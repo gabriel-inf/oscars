@@ -51,7 +51,7 @@ form {
 	display: inline;
 }
 
-/* top page title with Internet2 logo */
+/* top page title with logo */
 #pagetitle {
 	color: #000;
 	background: #fff;
@@ -71,22 +71,15 @@ form {
 	line-height: 80%;
 }
 
-#top {
-	background: #f2f2f2;
-}
 
-#top p.topmessage {
+p.topmessage {
 	font-size: 10px;
 	font-weight: bold;
-	padding: 0 0 0 10px;
-	margin: 8px 0 14px 0;
-	color: #333;
-}
-
-#top .bottomborder {
+	color: #0000bb;
+        background: #f2f2f2;
+        padding: .6em .6em;
+        margin: 8px 0 14x 0;
 	border-bottom: 1px solid #ccc;
-	padding: 0;
-	margin: 0;
 }
 
 /* css tab navigation */
