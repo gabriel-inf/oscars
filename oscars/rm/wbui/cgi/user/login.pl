@@ -10,6 +10,15 @@ require '../lib/general.pl';
 require '../lib/authenticate.pl';
 
 # main service start point URI (the first screen a user sees after logging in)
+$main_service_startpoint_URI = 'https://oscars.es.net/user/index.phtml';
+
+# temporarily
+print "Location: $main_service_startpoint_URI\n\n";
+exit;
+
+print "Content-type: text/plain\n\n";
+
+# main service start point URI (the first screen a user sees after logging in)
 $main_service_startpoint_URI = 'https://oscars.es.net/user/reservation.phtml';
 
 # current script name (used for error message)
