@@ -23,7 +23,7 @@ sub Get_User_Detail(FormData)
 		( $Dbh, $Error_Status ) = &Database_Connect();
 		if ( $Error_Status != 1 )
 		{
-			return( $script_filename, $Error_Status );
+			return( $Error_Status );
 		}
 
 		# names of the fields to be displayed on the screen
@@ -44,14 +44,14 @@ sub Get_User_Detail(FormData)
 		if ( $Error_Status != 1 )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $script_filename, $Error_Status );
+			return( $Error_Status );
 		}
 
 		( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
 		if ( $Error_Status != 1 )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $script_filename, $Error_Status );
+			return( $Error_Status );
 		}
 
 		# populate %User_Profile_Data with the data fetched from the database
@@ -86,7 +86,7 @@ sub Process_Profile_Update(FormData)
 
 		if ( $Error_Status != 1 )
 		{
-			return( $script_filename, $Error_Status );
+			return( $Error_Status );
 		}
 	}
 
@@ -96,7 +96,7 @@ sub Process_Profile_Update(FormData)
 	( $Dbh, $Error_Status ) = &Database_Connect();
 	if ( $Error_Status != 1 )
 	{
-		return( $script_filename, $Error_Status );
+		return( $Error_Status );
 	}
 
 	###
@@ -109,14 +109,14 @@ sub Process_Profile_Update(FormData)
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( $Error_Status );
 	}
 
 	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( $Error_Status );
 	}
 
 	while ( my $Ref = $Sth->fetchrow_arrayref )
@@ -161,14 +161,14 @@ sub Process_Profile_Update(FormData)
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( $Error_Status );
 	}
 
 	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( $Error_Status );
 	}
 
 	# populate %User_Profile_Data with the data fetched from the database
@@ -246,7 +246,7 @@ sub Process_Profile_Update(FormData)
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( $Error_Status );
 	}
 
 	( undef, $Error_Status ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );

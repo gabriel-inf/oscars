@@ -22,7 +22,7 @@ sub Process_User_Account_Activation(FormData)
 	( $Dbh, $Error_Status ) = &Database_Connect();
 	if ( $Error_Status != 1 )
 	{
-		return ($script_filename, $Error_Status );
+		return ($Error_Status );
 	}
 
 	# get the password from the database
@@ -32,14 +32,14 @@ sub Process_User_Account_Activation(FormData)
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		return ( $script_filename, $Error_Status );
+		return ( $Error_Status );
 	}
 
 	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		return ( $script_filename, $Error_Status );
+		return ( $Error_Status );
 	}
 
 	# check whether this person is a registered user
@@ -93,7 +93,7 @@ sub Process_User_Account_Activation(FormData)
 			if ( $Error_Status != 1 )
 			{
 				&Database_Disconnect( $Dbh );
-				return( $script_filename, $Error_Status );
+				return( $Error_Status );
 			}
 		}
 
@@ -104,14 +104,14 @@ sub Process_User_Account_Activation(FormData)
 		if ( $Error_Status != 1 )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $script_filename, $Error_Status );
+			return( $Error_Status );
 		}
 
 		( undef, $Error_Status ) = &Query_Execute( $Sth, $Pending_Level, '0', $FormData{'loginname'} );
 		if ( $Error_Status != 1 )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $script_filename, $Error_Status );
+			return( $Error_Status );
 		}
 
 		&Query_Finish( $Sth );
