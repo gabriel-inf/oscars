@@ -19,8 +19,8 @@ $abilene_bandwidth_limit = 3000;
 
 ##### Beginning of sub routines #####
 
-##### sub Process_Reservation
-# In: form data
+##### sub Process_Reservation(FormData)
+# In: FormData
 # Out: info, and success or error message
 sub Process_Reservation
 {
@@ -52,11 +52,11 @@ sub Process_Reservation
 		{
 			if ( $TempNodeLookupResult[0] eq 'command_fail' )
 			{
-				&Print_Interface_Screen( 0, '[ERROR] An error has occurred while traversing the network path. Please try again later.' );
+				return( 0, '[ERROR] An error has occurred while traversing the network path. Please try again later.' );
 			}
 			elsif ( $TempNodeLookupResult[0] eq 'non_abilene' )
 			{
-				&Print_Interface_Screen( 0, '[ERROR] This origin-destination path does not go through the Abilene network. Please check the origin and destination IP addresses and try again.' );
+				return( 0, '[ERROR] This origin-destination path does not go through the Abilene network. Please check the origin and destination IP addresses and try again.' );
 			}
 		}
 		else
@@ -88,7 +88,7 @@ sub Process_Reservation
 
 		if ( $Error_Status != 1 )
 		{
-			&Print_Error_Screen( $script_filename, $Error_Status );
+			return( $script_filename, $Error_Status );
 		}
 	}
 
@@ -98,7 +98,7 @@ sub Process_Reservation
 	( $Dbh, $Error_Status ) = &Database_Connect();
 	if ( $Error_Status != 1 )
 	{
-		&Print_Error_Screen( $script_filename, $Error_Status );
+		return( $script_filename, $Error_Status );
 	}
 
 	###
@@ -112,14 +112,14 @@ sub Process_Reservation
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		&Print_Error_Screen( $script_filename, $Error_Status );
+		return( $script_filename, $Error_Status );
 	}
 
 	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		&Print_Error_Screen( $script_filename, $Error_Status );
+		return( $script_filename, $Error_Status );
 	}
 
 	while ( my $Ref = $Sth->fetchrow_arrayref )
@@ -136,7 +136,7 @@ sub Process_Reservation
 					&Lock_Release();
 				}
 
-				&Print_Interface_Screen( 0, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege, and therefore you cannot make a new reservation request.' );
+				return( 0, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege, and therefore you cannot make a new reservation request.' );
 			}
 		}
 	}
@@ -162,7 +162,7 @@ sub Process_Reservation
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
-		&Print_Error_Screen( $script_filename, $Error_Status );
+		return( $script_filename, $Error_Status );
 	}
 
 	# to show the information on the error screen if conflic occurs...
@@ -188,7 +188,7 @@ sub Process_Reservation
 		if ( $Error_Status != 1 )
 		{
 			&Database_Disconnect( $Dbh );
-			&Print_Error_Screen( $script_filename, $Error_Status );
+			return( $script_filename, $Error_Status );
 		}
 
 		my $DB_Bandwidth_Sum;
@@ -227,7 +227,7 @@ sub Process_Reservation
 			&Lock_Release();
 		}
 
-		&Print_Interface_Screen( 0, '[ERROR] The available bandwidth limit on the Abilene network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
+		return( 0, '[ERROR] The available bandwidth limit on the Abilene network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
 	}
 	else
 	{
@@ -253,7 +253,7 @@ sub Process_Reservation
 		if ( $Error_Status != 1 )
 		{
 			&Database_Disconnect( $Dbh );
-			&Print_Error_Screen( $script_filename, $Error_Status );
+			return( $script_filename, $Error_Status );
 		}
 
 		( undef, $Error_Status ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
@@ -267,7 +267,7 @@ sub Process_Reservation
 			}
 
 			$Error_Status =~ s/CantExecuteQuery\n//;
-			&Print_Interface_Screen( 0, '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $Error_Status );
+			return( 0, '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $Error_Status );
 		}
 		
 		$New_Reservation_ID = $Dbh->{'mysql_insertid'};
@@ -286,7 +286,7 @@ sub Process_Reservation
 
 	### when everything has been processed successfully...
 	# don't forget to show the user's new reservation ID
-	&Print_Interface_Screen( 1, 'Your reservation has been processed successfully. Your reservation ID number is ' . $New_Reservation_ID . '.' );
+	return( 1, 'Your reservation has been processed successfully. Your reservation ID number is ' . $New_Reservation_ID . '.' );
 
 }
 ##### End of sub Process_Reservation
