@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # adduser.pl:  Admin tool: Add a User page
 # Last modified: March 25, 2005

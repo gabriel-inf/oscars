@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # gateway.pl:  Admin tool: Index page
 # Last modified: March 25, 2005

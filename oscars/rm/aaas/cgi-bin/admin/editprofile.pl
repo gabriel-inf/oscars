@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # editprofile.pl:  Admin tool: Edit Admin Profile page
 # Last modified: March 25, 2005

@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # logout.pl:  Admin tool: Logout Link
 # Last modified: March 25, 2005

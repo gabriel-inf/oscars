@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # userlist.pl:  Admin tool: User List page
 # Last modified: March 25, 2005
