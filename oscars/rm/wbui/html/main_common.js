@@ -12,6 +12,18 @@ hasClass(obj)
 stripe(id)
 */
 
+// ** prints HTML header
+function print_html_header()
+{
+    document.write('<title>On-demand Secure Circuits and Advance Reservation System</title>');
+    document.write('	<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1"a');
+    document.write('	<meta name="Author" content="Soo-yeon Hwang">');
+    document.write('    <meta name="Keywords" content="">');
+    document.write('	<meta name="Description" content="">');
+    document.write('	<meta http-equiv="Refresh" content="10;URL=./">');
+}
+
+
 // ** prints header
 function print_header(formType)
 {
