@@ -1,0 +1,9 @@
+<configuration>
+	<protocols>
+		<mpls>
+			<label-switched-path delete="delete">
+				<name>MPLS_LSP_NAME</name>
+			</label-switched-path>
+		</mpls>
+	</protocols>
+</configuration>
