@@ -30,10 +30,10 @@ $webmaster = 'dwrobertson@lbl.gov';
 # sub Generate_Random_String
 
 ### update main frame and status message
-# sub Update_Main_Frame
+# sub Update_Frames
 
 ### print status message in status frame
-# sub Update_Status_Message
+# sub Update_Status_Frame
 # sub Error_Code_To_Error_Message
 
 ##### List of sub routines End #####
@@ -355,12 +355,19 @@ sub Generate_Random_String
 ##### End of sub Generate_Random_String
 
 
-##### sub Update_Status_Message
+##### sub Update_Frames
+#
+sub Update_Frames
+{
+}
+
+
+##### sub Update_Status_Frame
 ##### Updates status portion of display (form target is status frame)
 ##### TODO:  DB lock release that was done here
 # In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
 # Out: None (prints error screen to the browser and exits)
-sub Update_Status_Message
+sub Update_Status_Frame
 {
 
 #	my $Err_Location = $ENV{'SCRIPT_NAME'};
@@ -391,7 +398,7 @@ Content-type: text/html
 	exit;
 
 }
-##### End of sub Update_Status_Message
+##### End of sub Update_Status_Frame
 
 
 ##### sub Error_Code_To_Error_Message
