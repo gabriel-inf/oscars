@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+	<title> Internet2 BRUW Project: Reservation Information </title>
+	<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1">
+	<meta name="Author" content="Soo-yeon Hwang">
+	<meta name="Keywords" content="">
+	<meta name="Description" content="">
+
+	<style type="text/css" media="screen">
+		@import url( '../styleSheets/layout.css' );
+	</style>
+
+	<script language="javascript" type="text/javascript" src="../main_common.js"></script>
+</head>
+
+<body>
+
+<script language="javascript">print_header('user');</script>
+
+<div>
+	<p class="topmessage"><script language="javascript">print_current_date();</script> | Reservation Information</p>
+</div>
+
+<div id="resvdetail_ui">
+
+<table border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="noleftborder">Reservation ID #</th>
+		<td><!-- ((_Reservation_ID_Number_)) --></td>
+		<th>Requested by (Login Name)</th>
+		<td><!-- ((_Requester_Login_Name_)) --></td>
+	</tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0">
+	<thead>
+		<tr>
+			<td class="noleftborder">Origin Location</td>
+			<td>Destination Location</td>
+			<td>Bandwidth</td>
+		</tr>
+	</thead>
+	<tr>
+		<td class="noleftborder"><!-- ((_Origin_Location_)) --></td>
+		<td><!-- ((_Destination_Location_)) --></td>
+		<td><!-- ((_Requested_Bandwidth_)) --> Mbps</td>
+	</tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0">
+	<thead>
+		<tr>
+			<td class="noleftborder">Start Date/Time</td>
+			<td>End Date/Time</td>
+			<td>Duration</td>
+		</tr>
+	</thead>
+	<tr>
+		<td class="noleftborder"><!-- ((_Start_DateTime_)) --></td>
+		<td><!-- ((_End_DateTime_)) --></td>
+		<td><!-- ((_Reservation_Duration_)) --></td>
+	</tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0">
+	<thead>
+		<tr>
+			<td class="noleftborder">Description</td>
+		</tr>
+	</thead>
+	<tr>
+		<td class="noleftborder"><!-- ((_Reservation_Description_)) --></td>
+	</tr>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="noleftborder">Reservation was made at</th>
+		<td colspan="3"><!-- ((_Request_DateTime_)) --></td>
+	</tr>
+</table>
+
+<p><a href="#" onClick="self.close()">Close Window</a></p>
+
+</div>
+
+</body>
+</html>
