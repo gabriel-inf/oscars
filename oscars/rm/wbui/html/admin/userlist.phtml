@@ -8,31 +8,24 @@
 	<meta name="Description" content="">
 
 	<style type="text/css" media="screen">
-		@import url( '../includes/layout.css' );
+		@import url( '../styleSheets/layout.css' );
 	</style>
 
-	<script language="javascript" type="text/javascript" src="../includes/main_common.js"></script>
+	<script language="javascript" type="text/javascript" src="../client/main_common.js"></script>
 </head>
 
 <body onload="stripe('userlist', '#fff', '#edf3fe');">
 
-<div id="top">
-<table id="pagetitle">
-<tr>
-	<td width="140"><a href="http://www.internet2.edu/" target="_blank"><img src="../includes/internet2_logo01.gif" width="108" height="86" border="0" alt="Internet2 Logo" title="Internet2"></a></td>
-	<td>
-		<h1>BRUW Admin Tool</h1>
-		<p>Provided by Internet2 BRUW Project</p>
-	</td>
-</tr>
-</table>
+<?php include('adminheader.html'); ?>
+
+<div>
 <p class="topmessage"><script language="javascript">print_current_date();</script> | Admin Tool | You are logged in as <!-- ((_Current_LoggedIn_Name_)) -->.</p>
 
 <ul id="tabnav">
-	<li><a href="scripts/userlist.pl" class="active" title="View and/or edit user accounts">Edit User Accounts</a></li>
-	<li><a href="scripts/adduser.pl" title="Add a new user account">Add a New User</a></li>
-	<li><a href="scripts/editprofile.pl"" title="View and/or edit admin profile">Admin Profile</a></li>
-	<li><a href="scripts/logout.pl" title="Logout from the admin tool">Logout</a></li>
+	<li><a href="userlist.phtml" class="active" title="View and/or edit user accounts">Edit User Accounts</a></li>
+	<li><a href="adduser.phtml" title="Add a new user account">Add a New User</a></li>
+	<li><a href="editprofile.phtml"" title="View and/or edit admin profile">Admin Profile</a></li>
+	<li><a href="logout.phtml" title="Logout from the admin tool">Logout</a></li>
 </ul>
 </div>
 
@@ -63,8 +56,6 @@ and make changes to it, including authorizing a newly registered account.</p>
 <p>For inquiries, please contact the project administrator.</p>
 
 </div>
-
-<p class="copyright">(c) 2004 Internet2 BRUW Project</p>
 
 </body>
 </html>
