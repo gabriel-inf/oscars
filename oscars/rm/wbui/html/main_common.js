@@ -134,6 +134,32 @@ function print_admin_bar(activePage)
 }
 
 
+// ** prints page footer
+function print_footer()
+{
+    document.write('<br/>');
+    document.write('<hr WIDTH = 80 % NOSHADE >');
+    document.write('<br/>');
+    document.write('<center><font face=arial,helvetica size=-1>');
+    document.write('<a href="http://www.es.net/">ESnet</a> | ');
+    document.write('<a href="http://www.lbl.gov/">Berkeley Lab</a> |');
+    document.write('<a href="http://www.lbl.gov/Disclaimers.html">Notice to Users</a> |');
+    document.write('<a href="http://www.es.net/OSCARS/">OSCARS</a>');
+    document.write('</font></center>');
+
+    document.write('<p>');
+    document.write('<center><table Width="85%">');
+    document.write('<tr><td>');
+    document.write('<font face=arial,helvetica size=2 COLOR=GRAY>');
+    document.write('<b>Contacts:</b> <a href="mailto:chin@es.net">Chin Guok</a>, ');
+    document.write('<a href="mailto:DWRobertson@lbl.gov">David Robertson</a><br/>');
+
+    document.write('</font>');
+    document.write('</table>');
+    document.write('</center>');
+}
+
+
 // ** print current date (format: July 7, 2004) **
 function print_current_date()
 {
