@@ -32,7 +32,7 @@ $webmaster = 'dwrobertson@lbl.gov';
 ### update main frame and status message
 # sub Update_Frames
 
-### print status message in status frame
+### return status message in status frame
 # sub Update_Status_Frame
 # sub Error_Code_To_Error_Message
 
@@ -366,7 +366,7 @@ sub Update_Frames
 ##### Updates status portion of display (form target is status frame)
 ##### TODO:  DB lock release that was done here
 # In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
-# Out: None (prints error screen to the browser and exits)
+# Out: returns error or status message
 sub Update_Status_Frame
 {
 
@@ -376,28 +376,9 @@ sub Update_Status_Frame
 	my( $Err_Code, $Errno ) = split( /\n/, $_[1], 2 );
 
 	my $Err_Message = &Error_Code_To_Error_Message( $Err_Code );
-
-	print <<__HTML__;
-Pragma: no-cache
-Cache-control: no-cache
-Content-type: text/html
-
-<html>
-	<body>
-	if ( $Errno ne '' )
-	{
-		print "<p><strong>[Error] $Err_Message<br>$Errno</strong></p>\n";
-	}
-	else
-	{
-		print "<p><strong>[Error] $Err_Message</strong></p>\n";
-	}
-
-	print "</body></html>\n";
-
-	exit;
-
+        return ($Err_Message, $Errno);
 }
+
 ##### End of sub Update_Status_Frame
 
 
