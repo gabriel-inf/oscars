@@ -7,14 +7,7 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/database.pl';
 require '../lib/authenticate.pl';	# required for sendmail location
-
-# template html file name for printing browser screen
-$interface_template_filename = 'register.html';
-
-# template html file name for printing process success screen
-$processing_result_template_filename = 'regprocessed.html';
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
@@ -59,65 +52,7 @@ exit;
 # Out: None (exits the program at the end)
 sub Print_Interface_Screen
 {
-
-	my( $Processing_Result, $Processing_Result_Message, $Template_HTML_File );
-	
-	if ( $#_ >= 0 )
-	{
-		$Processing_Result = $_[0];
-		$Processing_Result_Message = $_[1];
-	}
-	else
-	{
-		$Processing_Result = 1;
-		$Processing_Result_Message = '';
-	}
-	
-	if ( ( $Processing_Result == 1 ) && ( $Processing_Result_Message ne '' ) )
-	{
-		$Template_HTML_File = $processing_result_template_filename;
-	}
-	else
-	{
-		$Template_HTML_File = $interface_template_filename;
-	}
-
-	# open html template file
-	open( F_HANDLE, $Template_HTML_File ) || &Print_Error_Screen( $script_filename, "FileOpen\n" . $Template_HTML_File . ' - ' . $! );
-	my @Template_Html = <F_HANDLE>;
-	close( F_HANDLE );
-
-	# print to browser screen
-	# Pragma: no-cache => Pre-HTTP/1.1 directive to prevent caching
-	# Cache-control: no-cache => HTTP/1.1 directive to prevent caching
-	print "Pragma: no-cache\n";
-	print "Cache-control: no-cache\n";
-	print "Content-type: text/html\n\n";
-
-	foreach $Html_Line ( @Template_Html )
-	{
-		foreach ( $Html_Line )
-		{
-			s/<!-- \(\(_Processing_Result_Message_\)\) -->/$Processing_Result_Message/g;
-		}
-
-		# if processing has failed for some reason, pre-fill the form with the %FormData values so that users do not need to fill the form again
-		if ( $Processing_Result == 0 )
-		{
-			foreach $Key ( keys %FormData )
-			{
-				foreach ( $Html_Line )
-				{
-					s/(name="$Key")/$1 value="$FormData{$Key}"/ig;
-				}
-			}
-		}
-
-		print $Html_Line;
-	}
-
 	exit;
-
 }
 ##### End of sub Print_Interface_Screen
 
@@ -154,99 +89,8 @@ sub Process_User_Registration
 	# get current date/time string in GMT
 	my $Current_DateTime = &Create_Time_String( 'dbinput' );
 
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
+        ## TODO:  contact the DB, get result back
 
-	# lock other database operations (check if there's any previous lock set)
-	if ( $use_lock ne 'off' )
-	{
-		undef $Error_Status;
-
-		$Error_Status = &Lock_Set();
-
-		if ( $Error_Status != 1 )
-		{
-			&Print_Error_Screen( $script_filename, $Error_Status );
-		}
-	}
-
-	# connect to the database
-	undef $Error_Status;
-	
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
-	{
-		&Print_Error_Screen( $script_filename, $Error_Status );
-	}
-
-	# login name overlap check
-	$Query = "SELECT $db_table_field_name{'users'}{'user_loginname'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
-
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
-	{
-		&Database_Disconnect( $Dbh );
-		&Print_Error_Screen( $script_filename, $Error_Status );
-	}
-
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
-	{
-		&Database_Disconnect( $Dbh );
-		&Print_Error_Screen( $script_filename, $Error_Status );
-	}
-
-	&Query_Finish( $Sth );
-
-	if ( $Num_of_Affected_Rows > 0 )
-	{
-		&Database_Disconnect( $Dbh );
-
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
-
-		&Print_Interface_Screen( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
-	}
-
-	# insert into database query statement
-	$Query = "INSERT INTO $db_table_name{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
-	{
-		&Database_Disconnect( $Dbh );
-		&Print_Error_Screen( $script_filename, $Error_Status );
-	}
-
-	# initial user level is set to 0; needs admin accept/user activation to raise the user level
-	my @Stuffs_to_Insert = ( '', $FormData{'loginname'}, $Encrypted_Password, $FormData{'firstname'}, $FormData{'lastname'}, $FormData{'organization'}, $FormData{'email_primary'}, $FormData{'email_secondary'}, $FormData{'phone_primary'}, $FormData{'phone_secondary'}, $FormData{'description'}, 0, $Current_DateTime, '', 0 );
-
-	( undef, $Error_Status ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
-	if ( $Error_Status != 1 )
-	{
-		&Database_Disconnect( $Dbh );
-
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
-
-		$Error_Status =~ s/CantExecuteQuery\n//;
-		&Print_Interface_Screen( 0, 'An error has occurred while recording your registration on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $Error_Status );
-	}
-
-	&Query_Finish( $Sth );
-
-	# disconnect from the database
-	&Database_Disconnect( $Dbh );
-
-	# unlock the operation
-	if ( $use_lock ne 'off' )
-	{
-		&Lock_Release();
-	}
 
 	### send a notification email to the admin
 	open( MAIL, "|$sendmail_binary_path_and_flags $registration_notification_email_toaddr" ) || &Print_Interface_Screen( 0, 'Your user registration has been recorded successfully, but sending a notification email to the service administrator has failed. It may take a while longer for the administrator to accept your registration. Please contact the webmaster at ' . $webmaster . ', and inform the person of the date and time of error.<br>[Error] ' . $! );
