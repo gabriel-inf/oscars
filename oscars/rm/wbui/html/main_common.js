@@ -12,6 +12,30 @@ hasClass(obj)
 stripe(id)
 */
 
+// ** prints header
+function print_header(formType)
+{
+    document.write('<div>');
+    document.write('<table id="pagetitle">');
+    document.write('<tr>');
+    document.write('    <td><a href="http://www.es.net/" target="_blank"><img src="https://oscars.es.net/images/ESnetLogo.png" width="77" height="58" border="0" alt="ESnet Logo" title="ESnet"></a></td>');
+    document.write('    <td>');
+    if (formType == 'client')
+    {
+        document.write('	<h1>On-demand Secure Circuits and Advance Reservation System (OSCARS)</h1>');
+    }
+    else
+    {
+        document.write('	<h1>OSCARS Administration Tool</h1>');
+    }
+    document.write('    <p>In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project</p>');
+    document.write('    </td>');
+    document.write('</tr>');
+    document.write('</table>');
+    document.write('</div>');
+}
+
+
 // ** prints navigation bar, with active page highlighted
 function print_navigation_bar(activePage)
 {
