@@ -8,32 +8,23 @@
 	<meta name="Description" content="">
 
 	<style type="text/css" media="screen">
-		@import url( '../includes/layout.css' );
+		@import url( '../styleSheets/layout.css' );
 	</style>
 
-	<script language="javascript" type="text/javascript" src="../includes/main_common.js"></script>
-	<script language="javascript" type="text/javascript" src="../includes/form_admin_editprofile.js"></script>
+	<script language="javascript" type="text/javascript" src="../client/main_common.js"></script>
+	<script language="javascript" type="text/javascript" src="editprofile.js"></script>
 </head>
 
 <body>
 
-<div id="top">
-<table id="pagetitle">
-<tr>
-	<td width="140"><a href="http://www.internet2.edu/" target="_blank"><img src="../includes/internet2_logo01.gif" width="108" height="86" border="0" alt="Internet2 Logo" title="Internet2"></a></td>
-	<td>
-		<h1>BRUW Admin Tool</h1>
-		<p>Provided by Internet2 BRUW Project</p>
-	</td>
-</tr>
-</table>
+<div>
 <p class="topmessage"><script language="javascript">print_current_date();</script> | Admin Tool | You are logged in as <!-- ((_Current_LoggedIn_Name_)) -->.</p>
 
 <ul id="tabnav">
-	<li><a href="scripts/userlist.pl" title="View and/or edit user accounts">Edit User Accounts</a></li>
-	<li><a href="scripts/adduser.pl" title="Add a new user account">Add a New User</a></li>
-	<li><a href="scripts/editprofile.pl"" class="active" title="View and/or edit admin profile">Admin Profile</a></li>
-	<li><a href="scripts/logout.pl" title="Logout from the admin tool">Logout</a></li>
+	<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" title="View and/or edit user accounts">Edit User Accounts</a></li>
+	<li><a href="https://oscars.es.net/cgi-bin/admin/adduser.pl" title="Add a new user account">Add a New User</a></li>
+	<li><a href="https://oscars.es.net/cgi-bin/editprofile.pl"" class="active" title="View and/or edit admin profile">Admin Profile</a></li>
+	<li><a href="https://oscars.es.net/cgi-bin/admin/logout.pl" title="Logout from the admin tool">Logout</a></li>
 </ul>
 </div>
 
@@ -43,7 +34,7 @@
 (Required fields are marked with a <span class="requiredmark">*</span>)</p>
 <p class="notice"><!-- ((_Processing_Result_Message_)) --></p>
 
-<form method="post" action="scripts/editprofile.pl" onsubmit="return check_form(this);">
+<form method="post" action="https://oscars.es.net/cgi-bin/admin/editprofile.pl" onsubmit="return check_form(this);">
 <input type="hidden" name="mode" value="admineditprofile">
 
 <table>
@@ -111,8 +102,6 @@
 <p>For inquiries, please contact the project administrator.</p>
 
 </div>
-
-<p class="copyright">(c) 2004 Internet2 BRUW Project</p>
 
 </body>
 </html>
