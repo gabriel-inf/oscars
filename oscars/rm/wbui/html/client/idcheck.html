@@ -8,23 +8,18 @@
 	<meta name="Description" content="">
 
 	<style type="text/css" media="screen">
-		@import url( '../includes/layout.css' );
+		@import url( '../styleSheets/layout.css' );
 	</style>
 
-	<script language="javascript" type="text/javascript" src="../includes/main_common.js"></script>
+	<script language="javascript" type="text/javascript" src="main_common.js"></script>
 </head>
 
 <body>
 
-<div id="top">
-<table id="pagetitle">
-<tr>
-	<td>&nbsp;</td>
-</tr>
-</table>
+<?php include('header.html'); ?>
+
 <div class="bottomborder">
 	<p class="topmessage"><script language="javascript">print_current_date();</script> | Login Name Overlap Check Result</p>
-</div>
 </div>
 
 <div id="account_ui">
@@ -34,8 +29,6 @@
 <p><a href="#" onClick="self.close()">Close Window</a></p>
 
 </div>
-
-<p class="copyright">(c) 2004 Internet2 BRUW Project</p>
 
 </body>
 </html>
