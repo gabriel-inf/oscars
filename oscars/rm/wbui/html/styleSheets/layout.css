@@ -186,6 +186,10 @@ p.topmessage {
 	text-align: center;
 }
 
+#status {
+        text-align: center;
+}
+
 #login_ui table {
 	font-size: .9em;
 	border: 1px solid #ccc;
