@@ -87,7 +87,7 @@ p.topmessage {
 	height: 20px;
 	margin: 0;
 	padding-left: 10px;
-	background: url("../includes/tab_bottom.gif") repeat-x bottom;
+	background: url("../images/tab_bottom.gif") repeat-x bottom;
 }
 
 #tabnav li {
