@@ -42,7 +42,9 @@ CREATE TABLE IF NOT EXISTS networks (
 
 CREATE TABLE IF NOT EXISTS routers (
     router_id INT(5) NOT NULL,
+    router_valid BOOLEAN NOT NULL,
     router_name VARCHAR(50) NOT NULL,
+    router_loopback VARCHAR(50) NOT NULL,
     network_id INT(3) NOT NULL,
     PRIMARY KEY (router_id)
 ) type=MyISAM;
@@ -51,6 +53,7 @@ CREATE TABLE IF NOT EXISTS routers (
 
 CREATE TABLE IF NOT EXISTS interfaces (
     interface_id INT(5) NOT NULL,
+    interface_valid BOOLEAN NOT NULL,
     interface_speed INT(15) NOT NULL,
     interface_ip INT(4) NOT NULL,
     interface_descr VARCHAR(5),
