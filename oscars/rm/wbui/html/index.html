@@ -16,27 +16,14 @@
 
 <body>
 
-<div id="top">
-<table id="pagetitle">
-<tr>
-	<td><a href="http://www.es.net/" target="_blank"><img src="./images/ESnetLogo.png" width="77" height="58" border="0" alt="Internet2 Logo" title="Internet2"></a></td>
-	<td>
-		<h1>On-demand Secure Circuits and Advance Reservation System (OSCARS)</h1>
-		<p>In collaboration with the Internet2 BRUW Project</p>
-	</td>
-</tr>
-</table>
-<div class="bottomborder">
-	<p class="topmessage"><script language="javascript">print_current_date();</script> | Please sign in.</p>
-</div>
-</div>
+<?php include('header.html'); ?>
 
 <div id="login_ui">
 
 <p><em>Please Sign In</em></p>
 <p class="notice"><!-- ((_Processing_Result_Message_)) --></p>
 
-<form method="post" action="scripts/login.pl">
+<form method="post" action="https://oscars.es.net/cgi-bin/client/login.pl">
 <input type="hidden" name="mode" value="login">
 
 <table>
