@@ -1,8 +1,19 @@
 CREATE TABLE IF NOT EXISTS users (
     user_id INT(6) NOT NULL AUTO_INCREMENT,
-    user_surname VARCHAR(50) NOT NULL,
+    user_last_name VARCHAR(50) NOT NULL,
     user_first_name VARCHAR(50),
-    user_token varchar(2048),
+        -- for now
+    user_login_name VARCHAR(25),
+    user_password varchar(50),
+    user_email_primary VARCHAR(100) NOT NULL,
+    user_email_secondary VARCHAR(100),
+    user_phone_primary VARCHAR(50),
+    user_phone_secondary VARCHAR(50),
+    user_description TEXT,
+    user_level TINYINT UNSIGNED NOT NULL,
+    user_register_time DATETIME NOT NULL,
+    user_activation_key VARCHAR(40),
+    user_pending_level TINYINT UNSIGNED,
     authorization_id INT(6),    -- foreign key
     institution_id INT(6),      -- foreign key
     PRIMARY KEY (user_id)
@@ -25,6 +36,13 @@ CREATE TABLE IF NOT EXISTS auth_types (
     auth_type_id INT(3) NOT NULL AUTO_INCREMENT,
     auth_name VARCHAR(50),
     PRIMARY KEY (auth_type_id)
+) type=MyISAM;
+
+CREATE TABLE IF NOT EXISTS cookiekey (
+    cookiekey_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    cookeykey_randomkey VARCHAR(32) NOT NULL,
+    user_id INT(6) NOT NULL,
+    PRIMARY KEY (cookiekey_id),
 ) type=MyISAM;
 
 CREATE TABLE IF NOT EXISTS isps (
@@ -62,29 +80,18 @@ CREATE TABLE IF NOT EXISTS interfaces (
     PRIMARY KEY (interface_id)
 ) type=MyISAM;
 
-CREATE TABLE IF NOT EXISTS paths (
-    path_id INT(5) NOT NULL AUTO_INCREMENT,
-    path_index INT(5) NOT NULL,
-    interface_id INT(5) NOT NULL,
-    reservation_id INT(5) NOT NULL,
-    PRIMARY KEY (path_id)
-) type=MyISAM;
-
 CREATE TABLE IF NOT EXISTS reservations (
     reservation_id INT(5) NOT NULL AUTO_INCREMENT,
-    reservation_start DATETIME,
-    reservation_end DATETIME,
+    reservation_start_time DATETIME,
+    reservation_end_time DATETIME,
+    reservation_qos VARCHAR(50),
+    reservation_status VARCHAR(12),
+    reservation_description TEXT,
+    reservation_created_time DATETIME NOT NULL,
+    ingress_interface_id INT(5) NOT NULL,
+    egress_interface_id INT(5) NOT NULL,
     user_id INT(6) NOT NULL,
     PRIMARY KEY (reservation_id)
-) type = MyISAM;
-
-CREATE TABLE IF NOT EXISTS reservation_requests (
-    reservation_request_id INT(5) NOT NULL AUTO_INCREMENT,
-    reservation_request_start DATETIME,
-    reservation_request_end DATETIME,
-    reservation_request_qos VARCHAR(50),
-    user_id INT(6) NOT NULL,
-    PRIMARY KEY (reservation_request_id)
 ) type = MyISAM;
 
 CREATE TABLE IF NOT EXISTS allocations (
