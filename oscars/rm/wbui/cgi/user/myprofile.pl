@@ -20,15 +20,11 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 %FormData = &Parse_Form_Input_Data( 'post' );
 
 # check if the user is logged in
-if ( &Verify_Login_Status( $user_login_cookie_name ) != 1 )
+if ( &Verify_Login_Status( ) != 1 )
 {
 	# forward the user to the user login screen
 	print "Location: $main_service_login_URI\n\n";
 	exit;
-}
-else
-{
-	$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
 }
 
 # if 'mode' eq 'updatemyprofile': Update the currently logged-in user's profile

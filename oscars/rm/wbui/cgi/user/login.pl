@@ -10,7 +10,7 @@ require '../lib/general.pl';
 require '../lib/authenticate.pl';
 
 # main service start point URI (the first screen a user sees after logging in)
-$main_service_startpoint_URI = 'https://oscars.es.net/user/reservation.pl';
+$main_service_startpoint_URI = 'https://oscars.es.net/user/reservation.phtml';
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
@@ -30,16 +30,15 @@ if ( $FormData{'mode'} eq 'login' )
 }
 else
 {
-	### Check whether the user has a valid login cookie
-	if ( &Verify_Login_Status( $user_login_cookie_name ) == 1 )
+	if ( &Verify_Login_Status( ) == 1 )
 	{
 		# forward the user to the main service page
-		print "Location: $main_service_startpoint_URI\n\n";
+		&Reset_Main_Frame($main_service_startpoint_URI, 'Logged in');
 		exit;
 	}
 	else
 	{
-		&Print_Interface_Screen();
+		&Update_Status_Message('Invalid login');
 	}
 }
 
@@ -49,16 +48,6 @@ exit;
 
 
 ##### Beginning of sub routines #####
-
-
-##### sub Print_Interface_Screen
-# In: $Processing_Result [1 (success)/0 (fail)], $Processing_Result_Message
-# Out: None (exits the program at the end)
-sub Print_Interface_Screen
-{
-	exit;
-}
-##### sub End of Print_Interface_Screen
 
 
 ##### sub Process_User_Login
@@ -71,19 +60,18 @@ sub Process_User_Login
 	# validate user input (just check for empty fields)
 	if ( $FormData{'loginname'} eq '' )
 	{
-		&Print_Interface_Screen( 0, 'Please enter your login name.' );
+		&Update_Status_Message( 'Please enter your login name.' );
 	}
 
 	if ( $FormData{'password'} eq '' )
 	{
-		&Print_Interface_Screen( 0, 'Please enter the password.' );
+		&Update_Status_Message( 'Please enter your password.' );
 	}
 
 	### TODO:  call DB routine, get message back
 
 	### when everything has been processed successfully...
-	# $Processing_Result_Message string may be anything, as long as it's not empty
-	&Print_Interface_Screen( 1, 'The user has successfully logged in.' );
+	&Reset_Main_Frame( $main_service_startpoint_URI , 'Login successful');
 
 }
 ##### End of sub Process_User_Login
