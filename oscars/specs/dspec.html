@@ -7,7 +7,7 @@
 <em>David Robertson, Chin Guok<br/>
 ESnet</em><br/><br/>
 
-February 7, 2005</br>
+March 28, 2005</br>
 
 <hr>
 
@@ -15,8 +15,9 @@ February 7, 2005</br>
 
 <p>This document focuses on the design decisions made for satisfying the
 first year <a href="fspec.html">requirements</a> for the reservation manager
-(RM) portion of <a href="http://www.es.net/oscars">OSCARS</a>.  Non-first
-year decisions are followed by a parenthesized indicator of the year.</p>
+(RM) portion of <a href="http://www.es.net/oscars">OSCARS</a>.  
+A parenthesized indicator indicates in what year of the project functionality
+is planned to be implemented.</p>
 
 <p>Portions of this document are taken from the OSCARS
 <a href="http://www.es.net/oscars/documents/OSCARS.pdf">project summary</a>.</p>
@@ -52,37 +53,40 @@ using XML Schema, and definitions of request and response messages.</p>
 
 <p>The manual user interface to the RM will be a Web-Based User Interface
 (WBUI), i.e. a browser.  The specific mode of interaction will be via
-<a href="http://www.php.net/">PHP</a> forms.  The forms will use the
-<a href="http://www.nersc.gov/nusers/accounts/nim/users_manual/getting_started.php">NIM</a>
-Web pages as a template, where NIM is the resource allocation and accounting
+forms.  The forms will use the
+<a href="http://http://discvenue.internet2.edu/wordpress/">BRUW</a>
+Web pages as a template for the interface design and necessary functionality.
+BRUW is an experimental Internet2 bandwidth reservation system.
 system for NERSC.  However, database access will not be done directly
-via PHP, as in NIM.</p>
+via CGI, as in BRUW.  Instead mod_perl and WSRF::LITE (see below) will be used
+to contact the database via the AAAS (y1).</p>
 
 <p>To request a reservation, a form will be provided for the user to set
 a start and end time (minimum one hour), the bandwidth requested, and
 the end points of a circuit.  A disclaimer will be on the form indicating
 that if the transit path across ESnet has more than one ingress point, a
 full traceroute must be provided to ensure that the requested bandwidth is
-actually available.  An input field for the traceroute will be provided.</p>
+actually available.  An input field for the traceroute will be provided (y1).
+</p>
 
-<p>An input field indicating that a user wants to set up a bidirectional
+<p>An input field indicating whether a user wants to set up a bidirectional
 path will be provided, as well as a field for a return email address if
-the user wants to receive notifications.</p>
+the user wants to receive notifications (y1).</p>
 
 <p>The response to the request will show the full traceroute that was set
 up, if the reservation was set up immediately.  Otherwise a message will
-be displayed saying that the reservation request was queued.</p>
+be displayed saying that the reservation request was queued (y1).</p>
 
 <p>A form will be provided for users to see all the reservations they have made.
 A search filter will be provided on the form to narrow the reservations, for
 example by a specific date.  Reservation identifiers will include the date,
-the user name, and a sequence number for that date.</p>
+the user name, and a sequence number for that date (y1).</p>
 
-<p>User-requested notifications will be done via email.</p>
+<p>User-requested notifications will be done via email (y1).</p>
 
-<p>The <a href="http://dsd.lbl.gov/gtg/projects/pyGridWare/">pyGridWare</a>
-API will be used by client application programs.  pyGridWare is a
-<a href="http://www.python.org/">Python</a> implementation of the
+<p>The <a href="http://www.sve.man.ac.uk/Research/AtoZ/ILCT">WSRF::LITE</a>
+API will be used by client application programs.  WSRF::Lite is a
+Perl implementation of the
 <a href="http://www.oasis-open.org/specs/index.php">WS-Resource</a>
 Web services framework (y2).</p>
 
@@ -93,48 +97,52 @@ Web services framework (y2).</p>
 large.  A DoS attack could prevent reservations from being processed.  If the
 service is compromised, the WAN may be disabled.</p>
 
-<p>The AAAS Web server will only allow connections via SSL.</p>
+<p>The AAAS Web server will only allow connections via SSL (y1).</p>
 
 <p>SOAP messages to the AAAS will be signed, including the user's
-authenticated identifier.</p>
+authenticated identifier (y2).</p>
 
 <p>The only user able to access the database server (see next section) will
-be the AAAS and administrators.  The BSS will only accept connections from the
-AAAS.</p>
+be the AAAS and administrators.  The database server will only accept requests
+from the database front end, running on the same machine.  The BSS will only
+accept connections from the AAAS (y1).</p>
 
-<p>The RM will use ESnet production tools to monitor usage.</p>
+<p>The RM will use ESnet production tools to monitor usage (y1).</p>
 
 
 <h3>AAAS</h3>
 
-<p>The AAAS will consist of a Web server, a set of PHP forms, a database, and a
-front end to that database.  (PHP is embedded in HTML, but runs on the server
-side.  Only the result of a PHP method is visible to a client browser.)</p>
+<p>The AAAS will consist of a Web server, a set of Perl scripts, a database,
+and a front end to that database.</p>
 
 <p>The Apache2 Web server will be used, and will only accept connections
 via SSL.   Initially it will only accept connections from ESnet hosts.
-httpd processes will run as an unprivileged user without a login shell.</p>
+httpd processes will run as an unprivileged user without a login shell (y1).</p>
 
 <p>The MySQL database server will be used.  The database organization (tables,
-constraints, etc.) will use the NIM database as a template.  The database will
+constraints, etc.) will use the BRUW database as a template.  The database will
 run as an unprivileged user without a login shell.  The database will only
 accept connections from a user designated to run the front end, and from ESnet
-administrative users.</p>
+administrative users.  It will only accept requests from clients running
+on the same machine (i.e. the front end) (y1).</p>
 
 <p>Before requests can be made via the WBUI, the user will use a form to 
-authenticate via a user name and password, and a distinguished name (DN) if it
-is different than the user name.  The DN will be used to retrieve a certificate
-from the <a href="http://doegrids.org/">DOEGrids Certificate Service</a>.</p>
+authenticate via a user name and password (y1), and/or a distinguished name (DN)
+if it is different than the user name (y2).
+The DN will be used to retrieve a certificate
+from the <a href="http://doegrids.org/">DOEGrids Certificate Service</a> (y2).
+</p>
 
-<p>Once the certificate is retrieved, forms incorporating PHP methods will be
-used to handle user requests, incorporating that certificate in signed SOAP
-messages sent to the front end.  The front end will access and modify the
-database, and control the BSS, based on those requests (y1).  Requests made via
-the API use pyGridWare methods to send signed SOAP messages to the front end
-(y2).</p>
+<p>Once the certificate is retrieved, forms incorporating mod_perl WSRF::LITE
+methods will be used to handle user requests (y1), incorporating that
+certificate in signed (y2) SOAP messages sent to the front end
+(not the Web server) (y1).  The front end will access and modify the database,
+and control the BSS, based on those requests (y1).  Requests made
+via the API use WSRF::LITE methods to send signed SOAP messages to the front
+end (y2).</p>
 
-<p>Signed SOAP messages will be used for communication between the front end
-and the BSS.</p>
+<p>Signed (y2) SOAP messages will be used for communication between the front end
+and the BSS (y1).</p>
 
 <h3>BSS</h3>
 
