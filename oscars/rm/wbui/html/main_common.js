@@ -27,7 +27,7 @@ function print_html_header(formType)
     document.write('	<meta name="Author" content="Soo-yeon Hwang">');
     document.write('    <meta name="Keywords" content="">');
     document.write('	<meta name="Description" content="">');
-    document.write('	<meta http-equiv="Refresh" content="10;URL=./">');
+    document.write('	<meta http-equiv="Refresh" content="100;URL=./">');
 }
 
 
