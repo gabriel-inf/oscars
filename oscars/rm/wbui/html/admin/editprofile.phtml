@@ -17,14 +17,16 @@
 
 <body>
 
+<?php include('adminheader.html'); ?>
+
 <div>
 <p class="topmessage"><script language="javascript">print_current_date();</script> | Admin Tool | You are logged in as <!-- ((_Current_LoggedIn_Name_)) -->.</p>
 
 <ul id="tabnav">
-	<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" title="View and/or edit user accounts">Edit User Accounts</a></li>
-	<li><a href="https://oscars.es.net/cgi-bin/admin/adduser.pl" title="Add a new user account">Add a New User</a></li>
-	<li><a href="https://oscars.es.net/cgi-bin/editprofile.pl"" class="active" title="View and/or edit admin profile">Admin Profile</a></li>
-	<li><a href="https://oscars.es.net/cgi-bin/admin/logout.pl" title="Logout from the admin tool">Logout</a></li>
+	<li><a href="userlist.phtml" title="View and/or edit user accounts">Edit User Accounts</a></li>
+	<li><a href="adduser.phtml" title="Add a new user account">Add a New User</a></li>
+	<li><a href="editprofile.phtml"" class="active" title="View and/or edit admin profile">Admin Profile</a></li>
+	<li><a href="logout.phtml" title="Logout from the admin tool">Logout</a></li>
 </ul>
 </div>
 

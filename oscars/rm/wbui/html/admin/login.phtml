@@ -8,27 +8,18 @@
 	<meta name="Description" content="">
 
 	<style type="text/css" media="screen">
-		@import url( '../includes/layout.css' );
+		@import url( '../styleSheets/layout.css' );
 	</style>
 
-	<script language="javascript" type="text/javascript" src="../includes/main_common.js"></script>
+	<script language="javascript" type="text/javascript" src="../client/main_common.js"></script>
 </head>
 
 <body>
 
-<div id="top">
-<table id="pagetitle">
-<tr>
-	<td width="140"><a href="http://www.internet2.edu/" target="_blank"><img src="../includes/internet2_logo01.gif" width="108" height="86" border="0" alt="Internet2 Logo" title="Internet2"></a></td>
-	<td>
-		<h1>BRUW Admin Tool</h1>
-		<p>Provided by Internet2 BRUW Project</p>
-	</td>
-</tr>
-</table>
-<div class="bottomborder">
+<?php include('adminheader.html'); ?>
+
+<div>
 	<p class="topmessage"><script language="javascript">print_current_date();</script> | Admin Tool</p>
-</div>
 </div>
 
 <div id="login_ui">
@@ -36,7 +27,7 @@
 <p><em>Please Sign In</em></p>
 <p class="notice"><!-- ((_Processing_Result_Message_)) --></p>
 
-<form method="post" action="scripts/gateway.pl">
+<form method="post" action="https://oscars.es.net/cgi-bin/admin/gateway.pl">
 <input type="hidden" name="mode" value="adminlogin">
 
 <table>
@@ -59,8 +50,6 @@
 <p>For inquiries, please contact the project administrator.</p>
 
 </div>
-
-<p class="copyright">(c) 2004 Internet2 BRUW Project</p>
 
 </body>
 </html>
