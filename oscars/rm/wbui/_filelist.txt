@@ -1,116 +1,126 @@
 David Robertson
-March 28, 2005
+April 1, 2005
 
-Some of this material is now under aaas.
+[[ OSCARS/BRUW File List ]]
 
-[[ BRUW/OSCARS Front-end File List ]]
-
-[index.cgi mapping]
-- main service root: ./client/scripts/login.pl
-- register folder: ./client/scripts/register.pl
-- admin folder: ./admin/scripts/gateway.pl
+- main service root: ./wbui/html/index.phtml
 
 --------------------
 [client directories]
 ./
-./admin/
-./client/
-./images/
-./styleSheets/
+./wbui/html/
+            images/
+            styleSheets/
+            admin/
+            user/
 
-[server-side directories]
-./lib/
-./dbscripts/
-./configs/
-./scheduler/
+[CGI scripts directories]
+./wbui/cgi/
+           admin/
+           user/
+           lib/
+
+[AAAS directories]
+
+./aaas/
+       configs/
+       dbscripts/
+       module/
+
+[BSS directories]
+./bss/
+       module/
+
 
 --------------------
 [Commonly Used]
-./client/main_common.js
-./styleSheets/layout.css
-./images/internet2_logo01.gif
+./wbui/html/main_common.js
+./wbui/styleSheets/layout.css
+./wbui/images/internet2_logo01.gif
+./wbui/images/ESnet_logo.png
 
 [Code Libraries]
-./lib/general.pl
-./lib/database.pl
-./lib/authenticate.pl
-./lib/parseroute.pl
-./lib/abilene_mpls_setup.pl (used for back-end tunnel setup)
+
+./wbui/cgi/
+           general.pl
+           authenticate.pl
+
+./aaas/module/
+              general.pl
+              database.pl
 
 --------------------
 [Register: ID Check]
-./client/scripts/idcheck.pl
-./client/idcheck.html
-./images/icon_biggrin.gif
-./images/icon_sad.gif
-./images/icon_exclaim.gif
+./wbui/cgi/user/idcheck.pl
+./wbui/cgi/user/idcheck.html
+./wbui/html/images/icon_biggrin.gif
+./wbui/html/images/icon_sad.gif
+./wbui/html/images/icon_exclaim.gif
 
 [Register: Main Module]
-./client/scripts/register.pl
-./client/register.html
-./client/regprocessed.html
-./client/register.js
+./wbui/cgi/user/register.pl
+./wbui/html/user/register.html
+./wbui/html/user/register.js
+./aaas/module/register.pl    # database specific
 
 [Account Activation]
-./client/scripts/activateaccount.pl
-./client/activateaccount.html
-./client/acctactivated.html
+./wbui/cgi/user/activateaccount.pl
+./wbui/html/user/activateaccount.html
+./aaas/module/activateaccount.pl
 
 --------------------
 [Main Service: Login]
-./client/scripts/login.pl
-./client/login.html
+./wbui/cgi/user/login.pl
+./wbui/html/user/login.html
 
 [Main Service: Logout]
-./client/scripts/logout.pl
+./wbui/cgi/user/logout.pl
 
 [Main Service: Make a Reservation]
-./client/scripts/reservation.pl
-./client/reservation.html
-./client/reservation.js
+./wbui/cgi/user/reservation.pl
+./wbui/html/user/reservation.html
+./wbui/html/user/reservation.js
 
 [Main Service: View Reservations]
-./client/scripts/reservationlist.pl
-./client/resvlist_table.html
-./client/resvlist_calendar.html (for a forthcoming feature)
-./client/resvdetail.html
-./client/form_serv_reservationlist.js
+./wbui/cgi/user/reservationlist.pl
+./wbui/html/user/reservationlist.html
+./wbui/html/user/reservationlist.js
+./wbui/html/user/resvdetail.html
 
 [Main Service: Edit User Profile]
-./client/scripts/form_myprofile.pl
-./client/myprofile.html
-./client/myprofile.js
+./wbui/cgi/user/myprofile.pl
+./wbui/html/user/myprofile.html
+./wbui/html/myprofile.js
 
 --------------------
 [Admin Tool: Admin Account Registration]
-./admin/scripts/gateway.pl
-./client/reigster.html
-./admin/regprocessed.html
-./admin/gateway.js
+./wbui/cgi/admin/gateway.pl
+./wbui/html/admin/register.html
+./wbui/html/admin/gateway.js
 
 [Admin Tool: Login]
-./admin/scripts/gateway.pl
-./admin/login.html
+./wbui/cgi/admin/gateway.pl
+./wbui/html/admin/login.html
 
 [Admin Tool: Logout]
-./admin/scripts/logout.pl
+./wbui/cgi/admin/logout.pl
 
 [Admin Tool: View/Edit User Accounts]
-./admin/scripts/userlist.pl
-./admin/userlist.html
-./admin/userdetail.html
-./admin/userlist.js
+./wbui/cgi/admin/userlist.pl
+./wbui/html/admin/userlist.html
+./wbui/html/admin/userdetail.html
+./wbui/html/admin/userlist.js
 
 [Admin Tool: Edit Admin Profile]
-./admin/scripts/editprofile.pl
-./admin/editprofile.html
-./admin/editprofile.js
+./wbui/cgi/admin/editprofile.pl
+./wbui/html/admin/editprofile.html
+./wbui/html/admin/editprofile.js
 
 [Admin Tool: Add a New User]
-./admin/scripts/adduser.pl
-./admin/adduser.html
-./admin/idcheck.html
-./admin/form_admin_adduser.js
-./images/icon_biggrin.gif
-./images/icon_sad.gif
-./images/icon_exclaim.gif
+./wbui/cgi/admin/adduser.pl
+./wbui/html/admin/adduser.html
+./wbui/html/admin/idcheck.html
+./wbui/html/admin/adduser.js
+./wbui/images/icon_biggrin.gif
+./wbui/images/icon_sad.gif
+./wbui/images/icon_exclaim.gif
