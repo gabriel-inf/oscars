@@ -6,7 +6,7 @@
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
-require 'lib/general.pl';
+require 'general.pl';
 require 'database.pl';
 
 ##### Beginning of sub routines #####
