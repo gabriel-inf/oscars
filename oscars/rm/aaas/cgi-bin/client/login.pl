@@ -6,15 +6,15 @@
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
-require './lib/general.pl';
-require './lib/database.pl';
-require './lib/authenticate.pl';
+require '../lib/general.pl';
+require '../lib/database.pl';
+require '../lib/authenticate.pl';
 
 # template html file name
 $interface_template_filename = 'login.html';
 
 # main service start point URI (the first screen a user sees after logging in)
-$main_service_startpoint_URI = 'form_reservation.pl';
+$main_service_startpoint_URI = 'reservation.pl';
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
