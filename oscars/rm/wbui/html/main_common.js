@@ -85,14 +85,6 @@ function print_navigation_bar(activePage)
     {
         document.write('<li><a href="myprofile.phtml" title="View and/or edit your personal information">My Profile</a></li>');
     }
-    if (activePage == 'logout')
-    {
-        document.write('<li><a href="#" class="active" title="Logout from the service">Logout</a></li>');
-    }
-    else
-    {
-        document.write('<li><a href="logout.phtml" title="Logout from the service">Logout</a></li>');
-    }
     document.write("</ul>");
     document.write("</div>");
 }
