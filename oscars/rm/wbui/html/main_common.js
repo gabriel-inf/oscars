@@ -66,7 +66,7 @@ function print_navigation_bar(activePage)
     }
     else
     {
-        document.write('<li><a href="reservation.phtml" title="Create a new reservation">Make a Reservation</a></li>');
+        document.write('<li><a href="index.phtml" title="Create a new reservation">Make a Reservation</a></li>');
     }
     if (activePage == 'reservationList')
     {
