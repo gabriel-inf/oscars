@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # register.pl:  New user account registration
 # Last modified: March 25, 2005

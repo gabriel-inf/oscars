@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # idcheck.pl:  User login name overlap check
 # Last modified: March 25, 2005

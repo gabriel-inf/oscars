@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # activateaccount.pl:  Account Activation page
 # Last modified: March 25, 2005
@@ -10,11 +10,7 @@ require './lib/general.pl';
 require './lib/database.pl';
 require './lib/authenticate.pl';
 
-# template html file names
-$interface_template_filename = 'activateaccount.html';
-
-# template html file name for printing process success screen
-$processing_result_template_filename = 'accactivated.html';
+# on success loads accactivated.html
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
@@ -49,54 +45,6 @@ exit;
 # Out: None (exits the program at the end)
 sub Print_Interface_Screen
 {
-
-	my( $Processing_Result, $Processing_Result_Message );
-	
-	if ( $#_ >= 0 )
-	{
-		$Processing_Result = $_[0];
-		$Processing_Result_Message = $_[1];
-	}
-	else
-	{
-		$Processing_Result = 1;
-		$Processing_Result_Message = '';
-	}
-
-	my $Template_HTML_File;
-
-	if ( ( $Processing_Result == 1 ) && ( $Processing_Result_Message ne '' ) )
-	{
-		$Template_HTML_File = $processing_result_template_filename;
-	}
-	else
-	{
-		$Template_HTML_File = $interface_template_filename;
-	}
-
-	# open html template file
-	open( F_HANDLE, $Template_HTML_File ) || &Print_Error_Screen( $script_filename, "FileOpen\n" . $Template_HTML_File . ' - ' . $! );
-	my @Template_Html = <F_HANDLE>;
-	close( F_HANDLE );
-
-	# print to browser screen
-	# Pragma: no-cache => Pre-HTTP/1.1 directive to prevent caching
-	# Cache-control: no-cache => HTTP/1.1 directive to prevent caching
-	print "Pragma: no-cache\n";
-	print "Cache-control: no-cache\n";
-	print "Content-type: text/html\n\n";
-
-	foreach $Html_Line ( @Template_Html )
-	{
-		foreach ( $Html_Line )
-		{
-			s/<!-- \(\(_Processing_Result_Message_\)\) -->/$Processing_Result_Message/g;
-		}
-
-		print $Html_Line;
-	}
-
-	exit;
 
 }
 ##### sub End of Print_Interface_Screen

@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # reservation_check_disabled.pl:  Main interface CGI program for network
 #                                 resource reservation process

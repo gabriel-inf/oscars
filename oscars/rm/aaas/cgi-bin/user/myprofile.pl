@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # myprofile.pl:  Main service: My Profile page
 # Last modified: March 25, 2005

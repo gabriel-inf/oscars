@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # reservation.pl:  Main interface CGI program for network resource
 #                  reservation process

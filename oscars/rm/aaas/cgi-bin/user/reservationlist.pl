@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
 # Last modified: March 25, 2005
