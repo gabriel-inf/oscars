@@ -38,23 +38,10 @@ CREATE TABLE IF NOT EXISTS auth_types (
     PRIMARY KEY (auth_type_id)
 ) type=MyISAM;
 
-CREATE TABLE IF NOT EXISTS cookiekey (
-    cookiekey_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    cookeykey_randomkey VARCHAR(32) NOT NULL,
-    user_id INT(6) NOT NULL,
-    PRIMARY KEY (cookiekey_id),
-) type=MyISAM;
-
-CREATE TABLE IF NOT EXISTS isps (
-    isp_id INT(3) NOT NULL AUTO_INCREMENT,
-    isp_name VARCHAR(50) NOT NULL,
-    PRIMARY KEY (isp_id)
-) type=MyISAM;
-
+-- for example, ESnet
 CREATE TABLE IF NOT EXISTS networks (
     network_id INT(3) NOT NULL AUTO_INCREMENT,
     network_name VARCHAR(50) NOT NULL,
-    isp_id INT(3) NOT NULL,
     PRIMARY KEY (network_id)
 ) type=MyISAM;
 
@@ -73,21 +60,30 @@ CREATE TABLE IF NOT EXISTS interfaces (
     interface_id INT(5) NOT NULL AUTO_INCREMENT,
     interface_valid BOOLEAN NOT NULL,
     interface_speed INT(15) NOT NULL,
-    interface_ip INT(4) NOT NULL,
     interface_descr VARCHAR(5),
     interface_alias VARCHAR(512),
     router_id INT(5) NOT NULL,
     PRIMARY KEY (interface_id)
 ) type=MyISAM;
 
+CREATE TABLE IF NOT EXISTS ipaddrs {
+    ipaddr_id INT(5) NOT NULL AUTO_INCREMENT,
+    interface_id INT(5) NOT NULL,
+    PRIMARY KEY (ipaddr_id)
+} type=MyISAM;
+
 CREATE TABLE IF NOT EXISTS reservations (
     reservation_id INT(5) NOT NULL AUTO_INCREMENT,
+      -- in GMT
     reservation_start_time DATETIME,
     reservation_end_time DATETIME,
     reservation_qos VARCHAR(50),
+      -- need list of statuses to choose from
     reservation_status VARCHAR(12),
     reservation_description TEXT,
     reservation_created_time DATETIME NOT NULL,
+    reservation_ingress_port INT(5) NOT NULL,
+    reservation_egress_port INT(5) NOT NULL,
     ingress_interface_id INT(5) NOT NULL,
     egress_interface_id INT(5) NOT NULL,
     user_id INT(6) NOT NULL,
