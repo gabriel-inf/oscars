@@ -15,7 +15,7 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 ##### Beginning of mainstream #####
 
 # forward the user to the login screen
-&Reset_Main_Frame('https://oscars.es.net/');
+&Update_Frames('https://oscars.es.net/');
 
 exit;
 

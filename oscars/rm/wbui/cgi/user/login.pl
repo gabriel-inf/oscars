@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # login.pl:  Main Service Login page
-# Last modified: March 25, 2005
+# Last modified: April 1, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -33,12 +33,12 @@ else
 	if ( &Verify_Login_Status( ) == 1 )
 	{
 		# forward the user to the main service page
-		&Reset_Main_Frame($main_service_startpoint_URI, 'Logged in');
+		&Update_Frames($main_service_startpoint_URI, 'Logged in');
 		exit;
 	}
 	else
 	{
-		&Update_Status_Message('Invalid login');
+		&Update_Status_Frame('Invalid login');
 	}
 }
 
@@ -60,18 +60,18 @@ sub Process_User_Login
 	# validate user input (just check for empty fields)
 	if ( $FormData{'loginname'} eq '' )
 	{
-		&Update_Status_Message( 'Please enter your login name.' );
+		&Update_Status_Frame( 'Please enter your login name.' );
 	}
 
 	if ( $FormData{'password'} eq '' )
 	{
-		&Update_Status_Message( 'Please enter your password.' );
+		&Update_Status_Frame( 'Please enter your password.' );
 	}
 
 	### TODO:  call DB routine, get message back
 
 	### when everything has been processed successfully...
-	&Reset_Main_Frame( $main_service_startpoint_URI , 'Login successful');
+	&Update_Frames( $main_service_startpoint_URI , 'Login successful');
 
 }
 ##### End of sub Process_User_Login
