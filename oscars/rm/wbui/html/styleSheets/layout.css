@@ -1,7 +1,8 @@
 /*
 CSS for main CGI interface
-Last modified: July 07, 2004
+Last modified: March 31, 2005
 Soo-yeon Hwang (dapi@umich.edu)
+David Robertson (dwrobertson@lbl.gov)
 */
 
 body, html {
@@ -87,7 +88,7 @@ p.topmessage {
 	height: 20px;
 	margin: 0;
 	padding-left: 10px;
-	background: url("../images/tab_bottom.gif") repeat-x bottom;
+	background: url("https://oscars.es.net/images/tab_bottom.gif") repeat-x bottom;
 }
 
 #tabnav li {
