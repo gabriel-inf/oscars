@@ -24,18 +24,7 @@ sub Process_User_Registration(FormData)
 	### start working with the database
 	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
 
-	# lock other database operations (check if there's any previous lock set)
-	if ( $use_lock ne 'off' )
-	{
-		undef $Error_Status;
-
-		$Error_Status = &Lock_Set();
-
-		if ( $Error_Status != 1 )
-		{
-			return( $Error_Status );
-		}
-	}
+	# TODO:  lock table(s) with LOCK_TABLES
 
 	# connect to the database
 	undef $Error_Status;
@@ -69,10 +58,7 @@ sub Process_User_Registration(FormData)
 	{
 		&Database_Disconnect( $Dbh );
 
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
+                # TODO:  unlock table(s)
 
 		return( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
 	}
@@ -95,10 +81,7 @@ sub Process_User_Registration(FormData)
 	{
 		&Database_Disconnect( $Dbh );
 
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
+                # TODO:  unlock tables
 
 		$Error_Status =~ s/CantExecuteQuery\n//;
 		return( 0, 'An error has occurred while recording your registration on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $Error_Status );
@@ -109,11 +92,7 @@ sub Process_User_Registration(FormData)
 	# disconnect from the database
 	&Database_Disconnect( $Dbh );
 
-	# unlock the operation
-	if ( $use_lock ne 'off' )
-	{
-		&Lock_Release();
-	}
+	# TODO:  unlock table(s)
 
 	### when everything has been processed successfully...
 	# don't forget to show the user's login name

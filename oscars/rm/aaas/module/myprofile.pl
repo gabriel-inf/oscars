@@ -77,18 +77,7 @@ sub Process_Profile_Update(FormData)
 {
 	my( $Dbh, $Sth, $Error_Status, $Query );
 
-	# lock other database operations (check if there's any previous lock set)
-	if ( $use_lock ne 'off' )
-	{
-		undef $Error_Status;
-
-		$Error_Status = &Lock_Set();
-
-		if ( $Error_Status != 1 )
-		{
-			return( $Error_Status );
-		}
-	}
+	# TODO:  lock necessary tables with LOCK_TABLE
 
 	# connect to the database
 	undef $Error_Status;
@@ -128,10 +117,7 @@ sub Process_Profile_Update(FormData)
 				&Query_Finish( $Sth );
 				&Database_Disconnect( $Dbh );
 
-				if ( $use_lock ne 'off' )
-				{
-					&Lock_Release();
-				}
+                                # TODO:  unlock table(s)
 
 				return( 0, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.' );
 			}
@@ -184,11 +170,7 @@ sub Process_Profile_Update(FormData)
 	{
 		&Database_Disconnect( $Dbh );
 
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
-
+                # TODO:  unlock table(s)
 		return( 0, 'Please check the current password and try again.' );
 	}
 
@@ -224,12 +206,7 @@ sub Process_Profile_Update(FormData)
 	if ( $#Fields_to_Update < 0 )
 	{
 		&Database_Disconnect( $Dbh );
-
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
-
+                # TODO:  unlock table(s)
 		return( 0, 'There is no changed information to update.' );
 	}
 
@@ -254,11 +231,7 @@ sub Process_Profile_Update(FormData)
 	{
 		&Database_Disconnect( $Dbh );
 
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
-
+                # TODO:  unlock table(s)
 		$Error_Status =~ s/CantExecuteQuery\n//;
 		return( 0, 'An error has occurred while updating your account information.<br>[Error] ' . $Error_Status );
 	}
@@ -268,11 +241,7 @@ sub Process_Profile_Update(FormData)
 	# disconnect from the database
 	&Database_Disconnect( $Dbh );
 
-	# unlock the operation
-	if ( $use_lock ne 'off' )
-	{
-		&Lock_Release();
-	}
+        # TODO:  unlock table(s)
 
 	### when everything has been processed successfully...
 	return( 1, 'Your account information has been updated successfully.' );

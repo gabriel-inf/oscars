@@ -23,19 +23,8 @@ if ( $Error_Status != 1 )
 	return( $Error_Status );
 }
 
-# lock other database operations (check if there's any previous lock set)
-if ( $use_lock ne 'off' )
-{
-	undef $Error_Status;
-
-	$Error_Status = &Lock_Set();
-
-	if ( $Error_Status != 1 )
-	{
-		return( $Error_Status );
-	}
-}
-
+# TODO:  lock table
+# TODO:  redo to change status of user in user table
 # delete any previously set random keys for the same login name
 $Query = "DELETE FROM $db_table_name{'cookiekey'} WHERE $db_table_field_name{'cookiekey'}{'cookiekey_id'} = ?";
 
@@ -55,11 +44,7 @@ if ( $Error_Status != 1 )
 
 &Query_Finish( $Sth );
 
-# unlock the operation
-if ( $use_lock ne 'off' )
-{
-	&Lock_Release();
-}
+# TODO:  unlock the table(s)
 
 # disconnect from the database
 &Database_Disconnect( $Dbh );

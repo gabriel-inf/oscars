@@ -82,21 +82,7 @@ sub Process_User_Account_Activation(FormData)
 	### if the input password and the activation key matched against those in the database, activate the account
 	if ( $Keys_Match_Token )
 	{
-		### now we will start writing to the database, so place a lock
-		# lock other database operations (check if there's any previous lock set)
-		if ( $use_lock ne 'off' )
-		{
-			undef $Error_Status;
-
-			$Error_Status = &Lock_Set();
-
-			if ( $Error_Status != 1 )
-			{
-				&Database_Disconnect( $Dbh );
-				return( $Error_Status );
-			}
-		}
-
+                # TODO:  lock necessary tables here
 		# change the level to the pending level value and the pending level to 0; empty the activation key field
 		$Query = "UPDATE $db_table_name{'users'} SET $db_table_field_name{'users'}{'user_level'} = ?, $db_table_field_name{'users'}{'user_pending_level'} = ?, $db_table_field_name{'users'}{'user_activation_key'} = '' WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
@@ -116,11 +102,7 @@ sub Process_User_Account_Activation(FormData)
 
 		&Query_Finish( $Sth );
 
-		# unlock the operation
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
+		# TODO:  unlock the table(s)
 
 		# disconnect from the database
 		&Database_Disconnect( $Dbh );

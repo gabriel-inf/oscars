@@ -7,18 +7,6 @@
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-##### Settings Begin (Global variables) #####
-
-# global lock preference [on/off]
-$use_lock = 'on';
-
-# file used to check lock status
-# just make sure the directory path is right; the file should not exist in the directory
-$lockfile = '/home/dapi/public_html/secure/athena/lock/main.process.lock';
-
-##### Settings End #####
-
-
 ##### List of sub routines #####
 
 ### format/obtain time string 
@@ -28,19 +16,12 @@ $lockfile = '/home/dapi/public_html/secure/athena/lock/main.process.lock';
 # sub Calc_Local_Timezone_Offset
 # sub Format_Offset_from_Seconds
 
-### lock operation
-# sub Lock_Set
-# sub Lock_Release
-
-### cookie checking
-# sub Check_Cookie
-
 ##### List of sub routines End #####
 
 ##### Start of subroutines
 
 ##### sub Create_Time_String
-# In: $String_Type [cookie/dbinput/(localtime)], $Time_Value, $String_Format
+# In: $String_Type [dbinput/(localtime)], $Time_Value, $String_Format
 # Out: $Formatted_Time_String
 ### Look at sub Create_Time_Sprintf_String for $String_Format rules
 # $String_Format is used only when $String_Type is not specified (empty)
@@ -59,13 +40,7 @@ sub Create_Time_String
 
 	my( %Time, @Days, $Formatted_Time_String );
 
-	if ( $String_Type eq 'cookie' )
-	{
-		@Time{ 'sec', 'min', 'hour', 'mday', 'mon', 'year', 'wday', 'yday', 'isdst' } = gmtime( $Time_Value );
-		@Days = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
-		$Time{'month'} = ( 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' )[$Time{'mon'}];
-	}
-	elsif ( $String_Type eq 'dbinput' )
+	if ( $String_Type eq 'dbinput' )
 	{
 		# get the GMT value of the specified time
 		@Time{ 'sec', 'min', 'hour', 'mday', 'mon', 'year', 'wday', 'yday', 'isdst' } = gmtime( $Time_Value );
@@ -83,12 +58,7 @@ sub Create_Time_String
 	$Time{'year'} += 1900 if length( $Time{'year'} ) < 4;
 	$Time{'year'} += 100 if $Time{'year'} <= 1970;
 
-	if ( $String_Type eq 'cookie' )
-	{
-		# for cookie spec, see here: http://wp.netscape.com/newsref/std/cookie_spec.html
-		$Formatted_Time_String = sprintf( "%s, %02d-%s-%04d %02d:%02d:%02d GMT", @Time{ 'thisday', 'mday', 'month', 'year', 'hour', 'min', 'sec' } );
-	}
-	elsif ( $String_Type eq 'dbinput' )
+	if ( $String_Type eq 'dbinput' )
 	{
 		$Formatted_Time_String = sprintf( "%04d-%02d-%02d %02d:%02d:%02d", @Time{ 'year', 'month', 'mday', 'hour', 'min', 'sec' } );
 	}
@@ -260,125 +230,6 @@ sub Format_Offset_from_Seconds
 }
 ##### End of sub Format_Offset_from_Seconds
 
-
-##### sub Lock_Set
-# In: $Lock_File (file used to check lock status; if it's null, use the global $lockfile instead)
-# Out: $Result [1 (success)/"$Err_Code\n$Errno" (fail)]
-# (1: success, $Err_Code: reason of file lock operation failure, $Errno: optional. $! in usual)
-sub Lock_Set
-{
-
-	my $Lock_File;
-
-	if ( defined( $_[0] ) )
-	{
-		$Lock_File = $_[0];
-	}
-	else
-	{
-		$Lock_File = $lockfile;
-	}
-
-	my $Lock_Flag = 1;
-
-	# try checking ten times in the interval of one second
-	foreach ( 1 .. 10 )
-	{
-		unless ( -e $Lock_File )
-		{
-			$Lock_Flag = 1;
-			last;
-		}
-
-		$Lock_Flag = 0;
-		sleep( 1 );
-	}
-
-	if ( $Lock_Flag )
-	{
-#		symlink( ".", $Lock_File ) || &Print_Error_Screen( $Err_Location, 'CantLock', $! );
-		symlink( ".", $Lock_File ) || return "CantLock\n" . $!;
-#		return;
-	}
-	else
-	{
-#		&Print_Error_Screen( $Err_Location, 'Locked', $! );
-		return "Locked\n" . $!;
-	}
-
-	return 1;
-
-} 
-##### End of sub Lock_Set
-
-
-##### sub Lock_Release
-# In: $Lock_File (file used to check lock status; if it's null, use the global $lockfile instead)
-# Out: None (unlink returns only the number of files deleted)
-sub Lock_Release
-{
-
-	my $Lock_File;
-
-	if ( defined( $_[0] ) )
-	{
-		$Lock_File = $_[0];
-	}
-	else
-	{
-		$Lock_File = $lockfile;
-	}
-
-	if ( -e $Lock_File )
-	{
-		unlink( $Lock_File );
-	}
-
-}
-##### End of sub Lock_Release
-
-sub Check_Cookie
-{
-		### Check whether admin account is set up in the database
-		my( $Dbh, $Sth, $Error_Status, $Query );
-
-		# connect to the database
-		( $Dbh, $Error_Status ) = &Database_Connect();
-		if ( $Error_Status != 1 )
-		{
-			&Print_Error_Screen( $script_filename, $Error_Status );
-		}
-
-		# whether the random key & login name matche those in the database with the same cookiekey_id
-		$Query = "SELECT $db_table_field_name{'cookiekey'}{'user_loginname'}, $db_table_field_name{'cookiekey'}{'randomkey'} FROM $db_table_name{'cookiekey'} WHERE $db_table_field_name{'cookiekey'}{'cookiekey_id'} = ?";
-
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			&Print_Error_Screen( $script_filename, $Error_Status );
-		}
-
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $Data_From_Cookie{'cookiekey_id'} );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			&Print_Error_Screen( $script_filename, $Error_Status );
-		}
-
-		while ( my $Ref = $Sth->fetchrow_arrayref )
-		{
-			if ( ( $$Ref[0] eq $Data_From_Cookie{'user_loginname'} ) && ( $$Ref[1] eq $Data_From_Cookie{'randomkey'} ) )
-			{
-				$Login_Status_Check_Result = 1;
-			}
-		}
-
-		&Query_Finish( $Sth );
-
-		# disconnect from the database
-		&Database_Disconnect( $Dbh );
-}
 
 ##### End of Library File
 # Don't touch the line below

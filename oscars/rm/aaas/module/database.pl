@@ -23,7 +23,6 @@ use DBI;
 	'past_reservations' => 'past_reservations',
 	'active_reservations' => 'active_reservations',
 	'users' => 'users',
-	'cookiekey' => 'cookiekey'
 );
 
 # reservations/past_reservations field names
@@ -73,11 +72,6 @@ use DBI;
 		'user_register_datetime' => 'user_register_datetime',
 		'user_activation_key' => 'user_activation_key',
 		'user_pending_level' => 'user_pending_level'
-	},
-	'cookiekey' => {
-		'cookiekey_id' => 'cookiekey_id',
-		'user_loginname' => 'user_loginname',
-		'randomkey' => 'randomkey'
 	}
 );
 
