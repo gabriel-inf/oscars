@@ -13,7 +13,6 @@ require 'lib/authenticate.pl';
 # Abilene network bandwidth limit (in Mbps) (1 Gbps = 1000 Mbps)
 $abilene_bandwidth_limit = 3000;
 
-# global lock preference $use_lock is set in lib/general.pl
 # don't forget to check other preference in lib_*.pl files as well
 
 
@@ -79,18 +78,7 @@ sub Process_Reservation
 
 	my $Abilene_Conflict_Status = 0; # 0: no conflict, 1: existing conflict
 
-	# lock other database operations (check if there's any previous lock set)
-	if ( $use_lock ne 'off' )
-	{
-		undef $Error_Status;
-
-		$Error_Status = &Lock_Set();
-
-		if ( $Error_Status != 1 )
-		{
-			return( $script_filename, $Error_Status );
-		}
-	}
+	# TODO:  lock table(s) with LOCK_TABLE
 
 	# connect to the database
 	undef $Error_Status;
@@ -131,10 +119,7 @@ sub Process_Reservation
 				&Query_Finish( $Sth );
 				&Database_Disconnect( $Dbh );
 
-				if ( $use_lock ne 'off' )
-				{
-					&Lock_Release();
-				}
+                                # TODO:  unlock table(s)
 
 				return( 0, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege, and therefore you cannot make a new reservation request.' );
 			}
@@ -222,10 +207,7 @@ sub Process_Reservation
 	{
 		&Database_Disconnect( $Dbh );
 
-		if ( $use_lock ne 'off' )
-		{
-			&Lock_Release();
-		}
+                # TODO:  unlock table(s)
 
 		return( 0, '[ERROR] The available bandwidth limit on the Abilene network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
 	}
@@ -261,10 +243,7 @@ sub Process_Reservation
 		{
 			&Database_Disconnect( $Dbh );
 
-			if ( $use_lock ne 'off' )
-			{
-				&Lock_Release();
-			}
+                        # TODO:  unlock tables
 
 			$Error_Status =~ s/CantExecuteQuery\n//;
 			return( 0, '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $Error_Status );
@@ -278,11 +257,7 @@ sub Process_Reservation
 	# disconnect from the database
 	&Database_Disconnect( $Dbh );
 
-	# unlock the operation
-	if ( $use_lock ne 'off' )
-	{
-		&Lock_Release();
-	}
+	# TODO:  unlock tables
 
 	### when everything has been processed successfully...
 	# don't forget to show the user's new reservation ID
