@@ -7,6 +7,6 @@ Copy material in html into:
 
     /usr/local/esnet/virtual-sites/oscars.es.net/web/
 
-Copy material in cgi-bin into:
+Copy material in cgi into:
 
     /usr/local/esnet/virtual-sites/oscars.es.net/cgi-bin/
