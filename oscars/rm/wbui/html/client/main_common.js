@@ -1,14 +1,59 @@
 /*
 Javascript functions for main page
-Last modified: August 02, 2004
+Last modified: March 29, 2005
 Soo-yeon Hwang (dapi@umich.edu)
+David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
+print_navigation_bar(activePage)
 print_current_date()
 hasClass(obj)
 stripe(id)
 */
+
+// ** prints navigation bar, with active page highlighted
+function print_navigation_bar(activePage)
+{
+    document.write("<div>");
+    document.write('<ul id="tabnav">');
+    if (activePage == 'reservation')
+    {
+        document.write('<li><a href="#" class="active" title="Create a new reservation">Make a Reservation</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="reservation.phtml" title="Create a new reservation">Make a Reservation</a></li>');
+    }
+    if (activePage == 'reservationList')
+    {
+        document.write('<li><a href="#" class="active" title="View list of active reservations">View Reservations</a></li>');
+    }
+    else
+    {
+    
+        document.write('<li><a href="reservationlist.phtml" title="View list of active reservations">View Reservations</a></li>');
+    }
+    if (activePage == 'myprofile')
+    {
+        document.write('<li><a href="#" class="active" title="View and/or edit your personal information">My Profile</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="myprofile.phtml" title="View and/or edit your personal information">My Profile</a></li>');
+    }
+    if (activePage == 'logout')
+    {
+        document.write('<li><a href="#" class="active" title="Logout from the service">Logout</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="logout.phtml" title="Logout from the service">Logout</a></li>');
+    }
+    document.write("</ul>");
+    document.write("</div>");
+}
+
 
 // ** print current date (format: July 7, 2004) **
 function print_current_date()
