@@ -20,7 +20,7 @@ function print_header(formType)
     document.write('<tr>');
     document.write('    <td><a href="http://www.es.net/" target="_blank"><img src="https://oscars.es.net/images/ESnetLogo.png" width="77" height="58" border="0" alt="ESnet Logo" title="ESnet"></a></td>');
     document.write('    <td>');
-    if (formType == 'client')
+    if (formType == 'user')
     {
         document.write('	<h1>On-demand Secure Circuits and Advance Reservation System (OSCARS)</h1>');
     }
