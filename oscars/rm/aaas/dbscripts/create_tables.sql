@@ -1,9 +1,12 @@
+CREATE DATABASE IF NOT EXISTS AAAS;
+USE AAAS;
+
 CREATE TABLE IF NOT EXISTS users (
     user_id INT(6) NOT NULL AUTO_INCREMENT,
     user_last_name VARCHAR(50) NOT NULL,
     user_first_name VARCHAR(50),
         -- for now
-    user_login_name VARCHAR(25),
+    user_dn VARCHAR(25) NOT NULL,
     user_password varchar(50),
     user_email_primary VARCHAR(100) NOT NULL,
     user_email_secondary VARCHAR(100),
