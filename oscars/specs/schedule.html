@@ -6,62 +6,29 @@
 <body>
 <h2>OSCARS schedule to June 1</h2>
 
-<h3>1-31 to 2-11</h3>
+<h3>3-28 to 4-1</h3>
 
-<p>Bring up MySQL server on oscar.es.net, and populate with previously-designed
-tables.  This plus scripts is the start of the AAAS.  Work with John Webster to
-bring up Apache2 server on oscar.es.net to serve forms.</p>
+<p>Incorporate client portion of BRUW forms into OSCARS.  Merge OSCARS
+and BRUW databases.  Incorporate Chin's PSS code into Subversion repository.</p>
 
-<p>Finish functional and design specs, and send to oscars and circuits mailing
-lists, with *'d items indicating June functionality.</p>
+<h3>4-4 to 4-8</h3> 
 
-<p>Write forms for logging in and for making a reservation request.  Forms
-will prompt user for username/password.</p>
+<p>Incorporate BRUW Perl scripts, get working with OSCARS database to be able
+to add, view reservations.
+Simple scheduler written.</p>
 
-<p>See whether GEANT2 is interested in collaborating.</p>
+<h3>4-11 to 4-15</h3>
 
-<ul>
-<li>
-MILESTONE:  Demo showing user login, and modification of tables based on user
-request.  Unsigned SOAP messages used to communicate from WBUI to AAAS.
-</li>
-</ul>
+<p>Write AAAS front end to database (previously Perl scripts were accessed from
+Web server).  Integrate scheduler, AAAS, and PSS, and have ability to do
+simple reservation setup.</p>
 
-<h3>2-14 to 2-28</h3>
+<h3>4-18 to 4-22</h3>
 
-<p>See what Internet2 is doing for authentication and reservation setup, and
-whether they are interested in collaborating.  Rest of schedule may be modified
-depending on that input.</p>
+<p>Turn front end into a Grid service, using mod_perl and WSRF::Lite to
+contact it from a browser.  
 
-<p>Add forms for viewing and updating reservations.  Work on email notification
-of reservation status.</p>
-
-<p>Start work on BSS and PSS.  Develop communication between AAAS and BSS.</p>
-
-<ul>
-<li>
-MILESTONE:  Demo incorporates communication between AAAS and BSS, and viewing
-and updating reservations.
-</li>
-</ul>
-
-<h3>3-1 to 3-14</h3> 
-
-<p>Incorporate usage tables into AAAS db.  Get PSS to set up LSP.</p>
-
-<p>Work on security, modifying SOAP messages to use certificates extracted
-from DOEGrids repository).</p>
-
-<ul>
-<li>MILESTONE:  Demo incorporates the use of the PSS, and the generation of
-usage records.  Signed SOAP messages between components.
-</li>
-</ul>
-
-<h3>3-15 to 3-31</h3>
-
-<p>Work on deploying AAAS, BSS, and PSS in a safe and secure manner.  Begin
-work on documentation.</p>
+<h3>4-25 to 4-29</h3>
 
 <p>Work on the interaction of BSS with ESnet production tools to do network
 monitoring.  Add ability to communicate that information to the AAAS for
@@ -73,7 +40,7 @@ internally to ESnet.
 </li>
 </ul>
 
-<h3>4-1 to 4-15</h3>
+<h3>5-2 to 5-6</h3>
 
 <p>Make improvements based on tests and statistics gathered.  Work with people
 at FermiLab, GA, and BNL to test OSCARS reservation setup.</p>
@@ -84,7 +51,7 @@ the OSCARS reservation service, running internally to ESnet.
 </li>
 </ul>
 
-<h3>4-15 to 4-30</h3>
+<h3>5-9 to 5-13</h3>
 
 <p>Continue to work with people at FermiLab, GA, and BNL to coordinate use of 
 the service.</p>
@@ -96,7 +63,7 @@ QoS on ESnet.
 </li>
 </ul>
 
-<h3>May</h3>
+<h3>5-16 to 5-20</h3>
 
 <p>Finish documentation for use of QoS and functionality developed so far.
 Test QoS between BNL/Fermi, BNL/NERSC, and GA/NERSC.  Write up results of tests.</p>
