@@ -7,7 +7,7 @@
 
 # include libraries
 require 'lib/general.pl';
-require 'lib/database.pl';
+require 'database.pl';
 
 ##### sub Process_User_Login
 # In: FormData

@@ -7,7 +7,7 @@
 
 # include libraries
 require 'lib/general.pl';
-require 'lib/database.pl';
+require 'database.pl';
 
 ##### Beginning of sub routines #####
 
