@@ -8,32 +8,25 @@
 	<meta name="Description" content="">
 
 	<style type="text/css" media="screen">
-		@import url( './includes/layout.css' );
+		@import url( '../styleSheets/layout.css' );
 	</style>
 
-	<script language="javascript" type="text/javascript" src="./includes/main_common.js"></script>
-	<script language="javascript" type="text/javascript" src="./includes/form_serv_myprofile.js"></script>
+	<script language="javascript" type="text/javascript" src="./main_common.js"></script>
+	<script language="javascript" type="text/javascript" src="./myprofile.js"></script>
 </head>
 
 <body>
 
-<div id="top">
-<table id="pagetitle">
-<tr>
-	<td width="140"><a href="http://www.internet2.edu/" target="_blank"><img src="includes/internet2_logo01.gif" width="108" height="86" border="0" alt="Internet2 Logo" title="Internet2"></a></td>
-	<td>
-		<h1>Bandwidth Reservation for User Work</h1>
-		<p>Provided by Internet2 BRUW Project</p>
-	</td>
-</tr>
-</table>
+<?php include('../header.html'); ?>
+
+<div>
 <p class="topmessage"><script language="javascript">print_current_date();</script> | You are logged in as <!-- ((_Current_LoggedIn_Name_)) -->.</p>
 
 <ul id="tabnav">
-	<li><a href="scripts/reservation.pl" title="Create a new reservation">Make a Reservation</a></li>
-	<li><a href="scripts/reservationlist.pl" title="View list of active reservations">View Reservations</a></li>
+	<li><a href="reservation.phtml" title="Create a new reservation">Make a Reservation</a></li>
+	<li><a href="reservationlist.phtml" title="View list of active reservations">View Reservations</a></li>
 	<li><a href="#" class="active" title="View and/or edit your personal information">My Profile</a></li>
-	<li><a href="scripts/logout.pl" title="Logout from the service">Logout</a></li>
+	<li><a href="logout.phtml" title="Logout from the service">Logout</a></li>
 </ul>
 </div>
 
@@ -43,7 +36,7 @@
 (Required fields are marked with a <span class="requiredmark">*</span>)</p>
 <p class="notice"><!-- ((_Processing_Result_Message_)) --></p>
 
-<form method="post" action="scripts/myprofile.pl" onsubmit="return check_form(this);">
+<form method="post" action="https://oscars.es.net/cgi-bin/client/myprofile.pl" onsubmit="return check_form(this);">
 <input type="hidden" name="mode" value="updatemyprofile">
 
 <table>
