@@ -2,12 +2,12 @@
 <title>OSCARS Reservation Manager Functional Specification</title>
 </head>
 <body>
-<h1>OSCARS Reservation Manager Functional Specification</h1>
+<h2>OSCARS Reservation Manager Functional Specification</h2>
 
 <em>David Robertson, Chin Guok<br/>
 ESnet</em><br/><br/>
 
-January 31, 2005<br/>
+February 7, 2005<br/>
 
 <hr>
 
@@ -28,22 +28,23 @@ component of OSCARS.  The RM's responsibilities include setting up user
 accounts, user allocations, and setting up and tracking circuits and
 reservations.</p>
 
-<p> Current requirements are largely taken from Chin Guok's Powerpoint
+<p>Where requirements are known or estimated to be specific to a particular year
+of the project, a parenthesed indicator of the year is added.</p>
+
+<p>Current requirements are largely taken from Chin Guok's Powerpoint
 presentations and the OSCARS Web page.
 Further requirements will be added after additional discussions with
 ESnet staff, QoS/MPLS researchers at other DOE labs, and the
 <a href="http://networks.internet2.edu/hopi/">HOPI</a> and
-<a href="http://www.geant2.net/">GEANT2</a> people at the Joint Techs
-<a href="http://jointtechs.ornl.gov/SLC2005.html">workshop</a> in February 2005.
+<a href="http://www.geant2.net/">GEANT2</a> people.
 </p>
 
 <h2>Scope</h2>
 
 <p>This document covers the requirements for the RM and its
-clients.  Any prioritization of requirements is outside the scope of this
-document, as are the requirements for the other major component of
+clients.  The requirements for the other major component of
 OSCARS, which handles the details of setting up the guaranteed bandwidth
-circuit using MPLS and RSVP.</p>
+circuit using MPLS and RSVP are outside the scope of this document.</p>
 
 <p>Specific design decisions are in a companion document,
 the OSCARS RM <a href="dspec.html">design specification.</a></p>
@@ -107,46 +108,46 @@ policy, and generate usage records for auditing.  The following requests must
 be accepted from a client, if the user provides an authenticated identifier:</p>
 
 <ol>
-<li>Users must be able to request an account.<br/><br/>
-
-<li>Once they have an account, users must be able to request an allocation of
-bandwidth that reservations will be charged to.<br/><br/>
-
-<li>Users must be able to make a bandwidth reservation after they have
-received an account and allocation.  The bandwidth reservation request must
+<li>Users must be able to make a bandwidth reservation (y1) after they have
+received an account and allocation (y3).  The bandwidth reservation request must
 specify start and end times, bandwidth requirements, and specific source IP
-address and port that will be used to provide access to the circuit.<br/><br/>
+address and port that will be used to provide access to the circuit.
+(y1)<br/><br/>
 
-<li>Users must be able to view the current status of their reservations.<br/><br/>
+<li>Users must be able to view the current status of their reservations. (y1)<br/><br/>
  
 <li>Users must be able to request notifications of their reservation being
-changed or cancelled.<br/><br/
+placed, changed, or cancelled. (y1)<br/><br/
 
 <li>Users must be able to view the final status of their reservation,
 including time of setup/teardown, bandwidth allocated, QoS value, and
-packets/bytes forwarded.<br/><br/>
+packets/bytes forwarded. (y1)<br/><br/>
 
-<li>Users must be able to view their current allocation and usage.<br/><br/>
+<li>Users must be able to request an account. (y2)<br/><br/>
+
+<li>Once they have an account, users must be able to request an allocation of
+bandwidth that reservations will be charged to. (y3)<br/><br/>
+
+<li>Users must be able to view their current allocation and usage. (y3)<br/><br/>
 </ol>
+
+<p>Policies must be in place to avoid any interference by the OSCARS system
+with production traffic.  Policies may include those intended to prevent
+monopolization of the OSCARS service (y1), and those dictating pre-emption of an
+existing reservation to resolve resource reservation conflicts due to network
+outages. (y2)</p>
 
 <p>Upon receiving a reservation request from a client, the AAAS
 must extract an authenticated ID and pass it to a Policy Decision Point (PDP)
 to authorize the request.  Authorized requests are sent to the BSS for
-scheduling.</p>
+scheduling. (y3)</p>
 
 <p>The AAAS must communicate to the BSS any policy that restricts any
 resource that the BSS tracks, for example bandwidth usage.  Given that
 information, the BSS notifies the AAAS of any out-of-policy usage.
 The AAAS may determine that a policy is in effect, and enforce it.
 Enforcement may include sending information back to the BSS to update its
-reservation information.</p>
-
-<p>Policies must be in place to avoid any interference by the OSCARS system
-with production traffic.  Policies may include those intended to prevent
-monopolization of the OSCARS service, and those dictating pre-emption of an
-existing reservation to resolve resource reservation conflicts due to network
-outages.</p>
-
+reservation information. (y3)</p>
 
 <h3>BSS</h3>
 
@@ -154,32 +155,35 @@ outages.</p>
 necessary for future reservations:</p>
 
 <ul>
-<li>The BSS must determine the path that will be taken, and reserve bandwidth
-on the links.  Just prior to the reservation time, the BSS wil trigger the
-PSS to set up the circuit.  The BSS will also trigger the teardown
-of the circuit when the reservation has expired.<br/>
+<li>The BSS must maintain a calendaring system to avoid conflicts in
+reservations.(y1)<br/><br/>
 
-<li>The BSS must estimate future availability of circuits based on current
-and archived network statistics.<br/>
+<li>The BSS must determine the path that will be taken, and reserve bandwidth
+on the links.  Just prior to the reservation time, the BSS must invoke the
+PSS to set up the circuit.  The BSS must also trigger the teardown
+of the circuit when the reservation has expired. (y1)<br/><br/>
 
 <li>The BSS must track total current bandwidth available.
 It must periodically query the AAAS for the policy regarding the upper bound of
-bandwidth available for OSCARS.<br/>
+bandwidth available for OSCARS. (y2)<br/><br/>
 
 <li>The total bandwidth consumed by all currently active OSCARS reservations
 must be tracked, and if total bandwidth is over the limit, the AAAS must
-be contacted for policy enforcement.</br>
+be contacted for policy enforcement. (y2)<br/><br/>
+
+<li>The BSS must estimate future availability of circuits based on current
+and archived network statistics. (y3)<br/><br/>
 
 <li>The bandwidth used by an application must be compared
 against that requested in the the application's reservation.  If the
 BSS determines that bandwidth used by the application is over any limit,
 it must contact the AAAS to determine whether to enforce the relevant
-policy.</br>
+policy. (y3)<br/><br/>
 
 <li>The BSS must take into account scheduled maintenance
 and track unplanned outages.  It must limit new reservations or revise
 existing reservations during those time periods, after contacting the 
-AAAS for the appropriate policy.<br/>
+AAAS for the appropriate policy. (y3)<br/><br/>
 
 <li>
 If there is a new scheduled outage that conflicts with a reservation already
@@ -187,7 +191,7 @@ made, or if there is an unplanned outage on one of the interfaces in that path,
 the BSS must try to recompute a new path.  It must get the current topology,
 and then determine the new path.
 The BSS must make a request to the PSS to remove the previous circuit and set
-the circuit to the alternative path.<br/>
+the circuit to the alternative path. (y3)<br/><br/>
 
 </ul>
 
@@ -196,11 +200,11 @@ the circuit to the alternative path.<br/>
 
 <p>The PSS must set up and tear down the on-demand circuits on
 the appropriate routers, based on a request by the BSS.  To do so, it must
-change the router configuration on the start and end of the circuit.</p>
+change the router configuration on the start and end of the circuit. (y1)</p>
 
 <p>Prior to circuit setup, the PSS must validate the route to use, and
 query routers along the path to check for "illegal" active circuits that could
-conflict with bandwidth reservation.
+conflict with bandwidth reservation. (y1)</p>
 
 
 </body>
