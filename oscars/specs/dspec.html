@@ -1,0 +1,138 @@
+<html>
+<title>OSCARS Reservation Manager Design Specification</title>
+</head>
+<body>
+<h2>OSCARS Reservation Manager Design Specification</h2>
+
+<em>David Robertson, Chin Guok<br/>
+ESnet</em><br/><br/>
+
+January 31, 2005</br>
+
+<hr>
+
+<h3>Introduction</h3>
+
+<p>This document focuses on the design decisions made for satisfying the
+<a href="fspec.html">requirements</a> for the reservation manager (RM) portion
+of <a href="http://www.es.net/oscars">OSCARS</a>.  That document defines
+abbreviations used here.</p>
+
+<p>Portions of this document are taken from the OSCARS
+<a href="http://www.es.net/oscars/documents/OSCARS.pdf">project summary</a>.</p>
+
+<p>The primary design decision is to implement the RM components as Grid
+services, using Web services (WS) standards wherever possible.  Those used will
+include SOAP for transport, WSDL for service description, and WS-Addressing to
+determine where a request is handled.</p>
+
+<p>The AAAS component of the RM handles external service requests and enforces
+access.  The BSS and PSS will be implemented as Grid services, but will only be
+accessible via the AAAS.  The AAAS, BSS, and PSS will not have to run on the
+same machine.  Different instances of the RM, for example in different
+organizations, will communicate via their respective AAAS.</p>
+
+
+<h3>Transport</h3>
+
+<p><a href="http://www.w3.org/TR/soap/">SOAP</a> messages will be used for
+communication between all RM components.  In particular, identical SOAP
+messages to the AAAS will be generated, whether using the manual
+interface or the API manager.  If it turns out that the communication
+between the AAAS and the BSS, and the BSS and the PSS, needs to be very
+high-performance, then the use of SOAP for those messages may need to be
+reconsidered.</p>
+
+<p>Component services will be described via the Web Service Definition Language
+(<a href="http://www.w3.org/TR/wsdl">WSDL</a>).
+WSDL provides for definitions of data types for message arguments
+using XML Schema, and definitions of request and response messages.
+
+
+<h3>User interface</h3>
+
+<p>The manual user interface to the RM will be a Web-Based User Interface
+(WBUI), i.e. a browser.  Users will connect to the WBUI using HTTPS.  The
+specific mode of interaction will be via <a href="http://www.php.net">PHP</a>
+forms.  The forms will use the
+<a href="http://www.nersc.gov/nusers/accounts/nim/users_manual/getting_started.php">NIM</a>
+Web pages as a template, where NIM is the resource allocation and accounting
+system for NERSC.  However, database access will not be done directly
+via PHP, as in NIM.</p>
+
+<p>The <a href="http://dsd.lbl.gov/gtg/projects/pyGridWare/">pyGridWare</a>
+API will be used by client application programs.  pyGridWare is a
+<a href="http://www.python.org">Python</a> implementation of the
+<a href="http://www.oasis-open.org/specs/index.php">WS-Resource</a>
+Web services framework.</p>
+
+
+<h3>Security</h3>
+
+<p>Security is absolutely essential.  The impact of an abuse could be very
+large.  A DoS attack could prevent reservations from being processed.  If the
+service is compromised, the WAN may be disabled.</p>
+
+<p>SOAP messages to the AAAS will be signed and encrypted, and will include
+the user's authenticated identifier.</p>
+
+<p>The database server (see next section), and the other OSCARS
+components, must only be accessible from the AAAS<em>....</em></p>
+
+<p><em>Monitoring...</em></p>
+
+
+<h3>AAAS</h3>
+
+<p>The AAAS will consist of a database, a front end for accessing and
+maintaining that database, and a set of PHP forms.  (PHP is embedded in
+HTML, but runs on the server side.)  The forms will be
+copied to the ESnet server for access via the WBUI.
+The MySQL database server will be used.  The database organization
+(tables, constraints, etc.) will use the NIM database as a template.</p>
+
+<p>Requests made via the WBUI will use PHP methods to send signed and
+encrypted SOAP messages to the AAAS front end.  The front end
+will access and modify the database, and control the other OSCARS components,
+based on those requests.  (Information necessary for authentication
+and decryption is contained in the SOAP header.)  Requests made via the API
+use pyGridWare methods to send signed SOAP messages to the AAAS.</p>
+
+<p>In particular, in the case of a reservation request, the AAAS will extract
+the authenticated id from the SOAP header, and use COPS to pass it to a
+Policy Decision Point (PDP) to authorize the request.</p> 
+
+<p><em>Policies...</em></p>
+
+<p><em>Communication with BSS...</em></p>
+
+<p><em>Audit records...</em></p>
+
+<h3>BSS</h3>
+
+<p><em>Communication with PSS...</em></p>
+
+<p><em>Reservation set up and teardown...</em></p>
+
+<p><em>Estimating future availability...</em></p>
+
+<p><em>Tracking bandwidth...</em></p>
+
+<p><em>Enforcing policy on bandwidth...</em></p>
+
+<p><em>Tracking scheduled maintenance and unplanned outages...</em></p>
+
+<p><em>Recomputing new path...</em></p>
+
+<h3>PSS</h3>
+
+<p><em>Communication with PSS...</em></p>
+
+<p><em>Setting up and tearing down LSP's...</em></p>
+
+<p><em>Validating route...</em></p>
+
+</body>
+</html>
+
+
