@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     user_phone_secondary VARCHAR(50),
     user_description TEXT,
     user_level TINYINT UNSIGNED NOT NULL,
-    user_register_time DATETIME NOT NULL,
+    user_register_time DATETIME,
     user_activation_key VARCHAR(40),
     user_pending_level TINYINT UNSIGNED,
     authorization_id INT(6),    -- foreign key
@@ -66,11 +66,11 @@ CREATE TABLE IF NOT EXISTS interfaces (
     PRIMARY KEY (interface_id)
 ) type=MyISAM;
 
-CREATE TABLE IF NOT EXISTS ipaddrs {
-    ipaddr_id INT(5) NOT NULL AUTO_INCREMENT,
-    interface_id INT(5) NOT NULL,
-    PRIMARY KEY (ipaddr_id)
-} type=MyISAM;
+CREATE TABLE IF NOT EXISTS ipaddrs (
+    ipaddrs_id INT(5) NOT NULL AUTO_INCREMENT,
+    interface INT(5) NOT NULL,
+    PRIMARY KEY (ipaddrs_id)
+) type=MyISAM;
 
 CREATE TABLE IF NOT EXISTS reservations (
     reservation_id INT(5) NOT NULL AUTO_INCREMENT,
