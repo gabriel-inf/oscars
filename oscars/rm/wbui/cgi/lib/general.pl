@@ -18,9 +18,6 @@ $webmaster = 'dwrobertson@lbl.gov';
 ### parse CGI form input
 # sub Parse_Form_Input_Data
 
-### File I/O
-# sub Read_File
-
 ### format/obtain time string 
 # sub Create_Time_String
 # sub Create_Time_Sprintf_String
@@ -32,9 +29,11 @@ $webmaster = 'dwrobertson@lbl.gov';
 # sub Encode_Passwd
 # sub Generate_Random_String
 
-### print error screen to the browser
-# sub Print_Error_Screen
-# sub Print_CLI_Error_Screen
+### update main frame and status message
+# sub Update_Main_Frame
+
+### print status message in status frame
+# sub Update_Status_Message
 # sub Error_Code_To_Error_Message
 
 ##### List of sub routines End #####
@@ -96,22 +95,6 @@ sub Parse_Form_Input_Data
 
 } 
 ##### End of sub Parse_Form_Input_Data
-
-
-##### sub Read_File
-# In: $Filename_To_Read
-# Out: $Result [1 (success)/"$Err_Code\n$Errno" (fail)], and/or @File_Contents
-sub Read_File
-{
-
-	open( F_HANDLE, $_[0] ) || return "FileOpen\n" . $_[0] . ' - ' . $!;
-	my @Contents = <F_HANDLE>;
-	close( F_HANDLE );
-
-	return 1, @Contents;
-
-}
-##### End of sub Read_File
 
 
 ##### sub Create_Time_String
@@ -372,11 +355,12 @@ sub Generate_Random_String
 ##### End of sub Generate_Random_String
 
 
-##### sub Print_Error_Screen
+##### sub Update_Status_Message
+##### Updates status portion of display (form target is status frame)
 ##### TODO:  DB lock release that was done here
 # In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
 # Out: None (prints error screen to the browser and exits)
-sub Print_Error_Screen
+sub Update_Status_Message
 {
 
 #	my $Err_Location = $ENV{'SCRIPT_NAME'};
@@ -392,18 +376,7 @@ Cache-control: no-cache
 Content-type: text/html
 
 <html>
-	<head>
-		<title>500 CGI internal Error</title>
-	</head>
 	<body>
-	<h1>500 CGI internal Error</h1>
-
-	<p>An internal error occurred at <em>$Err_Location</em>.</p>
-	<p>Please contact the webmaster at $webmaster,
-	and inform the person of the date and time of error and
-	anything you might have done that may have caused the problem.</p>
-__HTML__
-
 	if ( $Errno ne '' )
 	{
 		print "<p><strong>[Error] $Err_Message<br>$Errno</strong></p>\n";
@@ -418,48 +391,11 @@ __HTML__
 	exit;
 
 }
-##### End of sub Print_Error_Screen
-
-
-##### sub Print_CLI_Error_Screen
-# In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)", $Custom_Err_Message (optional)
-# Out: None (prints error screen to standard output and exits)
-# $Custom_Err_Message is checked only when $_[1] is empty
-# lock release should be taken care of before calling this sub routine
-sub Print_CLI_Error_Screen
-{
-
-#	my $Err_Location = $ENV{'SCRIPT_NAME'};
-
-	my $Err_Location = $_[0];
-	my( $Err_Code, $Errno, $Err_Message );
-
-	if ( $_[1] ne '' )
-	{
-		( $Err_Code, $Errno ) = split( /\n/, $_[1], 2 );
-		$Err_Message = &Error_Code_To_Error_Message( $Err_Code );
-	}
-	else
-	{
-		$Err_Message = $_[2];
-	}
-
-	if ( $Errno ne '' )
-	{
-		die "An error has occurred at ${Err_Location}: $Err_Message\n$Errno";
-	}
-	else
-	{
-		die "An error has occurred at ${Err_Location}: $Err_Message";
-	}
-
-	exit;
-
-}
-##### End of sub Print_CLI_Error_Screen
+##### End of sub Update_Status_Message
 
 
 ##### sub Error_Code_To_Error_Message
+# Internal to this script.
 # In: $Error_Code
 # Out: $Err_Message
 sub Error_Code_To_Error_Message
