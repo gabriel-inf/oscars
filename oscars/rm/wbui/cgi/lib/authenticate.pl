@@ -3,10 +3,9 @@
 # authenticate.pl
 #
 # library for user authentication
-# Last modified: September 16, 2004
+# Last modified: April 1, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
-
-# also use with lib_database.cgi, or the login status check subroutine will not work
+# David Robertson (dwrobertson@lbl.gov)
 
 ##### Settings Begin (Global variables) #####
 
@@ -93,45 +92,7 @@ sub Verify_Login_Status
 	# if there exists a login cookie
 	if ( $Data_From_Cookie{'cookiekey_id'} ne '' )
 	{
-		### Check whether admin account is set up in the database
-		my( $Dbh, $Sth, $Error_Status, $Query );
-
-		# connect to the database
-		( $Dbh, $Error_Status ) = &Database_Connect();
-		if ( $Error_Status != 1 )
-		{
-			&Print_Error_Screen( $script_filename, $Error_Status );
-		}
-
-		# whether the random key & login name matche those in the database with the same cookiekey_id
-		$Query = "SELECT $db_table_field_name{'cookiekey'}{'user_loginname'}, $db_table_field_name{'cookiekey'}{'randomkey'} FROM $db_table_name{'cookiekey'} WHERE $db_table_field_name{'cookiekey'}{'cookiekey_id'} = ?";
-
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			&Print_Error_Screen( $script_filename, $Error_Status );
-		}
-
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $Data_From_Cookie{'cookiekey_id'} );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			&Print_Error_Screen( $script_filename, $Error_Status );
-		}
-
-		while ( my $Ref = $Sth->fetchrow_arrayref )
-		{
-			if ( ( $$Ref[0] eq $Data_From_Cookie{'user_loginname'} ) && ( $$Ref[1] eq $Data_From_Cookie{'randomkey'} ) )
-			{
-				$Login_Status_Check_Result = 1;
-			}
-		}
-
-		&Query_Finish( $Sth );
-
-		# disconnect from the database
-		&Database_Disconnect( $Dbh );
+		### TODO:  Check whether admin account is set up in the database
 	}
 
 	return $Login_Status_Check_Result;

@@ -2,20 +2,14 @@
 
 # general.pl
 #
-# library for general usage
-# Last modified: March 08, 2005
+# library for general cgi script usage
+# Last modified: April 01, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
+# David Robertson (dwrobertson@lbl.gov)
 
 ##### Settings Begin (Global variables) #####
 # contact info
-$webmaster = 'dapi@umich.edu';
-
-# global lock preference [on/off]
-$use_lock = 'on';
-
-# file used to check lock status
-# just make sure the directory path is right; the file should not exist in the directory
-$lockfile = '/home/dapi/public_html/secure/athena/lock/main.process.lock';
+$webmaster = 'dwrobertson@lbl.gov';
 
 ##### Settings End #####
 
@@ -37,10 +31,6 @@ $lockfile = '/home/dapi/public_html/secure/athena/lock/main.process.lock';
 ### password encryption & random string generation (activation key, password reset (future), ...)
 # sub Encode_Passwd
 # sub Generate_Random_String
-
-### lock operation
-# sub Lock_Set
-# sub Lock_Release
 
 ### print error screen to the browser
 # sub Print_Error_Screen
@@ -382,84 +372,8 @@ sub Generate_Random_String
 ##### End of sub Generate_Random_String
 
 
-##### sub Lock_Set
-# In: $Lock_File (file used to check lock status; if it's null, use the global $lockfile instead)
-# Out: $Result [1 (success)/"$Err_Code\n$Errno" (fail)]
-# (1: success, $Err_Code: reason of file lock operation failure, $Errno: optional. $! in usual)
-sub Lock_Set
-{
-
-	my $Lock_File;
-
-	if ( defined( $_[0] ) )
-	{
-		$Lock_File = $_[0];
-	}
-	else
-	{
-		$Lock_File = $lockfile;
-	}
-
-	my $Lock_Flag = 1;
-
-	# try checking ten times in the interval of one second
-	foreach ( 1 .. 10 )
-	{
-		unless ( -e $Lock_File )
-		{
-			$Lock_Flag = 1;
-			last;
-		}
-
-		$Lock_Flag = 0;
-		sleep( 1 );
-	}
-
-	if ( $Lock_Flag )
-	{
-#		symlink( ".", $Lock_File ) || &Print_Error_Screen( $Err_Location, 'CantLock', $! );
-		symlink( ".", $Lock_File ) || return "CantLock\n" . $!;
-#		return;
-	}
-	else
-	{
-#		&Print_Error_Screen( $Err_Location, 'Locked', $! );
-		return "Locked\n" . $!;
-	}
-
-	return 1;
-
-} 
-##### End of sub Lock_Set
-
-
-##### sub Lock_Release
-# In: $Lock_File (file used to check lock status; if it's null, use the global $lockfile instead)
-# Out: None (unlink returns only the number of files deleted)
-sub Lock_Release
-{
-
-	my $Lock_File;
-
-	if ( defined( $_[0] ) )
-	{
-		$Lock_File = $_[0];
-	}
-	else
-	{
-		$Lock_File = $lockfile;
-	}
-
-	if ( -e $Lock_File )
-	{
-		unlink( $Lock_File );
-	}
-
-}
-##### End of sub Lock_Release
-
-
 ##### sub Print_Error_Screen
+##### TODO:  DB lock release that was done here
 # In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
 # Out: None (prints error screen to the browser and exits)
 sub Print_Error_Screen
@@ -500,11 +414,6 @@ __HTML__
 	}
 
 	print "</body></html>\n";
-
-	if ( $use_lock ne 'off' )
-	{
-		&Lock_Release();
-	}
 
 	exit;
 
