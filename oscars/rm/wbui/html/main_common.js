@@ -54,6 +54,50 @@ function print_navigation_bar(activePage)
     document.write("</div>");
 }
 
+// ** prints admin navigation bar, with active page highlighted
+// ** TODO:  Fix duplication with previous function later.
+
+function print_admin_bar(activePage)
+{
+    document.write("<div>");
+    document.write('<ul id="tabnav">');
+    if (activePage == 'userlist')
+    {
+        document.write('<li><a href="#" class="active" title="View and/or edit user accounts">Edit User Accounts</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="userlist.phtml" title="View and/or edit user accounts">Edit User Accounts</a></li>');
+    }
+    if (activePage == 'adduser')
+    {
+        document.write('<li><a href="#" class="active" title="Add a new user account">Add a New User</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="adduser.phtml" title="Add a new user account">Add a New User</a></li>');
+    
+    }
+    if (activePage == 'editprofile')
+    {
+        document.write('<li><a href="#" class="active" title="View and/or edit admin profile">Admin Profile</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="editprofile.phtml" title="View and/or edit admin profile">Admin Profile</a></li>');
+    }
+    if (activePage == 'logout')
+    {
+        document.write('<li><a href="#" class="active" title="Logout from the admin tool">Logout</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="logout.phtml" title="Logout from the admin tool">Logout</a></li>');
+    }
+    document.write("</ul>");
+    document.write("</div>");
+}
+
 
 // ** print current date (format: July 7, 2004) **
 function print_current_date()
