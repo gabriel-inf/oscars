@@ -1,10 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<?php
+session_start();
+if (isset($_SESSION['valid_user'])) // temporarily disabled
+{
+    header("Location: https://oscars.es.net/login_frame.html");
+}
+?>
 <html>
 <head>
-	<script language="javascript" type="text/javascript" src="../main_common.js"></script>
 	<style type="text/css" media="screen">
 		@import url( '../styleSheets/layout.css' );
 	</style>
+	<script language="javascript" type="text/javascript" src="../main_common.js"></script>
 	<script language="javascript" type="text/javascript" src="reservation.js"></script>
 </head>
 
