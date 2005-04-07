@@ -10,16 +10,7 @@ require '../lib/general.pl';
 require '../lib/authenticate.pl';
 
 # main service start point URI (the first screen a user sees after logging in)
-$main_service_startpoint_URI = 'https://oscars.es.net/user/index.phtml';
-
-# temporarily
-print "Location: $main_service_startpoint_URI\n\n";
-exit;
-
-print "Content-type: text/plain\n\n";
-
-# main service start point URI (the first screen a user sees after logging in)
-$main_service_startpoint_URI = 'https://oscars.es.net/user/reservation.phtml';
+$service_startpoint_URI = 'https://oscars.es.net/user/';
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
@@ -28,30 +19,23 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 ##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept POST method only)
-# this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-# if 'mode' eq 'login': Process login & forward user to the next appropriate page
-# all else (default): Print user login screen
-if ( $FormData{'mode'} eq 'login' )
+# if login successful, forward user to the next appropriate page
+# all else: Update status but don't change main frame
+
+my $Error_Status = &Process_User_Login();
+if ( !$Error_Status )
 {
-	&Process_User_Login();
+    # forward the user to the main service page
+    &Print_Frames($service_startpoint_URI, "Logged in as $FormData{'loginname'}");
 }
 else
 {
-	if ( &Verify_Login_Status( ) == 1 )
-	{
-		# forward the user to the main service page
-		&Update_Frames($main_service_startpoint_URI, 'Logged in');
-		exit;
-	}
-	else
-	{
-		&Update_Status_Frame('Invalid login');
-	}
+    &Print_Status_Message($Error_Status);
 }
-
 exit;
+
 
 ##### End of mainstream #####
 
@@ -61,26 +45,24 @@ exit;
 
 ##### sub Process_User_Login
 # In: None
-# Out: None
-# Calls sub Print_Interface_Screen at the end (with a success token)
+# Out: Error status
 sub Process_User_Login
 {
 
 	# validate user input (just check for empty fields)
 	if ( $FormData{'loginname'} eq '' )
 	{
-		&Update_Status_Frame( 'Please enter your login name.' );
+		return( 'Please enter your login name.' );
 	}
 
 	if ( $FormData{'password'} eq '' )
 	{
-		&Update_Status_Frame( 'Please enter your password.' );
+		return( 'Please enter your password.' );
 	}
 
 	### TODO:  call DB routine, get message back
 
-	### when everything has been processed successfully...
-	&Update_Frames( $main_service_startpoint_URI , 'Login successful');
+        return ''
 
 }
 ##### End of sub Process_User_Login

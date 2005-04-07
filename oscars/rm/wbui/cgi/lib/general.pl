@@ -3,7 +3,7 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: April 01, 2005
+# Last modified: April 06, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -30,10 +30,10 @@ $webmaster = 'dwrobertson@lbl.gov';
 # sub Generate_Random_String
 
 ### update main frame and status message
-# sub Update_Frames
+# sub Print_Frames
 
-### return status message in status frame
-# sub Update_Status_Frame
+### print status message in status frame
+# sub Print_Status_Message
 # sub Error_Code_To_Error_Message
 
 ##### List of sub routines End #####
@@ -355,31 +355,40 @@ sub Generate_Random_String
 ##### End of sub Generate_Random_String
 
 
-##### sub Update_Frames
+##### sub Print_Frames
 #
-sub Update_Frames
+sub Print_Frames
 {
+    my($uri, $error_status) = @_;
+    print "Location: $uri\n\n";
 }
 
 
-##### sub Update_Status_Frame
+##### sub Print_Status_Message
 ##### Updates status portion of display (form target is status frame)
 ##### TODO:  DB lock release that was done here
 # In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
 # Out: returns error or status message
-sub Update_Status_Frame
+sub Print_Status_Message
 {
-
-#	my $Err_Location = $ENV{'SCRIPT_NAME'};
-
-	my $Err_Location = $_[0];
-	my( $Err_Code, $Errno ) = split( /\n/, $_[1], 2 );
-
-	my $Err_Message = &Error_Code_To_Error_Message( $Err_Code );
-        return ($Err_Message, $Errno);
+    my $Err_Message = $_[0];
+    print "Content-type: text/html\n\n";
+    print "<html>";
+    print "<head>";
+    print "<script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>";
+    print "<script language=\"javascript\">print_html_header(\"user\");</script>";
+    print "</head>";
+    print "<body>";
+    print "<div>";
+    print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date();</script>" . " | " . $Err_Message . "</p>";
+    print "</div>";
+    print "</body>";
+    print "</html>";
+    print "\n\n";
+    exit;
 }
 
-##### End of sub Update_Status_Frame
+##### End of sub Print_Status_Message
 
 
 ##### sub Error_Code_To_Error_Message
