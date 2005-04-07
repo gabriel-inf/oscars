@@ -26,18 +26,16 @@ $registration_notification_email_encoding = 'ISO-8859-1';
 ##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept POST method only)
-# this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-# if 'mode' eq 'reserve': Process reservation & print screen with result output (print screen subroutine is called at the end of reservation process)
-# all else (default): Print screen for user input
-if ( $FormData{'mode'} eq 'register' )
+my $Error_Status = &Process_User_Registration();
+if ( !$Error_Status )
 {
-	&Process_User_Registration();
+    &Print_Frames();
 }
 else
 {
-	&Print_Interface_Screen();
+    &Print_Status_Message($Error_Status);
 }
 
 exit;
@@ -47,40 +45,29 @@ exit;
 
 ##### Beginning of sub routines #####
 
-##### sub Print_Interface_Screen
-# In: $Processing_Result [1 (success)/0 (fail)], $Processing_Result_Message
-# Out: None (exits the program at the end)
-sub Print_Interface_Screen
-{
-	exit;
-}
-##### End of sub Print_Interface_Screen
-
-
 ##### sub Process_User_Registration
 # In: None
-# Out: None
-# Calls sub Print_Interface_Screen at the end (with a success token)
+# Out: Status message
 sub Process_User_Registration
 {
 
 	# validate user input (fairly minimal... Javascript also takes care of form data validation)
 	if ( $FormData{'loginname'} eq '' )
 	{
-		&Print_Interface_Screen( 0, 'Please enter your desired login name.' );
+		return( 0, 'Please enter your desired login name.' );
 	}
 	elsif ( $FormData{'loginname'} =~ /\W|\s/ )
 	{
-		&Print_Interface_Screen( 0, 'Please use only alphanumeric characters or _ for login name.' );
+		return( 0, 'Please use only alphanumeric characters or _ for login name.' );
 	}
 
 	if ( $FormData{'password_once'} eq '' || $FormData{'password_twice'} eq '' )
 	{
-		&Print_Interface_Screen( 0, 'Please enter the password.' );
+		return( 0, 'Please enter the password.' );
 	}
 	elsif ( $FormData{'password_once'} ne $FormData{'password_twice'} )
 	{
-		&Print_Interface_Screen( 0, 'Please enter the same password twice for verification.' );
+		return( 0, 'Please enter the same password twice for verification.' );
 	}
 
 	# encrypt password
@@ -93,7 +80,7 @@ sub Process_User_Registration
 
 
 	### send a notification email to the admin
-	open( MAIL, "|$sendmail_binary_path_and_flags $registration_notification_email_toaddr" ) || &Print_Interface_Screen( 0, 'Your user registration has been recorded successfully, but sending a notification email to the service administrator has failed. It may take a while longer for the administrator to accept your registration. Please contact the webmaster at ' . $webmaster . ', and inform the person of the date and time of error.<br>[Error] ' . $! );
+	open( MAIL, "|$sendmail_binary_path_and_flags $registration_notification_email_toaddr" ) || return( 0, 'Your user registration has been recorded successfully, but sending a notification email to the service administrator has failed. It may take a while longer for the administrator to accept your registration. Please contact the webmaster at ' . $webmaster . ', and inform the person of the date and time of error.<br>[Error] ' . $! );
 
 		print MAIL 'From: ', $webmaster, "\n";
 		print MAIL 'To: ', $registration_notification_email_toaddr, "\n";
@@ -113,11 +100,11 @@ sub Process_User_Registration
 		print MAIL '---------------------------------------------------', "\n";
 		print MAIL '=== This is an auto-generated e-mail ===', "\n";
 
-	close( MAIL ) || &Print_Interface_Screen( 0, 'Your user registration has been recorded successfully, but sending a notification email to the service administrator has failed. It may take a while longer for the administrator to accept your registration. Please contact the webmaster at ' . $webmaster . ', and inform the person of the date and time of error.<br>[Error] ' . $! );
+	close( MAIL ) || return( 0, 'Your user registration has been recorded successfully, but sending a notification email to the service administrator has failed. It may take a while longer for the administrator to accept your registration. Please contact the webmaster at ' . $webmaster . ', and inform the person of the date and time of error.<br>[Error] ' . $! );
 
 	### when everything has been processed successfully...
 	# don't forget to show the user's login name
-	&Print_Interface_Screen( 1, 'Your user registration has been recorded successfully. Your login name is <strong>' . $FormData{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
+	return( 1, 'Your user registration has been recorded successfully. Your login name is <strong>' . $FormData{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
 
 }
 ##### End of sub Process_User_Registration

@@ -2,7 +2,7 @@
 
 # reservation_check_disabled.pl:  Main interface CGI program for network
 #                                 resource reservation process
-# Last modified: April 4, 2005
+# Last modified: April 5, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -16,31 +16,18 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 ##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept POST method only)
-# this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-# check if the user is logged in
-if ( &Verify_Login_Status( $user_login_cookie_name ) != 1 )
-{
-	# forward the user to the user login screen
-	print "Location: $main_service_login_URI\n\n";
-	exit;
-}
-else
-{
-	$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
-}
+$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
 
-# if 'mode' eq 'reserve': Process reservation & print screen with result output
-#                         (print screen subroutine is called at the end of reservation process)
-# all else (default): Print screen for user input
-if ( $FormData{'mode'} eq 'reserve' )
+my $Error_Status = &Process_Reservation();
+if ( !$Error_Status)
 {
-	&Process_Reservation();
+    &Print_Frames();
 }
 else
 {
-	&Print_Interface_Screen();
+    &Print_Status_Message($Error_Status);
 }
 
 exit;
@@ -50,19 +37,10 @@ exit;
 
 ##### Beginning of sub routines #####
 
-##### sub Print_Interface_Screen
-# In: $Processing_Result [1 (success)/0 (fail)], $Processing_Result_Message
-# Out: None (exits the program at the end)
-sub Print_Interface_Screen
-{
-}
-##### End of sub Print_Interface_Screen
-
 
 ##### sub Process_Reservation
 # In: None
 # Out: None
-# Calls sub Print_Interface_Screen at the end (with a success token)
 sub Process_Reservation
 {
 
@@ -76,13 +54,13 @@ sub Process_Reservation
 	{
 		if ( $FormData{$_} !~ /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/ )
 		{
-			&Print_Interface_Screen( 0, '[ERROR] Please provide an IPv4 IP address for the ' . $_ . ' location.' );
+			return( 0, '[ERROR] Please provide an IPv4 IP address for the ' . $_ . ' location.' );
 		}
 	}
 
 	if ( $FormData{'origin'} eq $FormData{'destination'} )
 	{
-		&Print_Interface_Screen( 0, '[ERROR] Please provide different IP addresses for origin and destination locations.' );
+		return( 0, '[ERROR] Please provide different IP addresses for origin and destination locations.' );
 	}
 
 	# make bandwidth, date, and time values numeric
@@ -100,7 +78,7 @@ sub Process_Reservation
 =head1
         ## TODO:  connect to BSS and get back results
 
-	&Print_Interface_Screen( 1, 'Your reservation has been processed successfully. Your reservation ID number is ' . $New_Reservation_ID . '.' );
+	return( 1, 'Your reservation has been processed successfully. Your reservation ID number is ' . $New_Reservation_ID . '.' );
 
 }
 ##### End of sub Process_Reservation

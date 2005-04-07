@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # logout.pl:  Main Service: Logout Link
-# Last modified: March 25, 2005
+# Last modified: April 5, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -15,7 +15,7 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 ##### Beginning of mainstream #####
 
 # forward the user to the login screen
-&Update_Frames('https://oscars.es.net/');
+&Print_Frames('https://oscars.es.net/');
 
 exit;
 

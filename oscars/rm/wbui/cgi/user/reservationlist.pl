@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: April 4, 2005
+# Last modified: April 5, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -15,30 +15,18 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 ##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept both POST and GET methods)
-# this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'all' );
 
-# check if the user is logged in
-if ( &Verify_Login_Status( ) != 1 )
-{
-	# forward the user to the user login screen
-	print "Location: $main_service_login_URI\n\n";
-	exit;
-}
-else
-{
-	$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
-}
+$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
 
-# if 'mode' eq 'resvdetail': Print reservation details
-# all else (default): Print reservations list in table or in calendar
-if ( $FormData{'mode'} eq 'resvdetail' )
+my $Error_Status = &Print_Reservation_Detail();
+if ( !$Error_Status)
 {
-	&Print_Reservation_Detail();
+    &Print_Frames();
 }
 else
 {
-	&Print_Reservations_List();
+    &Print_Status_Message($Error_Status);
 }
 
 exit;
@@ -47,14 +35,6 @@ exit;
 
 
 ##### Beginning of sub routines #####
-
-##### sub Print_Reservations_List
-# In: None
-# Out: None (exits the program at the end)
-sub Print_Reservations_List
-{
-}
-##### End of sub Print_Reservations_List
 
 
 ##### sub Print_Reservation_Detail

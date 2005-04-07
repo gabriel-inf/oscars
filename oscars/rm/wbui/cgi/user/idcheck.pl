@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # idcheck.pl:  User login name overlap check
-# Last modified: April 1, 2005
+# Last modified: April 5, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -21,13 +21,10 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 ##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept all methods (POST/GET))
-# this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'all' );
 
-if ( $FormData{'mode'} eq 'idcheck' )
-{
-	&Print_Result_Screen();
-}
+my $Error_Status = &Print_Result_Screen();
+&Print_Frames();
 
 exit;
 
