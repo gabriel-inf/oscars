@@ -29,11 +29,9 @@ $webmaster = 'dwrobertson@lbl.gov';
 # sub Encode_Passwd
 # sub Generate_Random_String
 
-### update main frame and status message
-# sub Print_Frames
+### update status message, and replace main frame if necessary
+# sub Update_Frames
 
-### print status message in status frame
-# sub Print_Status_Message
 # sub Error_Code_To_Error_Message
 
 ##### List of sub routines End #####
@@ -355,40 +353,37 @@ sub Generate_Random_String
 ##### End of sub Generate_Random_String
 
 
-##### sub Print_Frames
-#
-sub Print_Frames
-{
-    my($uri, $error_status) = @_;
-    print "Location: $uri\n\n";
-}
-
-
-##### sub Print_Status_Message
+##### sub Update_Frames
 ##### Updates status portion of display (form target is status frame)
+#####    and replaces main_frame if necessary
 ##### TODO:  DB lock release that was done here
 # In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
 # Out: returns error or status message
-sub Print_Status_Message
+sub Update_Frames
 {
-    my $Err_Message = $_[0];
+    my ($uri, $Err_Message) = @_;
     print "Content-type: text/html\n\n";
     print "<html>";
     print "<head>";
+    print "<link rel=stylesheet type=\"text/css\" ";
+    print " href=\"https://oscars.es.net/styleSheets/layout.css\">";
     print "<script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>";
-    print "<script language=\"javascript\">print_html_header(\"user\");</script>";
     print "</head>";
     print "<body>";
     print "<div>";
     print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date();</script>" . " | " . $Err_Message . "</p>";
     print "</div>";
+    if ($uri)
+    {
+        print "<script language=\"javascript\">update_main_frame(\"$uri\");</script>";
+    }
     print "</body>";
     print "</html>";
     print "\n\n";
     exit;
 }
 
-##### End of sub Print_Status_Message
+##### End of sub Update_Frames
 
 
 ##### sub Error_Code_To_Error_Message

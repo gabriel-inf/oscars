@@ -28,11 +28,11 @@ my $Error_Status = &Process_User_Login();
 if ( !$Error_Status )
 {
     # forward the user to the main service page
-    &Print_Frames($service_startpoint_URI, "Logged in as $FormData{'loginname'}");
+    &Update_Frames($service_startpoint_URI, "Logged in as $FormData{'loginname'}.");
 }
 else
 {
-    &Print_Status_Message($Error_Status);
+    &Update_Frames('', $Error_Status);
 }
 exit;
 

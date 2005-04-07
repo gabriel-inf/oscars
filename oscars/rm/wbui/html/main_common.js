@@ -89,6 +89,13 @@ function print_navigation_bar(activePage)
     document.write("</div>");
 }
 
+// ** replaces main frame with new page
+function update_main_frame(uri)
+{
+    top.frames['main_frame'].location.href = uri;
+}
+
+
 // ** prints admin navigation bar, with active page highlighted
 // ** TODO:  Fix duplication with previous function later.
 
