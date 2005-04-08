@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS interfaces (
 
 CREATE TABLE IF NOT EXISTS ipaddrs (
     ipaddrs_id INT(5) NOT NULL AUTO_INCREMENT,
-    interface INT(5) NOT NULL,
+    ipaddrs_ip VARCHAR(30) NOT NULL,
     PRIMARY KEY (ipaddrs_id)
 ) type=MyISAM;
 
