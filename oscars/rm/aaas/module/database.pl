@@ -12,7 +12,7 @@ use DBI;
 ##### Settings Begin (Global variables) #####
 # database connection info
 %db_connect_info = (
-	'database' => 'aaas',
+	'database' => 'AAAS',
 	'host' => 'localhost',
 	'user' => 'davidr',
 	'password' => 'shyysh'
@@ -40,7 +40,7 @@ use DBI;
 		'user_level' => 'user_level',
 		'user_register_time' => 'user_register_time',
 		'user_activation_key' => 'user_activation_key',
-		'user_pending_level' => 'user_pending_level'
+		'user_pending_level' => 'user_pending_level',
 		'authorization_id' => 'authorization_id',
                 'institution_id' => 'institution_id',
 	}
@@ -145,6 +145,24 @@ sub Query_Finish
 
 }
 ##### sub End of Query_Finish
+
+##### sub Database_Lock_Table
+# In: 
+# Out: None
+sub Database_Lock_Table
+{
+    return 1;
+}
+##### sub End of Database_Lock_Table
+
+##### sub Database_Unlock_Table
+# In: 
+# Out: None
+sub Database_Unlock_Table
+{
+    return 1;
+}
+##### sub End of Database_Unlock_Table
 
 
 ##### End of Library File

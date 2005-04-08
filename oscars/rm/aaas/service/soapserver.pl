@@ -12,9 +12,11 @@ $daemon->handle;
 BEGIN {
 package AAASServer;
 
+require '../module/login.pl';
+
 sub login {
-  my ($class, $f) = @_;
-  $login_status = "Success";
-  return $login_status;
+  my ($class, $loginname, $passwd) = @_;
+  return (Process_User_Login($loginname, $passwd));
 }
+
 }
