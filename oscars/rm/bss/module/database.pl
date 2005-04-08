@@ -26,17 +26,17 @@ use DBI;
 # reservations/past_reservations field names
 %reservations_tables_field_names = (
 	'reservation_id' => 'reservation_id',
-	'user_loginname' => 'user_loginname',
-	'reserv_origin_ip' => 'reserv_origin_ip',
-	'reserv_dest_ip' => 'reserv_dest_ip',
-	'reserv_bandwidth' => 'reserv_bandwidth',
-	'reserv_start_time' => 'reserv_start_time',
-	'reserv_end_time' => 'reserv_end_time',
-	'reserv_description' => 'reserv_description',
-	'reserv_made_time' => 'reserv_made_time',
-	'access_ip' => 'access_ip',
-	'access_domain' => 'access_domain',
-	'access_browser' => 'access_browser'
+	'reservation_start_time' => 'reservation_start_time',
+	'reservation_end_time' => 'reservation_end_time',
+        'reservation_qos' => 'reservation_qos',
+        'reservation_status' => 'reservation_status',
+        'reservation_description' => 'reservation_description',
+        'reservation_created_time' => 'reservation_created_time',
+        'reservation_ingress_port' => 'reservation_ingress_port',
+        'reservation_egress_port' => 'reservation_egress_port',
+        'ingress_interface_id' => 'ingress_interface_id',
+        'egress_interface_id' => 'egress_interface_id',
+        'user_dn' => 'user_dn',
 );
 
 # database field names
