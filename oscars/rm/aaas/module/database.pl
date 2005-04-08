@@ -27,21 +27,22 @@ use DBI;
 # usage: @{ $db_table_field_name{'users'} }{'user_loginname', 'user_password', 'user_level'}
 %db_table_field_name = (
 	'users' => {
-		'user_register_id' => 'user_register_id',
-		'user_loginname' => 'user_loginname',
+		'user_id' => 'user_id',
+		'user_last_name' => 'user_last_name',
+		'user_first_name' => 'user_first_name',
+		'user_dn' => 'user_dn',
 		'user_password' => 'user_password',
-		'user_firstname' => 'user_firstname',
-		'user_lastname' => 'user_lastname',
-		'user_organization' => 'user_organization',
 		'user_email_primary' => 'user_email_primary',
 		'user_email_secondary' => 'user_email_secondary',
 		'user_phone_primary' => 'user_phone_primary',
 		'user_phone_secondary' => 'user_phone_secondary',
 		'user_description' => 'user_description',
 		'user_level' => 'user_level',
-		'user_register_datetime' => 'user_register_datetime',
+		'user_register_time' => 'user_register_time',
 		'user_activation_key' => 'user_activation_key',
 		'user_pending_level' => 'user_pending_level'
+		'authorization_id' => 'authorization_id',
+                'institution_id' => 'institution_id',
 	}
 );
 
