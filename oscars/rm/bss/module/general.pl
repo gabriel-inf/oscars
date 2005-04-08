@@ -2,8 +2,8 @@
 
 # general.pl
 #
-# library for general cgi script usage
-# Last modified: April 01, 2005
+# library for general BSS db usage
+# Last modified: April 07, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -15,9 +15,6 @@ $webmaster = 'dwrobertson@lbl.gov';
 
 
 ##### List of sub routines #####
-### parse CGI form input
-# sub Parse_Form_Input_Data
-
 ### format/obtain time string 
 # sub Create_Time_String
 # sub Create_Time_Sprintf_String
@@ -29,74 +26,11 @@ $webmaster = 'dwrobertson@lbl.gov';
 # sub Encode_Passwd
 # sub Generate_Random_String
 
-### print error screen to the browser
-# sub Print_Error_Screen
-# sub Print_CLI_Error_Screen
-# sub Error_Code_To_Error_Message
-
 ##### List of sub routines End #####
 
 
-##### sub Parse_Form_Input_Data
-# In: $Form_Method [all/post/get]
-# Out: %Form_Data (name-value pairs)
-sub Parse_Form_Input_Data
-{
-
-	my $Form_Method = $_[0];
-	
-	my( $Form_Info, @Key_Value_Pairs, $Key, $Value, %Form_Data );
-
-	if ( $Form_Method eq 'all' )
-	{
-		if ( $ENV{'REQUEST_METHOD'} =~ /^POST$/i )
-		{
-			read( STDIN, $Form_Info, $ENV{'CONTENT_LENGTH'} );
-		}
-		elsif ( $ENV{'REQUEST_METHOD'} =~ /^GET$/i )
-		{
-			$Form_Info = $ENV{'QUERY_STRING'}; 
-		}
-	}
-	elsif ( $Form_Method eq 'post' )
-	{
-		read( STDIN, $Form_Info, $ENV{'CONTENT_LENGTH'} );
-	}
-	elsif ( $Form_Method eq 'get' )
-	{
-		$Form_Info = $ENV{'QUERY_STRING'}; 
-	}
-
-	@Key_Value_Pairs = split( /&/, $Form_Info );
-
-	foreach $_ ( @Key_Value_Pairs )
-	{
-		( $Key, $Value ) = split( /=/, $_ );
-		$Value =~ tr/+/ /;
-		$Value =~ s/%([\dA-Fa-f][\dA-Fa-f])/pack( "C", hex( $1 ) )/eg;
-
-		foreach ( $Value )
-		{
-#			s/\r|\n//g;	# removes line feeds
-			s/^\s+|\s+$//g;	# removes leading/trailing spaces
-			s/&/&amp;/g;
-			s/&amp;\#([0-9]+);/&\#$1;/g;	# takes care of non-latin characters
-			s/</&lt;/g;
-			s/>/&gt;/g;
-			s/"/&quot;/g;
-		}
-
-		$Form_Data{$Key} = $Value;
-	}
-
-	return %Form_Data;
-
-} 
-##### End of sub Parse_Form_Input_Data
-
-
 ##### sub Create_Time_String
-# In: $String_Type [cookie/dbinput/(localtime)], $Time_Value, $String_Format
+# In: $String_Type [dbinput/(localtime)], $Time_Value, $String_Format
 # Out: $Formatted_Time_String
 ### Look at sub Create_Time_Sprintf_String for $String_Format rules
 # $String_Format is used only when $String_Type is not specified (empty)
@@ -115,13 +49,7 @@ sub Create_Time_String
 
 	my( %Time, @Days, $Formatted_Time_String );
 
-	if ( $String_Type eq 'cookie' )
-	{
-		@Time{ 'sec', 'min', 'hour', 'mday', 'mon', 'year', 'wday', 'yday', 'isdst' } = gmtime( $Time_Value );
-		@Days = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
-		$Time{'month'} = ( 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' )[$Time{'mon'}];
-	}
-	elsif ( $String_Type eq 'dbinput' )
+	if ( $String_Type eq 'dbinput' )
 	{
 		# get the GMT value of the specified time
 		@Time{ 'sec', 'min', 'hour', 'mday', 'mon', 'year', 'wday', 'yday', 'isdst' } = gmtime( $Time_Value );
@@ -139,12 +67,7 @@ sub Create_Time_String
 	$Time{'year'} += 1900 if length( $Time{'year'} ) < 4;
 	$Time{'year'} += 100 if $Time{'year'} <= 1970;
 
-	if ( $String_Type eq 'cookie' )
-	{
-		# for cookie spec, see here: http://wp.netscape.com/newsref/std/cookie_spec.html
-		$Formatted_Time_String = sprintf( "%s, %02d-%s-%04d %02d:%02d:%02d GMT", @Time{ 'thisday', 'mday', 'month', 'year', 'hour', 'min', 'sec' } );
-	}
-	elsif ( $String_Type eq 'dbinput' )
+	if ( $String_Type eq 'dbinput' )
 	{
 		$Formatted_Time_String = sprintf( "%04d-%02d-%02d %02d:%02d:%02d", @Time{ 'year', 'month', 'mday', 'hour', 'min', 'sec' } );
 	}
@@ -338,7 +261,7 @@ sub Encode_Passwd
 ##### sub Generate_Random_String
 # In: $String_Length
 # Out: $Random_String
-# This sub routine takes care of generating a random string for all functions except cookie randomkey
+# This sub routine takes care of generating a random string for all functions 
 sub Generate_Random_String
 {
 
@@ -351,120 +274,6 @@ sub Generate_Random_String
 
 }
 ##### End of sub Generate_Random_String
-
-
-##### sub Print_Error_Screen
-# In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
-# Out: None (prints error screen to the browser and exits)
-sub Print_Error_Screen
-{
-
-#	my $Err_Location = $ENV{'SCRIPT_NAME'};
-
-	my $Err_Location = $_[0];
-	my( $Err_Code, $Errno ) = split( /\n/, $_[1], 2 );
-
-	my $Err_Message = &Error_Code_To_Error_Message( $Err_Code );
-
-	print <<__HTML__;
-Pragma: no-cache
-Cache-control: no-cache
-Content-type: text/html
-
-<html>
-	<head>
-		<title>500 CGI internal Error</title>
-	</head>
-	<body>
-	<h1>500 CGI internal Error</h1>
-
-	<p>An internal error occurred at <em>$Err_Location</em>.</p>
-	<p>Please contact the webmaster at $webmaster,
-	and inform the person of the date and time of error and
-	anything you might have done that may have caused the problem.</p>
-__HTML__
-
-	if ( $Errno ne '' )
-	{
-		print "<p><strong>[Error] $Err_Message<br>$Errno</strong></p>\n";
-	}
-	else
-	{
-		print "<p><strong>[Error] $Err_Message</strong></p>\n";
-	}
-
-	print "</body></html>\n";
-
-	exit;
-
-}
-##### End of sub Print_Error_Screen
-
-
-##### sub Print_CLI_Error_Screen
-# In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)", $Custom_Err_Message (optional)
-# Out: None (prints error screen to standard output and exits)
-# $Custom_Err_Message is checked only when $_[1] is empty
-# lock release should be taken care of before calling this sub routine
-sub Print_CLI_Error_Screen
-{
-
-#	my $Err_Location = $ENV{'SCRIPT_NAME'};
-
-	my $Err_Location = $_[0];
-	my( $Err_Code, $Errno, $Err_Message );
-
-	if ( $_[1] ne '' )
-	{
-		( $Err_Code, $Errno ) = split( /\n/, $_[1], 2 );
-		$Err_Message = &Error_Code_To_Error_Message( $Err_Code );
-	}
-	else
-	{
-		$Err_Message = $_[2];
-	}
-
-	if ( $Errno ne '' )
-	{
-		die "An error has occurred at ${Err_Location}: $Err_Message\n$Errno";
-	}
-	else
-	{
-		die "An error has occurred at ${Err_Location}: $Err_Message";
-	}
-
-	exit;
-
-}
-##### End of sub Print_CLI_Error_Screen
-
-
-##### sub Error_Code_To_Error_Message
-# In: $Error_Code
-# Out: $Err_Message
-sub Error_Code_To_Error_Message
-{
-
-#	my $errmsglang = 'en';
-
-	my %Error_Msg_Table_EN = (
-		FileOpen => "Cannot open file. Please check if the file location is right, the file permission is properly set, or the file is not corrupted.",
-		CantConnectDB => "Cannot connect to the database.",
-		CantPrepareStatement => "Cannot prepare database statement.",
-		CantExecuteQuery => "Cannot execute query in the database.",
-		CantOpenSendmail => "Cannot run Sendmail.",
-	);
-
-#	my %Error_Msg_Set = (
-#			en => { %Error_Msg_Table_EN }
-#	);
-
-#	return $Error_Msg_Set{$errmsglang}{$_[0]};
-
-	return $Error_Msg_Table_EN{$_[0]};
-
-} 
-##### End of sub Error_Code_To_Error_Message
 
 
 ##### End of Library File
