@@ -25,7 +25,6 @@ use DBI;
 
 # database field names
 # usage: @{ $db_table_field_name{'users'} }{'user_loginname', 'user_password', 'user_level'}
-# 'past_reservations' table has the same field names/structure as the 'reservations' table
 %db_table_field_name = (
 	'users' => {
 		'user_register_id' => 'user_register_id',

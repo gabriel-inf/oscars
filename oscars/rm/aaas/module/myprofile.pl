@@ -90,7 +90,7 @@ sub Process_Profile_Update(FormData)
 
 	###
 	# user level provisioning
-	# if the user's level equals one of the read-only levels, don't let them submit a reservation
+	# if the user's level equals one of the read-only levels, don't give them access 
 	#
 	$Query = "SELECT $db_table_field_name{'users'}{'user_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
