@@ -2,12 +2,15 @@
 
 use SOAP::Lite;
 
-my $soap = SOAP::Lite
+my $AAAS_server = SOAP::Lite
   -> uri('http://localhost:2000/AAASServer')
   -> proxy ('http://localhost:2000/soapserver.pl');
 
-print $soap
-  -> login('foo')
-  -> result;
-
-print "\n\n"
+sub User_Login
+{
+    my ($login_name, $password) = @_;
+    my $status = $AAAS_server
+                 -> login('foo')
+                 -> result;
+    return($status);
+}
