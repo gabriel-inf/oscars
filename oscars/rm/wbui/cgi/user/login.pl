@@ -7,7 +7,6 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
 require 'soapclient.pl';
 
 # main service start point URI (the first screen a user sees after logging in)
@@ -15,6 +14,8 @@ $service_startpoint_URI = 'https://oscars.es.net/user/';
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
+
+$psalt = 'oscars';
 
 
 ##### Beginning of mainstream #####
@@ -25,15 +26,16 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # if login successful, forward user to the next appropriate page
 # all else: Update status but don't change main frame
 
-my $Error_Status = &Process_User_Login();
-if ( $Error_Status eq 'Success' )
+my ($Error_Status, @Error_Message) = &Process_User_Login();
+
+if ( $Error_Status )
 {
     # forward the user to the main service page
     &Update_Frames($service_startpoint_URI, "Logged in as $FormData{'loginname'}.");
 }
 else
 {
-    &Update_Frames('', $Error_Status);
+    &Update_Frames('', $Error_Message[0]);
 }
 exit;
 
@@ -60,10 +62,9 @@ sub Process_User_Login
 	{
 		return( 'Please enter your password.' );
 	}
+        my $encrypted_passwd = crypt($FormData{'password'}, $psalt);
 
-        $result = User_Login($FormData{'loginname'}, $FormData{'password'});
-        
-        return ($result);
+        return(User_Login($FormData{'loginname'}, $encrypted_passwd));
 
 }
 ##### End of sub Process_User_Login
