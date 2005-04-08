@@ -8,6 +8,7 @@
 # include libraries
 require '../lib/general.pl';
 require '../lib/authenticate.pl';
+require 'soapclient.pl';
 
 # main service start point URI (the first screen a user sees after logging in)
 $service_startpoint_URI = 'https://oscars.es.net/user/';
@@ -25,7 +26,7 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # all else: Update status but don't change main frame
 
 my $Error_Status = &Process_User_Login();
-if ( !$Error_Status )
+if ( $Error_Status eq 'Success' )
 {
     # forward the user to the main service page
     &Update_Frames($service_startpoint_URI, "Logged in as $FormData{'loginname'}.");
@@ -60,9 +61,9 @@ sub Process_User_Login
 		return( 'Please enter your password.' );
 	}
 
-	### TODO:  call DB routine, get message back
-
-        return ''
+        $result = User_Login($FormData{'loginname'}, $FormData{'password'});
+        
+        return ($result);
 
 }
 ##### End of sub Process_User_Login
