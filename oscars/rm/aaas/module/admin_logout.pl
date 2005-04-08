@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # logout.pl:  Admin tool: DB operations associated with logout
-# Last modified: April 4, 2005
+# Last modified: April 7, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -20,23 +20,6 @@ sub Handle_Admin_Logout(FormData)
 
     # TODO:  lock table
 
-    # delete any previously set random keys for the same login name
-    $Query = "DELETE FROM $db_table_name{'cookiekey'} WHERE $db_table_field_name{'cookiekey'}{'cookiekey_id'} = ?";
- 
-    ( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-    if ( $Error_Status != 1 )
-    {
-        &Database_Disconnect( $Dbh );
-	return( $Error_Status );
-    }
-
-    ( undef, $Error_Status ) = &Query_Execute( $Sth, $Data_From_Cookie{'cookiekey_id'} );
-    if ( $Error_Status != 1 )
-    {
-	&Database_Disconnect( $Dbh );
-	return( $Error_Status );
-    }
-
     &Query_Finish( $Sth );
 
     # TODO:  unlock the operation
@@ -45,6 +28,7 @@ sub Handle_Admin_Logout(FormData)
     &Database_Disconnect( $Dbh );
 
     # TODO:  return status
+}
 
 exit;
 

@@ -171,68 +171,6 @@ sub Process_Admin_Login(FormData)
 
 	&Query_Finish( $Sth );
 
-	### if the input password matched against the password from the database, set a logged-in cookie
-	if ( $Password_Match_Token )
-	{
-		# TODO:  lock table
-
-		# delete any previously set random keys for the same login name
-		$Query = "DELETE FROM $db_table_name{'cookiekey'} WHERE $db_table_field_name{'cookiekey'}{'user_loginname'} = ?";
-
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
-		}
-
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
-		}
-
-		&Query_Finish( $Sth );
-
-		# create a random key
-		my $Random_Key = &Generate_Randomkey( $FormData{'loginname'} );
-
-		# insert the ramdon key and login name in the database
-		$Query = "INSERT INTO $db_table_name{'cookiekey'} VALUES ( '', ?, ? )";
-
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
-		}
-
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'}, $Random_Key );
-		if ( $Error_Status != 1 )
-		{
-			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
-		}
-
-		# get the cookiekey_id value (the last-inserted auto-increment field value)
-		my $Cookiekey_ID = $Sth->{'mysql_insertid'};
-
-		&Query_Finish( $Sth );
-
-		# print the Set-Cookie browser header
-		print &Set_Login_Cookie( 'login', $admin_login_cookie_name, $Cookiekey_ID, $FormData{'loginname'}, $Random_Key );
-
-		# TODO: unlock the table
-
-		# disconnect from the database
-		&Database_Disconnect( $Dbh );
-	}
-	else
-	{
-		&Database_Disconnect( $Dbh );
-		return( 0, 'Please check the password and try again.' );
-	}
 
 	### when everything has been processed successfully...
 	# $Processing_Result_Message string may be anything, as long as it's not empty

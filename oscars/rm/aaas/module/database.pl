@@ -3,59 +3,30 @@
 # database.pl
 #
 # library for database operation
-# Last modified: July 15, 2004
+# Last modified: April 7, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
+# David Robertson (dwrobertson@lbl.gov)
 
 use DBI;
 
 ##### Settings Begin (Global variables) #####
 # database connection info
 %db_connect_info = (
-	'database' => 'athena',
+	'database' => 'aaas',
 	'host' => 'localhost',
-	'user' => 'dapi',
-	'password' => 'db@i2!'
+	'user' => 'davidr',
+	'password' => 'shyysh'
 );
 
 # database table names
 %db_table_name = (
-	'reservations' => 'reservations',
-	'past_reservations' => 'past_reservations',
-	'active_reservations' => 'active_reservations',
 	'users' => 'users',
-);
-
-# reservations/past_reservations field names
-%reservations_tables_field_names = (
-	'reservation_id' => 'reservation_id',
-	'user_loginname' => 'user_loginname',
-	'reserv_origin_ip' => 'reserv_origin_ip',
-	'reserv_dest_ip' => 'reserv_dest_ip',
-	'reserv_bandwidth' => 'reserv_bandwidth',
-	'reserv_start_time' => 'reserv_start_time',
-	'reserv_end_time' => 'reserv_end_time',
-	'reserv_description' => 'reserv_description',
-	'reserv_made_time' => 'reserv_made_time',
-	'access_ip' => 'access_ip',
-	'access_domain' => 'access_domain',
-	'access_browser' => 'access_browser'
 );
 
 # database field names
 # usage: @{ $db_table_field_name{'users'} }{'user_loginname', 'user_password', 'user_level'}
 # 'past_reservations' table has the same field names/structure as the 'reservations' table
 %db_table_field_name = (
-	'reservations' => { %reservations_tables_field_names },
-	'past_reservations' => { %reservations_tables_field_names },
-	'active_reservations' => {
-		'reservation_id' => 'reservation_id',
-		'user_loginname' => 'user_loginname',
-		'active_tunnel_name' => 'active_tunnel_name',
-		'active_tunnel_ingress' => 'active_tunnel_ingress',
-		'active_tunnel_egress' => 'active_tunnel_egress',
-		'active_tunnel_createdtime' => 'active_tunnel_createdtime',
-		'reserv_end_time' => 'reserv_end_time'
-	},
 	'users' => {
 		'user_register_id' => 'user_register_id',
 		'user_loginname' => 'user_loginname',

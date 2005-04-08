@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # login.pl:  login interaction with DB
-# Last modified: April 1, 2005
+# Last modified: April 5, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -10,10 +10,11 @@ require 'general.pl';
 require 'database.pl';
 
 ##### sub Process_User_Login
-# In: FormData
+# In: login name, password
 # Out: status message
-sub Process_User_Login(FormData)
+sub Process_User_Login
 {
+        my($loginname, $password) = @_;
 	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
 
 	# connect to the database
@@ -41,7 +42,7 @@ sub Process_User_Login(FormData)
 		return( $Error_Status );
 	}
 
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $loginname'} );
 
 
 	if ( $Error_Status != 1 )
@@ -73,7 +74,7 @@ sub Process_User_Login(FormData)
                                 &Database_Unlock_Table($db_table_name{'users'});
 				return( 0, 'This account is not authorized or activated yet.' );
 			}
-			elsif ( $$Ref[0] eq &Encode_Passwd( $FormData{'password'} ) )
+			elsif ( $$Ref[0] eq &Encode_Passwd( $password ) )
 			{
 				$Password_Match_Token = 1;
 			}

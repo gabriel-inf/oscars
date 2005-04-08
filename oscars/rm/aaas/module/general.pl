@@ -2,8 +2,8 @@
 
 # general.pl
 #
-# library for general AAAS usage
-# Last modified: April 1, 2005
+# library for general AAAS db usage
+# Last modified: April 7, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
