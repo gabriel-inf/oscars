@@ -15,9 +15,6 @@ $service_startpoint_URI = 'https://oscars.es.net/user/';
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
 
-$psalt = 'oscars';
-
-
 ##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept POST method only)
@@ -62,7 +59,7 @@ sub Process_User_Login
 	{
 		return( 0, 'Please enter your password.' );
 	}
-        my $encrypted_passwd = crypt($FormData{'password'}, $psalt);
+        my $encrypted_passwd = &Encode_Passwd($FormData{'password'});
 
         return(User_Login($FormData{'loginname'}, $encrypted_passwd));
 

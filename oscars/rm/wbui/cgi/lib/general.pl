@@ -3,13 +3,15 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: April 06, 2005
+# Last modified: April 08, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 ##### Settings Begin (Global variables) #####
 # contact info
 $webmaster = 'dwrobertson@lbl.gov';
+# password salt
+$psalt = 'oscars';
 
 ##### Settings End #####
 
@@ -324,10 +326,9 @@ sub Encode_Passwd
 {
 
 	my $Raw_Pwd = $_[0];
-	my( $Crypted_Pwd, $Salt );
+	my( $Crypted_Pwd );
  
-	$Salt = substr( $Raw_Pwd, -2, 2 );
-	$Crypted_Pwd = crypt( $Raw_Pwd, $Salt );
+	$Crypted_Pwd = crypt( $Raw_Pwd, $psalt );
  
 	return $Crypted_Pwd;
 
