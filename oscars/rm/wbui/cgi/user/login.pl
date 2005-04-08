@@ -55,12 +55,12 @@ sub Process_User_Login
 	# validate user input (just check for empty fields)
 	if ( $FormData{'loginname'} eq '' )
 	{
-		return( 'Please enter your login name.' );
+		return( 0, 'Please enter your login name.' );
 	}
 
 	if ( $FormData{'password'} eq '' )
 	{
-		return( 'Please enter your password.' );
+		return( 0, 'Please enter your password.' );
 	}
         my $encrypted_passwd = crypt($FormData{'password'}, $psalt);
 
