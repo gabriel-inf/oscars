@@ -356,9 +356,8 @@ sub Generate_Random_String
 ##### sub Update_Frames
 ##### Updates status portion of display (form target is status frame)
 #####    and replaces main_frame if necessary
-##### TODO:  DB lock release that was done here
-# In: $Err_Location, "$Err_Code (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
-# Out: returns error or status message
+# In: $uri, "$Err_Message (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
+# Result: update status message, sets main frame to another page if success
 sub Update_Frames
 {
     my ($uri, $Err_Message) = @_;
@@ -375,6 +374,7 @@ sub Update_Frames
     print "</div>";
     if ($uri)
     {
+        print "<?php session_start(); $_SESSION['valid_user'] = 'foo'; ?>";
         print "<script language=\"javascript\">update_main_frame(\"$uri\");</script>";
     }
     print "</body>";
