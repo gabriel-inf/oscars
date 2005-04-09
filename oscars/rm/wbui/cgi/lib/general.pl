@@ -98,7 +98,7 @@ sub Parse_Form_Input_Data
 
 
 ##### sub Create_Time_String
-# In: $String_Type [cookie/dbinput/(localtime)], $Time_Value, $String_Format
+# In: $String_Type [dbinput/(localtime)], $Time_Value, $String_Format
 # Out: $Formatted_Time_String
 ### Look at sub Create_Time_Sprintf_String for $String_Format rules
 # $String_Format is used only when $String_Type is not specified (empty)
@@ -117,13 +117,7 @@ sub Create_Time_String
 
 	my( %Time, @Days, $Formatted_Time_String );
 
-	if ( $String_Type eq 'cookie' )
-	{
-		@Time{ 'sec', 'min', 'hour', 'mday', 'mon', 'year', 'wday', 'yday', 'isdst' } = gmtime( $Time_Value );
-		@Days = ( 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
-		$Time{'month'} = ( 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' )[$Time{'mon'}];
-	}
-	elsif ( $String_Type eq 'dbinput' )
+	if ( $String_Type eq 'dbinput' )
 	{
 		# get the GMT value of the specified time
 		@Time{ 'sec', 'min', 'hour', 'mday', 'mon', 'year', 'wday', 'yday', 'isdst' } = gmtime( $Time_Value );
@@ -141,12 +135,7 @@ sub Create_Time_String
 	$Time{'year'} += 1900 if length( $Time{'year'} ) < 4;
 	$Time{'year'} += 100 if $Time{'year'} <= 1970;
 
-	if ( $String_Type eq 'cookie' )
-	{
-		# for cookie spec, see here: http://wp.netscape.com/newsref/std/cookie_spec.html
-		$Formatted_Time_String = sprintf( "%s, %02d-%s-%04d %02d:%02d:%02d GMT", @Time{ 'thisday', 'mday', 'month', 'year', 'hour', 'min', 'sec' } );
-	}
-	elsif ( $String_Type eq 'dbinput' )
+	if ( $String_Type eq 'dbinput' )
 	{
 		$Formatted_Time_String = sprintf( "%04d-%02d-%02d %02d:%02d:%02d", @Time{ 'year', 'month', 'mday', 'hour', 'min', 'sec' } );
 	}
@@ -339,7 +328,7 @@ sub Encode_Passwd
 ##### sub Generate_Random_String
 # In: $String_Length
 # Out: $Random_String
-# This sub routine takes care of generating a random string for all functions except cookie randomkey
+# This sub routine takes care of generating a random string for all functions
 sub Generate_Random_String
 {
 
@@ -371,7 +360,7 @@ sub Update_Frames
     print "</head>";
     print "<body>";
     print "<div>";
-    print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date();</script>" . " | " . $Err_Message . "</p>";
+    print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"UTC\");</script>" . " | " . $Err_Message . "</p>";
     print "</div>";
     if ($uri)
     {
