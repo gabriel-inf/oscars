@@ -3,6 +3,7 @@
 # authenticate.pl
 #
 # library for user authentication
+# TODO:  config file
 # Last modified: April 8, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
@@ -37,7 +38,7 @@ $non_activated_user_level = 0;
 $account_activation_key_size = '35';
 
 # admin tool gateway URI (admin login/registration screen)
-$admin_tool_gateway_URI = 'https://discvenue.internet2.edu/athena/admin/form_admin_gateway.cgi';
+$admin_tool_gateway_URI = 'https://oscars.es.net/admin/';
 
 # main service login URI (user login screen)
 $main_service_login_URI = 'https://oscars.es.net/';
@@ -53,7 +54,7 @@ $main_service_login_URI = 'https://oscars.es.net/';
 $sendmail_binary_path_and_flags = '/usr/sbin/sendmail -t -n -oi';
 
 # user account activation form URI
-$account_activation_form_URI = 'https://discvenue.internet2.edu/athena/form_activateaccount.cgi';
+$account_activation_form_URI = 'https://oscars.es.net/user/activateaccount.phtml';
 
 ##### Settings End #####
 
