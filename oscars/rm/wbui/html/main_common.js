@@ -168,10 +168,17 @@ function print_footer()
 
 
 // ** print current date (format: July 7, 2004) **
-function print_current_date()
+function print_current_date(useLocal)
 {
 	currentDate = new Date();
-	currentMonth = currentDate.getMonth();
+        if (useLocal == 'local')
+        {
+	    currentMonth = currentDate.getMonth();
+        }
+        else
+        {
+	    currentMonth = currentDate.getUTCMonth();
+        }
 
 	if ( currentMonth == 0 ) { currentMonthName = 'January'; }
 	if ( currentMonth == 1 ) { currentMonthName = 'February'; }
@@ -186,7 +193,19 @@ function print_current_date()
 	if ( currentMonth == 10 ) { currentMonthName = 'November'; }
 	if ( currentMonth == 11 ) { currentMonthName = 'December'; }
 
-	document.write( currentMonthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() );
+        if (useLocal != 'local')
+        {
+            currentMinutes = currentDate.getUTCMinutes();
+	    document.write( currentMonthName + " " + currentDate.getUTCDate() + ", " + currentDate.getUTCFullYear() + " " + currentDate.getUTCHours() + ":");
+        }
+        else
+        {
+            currentMinutes = currentDate.getMinutes();
+	    document.write( currentMonthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() + " " + currentDate.getHours() + ":");
+        }
+        if (currentMinutes < 10) { document.write("0") } ;
+        document.write(currentMinutes);
+        if (useLocal != 'local') { document.write(" (UTC)") } ;
 }
 
 // ** apply zebra stripe to a table **
