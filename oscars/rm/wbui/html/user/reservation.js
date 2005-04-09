@@ -1,60 +1,17 @@
 /*
 Javascript functions for reservation CGI interface
-Last modified: July 07, 2004
+Last modified: April 09, 2005
 Soo-yeon Hwang (dapi@umich.edu)
+David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
-print_timezone_offset()
-get_timezone_offset()
 print_start_datetime_example()
 check_form( form )
 check_LeapYear( intYear )
 validate_integer( strValue )
 validate_numeric( strValue )
 */
-
-// print local timezone offset
-// Reference: "What's The Time?" at http://www.htmlgoodies.com/dateandtime/whattime.html
-// Reference: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/script56/html/js56jsmthgettimezone.asp
-// getTimezoneOffset() number will be positive if you are behind UTC (e.g., Pacific Daylight Time), and negative if you are ahead of UTC (e.g., Japan).
-function print_timezone_offset()
-{
-//	document.write( '<input type="input" name="local_offset" value="' + get_timezone_offset() + '" size="3" style="text-align: left">' );
-
-	document.write( '<option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' );
-}
-
-function get_timezone_offset()
-{
-	var localDate = new Date();
-	var Offset = -( localDate.getTimezoneOffset() / 60 );
-	if ( Offset > 0 ) { Offset = "+" + Offset; }
-	else { Offset = "" + Offset; }	// to string-ize
-
-	// now start formatting the offset in the [+/-]hhmm format (ex. +0930, -0500)
-	var formattedOffset_sign = Offset.substring( 0, 1 );
-	var tempString = Offset.substring( 1, Offset.length );
-	var formattedOffset_array = tempString.split( ".", 2 ); // split the "hour.minute" value
-
-	if ( formattedOffset_array[1] > 0 )
-	{
-		formattedOffset_array[1] = Number( "0." + formattedOffset_array[1] ) * 60; // change .5 to 30 minutes
-	}
-	else
-	{
-		formattedOffset_array[1] = 0;
-	}
-
-	formattedOffset_array[1] = "" + formattedOffset_array[1];	// to string-ize
-
-	if ( formattedOffset_array[0].length < 2 ) { formattedOffset_array[0] = "0" + formattedOffset_array[0]; }
-	if ( formattedOffset_array[1].length < 2 ) { formattedOffset_array[1] = "0" + formattedOffset_array[1]; }
-
-	var formattedOffset_string = formattedOffset_sign + formattedOffset_array[0] + formattedOffset_array[1];
-
-	return formattedOffset_string;
-}
 
 // print year, date, and time for reservation start time ui example
 // date calculation reference: http://developer.netscape.com/viewsource/goodman_dateobject.html
@@ -70,33 +27,18 @@ function print_start_datetime_example()
 	var nowTime = ( new Date() ).getTime();
 	var boundaryDate = new Date( nowTime + ( 60 * 1000 * 60 * 2 ) ); // 2 hours from now
 
-	var printYear = boundaryDate.getFullYear();
-	var printMonth = boundaryDate.getMonth() + 1;
-	var printDate = boundaryDate.getDate();
-	var printHour = boundaryDate.getHours();
+	var printYear = boundaryDate.getUTCFullYear();
+	var printMonth = boundaryDate.getUTCMonth() + 1;
+	var printDate = boundaryDate.getUTCDate();
+	var printHour = boundaryDate.getUTCHours();
+	var printMinute = boundaryDate.getUTCMinutes();
 
-	if ( boundaryDate.getMinutes() > 0 )
-	{
-		printHour += 1;
-	}
 
 	document.write( '<td>' + printYear + '</td>' + '<td>' + printMonth + '</td>' + '<td>' + printDate + '</td>' );
 
-	if ( printHour > 12 )
-	{
-		printHour -= 12;
-		var printAmPm = 'pm';
-	}
-	else
-	{
-		var printAmPm = 'am';
-	}
-
-	document.write( '<td>' + printHour + '</td>' + '<td>' + printAmPm + '</td>' + '<td>UTC ' + get_timezone_offset() + '</td>' );
+	document.write( '<td>' + printHour + '</td>' + '<td>' + printMinute + '</td>' + '<td>UTC</td>' );
 }
 
-// check user input and validate it
-// Reference: http://www.thesitewizard.com/archive/validation.shtml
 // Reference: http://javascript.internet.com/forms/val-date.html
 function check_form( form )
 {
@@ -130,32 +72,30 @@ function check_form( form )
 		return false;
 	}
 
+        currentDate = Date();
 	if ( form.start_year.value == "" )
 	{
-		alert( "Please enter the reservation start year." );
-		form.start_year.focus();
-		return false;
+                form.start_year.value = currentDate.getUTCFullYear();
 	}
 
 	if ( form.start_month.value == "" )
 	{
-		alert( "Please enter the reservation start month." );
-		form.start_month.focus();
-		return false;
+                form.start_month.value = currentDate.getUTCMonth() + 1;
 	}
 
 	if ( form.start_date.value == "" )
 	{
-		alert( "Please enter the reservation start date." );
-		form.start_date.focus();
-		return false;
+                form.start_date.value = currentDate.getUTCDate();
 	}
 
 	if ( form.start_hour.value == "" )
 	{
-		alert( "Please enter the reservation start hour." );
-		form.start_hour.focus();
-		return false;
+                form.start_hour.value = currentDate.getUTCHour();
+	}
+
+	if ( form.start_minute.value == "" )
+	{
+                form.start_minute.value = currentDate.getUTCMinute();
 	}
 
 	if ( form.duration_hour.value == "" )
@@ -211,25 +151,8 @@ function check_form( form )
 		return false;
 	}
 
-	var nowTime = ( new Date() ).getTime();
-	var boundaryDate = new Date( nowTime + ( 60 * 1000 * 60 * 2 ) ); // 2 hours from now
-
-	var checkYear = boundaryDate.getFullYear();
-	var checkMonth = boundaryDate.getMonth() + 1;
-	var checkDate = boundaryDate.getDate();
-	var checkHour = boundaryDate.getHours();
-
-	if ( boundaryDate.getMinutes() > 0 )
-	{
-		checkHour += 1;
-	}
-
-	if ( form.start_year.value < checkYear )
-	{
-		alert( "The reservation start date and time must be at least two hours later than the current date and time." );
-		form.start_year.focus();
-		return false;
-	}
+	var nowTime = currentDate.getTime();
+	var boundaryTime = 60 * 1000 * 60 * 2 ; // 2 hours
 
 	if ( validate_integer(form.start_month.value) == false )
 	{
@@ -241,13 +164,6 @@ function check_form( form )
 	if ( form.start_month.value < 1 || form.start_month.value > 12 )
 	{
 		alert( "The reservation start month is out of proper range. Please check again." );
-		form.start_month.focus();
-		return false;
-	}
-
-	if ( form.start_year.value == checkYear && form.start_month.value < checkMonth )
-	{
-		alert( "The reservation start date and time must be at least two hours later than the current date and time." );
 		form.start_month.focus();
 		return false;
 	}
@@ -302,12 +218,6 @@ function check_form( form )
 		}
 	}
 
-	if ( form.start_year.value == checkYear && form.start_month.value == checkMonth && form.start_date.value < checkDate )
-	{
-		alert( "The reservation start date and time must be at least two hours later than the current date and time." );
-		form.start_date.focus();
-		return false;
-	}
 
 	if ( validate_integer(form.start_hour.value) == false )
 	{
@@ -316,27 +226,12 @@ function check_form( form )
 		return false;
 	}
 
-	if ( ( form.start_ampm.value == "pm" && form.start_hour.value < 1 ) || ( form.start_ampm.value == "am" && form.start_hour.value < 0 ) || form.start_hour.value > 12 )
+
+	if ( form.start_hour.value < 0 || form.start_hour.value > 23 )
 	{
 		alert( "The reservation start hour is out of proper range. Please check again." );
 		form.start_hour.focus();
 		return false;
-	}
-
-	if ( form.start_year.value == checkYear && form.start_month.value == checkMonth && form.start_date.value == checkDate )
-	{
-		var tempHour = form.start_hour.value;
-		if ( form.start_ampm.value == "pm" )
-		{
-			tempHour += 12;
-		}
-
-		if ( tempHour < checkHour )
-		{
-			alert( "The reservation start date and time must be at least two hours later than the current date and time." );
-			form.start_hour.focus();
-			return false;
-		}
 	}
 
 	if ( validate_integer(form.duration_hour.value) == false )
@@ -346,9 +241,9 @@ function check_form( form )
 		return false;
 	}
 
-	if ( form.duration_hour.value < 1 )
+	if ( form.duration_hour.value < 2 )
 	{
-		alert( "The duration of reservation should be equal to or greater than an hour. Please check again." );
+		alert( "The duration of reservation should be equal to or greater than two hours. Please check again." );
 		form.duration_hour.focus();
 		return false;
 	}
