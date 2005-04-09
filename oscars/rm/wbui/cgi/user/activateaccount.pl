@@ -20,14 +20,14 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-my $Error_Status = &Process_User_Account_Activation();
+my ($Error_Status, $Error_Message) = &Process_User_Account_Activation();
 if ( !$Error_Status )
 {
-    &Print_Frames();
+    &Update_Frames("", "Successful activation");
 }
 else
 {
-    &Print_Status_Message($Error_Status);
+    &Update_Frames("", $Error_Message[0]);
 }
 
 exit;
@@ -47,17 +47,17 @@ sub Process_User_Account_Activation
 	# validate user input (just check for empty fields)
 	if ( $FormData{'loginname'} eq '' )
 	{
-		return( 0, 'Please enter your login name.' );
+		return( 1, 'Please enter your login name.' );
 	}
 
 	if ( $FormData{'activation_key'} eq '' )
 	{
-		return( 0, 'Please enter the account activation key.' );
+		return( 1, 'Please enter the account activation key.' );
 	}
 
 	if ( $FormData{'password'} eq '' )
 	{
-		return( 0, 'Please enter the password.' );
+		return( 1, 'Please enter the password.' );
 	}
 
 	### start working with the database
@@ -65,7 +65,7 @@ sub Process_User_Account_Activation
 
 	### when everything has been processed successfully...
 	# $Processing_Result_Message string may be anything, as long as it's not empty
-	return( 1, 'The user account <strong>' . $FormData{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
+	return( 0, 'The user account <strong>' . $FormData{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
 
 }
 ##### End of sub Process_User_Account_Activation

@@ -45,7 +45,7 @@ sub Process_Profile_Update
 	# validate user input (fairly minimal... Javascript also takes care of form data validation)
 	if ( $FormData{'password_current'} eq '' )
 	{
-		return( 0, 'Please enter the current password.' );
+		return( 1, 'Please enter the current password.' );
 	}
 
 	my $Encrypted_Password;
@@ -55,7 +55,7 @@ sub Process_Profile_Update
 	{
 		if ( $FormData{'password_new_once'} ne $FormData{'password_new_twice'} )
 		{
-			return( 0, 'Please enter the same new password twice for verification.' );
+			return( 1, 'Please enter the same new password twice for verification.' );
 		}
 		else
 		{
@@ -70,7 +70,7 @@ sub Process_Profile_Update
 
         ### TODO:  output screen
 	### when everything has been processed successfully...
-	return( 1, 'Your account information has been updated successfully.' );
+	return( 0, 'Your account information has been updated successfully.' );
 
 }
 ##### End of sub Process_Profile_Update

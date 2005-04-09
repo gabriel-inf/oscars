@@ -18,18 +18,17 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 %FormData = &Parse_Form_Input_Data( 'post' );
 
 # TODO:  FIX
-$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
+#$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
 
-my $Error_status = &Process_Reservation();
+my ($Error_Status, $Error_Message) = &Process_Reservation();
 
 if (!$Error_Status)
 {
-    #  TODO:  successful login message
-    &Print_Frames("Logged in as $FormData{'loginname'}");
+    &Update_Frames("", "Reservation made for $FormData{'loginname'}");
 }
 else
 {
-    &Print_Status_Message($Error_Status);
+    &Update_Frames("", $Error_Message[0]);
 }
 exit;
 
@@ -60,15 +59,11 @@ sub Process_Reservation
 		$FormData{$_} += 0;
 	}
 
-	# convert 12 am to 0 am
-	if ( ( $FormData{'start_ampm'} eq 'am' ) && ( $FormData{'start_hour'} == 12 ) )
-	{
-		$FormData{'start_hour'} = 0;
-	}
 	### TODO:  call other subsystem with FormData
         ### subsystem returns reservation id, success or error message
 
         ### print screen or set src location
+        return(1, "so far does nothing");
 
 }
 ##### End of sub Process_Reservation

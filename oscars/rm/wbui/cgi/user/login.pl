@@ -25,7 +25,7 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 
 my ($Error_Status, @Error_Message) = &Process_User_Login();
 
-if ( $Error_Status )
+if ( !$Error_Status )
 {
     # forward the user to the main service page
     &Update_Frames($service_startpoint_URI, "Logged in as $FormData{'loginname'}.");
@@ -52,12 +52,12 @@ sub Process_User_Login
 	# validate user input (just check for empty fields)
 	if ( $FormData{'loginname'} eq '' )
 	{
-		return( 0, 'Please enter your login name.' );
+		return( 1, 'Please enter your login name.' );
 	}
 
 	if ( $FormData{'password'} eq '' )
 	{
-		return( 0, 'Please enter your password.' );
+		return( 1, 'Please enter your password.' );
 	}
         my $encrypted_passwd = &Encode_Passwd($FormData{'password'});
 
