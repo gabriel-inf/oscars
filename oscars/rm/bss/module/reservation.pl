@@ -1,82 +1,32 @@
 #!/usr/bin/perl
 
 # reservation.pl:  contacts db to generate reservation
-# Last modified: April 1, 2005
-# David Robertson (dwrobertson@lbl.gov)
+# Last modified: April 9, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
+# David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
 require 'lib/general.pl';
 require 'lib/database.pl';
-require 'lib/authenticate.pl';
 
-# Abilene network bandwidth limit (in Mbps) (1 Gbps = 1000 Mbps)
-$abilene_bandwidth_limit = 3000;
+#  network bandwidth limit (in Mbps) (1 Gbps = 1000 Mbps)
+$bandwidth_limit = 3000;
 
-# don't forget to check other preference in lib_*.pl files as well
 
 
 ##### Beginning of sub routines #####
 
-##### sub Process_Reservation(FormData)
-# In: FormData
-# Out: info, and success or error message
+##### sub Process_Reservation
+# In: Soap array
+# Out: success or failure, and reservation info
 sub Process_Reservation
 {
-
-	### see if the origin-destination path passes through Abilene; if not, do not accept reservation
-	# look up the closest Abilene node to each host (origin/destination)
-	# if the node does not exist, the network path does not go past Abilene
-	my %Closest_Abilene_Node;
-
-	# origin first; and then, destination (do not change the order of keys below!)
-	foreach $Key ( 'origin', 'destination' )
-	{
-		my @TempNodeLookupResult;
-
-		if ( $Key eq 'origin' )
-		{
-			# connect to the Indianapolis node (which is the closest to the login server)
-			# and run traceroute to the origin to find out the closest Abilene node to the origin
-			@TempNodeLookupResult = &Abilene_Node_Lookup( 'ipls', $FormData{$Key} );
-		}
-		else
-		{
-			# connect to the Abilene node that is closest to the origin
-			# and run traceroute from that node to the destination host
-			@TempNodeLookupResult = &Abilene_Node_Lookup( $Closest_Abilene_Node{'origin'}, $FormData{$Key} );
-		}
-
-		if ( $TempNodeLookupResult[0] != 1 )
-		{
-			if ( $TempNodeLookupResult[0] eq 'command_fail' )
-			{
-				return( 1, '[ERROR] An error has occurred while traversing the network path. Please try again later.' );
-			}
-			elsif ( $TempNodeLookupResult[0] eq 'non_abilene' )
-			{
-				return( 1, '[ERROR] This origin-destination path does not go through the Abilene network. Please check the origin and destination IP addresses and try again.' );
-			}
-		}
-		else
-		{
-			$Closest_Abilene_Node{$Key} = $TempNodeLookupResult[1];
-		}
-	}
 
 	### check conflicts & record reservation
 	# 1) schedule conflict; 2) path conflict; 3) bandwidth limit
 	# perform lock before and after these processes
 
-	### [notes on 6/14/2004]
-	# [note] look at 1) and 3) only, since we now treat the entire Abilene network as a single path
-	# let's not take individual path bandwidth/schedule conflict into account for now
-	# because network route can change at any moment, and strict path control is not a very good thing to do
-
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query );
-
-	my $Abilene_Conflict_Status = 0; # 0: no conflict, 1: existing conflict
+	my $Conflict_Status = 0; # 0: no conflict, 1: existing conflict
 
 	# TODO:  lock table(s) with LOCK_TABLE
 
@@ -89,44 +39,6 @@ sub Process_Reservation
 		return( 1, $Error_Code );
 	}
 
-	###
-	# user level provisioning
-	# if the user's level equals one of the read-only levels, don't let them submit a reservation
-	#
-
-	$Query = "SELECT $db_table_field_name{'users'}{'user_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
-
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	while ( my $Ref = $Sth->fetchrow_arrayref )
-	{
-		foreach $ReadOnlyLevel ( @read_only_user_levels )
-		{
-			if ( $$Ref[0] eq $ReadOnlyLevel )
-			{
-				&Query_Finish( $Sth );
-				&Database_Disconnect( $Dbh );
-
-                                # TODO:  unlock table(s)
-
-				return( 1, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege, and therefore you cannot make a new reservation request.' );
-			}
-		}
-	}
-
-	&Query_Finish( $Sth );
 
 	###
 	# for each of the duration hours, grab the total amount of bandwidth
@@ -183,12 +95,12 @@ sub Process_Reservation
 			$DB_Bandwidth_Sum = $$Ref[0];
 		}
 
-		# check the Abilene bandwidth limit
+		# check the bandwidth limit
 		# if the existing total plus the requested amount exceeds the pre-set limit,
 		# set the conflict status to 1 and exit the loop
 		if ( ( $DB_Bandwidth_Sum + $FormData{'bandwidth'} ) > $abilene_bandwidth_limit )
 		{
-			$Abilene_Conflict_Status = 1;
+			$Conflict_Status = 1;
 			( $Conflicted_Start_Time, $Conflicted_End_Time ) = ( $Comp_Start_DateTime, $Comp_End_DateTime );
 			last DURATION;
 		}
@@ -201,15 +113,15 @@ sub Process_Reservation
 	# otherwise, print error message on the screen
 	#
 
-	my $New_Reservation_ID unless ( $Abilene_Conflict_Status );
+	my $New_Reservation_ID unless ( $Conflict_Status );
 
-	if ( $Abilene_Conflict_Status )
+	if ( $Conflict_Status )
 	{
 		&Database_Disconnect( $Dbh );
 
                 # TODO:  unlock table(s)
 
-		return( 1, '[ERROR] The available bandwidth limit on the Abilene network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
+		return( 1, '[ERROR] The available bandwidth limit on the network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
 	}
 	else
 	{
