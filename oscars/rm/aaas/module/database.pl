@@ -60,7 +60,7 @@ use DBI;
 
 ##### sub Database_Connect
 # In: None
-# Out: $DB_Handle [$dbh/'' (fail)], $Error_Status [1 (success)/"$Err_Code\n" (fail)]
+# Out: $Err_Code (0 on success), $DB_Handle
 sub Database_Connect
 {
 
@@ -98,8 +98,7 @@ sub Database_Disconnect
 
 ##### sub Query_Prepare
 # In: $DB_Handle ($dbh), $Statement
-# Out: $Statement_Handle [$sth/'' (fail)], $Error_Status [1 (success)/"$Err_Code\n$Errno" (fail)]
-# (1: success, $Err_Code: reason of failure, $Errno: $dbh->errstr)
+# Out: $Err_Code, $Statement_Handle
 sub Query_Prepare
 {
 
@@ -116,15 +115,14 @@ sub Query_Prepare
 
 ##### sub Query_Execute
 # In: $Statement_Handle ($sth), @Query_Arguments (for placeholders(?s) in the prepared query statement)
-# Out: $Number_of_Rows_Affected [$num_of_affected_rows /'' (fail)], $Error_Status [1 (success)/"$Err_Code\n$Errno" (fail)]
-# (1: success, $Err_Code: reason of failure, $Errno: $sth->errstr)
+# Out: $Err_Code, $Number_of_Rows_Affected
 sub Query_Execute
 {
 
 	my( $sth, @Query_Args ) = @_;
 
 	# execute the prepared query (run subroutine 'Query_Prepare' before calling this subrutine)
-	my $num_of_affected_rows = $sth->execute( @Query_Args ) || return (0, "CantExecuteQuery\n" . $sth->errstr);
+	my $num_of_affected_rows = $sth->execute( @Query_Args ) || return (1, "CantExecuteQuery\n" . $sth->errstr);
 	
 	# if nothing fails, return 0 (success) and the $num_of_affected_rows
 	return (0, $num_of_affected_rows);
