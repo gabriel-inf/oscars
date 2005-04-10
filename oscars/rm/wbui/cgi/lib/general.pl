@@ -360,7 +360,7 @@ sub Update_Frames
     print "</head>";
     print "<body>";
     print "<div>";
-    print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"UTC\");</script>" . " | " . $Err_Message . "</p>";
+    print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"local\");</script>" . " | " . $Err_Message . "</p>";
     print "</div>";
     if ($uri)
     {
