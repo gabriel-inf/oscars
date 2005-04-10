@@ -1,0 +1,135 @@
+<wsdl:definitions name="OscarsService" targetNamespace="https://oscars.es.net/OscarsService"
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xsd="http://www.w3.org/1999/XMLSchema"
+  xmlns:tns="https://oscars.es.net/OscarsService"
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+>
+
+    <wsdl:types>
+
+<-- Adapted from widgets.wsdl from pyGridWare -->
+
+      <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
+                targetNamespace="https://oscars.es.net">
+
+        <!-- user login data -->
+        <xsd:complexType name="userLoginRequestType">
+         <xsd:all>
+          <xsd:element name="UserName" type="xsd:string"/>
+          <xsd:element name="UserPassword" type="xsd:string"/>
+         </xsd:all>
+        </xsd:complexType>
+
+        <xsd:complexType name="userLoginResponseType">
+         <xsd:all>
+          <xsd:element name="Response" type="xsd:string"/>
+         </xsd:all>
+        </xsd:complexType>
+
+        <!-- reservation request -->
+        <xsd:complexType name="createReservationRequestType">
+         <xsd:sequence>
+           <xsd:all>
+            <xsd:element name="StartTime" type="xsd:string"/>
+            <xsd:element name="StopTime" type="xsd:string"/>
+            <xsd:element name="Duration" type="xsd:string"/>
+            <xsd:element name="Bandwidth" type="xsd:string"/>
+            <xsd:element name="StartIP" type="xsd:string"/>
+            <xsd:element name="EndIP" type="xsd:string"/>
+           </xsd:all>
+           <xsd:element name="Traceroute" type="xsd:string"/>
+          <xsd:sequence>
+        </xsd:complexType>
+
+        <xsd:element name="createReservationResponseType">
+           <xsd:complexType>
+             <xsd:sequence>
+               <xsd:element name="Status" type="xsd:string"/>
+             </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+
+        <!-- view reservation -->
+        <xsd:complexType name="viewReservationRequestType">
+         <xsd:all>
+          <xsd:element name="UserName" type="xsd:string"/>
+          <xsd:element name="ReservationId" type="xsd:string"/>
+         </xsd:all>
+        </xsd:complexType>
+
+        <xsd:element name="viewReservationResponseType">
+           <xsd:complexType>
+             <xsd:sequence>
+               <xsd:element name="Status" type="xsd:string"/>
+             </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+
+      </xsd:schema>
+    </wsdl:types>
+
+
+    <wsdl:message name = "createReservationRequest">
+        <wsdl:part name = "createReq" element = "oscars:createReservationRequestType"/>
+    </wsdl:message>
+    <wsdl:message name = "createReservationResponse">
+        <wsdl:part name = "createRes" element = "oscars:createReservationResponseType"/>
+    </wsdl:message>
+
+    <wsdl:message name = "viewReservationRequest">
+        <wsdl:part name = "viewReq" element = "oscars:viewReservationRequestType"/>
+    </wsdl:message>
+    <wsdl:message name = "viewReservationResponse">
+        <wsdl:part name = "viewRes" element = "oscars:viewReservationResponseType"/>
+    </wsdl:message>
+
+    <!-- port types -->
+
+    <wsdl:portType name = "OscarsServicePortType" 
+
+        <wsdl:operation name = "create">
+            <wsdl:input message = "createReservationRequest" wsa:Action="http://oscars.es.net/createReservationRequest"/>
+            <wsdl:output message = "createReservationResponse" wsa:Action="http://oscars.es.net/createReservationResponse"/>
+        </wsdl:operation>
+
+        <wsdl:operation name = "view">
+            <wsdl:input message = "viewReservationRequest" wsa:Action="http://oscars.es.net/viewReservationRequest"/>
+            <wsdl:output message = "viewReservationResponse" wsa:Action="http://oscars.es.net/viewReservationResponse"/>
+        </wsdl:operation>
+
+    </wsdl:portType>
+
+    <wsdl:binding name="OscarsBinding" type="tns:OscarsServicePortType">
+        <soap:binding style = "document" transport = "http://schemas.xmlsoap.org/soap/http"/>
+
+        <wsdl:operation name = "create">
+            <soap:operation soapAction="http://oscars.es.net/createReservation"/>
+            <wsdl:input>
+                <soap:body use = "literal" namespace = "oscars"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use = "literal" namespace = "oscars"/>
+            </wsdl:output>
+        </wsdl:operation>
+
+        <wsdl:operation name = "view">
+            <soap:operation soapAction="http://oscars.es.net/viewReservation"/>
+            <wsdl:input>
+                <soap:body use = "literal" namespace = "oscars"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use = "literal" namespace = "oscars"/>
+            </wsdl:output>
+        </wsdl:operation>
+
+    </wsdl:binding>
+
+    <wsdl:service name="OscarsService">
+        <wsdl:port binding="OscarsBinding" name="tns:OscarsServicePortType">
+            <soap:address location="http://localhost:8080/services/OscarsService"/>
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>
+
