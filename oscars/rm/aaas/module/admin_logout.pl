@@ -12,10 +12,10 @@ require 'database.pl';
 sub Handle_Admin_Logout(FormData)
 {
     # connect to the database
-    ( $Dbh, $Error_Status ) = &Database_Connect();
-    if ( $Error_Status != 1 )
+    ( $Error_Code, $Dbh ) = &Database_Connect();
+    if ( $Error_Code )
     {
-        return( $Error_Status );
+        return( 1, $Error_Code );
     }
 
     # TODO:  lock table
@@ -28,6 +28,7 @@ sub Handle_Admin_Logout(FormData)
     &Database_Disconnect( $Dbh );
 
     # TODO:  return status
+    return ( 1, 'not done yet' );
 }
 
 exit;

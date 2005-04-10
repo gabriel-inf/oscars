@@ -17,13 +17,13 @@ require 'database.pl';
 sub Get_User_Detail(FormData)
 {
 		### get the user detail from the database and populate the profile form
-		my( $Dbh, $Sth, $Error_Status, $Query );
+		my( $Dbh, $Sth, $Error_Code, $Query );
 
 		# connect to the database
-		( $Dbh, $Error_Status ) = &Database_Connect();
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Dbh ) = &Database_Connect();
+		if ( $Error_Code )
 		{
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		# names of the fields to be displayed on the screen
@@ -40,18 +40,18 @@ sub Get_User_Detail(FormData)
 		$Query =~ s/,\s$//;
 		$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-		if ( $Error_Status != 1 )
+		( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		# populate %User_Profile_Data with the data fetched from the database
@@ -75,17 +75,17 @@ sub Get_User_Detail(FormData)
 # Calls sub Print_Interface_Screen at the end (with a success token)
 sub Process_Profile_Update(FormData)
 {
-	my( $Dbh, $Sth, $Error_Status, $Query );
+	my( $Dbh, $Sth, $Error_Code, $Query );
 
 	# TODO:  lock necessary tables with LOCK_TABLE
 
 	# connect to the database
-	undef $Error_Status;
+	undef $Error_Code;
 	
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	###
@@ -94,18 +94,18 @@ sub Process_Profile_Update(FormData)
 	#
 	$Query = "SELECT $db_table_field_name{'users'}{'user_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	while ( my $Ref = $Sth->fetchrow_arrayref )
@@ -143,18 +143,18 @@ sub Process_Profile_Update(FormData)
 	$Query =~ s/,\s$//;
 	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# populate %User_Profile_Data with the data fetched from the database
@@ -171,7 +171,7 @@ sub Process_Profile_Update(FormData)
 		&Database_Disconnect( $Dbh );
 
                 # TODO:  unlock table(s)
-		return( 0, 'Please check the current password and try again.' );
+		return( 1, 'Please check the current password and try again.' );
 	}
 
 	### update information in the database
@@ -207,7 +207,7 @@ sub Process_Profile_Update(FormData)
 	{
 		&Database_Disconnect( $Dbh );
                 # TODO:  unlock table(s)
-		return( 0, 'There is no changed information to update.' );
+		return( 1, 'There is no changed information to update.' );
 	}
 
 	# prepare the query for database update
@@ -219,21 +219,21 @@ sub Process_Profile_Update(FormData)
 	$Query =~ s/,\s$//;
 	$Query .= " WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
 
                 # TODO:  unlock table(s)
-		$Error_Status =~ s/CantExecuteQuery\n//;
-		return( 0, 'An error has occurred while updating your account information.<br>[Error] ' . $Error_Status );
+		$Error_Code =~ s/CantExecuteQuery\n//;
+		return( 1, 'An error has occurred while updating your account information.<br>[Error] ' . $Error_Code );
 	}
 
 	&Query_Finish( $Sth );
@@ -244,7 +244,7 @@ sub Process_Profile_Update(FormData)
         # TODO:  unlock table(s)
 
 	### when everything has been processed successfully...
-	return( 1, 'Your account information has been updated successfully.' );
+	return( 0, 'Your account information has been updated successfully.' );
 
 }
 ##### End of sub Process_Profile_Update

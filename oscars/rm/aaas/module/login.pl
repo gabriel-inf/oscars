@@ -18,41 +18,41 @@ $non_activated_user_level = -1;
 sub Process_User_Login
 {
         my($loginname, $password) = @_;
-	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
+	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
 
 	# connect to the database
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( 0, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-        $Error_Status = &Database_Lock_Table($db_table_name{'users'});
-	if ( $Error_Status != 1 )
+        $Error_Code = &Database_Lock_Table($db_table_name{'users'});
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( 0, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# get the password from the database
 	$Query = "SELECT $db_table_field_name{'users'}{'user_password'}, $db_table_field_name{'users'}{'user_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
                 &Database_Unlock_Table($db_table_name{'users'});
 		&Database_Disconnect( $Dbh );
-		return( 0, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $loginname );
+	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $loginname );
 
 
-	if ( $Error_Status != 1 )
+	if ( $Error_Code )
 	{
                 &Database_Unlock_Table($db_table_name{'users'});
 		&Database_Disconnect( $Dbh );
-		return( 0, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# check whether this person is a registered user
@@ -64,7 +64,7 @@ sub Process_User_Login
 	        &Query_Finish( $Sth );
                 &Database_Unlock_Table($db_table_name{'users'});
 		&Database_Disconnect( $Dbh );
-		return( 0, 'Please check your login name and try again.' );
+		return( 1, 'Please check your login name and try again.' );
 	}
 	else
 	{
@@ -76,7 +76,7 @@ sub Process_User_Login
 				# this account is not authorized & activated yet
 				&Database_Disconnect( $Dbh );
                                 &Database_Unlock_Table($db_table_name{'users'});
-				return( 0, 'This account is not authorized or activated yet.' );
+				return( 1, 'This account is not authorized or activated yet.' );
 			}
 			elsif ( $$Ref[0] eq  $password )
 			{
@@ -92,11 +92,11 @@ sub Process_User_Login
 	if ( !$Password_Match_Token )
 	{
 		&Database_Disconnect( $Dbh );
-		return( 0, 'Please check your password and try again.' );
+		return( 1, 'Please check your password and try again.' );
 	}
 
 	### when everything has been processed successfully...
-	return( 1, 'The user has successfully logged in.' );
+	return( 0, 'The user has successfully logged in.' );
 
 }
 ##### End of sub Process_User_Login

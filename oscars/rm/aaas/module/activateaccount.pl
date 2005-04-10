@@ -16,30 +16,30 @@ require 'database.pl';
 sub Process_User_Account_Activation(FormData)
 {
 	### start working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
+	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
 
 	# connect to the database
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return ($Error_Status );
+		return (1, $Error_Code );
 	}
 
 	# get the password from the database
 	$Query = "SELECT $db_table_field_name{'users'}{'user_password'}, $db_table_field_name{'users'}{'user_activation_key'}, $db_table_field_name{'users'}{'user_pending_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return ( $Error_Status );
+		return ( 1, $Error_Code );
 	}
 
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return ( $Error_Status );
+		return ( 1, $Error_Code );
 	}
 
 	# check whether this person is a registered user
@@ -50,7 +50,7 @@ sub Process_User_Account_Activation(FormData)
 	{
 		# this login name is not in the database
 		&Database_Disconnect( $Dbh );
-		return ( 0, 'Please check your login name and try again.' );
+		return ( 1, 'Please check your login name and try again.' );
 	}
 	else
 	{
@@ -86,18 +86,18 @@ sub Process_User_Account_Activation(FormData)
 		# change the level to the pending level value and the pending level to 0; empty the activation key field
 		$Query = "UPDATE $db_table_name{'users'} SET $db_table_field_name{'users'}{'user_level'} = ?, $db_table_field_name{'users'}{'user_pending_level'} = ?, $db_table_field_name{'users'}{'user_activation_key'} = '' WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $Pending_Level, '0', $FormData{'loginname'} );
-		if ( $Error_Status != 1 )
+		( $Error_Code, undef ) = &Query_Execute( $Sth, $Pending_Level, '0', $FormData{'loginname'} );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		&Query_Finish( $Sth );
@@ -110,12 +110,12 @@ sub Process_User_Account_Activation(FormData)
 	else
 	{
 		&Database_Disconnect( $Dbh );
-		return( 0, $Non_Match_Error_Message );
+		return( 1, $Non_Match_Error_Message );
 	}
 
 	### when everything has been processed successfully...
 	# $Processing_Result_Message string may be anything, as long as it's not empty
-	return( 1, 'The user account <strong>' . $FormData{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
+	return( 0, 'The user account <strong>' . $FormData{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
 
 }
 ##### End of sub Process_User_Account_Activation

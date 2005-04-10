@@ -17,12 +17,12 @@ require 'database.pl';
 sub Check_Loginname_Overlap(FormData)
 {
 	### start working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
+	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
 
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# check whether a particular user id already exists in the database
@@ -34,18 +34,18 @@ sub Check_Loginname_Overlap(FormData)
 	# Query: select user_loginname from users where user_loginname='some_id_to_check';
 	$Query = "SELECT $Field_Name_to_Check FROM $Table_Name_to_Check WHERE $Field_Name_to_Check = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'id'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'id'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	my $Check_Result;
@@ -66,7 +66,7 @@ sub Check_Loginname_Overlap(FormData)
 	# disconnect from the database
 	&Database_Disconnect( $Dbh );
 
-	return $Check_Result;
+	return (0, $Check_Result);
 
 }
 ##### End of sub Check_Loginname_Overlap
@@ -79,35 +79,35 @@ sub Check_Loginname_Overlap(FormData)
 sub Process_User_Registration(FormData)
 {
 	### start working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
+	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
 
 	# TODO:  lock  database operations
 
 	# connect to the database
-	undef $Error_Status;
+	undef $Error_Code;
 	
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# id overlap check
 	# we're not using the pre-existing sub routine here to perform the task within a single, locked database connection
 	$Query = "SELECT $db_table_field_name{'users'}{'user_loginname'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	&Query_Finish( $Sth );
@@ -118,7 +118,7 @@ sub Process_User_Registration(FormData)
 
                 # TODO:  release lock
 
-		return( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
+		return( 1, 'The selected login name is already taken by someone else; please choose a different login name.' );
 	}
 
 	#
@@ -130,21 +130,21 @@ sub Process_User_Registration(FormData)
 
 	$Query = "INSERT INTO $db_table_name{'users'} VALUES ( " . join( ', ', ('?') x @Stuffs_to_Insert ) . " )";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
-	if ( $Error_Status != 1 )
+	( undef, $Error_Code ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
 
                 # TODO:  release lock
-		$Error_Status =~ s/CantExecuteQuery\n//;
-		return( 0, 'An error has occurred while recording the account registration on the database.<br>[Error] ' . $Error_Status );
+		$Error_Code =~ s/CantExecuteQuery\n//;
+		return( 1, 'An error has occurred while recording the account registration on the database.<br>[Error] ' . $Error_Code );
 	}
 
 	&Query_Finish( $Sth );
@@ -153,7 +153,7 @@ sub Process_User_Registration(FormData)
 	&Database_Disconnect( $Dbh );
 
 	# TODO:  unlock the operation
-	return( 1, 'The new user account \'' . $FormData{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
+	return( 0, 'The new user account \'' . $FormData{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
 
 }
 ##### End of sub Process_User_Registration

@@ -17,13 +17,13 @@ require 'database.pl';
 sub Get_User_Profile
 {
 		### get the user detail from the database and populate the profile form
-		my( $Dbh, $Sth, $Error_Status, $Query );
+		my( $Dbh, $Sth, $Error_Code, $Query );
 
 		# connect to the database
-		( $Dbh, $Error_Status ) = &Database_Connect();
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Dbh ) = &Database_Connect();
+		if ( $Error_Code )
 		{
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		# names of the fields to be displayed on the screen
@@ -40,18 +40,18 @@ sub Get_User_Profile
 		$Query =~ s/,\s$//;
 		$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-		if ( $Error_Status != 1 )
+		( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		# populate %User_Profile_Data with the data fetched from the database
@@ -81,17 +81,17 @@ sub Get_User_Profile
 sub Process_Profile_Update
 {
 	### begin working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query );
+	my( $Dbh, $Sth, $Error_Code, $Query );
 
 	# TODO:  lock with LOCK_TABLE
 
 	# connect to the database
-	undef $Error_Status;
+	undef $Error_Code;
 	
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# read the current user information from the database to decide which fields are being updated
@@ -109,18 +109,18 @@ sub Process_Profile_Update
 	$Query =~ s/,\s$//;
 	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# populate %User_Profile_Data with the data fetched from the database
@@ -186,21 +186,21 @@ sub Process_Profile_Update
 	$Query =~ s/,\s$//;
 	$Query .= " WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
 
                 # TODO:  release lock
-		$Error_Status =~ s/CantExecuteQuery\n//;
-		return( 0, 'An error has occurred while updating the account information.<br>[Error] ' . $Error_Status );
+		$Error_Code =~ s/CantExecuteQuery\n//;
+		return( 1, 'An error has occurred while updating the account information.<br>[Error] ' . $Error_Code );
 	}
 
 	&Query_Finish( $Sth );
@@ -211,7 +211,7 @@ sub Process_Profile_Update
 	# TODO:  unlock table
 
 	### when everything has been processed successfully...
-	return( 1, 'The account information has been updated successfully.' );
+	return( 0, 'The account information has been updated successfully.' );
 
 }
 ##### End of sub Process_Profile_Update

@@ -14,30 +14,30 @@ require 'database.pl';
 sub Verify_Admin_Acct(FormData)
 {
 		### Check whether admin account is set up in the database
-		my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
+		my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
 
 		# connect to the database
-		( $Dbh, $Error_Status ) = &Database_Connect();
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Dbh ) = &Database_Connect();
+		if ( $Error_Code )
 		{
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		# whether admin account exists (determine it with the level info, not the login name)
 		$Query = "SELECT $db_table_field_name{'users'}{'user_loginname'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_level'} = ?";
 
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
-		( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $admin_user_level );
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $admin_user_level );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		&Query_Finish( $Sth );
@@ -67,40 +67,40 @@ sub Verify_Admin_Acct(FormData)
 sub Process_Admin_Registration(FormData)
 {
 	### start working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query );
+	my( $Dbh, $Sth, $Error_Code, $Query );
 
 	# TODO:  lock table
 
 	# connect to the database
-	undef $Error_Status;
+	undef $Error_Code;
 	
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# insert into database query statement
 	$Query = "INSERT INTO $db_table_name{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# admin user level is set to 10 by default
 	my @Stuffs_to_Insert = ( '', $admin_loginname_string, $Encrypted_Password, $FormData{'firstname'}, $FormData{'lastname'}, $FormData{'organization'}, $FormData{'email_primary'}, $FormData{'email_secondary'}, $FormData{'phone_primary'}, $FormData{'phone_secondary'}, $FormData{'description'}, 10, $Current_DateTime, '', 0 );
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
 
                 # TODO:  release db lock
-		$Error_Status =~ s/CantExecuteQuery\n//;
-		return( 0, 'An error occurred recording the admin account information on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $Error_Status );
+		$Error_Code =~ s/CantExecuteQuery\n//;
+		return( 1, 'An error occurred recording the admin account information on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $Error_Code );
 	}
 
 	&Query_Finish( $Sth );
@@ -111,7 +111,7 @@ sub Process_Admin_Registration(FormData)
 	# TODO:  unlock the operation
 
 	### when everything has been processed successfully...
-	return( 1, 'Admin account registration has been completed successfully.<br>Please <a href="gateway.pl">click here</a> to proceed to the Admin Tool login page.' );
+	return( 0, 'Admin account registration has been completed successfully.<br>Please <a href="gateway.pl">click here</a> to proceed to the Admin Tool login page.' );
 
 }
 ##### End of sub Process_Admin_Registration
@@ -123,30 +123,30 @@ sub Process_Admin_Registration(FormData)
 sub Process_Admin_Login(FormData)
 {
 	### start working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query, $Num_of_Affected_Rows );
+	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
 
 	# connect to the database
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# get the password from the database
 	$Query = "SELECT $db_table_field_name{'users'}{'user_password'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ? and $db_table_field_name{'users'}{'user_level'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( $Num_of_Affected_Rows, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'}, $admin_user_level );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'}, $admin_user_level );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# check whether this person has a valid admin privilege
@@ -155,7 +155,7 @@ sub Process_Admin_Login(FormData)
 	if ( $Num_of_Affected_Rows == 0 )
 	{
 		# this login name is not in the database or does not belong to the admin level
-		return( 0, 'Please check your login name and try again.' );
+		return( 1, 'Please check your login name and try again.' );
 	}
 	else
 	{
@@ -174,7 +174,7 @@ sub Process_Admin_Login(FormData)
 
 	### when everything has been processed successfully...
 	# $Processing_Result_Message string may be anything, as long as it's not empty
-	return( 1, 'The admin user has successfully logged in.' );
+	return( 0, 'The admin user has successfully logged in.' );
 
 }
 ##### End of sub Process_Admin_Login

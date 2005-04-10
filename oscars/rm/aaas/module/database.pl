@@ -71,11 +71,11 @@ sub Database_Connect
 
 	if ( defined( $dbh ) )
 	{
-		return $dbh, 1;
+		return (0, $dbh);
 	}
 	else
 	{
-		return '', "CantConnectDB\n";
+		return (1, "CantConnectDB\n");
 	}
 
 }
@@ -105,10 +105,10 @@ sub Query_Prepare
 
 	my( $dbh, $Statement ) = @_;
 
-	my $sth = $dbh->prepare( "$Statement" ) || return '', "CantPrepareStatement\n" . $dbh->errstr;
+	my $sth = $dbh->prepare( "$Statement" ) || return (1, "CantPrepareStatement\n" . $dbh->errstr);
 	
-	# if nothing fails, return the statement handle and 1 (success) for error status
-	return $sth, 1;
+	# if nothing fails, return 0 (success) and the statement handle
+	return (0, $sth);
 
 }
 ##### End of sub Query_Prepare
@@ -124,10 +124,10 @@ sub Query_Execute
 	my( $sth, @Query_Args ) = @_;
 
 	# execute the prepared query (run subroutine 'Query_Prepare' before calling this subrutine)
-	my $num_of_affected_rows = $sth->execute( @Query_Args ) || return '', "CantExecuteQuery\n" . $sth->errstr;
+	my $num_of_affected_rows = $sth->execute( @Query_Args ) || return (0, "CantExecuteQuery\n" . $sth->errstr);
 	
-	# if nothing fails, return the $num_of_affected_rows and 1 (success) for error status
-	return $num_of_affected_rows, 1;
+	# if nothing fails, return 0 (success) and the $num_of_affected_rows
+	return (0, $num_of_affected_rows);
 
 }
 ##### End of sub Query_Execute
@@ -151,7 +151,7 @@ sub Query_Finish
 # Out: None
 sub Database_Lock_Table
 {
-    return 1;
+    return 0;
 }
 ##### sub End of Database_Lock_Table
 
@@ -160,7 +160,7 @@ sub Database_Lock_Table
 # Out: None
 sub Database_Unlock_Table
 {
-    return 1;
+    return 0;
 }
 ##### sub End of Database_Unlock_Table
 

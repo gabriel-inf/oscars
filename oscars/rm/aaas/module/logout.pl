@@ -13,13 +13,13 @@ require 'database.pl';
 
 sub Handle_Logout()
 {
-my( $Dbh, $Sth, $Error_Status, $Query );
+my( $Dbh, $Sth, $Error_Code, $Query );
 
 # connect to the database
-( $Dbh, $Error_Status ) = &Database_Connect();
-if ( $Error_Status != 1 )
+( $Error_Code, $Dbh ) = &Database_Connect();
+if ( $Error_Code )
 {
-	return( $Error_Status );
+	return( 1, $Error_Code );
 }
 
 # TODO:  lock table
