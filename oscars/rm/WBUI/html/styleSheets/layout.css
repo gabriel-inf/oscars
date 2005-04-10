@@ -1,0 +1,315 @@
+/*
+CSS for main CGI interface
+Last modified: March 31, 2005
+Soo-yeon Hwang (dapi@umich.edu)
+David Robertson (dwrobertson@lbl.gov)
+*/
+
+body, html {
+	font-family: "Lucida Grande", Verdana, Arial, Helvetica, Geneva, sans-serif;
+	background: #fff;
+	color: #000;
+	font-size: .9em;
+	margin: 0;
+	padding: 0;
+}
+
+a:link {
+	color: #008394;
+}
+
+a:visited {
+	color: #00626E;
+}
+
+a:hover {
+	color: #942A00;
+}
+
+/*
+p.notice {
+	font-weight: bold;
+	background: #fdd;
+	border: 2px solid #f99;
+	padding: .2em .6em;
+}
+*/
+
+p.notice {
+	font-weight: bold;
+	color: #f00;
+}
+
+p.copyright {
+	border-top: 1px solid #999;
+	text-align: center;
+	font-size: .7em;
+	padding: .9em;
+	margin-bottom: 1.6em;
+}
+
+form {
+	display: inline;
+}
+
+/* top page title with logo */
+#pagetitle {
+	color: #000;
+	background: #fff;
+	width: 100%;
+	/* margin: 0 0 1.4em 0; */
+	font-size: .9em;
+}
+
+#pagetitle img {
+	display: block;
+	margin: .1em 0 .4em .2em;
+}
+
+#pagetitle h1 {
+	font-size: 2.1em;
+	font-weight: bold;
+	line-height: 80%;
+}
+
+
+p.topmessage {
+	font-size: 10px;
+	font-weight: bold;
+	color: #0000bb;
+        background: #f2f2f2;
+        padding: .6em .6em;
+        margin: 8px 0 14x 0;
+	border-bottom: 1px solid #ccc;
+}
+
+/* css tab navigation */
+#tabnav {
+	height: 20px;
+	margin: 0;
+	padding-left: 10px;
+	background: url("https://oscars.es.net/images/tab_bottom.gif") repeat-x bottom;
+}
+
+#tabnav li {
+	margin: 0; 
+	padding: 0;
+	display: inline;
+	list-style-type: none;
+}
+	
+#tabnav a:link, #tabnav a:visited {
+	float: left;
+	background: #f3f3f3;
+	font-size: 10px;
+	line-height: 14px;
+	font-weight: bold;
+	padding: 2px 10px 2px 10px;
+	margin-right: 4px;
+	border: 1px solid #ccc;
+	text-decoration: none;
+	color: #666;
+}
+
+#tabnav a:link.active, #tabnav a:visited.active {
+	border-bottom: 1px solid #fff;
+	background: #fff;
+	color: #000;
+}
+
+#tabnav a:hover {
+	background: #fff;
+}
+
+/* reservation form */
+#reservation_ui {
+	padding: 1em;
+}
+
+#reservation_ui table {
+	font-size: .9em;
+	border: 1px solid #ccc;
+	background: #f6f6f6;
+}
+
+#reservation_ui th {
+	font-weight: bold;
+}
+
+#reservation_ui th, #reservation_ui td {
+	padding: .4em;
+}
+
+#reservation_ui tr.alignright {
+	text-align: right;
+}
+
+/* reservation detailed information page */
+#resvdetail_ui {
+	padding: 1em;
+	text-align: center;
+}
+
+#resvdetail_ui table {
+	font-size: .8em;
+	border: 1px solid #ccc;
+	margin-left: auto;	/* necessary for centering table */
+	margin-right: auto;	/* necessary for centering table */
+	margin-bottom: 1em;
+	width: 400px;
+}
+
+#resvdetail_ui th {
+	font-weight: bold;
+	background: #f6f6f6;
+	text-align: left;
+}
+
+#resvdetail_ui td, #resvdetail_ui th {
+	border-left: 1px solid #ccc;
+	padding: .3em .8em;
+}
+
+#resvdetail_ui thead tr td {
+	font-weight: bold;
+	background: #f6f6f6;
+	border-bottom: 1px solid #ccc;
+}
+
+#resvdetail_ui .noleftborder {
+	border-left: none;
+}
+
+/* login form */
+#login_ui {
+	padding: 1em;
+	text-align: center;
+}
+
+#status {
+        text-align: center;
+}
+
+#login_ui table {
+	font-size: .9em;
+	border: 1px solid #ccc;
+	background: #f6f6f6;
+	margin-left: auto;
+	margin-right: auto;
+	width: 21em;
+}
+
+#login_ui th, #login_ui td {
+	padding: .4em;
+}
+
+#login_ui th {
+	text-align: right;
+}
+
+#login_ui input {
+	width: 10em;
+}
+
+/* new account registration/account information view & edit form */
+#account_ui {
+	padding: 1em;
+	text-align: center;
+}
+
+#account_ui table {
+	font-size: .9em;
+	border: 1px solid #ccc;
+	background: #f6f6f6;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 1.4em;
+	width: 40em;
+}
+
+#account_ui th, #account_ui td {
+	padding: .3em;
+}
+
+#account_ui th {
+	text-align: right;
+	width: 11em;
+}
+
+#account_ui .requiredmark {
+	color: #f00;
+}
+
+#account_ui .emphasis_bg1 {
+	border: 1px solid #093;
+	background: #efe;
+}
+
+#account_ui .emphasis_bg2 {
+	border: 1px solid #f69;
+	background: #fde;
+}
+
+/* new account activation form */
+#activateaccount_ui {
+	padding: 1em;
+	text-align: center;
+}
+
+#activateaccount_ui table {
+	font-size: .9em;
+	border: 1px solid #ccc;
+	background: #f6f6f6;
+	margin-left: auto;
+	margin-right: auto;
+	width: 26em;
+}
+
+#activateaccount_ui th, #activateaccount_ui td {
+	padding: .2em;
+}
+
+#activateaccount_ui th {
+	text-align: right;
+}
+
+/* zebra table for user/reservation lists */
+#zebratable_ui {
+	padding: 1em;
+	text-align: center;
+}
+
+#zebratable_ui table {
+	border: 1px solid #666666;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#zebratable_ui thead tr td {
+	background: #f6f6f6;
+	border-bottom: 1px solid #666666;
+	font-weight: bold;
+}
+
+#zebratable_ui tr td {
+	font-size: .7em;
+	padding: .3em .8em;
+	border-left: 1px solid #ccc;
+}
+
+/* td.nosideborder is not used now; setting a class on <tr> or <td> makes the cell background color disappear */
+#zebratable_ui td.nosideborder {
+	border-left: none;
+}
+
+#zebratable_ui tbody tr.attention td {
+	background-color: #3d80df;
+	color: #fff;
+	border-left: 1px solid #346dbe;
+	border-bottom: 1px solid #7daaea;
+}
+
+#zebratable_ui tbody tr.attention td a {
+	color: #fff;
+}
+

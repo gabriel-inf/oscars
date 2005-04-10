@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+	<script language="javascript" type="text/javascript" src="../main_common.js"></script>
+	<style type="text/css" media="screen">
+		@import url( '../styleSheets/layout.css' );
+	</style>
+        <script language="javascript">print_html_header('admin');</script>
+</head>
+
+<body>
+
+<script language="javascript">print_header('admin');</script>
+
+<div>
+	<p class="topmessage"><script language="javascript">print_current_date();</script> | Admin Tool</p>
+</div>
+
+<div id="login_ui">
+
+<p><em>Please Sign In</em></p>
+<p class="notice"><!-- ((_Processing_Result_Message_)) --></p>
+
+<form method="post" action="https://oscars.es.net/cgi-bin/admin/gateway.pl">
+<input type="hidden" name="mode" value="adminlogin">
+
+<table>
+<tr>
+	<th>Login Name:</th>
+	<td><input type="text" name="loginname"></td>
+</tr>
+<tr>
+	<th>Password:</th>
+	<td><input type="password" name="password"></td>
+</tr>
+<tr>
+	<th>&nbsp;</th>
+	<td><input type="submit" value="Login"></td>
+</tr>
+</table>
+
+</form>
+
+<p>For inquiries, please contact the project administrator.</p>
+
+</div>
+
+<script language="javascript">print_footer();</script>
+</body>
+</html>

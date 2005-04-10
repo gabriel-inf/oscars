@@ -1,0 +1,126 @@
+David Robertson
+April 1, 2005
+
+[[ OSCARS/BRUW File List ]]
+
+- main service root: ./wbui/html/index.phtml
+
+--------------------
+[client directories]
+./
+./wbui/html/
+            images/
+            styleSheets/
+            admin/
+            user/
+
+[CGI scripts directories]
+./wbui/cgi/
+           admin/
+           user/
+           lib/
+
+[AAAS directories]
+
+./aaas/
+       configs/
+       dbscripts/
+       module/
+
+[BSS directories]
+./bss/
+       module/
+
+
+--------------------
+[Commonly Used]
+./wbui/html/main_common.js
+./wbui/styleSheets/layout.css
+./wbui/images/internet2_logo01.gif
+./wbui/images/ESnet_logo.png
+
+[Code Libraries]
+
+./wbui/cgi/
+           general.pl
+           authenticate.pl
+
+./aaas/module/
+              general.pl
+              database.pl
+
+--------------------
+[Register: ID Check]
+./wbui/cgi/user/idcheck.pl
+./wbui/cgi/user/idcheck.html
+./wbui/html/images/icon_biggrin.gif
+./wbui/html/images/icon_sad.gif
+./wbui/html/images/icon_exclaim.gif
+
+[Register: Main Module]
+./wbui/cgi/user/register.pl
+./wbui/html/user/register.html
+./wbui/html/user/register.js
+./aaas/module/register.pl    # database specific
+
+[Account Activation]
+./wbui/cgi/user/activateaccount.pl
+./wbui/html/user/activateaccount.html
+./aaas/module/activateaccount.pl
+
+--------------------
+[Main Service: Login]
+./wbui/cgi/user/login.pl
+./wbui/html/user/login.html
+
+[Main Service: Logout]
+./wbui/cgi/user/logout.pl
+
+[Main Service: Make a Reservation]
+./wbui/cgi/user/reservation.pl
+./wbui/html/user/reservation.html
+./wbui/html/user/reservation.js
+
+[Main Service: View Reservations]
+./wbui/cgi/user/reservationlist.pl
+./wbui/html/user/reservationlist.html
+./wbui/html/user/reservationlist.js
+./wbui/html/user/resvdetail.html
+
+[Main Service: Edit User Profile]
+./wbui/cgi/user/myprofile.pl
+./wbui/html/user/myprofile.html
+./wbui/html/myprofile.js
+
+--------------------
+[Admin Tool: Admin Account Registration]
+./wbui/cgi/admin/gateway.pl
+./wbui/html/admin/register.html
+./wbui/html/admin/gateway.js
+
+[Admin Tool: Login]
+./wbui/cgi/admin/gateway.pl
+./wbui/html/admin/login.html
+
+[Admin Tool: Logout]
+./wbui/cgi/admin/logout.pl
+
+[Admin Tool: View/Edit User Accounts]
+./wbui/cgi/admin/userlist.pl
+./wbui/html/admin/userlist.html
+./wbui/html/admin/userdetail.html
+./wbui/html/admin/userlist.js
+
+[Admin Tool: Edit Admin Profile]
+./wbui/cgi/admin/editprofile.pl
+./wbui/html/admin/editprofile.html
+./wbui/html/admin/editprofile.js
+
+[Admin Tool: Add a New User]
+./wbui/cgi/admin/adduser.pl
+./wbui/html/admin/adduser.html
+./wbui/html/admin/idcheck.html
+./wbui/html/admin/adduser.js
+./wbui/images/icon_biggrin.gif
+./wbui/images/icon_sad.gif
+./wbui/images/icon_exclaim.gif

@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+	<script language="javascript" type="text/javascript" src="../main_common.js"></script>
+	<style type="text/css" media="screen">
+		@import url( '../styleSheets/layout.css' );
+	</style>
+	<script language="javascript" type="text/javascript" src="reservationlist.js"></script>
+</head>
+
+<body onload="stripe('reservationlist', '#fff', '#edf3fe');">
+
+<script language="javascript">print_navigation_bar('reservationList');</script>
+
+<div id="zebratable_ui">
+
+<p><em>View Active Reservations</em><br>
+<p>Click the Reservation ID number link to view detailed information about the reservation.
+<!-- <br>If you would like to make changes to the reservation that you have already submitted, please use the [My Reservation] menu. -->
+<br>Your reservations will appear highlighted in the table below.
+</p>
+
+<table cellspacing="0" id="reservationlist">
+	<thead>
+		<tr>
+			<td>Reservation ID #</td>
+			<td>Login Name</td>
+			<td>Origin</td>
+			<td>Destination</td>
+			<td>Bandwidth</td>
+			<td>Start Time</td>
+			<td>End Time</td>
+		</tr>
+	</thead>
+	<tbody>
+	<!-- ((_Reservation_List_Table_)) -->
+	</tbody>
+</table>
+
+<p>For inquiries, please contact the project administrator.</p>
+
+</div>
+
+<script language="javascript">print_footer();</script>
+</body>
+</html>

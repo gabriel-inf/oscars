@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+	<title> Internet2 BRUW Project: Bandwidth Reservation for User Work </title>
+	<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1">
+	<meta name="Author" content="Soo-yeon Hwang">
+	<meta name="Keywords" content="">
+	<meta name="Description" content="">
+
+	<style type="text/css" media="screen">
+		@import url( './includes/layout.css' );
+	</style>
+
+	<script language="javascript" type="text/javascript" src="./includes/main_common.js"></script>
+	<script language="javascript" type="text/javascript" src="./includes/form_serv_reservationlist.js"></script>
+</head>
+
+<body onload="stripe('reservationlist', '#fff', '#edf3fe');">
+
+<div id="top">
+<table id="pagetitle">
+<tr>
+	<td width="140"><a href="http://www.internet2.edu/" target="_blank"><img src="includes/internet2_logo01.gif" width="108" height="86" border="0" alt="Internet2 Logo" title="Internet2"></a></td>
+	<td>
+		<h1>Bandwidth Reservation for User Work</h1>
+		<p>Provided by Internet2 BRUW Project</p>
+	</td>
+</tr>
+</table>
+
+<p class="topmessage"><script language="javascript">print_current_date();</script> | You are logged in as <!-- ((_Current_LoggedIn_Name_)) -->.</p>
+
+<ul id="tabnav">
+	<li><a href="scripts/reservation.pl" title="Create a new reservation">Make a Reservation</a></li>
+	<li><a href="#" class="active" title="View list of active reservations">View Reservations</a></li>
+	<li><a href="scripts/myprofile.pl" title="View and/or edit your personal information">My Profile</a></li>
+	<li><a href="scripts/logout.pl" title="Logout from the service">Logout</a></li>
+</ul>
+</div>
+
+<div id="zebratable_ui">
+
+<p><em>View Active Reservations</em><br>
+<p>Click the Reservation ID number link to view detailed information about the reservation.
+<!-- <br>If you would like to make changes to the reservation that you have already submitted, please use the [My Reservation] menu. -->
+<br>Your reservations will appear highlighted in the table below.
+</p>
+
+<table cellspacing="0" id="reservationlist">
+	<thead>
+		<tr>
+			<td>Reservation ID #</td>
+			<td>Login Name</td>
+			<td>Origin</td>
+			<td>Destination</td>
+			<td>Bandwidth</td>
+			<td>Start Time</td>
+			<td>End Time</td>
+		</tr>
+	</thead>
+	<tbody>
+	<!-- ((_Reservation_List_Table_)) -->
+	</tbody>
+</table>
+
+<p>For inquiries, please contact the project administrator.</p>
+
+</div>
+
+<p class="copyright">(c) 2004 Internet2 BRUW Project</p>
+
+</body>
+</html>
