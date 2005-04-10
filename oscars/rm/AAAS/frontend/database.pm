@@ -1,9 +1,7 @@
-#
+package AAAS::Frontend::Database;
 
-# database.pl
-#
-# library for database operation
-# Last modified: April 7, 2005
+# database.pm:  package for database operation
+# Last modified: April 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -163,6 +161,5 @@ sub Database_Unlock_Table
 ##### sub End of Database_Unlock_Table
 
 
-##### End of Library File
 # Don't touch the line below
 1;

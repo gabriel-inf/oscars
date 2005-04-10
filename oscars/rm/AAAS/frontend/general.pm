@@ -1,9 +1,7 @@
-#
+package AAAS::Frontend::General;
 
-# general.pl
-#
-# library for general AAAS db usage
-# Last modified: April 7, 2005
+# general.pm:  package for general AAAS db usage
+# Last modified: April 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -231,6 +229,5 @@ sub Format_Offset_from_Seconds
 ##### End of sub Format_Offset_from_Seconds
 
 
-##### End of Library File
 # Don't touch the line below
 1;

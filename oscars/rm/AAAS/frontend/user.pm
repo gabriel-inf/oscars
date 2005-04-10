@@ -1,11 +1,14 @@
-#!/usr/bin/perl
+package AAAS::Frontend::User;
 
-# user.pm:  Database interactions having to do with user forms.
+# User.pm:  Database interactions having to do with user forms.
 # Last modified: April 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# login.pl:  login interaction with DB
+use AAAS::Frontend::General;
+use AAAS::Frontend::Database;
+
+# login:  login interaction with DB
 
 # TODO:  FIX
 $non_activated_user_level = -1;
@@ -365,14 +368,8 @@ sub Process_Profile_Update(FormData)
 }
 ##### End of sub Process_Profile_Update
 
-##### End of sub routines #####
 
-##### End of script #####
 # activateaccount:  Account Activation DB methods
-
-# include libraries
-require 'general.pl';
-require 'database.pl';
 
 ##### sub Process_User_Account_Activation
 # In: FormData
@@ -579,7 +576,4 @@ sub Process_User_Registration(FormData)
 }
 ##### End of sub Process_User_Registration
 
-
-##### End of sub routines #####
-
-##### End of script #####
+1;
