@@ -51,11 +51,11 @@ sub Process_Reservation
 		{
 			if ( $TempNodeLookupResult[0] eq 'command_fail' )
 			{
-				return( 0, '[ERROR] An error has occurred while traversing the network path. Please try again later.' );
+				return( 1, '[ERROR] An error has occurred while traversing the network path. Please try again later.' );
 			}
 			elsif ( $TempNodeLookupResult[0] eq 'non_abilene' )
 			{
-				return( 0, '[ERROR] This origin-destination path does not go through the Abilene network. Please check the origin and destination IP addresses and try again.' );
+				return( 1, '[ERROR] This origin-destination path does not go through the Abilene network. Please check the origin and destination IP addresses and try again.' );
 			}
 		}
 		else
@@ -74,19 +74,19 @@ sub Process_Reservation
 	# because network route can change at any moment, and strict path control is not a very good thing to do
 
 	### start working with the database
-	my( $Dbh, $Sth, $Error_Status, $Query );
+	my( $Dbh, $Sth, $Error_Code, $Query );
 
 	my $Abilene_Conflict_Status = 0; # 0: no conflict, 1: existing conflict
 
 	# TODO:  lock table(s) with LOCK_TABLE
 
 	# connect to the database
-	undef $Error_Status;
+	undef $Error_Code;
 	
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $script_filename, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	###
@@ -96,18 +96,18 @@ sub Process_Reservation
 
 	$Query = "SELECT $db_table_field_name{'users'}{'user_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	while ( my $Ref = $Sth->fetchrow_arrayref )
@@ -121,7 +121,7 @@ sub Process_Reservation
 
                                 # TODO:  unlock table(s)
 
-				return( 0, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege, and therefore you cannot make a new reservation request.' );
+				return( 1, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege, and therefore you cannot make a new reservation request.' );
 			}
 		}
 	}
@@ -143,11 +143,11 @@ sub Process_Reservation
 	
 	$Query = "SELECT SUM($db_table_field_name{'reservations'}{'reserv_bandwidth'}) FROM $db_table_name{'reservations'} WHERE ( $db_table_field_name{'reservations'}{'reserv_start_time'} <= ? AND $db_table_field_name{'reservations'}{'reserv_end_time'} > ? ) OR ( $db_table_field_name{'reservations'}{'reserv_start_time'} > ? AND $db_table_field_name{'reservations'}{'reserv_start_time'} < ? )";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $script_filename, $Error_Status );
+		return( 1, $Error_Code );
 	}
 
 	# to show the information on the error screen if conflic occurs...
@@ -169,11 +169,11 @@ sub Process_Reservation
 
 		# execute query with the comparison start & end datetime strings
 		# the order is: [Req.StartTime], [Req.StartTime], [Req.StartTime], [Req.EndTime]
-		( undef, $Error_Status ) = &Query_Execute( $Sth, $Comp_Start_DateTime, $Comp_Start_DateTime, $Comp_Start_DateTime, $Comp_End_DateTime );
-		if ( $Error_Status != 1 )
+		( $Error_Code, undef ) = &Query_Execute( $Sth, $Comp_Start_DateTime, $Comp_Start_DateTime, $Comp_Start_DateTime, $Comp_End_DateTime );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $script_filename, $Error_Status );
+			return( 1, $Error_Code );
 		}
 
 		my $DB_Bandwidth_Sum;
@@ -209,7 +209,7 @@ sub Process_Reservation
 
                 # TODO:  unlock table(s)
 
-		return( 0, '[ERROR] The available bandwidth limit on the Abilene network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
+		return( 1, '[ERROR] The available bandwidth limit on the Abilene network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
 	}
 	else
 	{
@@ -231,22 +231,22 @@ sub Process_Reservation
 		# insert into database query statement
 		$Query = "INSERT INTO $db_table_name{'reservations'} VALUES ( " . join( ', ', ('?') x @Stuffs_to_Insert ) . " )";
 
-		( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Status != 1 )
+		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
-			return( $script_filename, $Error_Status );
+			return( 1, $Error_Code );
 		}
 
-		( undef, $Error_Status ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
-		if ( $Error_Status != 1 )
+		( $Error_Code, undef ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
+		if ( $Error_Code )
 		{
 			&Database_Disconnect( $Dbh );
 
                         # TODO:  unlock tables
 
-			$Error_Status =~ s/CantExecuteQuery\n//;
-			return( 0, '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $Error_Status );
+			$Error_Code =~ s/CantExecuteQuery\n//;
+			return( 1, '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $Error_Code );
 		}
 		
 		$New_Reservation_ID = $Dbh->{'mysql_insertid'};
@@ -261,7 +261,7 @@ sub Process_Reservation
 
 	### when everything has been processed successfully...
 	# don't forget to show the user's new reservation ID
-	return( 1, 'Your reservation has been processed successfully. Your reservation ID number is ' . $New_Reservation_ID . '.' );
+	return( 0, 'Your reservation has been processed successfully. Your reservation ID number is ' . $New_Reservation_ID . '.' );
 
 }
 ##### End of sub Process_Reservation

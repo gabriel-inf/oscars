@@ -17,13 +17,13 @@ require 'database.pl';
 sub Get_Reservations_list(FormData)
 {
 	### get the reservation list from the database and populate the table tag
-	my( $Dbh, $Sth, $Error_Status, $Query );
+	my( $Dbh, $Sth, $Error_Code, $Query );
 
 	# connect to the database
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return(1, $Error_Code );
 	}
 
 	# DB Query: get the reservation list
@@ -40,18 +40,18 @@ sub Get_Reservations_list(FormData)
 	# sort by reservation ID in descending order
 	$Query .= " FROM $db_table_name{'reservations'} ORDER BY $db_table_field_name{'reservations'}{'reservation_id'} DESC";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return(1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return(1, $Error_Code );
 	}
 
 	# populate %Reservations_Data with the data fetched from the database
@@ -109,7 +109,7 @@ sub Get_Reservations_list(FormData)
 	# disconnect from the database
 	&Database_Disconnect( $Dbh );
 
-        ## TODO:  return success data
+        return (0, 'success');
 	exit;
 
 }
@@ -122,13 +122,13 @@ sub Get_Reservations_list(FormData)
 sub Print_Reservation_Detail(FormData)
 {
 	### get the reservation detail from the database
-	my( $Dbh, $Sth, $Error_Status, $Query );
+	my( $Dbh, $Sth, $Error_Code, $Query );
 
 	# connect to the database
-	( $Dbh, $Error_Status ) = &Database_Connect();
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Dbh ) = &Database_Connect();
+	if ( $Error_Code )
 	{
-		return( $Error_Status );
+		return(1, $Error_Code );
 	}
 
 	# names of the fields to be displayed on the screen
@@ -144,18 +144,18 @@ sub Print_Reservation_Detail(FormData)
 	$Query =~ s/,\s$//;
 	$Query .= " FROM $db_table_name{'reservations'} WHERE $db_table_field_name{'reservations'}{'reservation_id'} = ?";
 
-	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Status != 1 )
+	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return(1, $Error_Code );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'resvid'} );
-	if ( $Error_Status != 1 )
+	( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'resvid'} );
+	if ( $Error_Code )
 	{
 		&Database_Disconnect( $Dbh );
-		return( $Error_Status );
+		return(1, $Error_Code );
 	}
 
 	# populate %Reservations_Data with the data fetched from the database
@@ -169,7 +169,7 @@ sub Print_Reservation_Detail(FormData)
 	# disconnect from the database
 	&Database_Disconnect( $Dbh );
 
-        # TODO:  return success data
+        return (0, 'success');
 }
 ##### End of sub Get_Reservation_Detail
 

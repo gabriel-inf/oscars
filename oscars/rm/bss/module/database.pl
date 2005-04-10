@@ -46,7 +46,6 @@ use DBI;
 
 ##### Settings End #####
 
-
 ##### List of sub routines #####
 # sub Database_Connect
 # sub Database_Disconnect
@@ -58,7 +57,7 @@ use DBI;
 
 ##### sub Database_Connect
 # In: None
-# Out: $DB_Handle [$dbh/'' (fail)], $Error_Status [1 (success)/"$Err_Code\n" (fail)]
+# Out: $Err_Code (0 on success), $DB_Handle
 sub Database_Connect
 {
 
@@ -69,11 +68,11 @@ sub Database_Connect
 
 	if ( defined( $dbh ) )
 	{
-		return $dbh, 1;
+		return (0, $dbh);
 	}
 	else
 	{
-		return '', "CantConnectDB\n";
+		return (1, "CantConnectDB\n");
 	}
 
 }
@@ -96,17 +95,16 @@ sub Database_Disconnect
 
 ##### sub Query_Prepare
 # In: $DB_Handle ($dbh), $Statement
-# Out: $Statement_Handle [$sth/'' (fail)], $Error_Status [1 (success)/"$Err_Code\n$Errno" (fail)]
-# (1: success, $Err_Code: reason of failure, $Errno: $dbh->errstr)
+# Out: $Err_Code, $Statement_Handle
 sub Query_Prepare
 {
 
 	my( $dbh, $Statement ) = @_;
 
-	my $sth = $dbh->prepare( "$Statement" ) || return '', "CantPrepareStatement\n" . $dbh->errstr;
+	my $sth = $dbh->prepare( "$Statement" ) || return (1, "CantPrepareStatement\n" . $dbh->errstr);
 	
-	# if nothing fails, return the statement handle and 1 (success) for error status
-	return $sth, 1;
+	# if nothing fails, return 0 (success) and the statement handle
+	return (0, $sth);
 
 }
 ##### End of sub Query_Prepare
@@ -114,18 +112,17 @@ sub Query_Prepare
 
 ##### sub Query_Execute
 # In: $Statement_Handle ($sth), @Query_Arguments (for placeholders(?s) in the prepared query statement)
-# Out: $Number_of_Rows_Affected [$num_of_affected_rows /'' (fail)], $Error_Status [1 (success)/"$Err_Code\n$Errno" (fail)]
-# (1: success, $Err_Code: reason of failure, $Errno: $sth->errstr)
+# Out: $Err_Code, $Number_of_Rows_Affected
 sub Query_Execute
 {
 
 	my( $sth, @Query_Args ) = @_;
 
 	# execute the prepared query (run subroutine 'Query_Prepare' before calling this subrutine)
-	my $num_of_affected_rows = $sth->execute( @Query_Args ) || return '', "CantExecuteQuery\n" . $sth->errstr;
+	my $num_of_affected_rows = $sth->execute( @Query_Args ) || return (1, "CantExecuteQuery\n" . $sth->errstr);
 	
-	# if nothing fails, return the $num_of_affected_rows and 1 (success) for error status
-	return $num_of_affected_rows, 1;
+	# if nothing fails, return 0 (success) and the $num_of_affected_rows
+	return (0, $num_of_affected_rows);
 
 }
 ##### End of sub Query_Execute
@@ -143,6 +140,24 @@ sub Query_Finish
 
 }
 ##### sub End of Query_Finish
+
+##### sub Database_Lock_Table
+# In: 
+# Out: None
+sub Database_Lock_Table
+{
+    return 0;
+}
+##### sub End of Database_Lock_Table
+
+##### sub Database_Unlock_Table
+# In: 
+# Out: None
+sub Database_Unlock_Table
+{
+    return 0;
+}
+##### sub End of Database_Unlock_Table
 
 
 ##### End of Library File
