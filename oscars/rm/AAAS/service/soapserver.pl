@@ -3,20 +3,22 @@
 use SOAP::Transport::HTTP;
 
 my $daemon = SOAP::Transport::HTTP::Daemon
-  -> new (LocalPort => 2000)
+  -> new (LocalPort => 4000)
   -> dispatch_to('AAASServer')
 ;
 
 $daemon->handle;
 
-BEGIN {
 package AAASServer;
 
-require '../module/login.pl';
+use lib '../..';
+
+our @ISA = qw(Exporter);
+our @EXPORT = qw(login);
+
+use AAAS::Frontend::User;
 
 sub login {
-  my ($class, $loginname, $passwd) = @_;
-  return (Process_User_Login($loginname, $passwd));
-}
-
+  my ($class, $loginname, $password) = @_;
+  return (process_user_login($loginname, $password));
 }
