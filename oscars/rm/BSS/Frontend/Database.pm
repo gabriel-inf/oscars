@@ -1,165 +1,135 @@
-#
+package BSS::Frontend::Database;
 
-# database.pl
+# database.pm
 #
-# library for database operation
-# Last modified: April 7, 2005
+# package for database operation
+# Last modified: April 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
+
+require Exporter;
+
+our @ISA = qw(Exporter);
+our @EXPORT = qw(database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table %table %table_field);
+
 
 use DBI;
 
 ##### Settings Begin (Global variables) #####
 # database connection info
 %db_connect_info = (
-	'database' => 'aaas',
-	'host' => 'localhost',
-	'user' => 'davidr',
-	'password' => 'shyysh'
+  'database' => 'aaas',
+  'host' => 'localhost',
+  'user' => 'davidr',
+  'password' => 'shyysh'
 );
 
 # database table names
-%db_table_name = (
-	'reservations' => 'reservations',
+%table = (
+  'reservations' => 'reservations',
 );
 
-# reservations/past_reservations field names
-%reservations_tables_field_names = (
-	'reservation_id' => 'reservation_id',
-	'reservation_start_time' => 'reservation_start_time',
-	'reservation_end_time' => 'reservation_end_time',
-        'reservation_qos' => 'reservation_qos',
-        'reservation_status' => 'reservation_status',
-        'reservation_description' => 'reservation_description',
-        'reservation_created_time' => 'reservation_created_time',
-        'reservation_ingress_port' => 'reservation_ingress_port',
-        'reservation_egress_port' => 'reservation_egress_port',
-        'ingress_interface_id' => 'ingress_interface_id',
-        'egress_interface_id' => 'egress_interface_id',
-        'user_dn' => 'user_dn',
-);
-
-# database field names
-%db_table_field_name = (
-	'reservations' => { %reservations_tables_field_names }
+# reservations field names
+%table_field = (
+  'reservations' => {
+    'id' => 'reservation_id',
+    'start_time' => 'reservation_start_time',
+    'end_time' => 'reservation_end_time',
+    'qos' => 'reservation_qos',
+    'status' => 'reservation_status',
+    'description' => 'reservation_description',
+    'created_time' => 'reservation_created_time',
+    'ingress_port' => 'reservation_ingress_port',
+    'egress_port' => 'reservation_egress_port',
+    'ingress_interface_id' => 'ingress_interface_id',
+    'egress_interface_id' => 'egress_interface_id',
+    'user_dn' => 'user_dn',
+  }
 );
 
 ##### Settings End #####
 
-##### List of sub routines #####
-# sub Database_Connect
-# sub Database_Disconnect
-# sub Query_Prepare
-# sub Query_Execute
-# sub Query_Finish
-##### List of sub routines End #####
-
-
-##### sub Database_Connect
+##### sub database_connect
 # In: None
 # Out: $Err_Code (0 on success), $DB_Handle
-sub Database_Connect
+sub database_connect
 {
+  my $dsn = "DBI:mysql:database=$db_connect_info{'database'};host=$db_connect_info{'host'}";
+  my $dbh = DBI->connect( $dsn, $db_connect_info{'user'}, $db_connect_info{'password'} );
 
-	my $dsn = "DBI:mysql:database=$db_connect_info{'database'};host=$db_connect_info{'host'}";
-#	my %attributes = ( 'RaiseError' => 0, 'PrintError' => 0 );
-#	my $dbh = DBI->connect( $dsn, $db_connect_info{'user'}, $db_connect_info{'password'}, \%attributes );
-	my $dbh = DBI->connect( $dsn, $db_connect_info{'user'}, $db_connect_info{'password'} );
-
-	if ( defined( $dbh ) )
-	{
-		return (0, $dbh);
-	}
-	else
-	{
-		return (1, "CantConnectDB\n");
-	}
-
+  if ( defined( $dbh ) ) {
+      return (0, $dbh);
+  }
+  else {
+      return (1, "CantConnectDB\n");
+  }
 }
-##### End of sub Database_Connect
 
 
-##### sub Database_Disconnect
+##### sub database_disconnect
 # In: $DB_Handle ($dbh)
 # Out: None
-sub Database_Disconnect
+sub database_disconnect
 {
-
-	my $dbh = $_[0];
-
-	$dbh->disconnect();
-
+  my $dbh = $_[0];
+  $dbh->disconnect();
 }
-##### End of sub Database_Disconnect
 
 
-##### sub Query_Prepare
+##### sub query_prepare
 # In: $DB_Handle ($dbh), $Statement
 # Out: $Err_Code, $Statement_Handle
-sub Query_Prepare
+sub query_prepare
 {
-
-	my( $dbh, $Statement ) = @_;
-
-	my $sth = $dbh->prepare( "$Statement" ) || return (1, "CantPrepareStatement\n" . $dbh->errstr);
+  my( $dbh, $Statement ) = @_;
+  my $sth = $dbh->prepare( "$Statement" ) || return (1, "CantPrepareStatement\n" . $dbh->errstr);
 	
-	# if nothing fails, return 0 (success) and the statement handle
-	return (0, $sth);
-
+    # if nothing fails, return 0 (success) and the statement handle
+  return (0, $sth);
 }
-##### End of sub Query_Prepare
 
 
-##### sub Query_Execute
+##### sub query_execute
 # In: $Statement_Handle ($sth), @Query_Arguments (for placeholders(?s) in the prepared query statement)
 # Out: $Err_Code, $Number_of_Rows_Affected
-sub Query_Execute
+sub query_execute
 {
+  my( $sth, @Query_Args ) = @_;
+    # execute the prepared query (run subroutine 'query_prepare' before
+    # calling this subrutine)
+  my $num_of_affected_rows = $sth->execute( @Query_Args ) || return (1, "CantExecuteQuery\n" . $sth->errstr);
 
-	my( $sth, @Query_Args ) = @_;
-
-	# execute the prepared query (run subroutine 'Query_Prepare' before calling this subrutine)
-	my $num_of_affected_rows = $sth->execute( @Query_Args ) || return (1, "CantExecuteQuery\n" . $sth->errstr);
-	
-	# if nothing fails, return 0 (success) and the $num_of_affected_rows
-	return (0, $num_of_affected_rows);
-
+    # if nothing fails, return 0 (success) and the $num_of_affected_rows
+  return (0, $num_of_affected_rows);
 }
-##### End of sub Query_Execute
 
 
-##### sub Query_Finish
+##### sub query_finish
 # In: $Statement_Handle ($sth)
 # Out: None
-sub Query_Finish
+sub query_finish
 {
-
-	my $sth = $_[0];
-
-	$sth->finish();
-
+  my $sth = $_[0];
+  $sth->finish();
 }
-##### sub End of Query_Finish
 
-##### sub Database_Lock_Table
+
+##### sub database_lock_table
 # In: 
 # Out: None
-sub Database_Lock_Table
+sub database_lock_table
 {
     return 0;
 }
-##### sub End of Database_Lock_Table
 
-##### sub Database_Unlock_Table
+
+##### sub database_unlock_table
 # In: 
 # Out: None
-sub Database_Unlock_Table
+sub database_unlock_table
 {
     return 0;
 }
-##### sub End of Database_Unlock_Table
 
-
-##### End of Library File
 # Don't touch the line below
 1;
