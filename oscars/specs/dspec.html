@@ -7,7 +7,7 @@
 <em>David Robertson, Chin Guok<br/>
 ESnet</em><br/><br/>
 
-March 28, 2005</br>
+April 12, 2005</br>
 
 <hr>
 
@@ -30,7 +30,8 @@ description.</p>
 
 <p>The AAAS component of the RM handles external service requests and enforces
 access.  The BSS will be implemented as a Grid service, but will only be
-accessible via the AAAS.  The AAAS and BSS will not necessarily have to run on
+accessible if the proper token is presented.  The AAAS and BSS will not
+necessarily have to run on
 the same machine.  The path setup subsystem (PSS) will be implemented as a
 library linked in by the BSS.  Different instances of the RM, for example in
 different organizations, will communicate via their respective AAAS.</p>
@@ -40,13 +41,13 @@ different organizations, will communicate via their respective AAAS.</p>
 
 <p><a href="http://www.w3.org/TR/soap/">SOAP</a> messages will be used for
 communication between all grid service components.  In particular,
-identical SOAP messages to the AAAS will be generated, whether using the manual
-interface (y1), or the API (y2).</p>
+identical SOAP messages to the AAAS and BSS will be generated, whether using
+the manual interface (y1), or the API (y2).</p>
 
 <p>Grid component services will be described via the Web Service Definition
 Language (<a href="http://www.w3.org/TR/wsdl">WSDL</a>).
 WSDL provides for definitions of data types for message arguments
-using XML Schema, and definitions of request and response messages.</p>
+using XML Schema, and definitions of request and response messages. (y2)</p>
 
 
 <h3>User interface</h3>
@@ -56,10 +57,11 @@ using XML Schema, and definitions of request and response messages.</p>
 forms.  The forms will use the
 <a href="http://http://discvenue.internet2.edu/wordpress/">BRUW</a>
 Web pages as a template for the interface design and necessary functionality.
-BRUW is an experimental Internet2 bandwidth reservation system.
-However, database access will not be done directly via CGI, as in BRUW.
-Instead mod_perl and WSRF::LITE (see below) will be used
-to contact the database via the AAAS (y1).</p>
+BRUW is an experimental Internet2 bandwidth reservation system.</p>
+
+<p>Database access will not be done directly via CGI.
+Instead, SOAP::Lite called from a CGI script (y1) (mod_perl and 
+WSRF::LITE, y2) will be used to contact the database front end.</p>
 
 <p>To request a reservation, a form will be provided for the user to set
 a start and end time (minimum one hour), the bandwidth requested, and
@@ -97,23 +99,26 @@ Web services framework (y2).</p>
 large.  A DoS attack could prevent reservations from being processed.  If the
 service is compromised, the WAN may be disabled.</p>
 
-<p>The AAAS Web server will only allow connections via SSL (y1).</p>
+<p>The Web server used for communications from the WBUI will only allow
+connections via SSL (y1).</p>
 
-<p>SOAP messages to the AAAS will be signed, including the user's
+<p>SOAP messages to the AAAS and BSS will be signed, including the user's
 authenticated identifier (y2).</p>
 
-<p>The only user able to access the database server (see next section) will
-be the AAAS and administrators.  The database server will only accept requests
-from the database front end, running on the same machine.  The BSS will only
-accept connections from the AAAS (y1).</p>
+<p>The only way to access the database servers (see next section) will
+be via the AAAS and BSS database front ends, and administrators.  The
+database server will only accept requests
+from a database front end, running on the same machine.  The BSS will only
+accept connections if it is presented with the proper token, obtained
+from the AAAS (y1).</p>
 
 <p>The RM will use ESnet production tools to monitor usage (y1).</p>
 
 
 <h3>AAAS</h3>
 
-<p>The AAAS will consist of a Web server, a set of Perl scripts, a database,
-and a front end to that database.</p>
+<p>The AAAS will consist of a Web server, a SOAP server, a database,
+and a set of Perl scripts implementing a front end to that database.</p>
 
 <p>The Apache2 Web server will be used, and will only accept connections
 via SSL.   Initially it will only accept connections from ESnet hosts.
@@ -121,24 +126,25 @@ httpd processes will run as an unprivileged user without a login shell (y1).</p>
 
 <p>The MySQL database server will be used.  The database organization (tables,
 constraints, etc.) will use the BRUW database as a template.  The database will
-run as an unprivileged user without a login shell.  The database will only
-accept connections from a user designated to run the front end, and from ESnet
-administrative users.  It will only accept requests from clients running
-on the same machine (i.e. the front end) (y1).</p>
+run as an unprivileged user without a login shell.  It will only accept
+requests from clients running on the same machine (i.e. the front end).
+It will be configured with the --skip-networking option to ensure this (y1).
+</p>
 
 <p>Before requests can be made via the WBUI, the user will use a form to 
 authenticate via a user name and password (y1), and/or a distinguished name (DN)
 if it is different than the user name (y2).
-The DN will be used to retrieve a certificate
+The DN will be used to retrieve a certificate or token
 from the <a href="http://doegrids.org/">DOEGrids Certificate Service</a> (y2).
 </p>
 
-<p>Once the certificate is retrieved, forms incorporating mod_perl WSRF::LITE
-methods will be used to handle user requests (y1), incorporating that
+<p>Once the certificate is retrieved, forms incorporating SOAP::Lite (y1)
+or mod_perl and WSRF::LITE (y2)
+methods will be used to handle user requests, incorporating that
 certificate in signed (y2) SOAP messages sent to the front end
-(not the Web server) (y1).  The front end will access and modify the database,
-and control the BSS, based on those requests (y1).  Requests made
-via the API use WSRF::LITE methods to send signed SOAP messages to the front
+via the Web server (y1).  The front end will access and modify the database,
+based on those requests (y1).  Requests made
+via the API use the same interface to send signed SOAP messages to the front
 end (y2).</p>
 
 <p>Signed (y2) SOAP messages will be used for communication between the front end
@@ -146,8 +152,10 @@ and the BSS (y1).</p>
 
 <h3>BSS</h3>
 
-<p>The BSS will use an open-source library (TBD) to handle calendaring in
-conjunction with the AAAS MySQL database.  Triggers in the database will
+<p>The BSS will have its own database, and database access will be handled
+via a front end as in the AAAS.  The BSS will use an open-source library (TBD)
+to handle calendaring in conjunction with the AAAS MySQL database.  Triggers
+in the database will
 cause the BSS to invoke the PSS library to set up and tear down connections.</p>
 
 <p><em>NOTE:</em>  a large part of the functionality of the BSS and PSS
