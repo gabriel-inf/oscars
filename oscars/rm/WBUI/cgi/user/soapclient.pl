@@ -8,9 +8,12 @@ my $AAAS_server = SOAP::Lite
 
 sub User_Login
 {
-    my ($login_name, $password) = @_;
-    my $response = $AAAS_server -> login($login_name, $password);
+    my ($loginname, $password) = @_;
+    my $response = $AAAS_server -> login($loginname, $password);
     my $error_status = $response->result();
+    if ($response->fault) {
+        print $response->faultcode, " ", $response->faultstring, "\n";
+    }
     my @error_message = $response->paramsout();
     return ($error_status, @error_message);
 }
