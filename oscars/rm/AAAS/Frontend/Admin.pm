@@ -12,554 +12,414 @@ use AAAS::Frontend::Database;
 
 # gateway:  DB operations having to do with logging in as admin
 
-sub Verify_Admin_Acct(FormData)
+sub verify_acct
 {
-		### Check whether admin account is set up in the database
-		my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
+    ### Check whether admin account is set up in the database
+  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-		# connect to the database
-		( $Error_Code, $Dbh ) = &Database_Connect();
-		if ( $Error_Code )
-		{
-			return( 1, $Error_Code );
-		}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-		# whether admin account exists (determine it with the level info, not the login name)
-		$Query = "SELECT $db_table_field_name{'users'}{'user_loginname'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_level'} = ?";
+    # whether admin account exists (determine it with the level info, not the login name)
+  $query = "SELECT $table_field{'users'}{'user_loginname'} FROM $table{'users'} WHERE $table_field{'users'}{'user_level'} = ?";
 
-		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-		( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $admin_user_level );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $admin_user_level );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-		&Query_Finish( $Sth );
+  query_finish( $sth );
+  database_disconnect( $dbh );
 
-		# disconnect from the database
-		&Database_Disconnect( $Dbh );
-
-		### proceed to the appropriate next action depending on the existence of the admin account
-		if ( $Num_of_Affected_Rows == 0 )
-		{
-			# ID does not exist; go to admin registration
-			return();
-		}
-		else
-		{
-			# ID exists; go to admin login
-			return();
-		}
+    ### proceed to the appropriate next action depending on the existence of
+    ###  the admin account
+  if ( $num_of_affected_rows == 0 ) {
+        # ID does not exist; go to admin registration
+      return();
+  }
+    # ID exists; go to admin login
+  return();
 }
 
-##### End of Verify_Admin_Acct
 
-##### sub Process_Admin_Registration
-# In: FormData
+##### sub process_registration
+# In: soap_args
 # Out: None
-# Calls sub Print_Admin_Registration_Screen at the end (with a success token)
-sub Process_Admin_Registration(FormData)
+sub process_registration
 {
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query );
-
-	# TODO:  lock table
-
-	# connect to the database
-	undef $Error_Code;
+  my( $dbh, $sth, $error_code, $query );
+  undef $error_code;
 	
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-	# insert into database query statement
-	$Query = "INSERT INTO $db_table_name{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+      # TODO:  lock table
+      # insert into database query statement
+  $query = "INSERT INTO $table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	# admin user level is set to 10 by default
-	my @Stuffs_to_Insert = ( '', $admin_loginname_string, $Encrypted_Password, $FormData{'firstname'}, $FormData{'lastname'}, $FormData{'organization'}, $FormData{'email_primary'}, $FormData{'email_secondary'}, $FormData{'phone_primary'}, $FormData{'phone_secondary'}, $FormData{'description'}, 10, $Current_DateTime, '', 0 );
+    # admin user level is set to 10 by default
+  my @stuffs_to_insert = ( '', $admin_loginname_string, $encrypted_password, $soap_args{'firstname'}, $soap_args{'lastname'}, $soap_args{'organization'}, $soap_args{'email_primary'}, $soap_args{'email_secondary'}, $soap_args{'phone_primary'}, $soap_args{'phone_secondary'}, $soap_args{'description'}, 10, $Current_DateTime, '', 0 );
 
-	( $Error_Code, undef ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-
+  ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
                 # TODO:  release db lock
-		$Error_Code =~ s/CantExecuteQuery\n//;
-		return( 1, 'An error occurred recording the admin account information on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $Error_Code );
-	}
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      $error_code =~ s/CantExecuteQuery\n//;
+      return( 1, 'An error occurred recording the admin account information on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $error_code );
+  }
 
-	&Query_Finish( $Sth );
-
-	# disconnect from the database
-	&Database_Disconnect( $Dbh );
-
+  query_finish( $sth );
 	# TODO:  unlock the operation
+  database_disconnect( $dbh );
 
-	### when everything has been processed successfully...
-	return( 0, 'Admin account registration has been completed successfully.<br>Please <a href="gateway.pl">click here</a> to proceed to the Admin Tool login page.' );
+  return( 0, 'Admin account registration has been completed successfully.<br>Please <a href="gateway.pl">click here</a> to proceed to the Admin Tool login page.' );
 
 }
-##### End of sub Process_Admin_Registration
 
-##### sub Process_Admin_Login
-# In: FormData
+
+##### sub process_login
+# In: soap_args
 # Out: None
-# Calls sub Print_Admin_Login_Screen at the end (with a success token)
-sub Process_Admin_Login(FormData)
+sub process_login
 {
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
+  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-	# connect to the database
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-	# get the password from the database
-	$Query = "SELECT $db_table_field_name{'users'}{'user_password'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ? and $db_table_field_name{'users'}{'user_level'} = ?";
+    # get the password from the database
+  $query = "SELECT $table_field{'users'}{'user_password'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ? and $table_field{'users'}{'user_level'} = ?";
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'}, $admin_user_level );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	# check whether this person has a valid admin privilege
-	my $Password_Match_Token = 0;
-
-	if ( $Num_of_Affected_Rows == 0 )
-	{
-		# this login name is not in the database or does not belong to the admin level
-		return( 1, 'Please check your login name and try again.' );
-	}
-	else
-	{
-		# this login name is in the database; compare passwords
-		while ( my $Ref = $Sth->fetchrow_arrayref )
-		{
-			if ( $$Ref[0] eq &Encode_Passwd( $FormData{'password'} ) )
-			{
-				$Password_Match_Token = 1;
-			}
-		}
-	}
-
-	&Query_Finish( $Sth );
-
-
-	### when everything has been processed successfully...
-	# $Processing_Result_Message string may be anything, as long as it's not empty
-	return( 0, 'The admin user has successfully logged in.' );
-
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $soap_args{'loginname'}, $admin_user_level );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
+    # check whether this person has a valid admin privilege
+  my $password_matches = 0;
+  if ( $num_of_affected_rows == 0 ) {
+        # this login name is not in the database or does not belong to the admin level
+      return( 1, 'Please check your login name and try again.' );
+  }
+  else {
+        # this login name is in the database; compare passwords
+      while ( my $ref = $sth->fetchrow_arrayref ) {
+          if ( $$ref[0] eq &Encode_Passwd( $soap_args{'password'} ) ) {
+              $password_matches = 1;
+          }
+      }
+  }
+  query_finish( $sth );
+  return( 0, 'The admin user has successfully logged in.' );
 }
-##### End of sub Process_Admin_Login
 
 
 # adduser:  DB handling for adding a User page
 
-##### sub Check_Loginname_Overlap
-# In: FormData
-# Out: $Check_Result [yes(overlaps)/no(doesn't overlap)]
-sub Check_Loginname_Overlap(FormData)
+##### sub check_login_available
+# In: soap_args
+# Out: $check_result [yes(overlaps)/no(doesn't overlap)]
+sub check_login_available
 {
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
+  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-	# check whether a particular user id already exists in the database
+    # Check whether a particular user id already exists in the database
+    # database table & field names to check
+  my $table_name_to_check = $table{'users'};
+  my $field_name_to_check = $table_field{'users'}{'user_loginname'};
 
-	# database table & field names to check
-	my $Table_Name_to_Check = $db_table_name{'users'};
-	my $Field_Name_to_Check = $db_table_field_name{'users'}{'user_loginname'};
+      # query: select user_loginname from users where user_loginname='some_id_to_check';
+  $query = "SELECT $field_name_to_check FROM $table_name_to_check WHERE $field_name_to_check = ?";
 
-	# Query: select user_loginname from users where user_loginname='some_id_to_check';
-	$Query = "SELECT $Field_Name_to_Check FROM $Table_Name_to_Check WHERE $Field_Name_to_Check = ?";
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $soap_args{'id'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'id'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  my $check_result;
 
-	my $Check_Result;
-
-	if ( $Num_of_Affected_Rows == 0 )
-	{
-		# ID does not overlap; usable
-		$Check_Result = 'no';
-	}
-	else
-	{
-		# ID is already taken by someone else; unusable
-		$Check_Result = 'yes';
-	}
-
-	&Query_Finish( $Sth );
-
-	# disconnect from the database
-	&Database_Disconnect( $Dbh );
-
-	return (0, $Check_Result);
-
+  if ( $num_of_affected_rows == 0 ) {
+        # ID does not overlap; usable
+      $check_result = 'no';
+  }
+  else {
+        # ID is already taken by someone else; unusable
+      $check_result = 'yes';
+  }
+  query_finish( $sth );
+  database_disconnect( $dbh );
+  return (0, $check_result);
 }
-##### End of sub Check_Loginname_Overlap
 
 
-##### sub Process_User_Registration
-# In: FormData
+##### sub process_user_registration
+# In: soap_args
 # Out: None
-# Calls sub Print_Interface_Screen at the end (with a success token)
-sub Process_User_Registration(FormData)
+sub process_user_registration
 {
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
+  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
+  undef $error_code;
+	
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
+
+    # id overlap check.  We're not using the pre-existing sub routine here to
+    # perform the task within a single, locked database connection
+  $query = "SELECT $table_field{'users'}{'user_loginname'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
 	# TODO:  lock  database operations
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	# connect to the database
-	undef $Error_Code;
-	
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $soap_args{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	# id overlap check
-	# we're not using the pre-existing sub routine here to perform the task within a single, locked database connection
-	$Query = "SELECT $db_table_field_name{'users'}{'user_loginname'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+  query_finish( $sth );
+      # TODO:  release lock
+  if ( $num_of_affected_rows > 0 ) {
+      database_disconnect( $dbh );
+      return( 1, 'The selected login name is already taken by someone else; please choose a different login name.' );
+  }
+    # insert into database query statement
+    # initial user level is preset by the admin; no need to wait for
+    #  authorization
+  my @stuffs_to_insert = ( '', $soap_args{'loginname'}, $encrypted_password, $soap_args{'firstname'}, $soap_args{'lastname'}, $soap_args{'organization'}, $soap_args{'email_primary'}, $soap_args{'email_secondary'}, $soap_args{'phone_primary'}, $soap_args{'phone_secondary'}, $soap_args{'description'}, 0, $Current_DateTime, $Activation_Key, $soap_args{'level'} );
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  $query = "INSERT INTO $table{'users'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
 
-	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+        # TODO:  release lock
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	&Query_Finish( $Sth );
+  ( undef, $error_code ) = query_execute( $sth, @stuffs_to_insert );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      $error_code =~ s/CantExecuteQuery\n//;
+      return( 1, 'An error has occurred while recording the account registration on the database.<br>[Error] ' . $error_code );
+  }
 
-	if ( $Num_of_Affected_Rows > 0 )
-	{
-		&Database_Disconnect( $Dbh );
-
-                # TODO:  release lock
-
-		return( 1, 'The selected login name is already taken by someone else; please choose a different login name.' );
-	}
-
-	#
-	# insert into database query statement
-	#
-
-	# initial user level is preset by the admin; no need to wait for authorization
-	my @Stuffs_to_Insert = ( '', $FormData{'loginname'}, $Encrypted_Password, $FormData{'firstname'}, $FormData{'lastname'}, $FormData{'organization'}, $FormData{'email_primary'}, $FormData{'email_secondary'}, $FormData{'phone_primary'}, $FormData{'phone_secondary'}, $FormData{'description'}, 0, $Current_DateTime, $Activation_Key, $FormData{'level'} );
-
-	$Query = "INSERT INTO $db_table_name{'users'} VALUES ( " . join( ', ', ('?') x @Stuffs_to_Insert ) . " )";
-
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	( undef, $Error_Code ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-
-                # TODO:  release lock
-		$Error_Code =~ s/CantExecuteQuery\n//;
-		return( 1, 'An error has occurred while recording the account registration on the database.<br>[Error] ' . $Error_Code );
-	}
-
-	&Query_Finish( $Sth );
-
-	# disconnect from the database
-	&Database_Disconnect( $Dbh );
-
+  query_finish( $sth );
 	# TODO:  unlock the operation
-	return( 0, 'The new user account \'' . $FormData{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
+  database_disconnect( $dbh );
+  return( 0, 'The new user account \'' . $soap_args{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
 
 }
-##### End of sub Process_User_Registration
 
 
 # editprofile:  DB handling for Edit Admin Profile page
 
-##### sub Get_User_Profile
-# In:  FormData
+##### sub get_user_profile
+# In:  soap_args
 # Out: status message and DB results
-sub Get_User_Profile
+sub get_user_profile
 {
-		### get the user detail from the database and populate the profile form
-		my( $Dbh, $Sth, $Error_Code, $Query );
+    ### get the user detail from the database and populate the profile form
+  my( $dbh, $sth, $error_code, $query );
 
-		# connect to the database
-		( $Error_Code, $Dbh ) = &Database_Connect();
-		if ( $Error_Code )
-		{
-			return( 1, $Error_Code );
-		}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-		# names of the fields to be displayed on the screen
-		my @Fields_to_Display = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
+    # names of the fields to be displayed on the screen
+  my @fields_to_display = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
 
-		# DB Query: get the user profile detail
-		$Query = "SELECT ";
-		foreach $_ ( @Fields_to_Display )
-		{
-			my $Temp = 'user_' . $_;
-			$Query .= $db_table_field_name{'users'}{$Temp} . ", ";
-		}
-		# delete the last ", "
-		$Query =~ s/,\s$//;
-		$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+    # DB query: get the user profile detail
+  $query = "SELECT ";
+  foreach $_ ( @fields_to_display ) {
+      my $temp = 'user_' . $_;
+      $query .= $table_field{'users'}{$temp} . ", ";
+  }
+    # delete the last ", "
+  $query =~ s/,\s$//;
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-		( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
+  ( $error_code, undef ) = query_execute( $sth, $soap_args{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-		# populate %User_Profile_Data with the data fetched from the database
-		my %User_Profile_Data;
-		@User_Profile_Data{@Fields_to_Display} = ();
-		$Sth->bind_columns( map { \$User_Profile_Data{$_} } @Fields_to_Display );
-		$Sth->fetch();
+    # populate %user_profile_data with the data fetched from the database
+  my %user_profile_data;
+  @user_profile_data{@fields_to_display} = ();
+  $sth->bind_columns( map { \$user_profile_data{$_} } @fields_to_display );
+  $sth->fetch();
+  query_finish( $sth );
+  database_disconnect( $dbh );
 
-		&Query_Finish( $Sth );
-
-		# disconnect from the database
-		&Database_Disconnect( $Dbh );
-
-		foreach $Field ( @Fields_to_Display )
-		{
-			$Html_Line =~ s/(name="$Field")/$1 value="$User_Profile_Data{$Field}"/i;
-		}
-    # TODO:  return user profile to CGI script
-
+  foreach $field ( @fields_to_display ) {
+      $Html_Line =~ s/(name="$field")/$1 value="$user_profile_data{$field}"/i;
+  }
+  return (0, 'success');
 }
-##### End of sub Print_Interface_Screen
 
 
-##### sub Process_Profile_Update
-# In: FormData
+##### sub process_profile_update
+# In: soap_args
 # Out: status message, results
-sub Process_Profile_Update
+sub process_profile_update
 {
-	### begin working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query );
-
-	# TODO:  lock with LOCK_TABLE
-
-	# connect to the database
-	undef $Error_Code;
+  my( $dbh, $sth, $error_code, $query );
+  undef $error_code;
 	
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-	# read the current user information from the database to decide which fields are being updated
-	# 'password' should always be the last entry of the array (important for later procedures)
-	my @Fields_to_Read = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'password' );
+      # TODO:  lock with LOCK_TABLE
+      # Read the current user information from the database to decide which
+      # fields are being updated.  'password' should always be the last entry
+      # of the array (important for later procedures)
+  my @fields_to_read = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'password' );
 
-	# DB Query: get the user profile detail
-	$Query = "SELECT ";
-	foreach $_ ( @Fields_to_Read )
-	{
-		my $Temp = 'user_' . $_;
-		$Query .= $db_table_field_name{'users'}{$Temp} . ", ";
-	}
-	# delete the last ", "
-	$Query =~ s/,\s$//;
-	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+    # DB query: get the user profile detail
+  $query = "SELECT ";
+  foreach $_ ( @fields_to_read ) {
+      my $temp = 'user_' . $_;
+      $query .= $table_field{'users'}{$temp} . ", ";
+  }
+    # delete the last ", "
+  $query =~ s/,\s$//;
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, undef ) = query_execute( $sth, $soap_args{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	# populate %User_Profile_Data with the data fetched from the database
-	my %User_Profile_Data;
-	@User_Profile_Data{@Fields_to_Read} = ();
-	$Sth->bind_columns( map { \$User_Profile_Data{$_} } @Fields_to_Read );
-	$Sth->fetch();
+    # populate %user_profile_data with the data fetched from the database
+  my %user_profile_data;
+  @user_profile_data{@fields_to_read} = ();
+  $sth->bind_columns( map { \$user_profile_data{$_} } @fields_to_read );
+  $sth->fetch();
+  query_finish( $sth );
 
-	&Query_Finish( $Sth );
-
-	### check the current password with the one in the database before proceeding
-	if ( $User_Profile_Data{'password'} ne &Encode_Passwd( $FormData{'password_current'} ) )
-	{
-		&Database_Disconnect( $Dbh );
-
+    ### check the current password with the one in the database before
+    ### proceeding
+  if ( $user_profile_data{'password'} ne &Encode_Passwd( $soap_args{'password_current'} ) ) {
                 # TODO:  release lock
-		return( 0, 'Please check the current password and try again.' );
-	}
-
-	### update information in the database
-
+      database_disconnect( $dbh );
+      return( 1, 'Please check the current password and try again.' );
+  }
 	# determine which fields to update in the user profile table
-	# @Fields_to_Update and @Values_to_Update should be an exact match
-	my( @Fields_to_Update, @Values_to_Update );
+	# @fields_to_update and @values_to_update should be an exact match
+  my( @fields_to_update, @values_to_update );
 
-	# if the password needs to be updated, add the new one to the fields/values to update
-	if ( $Update_Password )
-	{
-		push( @Fields_to_Update, $db_table_field_name{'users'}{'user_password'} );
-		push( @Values_to_Update, $Encrypted_Password );
-	}
+    # if the password needs to be updated, add the new one to the fields
+    #  /values to update
+  if ( $update_password ) {
+      push( @fields_to_update, $table_field{'users'}{'user_password'} );
+      push( @values_to_update, $encrypted_password );
+  }
 
-	# remove password from the update comparison list
-	# 'password' is the last element of the array; remove it from the array
-	$#Fields_to_Read--;
+    # remove password from the update comparison list
+    # 'password' is the last element of the array; remove it from the array
+  $#fields_to_read--;
 
-	# compare the current & newly input user profile data and determine which fields/values to update
-	foreach $_ ( @Fields_to_Read )
-	{
-		if ( $User_Profile_Data{$_} ne $FormData{$_} )
-		{
-			my $Temp = 'user_' . $_;
-			push( @Fields_to_Update, $db_table_field_name{'users'}{$Temp} );
-			push( @Values_to_Update, $FormData{$_} );
-		}
-	}
+    # compare the current & newly input user profile data and determine which fields/values to update
+  foreach $_ ( @fields_to_read ) {
+      if ( $user_profile_data{$_} ne $soap_args{$_} ) {
+          my $temp = 'user_' . $_;
+          push( @fields_to_update, $table_field{'users'}{$temp} );
+          push( @values_to_update, $soap_args{$_} );
+      }
+  }
 
-	# if there is nothing to update...
-	if ( $#Fields_to_Update < 0 )
-	{
-		&Database_Disconnect( $Dbh );
+    # if there is nothing to update...
+  if ( $#fields_to_update < 0 ) {
+          # TODO:  release lock
+      database_disconnect( $dbh );
+      return( 1, 'There is no changed information to update.' );
+  }
 
+    # prepare the query for database update
+  $query = "UPDATE $table{'users'} SET ";
+  foreach $_ ( 0 .. $#fields_to_update ) {
+      $query .= $fields_to_update[$_] . " = ?, ";
+  }
+  $query =~ s/,\s$//;
+  $query .= " WHERE $table_field{'users'}{'user_loginname'} = ?";
+
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
+
+  ( $error_code, undef ) = query_execute( $sth, @values_to_update, $soap_args{'loginname'} );
+  if ( $error_code ) {
                 # TODO:  release lock
-		return( 0, 'There is no changed information to update.' );
-	}
+      database_disconnect( $dbh );
+      $error_code =~ s/CantExecuteQuery\n//;
+      return( 1, 'An error has occurred while updating the account information.<br>[Error] ' . $error_code );
+  }
 
-	# prepare the query for database update
-	$Query = "UPDATE $db_table_name{'users'} SET ";
-	foreach $_ ( 0 .. $#Fields_to_Update )
-	{
-		$Query .= $Fields_to_Update[$_] . " = ?, ";
-	}
-	$Query =~ s/,\s$//;
-	$Query .= " WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
-
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	( $Error_Code, undef ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-
-                # TODO:  release lock
-		$Error_Code =~ s/CantExecuteQuery\n//;
-		return( 1, 'An error has occurred while updating the account information.<br>[Error] ' . $Error_Code );
-	}
-
-	&Query_Finish( $Sth );
-
-	# disconnect from the database
-	&Database_Disconnect( $Dbh );
-
+  query_finish( $sth );
 	# TODO:  unlock table
-
-	### when everything has been processed successfully...
-	return( 0, 'The account information has been updated successfully.' );
-
+  database_disconnect( $dbh );
+  return( 0, 'The account information has been updated successfully.' );
 }
-##### End of sub Process_Profile_Update
 
 
 # logout:   DB operations associated with admin logout
 
-sub Handle_Admin_Logout(FormData)
+sub handle_logout
 {
-    # connect to the database
-    ( $Error_Code, $Dbh ) = &Database_Connect();
-    if ( $Error_Code )
-    {
-        return( 1, $Error_Code );
-    }
+    ( $error_code, $dbh ) = database_connect();
+    if ( $error_code ) { return( 1, $error_code ); }
 
-    # TODO:  lock table
+    #query_finish( $sth );
 
-    &Query_Finish( $Sth );
-
-    # TODO:  unlock the operation
-
-    # disconnect from the database
-    &Database_Disconnect( $Dbh );
-
-    # TODO:  return status
+    database_disconnect( $dbh );
     return ( 1, 'not done yet' );
 }
 

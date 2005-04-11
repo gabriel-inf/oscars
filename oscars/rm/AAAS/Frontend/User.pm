@@ -5,6 +5,11 @@ package AAAS::Frontend::User;
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
+require Exporter;
+
+our @ISA = qw(Exporter);
+our @EXPORT = qw(process_user_login);
+
 use AAAS::Frontend::General;
 use AAAS::Frontend::Database;
 
@@ -13,567 +18,444 @@ use AAAS::Frontend::Database;
 # TODO:  FIX
 $non_activated_user_level = -1;
 
-##### sub Process_User_Login
-# In: login name, password
+##### sub process_user_login
+# In: reference to hash of parameters
 # Out: status code, status message
-sub Process_User_Login
+sub process_user_login
 {
-        my($loginname, $password) = @_;
-	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
+  my($loginname, $password) = @_;
+  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-	# connect to the database
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-        $Error_Code = &Database_Lock_Table($db_table_name{'users'});
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  $error_code = database_lock_table($table{'users'});
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	# get the password from the database
-	$Query = "SELECT $db_table_field_name{'users'}{'user_password'}, $db_table_field_name{'users'}{'user_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
+    # get the password from the database
+  $query = "SELECT $table_field{'users'}{'user_password'}, $table_field{'users'}{'user_level'} FROM $table{'users'} WHERE $table_field{'users'}{'user_dn'} = ?";
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-                &Database_Unlock_Table($db_table_name{'users'});
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_unlock_table($table{'users'});
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $loginname );
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $loginname );
 
+  if ( $error_code ) {
+      database_unlock_table($table{'users'});
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	if ( $Error_Code )
-	{
-                &Database_Unlock_Table($db_table_name{'users'});
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+    # check whether this person is a registered user
+  my $password_matches = 0;
+  if ( $num_of_affected_rows == 0 ) {
+        # this login name is not in the database
+      query_finish( $sth );
+      database_unlock_table($table{'users'});
+      database_disconnect( $dbh );
+      return( 1, 'Please check your login name and try again.' );
+  }
+  else {
+        # this login name is in the database; compare passwords
+      while ( my $ref = $sth->fetchrow_arrayref ) {
+          if ( $$ref[1] eq $non_activated_user_level ) {
+                # this account is not authorized & activated yet
+              database_disconnect( $dbh );
+              database_unlock_table($table{'users'});
+              return( 1, 'This account is not authorized or activated yet.' );
+          }
+          elsif ( $$ref[0] eq  $password ) {
+              $password_matches = 1;
+          }
+      }
+  }
+  query_finish( $sth );
+  database_unlock_table($table{'users'});
 
-	# check whether this person is a registered user
-	my $Password_Match_Token = 0;
-
-	if ( $Num_of_Affected_Rows == 0 )
-	{
-		# this login name is not in the database
-	        &Query_Finish( $Sth );
-                &Database_Unlock_Table($db_table_name{'users'});
-		&Database_Disconnect( $Dbh );
-		return( 1, 'Please check your login name and try again.' );
-	}
-	else
-	{
-		# this login name is in the database; compare passwords
-		while ( my $Ref = $Sth->fetchrow_arrayref )
-		{
-			if ( $$Ref[1] eq $non_activated_user_level )
-			{
-				# this account is not authorized & activated yet
-				&Database_Disconnect( $Dbh );
-                                &Database_Unlock_Table($db_table_name{'users'});
-				return( 1, 'This account is not authorized or activated yet.' );
-			}
-			elsif ( $$Ref[0] eq  $password )
-			{
-				$Password_Match_Token = 1;
-			}
-                        #print STDERR $$Ref[0] . ' ' . $password;
-		}
-	}
-
-	&Query_Finish( $Sth );
-        &Database_Unlock_Table($db_table_name{'users'});
-
-	if ( !$Password_Match_Token )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, 'Please check your password and try again.' );
-	}
-
-	### when everything has been processed successfully...
-	return( 0, 'The user has successfully logged in.' );
-
-}
-##### End of sub Process_User_Login
-
-
-# logout.pl:  DB operations associated with logout
-
-sub Handle_Logout()
-{
-my( $Dbh, $Sth, $Error_Code, $Query );
-
-# connect to the database
-( $Error_Code, $Dbh ) = &Database_Connect();
-if ( $Error_Code )
-{
-	return( 1, $Error_Code );
+  if ( !$password_matches ) {
+      database_disconnect( $dbh );
+      return( 1, 'Please check your password and try again.' );
+  }
+  return( 0, 'The user has successfully logged in.' );
 }
 
-# TODO:  lock table
-# TODO:  redo to change status of user in user table
 
-&Query_Finish( $Sth );
+#### logout:  DB operations associated with logout
 
-# TODO:  unlock the table(s)
+sub handle_logout
+{
+  my( $dbh, $sth, $error_code, $query );
 
-# disconnect from the database
-&Database_Disconnect( $Dbh );
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) {
+      return( 1, $error_code );
+  }
+    # TODO:  lock table, and redo to change status of user in user table
+  query_finish( $sth );
+    # TODO:  unlock the table(s)
+  database_disconnect( $dbh );
+  return (0, 'OK');
 }
 
 
 # myprofile:  Profile DB interaction
 
-##### sub Get_User_Detail
-# In: FormData
-# Out: user detail, status message
-sub Get_User_Detail(FormData)
+##### sub get_user_detail
+# In: reference to hash of parameters
+# Out: status code, status message
+sub get_user_detail
 {
-		### get the user detail from the database and populate the profile form
-		my( $Dbh, $Sth, $Error_Code, $Query );
+  my($args_ref) = @_;
+  my( $dbh, $sth, $error_code, $query );
 
-		# connect to the database
-		( $Error_Code, $Dbh ) = &Database_Connect();
-		if ( $Error_Code )
-		{
-			return( 1, $Error_Code );
-		}
+  ### get the user detail from the database and populate the profile form
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) {
+      return( 1, $error_code );
+  }
 
-		# names of the fields to be displayed on the screen
-		my @Fields_to_Display = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
+    # names of the fields to be displayed on the screen
+  my @fields_to_display = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
 
-		# DB Query: get the user profile detail
-		$Query = "SELECT ";
-		foreach $_ ( @Fields_to_Display )
-		{
-			my $Temp = 'user_' . $_;
-			$Query .= $db_table_field_name{'users'}{$Temp} . ", ";
-		}
-		# delete the last ", "
-		$Query =~ s/,\s$//;
-		$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+    # DB query: get the user profile detail
+  $query = "SELECT ";
+  foreach $_ ( @fields_to_display ) {
+      my $temp = 'user_' . $_;
+      $query .= $table_field{'users'}{$temp} . ", ";
+  }
+    # delete the last ", "
+  $query =~ s/,\s$//;
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-		( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
+  ( $error_code, undef ) = query_execute( $sth, $args_ref->{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-		# populate %User_Profile_Data with the data fetched from the database
-		my %User_Profile_Data;
-		@User_Profile_Data{@Fields_to_Display} = ();
-		$Sth->bind_columns( map { \$User_Profile_Data{$_} } @Fields_to_Display );
-		$Sth->fetch();
+    # populate %user_profile_data with the data fetched from the database
+  my %user_profile_data;
+  @user_profile_data{@fields_to_display} = ();
+  $sth->bind_columns( map { \$user_profile_data{$_} } @fields_to_display );
+  $sth->fetch();
 
-		&Query_Finish( $Sth );
-
-		# disconnect from the database
-		&Database_Disconnect( $Dbh );
-
+  query_finish( $sth );
+  database_disconnect( $dbh );
 }
-##### End of sub Get_User_Detail
 
 
-##### sub Process_Profile_Update
-# In: FormData
-# Out: status message
-# Calls sub Print_Interface_Screen at the end (with a success token)
-sub Process_Profile_Update(FormData)
+##### sub process_profile_update
+# In: reference to hash of parameters
+# Out: status code, status message
+sub process_profile_update
 {
-	my( $Dbh, $Sth, $Error_Code, $Query );
+  my ($args_ref) = @_;
+  my( $dbh, $sth, $error_code, $query );
 
-	# TODO:  lock necessary tables with LOCK_TABLE
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) {
+      return( 1, $error_code );
+  }
 
-	# connect to the database
-	undef $Error_Code;
-	
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+    # user level provisioning:  # if the user's level equals one of the
+    #  read-only levels, don't give them access 
+  $query = "SELECT $table_field{'users'}{'user_level'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-	###
-	# user level provisioning
-	# if the user's level equals one of the read-only levels, don't give them access 
-	#
-	$Query = "SELECT $db_table_field_name{'users'}{'user_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+    # TODO:  lock necessary tables with LOCK_TABLE
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_ref->{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	while ( my $Ref = $Sth->fetchrow_arrayref )
-	{
-		foreach $ReadOnlyLevel ( @read_only_user_levels )
-		{
-			if ( $$Ref[0] eq $ReadOnlyLevel )
-			{
-				&Query_Finish( $Sth );
-				&Database_Disconnect( $Dbh );
+  while ( my $ref = $sth->fetchrow_arrayref ) {
+      foreach $read_only_level ( @read_only_user_levels ) {
+          if ( $$ref[0] eq $read_only_level ) {
+              query_finish( $sth );
+                  # TODO:  unlock table(s)
+              database_disconnect( $dbh );
+              return( 0, '[ERROR] Your user level (Lv. ' . $$ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.' );
+          }
+      }
+  }
 
-                                # TODO:  unlock table(s)
+  query_finish( $sth );
 
-				return( 0, '[ERROR] Your user level (Lv. ' . $$Ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.' );
-			}
-		}
-	}
+    # Read the current user information from the database to decide which
+    # fields are being updated.  'password' should always be the last entry
+    #  of the array (important for later procedures)
+  my @fields_to_read = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'password' );
 
-	&Query_Finish( $Sth );
+    # DB query: get the user profile detail
+  $query = "SELECT ";
+  foreach $_ ( @fields_to_read ) {
+      my $temp = 'user_' . $_;
+      $query .= $table_field{'users'}{$temp} . ", ";
+  }
+    # delete the last ", "
+  $query =~ s/,\s$//;
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-	###
-	# read the current user information from the database to decide which fields are being updated
-	# 'password' should always be the last entry of the array (important for later procedures)
-	#
-	my @Fields_to_Read = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'password' );
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
+  ( $error_code, undef ) = query_execute( $sth, $args_ref->{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	# DB Query: get the user profile detail
-	$Query = "SELECT ";
-	foreach $_ ( @Fields_to_Read )
-	{
-		my $Temp = 'user_' . $_;
-		$Query .= $db_table_field_name{'users'}{$Temp} . ", ";
-	}
-	# delete the last ", "
-	$Query =~ s/,\s$//;
-	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+    # populate %user_profile_data with the data fetched from the database
+  my %user_profile_data;
+  @user_profile_data{@fields_to_read} = ();
+  $sth->bind_columns( map { \$user_profile_data{$_} } @fields_to_read );
+  $sth->fetch();
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  query_finish( $sth );
 
-	( $Error_Code, undef ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	# populate %User_Profile_Data with the data fetched from the database
-	my %User_Profile_Data;
-	@User_Profile_Data{@Fields_to_Read} = ();
-	$Sth->bind_columns( map { \$User_Profile_Data{$_} } @Fields_to_Read );
-	$Sth->fetch();
-
-	&Query_Finish( $Sth );
-
-	### check the current password with the one in the database before proceeding
-	if ( $User_Profile_Data{'password'} ne &Encode_Passwd( $FormData{'password_current'} ) )
-	{
-		&Database_Disconnect( $Dbh );
-
-                # TODO:  unlock table(s)
-		return( 1, 'Please check the current password and try again.' );
-	}
-
-	### update information in the database
-
-	# determine which fields to update in the user profile table
-	# @Fields_to_Update and @Values_to_Update should be an exact match
-	my( @Fields_to_Update, @Values_to_Update );
-
-	# if the password needs to be updated, add the new one to the fields/values to update
-	if ( $Update_Password )
-	{
-		push( @Fields_to_Update, $db_table_field_name{'users'}{'user_password'} );
-		push( @Values_to_Update, $Encrypted_Password );
-	}
-
-	# remove password from the update comparison list
-	# 'password' is the last element of the array; remove it from the array
-	$#Fields_to_Read--;
-
-	# compare the current & newly input user profile data and determine which fields/values to update
-	foreach $_ ( @Fields_to_Read )
-	{
-		if ( $User_Profile_Data{$_} ne $FormData{$_} )
-		{
-			my $Temp = 'user_' . $_;
-			push( @Fields_to_Update, $db_table_field_name{'users'}{$Temp} );
-			push( @Values_to_Update, $FormData{$_} );
-		}
-	}
-
-	# if there is nothing to update...
-	if ( $#Fields_to_Update < 0 )
-	{
-		&Database_Disconnect( $Dbh );
-                # TODO:  unlock table(s)
-		return( 1, 'There is no changed information to update.' );
-	}
-
-	# prepare the query for database update
-	$Query = "UPDATE $db_table_name{'users'} SET ";
-	foreach $_ ( 0 .. $#Fields_to_Update )
-	{
-		$Query .= $Fields_to_Update[$_] . " = ?, ";
-	}
-	$Query =~ s/,\s$//;
-	$Query .= " WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
-
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	( $Error_Code, undef ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-
-                # TODO:  unlock table(s)
-		$Error_Code =~ s/CantExecuteQuery\n//;
-		return( 1, 'An error has occurred while updating your account information.<br>[Error] ' . $Error_Code );
-	}
-
-	&Query_Finish( $Sth );
-
-	# disconnect from the database
-	&Database_Disconnect( $Dbh );
-
+    ### check the current password with the one in the database before
+    ### proceeding
+  if ( $user_profile_data{'password'} ne $args_ref->{'password_current'} ) {
         # TODO:  unlock table(s)
+      database_disconnect( $dbh );
+      return( 1, 'Please check the current password and try again.' );
+  }
+      # TODO:  unlock table(s)
 
-	### when everything has been processed successfully...
-	return( 0, 'Your account information has been updated successfully.' );
+    # determine which fields to update in the user profile table
+    # @fields_to_update and @values_to_update should be an exact match
+    my( @fields_to_update, @values_to_update );
 
+    # if the password needs to be updated, add the new one to the fields/
+    # values to update
+  if ( $update_password ) {
+      push( @fields_to_update, $table_field{'users'}{'user_password'} );
+      push( @values_to_update, $encrypted_password );
+  }
+
+    # Remove password from the update comparison list.  'password' is the
+    # last element of the array; remove it from the array
+  $#fields_to_read--;
+
+    # compare the current & newly input user profile data and determine
+    # which fields/values to update
+  foreach $_ ( @fields_to_read ) {
+      if ( $user_profile_data{$_} ne $soap_args{$_} ) {
+          my $temp = 'user_' . $_;
+          push( @fields_to_update, $table_field{'users'}{$temp} );
+          push( @values_to_update, $soap_args{$_} );
+      }
+  }
+
+    # if there is nothing to update...
+  if ( $#fields_to_update < 0 ) {
+      database_disconnect( $dbh );
+      return( 1, 'There is no changed information to update.' );
+  }
+
+    # prepare the query for database update
+  $query = "UPDATE $table{'users'} SET ";
+  foreach $_ ( 0 .. $#fields_to_update ) {
+      $query .= $fields_to_update[$_] . " = ?, ";
+  }
+  $query =~ s/,\s$//;
+  $query .= " WHERE $table_field{'users'}{'user_loginname'} = ?";
+
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
+
+  ( $error_code, undef ) = query_execute( $sth, @values_to_update, $args_ref->{'loginname'} );
+  if ( $error_code ) {
+          # TODO:  unlock table(s)
+      database_disconnect( $dbh );
+      $error_code =~ s/CantExecuteQuery\n//;
+      return( 1, 'An error has occurred while updating your account information.<br>[Error] ' . $error_code );
+  }
+
+  query_finish( $sth );
+        # TODO:  unlock table(s)
+  database_disconnect( $dbh );
+  return( 0, 'Your account information has been updated successfully.' );
 }
-##### End of sub Process_Profile_Update
 
 
 # activateaccount:  Account Activation DB methods
 
-##### sub Process_User_Account_Activation
-# In: FormData
-# Out:  StatusMessage 
-# Calls sub Print_Interface_Screen at the end (with a success token)
-sub Process_User_Account_Activation(FormData)
+##### sub process_account_activation
+# In: reference to hash of parameters
+# Out: status code, status message
+sub process_account_activation
 {
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
+  my( $args_ref ) = @_;
+  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-	# connect to the database
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return (1, $Error_Code );
-	}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return (1, $error_code ); }
 
-	# get the password from the database
-	$Query = "SELECT $db_table_field_name{'users'}{'user_password'}, $db_table_field_name{'users'}{'user_activation_key'}, $db_table_field_name{'users'}{'user_pending_level'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+    # get the password from the database
+  $query = "SELECT $table_field{'users'}{'user_password'}, $table_field{'users'}{'user_activation_key'}, $table_field{'users'}{'user_pending_level'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return ( 1, $Error_Code );
-	}
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return ( 1, $error_code );
+  }
 
-	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return ( 1, $Error_Code );
-	}
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_ref->{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return ( 1, $error_code );
+  }
 
-	# check whether this person is a registered user
-	my $Keys_Match_Token = 0;
-	my( $Pending_Level, $Non_Match_Error_Message );
+      # check whether this person is a registered user
+  my $keys_match = 0;
+  my( $pending_level, $non_match_error );
 
-	if ( $Num_of_Affected_Rows == 0 )
-	{
-		# this login name is not in the database
-		&Database_Disconnect( $Dbh );
-		return ( 1, 'Please check your login name and try again.' );
-	}
-	else
-	{
-		# this login name is in the database; compare passwords
-		while ( my $Ref = $Sth->fetchrow_arrayref )
-		{
-			if ( $$Ref[1] eq '' )
-			{
-				$Non_Match_Error_Message = 'This account has already been activated.';
-			}
-			elsif ( $$Ref[0] ne &Encode_Passwd( $FormData{'password'} ) )
-			{
-				$Non_Match_Error_Message = 'Please check your password and try again.';
-			}
-			elsif ( $$Ref[1] ne $FormData{'activation_key'} )
-			{
-				$Non_Match_Error_Message = 'Please check the activation key and try again.';
-			}
-			else
-			{
-				$Keys_Match_Token = 1;
-				$Pending_Level = $$Ref[2];
-			}
-		}
-	}
+  if ( $num_of_affected_rows == 0 ) {
+        # this login name is not in the database
+      database_disconnect( $dbh );
+      return ( 1, 'Please check your login name and try again.' );
+  }
+  else {
+        # this login name is in the database; compare passwords
+      while ( my $ref = $sth->fetchrow_arrayref ) {
+          if ( $$ref[1] eq '' ) {
+              $non_match_error = 'This account has already been activated.';
+          }
+          elsif ( $$ref[0] ne &Encode_Passwd( $args_ref->{'password'} ) ) {
+              $non_match_error = 'Please check your password and try again.';
+          }
+          elsif ( $$ref[1] ne $args_ref->{'activation_key'} ) {
+              $non_match_error = 'Please check the activation key and try again.';
+          }
+          else {
+              $keys_match = 1;
+              $pending_level = $$ref[2];
+          }
+      }
+  }
+  query_finish( $sth );
 
-	&Query_Finish( $Sth );
+      ### if the input password and the activation key matched against those
+      ### in the database, activate the account
+  if ( $keys_match ) {
+        # TODO:  lock necessary tables here
+        # Change the level to the pending level value and the pending level
+        # to 0; empty the activation key field
+    $query = "UPDATE $table{'users'} SET $table_field{'users'}{'user_level'} = ?, $table_field{'users'}{'user_pending_level'} = ?, $table_field{'users'}{'user_activation_key'} = '' WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-	### if the input password and the activation key matched against those in the database, activate the account
-	if ( $Keys_Match_Token )
-	{
-                # TODO:  lock necessary tables here
-		# change the level to the pending level value and the pending level to 0; empty the activation key field
-		$Query = "UPDATE $db_table_name{'users'} SET $db_table_field_name{'users'}{'user_level'} = ?, $db_table_field_name{'users'}{'user_pending_level'} = ?, $db_table_field_name{'users'}{'user_activation_key'} = '' WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+      ( $error_code, $sth ) = query_prepare( $dbh, $query );
+      if ( $error_code ) {
+          database_disconnect( $dbh );
+          return( 1, $error_code );
+      }
 
-		( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
-
-		( $Error_Code, undef ) = &Query_Execute( $Sth, $Pending_Level, '0', $FormData{'loginname'} );
-		if ( $Error_Code )
-		{
-			&Database_Disconnect( $Dbh );
-			return( 1, $Error_Code );
-		}
-
-		&Query_Finish( $Sth );
-
-		# TODO:  unlock the table(s)
-
-		# disconnect from the database
-		&Database_Disconnect( $Dbh );
-	}
-	else
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Non_Match_Error_Message );
-	}
-
-	### when everything has been processed successfully...
-	# $Processing_Result_Message string may be anything, as long as it's not empty
-	return( 0, 'The user account <strong>' . $FormData{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
-
+      ( $error_code, undef ) = query_execute( $sth, $pending_level, '0', $args_ref->{'loginname'} );
+      if ( $error_code ) {
+          database_disconnect( $dbh );
+          return( 1, $error_code );
+      }
+          # TODO:  unlock the table(s)
+      query_finish( $sth );
+      database_disconnect( $dbh );
+  }
+  else {
+      database_disconnect( $dbh );
+      return( 1, $non_match_error );
+  }
+  return( 0, 'The user account <strong>' . $args_ref->{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
 }
-##### End of sub Process_User_Account_Activation
 
 
 # register:  user account registration db
 
-##### sub Process_User_Registration
-# In: FormData
+##### sub process_registration
+# In:  reference to hash of parameters
 # Out: status message
-sub Process_User_Registration(FormData)
+sub process_registration
 {
-	# encrypt password
-	my $Encrypted_Password = &Encode_Passwd( $FormData{'password_once'} );
+  my( $args_ref ) = @_;
+    # encrypt password
+  my $encrypted_password = &Encode_Passwd( $args_ref->{'password_once'} );
 
-	# get current date/time string in GMT
-	my $Current_DateTime = &Create_Time_String( 'dbinput' );
-
-	### start working with the database
-	my( $Dbh, $Sth, $Error_Code, $Query, $Num_of_Affected_Rows );
-
-	# TODO:  lock table(s) with LOCK_TABLES
-
-	# connect to the database
-	undef $Error_Code;
+    # get current date/time string in GMT
+  my $current_date_time = &Create_Time_String( 'dbinput' );
+  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 	
-	( $Error_Code, $Dbh ) = &Database_Connect();
-	if ( $Error_Code )
-	{
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $dbh ) = database_connect();
+  if ( $error_code ) { return( 1, $error_code ); }
 
-	# login name overlap check
-	$Query = "SELECT $db_table_field_name{'users'}{'user_loginname'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+    # login name overlap check
+  $query = "SELECT $table_field{'users'}{'user_loginname'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+	# TODO:  lock table(s) with LOCK_TABLES
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_ref->{'loginname'} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
+  query_finish( $sth );
 
-	( $Error_Code, $Num_of_Affected_Rows ) = &Query_Execute( $Sth, $FormData{'loginname'} );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
+  if ( $num_of_affected_rows > 0 ) {
+      database_disconnect( $dbh );
+        # TODO:  unlock table(s)
+      return( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
+  }
 
-	&Query_Finish( $Sth );
+  $query = "INSERT INTO $table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-	if ( $Num_of_Affected_Rows > 0 )
-	{
-		&Database_Disconnect( $Dbh );
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+    database_disconnect( $dbh );
+    return( 1, $error_code );
+  }
 
-                # TODO:  unlock table(s)
+    # Initial user level is set to 0; needs admin accept/user activation to
+    # raise the user level
+  my @stuffs_to_insert = ( '', $args_ref->{'loginname'}, $encrypted_password, $args_ref->{'firstname'}, $args_ref->{'lastname'}, $args_ref->{'organization'}, $args_ref->{'email_primary'}, $args_ref->{'email_secondary'}, $args_ref->{'phone_primary'}, $args_ref->{'phone_secondary'}, $args_ref->{'description'}, 0, $current_date_time, '', 0 );
 
-		return( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
-	}
-
-	# insert into database query statement
-	$Query = "INSERT INTO $db_table_name{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-
-	( $Error_Code, $Sth ) = &Query_Prepare( $Dbh, $Query );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-		return( 1, $Error_Code );
-	}
-
-	# initial user level is set to 0; needs admin accept/user activation to raise the user level
-	my @Stuffs_to_Insert = ( '', $FormData{'loginname'}, $Encrypted_Password, $FormData{'firstname'}, $FormData{'lastname'}, $FormData{'organization'}, $FormData{'email_primary'}, $FormData{'email_secondary'}, $FormData{'phone_primary'}, $FormData{'phone_secondary'}, $FormData{'description'}, 0, $Current_DateTime, '', 0 );
-
-	( $Error_Code, undef ) = &Query_Execute( $Sth, @Stuffs_to_Insert );
-	if ( $Error_Code )
-	{
-		&Database_Disconnect( $Dbh );
-
-                # TODO:  unlock tables
-
-		$Error_Code =~ s/CantExecuteQuery\n//;
-		return( 1, 'An error has occurred while recording your registration on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $Error_Code );
-	}
-
-	&Query_Finish( $Sth );
-
-	# disconnect from the database
-	&Database_Disconnect( $Dbh );
+  ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
+  if ( $error_code ) {
+          # TODO:  unlock tables
+      database_disconnect( $dbh );
+      $error_code =~ s/CantExecuteQuery\n//;
+      return( 1, 'An error has occurred while recording your registration on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $error_code );
+  }
+  query_finish( $sth );
 
 	# TODO:  unlock table(s)
-
-	### when everything has been processed successfully...
-	# don't forget to show the user's login name
-	return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $FormData{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
-
+  database_disconnect( $dbh );
+  return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $args_ref->{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
 }
-##### End of sub Process_User_Registration
 
 1;
