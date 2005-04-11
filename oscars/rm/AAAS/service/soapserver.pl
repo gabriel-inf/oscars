@@ -3,7 +3,7 @@
 use SOAP::Transport::HTTP;
 
 my $daemon = SOAP::Transport::HTTP::Daemon
-  -> new (LocalPort => 4000)
+  -> new (LocalPort => 2000)
   -> dispatch_to('AAASServer')
 ;
 
