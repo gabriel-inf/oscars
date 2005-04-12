@@ -2,11 +2,10 @@ package AAAS::Frontend::Admin;
 
 # Admin.pm:  database operations associated with administrative forms
 
-# Last modified: April 10, 2005
+# Last modified: April 12, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-use AAAS::Frontend::General;
 use AAAS::Frontend::Database;
 
 
@@ -50,7 +49,7 @@ sub verify_acct
 
 
 ##### sub process_registration
-# In: soap_args
+# In: args_href
 # Out: None
 sub process_registration
 {
@@ -71,7 +70,7 @@ sub process_registration
   }
 
     # admin user level is set to 10 by default
-  my @stuffs_to_insert = ( '', $admin_loginname_string, $encrypted_password, $soap_args{'firstname'}, $soap_args{'lastname'}, $soap_args{'organization'}, $soap_args{'email_primary'}, $soap_args{'email_secondary'}, $soap_args{'phone_primary'}, $soap_args{'phone_secondary'}, $soap_args{'description'}, 10, $Current_DateTime, '', 0 );
+  my @stuffs_to_insert = ( '', $admin_loginname_string, $encrypted_password, $args_href->{'firstname'}, $args_href->{'lastname'}, $args_href->{'organization'}, $args_href->{'email_primary'}, $args_href->{'email_secondary'}, $args_href->{'phone_primary'}, $args_href->{'phone_secondary'}, $args_href->{'description'}, 10, $args_href->{'datetime'}, '', 0 );
 
   ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
                 # TODO:  release db lock
@@ -91,7 +90,7 @@ sub process_registration
 
 
 ##### sub process_login
-# In: soap_args
+# In: args_href
 # Out: None
 sub process_login
 {
@@ -109,7 +108,7 @@ sub process_login
       return( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $soap_args{'loginname'}, $admin_user_level );
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'}, $admin_user_level );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -123,7 +122,7 @@ sub process_login
   else {
         # this login name is in the database; compare passwords
       while ( my $ref = $sth->fetchrow_arrayref ) {
-          if ( $$ref[0] eq &Encode_Passwd( $soap_args{'password'} ) ) {
+          if ( $$ref[0] eq $args_href->{'password'} ) {
               $password_matches = 1;
           }
       }
@@ -136,7 +135,7 @@ sub process_login
 # adduser:  DB handling for adding a User page
 
 ##### sub check_login_available
-# In: soap_args
+# In: args_href
 # Out: $check_result [yes(overlaps)/no(doesn't overlap)]
 sub check_login_available
 {
@@ -159,7 +158,7 @@ sub check_login_available
       return( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $soap_args{'id'} );
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'id'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -182,7 +181,7 @@ sub check_login_available
 
 
 ##### sub process_user_registration
-# In: soap_args
+# In: args_href
 # Out: None
 sub process_user_registration
 {
@@ -203,7 +202,7 @@ sub process_user_registration
       return( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $soap_args{'loginname'} );
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -218,7 +217,7 @@ sub process_user_registration
     # insert into database query statement
     # initial user level is preset by the admin; no need to wait for
     #  authorization
-  my @stuffs_to_insert = ( '', $soap_args{'loginname'}, $encrypted_password, $soap_args{'firstname'}, $soap_args{'lastname'}, $soap_args{'organization'}, $soap_args{'email_primary'}, $soap_args{'email_secondary'}, $soap_args{'phone_primary'}, $soap_args{'phone_secondary'}, $soap_args{'description'}, 0, $Current_DateTime, $Activation_Key, $soap_args{'level'} );
+  my @stuffs_to_insert = ( '', $args_href->{'loginname'}, $encrypted_password, $args_href->{'firstname'}, $args_href->{'lastname'}, $args_href->{'organization'}, $args_href->{'email_primary'}, $args_href->{'email_secondary'}, $args_href->{'phone_primary'}, $args_href->{'phone_secondary'}, $args_href->{'description'}, 0, $args_href->{'datetime'}, $activation_key, $args_href->{'level'} );
 
   $query = "INSERT INTO $table{'users'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
 
@@ -239,7 +238,7 @@ sub process_user_registration
   query_finish( $sth );
 	# TODO:  unlock the operation
   database_disconnect( $dbh );
-  return( 0, 'The new user account \'' . $soap_args{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
+  return( 0, 'The new user account \'' . $args_href->{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
 
 }
 
@@ -247,7 +246,7 @@ sub process_user_registration
 # editprofile:  DB handling for Edit Admin Profile page
 
 ##### sub get_user_profile
-# In:  soap_args
+# In:  args_href
 # Out: status message and DB results
 sub get_user_profile
 {
@@ -276,7 +275,7 @@ sub get_user_profile
       return( 1, $error_code );
   }
 
-  ( $error_code, undef ) = query_execute( $sth, $soap_args{'loginname'} );
+  ( $error_code, undef ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -298,7 +297,7 @@ sub get_user_profile
 
 
 ##### sub process_profile_update
-# In: soap_args
+# In: args_href
 # Out: status message, results
 sub process_profile_update
 {
@@ -330,7 +329,7 @@ sub process_profile_update
       return( 1, $error_code );
   }
 
-  ( $error_code, undef ) = query_execute( $sth, $soap_args{'loginname'} );
+  ( $error_code, undef ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -345,7 +344,7 @@ sub process_profile_update
 
     ### check the current password with the one in the database before
     ### proceeding
-  if ( $user_profile_data{'password'} ne &Encode_Passwd( $soap_args{'password_current'} ) ) {
+  if ( $user_profile_data{'password'} ne &Encode_Passwd( $args_href->{'password_current'} ) ) {
                 # TODO:  release lock
       database_disconnect( $dbh );
       return( 1, 'Please check the current password and try again.' );
@@ -367,10 +366,10 @@ sub process_profile_update
 
     # compare the current & newly input user profile data and determine which fields/values to update
   foreach $_ ( @fields_to_read ) {
-      if ( $user_profile_data{$_} ne $soap_args{$_} ) {
+      if ( $user_profile_data{$_} ne $args_href->{$_} ) {
           my $temp = 'user_' . $_;
           push( @fields_to_update, $table_field{'users'}{$temp} );
-          push( @values_to_update, $soap_args{$_} );
+          push( @values_to_update, $args_href->{$_} );
       }
   }
 
@@ -395,7 +394,7 @@ sub process_profile_update
       return( 1, $error_code );
   }
 
-  ( $error_code, undef ) = query_execute( $sth, @values_to_update, $soap_args{'loginname'} );
+  ( $error_code, undef ) = query_execute( $sth, @values_to_update, $args_href->{'loginname'} );
   if ( $error_code ) {
                 # TODO:  release lock
       database_disconnect( $dbh );

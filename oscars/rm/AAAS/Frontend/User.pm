@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with user forms.
-# Last modified: April 10, 2005
+# Last modified: April 12, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -10,7 +10,6 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(process_user_login);
 
-use AAAS::Frontend::General;
 use AAAS::Frontend::Database;
 
 # login:  login interaction with DB
@@ -36,7 +35,7 @@ sub process_user_login
   }
 
     # get the password from the database
-  $query = "SELECT $table_field{'users'}{'user_password'}, $table_field{'users'}{'user_level'} FROM $table{'users'} WHERE $table_field{'users'}{'user_dn'} = ?";
+  $query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -112,7 +111,7 @@ sub handle_logout
 # Out: status code, status message
 sub get_user_detail
 {
-  my($args_ref) = @_;
+  my($args_href) = @_;
   my( $dbh, $sth, $error_code, $query );
 
   ### get the user detail from the database and populate the profile form
@@ -122,17 +121,16 @@ sub get_user_detail
   }
 
     # names of the fields to be displayed on the screen
-  my @fields_to_display = ( 'firstname', 'lastname', 'organization', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
+  my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
 
     # DB query: get the user profile detail
   $query = "SELECT ";
   foreach $_ ( @fields_to_display ) {
-      my $temp = 'user_' . $_;
-      $query .= $table_field{'users'}{$temp} . ", ";
+      $query .= $table_field{'users'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -140,7 +138,7 @@ sub get_user_detail
       return( 1, $error_code );
   }
 
-  ( $error_code, undef ) = query_execute( $sth, $args_ref->{'loginname'} );
+  ( $error_code, undef ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -162,7 +160,7 @@ sub get_user_detail
 # Out: status code, status message
 sub process_profile_update
 {
-  my ($args_ref) = @_;
+  my ($args_href) = @_;
   my( $dbh, $sth, $error_code, $query );
 
   ( $error_code, $dbh ) = database_connect();
@@ -172,7 +170,7 @@ sub process_profile_update
 
     # user level provisioning:  # if the user's level equals one of the
     #  read-only levels, don't give them access 
-  $query = "SELECT $table_field{'users'}{'user_level'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query = "SELECT $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
     # TODO:  lock necessary tables with LOCK_TABLE
 
@@ -182,7 +180,7 @@ sub process_profile_update
       return( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_ref->{'loginname'} );
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -209,19 +207,18 @@ sub process_profile_update
     # DB query: get the user profile detail
   $query = "SELECT ";
   foreach $_ ( @fields_to_read ) {
-      my $temp = 'user_' . $_;
-      $query .= $table_field{'users'}{$temp} . ", ";
+      $query .= $table_field{'users'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
   }
-  ( $error_code, undef ) = query_execute( $sth, $args_ref->{'loginname'} );
+  ( $error_code, undef ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -237,7 +234,7 @@ sub process_profile_update
 
     ### check the current password with the one in the database before
     ### proceeding
-  if ( $user_profile_data{'password'} ne $args_ref->{'password_current'} ) {
+  if ( $user_profile_data{'password'} ne $args_href->{'password_current'} ) {
         # TODO:  unlock table(s)
       database_disconnect( $dbh );
       return( 1, 'Please check the current password and try again.' );
@@ -251,7 +248,7 @@ sub process_profile_update
     # if the password needs to be updated, add the new one to the fields/
     # values to update
   if ( $update_password ) {
-      push( @fields_to_update, $table_field{'users'}{'user_password'} );
+      push( @fields_to_update, $table_field{'users'}{'password'} );
       push( @values_to_update, $encrypted_password );
   }
 
@@ -263,8 +260,7 @@ sub process_profile_update
     # which fields/values to update
   foreach $_ ( @fields_to_read ) {
       if ( $user_profile_data{$_} ne $soap_args{$_} ) {
-          my $temp = 'user_' . $_;
-          push( @fields_to_update, $table_field{'users'}{$temp} );
+          push( @fields_to_update, $table_field{'users'}{$_} );
           push( @values_to_update, $soap_args{$_} );
       }
   }
@@ -281,7 +277,7 @@ sub process_profile_update
       $query .= $fields_to_update[$_] . " = ?, ";
   }
   $query =~ s/,\s$//;
-  $query .= " WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query .= " WHERE $table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -289,7 +285,7 @@ sub process_profile_update
       return( 1, $error_code );
   }
 
-  ( $error_code, undef ) = query_execute( $sth, @values_to_update, $args_ref->{'loginname'} );
+  ( $error_code, undef ) = query_execute( $sth, @values_to_update, $args_href->{'loginname'} );
   if ( $error_code ) {
           # TODO:  unlock table(s)
       database_disconnect( $dbh );
@@ -311,14 +307,14 @@ sub process_profile_update
 # Out: status code, status message
 sub process_account_activation
 {
-  my( $args_ref ) = @_;
+  my( $args_href ) = @_;
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return (1, $error_code ); }
 
     # get the password from the database
-  $query = "SELECT $table_field{'users'}{'user_password'}, $table_field{'users'}{'user_activation_key'}, $table_field{'users'}{'user_pending_level'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'activation_key'}, $table_field{'users'}{'pending_level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -326,7 +322,7 @@ sub process_account_activation
       return ( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_ref->{'loginname'} );
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return ( 1, $error_code );
@@ -347,10 +343,10 @@ sub process_account_activation
           if ( $$ref[1] eq '' ) {
               $non_match_error = 'This account has already been activated.';
           }
-          elsif ( $$ref[0] ne &Encode_Passwd( $args_ref->{'password'} ) ) {
+          elsif ( $$ref[0] ne $args_href->{'password'} ) {
               $non_match_error = 'Please check your password and try again.';
           }
-          elsif ( $$ref[1] ne $args_ref->{'activation_key'} ) {
+          elsif ( $$ref[1] ne $args_href->{'activation_key'} ) {
               $non_match_error = 'Please check the activation key and try again.';
           }
           else {
@@ -367,7 +363,7 @@ sub process_account_activation
         # TODO:  lock necessary tables here
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
-    $query = "UPDATE $table{'users'} SET $table_field{'users'}{'user_level'} = ?, $table_field{'users'}{'user_pending_level'} = ?, $table_field{'users'}{'user_activation_key'} = '' WHERE $table_field{'users'}{'user_loginname'} = ?";
+    $query = "UPDATE $table{'users'} SET $table_field{'users'}{'level'} = ?, $table_field{'users'}{'pending_level'} = ?, $table_field{'users'}{'activation_key'} = '' WHERE $table_field{'users'}{'dn'} = ?";
 
       ( $error_code, $sth ) = query_prepare( $dbh, $query );
       if ( $error_code ) {
@@ -375,7 +371,7 @@ sub process_account_activation
           return( 1, $error_code );
       }
 
-      ( $error_code, undef ) = query_execute( $sth, $pending_level, '0', $args_ref->{'loginname'} );
+      ( $error_code, undef ) = query_execute( $sth, $pending_level, '0', $args_href->{'loginname'} );
       if ( $error_code ) {
           database_disconnect( $dbh );
           return( 1, $error_code );
@@ -388,7 +384,7 @@ sub process_account_activation
       database_disconnect( $dbh );
       return( 1, $non_match_error );
   }
-  return( 0, 'The user account <strong>' . $args_ref->{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
+  return( 0, 'The user account <strong>' . $args_href->{'loginname'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.' );
 }
 
 
@@ -399,19 +395,18 @@ sub process_account_activation
 # Out: status message
 sub process_registration
 {
-  my( $args_ref ) = @_;
-    # encrypt password
-  my $encrypted_password = &Encode_Passwd( $args_ref->{'password_once'} );
+  my( $args_href ) = @_;
+  my $encrypted_password = $args_href->{'password_once'};
 
     # get current date/time string in GMT
-  my $current_date_time = &Create_Time_String( 'dbinput' );
+  my $current_date_time = $args_href ->{'utc_seconds'};
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 	
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return( 1, $error_code ); }
 
     # login name overlap check
-  $query = "SELECT $table_field{'users'}{'user_loginname'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query = "SELECT $table_field{'users'}{'dn'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 	# TODO:  lock table(s) with LOCK_TABLES
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -419,7 +414,7 @@ sub process_registration
       return( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_ref->{'loginname'} );
+  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -442,7 +437,7 @@ sub process_registration
 
     # Initial user level is set to 0; needs admin accept/user activation to
     # raise the user level
-  my @stuffs_to_insert = ( '', $args_ref->{'loginname'}, $encrypted_password, $args_ref->{'firstname'}, $args_ref->{'lastname'}, $args_ref->{'organization'}, $args_ref->{'email_primary'}, $args_ref->{'email_secondary'}, $args_ref->{'phone_primary'}, $args_ref->{'phone_secondary'}, $args_ref->{'description'}, 0, $current_date_time, '', 0 );
+  my @stuffs_to_insert = ( '', $args_href->{'loginname'}, $encrypted_password, $args_href->{'firstname'}, $args_href->{'lastname'}, $args_href->{'organization'}, $args_href->{'email_primary'}, $args_href->{'email_secondary'}, $args_href->{'phone_primary'}, $args_href->{'phone_secondary'}, $args_href->{'description'}, 0, $current_date_time, '', 0 );
 
   ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
   if ( $error_code ) {
@@ -455,7 +450,7 @@ sub process_registration
 
 	# TODO:  unlock table(s)
   database_disconnect( $dbh );
-  return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $args_ref->{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
+  return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $args_href->{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
 }
 
 1;

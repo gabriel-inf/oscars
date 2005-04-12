@@ -27,23 +27,23 @@ use DBI;
 );
 
 # database field names
-# usage: @{ $table_field{'users'} }{'user_loginname', 'user_password', 'user_level'}
+# usage: @{ $table_field{'users'} }{'dn', 'password', 'level'}
 %table_field = (
   'users' => {
-      'user_id' => 'user_id',
-      'user_last_name' => 'user_last_name',
-      'user_first_name' => 'user_first_name',
-      'user_dn' => 'user_dn',
-      'user_password' => 'user_password',
-      'user_email_primary' => 'user_email_primary',
-      'user_email_secondary' => 'user_email_secondary',
-      'user_phone_primary' => 'user_phone_primary',
-      'user_phone_secondary' => 'user_phone_secondary',
-      'user_description' => 'user_description',
-      'user_level' => 'user_level',
-      'user_register_time' => 'user_register_time',
-      'user_activation_key' => 'user_activation_key',
-      'user_pending_level' => 'user_pending_level',
+      'id' => 'user_id',
+      'last_name' => 'user_last_name',
+      'first_name' => 'user_first_name',
+      'dn' => 'user_dn',
+      'password' => 'user_password',
+      'email_primary' => 'user_email_primary',
+      'email_secondary' => 'user_email_secondary',
+      'phone_primary' => 'user_phone_primary',
+      'phone_secondary' => 'user_phone_secondary',
+      'description' => 'user_description',
+      'level' => 'user_level',
+      'register_time' => 'user_register_time',
+      'activation_key' => 'user_activation_key',
+      'pending_level' => 'user_pending_level',
       'authorization_id' => 'authorization_id',
       'institution_id' => 'institution_id',
   }
