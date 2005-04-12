@@ -38,14 +38,14 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
 
 CREATE TABLE IF NOT EXISTS reservations (
     reservation_id INT(5) NOT NULL AUTO_INCREMENT,
-      -- in GMT
-    reservation_start_time DATETIME,
-    reservation_end_time DATETIME,
+      -- in time since epoch in seconds (UTC)
+    reservation_start_time INT(9),
+    reservation_end_time INT(9),
     reservation_qos VARCHAR(50),
       -- need list of statuses to choose from
     reservation_status VARCHAR(12),
     reservation_description TEXT,
-    reservation_created_time DATETIME NOT NULL,
+    reservation_created_time INT(9) NOT NULL,
     reservation_ingress_port INT(5) NOT NULL,
     reservation_egress_port INT(5) NOT NULL,
     ingress_interface_id INT(5) NOT NULL,
