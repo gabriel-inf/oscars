@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS interfaces (
 
 CREATE TABLE IF NOT EXISTS ipaddrs (
     ipaddrs_id INT(5) NOT NULL AUTO_INCREMENT,
-    ipaddrs_ip VARCHAR(30) NOT NULL,
+    ipaddrs_ip VARCHAR(39) NOT NULL,
     interface_id INT(5) NOT NULL,
     PRIMARY KEY (ipaddrs_id)
 ) type=MyISAM;
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     reservation_qos VARCHAR(50),
       -- need list of statuses to choose from
     reservation_status VARCHAR(12),
-    reservation_description TEXT,
+    reservation_description VARCHAR(30),
     reservation_created_time INT(9) NOT NULL,
     reservation_ingress_port INT(5) NOT NULL,
     reservation_egress_port INT(5) NOT NULL,
