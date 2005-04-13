@@ -8,7 +8,7 @@ package AAAS::Frontend::Database;
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table %table %table_field);
+our @EXPORT = qw(db_handle_query db_handle_finish database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table %table %table_field);
 
 use DBI;
 
@@ -50,6 +50,58 @@ use DBI;
 );
 
 ##### Settings End #####
+
+
+##### sub db_handle_query
+# In:  database handle, partial query, table name, arglist
+# Out: error code, number of rows returned, statement handle
+# Out: $Err_Code (0 on success), $DB_Handle
+sub db_handle_query
+{
+  my ($errorflag, $dbh, $query, $table_name, @arglist) = @_;
+  my ($error_code);
+  $error_code = database_lock_table($table{$table_name});
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( $error_code, 0, undef );
+  }
+  $query =~ s/WHERE/FROM $table{$table_name} WHERE/;
+  #print STDERR "** ", ' ', $query, "\n\n";
+  ( $error_code, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_code ) {
+      database_unlock_table($table{$table_name});
+      database_disconnect( $dbh );
+      return( $error_code, 0, undef );
+  }
+  ( $error_code, $num_rows ) = query_execute( $sth, @arglist );
+
+  if ( $error_code ) {
+      print STDERR $error_code, " after exec\n\n";
+      database_unlock_table($table{$table_name});
+      database_disconnect( $dbh );
+      return( $error_code, 0, undef );
+  }
+  if (($num_rows == 0) && $errorflag)
+  {
+      print STDERR $error_code, " num_rows = 0\n\n";
+      db_handle_finish($dbh, $sth, $table_name);
+      return (1, "");
+  }
+  else { return ($error_code, $num_rows, $sth) };
+}
+
+
+##### sub db_handle_finish
+# In:  database handle, statement handle, table name
+# Out: None.
+sub db_handle_finish
+{
+  my ($dbh, $sth, $table_name) = @_;
+  query_finish( $sth );
+  database_unlock_table($table{$table_name});
+  database_disconnect( $dbh );
+}
+
 
 
 ##### sub database_connect

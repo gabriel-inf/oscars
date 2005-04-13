@@ -23,42 +23,21 @@ $non_activated_user_level = -1;
 sub process_user_login
 {
   my($loginname, $password) = @_;
-  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
+  my( $dbh, $sth, $error_code, $query, $num_rows );
 
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return( 1, $error_code ); }
 
-  $error_code = database_lock_table($table{'users'});
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
-
     # get the password from the database
-  $query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $partial_query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'level'} WHERE $table_field{'users'}{'dn'} = ?";
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_unlock_table($table{'users'});
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
-
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $loginname );
-
-  if ( $error_code ) {
-      database_unlock_table($table{'users'});
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
+  ($error_code, $num_rows, $sth) = db_handle_query(1, $dbh, $partial_query, 'users', $loginname);
+  if ( $error_code ) { return( 1, $error_code ); }
 
     # check whether this person is a registered user
   my $password_matches = 0;
-  if ( $num_of_affected_rows == 0 ) {
+  if ( $num_rows == 0 ) {
         # this login name is not in the database
-      query_finish( $sth );
-      database_unlock_table($table{'users'});
-      database_disconnect( $dbh );
       return( 1, 'Please check your login name and try again.' );
   }
   else {
@@ -66,8 +45,7 @@ sub process_user_login
       while ( my $ref = $sth->fetchrow_arrayref ) {
           if ( $$ref[1] eq $non_activated_user_level ) {
                 # this account is not authorized & activated yet
-              database_disconnect( $dbh );
-              database_unlock_table($table{'users'});
+              database_handle_finish( 1, $dbh, $sth, 'users');
               return( 1, 'This account is not authorized or activated yet.' );
           }
           elsif ( $$ref[0] eq  $password ) {
@@ -75,11 +53,8 @@ sub process_user_login
           }
       }
   }
-  query_finish( $sth );
-  database_unlock_table($table{'users'});
-
+  db_handle_finish( $dbh, $sth, 'users');
   if ( !$password_matches ) {
-      database_disconnect( $dbh );
       return( 1, 'Please check your password and try again.' );
   }
   return( 0, 'The user has successfully logged in.' );
@@ -172,15 +147,13 @@ sub process_profile_update
     #  read-only levels, don't give them access 
   $query = "SELECT $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
-    # TODO:  lock necessary tables with LOCK_TABLE
-
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'} );
+  ( $error_code, $num_rows ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -308,7 +281,7 @@ sub process_profile_update
 sub process_account_activation
 {
   my( $args_href ) = @_;
-  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
+  my( $dbh, $sth, $error_code, $query, $num_rows );
 
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return (1, $error_code ); }
@@ -322,7 +295,7 @@ sub process_account_activation
       return ( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'} );
+  ( $error_code, $num_rows ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return ( 1, $error_code );
@@ -332,7 +305,7 @@ sub process_account_activation
   my $keys_match = 0;
   my( $pending_level, $non_match_error );
 
-  if ( $num_of_affected_rows == 0 ) {
+  if ( $num_rows == 0 ) {
         # this login name is not in the database
       database_disconnect( $dbh );
       return ( 1, 'Please check your login name and try again.' );
@@ -400,7 +373,7 @@ sub process_registration
 
     # get current date/time string in GMT
   my $current_date_time = $args_href ->{'utc_seconds'};
-  my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
+  my( $dbh, $sth, $error_code, $query, $num_rows );
 	
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return( 1, $error_code ); }
@@ -414,14 +387,14 @@ sub process_registration
       return( 1, $error_code );
   }
 
-  ( $error_code, $num_of_affected_rows ) = query_execute( $sth, $args_href->{'loginname'} );
+  ( $error_code, $num_rows ) = query_execute( $sth, $args_href->{'loginname'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
   }
   query_finish( $sth );
 
-  if ( $num_of_affected_rows > 0 ) {
+  if ( $num_rows > 0 ) {
       database_disconnect( $dbh );
         # TODO:  unlock table(s)
       return( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
