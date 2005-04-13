@@ -23,7 +23,7 @@ $non_activated_user_level = -1;
 sub process_user_login
 {
   my($loginname, $password) = @_;
-  my( $dbh, $sth, $error_code, $query, $num_rows );
+  my( $dbh, $sth, $error_code, $partial_query, $num_rows );
 
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return( 1, $error_code ); }
@@ -31,13 +31,14 @@ sub process_user_login
     # get the password from the database
   $partial_query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'level'} WHERE $table_field{'users'}{'dn'} = ?";
 
-  ($error_code, $num_rows, $sth) = db_handle_query(1, $dbh, $partial_query, 'users', $loginname);
+  ($error_code, $num_rows, $sth) = db_handle_query(READ_LOCK, $dbh, $partial_query, 'users', $loginname);
   if ( $error_code ) { return( 1, $error_code ); }
 
     # check whether this person is a registered user
   my $password_matches = 0;
   if ( $num_rows == 0 ) {
         # this login name is not in the database
+      db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
       return( 1, 'Please check your login name and try again.' );
   }
   else {
@@ -45,7 +46,7 @@ sub process_user_login
       while ( my $ref = $sth->fetchrow_arrayref ) {
           if ( $$ref[1] eq $non_activated_user_level ) {
                 # this account is not authorized & activated yet
-              database_handle_finish( 1, $dbh, $sth, 'users');
+              db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
               return( 1, 'This account is not authorized or activated yet.' );
           }
           elsif ( $$ref[0] eq  $password ) {
@@ -53,7 +54,7 @@ sub process_user_login
           }
       }
   }
-  db_handle_finish( $dbh, $sth, 'users');
+  db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
   if ( !$password_matches ) {
       return( 1, 'Please check your password and try again.' );
   }
@@ -61,7 +62,7 @@ sub process_user_login
 }
 
 
-#### logout:  DB operations associated with logout
+#### logout:  DB operations associated with logout, a noop right now
 
 sub handle_logout
 {
@@ -71,9 +72,6 @@ sub handle_logout
   if ( $error_code ) {
       return( 1, $error_code );
   }
-    # TODO:  lock table, and redo to change status of user in user table
-  query_finish( $sth );
-    # TODO:  unlock the table(s)
   database_disconnect( $dbh );
   return (0, 'OK');
 }
@@ -86,8 +84,8 @@ sub handle_logout
 # Out: status code, status message
 sub get_user_detail
 {
-  my($args_href) = @_;
-  my( $dbh, $sth, $error_code, $query );
+  my($loginname) = @_;
+  my( $dbh, $sth, $error_code, $partial_query, $num_rows);
 
   ### get the user detail from the database and populate the profile form
   ( $error_code, $dbh ) = database_connect();
@@ -99,25 +97,16 @@ sub get_user_detail
   my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
 
     # DB query: get the user profile detail
-  $query = "SELECT ";
+  $partial_query = "SELECT ";
   foreach $_ ( @fields_to_display ) {
-      $query .= $table_field{'users'}{$_} . ", ";
+      $partial_query .= $table_field{'users'}{$_} . ", ";
   }
     # delete the last ", "
-  $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $partial_query =~ s/,\s$//;
+  $partial_query .= " WHERE $table_field{'users'}{'dn'} = ?";
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
-
-  ( $error_code, undef ) = query_execute( $sth, $args_href->{'loginname'} );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
+  ( $error_code, $num_rows, $sth ) = db_handle_query(READ_LOCK, $dbh, $partial_query, 'users', $loginname );
+  if ( $error_code ) { return( 1, $error_code ); }
 
     # populate %user_profile_data with the data fetched from the database
   my %user_profile_data;
@@ -125,8 +114,8 @@ sub get_user_detail
   $sth->bind_columns( map { \$user_profile_data{$_} } @fields_to_display );
   $sth->fetch();
 
-  query_finish( $sth );
-  database_disconnect( $dbh );
+  db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
+  return (0, 'Retrieved user profile.');
 }
 
 

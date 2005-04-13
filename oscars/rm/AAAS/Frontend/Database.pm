@@ -7,10 +7,14 @@ package AAAS::Frontend::Database;
 
 require Exporter;
 
+use constant READ_LOCK => 1;
+use constant WRITE_LOCK => 2;
+
 our @ISA = qw(Exporter);
-our @EXPORT = qw(db_handle_query db_handle_finish database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table %table %table_field);
+our @EXPORT = qw(db_handle_query db_handle_finish database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table %table %table_field READ_LOCK WRITE_LOCK);
 
 use DBI;
+
 
 ##### Settings Begin (Global variables) #####
 # database connection info
@@ -58,9 +62,8 @@ use DBI;
 # Out: $Err_Code (0 on success), $DB_Handle
 sub db_handle_query
 {
-  my ($errorflag, $dbh, $query, $table_name, @arglist) = @_;
-  my ($error_code);
-  $error_code = database_lock_table($table{$table_name});
+  my ($opflag, $dbh, $query, $table_name, @arglist) = @_;
+  my $error_code = database_lock_table($opflag, $table{$table_name});
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( $error_code, 0, undef );
@@ -69,7 +72,7 @@ sub db_handle_query
   #print STDERR "** ", ' ', $query, "\n\n";
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
-      database_unlock_table($table{$table_name});
+      database_unlock_table($opflag, $table{$table_name});
       database_disconnect( $dbh );
       return( $error_code, 0, undef );
   }
@@ -77,15 +80,9 @@ sub db_handle_query
 
   if ( $error_code ) {
       print STDERR $error_code, " after exec\n\n";
-      database_unlock_table($table{$table_name});
+      database_unlock_table($opflag, $table{$table_name});
       database_disconnect( $dbh );
       return( $error_code, 0, undef );
-  }
-  if (($num_rows == 0) && $errorflag)
-  {
-      print STDERR $error_code, " num_rows = 0\n\n";
-      db_handle_finish($dbh, $sth, $table_name);
-      return (1, "");
   }
   else { return ($error_code, $num_rows, $sth) };
 }
@@ -96,9 +93,9 @@ sub db_handle_query
 # Out: None.
 sub db_handle_finish
 {
-  my ($dbh, $sth, $table_name) = @_;
+  my ($opflag, $dbh, $sth, $table_name) = @_;
   query_finish( $sth );
-  database_unlock_table($table{$table_name});
+  database_unlock_table($opflag, $table{$table_name});
   database_disconnect( $dbh );
 }
 
@@ -164,26 +161,35 @@ sub query_execute
 # Out: None
 sub query_finish
 {
-  my $sth = $_[0];
+  my ($sth) = @_;
   $sth->finish();
 }
 
 
 ##### sub database_lock_table
-# In: 
-# Out: None
+# In:  opflag, table name 
+# Out: status, error message if any
 sub database_lock_table
 {
-    return 0;
+    my ($opflag, $table_name) = @_;
+    my $query = "LOCK TABLE $table{ $table_name }";
+    if ($opflag & $WRITE_LOCK) { $query .= " WRITE"; }
+    elsif ($opflag & READ_LOCK) { $query .= " READ"; }
+    return (0, "");
 }
 
 
 ##### sub database_unlock_table
-# In: 
-# Out: None
+# In:  opflag, table name
+# Out: status, error message if any
 sub database_unlock_table
 {
-    return 0;
+    my ($opflag, $table_name) = @_;
+    if (($opflag & READ_LOCK) || ($opflag & WRITE_LOCK))
+    {
+        $query = "UNLOCK TABLE $table{ $table_name }";
+    }
+    return (0, "");
 }
 
 # Don't touch the line below
