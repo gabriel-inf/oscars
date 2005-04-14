@@ -1,21 +1,23 @@
-package BSS::Frontend::Database;
+package AAAS::Frontend::Database;
 
-# database.pm
-#
-# package for database operation
+# database.pm:  package for database operation
 # Last modified: April 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 require Exporter;
 
-our @ISA = qw(Exporter);
-our @EXPORT = qw(database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table %table %table_field);
+use constant READ_LOCK => 1;
+use constant WRITE_LOCK => 2;
 
+our @ISA = qw(Exporter);
+our @EXPORT = qw(db_handle_query db_handle_finish database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table %table %table_field READ_LOCK WRITE_LOCK);
 
 use DBI;
 
+
 ##### Settings Begin (Global variables) #####
+
 # database connection info
 %db_connect_info = (
   'database' => 'aaas',
@@ -48,6 +50,52 @@ use DBI;
 );
 
 ##### Settings End #####
+
+
+##### sub db_handle_query
+# In:  database handle, partial query, table name, arglist
+# Out: error code, number of rows returned, statement handle
+# Out: $Err_Code (0 on success), $DB_Handle
+sub db_handle_query
+{
+  my ($opflag, $dbh, $query, $table_name, @arglist) = @_;
+  my %results = database_lock_table($opflag, $table{$table_name});
+  if ( results{'error'} {
+      database_disconnect( $dbh );
+      return( %results, undef );
+  }
+  $query =~ s/WHERE/FROM $table{$table_name} WHERE/;
+  #print STDERR "** ", ' ', $query, "\n\n";
+  ( %results, $sth ) = query_prepare( $dbh, $query );
+  if ( $results{'error'} ) {
+      database_unlock_table($opflag, $table{$table_name});
+      database_disconnect( $dbh );
+      return( %results, undef );
+  }
+  %results = query_execute( $sth, @arglist );
+
+  if ( $results{'error'} ) {
+      print STDERR $error_code, " after exec\n\n";
+      database_unlock_table($opflag, $table{$table_name});
+      database_disconnect( $dbh );
+      return( %results, undef );
+  }
+  else { return (%results, $sth) };
+}
+
+
+##### sub db_handle_finish
+# In:  database handle, statement handle, table name
+# Out: None.
+sub db_handle_finish
+{
+  my ($opflag, $dbh, $sth, $table_name) = @_;
+  query_finish( $sth );
+  database_unlock_table($opflag, $table{$table_name});
+  database_disconnect( $dbh );
+}
+
+
 
 ##### sub database_connect
 # In: None
@@ -95,11 +143,20 @@ sub query_prepare
 sub query_execute
 {
   my( $sth, @Query_Args ) = @_;
+  my %results;
     # execute the prepared query (run subroutine 'query_prepare' before
     # calling this subrutine)
-  my $num_of_affected_rows = $sth->execute( @Query_Args ) || return (1, "CantExecuteQuery\n" . $sth->errstr);
+  $results{'num_rows'} = $sth->execute( @Query_Args );
+  if (!($results{'num_rows'}))
+  {
+      $results{'error'} = 1;
+      $results{'status_message'} = "CantExecuteQuery\n" . $sth->errstr;
+      return %results;
+  }
 
-    # if nothing fails, return 0 (success) and the $num_of_affected_rows
+    # if nothing fails, $results{'error'} is empty (success) and
+    # $results{'num_rows'} is set
+  $results{'error'} = '';
   return (0, $num_of_affected_rows);
 }
 
@@ -109,26 +166,37 @@ sub query_execute
 # Out: None
 sub query_finish
 {
-  my $sth = $_[0];
+  my ($sth) = @_;
   $sth->finish();
 }
 
 
 ##### sub database_lock_table
-# In: 
-# Out: None
+# In:  opflag, table name 
+# Out: status, error message if any
 sub database_lock_table
 {
-    return 0;
+    my ($opflag, $table_name) = @_;
+    my $query = "LOCK TABLE $table{ $table_name }";
+    if ($opflag & $WRITE_LOCK) { $query .= " WRITE"; }
+    elsif ($opflag & READ_LOCK) { $query .= " READ"; }
+    my %results = { 'error': ''};
+    return (%results);
 }
 
 
 ##### sub database_unlock_table
-# In: 
-# Out: None
+# In:  opflag, table name
+# Out: status, error message if any
 sub database_unlock_table
 {
-    return 0;
+    my ($opflag, $table_name) = @_;
+    if (($opflag & READ_LOCK) || ($opflag & WRITE_LOCK))
+    {
+        $query = "UNLOCK TABLE $table{ $table_name }";
+    }
+    my %results = { 'error': ''};
+    return (%results);
 }
 
 # Don't touch the line below

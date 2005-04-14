@@ -1,14 +1,14 @@
 package BSS::Frontend::Reservation;
 
 # Reservation.pm:
-# Last modified: April 10, 2005
+# Last modified: April 14, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(process_reservation);
+our @EXPORT = qw(get_reservations process_reservation);
 
 use BSS::Frontend::Database;
 
@@ -17,110 +17,55 @@ $bandwidth_limit = 3000;
 
 ##### Beginning of sub routines #####
 
-# reservation:  contacts db to generate reservation
+# from reservation.pl:  contacts db to generate reservation
 
 ##### sub process_reservation
 # In: reference to hash of parameters
 # Out: success or failure, and status message
 sub process_reservation
 {
-    ### check conflicts & record reservation
-    # 1) schedule conflict; 2) path conflict; 3) bandwidth limit
-    # perform lock before and after these processes
-
-  my $conflict_status = 0; # 0: no conflict, 1: existing conflict
-
+  my($args_href) = @_;
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return( 1, $error_code ); }
+  my $over_limit = 0; # whether any time segment is over the bandwidth limit
+  my $end_time = args_href->{'start_time'} + args_href->{'duration'};
 
     # TODO:  lock table(s) with LOCK_TABLE
 
     ###
-    # for each of the duration hours, grab the total amount of bandwidth
-    # and see whether the requested amount plus the total of already reserved
-    # amount exceeds the pre-set limit of bandwidth
-
-  use DateTime;
-
-    # prepare the query beforehand, and execute it within the foreach loop
-    # Comparison rule:
-    # ( Row.StartTime <= [Req.StartTime] AND Row.EndTime > [Req.StartTime] ) OR ( Row.StartTime > [Req.StartTime] AND Row.StartTime < [Req.EndTime] )
-    # QUERY EXAMPLE: select SUM(bandwidth) from res where ( start <= '2004-09-11 02:00:00' and end > '2004-09-11 02:00:00' ) or ( start > '2004-09-11 02:00:00' and start < '2004-09-11 03:00:00' );
-	
-  $query = "SELECT SUM($table_field{'reservations'}{'qos'}) FROM $table{'reservations'} WHERE ( $table_field{'reservations'}{'start_time'} <= ? AND $table_field{'reservations'}{'end_time'} > ? ) OR ( $table_field{'reservations'}{'start_time'} > ? AND $table_field{'reservations'}{'start_time'} < ? )";
+    # Get bandwidth and times of reservations overlapping that of the
+    # reservation request.
+  $query = "SELECT $table_field{'reservations'}{'qos'}, $table_field{'reservations'}{'start_time'}, $table_field{'reservations'}{'end_time'} FROM $table{'reservations'} WHERE ( $table_field{'reservations'}{'end_time'} >= ? AND $table_field{'reservations'}{'start_time'} <= ? )";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
   }
+      # execute query with the comparison start & end datetime strings
+  ( $error_code, $rows ) = query_execute( $sth, $args_href->{'start_time'}, $end_time} );
+  if ( $error_code ) {
+      database_disconnect( $dbh );
+      return( 1, $error_code );
+  }
 
-    # to show the information on the error screen if conflic occurs...
-  my( $Conflicted_Start_Time, $Conflicted_End_Time );
-
-  DURATION: foreach $_ ( 0 .. ( $args_ref->{'duration_hour'} - 1 ) )
-  {
-      my %temp_date_time;
-      @temp_date_time{ 'year', 'month', 'day', 'hour', 'time_zone' } = @FormData{ 'start_year', 'start_month', 'start_date', 'start_hour', 'start_timeoffset' };
-      my $dt_comp_start = DateTime->new( %temp_date_time );
-      $dt_comp_start->add( hours => $_ );
-
-        # now get the comparison end time (one hour later)
-      my $dt_comp_end = $dt_comp_start->clone->add( hours => ( $_ + 1 ) );
-
-        # 'dbinput' type uses gmtime( epoch_time ); hence making everything converted to UTC
-      my $comp_start_datetime = &Create_Time_String( 'dbinput', $dt_comp_start->epoch );
-      my $comp_end_datetime = &Create_Time_String( 'dbinput', $dt_comp_end->epoch );
-
-        # execute query with the comparison start & end datetime strings
-        # the order is: [Req.StartTime], [Req.StartTime], [Req.StartTime], [Req.EndTime]
-      ( $error_code, undef ) = query_execute( $sth, $comp_start_datetime, $comp_start_datetime, $comp_start_datetime, $comp_end_datetime );
-      if ( $error_code ) {
-          database_disconnect( $dbh );
-          return( 1, $error_code );
-      }
-
-      my $db_bandwidth_sum;
-      while ( my $ref = $sth->fetchrow_arrayref ) {
-          $db_bandwidth_sum = $$ref[0];
-      }
-
-        # Check the bandwidth limit; if the existing total plus the requested
-        # amount exceeds the pre-set limit, # set the conflict status to 1 and
-        # exit the loop
-      if ( ( $db_bandwidth_sum + $args_ref->{'bandwidth'} ) > $abilene_bandwidth_limit ) {
-          $conflict_status = 1;
-          ( $Conflicted_Start_Time, $Conflicted_End_Time ) = ( $comp_start_datetime, $comp_end_datetime );
-          last DURATION;
-      }
-  } # end of DURATION loop
-
+  # TODO:  find segments of overlap, determine if bandwidth in any is
+  #        over the limit; return time segments if error
   query_finish( $sth );
 
-    # if the conflict status is 0, record the reservation to the database
-    # otherwise, return error message
+  # TODO:  unlock table(s)
 
-  my $new_reservation_id unless ( $conflict_status );
-  if ( $conflict_status ) {
-                # TODO:  unlock table(s)
+    # If no segment is over the limit,  record the reservation to the database.
+    # otherwise, return error message (TODO) with the times involved.
+
+  my $new_reservation_id unless ( $over_limit );
+  if ( $over_limit ) {
       database_disconnect( $dbh );
-      return( 1, '[ERROR] The available bandwidth limit on the network has been reached between ' . $Conflicted_Start_Time . ' UTC and ' . $Conflicted_End_Time . ' UTC. Please modify your reservation request and try again.' );
+          # TODO:  list of times
+      return( 1, '[ERROR] The available bandwidth limit on the network has been reached between '. 'Please modify your reservation request and try again.' );
   }
   else {
-        # get the reservation start time
-      my %temp_date_time;
-      @temp_date_time{ 'year', 'month', 'day', 'hour', 'time_zone' } = @FormData{ 'start_year', 'start_month', 'start_date', 'start_hour', 'start_timeoffset' };
-      my $dtResStart = DateTime->new( %temp_date_time );
-
-        # now get the reservation end time
-      my $dtResEnd = $dtResStart->clone->add( hours => $args_ref->{'duration_hour'} );
-
-        # 'dbinput' type uses gmtime( epoch_time ); hence convert everything to UTC
-      my $start_time = &Create_Time_String( 'dbinput', $dtResStart->epoch );
-      my $end_time = &Create_Time_String( 'dbinput', $dtResEnd->epoch );
-      my $current_time = &Create_Time_String( 'dbinput', time );
-
-      my @stuffs_to_insert = ( '', @FormData{ 'loginname', 'origin', 'destination', 'bandwidth' }, $start_time, $end_time, $args_ref->{'description'}, $current_time, @ENV{ 'REMOTE_ADDR', 'REMOTE_HOST', 'HTTP_USER_AGENT' } );
+      my @stuffs_to_insert = ( '', @FormData{ 'loginname', 'origin', 'destination', 'bandwidth' }, args_href->{'start_time'}, $end_time, $args_ref->{'description'}, $current_time, @ENV{ 'REMOTE_ADDR', 'REMOTE_HOST', 'HTTP_USER_AGENT' } );
 
         # insert into database query statement
       $query = "INSERT INTO $table{'reservations'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
@@ -149,13 +94,13 @@ sub process_reservation
 }
 
 
-# reservationlist:  Reservation List DB handling
+# from reservationlist.pl:  Reservation List DB handling
 
-##### sub get_reservations_list
+##### sub get_reservations
 ### get the reservation list from the database and populate the table tag
 # In: reference to hash of parameters
 # Out: success or failure, and status message
-sub get_reservations_list
+sub get_reservations
 {
   my( $dbh, $sth, $error_code, $query );
 
