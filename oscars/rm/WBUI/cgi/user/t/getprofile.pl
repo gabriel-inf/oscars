@@ -4,7 +4,7 @@ require '../soapclient.pl';
 
 my($value);
 my %params = ('loginname' => 'davidr' );
-my($unused, %results) = soap_get_user_profile(%params);
+my($unused, %results) = soap_get_profile(%params);
 print "Status:  ", $results{'status_msg'}, "\n";
 print "Returning:\n\n";
 foreach $key(sort keys %results)

@@ -17,15 +17,15 @@ require 'soapclient.pl';
 # TODO:  FIX
 #$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
 
-my ($Error_Status, %Results) = &process_reservation();
+my ($Error_Status, %Results) = create_reservation();
 
 if (!$Error_Status)
 {
-    &Update_Frames("", "Reservation made for $FormData{'loginname'}");
+    Update_Frames("", "Reservation made for $FormData{'loginname'}");
 }
 else
 {
-    &Update_Frames("", $Results{'error_msg'});
+    Update_Frames("", $Results{'error_msg'});
 }
 exit;
 
@@ -42,10 +42,10 @@ exit;
 
 
 
-##### sub process_reservation
+##### sub create_reservation
 # In: None
 # Out: None
-sub process_reservation
+sub create_reservation
 {
 
   my(%results);
