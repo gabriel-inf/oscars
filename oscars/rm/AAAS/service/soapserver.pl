@@ -14,24 +14,24 @@ package AAASServer;
 use lib '../..';
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(process_user_login get_user_profile set_user_profile );
+our @EXPORT = qw(Verify_login Get_profile Set_profile );
 
 use AAAS::Frontend::User;
 use AAAS::Frontend::Admin;
 
-sub process_user_login {
+sub Verify_login {
   my ($class, %params) = @_;
-  return (AAAS::Frontend::User::process_login(\%params));
+  return (verify_login(\%params));
 }
 
 
-sub get_user_profile {
+sub Get_profile {
   my ($class, %params) = @_;
   return (get_profile(\%params));
 }
 
 
-sub set_user_profile {
+sub Set_profile {
   my ($class, %params) = @_;
   return (set_profile(\%params));
 }

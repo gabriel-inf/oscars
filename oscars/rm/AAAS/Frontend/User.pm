@@ -10,7 +10,7 @@ use lib '../..';
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(process_login get_profile set_profile );
+our @EXPORT = qw(verify_login get_profile set_profile );
 
 use DB;
 use AAAS::Frontend::DBSettings;
@@ -20,10 +20,10 @@ $non_activated_user_level = -1;
 
 # from login.pl:  login interaction with DB
 
-##### sub process_login
+##### sub verify_login
 # In: reference to hash of parameters
 # Out: status code, status message
-sub process_login
+sub verify_login
 {
   my($args_href) = @_;
   my( $dbh, $sth, $query, $num_rows, %results );
