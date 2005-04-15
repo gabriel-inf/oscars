@@ -34,7 +34,6 @@ sub process_login
     # get the password from the database
   $query = "SELECT $Table_field{'users'}{'password'}, $Table_field{'users'}{'level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  print STDERR "process_login: ", ' * ', $results{'error_msg'}, $dbh, "\n\n";
   ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $args_href->{'loginname'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
@@ -42,7 +41,7 @@ sub process_login
   my $password_matches = 0;
   if ( $num_rows == 0 ) {
         # this login name is not in the database
-      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
+      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} = 'Please check your login name and try again.';
       return( 1, %results );
   }
@@ -51,7 +50,7 @@ sub process_login
       while ( my $ref = $sth->fetchrow_arrayref ) {
           if ( $$ref[1] eq $non_activated_user_level ) {
                 # this account is not authorized & activated yet
-              db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
+              db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
               $results{'error_msg'} = 'This account is not authorized or activated yet.';
               return( 1, %results );
           }
@@ -60,7 +59,7 @@ sub process_login
           }
       }
   }
-  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
+  db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
 
   if ( !$password_matches ) {
       $results{'error_msg'} = 'Please check your password and try again.';
@@ -80,11 +79,11 @@ sub logout
 
   ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) {
-      return( %results );
+      return( 1, %results );
   }
   database_disconnect( $dbh );
   results{'status_msg'} = 'Logged out';
-  return ( %results );
+  return ( 0, %results );
 }
 
 
@@ -114,12 +113,14 @@ sub get_profile
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $error_msg, $num_rows, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $args_href->{'loginname'});
+  ( $error_msg, $num_rows, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $args_href->{'loginname'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
+
   if ( $num_rows == 0 )
   {
+      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} = 'No such user in the database';
-      return( %results );
+      return( 1, %results );
   }
 
     # populate %results with the data fetched from the database
@@ -127,7 +128,7 @@ sub get_profile
   $sth->bind_columns( map { \$results{$_} } @fields_to_display );
   $sth->fetch();
 
-  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
+  db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
   foreach $key(sort keys %results)
   {
         $value = $results{$key};
@@ -144,29 +145,26 @@ sub get_profile
 sub set_profile
 {
   my ($args_href) = @_;
-  my( $dbh, $sth, $query, $error_code, %results );
+  my( $dbh, $sth, $query, %results );
 
   ( $results{'error_message'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) {
-      return( %results );
+      return( 1, %results );
   }
 
     # user level provisioning:  # if the user's level equals one of the
     #  read-only levels, don't give them access 
   $query = "SELECT $Table_field{'users'}{'level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, undef, $sth ) = db_handle_query(READ_LOCK, $dbh, $query, $Table{'users'}, $args_href->{'loginname'} );
-  if ( $results{'error_msg'}) {
-      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
-      return( %results );
-  }
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $args_href->{'loginname'} );
+  if ( $results{'error_msg'}) { return( 1, %results ); }
 
   while ( my $ref = $sth->fetchrow_arrayref ) {
       foreach $read_only_level ( @read_only_user_levels ) {
           if ( $$ref[0] eq $read_only_level ) {
-              db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
+              db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
               $results{'error_msg'} = '[ERROR] Your user level (Lv. ' . $$ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.';
-              return ( %results );
+              return ( 1, %results );
           }
       }
   }
@@ -187,31 +185,22 @@ sub set_profile
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
-  ( $error_code, undef ) = query_execute( $sth, $args_href->{'loginname'} );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $args_href->{'loginname'} );
+  if ( $results{'error_msg'}) { return( 1, %results ); }
 
-    # populate user %profile_data with the data fetched from the database
-  my %profile_data;
-  @profile_data{@fields_to_read} = ();
-  $sth->bind_columns( map { \$profile_data{$_} } @fields_to_read );
+    # populate %results with the data fetched from the database
+  @results{@fields_to_read} = ();
+  $sth->bind_columns( map { \$results{$_} } @fields_to_read );
   $sth->fetch();
-
-  query_finish( $sth );
 
     ### check the current password with the one in the database before
     ### proceeding
-  if ( $profile_data{'password'} ne $args_href->{'password_current'} ) {
-      database_disconnect( $dbh );
+  if ( $results{'password'} ne $args_href->{'password_current'} ) {
+      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
       return( 1, 'Please check the current password and try again.' );
   }
+  query_finish( $sth );
+
     # determine which fields to update in the user profile table
     # @fields_to_update and @values_to_update should be an exact match
     my( @fields_to_update, @values_to_update );
@@ -230,14 +219,15 @@ sub set_profile
     # compare the current & newly input user profile data and determine
     # which fields/values to update
   foreach $_ ( @fields_to_read ) {
-      if ( $profile_data{$_} ne $soap_args{$_} ) {
+      if ( $results{$_} ne $args_href->{$_} ) {
           push( @fields_to_update, $Table_field{'users'}{$_} );
-          push( @values_to_update, $soap_args{$_} );
+          push( @values_to_update, $args_href->{$_} );
       }
   }
 
     # if there is nothing to update...
   if ( $#fields_to_update < 0 ) {
+      database_unlock_table( $Table{'users'} );
       database_disconnect( $dbh );
       return( 1, 'There is no changed information to update.' );
   }
@@ -250,22 +240,17 @@ sub set_profile
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, @values_to_update, $args_href->{'loginname'} );
+  if ( $results{'error_msg'}) {
+      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+      $results{'error_msg'} =~ s/CantExecuteQuery\n//;
+      $results{'error_msg'} =  'An error has occurred while updating your account information.<br>[Error] ' . $error_code . $results{'error_msg'};
+      return( 1, %results );
   }
 
-  ( $error_code, undef ) = query_execute( $sth, @values_to_update, $args_href->{'loginname'} );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      $error_code =~ s/CantExecuteQuery\n//;
-      return( 1, 'An error has occurred while updating your account information.<br>[Error] ' . $error_code );
-  }
-
-  query_finish( $sth );
-  database_disconnect( $dbh );
-  return( 0, 'Your account information has been updated successfully.' );
+  db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+  $results{'status_msg'} = 'Your account information has been updated successfully.';
+  return( 0, %results );
 }
 
 
