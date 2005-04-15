@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-require 'soapclient.pl';
+require '../soapclient.pl';
 
 my $passwd = crypt('shyysh', 'oscars');
 my %params = ('loginname' => 'davidr', 'password' => $passwd);
