@@ -1,7 +1,7 @@
 package AAAS::Frontend::Database;
 
 # database.pm:  package for database operation
-# Last modified: April 10, 2005
+# Last modified: April 14, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -17,10 +17,9 @@ use DBI;
 
 
 ##### Settings Begin (Global variables) #####
-
 # database connection info
 %db_connect_info = (
-  'database' => 'aaas',
+  'database' => 'AAAS',
   'host' => 'localhost',
   'user' => 'davidr',
   'password' => 'shyysh'
@@ -49,38 +48,38 @@ use DBI;
   }
 );
 
+
 ##### Settings End #####
 
 
 ##### sub db_handle_query
 # In:  database handle, partial query, table name, arglist
 # Out: error code, number of rows returned, statement handle
-# Out: $Err_Code (0 on success), $DB_Handle
+# Out: $error_msg (0 on success), $DB_handle
 sub db_handle_query
 {
-  my ($opflag, $dbh, $query, $table_name, @arglist) = @_;
-  my %results = database_lock_table($opflag, $table{$table_name});
-  if ( results{'error'} {
+  my ($dbh, $query, $table, $opflag, @arglist) = @_;
+  print STDERR $query, "\n";
+  my $error_msg = database_lock_table($opflag, $table);
+  if ( $error_msg ) {
       database_disconnect( $dbh );
-      return( %results, undef );
+      return( $error_msg, undef );
   }
-  $query =~ s/WHERE/FROM $table{$table_name} WHERE/;
-  #print STDERR "** ", ' ', $query, "\n\n";
-  ( %results, $sth ) = query_prepare( $dbh, $query );
-  if ( $results{'error'} ) {
-      database_unlock_table($opflag, $table{$table_name});
+  ( $error_msg, $sth ) = query_prepare( $dbh, $query );
+  if ( $error_msg ) {
+      database_unlock_table($opflag, $table);
       database_disconnect( $dbh );
-      return( %results, undef );
+      return( $error_msg, undef );
   }
-  %results = query_execute( $sth, @arglist );
+  ($error_msg, $num_rows) = query_execute( $sth, @arglist );
 
-  if ( $results{'error'} ) {
-      print STDERR $error_code, " after exec\n\n";
-      database_unlock_table($opflag, $table{$table_name});
+  if ( $error_msg ) {
+      print STDERR $error_msg, " after exec\n\n";
+      database_unlock_table($opflag, $table);
       database_disconnect( $dbh );
-      return( %results, undef );
+      return( $error_msg, undef );
   }
-  else { return (%results, $sth) };
+  else { return ('', $num_rows, $sth) };
 }
 
 
@@ -89,9 +88,9 @@ sub db_handle_query
 # Out: None.
 sub db_handle_finish
 {
-  my ($opflag, $dbh, $sth, $table_name) = @_;
+  my ($opflag, $dbh, $sth, $table) = @_;
   query_finish( $sth );
-  database_unlock_table($opflag, $table{$table_name});
+  database_unlock_table($opflag, $table);
   database_disconnect( $dbh );
 }
 
@@ -99,23 +98,20 @@ sub db_handle_finish
 
 ##### sub database_connect
 # In: None
-# Out: $Err_Code (0 on success), $DB_Handle
+# Out: $error_msg (empty on success), $DB_handle
 sub database_connect
 {
-  my $dsn = "DBI:mysql:database=$db_connect_info{'database'};host=$db_connect_info{'host'}";
+  my $dsn = "DBI:mysql:database=$db_connect_info{'database'};
+  host=$db_connect_info{'host'}";
   my $dbh = DBI->connect( $dsn, $db_connect_info{'user'}, $db_connect_info{'password'} );
 
-  if ( defined( $dbh ) ) {
-      return (0, $dbh);
-  }
-  else {
-      return (1, "CantConnectDB\n");
-  }
+  if ( defined( $dbh ) ) { return ( '', $dbh ); }
+  else { return ( "CantConnectDB\n", undef ); }
 }
 
 
 ##### sub database_disconnect
-# In: $DB_Handle ($dbh)
+# In: $DB_handle ($dbh)
 # Out: None
 sub database_disconnect
 {
@@ -125,44 +121,38 @@ sub database_disconnect
 
 
 ##### sub query_prepare
-# In: $DB_Handle ($dbh), $Statement
-# Out: $Err_Code, $Statement_Handle
+# In: $DB_handle ($dbh), $statement
+# Out: $error_msg, $statement_handle
 sub query_prepare
 {
-  my( $dbh, $Statement ) = @_;
-  my $sth = $dbh->prepare( "$Statement" ) || return (1, "CantPrepareStatement\n" . $dbh->errstr);
-	
-    # if nothing fails, return 0 (success) and the statement handle
-  return (0, $sth);
+  my( $dbh, $statement ) = @_;
+  my $sth = $dbh->prepare( $statement );
+  if (!defined($sth)) { return ("CantPrepareStatement\n" . $dbh->errstr, undef); }
+    # if nothing fails, return an empty error message, and the statement
+    # handle
+  return ('', $sth);
 }
 
 
 ##### sub query_execute
-# In: $Statement_Handle ($sth), @Query_Arguments (for placeholders(?s) in the prepared query statement)
-# Out: $Err_Code, $Number_of_Rows_Affected
+# In: $statement_handle ($sth), @query_Arguments (for placeholders(?s) in the prepared query statement)
+# Out: $error_msg, $num_of_rows_affected
 sub query_execute
 {
-  my( $sth, @Query_Args ) = @_;
-  my %results;
+  my( $sth, @query_args ) = @_;
     # execute the prepared query (run subroutine 'query_prepare' before
     # calling this subrutine)
-  $results{'num_rows'} = $sth->execute( @Query_Args );
-  if (!($results{'num_rows'}))
-  {
-      $results{'error'} = 1;
-      $results{'status_message'} = "CantExecuteQuery\n" . $sth->errstr;
-      return %results;
+  my $num_rows = $sth->execute( @query_args );
+  if (!$num_rows) {
+      return( "CantExecuteQuery\n" . $sth->errstr, undef );
   }
-
-    # if nothing fails, $results{'error'} is empty (success) and
-    # $results{'num_rows'} is set
-  $results{'error'} = '';
-  return (0, $num_of_affected_rows);
+    # if nothing fails, empty error message, and $num_rows is set
+  return ( '', $num_rows);
 }
 
 
 ##### sub query_finish
-# In: $Statement_Handle ($sth)
+# In: $statement_handle ($sth)
 # Out: None
 sub query_finish
 {
@@ -176,12 +166,11 @@ sub query_finish
 # Out: status, error message if any
 sub database_lock_table
 {
-    my ($opflag, $table_name) = @_;
-    my $query = "LOCK TABLE $table{ $table_name }";
+    my ($opflag, $table) = @_;
+    my $query = "LOCK TABLE $table";
     if ($opflag & $WRITE_LOCK) { $query .= " WRITE"; }
     elsif ($opflag & READ_LOCK) { $query .= " READ"; }
-    my %results = { 'error': ''};
-    return (%results);
+    return ( '' );
 }
 
 
@@ -190,13 +179,12 @@ sub database_lock_table
 # Out: status, error message if any
 sub database_unlock_table
 {
-    my ($opflag, $table_name) = @_;
+    my ($opflag, $table) = @_;
     if (($opflag & READ_LOCK) || ($opflag & WRITE_LOCK))
     {
-        $query = "UNLOCK TABLE $table{ $table_name }";
+        $query = "UNLOCK TABLE $table";
     }
-    my %results = { 'error': ''};
-    return (%results);
+    return ( '' );
 }
 
 # Don't touch the line below
