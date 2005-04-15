@@ -1,79 +1,77 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # myprofile.pl:  Main service: My Profile page
-# Last modified: April 5, 2005
+# Last modified: April 15, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
-require './lib/general.pl';
-require './lib/authenticate.pl';
-
-# current script name (used for error message)
-$script_filename = $ENV{'SCRIPT_NAME'};
+require '../lib/general.pl';
+require 'soapclient.pl';
 
 
-##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-my $Error_Status = &Process_Profile_Update();
+my ($Error_Status, %Results = &process_profile_update();
 if ( !$Error_Status)
 {
-    &Print_Frames();
+    ### TODO:  output screen
+    &Update_Frames('', $Results{'status_msg'});
 }
-else
-{
-    &Print_Status_Message($Error_Status);
-}
+else { &Update_Frames('', $Results{'error_msg'}); }
 
 exit;
 
-##### End of mainstream #####
 
 
 ##### Beginning of sub routines #####
 
 
-##### sub Process_Profile_Update
+##### sub process_profile_update
 # In: None
-# Out: Status Message
-sub Process_Profile_Update
+# Out: status message
+sub process_profile_update
 {
 
-	# validate user input (fairly minimal... Javascript also takes care of form data validation)
-	if ( $FormData{'password_current'} eq '' )
-	{
-		return( 1, 'Please enter the current password.' );
-	}
+  my(%results);
 
-	my $Encrypted_Password;
-	my $Update_Password = 0;
+    # validate user input (fairly minimal... Javascript also takes care of form data validation)
+  if ( $FormData{'password_current'} eq '' )
+  {
+      $results{'error_msg'} = 'Please enter the current password.';
+      return( 1, %results );
+  }
 
-	if ( $FormData{'password_new_once'} ne '' || $FormData{'password_new_twice'} ne '' )
-	{
-		if ( $FormData{'password_new_once'} ne $FormData{'password_new_twice'} )
-		{
-			return( 1, 'Please enter the same new password twice for verification.' );
-		}
-		else
-		{
-			# encrypt the new password
-			$Encrypted_Password = &Encode_Passwd( $FormData{'password_new_once'} );
+  my $encrypted_password;
+  my $update_password = 0;
+  my(%params);
 
-			$Update_Password = 1;
-		}
-	}
+  if ( $FormData{'password_new_once'} ne '' || $FormData{'password_new_twice'} ne '' )
+  {
+      if ( $FormData{'password_new_once'} ne $FormData{'password_new_twice'} )
+      {
+          $results{'error_msg'} = 'Please enter the same new password twice for verification.';
+          return( 1, %results );
+      }
+      else
+      {
+           # encrypt the new password
+          $params{'password'} = &Encode_Passwd( $FormData{'password_new_once'} );
 
-	### TODO:  make call to database, get status
+          $update_password = 1;
+      }
+  }
 
-        ### TODO:  output screen
-	### when everything has been processed successfully...
-	return( 0, 'Your account information has been updated successfully.' );
+    ### TODO:  make call to database, get status
 
+    ### when everything has been processed successfully...
+  results{'status_msg'} = 'Your account information has been updated successfully.';
+  return( 0, %results );
 }
-##### End of sub Process_Profile_Update
+
+##### End of sub process_profile_update
 
 ##### End of sub routines #####
 

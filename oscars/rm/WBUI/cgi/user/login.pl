@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login page
-# Last modified: April 1, 2005
+# Last modified: April 15, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -9,10 +9,10 @@
 require '../lib/general.pl';
 require 'soapclient.pl';
 
+
 # main service start point URI (the first screen a user sees after logging in)
 $Service_startpoint_URI = 'https://oscars.es.net/user/';
 
-##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
@@ -20,7 +20,7 @@ $Service_startpoint_URI = 'https://oscars.es.net/user/';
 # if login successful, forward user to the next appropriate page
 # all else: Update status but don't change main frame
 
-my ($Error_Status, @Error_Message) = &process_user_login();
+my ($Error_Status, %Results) = &process_user_login();
 
 if ( !$Error_Status )
 {
@@ -29,12 +29,10 @@ if ( !$Error_Status )
 }
 else
 {
-    &Update_Frames('', $Error_Message[0]);
+    &Update_Frames('', $Results{'error_msg'});
 }
 exit;
 
-
-##### End of mainstream #####
 
 
 ##### Beginning of sub routines #####
@@ -45,25 +43,26 @@ exit;
 # Out: Error status
 sub process_user_login
 {
+  my(%results);
 
-	# validate user input (just check for empty fields)
-	if ( $FormData{'loginname'} eq '' )
-	{
-		return( 1, 'Please enter your login name.' );
-	}
+    # validate user input (just check for empty fields)
+  if ( $FormData{'loginname'} eq '' )
+  {
+      $results{'error_msg'} = 'Please enter your login name.';
+      return( 1, %results );
+  }
 
-	if ( $FormData{'password'} eq '' )
-	{
-		return( 1, 'Please enter your password.' );
-	}
-        my(%params);
-        $params{'loginname'} = $FormData{'loginname'};
-        $params{'password'} = &Encode_Passwd($FormData{'password'});
+  if ( $FormData{'password'} eq '' )
+  {
+      $results{'error_msg'} = 'Please enter your password.';
+      return( 1, %results );
+  }
+  my(%params);
+  $params{'loginname'} = $FormData{'loginname'};
+  $params{'password'} = &Encode_Passwd($FormData{'password'});
 
-        return(soap_process_user_login(%params));
-
+  return(soap_process_user_login(%params));
 }
-##### End of sub process_user_login
 
 
 ##### End of sub routines #####

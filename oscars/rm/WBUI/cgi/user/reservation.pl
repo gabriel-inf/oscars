@@ -1,18 +1,15 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # reservation.pl:  Main interface CGI program for network resource
 #                  reservation process
-# Last modified: April 5, 2005
+# Last modified: April 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
+require 'soapclient.pl';
 
-$script_filename = $ENV{'SCRIPT_NAME'};
-
-##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
@@ -20,7 +17,7 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # TODO:  FIX
 #$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
 
-my ($Error_Status, $Error_Message) = &Process_Reservation();
+my ($Error_Status, %Results) = &process_reservation();
 
 if (!$Error_Status)
 {
@@ -28,11 +25,10 @@ if (!$Error_Status)
 }
 else
 {
-    &Update_Frames("", $Error_Message[0]);
+    &Update_Frames("", $Results{'error_msg'});
 }
 exit;
 
-##### End of mainstream #####
 
 
 ##### Beginning of sub routines #####
@@ -46,27 +42,28 @@ exit;
 
 
 
-##### sub Process_Reservation
+##### sub process_reservation
 # In: None
 # Out: None
-# Calls sub Print_Interface_Screen at the end (with a success token)
-sub Process_Reservation
+sub process_reservation
 {
 
-	# make bandwidth, date, and time values numeric
-	foreach $_ ( 'bandwidth', 'start_year', 'start_month', 'start_date', 'start_hour', 'duration_hour' )
-	{
-		$FormData{$_} += 0;
-	}
+  my(%results);
 
-	### TODO:  call other subsystem with FormData
-        ### subsystem returns reservation id, success or error message
+    # make bandwidth, date, and time values numeric
+  foreach $_ ( 'bandwidth', 'start_year', 'start_month', 'start_date', 'start_hour', 'duration_hour' )
+  {
+      $FormData{$_} += 0;
+  }
 
-        ### print screen or set src location
-        return(1, "so far does nothing");
+    ### TODO:  call other subsystem with FormData
+    ### subsystem returns reservation id, success or error message
+
+    ### print screen or set src location
+  $results{'error_msg'} = 'so far does nothing';
+  return( 1, %results );
 
 }
-##### End of sub Process_Reservation
 
 
 ##### End of sub routines #####

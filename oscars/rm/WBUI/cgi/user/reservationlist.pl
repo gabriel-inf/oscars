@@ -1,18 +1,14 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: April 5, 2005
+# Last modified: April 15, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
+require 'soapclient.pl';
 
-# current script name (used for error message)
-$script_filename = $ENV{'SCRIPT_NAME'};
-
-##### Beginning of mainstream #####
 
 # Receive data from HTML form (accept both POST and GET methods)
 %FormData = &Parse_Form_Input_Data( 'all' );
@@ -31,7 +27,6 @@ else
 
 exit;
 
-##### End of mainstream #####
 
 
 ##### Beginning of sub routines #####
@@ -65,7 +60,7 @@ sub Print_Reservation_Detail
 	exit;
 
 }
-##### End of sub Print_Reservation_Detail
+
 
 ##### End of sub routines #####
 
