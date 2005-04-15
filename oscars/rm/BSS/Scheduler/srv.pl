@@ -17,12 +17,17 @@ use lib "lib/perl5";
 ## while (i.e. running traceroute)
 use SOAP::Transport::HTTP::Daemon::ThreadOnAccept;
 
+use Config::Auto;
+
 # enable this in the 'production' version
 # don't want to die on 'Broken pipe' or Ctrl-C
 #$SIG{PIPE} = $SIG{INT} = 'IGNORE';
 
+# slurp up the config file
+my $config = Config::Auto::parse('BSS.config');
+
 # start up a thread to monitor the DB
-BSSScheduler::start_scheduler();
+BSSScheduler::start_scheduler($config);
 
 # Let create a SOAP server
 my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept

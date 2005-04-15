@@ -13,6 +13,9 @@ use threads::shared;
 
 use strict;
 
+# global config file 
+my ($global_config);
+
 ###################################
 # This should probably be just new or 
 # some such OO thing. Just startup and deatch
@@ -20,6 +23,8 @@ use strict;
 # to the main prog
 ###################################
 sub start_scheduler {
+
+    $global_config = shift;
 
     print "Starting Scheduler\n";
     my $handler = threads->create("scheduler");
@@ -38,8 +43,7 @@ sub scheduler {
         print "Scheduler looping\n";
         find_reservations();
         # check every 5 minutes or so
-        #sleep(3600);
-        sleep(60);
+        sleep($global_config->{'db_poll_time'});
     }
 }
 
@@ -53,7 +57,7 @@ sub find_reservations {
     my $cur_time = localtime();
 
     # XXX: configurable: now 10 mins in future
-    my $timeslot = time() + 7200;
+    my $timeslot = time() + $global_config->{'reservation_time_interval'};
     
     print "searching db for reservations $cur_time \n";
     # dbcall to find reservations();
