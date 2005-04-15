@@ -42,10 +42,14 @@ sub soap_set_user_profile
 }
 
 
-sub soap_get_user_reservations
+my $BSS_server = SOAP::Lite
+  -> uri('http://localhost:3000/BSSServer')
+  -> proxy ('http://localhost:3000/soapserver.pl');
+
+sub soap_view_reservations
 {
     my (%params) = @_;
-    my $response = $AAAS_server -> get_user_reservations(%params);
+    my $response = $BSS_server -> view_reservations(%params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -54,10 +58,10 @@ sub soap_get_user_reservations
 }
 
 
-sub soap_process_user_reservation
+sub soap_create_reservation
 {
     my (%params) = @_;
-    my $response = $AAAS_server -> process_user_reservation(%params);
+    my $response = $BSS_server -> process_create_reservation(%params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
