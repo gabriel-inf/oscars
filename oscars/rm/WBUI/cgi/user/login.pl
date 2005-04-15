@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # login.pl:  Main Service Login page
 # Last modified: April 1, 2005
@@ -10,10 +10,7 @@ require '../lib/general.pl';
 require 'soapclient.pl';
 
 # main service start point URI (the first screen a user sees after logging in)
-$service_startpoint_URI = 'https://oscars.es.net/user/';
-
-# current script name (used for error message)
-$script_filename = $ENV{'SCRIPT_NAME'};
+$Service_startpoint_URI = 'https://oscars.es.net/user/';
 
 ##### Beginning of mainstream #####
 
@@ -23,12 +20,12 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # if login successful, forward user to the next appropriate page
 # all else: Update status but don't change main frame
 
-my ($Error_Status, @Error_Message) = &Process_User_Login();
+my ($Error_Status, @Error_Message) = &process_user_login();
 
 if ( !$Error_Status )
 {
     # forward the user to the main service page
-    &Update_Frames($service_startpoint_URI, "Logged in as $FormData{'loginname'}.");
+    &Update_Frames($Service_startpoint_URI, "Logged in as $FormData{'loginname'}.");
 }
 else
 {
@@ -43,10 +40,10 @@ exit;
 ##### Beginning of sub routines #####
 
 
-##### sub Process_User_Login
+##### sub process_user_login
 # In: None
 # Out: Error status
-sub Process_User_Login
+sub process_user_login
 {
 
 	# validate user input (just check for empty fields)
@@ -59,12 +56,14 @@ sub Process_User_Login
 	{
 		return( 1, 'Please enter your password.' );
 	}
-        my $encrypted_passwd = &Encode_Passwd($FormData{'password'});
+        my(%params);
+        $params{'loginname'} = $FormData{'loginname'};
+        $params{'password'} = &Encode_Passwd($FormData{'password'});
 
-        return(User_Login($FormData{'loginname'}, $encrypted_passwd));
+        return(soap_process_user_login(%params));
 
 }
-##### End of sub Process_User_Login
+##### End of sub process_user_login
 
 
 ##### End of sub routines #####
