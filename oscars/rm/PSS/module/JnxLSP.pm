@@ -1,6 +1,6 @@
 #####
 #
-# Package: pss-juniper.pm
+# Package: JnxLSP.pm
 # Author: chin guok (chin@es.net)
 # Description:
 #   Sub-routines to setup/teardown LSPs on Juniper routers.
@@ -13,7 +13,7 @@ use strict;
 use JUNOS::Device;
 use JUNOS::Trace;
 use XML::DOM;
-use ESnetVars qw(
+use ESnetPSSVars qw(
   :JNXLSP
 );
 
@@ -115,7 +115,6 @@ sub configure_lsp
   }
   return();
 }
-
 
 #####
 #
@@ -446,3 +445,5 @@ sub execute_operational_command
   }
   return($_jnxRes->toString());
 }
+
+1;
