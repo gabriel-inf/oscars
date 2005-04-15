@@ -10,7 +10,8 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(get_reservations process_reservation);
 
-use BSS::Frontend::Database;
+use DB;
+use BSS::Frontend::DBSettings;
 
 #  network bandwidth limit (in Mbps) (1 Gbps = 1000 Mbps)
 $bandwidth_limit = 3000;
@@ -25,17 +26,15 @@ $bandwidth_limit = 3000;
 sub process_reservation
 {
   my($args_href) = @_;
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
   my $over_limit = 0; # whether any time segment is over the bandwidth limit
   my $end_time = args_href->{'start_time'} + args_href->{'duration'};
 
-    # TODO:  lock table(s) with LOCK_TABLE
-
     ###
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
-  $query = "SELECT $table_field{'reservations'}{'qos'}, $table_field{'reservations'}{'start_time'}, $table_field{'reservations'}{'end_time'} FROM $table{'reservations'} WHERE ( $table_field{'reservations'}{'end_time'} >= ? AND $table_field{'reservations'}{'start_time'} <= ? )";
+  $query = "SELECT $Table_field{'reservations'}{'qos'}, $Table_field{'reservations'}{'start_time'}, $Table_field{'reservations'}{'end_time'} FROM $Table{'reservations'} WHERE ( $Table_field{'reservations'}{'end_time'} >= ? AND $Table_field{'reservations'}{'start_time'} <= ? )";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -53,8 +52,6 @@ sub process_reservation
   #        over the limit; return time segments if error
   query_finish( $sth );
 
-  # TODO:  unlock table(s)
-
     # If no segment is over the limit,  record the reservation to the database.
     # otherwise, return error message (TODO) with the times involved.
 
@@ -68,7 +65,7 @@ sub process_reservation
       my @stuffs_to_insert = ( '', @FormData{ 'loginname', 'origin', 'destination', 'bandwidth' }, args_href->{'start_time'}, $end_time, $args_ref->{'description'}, $current_time, @ENV{ 'REMOTE_ADDR', 'REMOTE_HOST', 'HTTP_USER_AGENT' } );
 
         # insert into database query statement
-      $query = "INSERT INTO $table{'reservations'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
+      $query = "INSERT INTO $Table{'reservations'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
 
       ( $error_code, $sth ) = query_prepare( $dbh, $query );
       if ( $error_code ) {
@@ -78,7 +75,6 @@ sub process_reservation
 
       ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
       if ( $error_code ) {
-              # TODO:  unlock tables
           database_disconnect( $dbh );
           $error_code =~ s/CantExecuteQuery\n//;
           return( 1, '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $error_code );
@@ -88,7 +84,6 @@ sub process_reservation
 
       query_finish( $sth );
   }
-	# TODO:  unlock tables
   database_disconnect( $dbh );
   return( 0, 'Your reservation has been processed successfully. Your reservation ID number is ' . $new_reservation_id . '.' );
 }
@@ -104,7 +99,7 @@ sub get_reservations
 {
   my( $dbh, $sth, $error_code, $query );
 
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return(1, $error_code ); }
 
     # DB query: get the reservation list
@@ -113,12 +108,12 @@ sub get_reservations
 
   $query = "SELECT ";
   foreach $_ ( @fields_to_read ) {
-      $query .= $table_field{'reservations'}{$_} . ", ";
+      $query .= $Table_field{'reservations'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
     # sort by reservation ID in descending order
-  $query .= " FROM $table{'reservations'} ORDER BY $table_field{'reservations'}{'reservation_id'} DESC";
+  $query .= " FROM $Table{'reservations'} ORDER BY $Table_field{'reservations'}{'reservation_id'} DESC";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -189,7 +184,7 @@ sub get_reservation_detail
 {
   my( $dbh, $sth, $error_code, $query );
 
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return(1, $error_code ); }
 
     # names of the fields to be displayed on the screen
@@ -198,11 +193,11 @@ sub get_reservation_detail
     # DB query: get the user profile detail
   $query = "SELECT ";
   foreach $_ ( @fields_to_display ) {
-      $query .= $table_field{'reservations'}{$_} . ", ";
+      $query .= $Table_field{'reservations'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'reservations'} WHERE $table_field{'reservations'}{'reservation_id'} = ?";
+  $query .= " FROM $Table{'reservations'} WHERE $Table_field{'reservations'}{'reservation_id'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
