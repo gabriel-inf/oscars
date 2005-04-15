@@ -2,11 +2,12 @@ package AAAS::Frontend::Admin;
 
 # Admin.pm:  database operations associated with administrative forms
 
-# Last modified: April 12, 2005
+# Last modified: April 14, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-use AAAS::Frontend::Database;
+use DB;
+use AAAS::Frontend::DBSettings;
 
 
 # gateway:  DB operations having to do with logging in as admin
@@ -16,11 +17,11 @@ sub verify_acct
     ### Check whether admin account is set up in the database
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
     # whether admin account exists (determine it with the level info, not the login name)
-  $query = "SELECT $table_field{'users'}{'user_loginname'} FROM $table{'users'} WHERE $table_field{'users'}{'user_level'} = ?";
+  $query = "SELECT $Table_field{'users'}{'user_loginname'} FROM $Table{'users'} WHERE $Table_field{'users'}{'user_level'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -56,11 +57,11 @@ sub process_registration
   my( $dbh, $sth, $error_code, $query );
   undef $error_code;
 	
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
       # insert into database query statement
-  $query = "INSERT INTO $table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+  $query = "INSERT INTO $Table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -93,11 +94,11 @@ sub process_login
 {
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
     # get the password from the database
-  $query = "SELECT $table_field{'users'}{'user_password'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ? and $table_field{'users'}{'user_level'} = ?";
+  $query = "SELECT $Table_field{'users'}{'user_password'} FROM $Table{'users'} WHERE $Table_field{'users'}{'user_loginname'} = ? and $Table_field{'users'}{'user_level'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -138,13 +139,13 @@ sub check_login_available
 {
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
     # Check whether a particular user id already exists in the database
     # database table & field names to check
-  my $table_name_to_check = $table{'users'};
-  my $field_name_to_check = $table_field{'users'}{'user_loginname'};
+  my $table_name_to_check = $Table{'users'};
+  my $field_name_to_check = $Table_field{'users'}{'user_loginname'};
 
       # query: select user_loginname from users where user_loginname='some_id_to_check';
   $query = "SELECT $field_name_to_check FROM $table_name_to_check WHERE $field_name_to_check = ?";
@@ -185,12 +186,12 @@ sub process_user_registration
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
   undef $error_code;
 	
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
     # id overlap check.  We're not using the pre-existing sub routine here to
     # perform the task within a single, locked database connection
-  $query = "SELECT $table_field{'users'}{'user_loginname'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query = "SELECT $Table_field{'users'}{'user_loginname'} FROM $Table{'users'} WHERE $Table_field{'users'}{'user_loginname'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -214,7 +215,7 @@ sub process_user_registration
     #  authorization
   my @stuffs_to_insert = ( '', $args_href->{'loginname'}, $encrypted_password, $args_href->{'firstname'}, $args_href->{'lastname'}, $args_href->{'organization'}, $args_href->{'email_primary'}, $args_href->{'email_secondary'}, $args_href->{'phone_primary'}, $args_href->{'phone_secondary'}, $args_href->{'description'}, 0, $args_href->{'datetime'}, $activation_key, $args_href->{'level'} );
 
-  $query = "INSERT INTO $table{'users'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
+  $query = "INSERT INTO $Table{'users'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -246,7 +247,7 @@ sub get_user_profile
     ### get the user detail from the database and populate the profile form
   my( $dbh, $sth, $error_code, $query );
 
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
     # names of the fields to be displayed on the screen
@@ -256,11 +257,11 @@ sub get_user_profile
   $query = "SELECT ";
   foreach $_ ( @fields_to_display ) {
       my $temp = 'user_' . $_;
-      $query .= $table_field{'users'}{$temp} . ", ";
+      $query .= $Table_field{'users'}{$temp} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'user_loginname'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -297,7 +298,7 @@ sub process_profile_update
   my( $dbh, $sth, $error_code, $query );
   undef $error_code;
 	
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
       # Read the current user information from the database to decide which
@@ -309,11 +310,11 @@ sub process_profile_update
   $query = "SELECT ";
   foreach $_ ( @fields_to_read ) {
       my $temp = 'user_' . $_;
-      $query .= $table_field{'users'}{$temp} . ", ";
+      $query .= $Table_field{'users'}{$temp} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'user_loginname'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -347,7 +348,7 @@ sub process_profile_update
     # if the password needs to be updated, add the new one to the fields
     #  /values to update
   if ( $update_password ) {
-      push( @fields_to_update, $table_field{'users'}{'user_password'} );
+      push( @fields_to_update, $Table_field{'users'}{'user_password'} );
       push( @values_to_update, $encrypted_password );
   }
 
@@ -359,7 +360,7 @@ sub process_profile_update
   foreach $_ ( @fields_to_read ) {
       if ( $user_profile_data{$_} ne $args_href->{$_} ) {
           my $temp = 'user_' . $_;
-          push( @fields_to_update, $table_field{'users'}{$temp} );
+          push( @fields_to_update, $Table_field{'users'}{$temp} );
           push( @values_to_update, $args_href->{$_} );
       }
   }
@@ -371,12 +372,12 @@ sub process_profile_update
   }
 
     # prepare the query for database update
-  $query = "UPDATE $table{'users'} SET ";
+  $query = "UPDATE $Table{'users'} SET ";
   foreach $_ ( 0 .. $#fields_to_update ) {
       $query .= $fields_to_update[$_] . " = ?, ";
   }
   $query =~ s/,\s$//;
-  $query .= " WHERE $table_field{'users'}{'user_loginname'} = ?";
+  $query .= " WHERE $Table_field{'users'}{'user_loginname'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -401,7 +402,7 @@ sub process_profile_update
 
 sub handle_logout
 {
-    ( $error_code, $dbh ) = database_connect();
+    ( $error_code, $dbh ) = database_connect($Dbname);
     if ( $error_code ) { return( 1, $error_code ); }
 
     #query_finish( $sth );

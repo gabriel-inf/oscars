@@ -5,12 +5,15 @@ package AAAS::Frontend::User;
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
+use lib '../..';
+
 require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(process_login get_profile set_profile );
 
-use AAAS::Frontend::Database;
+use DB;
+use AAAS::Frontend::DBSettings;
 
 # TODO:  FIX
 $non_activated_user_level = -1;
@@ -25,21 +28,21 @@ sub process_login
   my($args_href) = @_;
   my( $dbh, $sth, $query, $num_rows, %results );
 
-  ( $results{'error_msg'}, $dbh ) = database_connect();
+  ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # get the password from the database
-  $query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query = "SELECT $Table_field{'users'}{'password'}, $Table_field{'users'}{'level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
   print STDERR "process_login: ", ' * ', $results{'error_msg'}, $dbh, "\n\n";
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $table{'users'}, $READ_LOCK, $args_href->{'loginname'});
+  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $args_href->{'loginname'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this person is a registered user
   my $password_matches = 0;
   if ( $num_rows == 0 ) {
         # this login name is not in the database
-      db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} = 'Please check your login name and try again.';
       return( 1, %results );
   }
@@ -48,7 +51,7 @@ sub process_login
       while ( my $ref = $sth->fetchrow_arrayref ) {
           if ( $$ref[1] eq $non_activated_user_level ) {
                 # this account is not authorized & activated yet
-              db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+              db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
               $results{'error_msg'} = 'This account is not authorized or activated yet.';
               return( 1, %results );
           }
@@ -57,7 +60,7 @@ sub process_login
           }
       }
   }
-  db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
 
   if ( !$password_matches ) {
       $results{'error_msg'} = 'Please check your password and try again.';
@@ -75,7 +78,7 @@ sub logout
 {
   my( $dbh, $sth, $query, %results );
 
-  ( $results{'error_msg'}, $dbh ) = database_connect();
+  ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) {
       return( %results );
   }
@@ -96,7 +99,7 @@ sub get_profile
   my( $dbh, $sth, $query, %results);
 
   ### get the user detail from the database and populate the profile form
-  ( $results{'error_msg'}, $dbh ) = database_connect();
+  ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # names of the fields to be displayed on the screen
@@ -105,13 +108,13 @@ sub get_profile
     # DB query: get the user profile detail
   $query = "SELECT ";
   foreach $_ ( @fields_to_display ) {
-      $query .= $table_field{'users'}{$_} . ", ";
+      $query .= $Table_field{'users'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $error_msg, $num_rows, $sth ) = db_handle_query($dbh, $query, $table{'users'}, READ_LOCK, $args_href->{'loginname'});
+  ( $error_msg, $num_rows, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $args_href->{'loginname'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
   if ( $num_rows == 0 )
   {
@@ -125,7 +128,7 @@ sub get_profile
   $sth->bind_columns( map { \$profile_data{$_} } @fields_to_display );
   $sth->fetch();
 
-  db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
   $results{'data'} = %profile_data;
   print STDERR '** ', %profile_data, "\n";
   $results{'status_msg'} = 'Retrieved user profile';
@@ -141,25 +144,25 @@ sub set_profile
   my ($args_href) = @_;
   my( $dbh, $sth, $query, $error_code, %results );
 
-  ( $results{'error_message'}, $dbh ) = database_connect();
+  ( $results{'error_message'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) {
       return( %results );
   }
 
     # user level provisioning:  # if the user's level equals one of the
     #  read-only levels, don't give them access 
-  $query = "SELECT $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query = "SELECT $Table_field{'users'}{'level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, undef, $sth ) = db_handle_query(READ_LOCK, $dbh, $query, $table{'users'}, $args_href->{'loginname'} );
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query(READ_LOCK, $dbh, $query, $Table{'users'}, $args_href->{'loginname'} );
   if ( $results{'error_msg'}) {
-      db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       return( %results );
   }
 
   while ( my $ref = $sth->fetchrow_arrayref ) {
       foreach $read_only_level ( @read_only_user_levels ) {
           if ( $$ref[0] eq $read_only_level ) {
-              db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+              db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
               $results{'error_msg'} = '[ERROR] Your user level (Lv. ' . $$ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.';
               return ( %results );
           }
@@ -176,11 +179,11 @@ sub set_profile
     # DB query: get the user profile detail
   $query = "SELECT ";
   foreach $_ ( @fields_to_read ) {
-      $query .= $table_field{'users'}{$_} . ", ";
+      $query .= $Table_field{'users'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -214,7 +217,7 @@ sub set_profile
     # if the password needs to be updated, add the new one to the fields/
     # values to update
   if ( $update_password ) {
-      push( @fields_to_update, $table_field{'users'}{'password'} );
+      push( @fields_to_update, $Table_field{'users'}{'password'} );
       push( @values_to_update, $encrypted_password );
   }
 
@@ -226,7 +229,7 @@ sub set_profile
     # which fields/values to update
   foreach $_ ( @fields_to_read ) {
       if ( $profile_data{$_} ne $soap_args{$_} ) {
-          push( @fields_to_update, $table_field{'users'}{$_} );
+          push( @fields_to_update, $Table_field{'users'}{$_} );
           push( @values_to_update, $soap_args{$_} );
       }
   }
@@ -238,12 +241,12 @@ sub set_profile
   }
 
     # prepare the query for database update
-  $query = "UPDATE $table{'users'} SET ";
+  $query = "UPDATE $Table{'users'} SET ";
   foreach $_ ( 0 .. $#fields_to_update ) {
       $query .= $fields_to_update[$_] . " = ?, ";
   }
   $query =~ s/,\s$//;
-  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -274,11 +277,11 @@ sub process_account_activation
   my( $args_href ) = @_;
   my( $dbh, $sth, $error_code, $query, $num_rows, %results );
 
-  ($results{'error_message'}, $dbh ) = database_connect();
+  ($results{'error_message'}, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return (1, $error_code ); }
 
     # get the password from the database
-  $query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'activation_key'}, $table_field{'users'}{'pending_level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query = "SELECT $Table_field{'users'}{'password'}, $Table_field{'users'}{'activation_key'}, $Table_field{'users'}{'pending_level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -326,7 +329,7 @@ sub process_account_activation
   if ( $keys_match ) {
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
-    $query = "UPDATE $table{'users'} SET $table_field{'users'}{'level'} = ?, $table_field{'users'}{'pending_level'} = ?, $table_field{'users'}{'activation_key'} = '' WHERE $table_field{'users'}{'dn'} = ?";
+    $query = "UPDATE $Table{'users'} SET $Table_field{'users'}{'level'} = ?, $Table_field{'users'}{'pending_level'} = ?, $Table_field{'users'}{'activation_key'} = '' WHERE $Table_field{'users'}{'dn'} = ?";
 
       ( $error_code, $sth ) = query_prepare( $dbh, $query );
       if ( $error_code ) {
@@ -364,11 +367,11 @@ sub process_registration
   my $current_date_time = $args_href ->{'utc_seconds'};
   my( $dbh, $sth, $error_code, $query, $num_rows );
 	
-  ( $error_code, $dbh ) = database_connect();
+  ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
 
     # login name overlap check
-  $query = "SELECT $table_field{'users'}{'dn'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query = "SELECT $Table_field{'users'}{'dn'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
       database_disconnect( $dbh );
@@ -387,7 +390,7 @@ sub process_registration
       return( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
   }
 
-  $query = "INSERT INTO $table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+  $query = "INSERT INTO $Table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
