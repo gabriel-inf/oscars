@@ -59,7 +59,6 @@ sub process_registration
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return( 1, $error_code ); }
 
-      # TODO:  lock table
       # insert into database query statement
   $query = "INSERT INTO $table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
@@ -73,7 +72,6 @@ sub process_registration
   my @stuffs_to_insert = ( '', $admin_loginname_string, $encrypted_password, $args_href->{'firstname'}, $args_href->{'lastname'}, $args_href->{'organization'}, $args_href->{'email_primary'}, $args_href->{'email_secondary'}, $args_href->{'phone_primary'}, $args_href->{'phone_secondary'}, $args_href->{'description'}, 10, $args_href->{'datetime'}, '', 0 );
 
   ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
-                # TODO:  release db lock
   if ( $error_code ) {
       database_disconnect( $dbh );
       $error_code =~ s/CantExecuteQuery\n//;
@@ -81,7 +79,6 @@ sub process_registration
   }
 
   query_finish( $sth );
-	# TODO:  unlock the operation
   database_disconnect( $dbh );
 
   return( 0, 'Admin account registration has been completed successfully.<br>Please <a href="gateway.pl">click here</a> to proceed to the Admin Tool login page.' );
@@ -195,7 +192,6 @@ sub process_user_registration
     # perform the task within a single, locked database connection
   $query = "SELECT $table_field{'users'}{'user_loginname'} FROM $table{'users'} WHERE $table_field{'users'}{'user_loginname'} = ?";
 
-	# TODO:  lock  database operations
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
       database_disconnect( $dbh );
@@ -209,7 +205,6 @@ sub process_user_registration
   }
 
   query_finish( $sth );
-      # TODO:  release lock
   if ( $num_of_affected_rows > 0 ) {
       database_disconnect( $dbh );
       return( 1, 'The selected login name is already taken by someone else; please choose a different login name.' );
@@ -223,7 +218,6 @@ sub process_user_registration
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
-        # TODO:  release lock
       database_disconnect( $dbh );
       return( 1, $error_code );
   }
@@ -236,7 +230,6 @@ sub process_user_registration
   }
 
   query_finish( $sth );
-	# TODO:  unlock the operation
   database_disconnect( $dbh );
   return( 0, 'The new user account \'' . $args_href->{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
 
@@ -307,7 +300,6 @@ sub process_profile_update
   ( $error_code, $dbh ) = database_connect();
   if ( $error_code ) { return( 1, $error_code ); }
 
-      # TODO:  lock with LOCK_TABLE
       # Read the current user information from the database to decide which
       # fields are being updated.  'password' should always be the last entry
       # of the array (important for later procedures)
@@ -345,7 +337,6 @@ sub process_profile_update
     ### check the current password with the one in the database before
     ### proceeding
   if ( $user_profile_data{'password'} ne &Encode_Passwd( $args_href->{'password_current'} ) ) {
-                # TODO:  release lock
       database_disconnect( $dbh );
       return( 1, 'Please check the current password and try again.' );
   }
@@ -375,7 +366,6 @@ sub process_profile_update
 
     # if there is nothing to update...
   if ( $#fields_to_update < 0 ) {
-          # TODO:  release lock
       database_disconnect( $dbh );
       return( 1, 'There is no changed information to update.' );
   }
@@ -396,14 +386,12 @@ sub process_profile_update
 
   ( $error_code, undef ) = query_execute( $sth, @values_to_update, $args_href->{'loginname'} );
   if ( $error_code ) {
-                # TODO:  release lock
       database_disconnect( $dbh );
       $error_code =~ s/CantExecuteQuery\n//;
       return( 1, 'An error has occurred while updating the account information.<br>[Error] ' . $error_code );
   }
 
   query_finish( $sth );
-	# TODO:  unlock table
   database_disconnect( $dbh );
   return( 0, 'The account information has been updated successfully.' );
 }

@@ -1,160 +1,167 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with user forms.
-# Last modified: April 12, 2005
+# Last modified: April 14, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(process_user_login);
+our @EXPORT = qw(process_login get_profile set_profile );
 
 use AAAS::Frontend::Database;
-
-# login:  login interaction with DB
 
 # TODO:  FIX
 $non_activated_user_level = -1;
 
-##### sub process_user_login
+# from login.pl:  login interaction with DB
+
+##### sub process_login
 # In: reference to hash of parameters
 # Out: status code, status message
-sub process_user_login
+sub process_login
 {
-  my($loginname, $password) = @_;
-  my( $dbh, $sth, $error_code, $partial_query, $num_rows );
+  my($args_href) = @_;
+  my( $dbh, $sth, $query, $num_rows, %results );
 
-  ( $error_code, $dbh ) = database_connect();
-  if ( $error_code ) { return( 1, $error_code ); }
+  ( $results{'error_msg'}, $dbh ) = database_connect();
+  if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # get the password from the database
-  $partial_query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'level'} WHERE $table_field{'users'}{'dn'} = ?";
+  $query = "SELECT $table_field{'users'}{'password'}, $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
-  ($error_code, $num_rows, $sth) = db_handle_query(READ_LOCK, $dbh, $partial_query, 'users', $loginname);
-  if ( $error_code ) { return( 1, $error_code ); }
+  print STDERR "process_login: ", ' * ', $results{'error_msg'}, $dbh, "\n\n";
+  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $table{'users'}, $READ_LOCK, $args_href->{'loginname'});
+  if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this person is a registered user
   my $password_matches = 0;
   if ( $num_rows == 0 ) {
         # this login name is not in the database
-      db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
-      return( 1, 'Please check your login name and try again.' );
+      db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+      $results{'error_msg'} = 'Please check your login name and try again.';
+      return( 1, %results );
   }
   else {
         # this login name is in the database; compare passwords
       while ( my $ref = $sth->fetchrow_arrayref ) {
           if ( $$ref[1] eq $non_activated_user_level ) {
                 # this account is not authorized & activated yet
-              db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
-              return( 1, 'This account is not authorized or activated yet.' );
+              db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+              $results{'error_msg'} = 'This account is not authorized or activated yet.';
+              return( 1, %results );
           }
-          elsif ( $$ref[0] eq  $password ) {
+          elsif ( $$ref[0] eq  $args_href->{'password'} ) {
               $password_matches = 1;
           }
       }
   }
-  db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
+  db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+
   if ( !$password_matches ) {
-      return( 1, 'Please check your password and try again.' );
+      $results{'error_msg'} = 'Please check your password and try again.';
   }
-  return( 0, 'The user has successfully logged in.' );
+  $results{'status_msg'} = 'The user has successfully logged in.';
+      # The first value is unused, but I can't get SOAP to send a correct
+      # reply without it so far.
+  return( 0, %results );
 }
 
 
-#### logout:  DB operations associated with logout, a noop right now
+#### from logout.pl:  DB operations associated with logout, a noop right now
 
-sub handle_logout
+sub logout
 {
-  my( $dbh, $sth, $error_code, $query );
+  my( $dbh, $sth, $query, %results );
 
-  ( $error_code, $dbh ) = database_connect();
-  if ( $error_code ) {
-      return( 1, $error_code );
+  ( $results{'error_msg'}, $dbh ) = database_connect();
+  if ( $results{'error_msg'} ) {
+      return( %results );
   }
   database_disconnect( $dbh );
-  return (0, 'OK');
+  results{'status_msg'} = 'Logged out';
+  return ( %results );
 }
 
 
-# myprofile:  Profile DB interaction
+# from myprofile.pl:  Profile DB interaction
 
-##### sub get_user_detail
+##### sub get_profile
 # In: reference to hash of parameters
 # Out: status code, status message
-sub get_user_detail
+sub get_profile
 {
-  my($loginname) = @_;
-  my( $dbh, $sth, $error_code, $partial_query, $num_rows);
+  my($args_href) = @_;
+  my( $dbh, $sth, $query, %results);
 
   ### get the user detail from the database and populate the profile form
-  ( $error_code, $dbh ) = database_connect();
-  if ( $error_code ) {
-      return( 1, $error_code );
-  }
+  ( $results{'error_msg'}, $dbh ) = database_connect();
+  if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # names of the fields to be displayed on the screen
   my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description' );
 
     # DB query: get the user profile detail
-  $partial_query = "SELECT ";
+  $query = "SELECT ";
   foreach $_ ( @fields_to_display ) {
-      $partial_query .= $table_field{'users'}{$_} . ", ";
+      $query .= $table_field{'users'}{$_} . ", ";
   }
     # delete the last ", "
-  $partial_query =~ s/,\s$//;
-  $partial_query .= " WHERE $table_field{'users'}{'dn'} = ?";
+  $query =~ s/,\s$//;
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
-  ( $error_code, $num_rows, $sth ) = db_handle_query(READ_LOCK, $dbh, $partial_query, 'users', $loginname );
-  if ( $error_code ) { return( 1, $error_code ); }
+  ( $error_msg, $num_rows, $sth ) = db_handle_query($dbh, $query, $table{'users'}, READ_LOCK, $args_href->{'loginname'});
+  if ( $results{'error_msg'} ) { return( 1, %results ); }
+  if ( $num_rows == 0 )
+  {
+      $results{'error_msg'} = 'No such user in the database';
+      return( %results );
+  }
 
-    # populate %user_profile_data with the data fetched from the database
-  my %user_profile_data;
-  @user_profile_data{@fields_to_display} = ();
-  $sth->bind_columns( map { \$user_profile_data{$_} } @fields_to_display );
+    # populate user %profile_data with the data fetched from the database
+  my %profile_data;
+  @profile_data{@fields_to_display} = ();
+  $sth->bind_columns( map { \$profile_data{$_} } @fields_to_display );
   $sth->fetch();
 
-  db_handle_finish( READ_LOCK, $dbh, $sth, 'users');
-  return (0, 'Retrieved user profile.');
+  db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+  $results{'data'} = %profile_data;
+  print STDERR '** ', %profile_data, "\n";
+  $results{'status_msg'} = 'Retrieved user profile';
+  return ( 0, %results );
 }
 
 
-##### sub process_profile_update
+##### sub set_profile
 # In: reference to hash of parameters
 # Out: status code, status message
-sub process_profile_update
+sub set_profile
 {
   my ($args_href) = @_;
-  my( $dbh, $sth, $error_code, $query );
+  my( $dbh, $sth, $query, $error_code, %results );
 
-  ( $error_code, $dbh ) = database_connect();
-  if ( $error_code ) {
-      return( 1, $error_code );
+  ( $results{'error_message'}, $dbh ) = database_connect();
+  if ( $results{'error_msg'} ) {
+      return( %results );
   }
 
     # user level provisioning:  # if the user's level equals one of the
     #  read-only levels, don't give them access 
   $query = "SELECT $table_field{'users'}{'level'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
-
-  ( $error_code, $num_rows ) = query_execute( $sth, $args_href->{'loginname'} );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query(READ_LOCK, $dbh, $query, $table{'users'}, $args_href->{'loginname'} );
+  if ( $results{'error_msg'}) {
+      db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+      return( %results );
   }
 
   while ( my $ref = $sth->fetchrow_arrayref ) {
       foreach $read_only_level ( @read_only_user_levels ) {
           if ( $$ref[0] eq $read_only_level ) {
-              query_finish( $sth );
-                  # TODO:  unlock table(s)
-              database_disconnect( $dbh );
-              return( 0, '[ERROR] Your user level (Lv. ' . $$ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.' );
+              db_handle_finish( READ_LOCK, $dbh, $sth, $table{'users'});
+              $results{'error_msg'} = '[ERROR] Your user level (Lv. ' . $$ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.';
+              return ( %results );
           }
       }
   }
@@ -186,23 +193,20 @@ sub process_profile_update
       return( 1, $error_code );
   }
 
-    # populate %user_profile_data with the data fetched from the database
-  my %user_profile_data;
-  @user_profile_data{@fields_to_read} = ();
-  $sth->bind_columns( map { \$user_profile_data{$_} } @fields_to_read );
+    # populate user %profile_data with the data fetched from the database
+  my %profile_data;
+  @profile_data{@fields_to_read} = ();
+  $sth->bind_columns( map { \$profile_data{$_} } @fields_to_read );
   $sth->fetch();
 
   query_finish( $sth );
 
     ### check the current password with the one in the database before
     ### proceeding
-  if ( $user_profile_data{'password'} ne $args_href->{'password_current'} ) {
-        # TODO:  unlock table(s)
+  if ( $profile_data{'password'} ne $args_href->{'password_current'} ) {
       database_disconnect( $dbh );
       return( 1, 'Please check the current password and try again.' );
   }
-      # TODO:  unlock table(s)
-
     # determine which fields to update in the user profile table
     # @fields_to_update and @values_to_update should be an exact match
     my( @fields_to_update, @values_to_update );
@@ -221,7 +225,7 @@ sub process_profile_update
     # compare the current & newly input user profile data and determine
     # which fields/values to update
   foreach $_ ( @fields_to_read ) {
-      if ( $user_profile_data{$_} ne $soap_args{$_} ) {
+      if ( $profile_data{$_} ne $soap_args{$_} ) {
           push( @fields_to_update, $table_field{'users'}{$_} );
           push( @values_to_update, $soap_args{$_} );
       }
@@ -239,7 +243,7 @@ sub process_profile_update
       $query .= $fields_to_update[$_] . " = ?, ";
   }
   $query =~ s/,\s$//;
-  $query .= " WHERE $table_field{'users'}{'dn'} = ?";
+  $query .= " FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -249,14 +253,12 @@ sub process_profile_update
 
   ( $error_code, undef ) = query_execute( $sth, @values_to_update, $args_href->{'loginname'} );
   if ( $error_code ) {
-          # TODO:  unlock table(s)
       database_disconnect( $dbh );
       $error_code =~ s/CantExecuteQuery\n//;
       return( 1, 'An error has occurred while updating your account information.<br>[Error] ' . $error_code );
   }
 
   query_finish( $sth );
-        # TODO:  unlock table(s)
   database_disconnect( $dbh );
   return( 0, 'Your account information has been updated successfully.' );
 }
@@ -270,9 +272,9 @@ sub process_profile_update
 sub process_account_activation
 {
   my( $args_href ) = @_;
-  my( $dbh, $sth, $error_code, $query, $num_rows );
+  my( $dbh, $sth, $error_code, $query, $num_rows, %results );
 
-  ( $error_code, $dbh ) = database_connect();
+  ($results{'error_message'}, $dbh ) = database_connect();
   if ( $error_code ) { return (1, $error_code ); }
 
     # get the password from the database
@@ -322,7 +324,6 @@ sub process_account_activation
       ### if the input password and the activation key matched against those
       ### in the database, activate the account
   if ( $keys_match ) {
-        # TODO:  lock necessary tables here
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
     $query = "UPDATE $table{'users'} SET $table_field{'users'}{'level'} = ?, $table_field{'users'}{'pending_level'} = ?, $table_field{'users'}{'activation_key'} = '' WHERE $table_field{'users'}{'dn'} = ?";
@@ -338,7 +339,6 @@ sub process_account_activation
           database_disconnect( $dbh );
           return( 1, $error_code );
       }
-          # TODO:  unlock the table(s)
       query_finish( $sth );
       database_disconnect( $dbh );
   }
@@ -369,7 +369,6 @@ sub process_registration
 
     # login name overlap check
   $query = "SELECT $table_field{'users'}{'dn'} FROM $table{'users'} WHERE $table_field{'users'}{'dn'} = ?";
-	# TODO:  lock table(s) with LOCK_TABLES
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
       database_disconnect( $dbh );
@@ -385,7 +384,6 @@ sub process_registration
 
   if ( $num_rows > 0 ) {
       database_disconnect( $dbh );
-        # TODO:  unlock table(s)
       return( 0, 'The selected login name is already taken by someone else; please choose a different login name.' );
   }
 
@@ -403,14 +401,12 @@ sub process_registration
 
   ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
   if ( $error_code ) {
-          # TODO:  unlock tables
       database_disconnect( $dbh );
       $error_code =~ s/CantExecuteQuery\n//;
       return( 1, 'An error has occurred while recording your registration on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $error_code );
   }
   query_finish( $sth );
 
-	# TODO:  unlock table(s)
   database_disconnect( $dbh );
   return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $args_href->{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
 }
