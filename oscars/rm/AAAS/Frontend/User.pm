@@ -122,15 +122,17 @@ sub get_profile
       return( %results );
   }
 
-    # populate user %profile_data with the data fetched from the database
-  my %profile_data;
-  @profile_data{@fields_to_display} = ();
-  $sth->bind_columns( map { \$profile_data{$_} } @fields_to_display );
+    # populate %results with the data fetched from the database
+  @results{@fields_to_display} = ();
+  $sth->bind_columns( map { \$results{$_} } @fields_to_display );
   $sth->fetch();
 
   db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
-  $results{'data'} = %profile_data;
-  print STDERR '** ', %profile_data, "\n";
+  foreach $key(sort keys %results)
+  {
+        $value = $results{$key};
+        print STDERR "$key -> $value\n";
+  }
   $results{'status_msg'} = 'Retrieved user profile';
   return ( 0, %results );
 }
