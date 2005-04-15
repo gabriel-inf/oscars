@@ -2,4 +2,5 @@ David Robertson
 April 14, 2005
 
 Modules in this directory test SOAP client calls, front ends.
+They don't test the CGI scripts yet, however.
 
