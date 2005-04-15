@@ -9,23 +9,28 @@ my $daemon = SOAP::Transport::HTTP::Daemon
 
 $daemon->handle;
 
-package BSServer;
+package BSSServer;
 
 use lib '../..';
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(get_user_reservations process_user_reservation);
+our @EXPORT = qw(Create_reservation Remove_reservation Get_reservations);
 
 use BSS::Frontend::Reservation;
 
-sub get_user_reservations {
+sub Create_reservation {
+  my ($class, %params) = @_;
+  return (create_reservation(\%params));
+}
+
+sub Remove_reservation {
+  my ($class, %params) = @_;
+  return (remove_reservation(\%params));
+}
+
+sub Get_reservations {
   my ($class, %params) = @_;
   return (get_reservations(\%params));
 }
 
-
-sub process_user_reservation {
-  my ($class, %params) = @_;
-  return (process_reservation(\%params));
-}
 

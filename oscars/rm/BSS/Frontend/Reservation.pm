@@ -8,7 +8,7 @@ package BSS::Frontend::Reservation;
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(get_reservations process_reservation);
+our @EXPORT = qw(get_reservations create_reservation remove_reservation);
 
 use DB;
 use BSS::Frontend::DBSettings;
@@ -20,10 +20,10 @@ $bandwidth_limit = 3000;
 
 # from reservation.pl:  contacts db to generate reservation
 
-##### sub process_reservation
+##### sub create_reservation
 # In: reference to hash of parameters
 # Out: success or failure, and status message
-sub process_reservation
+sub create_reservation
 {
   my($args_href) = @_;
   ( $error_code, $dbh ) = database_connect($Dbname);
@@ -173,6 +173,12 @@ sub get_reservations
   query_finish( $sth );
   database_disconnect( $dbh );
   return (0, 'success');
+}
+
+
+    # stub
+sub remove_resersvation
+{
 }
 
 
