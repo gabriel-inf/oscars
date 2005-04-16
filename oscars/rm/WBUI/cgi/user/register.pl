@@ -75,9 +75,6 @@ sub process_user_registration
     # encrypt password
   my $Encrypted_Password = &Encode_Passwd( $FormData{'password_once'} );
 
-    # get current date/time string in GMT
-  my $Current_DateTime = &Create_Time_String( 'dbinput' );
-
         ## TODO:  contact the DB, get result back
 
 
