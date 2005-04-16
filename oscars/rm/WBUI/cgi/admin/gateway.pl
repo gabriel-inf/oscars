@@ -85,9 +85,6 @@ sub Process_Admin_Registration
 	# encrypt password
 	my $Encrypted_Password = &Encode_Passwd( $FormData{'password_once'} );
 
-	# get current date/time string
-	my $Current_DateTime = &Create_Time_String( 'dbinput' );
-
         ### TODO:  contact AAAS, get results back
 
 	### when everything has been processed successfully...

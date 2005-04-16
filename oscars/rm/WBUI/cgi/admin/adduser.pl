@@ -170,9 +170,6 @@ sub Process_User_Registration
 	# encrypt password
 	my $Encrypted_Password = &Encode_Passwd( $FormData{'password_once'} );
 
-	# get current date/time string in GMT
-	my $Current_DateTime = &Create_Time_String( 'dbinput' );
-
 	# create user account activation key
 	my $Activation_Key = &Generate_Random_String( $account_activation_key_size );
 
