@@ -61,7 +61,7 @@ sub process_user_login
   $params{'loginname'} = $FormData{'loginname'};
   $params{'password'} = &Encode_Passwd($FormData{'password'});
 
-  return(soap_verify_user_login(%params));
+  return(soap_verify_login(%params));
 }
 
 
