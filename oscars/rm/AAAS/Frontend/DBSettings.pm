@@ -1,6 +1,6 @@
-package AAAS::Frontend::DBSettings;
+package AAAS::Frontend::Database;
 
-# DBSettings.pm:  package for AAAS specific database settings
+# Database.pm:  package for AAAS specific database settings
 # Last modified: April 14, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
