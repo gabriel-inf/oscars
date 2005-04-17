@@ -1,9 +1,11 @@
 package AAAS::Frontend::Database;
 
 # Database.pm:  package for AAAS specific database settings
-# Last modified: April 14, 2005
+# Last modified: April 17, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
+
+use strict;
 
 require Exporter;
 
@@ -13,16 +15,16 @@ our @EXPORT = qw($Dbname %Table %Table_field);
 
 ##### Settings Begin (Global variables) #####
 
-$Dbname = 'AAAS';
+our $Dbname = 'AAAS';
 
 # database table names
-%Table = (
+our %Table = (
   'users' => 'users',
 );
 
 # database field names
 # usage: @{ $table_field{'users'} }{'dn', 'password', 'level'}
-%Table_field = (
+our %Table_field = (
   'users' => {
       'id' => 'user_id',
       'last_name' => 'user_last_name',
