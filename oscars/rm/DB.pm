@@ -5,6 +5,8 @@ package DB;
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
+use strict;
+
 require Exporter;
 
 use constant READ_LOCK => 1;
@@ -15,7 +17,7 @@ our @EXPORT = qw(db_handle_query db_handle_finish database_connect database_disc
 
 use DBI;
 
-%db_connect_info = (
+our %db_connect_info = (
   'host' => 'localhost',
   'user' => 'davidr',
   'password' => 'shyysh'
@@ -29,8 +31,10 @@ use DBI;
 sub db_handle_query
 {
   my ($dbh, $query, $table, $opflag, @arglist) = @_;
+  my ($sth, $num_rows); 
+
   if (!defined($dbh)) { print STDERR "foo\n"; }
-  print STDERR $query, "\n";
+  #print STDERR $query, "\n";
   my $error_msg = database_lock_table($opflag, $table);
   if ( $error_msg ) {
       database_disconnect( $dbh );
@@ -140,7 +144,7 @@ sub database_lock_table
 {
     my ($opflag, $table) = @_;
     my $query = "LOCK TABLE $table";
-    if ($opflag & $WRITE_LOCK) { $query .= " WRITE"; }
+    if ($opflag & WRITE_LOCK) { $query .= " WRITE"; }
     elsif ($opflag & READ_LOCK) { $query .= " READ"; }
     return ( '' );
 }
@@ -152,6 +156,8 @@ sub database_lock_table
 sub database_unlock_table
 {
     my ($opflag, $table) = @_;
+    my $query;
+
     if (($opflag & READ_LOCK) || ($opflag & WRITE_LOCK))
     {
         $query = "UNLOCK TABLE $table";
