@@ -2,6 +2,8 @@
 
 use SOAP::Transport::HTTP;
 
+use strict;
+
 my $daemon = SOAP::Transport::HTTP::Daemon
   -> new (LocalPort => 2000)
   -> dispatch_to('AAASServer')
@@ -17,7 +19,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(Verify_login Get_profile Set_profile );
 
 use AAAS::Frontend::User;
-use AAAS::Frontend::Admin;
+#use AAAS::Frontend::Admin;  needs to pass use strict
 
 sub Verify_login {
   my ($class, %params) = @_;
