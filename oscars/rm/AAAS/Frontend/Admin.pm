@@ -6,8 +6,10 @@ package AAAS::Frontend::Admin;
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
+use strict;
+
 use DB;
-use AAAS::Frontend::DBSettings;
+use AAAS::Frontend::Database;
 
 
 # gateway:  DB operations having to do with logging in as admin
@@ -54,8 +56,8 @@ sub verify_acct
 # Out: None
 sub process_registration
 {
+  my( $args_href ) = @_;
   my( $dbh, $sth, $error_code, $query );
-  undef $error_code;
 	
   ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
@@ -92,6 +94,7 @@ sub process_registration
 # Out: None
 sub process_login
 {
+  my( $args_href ) = @_;
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
   ( $error_code, $dbh ) = database_connect($Dbname);
@@ -137,6 +140,7 @@ sub process_login
 # Out: $check_result [yes(overlaps)/no(doesn't overlap)]
 sub check_login_available
 {
+  my( $args_href ) = @_;
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
 
   ( $error_code, $dbh ) = database_connect($Dbname);
@@ -183,6 +187,7 @@ sub check_login_available
 # Out: None
 sub process_user_registration
 {
+  my( $args_href ) = @_;
   my( $dbh, $sth, $error_code, $query, $num_of_affected_rows );
   undef $error_code;
 	
@@ -244,6 +249,7 @@ sub process_user_registration
 # Out: status message and DB results
 sub get_user_profile
 {
+  my( $args_href ) = @_;
     ### get the user detail from the database and populate the profile form
   my( $dbh, $sth, $error_code, $query );
 
@@ -295,6 +301,7 @@ sub get_user_profile
 # Out: status message, results
 sub process_profile_update
 {
+  my( $args_href ) = @_;
   my( $dbh, $sth, $error_code, $query );
   undef $error_code;
 	

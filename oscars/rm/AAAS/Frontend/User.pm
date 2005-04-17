@@ -5,6 +5,8 @@ package AAAS::Frontend::User;
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
+use strict;
+
 use lib '../..';
 
 require Exporter;
@@ -13,10 +15,10 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(verify_login get_profile set_profile );
 
 use DB;
-use AAAS::Frontend::DBSettings;
+use AAAS::Frontend::Database;
 
 # TODO:  FIX
-$non_activated_user_level = -1;
+our $non_activated_user_level = -1;
 
 # from login.pl:  login interaction with DB
 
@@ -34,14 +36,14 @@ sub verify_login
     # get the password from the database
   $query = "SELECT $Table_field{'users'}{'password'}, $Table_field{'users'}{'level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $hashref->{'loginname'});
+  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $hashref->{'loginname'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this person is a registered user
   my $password_matches = 0;
   if ( $num_rows == 0 ) {
         # this login name is not in the database
-      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} = 'Please check your login name and try again.';
       return( 1, %results );
   }
@@ -50,7 +52,7 @@ sub verify_login
       while ( my $ref = $sth->fetchrow_arrayref ) {
           if ( $$ref[1] eq $non_activated_user_level ) {
                 # this account is not authorized & activated yet
-              db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+              db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
               $results{'error_msg'} = 'This account is not authorized or activated yet.';
               return( 1, %results );
           }
@@ -59,7 +61,7 @@ sub verify_login
           }
       }
   }
-  db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
 
   if ( !$password_matches ) {
       $results{'error_msg'} = 'Please check your password and try again.';
@@ -95,7 +97,7 @@ sub logout
 sub get_profile
 {
   my($hashref) = @_;
-  my( $dbh, $sth, $query, %results);
+  my( $dbh, $sth, $num_rows, $error_msg, $query, %results);
 
   ### get the user detail from the database and populate the profile form
   ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
@@ -113,12 +115,12 @@ sub get_profile
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $error_msg, $num_rows, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $hashref->{'loginname'});
+  ( $error_msg, $num_rows, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $hashref->{'loginname'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
   if ( $num_rows == 0 )
   {
-      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} = 'No such user in the database';
       return( 1, %results );
   }
@@ -128,7 +130,7 @@ sub get_profile
   $sth->bind_columns( map { \$results{$_} } @fields_to_display );
   $sth->fetch();
 
-  db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
 #  foreach $key(sort keys %results)
 #  {
 #        $value = $results{$key};
@@ -145,7 +147,8 @@ sub get_profile
 sub set_profile
 {
   my ($hashref) = @_;
-  my( $dbh, $sth, $query, %results );
+  my( $dbh, $sth, $query, %results, $read_only_level, @read_only_user_levels );
+  my ($update_password, $encrypted_password, $error_code );   # TODO:  FIX
 
   ( $results{'error_message'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) {
@@ -156,13 +159,13 @@ sub set_profile
     #  read-only levels, don't give them access 
   $query = "SELECT $Table_field{'users'}{'level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $hashref->{'loginname'} );
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $hashref->{'loginname'} );
   if ( $results{'error_msg'}) { return( 1, %results ); }
 
   while ( my $ref = $sth->fetchrow_arrayref ) {
       foreach $read_only_level ( @read_only_user_levels ) {
           if ( $$ref[0] eq $read_only_level ) {
-              db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+              db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
               $results{'error_msg'} = '[ERROR] Your user level (Lv. ' . $$ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.';
               return ( 1, %results );
           }
@@ -185,7 +188,7 @@ sub set_profile
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, $hashref->{'loginname'} );
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $hashref->{'loginname'} );
   if ( $results{'error_msg'}) { return( 1, %results ); }
 
     # populate %results with the data fetched from the database
@@ -196,7 +199,7 @@ sub set_profile
     ### check the current password with the one in the database before
     ### proceeding
   if ( $results{'password'} ne $hashref->{'password_current'} ) {
-      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       return( 1, 'Please check the current password and try again.' );
   }
   query_finish( $sth );
@@ -240,15 +243,15 @@ sub set_profile
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, $READ_LOCK, @values_to_update, $hashref->{'loginname'} );
+  ( $results{'error_msg'}, undef, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, @values_to_update, $hashref->{'loginname'} );
   if ( $results{'error_msg'}) {
-      db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} =~ s/CantExecuteQuery\n//;
       $results{'error_msg'} =  'An error has occurred while updating your account information.<br>[Error] ' . $error_code . $results{'error_msg'};
       return( 1, %results );
   }
 
-  db_handle_finish( $READ_LOCK, $dbh, $sth, $Table{'users'});
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
   $results{'status_msg'} = 'Your account information has been updated successfully.';
   return( 0, %results );
 }
