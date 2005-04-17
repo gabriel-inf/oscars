@@ -6,7 +6,7 @@
 #
 # JRLee
 ######################################################################
-package BSSScheduler;
+package BSS::Scheduler::SchedulerThread;
 
 use threads;
 use threads::shared;
