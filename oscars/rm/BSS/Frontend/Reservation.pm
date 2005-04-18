@@ -31,7 +31,7 @@ use BSS::Frontend::Database;
 sub insert_reservation
 {
   my( $inref ) = @_;
-  my( $dbh, $query, $sth, $num_rows, @insertions );
+  my( $dbh, $query, $sth, @insertions );
   my( %results );
 
   ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
@@ -43,8 +43,10 @@ sub insert_reservation
     # reservation request.
   $query = "SELECT $Table_field{'reservations'}{'bandwidth'}, $Table_field{'reservations'}{'start_time'}, $Table_field{'reservations'}{'end_time'} FROM $Table{'reservations'} WHERE ( $Table_field{'reservations'}{'end_time'} >= ? AND $Table_field{'reservations'}{'start_time'} <= ? )";
 
+  $results{'created_time'} = '';  only holds a time if reservation successful
+
       # handled query with the comparison start & end datetime strings
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $inref->{'start_time'}, $inref->{'end_time'});
+  ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $inref->{'start_time'}, $inref->{'end_time'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
   # TODO:  find segments of overlap, determine if bandwidth in any is
@@ -66,7 +68,7 @@ sub insert_reservation
         # insert into database query statement
       $query = "INSERT INTO $Table{'reservations'} VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
 
-      ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, @insertions);
+      ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, @insertions);
       if ( $results{'error_msg'} )
       {
           $results{'error_msg'} =~ "s/CantExecuteQuery\n//";
@@ -77,7 +79,8 @@ sub insert_reservation
       $results{'id'} = $dbh->{'mysql_insertid'};
   }
   db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
-  results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $new_reservation_id . '.';
+  $results{'created_time'} = time();
+  $results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $new_reservation_id . '.';
   return( 0, %results );
 }
 
@@ -91,7 +94,7 @@ sub insert_reservation
 sub get_reservations
 {
   my( $inref ) = @_;
-  my( $dbh, $sth, $num_rows, $query );
+  my( $dbh, $sth, $query );
   my( %results );
 
   ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
@@ -110,7 +113,7 @@ sub get_reservations
     # sort by reservation ID in descending order
   $query .= " FROM $Table{'reservations'} ORDER BY $Table_field{'reservations'}{'reservation_id'} DESC";
 
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK);
+  ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK);
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
     # populate %reservations_data with the data fetched from the database
@@ -175,7 +178,7 @@ sub delete_reservation
 sub get_reservation_detail
 {
   my( $inref ) = @_;
-  my( $dbh, $sth, $query, $num_rows );
+  my( $dbh, $sth, $query );
   my( %results );
 
   ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
@@ -192,7 +195,7 @@ sub get_reservation_detail
     # delete the last ", "
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'reservations'} WHERE $Table_field{'reservations'}{'reservation_id'} = ?";
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $inref->{'id'});
+  ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $inref->{'id'});
 
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
