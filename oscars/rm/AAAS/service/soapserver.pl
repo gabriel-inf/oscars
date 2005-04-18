@@ -22,14 +22,14 @@ use AAAS::Frontend::User;
 #use AAAS::Frontend::Admin;  needs to pass use strict
 
 sub Verify_login {
-  my ($class, %params) = @_;
-  return (verify_login(\%params));
+  my ($class, $params) = @_;
+  return (verify_login($params));
 }
 
 
 sub Get_profile {
-  my ($class, %params) = @_;
-  return (get_profile(\%params));
+  my ($class, $params, $fields_to_display) = @_;
+  return (get_profile($params, @$fields_to_display));
 }
 
 
