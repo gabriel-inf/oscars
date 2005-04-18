@@ -31,7 +31,7 @@ our %db_connect_info = (
 sub db_handle_query
 {
   my ($dbh, $query, $table, $opflag, @arglist) = @_;
-  my ($sth, $num_rows); 
+  my ($sth); 
 
   if (!defined($dbh)) { print STDERR "foo\n"; }
   #print STDERR $query, "\n";
@@ -46,7 +46,7 @@ sub db_handle_query
       database_disconnect( $dbh );
       return( $error_msg, undef );
   }
-  ($error_msg, $num_rows) = query_execute( $sth, @arglist );
+  $error_msg = query_execute( $sth, @arglist );
 
   if ( $error_msg ) {
       print STDERR $error_msg, " after exec\n\n";
@@ -54,7 +54,7 @@ sub db_handle_query
       database_disconnect( $dbh );
       return( $error_msg, undef );
   }
-  else { return ('', $num_rows, $sth) };
+  else { return ('', $sth) };
 }
 
 
@@ -122,8 +122,8 @@ sub query_execute
   if (!$num_rows) {
       return( "CantExecuteQuery\n" . $sth->errstr, undef );
   }
-    # if nothing fails, empty error message, and $num_rows is set
-  return ( '', $num_rows);
+    # if nothing fails, empty error message
+  return ( '' );
 }
 
 
