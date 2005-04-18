@@ -1,5 +1,5 @@
-# Database.pm:  BSS specific database settings
-# Last modified: April 14, 2005
+# Database.pm:  BSS specific database settings and routines
+# Last modified: April 18, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -7,6 +7,8 @@ package BSS::Frontend::Database;
 
 # tighten it up
 use strict; 
+
+use DB;
 
 require Exporter;
 
@@ -80,71 +82,63 @@ sub ip_to_interface {
 
 
 #######################################################################
-# Search the db for for ipaddrs idx and convert them back to 
-# interface idx.
+# Use router's ipaddrs idx to get interface idx.
 # IN: ipaddr_idx
 # OUT: interface_idx
 #######################################################################
 sub ipaddr_to_iface_idx  {
 
-    my ($ip_idx) = @_;
-    my ($sth, $dbh, $id);
+  my ($ip_idx) = @_;
+  my ($query, $error_msg, $sth, $dbh);
+  my ($interface_idx);
 
-    # XXX:
-    # this should probably be done either  in a constructor or init method
-    # and stached in globals and a config for the name/pass/etc
-    $dbh = DBI->connect('DBI:mysql:BSS', 'jason', 'ritazza6')
-            or die "Couldn't connect to database: " . DBI->errstr;
+  ( $error_msg, $dbh ) = database_connect($Dbname);
+  if ( $error_msg ) { return(0); }
 
-    $sth = $dbh->prepare('SELECT * FROM ipaddrs WHERE interface_id = ?')
-            or die "Couldn't prepare statement: " . $dbh->errstr;
 
-    $sth->execute( $ip_idx );
+  $query = 'SELECT * FROM ipaddrs WHERE interface_id = ?';
+
+  ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $ip_idx);
+  if ($error_msg) { return( 0 ); }
 
     # error on no matchs
-    if ($sth->rows == 0 ) {
-        print "nothing matched ($ip_idx)\n";
-        $sth->finish;
-        return 0;
-    }
+  if ($sth->rows == 0 ) {
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+      return( 0 );
+  }
 
-    # flatten it out
-    while (my @data = $sth->fetchrow_array()) {
-            $id = $data[2];
-    }   
+  # flatten it out
+  while (my @data = $sth->fetchrow_array()) {
+          $interface_idx = $data[2];
+  }   
 
-    # close it up
-    $sth->finish;
-
-    # return the answer
-    return  $id;
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+      # return the answer
+  return ($interface_idx);
 }
 
 #######################################################################
-# Check the db ifaces for a router iface ip
+## Check the db ifaces for a router iface ip.  Called from the scheduler
+## to see if a router is an edge router.
 # IN: ip
 # OUT: router idx
 #######################################################################
 sub check_db_rtr {
 
     my ($rtr) = @_;
-    my ($dbh, $sth, $id);
+    my ($dbh, $query, $sth, $id, $error_msg);
 
-    # XXX:
-    # this should probably be done either  in a constructor or init method
-    # and stached in globals
-    $dbh = DBI->connect('DBI:mysql:BSS', 'jason', 'ritazza6')
-            or die "Couldn't connect to database: " . DBI->errstr;
+    ( $error_msg, $dbh ) = database_connect($Dbname);
+    if ( $error_msg ) { return(0); }
 
-    $sth = $dbh->prepare('SELECT * FROM ipaddrs WHERE ipaddrs_ip = ?')
-            or die "Couldn't prepare statement: " . $dbh->errstr;
-
-    $sth->execute( $rtr );
+    $query = 'SELECT * FROM ipaddrs WHERE ipaddrs_ip = ?';
+    ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $rtr);
+    if ( $error_msg ) { return(0); }
 
     # no match
     if ($sth->rows == 0 ) {
         #print "nothing matched ($rtr)\n";
-        $sth->finish;
+        db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
         return 0;
     }
 
@@ -154,11 +148,10 @@ sub check_db_rtr {
     }   
 
     # close it up
-    $sth->finish;
+    db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
 
     # return the answer
-    return  $id;
-
+    return $id;
 }
 
 # setup globls?

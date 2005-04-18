@@ -43,7 +43,7 @@ sub insert_reservation
     # reservation request.
   $query = "SELECT $Table_field{'reservations'}{'bandwidth'}, $Table_field{'reservations'}{'start_time'}, $Table_field{'reservations'}{'end_time'} FROM $Table{'reservations'} WHERE ( $Table_field{'reservations'}{'end_time'} >= ? AND $Table_field{'reservations'}{'start_time'} <= ? )";
 
-  $results{'created_time'} = '';  only holds a time if reservation successful
+  $results{'created_time'} = '';  # only holds a time if reservation successful
 
       # handled query with the comparison start & end datetime strings
   ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $inref->{'start_time'}, $inref->{'end_time'});
