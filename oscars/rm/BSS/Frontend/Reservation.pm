@@ -1,7 +1,7 @@
 package BSS::Frontend::Reservation;
 
 # Reservation.pm:
-# Last modified: April 17, 2005
+# Last modified: April 18, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -25,16 +25,17 @@ use BSS::Frontend::Database;
 ###
 ### IN:  reference to hash.  Hash's keys are all the fields of the reservations
 ###      table except for the primary key.
-### OUT: error status (0 success, 1 failure), and the ID.
+### OUT: error status (0 success, 1 failure), and the results hash.
 ################################
 
 sub insert_reservation
 {
-  my( $input_ref ) = @_;
-  my( $dbh, $query, $sth, $error_code, $rows, $current_time );
+  my( $inref ) = @_;
+  my( $dbh, $query, $sth, $num_rows, @insertions );
+  my( %results );
 
-  ( $error_code, $dbh ) = database_connect($Dbname);
-  if ( $error_code ) { return( 1, $error_code ); }
+  ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
+  if ( $results{'error_msg'} ) { return( 1, %results ); }
   my $over_limit = 0; # whether any time segment is over the bandwidth limit
 
     ###
@@ -42,56 +43,42 @@ sub insert_reservation
     # reservation request.
   $query = "SELECT $Table_field{'reservations'}{'bandwidth'}, $Table_field{'reservations'}{'start_time'}, $Table_field{'reservations'}{'end_time'} FROM $Table{'reservations'} WHERE ( $Table_field{'reservations'}{'end_time'} >= ? AND $Table_field{'reservations'}{'start_time'} <= ? )";
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
-      # execute query with the comparison start & end datetime strings
-  ( $error_code, $rows ) = query_execute( $sth, $input_ref->{'start_time'}, $input_ref->{'end_time'} );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return( 1, $error_code );
-  }
+      # handled query with the comparison start & end datetime strings
+  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $inref->{'start_time'}, $inref->{'end_time'});
+  if ( $results{'error_msg'} ) { return( 1, %results ); }
 
   # TODO:  find segments of overlap, determine if bandwidth in any is
   #        over the limit; return time segments if error
-  query_finish( $sth );
 
     # If no segment is over the limit,  record the reservation to the database.
     # otherwise, return error message (TODO) with the times involved.
 
   my $new_reservation_id unless ( $over_limit );
   if ( $over_limit ) {
-      database_disconnect( $dbh );
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
           # TODO:  list of times
-      return( 1, '[ERROR] The available bandwidth limit on the network has been reached between '. 'Please modify your reservation request and try again.' );
+      results{'error_msg'} = '[ERROR] The available bandwidth limit on the network has been reached between '. 'Please modify your reservation request and try again.';
+      return( 1, %results );
   }
   else {
-      my @stuffs_to_insert = ( '', $input_ref->{ 'loginname', 'origin', 'destination', 'bandwidth', 'start_time', 'end_time', 'description'}, $current_time, @ENV{ 'REMOTE_ADDR', 'REMOTE_HOST', 'HTTP_USER_AGENT' } );
+      query_finish( $sth );
 
         # insert into database query statement
-      $query = "INSERT INTO $Table{'reservations'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
+      $query = "INSERT INTO $Table{'reservations'} VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
 
-      ( $error_code, $sth ) = query_prepare( $dbh, $query );
-      if ( $error_code ) {
-          database_disconnect( $dbh );
-          return( 1, $error_code );
-      }
-
-      ( $error_code, undef ) = query_execute( $sth, @stuffs_to_insert );
-      if ( $error_code ) {
-          database_disconnect( $dbh );
-          $error_code =~ s/CantExecuteQuery\n//;
-          return( 1, '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $error_code );
+      ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, @insertions);
+      if ( $results{'error_msg'} )
+      {
+          $results{'error_msg'} =~ "s/CantExecuteQuery\n//";
+          $results{'error_msg'} = '[ERROR] An error has occurred while recording the reservation request on the database.<br>[Error] ' . $results{'error_msg'};
+           return( 1, %results );
       }
 		
-      $new_reservation_id = $dbh->{'mysql_insertid'};
-
-      query_finish( $sth );
+      $results{'id'} = $dbh->{'mysql_insertid'};
   }
-  database_disconnect( $dbh );
-  return( 0, 'Your reservation has been processed successfully. Your reservation ID number is ' . $new_reservation_id . '.' );
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+  results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $new_reservation_id . '.';
+  return( 0, %results );
 }
 
 
@@ -103,11 +90,12 @@ sub insert_reservation
 # Out: success or failure, and status message
 sub get_reservations
 {
-  my( $input_ref ) = @_;
-  my( $dbh, $sth, $error_code, $query );
+  my( $inref ) = @_;
+  my( $dbh, $sth, $num_rows, $query );
+  my( %results );
 
-  ( $error_code, $dbh ) = database_connect($Dbname);
-  if ( $error_code ) { return(1, $error_code ); }
+  ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
+  if ( $results{'error_msg'} ) { return(1, %results ); }
 
     # DB query: get the reservation list
     # CAUTION: do not change the elements order of this array!!
@@ -122,17 +110,8 @@ sub get_reservations
     # sort by reservation ID in descending order
   $query .= " FROM $Table{'reservations'} ORDER BY $Table_field{'reservations'}{'reservation_id'} DESC";
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return(1, $error_code );
-  }
-
-  ( $error_code, undef ) = query_execute( $sth );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return(1, $error_code );
-  }
+  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK);
+  if ( $results{'error_msg'} ) { return(1, %results ); }
 
     # populate %reservations_data with the data fetched from the database
   my %reservations_data;
@@ -163,7 +142,7 @@ sub get_reservations
 
         # the second column of the table is reservation requester's login name
       if ( $resv_list_table_row[1] =~ /<td>([^<]+)<\/td>/ ) {
-          if ( $1 eq $input_ref->{'loginname'} ) {
+          if ( $1 eq $inref->{'loginname'} ) {
                 # highlight the row if login name matches that of the
                 # currently logged-in user's
               unshift( @resv_list_table_row, '<tr class="attention">' );
@@ -177,9 +156,9 @@ sub get_reservations
 		
       $reservation_list_table .= join( '', @resv_list_table_row );
   }
-  query_finish( $sth );
-  database_disconnect( $dbh );
-  return (0, 'success');
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+  results{'status_msg'} = 'Successfully read reservations';
+  return( 0, %results );
 }
 
 
@@ -195,11 +174,12 @@ sub delete_reservation
 # Out: success or failure, and status message
 sub get_reservation_detail
 {
-  my( $input_ref ) = @_;
-  my( $dbh, $sth, $error_code, $query );
+  my( $inref ) = @_;
+  my( $dbh, $sth, $query, $num_rows );
+  my( %results );
 
-  ( $error_code, $dbh ) = database_connect($Dbname);
-  if ( $error_code ) { return(1, $error_code ); }
+  ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
+  if ( $results{'error_msg'} ) { return(1, %results ); }
 
     # names of the fields to be displayed on the screen
   my @fields_to_display = ( 'user_loginname', 'reserv_origin_ip', 'reserv_dest_ip', 'bandwidth', 'start_time', 'end_time', 'description', 'created_time' );
@@ -212,18 +192,9 @@ sub get_reservation_detail
     # delete the last ", "
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'reservations'} WHERE $Table_field{'reservations'}{'reservation_id'} = ?";
+  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $inref->{'id'});
 
-  ( $error_code, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return(1, $error_code );
-  }
-
-  ( $error_code, undef ) = query_execute( $sth, $input_ref->{'resvid'} );
-  if ( $error_code ) {
-      database_disconnect( $dbh );
-      return(1, $error_code );
-  }
+  if ( $results{'error_msg'} ) { return(1, %results ); }
 
     # populate %reservations_data with the data fetched from the database
   my %reservations_data;
@@ -231,9 +202,9 @@ sub get_reservation_detail
   $sth->bind_columns( map { \$reservations_data{$_} } @fields_to_display );
   $sth->fetch();
 
-  query_finish( $sth );
-  database_disconnect( $dbh );
-  return (0, 'success');
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+  $results{'status_msg'} = 'Successfully got reservation details.';
+  return (0, %results);
 }
 
 1;
