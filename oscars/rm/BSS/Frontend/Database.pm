@@ -55,40 +55,20 @@ our %Table_field = (
 # BSS DB specific calls 
 #
 # JRLee
+# DWRobertson
 #######################################################################
 
 use DBI;
 
 
-################################
-### convert the ipaddr idx to 
-### to a router idx
-### IN src & dst ip idx's
-### OUT src and dst interface idx
-################################
-
-sub ip_to_interface {
-    my ($src_idx, $dst_idx) = @_; 
-    my ($src_iface, $dst_iface);
-
-    $src_iface = ipaddr_to_iface_idx($src_idx);
-    $dst_iface = ipaddr_to_iface_idx($dst_idx);
-
-    if ($src_iface == 0 || $dst_iface == 0 ) {
-        return (0,0);
-    } 
-	return ($src_iface, $dst_iface);
-}
-
-
 #######################################################################
-# Use router's ipaddrs idx to get interface idx.
-# IN: ipaddr_idx
+### Get the interface idx, given a router ip address
+# IN:  ipaddrs_ip
 # OUT: interface_idx
 #######################################################################
 sub ipaddr_to_iface_idx  {
 
-  my ($ip_idx) = @_;
+  my ($ipaddrs_ip) = @_;
   my ($query, $error_msg, $sth, $dbh);
   my ($interface_idx);
 
@@ -96,26 +76,66 @@ sub ipaddr_to_iface_idx  {
   if ( $error_msg ) { return(0); }
 
 
-  $query = 'SELECT * FROM ipaddrs WHERE interface_id = ?';
+     # TODO:  make ipaddrs_ip field UNIQUE in ipaddrs?
+  $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
 
-  ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $ip_idx);
+  ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'ipaddrs'}, READ_LOCK, $ipaddrs_ip);
   if ($error_msg) { return( 0 ); }
 
     # error on no matchs
   if ($sth->rows == 0 ) {
-      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
       return( 0 );
   }
 
   # flatten it out
   while (my @data = $sth->fetchrow_array()) {
-          $interface_idx = $data[2];
+          $interface_idx = $data[0];
   }   
 
-  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
       # return the answer
   return ($interface_idx);
 }
+
+
+#######################################################################
+### Get the primary key, given a host ip address
+# IN:  hostaddrs_ip
+# OUT: hostaddrs_id
+#######################################################################
+sub hostaddr_to_idx {
+
+  my ($hostaddrs_ip) = @_;
+  my ($query, $error_msg, $sth, $dbh);
+  my ($hostaddrs_id);
+
+  ( $error_msg, $dbh ) = database_connect($Dbname);
+  if ( $error_msg ) { return(0); }
+
+
+     # TODO:  make hostaddrs_ip field UNIQUE in hostaddrs?
+  $query = 'SELECT hostaddrs_id FROM hostaddrs WHERE hostaddrs_ip = ?';
+
+  ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'hostaddrs'}, READ_LOCK, $hostaddrs_ip);
+  if ($error_msg) { return( 0 ); }
+
+    # error on no matches
+  if ($sth->rows == 0 ) {
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'hostaddrs'});
+      return( 0 );
+  }
+
+  # flatten it out
+  while (my @data = $sth->fetchrow_array()) {
+          $hostaddrs_id = $data[0];
+  }   
+
+  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'hostaddrs'});
+      # return the answer
+  return ($hostaddrs_id);
+}
+
 
 #######################################################################
 ## Check the db ifaces for a router iface ip.  Called from the scheduler
@@ -132,13 +152,13 @@ sub check_db_rtr {
     if ( $error_msg ) { return(0); }
 
     $query = 'SELECT * FROM ipaddrs WHERE ipaddrs_ip = ?';
-    ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, $rtr);
+    ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'ipaddrs'}, READ_LOCK, $rtr);
     if ( $error_msg ) { return(0); }
 
     # no match
     if ($sth->rows == 0 ) {
         #print "nothing matched ($rtr)\n";
-        db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+        db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
         return 0;
     }
 
@@ -148,85 +168,12 @@ sub check_db_rtr {
     }   
 
     # close it up
-    db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
+    db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
 
     # return the answer
     return $id;
 }
 
-# setup globls?
-#######################################################################
-# insert a reservation into the database
-# IN:  dbh,rid,stime,time,qos,status,desc,ctime,inport,outport,inid,outid,dn
-# OUT: 1 on success, 0 on failure
-#######################################################################
-sub insert_db_reservation {
-
-    my( $stime,$etime,$qos,$status,$desc,$ctime, 
-        $inport,$outport,$inid,$outid,$dn) = @_;
-
-    my ($dbh, $sth, $res_id);
-
-    print "start of insert_db_reservations\n";
-    # XXX:
-    # this should be done either in a constructor or init method
-    # and stached in globals for this package
-    $dbh = DBI->connect('DBI:mysql:BSS', 'jason', 'ritazza6')
-            or die "Couldn't connect to database: " . DBI->errstr;
-        
-    # XXX: should parse/check args
-    my $q = "INSERT INTO reservations VALUES(NULL,$stime,$etime,'$qos',
-            '$status','$desc',$ctime,$inport,$outport,$inid,$outid,'$dn')";
-    #print "q = $q\n";
-    # Execute the query  (NOTE, use do if we don't expect results)
-    $sth = $dbh->do($q) or print "Couldn't 'do' statement: " . $dbh->errstr . "\n"; 
-
-    print "Finished insert_reservation\n";
-
-    $res_id = get_res_id( $stime,$etime,$qos,$status,$desc,$ctime, 
-        $inport,$outport,$inid,$outid,$dn);
-
-    if ( $res_id == 0 ) {
-        print "Error inserting reservation\n";
-    }
-    return $res_id;
-}
-
-#######################################################################
-# insert a reservation into the database
-# IN:  dbh,rid,stime,time,qos,status,desc,ctime,inport,outport,inid,outid,dn
-# OUT: 1 on success, 0 on failure
-#######################################################################
-sub get_res_id {
-
-    my( $stime,$time,$qos,$status,$desc,$ctime, 
-        $inport,$outport,$inid,$outid,$dn) = @_;
-
-    my ($dbh, $sth, $id);
-
-    $dbh = DBI->connect('DBI:mysql:BSS', 'jason', 'ritazza6')
-            or die "Couldn't connect to database: " . DBI->errstr;
-        
-    $sth = $dbh->prepare('SELECT MAX(reservation_id) FROM reservations WHERE 
-            reservation_created_time = ? and reservation_start_time = ?') or 
-            die "Couldn't prepare statement: " . $dbh->errstr;
-
-    $sth->execute( $ctime, $stime );
-    # error on no matchs
-    if ($sth->rows == 0 ) {
-        print "nothing matched ($ctime,$stime)\n";
-        $sth->finish;
-        return 0;
-    }
-
-    $id = $sth->fetchrow_array();
-
-    # close it up
-    $sth->finish;
-
-    # return the answer
-    return  $id;
-}
 
 ## last line of a module
 1;

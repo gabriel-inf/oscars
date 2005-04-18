@@ -55,7 +55,7 @@ sub insert_reservation
     # If no segment is over the limit,  record the reservation to the database.
     # otherwise, return error message (TODO) with the times involved.
 
-  my $new_reservation_id unless ( $over_limit );
+  #$results{'id'} unless ( $over_limit );
   if ( $over_limit ) {
       db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
           # TODO:  list of times
@@ -64,8 +64,16 @@ sub insert_reservation
   }
   else {
       query_finish( $sth );
+      database_unlock_table( $Table{'reservations'} );
+          # get interface id's from edge router ip's
+      $results{'ingress_interface_id'} = ipaddr_to_iface_idx($inref->{'ingress_router'}); 
+      $results{'egress_interface_id'} = ipaddr_to_iface_idx($inref->{'egress_router'}); 
 
-        # insert into database query statement
+          # get ipaddr id from host's and destination's ip addresses
+      $results{'src_hostaddrs_id'} = hostaddr_to_idx($inref->{'src_ip'}); 
+      $results{'dst_hostaddrs_id'} = hostaddr_to_idx($inref->{'dst_ip'}); 
+
+        # insert all fields for reservation into database
       $query = "INSERT INTO $Table{'reservations'} VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
 
       ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, @insertions);
@@ -80,7 +88,7 @@ sub insert_reservation
   }
   db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
   $results{'created_time'} = time();
-  $results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $new_reservation_id . '.';
+  $results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $results{'id'} . '.';
   return( 0, %results );
 }
 
