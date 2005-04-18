@@ -52,8 +52,8 @@ use BSS::Scheduler::ReservationHandler;
 use BSS::Frontend::Reservation;
 
 sub Create_reservation {
-  my ($class, %params) = @_;
-  return (create_reservation(\%params));
+  my ($class, $inref ) = @_;
+  return (create_reservation($inref));
 }
 
 sub Remove_reservation {
