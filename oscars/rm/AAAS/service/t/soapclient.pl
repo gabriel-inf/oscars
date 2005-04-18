@@ -12,8 +12,8 @@ my $AAAS_server = SOAP::Lite
 
 sub soap_verify_login
 {
-    my (%params) = @_;
-    my $response = $AAAS_server -> Verify_login(%params);
+    my ($params) = @_;
+    my $response = $AAAS_server -> Verify_login($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -22,8 +22,8 @@ sub soap_verify_login
 
 sub soap_get_profile
 {
-    my (%params) = @_;
-    my $response = $AAAS_server -> Get_profile(%params);
+    my ($params, $fields_to_display) = @_;
+    my $response = $AAAS_server -> Get_profile($params, $fields_to_display);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
