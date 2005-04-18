@@ -24,8 +24,11 @@ my $useping = 1;
 ### 1) compute routers
 ### 2) check bandwidth (y2?)
 ### 3) return the reservation id
-### IN: src, dst, start_time, duration, qos,desc, ingress_port, egress_port
-### OUT: reservation id
+### IN: ref to hash containing fields corresponding to the reservations table.
+###     Some fields are still empty, and are filled in before inserting a
+###     record
+### OUT: 0 on success, and hash containing all table fields, as well as error
+###     or status message
 ################################
 sub create_reservation {
 
@@ -33,12 +36,11 @@ sub create_reservation {
         # This routine fills in the remaining fields.
 	my ( $inref ) = @_; 
 
-        # TODO:  FIX, use class methods to set
+       # these will be used to look up interface ids in insert_reservation
 	($inref->{'ingress_router'}, $inref->{'egress_router'}) = find_router_ips($inref->{'src_ip'}, $inref->{'dst_ip'});
 
     print STDERR "$inref->{'ingress_router'}, $inref->{'egress_router'}\n";
 
-    $inref->{'created_time'} = time();
 	my ($error_status, %results) = insert_reservation( $inref );
 	return ($error_status, %results);
 }
