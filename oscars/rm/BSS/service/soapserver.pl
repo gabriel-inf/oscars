@@ -29,10 +29,10 @@ my $config = Config::Auto::parse('BSS.config');
 # start up a thread to monitor the DB
 BSS::Scheduler::SchedulerThread::start_scheduler($config);
 
-# Let create a SOAP server
+# Create a SOAP server
 my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
-	-> new (LocalPort => 3000, Listen => 5, Reuse => 1)
-	-> dispatch_to('.', 'BSS_Server')
+	-> new (LocalPort => 5000, Listen => 5, Reuse => 1)
+	-> dispatch_to('BSS_Server')
 	;
 
 # and away we go
@@ -57,13 +57,13 @@ sub Create_reservation {
 }
 
 sub Remove_reservation {
-  my ($class, %params) = @_;
-  return (remove_reservation(\%params));
+  my ($class, $inref) = @_;
+  return (remove_reservation($inref));
 }
 
 sub Get_reservations {
-  my ($class, %params) = @_;
-  return (get_reservations(\%params));
+  my ($class, $inref) = @_;
+  return (get_reservations($inref));
 }
 
 
