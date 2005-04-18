@@ -21,8 +21,8 @@ sub soap_get_reservations
 
 sub soap_create_reservation
 {
-    my (%params) = @_;
-    my $response = $BSS_server -> Create_reservation(%params);
+    my ($inref) = @_;
+    my $response = $BSS_server -> Create_reservation($inref);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
