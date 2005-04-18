@@ -1,40 +1,46 @@
 package BSS::Frontend::Reservation;
 
 # Reservation.pm:
-# Last modified: April 14, 2005
+# Last modified: April 17, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
+
+use strict;
 
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(get_reservations create_reservation remove_reservation);
+our @EXPORT = qw(get_reservations insert_reservation delete_reservation);
 
 use DB;
-use BSS::Frontend::DBSettings;
+use BSS::Frontend::Database;
 
-#  network bandwidth limit (in Mbps) (1 Gbps = 1000 Mbps)
-$bandwidth_limit = 3000;
 
-##### Beginning of sub routines #####
 
-# from reservation.pl:  contacts db to generate reservation
+################################
+### insert_reservation
+###
+### Called from the scheduler to insert a row into the reservations table.
+### Error checking has already been done by scheduler and CGI script.
+###
+### IN:  reference to hash.  Hash's keys are all the fields of the reservations
+###      table except for the primary key.
+### OUT: error status (0 success, 1 failure), and the ID.
+################################
 
-##### sub create_reservation
-# In: reference to hash of parameters
-# Out: success or failure, and status message
-sub create_reservation
+sub insert_reservation
 {
-  my($args_href) = @_;
+  my( $input_ref ) = @_;
+  my( $dbh, $query, $sth, $error_code, $rows, $current_time );
+
   ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return( 1, $error_code ); }
   my $over_limit = 0; # whether any time segment is over the bandwidth limit
-  my $end_time = args_href->{'start_time'} + args_href->{'duration'};
 
     ###
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
-  $query = "SELECT $Table_field{'reservations'}{'qos'}, $Table_field{'reservations'}{'start_time'}, $Table_field{'reservations'}{'end_time'} FROM $Table{'reservations'} WHERE ( $Table_field{'reservations'}{'end_time'} >= ? AND $Table_field{'reservations'}{'start_time'} <= ? )";
+  $query = "SELECT $Table_field{'reservations'}{'bandwidth'}, $Table_field{'reservations'}{'start_time'}, $Table_field{'reservations'}{'end_time'} FROM $Table{'reservations'} WHERE ( $Table_field{'reservations'}{'end_time'} >= ? AND $Table_field{'reservations'}{'start_time'} <= ? )";
 
   ( $error_code, $sth ) = query_prepare( $dbh, $query );
   if ( $error_code ) {
@@ -42,7 +48,7 @@ sub create_reservation
       return( 1, $error_code );
   }
       # execute query with the comparison start & end datetime strings
-  ( $error_code, $rows ) = query_execute( $sth, $args_href->{'start_time'}, $end_time} );
+  ( $error_code, $rows ) = query_execute( $sth, $input_ref->{'start_time'}, $input_ref->{'end_time'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return( 1, $error_code );
@@ -62,7 +68,7 @@ sub create_reservation
       return( 1, '[ERROR] The available bandwidth limit on the network has been reached between '. 'Please modify your reservation request and try again.' );
   }
   else {
-      my @stuffs_to_insert = ( '', @FormData{ 'loginname', 'origin', 'destination', 'bandwidth' }, args_href->{'start_time'}, $end_time, $args_ref->{'description'}, $current_time, @ENV{ 'REMOTE_ADDR', 'REMOTE_HOST', 'HTTP_USER_AGENT' } );
+      my @stuffs_to_insert = ( '', $input_ref->{ 'loginname', 'origin', 'destination', 'bandwidth', 'start_time', 'end_time', 'description'}, $current_time, @ENV{ 'REMOTE_ADDR', 'REMOTE_HOST', 'HTTP_USER_AGENT' } );
 
         # insert into database query statement
       $query = "INSERT INTO $Table{'reservations'} VALUES ( " . join( ', ', ('?') x @stuffs_to_insert ) . " )";
@@ -97,6 +103,7 @@ sub create_reservation
 # Out: success or failure, and status message
 sub get_reservations
 {
+  my( $input_ref ) = @_;
   my( $dbh, $sth, $error_code, $query );
 
   ( $error_code, $dbh ) = database_connect($Dbname);
@@ -104,7 +111,7 @@ sub get_reservations
 
     # DB query: get the reservation list
     # CAUTION: do not change the elements order of this array!!
-  my @fields_to_read = ( 'id', 'user_loginname', 'reserv_origin_ip', 'reserv_dest_ip', 'qos', 'start_time', 'end_time' );
+  my @fields_to_read = ( 'id', 'user_loginname', 'reserv_origin_ip', 'reserv_dest_ip', 'bandwidth', 'start_time', 'end_time' );
 
   $query = "SELECT ";
   foreach $_ ( @fields_to_read ) {
@@ -146,7 +153,7 @@ sub get_reservations
           if ( $fields_to_read[$_] eq 'reservation_id' ) {
               push( @resv_list_table_row, '<td><a href="#" onClick="javascript:open_resv_detail_window(\'?mode=resvdetail&resvid=' . $reservations_data{$fields_to_read[$_]} . '\');">' . $reservations_data{$fields_to_read[$_]} . '</a></td>' );
           }
-          elsif ( $fields_to_read[$_] eq 'qos' ) {
+          elsif ( $fields_to_read[$_] eq 'bandwidth' ) {
               push( @resv_list_table_row, "<td>$reservations_data{$fields_to_read[$_]} Mbps</td>" );
           }
           else {
@@ -156,7 +163,7 @@ sub get_reservations
 
         # the second column of the table is reservation requester's login name
       if ( $resv_list_table_row[1] =~ /<td>([^<]+)<\/td>/ ) {
-          if ( $1 eq $args_ref->{'loginname'} ) {
+          if ( $1 eq $input_ref->{'loginname'} ) {
                 # highlight the row if login name matches that of the
                 # currently logged-in user's
               unshift( @resv_list_table_row, '<tr class="attention">' );
@@ -177,7 +184,7 @@ sub get_reservations
 
 
     # stub
-sub remove_resersvation
+sub delete_reservation
 {
 }
 
@@ -188,13 +195,14 @@ sub remove_resersvation
 # Out: success or failure, and status message
 sub get_reservation_detail
 {
+  my( $input_ref ) = @_;
   my( $dbh, $sth, $error_code, $query );
 
   ( $error_code, $dbh ) = database_connect($Dbname);
   if ( $error_code ) { return(1, $error_code ); }
 
     # names of the fields to be displayed on the screen
-  my @fields_to_display = ( 'user_loginname', 'reserv_origin_ip', 'reserv_dest_ip', 'qos', 'start_time', 'end_time', 'description', 'created_time' );
+  my @fields_to_display = ( 'user_loginname', 'reserv_origin_ip', 'reserv_dest_ip', 'bandwidth', 'start_time', 'end_time', 'description', 'created_time' );
 
     # DB query: get the user profile detail
   $query = "SELECT ";
@@ -211,7 +219,7 @@ sub get_reservation_detail
       return(1, $error_code );
   }
 
-  ( $error_code, undef ) = query_execute( $sth, $args_ref->{'resvid'} );
+  ( $error_code, undef ) = query_execute( $sth, $input_ref->{'resvid'} );
   if ( $error_code ) {
       database_disconnect( $dbh );
       return(1, $error_code );
