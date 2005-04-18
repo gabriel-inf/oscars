@@ -29,21 +29,18 @@ my $useping = 1;
 ################################
 sub create_reservation {
 
-        # references to input arguments, output hash
+        # reference to input hash ref containing fields filled in by user
+        # This routine fills in the remaining fields.
 	my ( $inref ) = @_; 
-    my ( $outref ) = \{};
 
         # TODO:  FIX, use class methods to set
-	($outref->{'ingress_router'}, $outref->{'egress_router'}) = find_router_ips($inref->{'src'}, $inref->{'dst'});
+	($inref->{'ingress_router'}, $inref->{'egress_router'}) = find_router_ips($inref->{'src_ip'}, $inref->{'dst_ip'});
 
-    print "$outref->{'ingress_router'}, $outref->{'egress_router'}\n";
+    print STDERR "$inref->{'ingress_router'}, $inref->{'egress_router'}\n";
 
-    $outref->{'status'} = "PENDING";
-    $outref->{'created_time'} = time();
-	$outref->{'id'} = create_reservation( $outref );
-
-    # if its 0 (zero) we failed
-	return ($outref->{'id'}, $outref);
+    $inref->{'created_time'} = time();
+	my ($error_status, %results) = insert_reservation( $inref );
+	return ($error_status, %results);
 }
 
 ################################
