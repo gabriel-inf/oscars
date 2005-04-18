@@ -4,7 +4,7 @@ use SOAP::Lite;
 
 
 my $BSS_server = SOAP::Lite
-  -> uri('http://localhost:5000/BSSServer')
+  -> uri('http://localhost:5000/BSS_Server')
   -> proxy ('http://localhost:5000/soapserver.pl');
 
 sub soap_get_reservations
