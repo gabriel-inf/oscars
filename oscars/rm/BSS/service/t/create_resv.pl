@@ -23,10 +23,11 @@ $params{'status'} =         'pending';
 $params{'ingress_interface_id'}= '';   # db lookup in scheduler
 $params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
+    ## Used in db lookups, not table fields
     # www.mcs.anl.gov, CGI Perl script will do any DNS lookup
-$params{'src_ip'} = '140.221.9.193';     # db lookup in scheduler
+$params{'src_ip'} = '140.221.9.193';
     # www.sdsc.edu
-$params{'dst_ip'} = '198.202.75.101';    # db lookup in scheduler
+$params{'dst_ip'} = '198.202.75.101';
 
 $params{'user_dn'} =        'oscars';
 
