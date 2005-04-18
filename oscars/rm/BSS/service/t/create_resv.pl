@@ -1,28 +1,41 @@
-#!/usr/bin/perl
-# min testing client
+#!/usr/bin/perl -w
 
-   use SOAP::Lite;
-   my $client = SOAP::Lite->new();
-   #$client->uri('urn:BSS'); # this will work
-   $client->uri('http://localhost:8001/BSS');
-   $client->proxy('http://localhost:8001');
+use DateTime;
 
-   my $som = $client->create_reservation(
-	"www.mcs.anl.gov",
-	#"www.bnl.gov",  # bad host, doesn't ping,tr hangs...
-	"www.sdsc.edu",
-	"1113522927",
-	"600",
-	"4m",
-	"testing",
-	"5222",
-	"6666",
-	'DN=/DC=org/DC=doegrids/OU=People/CN=Jason R Lee 402729');
+require 'soapclient.pl';
 
-   my @res = $som->paramsout;
-   my $output = $som->result;
+my( %params );
 
-   print "Result is [$output], outparams are:\n";
-   for $it (@res) {
-       print "=> $it\n";
-   }
+    # setup some example stuff
+params{'id'} =              'NULL';
+
+    # in seconds since epoch
+my $dt = DateTime->now();
+$params{'start_time'} =     $dt->epoch + 604800;      # + one week
+$params{'end_time'} =       $dt->epoch + 604800*2;    # + two weeks
+
+$params{'created_time'} =   '';   # filled in scheduler
+$params{'bandwidth'}=       '50m';
+$params{'class'}=           'test';
+$params{'burst_limit'}=     '100m';
+$params{'status'} =         'pending';
+
+$params{'ingress_interface_id'}= '';   db lookup in scheduler
+$params{'egress_interface_id'}=  '';   db lookup in scheduler
+
+    # www.mcs.anl.gov, CGI Perl script will do any DNS lookup
+$params{'src_ip'} = '140.221.9.193';     # db lookup in scheduler
+    # www.sdsc.edu
+$params{'dst_ip'} = '198.202.75.101';    # db lookup in scheduler
+
+$params{'user_dn'} =        'oscars';
+
+$params{'ingress_port'} =   '';     # db lookup in schedule
+$params{'egress_port'} =    '';     # db lookup in scheduler
+
+$params{'dscp'} =           '';     # optional
+
+$params{'description'} =    'This is a test.';
+
+my($result, %data) = soap_create_reservation(\%params);
+print $data{'status_msg'}, "\n\n";
