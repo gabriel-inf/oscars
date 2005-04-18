@@ -28,7 +28,7 @@ our $non_activated_user_level = -1;
 sub verify_login
 {
   my($inputs) = @_;
-  my( $dbh, $sth, $query, $num_rows, %results );
+  my( $dbh, $sth, $query, %results );
 
   ( $results{'error_msg'}, $dbh ) = database_connect($Dbname);
   if ( $results{'error_msg'} ) { return( 1, %results ); }
@@ -36,12 +36,12 @@ sub verify_login
     # get the password from the database
   $query = "SELECT $Table_field{'users'}{'password'}, $Table_field{'users'}{'level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
+  ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this person is a registered user
   my $password_matches = 0;
-  if ( $num_rows == 0 ) {
+  if ( $sth->rows == 0 ) {
         # this login name is not in the database
       db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} = 'Please check your login name and try again.';
@@ -97,7 +97,7 @@ sub logout
 sub get_profile
 {
   my( $inputs, @fields_to_display ) = @_;
-  my( $dbh, $sth, $query, $num_rows);
+  my( $dbh, $sth, $query );
   my( %results );
 
   ### get the user detail from the database and populate the profile form
@@ -113,10 +113,10 @@ sub get_profile
   $query =~ s/,\s$//;
   $query .= " FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, $num_rows, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
+  ( $results{'error_msg'}, $sth ) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
   if ( $results{'error_msg'} ) { return( 1, %results ) };
 
-  if ( $num_rows == 0 )
+  if ( $sth->rows == 0 )
   {
       db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       $results{'error_msg'} = 'No such user in the database';
@@ -260,7 +260,7 @@ sub set_profile
 sub process_account_activation
 {
   my( $inputs ) = @_;
-  my( $dbh, $sth, $query, $num_rows );
+  my( $dbh, $sth, $query );
   my( %results );
 
   ($results{'error_msg'}, $dbh ) = database_connect($Dbname);
@@ -269,14 +269,14 @@ sub process_account_activation
     # get the password from the database
   $query = "SELECT $Table_field{'users'}{'password'}, $Table_field{'users'}{'activation_key'}, $Table_field{'users'}{'pending_level'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
+  ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
   if ( $results{'error_msg'} ) { return ( 1, %results ); }
 
       # check whether this person is a registered user
   my $keys_match = 0;
   my( $pending_level, $non_match_error );
 
-  if ( $num_rows == 0 ) {
+  if ( $sth->rows == 0 ) {
         # this login name is not in the database
       db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       results{'error_msg'} =  'Please check your login name and try again.';
@@ -309,7 +309,7 @@ sub process_account_activation
         # to 0; empty the activation key field
       $query = "UPDATE $Table{'users'} SET $Table_field{'users'}{'level'} = ?, $Table_field{'users'}{'pending_level'} = ?, $Table_field{'users'}{'activation_key'} = '' WHERE $Table_field{'users'}{'dn'} = ?";
 
-      ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $pending_level, $inputs->{'dn'});
+      ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $pending_level, $inputs->{'dn'});
       if ( $results{'error_msg'} ) { return( 1, %results ); }
   }
   else {
@@ -331,7 +331,7 @@ sub process_account_activation
 sub process_registration
 {
   my( $inputs, @insertions ) = @_;
-  my( $dbh, $sth, $query, $num_rows );
+  my( $dbh, $sth, $query );
   my( %results );
 
   my $encrypted_password = $inputs->{'password_once'};
@@ -344,10 +344,10 @@ sub process_registration
 
     # login name overlap check
   $query = "SELECT $Table_field{'users'}{'dn'} FROM $Table{'users'} WHERE $Table_field{'users'}{'dn'} = ?";
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
+  ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, $inputs->{'dn'});
   if ( $results{'error_msg'} ) { return( 1, %results ); }
 
-  if ( $num_rows > 0 ) {
+  if ( $sth->rows > 0 ) {
       db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
       results{'error_msg'} = 'The selected login name is already taken by someone else; please choose a different login name.';
       return( 1, %results );
@@ -357,7 +357,7 @@ sub process_registration
 
   $query = "INSERT INTO $Table{'users'} VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-  ( $results{'error_msg'}, $num_rows, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, @insertions);
+  ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'users'}, READ_LOCK, @insertions);
   if ( $results{'error_msg'} ) {
       $results{'error_msg'} =~ s/CantExecuteQuery\n//;
       $results{'error_msg'} = 'An error has occurred while recording your registration on the database. Please contact the webmaster for any inquiries.<br>[Error] ' . $results{'error_msg'};
