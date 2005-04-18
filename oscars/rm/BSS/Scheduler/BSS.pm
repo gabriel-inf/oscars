@@ -1,14 +1,15 @@
 ######################################################################
-# Main package, inclues the BSSdb for database stuff
+# Main package, uses the BSS database front end
 #
 # JRLee
+# DWRobertson
 ######################################################################
-package BSS ; 
+package BSS::Scheduler::ReservationHandler ; 
 use Net::Traceroute;
 use Net::Ping;
 
-# BSS data base module
-use BSSdb;
+# BSS data base front end
+use BSS::Frontend::Reservation;
 
 # keep it tight
 use strict;
@@ -19,7 +20,7 @@ my $useping = 1;
 
 
 ################################
-### create reservaion
+### create reservation
 ### 1) compute routers
 ### 2) check bandwidth (y2?)
 ### 3) return the reservation id
@@ -28,29 +29,21 @@ my $useping = 1;
 ################################
 sub create_reservation {
 
-	# XXX: should validate args
-	my ($self, $src, $dst, $start_time, $duration, $qos, 
-		$desc, $ingress_port, $egress_port, $dn) = @_;
+        # references to input arguments, output hash
+	my ( $inref ) = @_; 
+    my ( $outref ) = \{};
 
-    my ( $ingress_router, $egress_router, $ingress_id, $egress_id,
-        $end_time, $status, $created_time, $res_id);
+        # TODO:  FIX, use class methods to set
+	($outref->{'ingress_router'}, $outref->{'egress_router'}) = find_router_ips($inref->{'src'}, $inref->{'dst'});
 
-	($ingress_router, $egress_router) = find_router_ips($src, $dst);
-	($ingress_id, $egress_id) = ip_to_interface($ingress_router, $egress_router);
+    print "$outref->{'ingress_router'}, $outref->{'egress_router'}\n";
 
-    print "in $ingress_router, out $egress_router\n";
-
-    $end_time = $start_time + $duration;
-    $status = "PENDING";
-    $created_time = time();
-	$res_id = BSSdb::insert_db_reservation( 
-        $start_time, $end_time, $qos, $status,$desc, $created_time,
-        $ingress_port, $egress_port,
-        $ingress_router, $egress_router,
-        $dn);
+    $outref->{'status'} = "PENDING";
+    $outref->{'created_time'} = time();
+	$outref->{'id'} = create_reservation( $outref );
 
     # if its 0 (zero) we failed
-	return $res_id;
+	return ($outref->{'id'}, $outref);
 }
 
 ################################
@@ -58,18 +51,21 @@ sub create_reservation {
 ### mark it as unrunable?
 ################################
 sub remove_reservation {
-	
-	# XXX: double check args
-	my ($src, $dst, $start_time, $duration, $qos, 
-		$desc, $ingress_port, $egress_port) = @_;
+
+        # references to input arguments, output hash
+	my ( $inref ) = @_;
+    my ( $outref ) = \{};
+    my ( $status );
 		
-	my ($ingress_router, $egress_router) =
-		find_router_ips($src, $dst);
+	($outref->{'ingress_router'}, $outref->{'egress_router'}) =
+		find_router_ips($inref->{'src'}, $inref->{'dst'});
 
-	my $ingress_id = router_to_id($ingress_router);
-	my $egress_id = router_to_id($egress_router);
+	$outref->{'ingress_id'} = router_to_id($outref->{'ingress_router'});
+	$outref->{'egress_id'} = router_to_id($outref->{'egress_router'});
 
-	return 1;
+	$status = delete_reservation( $outref );
+
+	return ($status, $outref);
 }
 
 ##############################################################
@@ -143,7 +139,7 @@ sub do_trace {
     # loop from the last router back, till we find an edge router
     for my $i (1..$hops-1) {
         my $rtr = $tr->hop_query_host($hops - $i, 0);
-        my  $idx = BSSdb::check_db_rtr($rtr);
+        my  $idx = BSS::Frontend::Database::check_db_rtr($rtr);
         if ($idx != 0) {
             #print "FOUND idx = $idx\n";
             return $idx;
@@ -181,32 +177,6 @@ sub find_router_ips {
 	return ($ingress_rtr, $egress_rtr); 
 }
 
-################################
-### convert the ipaddr idx to 
-### to a router idx
-### IN src & dst ip idx's
-### OUT src and dst interface idx
-################################
-
-sub ip_to_interface {
-    my ($src_idx, $dst_idx) = @_; 
-    my ($src_iface, $dst_iface);
-
-    $src_iface = BSSdb::ipaddr_to_iface_idx($src_idx);
-    $dst_iface = BSSdb::ipaddr_to_iface_idx($dst_idx);
-
-    if ($src_iface == 0 || $dst_iface == 0 ) {
-        return (0,0);
-    } 
-	return ($src_iface, $dst_iface);
-}
-
-################################
-### move to BSSdb?
-################################
-sub insert_db_reservation {
-    return 1;
-}
 
 # testing 
 sub hi {
