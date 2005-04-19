@@ -2,18 +2,19 @@
 # Last modified: April 18, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
+# Jason Lee (jrlee@lbl.gov)
 
 package BSS::Frontend::Database;
 
-# tighten it up
 use strict; 
 
 use DB;
+use DBI;
 
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw($Dbname %Table %Table_field);
+our @EXPORT = qw($Dbname %Table %Table_field @Table_field_order ipaddr_to_iface_idx hostaddr_to_idx);
 
 ##### Settings Begin (Global variables) #####
 # database connection info
@@ -47,18 +48,18 @@ our %Table_field = (
   }
 );
 
+our @Table_field_order = ['reservation_id', 'reservation_start_time',
+    'reservation_end_time', 'reservation_created_time',
+    'reservation_bandwidth', 'reservation_class',
+    'reservation_burst_limit', 'reservation_status',
+    'ingress_interface_id', 'egress_id',
+    'src_hostaddrs_id', 'dst_hostaddrs_id',
+    'user_dn', 'reservation_ingress_port',
+    'reservation_egress_port', 'reservation_dscp',
+    'reservation_description'];
 
 ##### Settings End #####
 
-
-#######################################################################
-# BSS DB specific calls 
-#
-# JRLee
-# DWRobertson
-#######################################################################
-
-use DBI;
 
 
 #######################################################################
@@ -104,8 +105,8 @@ sub ipaddr_to_iface_idx  {
 # IN:  hostaddrs_ip
 # OUT: hostaddrs_id
 #######################################################################
-sub hostaddr_to_idx {
-
+sub hostaddr_to_idx
+{
   my ($hostaddrs_ip) = @_;
   my ($query, $error_msg, $sth, $dbh);
   my ($hostaddrs_id);
