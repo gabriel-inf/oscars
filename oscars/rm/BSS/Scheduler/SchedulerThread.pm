@@ -45,6 +45,7 @@ sub start_scheduler {
 sub scheduler {
     print "Scheduler running\n";
     while (1) {
+        #FOO:foo()
         print "Scheduler looping\n";
         find_reservations();
         # check every 5 minutes or so
