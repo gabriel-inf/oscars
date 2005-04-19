@@ -1,11 +1,12 @@
 #!/usr/bin/perl -w
 
+#use SOAP::Lite +trace;
 use SOAP::Lite;
 
 
 my $BSS_server = SOAP::Lite
-  -> uri('http://localhost:5000/BSS_Server')
-  -> proxy ('http://localhost:5000/soapserver.pl');
+  -> uri('http://localhost:3000/BSS_Server')
+  -> proxy ('http://localhost:3000/soapserver.pl');
 
 sub soap_get_reservations
 {

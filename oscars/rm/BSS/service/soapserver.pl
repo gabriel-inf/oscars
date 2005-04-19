@@ -27,12 +27,12 @@ use Config::Auto;
 my $config = Config::Auto::parse('BSS.config');
 
 # start up a thread to monitor the DB
-BSS::Scheduler::SchedulerThread::start_scheduler($config);
+start_scheduler($config);
 
 # Create a SOAP server
 my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
-	-> new (LocalPort => 5000, Listen => 5, Reuse => 1)
-	-> dispatch_to('BSS_Server')
+	-> new (LocalPort => 3000, Listen => 5, Reuse => 1)
+	-> dispatch_to('.', 'BSS_Server')
 	;
 
 # and away we go

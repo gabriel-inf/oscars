@@ -8,6 +8,11 @@ package BSS::Scheduler::ReservationHandler ;
 use Net::Traceroute;
 use Net::Ping;
 
+require Exporter;
+
+our @ISA = qw(Exporter);
+our @EXPORT = qw(create_reservation remove_reservation);
+
 # BSS data base front end
 use BSS::Frontend::Reservation;
 

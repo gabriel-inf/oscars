@@ -13,6 +13,11 @@ use threads::shared;
 
 use strict;
 
+require Exporter;
+
+our @ISA = qw(Exporter);
+our @EXPORT = qw(start_scheduler);
+
 # global config file 
 my ($global_config);
 
