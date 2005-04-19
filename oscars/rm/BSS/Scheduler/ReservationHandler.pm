@@ -41,8 +41,7 @@ sub create_reservation {
         # This routine fills in the remaining fields.
 	my ( $inref ) = @_; 
 
-       # these will be used to look up interface ids in insert_reservation
-	($inref->{'ingress_router'}, $inref->{'egress_router'}) = find_router_ips($inref->{'src_ip'}, $inref->{'dst_ip'});
+	($inref->{'ingress_router'}, $inref->{'egress_router'}) = find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
 
     print STDERR "$inref->{'ingress_router'}, $inref->{'egress_router'}\n";
 
@@ -62,7 +61,7 @@ sub remove_reservation {
     my ( $status );
 		
 	($outref->{'ingress_router'}, $outref->{'egress_router'}) =
-		find_router_ips($inref->{'src'}, $inref->{'dst'});
+		find_router_ids($inref->{'src'}, $inref->{'dst'});
 
 	$outref->{'ingress_id'} = router_to_id($outref->{'ingress_router'});
 	$outref->{'egress_id'} = router_to_id($outref->{'egress_router'});
@@ -157,12 +156,12 @@ sub do_trace {
 ### find edge routers validate both
 ### ends
 ### IN: src and dst hosts
-### OUT: ips of interfaces of 
+### OUT: ids of interfaces of 
 ### both edge routers
 ### XXX: validate input
 ################################
 
-sub find_router_ips {
+sub find_interface_ids {
     my ($src, $dst) = @_;
 
     my( $ingress_rtr, $egress_rtr);
