@@ -181,39 +181,6 @@ sub find_router_ips {
 	return ($ingress_rtr, $egress_rtr); 
 }
 
-
-# testing 
-sub hi {
-
-    print "HELLO 'Hi called'\n";
-	my @args = @_;
-	my $num = $#args;
-
-	print "# args $num\n";	
-	for my $i (@args) {
-		print "==> $i\n";
-	}
-	# self?
-	shift;
-	# first arg
-	my $name = shift;
-	# 2nd arg
-	my $baz = shift;
-
-	# make it local, stop whining 
-	#local *FOO;
-	#open(FOO, '/tmp/a');
-	#sleep(5);
-	#$num = fileno(FOO);
-	#close(F00);
-	return ("hello, world [$num]{$name}{$baz}", "more stuff here", "and here");
-	
-}
-
-sub bye {
-	return "goodbye.";
-}
-
 ### last line of a module
 1;
 # vim: et ts=4 sw=4
