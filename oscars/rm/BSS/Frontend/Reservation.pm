@@ -65,22 +65,24 @@ sub insert_reservation
   else {
       query_finish( $sth );
       database_unlock_table( $Table{'reservations'} );
+
           # get interface id's from edge router ip's
-      $inref->{'ingress_interface_id'} = ipaddr_to_iface_idx($inref->{'ingress_router'}); 
-      $inref->{'egress_interface_id'} = ipaddr_to_iface_idx($inref->{'egress_router'}); 
+      $inref->{'ingress_id'} = ipaddr_to_iface_idx($inref->{'ingress_router'}); 
+      $inref->{'egress_id'} = ipaddr_to_iface_idx($inref->{'egress_router'}); 
 
           # get ipaddr id from host's and destination's ip addresses
-      $inref->{'src_hostaddrs_id'} = hostaddr_to_idx($inref->{'src_ip'}); 
-      $inref->{'dst_hostaddrs_id'} = hostaddr_to_idx($inref->{'dst_ip'}); 
+      $inref->{'src_id'} = hostaddr_to_idx($inref->{'src_ip'}); 
+      $inref->{'dst_id'} = hostaddr_to_idx($inref->{'dst_ip'}); 
+      $inref->{'created_time'} = time();
 
-      my @insertions;
+      my @insertions;   # copy over input fields that will be set in table
       foreach $_ ( @Table_field_order ) {
+         $results{$_} = $inref->{$_};
          push(@insertions, $inref->{$_}); 
       }
 
         # insert all fields for reservation into database
       $query = "INSERT INTO $Table{'reservations'} VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
-      print STDERR $query;
 
       ( $results{'error_msg'}, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK, @insertions);
       if ( $results{'error_msg'} )
@@ -93,7 +95,6 @@ sub insert_reservation
       $results{'id'} = $dbh->{'mysql_insertid'};
   }
   db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'reservations'});
-  $results{'created_time'} = time();
   $results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $results{'id'} . '.';
   return( 0, %results );
 }

@@ -40,7 +40,7 @@ our %Table_field = (
     'egress_id' => 'egress_interface_id',
     'src_id' => 'src_hostaddrs_id',
     'dst_id' => 'dst_hostaddrs_id',
-    'user_dn' => 'user_dn',
+    'dn' => 'user_dn',
     'ingress_port' => 'reservation_ingress_port',
     'egress_port' => 'reservation_egress_port',
     'dscp' => 'reservation_dscp',
@@ -48,15 +48,10 @@ our %Table_field = (
   }
 );
 
-our @Table_field_order = ['reservation_id', 'reservation_start_time',
-    'reservation_end_time', 'reservation_created_time',
-    'reservation_bandwidth', 'reservation_class',
-    'reservation_burst_limit', 'reservation_status',
-    'ingress_interface_id', 'egress_id',
-    'src_hostaddrs_id', 'dst_hostaddrs_id',
-    'user_dn', 'reservation_ingress_port',
-    'reservation_egress_port', 'reservation_dscp',
-    'reservation_description'];
+our @Table_field_order = ('id', 'start_time', 'end_time', 'created_time',
+    'bandwidth', 'class', 'burst_limit', 'status', 'ingress_id', 'egress_id',
+    'src_id', 'dst_id', 'dn', 'ingress_port', 'egress_port', 'dscp',
+    'description');
 
 ##### Settings End #####
 

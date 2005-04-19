@@ -29,7 +29,7 @@ $params{'src_ip'} = '140.221.9.193';
     # www.sdsc.edu
 $params{'dst_ip'} = '198.202.75.101';
 
-$params{'user_dn'} =        'oscars';
+$params{'dn'} =        'oscars';
 
 $params{'ingress_port'} =   '';     # db lookup in schedule
 $params{'egress_port'} =    '';     # db lookup in scheduler
