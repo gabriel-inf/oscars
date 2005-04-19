@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS routers (
 CREATE TABLE IF NOT EXISTS interfaces (
     interface_id INT(5) NOT NULL AUTO_INCREMENT,
     interface_valid BOOLEAN NOT NULL,
-    interface_speed INT(15) NOT NULL,
+    interface_speed INT(15) UNSIGNED NOT NULL,
     interface_descr VARCHAR(5),
     interface_alias VARCHAR(512),
     router_id INT(5) NOT NULL,
