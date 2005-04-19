@@ -66,9 +66,10 @@ sub insert_reservation
       query_finish( $sth );
       database_unlock_table( $Table{'reservations'} );
 
+      print STDERR $inref->{'ingress_router'}, ' ', $inref->{'egress_router'}, "\n";
           # get interface id's from edge router ip's
-      $inref->{'ingress_id'} = ipaddr_to_iface_idx($inref->{'ingress_router'}); 
-      $inref->{'egress_id'} = ipaddr_to_iface_idx($inref->{'egress_router'}); 
+      $inref->{'ingress_id'} = $inref->{'ingress_router'}; 
+      $inref->{'egress_id'} = $inref->{'egress_router'}; 
 
           # get ipaddr id from host's and destination's ip addresses
       $inref->{'src_id'} = hostaddr_to_idx($inref->{'src_ip'}); 

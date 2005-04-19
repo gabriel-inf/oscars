@@ -14,7 +14,7 @@ use DBI;
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw($Dbname %Table %Table_field @Table_field_order ipaddr_to_iface_idx hostaddr_to_idx);
+our @EXPORT = qw($Dbname %Table %Table_field @Table_field_order ipaddr_to_iface_idx hostaddr_to_idx check_db_rtr);
 
 ##### Settings Begin (Global variables) #####
 # database connection info
@@ -23,6 +23,8 @@ our $Dbname = 'BSS';
 # database table names
 our %Table = (
   'reservations' => 'reservations',
+  'hostaddrs' => 'hostaddrs',
+  'ipaddrs' => 'ipaddrs'
 );
 
 # reservations field names
@@ -116,16 +118,22 @@ sub hostaddr_to_idx
   ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'hostaddrs'}, READ_LOCK, $hostaddrs_ip);
   if ($error_msg) { return( 0 ); }
 
-    # error on no matches
+    # if no matches, insert a row in hostaddrs
   if ($sth->rows == 0 ) {
-      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'hostaddrs'});
-      return( 0 );
-  }
+      $query = "INSERT INTO $Table{'hostaddrs'} VALUES ( '', '$hostaddrs_ip'  )";
+      print STDERR $query, "\n";
 
-  # flatten it out
-  while (my @data = $sth->fetchrow_array()) {
+      ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK);
+      if ( $error_msg ) { return( 0 ); }
+		
+      $hostaddrs_id = $dbh->{'mysql_insertid'};
+  }
+  else {
+      # flatten it out
+      while (my @data = $sth->fetchrow_array()) {
           $hostaddrs_id = $data[0];
-  }   
+      }   
+  }
 
   db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'hostaddrs'});
       # return the answer
@@ -137,37 +145,34 @@ sub hostaddr_to_idx
 ## Check the db ifaces for a router iface ip.  Called from the scheduler
 ## to see if a router is an edge router.
 # IN: ip
-# OUT: router idx
+# OUT: interface idx
 #######################################################################
 sub check_db_rtr {
 
     my ($rtr) = @_;
-    my ($dbh, $query, $sth, $id, $error_msg);
+    my ($dbh, $query, $sth, $interface_idx, $error_msg);
 
     ( $error_msg, $dbh ) = database_connect($Dbname);
     if ( $error_msg ) { return(0); }
 
-    $query = 'SELECT * FROM ipaddrs WHERE ipaddrs_ip = ?';
+    $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
     ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'ipaddrs'}, READ_LOCK, $rtr);
     if ( $error_msg ) { return(0); }
 
     # no match
     if ($sth->rows == 0 ) {
-        #print "nothing matched ($rtr)\n";
         db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
         return 0;
     }
 
     # flatten it out
     while (my @data = $sth->fetchrow_array()) {
-            $id = $data[2];
+            $interface_idx = $data[0];
     }   
-
-    # close it up
     db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
 
     # return the answer
-    return $id;
+    return $interface_idx;
 }
 
 
