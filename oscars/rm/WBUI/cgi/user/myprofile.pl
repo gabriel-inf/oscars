@@ -9,7 +9,24 @@
 require '../lib/general.pl';
 require 'soapclient.pl';
 
-print_profile({});
+
+    # names of the fields to be displayed on the screen
+my @Fields_to_Display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'level', 'register_time', 'activation_key', 'pending_level', 'authorization_id', 'institution_id' );
+
+my( %FormData );  # TODO:  edit_profile
+$FormData{'dn'} = 'davidr';
+( $Error_Status, %Results ) = soap_get_profile(\%FormData, \@Fields_to_Display);
+
+if (!$Error_Status)
+{
+    print_profile(\%Results);
+}
+else
+{
+    Update_Frames("", $Results{'error_msg'});
+}
+exit;
+
 
 ##### Beginning of sub routines #####
 
@@ -36,12 +53,11 @@ sub print_profile
   print "<p><em>View/Edit My Profile</em><br>\n";
   print "(Required fields are marked with a <span class=\"requiredmark\">*</span>)</p>\n";
   print "<form method=\"post\" action=\"https://oscars.es.net/cgi-bin/user/myprofile.pl\" onsubmit=\"return check_form(this);\">\n";
-  print "<input type=\"hidden\" name=\"mode\" value=\"updatemyprofile\">\n\n";
  
   print "<table>\n";
   print "<tr>\n";
   print "	  <th><span class=\"requiredmark\">*</span> Distinguished Name</th>\n";
-  print "   <td><input type=\"text\" name=\"dn\" size=\"20\"</td>\n";
+  print "   <td><input type=\"text\" name=\"dn\" size=\"20\" value=\"$params->{'dn'}\"</td>\n";
   print "</tr>\n";
   print "<tr>\n";
   print "   <th><span class=\"requiredmark\">*</span> Current Password</th>\n";
@@ -58,38 +74,38 @@ sub print_profile
   print "<table>\n";
   print "<tr>\n";
   print "	  <th><span class=\"requiredmark\">*</span> First Name</th>\n";
-  print "   <td><input type=\"text\" name=\"firstname\" size=\"20\"></td>\n";
+  print "   <td><input type=\"text\" name=\"first_name\" size=\"20\" value=\"$params->{'first_name'}\"></td>\n";
   print "</tr>\n";
   print "<tr>\n";
   print "	  <th><span class=\"requiredmark\">*</span> Last Name</th>\n";
-  print "	  <td><input type=\"text\" name=\"lastname\" size=\"20\"></td>\n";
+  print "	  <td><input type=\"text\" name=\"last_name\" size=\"20\" value=\"$params->{'last_name'}\"></td>\n";
   print "</tr>\n";
   print "<tr>\n";
   print "	  <th><span class=\"requiredmark\">*</span> Organization</th>\n";
-  print "   <td><input type=\"text\" name=\"organization\" size=\"40\"></td>\n";
+  print "   <td><input type=\"text\" name=\"institution\" size=\"40\" value=\"$params->{'institution'}\"></td>\n";
   print "</tr>\n";
   print "<tr>\n";
   print "	  <th valign=\"top\">Personal Description</th>\n";
-  print "   <td><textarea name=\"description\" rows=\"3\" cols=\"34\"></textarea></td>\n";
+  print "   <td><textarea name=\"description\" rows=\"3\" cols=\"34\" value=\"$params->{'description'}\"></textarea></td>\n";
   print "</tr>\n";
   print "</table>\n\n";
   
   print "<table>\n";
   print "<tr>\n";
   print "    <th><span class=\"requiredmark\">*</span> E-mail (Primary)</th>\n";
-  print "    <td><input type=\"text\" name=\"email_primary\" size=\"40\"></td>\n";
+  print "    <td><input type=\"text\" name=\"email_primary\" value=\"$params->{'email_primary'}\" size=\"40\"></td>\n";
   print "</tr>\n";
   print "<tr>\n";
   print "    <th>E-mail (Secondary)</th>\n";
-  print "    <td><input type=\"text\" name=\"email_secondary\" size=\"40\"></td>\n";
+  print "    <td><input type=\"text\" name=\"email_secondary\" value=\"$params->{'email_secondary'}\" size=\"40\"></td>\n";
   print "</tr>\n";
   print "<tr>\n";
   print "    <th><span class=\"requiredmark\">*</span> Phone Number (Primary)</th>\n";
-  print "    <td><input type=\"text\" name=\"phone_primary\" size=\"40\"></td>\n";
+  print "    <td><input type=\"text\" name=\"phone_primary\" value=\"$params->{'phone_primary'}\" size=\"40\"></td>\n";
   print "</tr>\n";
   print "<tr>\n";
   print "    <th>Phone Number (Secondary)</th>\n";
-  print "    <td><input type=\"text\" name=\"phone_secondary\" size=\"40\"></td>\n";
+  print "    <td><input type=\"text\" name=\"phone_secondary\" value=\"$params->{'phone_secondary'}\" size=\"40\"></td>\n";
   print "</tr>\n";
   print "</table>\n\n";
   

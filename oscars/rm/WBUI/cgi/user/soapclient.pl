@@ -20,8 +20,8 @@ sub soap_verify_login
 
 sub soap_get_profile
 {
-    my ($params) = @_;
-    my $response = $AAAS_server -> Get_profile($params);
+    my ($params, $fields_to_display ) = @_;
+    my $response = $AAAS_server -> Get_profile($params, $fields_to_display);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
