@@ -44,8 +44,6 @@ use constant PENDING =>   'pending';
 # global config file 
 my ($global_config);
 
-# XXX: our (temp) db handle (hack alert)
-my ($dbHandle);
 
 #fake pss calls for the momment
 my ($fakeit) = 1;
@@ -60,6 +58,7 @@ my ($_error);
 ######################################################################
 sub start_scheduler {
 
+    # get a copy of the config
     $global_config = shift;
 
     print "Starting Scheduler\n";
@@ -74,17 +73,30 @@ sub start_scheduler {
 # minutes for reserversations
 ######################################################################
 sub scheduler {
+
     print "Scheduler running\n";
     # init dbHandle
+    # XXX: our (temp) db handle (hack alert)
+    my ($dbHandle, $result);
+
     $dbHandle = new Foo(%$global_config);
+
     while (1) {
-        print "Scheduler looping\n";
 
         # find reservations that need to be actived
-        find_new_reservations();
+        print "find new\n";
+        $result = find_new_reservations($dbHandle);
+        if ($result == 0) {
+            print "Error with find_new_res\n";
+        }
+
 
         # find reservations that need to be deactivated 
-        find_expired_reservations();
+        print "find_exp\n";
+        $result = find_expired_reservations($dbHandle);
+        if ($result == 0) {
+            print "Error with find_new_res\n";
+        }
 
         # check every do_poll_time seconds
         sleep($global_config->{'db_poll_time'});
@@ -99,11 +111,14 @@ sub scheduler {
 ######################################################################
 sub find_new_reservations {
 
+
+    my ($dbHandle) = @_;
+
     print "in find_new_res\n";
-
-    my $cur_time = localtime();
     my ($timeslot, $resv, $result);
+    my $cur_time = localtime();
 
+    print "decalared vars...\n";
     # configurable
     $timeslot = time() + $global_config->{'reservation_time_interval'};
     print "pending: $cur_time \n";
@@ -113,10 +128,10 @@ sub find_new_reservations {
 
     foreach my $r (@$resv) {
         ## calls to pss to setup reservations
-        $result = setup_pss($r);
+        $result = setup_pss($r, $dbHandle);
 
         #print "update reservation to active\n";
-        update_reservation( $r, $result, ACTIVE);
+        update_reservation( $r, $result, ACTIVE, $dbHandle);
     }
     return 1;
 }
@@ -127,6 +142,8 @@ sub find_new_reservations {
 #
 ######################################################################
 sub find_expired_reservations {
+
+    my ($dbHandle) = @_;
 
     my $cur_time = localtime();
     my ($timeslot, $resv, $result);
@@ -139,10 +156,10 @@ sub find_expired_reservations {
     $resv = $dbHandle->find_expired_reservations($timeslot, ACTIVE);
 
     foreach my $r (@$resv) {
-        $result = teardown_pss($r);
+        $result = teardown_pss($r, $dbHandle);
 
         #print "update reservation to active\n";
-        update_reservation( $r, $result, FINISHED);
+        update_reservation( $r, $result, FINISHED, $dbHandle);
     }
     return 1;
 }
@@ -153,7 +170,7 @@ sub find_expired_reservations {
 ######################################################################
 sub setup_pss {
 
-    my ($res) = @_;
+    my ($res, $dbHandle) = @_;
 
     # make those router idx's into ips
     my $srchost = $dbHandle->hostidx2ip( $res->{'src_hostaddrs_id'} );
@@ -200,7 +217,7 @@ sub setup_pss {
 ######################################################################
 sub teardown_pss {
 
-    my ($res) = @_;
+    my ($res, $dbHandle) = @_;
 
     # make those router idx's into ips
     my $srchost = $dbHandle->hostidx2ip( $res->{'src_hostaddrs_id'});
@@ -252,7 +269,7 @@ sub teardown_pss {
 
 sub update_reservation {
 
-    my ($resv, $result, $status) = @_;
+    my ($resv, $result, $status, $dbHandle) = @_;
 
     if ( $result == 1 ) {
         print "Changing status to $status\n";
