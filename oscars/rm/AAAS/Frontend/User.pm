@@ -96,7 +96,7 @@ sub logout
 # Out: status code, status message
 sub get_profile
 {
-  my( $inputs, @fields_to_display ) = @_;
+  my( $inputs, $fields_to_display ) = @_;
   my( $dbh, $sth, $query );
   my( %results );
 
@@ -106,7 +106,7 @@ sub get_profile
 
     # DB query: get the user profile detail
   $query = "SELECT ";
-  foreach $_ ( @fields_to_display ) {
+  foreach $_ ( @$fields_to_display ) {
       $query .= $Table_field{'users'}{$_} . ", ";
   }
     # delete the last ", "
@@ -124,16 +124,33 @@ sub get_profile
   }
 
     # populate %results with the data fetched from the database
-  @results{@fields_to_display} = ();
-  $sth->bind_columns( map { \$results{$_} } @fields_to_display );
+  @results{@$fields_to_display} = ();
+  $sth->bind_columns( map { \$results{$_} } @$fields_to_display );
   $sth->fetch();
+  query_finish( $sth );
+
+  $query = "SELECT institution_name FROM $Table{'institutions'} WHERE institution_id = ?";
+  ( $results{'error_msg'}, $sth ) = db_handle_query($dbh, $query, $Table{'institutions'}, READ_LOCK, $results{'institution_id'});
+  if ( $results{'error_msg'} ) { return( 1, %results ) };
+
+  if ( $sth->rows == 0 )
+  {
+      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
+      $results{'error_msg'} = 'No such organization in the database';
+      return( 1, %results );
+  }
+    # flatten it out
+  while (my @data = $sth->fetchrow_array()) {
+         $results{'institution'} = $data[0];
+  }   
+
 
   db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'users'});
-#  foreach $key(sort keys %results)
-#  {
-#        $value = $results{$key};
-#        print STDERR "$key -> $value\n";
-#  }
+  my($key, $value);
+  #foreach $key(sort keys %results)
+  #{
+        #$value = $results{$key};
+  #}
   $results{'status_msg'} = 'Retrieved user profile';
   return ( 0, %results );
 }

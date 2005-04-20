@@ -20,6 +20,7 @@ our $Dbname = 'AAAS';
 # database table names
 our %Table = (
   'users' => 'users',
+  'institutions' => 'institutions'
 );
 
 # database field names
