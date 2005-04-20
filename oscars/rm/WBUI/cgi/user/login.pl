@@ -58,10 +58,10 @@ sub process_user_login
       return( 1, %results );
   }
   my(%params);
-  $params{'loginname'} = $FormData{'loginname'};
+  $params{'dn'} = $FormData{'loginname'};
   $params{'password'} = &Encode_Passwd($FormData{'password'});
 
-  return(soap_verify_login(%params));
+  return(soap_verify_login(\%params));
 }
 
 

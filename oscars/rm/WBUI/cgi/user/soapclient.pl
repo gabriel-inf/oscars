@@ -10,8 +10,8 @@ my $AAAS_server = SOAP::Lite
 
 sub soap_verify_login
 {
-    my (%params) = @_;
-    my $response = $AAAS_server -> Verify_login(%params);
+    my ($params) = @_;
+    my $response = $AAAS_server -> Verify_login($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -20,8 +20,8 @@ sub soap_verify_login
 
 sub soap_get_profile
 {
-    my (%params) = @_;
-    my $response = $AAAS_server -> Get_profile(%params);
+    my ($params) = @_;
+    my $response = $AAAS_server -> Get_profile($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -32,8 +32,8 @@ sub soap_get_profile
 
 sub soap_set_profile
 {
-    my (%params) = @_;
-    my $response = $AAAS_server -> Set_profile(%params);
+    my ($params) = @_;
+    my $response = $AAAS_server -> Set_profile($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -43,13 +43,13 @@ sub soap_set_profile
 
 
 my $BSS_server = SOAP::Lite
-  -> uri('http://localhost:3000/BSSServer')
-  -> proxy ('http://localhost:3000/soapserver.pl');
+  -> uri('http://localhost:5000/BSSServer')
+  -> proxy ('http://localhost:5000/soapserver.pl');
 
 sub soap_get_reservations
 {
-    my (%params) = @_;
-    my $response = $BSS_server -> Get_reservations(%params);
+    my ($params) = @_;
+    my $response = $BSS_server -> Get_reservations($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -60,8 +60,8 @@ sub soap_get_reservations
 
 sub soap_create_reservation
 {
-    my (%params) = @_;
-    my $response = $BSS_server -> Create_reservation(%params);
+    my ($params) = @_;
+    my $response = $BSS_server -> Create_reservation($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -72,8 +72,8 @@ sub soap_create_reservation
 
 sub soap_remove_reservation
 {
-    my (%params) = @_;
-    my $response = $BSS_server -> Remove_reservation(%params);
+    my ($params) = @_;
+    my $response = $BSS_server -> Remove_reservation($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
