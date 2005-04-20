@@ -2,9 +2,12 @@
 
 # reservation.pl:  Main interface CGI program for network resource
 #                  reservation process
-# Last modified: April 15, 2005
+# Last modified: April 19, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
+
+use DateTime;
+use Socket;
 
 # include libraries
 require '../lib/general.pl';
@@ -14,14 +17,11 @@ require 'soapclient.pl';
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-# TODO:  FIX
-#$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
-
-my ($Error_Status, %Results) = create_reservation();
+my ($Error_Status, %Results) = create_reservation(\%FormData);
 
 if (!$Error_Status)
 {
-    Update_Frames("", "Reservation made for $FormData{'loginname'}");
+    Update_Frames("", "Reservation made");
 }
 else
 {
@@ -33,14 +33,6 @@ exit;
 
 ##### Beginning of sub routines #####
 
-	# Pragma: no-cache => Pre-HTTP/1.1 directive to prevent caching
-	# Cache-control: no-cache => HTTP/1.1 directive to prevent caching
-	# print "Pragma: no-cache\n";
-	# print "Cache-control: no-cache\n";
-	# print "Content-type: text/html\n\n";
-	# exit;
-
-
 
 ##### sub create_reservation
 # In: None
@@ -48,23 +40,57 @@ exit;
 sub create_reservation
 {
 
-  my(%results);
+  my( $FormData ) = @_;
+  my( %params );
+  my( %results);
 
-    # make bandwidth, date, and time values numeric
-  foreach $_ ( 'bandwidth', 'start_year', 'start_month', 'start_date', 'start_hour', 'duration_hour' )
-  {
-      $FormData{$_} += 0;
+  $params{'id'} =              'NULL';
+
+      # in seconds since epoch
+  $params{'start_time'} =     $FormData->{'start_time'};
+      # start time + duration time in seconds
+  $params{'end_time'} =       $FormData->{'start_time'} + $FormData->{'duration_hour'} * 3600;
+
+  $params{'created_time'} =   '';   # filled in scheduler
+  $params{'bandwidth'} =      $FormData->{'bandwidth'};
+  $params{'class'} =          'test';
+  $params{'burst_limit'} =    '100m';
+  $params{'status'} =         'pending';
+
+  $params{'ingress_interface_id'}= '';   # db lookup in scheduler
+  $params{'egress_interface_id'}=  '';   # db lookup in scheduler
+
+  $params{'src_ip'} =         $FormData->{'origin'};
+  $params{'dst_ip'} =         $FormData->{'destination'};
+
+      # TODO:  error checking
+  if (not_an_ip($params{'src_ip'})) {
+      $params{'src_ip'} = inet_ntoa(inet_aton($params{'src_ip'}));
   }
 
-    ### TODO:  call other subsystem with FormData
-    ### subsystem returns reservation id, success or error message
+  if (not_an_ip($params{'dst_ip'})) {
+      $params{'dst_ip'} = inet_ntoa(inet_aton($params{'dst_ip'}));
+  }
 
-    ### print screen or set src location
-  $results{'error_msg'} = 'so far does nothing';
-  return( 1, %results );
+  $params{'dn'} =             'oscars';
+
+  $params{'ingress_port'} =   '';     # db lookup in schedule
+  $params{'egress_port'} =    '';     # db lookup in scheduler
+
+  $params{'dscp'} =           '';     # optional
+
+  $params{'description'} =    $FormData->{'description'};
+  return( soap_create_reservation(\%params) );
 
 }
 
+
+sub not_an_ip
+{
+  my($string) = @_;
+
+  return($string !~ /^([\d]+)\.([\d]+)\.([\d]+)\.([\d]+)$/);
+}
 
 ##### End of sub routines #####
 
