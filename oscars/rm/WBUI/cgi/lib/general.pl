@@ -68,6 +68,7 @@ sub Parse_Form_Input_Data
 
   foreach $_ ( @Key_Value_Pairs ) {
       ( $Key, $Value ) = split( /=/, $_ );
+      #print STDERR '** ' . $Key . ' ' . $Value . "\n";
       $Value =~ tr/+/ /;
       $Value =~ s/%([\dA-Fa-f][\dA-Fa-f])/pack( "C", hex( $1 ) )/eg;
 
@@ -130,23 +131,22 @@ sub Update_Frames
 {
   my ($uri, $Err_Message) = @_;
   print "Content-type: text/html\n\n";
-  print "<html>";
-  print "<head>";
-  print "<link rel=stylesheet type=\"text/css\" ";
-  print " href=\"https://oscars.es.net/styleSheets/layout.css\">";
-  print "<script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>";
-  print "</head>";
-  print "<body>";
-  print "<div>";
-  print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"local\");</script>" . " | " . $Err_Message . "</p>";
-  print "</div>";
+  print "<html>\n";
+  print "<head>\n";
+  print "<link rel=\"stylesheet\" type=\"text/css\" ";
+  print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
+  print "<script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
+  print "</head>\n";
+  print "<body>\n";
+  print "<div>\n";
+  print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"local\");</script>" . " | " . $Err_Message . "</p>\n";
+  print "</div>\n";
   if ($uri)
   {
-      print "<?php session_start(); $_SESSION['valid_user'] = 'foo'; ?>";
-      print "<script language=\"javascript\">update_main_frame(\"$uri\");</script>";
+      print "<script language=\"javascript\">update_main_frame(\"$uri\");</script>\n";
   }
-  print "</body>";
-  print "</html>";
+  print "</body>\n";
+  print "</html>\n";
   print "\n\n";
 }
 
