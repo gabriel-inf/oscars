@@ -9,7 +9,7 @@ use SOAP::Lite;
 use SOAP::Transport::HTTP;
 
 use lib '../..';
-use lib '/home/jason/oscars/trunk/oscars/rm/BSS/Scheduler/lib/perl5';
+use lib '../Scheduler/lib/perl5';
 
 use BSS::Scheduler::SchedulerThread;
 
