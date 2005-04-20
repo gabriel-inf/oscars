@@ -330,28 +330,6 @@ function check_form( form )
 		return false;
 	}
 
-
- 
-	// if every check passes...
-	// change the submit button's lable, and disable the submit and reset buttons
-	if ( document.all || document.getElementById )
-	{
-		for (i = 0; i < form.length; i++)
-		{
-			var tempObj = form.elements[i];
-
-			if ( tempObj.type.toLowerCase() == "submit" )
-			{
-				tempObj.value = "  Processing...  ";
-			}
-
-			if ( tempObj.type.toLowerCase() == "submit" || tempObj.type.toLowerCase() == "reset" )
-			{
-				tempObj.disabled = true;
-			}
-		}
-	}
-
 	return true;
 }
 
