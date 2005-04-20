@@ -5,8 +5,8 @@ use SOAP::Lite;
 use strict;
 
 my $AAAS_server = SOAP::Lite
-  -> uri('http://localhost:4000/AAASServer')
-  -> proxy ('http://localhost:4000/soapserver.pl');
+  -> uri('http://localhost:2000/AAASServer')
+  -> proxy ('http://localhost:2000/soapserver.pl');
 
 # TODO:  one SOAP call that dispatches according to server, subroutine args
 
