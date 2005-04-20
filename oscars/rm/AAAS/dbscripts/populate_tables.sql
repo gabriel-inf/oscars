@@ -5,6 +5,7 @@ insert into institutions values('NULL', 'Berkeley National Laboratory');
 insert into institutions values('NULL', 'Brookhaven National Laboratory');
 insert into institutions values('NULL', 'FermiLab');
 insert into institutions values('NULL', 'General Atomics');
+insert into institutions values('NULL', 'Internet2');
 
 delete from authorizations;
 insert into authorizations values('NULL', 'atwioscars', 1);
