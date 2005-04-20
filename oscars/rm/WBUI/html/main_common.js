@@ -83,7 +83,7 @@ function print_navigation_bar(activePage)
     }
     else
     {
-        document.write('<li><a href="myprofile.phtml" title="View and/or edit your personal information">My Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/myprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
     }
     document.write("</ul>");
     document.write("</div>");
