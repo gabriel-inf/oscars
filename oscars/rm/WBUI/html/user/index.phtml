@@ -13,18 +13,9 @@
 
 <div id="reservation_ui">
 
-<p><em>(Please <a href="https://oscars.es.net/user/reservation.phtml">click here</a> to reload this page.)</em></p>
-
 <form method="post" action="https://oscars.es.net/cgi-bin/user/reservation.pl" onsubmit="return check_form(this);">
-<input type="hidden" name="mode" value="reserve">
 
-<noscript>
-<p class="notice">
-	- <em><strong>Javascript support error</strong></em><br/>
-	If you see this message, your Web browser does not support or has disabled support for Javascript.
-	Please use a different Web browser or enable Javascript support in your browser.
-</p>
-</noscript>
+<input type="hidden" name="start_time">
 
 <p>Please indicate the origin location and destination, along with the amount of bandwidth you would like to reserve (in Mbps).<br/>
 Origin and destination locations can be either host names or IP addresses. (IPv6 is not supported yet.)</p>
@@ -126,7 +117,7 @@ Please check the information that you filled in, and press the [Reserve the Reso
 
 <p>
 	<input type="submit" value="Reserve the Resource">
-	<input type="reset">
+	<input type="reset" value="Reset form fields">
 </p>
 
 </form>

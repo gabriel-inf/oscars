@@ -6,12 +6,87 @@ David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
+print_timezone_offset()
+get_timezone_offset()
 print_start_datetime_example()
 check_form( form )
 check_LeapYear( intYear )
 validate_integer( strValue )
 validate_numeric( strValue )
 */
+
+// print local timezone offset
+// Reference: "What's The Time?" at http://www.htmlgoodies.com/dateandtime/whattime.html
+// Reference: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/script56/html/js56jsmthgettimezone.asp
+// getTimezoneOffset() number will be positive if you are behind UTC (e.g., Pacific Daylight Time), and negative if you are ahead of UTC (e.g., Japan).
+function print_timezone_offset()
+{
+//	document.write( '<input type="input" name="local_offset" value="' + get_timezone_offset() + '" size="3" style="text-align: left">' );
+
+	document.write( '<option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' );
+}
+
+function get_timezone_offset()
+{
+	var localDate = new Date();
+	var Offset = -( localDate.getTimezoneOffset() / 60 );
+	if ( Offset > 0 ) { Offset = "+" + Offset; }
+	else { Offset = "" + Offset; }	// to string-ize
+
+	// now start formatting the offset in the [+/-]hhmm format (ex. +0930, -0500)
+	var formattedOffset_sign = Offset.substring( 0, 1 );
+	var tempString = Offset.substring( 1, Offset.length );
+	var formattedOffset_array = tempString.split( ".", 2 ); // split the "hour.minute" value
+
+	if ( formattedOffset_array[1] > 0 )
+	{
+		formattedOffset_array[1] = Number( "0." + formattedOffset_array[1] ) * 60; // change .5 to 30 minutes
+	}
+	else
+	{
+		formattedOffset_array[1] = 0;
+	}
+
+	formattedOffset_array[1] = "" + formattedOffset_array[1];	// to string-ize
+
+	if ( formattedOffset_array[0].length < 2 ) { formattedOffset_array[0] = "0" + formattedOffset_array[0]; }
+	if ( formattedOffset_array[1].length < 2 ) { formattedOffset_array[1] = "0" + formattedOffset_array[1]; }
+
+	var formattedOffset_string = formattedOffset_sign + formattedOffset_array[0] + formattedOffset_array[1];
+
+	return formattedOffset_string;
+}
+
+function get_timezone_offset()
+{
+	var localDate = new Date();
+	var Offset = -( localDate.getTimezoneOffset() / 60 );
+	if ( Offset > 0 ) { Offset = "+" + Offset; }
+	else { Offset = "" + Offset; }	// to string-ize
+
+	// now start formatting the offset in the [+/-]hhmm format (ex. +0930, -0500)
+	var formattedOffset_sign = Offset.substring( 0, 1 );
+	var tempString = Offset.substring( 1, Offset.length );
+	var formattedOffset_array = tempString.split( ".", 2 ); // split the "hour.minute" value
+
+	if ( formattedOffset_array[1] > 0 )
+	{
+		formattedOffset_array[1] = Number( "0." + formattedOffset_array[1] ) * 60; // change .5 to 30 minutes
+	}
+	else
+	{
+		formattedOffset_array[1] = 0;
+	}
+
+	formattedOffset_array[1] = "" + formattedOffset_array[1];	// to string-ize
+
+	if ( formattedOffset_array[0].length < 2 ) { formattedOffset_array[0] = "0" + formattedOffset_array[0]; }
+	if ( formattedOffset_array[1].length < 2 ) { formattedOffset_array[1] = "0" + formattedOffset_array[1]; }
+
+	var formattedOffset_string = formattedOffset_sign + formattedOffset_array[0] + formattedOffset_array[1];
+
+	return formattedOffset_string;
+}
 
 // print year, date, and time for reservation start time ui example
 // date calculation reference: http://developer.netscape.com/viewsource/goodman_dateobject.html
@@ -45,7 +120,7 @@ function check_form( form )
 	/*
 	if ( form.username.value == "" )
 	{
-		alert( "Please enter your name." );
+		alert( "Please enter your distinguished name." );
 		form.username.focus();
 		return false;
 	}
@@ -53,14 +128,14 @@ function check_form( form )
 
 	if ( form.origin.value == "" )
 	{
-		alert( "Please enter origin location." );
+		alert( "Please enter starting host name, or its IP address ." );
 		form.origin.focus();
 		return false;
 	}
 
 	if ( form.destination.value == "" )
 	{
-		alert( "Please enter destination." );
+		alert( "Please enter destination host name, or its IP address." );
 		form.destination.focus();
 		return false;
 	}
@@ -72,7 +147,7 @@ function check_form( form )
 		return false;
 	}
 
-        currentDate = Date();
+        currentDate = new Date();
 	if ( form.start_year.value == "" )
 	{
                 form.start_year.value = currentDate.getUTCFullYear();
@@ -247,7 +322,16 @@ function check_form( form )
 		form.duration_hour.focus();
 		return false;
 	}
+        reserve_date = new Date(form.start_year.value, form.start_month.value, form.start_date.value, form.start_hour.value, form.start_minute.value, 0, 0);
+        form.start_time.value = reserve_date.getTime() / 1000;
+	if ( form.start_time.value == 0 )
+	{
+		alert( "Problem with start time." );
+		return false;
+	}
 
+
+ 
 	// if every check passes...
 	// change the submit button's lable, and disable the submit and reset buttons
 	if ( document.all || document.getElementById )
