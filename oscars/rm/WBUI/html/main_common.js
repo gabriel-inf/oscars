@@ -66,7 +66,7 @@ function print_navigation_bar(activePage)
     }
     else
     {
-        document.write('<li><a href="index.phtml" title="Create a new reservation">Make a Reservation</a></li>');
+        document.write('<li><a href="https://oscars.es.net/user/" title="Create a new reservation">Make a Reservation</a></li>');
     }
     if (activePage == 'reservationList')
     {
@@ -75,7 +75,7 @@ function print_navigation_bar(activePage)
     else
     {
     
-        document.write('<li><a href="reservationlist.phtml" title="View list of active reservations">View Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/user/reservationlist.phtml" title="View list of active reservations">View Reservations</a></li>');
     }
     if (activePage == 'myprofile')
     {
