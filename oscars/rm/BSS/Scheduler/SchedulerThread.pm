@@ -2,7 +2,7 @@
 # Scheduler thread that polls the db looking for 
 # reservataions that need to be scheduled
 #
-# XXX: Poll time needs to come from a config file
+# Poll time now comes from the config file.
 #
 # JRLee
 ######################################################################
@@ -11,6 +11,14 @@ package BSS::Scheduler::SchedulerThread;
 use threads;
 use threads::shared;
 
+# Chins PSS module to configure the routers
+use PSS::module::ESnetPSSVars;
+use PSS::module::JnxLSP;
+
+# XXX: hack till this functionality moves to db
+use BSS::Scheduler::Foo;
+
+# try to keep it tight
 use strict;
 
 require Exporter;
@@ -18,15 +26,38 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(start_scheduler);
 
+
+################## CONSTANTS ##############################
+
+use constant _LSP_SETUP => 1;
+use constant _LSP_TEARDOWN => 0;
+
+#XXX: move to somewhere where everyone can use them
+use constant ACTIVE =>    'active';
+use constant CANCELED =>  'canceled';
+use constant FAILED  =>   'failed';
+use constant FINISHED =>  'finished';
+use constant PENDING =>   'pending';
+
+
+################## GLOBALS ##############################
 # global config file 
 my ($global_config);
 
-###################################
+# XXX: our (temp) db handle (hack alert)
+my ($dbHandle);
+
+#fake pss calls for the momment
+my ($fakeit) = 1;
+
+my ($_error);
+
+######################################################################
 # This should probably be just new or 
 # some such OO thing. Just startup and deatch
 # a thread to do scheduling, return control
 # to the main prog
-###################################
+######################################################################
 sub start_scheduler {
 
     $global_config = shift;
@@ -38,46 +69,198 @@ sub start_scheduler {
     return 1;
 }
 
-###################################
-# Loop forever checking the DB every N
+######################################################################
+# Main: Loop forever checking the DB every N
 # minutes for reserversations
-###################################
+######################################################################
 sub scheduler {
     print "Scheduler running\n";
+    # init dbHandle
+    $dbHandle = new Foo(%$global_config);
     while (1) {
-        #FOO:foo()
         print "Scheduler looping\n";
-        find_reservations();
-        # check every 5 minutes or so
+
+        # find reservations that need to be actived
+        find_new_reservations();
+
+        # find reservations that need to be deactivated 
+        find_expired_reservations();
+
+        # check every do_poll_time seconds
         sleep($global_config->{'db_poll_time'});
     }
 }
 
-###################################
+######################################################################
 # Find reservations to run
 # need to find all the reservatations in db
 # that need to be setup and run in the next N
 # minutes
-###################################
-sub find_reservations {
+######################################################################
+sub find_new_reservations {
+
+    print "in find_new_res\n";
+
     my $cur_time = localtime();
+    my ($timeslot, $resv, $result);
 
-    # XXX: configurable: now 10 mins in future
-    my $timeslot = time() + $global_config->{'reservation_time_interval'};
-    
-    print "searching db for reservations $cur_time \n";
-    # dbcall to find reservations();
-    #@reservaions = search_db_reservations($timeslot);
+    # configurable
+    $timeslot = time() + $global_config->{'reservation_time_interval'};
+    print "pending: $cur_time \n";
 
-    #for $res (@reservations) {
-        #print "res ==> $res \n";
-        #print "execing pss to schedule reservations\n";
+    # find reservations that need to be scheduled
+    $resv = $dbHandle->find_pending_reservations($timeslot, PENDING);
+
+    foreach my $r (@$resv) {
         ## calls to pss to setup reservations
-        #print "update reservation to active\n";
-        ## db call to update res
-    #}
+        $result = setup_pss($r);
 
+        #print "update reservation to active\n";
+        update_reservation( $r, $result, ACTIVE);
+    }
     return 1;
+}
+
+######################################################################
+#
+# Find reservations that have expired, and tear them down
+#
+######################################################################
+sub find_expired_reservations {
+
+    my $cur_time = localtime();
+    my ($timeslot, $resv, $result);
+
+    # configurable
+    $timeslot = time() + $global_config->{reservation_time_interval};
+    print "expired: $cur_time \n";
+
+    # find active reservation past the timeslot
+    $resv = $dbHandle->find_expired_reservations($timeslot, ACTIVE);
+
+    foreach my $r (@$resv) {
+        $result = teardown_pss($r);
+
+        #print "update reservation to active\n";
+        update_reservation( $r, $result, FINISHED);
+    }
+    return 1;
+}
+######################################################################
+#
+# Format the args and call pss to do the configuraion change
+#
+######################################################################
+sub setup_pss {
+
+    my ($res) = @_;
+
+    # make those router idx's into ips
+    my $srchost = $dbHandle->hostidx2ip( $res->{'src_hostaddrs_id'} );
+    my $dsthost = $dbHandle->hostidx2ip( $res->{'dst_hostaddrs_id'} );
+    my $srcrouter = $dbHandle->ipidx2ip( $res->{'ingress_interface_id'} );
+    my $dstrouter = $dbHandle->ipidx2ip( $res->{'egress_interface_id'} );
+
+    # probably a slick way with map to do this ...
+    my (%_lspInfo) = (
+      'name' => "oscars_$res->{'reservation_id'}",
+      'lsp_from' => $srcrouter,
+      'lsp_to' => $dstrouter,
+      'bandwidth' => $res->{'reservation_bandwidth'},
+      'lsp_class-of-service' => '4',
+      'policer_burst-size-limit' =>  $res->{'reservation_burst_limit'},
+      'source-address' => $srchost,
+      'destination-address' => $dsthost,
+#      'dscp' => 'ef',
+#      'protocol' => 'udp',
+#      'source-port' => '5000',
+    );
+
+    print "execing pss to schedule reservations\n";
+
+    if ($fakeit == 0 ) {
+        # Create an LSP object.
+        my ($_jnxLsp) = new JnxLSP(%_lspInfo);
+
+        print("Setting up LSP...\n");
+        $_jnxLsp->configure_lsp(_LSP_SETUP);
+        if ($_error = $_jnxLsp->get_error())  {
+            return 0;
+            #die($_error);
+        }
+    }
+    print("LSP setup complete\n");
+    return 1;
+}
+
+######################################################################
+#
+# Format the args and call pss to teardown the configuraion 
+#
+######################################################################
+sub teardown_pss {
+
+    my ($res) = @_;
+
+    # make those router idx's into ips
+    my $srchost = $dbHandle->hostidx2ip( $res->{'src_hostaddrs_id'});
+    my $dsthost = $dbHandle->hostidx2ip( $res->{'dst_hostaddrs_id'});
+
+    my $srcrouter = $dbHandle->ipidx2ip( $res->{'ingress_interface_id'});
+    my $dstrouter = $dbHandle->ipidx2ip( $res->{'egress_interface_id'});
+
+    #print "srchost $srchost, dsthost $dsthost, srcrout $srcrouter, dstr $dstrouter\n";
+
+    # probably a slick way with map to do this ...
+    my (%_lspInfo) = (
+      'name' => "oscars_$res->{'reservation_id'}",
+      'lsp_from' => $srcrouter,
+      'lsp_to' => $dstrouter,
+      'bandwidth' => $res->{'reservation_bandwidth'},
+      'lsp_class-of-service' => '4',
+      'policer_burst-size-limit' =>  $res->{'reservation_burst_limit'},
+      'source-address' => $srchost,
+      'destination-address' => $dsthost,
+#      'dscp' => 'ef',
+#      'protocol' => 'udp',
+#      'source-port' => '5000',
+    );
+
+    #my $d = join ":", (values %_lspInfo) ;
+    #print "$d \n";
+
+    if ($fakeit == 0 ) {
+        # Create an LSP object.
+        my ($_jnxLsp) = new JnxLSP(%_lspInfo);
+
+        print("Tearing down LSP...\n");
+        $_jnxLsp->configure_lsp(_LSP_TEARDOWN); 
+        if ($_error = $_jnxLsp->get_error())  {
+            return 0;
+        }
+    }
+    print("LSP teardown complete\n");
+    return 1;
+}
+
+
+######################################################################
+#
+# Change the status of the reservervation from pending to active
+#
+######################################################################
+
+sub update_reservation {
+
+    my ($resv, $result, $status) = @_;
+
+    if ( $result == 1 ) {
+        print "Changing status to $status\n";
+        $dbHandle->db_update_reservation($resv, $status)
+    } else {
+        print "Changing status to failed\n";
+        $dbHandle->db_update_reservation($resv, FAILED)
+    }
 }
 
 #########################
