@@ -29,7 +29,7 @@ sub Verify_login {
 
 sub Get_profile {
   my ($class, $params, $fields_to_display) = @_;
-  return (get_profile($params, @$fields_to_display));
+  return (get_profile($params, $fields_to_display));
 }
 
 
