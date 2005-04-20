@@ -30,7 +30,8 @@ my $config = Config::Auto::parse('BSS.config');
 start_scheduler($config);
 
 # Create a SOAP server
-my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
+#my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
+my $daemon = SOAP::Transport::HTTP::Daemon
 	-> new (LocalPort => 3000, Listen => 5, Reuse => 1)
 	-> dispatch_to('.', 'BSS_Server')
 	;
