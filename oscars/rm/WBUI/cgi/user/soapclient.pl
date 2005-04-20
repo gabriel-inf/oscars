@@ -4,7 +4,7 @@ use SOAP::Lite;
 
 my $AAAS_server = SOAP::Lite
   -> uri('http://localhost:2000/AAASServer')
-  -> proxy ('http://localhost:2000/soapserver.pl');
+  -> proxy ('http://localhost:2000/AAAS_Server.pl');
 
 # TODO:  one SOAP call that dispatches according to server, subroutine args
 
@@ -43,8 +43,8 @@ sub soap_set_profile
 
 
 my $BSS_server = SOAP::Lite
-  -> uri('http://localhost:5000/BSSServer')
-  -> proxy ('http://localhost:5000/soapserver.pl');
+  -> uri('http://localhost:3000/BSS_Server')
+  -> proxy ('http://localhost:3000/BSS_server.pl');
 
 sub soap_get_reservations
 {
