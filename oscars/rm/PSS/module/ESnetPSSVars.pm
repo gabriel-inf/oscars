@@ -7,7 +7,7 @@
 #
 ###################################################################
 
-package ESnetPSSVars;
+package PSS::module::ESnetPSSVars;
 
 use Exporter;
 @ISA = qw(Exporter);

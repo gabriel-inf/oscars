@@ -1,7 +1,9 @@
 #!/usr/local/bin/perl
 
 use strict;
-use JnxLSP;
+
+use lib '../..';
+use PSS::module::JnxLSP;
 
 #####
 #

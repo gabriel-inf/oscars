@@ -7,15 +7,21 @@
 #
 #####
 
+#package PSS::module::JnxLSP;
 package JnxLSP;
 
 use strict;
 use JUNOS::Device;
 use JUNOS::Trace;
 use XML::DOM;
-use ESnetPSSVars qw(
+use PSS::module::ESnetPSSVars qw(
   :JNXLSP
 );
+
+
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT = qw();
 
 
 #####
@@ -433,7 +439,8 @@ sub execute_operational_command
   }
 
   # Send the command and receive a XML::DOM object.
-  my $_jnxRes = $_jnx->$_command( %_queryArgs );
+  # jrl my $_jnxRes = $_jnx->$_command( %_queryArgs );
+  $_jnxRes = $_jnx->$_command( %_queryArgs );
   unless (ref($_jnxRes))  {
     die "ERROR: $_jnxInfo{hostname}: failed to execute command $_command.\n";
   }
@@ -441,7 +448,8 @@ sub execute_operational_command
   # Check and see if there were any errors in executing the command.
   $_error = $_jnxRes->getFirstError();
   if ($_error)  {
-    $_self->{'errMsg'} = "ERROR: $_jnxInfo{'hostname'} - ", $_error->{message}, "\n";
+    # jrl $_self->{'errMsg'} = "ERROR: $_jnxInfo{'hostname'} - ", $_error->{message}, "\n";
+    $_self->{'errMsg'} = "ERROR: $_jnxInfo{'hostname'} - " . $_error->{message} . "\n";
     return(0);
   }
   return($_jnxRes->toString());
