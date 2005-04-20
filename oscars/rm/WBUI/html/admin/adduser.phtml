@@ -1,21 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-	<script language="javascript" type="text/javascript" src="../main_common.js"></script>
 	<style type="text/css" media="screen">
 		@import url( '../styleSheets/layout.css' );
 	</style>
-        <script language="javascript">print_html_header('admin');</script>
+	<script language="javascript" type="text/javascript" src="../main_common.js"></script>
 	<script language="javascript" type="text/javascript" src="adduser.js"></script>
 </head>
 
 <body>
-
-<script language="javascript">print_header('admin');</script>
-
-<div>
-<p class="topmessage"><script language="javascript">print_current_date();</script> | Admin Tool | You are logged in as <!-- ((_Current_LoggedIn_Name_)) -->.</p>
-</div>
 
 <script language="javascript">print_admin_bar('adduser');</script>
 
@@ -25,8 +18,6 @@
 (Required fields are marked with a <span class="requiredmark">*</span>)</p>
 <p>Users can register themselves, or you can manually create a user account here.<br>
 A manually registered user will receive an email with activation key and other login information.</p>
-
-<p class="notice"><!-- ((_Processing_Result_Message_)) --></p>
 
 <form method="post" action="https://oscars.es.net/cgi-bin/admin/adduser.pl" name="adduserform" onsubmit="return check_form(this);">
 <input type="hidden" name="mode" value="adminadduser">
