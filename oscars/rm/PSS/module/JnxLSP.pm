@@ -132,7 +132,7 @@ sub get_lsp_status
 {
   my ($_self) = @_;
   my (@_resultArray, $_result);
-  my ($_found) = 0;
+  my ($_state) = -1;
 
   $_result = $_self->execute_operational_command("get_mpls_lsp_information");
   @_resultArray = split(/\n/, $_result);
@@ -140,22 +140,23 @@ sub get_lsp_status
   while (defined($_resultArray[0]))  {
     $_result = shift(@_resultArray);
 
-    # If we locate the LSP, set the status to 1.
-    if ($_result =~ m/^<name>$_self->{'name'}<\/name>$/)  {
-      $_found = 1;
-    }
-
-    # If LSP was found, then we'll update the value with the LSP state (0 => down, 1 => up).
-    elsif  (($_found) and ($_result =~ m/^<lsp-state>(\w+)<\/lsp-state>$/))  {
+    # Update the value with the LSP state (0 => down, 1 => up).
+    # NB: In the XML query, we'll see the <state> BEFORE the <name>
+    if  ($_result =~ m/^<lsp-state>(\w+)<\/lsp-state>$/)  {
       if (lc($1) eq 'up')  {
-        return(1);
+        $_state = 1;
       }
-      elsif (lc($1) eq 'down')  {
-        return(0);
+      elsif (lc($1) eq 'dn')  {
+        $_state = 0;
       }
       else  {
-        return(-1);
+        $_state = -1;
       }
+    }
+
+    # If we locate the LSP, set the status to 1.
+    elsif ($_result =~ m/^<name>$_self->{'name'}<\/name>$/)  {
+      return($_state);
     }
   }
   return(-1);
