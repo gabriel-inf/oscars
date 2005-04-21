@@ -25,7 +25,7 @@ my ($Error_Status, %Results) = &process_user_login();
 if ( !$Error_Status )
 {
     # forward the user to the main service page
-    &Update_Frames($Service_startpoint_URI, "Logged in as $FormData{'loginname'}.");
+    &Update_Frames($Service_startpoint_URI, "Logged in as $FormData{'loginname'}.", $FormData{'loginname'});
 }
 else
 {
