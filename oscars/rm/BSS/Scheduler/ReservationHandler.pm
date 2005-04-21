@@ -4,9 +4,11 @@
 # JRLee
 # DWRobertson
 ######################################################################
-package BSS::Scheduler::ReservationHandler ; 
+
+package BSS::Scheduler::ReservationHandler; 
 use Net::Traceroute;
 use Net::Ping;
+use BSS::Traceroute::JnxTraceroute;
 
 require Exporter;
 
@@ -18,6 +20,11 @@ use BSS::Frontend::Reservation;
 
 # keep it tight
 use strict;
+
+######################### CONSTANTS ##################################
+
+use constant LOCAL => 0;
+use constant REMOTE => 1;
 
 ### needs to be in a config file
 my $use_system = 1;
@@ -107,16 +114,15 @@ sub do_ping {
     return 0;
 }
 
-
 ################################
-### do trace
+### do remote trace
 ################################
 
-sub do_trace {
+sub do_remote_trace {
 
-    my ($tr, $hops);
-
-    my $host = shift;
+    my ($host)  = @_;;
+    my (@hops);
+    my ($_error, $idx, $prev);
 
     # try to ping before traceing?
     if ($useping) {
@@ -126,7 +132,60 @@ sub do_trace {
         }
     }
 
-    $tr = new Net::Traceroute->new(host=>$host,timeout=>30,query_timeout=>3,max_ttl=>20 ) || return 0;
+    my ($_jnxTraceroute) = new JnxTraceroute();
+    $_jnxTraceroute->traceroute($host);
+
+    if ($_error = $_jnxTraceroute->get_error())  {
+        print "Error $_error\n";
+        return 0;
+    }
+
+    @hops = $_jnxTraceroute->get_hops();
+
+    print "hops: " .  $#hops . "\n";
+
+    # if we didn't hop much, mabe the same router?
+    if ($#hops < 2 ) { return 0; }
+
+    # start off with an non-existant router
+    $idx = 0;
+
+    # loop forward till the next router isn't one of ours ...
+    while(defined($hops[0]))  {
+        print("  $hops[0]\n");
+        $prev = $idx;
+        $idx = BSS::Frontend::Database::check_db_rtr($hops[0]);
+        if ( $idx == 0 ) {
+            return $prev;
+        }
+        shift(@hops);
+    }
+
+    # if we didn't find it
+    return 0;
+}
+
+################################
+### do local trace
+################################
+
+sub do_local_trace {
+
+    
+    my ($host)  = @_;;
+
+    my ($tr, $hops);
+
+    # try to ping before traceing?
+    if ($useping) {
+        if ( 0 == do_ping($host)) {
+            print "Host not pingable\n";
+            return 0;
+        }
+    }
+
+    $tr = new Net::Traceroute->new( host=>$host, timeout=>30, 
+            query_timeout=>3, max_ttl=>20 ) || return 0;
 
     if( ! $tr->found) {
         print "do_trace:'$host' not found\n";
@@ -166,11 +225,16 @@ sub find_interface_ids {
 
     my( $ingress_rtr, $egress_rtr);
 
-    print "running tr to $src\n";
-    $ingress_rtr = do_trace($src);
-    
-    print "running tr to $dst\n";
-    $egress_rtr = do_trace($dst);
+    print "running local tr to $src\n";
+    $ingress_rtr = do_local_trace($src);
+   
+    if ( $main::config->{'run_traceroute'} )  {
+        print "running remote tr to $dst\n";
+        $egress_rtr = do_remote_trace($dst);
+    } else {
+        print "running remote (local) tr to $dst\n";
+        $ingress_rtr = do_local_trace($src);
+    }
 
     # if we can't find both ends ...
     if ($ingress_rtr == 0 || $egress_rtr == 0 ) {
