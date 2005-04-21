@@ -91,7 +91,7 @@ sub ipidx2ip {
     $sth->finish;
 
     # XXX: how do we raise an error here? die?
-    if ( $#{ @$data }  == -1 ) {
+    if ( $#{$data}  == -1 ) {
         return -1;
     }
     #print "ip: " . $data->[0]{'ipaddrs_ip'} . "\n";
@@ -116,7 +116,7 @@ sub hostidx2ip {
     $sth->finish;
 
     # XXX: how do we raise an error here? die?
-    if ( $#{ @$data }  == -1 ) {
+    if ( $#{$data}  == -1 ) {
         return -1;
     }
     #print "hostip: " . $data->[0]{'hostaddrs_ip'} . "\n";
