@@ -75,7 +75,7 @@ function print_navigation_bar(activePage)
     else
     {
     
-        document.write('<li><a href="https://oscars.es.net/user/reservationlist.phtml" title="View list of active reservations">View Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/user/reservationlist.html" title="View list of active reservations">View Reservations</a></li>');
     }
     if (activePage == 'myprofile')
     {
@@ -109,7 +109,7 @@ function print_admin_bar(activePage)
     }
     else
     {
-        document.write('<li><a href="userlist.phtml" title="View and/or edit user accounts">Edit User Accounts</a></li>');
+        document.write('<li><a href="userlist.html" title="View and/or edit user accounts">Edit User Accounts</a></li>');
     }
     if (activePage == 'adduser')
     {
@@ -117,7 +117,7 @@ function print_admin_bar(activePage)
     }
     else
     {
-        document.write('<li><a href="adduser.phtml" title="Add a new user account">Add a New User</a></li>');
+        document.write('<li><a href="adduser.html" title="Add a new user account">Add a New User</a></li>');
     
     }
     if (activePage == 'editprofile')
@@ -126,7 +126,7 @@ function print_admin_bar(activePage)
     }
     else
     {
-        document.write('<li><a href="editprofile.phtml" title="View and/or edit admin profile">Admin Profile</a></li>');
+        document.write('<li><a href="editprofile.html" title="View and/or edit admin profile">Admin Profile</a></li>');
     }
     if (activePage == 'logout')
     {
@@ -134,7 +134,7 @@ function print_admin_bar(activePage)
     }
     else
     {
-        document.write('<li><a href="logout.phtml" title="Logout from the admin tool">Logout</a></li>');
+        document.write('<li><a href="logout.html" title="Logout from the admin tool">Logout</a></li>');
     }
     document.write("</ul>");
     document.write("</div>");
