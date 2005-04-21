@@ -13,18 +13,19 @@ use lib '../Scheduler/lib/perl5';
 
 use BSS::Scheduler::SchedulerThread;
 
+use Config::Auto;
+
 ## we want to thread on each accept, as some requests can take a 
 ## while (i.e. running traceroute)
 use SOAP::Transport::HTTP::Daemon::ThreadOnAccept;
-
-use Config::Auto;
 
 # enable this in the 'production' version
 # don't want to die on 'Broken pipe' or Ctrl-C
 #$SIG{PIPE} = $SIG{INT} = 'IGNORE';
 
 # slurp up the config file
-my $config = Config::Auto::parse('BSS.config');
+use vars qw ($config);
+$config = Config::Auto::parse('BSS.config');
 
 # start up a thread to monitor the DB
 start_scheduler($config);
@@ -32,7 +33,7 @@ start_scheduler($config);
 # Create a SOAP server
 #my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
 my $daemon = SOAP::Transport::HTTP::Daemon
-	-> new (LocalPort => 3000, Listen => 5, Reuse => 1)
+	-> new (LocalPort => $config->{'server_port'}, Listen => 5, Reuse => 1)
 	-> dispatch_to('.', 'BSS_Server')
 	;
 
