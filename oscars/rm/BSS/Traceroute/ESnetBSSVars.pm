@@ -7,7 +7,8 @@
 #
 ###################################################################
 
-package ESnetBSSVars;
+#package ESnetBSSVars;
+package BSS::Traceroute::ESnetBSSVars;
 
 use Exporter;
 @ISA = qw(Exporter);
@@ -42,7 +43,8 @@ BEGIN  {
 
   # SSH variable to use for Juniper login.
   $_jnxTracerouteUser = 'traceroute';
-  $_jnxTracerouteKey = '/home/oscars/.ssh/traceroute_id_dsa';
+  #$_jnxTracerouteKey = '/home/oscars/.ssh/traceroute_id_dsa';
+  $_jnxTracerouteKey = '/home/jason/.ssh/traceroute_id_dsa';
 
   # Default source of tracreoutes.
   $_jnxTracerouteSource = 'chi-cr1.es.net';

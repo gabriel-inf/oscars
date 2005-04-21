@@ -10,7 +10,9 @@
 package JnxTraceroute;
 
 use strict;
-use ESnetBSSVars qw(
+
+#use ESnetBSSVars qw(
+use BSS::Traceroute::ESnetBSSVars qw(
   :JNXTRACEROUTE
 );
 

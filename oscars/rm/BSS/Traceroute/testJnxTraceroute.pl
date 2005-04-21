@@ -1,7 +1,8 @@
 #!/usr/local/bin/perl
 
 use strict;
-use JnxTraceroute;
+use lib '../..';
+use BSS::Traceroute::JnxTraceroute;
 
 #####
 #
