@@ -1,126 +1,121 @@
-package DB;
+package OSCARS_db;
 
-# DB.pm:  package for database operation
-# Last modified: April 14, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# OSCARS_db.pm:  convenience class for database operations, inherited by
+#                front end database handling classes
+# Last modified: April 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 use strict;
 
-require Exporter;
+use DBI;
 
 use constant READ_LOCK => 1;
 use constant WRITE_LOCK => 2;
 
-our @ISA = qw(Exporter);
-our @EXPORT = qw(db_handle_query db_handle_finish database_connect database_disconnect query_prepare query_execute query_finish database_lock_table database_unlock_table READ_LOCK WRITE_LOCK);
-
-use DBI;
-
-our %db_connect_info = (
-  'host' => 'localhost',
-  'user' => 'davidr',
-  'password' => 'shyysh'
-);
 
 
-##### sub db_handle_query
-# In:  database handle, partial query, table name, arglist
-# Out: error code, number of rows returned, statement handle
-# Out: $error_msg (0 on success), $DB_handle
-sub db_handle_query
+######################################################################
+sub new {
+  my ( $_class, %_args ) = @_;
+  my ( $_self ) = {%_args};
+  
+  # Bless $self into designated class.
+  bless($_self, $_class);
+  
+  # Initialize.
+  $_self->initialize();
+  
+  return($_self);
+}
+
+######################################################################
+sub initialize {
+    my ( $_self ) = @_;
+    $_self->{'dbh'} = DBI->connect($_self->{'configs'}->{'db_use_database'}, 
+             $_self->{'configs'}->{db_login_name}, $_self->{'configs'}->{'db_login_passwd'})
+            or die "Couldn't connect to database: " . DBI->errstr;
+    $_self->{'sth'} = undef;
+    $_self->{'lock_type'} = READ_LOCK;
+}
+
+
+#####
+sub set_lock_type
 {
-  my ($dbh, $query, $table, $opflag, @arglist) = @_;
-  my ($sth); 
+  my( $self ) = @_;
+  $self->{'lock_type'} = @_;
+}
 
-  if (!defined($dbh)) { print STDERR "foo\n"; }
+
+##### method handle_query
+# In:  query statement, table name, arglist
+# Out: $error_msg (empty on success)
+sub handle_query
+{
+  my ($self, $query, $table_name, @arglist) = @_;
+
+  if (!defined($self->{'dbh'}))
+  {
+     print STDERR "foo\n";
+  }
+  my $error_msg = $self->lock_table($table_name);
+  if ( $error_msg ) { return( $error_msg, undef ); }
+
   #print STDERR $query, "\n";
-  my $error_msg = database_lock_table($opflag, $table);
+  ( $error_msg, $self->{'sth'} ) = $self->query_prepare( $query );
   if ( $error_msg ) {
-      database_disconnect( $dbh );
+      $self->unlock_table($table_name);
       return( $error_msg, undef );
   }
-  ( $error_msg, $sth ) = query_prepare( $dbh, $query );
-  if ( $error_msg ) {
-      database_unlock_table($opflag, $table);
-      database_disconnect( $dbh );
-      return( $error_msg, undef );
-  }
-  $error_msg = query_execute( $sth, @arglist );
+  $error_msg = $self->query_execute( @arglist );
 
   if ( $error_msg ) {
       print STDERR $error_msg, " after exec\n\n";
-      database_unlock_table($opflag, $table);
-      database_disconnect( $dbh );
+      $self->unlock_table($table_name);
       return( $error_msg, undef );
   }
-  else { return ('', $sth) };
+  else { return ('', $self->{'sth'} ) };
 }
 
 
-##### sub db_handle_finish
-# In:  database handle, statement handle, table name
+##### method handle_finish
+# In:  lock type flag, table name
 # Out: None.
-sub db_handle_finish
+sub handle_finish
 {
-  my ($opflag, $dbh, $sth, $table) = @_;
-  query_finish( $sth );
-  database_unlock_table($opflag, $table);
-  database_disconnect( $dbh );
+  my ($self, $table) = @_;
+  $self->query_finish();
+  $self->unlock_table($table);
 }
 
 
 
-##### sub database_connect
-# In: None
-# Out: $error_msg (empty on success), $DB_handle
-sub database_connect
-{
-  my($dbname) = @_;
-  my $dsn = "DBI:mysql:database=$dbname;
-  host=$db_connect_info{'host'}";
-  my $dbh = DBI->connect( $dsn, $db_connect_info{'user'}, $db_connect_info{'password'} );
-
-  if ( defined( $dbh ) ) { return ( '', $dbh ); }
-  else { return ( "CantConnectDB\n", undef ); }
-}
-
-
-##### sub database_disconnect
-# In: $DB_handle ($dbh)
-# Out: None
-sub database_disconnect
-{
-  my $dbh = $_[0];
-  $dbh->disconnect();
-}
-
-
-##### sub query_prepare
-# In: $DB_handle ($dbh), $statement
-# Out: $error_msg, $statement_handle
+##### method query_prepare
+# In:  query statement 
+# Out: $error_msg
 sub query_prepare
 {
-  my( $dbh, $statement ) = @_;
-  my $sth = $dbh->prepare( $statement );
-  if (!defined($sth)) { return ("CantPrepareStatement\n" . $dbh->errstr, undef); }
-    # if nothing fails, return an empty error message, and the statement
-    # handle
+  my( $self, $statement ) = @_;
+  my $sth = $self->{'dbh'}->prepare( $statement );
+  if (!defined($sth)) { return ("CantPrepareStatement\n" . $self->{'dbh'}->errstr, undef); }
+    # if nothing fails, return an empty error message
   return ('', $sth);
 }
 
 
-##### sub query_execute
-# In: $statement_handle ($sth), @query_Arguments (for placeholders(?s) in the prepared query statement)
-# Out: $error_msg, $num_of_rows_affected
+##### method query_execute
+# In: @query_args (placeholders for '?''s in the prepared query statement)
+# Out: $error_msg (empty on success)
 sub query_execute
 {
-  my( $sth, @query_args ) = @_;
+  my( $self, @query_args ) = @_;
     # execute the prepared query (run subroutine 'query_prepare' before
     # calling this subrutine)
-  my $num_rows = $sth->execute( @query_args );
+  #print '-- ', @query_args, "\n";
+  my $num_rows = $self->{'sth'}->execute( @query_args );
   if (!$num_rows) {
-      return( "CantExecuteQuery\n" . $sth->errstr, undef );
+      return( "CantExecuteQuery\n" . $self->{'sth'}->errstr );
   }
     # if nothing fails, empty error message
   return ( '' );
@@ -128,39 +123,40 @@ sub query_execute
 
 
 ##### sub query_finish
-# In: $statement_handle ($sth)
+# In:  None 
 # Out: None
 sub query_finish
 {
-  my ($sth) = @_;
-  $sth->finish();
+  my ($self) = @_;
+  $self->{'sth'}->finish();
+  $self->{'sth'} = undef;
 }
 
 
-##### sub database_lock_table
-# In:  opflag, table name 
-# Out: status, error message if any
-sub database_lock_table
+##### method lock_table
+# In:  table name 
+# Out: error message if any
+sub lock_table
 {
-    my ($opflag, $table) = @_;
-    my $query = "LOCK TABLE $table";
-    if ($opflag & WRITE_LOCK) { $query .= " WRITE"; }
-    elsif ($opflag & READ_LOCK) { $query .= " READ"; }
+    my ($self, $table_name) = @_;
+    my $query = "LOCK TABLE $table_name";
+    if ($self->{'lock_type'} & WRITE_LOCK) { $query .= " WRITE"; }
+    elsif ($self->{'lock_type'} & READ_LOCK) { $query .= " READ"; }
     return ( '' );
 }
 
 
-##### sub database_unlock_table
-# In:  opflag, table name
-# Out: status, error message if any
-sub database_unlock_table
+##### method unlock_table
+# In:  table name
+# Out: error message if any
+sub unlock_table
 {
-    my ($opflag, $table) = @_;
+    my ($self, $table_name) = @_;
     my $query;
 
-    if (($opflag & READ_LOCK) || ($opflag & WRITE_LOCK))
+    if (($self->{'lock_type'} & READ_LOCK) || ($self->{'lock_type'} & WRITE_LOCK))
     {
-        $query = "UNLOCK TABLE $table";
+        $query = "UNLOCK TABLE $table_name";
     }
     return ( '' );
 }
