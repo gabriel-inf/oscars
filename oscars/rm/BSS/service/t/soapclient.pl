@@ -3,15 +3,19 @@
 #use SOAP::Lite +trace;
 use SOAP::Lite;
 
+use lib '../../..';
+
+use BSS::Scheduler::ReservationHandler;
+
 
 my $BSS_server = SOAP::Lite
-  -> uri('http://localhost:3000/BSS_Server')
+  -> uri('http://localhost:3000/BSS/Scheduler/ReservationHandler')
   -> proxy ('http://localhost:3000/soapserver.pl');
 
 sub soap_get_reservations
 {
     my (%params) = @_;
-    my $response = $BSS_server -> Get_reservations(%params);
+    my $response = $BSS_server -> get_reservations(%params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -23,7 +27,7 @@ sub soap_get_reservations
 sub soap_create_reservation
 {
     my ($inref) = @_;
-    my $response = $BSS_server -> Create_reservation($inref);
+    my $response = $BSS_server -> create_reservation($inref);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -35,7 +39,7 @@ sub soap_create_reservation
 sub soap_remove_reservation
 {
     my (%params) = @_;
-    my $response = $BSS_server -> Remove_reservation(%params);
+    my $response = $BSS_server -> remove_reservation(%params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
