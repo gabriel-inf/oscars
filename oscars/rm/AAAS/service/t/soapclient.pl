@@ -4,8 +4,12 @@ use SOAP::Lite;
 
 use strict;
 
+use lib '../../..';
+
+use AAAS::Frontend::User;
+
 my $AAAS_server = SOAP::Lite
-  -> uri('http://localhost:2000/AAASServer')
+  -> uri('http://localhost:2000/AAAS/Frontend/User')
   -> proxy ('http://localhost:2000/soapserver.pl');
 
 # TODO:  one SOAP call that dispatches according to server, subroutine args
@@ -13,7 +17,7 @@ my $AAAS_server = SOAP::Lite
 sub soap_verify_login
 {
     my ($params) = @_;
-    my $response = $AAAS_server -> Verify_login($params);
+    my $response = $AAAS_server -> verify_login($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -23,7 +27,7 @@ sub soap_verify_login
 sub soap_get_profile
 {
     my ($params, $fields_to_display) = @_;
-    my $response = $AAAS_server -> Get_profile($params, $fields_to_display);
+    my $response = $AAAS_server -> get_profile($params, $fields_to_display);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -35,7 +39,7 @@ sub soap_get_profile
 sub soap_set_profile
 {
     my (%params) = @_;
-    my $response = $AAAS_server -> Set_profile(%params);
+    my $response = $AAAS_server -> set_profile(%params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
