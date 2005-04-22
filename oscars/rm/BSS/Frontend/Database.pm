@@ -1,34 +1,41 @@
 # Database.pm:  BSS specific database settings and routines
-# Last modified: April 18, 2005
+# Last modified: April 21, 2005
+# Jason Lee (jrlee@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
-# Jason Lee (jrlee@lbl.gov)
 
 package BSS::Frontend::Database;
 
 use strict; 
 
-use DB;
-use DBI;
+use lib '../..';
 
-require Exporter;
+use OSCARS_db;
 
-our @ISA = qw(Exporter);
-our @EXPORT = qw($Dbname %Table %Table_field @Table_field_order ipaddr_to_iface_idx hostaddr_to_idx check_db_rtr);
+our @ISA = qw(OSCARS_db);
+
+
+######################################################################
+sub new {
+  my $invocant = shift;
+  my $_class = ref($invocant) || $invocant;
+  my ($_self) = {@_};
+  
+  # Bless $_self into designated class.
+  bless($_self, $_class);
+  
+  # Initialize.
+  $_self->initialize();
+  
+  return($_self);
+}
 
 ##### Settings Begin (Global variables) #####
-# database connection info
-our $Dbname = 'BSS';
 
-# database table names
-our %Table = (
-  'reservations' => 'reservations',
-  'hostaddrs' => 'hostaddrs',
-  'ipaddrs' => 'ipaddrs'
-);
+our( %table, @resv_field_order );
 
 # reservations field names
-our %Table_field = (
+%table = (
   'reservations' => {
     'id' => 'reservation_id',
     'start_time' => 'reservation_start_time',
@@ -50,13 +57,135 @@ our %Table_field = (
   }
 );
 
-our @Table_field_order = ('id', 'start_time', 'end_time', 'created_time',
+@resv_field_order = ('id', 'start_time', 'end_time', 'created_time',
     'bandwidth', 'class', 'burst_limit', 'status', 'ingress_id', 'egress_id',
     'src_id', 'dst_id', 'dn', 'ingress_port', 'egress_port', 'dscp',
     'description');
 
-##### Settings End #####
 
+
+######################################################################
+sub get_BSS_table  {
+  my( $self, $table_name ) = @_;
+  return ( %table )
+}
+
+
+######################################################################
+sub get_resv_field_order {
+  my ($self) = @_;
+  return (@resv_field_order)
+}
+
+    
+######################################################################
+sub find_pending_reservations  {
+
+    my ($self, $stime, $status) = @_;
+    my ($sth);
+
+    #print "pending: Looking at time == $stime \n";
+
+    $sth = $self->{'dbh'}->prepare( qq{ SELECT * FROM reservations WHERE reservation_status = ? and reservation_start_time < ?}) or die "Couldn't prepare statement: " . $self->{'dbh'}->errstr;
+
+    $sth->execute( $status, $stime );
+
+    # get all the data
+    my $data = $sth->fetchall_arrayref({});
+
+    # close it up
+    $sth->finish;
+
+    # return the answer
+    return $data
+}
+
+######################################################################
+sub find_expired_reservations  {
+
+    my ($self, $stime, $status) = @_;
+    my ($sth);
+
+    #print "expired: Looking at time == " . $stime . "\n";
+
+    $sth = $self->{'dbh'}->prepare( qq{ SELECT * FROM reservations WHERE reservation_status = ? and reservation_end_time < ?}) or die "Couldn't prepare statement: " . $self->{'dbh'}->errstr;
+
+    $sth->execute( $status, $stime );
+
+    # get all the data
+    my $data = $sth->fetchall_arrayref({});
+
+    # close it up
+    $sth->finish;
+
+    # return the answer
+    return $data
+}
+
+######################################################################
+sub ipidx2ip {
+
+    my ($self, $idx) = @_;
+    my ($sth);
+
+    $sth = $self->{'dbh'}->prepare( qq{ SELECT * FROM ipaddrs WHERE ipaddrs_id = ?}) or die "Couldn't prepare statement: " . $self->{'dbh'}->errstr;
+
+    $sth->execute( $idx );
+
+    # get all the data
+    my $data = $sth->fetchall_arrayref({});
+
+    # close it up
+    $sth->finish;
+
+    # XXX: how do we raise an error here? die?
+    if ( $#{$data}  == -1 ) {
+        return -1;
+    }
+    #print "ip: " . $data->[0]{'ipaddrs_ip'} . "\n";
+    # return the answer
+    return $data->[0]{'ipaddrs_ip'}
+}
+
+######################################################################
+sub hostidx2ip {
+
+    my ($self, $idx) = @_;
+    my ($sth);
+
+    $sth = $self->{'dbh'}->prepare( qq{ SELECT * FROM hostaddrs WHERE hostaddrs_id = ?}) or die "Couldn't prepare statement: " . $self->{'dbh'}->errstr;
+
+    $sth->execute( $idx );
+
+    # get all the data
+    my $data = $sth->fetchall_arrayref({});
+
+    # close it up
+    $sth->finish;
+
+    # XXX: how do we raise an error here? die?
+    if ( $#{$data}  == -1 ) {
+        return -1;
+    }
+    #print "hostip: " . $data->[0]{'hostaddrs_ip'} . "\n";
+    # return the answer
+    return $data->[0]{'hostaddrs_ip'}
+}
+
+
+######################################################################
+sub db_update_reservation {
+
+    my ($self, $res_id, $status) = @_;
+
+    my $sth = $self->{'dbh'}->prepare( qq{ UPDATE reservations SET reservation_status = ? WHERE reservation_id = ?}) or die "Couldn't prepare statement: " . $self->{'dbh'}->errstr;
+    $sth->execute( $status, $res_id->{reservation_id});
+
+    # close it up
+    $sth->finish;
+
+    return 1;
+}
 
 
 #######################################################################
@@ -66,23 +195,19 @@ our @Table_field_order = ('id', 'start_time', 'end_time', 'created_time',
 #######################################################################
 sub ipaddr_to_iface_idx  {
 
-  my ($ipaddrs_ip) = @_;
+  my ($self, $ipaddrs_ip) = @_;
   my ($query, $error_msg, $sth, $dbh);
   my ($interface_idx);
-
-  ( $error_msg, $dbh ) = database_connect($Dbname);
-  if ( $error_msg ) { return(0); }
-
 
      # TODO:  make ipaddrs_ip field UNIQUE in ipaddrs?
   $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
 
-  ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'ipaddrs'}, READ_LOCK, $ipaddrs_ip);
+  ( $error_msg, $sth) = $self->handle_query($query, 'ipaddrs', $ipaddrs_ip);
   if ($error_msg) { return( 0 ); }
 
     # error on no matchs
   if ($sth->rows == 0 ) {
-      db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
+      $self->handle_finish( 'ipaddrs' );
       return( 0 );
   }
 
@@ -91,7 +216,7 @@ sub ipaddr_to_iface_idx  {
           $interface_idx = $data[0];
   }   
 
-  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
+  $self->handle_finish( 'ipaddrs' );
       # return the answer
   return ($interface_idx);
 }
@@ -104,29 +229,25 @@ sub ipaddr_to_iface_idx  {
 #######################################################################
 sub hostaddr_to_idx
 {
-  my ($hostaddrs_ip) = @_;
-  my ($query, $error_msg, $sth, $dbh);
+  my ($self, $hostaddrs_ip) = @_;
+  my ($query, $error_msg, $sth);
   my ($hostaddrs_id);
-
-  ( $error_msg, $dbh ) = database_connect($Dbname);
-  if ( $error_msg ) { return(0); }
-
 
      # TODO:  make hostaddrs_ip field UNIQUE in hostaddrs?
   $query = 'SELECT hostaddrs_id FROM hostaddrs WHERE hostaddrs_ip = ?';
 
-  ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'hostaddrs'}, READ_LOCK, $hostaddrs_ip);
+  ( $error_msg, $sth) = $self->handle_query($query, 'hostaddrs', $hostaddrs_ip);
   if ($error_msg) { return( 0 ); }
 
     # if no matches, insert a row in hostaddrs
   if ($sth->rows == 0 ) {
-      $query = "INSERT INTO $Table{'hostaddrs'} VALUES ( '', '$hostaddrs_ip'  )";
+      $query = "INSERT INTO hostaddrs VALUES ( '', '$hostaddrs_ip'  )";
       print STDERR $query, "\n";
 
-      ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'reservations'}, READ_LOCK);
+      ( $error_msg, $sth) = $self->handle_query($query, 'reservations');
       if ( $error_msg ) { return( 0 ); }
 		
-      $hostaddrs_id = $dbh->{'mysql_insertid'};
+      $hostaddrs_id = $self->{'dbh'}->{'mysql_insertid'};
   }
   else {
       # flatten it out
@@ -135,7 +256,7 @@ sub hostaddr_to_idx
       }   
   }
 
-  db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'hostaddrs'});
+  $self->handle_finish( 'hostaddrs' );
       # return the answer
   return ($hostaddrs_id);
 }
@@ -149,30 +270,27 @@ sub hostaddr_to_idx
 #######################################################################
 sub check_db_rtr {
 
-    my ($rtr) = @_;
-    my ($dbh, $query, $sth, $interface_idx, $error_msg);
+  my ($self, $rtr) = @_;
+  my ($query, $sth, $interface_idx, $error_msg);
 
-    ( $error_msg, $dbh ) = database_connect($Dbname);
-    if ( $error_msg ) { return(0); }
-
-    $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
-    ( $error_msg, $sth) = db_handle_query($dbh, $query, $Table{'ipaddrs'}, READ_LOCK, $rtr);
-    if ( $error_msg ) { return(0); }
+  $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
+  ( $error_msg, $sth) = $self->handle_query($query, 'ipaddrs', $rtr);
+  if ( $error_msg ) { return(0); }
 
     # no match
-    if ($sth->rows == 0 ) {
-        db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
-        return 0;
-    }
+  if ($sth->rows == 0 ) {
+      $self->handle_finish( 'ipaddrs' );
+      return 0;
+  }
 
     # flatten it out
-    while (my @data = $sth->fetchrow_array()) {
-            $interface_idx = $data[0];
-    }   
-    db_handle_finish( READ_LOCK, $dbh, $sth, $Table{'ipaddrs'});
+  while (my @data = $sth->fetchrow_array()) {
+      $interface_idx = $data[0];
+  }   
+  $self->handle_finish( 'ipaddrs' );
 
     # return the answer
-    return $interface_idx;
+  return $interface_idx;
 }
 
 
