@@ -1,31 +1,41 @@
 package AAAS::Frontend::Database;
 
 # Database.pm:  package for AAAS specific database settings
-# Last modified: April 17, 2005
+# Last modified: April 21, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
-require Exporter;
+use lib '../..';
 
-our @ISA = qw(Exporter);
-our @EXPORT = qw($Dbname %Table %Table_field);
+use OSCARS_db;
 
+our @ISA = qw(OSCARS_db);
+
+
+######################################################################
+sub new {
+  my $invocant = shift;
+  my $_class = ref($invocant) || $invocant;
+  my ($_self) = {@_};
+  
+  # Bless $_self into designated class.
+  bless($_self, $_class);
+  
+  # Initialize.
+  $_self->initialize();
+  
+  return($_self);
+}
 
 ##### Settings Begin (Global variables) #####
 
-our $Dbname = 'AAAS';
-
-# database table names
-our %Table = (
-  'users' => 'users',
-  'institutions' => 'institutions'
-);
+our( %table );
 
 # database field names
-# usage: @{ $table_field{'users'} }{'dn', 'password', 'level'}
-our %Table_field = (
+# usage: @{ $table{'users'} }{'dn', 'password', 'level'}
+%table = (
   'users' => {
       'id' => 'user_id',
       'last_name' => 'user_last_name',
@@ -47,6 +57,12 @@ our %Table_field = (
 );
 
 ##### Settings End #####
+
+sub get_AAAS_table
+{
+  my ( $self, $table_name ) = @_;
+  return(%table);
+}
 
 # Don't touch the line below
 1;
