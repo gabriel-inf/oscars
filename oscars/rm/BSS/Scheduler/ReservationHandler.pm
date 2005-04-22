@@ -6,14 +6,11 @@
 ######################################################################
 
 package BSS::Scheduler::ReservationHandler; 
-use Net::Traceroute;
+
 use Net::Ping;
+
+use BSS::Scheduler::Net::Traceroute;
 use BSS::Traceroute::JnxTraceroute;
-
-require Exporter;
-
-our @ISA = qw(Exporter);
-our @EXPORT = qw(create_reservation remove_reservation);
 
 # BSS data base front end
 use BSS::Frontend::Reservation;
@@ -21,14 +18,28 @@ use BSS::Frontend::Reservation;
 # keep it tight
 use strict;
 
-######################### CONSTANTS ##################################
 
-use constant LOCAL => 0;
-use constant REMOTE => 1;
+######################################################################
+sub new {
+  my ($_class, %_args) = @_;
+  my ($_self) = {%_args};
+  
+  # Bless $_self into designated class.
+  bless($_self, $_class);
+  
+  # Initialize.
+  $_self->initialize();
+  
+  return($_self);
+}
 
-### needs to be in a config file
-my $use_system = 1;
-my $useping = 1;
+######################################################################
+sub initialize {
+    my ($self) = @_;
+    $self->{'frontend'} = BSS::Frontend::Reservation->new('configs' => $self->{'configs'})
+            or die "FATAL:  could not connect to database";
+}
+######################################################################
 
 
 ################################
@@ -46,13 +57,13 @@ sub create_reservation {
 
         # reference to input hash ref containing fields filled in by user
         # This routine fills in the remaining fields.
-	my ( $inref ) = @_; 
+	my ( $self, $inref ) = @_; 
 
-	($inref->{'ingress_router'}, $inref->{'egress_router'}) = find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
+	($inref->{'ingress_router'}, $inref->{'egress_router'}) = $self->find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
 
-    print STDERR "$inref->{'ingress_router'}, $inref->{'egress_router'}\n";
+    print STDERR "past: ", $inref->{'ingress_router'}, $inref->{'egress_router'}, "\n";
 
-	my ($error_status, %results) = insert_reservation( $inref );
+	my ($error_status, %results) = $self->{'frontend'}->insert_reservation( $inref );
 	return ($error_status, %results);
 }
 
@@ -63,17 +74,17 @@ sub create_reservation {
 sub remove_reservation {
 
         # references to input arguments, output hash
-	my ( $inref ) = @_;
+	my ( $self, $inref ) = @_;
     my ( $outref ) = \{};
     my ( $status );
 		
 	($outref->{'ingress_router'}, $outref->{'egress_router'}) =
-		find_router_ids($inref->{'src'}, $inref->{'dst'});
+		$self->{'frontend'}->{'dbconn'}->find_router_ids($inref->{'src'}, $inref->{'dst'});
 
-	$outref->{'ingress_id'} = router_to_id($outref->{'ingress_router'});
-	$outref->{'egress_id'} = router_to_id($outref->{'egress_router'});
+	$outref->{'ingress_id'} = $self->{'frontend'}->{'dbconn'}->router_to_id($outref->{'ingress_router'});
+	$outref->{'egress_id'} = $self->{'frontend'}->{'dbconn'}->router_to_id($outref->{'egress_router'});
 
-	$status = delete_reservation( $outref );
+	$status = $self->{'frontend'}->delete_reservation( $outref );
 
 	return ($status, $outref);
 }
@@ -86,11 +97,10 @@ sub remove_reservation {
 ##############################################################
 
 sub do_ping {
-
-    my $host = shift;
+    my ( $self, $host ) = @_;
 
     # use sytem 'ping' command (should be config'd in config file
-    if ($use_system) {
+    if ($self->{'configs'}{'use_system'}) {
         my @ping = `/bin/ping -w 10 -c 3 -n  $host`;
         foreach my $i (@ping) {
             if ( $i =~ /^64 bytes/ ) {  
@@ -119,14 +129,13 @@ sub do_ping {
 ################################
 
 sub do_remote_trace {
-
-    my ($host)  = @_;;
+    my ( $self, $host )  = @_;
     my (@hops);
     my ($_error, $idx, $prev);
 
     # try to ping before traceing?
-    if ($useping) {
-        if ( 0 == do_ping($host)) {
+    if ($self->{'configs'}{'use_ping'}) {
+        if ( 0 == $self->do_ping($host)) {
             print "Host not pingable\n";
             return 0;
         }
@@ -154,7 +163,7 @@ sub do_remote_trace {
     while(defined($hops[0]))  {
         print("  $hops[0]\n");
         $prev = $idx;
-        $idx = BSS::Frontend::Database::check_db_rtr($hops[0]);
+        $idx = $self->{'frontend'}->{'dbconn'}->check_db_rtr($hops[0]);
         if ( $idx == 0 ) {
             return $prev;
         }
@@ -170,15 +179,12 @@ sub do_remote_trace {
 ################################
 
 sub do_local_trace {
-
-    
-    my ($host)  = @_;;
-
+    my ($self, $host)  = @_;
     my ($tr, $hops);
 
     # try to ping before traceing?
-    if ($useping) {
-        if ( 0 == do_ping($host)) {
+    if ($self->{'configs'}{'use_ping'}) {
+        if ( 0 == $self->do_ping($host)) {
             print "Host not pingable\n";
             return 0;
         }
@@ -201,7 +207,7 @@ sub do_local_trace {
     # loop from the last router back, till we find an edge router
     for my $i (1..$hops-1) {
         my $rtr = $tr->hop_query_host($hops - $i, 0);
-        my  $idx = BSS::Frontend::Database::check_db_rtr($rtr);
+        my  $idx = $self->{'frontend'}->{'dbconn'}->check_db_rtr($rtr);
         if ($idx != 0) {
             #print "FOUND idx = $idx\n";
             return $idx;
@@ -221,19 +227,19 @@ sub do_local_trace {
 ################################
 
 sub find_interface_ids {
-    my ($src, $dst) = @_;
+    my ($self, $src, $dst) = @_;
 
     my( $ingress_rtr, $egress_rtr);
 
     print "running local tr to $src\n";
-    $ingress_rtr = do_local_trace($src);
+    $ingress_rtr = $self->do_local_trace($src);
    
     if ( $main::config->{'run_traceroute'} )  {
         print "running remote tr to $dst\n";
-        $egress_rtr = do_remote_trace($dst);
+        $egress_rtr = $self->do_remote_trace($dst);
     } else {
         print "running remote (local) tr to $dst\n";
-        $ingress_rtr = do_local_trace($src);
+        $ingress_rtr = $self->do_local_trace($src);
     }
 
     # if we can't find both ends ...
