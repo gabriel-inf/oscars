@@ -91,6 +91,19 @@ sub handle_finish
 
 
 
+##### method get_id
+# In:  None.
+# Out:  ID from latest query execution
+#####
+sub get_id
+{
+  my( $self ) = @_;
+
+  return($self->{'dbh'}->{'mysql_insertid'});
+}
+
+
+
 ##### method query_prepare
 # In:  query statement 
 # Out: $error_msg
