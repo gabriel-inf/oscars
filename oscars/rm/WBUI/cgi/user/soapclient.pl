@@ -11,7 +11,7 @@ my $AAAS_server = SOAP::Lite
 sub soap_verify_login
 {
     my ($params) = @_;
-    my $response = $AAAS_server -> Verify_login($params);
+    my $response = $AAAS_server -> verify_login($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -21,7 +21,7 @@ sub soap_verify_login
 sub soap_get_profile
 {
     my ($params, $fields_to_display ) = @_;
-    my $response = $AAAS_server -> Get_profile($params, $fields_to_display);
+    my $response = $AAAS_server -> get_profile($params, $fields_to_display);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -33,7 +33,7 @@ sub soap_get_profile
 sub soap_set_profile
 {
     my ($params) = @_;
-    my $response = $AAAS_server -> Set_profile($params);
+    my $response = $AAAS_server -> set_profile($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -49,7 +49,7 @@ my $BSS_server = SOAP::Lite
 sub soap_get_reservations
 {
     my ($params) = @_;
-    my $response = $BSS_server -> Get_reservations($params);
+    my $response = $BSS_server -> get_reservations($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -61,7 +61,7 @@ sub soap_get_reservations
 sub soap_create_reservation
 {
     my ($params) = @_;
-    my $response = $BSS_server -> Create_reservation($params);
+    my $response = $BSS_server -> create_reservation($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -73,7 +73,7 @@ sub soap_create_reservation
 sub soap_remove_reservation
 {
     my ($params) = @_;
-    my $response = $BSS_server -> Remove_reservation($params);
+    my $response = $BSS_server -> remove_reservation($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
