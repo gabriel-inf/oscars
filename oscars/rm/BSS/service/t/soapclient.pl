@@ -14,8 +14,8 @@ my $BSS_server = SOAP::Lite
 
 sub soap_get_reservations
 {
-    my (%params) = @_;
-    my $response = $BSS_server -> get_reservations(%params);
+    my ($inref, $fields_to_display) = @_;
+    my $response = $BSS_server -> get_reservations($inref, $fields_to_display);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
