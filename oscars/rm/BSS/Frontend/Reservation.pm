@@ -11,7 +11,7 @@ use lib '../..';
 
 use BSS::Frontend::Database;
 
-
+use Data::Dumper;
 
 ######################################################################
 sub new {
@@ -30,12 +30,9 @@ sub new {
 ######################################################################
 sub initialize {
     my ($self) = @_;
-    $self->{'dbconn'} = BSS::Frontend::Database->new('configs' => $self->{'configs'})
-            or die "FATAL:  could not connect to database";
+
+    $self->{'dbconn'} = BSS::Frontend::Database->new('configs' => $self->{'configs'}) or die "FATAL:  could not connect to database";
 }
-######################################################################
-
-
 
 ################################
 ### insert_reservation
@@ -54,10 +51,8 @@ sub insert_reservation
   my( $query, $sth );
   my( %results );
 
-  print "got to insert_reservation\n";
   my $over_limit = 0; # whether any time segment is over the bandwidth limit
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
-  print "past get_BSS_TABLE\n";
 
     ###
     # Get bandwidth and times of reservations overlapping that of the
@@ -87,7 +82,11 @@ sub insert_reservation
       $self->{'dbconn'}->query_finish();
       $self->{'dbconn'}->unlock_table( 'reservations' );
 
-      print STDERR $inref->{'ingress_router'}, ' ', $inref->{'egress_router'}, "\n";
+      if (($inref->{'ingress_router'} == 0) || ($inref->{'egress_router'} == 0))
+      {
+          $results{'error_msg'} = 'Traceroute turned off.  Unable to do insert.';
+          return( 1, %results );
+      }
           # get interface id's from edge router ip's
       $inref->{'ingress_id'} = $inref->{'ingress_router'}; 
       $inref->{'egress_id'} = $inref->{'egress_router'}; 
