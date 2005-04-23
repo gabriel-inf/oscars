@@ -130,72 +130,33 @@ sub insert_reservation
 # Out: success or failure, and status message
 sub get_reservations
 {
-  my( $self, $inref ) = @_;
+  my( $self, $inref, $fields_to_read ) = @_;
   my( $sth, $query );
   my( %results );
 
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
     # DB query: get the reservation list
-    # CAUTION: do not change the elements order of this array!!
-  my @fields_to_read = ( 'id', 'user_loginname', 'reserv_origin_ip', 'reserv_dest_ip', 'bandwidth', 'start_time', 'end_time' );
 
   $query = "SELECT ";
-  foreach $_ ( @fields_to_read ) {
+  foreach $_ ( @$fields_to_read ) {
       $query .= $table{'reservations'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
     # sort by reservation ID in descending order
-  $query .= " FROM reservations ORDER BY $table{'reservations'}{'id'} DESC";
+  #$query .= " FROM reservations ORDER BY $table{'reservations'}{'id'} DESC";
+  $query .= " FROM reservations WHERE $table{'reservations'}{'id'} = ?";
 
-  ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations');
+  ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations', $inref->{'id'});
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
-    # populate %reservations_data with the data fetched from the database
-  my %reservations_data;
-  @reservations_data{@fields_to_read} = ();
-  $sth->bind_columns( map { \$reservations_data{$_} } @fields_to_read );
+    # populate %results with the data fetched from the database
+  @results{@$fields_to_read} = ();
+  $sth->bind_columns( map { \$results{$_} } @$fields_to_read );
+  $sth->fetch();
 
-  my $reservation_list_table;
-
-  while ( $sth->fetch() ) {
-      my @resv_list_table_row;
-
-        # iterate through @fields_to_read
-      foreach $_ ( 0 .. $#fields_to_read ) {
-            # TODO:  FIX
-            # If the cell content is Reservation ID, surround it with a link
-            # to the detailed info page.  The javascript function
-            #  'open_resv_detail_window' is defined in ./reservationlist.js
-          if ( $fields_to_read[$_] eq 'reservation_id' ) {
-              push( @resv_list_table_row, '<td><a href="#" onClick="javascript:open_resv_detail_window(\'?mode=resvdetail&resvid=' . $reservations_data{$fields_to_read[$_]} . '\');">' . $reservations_data{$fields_to_read[$_]} . '</a></td>' );
-          }
-          elsif ( $fields_to_read[$_] eq 'bandwidth' ) {
-              push( @resv_list_table_row, "<td>$reservations_data{$fields_to_read[$_]} Mbps</td>" );
-          }
-          else {
-              push( @resv_list_table_row, "<td>$reservations_data{$fields_to_read[$_]}</td>" );
-          }
-      }
-
-        # the second column of the table is reservation requester's login name
-      if ( $resv_list_table_row[1] =~ /<td>([^<]+)<\/td>/ ) {
-          if ( $1 eq $inref->{'loginname'} ) {
-                # highlight the row if login name matches that of the
-                # currently logged-in user's
-              unshift( @resv_list_table_row, '<tr class="attention">' );
-          }
-          else {
-                # do not highlight the row
-              unshift( @resv_list_table_row, '<tr>' );
-          }
-      }
-      push( @resv_list_table_row, "</tr>\n" );
-		
-      $reservation_list_table .= join( '', @resv_list_table_row );
-  }
   $self->{'dbconn'}->handle_finish( 'reservations' );
-  results{'status_msg'} = 'Successfully read reservations';
+  $results{'status_msg'} = 'Successfully read reservations';
   return( 0, %results );
 }
 
