@@ -27,10 +27,12 @@ sub new {
 
 ######################################################################
 sub initialize {
-    my (_$self) = @_;
-    $_self->{'dbconn'} = new AAAS::Frontend::Database($_self{'db_use_database'}, $_self->{'db_login_name'}, $_self->{'db_login_passwd'})
+    my ($self) = @_;
+
+    $self->{'dbconn'} = AAAS::Frontend::Database->new('configs' => $self->{'configs'})
             or die "FATAL:  could not connect to database";
 }
+
 
 
 #####
