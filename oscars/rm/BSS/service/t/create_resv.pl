@@ -38,5 +38,11 @@ $params{'dscp'} =           '';     # optional
 
 $params{'description'} =    'This is a test.';
 
-my($result, %data) = soap_create_reservation(\%params);
-print $data{'status_msg'}, "\n\n";
+my($result);
+($result, %data) = soap_create_reservation(\%params);
+if (defined($data{'error_msg'})) {
+    print $data{'error_msg'}, "\n";
+}
+elsif (defined($data->{'status_msg'})) {
+    print $data{'status_msg'}, "\n";
+}
