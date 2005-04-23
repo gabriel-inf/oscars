@@ -15,8 +15,7 @@ use threads::shared;
 use PSS::module::ESnetPSSVars;
 use PSS::module::JnxLSP;
 
-# XXX: hack till this functionality moves to db
-use BSS::Scheduler::Foo;
+use BSS::Frontend::Database;
 
 # try to keep it tight
 use strict;
@@ -75,11 +74,9 @@ sub start_scheduler {
 sub scheduler {
 
     print "Scheduler running\n";
-    # init dbHandle
-    # XXX: our (temp) db handle (hack alert)
     my ($dbHandle, $result);
 
-    $dbHandle = new Foo(%$global_config);
+    $dbHandle = BSS::Frontend::Database->new('configs' => $global_config);
 
     while (1) {
 

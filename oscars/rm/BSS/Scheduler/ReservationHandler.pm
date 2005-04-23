@@ -33,14 +33,22 @@ sub new {
   return($_self);
 }
 
+use Data::Dumper;
+
 ######################################################################
 sub initialize {
     my ($self) = @_;
-    $self->{'frontend'} = BSS::Frontend::Reservation->new('configs' => $self->{'configs'})
-            or die "FATAL:  could not connect to database";
+
+    $self->{'frontend'} = BSS::Frontend::Reservation->new('configs' => $self->{'configs'});
 }
+
+
 ######################################################################
 
+sub db_login {
+    my ($self) = @_;
+    $self->{'frontend'}->db_login();
+}
 
 ################################
 ### create reservation
@@ -60,8 +68,6 @@ sub create_reservation {
 	my ( $self, $inref ) = @_; 
 
 	($inref->{'ingress_router'}, $inref->{'egress_router'}) = $self->find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
-
-    print STDERR "past: ", $inref->{'ingress_router'}, $inref->{'egress_router'}, "\n";
 
 	my ($error_status, %results) = $self->{'frontend'}->insert_reservation( $inref );
 	return ($error_status, %results);
@@ -161,7 +167,7 @@ sub do_remote_trace {
 
     # loop forward till the next router isn't one of ours ...
     while(defined($hops[0]))  {
-        print("  $hops[0]\n");
+        print("hop:  $hops[0]\n");
         $prev = $idx;
         $idx = $self->{'frontend'}->{'dbconn'}->check_db_rtr($hops[0]);
         if ( $idx == 0 ) {
@@ -241,6 +247,7 @@ sub find_interface_ids {
         print "running remote (local) tr to $dst\n";
         $ingress_rtr = $self->do_local_trace($src);
     }
+    print "ingress: ", $ingress_rtr, " egress: ", $egress_rtr, "\n";
 
     # if we can't find both ends ...
     if ($ingress_rtr == 0 || $egress_rtr == 0 ) {
