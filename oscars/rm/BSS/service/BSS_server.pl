@@ -25,19 +25,19 @@ use BSS::Scheduler::ReservationHandler;
 use Config::Auto;
 
 # slurp up the config file
-our ($config, $dbUser);
+our ($configs);
 
-$config = Config::Auto::parse('BSS.config');
+$configs = Config::Auto::parse('BSS.config');
 
-$db_handler = BSS::Scheduler::ReservationHandler->new('configs' => $config);
+$db_handler = BSS::Scheduler::ReservationHandler->new('configs' => $configs);
 
 # start up a thread to monitor the DB
-start_scheduler($config, $db_handler);
+start_scheduler($configs);
 
 # Create a SOAP server
 #my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
 my $daemon = SOAP::Transport::HTTP::Daemon
-	-> new (LocalPort => $config->{'server_port'}, Listen => 5, Reuse => 1)
+	-> new (LocalPort => $configs->{'server_port'}, Listen => 5, Reuse => 1)
 	-> dispatch_to('.', $db_handler)
 	;
 
