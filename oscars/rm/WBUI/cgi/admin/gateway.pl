@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # gateway.pl:  Admin tool: login script
-# Last modified: April 4, 2005
+# Last modified: April 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -18,6 +18,15 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # Receive data from HTML form (accept POST method only)
 # this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'post' );
+
+# login URI
+$login_URI = 'https://oscars.es.net/admin/';
+
+if (!(Verify_Login_Status(\%FormData, undef))) 
+{
+    print "Location: $login_URI\n\n";
+    exit;
+}
 
 # if 'mode' eq 'adminregister': Process admin reservation & print screen with result output
 # if 'mode' eq 'adminlogin': Process admin login & forward user to the next appropriate page
@@ -111,7 +120,7 @@ sub Process_Admin_Login
 {
 
 	# validate user input (just check for empty fields)
-	if ( $FormData{'loginname'} eq '' )
+	if ( $FormData{'dn'} eq '' )
 	{
 		&Print_Admin_Login_Screen( 0, 'Please enter the login name.' );
 	}

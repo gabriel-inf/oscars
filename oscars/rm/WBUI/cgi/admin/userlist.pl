@@ -1,13 +1,12 @@
 #!/usr/bin/perl
 
 # userlist.pl:  Admin tool: User List page
-# Last modified: March 25, 2005
+# Last modified: April 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/database.pl';
 require '../lib/authenticate.pl';
 
 # template html file names
@@ -35,17 +34,15 @@ $notification_email_encoding = 'ISO-8859-1';
 # this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'all' );
 
-# check if the user is logged in
-if ( &Verify_Login_Status( $admin_login_cookie_name ) != 1 )
+# login URI
+$login_URI = 'https://oscars.es.net/admin/';
+
+if (!(Verify_Login_Status(\%FormData, undef))) 
 {
-	# forward the user to the admin tool gateway (login) screen
-	print "Location: $admin_tool_gateway_URI\n\n";
-	exit;
+    print "Location: $login_URI\n\n";
+    exit;
 }
-else
-{
-	$FormData{'current_loggedin_name'} = ( &Read_Login_Cookie( $admin_login_cookie_name ) )[1];
-}
+
 
 # if 'mode' eq 'useraccdetail': Print user account details
 # if 'mode' eq 'useraccupdate': Update the user account info & print the updated user account details
@@ -116,7 +113,7 @@ sub Print_User_Accounts_List
 
 	# DB Query: get the user list
 	# CAUTION: do not change the elements order of this array!!
-	my @Fields_to_Read = ( 'user_register_id', 'user_loginname', 'user_firstname', 'user_lastname', 'user_email_primary', 'user_level', 'user_pending_level' );
+	my @Fields_to_Read = ( 'user_register_id', 'user_dn', 'user_firstname', 'user_lastname', 'user_email_primary', 'user_level', 'user_pending_level' );
 
 	$Query = "SELECT ";
 	foreach $_ ( @Fields_to_Read )
@@ -160,9 +157,9 @@ sub Print_User_Accounts_List
 		{
 			# if the cell content is login name, surround it with a link to the user profile update page
 			# the second SELECTed field is login name
-			if ( $Fields_to_Read[$_] eq 'user_loginname' )
+			if ( $Fields_to_Read[$_] eq 'user_dn' )
 			{
-				push( @User_List_Table_Row, '<td><a href="?mode=useraccdetail&loginname=' . $User_Profile_Data{$Fields_to_Read[$_]} . '">' . $User_Profile_Data{$Fields_to_Read[$_]} . '</a></td>' );
+				push( @User_List_Table_Row, '<td><a href="?mode=useraccdetail&dn=' . $User_Profile_Data{$Fields_to_Read[$_]} . '">' . $User_Profile_Data{$Fields_to_Read[$_]} . '</a></td>' );
 			}
 			else
 			{
@@ -282,7 +279,7 @@ sub Print_User_Account_Detail
 	}
 	# delete the last ", "
 	$Query =~ s/,\s$//;
-	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
 
 	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
 	if ( $Error_Status != 1 )
@@ -291,7 +288,7 @@ sub Print_User_Account_Detail
 		&Print_Error_Screen( $script_filename, $Error_Status );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'dn'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
@@ -339,7 +336,7 @@ sub Print_User_Account_Detail
 
 	# if the account is the "admin" account or the same as the one that's logged in right now, it should not be deleted
 	# remove the account delete form & the password reset from from the template html
-	if ( $FormData{'loginname'} eq $admin_loginname_string || $FormData{'loginname'} eq $FormData{'current_loggedin_name'} )
+	if ( $FormData{'dn'} eq $admin_dn || $FormData{'dn'} eq $FormData{'current_loggedin_name'} )
 	{
 		$Html_Line =~ s/(?:<!-- \(\(_Account_Delete_Form_Begin_\)\) -->).*?(?:<!-- \(\(_Account_Delete_Form_End_\)\) -->)//is;
 		$Html_Line =~ s/(?:<!-- \(\(_Password_Reset_Form_Begin_\)\) -->).*?(?:<!-- \(\(_Password_Reset_Form_End_\)\) -->)//is;
@@ -349,8 +346,8 @@ sub Print_User_Account_Detail
 	{
 		s/<!-- \(\(_Processing_Result_Message_\)\) -->/$Processing_Result_Message/g;
 		s/<!-- \(\(_Current_LoggedIn_Name_\)\) -->/$FormData{'current_loggedin_name'}/g;
-		s/<!-- \(\(_User_Login_Name_\)\) -->/$FormData{'loginname'}/g;
-		s/(name="loginname")/$1 value="$FormData{'loginname'}"/ig;
+		s/<!-- \(\(_User_Login_Name_\)\) -->/$FormData{'dn'}/g;
+		s/(name="dn")/$1 value="$FormData{'dn'}"/ig;
 	}
 
 	foreach $Field ( @Fields_to_Display )
@@ -446,7 +443,7 @@ sub Process_User_Account_Update
 	}
 	# delete the last ", "
 	$Query =~ s/,\s$//;
-	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+	$Query .= " FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
 
 	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
 	if ( $Error_Status != 1 )
@@ -455,7 +452,7 @@ sub Process_User_Account_Update
 		&Print_Error_Screen( $script_filename, $Error_Status );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'dn'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
@@ -534,7 +531,7 @@ sub Process_User_Account_Update
 		$Query .= $Fields_to_Update[$_] . " = ?, ";
 	}
 	$Query =~ s/,\s$//;
-	$Query .= " WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+	$Query .= " WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
 
 	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
 	if ( $Error_Status != 1 )
@@ -543,7 +540,7 @@ sub Process_User_Account_Update
 		&Print_Error_Screen( $script_filename, $Error_Status );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'loginname'} );
+	( undef, $Error_Status ) = &Query_Execute( $Sth, @Values_to_Update, $FormData{'dn'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
@@ -585,7 +582,7 @@ sub Process_User_Account_Update
 
 			print MAIL $account_activation_form_URI, "\n\n";
 
-			print MAIL 'Your Login Name: ', $FormData{'loginname'}, "\n";
+			print MAIL 'Your Login Name: ', $FormData{'dn'}, "\n";
 			print MAIL 'Account Activation Key: ', $Activation_Key, "\n";
 			print MAIL 'Your User Level: ', $user_level_description{$Pending_Level}, ' (Lv ', $Pending_Level, ')', "\n";
 			print MAIL 'Your password is the same as the one you specified upon registration.', "\n\n";
@@ -638,7 +635,7 @@ sub Process_User_Account_Delete
 	}
 
 	# DB Query: delete the user profile data from the users table
-	$Query = "DELETE FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+	$Query = "DELETE FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
 
 	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
 	if ( $Error_Status != 1 )
@@ -647,7 +644,7 @@ sub Process_User_Account_Delete
 		&Print_Error_Screen( $script_filename, $Error_Status );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'dn'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
@@ -658,13 +655,13 @@ sub Process_User_Account_Delete
 		}
 
 		$Error_Status =~ s/CantExecuteQuery\n//;
-		&Print_User_Accounts_List( 0, 'An error has occurred while deleting the user account \'' . $FormData{'loginname'} . '\'.<br>[Error] ' . $Error_Status );
+		&Print_User_Accounts_List( 0, 'An error has occurred while deleting the user account \'' . $FormData{'dn'} . '\'.<br>[Error] ' . $Error_Status );
 	}
 
 	&Query_Finish( $Sth );
 
 	# DB Query: delete all the reservation records of the user from the reservations table as well
-	$Query = "DELETE FROM $db_table_name{'reservations'} WHERE $db_table_field_name{'reservations'}{'user_loginname'} = ?";
+	$Query = "DELETE FROM $db_table_name{'reservations'} WHERE $db_table_field_name{'reservations'}{'user_dn'} = ?";
 
 	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
 	if ( $Error_Status != 1 )
@@ -673,7 +670,7 @@ sub Process_User_Account_Delete
 		&Print_Error_Screen( $script_filename, $Error_Status );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'dn'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
@@ -684,7 +681,7 @@ sub Process_User_Account_Delete
 		}
 
 		$Error_Status =~ s/CantExecuteQuery\n//;
-		&Print_User_Accounts_List( 0, 'The user account \'' . $FormData{'loginname'} . '\' has been deleted successfully, but an error has occurred while deleting reservations made by the user. Please contact the system administrator immediately to resolve the issue.<br>[Error] ' . $Error_Status );
+		&Print_User_Accounts_List( 0, 'The user account \'' . $FormData{'dn'} . '\' has been deleted successfully, but an error has occurred while deleting reservations made by the user. Please contact the system administrator immediately to resolve the issue.<br>[Error] ' . $Error_Status );
 	}
 
 	&Query_Finish( $Sth );
@@ -699,7 +696,7 @@ sub Process_User_Account_Delete
 	}
 
 	### when everything has been processed successfully...
-	&Print_User_Accounts_List( 1, 'The user account \'' . $FormData{'loginname'} . '\' and all the reservations made by the user have been deleted successfully.' );
+	&Print_User_Accounts_List( 1, 'The user account \'' . $FormData{'dn'} . '\' and all the reservations made by the user have been deleted successfully.' );
 
 }
 ##### End of sub Process_User_Account_Delete
@@ -747,7 +744,7 @@ sub Process_User_Account_Password_Reset
 	}
 
 	# DB Query: get the user's primary email address from the database
-	$Query = "SELECT $db_table_field_name{'users'}{'user_email_primary'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+	$Query = "SELECT $db_table_field_name{'users'}{'user_email_primary'} FROM $db_table_name{'users'} WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
 
 	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
 	if ( $Error_Status != 1 )
@@ -756,7 +753,7 @@ sub Process_User_Account_Password_Reset
 		&Print_Error_Screen( $script_filename, $Error_Status );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'loginname'} );
+	( undef, $Error_Status ) = &Query_Execute( $Sth, $FormData{'dn'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
@@ -773,7 +770,7 @@ sub Process_User_Account_Password_Reset
 	&Query_Finish( $Sth );
 
 	# DB Query: update the password
-	$Query = "UPDATE $db_table_name{'users'} SET $db_table_field_name{'users'}{'user_password'} = ? WHERE $db_table_field_name{'users'}{'user_loginname'} = ?";
+	$Query = "UPDATE $db_table_name{'users'} SET $db_table_field_name{'users'}{'user_password'} = ? WHERE $db_table_field_name{'users'}{'user_dn'} = ?";
 
 	( $Sth, $Error_Status ) = &Query_Prepare( $Dbh, $Query );
 	if ( $Error_Status != 1 )
@@ -782,7 +779,7 @@ sub Process_User_Account_Password_Reset
 		&Print_Error_Screen( $script_filename, $Error_Status );
 	}
 
-	( undef, $Error_Status ) = &Query_Execute( $Sth, $Encrypted_Password, $FormData{'loginname'} );
+	( undef, $Error_Status ) = &Query_Execute( $Sth, $Encrypted_Password, $FormData{'dn'} );
 	if ( $Error_Status != 1 )
 	{
 		&Database_Disconnect( $Dbh );
@@ -819,7 +816,7 @@ sub Process_User_Account_Password_Reset
 		print MAIL 'The password of your account has been reset by the system administrator to the following.', "\n";
 		print MAIL 'Please change the password to your own once you log in to the service.', "\n\n";
 
-		print MAIL 'Your Login Name: ', $FormData{'loginname'}, "\n";
+		print MAIL 'Your Login Name: ', $FormData{'dn'}, "\n";
 		print MAIL 'New Password: ', $FormData{'password_new'}, "\n\n";
 
 		print MAIL '---------------------------------------------------', "\n";

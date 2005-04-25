@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # editprofile.pl:  Admin tool: Edit Admin Profile page
-# Last modified: April 4, 2005
+# Last modified: April 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -19,16 +19,13 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'all' );
 
-# check if the user is logged in
-if ( &Verify_Login_Status( $admin_login_cookie_name ) != 1 )
+# login URI
+$login_URI = 'https://oscars.es.net/';
+
+if (!(Verify_Login_Status(\%FormData, undef))) 
 {
-	# forward the user to the admin tool gateway (login) screen
-	print "Location: $admin_tool_gateway_URI\n\n";
-	exit;
-}
-else
-{
-	$FormData{'loginname'} = ( &Read_Login_Cookie( $admin_login_cookie_name ) )[1];
+    print "Location: $login_URI\n\n";
+    exit;
 }
 
 # if 'mode' eq 'admineditprofile': Update the currently logged in admin user's profile

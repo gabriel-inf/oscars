@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # adduser.pl:  Admin tool: Add a User page
-# Last modified: April 4, 2005
+# Last modified: April 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -32,17 +32,15 @@ $adminadduser_notification_email_encoding = 'ISO-8859-1';
 # this hash is the only global variable used throughout the script
 %FormData = &Parse_Form_Input_Data( 'all' );
 
-# check if the user is logged in
-if ( &Verify_Login_Status( $admin_login_cookie_name ) != 1 )
+# login URI
+$login_URI = 'https://oscars.es.net/admin/';
+
+if (!(Verify_Login_Status(\%FormData, undef))) 
 {
-	# forward the user to the admin tool gateway (login) screen
-	print "Location: $admin_tool_gateway_URI\n\n";
-	exit;
+    print "Location: $login_URI\n\n";
+    exit;
 }
-else
-{
-	$FormData{'current_loggedin_name'} = ( &Read_Login_Cookie( $admin_login_cookie_name ) )[1];
-}
+
 
 # if 'mode' eq 'idcheck': Check the input login name for overlap
 # if 'mode' eq 'adminadduser': Add a new user (pass the authorization step) and send an activation info email to the user
@@ -149,11 +147,11 @@ sub Process_User_Registration
 {
 
 	# validate user input (fairly minimal... Javascript also takes care of form data validation)
-	if ( $FormData{'loginname'} eq '' )
+	if ( $FormData{'dn'} eq '' )
 	{
 		&Print_Interface_Screen( 0, 'Please enter the desired login name.' );
 	}
-	elsif ( $FormData{'loginname'} =~ /\W|\s/ )
+	elsif ( $FormData{'dn'} =~ /\W|\s/ )
 	{
 		&Print_Interface_Screen( 0, 'Please use only alphanumeric characters or _ for login name.' );
 	}
@@ -189,7 +187,7 @@ sub Process_User_Registration
 
 		print MAIL $account_activation_form_URI, "\n\n";
 
-		print MAIL 'Your Login Name: ', $FormData{'loginname'}, "\n";
+		print MAIL 'Your Login Name: ', $FormData{'dn'}, "\n";
 		print MAIL 'Account Activation Key: ', $Activation_Key, "\n";
 		print MAIL 'Password: ', $FormData{'password_once'}, "\n";
 		print MAIL 'Your User Level: ', $user_level_description{$FormData{'level'}}, ' (Lv ', $FormData{'level'}, ')', "\n";
@@ -202,7 +200,7 @@ sub Process_User_Registration
 
 	### when everything has been processed successfully...
 	# don't forget to show the user's login name
-	&Print_Interface_Screen( 1, 'The new user account \'' . $FormData{'loginname'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
+	&Print_Interface_Screen( 1, 'The new user account \'' . $FormData{'dn'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
 
 }
 ##### End of sub Process_User_Registration
