@@ -19,7 +19,7 @@ require 'soapclient.pl';
 # login URI
 $login_URI = 'https://oscars.es.net/';
 
-if (!(Verify_Login_Status('', undef))) 
+if (!(Verify_Login_Status(\%FormData, undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;

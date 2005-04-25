@@ -26,7 +26,7 @@ my ($Error_Status, %Results) = &process_user_login();
 if ( !$Error_Status )
 {
     # forward the user to the main service page, after setting session
-    if (!(&Verify_Login_Status($FormData, 1)))
+    if (!(&Verify_Login_Status(\%FormData, 1)))
     {
         &Update_Frames("", "Please try a different login name");
     } 

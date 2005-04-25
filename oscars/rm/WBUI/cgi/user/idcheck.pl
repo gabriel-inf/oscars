@@ -24,7 +24,7 @@ require 'soapclient.pl';
 # login URI
 $login_URI = 'https://oscars.es.net/';
 
-if (!(Verify_Login_Status('', undef))) 
+if (!(Verify_Login_Status(\%FormData, undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;
@@ -65,11 +65,6 @@ sub print_result_screen
       return( 1, %results );
   }
 
-
-  # TODO:  print processing result to browser screen
-  print "Pragma: no-cache\n";
-  print "Cache-control: no-cache\n";
-  print "Content-type: text/html\n\n";
 
   $results{'status_msg'} = 'OK';
   return( 0, %results );

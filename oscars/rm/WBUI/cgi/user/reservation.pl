@@ -17,19 +17,16 @@ require 'soapclient.pl';
 
 
 # login URI
-#$login_URI = 'https://oscars.es.net/';
+$login_URI = 'https://oscars.es.net/';
 
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-$FormData{'dn'} = 'davidr';
-#print STDERR Dumper(%FormData);
-
-#if (!(Verify_Login_Status('', undef))) 
-#{
-    #print "Location: $login_URI\n\n";
-    #exit;
-#}
+if (!(Verify_Login_Status(\%FormData, undef))) 
+{
+    print "Location: $login_URI\n\n";
+    exit;
+}
 
 my ($Error_Status, %Results) = create_reservation(\%FormData);
 

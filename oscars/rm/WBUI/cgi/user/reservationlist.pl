@@ -16,17 +16,17 @@ use Socket;
 
 
 # login URI
-#$login_URI = 'https://oscars.es.net/';
+$login_URI = 'https://oscars.es.net/';
 
-    # prints error message indicating to go to the login page if can't verify
-#if (!(Verify_Login_Status('', undef))) 
-#{
-    #exit;
-#}
+# Receive data from HTML form (accept POST method only)
+%FormData = &Parse_Form_Input_Data( 'post' );
 
-# TODO:  FIX, need to get from session
-my %FormData;
-$FormData{'dn'} = 'oscars';
+if (!(Verify_Login_Status(\%FormData, undef))) 
+{
+    print "Location: $login_URI\n\n";
+    exit;
+}
+
 
     # names of the fields to be read and displayed on the screen
 my @Fields_to_Read = ( 'start_time', 'end_time', 'bandwidth', 'status', 'src_id', 'dst_id' );
@@ -54,7 +54,7 @@ sub print_reservation_detail
   my ($arrayref, $row, $f, $fctr, $dt, $minute, $ipaddr, $host);
 
   $arrayref = $results->{'rows'};
-  print "Content-type: text/html\n\n";
+  #print "Content-type: text/html\n\n";
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";

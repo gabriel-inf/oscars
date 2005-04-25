@@ -22,9 +22,17 @@ $registration_notification_email_toaddr = 'dwrobertson@lbl.gov';
 $registration_notification_email_encoding = 'ISO-8859-1';
 
 
+# login URI
+$login_URI = 'https://oscars.es.net/';
 
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
+
+if (!(Verify_Login_Status(\%FormData, undef))) 
+{
+    print "Location: $login_URI\n\n";
+    exit;
+}
 
 my ($Error_Status, %Results) = &process_user_registration();
 if ( !$Error_Status )

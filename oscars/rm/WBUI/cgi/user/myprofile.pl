@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # myprofile.pl:  Main service: My Profile page
-# Last modified: April 24, 2005
+# Last modified: April 25, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -17,14 +17,13 @@ my @Fields_to_Display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'ema
 my( %FormData );  # TODO:  edit_profile
 
 # login URI
-#$login_URI = 'https://oscars.es.net/';
+$login_URI = 'https://oscars.es.net/';
 
-#if (!(Verify_Login_Status('', undef))) 
-#{
-    #print "Location: $login_URI\n\n";
-    #exit;
-#}
-$FormData{'dn'} = 'davidr';
+if (!(Verify_Login_Status(\%FormData, undef))) 
+{
+    print "Location: $login_URI\n\n";
+    exit;
+}
 
 ( $Error_Status, %Results ) = soap_get_profile(\%FormData, \@Fields_to_Display);
 
@@ -46,7 +45,7 @@ sub print_profile
 {
   my ($params) = @_;
 
-  print "Content-type: text/html\n\n";
+  #print "Content-type: text/html\n\n";
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";
