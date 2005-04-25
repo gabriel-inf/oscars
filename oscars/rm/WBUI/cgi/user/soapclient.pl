@@ -3,17 +3,19 @@
 use SOAP::Lite;
 
 my $AAAS_server = SOAP::Lite
-  -> uri('http://localhost:2000/AAASServer')
+  -> uri('http://localhost:2000/AAAS/Frontend/User')
   -> proxy ('http://localhost:2000/AAAS_Server.pl');
 
 # TODO:  one SOAP call that dispatches according to server, subroutine args
+
+use Data::Dumper;
 
 sub soap_verify_login
 {
     my ($params) = @_;
     my $response = $AAAS_server -> verify_login($params);
     if ($response->fault) {
-        print $response->faultcode, " ", $response->faultstring, "\n";
+        print STDERR $response->faultcode, " ", $response->faultstring, "\n";
     }
     return ($response->result(), $response->paramsout());
 }
@@ -43,7 +45,7 @@ sub soap_set_profile
 
 
 my $BSS_server = SOAP::Lite
-  -> uri('http://localhost:3000/BSS_Server')
+  -> uri('http://localhost:3000/BSS/Scheduler/ReservationHandler')
   -> proxy ('http://localhost:3000/BSS_server.pl');
 
 sub soap_get_reservations
