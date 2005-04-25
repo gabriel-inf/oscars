@@ -130,7 +130,7 @@ sub Generate_Random_String
 sub Update_Frames
 {
   my ($uri, $err_msg) = @_;
-  print "Content-type: text/html\n\n";
+  #print "Content-type: text/html\n\n";
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";

@@ -64,41 +64,40 @@ $account_activation_form_URI = 'https://oscars.es.net/user/activateaccount.phtml
 
 
 ##### sub Verify_Login_Status
-# In: user login name, whether initial log in
+# In: ref to form data, and whether initial log in
 #     Must have cookie containing valid session id
 #     to be granted access.
 # Out: 1 (logged in)/0 (not logged in)
 sub Verify_Login_Status
 {
-  my ($dn, $init_login) = @_;
-  my ($cgi, $session, $cookie, $stored_dn);
+  my ($FormData, $init_login) = @_;
+  my ($cgi, $session, $sid, $cookie, $stored_dn);
 
   $cgi = CGI->new();
   if (defined($init_login))    # just logged in
   {
     $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
-    $session->param("dn", $FormData{'dn'});
-    $session->header();
+    $sid = $session->id();
+    $cookie = $cgi->cookie(CGISESSID => $sid);
+    $session->param("dn", $FormData->{'dn'});
+    print $cgi->header( -cookie=>$cookie );
     return( 1 );
   }
   else
   {
-    $sid = $cgi->cookie("CGISESSID") || undef;
-    if (!defined($sid)) {
-        return( 0 );
-     }
-
-    $session = CGI::Session->new(undef, $sid, {Directory => "/tmp"});
+    $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
         # Unauthorized user may know to set CGISESSID cookie. However,
         # an entirely new session (without the dn param) will be 
         # created if there is no valid session with that id.
     $stored_dn = $session->param("dn");
     if (!defined($stored_dn)) {
+        print STDERR "no such parameter stored\n";
         return( 0 );
     }
     else
     {
-       $FormData{'dn'} = $stored_dn;
+       $FormData->{'dn'} = $stored_dn;
+       print $cgi->header( );
        return( 1 ); }
     }
 }
