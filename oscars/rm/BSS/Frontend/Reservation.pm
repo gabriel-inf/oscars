@@ -145,9 +145,10 @@ sub get_reservations
   $query =~ s/,\s$//;
     # sort by reservation ID in descending order
   #$query .= " FROM reservations ORDER BY $table{'reservations'}{'id'} DESC";
-  $query .= " FROM reservations WHERE $table{'reservations'}{'id'} = ?";
+  $query .= " FROM reservations WHERE $table{'reservations'}{'dn'} = ?";
 
-  ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations', $inref->{'id'});
+  print STDERR $query, "\n";
+  ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations', $inref->{'dn'});
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
     # populate %results with the data fetched from the database
