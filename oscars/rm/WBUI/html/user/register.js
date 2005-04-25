@@ -12,7 +12,7 @@ check_form( form )
 // check overlapping login name
 function login_name_overlap_check( formObject )
 {
-	var loginnameRegexp = /\W|\s/;
+	var dnRegexp = /\W|\s/;
 
 	if ( formObject.value == "" )
 	{
@@ -20,7 +20,7 @@ function login_name_overlap_check( formObject )
 		formObject.focus();
 		return false;
 	}
-	else if ( loginnameRegexp.test( formObject.value ) )
+	else if ( dnRegexp.test( formObject.value ) )
 	{
 		alert( "Please use only alphanumeric characters or _ for login name." );
 		formObject.focus();
@@ -36,19 +36,19 @@ function login_name_overlap_check( formObject )
 // check user input and validate it
 function check_form( form )
 {
-	if ( form.loginname.value == "" )
+	if ( form.dn.value == "" )
 	{
 		alert( "Please enter your desired login name." );
-		form.loginname.focus();
+		form.dn.focus();
 		return false;
 	}
 
-	var loginnameRegexp = /\W|\s/;
+	var dnRegexp = /\W|\s/;
 
-	if ( loginnameRegexp.test( form.loginname.value ) )
+	if ( dnRegexp.test( form.dn.value ) )
 	{
 		alert( "Please use only alphanumeric characters or _ for login name." );
-		form.loginname.focus();
+		form.dn.focus();
 		return false;
 	}
 
