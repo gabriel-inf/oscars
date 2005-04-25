@@ -129,7 +129,7 @@ sub Generate_Random_String
 #####
 sub Update_Frames
 {
-  my ($uri, $err_msg, $loginname) = @_;
+  my ($uri, $err_msg) = @_;
   print "Content-type: text/html\n\n";
   print "<html>\n";
   print "<head>\n";
@@ -138,10 +138,6 @@ sub Update_Frames
   print "<script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
   print "</head>\n";
   print "<body>\n";
-  # TODO:  CGI::Session
-  #if ($loginname)
-  #{
-  #}
   print "<div>\n";
   print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"local\");</script>" . " | " . $err_msg . "</p>\n";
   print "</div>\n";

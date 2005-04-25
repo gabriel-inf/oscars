@@ -3,15 +3,19 @@
 # authenticate.pl
 #
 # library for user authentication
-# TODO:  config file
-# Last modified: April 8, 2005
+# Last modified: April 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
+
+use CGI;
+use CGI::Session;
+
+# TODO:  this should not be in the cgi-bin directory
 
 ##### Settings Begin (Global variables) #####
 
 # admin login name (id)
-$admin_loginname_string = 'admin';
+$admin_dn_string = 'admin';
 
 # admin user level
 $admin_user_level = 10;
@@ -57,6 +61,44 @@ $sendmail_binary_path_and_flags = '/usr/sbin/sendmail -t -n -oi';
 $account_activation_form_URI = 'https://oscars.es.net/user/activateaccount.phtml';
 
 ##### Settings End #####
+
+
+##### sub Verify_Login_Status
+# In: user login name, whether initial log in
+#     Must have cookie containing valid session id
+#     to be granted access.
+# Out: 1 (logged in)/0 (not logged in)
+sub Verify_Login_Status
+{
+  my ($dn, $init_login) = @_;
+  my ($cgi, $session, $cookie, $stored_dn);
+
+  $cgi = CGI->new();
+  if (defined($init_login))    # just logged in
+  {
+    $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
+    $session->param("dn", $FormData{'dn'});
+    $session->header();
+    return( 1 );
+  }
+  else
+  {
+    $sid = $cgi->cookie("CGISESSID") || undef;
+    if (!defined($sid)) { return( 0 ); }
+
+    $session = CGI::Session->new(undef, $sid, {Directory => "/tmp"});
+        # Unauthorized user may know to set CGISESSID cookie. However,
+        # an entirely new session (without the dn param) will be 
+        # created if there is no valid session with that id.
+    $stored_dn = $session->param("dn");
+    if (!defined($stored_dn)) { return( 0 ); }
+    else
+    {
+       $FormData{'dn'} = $stored_dn;
+       return( 1 ); }
+    }
+}
+
 
 
 ##### End of Library File
