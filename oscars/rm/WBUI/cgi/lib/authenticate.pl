@@ -84,14 +84,18 @@ sub Verify_Login_Status
   else
   {
     $sid = $cgi->cookie("CGISESSID") || undef;
-    if (!defined($sid)) { return( 0 ); }
+    if (!defined($sid)) {
+        return( 0 );
+     }
 
     $session = CGI::Session->new(undef, $sid, {Directory => "/tmp"});
         # Unauthorized user may know to set CGISESSID cookie. However,
         # an entirely new session (without the dn param) will be 
         # created if there is no valid session with that id.
     $stored_dn = $session->param("dn");
-    if (!defined($stored_dn)) { return( 0 ); }
+    if (!defined($stored_dn)) {
+        return( 0 );
+    }
     else
     {
        $FormData{'dn'} = $stored_dn;
