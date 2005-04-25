@@ -132,7 +132,7 @@ sub get_reservations
 {
   my( $self, $inref, $fields_to_read ) = @_;
   my( $sth, $query );
-  my( %results );
+  my( %mapping, $rarrayref, $harrayref, $r, %results );
 
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
     # DB query: get the reservation list
@@ -143,18 +143,32 @@ sub get_reservations
   }
     # delete the last ", "
   $query =~ s/,\s$//;
-    # sort by reservation ID in descending order
-  #$query .= " FROM reservations ORDER BY $table{'reservations'}{'id'} DESC";
-  $query .= " FROM reservations WHERE $table{'reservations'}{'dn'} = ?";
+    # sort by start time in ascending order
+  $query .= " FROM reservations WHERE $table{'reservations'}{'dn'} = ? ORDER BY $table{'reservations'}{'start_time'}";
 
-  print STDERR $query, "\n";
   ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations', $inref->{'dn'});
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
-    # populate %results with the data fetched from the database
-  @results{@$fields_to_read} = ();
-  $sth->bind_columns( map { \$results{$_} } @$fields_to_read );
-  $sth->fetch();
+  $rarrayref = $sth->fetchall_arrayref();
+  $self->{'dbconn'}->query_finish();
+  $self->{'dbconn'}->unlock_table( 'hostaddrs' );
+  $results{'rows'} = $rarrayref;
+
+  $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
+  ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'hostaddrs');
+  if ( $results{'error_msg'} ) { return(1, %results ); }
+  $harrayref = $sth->fetchall_arrayref();
+  foreach $r (@$harrayref)
+  {
+      $mapping{@$r[0]} = @$r[1];
+  }
+
+    # replace src and destination id's with host ip's
+  foreach $r (@$rarrayref)
+  {
+     @$r[4] = $mapping{@$r[4]};
+     @$r[5] = $mapping{@$r[5]};
+  }
 
   $self->{'dbconn'}->handle_finish( 'reservations' );
   $results{'status_msg'} = 'Successfully read reservations';
