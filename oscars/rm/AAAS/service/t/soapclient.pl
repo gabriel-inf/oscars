@@ -10,9 +10,10 @@ use AAAS::Frontend::User;
 
 my $AAAS_server = SOAP::Lite
   -> uri('http://localhost:2000/AAAS/Frontend/User')
-  -> proxy ('http://localhost:2000/soapserver.pl');
+  -> proxy ('http://localhost:2000/AAAS_server.pl');
 
 # TODO:  one SOAP call that dispatches according to server, subroutine args
+
 
 sub soap_verify_login
 {
