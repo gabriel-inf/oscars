@@ -18,7 +18,15 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
+# login URI
+$login_URI = 'https://oscars.es.net/';
+
+if (!(Verify_Login_Status('', undef))) 
+{
+    print "Location: $login_URI\n\n";
+    exit;
+}
+
 
 my $Error_Status = &Process_Reservation();
 if ( !$Error_Status)

@@ -7,6 +7,7 @@
 
 # include libraries
 require '../lib/general.pl';
+require '../lib/authenticate.pl';
 require 'soapclient.pl';
 
 
@@ -24,8 +25,15 @@ my ($Error_Status, %Results) = &process_user_login();
 
 if ( !$Error_Status )
 {
-    # forward the user to the main service page
-    &Update_Frames($Service_startpoint_URI, "Logged in as $FormData{'loginname'}.", $FormData{'loginname'});
+    # forward the user to the main service page, after setting session
+    if (!(&Verify_Login_Status($FormData, 1)))
+    {
+        &Update_Frames("", "Please try a different login name");
+    } 
+    else
+    {
+        &Update_Frames($Service_startpoint_URI, "Logged in as $FormData{'dn'}.", $FormData{'dn'});
+    }
 }
 else
 {
@@ -46,7 +54,7 @@ sub process_user_login
   my(%results);
 
     # validate user input (just check for empty fields)
-  if ( $FormData{'loginname'} eq '' )
+  if ( $FormData{'dn'} eq '' )
   {
       $results{'error_msg'} = 'Please enter your login name.';
       return( 1, %results );
@@ -58,7 +66,7 @@ sub process_user_login
       return( 1, %results );
   }
   my(%params);
-  $params{'dn'} = $FormData{'loginname'};
+  $params{'dn'} = $FormData{'dn'};
   $params{'password'} = &Encode_Passwd($FormData{'password'});
 
   return(soap_verify_login(\%params));

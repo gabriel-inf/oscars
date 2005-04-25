@@ -7,6 +7,7 @@
 
 # include libraries
 require '../lib/general.pl';
+require '../lib/authenticate.pl';
 require 'soapclient.pl';
 
 # smiley icons used in the login name overlap check result page
@@ -19,6 +20,15 @@ require 'soapclient.pl';
 
 # Receive data from HTML form (accept all methods (POST/GET))
 %FormData = &Parse_Form_Input_Data( 'all' );
+
+# login URI
+$login_URI = 'https://oscars.es.net/';
+
+if (!(Verify_Login_Status('', undef))) 
+{
+    print "Location: $login_URI\n\n";
+    exit;
+}
 
 my ($Error_Status, %Results) = &print_result_screen();
 &Update_Frames();

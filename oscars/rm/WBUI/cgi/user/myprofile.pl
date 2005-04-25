@@ -1,12 +1,13 @@
 #!/usr/bin/perl -w
 
 # myprofile.pl:  Main service: My Profile page
-# Last modified: April 20, 2005
+# Last modified: April 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
 require '../lib/general.pl';
+require '../lib/authenticate.pl';
 require 'soapclient.pl';
 
 
@@ -14,7 +15,17 @@ require 'soapclient.pl';
 my @Fields_to_Display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'level', 'register_time', 'activation_key', 'pending_level', 'authorization_id', 'institution_id' );
 
 my( %FormData );  # TODO:  edit_profile
+
+# login URI
+#$login_URI = 'https://oscars.es.net/';
+
+#if (!(Verify_Login_Status('', undef))) 
+#{
+    #print "Location: $login_URI\n\n";
+    #exit;
+#}
 $FormData{'dn'} = 'davidr';
+
 ( $Error_Status, %Results ) = soap_get_profile(\%FormData, \@Fields_to_Display);
 
 if (!$Error_Status)

@@ -1,64 +1,78 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: April 15, 2005
+# Last modified: April 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
 require '../lib/general.pl';
+require '../lib/authenticate.pl';
 require 'soapclient.pl';
 
+use Data::Dumper;
 
 # Receive data from HTML form (accept both POST and GET methods)
 %FormData = &Parse_Form_Input_Data( 'all' );
 
-$FormData{'loginname'} = ( &Read_Login_Cookie( $user_login_cookie_name ) )[1];
+# login URI
+$login_URI = 'https://oscars.es.net/';
 
-my $Error_Status = &Print_Reservation_Detail();
-if ( !$Error_Status)
+#if (!(Verify_Login_Status('', undef))) 
+#{
+    #print "Location: $login_URI\n\n";
+    #exit;
+#}
+
+( $Error_Status, %Results ) = soap_get_reservations(\%FormData, \@Fields_to_Display);
+print STDERR Dumper(%Results);
+
+if (!$Error_Status)
 {
-    &Print_Frames();
+    print_reservation_detail(\%Results);
 }
 else
 {
-    &Print_Status_Message($Error_Status);
+    Update_Frames("", $Results{'error_msg'});
 }
-
 exit;
 
 
 
-##### Beginning of sub routines #####
-
-
-##### sub Print_Reservation_Detail
-# In: None
-# Out: None (exits the program at the end)
-sub Print_Reservation_Detail
+##### sub print_reservation_detail
+# In: 
+# Out:
+sub print_reservation_detail
 {
-	### TODO:  get the reservation detail from the BSS
+  my $results = @_;
 
-	# for date/time calculation
-	use DateTime;
+  print "Content-type: text/html\n\n";
+  print "<html>\n";
+  print "<head>\n";
+  print "<link rel=\"stylesheet\" type=\"text/css\" ";
+  print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
+  print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
+  print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/user/reservationlist.js\"></script>\n";
+  print "</head>\n\n";
 
-	# create duration string from start time & end time
-	my( %TempStartDateTime, %TempEndDateTime );
-	@TempStartDateTime{ 'year', 'month', 'day', 'hour', 'minute', 'second' } = ( unpack( "a4aa2aa2aa2aa2aa2", $Reservations_Data{'reserv_start_time'} ) )[0, 2, 4, 6, 8, 10];
-	@TempEndDateTime{ 'year', 'month', 'day', 'hour', 'minute', 'second' } = ( unpack( "a4aa2aa2aa2aa2aa2", $Reservations_Data{'reserv_end_time'} ) )[0, 2, 4, 6, 8, 10];
-	my $dtStart = DateTime->new( %TempStartDateTime, time_zone => 'UTC' );
-	my $dtEnd = DateTime->new( %TempEndDateTime, time_zone => 'UTC' );
-	my $durObj = $dtEnd - $dtStart;
-	my @TempDuration = $durObj->in_units( 'days', 'hours' );
-	my $Resv_Duration_String;
-	$Resv_Duration_String .= $TempDuration[0] . " days "	if ( $TempDuration[0] > 1 );
-	$Resv_Duration_String .= $TempDuration[0] . " day "	if ( $TempDuration[0] == 1 );
-	$Resv_Duration_String .= $TempDuration[1] . " hours"	if ( $TempDuration[1] > 1 );
-	$Resv_Duration_String .= $TempDuration[1] . " hour"	if ( $TempDuration[1] == 1 );
+  print "<body>\n\n";
 
-	# TODO:  print to browser screen
-	exit;
+  print "<script language=\"javascript\">print_navigation_bar('reservationList');</script>\n\n";
 
+  print "<div>\n\n";
+
+  print "<h2>View Active Reservations</h2>\n";
+  print "<p>Click the Reservation ID number link to view detailed information about the reservation.\n";
+  print "<br>Your reservations will appear highlighted in the table below.\n";
+  print "</p>\n\n";
+
+  print "<p>For inquiries, please contact the project administrator.</p>\n";
+
+  print "</div>\n";
+
+  print "<script language=\"javascript\">print_footer();</script>\n";
+  print "</body>\n";
+  print "</html>\n";
 }
 
 
