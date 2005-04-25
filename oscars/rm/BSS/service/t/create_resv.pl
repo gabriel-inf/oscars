@@ -40,9 +40,11 @@ $params{'description'} =    'This is a test.';
 
 my($result);
 ($result, %data) = soap_create_reservation(\%params);
-if (defined($data{'error_msg'})) {
-    print $data{'error_msg'}, "\n";
+if (defined($data{'error_msg'}) && $data{'error_msg'})
+{
+    print $data{'error_msg'}, "\n\n";
 }
-elsif (defined($data->{'status_msg'})) {
-    print $data{'status_msg'}, "\n";
+elsif (defined($data{'status_msg'}))
+{
+    print $data{'status_msg'}, "\n\n";
 }

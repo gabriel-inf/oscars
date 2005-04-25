@@ -7,15 +7,22 @@ my %params = ('id' => 131 );   # FIX
     # names of the fields to be displayed on the screen
 my @fields_to_display = ( 'start_time', 'end_time', 'created_time', 'bandwidth', 'resv_class', 'burst_limit', 'status', 'src_id', 'dst_id', 'dn', 'description' );
 
-my($unused, %results) = soap_get_reservations(\%params, \@fields_to_display);
-print "Status:  ", $results{'status_msg'}, "\n";
-print "Returning:\n\n";
-foreach $key(sort keys %results)
+my($unused, %data) = soap_get_reservations(\%params, \@fields_to_display);
+if (defined($data{'error_msg'}) && $data{'error_msg'})
 {
-    if ($key ne 'status_msg')
+    print $data{'error_msg'}, "\n\n";
+}
+elsif (defined($data{'status_msg'}))
+{
+    print "Status:  ", $data{'status_msg'}, "\n";
+    print "Returning:\n\n";
+    foreach $key(sort keys %data)
     {
-        $value = $results{$key};
-        if ($value) { print "$key -> $value\n"; }
-        else { print "$key -> \n"; }
+        if ($key ne 'status_msg')
+        {
+            $value = $data{$key};
+            if ($value) { print "$key -> $value\n"; }
+            else { print "$key -> \n"; }
+        }
     }
 }
