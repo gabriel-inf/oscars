@@ -75,7 +75,7 @@ function print_navigation_bar(activePage)
     else
     {
     
-        document.write('<li><a href="https://oscars.es.net/user/reservationlist.html" title="View list of active reservations">View Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/reservationlist.pl" title="View list of active reservations">View Reservations</a></li>');
     }
     if (activePage == 'myprofile')
     {
