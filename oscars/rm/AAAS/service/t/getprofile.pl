@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 
-require 'soapclient.pl';
+use lib '../../..';
+
+use AAAS::Client::SOAPClient;
 
 my($value);
 my %params = ('dn' => 'davidr' );

@@ -1,6 +1,9 @@
 #!/usr/bin/perl -w
 
-require 'soapclient.pl';
+use lib '../../..';
+
+use AAAS::Client::SOAPClient;
+
 
 my $passwd = crypt('shyysh', 'oscars');
 my %params = ('dn' => 'davidr', 'password' => $passwd);
