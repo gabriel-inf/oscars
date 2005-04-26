@@ -1,0 +1,1 @@
+SetEnv PERL5LIB /home/davidr/oscars/rm:$PERL5LIB
