@@ -26,6 +26,8 @@ if (!(Verify_Login_Status(\%FormData, undef)))
     print "Location: $login_URI\n\n";
     exit;
 }
+# FIX:  hard-wired for testing
+$FormData{'dn'} = 'oscars';
 
 
     # names of the fields to be read and displayed on the screen
@@ -51,7 +53,7 @@ exit;
 sub print_reservation_detail
 {
   my ($results) = @_;
-  my ($arrayref, $row, $f, $fctr, $dt, $minute, $ipaddr, $host);
+  my ($arrayref, $row, $f, $fctr, $dt, $minute, $hour, $ipaddr, $host);
 
   $arrayref = $results->{'rows'};
   #print "Content-type: text/html\n\n";
@@ -101,12 +103,17 @@ sub print_reservation_detail
             if ($fctr < 2)    # first two fields are starting and ending times
             {
               $dt = DateTime->from_epoch( epoch => $f );
+              $hour = $dt->hour();
+              if ($hour < 10)
+              {
+                  $hour = "0" . $hour;
+              }
               $minute = $dt->minute();
               if ($minute < 10)
               {
                   $minute = "0" . $minute;
               }
-              print "      <td>" . $dt->month() . "-" . $dt->day() . " " . $dt->hour() . ":" . $minute . "</td>\n" 
+              print "      <td>" . $dt->month() . "-" . $dt->day() . "&nbsp;&nbsp; " . $hour . ":" . $minute . "</td>\n" 
             }
             elsif (($fctr == 4) || ($fctr == 5))  # IP's
             {
