@@ -1,31 +1,16 @@
-<!DOCTYPE HTML PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<link rel="stylesheet" href="../styleSheets/oscars.css" type="text/css">
-<title>OSCARS</title></head>
+	<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>
+        <script language="javascript">print_html_header('user');</script>
 </head>
 
-<body>
-
-<table border="0" cellpadding="2" cellborder="0" width="90%">
-<?php include('../header.html'); ?>
-  <tr>
-    <td rowspan="3" valign="top">
-<?php include('../sideMenu.html'); ?>
-    </td>
-    <td>
-<h2>OSCARS Project Participants</h2>
-<ul>
-<li>
-Chin Guok is the principal investigator of the OSCARS project .<br/><br/>
-
-<li><a href="http://dsd.lbl.gov/~davidr">David Robertson</a> is a software
-engineer developing the reservation manager component of OSCARS.<br/><br/>
-</ul>
-    </td>
-  </tr>
-</table>
-<?php include('../footer.inc.html'); ?>
-
-</body>
+<frameset rows="10%, 6%, *" border="0">
+    <frame src="../user/banner.html" name="banner_frame">
+    <frame src="../status_frame.html" name="status_frame">
+    <frame src="people.html" name="main_frame">
+    <noframes>
+        This document can only be viewed in a browser that supports frames.
+    </noframes>
+</frameset>
 </html>
