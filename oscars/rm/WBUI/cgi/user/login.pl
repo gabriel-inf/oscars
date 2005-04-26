@@ -19,6 +19,7 @@ $Service_startpoint_URI = 'https://oscars.es.net/user/';
 
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
+$auth = AAAS::Client::Auth->new();
 
 # if login successful, forward user to the next appropriate page
 # all else: Update status but don't change main frame
@@ -28,7 +29,6 @@ my ($Error_Status, %Results) = &process_user_login();
 if ( !$Error_Status )
 {
     # forward the user to the main service page, after setting session
-    $auth = AAAS::Client::Auth->new();
     if (!($auth->verify_login_status(\%FormData, 1)))
     {
         &Update_Frames("", "Please try a different login name");
@@ -71,7 +71,7 @@ sub process_user_login
   }
   my(%params);
   $params{'dn'} = $FormData{'dn'};
-  $params{'password'} = &Encode_Passwd($FormData{'password'});
+  $params{'password'} = $auth->encode_passwd($FormData{'password'});
 
   return(soap_verify_login(\%params));
 }
