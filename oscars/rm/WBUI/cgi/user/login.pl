@@ -37,6 +37,7 @@ if ( !$Error_Status )
 }
 else
 {
+    print "Content-type: text/html\n\n";
     &Update_Frames('', $Results{'error_msg'});
 }
 exit;
