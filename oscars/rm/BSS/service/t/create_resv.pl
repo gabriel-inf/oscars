@@ -2,7 +2,9 @@
 
 use DateTime;
 
-require 'soapclient.pl';
+use lib '../../..';
+
+use BSS::Client::SOAPClient;
 
 my( %params );
 

@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 
-require 'soapclient.pl';
+use lib '../../..';
+
+use BSS::Client::SOAPClient;
 
 use Data::Dumper;
 
