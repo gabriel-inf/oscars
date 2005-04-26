@@ -7,7 +7,9 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
+
+use AAAS::Client::SOAPClient;
+use AAAS::Client::Auth;
 
 # template html file names
 %interface_template_filename = (
@@ -36,8 +38,9 @@ $notification_email_encoding = 'ISO-8859-1';
 
 # login URI
 $login_URI = 'https://oscars.es.net/admin/';
+$auth = AAAS::Client::Auth->new();
 
-if (!(Verify_Login_Status(\%FormData, undef))) 
+if (!($auth->verify_login_status(\%FormData, undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;

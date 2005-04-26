@@ -7,7 +7,9 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
+
+use AAAS::Client::SOAPClient;
+use AAAS::Client::Auth;
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
@@ -34,8 +36,9 @@ $adminadduser_notification_email_encoding = 'ISO-8859-1';
 
 # login URI
 $login_URI = 'https://oscars.es.net/admin/';
+$auth = AAAS::Client::Auth->new();
 
-if (!(Verify_Login_Status(\%FormData, undef))) 
+if (!($auth->verify_login_status(\%FormData, undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;

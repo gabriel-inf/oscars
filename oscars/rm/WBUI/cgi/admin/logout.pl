@@ -7,7 +7,9 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
+
+use AAAS::Client::SOAPClient;
+use AAAS::Client::Auth;
 
 # current script name (used for error message)
 $script_filename = $ENV{'SCRIPT_NAME'};
