@@ -1,0 +1,6 @@
+use Exporter;
+
+our @ISA = qw(Exporter);
+
+our @EXPORT = qw( soap_verify_login soap_get_profile soap_set_profile);
+
