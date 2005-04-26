@@ -1,5 +1,3 @@
-#
-
 # general.pl
 #
 # library for general cgi script usage
@@ -10,8 +8,6 @@
 ##### Settings Begin (Global variables) #####
 # contact info
 $webmaster = 'dwrobertson@lbl.gov';
-# password salt
-$psalt = 'oscars';
 
 ##### Settings End #####
 
@@ -20,21 +16,8 @@ $psalt = 'oscars';
 ### parse CGI form input
 # sub Parse_Form_Input_Data
 
-### format/obtain time string 
-# sub Create_Time_String
-# sub Create_Time_Sprintf_String
-# sub Get_Offset_Adjusted_Time
-# sub Calc_Local_Timezone_Offset
-# sub Format_Offset_from_Seconds
-
-### password encryption & random string generation (activation key, password reset (future), ...)
-# sub Encode_Passwd
-# sub Generate_Random_String
-
 ### update status message, and replace main frame if necessary
 # sub Update_Frames
-
-# sub Error_Code_To_Error_Message
 
 
 
@@ -89,47 +72,14 @@ sub Parse_Form_Input_Data
 } 
 
 
-##### sub Encode_Passwd
-# In: $Raw_Password (plain text)
-# Out: $Crypted_Password
-#####
-sub Encode_Passwd
-{
-
-  my $Raw_Pwd = $_[0];
-  my( $Crypted_Pwd );
- 
-  $Crypted_Pwd = crypt( $Raw_Pwd, $psalt );
-  return $Crypted_Pwd;
-}
-
-
-##### sub Generate_Random_String
-# In: $String_Length
-# Out: $Random_String
-# This sub routine takes care of generating a random string for all functions
-#####
-sub Generate_Random_String
-{
-
-  my $String_Length = $_[0] + 0;	# make it a numeric value
-
-  my @Alphanumeric = ('a'..'z', 'A'..'Z', 0..9);
-  my $Random_String = join( '', map( $Alphanumeric[ rand @Alphanumeric ], 0 .. $String_Length ) );
-
-  return $Random_String;
-}
-
-
 ##### sub Update_Frames
 ##    Updates status portion of display (form target is status frame)
-##    and replaces main_frame if necessary
-# In: $uri, "$err_msg (to be referenced by &Error_Code_To_Error_Message)\n$Errno (optional; $! in usual)"
+##In:  URI of new frame if necessary, error or status msg
 # Result: update status message, sets main frame to another page if success
 #####
 sub Update_Frames
 {
-  my ($uri, $err_msg) = @_;
+  my ($uri, $msg) = @_;
   #print "Content-type: text/html\n\n";
   print "<html>\n";
   print "<head>\n";
@@ -139,7 +89,7 @@ sub Update_Frames
   print "</head>\n";
   print "<body>\n";
   print "<div>\n";
-  print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"local\");</script>" . " | " . $err_msg . "</p>\n";
+  print "<p class=\"topmessage\"><script language=\"javascript\">print_current_date(\"local\");</script>" . " | " . $msg . "</p>\n";
   print "</div>\n";
   if ($uri)
   {
@@ -150,36 +100,6 @@ sub Update_Frames
   print "\n\n";
 }
 
-
-
-##### sub Error_Code_To_Error_Message
-# Internal to this script.
-# In: $Error_Code
-# Out: $err_msg
-#####
-sub Error_Code_To_Error_Message
-{
-
-#  my $errmsglang = 'en';
-
-  my %Error_Msg_Table_EN = (
-      FileOpen => "Cannot open file. Please check if the file location is right, the file permission is properly set, or the file is not corrupted.",
-      Locked => "The process is locked by other preceding processes. Please try again later. If you keep seeing this message, there might be an error in the lock setting, or the file used for locking might be corrupted; please inform the webmaster of the problem.",
-      CantLock => "Cannot perform file lock. If you keep seeing this message, there might be an error in the lock setting or on the server space; please inform the webmaster of the problem.",
-      CantConnectDB => "Cannot connect to the database.",
-      CantPrepareStatement => "Cannot prepare database statement.",
-      CantExecuteQuery => "Cannot execute query in the database.",
-      CantOpenSendmail => "Cannot run Sendmail.",
-  );
-
-#  my %Error_Msg_Set = (
-#      en => { %Error_Msg_Table_EN }
-#  );
-
-#  return $Error_Msg_Set{$errmsglang}{$_[0]};
-
-  return $Error_Msg_Table_EN{$_[0]};
-} 
 
 
 # Don't touch the line below
