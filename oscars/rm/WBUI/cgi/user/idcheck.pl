@@ -7,8 +7,10 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
-require 'soapclient.pl';
+
+use AAAS::Client::SOAPClient;
+use AAAS::Client::Auth;
+
 
 # smiley icons used in the login name overlap check result page
 %icon_locations = (
@@ -23,8 +25,9 @@ require 'soapclient.pl';
 
 # login URI
 $login_URI = 'https://oscars.es.net/';
+$auth = AAAS::Client::Auth->new();
 
-if (!(Verify_Login_Status(\%FormData, undef))) 
+if (!($auth->verify_login_status(\%FormData, undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;

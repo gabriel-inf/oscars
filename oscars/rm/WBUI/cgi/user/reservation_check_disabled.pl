@@ -8,7 +8,9 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
+
+use BSS::Client::SOAPClient;
+use AAAS::Client::Auth;
 
 # current script name
 $script_filename = $ENV{'SCRIPT_NAME'};
@@ -20,8 +22,9 @@ $script_filename = $ENV{'SCRIPT_NAME'};
 
 # login URI
 $login_URI = 'https://oscars.es.net/';
+$auth = AAAS::Client::Auth->new();
 
-if (!(Verify_Login_Status('', undef))) 
+if (!($auth->verify_login_status('', undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;

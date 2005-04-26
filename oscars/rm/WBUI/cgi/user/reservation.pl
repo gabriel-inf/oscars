@@ -12,17 +12,19 @@ use Data::Dumper
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
-require 'soapclient.pl';
+
+use BSS::Client::SOAPClient;
+use AAAS::Client::Auth;
 
 
 # login URI
 $login_URI = 'https://oscars.es.net/';
+$auth = AAAS::Client::Auth->new();
 
 # Receive data from HTML form (accept POST method only)
 %FormData = &Parse_Form_Input_Data( 'post' );
 
-if (!(Verify_Login_Status(\%FormData, undef))) 
+if (!($auth->verify_login_status(\%FormData, undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;

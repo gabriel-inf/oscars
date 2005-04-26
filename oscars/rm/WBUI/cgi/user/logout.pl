@@ -7,7 +7,8 @@
 
 # include libraries
 require '../lib/general.pl';
-require 'soapclient.pl';
+
+use AAAS::Client::SOAPClient;
 
 
 

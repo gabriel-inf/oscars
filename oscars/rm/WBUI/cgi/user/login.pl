@@ -6,9 +6,11 @@
 # David Robertson (dwrobertson@lbl.gov)
 
 # include libraries
+
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
-require 'soapclient.pl';
+
+use AAAS::Client::SOAPClient;
+use AAAS::Client::Auth;
 
 
 # main service start point URI (the first screen a user sees after logging in)
@@ -26,7 +28,8 @@ my ($Error_Status, %Results) = &process_user_login();
 if ( !$Error_Status )
 {
     # forward the user to the main service page, after setting session
-    if (!(&Verify_Login_Status(\%FormData, 1)))
+    $auth = AAAS::Client::Auth->new();
+    if (!($auth->verify_login_status(\%FormData, 1)))
     {
         &Update_Frames("", "Please try a different login name");
     } 

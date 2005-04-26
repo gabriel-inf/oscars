@@ -7,8 +7,9 @@
 
 # include libraries
 require '../lib/general.pl';
-require '../lib/authenticate.pl';
-require 'soapclient.pl';
+
+use AAAS::Client::SOAPClient;
+use AAAS::Client::Auth;
 
 
     # names of the fields to be displayed on the screen
@@ -18,8 +19,9 @@ my( %FormData );  # TODO:  edit_profile
 
 # login URI
 $login_URI = 'https://oscars.es.net/';
+$auth = AAAS::Client::Auth->new();
 
-if (!(Verify_Login_Status(\%FormData, undef))) 
+if (!($auth->verify_login_status(\%FormData, undef))) 
 {
     print "Location: $login_URI\n\n";
     exit;
