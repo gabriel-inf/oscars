@@ -15,3 +15,6 @@ Copy htaccess to .htaccess in
 
     /usr/local/esnet/virtual-sites/oscars.es.net/cgi-bin/users and
     /usr/local/esnet/virtual-sites/oscars.es.net/cgi-bin/admin
+
+Allow Override FileInfo must be set in your Apache httpd.conf for you to
+be able to use the material in .htaccess
