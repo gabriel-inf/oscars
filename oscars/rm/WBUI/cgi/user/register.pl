@@ -1,15 +1,14 @@
 #!/usr/bin/perl -w
 
 # register.pl:  New user account registration
-# Last modified: April 15, 2005
+# Last modified: April 16, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
-require '../lib/general.pl';
 
 use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
+
+require '../lib/general.pl';
 
 
 # title of the new user registration notification email (sent to the admin)
@@ -23,67 +22,58 @@ $registration_notification_email_toaddr = 'dwrobertson@lbl.gov';
 $registration_notification_email_encoding = 'ISO-8859-1';
 
 
-# login URI
-$login_URI = 'https://oscars.es.net/';
-$auth = AAAS::Client::Auth->new();
 
-# Receive data from HTML form (accept POST method only)
-%FormData = &Parse_Form_Input_Data( 'post' );
+my ($error_status, $cgi, %results);
 
-if (!($auth->verify_login_status(\%FormData, undef))) 
-{
-    print "Location: $login_URI\n\n";
-    exit;
-}
+($error_status, $cgi) = check_login(0);
 
-my ($Error_Status, %Results) = &process_user_registration();
-if ( !$Error_Status )
-{
-    &Update_Frames();
-}
-else
-{
-    &Update_Frames('', $Results{'error_msg'});
+if (!$error_status) {
+  ($error_status, %results) = process_user_registration(\$cgi->param);
+  if (!$error_status) {
+      update_status_frame($results{'status_msg'});
+  }
+  else {
+      update_status_frame($results{'error_msg'});
+  }
 }
 
 exit;
 
 
 
-##### Beginning of sub routines #####
-
 ##### sub process_user_registration
 # In: None
 # Out: Status message
 sub process_user_registration
 {
+  my( $form_params ) = @_;
 
     # validate user input (fairly minimal... Javascript also takes care of form data validation)
   my(%results);
-  if ( $FormData{'loginname'} eq '' )
+  if ( $form_params->{'loginname'} eq '' )
   {
       $results{'error_msg'} = 'Please enter your desired login name.';
       return( 1, %results );
   }
-  elsif ( $FormData{'loginname'} =~ /\W|\s/ )
+  elsif ( $form_params->{'loginname'} =~ /\W|\s/ )
   {
       $results{'error_msg'} = 'Please use only alphanumeric characters or _ for login name.';
       return( 1, %results );
   }
 
-  if ( $FormData{'password_once'} eq '' || $FormData{'password_twice'} eq '' )
+  if ( $form_params->{'password_once'} eq '' || $form_params->{'password_twice'} eq '' )
   {
       $results{'error_msg'} = 'Please enter the password.';
       return( 1, %results );
   }
-  elsif ( $FormData{'password_once'} ne $FormData{'password_twice'} )
+  elsif ( $form_params->{'password_once'} ne $form_params->{'password_twice'} )
   {
       $results{'error_msg'} = 'Please enter the same password twice for verification.';
       return( 1, %results );
   }
 
     # encrypt password
-  my $Encrypted_Password = &Encode_Passwd( $FormData{'password_once'} );
+  my $Encrypted_Password = &Encode_Passwd( $form_params->{'password_once'} );
 
         ## TODO:  contact the DB, get result back
 
@@ -97,14 +87,14 @@ sub process_user_registration
   print MAIL 'Subject: ', $registration_notification_email_title, "\n";
   print MAIL 'Content-Type: text/plain; charset="', $registration_notification_email_encoding, '"', "\n\n";
 		
-  print MAIL $FormData{'firstname'}, ' ', $FormData{'lastname'}, ' <', $FormData{'email_primary'}, '> has requested a new user account. Please visit the user admin Web page to accept or deny this request.', "\n\n";
+  print MAIL $form_params->{'firstname'}, ' ', $form_params->{'lastname'}, ' <', $form_params->{'email_primary'}, '> has requested a new user account. Please visit the user admin Web page to accept or deny this request.', "\n\n";
 
-  print MAIL 'Login Name: ', $FormData{'loginname'}, "\n\n";
+  print MAIL 'Login Name: ', $form_params->{'loginname'}, "\n\n";
 
-  print MAIL 'Primary E-mail Address: ', $FormData{'email_primary'}, "\n";
-  print MAIL 'Secondary E-mail Address: ', $FormData{'email_secondary'}, "\n";
-  print MAIL 'Primary Phone Number: ', $FormData{'phone_primary'}, "\n";
-  print MAIL 'Secondary Phone Number: ', $FormData{'phone_secondary'}, "\n\n";
+  print MAIL 'Primary E-mail Address: ', $form_params->{'email_primary'}, "\n";
+  print MAIL 'Secondary E-mail Address: ', $form_params->{'email_secondary'}, "\n";
+  print MAIL 'Primary Phone Number: ', $form_params->{'phone_primary'}, "\n";
+  print MAIL 'Secondary Phone Number: ', $form_params->{'phone_secondary'}, "\n\n";
 
   print MAIL '---------------------------------------------------', "\n";
   print MAIL '=== This is an auto-generated e-mail ===', "\n";
@@ -113,11 +103,6 @@ sub process_user_registration
 
     ### when everything has been processed successfully...
     # don't forget to show the user's login name
-  return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $FormData{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
+  return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $form_params->{'loginname'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
 
 }
-
-
-##### End of sub routines #####
-
-##### End of script #####

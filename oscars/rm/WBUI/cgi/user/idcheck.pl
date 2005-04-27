@@ -1,15 +1,14 @@
 #!/usr/bin/perl -w
 
 # idcheck.pl:  User login name overlap check
-# Last modified: April 15, 2005
+# Last modified: April 26, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
-require '../lib/general.pl';
 
 use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
+
+require '../lib/general.pl';
 
 
 # smiley icons used in the login name overlap check result page
@@ -20,38 +19,30 @@ use AAAS::Client::Auth;
 );
 
 
-# Receive data from HTML form (accept all methods (POST/GET))
-%FormData = &Parse_Form_Input_Data( 'all' );
+my ($error_status, $cgi, %results);
 
-# login URI
-$login_URI = 'https://oscars.es.net/';
-$auth = AAAS::Client::Auth->new();
+($error_status, $cgi) = check_login(0);
 
-if (!($auth->verify_login_status(\%FormData, undef))) 
-{
-    print "Location: $login_URI\n\n";
-    exit;
+if (!$error_status) {
+  ($error_status, %results) = print_result_screen(\$cgi->param));
+  if (!$error_status) {
+      update_status_frame("");
+  }
 }
-
-my ($Error_Status, %Results) = &print_result_screen();
-&Update_Frames();
 
 exit;
 
 
-
-##### Beginning of sub routines #####
-
-
 ##### sub print_result_screen
-# In: None
+# In:  ref to form parameter hash
 # Out: None (exits the program at the end)
 sub print_result_screen
 {
+  my( $form_params ) = @_;
   my(%results);
-  my $results{'error_msg'} = '<strong>' . $FormData{'id'} . '</strong><br>';
+  my $results{'error_msg'} = '<strong>' . $form_params->{'id'} . '</strong><br>';
 
-  if ( $FormData{'id'} =~ /\W|\s/) {
+  if ( $form_params->{'id'} =~ /\W|\s/) {
       $results{'error_msg'} .= '<img src="' . $icon_locations{'exclaim'} . '" alt="!"> Please use only alphanumeric characters or _ for login name.';
       return( 1, %results );
   }
@@ -68,12 +59,6 @@ sub print_result_screen
       return( 1, %results );
   }
 
-
   $results{'status_msg'} = 'OK';
   return( 0, %results );
 }
-
-
-##### End of sub routines #####
-
-##### End of script #####

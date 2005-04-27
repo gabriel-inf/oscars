@@ -1,82 +1,62 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login page
-# Last modified: April 15, 2005
+# Last modified: April 26, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
+use Data::Dumper;
 
-require '../lib/general.pl';
 
 use AAAS::Client::SOAPClient;
 use AAAS::Client::Auth;
 
 
-# main service start point URI (the first screen a user sees after logging in)
-$Service_startpoint_URI = 'https://oscars.es.net/user/';
+require '../lib/general.pl';
 
 
-# Receive data from HTML form (accept POST method only)
-%FormData = &Parse_Form_Input_Data( 'post' );
-$auth = AAAS::Client::Auth->new();
+$service_startpoint_URI = 'https://oscars.es.net/user/';
 
-# if login successful, forward user to the next appropriate page
-# all else: Update status but don't change main frame
 
-my ($Error_Status, %Results) = &process_user_login();
+my ($error_status, %results);
+my $cgi = CGI->new();
 
-if ( !$Error_Status )
-{
-    # forward the user to the main service page, after setting session
-    if (!($auth->verify_login_status(\%FormData, 1)))
-    {
-        &Update_Frames("", "Please try a different login name");
-    } 
-    else
-    {
-        &Update_Frames($Service_startpoint_URI, "Logged in as $FormData{'dn'}.", $FormData{'dn'});
-    }
+($error_status, %results) = check_db_user($cgi);
+
+if (!$error_status) {
+  $error_status = check_login(1, $cgi);
+  update_frames("status_frame", $service_startpoint_URI, "Logged in as " . $cgi->param('dn') . ".");
 }
-else
-{
-    print "Content-type: text/html\n\n";
-    &Update_Frames('', $Results{'error_msg'});
+else {
+  update_frames("status_frame", "", $results{'error_msg'});
 }
+
 exit;
 
 
-
-##### Beginning of sub routines #####
-
-
-##### sub process_user_login
-# In: None
-# Out: Error status
-sub process_user_login
+##### sub check_db_user
+# In:  CGI instance
+# Out: error status, SOAP results
+sub check_db_user
 {
-  my(%results);
+  my( $cgi ) = @_;
+  my( %soap_params, %results );
 
     # validate user input (just check for empty fields)
-  if ( $FormData{'dn'} eq '' )
+  if ( $cgi->param('dn') eq '' )
   {
       $results{'error_msg'} = 'Please enter your login name.';
       return( 1, %results );
   }
 
-  if ( $FormData{'password'} eq '' )
+  if ( $cgi->param('password') eq '' )
   {
       $results{'error_msg'} = 'Please enter your password.';
       return( 1, %results );
   }
-  my(%params);
-  $params{'dn'} = $FormData{'dn'};
-  $params{'password'} = $auth->encode_passwd($FormData{'password'});
+  $soap_params{'dn'} = $cgi->param('dn');
+  $auth = AAAS::Client::Auth->new();
+  $soap_params{'password'} = $auth->encode_passwd($cgi->param('password'));
 
-  return(soap_verify_login(\%params));
+  return(soap_verify_login(\%soap_params));
 }
-
-
-##### End of sub routines #####
-
-##### End of script #####

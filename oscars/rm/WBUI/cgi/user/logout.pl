@@ -1,26 +1,28 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout Link
-# Last modified: April 15, 2005
+# Last modified: April 25, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
+use CGI;
+
 require '../lib/general.pl';
 
-use AAAS::Client::SOAPClient;
 
 
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
 
-# forward the user to the login screen
-&Update_Frames('https://oscars.es.net/', '');
+# nuke session and put the user back at the login screen
+
+if (!$error_status) {
+    end_session($cgi);
+}
+
+print "Content-type: text/html\n\n";
+
+update_frames("main_frame", "https://oscars.es.net/login_frame.html", "Please log in.");
 
 exit;
 
-
-##### Beginning of sub routines #####
-
-
-##### End of sub routines #####
-
-##### End of script #####

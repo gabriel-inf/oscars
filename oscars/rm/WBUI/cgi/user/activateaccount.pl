@@ -1,66 +1,57 @@
 #!/usr/bin/perl -w
 
 # activateaccount.pl:  Account Activation page
-# Last modified: April 24, 2005
+# Last modified: April 26, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
-require '../lib/general.pl';
 
 use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
+
+require '../lib/general.pl';
+
 
 # on success loads accactivated.html
 
+my ($error_status, $cgi, %results);
 
-# Receive data from HTML form (accept POST method only)
-%FormData = &Parse_Form_Input_Data( 'post' );
+($error_status, $cgi) = check_login(0);
 
-# login URI
-$login_URI = 'https://oscars.es.net/';
+if (!$error_status) {
+  ($error_status, %results) = process_user_account_activation(\$cgi->param);
 
-$auth = AAAS::Client::Auth->new();
-if (!($auth->verify_login_status(\%FormData, undef))) 
-{
-    print "Location: $login_URI\n\n";
-    exit;
+  if ( !$error_Status ) {
+      update_status_frame($results{'status_msg'};
+  }
+  else {
+      update_status_frame($results{'error_msg'});
+  }
 }
 
-my ($Error_Status, %Results) = &process_user_account_activation();
-
-if ( !$Error_Status ) {
-  &Update_Frames("", $Results{'status_msg'};
-}
-else {
-  &Update_Frames("", $Results{'error_msg'});
-}
 
 exit;
 
 
-##### Beginning of sub routines #####
-
-
 ##### sub process_user_account_activation
-# In: None
-# Out: None
+# In:  ref to form parameter hash
+# Out: status, message
 sub process_user_account_activation
 {
+  my( $form_params ) = @_;
   my(%results);
 
     # validate user input (just check for empty fields)
-  if ( $FormData{'dn'} eq '' ) {
+  if ( $form_params->{'dn'} eq '' ) {
       $results{'error_msg'} = 'Please enter your login name.';
       return( 1, %results );
   }
 
-  if ( $FormData{'activation_key'} eq '' ) {
+  if ( $form_params->{'activation_key'} eq '' ) {
       $results{'error_msg'} = 'Please enter the account activation key.';
       return( 1, %results );
   }
 
-  if ( $FormData{'password'} eq '' ) {
+  if ( $form_params->{'password'} eq '' ) {
       $results{'error_msg'} = 'Please enter the password.';
       return( 1, %results );
   }
@@ -71,12 +62,7 @@ sub process_user_account_activation
   ### when everything has been processed successfully...
   # $Processing_Result_Message string may be anything, as long as it's not empty
 
-  $results{'status_msg'} = 'The user account <strong>' . $FormData{'dn'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.';
+  $results{'status_msg'} = 'The user account <strong>' . $form_params->{'dn'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.';
   return( 0, %results );
 
 }
-
-
-##### End of sub routines #####
-
-##### End of script #####

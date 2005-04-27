@@ -8,43 +8,34 @@
 
 use DateTime;
 use Socket;
-use Data::Dumper
-
-# include libraries
-require '../lib/general.pl';
+use Data::Dumper;
+use CGI;
 
 use BSS::Client::SOAPClient;
-use AAAS::Client::Auth;
+
+require '../lib/general.pl';
 
 
-# login URI
-$login_URI = 'https://oscars.es.net/';
-$auth = AAAS::Client::Auth->new();
+my $cgi = CGI->new();
 
-# Receive data from HTML form (accept POST method only)
-%FormData = &Parse_Form_Input_Data( 'post' );
+my (%form_params, %results);
 
-if (!($auth->verify_login_status(\%FormData, undef))) 
-{
-    print "Location: $login_URI\n\n";
-    exit;
+my $error_status = check_login(0, $cgi);
+
+if (!$error_status) {
+  foreach $_ ($cgi->param) {
+      $form_params{$_} = $cgi->param($_);
+
+  ($error_status, %results) = create_reservation(\%form_params);
+  if (!$error_status) {
+      update_frames("status_frame", "", $results{'status_msg'});
+  }
+  else {
+      update_frames("status_frame", "", $results{'error_msg'});
+  }
 }
 
-my ($Error_Status, %Results) = create_reservation(\%FormData);
-
-if (!$Error_Status)
-{
-    Update_Frames("", "Reservation made");
-}
-else
-{
-    Update_Frames("", $Results{'error_msg'});
-}
 exit;
-
-
-
-##### Beginning of sub routines #####
 
 
 ##### sub create_reservation
@@ -53,46 +44,46 @@ exit;
 sub create_reservation
 {
 
-  my( $FormData ) = @_;
-  my( %params );
+  my( $form_params ) = @_;
+  my( %soap_params );
   my( %results);
 
-  $params{'id'} =              'NULL';
+  $soap_params{'id'} =              'NULL';
 
       # in seconds since epoch
-  $params{'start_time'} =     $FormData->{'start_time'};
+  $soap_params{'start_time'} =     $form_params->{'start_time'};
       # start time + duration time in seconds
-  $params{'end_time'} =       $FormData->{'start_time'} + $FormData->{'duration_hour'} * 3600;
+  $soap_params{'end_time'} =       $form_params->{'start_time'} + $form_params->{'duration_hour'} * 3600;
 
-  $params{'created_time'} =   '';   # filled in scheduler
-  $params{'bandwidth'} =      $FormData->{'bandwidth'};
-  $params{'class'} =          'test';
-  $params{'burst_limit'} =    '100m';
-  $params{'status'} =         'pending';
+  $soap_params{'created_time'} =   '';   # filled in scheduler
+  $soap_params{'bandwidth'} =      $form_params->{'bandwidth'};
+  $soap_params{'class'} =          'test';
+  $soap_params{'burst_limit'} =    '100m';
+  $soap_params{'status'} =         'pending';
 
-  $params{'ingress_interface_id'}= '';   # db lookup in scheduler
-  $params{'egress_interface_id'}=  '';   # db lookup in scheduler
+  $soap_params{'ingress_interface_id'}= '';   # db lookup in scheduler
+  $soap_params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
-  $params{'src_ip'} =         $FormData->{'origin'};
-  $params{'dst_ip'} =         $FormData->{'destination'};
+  $soap_params{'src_ip'} =         $form_params->{'origin'};
+  $soap_params{'dst_ip'} =         $form_params->{'destination'};
 
       # TODO:  error checking
-  if (not_an_ip($params{'src_ip'})) {
-      $params{'src_ip'} = inet_ntoa(inet_aton($params{'src_ip'}));
+  if (not_an_ip($soap_params{'src_ip'})) {
+      $soap_params{'src_ip'} = inet_ntoa(inet_aton($soap_params{'src_ip'}));
   }
 
-  if (not_an_ip($params{'dst_ip'})) {
-      $params{'dst_ip'} = inet_ntoa(inet_aton($params{'dst_ip'}));
+  if (not_an_ip($soap_params{'dst_ip'})) {
+      $soap_params{'dst_ip'} = inet_ntoa(inet_aton($soap_params{'dst_ip'}));
   }
 
-  $params{'dn'} =             'oscars';
+  $soap_params{'dn'} =             'oscars';
 
-  $params{'ingress_port'} =   '';     # db lookup in schedule
-  $params{'egress_port'} =    '';     # db lookup in scheduler
+  $soap_params{'ingress_port'} =   '';     # db lookup in schedule
+  $soap_params{'egress_port'} =    '';     # db lookup in scheduler
 
-  $params{'dscp'} =           '';     # optional
+  $soap_params{'dscp'} =           '';     # optional
 
-  $params{'description'} =    $FormData->{'description'};
+  $soap_params{'description'} =    $form_params->{'description'};
   return( soap_create_reservation(\%params) );
 
 }
@@ -104,7 +95,3 @@ sub not_an_ip
 
   return($string !~ /^([\d]+)\.([\d]+)\.([\d]+)\.([\d]+)$/);
 }
-
-##### End of sub routines #####
-
-##### End of script #####

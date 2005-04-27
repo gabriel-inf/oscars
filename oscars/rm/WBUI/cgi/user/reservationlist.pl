@@ -1,50 +1,47 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: April 24, 2005
+# Last modified: April 26, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
-require '../lib/general.pl';
-
-use BSS::Client::SOAPClient;
-use AAAS::Client::Auth;
-
-use Data::Dumper;
 use DateTime;
 use Socket;
+use CGI;
 
 
-# login URI
-$login_URI = 'https://oscars.es.net/';
-$auth = AAAS::Client::Auth->new();
+use BSS::Client::SOAPClient;
 
-# Receive data from HTML form (accept POST method only)
-%FormData = &Parse_Form_Input_Data( 'post' );
+require '../lib/general.pl';
 
-if (!($auth->verify_login_status(\%FormData, undef))) 
-{
-    print "Location: $login_URI\n\n";
-    exit;
-}
-# FIX:  hard-wired for testing
-$FormData{'dn'} = 'oscars';
 
 
     # names of the fields to be read and displayed on the screen
-my @Fields_to_Read = ( 'start_time', 'end_time', 'bandwidth', 'status', 'src_id', 'dst_id' );
+my @fields_to_read = ( 'start_time', 'end_time', 'bandwidth', 'status', 'src_id', 'dst_id' );
 
-( $Error_Status, %Results ) = soap_get_reservations(\%FormData, \@Fields_to_Read);
 
-if (!$Error_Status)
-{
-    print_reservation_detail(\%Results);
+my (%form_params, %results);
+
+
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
+
+if (!$error_status) {
+  foreach $_ ($cgi->param) {
+      $form_params{$_} = $cgi->param($_);
+  }
+      # FIX:  hard-wired for testing
+  $form_params{'dn'} = 'oscars';
+  ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
+  if (!$error_status) {
+      update_frames("main_frame", "", $results{'status_msg'});
+      print_reservation_detail(\%results);
+  }
+  else {
+      update_frames("main_frame", "", $results{'error_msg'});
+  }
 }
-else
-{
-    Update_Frames("", $Results{'error_msg'});
-}
+
 exit;
 
 
@@ -58,7 +55,6 @@ sub print_reservation_detail
   my ($arrayref, $row, $f, $fctr, $dt, $minute, $hour, $ipaddr, $host);
 
   $arrayref = $results->{'rows'};
-  #print "Content-type: text/html\n\n";
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";
@@ -152,8 +148,3 @@ sub print_reservation_detail
   print "</html>\n\n";
 }
 
-
-
-##### End of sub routines #####
-
-##### End of script #####

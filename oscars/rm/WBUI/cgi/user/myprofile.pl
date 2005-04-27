@@ -1,53 +1,48 @@
 #!/usr/bin/perl -w
 
 # myprofile.pl:  Main service: My Profile page
-# Last modified: April 25, 2005
+# Last modified: April 26, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
-require '../lib/general.pl';
+use CGI;
 
 use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
+
+require '../lib/general.pl';
 
 
     # names of the fields to be displayed on the screen
-my @Fields_to_Display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'level', 'register_time', 'activation_key', 'pending_level', 'authorization_id', 'institution_id' );
+my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'level', 'register_time', 'activation_key', 'pending_level', 'authorization_id', 'institution_id' );
 
-my( %FormData );  # TODO:  edit_profile
 
-# login URI
-$login_URI = 'https://oscars.es.net/';
-$auth = AAAS::Client::Auth->new();
+my (%form_params, %results);
 
-if (!($auth->verify_login_status(\%FormData, undef))) 
-{
-    print "Location: $login_URI\n\n";
-    exit;
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
+
+if (!$error_status) {
+  foreach $_ ($cgi->param) {
+      $form_params{$_} = $cgi->param($_);
+  }
+  ($error_status, %results) = soap_get_profile(\%form_params, \@fields_to_display);
+  if (!$error_status) {
+      update_frames("main_frame", "", $results{'status_msg'});
+      print_profile(\%results);
+  }
+  else {
+      update_frames("main_frame", "", $results{'error_msg'});
+  }
 }
 
-( $Error_Status, %Results ) = soap_get_profile(\%FormData, \@Fields_to_Display);
-
-if (!$Error_Status)
-{
-    print_profile(\%Results);
-}
-else
-{
-    Update_Frames("", $Results{'error_msg'});
-}
 exit;
 
-
-##### Beginning of sub routines #####
 
 
 sub print_profile
 {
   my ($params) = @_;
 
-  #print "Content-type: text/html\n\n";
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";
@@ -168,9 +163,3 @@ sub print_profile
   print "</html>\n";
   print "\n\n";
 }
-
-##### End of sub Print_Profile
-
-##### End of sub routines #####
-
-##### End of script #####
