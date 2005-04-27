@@ -9,19 +9,12 @@ package AAAS::Client::Auth;
 use CGI;
 use CGI::Session;
 
-use Exporter;
-
-our @ISA = qw(Exporter);
-
-our @EXPORT = qw( verify_login_status encode_passwd generate_random_string );
-
-
 ### password encryption & random string generation (activation key, password reset (future), ...)
 # sub encode_passwd
 # sub generate_random_string
 
 
-$psalt = 'oscars';
+our $psalt = 'oscars';
 
 # admin login name (id)
 $admin_dn = 'admin';
@@ -92,45 +85,62 @@ sub initialize {
 
 
 
+##### method set_login_status
+#
+# Sets cookie containing session id
+# to be used in grantng access.
+# In:   ref to CGI instance
+# Out:  None
+sub set_login_status
+{
+  my ($self, $cgi) = @_;
+  my ($session, $sid, $cookie);
+
+  $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
+  $sid = $session->id();
+  $cookie = $cgi->cookie(CGISESSID => $sid);
+  $session->param("dn", $cgi->param('dn'));
+  print $cgi->header( -cookie=>$cookie );
+}
+
+
+
 ##### method verify_login_status
-# In: ref to form data, and whether initial log in
-#     Must have cookie containing valid session id
-#     to be granted access.
+#
+# Must have cookie containing valid session id
+# to be granted access.
+#
+# In:  ref to CGI instance
 # Out: 1 (logged in)/0 (not logged in)
 sub verify_login_status
 {
-  my ($self, $form_data, $init_login) = @_;
-  my ($cgi, $session, $sid, $cookie, $stored_dn);
+  my ($self, $cgi) = @_;
+  my ($session, $stored_dn);
 
-  $cgi = CGI->new();
-  if (defined($init_login))    # just logged in
-  {
-    $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
-    $sid = $session->id();
-    $cookie = $cgi->cookie(CGISESSID => $sid);
-    $session->param("dn", $form_data->{'dn'});
-    print $cgi->header( -cookie=>$cookie );
-    return( 1 );
+  $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
+      # Unauthorized user may know to set CGISESSID cookie. However,
+      # an entirely new session (without the dn param) will be 
+      # created if there is no valid session with that id.
+  $stored_dn = $session->param("dn");
+  if (!defined($stored_dn)) {
+      print STDERR "no such parameter stored\n";
+      return( 0 );
   }
   else
   {
-    $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
-        # Unauthorized user may know to set CGISESSID cookie. However,
-        # an entirely new session (without the dn param) will be 
-        # created if there is no valid session with that id.
-    $stored_dn = $session->param("dn");
-    if (!defined($stored_dn)) {
-        print STDERR "no such parameter stored\n";
-        return( 0 );
-    }
-    else
-    {
-       $form_data->{'dn'} = $stored_dn;
-       print $cgi->header( );
-       return( 1 ); }
-    }
+     $cgi->param(-name=>'dn',-value=>$stored_dn);
+     print $cgi->header( );
+     return( 1 );
+  }
 }
 
+
+
+sub logout
+{
+    my( $self, $cgi ) = @_;
+    $cgi->param(-name=>'dn',-value=>'');
+}
 
 
 ##### method encode_passwd
@@ -139,8 +149,7 @@ sub verify_login_status
 #####
 sub encode_passwd
 {
-
-  my ($raw_pwd) = $_;
+  my ($self, $raw_pwd) = @_;
   my( $crypted_pwd );
  
   $crypted_pwd = crypt( $raw_pwd, $psalt );
@@ -155,7 +164,7 @@ sub encode_passwd
 #####
 sub generate_random_string
 {
-
+  my $self = shift;
   my $string_length = $_[0] + 0;	# make it a numeric value
 
   my @alphanumeric = ('a'..'z', 'A'..'Z', 0..9);
