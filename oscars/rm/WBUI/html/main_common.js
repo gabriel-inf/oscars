@@ -12,6 +12,42 @@ hasClass(obj)
 stripe(id)
 */
 
+
+var monthMapping = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+
+// ** print current date (format: July 7, 2004) **
+function print_current_date(fr, useLocal)
+{
+	var currentDate = new Date();
+        var currentMonth;
+
+        if (useLocal == 'local')
+        {
+	    currentMonth = currentDate.getMonth();
+        }
+        else
+        {
+	    currentMonth = currentDate.getUTCMonth();
+        }
+
+        var monthName = monthMapping[currentMonth];
+
+        if (useLocal != 'local')
+        {
+            currentMinutes = currentDate.getUTCMinutes();
+	    fr.write( monthName + " " + currentDate.getUTCDate() + ", " + currentDate.getUTCFullYear() + " " + currentDate.getUTCHours() + ":");
+        }
+        else
+        {
+            currentMinutes = currentDate.getMinutes();
+	    fr.write( monthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() + " " + currentDate.getHours() + ":");
+        }
+        if (currentMinutes < 10) { fr.write("0") } ;
+        fr.write(currentMinutes);
+        if (useLocal != 'local') { fr.write(" (UTC)") } ;
+}
+
 // ** prints HTML header
 function print_html_header(formType)
 {
@@ -85,14 +121,54 @@ function print_navigation_bar(activePage)
     {
         document.write('<li><a href="https://oscars.es.net/cgi-bin/user/myprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
     }
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/user/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
     document.write("</div>");
 }
 
-// ** replaces main frame with new page
+
 function update_main_frame(uri)
 {
-    top.frames['main_frame'].location.href = uri;
+    parent.frames['main_frame'].location = uri;
+}
+
+
+// ** prints status frame, and replaces main frame with new page if a URI is
+// ** given
+function update_status_message(target, msg)
+{
+  if (target == 'main_frame')
+  {
+    f = parent.frames['status_frame'].document;
+    f.open();
+    f.write("<html>");
+
+    f.write("<head>");
+    f.write('<link rel="stylesheet" type="text/css" href="https://oscars.es.net/styleSheets/layout.css">');
+
+    f.write('<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>');
+
+    f.write("</head>");
+
+    f.write("<body>");
+    f.write("<div>");
+    f.write("<p class=\"topmessage\">");
+    print_current_date(f, 'local');
+    f.write("</script> | ", msg, "</p>");
+    f.write("</div>");
+
+    f.write("</body>");
+    f.write("</html>");
+    f.close();
+  }
+  else
+  {
+    document.write("<div>");
+    document.write("<p class=\"topmessage\">");
+    print_current_date(document, 'local');
+    document.write("</script> | ", msg, "</p>");
+    document.write("</div>");
+  }
 }
 
 
@@ -128,14 +204,7 @@ function print_admin_bar(activePage)
     {
         document.write('<li><a href="editprofile.html" title="View and/or edit admin profile">Admin Profile</a></li>');
     }
-    if (activePage == 'logout')
-    {
-        document.write('<li><a href="#" class="active" title="Logout from the admin tool">Logout</a></li>');
-    }
-    else
-    {
-        document.write('<li><a href="logout.html" title="Logout from the admin tool">Logout</a></li>');
-    }
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
     document.write("</div>");
 }
@@ -166,47 +235,6 @@ function print_footer()
     document.write('</center>');
 }
 
-
-// ** print current date (format: July 7, 2004) **
-function print_current_date(useLocal)
-{
-	currentDate = new Date();
-        if (useLocal == 'local')
-        {
-	    currentMonth = currentDate.getMonth();
-        }
-        else
-        {
-	    currentMonth = currentDate.getUTCMonth();
-        }
-
-	if ( currentMonth == 0 ) { currentMonthName = 'January'; }
-	if ( currentMonth == 1 ) { currentMonthName = 'February'; }
-	if ( currentMonth == 2 ) { currentMonthName = 'March'; }
-	if ( currentMonth == 3 ) { currentMonthName = 'April'; }
-	if ( currentMonth == 4 ) { currentMonthName = 'May'; }
-	if ( currentMonth == 5 ) { currentMonthName = 'June'; }
-	if ( currentMonth == 6 ) { currentMonthName = 'July'; }
-	if ( currentMonth == 7 ) { currentMonthName = 'August'; }
-	if ( currentMonth == 8 ) { currentMonthName = 'September'; }
-	if ( currentMonth == 9 ) { currentMonthName = 'October';}
-	if ( currentMonth == 10 ) { currentMonthName = 'November'; }
-	if ( currentMonth == 11 ) { currentMonthName = 'December'; }
-
-        if (useLocal != 'local')
-        {
-            currentMinutes = currentDate.getUTCMinutes();
-	    document.write( currentMonthName + " " + currentDate.getUTCDate() + ", " + currentDate.getUTCFullYear() + " " + currentDate.getUTCHours() + ":");
-        }
-        else
-        {
-            currentMinutes = currentDate.getMinutes();
-	    document.write( currentMonthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() + " " + currentDate.getHours() + ":");
-        }
-        if (currentMinutes < 10) { document.write("0") } ;
-        document.write(currentMinutes);
-        if (useLocal != 'local') { document.write(" (UTC)") } ;
-}
 
 // ** apply zebra stripe to a table **
 // Reference: http://www.alistapart.com/articles/zebratables/

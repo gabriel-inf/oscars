@@ -117,6 +117,15 @@ p.topmessage {
 	color: #000;
 }
 
+#tabnav a:link.logout {
+        float: right;
+	border: 1px solid #bb0000;
+	padding: 2px 20px 2px 20px;
+	margin-right: 20px;
+	color: #bb0000;
+}
+
+
 #tabnav a:hover {
 	background: #fff;
 }
