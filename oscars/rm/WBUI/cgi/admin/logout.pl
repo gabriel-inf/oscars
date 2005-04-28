@@ -1,39 +1,30 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
-# logout.pl:  Admin tool: Logout script
-# Last modified: April 4, 2005
+# logout.pl:  Main Service: Logout Link
+# Last modified: April 25, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
+use CGI;
+
 require '../lib/general.pl';
 
-use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
-
-# current script name (used for error message)
-$script_filename = $ENV{'SCRIPT_NAME'};
+# Currently (4-27-05) same as ../user/logout.pl
 
 
-##### Beginning of mainstream #####
 
-# Receive data from HTML form (accept GET method only)
-# this hash is the only global variable used throughout the script
-#%FormData = &Parse_Form_Input_Data( 'get' );
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
 
-#  TODO:  connect to AAAS, perform cleanup
+# nuke session and put the user back at the login screen
 
-# forward the user to the admin tool gateway (login) screen
-print "Location: $admin_tool_gateway_URI\n\n";
+if (!$error_status) {
+    end_session($cgi);
+}
+
+print "Content-type: text/html\n\n";
+
+update_frames("main_frame", "https://oscars.es.net/login_frame.html", "Please log in.");
 
 exit;
 
-##### End of mainstream #####
-
-
-##### Beginning of sub routines #####
-
-
-##### End of sub routines #####
-
-##### End of script #####
