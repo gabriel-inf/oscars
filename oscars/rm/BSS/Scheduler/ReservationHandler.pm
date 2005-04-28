@@ -175,10 +175,16 @@ sub do_remote_trace {
 
     @hops = $_jnxTraceroute->get_hops();
 
-    print "hops: " .  $#hops . "\n";
+    print "hops: " .  $#hops + 1 . "\n";
 
-    # if we didn't hop much, mabe the same router?
-    if ($#hops < 2 ) { return 0; }
+    # if we didn't hop much, maybe the same router?
+    if ($#hops < 0 ) { return 0; }
+
+    if ($#hops == 0) { 
+        print "returning " . $_jnxTraceroute->{'defaultrouter'} . "\n";
+        $idx = $self->{'frontend'}->{'dbconn'}->check_db_rtr($_jnxTraceroute->{'defaultrouter'});
+        return $idx;
+    }
 
     # start off with an non-existant router
     $idx = 0;
@@ -256,9 +262,10 @@ sub find_interface_ids {
     my( $ingress_rtr, $egress_rtr);
 
     print "running local tr to $src\n";
-    $ingress_rtr = $self->do_local_trace($src);
+    #$ingress_rtr = $self->do_local_trace($src);
+    $ingress_rtr = $self->do_remote_trace($src);
    
-    if ( $main::config->{'run_traceroute'} )  {
+    if ( $self->{'configs'}{'run_traceroute'} )  {
         print "running remote tr to $dst\n";
         $egress_rtr = $self->do_remote_trace($dst);
     } else {
