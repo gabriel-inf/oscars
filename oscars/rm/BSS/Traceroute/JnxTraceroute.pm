@@ -202,6 +202,9 @@ sub initialize
   $_self->{'user'} = $_jnxTracerouteUser;
   $_self->{'Key'} = $_jnxTracerouteKey;
 
+  # default router to traceroute from
+  $_self->{'defaultrouter'} = $_jnxTracerouteSource;
+
   return();
 }
 

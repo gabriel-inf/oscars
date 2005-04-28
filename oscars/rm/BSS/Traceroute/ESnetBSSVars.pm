@@ -47,6 +47,8 @@ BEGIN  {
   $_jnxTracerouteKey = '/home/jason/.ssh/traceroute_id_dsa';
 
   # Default source of tracreoutes.
-  $_jnxTracerouteSource = 'chi-cr1.es.net';
+  #$_jnxTracerouteSource = 'chi-cr1.es.net';
+  # this is dev-rt20-e
+  $_jnxTracerouteSource = '198.128.1.138';
 }
 
