@@ -122,8 +122,7 @@ sub verify_login_status
       # an entirely new session (without the dn param) will be 
       # created if there is no valid session with that id.
   $stored_dn = $session->param("dn");
-  if (!defined($stored_dn)) {
-      print STDERR "no such parameter stored\n";
+  if (!defined($stored_dn) or !$stored_dn)  {
       return( 0 );
   }
   else
@@ -138,8 +137,11 @@ sub verify_login_status
 
 sub logout
 {
-    my( $self, $cgi ) = @_;
-    $cgi->param(-name=>'dn',-value=>'');
+  my( $self, $cgi ) = @_;
+  my ($session, $stored_dn);
+
+  $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
+  $session->clear(["dn"]);
 }
 
 
