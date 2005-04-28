@@ -5,6 +5,7 @@
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
+use CGI;
 
 use AAAS::Client::SOAPClient;
 
@@ -19,15 +20,22 @@ require '../lib/general.pl';
 );
 
 
-my ($error_status, $cgi, %results);
+my (%form_params, %results);
 
-($error_status, $cgi) = check_login(0);
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
 
 if (!$error_status) {
-  ($error_status, %results) = print_result_screen(\$cgi->param));
+  foreach $_ ($cgi->param) {
+      $form_params{$_} = $cgi->param($_);
+  }
+  ($error_status, %results) = print_result_screen(\%form_params));
   if (!$error_status) {
       update_status_frame("");
   }
+}
+else {
+    print "Location:  https://oscars.es.net/\n\n";
 }
 
 exit;

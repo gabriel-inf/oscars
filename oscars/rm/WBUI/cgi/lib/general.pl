@@ -21,7 +21,7 @@ $login_URI = 'https://oscars.es.net/';
 
 sub check_login {
   my( $set_cookie, $cgi ) = @_;
-  my( $login_URI, $auth );
+  my( $auth );
 
   $auth = AAAS::Client::Auth->new();
 
@@ -31,10 +31,9 @@ sub check_login {
   }
   elsif (!($auth->verify_login_status($cgi))) 
   {
-      print "Location: $login_URI\n\n";
-      return ( "Please try a different login name." );
+      return ( 1 );
   }
-  return ( '' );
+  return ( 0 );
 }
 
 

@@ -5,6 +5,7 @@
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
+use CGI;
 
 use AAAS::Client::SOAPClient;
 
@@ -13,19 +14,26 @@ require '../lib/general.pl';
 
 # on success loads accactivated.html
 
-my ($error_status, $cgi, %results);
+my (%form_params, %results);
 
-($error_status, $cgi) = check_login(0);
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
 
 if (!$error_status) {
-  ($error_status, %results) = process_user_account_activation(\$cgi->param);
+  foreach $_ ($cgi->param) {
+      $form_params{$_} = $cgi->param($_);
+  }
+  ($error_status, %results) = process_user_account_activation(\%form_params);
 
   if ( !$error_Status ) {
-      update_status_frame($results{'status_msg'};
+      update_frames("main_frame", "", $results{'status_msg'});
   }
   else {
-      update_status_frame($results{'error_msg'});
+      update_frames("main_frame", "", $results{'error_msg'});
   }
+}
+else {
+    print "Location:  https://oscars.es.net/\n\n";
 }
 
 

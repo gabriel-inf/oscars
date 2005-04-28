@@ -41,6 +41,9 @@ if (!$error_status) {
       update_frames("main_frame", "", $results{'error_msg'});
   }
 }
+else {
+    print "Location:  https://oscars.es.net/\n\n";
+}
 
 exit;
 

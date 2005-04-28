@@ -25,6 +25,7 @@ my $error_status = check_login(0, $cgi);
 if (!$error_status) {
   foreach $_ ($cgi->param) {
       $form_params{$_} = $cgi->param($_);
+  }
 
   ($error_status, %results) = create_reservation(\%form_params);
   if (!$error_status) {
@@ -33,6 +34,9 @@ if (!$error_status) {
   else {
       update_frames("status_frame", "", $results{'error_msg'});
   }
+}
+else {
+    print "Location:  https://oscars.es.net/\n\n";
 }
 
 exit;
