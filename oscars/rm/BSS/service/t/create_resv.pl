@@ -13,8 +13,8 @@ $params{'id'} =              'NULL';
 
     # in seconds since epoch
 my $dt = DateTime->now();
-$params{'start_time'} =     $dt->epoch + 604800;      # + one week
-$params{'end_time'} =       $dt->epoch + 604800*2;    # + two weeks
+$params{'start_time'} =     $dt->epoch - 1200;   # - 20 minutes
+$params{'end_time'} =       $dt->epoch + 120;    # + 2 minutes
 
 $params{'created_time'} =   '';   # filled in scheduler
 $params{'bandwidth'}=       '50m';
@@ -25,11 +25,8 @@ $params{'status'} =         'pending';
 $params{'ingress_interface_id'}= '';   # db lookup in scheduler
 $params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
-    ## Used in db lookups, not table fields
-    # www.mcs.anl.gov, CGI Perl script will do any DNS lookup
-$params{'src_ip'} = '140.221.9.193';
-    # www.sdsc.edu
-$params{'dst_ip'} = '198.202.75.101';
+$params{'src_ip'} = '192.168.2.2';
+$params{'dst_ip'} = '192.168.0.2';
 
 $params{'dn'} =        'oscars';
 
