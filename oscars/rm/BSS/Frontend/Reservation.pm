@@ -54,6 +54,7 @@ sub insert_reservation
   my $over_limit = 0; # whether any time segment is over the bandwidth limit
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
 
+
     ###
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
@@ -92,8 +93,8 @@ sub insert_reservation
       $inref->{'egress_id'} = $inref->{'egress_router'}; 
 
           # get ipaddr id from host's and destination's ip addresses
-      $inref->{'src_id'} = hostaddr_to_idx($inref->{'src_ip'}); 
-      $inref->{'dst_id'} = hostaddr_to_idx($inref->{'dst_ip'}); 
+      $inref->{'src_id'} = $self->{'dbconn'}->hostaddr_to_idx($inref->{'src_ip'}); 
+      $inref->{'dst_id'} = $self->{'dbconn'}->hostaddr_to_idx($inref->{'dst_ip'}); 
       $inref->{'created_time'} = time();
 
       my @insertions;   # copy over input fields that will be set in table
