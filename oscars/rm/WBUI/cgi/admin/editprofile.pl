@@ -5,98 +5,86 @@
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-# include libraries
-require '../lib/general.pl';
+use CGI;
 
 use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
 
-# current script name (used for error message)
-$script_filename = $ENV{'SCRIPT_NAME'};
+require '../lib/general.pl';
 
 
-##### Beginning of mainstream #####
+my (%form_params, %results);
 
-# Receive data from HTML form (accept both POST and GET methods)
-# this hash is the only global variable used throughout the script
-%FormData = &Parse_Form_Input_Data( 'all' );
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
 
-# login URI
-$login_URI = 'https://oscars.es.net/';
-$auth = AAAS::Client::Auth->new();
-
-if (!($auth->verify_login_status(\%FormData, undef))) 
+if (!$error_status)
 {
-    print "Location: $login_URI\n\n";
-    exit;
+  foreach $_ ($cgi->param) {
+      $form_params{$_} = $cgi->param($_);
+  }
+  $results{'error_msg'} = validate_params(\%form_params);
+  if (!$results{'error_msg'})
+  {
+      my( $encrypted_passwd, $update_password );
+
+          # encrypt the new password
+      $encrypted_passwd = encode_passwd( $form_params->{'password_new_once'} );
+      $update_password = 1;
+
+      ($error_status, %results) = soap_admin_set_profile(\%form_params);
+      if (!$error_status) {
+          update_frames("main_frame", "", $results{'status_msg'});
+          print_profile_update(\%results);
+      }
+      else {
+          update_frames("main_frame", "", $results{'error_msg'});
+      }
+  }
+  else {
+      update_frames("main_frame", "", $results{'error_msg'});
+  }
+}
+else {
+    print "Location:  https://oscars.es.net/\n\n";
 }
 
-# if 'mode' eq 'admineditprofile': Update the currently logged in admin user's profile
-# all else (default): Print the edit profile interface page
-if ( $FormData{'mode'} eq 'admineditprofile' )
-{
-	&Process_Profile_Update();
-}
-else
-{
-	&Print_Interface_Screen();
-}
 
 exit;
 
-##### End of mainstream #####
 
 
-##### Beginning of sub routines #####
-
-##### sub Print_Interface_Screen
-# In: $Processing_Result [1 (success)/0 (fail)], $Processing_Result_Message
-# Out: None (exits the program at the end)
-sub Print_Interface_Screen
-{
-    ## TODO:  connect to AAAS and get back result
-}
-##### End of sub Print_Interface_Screen
-
-
-##### sub Process_Profile_Update
+##### sub validate_params
 # In: None
 # Out: None
-# Calls sub Print_Interface_Screen at the end (with a success token)
-sub Process_Profile_Update
+sub validate_params
 {
+  my( $form_params ) = @_;
 
-	# validate user input (fairly minimal... Javascript also takes care of form data validation)
-	if ( $FormData{'password_current'} eq '' )
-	{
-		&Print_Interface_Screen( 0, 'Please enter the current password.' );
-	}
-
-	my $Encrypted_Password;
-	my $Update_Password = 0;
-
-	if ( $FormData{'password_new_once'} ne '' || $FormData{'password_new_twice'} ne '' )
-	{
-		if ( $FormData{'password_new_once'} ne $FormData{'password_new_twice'} )
-		{
-			&Print_Interface_Screen( 0, 'Please enter the same new password twice for verification.' );
-		}
-		else
-		{
-			# encrypt the new password
-			$Encrypted_Password = &Encode_Passwd( $FormData{'password_new_once'} );
-
-			$Update_Password = 1;
-		}
-	}
-
-	### TODO:  connect to AAAS, and get back result
-	### when everything has been processed successfully...
-	&Print_Interface_Screen( 1, 'The account information has been updated successfully.' );
-
+      # validate user input ... Javascript also takes care of form data validation)
+  if ( $FormData{'password_current'} eq '' )
+  {
+      return ( 'Please enter the current password.' );
+  }
+  if ( $form_params->{'password_new_once'} ne '' || $form_params->{'password_new_twice'} ne '' )
+  {
+      if ( $form_params->{'password_new_once'} ne $form_params->{'password_new_twice'} )
+      {
+          return ( 'Please enter the same new password twice for verification.' );
+      }
+  }
+  return( '' );
 }
-##### End of sub Process_Profile_Update
 
-##### End of sub routines #####
 
-##### End of script #####
+##### sub print_profile_update
+# In: None
+# Out: None
+sub print_profile_update
+{
+  my( $form_params ) = @_;
+
+      ### TODO:  connect to AAAS, and get back result
+      ### when everything has been processed successfully...
+
+#	'The account information has been updated successfully.' );
+}
