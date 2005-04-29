@@ -1,73 +1,24 @@
 ###################################################################
-# Package: ESnetPSSVars.pm
-# Author: chin guok (chin@es.net)
+# Configuration file: ESnetPSSVars.pm
+# Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 #
 # Description:
-#   Contains variables for the OSCARS scripts.
+#   Contains configuration specifically for JnxLSP.
 #
 ###################################################################
 
-package PSS::module::ESnetPSSVars;
-
-use Exporter;
-@ISA = qw(Exporter);
-
-# Symbols to export by default.
-#@EXPORT = qw();
-
-# Symbols to export on request.
-@EXPORT_OK = qw(
-  $_jnxLspAccess
-  $_jnxLspLogin
-  $_jnxLspPassword
-  $_jnxLspSetupXmlFile
-  $_jnxLspTeardownXmlFile
-  $_jnxLspExtIfFilter
-  $_jnxLspFirewallFilterMaker
-  $_jnxLspCoS
-  $_jnxLspSetupPriority
-  $_jnxLspResvPriority
-);
-
-# Define names for sets of symbols.
-%EXPORT_TAGS = (
-  JNXLSP => [qw(
-    $_jnxLspAccess
-    $_jnxLspLogin
-    $_jnxLspPassword
-    $_jnxLspSetupXmlFile
-    $_jnxLspTeardownXmlFile
-    $_jnxLspExtIfFilter
-    $_jnxLspFirewallFilterMaker
-    $_jnxLspCoS
-    $_jnxLspSetupPriority
-    $_jnxLspResvPriority
-  )],
-);
-
-
-BEGIN  {
-
-  #####
-  #
-  # Variables specifically for JnxLSP.pm
-  #
-  #####
-
   # Router access.
-  $_jnxLspAccess = 'ssl';
-  $_jnxLspLogin = 'junoscript';
-  $_jnxLspPassword = 'JUNOScript';
+_jnxLspAccess = 'ssl';
+_jnxLspLogin = 'junoscript';
+_jnxLspPassword = 'JUNOScript';
 
   # XML related variables.
-  $_jnxLspSetupXmlFile = '../xml/ESnet-OSCARS_Juniper_LSP-setup.xml';
-  $_jnxLspTeardownXmlFile = '../xml/ESnet-OSCARS_Juniper_LSP-teardown.xml';
-  $_jnxLspExtIfFilter = 'external-interface-inbound-inet.0-filter';
-  $_jnxLspFirewallFilterMaker = 'oscars-filters-start';
+_jnxLspSetupXmlFile = '../xml/ESnet-OSCARS_Juniper_LSP-setup.xml';
+_jnxLspTeardownXmlFile = '../xml/ESnet-OSCARS_Juniper_LSP-teardown.xml';
+_jnxLspExtIfFilter = 'external-interface-inbound-inet.0-filter';
+_jnxLspFirewallFilterMaker = 'oscars-filters-start';
 
   # LSP default values.
-  $_jnxLspCoS = 4;  # EF
-  $_jnxLspSetupPriority = 4;
-  $_jnxLspResvPriority = 4;
-}
-
+_jnxLspCoS = 4;  # EF
+_jnxLspSetupPriority = 4;
+_jnxLspResvPriority = 4;
