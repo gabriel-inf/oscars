@@ -5,7 +5,6 @@ use strict;
 use Config::Auto;
 use SOAP::Transport::HTTP;
 
-use lib '../..';
 use AAAS::Frontend::User;
 
 our( $config, $dbUser);

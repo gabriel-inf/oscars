@@ -2,7 +2,7 @@ package AAAS::Frontend::Admin;
 
 # Admin.pm:  database operations associated with administrative forms
 
-# Last modified: April 14, 2005
+# Last modified: April 28, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -361,18 +361,6 @@ sub process_profile_update
   $self->{'dbconn'}->handle_finish( 'users');
   $results{'status_msg'} = 'The account information has been updated successfully.';
   return( 0, %results );
-}
-
-
-# logout:   DB operations associated with admin logout
-
-sub handle_logout
-{
-    my( $self, $sth );
-    my( %results );
-
-    #$self->{'dbconn'}->handle_finish( 'users'});
-    return ( 1, 'not done yet' );
 }
 
 1;

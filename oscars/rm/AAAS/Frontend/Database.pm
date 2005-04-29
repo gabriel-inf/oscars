@@ -1,13 +1,11 @@
 package AAAS::Frontend::Database;
 
 # Database.pm:  package for AAAS specific database settings
-# Last modified: April 21, 2005
+# Last modified: April 28, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
-
-use lib '../..';
 
 use OSCARS_db;
 
