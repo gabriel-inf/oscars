@@ -16,8 +16,8 @@ require '../lib/general.pl';
 
 
 
-    # names of the fields to be read and displayed on the screen
-my @fields_to_read = ( 'start_time', 'end_time', 'bandwidth', 'status', 'src_id', 'dst_id' );
+    # names of the fields to be read
+my @fields_to_read = ( 'user_dn', 'start_time', 'end_time', 'status', 'src_id', 'dst_id' );
 
 
 my (%form_params, %results);
@@ -30,12 +30,10 @@ if (!$error_status) {
   foreach $_ ($cgi->param) {
       $form_params{$_} = $cgi->param($_);
   }
-      # FIX:  hard-wired for testing
-  $form_params{'dn'} = 'oscars';
   ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
   if (!$error_status) {
       update_frames("main_frame", "", $results{'status_msg'});
-      print_reservation_detail(\%results);
+      print_reservations(\%results);
   }
   else {
       update_frames("main_frame", "", $results{'error_msg'});
@@ -49,15 +47,16 @@ exit;
 
 
 
-##### sub print_reservation_detail
+##### sub print_reservations
 # In: 
 # Out:
-sub print_reservation_detail
+sub print_reservations
 {
-  my ($results) = @_;
-  my ($arrayref, $row, $f, $fctr, $dt, $minute, $hour, $ipaddr, $host);
+  my ( $results) = @_;
+  my ( $rowsref, $mapping, $row );
 
-  $arrayref = $results->{'rows'};
+  $rowsref = $results->{'rows'};
+  $mapping = $results->{'idtoip'};
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";
@@ -73,68 +72,28 @@ sub print_reservation_detail
   print "<div id=\"zebratable_ui\">\n\n";
 
   print "<p><em>View Active Reservations</em><br>\n";
-  print "<p>Click the Reservation ID number link to view detailed information about the reservation.\n";
-  print "(NOTE:  Currently this is mixed with the reservation details.)\n";
+  print "<p>Click on the Reservation Tag link to view detailed information about the reservation.\n";
   print "</p>\n\n";
 
   print "<table cellspacing=\"0\" width=\"90%\" id=\"reservationlist\">\n";
   print "  <thead>\n";
   print "  <tr>\n";
-  print "    <td width=\"13%\">Start Time</td>\n";
-  print "    <td width=\"13%\">End Time</td>\n";
-  print "    <td width=\"4%\">Bandwidth</td>\n";
-  print "    <td width=\"12%\">Status</td>\n";
-  print "    <td width=\"29%\">Origin</td>\n";
-  print "    <td width=\"29%\">Destination</td>\n";
+  print "    <td >Tag</td>\n";
+  print "    <td >Start Time</td>\n";
+  print "    <td >End Time</td>\n";
+  print "    <td >Status</td>\n";
+  print "    <td >Origin</td>\n";
+  print "    <td >Destination</td>\n";
   print "  </tr>\n";
   print "  </thead>\n";
 
   print "  <tbody>\n";
-      # ordering, number of fields has to be same on client and server
-      # hash would be better, but haven't figured out how to read from db all
-      # at once into hash
-  foreach $row (@$arrayref)
+  foreach $row (@$rowsref)
   {
-      if (@$row[3] ne 'finished')
+      if ($row{'status'} ne 'finished')
       {
         print "  <tr>\n";
-        $fctr = 0;
-        foreach $f (@$row)
-        {
-            if ($fctr < 2)    # first two fields are starting and ending times
-            {
-              $dt = DateTime->from_epoch( epoch => $f );
-              $hour = $dt->hour();
-              if ($hour < 10)
-              {
-                  $hour = "0" . $hour;
-              }
-              $minute = $dt->minute();
-              if ($minute < 10)
-              {
-                  $minute = "0" . $minute;
-              }
-              print "      <td>" . $dt->month() . "-" . $dt->day() . "&nbsp;&nbsp; " . $hour . ":" . $minute . "</td>\n" 
-            }
-            elsif (($fctr == 4) || ($fctr == 5))  # IP's
-            {
-              $ipaddr = inet_aton($f);
-              $host = gethostbyaddr($ipaddr, AF_INET);
-              if ($host)
-              {
-                print "    <td>" . $host . "</td>\n"; 
-              }
-              else
-              {
-                print "    <td>" . $f . "</td>\n"; 
-              }
-            }
-            else
-            {
-              print "    <td>$f</td>\n";
-            }
-            $fctr += 1;
-        }
+        print_row($row, $mapping);
         print "  </tr>\n";
       }
   }
@@ -151,3 +110,87 @@ sub print_reservation_detail
   print "</html>\n\n";
 }
 
+
+
+sub print_row
+{
+  my( $row, $mapping ) = @_;
+  my( $tag, $seconds, $time_field, $time_tag );
+
+
+  $seconds = DateTime->from_epoch( epoch => $row{'start_time'} );
+  ($time_tag, $time_field) = get_time_str($seconds);
+      # ESnet hard wired for now in tag
+      # TODO:  incremental ID at end if multiple ones in same minute
+  $tag = 'OSCARS.ESnet.' . $row->{'user_dn'} . '.' . $time_tag . '.0';
+  print "    <td>" . $tag . "</td>\n"; 
+  
+  print $time_field;
+
+  $seconds = DateTime->from_epoch( epoch => $row{'end_time'} );
+  ($time_tag, $time_field) = get_time_str($seconds);
+  print $time_field;
+
+  print "    <td>" . $row->{'status'} . "</td>\n";
+
+  print_host($row{'src_id'}, $mapping);
+  print_host($row{'dst_id'}, $mapping);
+}
+
+
+#
+
+sub print_host
+{
+  my( $id, $mapping ) = @_;
+
+  my $ip = $mapping->{'id'};
+  my $ipaddr = inet_aton($ip);
+  my $host = gethostbyaddr($ipaddr, AF_INET);
+  if ($host) {
+      print "    <td>" . $host . "</td>\n"; 
+  }
+  else
+  {
+      print "    <td>" . $ipaddr . "</td>\n"; 
+  }
+}
+
+
+#
+
+sub get_time_str 
+{
+  my( $seconds ) = @_;
+
+  my $dt = DateTime->from_epoch( epoch => $seconds );
+  my $year = $dt->year();
+  if ($year < 10)
+  {
+      $year = "0" . $year;
+  }
+  my $month = $dt->month();
+  if ($month < 10)
+  {
+      $month = "0" . $month;
+  }
+  my $day = $dt->day();
+  if ($day < 10)
+  {
+      $day = "0" . $day;
+  }
+  my $hour = $dt->hour();
+  if ($hour < 10)
+  {
+      $hour = "0" . $hour;
+  }
+  $minute = $dt->minute();
+  if ($minute < 10)
+  {
+      $minute = "0" . $minute;
+  }
+  my $time_tag = $year . $month . $day . '.' . $hour . ':' . $minute;
+  my $time_field = "      <td>" . $month . "-" . $day . "&nbsp;&nbsp; " . $hour . ":" . $minute . "</td>\n" ;
+
+  return ( $time_tag, $time_field );
+}
