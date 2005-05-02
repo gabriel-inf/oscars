@@ -30,19 +30,31 @@ $adminadduser_notification_email_encoding = 'ISO-8859-1';
 
 ##### Beginning of mainstream #####
 
-# Receive data from HTML form (accept both POST and GET methods)
-# this hash is the only global variable used throughout the script
-%FormData = &Parse_Form_Input_Data( 'all' );
 
-# login URI
-$login_URI = 'https://oscars.es.net/admin/';
-$auth = AAAS::Client::Auth->new();
+my (%form_params, %results);
 
-if (!($auth->verify_login_status(\%FormData, undef))) 
-{
-    print "Location: $login_URI\n\n";
-    exit;
+my $cgi = CGI->new();
+my $error_status = check_login(0, $cgi);
+
+if (!$error_status) {
+  foreach $_ ($cgi->param) {
+      $form_params{$_} = $cgi->param($_);
+  }
+  $results{'error_msg'} = validate_params(\%form_params);
+  ($error_status, %results) = soap_check_login_dup(\%form_params);
+  if (!$error_status) {
+      update_frames("main_frame", "", $results{'status_msg'});
+      print_dup_status(\%results);
+  }
+  else {
+      update_frames("main_frame", "", $results{'error_msg'});
+  }
 }
+else {
+    print "Location:  https://oscars.es.net/\n\n";
+}
+
+exit;
 
 
 # if 'mode' eq 'idcheck': Check the input login name for overlap
@@ -56,10 +68,6 @@ elsif ( $FormData{'mode'} eq 'adminadduser' )
 {
 	&Process_User_Registration();
 }
-else
-{
-	&Print_Interface_Screen();
-}
 
 exit;
 
@@ -68,78 +76,34 @@ exit;
 
 ##### Beginning of sub routines #####
 
-##### sub Print_Loginname_Overlap_Check_Result
+##### sub validate_params
 # In: None
-# Out: None (exits the program at the end)
-sub Print_Loginname_Overlap_Check_Result
+# Out: None
+sub validate_params
 {
+  my( $form_params ) = @_;
 
-	my $Processing_Result_Message = '<strong>' . $FormData{'id'} . '</strong><br>';
+      # validate user input (Javascript also takes care of form data
+      # validation)
+  if ( $form_params->{'id'} =~ /\W|\s/) {
+      return( "Please use only alphanumeric characters or _ for login name.");
+  }
+  if ( $form_params->{'dn'} eq '' ) {
+      return( 'Please enter the desired login name.' );
+  }
+  if ( $form_params->{'dn'} =~ /\W|\s/ ) {
+      return(  'Please use only alphanumeric characters or _ for login name.' );
+  }
+  if ( $form_params->{'password_once'} eq '' || $form_params->{'password_twice'} eq '' )
+  {
+      return( 'Please enter the password.' );
+  }
+  if ( $form_params->{'password_once'} ne $form_params->{'password_twice'} ) {
+      return( 'Please enter the same password twice for verification.' );
+  }
 
-	if ( $FormData{'id'} =~ /\W|\s/)
-	{
-		$Processing_Result_Message .= '<img src="' . $icon_locations{'exclaim'} . '" alt="!"> Please use only alphanumeric characters or _ for login name.';
-	}
-	else
-	{
-		my $Overlap_Check_Result = &Check_Loginname_Overlap();
-
-		if ( $Overlap_Check_Result eq 'no' )
-		{
-			$Processing_Result_Message .= '<img src="' . $icon_locations{'smile'} . '" alt="smile face"> You can use this login ID.';
-		}
-		elsif ( $Overlap_Check_Result eq 'yes' )
-		{
-			$Processing_Result_Message .= '<img src="' . $icon_locations{'sad'} . '" alt="sad face"> This login name is already taken; please choose something else.';
-		}
-	}
-
-	my $Template_HTML_File = $interface_template_filename{'idcheck'};
-
-	# open html template file
-	open( F_HANDLE, $Template_HTML_File ) || &Print_Error_Screen( $script_filename, "FileOpen\n" . $Template_HTML_File . ' - ' . $! );
-	my @Template_Html = <F_HANDLE>;
-	close( F_HANDLE );
-
-	# print processing result to browser screen
-	print "Pragma: no-cache\n";
-	print "Cache-control: no-cache\n";
-	print "Content-type: text/html\n\n";
-
-	foreach $Html_Line ( @Template_Html )
-	{
-		foreach ( $Html_Line )
-		{
-			s/<!-- \(\(_Processing_Result_Message_\)\) -->/$Processing_Result_Message/g;
-		}
-
-		print $Html_Line;
-	}
-
-	exit;
-
+  return( "" );
 }
-##### End of sub Print_Loginname_Overlap_Check_Result
-
-
-##### sub Check_Loginname_Overlap
-# In: None
-# Out: $Check_Result [yes(overlaps)/no(doesn't overlap)]
-sub Check_Loginname_Overlap
-{
-        ## TODO:  connect to AAAS, get back result
-	return $Check_Result;
-}
-##### End of sub Check_Loginname_Overlap
-
-
-##### sub Print_Interface_Screen
-# In: $Processing_Result [1 (success)/0 (fail)], $Processing_Result_Message
-# Out: None (exits the program at the end)
-sub Print_Interface_Screen
-{
-}
-##### End of sub Print_Interface_Screen
 
 
 ##### sub Process_User_Registration
@@ -148,66 +112,60 @@ sub Print_Interface_Screen
 # Calls sub Print_Interface_Screen at the end (with a success token)
 sub Process_User_Registration
 {
+  my( $form_params ) = @_;
 
-	# validate user input (fairly minimal... Javascript also takes care of form data validation)
-	if ( $FormData{'dn'} eq '' )
-	{
-		&Print_Interface_Screen( 0, 'Please enter the desired login name.' );
-	}
-	elsif ( $FormData{'dn'} =~ /\W|\s/ )
-	{
-		&Print_Interface_Screen( 0, 'Please use only alphanumeric characters or _ for login name.' );
-	}
+      # encrypt password
+  my $encrypted_password = encode_passwd( $form_params->{'password_once'} );
 
-	if ( $FormData{'password_once'} eq '' || $FormData{'password_twice'} eq '' )
-	{
-		&Print_Interface_Screen( 0, 'Please enter the password.' );
-	}
-	elsif ( $FormData{'password_once'} ne $FormData{'password_twice'} )
-	{
-		&Print_Interface_Screen( 0, 'Please enter the same password twice for verification.' );
-	}
-
-	# encrypt password
-	my $Encrypted_Password = &Encode_Passwd( $FormData{'password_once'} );
-
-	# create user account activation key
-	my $Activation_Key = &Generate_Random_String( $account_activation_key_size );
+      # create user account activation key
+  my $activation_key = generate_random_string( $account_activation_key_size );
 
 	### TODO:  connect to AAAS, get back result
 
 	### send a notification email to the user (with account activation instruction)
-	open( MAIL, "|$sendmail_binary_path_and_flags $FormData{'email_primary'}" ) || &Print_Interface_Screen( 0, 'The user account has been created successfully, but sending a notification email to the user has failed. If the user does not receive the activation key by email, the account cannot be activated. Please check all the settings and the user\'s primary email address, and contact the webmaster at ' . $webmaster . ' and inform the person of the date and time of error.<br>[Error] ' . $! );
-
-		print MAIL 'From: ', $webmaster, "\n";
-		print MAIL 'To: ', $FormData{'email_primary'}, "\n";
-
-		print MAIL 'Subject: ', $adminadduser_notification_email_title, "\n";
-		print MAIL 'Content-Type: text/plain; charset="', $adminadduser_notification_email_encoding, '"', "\n\n";
-		
-		print MAIL 'A new user account has been created for you, and is ready for activation.', "\n";
-		print MAIL 'Please visit the Web page below and activate your user account. If the URL appears in multiple lines, please copy and paste the whole address on your Web browser\'s address bar.', "\n\n";
-
-		print MAIL $account_activation_form_URI, "\n\n";
-
-		print MAIL 'Your Login Name: ', $FormData{'dn'}, "\n";
-		print MAIL 'Account Activation Key: ', $Activation_Key, "\n";
-		print MAIL 'Password: ', $FormData{'password_once'}, "\n";
-		print MAIL 'Your User Level: ', $user_level_description{$FormData{'level'}}, ' (Lv ', $FormData{'level'}, ')', "\n";
-		print MAIL 'Please change the password to your own once you activate the account.', "\n\n";
-
-		print MAIL '---------------------------------------------------', "\n";
-		print MAIL '=== This is an auto-generated e-mail ===', "\n";
-
-	close( MAIL ) || &Print_Interface_Screen( 0, 'The user account has been created successfully, but sending a notification email to the user has failed. If the user does not receive the activation key by email, the account cannot be activated. Please check all the settings and the user\'s primary email address, and contact the webmaster at ' . $webmaster . ' and inform the person of the date and time of error.<br>[Error] ' . $! );
+  my $error_status = print_mail_message($form_params);
+  if ($error_status) {
+      return( 0, $error_status ); 
 
 	### when everything has been processed successfully...
-	# don't forget to show the user's login name
-	&Print_Interface_Screen( 1, 'The new user account \'' . $FormData{'dn'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
+    # don't forget to show the user's login name
+  return( 1, 'The new user account \'' . $form_params->{'dn'} . '\' has been created successfully. <br>The user will receive information on activating the account in email shortly.' );
 
 }
-##### End of sub Process_User_Registration
 
-##### End of sub routines #####
 
-##### End of script #####
+sub print_mail_message
+{
+  my( $form_params ) = @_;
+  my $status = open( MAIL, "|$sendmail_binary_path_and_flags $form_params->{'email_primary'}" )
+  if (!defined($status)
+  { 
+    return( 'The user account has been created successfully, but sending a notification email to the user has failed. If the user does not receive the activation key by email, the account cannot be activated. Please check all the settings and the user\'s primary email address, and contact the webmaster at ' . $webmaster . ' and inform the person of the date and time of error.<br>[Error] ' . $! );
+  }
+  print MAIL 'From: ', $webmaster, "\n";
+  print MAIL 'To: ', $form_params->{'email_primary'}, "\n";
+
+  print MAIL 'Subject: ', $adminadduser_notification_email_title, "\n";
+  print MAIL 'Content-Type: text/plain; charset="', $adminadduser_notification_email_encoding, '"', "\n\n";
+		
+  print MAIL 'A new user account has been created for you, and is ready for activation.', "\n";
+  print MAIL 'Please visit the Web page below and activate your user account. If the URL appears in multiple lines, please copy and paste the whole address on your Web browser\'s address bar.', "\n\n";
+
+  print MAIL $account_activation_form_URI, "\n\n";
+  print MAIL 'Your Login Name: ', $form_params->{'dn'}, "\n";
+  print MAIL 'Account Activation Key: ', $Activation_Key, "\n";
+  print MAIL 'Password: ', $form_params->{'password_once'}, "\n";
+  print MAIL 'Your User Level: ', $user_level_description{$form_params->{'level'}}, ' (Lv ', $form_params->{'level'}, ')', "\n";
+  print MAIL 'Please change the password to your own once you activate the account.', "\n\n";
+
+  print MAIL '---------------------------------------------------', "\n";
+  print MAIL '=== This is an auto-generated e-mail ===', "\n";
+
+  my $error_status = close( MAIL );
+  if (!defined($error_status))
+  {
+    return(  'The user account has been created successfully, but sending a notification email to the user has failed. If the user does not receive the activation key by email, the account cannot be activated. Please check all the settings and the user\'s primary email address, and contact the webmaster at ' . $webmaster . ' and inform the person of the date and time of error.<br>[Error] ' . $! );
+  }
+  return "";
+}
+
