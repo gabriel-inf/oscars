@@ -11,10 +11,12 @@ package BSS::Scheduler::SchedulerThread;
 use threads;
 use threads::shared;
 
-# Chins PSS module to configure the routers
-use PSS::module::ESnetPSSVars;
-use PSS::module::JnxLSP;
+use Data::Dumper;
 
+    # Chins PSS module to configure the routers
+use PSS::LSPHandler::JnxLSP;
+
+    # Front end to reservations database
 use BSS::Frontend::Database;
 
 # try to keep it tight
@@ -45,7 +47,7 @@ my ($global_config);
 
 
 #fake pss calls for the momment
-my ($fakeit) = 1;
+my ($fakeit) = 0;
 
 my ($_error);
 
@@ -178,8 +180,10 @@ sub setup_pss {
     # probably a slick way with map to do this ...
     my (%_lspInfo) = (
       'name' => "oscars_$res->{'reservation_id'}",
-      'lsp_from' => $srcrouter,
-      'lsp_to' => $dstrouter,
+      #'lsp_from' => $srcrouter,
+      'lsp_from' => '198.128.1.138',
+      #'lsp_to' => $dstrouter,
+      'lsp_to' => '10.0.0.1',
       'bandwidth' => $res->{'reservation_bandwidth'},
       'lsp_class-of-service' => '4',
       'policer_burst-size-limit' =>  $res->{'reservation_burst_limit'},
@@ -191,14 +195,15 @@ sub setup_pss {
     );
 
     print "execing pss to schedule reservations\n";
-
     if ($fakeit == 0 ) {
         # Create an LSP object.
         my ($_jnxLsp) = new JnxLSP(%_lspInfo);
 
+        print Dumper($_jnxLsp);
         print("Setting up LSP...\n");
         $_jnxLsp->configure_lsp(_LSP_SETUP);
         if ($_error = $_jnxLsp->get_error())  {
+            print Dumper($_error);
             return 0;
             #die($_error);
         }

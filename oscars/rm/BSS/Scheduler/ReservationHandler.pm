@@ -9,7 +9,7 @@ package BSS::Scheduler::ReservationHandler;
 
 use Net::Ping;
 
-use BSS::Scheduler::Net::Traceroute;
+use Net::Traceroute;
 use BSS::Traceroute::JnxTraceroute;
 
 # BSS data base front end
