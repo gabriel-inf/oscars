@@ -8,8 +8,6 @@ package BSS::Frontend::Database;
 
 use strict; 
 
-use lib '../..';
-
 use OSCARS_db;
 
 our @ISA = qw(OSCARS_db);

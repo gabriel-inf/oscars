@@ -7,8 +7,6 @@ package BSS::Frontend::Reservation;
 
 use strict;
 
-use lib '../..';
-
 use BSS::Frontend::Database;
 
 use Data::Dumper;
@@ -133,14 +131,19 @@ sub get_reservations
 {
   my( $self, $inref, $fields_to_read ) = @_;
   my( $sth, $query );
-  my( %mapping, $rarrayref, $harrayref, $r, %results );
+  my( @field_names, $r, %results );
 
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
     # DB query: get the reservation list
+    # TODO:  selectall
+
+  foreach $_ ( @$fields_to_read ) {
+      push (@field_names, $table{'reservations'}{$_});
+  }
 
   $query = "SELECT ";
-  foreach $_ ( @$fields_to_read ) {
-      $query .= $table{'reservations'}{$_} . ", ";
+  foreach $_ ( @field_names ) {
+      $query .= $_ . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
@@ -150,26 +153,15 @@ sub get_reservations
   ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations', $inref->{'dn'});
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
-  $rarrayref = $sth->fetchall_arrayref();
+  $results{'rows'} = $sth->fetchall_arrayref({user_dn => 1, reservation_start_time => 2, reservation_end_time => 3, reservation_status => 4, src_hostaddrs_id => 5, dst_hostaddrs_id => 6});
   $self->{'dbconn'}->query_finish();
   $self->{'dbconn'}->unlock_table( 'hostaddrs' );
-  $results{'rows'} = $rarrayref;
 
   $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
   ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'hostaddrs');
   if ( $results{'error_msg'} ) { return(1, %results ); }
-  $harrayref = $sth->fetchall_arrayref();
-  foreach $r (@$harrayref)
-  {
-      $mapping{@$r[0]} = @$r[1];
-  }
 
-    # replace src and destination id's with host ip's
-  foreach $r (@$rarrayref)
-  {
-     @$r[4] = $mapping{@$r[4]};
-     @$r[5] = $mapping{@$r[5]};
-  }
+  $results{'idtoip'} = $sth->fetchall_arrayref();
 
   $self->{'dbconn'}->handle_finish( 'reservations' );
   $results{'status_msg'} = 'Successfully read reservations';
