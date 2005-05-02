@@ -8,12 +8,10 @@
 use SOAP::Lite;
 use SOAP::Transport::HTTP;
 
-use lib '../..';
-use lib '../Scheduler/lib/perl5';
-
 ## we want to thread on each accept, as some requests can take a 
 ## while (i.e. running traceroute)
-use SOAP::Transport::HTTP::Daemon::ThreadOnAccept;
+#use SOAP::Transport::HTTP::Daemon::ThreadOnAccept;
+use SOAP::Transport::HTTP;
 
 # enable this in the 'production' version
 # don't want to die on 'Broken pipe' or Ctrl-C
