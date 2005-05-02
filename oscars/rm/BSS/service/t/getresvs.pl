@@ -9,7 +9,7 @@ use Data::Dumper;
 my($value);
 my %params = ('dn' => 'oscars' );   # FIX
     # names of the fields to be read and displayed on the screen
-my @fields_to_read = ( 'start_time', 'end_time', 'bandwidth', 'status', 'src_id', 'dst_id', 'dn' );
+my @fields_to_read = ( 'dn', 'start_time', 'end_time', 'status', 'src_id', 'dst_id' );
 
 my($unused, %data) = soap_get_reservations(\%params, \@fields_to_read);
 if (defined($data{'error_msg'}) && $data{'error_msg'})
@@ -18,20 +18,28 @@ if (defined($data{'error_msg'}) && $data{'error_msg'})
 }
 elsif (defined($data{'status_msg'}))
 {
-    my $rows = $data{'rows'};
-    my ($r, $f);
+    my ($rows, $r, $f);
+    my (%mapping);
+
+    $rows = $data{'idtoip'};
+    foreach $r (@$rows)
+    {
+        $mapping{$$r[0]} = $$r[1];
+    }
     foreach $_ (@fields_to_read)
     {
         print $_, ' ';
     }
-    print "\n\n";
+    print "\n";
+    $rows = $data{'rows'};
     foreach $r (@$rows)
     {
-       foreach $f (@$r)
-       {
-           print $f, ' ';
-       }
-       print "\n";
+        print $r->{'user_dn'}, ' ';
+        print $r->{'reservation_start_time'}, ' ';
+        print $r->{'reservation_end_time'}, ' ';
+        print $r->{'reservation_status'}, ' ';;
+        print $mapping{$r->{'src_hostaddrs_id'}}, ' ';
+        print $mapping{$r->{'dst_hostaddrs_id'}};
+        print "\n";
     }
-    
 }

@@ -14,10 +14,10 @@ $params{'id'} =              'NULL';
     # in seconds since epoch
 my $dt = DateTime->now();
 $params{'start_time'} =     $dt->epoch - 1200;   # - 20 minutes
-$params{'end_time'} =       $dt->epoch + 120;    # + 2 minutes
+$params{'end_time'} =       $dt->epoch + 120;    # + 5 minutes
 
 $params{'created_time'} =   '';   # filled in scheduler
-$params{'bandwidth'}=       '50m';
+$params{'bandwidth'}=       '10m';
 $params{'class'}=           'test';
 $params{'burst_limit'}=     '100m';
 $params{'status'} =         'pending';
