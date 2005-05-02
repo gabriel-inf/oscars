@@ -1,7 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 use strict;
-use lib '../..';
+
 use BSS::Traceroute::JnxTraceroute;
 
 #####
@@ -22,7 +22,7 @@ my (@_hops) = ();
 
 
 # Create a traceroute object.
-my ($_jnxTraceroute) = new JnxTraceroute();
+my ($_jnxTraceroute) = BSS::Traceroute::JnxTraceroute->new();
 
 print("Traceroute: chi-cr1.es.net -> distressed.es.net\n");
 

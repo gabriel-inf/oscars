@@ -1,20 +1,18 @@
 #####
 #
 # Package: JnxTraceroute.pm
-# Author: chin guok (chin@es.net)
+# Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:
 #   Execute traceroute on Juniper routers.
 #
 #####
 
-package JnxTraceroute;
+package BSS::Traceroute::JnxTraceroute;
+
+use Config::Auto;
 
 use strict;
 
-#use ESnetBSSVars qw(
-use BSS::Traceroute::ESnetBSSVars qw(
-  :JNXTRACEROUTE
-);
 
 
 #####
@@ -22,8 +20,6 @@ use BSS::Traceroute::ESnetBSSVars qw(
 # Constant definitions.
 #
 #####
-# TRACEROUTE constants
-use constant _TRACEROUTE_SOURCE => $_jnxTracerouteSource;
 
 
 #####
@@ -78,7 +74,7 @@ sub traceroute
   my ($_hopInfo, $_hopCount);
 
   # Clear error message.
-  $_self->{'errMsg'} = 0;
+  $_self->{'jnxConf'}->{'errMsg'} = 0;
 
   # If only _addr1 is defined, then
   #   _source = $_self{"source"}, _destination = _addr1.
@@ -90,18 +86,18 @@ sub traceroute
       $_destination = $_addr2;
     }
     else  {
-      $_source = _TRACEROUTE_SOURCE;
+      $_source = $_self->{'jnxConf'}->{'source'};
       $_destination = $_addr1;
     }
   }
   else  {
-    $_self->{'errMsg'} = "ERROR: Traceroute destination not defined\n";
+    $_self->{'jnxConf'}->{'errMsg'} = "ERROR: Traceroute destination not defined\n";
     return();
   }
 
   # Perform the traceroute.
-  if (not(open(_TRACEROUTE_, "ssh -x -a -i $_self->{'Key'} -l $_self->{'user'} $_source traceroute $_destination 2>/dev/null |")))  {
-    $_self->{'errMsg'} = "ERROR: Unable to ssh into router and perform traceroute\n";
+  if (not(open(_TRACEROUTE_, "ssh -x -a -i $_self->{'jnxConf'}->{'key'} -l $_self->{'jnxConf'}->{'user'} $_source traceroute $_destination 2>/dev/null |")))  {
+    $_self->{'jnxConf'}->{'errMsg'} = "ERROR: Unable to ssh into router and perform traceroute\n";
     return();
   }
 
@@ -172,7 +168,7 @@ sub get_error
 {
   my ($_self) = @_;
 
-  return($_self->{'errMsg'});
+  return($_self->{'jnxConf'}->{'errMsg'});
 }
 
 
@@ -195,15 +191,13 @@ sub initialize
 {
   my ($_self) = @_;
 
-  # Clear error message.
-  $_self->{'errMsg'} = 0;
+  $_self->{'jnxConf'} = Config::Auto::parse('JnxTraceroute.config');
 
-  # Assign ssh variables.
-  $_self->{'user'} = $_jnxTracerouteUser;
-  $_self->{'Key'} = $_jnxTracerouteKey;
+  # Clear error message.
+  $_self->{'jnxConf'}->{'errMsg'} = 0;
 
   # default router to traceroute from
-  $_self->{'defaultrouter'} = $_jnxTracerouteSource;
+  $_self->{'defaultrouter'} = $_self->{'jnxConf'}->{'source'};
 
   return();
 }
