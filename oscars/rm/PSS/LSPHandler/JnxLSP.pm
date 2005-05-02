@@ -1,22 +1,20 @@
 #####
 #
 # Package: JnxLSP.pm
-# Author: chin guok (chin@es.net)
+# Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:
 #   Sub-routines to setup/teardown LSPs on Juniper routers.
 #
 #####
 
-#package PSS::module::JnxLSP;
-package JnxLSP;
+package PSS::LSPHandler::JnxLSP;
 
 use strict;
+
 use JUNOS::Device;
 use JUNOS::Trace;
 use XML::DOM;
-use PSS::module::ESnetPSSVars qw(
-  :JNXLSP
-);
+use Config::Auto;
 
 
 require Exporter;
@@ -30,31 +28,17 @@ our @EXPORT = qw();
 #
 #####
 # JUNOScript constants
+
 use constant _STATE_CONNECTED => 1;
 use constant _STATE_LOCKED => 2;
 use constant _STATE_CONFIG_LOADED => 3;
-use constant _JUNOSCRIPT_ACCESS => $_jnxLspAccess;
-use constant _JUNOSCRIPT_LOGIN => $_jnxLspLogin;
-use constant _JUNOSCRIPT_PASSWORD => $_jnxLspPassword;
-
-# XML constants
-use constant _XML_LSP_SETUP_FILE => $_jnxLspSetupXmlFile;
-use constant _XML_LSP_TEARDOWN_FILE => $_jnxLspTeardownXmlFile;
-use constant _JNX_CFG_EXT_IF_FILTER => $_jnxLspExtIfFilter;
-use constant _JNX_CFG_FIREWALL_FILTER_MARKER => $_jnxLspFirewallFilterMaker;
-
-# LSP constants
-use constant _LSP_CLASS_OF_SERVICE_DEFAULT => $_jnxLspCoS;
-use constant _LSP_SETUP_PRIORITY_DEFAULT => $_jnxLspSetupPriority;
-use constant _LSP_SETUP_RESERVATION_DEFAULT => $_jnxLspResvPriority;
-
 
 #####
 #
 # Global variables.
 #
 #####
-my ($_configFormat) = 'xml';  # Default configuration format is XML.
+my ($_configFormat) = 'xml';  # Default Junoscript configuration format is XML.
 my ($_loadAction) = 'merge';  # Default load action is 'merge'.
 
 
@@ -99,23 +83,22 @@ sub new
 sub configure_lsp
 {
   my ($_self, $_lspOp) = @_;
-  my ($_configInfo);
   my ($_xmlFile);
   my ($_xmlInput);
   my ($_xmlString) = '';
 
-  # For LSP setup, use _XML_LSP_SETUP_FILE.
-  # for teardown, use _XML_LSP_TEARDOWN_FILE.
+  # For LSP setup, use setupXmlFile
+  # for teardown, use teardownXmlFile.
   if ($_lspOp == 1)  {
-    $_xmlFile = _XML_LSP_SETUP_FILE;
+    $_xmlFile = $ENV{'OSCARS_XML'} . '/' . $_self->{'jnxLSPConf'}->{'setupXmlFile'};
   }
   else  {
-    $_xmlFile = _XML_LSP_TEARDOWN_FILE;
+    $_xmlFile = $ENV{'OSCARS_XML'} . '/' . $_self->{'jnxLSPConf'}->{'teardownXmlFile'};
   }
 
   $_xmlString = $_self->read_xml_file($_xmlFile);
 
-  # Execute the configuration changes if there is no error.
+  # Execute the Junoscript configuration changes if there is no error.
   if (not($_self->get_error()))  {
     $_self->execute_configuration_change($_xmlString);
   }
@@ -206,26 +189,9 @@ sub initialize
 
   # Clear error message.
   $_self->{'errMsg'} = 0;
-
-  if (not(defined($_self->{'lsp_class-of-service'})))  {
-    $_self->{'lsp_class-of-service'} = _LSP_CLASS_OF_SERVICE_DEFAULT;
-  }
-  if (not(defined($_self->{'lsp_setup-priority'})))  {
-    $_self->{'lsp_setup-priority'} = _LSP_SETUP_PRIORITY_DEFAULT;
-  }
-  if (not(defined($_self->{'lsp_reservation-priority'})))  {
-    $_self->{'lsp_reservation-priority'} = _LSP_SETUP_RESERVATION_DEFAULT;
-  }
-  if (not(defined($_self->{'policer_burst-size-limit'})))  {
-    # Burst size ~1% of bandwidth. (Left undone for now.)
-    $_self->{'policer_burst-size-limit'} = '1m';
-  }
-  if (not(defined($_self->{'external_interface_filter'})))  {
-    $_self->{'external_interface_filter'} = $_jnxLspExtIfFilter;
-  }
-  if (not(defined($_self->{'firewall_filter_marker'})))  {
-    $_self->{'firewall_filter_marker'} = $_jnxLspFirewallFilterMaker;
-  }
+  
+      # read configuration file for this package
+  $_self->{'jnxLSPConf'} = Config::Auto::parse('JnxLSP.config');
   return();
 }
 
@@ -268,7 +234,7 @@ sub read_xml_file
     }
 
     # If the string has a user-var that is not defined, throw the line away.
-    # (Most likely it was an optional configuration line.)
+    # (Most likely it was an optional Junoscript configuration line.)
     next if ($_xmlInput =~ m/<user-var>[a-zA-Z0-9_-]*<\/user-var>/);
 
     $_xmlOutput .= $_xmlInput;
@@ -326,9 +292,9 @@ sub execute_configuration_change
 {
   my ($_self, $_xmlString) = @_;
   my (%_jnxInfo) = (
-    'access' => _JUNOSCRIPT_ACCESS,
-    'login'  => _JUNOSCRIPT_LOGIN,
-    'password' => _JUNOSCRIPT_PASSWORD,
+    'access' => $_self->{'jnxLSPConf'}->{'access'},
+    'login'  => $_self->{'jnxLSPConf'}->{'login'},
+    'password' => $_self->{'jnxLSPConf'}->{'password'},
     'hostname' => $_self->{'lsp_from'}
   );
   my ($_xmlDoc);
@@ -347,7 +313,7 @@ sub execute_configuration_change
     return();
   }
 
-  # Lock the configuration database before making any changes
+  # Lock the Junoscript configuration database before making any changes
   $_jnxRes = $_jnx->lock_configuration();
   $_error = $_jnxRes->getFirstError();
   if ($_error)  {
@@ -356,7 +322,7 @@ sub execute_configuration_change
     return();
   }
 
-  # Load the configuration.
+  # Load the Junoscript configuration.
   $_xmlDoc = $_xmlParser->parsestring($_xmlString);
   unless (ref($_xmlDoc)) {
     $_self->{'errMsg'} = "ERROR: Cannot parse $_xmlString, check to make sure the XML data is well-formed\n";
@@ -420,9 +386,9 @@ sub execute_operational_command
 {
   my ($_self, $_command) = @_;
   my (%_jnxInfo) = (
-    'access' => _JUNOSCRIPT_ACCESS,
-    'login'  => _JUNOSCRIPT_LOGIN,
-    'password' => _JUNOSCRIPT_PASSWORD,
+    'access' => $_self->{'jnxLSPConf'}->{'access'},
+    'login'  => $_self->{'jnxLSPConf'}->{'login'},
+    'password' => $_self->{'jnxLSPConf'}->{'password'},
     'hostname' => $_self->{'lsp_from'}
   );
   my ($_jnxRes, $_error);

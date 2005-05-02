@@ -1,9 +1,8 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 use strict;
 
-use lib '../..';
-use PSS::module::JnxLSP;
+use PSS::LSPHandler::JnxLSP;
 
 #####
 #
@@ -63,7 +62,7 @@ my (%_lspInfo) = (
 );
 
 # Create an LSP object.
-my ($_jnxLsp) = new JnxLSP(%_lspInfo);
+my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%_lspInfo);
 
 
 # Setup an LSP.
