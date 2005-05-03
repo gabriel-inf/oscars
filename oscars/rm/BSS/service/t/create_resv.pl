@@ -19,7 +19,7 @@ $params{'end_time'} =       $dt->epoch + 120;    # + 5 minutes
 $params{'created_time'} =   '';   # filled in scheduler
 $params{'bandwidth'}=       '10m';
 $params{'class'}=           'test';
-$params{'burst_limit'}=     '100m';
+$params{'burst_limit'}=     '1m';
 $params{'status'} =         'pending';
 
 $params{'ingress_interface_id'}= '';   # db lookup in scheduler

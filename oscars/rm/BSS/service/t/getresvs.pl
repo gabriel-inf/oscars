@@ -1,7 +1,5 @@
 #!/usr/bin/perl -w
 
-use lib '../../..';
-
 use BSS::Client::SOAPClient;
 
 use Data::Dumper;
@@ -19,13 +17,7 @@ if (defined($data{'error_msg'}) && $data{'error_msg'})
 elsif (defined($data{'status_msg'}))
 {
     my ($rows, $r, $f);
-    my (%mapping);
 
-    $rows = $data{'idtoip'};
-    foreach $r (@$rows)
-    {
-        $mapping{$$r[0]} = $$r[1];
-    }
     foreach $_ (@fields_to_read)
     {
         print $_, ' ';
@@ -38,8 +30,8 @@ elsif (defined($data{'status_msg'}))
         print $r->{'reservation_start_time'}, ' ';
         print $r->{'reservation_end_time'}, ' ';
         print $r->{'reservation_status'}, ' ';;
-        print $mapping{$r->{'src_hostaddrs_id'}}, ' ';
-        print $mapping{$r->{'dst_hostaddrs_id'}};
+        print $r->{'src_hostaddrs_id'}, ' ';
+        print $r->{'dst_hostaddrs_id'};
         print "\n";
     }
 }
