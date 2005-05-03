@@ -52,7 +52,6 @@ sub insert_reservation
   my $over_limit = 0; # whether any time segment is over the bandwidth limit
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
 
-
     ###
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
@@ -131,7 +130,7 @@ sub get_reservations
 {
   my( $self, $inref, $fields_to_read ) = @_;
   my( $sth, $query );
-  my( @field_names, $r, %results );
+  my( %mapping, @field_names, $rref, $arrayref, $r, %results );
 
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
     # DB query: get the reservation list
@@ -153,17 +152,27 @@ sub get_reservations
   ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations', $inref->{'dn'});
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
-  $results{'rows'} = $sth->fetchall_arrayref({user_dn => 1, reservation_start_time => 2, reservation_end_time => 3, reservation_status => 4, src_hostaddrs_id => 5, dst_hostaddrs_id => 6});
+  $rref = $sth->fetchall_arrayref({user_dn => 1, reservation_start_time => 2, reservation_end_time => 3, reservation_status => 4, src_hostaddrs_id => 5, dst_hostaddrs_id => 6, reservation_id => 7 });
   $self->{'dbconn'}->query_finish();
-  $self->{'dbconn'}->unlock_table( 'hostaddrs' );
+  $self->{'dbconn'}->unlock_table( 'reservations' );
 
   $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
   ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'hostaddrs');
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
-  $results{'idtoip'} = $sth->fetchall_arrayref();
+  $arrayref = $sth->fetchall_arrayref();
+  foreach $r (@$arrayref)
+  {
+      $mapping{$$r[0]} = $$r[1];
+  }
+  foreach $r (@$rref)
+  {
+      $r->{'src_hostaddrs_id'} = $mapping{$r->{'src_hostaddrs_id'}};
+      $r->{'dst_hostaddrs_id'} = $mapping{$r->{'dst_hostaddrs_id'}};
+  }
+  $results{'rows'} = $rref;
 
-  $self->{'dbconn'}->handle_finish( 'reservations' );
+  $self->{'dbconn'}->handle_finish( 'hostaddrs' );
   $results{'status_msg'} = 'Successfully read reservations';
   return( 0, %results );
 }
@@ -181,33 +190,45 @@ sub delete_reservation
 # Out: success or failure, and status message
 sub get_reservation_detail
 {
-  my( $self, $inref ) = @_;
+  my( $self, $inref, $fields_to_display ) = @_;
   my( $sth, $query );
-  my( %results );
+  my( %mapping, $r, $arrayref, %results );
 
   my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
-    # names of the fields to be displayed on the screen
-  my @fields_to_display = ( 'user_loginname', 'reserv_origin_ip', 'reserv_dest_ip', 'bandwidth', 'start_time', 'end_time', 'description', 'created_time' );
 
     # DB query: get the user profile detail
   $query = "SELECT ";
-  foreach $_ ( @fields_to_display ) {
+  foreach $_ ( @$fields_to_display ) {
       $query .= $table{'reservations'}{$_} . ", ";
   }
     # delete the last ", "
   $query =~ s/,\s$//;
   $query .= " FROM reservations WHERE $table{'reservations'}{'id'} = ?";
   ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'reservations', $inref->{'id'});
+  #print STDERR "query: ", $query, " id: ", $inref->{'id'}, "\n";
 
   if ( $results{'error_msg'} ) { return(1, %results ); }
 
-    # populate %reservations_data with the data fetched from the database
-  my %reservations_data;
-  @reservations_data{@fields_to_display} = ();
-  $sth->bind_columns( map { \$reservations_data{$_} } @fields_to_display );
+    # populate %results with the data fetched from the database
+  @results{@$fields_to_display} = ();
+  $sth->bind_columns( map { \$results{$_} } @$fields_to_display );
   $sth->fetch();
+  $self->{'dbconn'}->query_finish();
+  $self->{'dbconn'}->unlock_table( 'reservations' );
 
-  $self->{'dbconn'}->handle_finish( 'reservations' );
+  $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
+  ( $results{'error_msg'}, $sth) = $self->{'dbconn'}->handle_query($query, 'hostaddrs');
+  if ( $results{'error_msg'} ) { return(1, %results ); }
+
+  $arrayref = $sth->fetchall_arrayref();
+  foreach $r (@$arrayref)
+  {
+      $mapping{$$r[0]} = $$r[1];
+  }
+  $results{'src_ip'} = $mapping{$results{'src_id'}};
+  $results{'dst_ip'} = $mapping{$results{'dst_id'}};
+
+  $self->{'dbconn'}->handle_finish( 'hostaddrs' );
   $results{'status_msg'} = 'Successfully got reservation details.';
   return (0, %results);
 }
