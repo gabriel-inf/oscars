@@ -1,12 +1,10 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: April 26, 2005
+# Last modified: May 2, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-use DateTime;
-use Socket;
 use CGI;
 
 
@@ -15,9 +13,8 @@ use BSS::Client::SOAPClient;
 require '../lib/general.pl';
 
 
-
     # names of the fields to be read
-my @fields_to_read = ( 'user_dn', 'start_time', 'end_time', 'status', 'src_id', 'dst_id' );
+my @fields_to_read = ( 'id', 'dn', 'start_time', 'end_time', 'status', 'src_id', 'dst_id' );
 
 
 my (%form_params, %results);
@@ -53,16 +50,14 @@ exit;
 sub print_reservations
 {
   my ( $results) = @_;
-  my ( $rowsref, $mapping, $row );
+  my ( $rowsref, $row );
 
   $rowsref = $results->{'rows'};
-  $mapping = $results->{'idtoip'};
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";
   print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
   print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
-  print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/user/reservationlist.js\"></script>\n";
   print "</head>\n\n";
 
   print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
@@ -90,10 +85,10 @@ sub print_reservations
   print "  <tbody>\n";
   foreach $row (@$rowsref)
   {
-      if ($row{'status'} ne 'finished')
+      if ($row->{'reservation_status'} ne 'finished')
       {
         print "  <tr>\n";
-        print_row($row, $mapping);
+        print_row($row);
         print "  </tr>\n";
       }
   }
@@ -114,83 +109,25 @@ sub print_reservations
 
 sub print_row
 {
-  my( $row, $mapping ) = @_;
-  my( $tag, $seconds, $time_field, $time_tag );
+  my( $row ) = @_;
+  my( $tag, $seconds, $time_field, $time_tag, $ip );
 
 
-  $seconds = DateTime->from_epoch( epoch => $row{'start_time'} );
-  ($time_tag, $time_field) = get_time_str($seconds);
+  ($time_tag, $time_field) = get_time_str($row->{'reservation_start_time'});
       # ESnet hard wired for now in tag
       # TODO:  incremental ID at end if multiple ones in same minute
-  $tag = 'OSCARS.ESnet.' . $row->{'user_dn'} . '.' . $time_tag . '.0';
-  print "    <td>" . $tag . "</td>\n"; 
+  $tag = 'OSCARS.' . $row->{'user_dn'} . '.' . $time_tag . '-' . $row->{reservation_id};
+  print '    <td><a href="https://oscars.es.net/cgi-bin/user/resvdetail.pl?id=' . $row->{reservation_id} . '">' . $tag . '</a></td>' . "\n"; 
   
-  print $time_field;
+  print "    <td>" . $time_field . "</td>\n";
 
-  $seconds = DateTime->from_epoch( epoch => $row{'end_time'} );
-  ($time_tag, $time_field) = get_time_str($seconds);
-  print $time_field;
+  ($time_tag, $time_field) = get_time_str($row->{'reservation_end_time'});
+  print "    <td>" . $time_field . "</td>\n";
 
-  print "    <td>" . $row->{'status'} . "</td>\n";
+  print "    <td>" . $row->{'reservation_status'} . "</td>\n";
 
-  print_host($row{'src_id'}, $mapping);
-  print_host($row{'dst_id'}, $mapping);
-}
-
-
-#
-
-sub print_host
-{
-  my( $id, $mapping ) = @_;
-
-  my $ip = $mapping->{'id'};
-  my $ipaddr = inet_aton($ip);
-  my $host = gethostbyaddr($ipaddr, AF_INET);
-  if ($host) {
-      print "    <td>" . $host . "</td>\n"; 
-  }
-  else
-  {
-      print "    <td>" . $ipaddr . "</td>\n"; 
-  }
-}
-
-
-#
-
-sub get_time_str 
-{
-  my( $seconds ) = @_;
-
-  my $dt = DateTime->from_epoch( epoch => $seconds );
-  my $year = $dt->year();
-  if ($year < 10)
-  {
-      $year = "0" . $year;
-  }
-  my $month = $dt->month();
-  if ($month < 10)
-  {
-      $month = "0" . $month;
-  }
-  my $day = $dt->day();
-  if ($day < 10)
-  {
-      $day = "0" . $day;
-  }
-  my $hour = $dt->hour();
-  if ($hour < 10)
-  {
-      $hour = "0" . $hour;
-  }
-  $minute = $dt->minute();
-  if ($minute < 10)
-  {
-      $minute = "0" . $minute;
-  }
-  my $time_tag = $year . $month . $day . '.' . $hour . ':' . $minute;
-  my $time_field = "      <td>" . $month . "-" . $day . "&nbsp;&nbsp; " . $hour . ":" . $minute . "</td>\n" ;
-
-  return ( $time_tag, $time_field );
+  $ip = get_oscars_host($row->{'src_hostaddrs_id'});
+  print "    <td>" . $ip . "</td>\n";
+  $ip = get_oscars_host($row->{'dst_hostaddrs_id'});
+  print "    <td>" . $ip . "</td>\n";
 }
