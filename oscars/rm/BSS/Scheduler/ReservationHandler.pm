@@ -113,6 +113,24 @@ sub get_reservations {
 	return ($error_status, %results);
 }
 
+################################
+### get_reservation_detail
+### IN: ref to hash containing fields corresponding to the reservations table.
+###     Some fields are still empty, and are filled in before inserting a
+###     record
+### OUT: 0 on success, and hash containing all table fields, as well as error
+###     or status message
+################################
+sub get_reservation_detail {
+
+        # reference to input hash ref containing fields filled in by user
+        # This routine fills in the remaining fields.
+	my ( $self, $inref, $fields_to_display ) = @_; 
+
+	my ($error_status, %results) = $self->{'frontend'}->get_reservation_detail( $inref, $fields_to_display );
+	return ($error_status, %results);
+}
+
 ##############################################################
 ### do ping
 ### Freaking Net:Ping uses it own socket, so it has to be
