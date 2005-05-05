@@ -1,0 +1,9 @@
+David Robertson
+May 5, 2005
+
+Currently the OSCARS_HOME environment variable must be set,
+e.g. to /home/davidr/oscars/rm
+
+and that directory must also be in the PERL5LIB path (this
+will change when OSCARS_HOME is automatically added in the
+path).
