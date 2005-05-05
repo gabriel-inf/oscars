@@ -90,10 +90,10 @@ sub configure_lsp
   # For LSP setup, use setupXmlFile
   # for teardown, use teardownXmlFile.
   if ($_lspOp == 1)  {
-    $_xmlFile = $ENV{'OSCARS_XML'} . '/' . $_self->{'jnxLSPConf'}->{'setupXmlFile'};
+    $_xmlFile = $ENV{'OSCARS_HOME'} . '/PSS/xml/' . $_self->{'jnxLSPConf'}->{'setupXmlFile'};
   }
   else  {
-    $_xmlFile = $ENV{'OSCARS_XML'} . '/' . $_self->{'jnxLSPConf'}->{'teardownXmlFile'};
+    $_xmlFile = $ENV{'OSCARS_HOME'} . '/PSS/xml/' . $_self->{'jnxLSPConf'}->{'teardownXmlFile'};
   }
 
   $_xmlString = $_self->read_xml_file($_xmlFile);
@@ -191,7 +191,7 @@ sub initialize
   $_self->{'errMsg'} = 0;
   
       # read configuration file for this package
-  $_self->{'jnxLSPConf'} = Config::Auto::parse('JnxLSP.config');
+  $_self->{'jnxLSPConf'} = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/PSS/LSPHandler/JnxLSP.config');
   return();
 }
 
