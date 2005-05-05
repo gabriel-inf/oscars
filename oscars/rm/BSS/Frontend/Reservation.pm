@@ -32,6 +32,7 @@ sub initialize {
     $self->{'dbconn'} = BSS::Frontend::Database->new('configs' => $self->{'configs'}) or die "FATAL:  could not connect to database";
 }
 
+
 ################################
 ### insert_reservation
 ###
@@ -79,10 +80,11 @@ sub insert_reservation
   else {
       $self->{'dbconn'}->query_finish();
       $self->{'dbconn'}->unlock_table( 'reservations' );
+      #print STDERR Dumper($inref);
 
       if (($inref->{'ingress_router'} == 0) || ($inref->{'egress_router'} == 0))
       {
-          $results{'error_msg'} = 'Traceroute turned off.  Unable to do insert.';
+          $results{'error_msg'} = 'Invalid router id(s): 0.  Unable to do insert.';
           return( 1, %results );
       }
           # get interface id's from edge router ip's

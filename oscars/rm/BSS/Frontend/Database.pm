@@ -273,12 +273,12 @@ sub check_db_rtr {
 
   $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
   ( $error_msg, $sth) = $self->handle_query($query, 'ipaddrs', $rtr);
-  if ( $error_msg ) { return(0); }
+  if ( $error_msg ) { return(0, $error_msg); }
 
     # no match
   if ($sth->rows == 0 ) {
       $self->handle_finish( 'ipaddrs' );
-      return 0;
+      return (0, "No match in database for $rtr");
   }
 
     # flatten it out
@@ -288,7 +288,7 @@ sub check_db_rtr {
   $self->handle_finish( 'ipaddrs' );
 
     # return the answer
-  return $interface_idx;
+  return ($interface_idx, "");
 }
 
 
