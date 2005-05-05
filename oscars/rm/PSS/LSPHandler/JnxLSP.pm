@@ -121,6 +121,7 @@ sub get_lsp_status
 {
   my ($_self) = @_;
   my (@_resultArray, $_result);
+  my ($_found) = 0;
   my ($_state) = -1;
 
   $_result = $_self->execute_operational_command("get_mpls_lsp_information");
@@ -187,11 +188,31 @@ sub initialize
 {
   my ($_self) = @_;
 
+      # read configuration file for this package
+  $_self->{'jnxLSPConf'} = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/PSS/LSPHandler/JnxLSP.config');
+
   # Clear error message.
   $_self->{'errMsg'} = 0;
   
-      # read configuration file for this package
-  $_self->{'jnxLSPConf'} = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/PSS/LSPHandler/JnxLSP.config');
+  if (not(defined($_self->{'lsp_class-of-service'})))  {
+    $_self->{'lsp_class-of-service'} = $_self->{'jnxLSPConf'}->{'CoS'};
+  }
+  if (not(defined($_self->{'lsp_setup-priority'})))  {
+    $_self->{'lsp_setup-priority'} = $_self->{'jnxLSPConf'}->{'setupPriority'};
+  }
+  if (not(defined($_self->{'lsp_reservation-priority'})))  {
+    $_self->{'lsp_reservation-priority'} = $_self->{'jnxLSPConf'}->{'resvPriority'};
+  }
+  if (not(defined($_self->{'policer_burst-size-limit'})))  {
+    # Burst size ~1% of bandwidth. (Left undone for now.)
+    $_self->{'policer_burst-size-limit'} = '1m';
+  }
+  if (not(defined($_self->{'external_interface_filter'})))  {
+    $_self->{'external_interface_filter'} = $_self->{'jnxLSPConf'}->{'extIfFilter'};
+  }
+  if (not(defined($_self->{'firewall_filter_marker'})))  {
+    $_self->{'firewall_filter_marker'} = $_self->{'jnxLSPConf'}->{'firewallFilterMaker'};
+  }
   return();
 }
 
