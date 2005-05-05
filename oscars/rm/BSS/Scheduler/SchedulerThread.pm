@@ -62,7 +62,7 @@ sub start_scheduler {
     # get a copy of the config
     $global_config = shift;
 
-    print "Starting Scheduler\n";
+    print STDERR "Starting Scheduler\n";
     my $handler = threads->create("scheduler");
     $handler->detach();
 
@@ -75,7 +75,7 @@ sub start_scheduler {
 ######################################################################
 sub scheduler {
 
-    print "Scheduler running\n";
+    print STDERR "Scheduler running\n";
     my ($dbHandle, $result);
 
     $dbHandle = BSS::Frontend::Database->new('configs' => $global_config);
@@ -83,18 +83,18 @@ sub scheduler {
     while (1) {
 
         # find reservations that need to be actived
-        print "find new\n";
+        #print STDERR "find new\n";
         $result = find_new_reservations($dbHandle);
         if ($result == 0) {
-            print "Error with find_new_res\n";
+            print STDERR "Error with find_new_res\n";
         }
 
 
         # find reservations that need to be deactivated 
-        print "find_exp\n";
+        #print STDERR "find_exp\n";
         $result = find_expired_reservations($dbHandle);
         if ($result == 0) {
-            print "Error with find_new_res\n";
+            print STDERR "Error with find_new_res\n";
         }
 
         # check every do_poll_time seconds
@@ -113,14 +113,14 @@ sub find_new_reservations {
 
     my ($dbHandle) = @_;
 
-    print "in find_new_res\n";
+    #print STDERR "in find_new_res\n";
     my ($timeslot, $resv, $result);
     my $cur_time = localtime();
 
-    print "decalared vars...\n";
+    #print STDERR "declared vars...\n";
     # configurable
     $timeslot = time() + $global_config->{'reservation_time_interval'};
-    print "pending: $cur_time \n";
+    #print STDERR "pending: $cur_time \n";
 
     # find reservations that need to be scheduled
     $resv = $dbHandle->find_pending_reservations($timeslot, PENDING);
@@ -129,7 +129,7 @@ sub find_new_reservations {
         ## calls to pss to setup reservations
         $result = setup_pss($r, $dbHandle);
 
-        #print "update reservation to active\n";
+        #print STDERR "update reservation to active\n";
         update_reservation( $r, $result, ACTIVE, $dbHandle);
     }
     return 1;
@@ -149,7 +149,7 @@ sub find_expired_reservations {
 
     # configurable
     $timeslot = time() + $global_config->{reservation_time_interval};
-    print "expired: $cur_time \n";
+    #print STDERR "expired: $cur_time \n";
 
     # find active reservation past the timeslot
     $resv = $dbHandle->find_expired_reservations($timeslot, ACTIVE);
@@ -157,7 +157,7 @@ sub find_expired_reservations {
     foreach my $r (@$resv) {
         $result = teardown_pss($r, $dbHandle);
 
-        #print "update reservation to active\n";
+        #print STDERR "update reservation to active\n";
         update_reservation( $r, $result, FINISHED, $dbHandle);
     }
     return 1;
@@ -194,21 +194,21 @@ sub setup_pss {
 #      'source-port' => '5000',
     );
 
-    print "execing pss to schedule reservations\n";
+    print STDERR "execing pss to schedule reservations\n";
     if ($fakeit == 0 ) {
         # Create an LSP object.
         my ($_jnxLsp) = new JnxLSP(%_lspInfo);
 
-        print Dumper($_jnxLsp);
-        print("Setting up LSP...\n");
+        print STDERR Dumper($_jnxLsp);
+        print STDERR("Setting up LSP...\n");
         $_jnxLsp->configure_lsp(_LSP_SETUP);
         if ($_error = $_jnxLsp->get_error())  {
-            print Dumper($_error);
+            print STDERR Dumper($_error);
             return 0;
             #die($_error);
         }
     }
-    print("LSP setup complete\n");
+    print STDERR("LSP setup complete\n");
     return 1;
 }
 
@@ -228,7 +228,7 @@ sub teardown_pss {
     my $srcrouter = $dbHandle->ipidx2ip( $res->{'ingress_interface_id'});
     my $dstrouter = $dbHandle->ipidx2ip( $res->{'egress_interface_id'});
 
-    #print "srchost $srchost, dsthost $dsthost, srcrout $srcrouter, dstr $dstrouter\n";
+    #print STDERR "srchost $srchost, dsthost $dsthost, srcrout $srcrouter, dstr $dstrouter\n";
 
     # probably a slick way with map to do this ...
     my (%_lspInfo) = (
@@ -246,19 +246,19 @@ sub teardown_pss {
     );
 
     #my $d = join ":", (values %_lspInfo) ;
-    #print "$d \n";
+    #print STDERR "$d \n";
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
         my ($_jnxLsp) = new JnxLSP(%_lspInfo);
 
-        print("Tearing down LSP...\n");
+        print STDERR("Tearing down LSP...\n");
         $_jnxLsp->configure_lsp(_LSP_TEARDOWN); 
         if ($_error = $_jnxLsp->get_error())  {
             return 0;
         }
     }
-    print("LSP teardown complete\n");
+    print STDERR("LSP teardown complete\n");
     return 1;
 }
 
@@ -274,10 +274,10 @@ sub update_reservation {
     my ($resv, $result, $status, $dbHandle) = @_;
 
     if ( $result == 1 ) {
-        print "Changing status to $status\n";
+        print STDERR "Changing status to $status\n";
         $dbHandle->db_update_reservation($resv, $status)
     } else {
-        print "Changing status to failed\n";
+        print STDERR "Changing status to failed\n";
         $dbHandle->db_update_reservation($resv, FAILED)
     }
 }

@@ -50,6 +50,7 @@ sub db_login {
     $self->{'frontend'}->db_login();
 }
 
+
 ################################
 ### create reservation
 ### 1) compute routers
@@ -66,12 +67,16 @@ sub create_reservation {
         # reference to input hash ref containing fields filled in by user
         # This routine fills in the remaining fields.
 	my ( $self, $inref ) = @_; 
+    my ( $error_status, %results );
 
-	($inref->{'ingress_router'}, $inref->{'egress_router'}) = $self->find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
+	($inref->{'ingress_router'}, $inref->{'egress_router'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
 
-	my ($error_status, %results) = $self->{'frontend'}->insert_reservation( $inref );
+    if ($results{'error_msg'}) { return (0, %results); }
+
+	($error_status, %results) = $self->{'frontend'}->insert_reservation( $inref );
 	return ($error_status, %results);
 }
+
 
 ################################
 ### Leave the res in the db, just 
@@ -95,6 +100,7 @@ sub remove_reservation {
 	return ($status, $outref);
 }
 
+
 ################################
 ### get_reservations
 ### IN: ref to hash containing fields corresponding to the reservations table.
@@ -112,6 +118,7 @@ sub get_reservations {
 	my ($error_status, %results) = $self->{'frontend'}->get_reservations( $inref, $fields_to_display );
 	return ($error_status, %results);
 }
+
 
 ################################
 ### get_reservation_detail
@@ -131,6 +138,7 @@ sub get_reservation_detail {
 	return ($error_status, %results);
 }
 
+
 ##############################################################
 ### do ping
 ### Freaking Net:Ping uses it own socket, so it has to be
@@ -149,22 +157,20 @@ sub do_ping {
                 return 1; 
             }
         }
-        print "Counld not ping $host\n";
         return 0;
     # use the Net::Ping system
     } else {
         # make sure its up and pingable first
         my $p = Net::Ping->new(proto=>'icmp');
         if (! $p->ping($host, 5) )  {
-            print "Counld not ping $host\n";
             $p->close();
             return 0;
         }
         $p->close();
     }
-    print "end do ping\n";
     return 0;
 }
+
 
 ################################
 ### do remote trace
@@ -178,30 +184,30 @@ sub do_remote_trace {
     # try to ping before traceing?
     if ($self->{'configs'}{'use_ping'}) {
         if ( 0 == $self->do_ping($host)) {
-            print "Host not pingable\n";
-            return 0;
+            print STDERR "returning 0 " . "host not pingable\n";
+            return (0, "do_remote_trace:  host $host not pingable");
         }
     }
 
-    my ($_jnxTraceroute) = new JnxTraceroute();
+    my ($_jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
     $_jnxTraceroute->traceroute($host);
 
     if ($_error = $_jnxTraceroute->get_error())  {
-        print "Error $_error\n";
-        return 0;
+        print STDERR "do_remote_trace, returning 0 " . $_error . "\n";
+        return (0, "do_remote_trace: " . $_error);
     }
 
     @hops = $_jnxTraceroute->get_hops();
 
-    print "hops: " .  $#hops + 1 . "\n";
+    print STDERR "hops: " .  $#hops + 1 . "\n";
 
     # if we didn't hop much, maybe the same router?
-    if ($#hops < 0 ) { return 0; }
+    if ($#hops < 0 ) { return (0, "do_remote_trace:  same router?"); }
 
     if ($#hops == 0) { 
-        print "returning " . $_jnxTraceroute->{'defaultrouter'} . "\n";
-        $idx = $self->{'frontend'}->{'dbconn'}->check_db_rtr($_jnxTraceroute->{'defaultrouter'});
-        return $idx;
+        print STDERR "returning default " . $_jnxTraceroute->{'defaultrouter'} . "\n";
+        ($idx, $_error) = $self->{'frontend'}->{'dbconn'}->check_db_rtr($_jnxTraceroute->{'defaultrouter'});
+        return ($idx, $_error);
     }
 
     # start off with an non-existant router
@@ -209,18 +215,21 @@ sub do_remote_trace {
 
     # loop forward till the next router isn't one of ours ...
     while(defined($hops[0]))  {
-        print("hop:  $hops[0]\n");
+        print STDERR "hop:  $hops[0]\n";
         $prev = $idx;
-        $idx = $self->{'frontend'}->{'dbconn'}->check_db_rtr($hops[0]);
+        ($idx, $_error) = $self->{'frontend'}->{'dbconn'}->check_db_rtr($hops[0]);
+        if ($_error) { return (0, $_error); }
         if ( $idx == 0 ) {
-            return $prev;
+            return ($prev, "");
         }
         shift(@hops);
     }
+    print "at end of do_remote_trace\n";
 
     # if we didn't find it
-    return 0;
+    return (0, "do_remote_trace:  Couldn't trace route to $host");
 }
+
 
 ################################
 ### do local trace
@@ -228,13 +237,12 @@ sub do_remote_trace {
 
 sub do_local_trace {
     my ($self, $host)  = @_;
-    my ($tr, $hops);
+    my ($tr, $hops, $idx, $error);
 
     # try to ping before traceing?
     if ($self->{'configs'}{'use_ping'}) {
         if ( 0 == $self->do_ping($host)) {
-            print "Host not pingable\n";
-            return 0;
+            return (0, "do_local_trace: Host $host not pingable");
         }
     }
 
@@ -242,28 +250,30 @@ sub do_local_trace {
             query_timeout=>3, max_ttl=>20 ) || return 0;
 
     if( ! $tr->found) {
-        print "do_trace:'$host' not found\n";
-        return 0;
+        return (0, "do_local_trace:  $host not found");
     } 
 
     $hops = $tr->hops;
-    print "hops = $hops\n";
+    print STDERR "hops = $hops\n";
 
     # if we didn't hop much, mabe the same router?
-    if ($hops < 2 ) { return 0; }
+    if ($hops < 2 ) { return (0, "do_local_trace:  same router?"); }
 
     # loop from the last router back, till we find an edge router
     for my $i (1..$hops-1) {
         my $rtr = $tr->hop_query_host($hops - $i, 0);
-        my  $idx = $self->{'frontend'}->{'dbconn'}->check_db_rtr($rtr);
-        if ($idx != 0) {
-            #print "FOUND idx = $idx\n";
-            return $idx;
+        ($idx, $error) = $self->{'frontend'}->{'dbconn'}->check_db_rtr($rtr);
+        if (($idx != 0) && (!$error)) {
+            print STDERR "FOUND idx = $idx\n";
+            return ($idx, "");
         } 
+        if ($error) { return (0, $error); }
      }
     # if we didn't find it
-    return 0;
+    return (0, "do_local_trace:  could not find edge router");
 }
+
+
 ################################
 ### run traceroutes to both hosts
 ### find edge routers validate both
@@ -277,27 +287,30 @@ sub do_local_trace {
 sub find_interface_ids {
     my ($self, $src, $dst) = @_;
 
-    my( $ingress_rtr, $egress_rtr);
+    my( $ingress_rtr, $egress_rtr, $err_msg);
 
-    print "running local tr to $src\n";
-    #$ingress_rtr = $self->do_local_trace($src);
-    $ingress_rtr = $self->do_remote_trace($src);
+    print STDERR "running remote tr to $src\n";
+    ($ingress_rtr, $err_msg) = $self->do_remote_trace($src);
+    if ($err_msg) { return ( 0, 0, $err_msg); }
    
     if ( $self->{'configs'}{'run_traceroute'} )  {
-        print "running remote tr to $dst\n";
-        $egress_rtr = $self->do_remote_trace($dst);
+        print STDERR "running remote tr to $dst\n";
+        ($egress_rtr, $err_msg) = $self->do_remote_trace($dst);
+        if ($err_msg) { return (0, 0, $err_msg); }
     } else {
-        print "running remote (local) tr to $dst\n";
-        $ingress_rtr = $self->do_local_trace($src);
+        print STDERR "running remote (local) tr to $dst\n";
+        ($ingress_rtr, $err_msg) = $self->do_local_trace($src);
+        if ($err_msg) { return (0, 0, $err_msg); }
     }
-    print "ingress: ", $ingress_rtr, " egress: ", $egress_rtr, "\n";
+    print STDERR "ingress: ", $ingress_rtr, " egress: ", $egress_rtr, "\n";
 
-    # if we can't find both ends ...
-    if ($ingress_rtr == 0 || $egress_rtr == 0 ) {
-        return 0,0;
+    if (($ingress_rtr == 0) || ($egress_rtr == 0))
+    {
+        return( 0, 0, "Unable to find route." );
     }
 
-	return ($ingress_rtr, $egress_rtr); 
+
+	return ($ingress_rtr, $egress_rtr, ""); 
 }
 
 ### last line of a module
