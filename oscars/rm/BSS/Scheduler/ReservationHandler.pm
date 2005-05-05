@@ -7,6 +7,8 @@
 
 package BSS::Scheduler::ReservationHandler; 
 
+use Data::Dumper;
+
 use Net::Ping;
 
 use Net::Traceroute;
@@ -33,7 +35,6 @@ sub new {
   return($_self);
 }
 
-use Data::Dumper;
 
 ######################################################################
 sub initialize {
@@ -218,7 +219,6 @@ sub do_remote_trace {
         print STDERR "hop:  $hops[0]\n";
         $prev = $idx;
         ($idx, $_error) = $self->{'frontend'}->{'dbconn'}->check_db_rtr($hops[0]);
-        if ($_error) { return (0, $_error); }
         if ( $idx == 0 ) {
             return ($prev, "");
         }
