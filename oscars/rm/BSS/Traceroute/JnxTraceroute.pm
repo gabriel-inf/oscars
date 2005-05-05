@@ -191,7 +191,7 @@ sub initialize
 {
   my ($_self) = @_;
 
-  $_self->{'jnxConf'} = Config::Auto::parse('JnxTraceroute.config');
+  $_self->{'jnxConf'} = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/BSS/Traceroute/JnxTraceroute.config');
 
   # Clear error message.
   $_self->{'jnxConf'}->{'errMsg'} = 0;
