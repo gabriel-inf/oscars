@@ -88,7 +88,7 @@ sub create_reservation
   $soap_params{'dscp'} =           '';     # optional
 
   $soap_params{'description'} =    $form_params->{'description'};
-  return( soap_create_reservation(\%params) );
+  return( soap_create_reservation(\%soap_params) );
 
 }
 
