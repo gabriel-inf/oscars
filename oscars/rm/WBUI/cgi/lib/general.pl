@@ -21,6 +21,8 @@ $webmaster = 'dwrobertson@lbl.gov';
 $login_URI = 'https://oscars.es.net/';
 
 
+# checks session status only; database check done elsewhere
+
 sub check_login {
   my( $set_cookie, $cgi ) = @_;
   my( $auth );
@@ -48,7 +50,8 @@ sub check_login {
 #####
 sub update_frames
 {
-  my ($target, $uri, $msg) = @_;
+  my ($error_made, $target, $uri, $msg) = @_;
+  if ($error_made) { print "Content-type: text/html\n\n"; }
   print "<html>\n";
   print "<head>\n";
   print "<link rel=\"stylesheet\" type=\"text/css\" ";
@@ -58,7 +61,7 @@ sub update_frames
   print "<body>\n";
   print "<script language=\"javascript\">update_status_message(\"$target\", \"$msg\");</script>";
   if ($uri) {
-    print "<script language=\"javascript\">update_main_frame(\"$uri\", \"$msg\");</script>";
+    print "<script language=\"javascript\">update_frame(\"main_frame\", \"$uri\");</script>";
   }
   print "</body>\n";
   print "</html>\n";
