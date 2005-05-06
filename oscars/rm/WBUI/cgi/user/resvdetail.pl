@@ -35,11 +35,11 @@ if (!$error_status) {
   $form_params{'dn'} = 'oscars';
   ($error_status, %results) = BSS::Client::SOAPClient::soap_get_resv_detail(\%form_params, \@fields_to_read);
   if (!$error_status) {
-      update_frames("main_frame", "", $results{'status_msg'});
+      update_frames($error_status, "main_frame", "", $results{'status_msg'});
       print_reservation_detail(\%results);
   }
   else {
-      update_frames("main_frame", "", $results{'error_msg'});
+      update_frames($error_status, "main_frame", "", $results{'error_msg'});
   }
 }
 else {

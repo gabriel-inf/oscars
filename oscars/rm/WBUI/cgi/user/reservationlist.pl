@@ -29,11 +29,11 @@ if (!$error_status) {
   }
   ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
   if (!$error_status) {
-      update_frames("main_frame", "", $results{'status_msg'});
+      update_frames($error_status, "main_frame", "", $results{'status_msg'});
       print_reservations(\%results);
   }
   else {
-      update_frames("main_frame", "", $results{'error_msg'});
+      update_frames($error_status, "main_frame", "", $results{'error_msg'});
   }
 }
 else {

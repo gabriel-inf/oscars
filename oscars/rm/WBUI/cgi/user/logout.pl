@@ -22,7 +22,7 @@ if (!$error_status) {
 
 print "Content-type: text/html\n\n";
 
-update_frames("main_frame", "https://oscars.es.net/login_frame.html", "Please log in.");
+update_frames(0, "main_frame", "https://oscars.es.net/login_frame.html", "Please log in.");
 
 exit;
 

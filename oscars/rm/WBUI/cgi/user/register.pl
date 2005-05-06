@@ -35,10 +35,10 @@ if (!$error_status) {
   }
   ($error_status, %results) = process_user_registration(\%form_params);
   if (!$error_status) {
-      update_frames("main_frame", "", $results{'status_msg'});
+      update_frames($error_status, "main_frame", "", $results{'status_msg'});
   }
   else {
-      update_frames("main_frame", "", $results{'error_msg'});
+      update_frames($error_status, "main_frame", "", $results{'error_msg'});
   }
 }
 else {

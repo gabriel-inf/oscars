@@ -29,10 +29,10 @@ if (!$error_status) {
 
   ($error_status, %results) = create_reservation(\%form_params);
   if (!$error_status) {
-      update_frames("status_frame", "", $results{'status_msg'});
+      update_frames($error_status, "status_frame", "", $results{'status_msg'});
   }
   else {
-      update_frames("status_frame", "", $results{'error_msg'});
+      update_frames($error_status, "status_frame", "", $results{'error_msg'});
   }
 }
 else {
