@@ -79,7 +79,9 @@ sub verify_login
   if ( !$password_matches ) {
       $results{'error_msg'} = 'Please check your password and try again.';
   }
-  $results{'status_msg'} = 'The user has successfully logged in.';
+  else {
+      $results{'status_msg'} = 'The user has successfully logged in.';
+  }
       # The first value is unused, but I can't get SOAP to send a correct
       # reply without it so far.
   return( 0, %results );
