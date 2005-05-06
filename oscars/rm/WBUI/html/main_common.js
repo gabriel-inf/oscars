@@ -1,6 +1,6 @@
 /*
 Javascript functions for main page
-Last modified: March 29, 2005
+Last modified: May 5, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -127,17 +127,17 @@ function print_navigation_bar(activePage)
 }
 
 
-function update_main_frame(uri)
+// ** displays new page in given frame
+function update_frame(target, uri)
 {
-    parent.frames['main_frame'].location = uri;
+    parent.frames[target].location = uri;
 }
 
 
-// ** prints status frame, and replaces main frame with new page if a URI is
-// ** given
+// ** prints new message in status frame
 function update_status_message(target, msg)
 {
-  if (target == 'main_frame')
+  if (target != 'status_frame')
   {
     f = parent.frames['status_frame'].document;
     f.open();
