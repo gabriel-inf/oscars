@@ -7,16 +7,13 @@
 
 use Data::Dumper;
 
-
 use AAAS::Client::SOAPClient;
 use AAAS::Client::Auth;
-
 
 require '../lib/general.pl';
 
 
 $service_startpoint_URI = 'https://oscars.es.net/user/';
-
 
 my ($error_status, %results);
 my $cgi = CGI->new();
@@ -29,11 +26,11 @@ if ($results{'error_msg'}) { $error_status = 1; }
 else { $error_status = 0; }
 
 if (!$error_status) {
-  $error_status = check_login(1, $cgi);
-  update_frames($error_status, "status_frame", $service_startpoint_URI, "Logged in as " . $cgi->param('dn') . ".");
+    $error_status = check_login(1, $cgi);
+    update_frames($error_status, "status_frame", $service_startpoint_URI, "Logged in as " . $cgi->param('dn') . ".");
 }
 else {
-  update_frames($error_status, "status_frame", "", $results{'error_msg'});
+    update_frames($error_status, "status_frame", "", $results{'error_msg'});
 }
 
 exit;
@@ -44,24 +41,24 @@ exit;
 # Out: error status, SOAP results
 sub check_db_user
 {
-  my( $cgi ) = @_;
-  my( %soap_params, %results );
+    my( $cgi ) = @_;
+    my( %soap_params, %results );
 
     # validate user input (just check for empty fields)
-  if ( $cgi->param('dn') eq '' )
-  {
-      $results{'error_msg'} = 'Please enter your login name.';
-      return( 1, %results );
-  }
+    if ( $cgi->param('dn') eq '' )
+    {
+        $results{'error_msg'} = 'Please enter your login name.';
+        return( 1, %results );
+    }
 
-  if ( $cgi->param('password') eq '' )
-  {
-      $results{'error_msg'} = 'Please enter your password.';
-      return( 1, %results );
-  }
-  $soap_params{'dn'} = $cgi->param('dn');
-  $auth = AAAS::Client::Auth->new();
-  $soap_params{'password'} = $auth->encode_passwd($cgi->param('password'));
+    if ( $cgi->param('password') eq '' )
+    {
+        $results{'error_msg'} = 'Please enter your password.';
+        return( 1, %results );
+    }
+    $soap_params{'dn'} = $cgi->param('dn');
+    $auth = AAAS::Client::Auth->new();
+    $soap_params{'password'} = $auth->encode_passwd($cgi->param('password'));
 
-  return(soap_verify_login(\%soap_params));
+    return(soap_verify_login(\%soap_params));
 }

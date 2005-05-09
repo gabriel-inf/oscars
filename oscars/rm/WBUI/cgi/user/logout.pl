@@ -10,7 +10,6 @@ use CGI;
 require '../lib/general.pl';
 
 
-
 my $cgi = CGI->new();
 my $error_status = check_login(0, $cgi);
 
