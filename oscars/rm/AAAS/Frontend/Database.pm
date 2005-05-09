@@ -14,17 +14,17 @@ our @ISA = qw(OSCARS_db);
 
 ######################################################################
 sub new {
-  my $invocant = shift;
-  my $_class = ref($invocant) || $invocant;
-  my ($_self) = {@_};
+    my $invocant = shift;
+    my $_class = ref($invocant) || $invocant;
+    my ($_self) = {@_};
   
-  # Bless $_self into designated class.
-  bless($_self, $_class);
+    # Bless $_self into designated class.
+    bless($_self, $_class);
   
-  # Initialize.
-  $_self->initialize();
+    # Initialize.
+    $_self->initialize();
   
-  return($_self);
+    return($_self);
 }
 
 ##### Settings Begin (Global variables) #####
@@ -58,8 +58,8 @@ our( %table );
 
 sub get_AAAS_table
 {
-  my ( $self, $table_name ) = @_;
-  return(%table);
+    my ( $self, $table_name ) = @_;
+    return(%table);
 }
 
 # Don't touch the line below
