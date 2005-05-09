@@ -65,16 +65,16 @@ $account_activation_form_URI = 'https://oscars.es.net/user/activateaccount.phtml
 
 ######################################################################
 sub new {
-  my ($_class, %_args) = @_;
-  my ($_self) = {%_args};
+    my ($_class, %_args) = @_;
+    my ($_self) = {%_args};
   
-  # Bless $_self into designated class.
-  bless($_self, $_class);
+    # Bless $_self into designated class.
+    bless($_self, $_class);
   
-  # Initialize.
-  $_self->initialize();
+    # Initialize.
+    $_self->initialize();
   
-  return($_self);
+    return($_self);
 }
 
 ######################################################################
@@ -93,16 +93,15 @@ sub initialize {
 # Out:  None
 sub set_login_status
 {
-  my ($self, $cgi) = @_;
-  my ($session, $sid, $cookie);
+    my ($self, $cgi) = @_;
+    my ($session, $sid, $cookie);
 
-  $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
-  $sid = $session->id();
-  $cookie = $cgi->cookie(CGISESSID => $sid);
-  $session->param("dn", $cgi->param('dn'));
-  print $cgi->header( -cookie=>$cookie );
+    $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
+    $sid = $session->id();
+    $cookie = $cgi->cookie(CGISESSID => $sid);
+    $session->param("dn", $cgi->param('dn'));
+    print $cgi->header( -cookie=>$cookie );
 }
-
 
 
 ##### method verify_login_status
@@ -114,34 +113,34 @@ sub set_login_status
 # Out: 1 (logged in)/0 (not logged in)
 sub verify_login_status
 {
-  my ($self, $cgi) = @_;
-  my ($session, $stored_dn);
+    my ($self, $cgi) = @_;
+    my ($session, $stored_dn);
 
-  $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
-      # Unauthorized user may know to set CGISESSID cookie. However,
-      # an entirely new session (without the dn param) will be 
-      # created if there is no valid session with that id.
-  $stored_dn = $session->param("dn");
-  if (!defined($stored_dn) or !$stored_dn)  {
-      return( 0 );
-  }
-  else
-  {
-     $cgi->param(-name=>'dn',-value=>$stored_dn);
-     print $cgi->header( );
-     return( 1 );
-  }
+    $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
+
+    # Unauthorized user may know to set CGISESSID cookie. However,
+    # an entirely new session (without the dn param) will be 
+    # created if there is no valid session with that id.
+    $stored_dn = $session->param("dn");
+    if (!defined($stored_dn) or !$stored_dn)  {
+        return( 0 );
+    }
+    else {
+       $cgi->param(-name=>'dn',-value=>$stored_dn);
+       print $cgi->header( );
+       return( 1 );
+    }
 }
 
 
 
 sub logout
 {
-  my( $self, $cgi ) = @_;
-  my ($session, $stored_dn);
-
-  $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
-  $session->clear(["dn"]);
+    my( $self, $cgi ) = @_;
+    my ($session, $stored_dn);
+  
+    $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
+    $session->clear(["dn"]);
 }
 
 
@@ -151,11 +150,11 @@ sub logout
 #####
 sub encode_passwd
 {
-  my ($self, $raw_pwd) = @_;
-  my( $crypted_pwd );
+    my ($self, $raw_pwd) = @_;
+    my( $crypted_pwd );
  
-  $crypted_pwd = crypt( $raw_pwd, $psalt );
-  return $crypted_pwd;
+    $crypted_pwd = crypt( $raw_pwd, $psalt );
+    return $crypted_pwd;
 }
 
 
@@ -166,13 +165,13 @@ sub encode_passwd
 #####
 sub generate_random_string
 {
-  my $self = shift;
-  my $string_length = $_[0] + 0;	# make it a numeric value
+    my $self = shift;
+    my $string_length = $_[0] + 0;	# make it a numeric value
 
-  my @alphanumeric = ('a'..'z', 'A'..'Z', 0..9);
-  my $random_string = join( '', map( $alphanumeric[ rand @alphanumeric ], 0 .. $string_Length ) );
+    my @alphanumeric = ('a'..'z', 'A'..'Z', 0..9);
+    my $random_string = join( '', map( $alphanumeric[ rand @alphanumeric ], 0 .. $string_Length ) );
 
-  return $random_string;
+    return $random_string;
 }
 
 
