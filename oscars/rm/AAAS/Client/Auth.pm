@@ -122,7 +122,7 @@ sub verify_login_status
     # an entirely new session (without the dn param) will be 
     # created if there is no valid session with that id.
     $stored_dn = $session->param("dn");
-    if (!defined($stored_dn) or !$stored_dn)  {
+    if (!$stored_dn)  {
         return( 0 );
     }
     else {
