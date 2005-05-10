@@ -23,16 +23,16 @@ use strict;
 
 ######################################################################
 sub new {
-  my ($_class, %_args) = @_;
-  my ($_self) = {%_args};
+    my ($_class, %_args) = @_;
+    my ($_self) = {%_args};
   
-  # Bless $_self into designated class.
-  bless($_self, $_class);
+    # Bless $_self into designated class.
+    bless($_self, $_class);
   
-  # Initialize.
-  $_self->initialize();
+    # Initialize.
+    $_self->initialize();
   
-  return($_self);
+    return($_self);
 }
 
 
@@ -41,14 +41,6 @@ sub initialize {
     my ($self) = @_;
 
     $self->{'frontend'} = BSS::Frontend::Reservation->new('configs' => $self->{'configs'});
-}
-
-
-######################################################################
-
-sub db_login {
-    my ($self) = @_;
-    $self->{'frontend'}->db_login();
 }
 
 
@@ -64,41 +56,29 @@ sub db_login {
 ###     or status message
 ################################
 sub create_reservation {
-
-        # reference to input hash ref containing fields filled in by user
-        # This routine fills in the remaining fields.
-	my ( $self, $inref ) = @_; 
+    # reference to input hash ref containing fields filled in by user
+    # This routine fills in the remaining fields.
+    my ( $self, $inref ) = @_; 
     my ( $error_status, %results );
 
-	($inref->{'ingress_router'}, $inref->{'egress_router'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
+    ($inref->{'ingress_id'}, $inref->{'egress_id'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
 
-    if ($results{'error_msg'}) { return (0, %results); }
+    if ($results{'error_msg'}) { return ( 0, %results ); }
 
-	($error_status, %results) = $self->{'frontend'}->insert_reservation( $inref );
-	return ($error_status, %results);
+    ( $error_status, %results ) = $self->{'frontend'}->insert_reservation( $inref );
+    return ( $error_status, %results );
 }
 
 
 ################################
-### Leave the res in the db, just 
-### mark it as unrunable?
+### Given reservation id, Leave the reservation in the db, but mark status as
+### cancelled (TODO).
 ################################
 sub remove_reservation {
-
-        # references to input arguments, output hash
-	my ( $self, $inref ) = @_;
-    my ( $outref ) = \{};
-    my ( $status );
+    my ( $self, $inref ) = @_;
 		
-	($outref->{'ingress_router'}, $outref->{'egress_router'}) =
-		$self->{'frontend'}->{'dbconn'}->find_router_ids($inref->{'src'}, $inref->{'dst'});
-
-	$outref->{'ingress_id'} = $self->{'frontend'}->{'dbconn'}->router_to_id($outref->{'ingress_router'});
-	$outref->{'egress_id'} = $self->{'frontend'}->{'dbconn'}->router_to_id($outref->{'egress_router'});
-
-	$status = $self->{'frontend'}->delete_reservation( $outref );
-
-	return ($status, $outref);
+    my ($error_status, %results) = $self->{'frontend'}->delete_reservation( $inref );
+    return ($error_status, %results);
 }
 
 
@@ -111,13 +91,12 @@ sub remove_reservation {
 ###     or status message
 ################################
 sub get_reservations {
+    # reference to input hash ref containing fields filled in by user
+    # This routine fills in the remaining fields.
+    my ( $self, $inref, $fields_to_display ) = @_; 
 
-        # reference to input hash ref containing fields filled in by user
-        # This routine fills in the remaining fields.
-	my ( $self, $inref, $fields_to_display ) = @_; 
-
-	my ($error_status, %results) = $self->{'frontend'}->get_reservations( $inref, $fields_to_display );
-	return ($error_status, %results);
+    my ($error_status, %results) = $self->{'frontend'}->get_reservations( $inref, $fields_to_display );
+    return ($error_status, %results);
 }
 
 
@@ -130,13 +109,12 @@ sub get_reservations {
 ###     or status message
 ################################
 sub get_reservation_detail {
+    # inref is a ref to an input hash containing fields filled in by user.
+    # This routine fills in the remaining fields.
+    my ( $self, $inref, $fields_to_display ) = @_; 
 
-        # reference to input hash ref containing fields filled in by user
-        # This routine fills in the remaining fields.
-	my ( $self, $inref, $fields_to_display ) = @_; 
-
-	my ($error_status, %results) = $self->{'frontend'}->get_reservation_detail( $inref, $fields_to_display );
-	return ($error_status, %results);
+    my ($error_status, %results) = $self->{'frontend'}->get_reservation_detail( $inref, $fields_to_display );
+    return ($error_status, %results);
 }
 
 
@@ -180,7 +158,7 @@ sub do_ping {
 sub do_remote_trace {
     my ( $self, $host )  = @_;
     my (@hops);
-    my ($_error, $idx, $prev);
+    my ($_error, $interface_id, $prev);
 
     # try to ping before traceing?
     if ($self->{'configs'}{'use_ping'}) {
@@ -207,19 +185,21 @@ sub do_remote_trace {
 
     if ($#hops == 0) { 
         print STDERR "returning default " . $_jnxTraceroute->{'defaultrouter'} . "\n";
-        ($idx, $_error) = $self->{'frontend'}->{'dbconn'}->check_db_rtr($_jnxTraceroute->{'defaultrouter'});
-        return ($idx, $_error);
+            # id is 0 if not an edge router (not in interfaces table)
+        ($interface_id, $_error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($_jnxTraceroute->{'defaultrouter'});
+        return ($interface_id, $_error);
     }
 
     # start off with an non-existant router
-    $idx = 0;
+    $interface_id = 0;
 
     # loop forward till the next router isn't one of ours ...
     while(defined($hops[0]))  {
         print STDERR "hop:  $hops[0]\n";
-        $prev = $idx;
-        ($idx, $_error) = $self->{'frontend'}->{'dbconn'}->check_db_rtr($hops[0]);
-        if ( $idx == 0 ) {
+        $prev = $interface_id;
+            # id is 0 if not an edge router (not in interfaces table)
+        ($interface_id, $_error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($hops[0]);
+        if ( $interface_id == 0 ) {
             return ($prev, "");
         }
         shift(@hops);
@@ -237,7 +217,7 @@ sub do_remote_trace {
 
 sub do_local_trace {
     my ($self, $host)  = @_;
-    my ($tr, $hops, $idx, $error);
+    my ($tr, $hops, $interface_id, $error);
 
     # try to ping before traceing?
     if ($self->{'configs'}{'use_ping'}) {
@@ -261,11 +241,11 @@ sub do_local_trace {
 
     # loop from the last router back, till we find an edge router
     for my $i (1..$hops-1) {
-        my $rtr = $tr->hop_query_host($hops - $i, 0);
-        ($idx, $error) = $self->{'frontend'}->{'dbconn'}->check_db_rtr($rtr);
-        if (($idx != 0) && (!$error)) {
-            print STDERR "FOUND idx = $idx\n";
-            return ($idx, "");
+        my $ipaddr = $tr->hop_query_host($hops - $i, 0);
+        ($interface_id, $error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($ipaddr);
+        if (($interface_id != 0) && (!$error)) {
+            print STDERR "FOUND interface_id = $interface_id\n";
+            return ($interface_id, "");
         } 
         if ($error) { return (0, $error); }
      }
@@ -287,30 +267,28 @@ sub do_local_trace {
 sub find_interface_ids {
     my ($self, $src, $dst) = @_;
 
-    my( $ingress_rtr, $egress_rtr, $err_msg);
+    my( $ingress_interface_id, $egress_interface_id, $err_msg);
 
     print STDERR "running remote tr to $src\n";
-    ($ingress_rtr, $err_msg) = $self->do_remote_trace($src);
+    ($ingress_interface_id, $err_msg) = $self->do_remote_trace($src);
     if ($err_msg) { return ( 0, 0, $err_msg); }
    
     if ( $self->{'configs'}{'run_traceroute'} )  {
         print STDERR "running remote tr to $dst\n";
-        ($egress_rtr, $err_msg) = $self->do_remote_trace($dst);
+        ($egress_interface_id, $err_msg) = $self->do_remote_trace($dst);
         if ($err_msg) { return (0, 0, $err_msg); }
     } else {
         print STDERR "running remote (local) tr to $dst\n";
-        ($ingress_rtr, $err_msg) = $self->do_local_trace($src);
+        ($ingress_interface_id, $err_msg) = $self->do_local_trace($src);
         if ($err_msg) { return (0, 0, $err_msg); }
     }
-    print STDERR "ingress: ", $ingress_rtr, " egress: ", $egress_rtr, "\n";
+    print STDERR "ingress: ", $ingress_interface_id, " egress: ", $egress_interface_id, "\n";
 
-    if (($ingress_rtr == 0) || ($egress_rtr == 0))
+    if (($ingress_interface_id == 0) || ($egress_interface_id == 0))
     {
         return( 0, 0, "Unable to find route." );
     }
-
-
-	return ($ingress_rtr, $egress_rtr, ""); 
+	return ($ingress_interface_id, $egress_interface_id, ""); 
 }
 
 ### last line of a module
