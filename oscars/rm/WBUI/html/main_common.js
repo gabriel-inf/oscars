@@ -115,11 +115,11 @@ function print_navigation_bar(activePage)
     }
     if (activePage == 'userprofile')
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/userprofile.pl" class="active" title="View and/or edit your personal information">My Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" class="active" title="View and/or edit your personal information">My Profile</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/userprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
     }
     document.write('<li><a href="https://oscars.es.net/cgi-bin/user/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
