@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-# register.pl:  New user account registration
-# Last modified: April 16, 2005
+# register.pl:  New user account registration script
+# Last modified: May 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -9,7 +9,7 @@ use CGI;
 
 use AAAS::Client::SOAPClient;
 
-require '../lib/general.pl';
+require 'general.pl';
 
 
 # title of the new user registration notification email (sent to the admin)

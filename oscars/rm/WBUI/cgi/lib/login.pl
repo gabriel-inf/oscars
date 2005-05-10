@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-# login.pl:  Main Service Login page
-# Last modified: April 26, 2005
+# login.pl:  Main Service Login script
+# Last modified: May 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -10,7 +10,7 @@ use Data::Dumper;
 use AAAS::Client::SOAPClient;
 use AAAS::Client::Auth;
 
-require '../lib/general.pl';
+require 'general.pl';
 
 
 $service_startpoint_URI = 'https://oscars.es.net/user/';
