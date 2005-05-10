@@ -23,11 +23,11 @@ $login_URI = 'https://oscars.es.net/';
 # checks session status only; database check done elsewhere
 
 sub check_login {
-    my( $set_cookie, $cgi ) = @_;
+    my( $login_results, $cgi ) = @_;
     my( $auth );
 
     $auth = AAAS::Client::Auth->new();
-    if ( $set_cookie ) {
+    if ( $login_results ) {
         $auth->set_login_status($cgi);
     }
     elsif (!($auth->verify_login_status($cgi))) {
