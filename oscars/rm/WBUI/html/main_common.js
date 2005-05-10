@@ -121,7 +121,7 @@ function print_navigation_bar(activePage)
     {
         document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
     }
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/user/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
     document.write("</div>");
 }
@@ -166,7 +166,7 @@ function print_admin_bar(activePage)
     {
         document.write('<li><a href="editprofile.html" title="View and/or edit admin profile">Admin Profile</a></li>');
     }
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
     document.write("</div>");
 }
