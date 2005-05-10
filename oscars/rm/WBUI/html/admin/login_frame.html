@@ -1,0 +1,42 @@
+<html>
+<head>
+	<style type="text/css" media="screen">
+		@import url( './styleSheets/layout.css' );
+	</style>
+	<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>
+</head>
+
+<body>
+<div id="login_ui">
+
+<form method="post" action="https://oscars.es.net/cgi-bin/user/login.pl?admin=1"
+target="status_frame">
+
+<table>
+<tr>
+	<th>Login Name:</th>
+	<td><input type="text" name="dn"></td>
+</tr>
+<tr>
+	<th>Password:</th>
+	<td><input type="password" name="password"></td>
+</tr>
+<tr>
+	<th>&nbsp;</th>
+	<td><input type="submit" value="Login"></td>
+</tr>
+</table>
+
+</form>
+
+<p><strong>Please <a href="./register/">click here to register</a>.</strong><br>
+<br>
+You need to be able to authenticate via <a href="http://shibboleth.internet2.edu/" target="_blank">Shibboleth</a> to create a new account.<br>
+For inquiries, please contact the project administrator.</p>
+
+</div>
+
+<script language="javascript">print_footer('user');</script>
+
+</body>
+</html>
