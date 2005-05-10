@@ -50,14 +50,14 @@ sub verify_acct
     my( $sth, $query );
     my( %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     # whether admin account exists (determine it with the level info, not the login name)
     $query = "SELECT $table{'users'}{'dn'} FROM users WHERE $table{'users'}{'user_level'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -91,7 +91,7 @@ sub process_registration
     my( $encrypted_password );  # TODO:  FIX
     my( %results );
 	
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     # insert into database query statement
@@ -101,7 +101,7 @@ sub process_registration
     my @insertions = ( '', $admin_dn, $encrypted_password, $inref->{'firstname'}, $inref->{'lastname'}, $inref->{'organization'}, $inref->{'email_primary'}, $inref->{'email_secondary'}, $inref->{'phone_primary'}, $inref->{'phone_secondary'}, $inref->{'description'}, 10, $inref->{'datetime'}, '', 0 );
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -128,14 +128,14 @@ sub process_login
     my( $sth, $query );
     my( %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     # get the password from the database
     $query = "SELECT $table{'users'}{'user_password'} FROM users WHERE $table{'users'}{'dn'} = ? and $table{'users'}{'user_level'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -177,7 +177,7 @@ sub check_login_available
     my(  $sth, $query );
     my( %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     # Check whether a particular user id already exists in the database
@@ -188,7 +188,7 @@ sub check_login_available
     $query = "SELECT $field_name_to_check FROM users WHERE $field_name_to_check = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -225,14 +225,14 @@ sub process_user_registration
     my( $encrypted_password, $activation_key );  # TODO:  FIX
     my( %results );
 	
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     # id dup check.
     $query = "SELECT $table{'users'}{'dn'} FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -259,7 +259,7 @@ sub process_user_registration
     $query = "INSERT INTO users VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -288,7 +288,7 @@ sub get_user_profile
     my( $sth, $query );
     my( %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     # names of the fields to be displayed on the screen
@@ -305,7 +305,7 @@ sub get_user_profile
     $query .= " FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -338,7 +338,7 @@ sub process_profile_update
     my( $update_password, $encrypted_password );
     my( %results );
 	
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     # Read the current user information from the database to decide which
@@ -357,7 +357,7 @@ sub process_profile_update
     $query .= " FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -423,7 +423,7 @@ sub process_profile_update
     $query .= " WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }

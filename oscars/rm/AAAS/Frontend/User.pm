@@ -45,14 +45,14 @@ sub verify_login
     my( $self, $inref ) = @_;
     my( $query, $sth, %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
     # get the password from the database
     $query = "SELECT $table{'users'}{'password'}, $table{'users'}{'level'} FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -119,7 +119,7 @@ sub get_profile
     my( %results );
     my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     # DB query: get the user profile detail
     $query = "SELECT ";
@@ -131,7 +131,7 @@ sub get_profile
     $query .= " FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -156,7 +156,7 @@ sub get_profile
 
     $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -200,14 +200,14 @@ sub set_profile
     my( %table ) = get_AAAS_table();
     my( %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     # user level provisioning:  # if the user's level equals one of the
     #  read-only levels, don't give them access 
     $query = "SELECT $table{'users'}{'level'} FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -242,7 +242,7 @@ sub set_profile
     $query .= " FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -310,7 +310,7 @@ sub set_profile
     $query .= " FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -338,13 +338,13 @@ sub activate_account
     my( %table ) = get_AAAS_table();
     my( %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     # get the password from the database
     $query = "SELECT $table{'users'}{'password'}, $table{'users'}{'activation_key'}, $table{'users'}{'pending_level'} FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
@@ -389,7 +389,7 @@ sub activate_account
         $query = "UPDATE users SET $table{'users'}{'level'} = ?, $table{'users'}{'pending_level'} = ?, $table{'users'}{'activation_key'} = '' WHERE $table{'users'}{'dn'} = ?";
 
         $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-        if (!defined($sth)) {
+        if (!$sth) {
             $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
             return (1, %results);
         }
@@ -422,7 +422,7 @@ sub process_registration
     my( $sth, $query );
     my( %results );
 
-    if (!defined($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     my( %table ) = get_AAAS_table();
     my $encrypted_password = $inref->{'password_once'};
@@ -445,7 +445,7 @@ sub process_registration
     $query = "INSERT INTO users VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
     $sth = $self->{'dbconn'}{'dbh'}->prepare( $query );
-    if (!defined($sth)) {
+    if (!$sth) {
         $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
         return (1, %results);
     }
