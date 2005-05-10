@@ -68,7 +68,7 @@ sub print_profile
 
     print "  <th><span class=\"requiredmark\">*</span> Distinguished Name</th>\n";
     print "  <td><input type=\"text\" name=\"dn\" size=\"20\"\n";
-    if (defined($params->{'dn'})) { print " value=\"$params->{'dn'}\""; }
+    if ($params->{'dn'}) { print " value=\"$params->{'dn'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
@@ -89,28 +89,28 @@ sub print_profile
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> First Name</th>\n";
     print "  <td><input type=\"text\" name=\"first_name\" size=\"20\"";
-    if (defined($params->{'first_name'})) { print " value=\"$params->{'first_name'}\""; }
+    if ($params->{'first_name'}) { print " value=\"$params->{'first_name'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Last Name</th>\n";
     print "  <td><input type=\"text\" name=\"last_name\" size=\"20\"";
-    if (defined($params->{'last_name'})) { print " value=\"$params->{'last_name'}\""; }
+    if ($params->{'last_name'}) { print " value=\"$params->{'last_name'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Organization</th>\n";
     print "  <td><input type=\"text\" name=\"institution\" size=\"40\"";
-    if (defined($params->{'institution'})) { print " value=\"$params->{'institution'}\""; }
+    if ($params->{'institution'}) { print " value=\"$params->{'institution'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th valign=\"top\">Personal Description</th>\n";
     print "  <td><textarea name=\"description\" rows=\"3\" cols=\"34\"";
-    if (defined($params->{'description'})) { print " value=\"$params->{'description'}\""; }
+    if ($params->{'description'}) { print " value=\"$params->{'description'}\""; }
     print "  </textarea></td>\n";
     print "</tr>\n";
 
@@ -121,28 +121,28 @@ sub print_profile
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> E-mail (Primary)</th>\n";
     print "  <td><input type=\"text\" name=\"email_primary\" size=\"40\"";
-    if (defined($params->{'email_primary'})) { print " value=\"$params->{'email_primary'}\""; }
+    if ($params->{'email_primary'}) { print " value=\"$params->{'email_primary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th>E-mail (Secondary)</th>\n";
     print "  <td><input type=\"text\" name=\"email_secondary\" size=\"40\"";
-    if (defined($params->{'email_secondary'})) { print " value=\"$params->{'email_secondary'}\""; }
+    if ($params->{'email_secondary'}) { print " value=\"$params->{'email_secondary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Phone Number (Primary)</th>\n";
     print "  <td><input type=\"text\" name=\"phone_primary\" size=\"40\"";
-    if (defined($params->{'phone_primary'})) { print " value=\"$params->{'phone_primary'}\""; }
+    if ($params->{'phone_primary'}) { print " value=\"$params->{'phone_primary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th>Phone Number (Secondary)</th>\n";
     print "  <td><input type=\"text\" name=\"phone_secondary\" size=\"40\"";
-    if (defined($params->{'phone_secondary'})) { print " value=\"$params->{'phone_secondary'}\""; }
+    if ($params->{'phone_secondary'}) { print " value=\"$params->{'phone_secondary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
