@@ -11,7 +11,7 @@ require '../lib/general.pl';
 
 
 my $cgi = CGI->new();
-my $error_status = check_login(0, $cgi);
+my $error_status = check_login(undef, $cgi);
 
 # nuke session and put the user back at the login screen
 

@@ -20,7 +20,7 @@ my $cgi = CGI->new();
 
 my (%form_params, %results);
 
-my $error_status = check_login(0, $cgi);
+my $error_status = check_login(undef, $cgi);
 
 if (!$error_status) {
     foreach $_ ($cgi->param) {

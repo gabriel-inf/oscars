@@ -17,7 +17,7 @@ require '../lib/general.pl';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(0, $cgi);
+my $error_status = check_login(undef, $cgi);
 
 if (!$error_status) {
     foreach $_ ($cgi->param) {

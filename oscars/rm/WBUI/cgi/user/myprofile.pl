@@ -18,7 +18,7 @@ my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'ema
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(0, $cgi);
+my $error_status = check_login(undef, $cgi);
 
 if (!$error_status) {
     foreach $_ ($cgi->param) {

@@ -20,13 +20,11 @@ my $cgi = CGI->new();
 
 ($error_status, %results) = check_db_user($cgi);
 
-# error_status not being set correctly; FIX
-
 if ($results{'error_msg'}) { $error_status = 1; }
 else { $error_status = 0; }
 
 if (!$error_status) {
-    $error_status = check_login(1, $cgi);
+    $error_status = check_login(%results, $cgi);
     update_frames($error_status, "status_frame", $service_startpoint_URI, "Logged in as " . $cgi->param('dn') . ".");
 }
 else {
