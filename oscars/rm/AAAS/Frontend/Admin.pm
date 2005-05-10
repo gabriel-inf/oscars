@@ -438,4 +438,59 @@ sub process_profile_update
     return( 0, %results );
 }
 
+##### sub get_userlist
+# In:  inref
+# Out: status message and DB results
+sub get_userlist
+{
+    my( $self, $inref, $fields_to_display ) = @_;
+    my( $sth, $error_status, $query );
+    my( %results, $arrayref, $rref );
+    my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
+
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+
+    $query = "SELECT ";
+    foreach $_ ( @$fields_to_display ) {
+        $query .= $table{'users'}{$_} . ", ";
+    }
+    # delete the last ", "
+    $query =~ s/,\s$//;
+    $query .= " FROM users ORDER BY $table{'users'}{'last_name'}";
+
+    print STDERR $query, "\n";
+    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
+    if ( !$sth ) {
+        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        return (1, %results);
+    }
+
+    $sth->execute();
+    if ( $sth->errstr ) {
+        $sth->finish();
+        $results{'error_msg'} = "[ERROR] While getting user list: $sth->errstr";
+        return( 1, %results );
+    }
+    $arrayref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
+    $sth->finish();
+
+    $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
+    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
+    if (!$sth) {
+        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        return (1, %results);
+    }
+    $sth->execute( $arrayref->{'institution_id'} );
+    if ( $sth->errstr ) {
+        $sth->finish();
+        $results{'error_msg'} = "[ERROR] While getting user list: $sth->errstr";
+        return( 1, %results );
+    }
+    $results{'rows'} = $arrayref;
+    $results{'status_msg'} = 'Successfully read user list';
+    return( 0, %results );
+
+}
+
+
 1;
