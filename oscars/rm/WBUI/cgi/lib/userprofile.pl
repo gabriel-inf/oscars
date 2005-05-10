@@ -9,7 +9,7 @@ use CGI;
 
 use AAAS::Client::SOAPClient;
 
-require '../lib/general.pl';
+require 'general.pl';
 
 # names of the fields to be displayed on the screen
 my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'level', 'register_time', 'activation_key', 'pending_level', 'authorization_id', 'institution_id' );
