@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-# myprofile.pl:  Main service: My Profile page
-# Last modified: April 26, 2005
+# userprofile.pl:  Main service: My Profile page
+# Last modified: May 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -50,18 +50,18 @@ sub print_profile
     print "<link rel=\"stylesheet\" type=\"text/css\" ";
     print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
     print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
-    print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/user/myprofile.js\"></script>\n";
+    print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/userprofile.js\"></script>\n";
     print "</head>\n\n";
 
     print "<body>\n\n";
 
-    print "<script language=\"javascript\">print_navigation_bar(\"myprofile\");</script>\n\n";
+    print "<script language=\"javascript\">print_navigation_bar(\"userprofile\");</script>\n\n";
 
     print "<div id=\"account_ui\">\n\n";
 
     print "<p><em>View/Edit My Profile</em><br>\n";
     print "(Required fields are marked with a <span class=\"requiredmark\">*</span>)</p>\n";
-    print "<form method=\"post\" action=\"https://oscars.es.net/cgi-bin/user/myprofile.pl\" onsubmit=\"return check_form(this);\">\n";
+    print "<form method=\"post\" action=\"https://oscars.es.net/cgi-bin/lib/userprofile.pl\" onsubmit=\"return check_form(this);\">\n";
  
     print "<table>\n";
     print "<tr>\n";
