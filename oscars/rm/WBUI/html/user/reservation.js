@@ -155,7 +155,7 @@ function check_form( form )
 
 	if ( form.start_month.value == "" )
 	{
-                form.start_month.value = currentDate.getUTCMonth() + 1;
+                form.start_month.value = currentDate.getUTCMonth();
 	}
 
 	if ( form.start_date.value == "" )
