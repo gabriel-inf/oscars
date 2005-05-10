@@ -1,12 +1,13 @@
 /*
 Javascript functions for main page
-Last modified: May 5, 2005
+Last modified: May 10, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
 print_navigation_bar(activePage)
+print_admin_bar(activePage)
 print_current_date()
 hasClass(obj)
 stripe(id)
@@ -98,24 +99,23 @@ function print_navigation_bar(activePage)
     document.write('<ul id="tabnav">');
     if (activePage == 'reservation')
     {
-        document.write('<li><a href="#" class="active" title="Create a new reservation">Make a Reservation</a></li>');
+        document.write('<li><a href="https://oscars.es.net/user/create_reservation.html" class="active" title="Create a new reservation">Make a Reservation</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/user/" title="Create a new reservation">Make a Reservation</a></li>');
+        document.write('<li><a href="https://oscars.es.net/user/create_reservation.html" title="Create a new reservation">Make a Reservation</a></li>');
     }
     if (activePage == 'reservationList')
     {
-        document.write('<li><a href="#" class="active" title="View list of active reservations">View Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/reservationlist.pl" class="active" title="View list of active reservations">View Reservations</a></li>');
     }
     else
     {
-    
         document.write('<li><a href="https://oscars.es.net/cgi-bin/user/reservationlist.pl" title="View list of active reservations">View Reservations</a></li>');
     }
     if (activePage == 'myprofile')
     {
-        document.write('<li><a href="#" class="active" title="View and/or edit your personal information">My Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/myprofile.pl" class="active" title="View and/or edit your personal information">My Profile</a></li>');
     }
     else
     {
@@ -131,6 +131,44 @@ function print_navigation_bar(activePage)
 function update_frame(target, uri)
 {
     parent.frames[target].location = uri;
+}
+
+
+// ** prints admin navigation bar, with active page highlighted
+// ** TODO:  Fix duplication with previous function later.
+
+function print_admin_bar(activePage)
+{
+    document.write("<div>");
+    document.write('<ul id="tabnav">');
+    if (activePage == 'userlist')
+    {
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" class="active" title="View list of user accounts">List User Accounts</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" title="View list of user accounts">List User Accounts</a></li>');
+    }
+    if (activePage == 'adduser')
+    {
+        document.write('<li><a href="#" class="active" title="Add a new user account">Add a New User</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="adduser.html" title="Add a new user account">Add a New User</a></li>');
+    
+    }
+    if (activePage == 'editprofile')
+    {
+        document.write('<li><a href="#" class="active" title="View and/or edit admin profile">Admin Profile</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="editprofile.html" title="View and/or edit admin profile">Admin Profile</a></li>');
+    }
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
+    document.write("</ul>");
+    document.write("</div>");
 }
 
 
@@ -169,44 +207,6 @@ function update_status_message(target, msg)
     document.write("</script> | ", msg, "</p>");
     document.write("</div>");
   }
-}
-
-
-// ** prints admin navigation bar, with active page highlighted
-// ** TODO:  Fix duplication with previous function later.
-
-function print_admin_bar(activePage)
-{
-    document.write("<div>");
-    document.write('<ul id="tabnav">');
-    if (activePage == 'userlist')
-    {
-        document.write('<li><a href="#" class="active" title="View and/or edit user accounts">Edit User Accounts</a></li>');
-    }
-    else
-    {
-        document.write('<li><a href="userlist.html" title="View and/or edit user accounts">Edit User Accounts</a></li>');
-    }
-    if (activePage == 'adduser')
-    {
-        document.write('<li><a href="#" class="active" title="Add a new user account">Add a New User</a></li>');
-    }
-    else
-    {
-        document.write('<li><a href="adduser.html" title="Add a new user account">Add a New User</a></li>');
-    
-    }
-    if (activePage == 'editprofile')
-    {
-        document.write('<li><a href="#" class="active" title="View and/or edit admin profile">Admin Profile</a></li>');
-    }
-    else
-    {
-        document.write('<li><a href="editprofile.html" title="View and/or edit admin profile">Admin Profile</a></li>');
-    }
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
-    document.write("</ul>");
-    document.write("</div>");
 }
 
 
