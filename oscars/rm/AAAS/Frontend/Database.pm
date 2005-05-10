@@ -1,16 +1,13 @@
 package AAAS::Frontend::Database;
 
-# Database.pm:  package for AAAS specific database settings
-# Last modified: April 28, 2005
+# Database.pm:  package for AAAS database settings
+# Last modified: May 9, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
-use OSCARS_db;
-
-our @ISA = qw(OSCARS_db);
-
+use DBI;
 
 ######################################################################
 sub new {
@@ -26,6 +23,16 @@ sub new {
   
     return($_self);
 }
+
+
+######################################################################
+sub initialize {
+    my ( $_self ) = @_;
+    $_self->{'dbh'} = DBI->connect($_self->{'configs'}->{'db_use_database'}, 
+             $_self->{'configs'}->{db_login_name}, $_self->{'configs'}->{'db_login_passwd'})
+            or die "Couldn't connect to database: " . DBI->errstr;
+}
+
 
 ##### Settings Begin (Global variables) #####
 
