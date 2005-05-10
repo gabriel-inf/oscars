@@ -84,7 +84,7 @@ sub print_reservations
     foreach $row (@$rowsref) {
         if ($row->{'reservation_status'} ne 'finished') {
             print "  <tr>\n";
-            print($row);
+            print_row($row);
             print "  </tr>\n";
         }
     }
