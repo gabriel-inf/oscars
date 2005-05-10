@@ -113,13 +113,13 @@ function print_navigation_bar(activePage)
     {
         document.write('<li><a href="https://oscars.es.net/cgi-bin/user/reservationlist.pl" title="View list of active reservations">View Reservations</a></li>');
     }
-    if (activePage == 'myprofile')
+    if (activePage == 'userprofile')
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/myprofile.pl" class="active" title="View and/or edit your personal information">My Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/userprofile.pl" class="active" title="View and/or edit your personal information">My Profile</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/myprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/userprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
     }
     document.write('<li><a href="https://oscars.es.net/cgi-bin/user/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
