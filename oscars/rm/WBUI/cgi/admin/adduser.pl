@@ -11,9 +11,6 @@ require '../lib/general.pl';
 use AAAS::Client::SOAPClient;
 use AAAS::Client::Auth;
 
-# current script name (used for error message)
-$script_filename = $ENV{'SCRIPT_NAME'};
-
 # smiley icons used in the login name overlap check result page
 %icon_locations = (
 	'smile' => 'https://oscars.es.net/images/icon_biggrin.gif', # smile face
@@ -34,7 +31,7 @@ $adminadduser_notification_email_encoding = 'ISO-8859-1';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(0, $cgi);
+my $error_status = check_login(undef, $cgi);
 
 if (!$error_status) {
   foreach $_ ($cgi->param) {
@@ -44,7 +41,6 @@ if (!$error_status) {
   ($error_status, %results) = soap_check_login_dup(\%form_params);
   if (!$error_status) {
       update_frames("main_frame", "", $results{'status_msg'});
-      print_dup_status(\%results);
   }
   else {
       update_frames("main_frame", "", $results{'error_msg'});
@@ -57,15 +53,6 @@ else {
 exit;
 
 
-# if 'mode' eq 'idcheck': Check the input login name for overlap
-# if 'mode' eq 'adminadduser': Add a new user (pass the authorization step) and send an activation info email to the user
-# all else (default): Print the new user registration page
-if ( $FormData{'mode'} eq 'idcheck' )
-{
-	&Print_Loginname_Overlap_Check_Result();
-}
-elsif ( $FormData{'mode'} eq 'adminadduser' )
-{
 	&Process_User_Registration();
 }
 
@@ -106,11 +93,10 @@ sub validate_params
 }
 
 
-##### sub Process_User_Registration
+##### sub process_user_pegistration
 # In: None
 # Out: None
-# Calls sub Print_Interface_Screen at the end (with a success token)
-sub Process_User_Registration
+sub process_user_registration
 {
   my( $form_params ) = @_;
 
