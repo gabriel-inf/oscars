@@ -124,7 +124,8 @@ sub find_new_reservations {
 
     foreach my $r (@$resv) {
         ## calls to pss to setup reservations
-        $result = setup_pss((map_fields($front_end, $r)));
+        my %lsp_info = map_fields($front_end, $r);
+        $result = setup_pss(%lsp_info);
 
         #print STDERR "update reservation to active\n";
         update_reservation( $r, $result, $configs->{'ACTIVE'}, $front_end);
@@ -153,7 +154,8 @@ sub find_expired_reservations {
     if ($error_msg) { return $error_msg; }
        
     foreach my $r (@$resv) {
-        $result = teardown_pss(map_fields($front_end, $r), $front_end);
+        my %lsp_info = map_fields($front_end, $r);
+        $result = teardown_pss(%lsp_info, $front_end);
 
         #print STDERR "update reservation to active\n";
         update_reservation( $r, $result, $configs->{'FINISHED'}, $front_end);
@@ -167,22 +169,22 @@ sub find_expired_reservations {
 ######################################################################
 sub setup_pss {
 
-    my ($lspInfo) = @_;   
+    my (%lspInfo) = @_;   
 
         # fill in remaining fields
-    $lspInfo->{'protocol'} = 'udp';
-    $lspInfo->{'source-port'} = '5000';
+    $lspInfo{'protocol'} = 'udp';
+    $lspInfo{'source-port'} = '5000';
 
     print STDERR "execing pss to schedule reservations\n";
-    print STDERR Dumper($lspInfo);
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
-        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%$lspInfo);
+        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%lspInfo);
 
         print STDERR "Setting up LSP...\n";
         $_jnxLsp->configure_lsp(_LSP_SETUP);
         if ($_error = $_jnxLsp->get_error())  {
+            print STDERR $_error;
             return 0;
             #die($_error);
         }
@@ -198,19 +200,20 @@ sub setup_pss {
 ######################################################################
 sub teardown_pss {
 
-    my ($lspInfo) = @_;
+    my (%lspInfo) = @_;
 
         # fill in remaining fields
-    $lspInfo->{'protocol'} = 'udp';
-    $lspInfo->{'source-port'} = '5000';
+    $lspInfo{'protocol'} = 'udp';
+    $lspInfo{'source-port'} = '5000';
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
-        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%$lspInfo);
+        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%lspInfo);
 
         print STDERR "Tearing down LSP...\n" ;
         $_jnxLsp->configure_lsp(_LSP_TEARDOWN); 
         if ($_error = $_jnxLsp->get_error())  {
+            print STDERR $_error;
             return 0;
         }
     }
@@ -246,9 +249,6 @@ sub map_fields
     my ( %results, $error );
     my ( $ingress_loopback_name, $egress_loopback_name, $src_ip, $dst_ip );
 
-    print '** ', "\n";
-    print Dumper($data);
-
      # get loopbacks for routers, given interface ids
     ($ingress_loopback_name, $error) = $front_end->{'dbconn'}->xface_id_to_loopback($data->{'ingress_interface_id'});
     ($egress_loopback_name, $error) = $front_end->{'dbconn'}->xface_id_to_loopback($data->{'egress_interface_id'});
@@ -257,8 +257,11 @@ sub map_fields
     ($dst_ip, $error) = $front_end->{'dbconn'}->hostaddrs_id_to_ip($data->{'dst_hostaddrs_id'});
     %results = (
       'name' => "oscars_$data->{'reservation_id'}",
-      'lsp_from' => $ingress_loopback_name,
-      'lsp_to' => $egress_loopback_name,
+      #'lsp_from' => $ingress_loopback_name,
+      'lsp_from' => 'dev-rt20-e.es.net',
+      #'lsp_to' => $egress_loopback_name,
+          # hard wired for now
+      'lsp_to' => "10.0.0.1",
       'bandwidth' => $data->{'reservation_bandwidth'},
       'lsp_class-of-service' => $data->{'reservation_class'},
       'policer_burst-size-limit' =>  $data->{'reservation_burst_limit'},
@@ -266,7 +269,7 @@ sub map_fields
       'destination-address' => $dst_ip,
       'dscp' => $data->{'reservation_dscp'}
     );
-    return ( \%results );
+    return ( %results );
 }
 
 
