@@ -52,7 +52,8 @@ sub insert_reservation
     my( $query, $sth );
     my( %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     my $over_limit = 0; # whether any time segment is over the bandwidth limit
     my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
@@ -145,7 +146,8 @@ sub get_reservations
     my( $sth, $query );
     my( %mapping, @field_names, $rref, $arrayref, $r, %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
     # DB query: get the reservation list
@@ -210,8 +212,10 @@ sub get_reservations
 sub delete_reservation
 {
     my( $self, $inref ) = @_;
+    my( %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 }
 
 
@@ -225,7 +229,8 @@ sub get_reservation_detail
     my( $sth, $query );
     my( %mapping, $r, $arrayref, %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     my( %table ) = $self->{'dbconn'}->get_BSS_table('reservations');
 
@@ -286,8 +291,10 @@ sub find_pending_reservations  {
 
     my ( $self, $stime, $status ) = @_;
     my ( $sth, $data, $query, $error_msg );
+    my ( %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and reservation_start_time < ?};
     $sth = $self->{'dbconn'}->{'dbh'}->prepare($query);
@@ -317,8 +324,10 @@ sub find_expired_reservations  {
 
     my ( $self, $stime, $status ) = @_;
     my ( $sth, $data, $query, $error_msg);
+    my ( %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     #print "expired: Looking at time == " . $stime . "\n";
 
@@ -353,7 +362,8 @@ sub update_reservation {
     my ( $self, $res_id, $status ) = @_;
     my ( $sth, $query, %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     $query = qq{ UPDATE reservations SET reservation_status = ? WHERE reservation_id = ?};
     $sth = $self->{'dbconn'}->{'dbh'}->prepare($query);
@@ -374,5 +384,23 @@ sub update_reservation {
     return( 0, %results );
 }
 
+
+# private
+
+sub check_connection
+{
+    my ( $self ) = @_;
+    my ( %attr ) = (
+        PrintError => 0,
+        RaiseError => 0,
+    );
+    $self->{'dbconn'}->{'dbh'} = DBI->connect(
+             $self->{'configs'}->{'db_use_database'}, 
+             $self->{'configs'}->{'db_login_name'},
+             $self->{'configs'}->{'db_login_passwd'},
+             \%attr);
+    if (!$self->{'dbconn'}->{'dbh'}) { return( "Unable to make database connection"); }
+    return "";
+}
 
 1;
