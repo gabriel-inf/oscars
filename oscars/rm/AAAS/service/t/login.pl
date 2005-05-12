@@ -1,12 +1,10 @@
 #!/usr/bin/perl -w
 
-use lib '../../..';
-
 use AAAS::Client::SOAPClient;
 
 
-my $passwd = crypt('shyysh', 'oscars');
-my %params = ('dn' => 'davidr', 'password' => $passwd);
+my $passwd = crypt('ritazza6', 'oscars');
+my %params = ('dn' => 'oscars', 'password' => $passwd);
 my($result, %data) = soap_verify_login(\%params);
 if (defined($data{'error_msg'}) && $data{'error_msg'})
 {
