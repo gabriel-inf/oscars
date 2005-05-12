@@ -26,9 +26,9 @@ $registration_notification_email_encoding = 'ISO-8859-1';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(undef, $cgi);
+my $dn = check_login(undef, $cgi);
 
-if (!$error_status) {
+if ($dn) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }

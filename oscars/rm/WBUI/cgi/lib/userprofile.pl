@@ -18,12 +18,13 @@ my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'ema
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(undef, $cgi);
+my $dn = check_login(undef, $cgi);
 
-if (!$error_status) {
+if ($dn) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
+    $form_params{'dn'} = $dn;
     ($error_status, %results) = soap_get_profile(\%form_params, \@fields_to_display);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});

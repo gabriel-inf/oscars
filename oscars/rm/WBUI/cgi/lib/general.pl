@@ -29,11 +29,12 @@ sub check_login {
     $auth = AAAS::Client::Auth->new();
     if ( $login_results ) {
         $auth->set_login_status($cgi);
+        return 1;
     }
-    elsif (!($auth->verify_login_status($cgi))) {
-        return ( 1 );
+    else {
+        my $dn = $auth->verify_login_status($cgi);
+        return($dn);
     }
-    return ( 0 );
 }
 
 

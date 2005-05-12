@@ -11,13 +11,11 @@ require 'general.pl';
 
 
 my $cgi = CGI->new();
-my $error_status = check_login(undef, $cgi);
+my $dn = check_login(undef, $cgi);
 
 # nuke session and put the user back at the login screen
 
-if (!$error_status) {
-    end_session($cgi);
-}
+if ($dn) { end_session($cgi); }
 
 print "Content-type: text/html\n\n";
 
