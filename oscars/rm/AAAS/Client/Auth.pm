@@ -123,12 +123,12 @@ sub verify_login_status
     # created if there is no valid session with that id.
     $stored_dn = $session->param("dn");
     if (!$stored_dn)  {
-        return( 0 );
+        return( $stored_dn );
     }
     else {
        $cgi->param(-name=>'dn',-value=>$stored_dn);
        print $cgi->header( );
-       return( 1 );
+       return( $stored_dn );
     }
 }
 
