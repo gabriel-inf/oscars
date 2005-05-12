@@ -72,7 +72,7 @@ sub insert_reservation
         return ( 1, %results );
     }
     $sth->execute( $inref->{'start_time'}, $inref->{'end_time'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $results{'error_msg'} = "[ERROR] While creating a new reservation:  $DBI::errstr";
         return( 1, %results );
@@ -114,6 +114,7 @@ sub insert_reservation
 
         # insert all fields for reservation into database
         $query = "INSERT INTO reservations VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
+        print STDERR '** ', $query;
 
         $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
         if (!$sth) {
@@ -121,7 +122,7 @@ sub insert_reservation
             return (1, %results);
         }
         $sth->execute( @insertions );
-        if ( $sth->errstr ) {
+        if ( $DBI::errstr ) {
             $sth->finish();
             $results{'error_msg'} = "[ERROR] While recording the reservation request on the database: $DBI::errstr";
             return( 1, %results );
@@ -172,7 +173,7 @@ sub get_reservations
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $results{'error_msg'} = "[ERROR] While getting reservation list: $DBI::errstr";
         return( 1, %results );
@@ -188,7 +189,7 @@ sub get_reservations
         return (1, %results);
     }
     $sth->execute();
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $results{'error_msg'} = "[ERROR] While getting reservation list: $DBI::errstr";
         return( 1, %results );
@@ -248,7 +249,7 @@ sub get_reservation_detail
         return (1, %results);
     }
     $sth->execute( $inref->{'id'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $results{'error_msg'} = "[ERROR] While getting reservation details: $DBI::errstr";
         return( 1, %results );
@@ -267,7 +268,7 @@ sub get_reservation_detail
         return (1, %results);
     }
     $sth->execute();
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $results{'error_msg'} = "[ERROR] While getting reservation details: $DBI::errstr";
         return( 1, %results );
@@ -304,7 +305,7 @@ sub find_pending_reservations  {
     }
 
     $sth->execute( $status, $stime );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $error_msg = "[ERROR] While finding pending reservations: $DBI::errstr";
         return( $error_msg, undef );
@@ -339,7 +340,7 @@ sub find_expired_reservations  {
     }
 
     $sth->execute( $status, $stime );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $error_msg = "[ERROR] While finding expired reservations: $DBI::errstr";
         return( $error_msg, undef );
@@ -372,7 +373,7 @@ sub update_reservation {
         return ( 1, %results );
     }
     $sth->execute( $status, $res_id->{reservation_id});
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
         $results{'error_msg'} = "[ERROR] While updating your reservation: $DBI::errstr";
         return( 1, %results );
