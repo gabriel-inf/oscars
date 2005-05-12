@@ -7,6 +7,8 @@ package AAAS::Frontend::User;
 
 use strict;
 
+use DBI;
+
 use AAAS::Frontend::Database;
 
 ######################################################################
@@ -45,7 +47,8 @@ sub verify_login
     my( $self, $inref ) = @_;
     my( $query, $sth, %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
     # get the password from the database
@@ -53,13 +56,14 @@ sub verify_login
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "[ERROR] Can't prepare statement . $DBI::errstr";
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
+        print "***\n";
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While processing the login: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While processing the login: $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person is a registered user
@@ -95,14 +99,20 @@ sub verify_login
 }
 
 
-#### from logout.pl:  DB operations associated with logout, a noop right now
+#### from logout.pl:  DB operations associated with logout
 
 sub logout
 {
     my( $self ) = @_;
     my( %results );
 
-    results{'status_msg'} = 'Logged out';
+    if (!$self->{'dbconn'}->{'dbh'}->disconnect())
+    {
+        $results{'error_msg'} = "Could not disconnect from database";
+        return ( 1, %results );
+    }
+    $self->{'dbconn'}->{'dbh'} = undef;
+    $results{'status_msg'} = 'Logged out';
     return ( 0, %results );
 }
 
@@ -119,7 +129,8 @@ sub get_profile
     my( %results );
     my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     # DB query: get the user profile detail
     $query = "SELECT ";
@@ -132,13 +143,13 @@ sub get_profile
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While getting the user profile: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While getting the user profile: $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person is a registered user
@@ -157,13 +168,13 @@ sub get_profile
     $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $results{'institution_id'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While getting the user profile: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While getting the user profile: $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person is a registered user
@@ -200,7 +211,8 @@ sub set_profile
     my( %table ) = get_AAAS_table();
     my( %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     # user level provisioning:  # if the user's level equals one of the
     #  read-only levels, don't give them access 
@@ -208,13 +220,13 @@ sub set_profile
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While updating your account profile: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While updating your account profile: $DBI::errstr";
         return( 1, %results );
     }
 
@@ -243,13 +255,13 @@ sub set_profile
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While updating your account profile:  $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While updating your account profile:  $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person is a registered user
@@ -311,13 +323,13 @@ sub set_profile
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( @values_to_update, $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While updating your account information: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While updating your account information: $DBI::errstr";
         return( 1, %results );
     }
     $sth->finish();
@@ -338,20 +350,21 @@ sub activate_account
     my( %table ) = get_AAAS_table();
     my( %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     # get the password from the database
     $query = "SELECT $table{'users'}{'password'}, $table{'users'}{'activation_key'}, $table{'users'}{'pending_level'} FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While activating your account: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While activating your account: $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person is a registered user
@@ -390,13 +403,13 @@ sub activate_account
 
         $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
         if (!$sth) {
-            $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+            $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
             return (1, %results);
         }
         $sth->execute( $pending_level, $inref->{'dn'} );
-        if ( $sth->errstr ) {
+        if ( $DBI::errstr ) {
             $sth->finish();
-            $results{'error_msg'} = "[ERROR] While updating your account information: $sth->errstr";
+            $results{'error_msg'} = "[ERROR] While updating your account information: $DBI::errstr";
             return( 1, %results );
         }
     }
@@ -422,7 +435,8 @@ sub process_registration
     my( $sth, $query );
     my( %results );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+    $results{'error_msg'} = $self->check_connection();
+    if ($results{'error_msg'}) { return( 1, %results); }
 
     my( %table ) = get_AAAS_table();
     my $encrypted_password = $inref->{'password_once'};
@@ -446,19 +460,37 @@ sub process_registration
 
     $sth = $self->{'dbconn'}{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( @insertions );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While recording your registration. Please contact the webmaster for any inquiries. $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While recording your registration. Please contact the webmaster for any inquiries. $DBI::errstr";
         return( 1, %results );
     }
     $sth->finish();
 
     $results{'status_msg'} = 'Your user registration has been recorded successfully. Your login name is <strong>' . $inref->{'dn'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.';
     return( 0, %results );
+}
+
+# private
+
+sub check_connection
+{
+    my ( $self ) = @_;
+    my ( %attr ) = (
+        PrintError => 0,
+        RaiseError => 0,
+    );
+    $self->{'dbconn'}->{'dbh'} = DBI->connect(
+             $self->{'configs'}->{'db_use_database'}, 
+             $self->{'configs'}->{'db_login_name'},
+             $self->{'configs'}->{'db_login_passwd'},
+             \%attr);
+    if (!$self->{'dbconn'}->{'dbh'}) { return( "Unable to make database connection"); }
+    return "";
 }
 
 1;

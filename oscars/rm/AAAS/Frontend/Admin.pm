@@ -8,6 +8,8 @@ package AAAS::Frontend::Admin;
 
 use strict;
 
+use DBI;
+
 use AAAS::Frontend::Database;
 
 
@@ -58,13 +60,13 @@ sub verify_acct
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $admin_user_level );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While processing login: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While processing login: $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person is an administator
@@ -102,13 +104,13 @@ sub process_registration
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( @insertions );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While recording admin account information. Please contact the webmaster for any inquiries.  $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While recording admin account information. Please contact the webmaster for any inquiries.  $DBI::errstr";
         return( 1, %results );
     }
 
@@ -136,13 +138,13 @@ sub process_login
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'}, $admin_user_level );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While processing administrative login: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While processing administrative login: $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person has a valid admin privilege
@@ -189,13 +191,13 @@ sub check_login_available
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'id'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While checking whether login name available: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While checking whether login name available: $DBI::errstr";
         return( 1, %results );
     }
 
@@ -233,13 +235,13 @@ sub process_user_registration
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While processing user registration: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While processing user registration: $DBI::errstr";
         return( 1, %results );
     }
     # check whether this person is a registered user
@@ -260,13 +262,13 @@ sub process_user_registration
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( @insertions );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While processing user registration: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While processing user registration: $DBI::errstr";
         return( 1, %results );
     }
 
@@ -306,13 +308,13 @@ sub get_user_profile
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While getting user profile: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While getting user profile: $DBI::errstr";
         return( 1, %results );
     }
 
@@ -358,13 +360,13 @@ sub process_profile_update
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While updating user profile: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While updating user profile: $DBI::errstr";
         return( 1, %results );
     }
 
@@ -424,13 +426,13 @@ sub process_profile_update
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( @values_to_update, $inref->{'dn'} );
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While updating account information: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While updating account information: $DBI::errstr";
         return( 1, %results );
     }
     $sth->finish();
@@ -461,14 +463,14 @@ sub get_userlist
     print STDERR $query, "\n";
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if ( !$sth ) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
 
     $sth->execute();
-    if ( $sth->errstr ) {
+    if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While getting user list: $sth->errstr";
+        $results{'error_msg'} = "[ERROR] While getting user list: $DBI::errstr";
         return( 1, %results );
     }
     $arrayref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
@@ -477,7 +479,7 @@ sub get_userlist
     $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $self->{'dbconn'}->{'dbh'}->errstr;
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
         return (1, %results);
     }
     $sth->execute( $arrayref->{'institution_id'} );

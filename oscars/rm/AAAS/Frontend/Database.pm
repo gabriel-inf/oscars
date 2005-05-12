@@ -28,9 +28,16 @@ sub new {
 ######################################################################
 sub initialize {
     my ( $_self ) = @_;
-    $_self->{'dbh'} = DBI->connect($_self->{'configs'}->{'db_use_database'}, 
-             $_self->{'configs'}->{db_login_name}, $_self->{'configs'}->{'db_login_passwd'})
-            or die "Couldn't connect to database: " . DBI->errstr;
+    my ( %attr ) = (
+        PrintError => 0,
+        RaiseError => 0,
+    );
+    $_self->{'dbh'} = DBI->connect(
+             $_self->{'configs'}->{'db_use_database'}, 
+             $_self->{'configs'}->{'db_login_name'},
+             $_self->{'configs'}->{'db_login_passwd'},
+             \%attr)
+      or die "Couldn't connect to database: " . $DBI::errstr;
 }
 
 
