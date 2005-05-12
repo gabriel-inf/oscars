@@ -17,12 +17,13 @@ require '../lib/general.pl';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(undef, $cgi);
+my $dn = check_login(undef, $cgi);
 
-if (!$error_status) {
+if ($dn) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
+    $form_params{'dn'} = $dn;
     ($error_status, %results) = process_user_account_activation(\%form_params);
 
     if ( !$error_status ) {

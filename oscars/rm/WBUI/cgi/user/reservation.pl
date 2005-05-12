@@ -20,14 +20,13 @@ my $cgi = CGI->new();
 
 my (%form_params, %results);
 
-my $error_status = check_login(undef, $cgi);
+my $dn = check_login(undef, $cgi);
 
-if (!$error_status) {
+if ($dn) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
-
-    ($error_status, %results) = create_reservation(\%form_params);
+    ($error_status, %results) = create_reservation($dn, \%form_params);
     if (!$error_status) {
         update_frames($error_status, "status_frame", "", $results{'status_msg'});
     }
@@ -47,11 +46,12 @@ exit;
 # Out: None
 sub create_reservation
 {
-    my( $form_params ) = @_;
+    my( $dn, $form_params ) = @_;
     my( %soap_params );
     my( %results);
 
     $soap_params{'id'} =              'NULL';
+    $soap_params{'dn'} =             $dn;
 
     # in seconds since epoch
     $soap_params{'start_time'} =     $form_params->{'start_time'};
@@ -60,7 +60,7 @@ sub create_reservation
 
     $soap_params{'created_time'} =   '';   # filled in scheduler
     $soap_params{'bandwidth'} =      $form_params->{'bandwidth'} . 'm';
-    $soap_params{'class'} =          'test';
+    $soap_params{'class'} =          '4';
     $soap_params{'burst_limit'} =    '1m';
     $soap_params{'status'} =         'pending';
 
@@ -79,11 +79,9 @@ sub create_reservation
         $soap_params{'dst_ip'} = inet_ntoa(inet_aton($soap_params{'dst_ip'}));
     }
 
-    $soap_params{'dn'} =             'oscars';
-
     $soap_params{'ingress_port'} =   '';     # db lookup in schedule
     $soap_params{'egress_port'} =    '';     # db lookup in scheduler
-    $soap_params{'dscp'} =           '';     # optional
+    $soap_params{'dscp'} =           'ef';     # optional
 
     $soap_params{'lsp_from'} =    '';        # done in PSS
     $soap_params{'lsp_to'} =      '';        # done in PSS

@@ -23,9 +23,9 @@ require '../lib/general.pl';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(0, $cgi);
+my $dn = check_login(0, $cgi);
 
-if (!$error_status) {
+if ($dn) {
   foreach $_ ($cgi->param) {
       $form_params{$_} = $cgi->param($_);
   }

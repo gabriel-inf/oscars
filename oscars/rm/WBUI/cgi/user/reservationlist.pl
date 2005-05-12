@@ -19,12 +19,13 @@ my (%form_params, %results);
 
 
 my $cgi = CGI->new();
-my $error_status = check_login(undef, $cgi);
+my $dn = check_login(undef, $cgi);
 
 if (!$error_status) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
+    $form_params{'dn'} = $dn;
     ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});
