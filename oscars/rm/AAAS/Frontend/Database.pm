@@ -28,16 +28,7 @@ sub new {
 ######################################################################
 sub initialize {
     my ( $_self ) = @_;
-    my ( %attr ) = (
-        PrintError => 0,
-        RaiseError => 0,
-    );
-    $_self->{'dbh'} = DBI->connect(
-             $_self->{'configs'}->{'db_use_database'}, 
-             $_self->{'configs'}->{'db_login_name'},
-             $_self->{'configs'}->{'db_login_passwd'},
-             \%attr)
-      or die "Couldn't connect to database: " . $DBI::errstr;
+    $_self->{'dbh'} = undef;
 }
 
 
@@ -75,6 +66,29 @@ sub get_AAAS_table
     my ( $self, $table_name ) = @_;
     return(%table);
 }
+
+sub check_connection
+{
+    my ( $self, $inref ) = @_;
+    my ( %attr ) = (
+        RaiseError => 0,
+        PrintError => 0,
+    );
+    if (!$self->{'dbh'}) {
+        if ($inref) {
+            $self->{'dbh'} = DBI->connect(
+                 $self->{'configs'}->{'db_use_database'}, 
+                 $inref->{'dn'},
+                 $inref->{'password'},
+                 \%attr)
+        }
+        else { return( "You must log in first before accessing the database"); }
+     
+    }
+    if (!$self->{'dbh'}) { return( "Unable to make database connection: $DBI::errstr"); }
+    return "";
+}
+
 
 # Don't touch the line below
 1;
