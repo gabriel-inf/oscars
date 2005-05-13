@@ -11,6 +11,10 @@ use DBI;
 
 use AAAS::Frontend::Database;
 
+   # TODO:  find better home, where to set
+our $admin_user_level = -1;
+our $admin_dn = 'davidr';
+
 ######################################################################
 sub new {
     my ($_class, %_args) = @_;
@@ -47,7 +51,9 @@ sub verify_login
     my( $self, $inref ) = @_;
     my( $query, $sth, %results );
 
-    $results{'error_msg'} = $self->check_connection();
+        # at present, multiple users may share a connection; access level needs to be checked on each
+        # method call
+    $results{'error_msg'} = $self->{'dbconn'}->check_connection($inref);
     if ($results{'error_msg'}) { return( 1, %results); }
 
     my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
@@ -74,6 +80,7 @@ sub verify_login
     }
         # this login name is in the database; compare passwords
     my $password_matches = 0;
+    my $encoded_password = crypt($inref->{'password'}, 'oscars');
     while ( my $ref = $sth->fetchrow_arrayref ) {
         if ( $$ref[1] eq $non_activated_user_level ) {
             # this account is not authorized & activated yet
@@ -81,7 +88,7 @@ sub verify_login
             $results{'error_msg'} = 'This account is not authorized or activated yet.';
             return( 1, %results );
         }
-        elsif ( $$ref[0] eq  $inref->{'password'} ) {
+        elsif ( $$ref[0] eq  $encoded_password ) {
             $password_matches = 1;
         }
     }
@@ -106,6 +113,10 @@ sub logout
     my( $self ) = @_;
     my( %results );
 
+    if (!$self->{'dbconn'}->{'dbh'}) {
+        $results{'status_msg'} = 'Already logged out.';
+        return ( 0, %results );
+    }
     if (!$self->{'dbconn'}->{'dbh'}->disconnect())
     {
         $results{'error_msg'} = "Could not disconnect from database";
@@ -129,7 +140,7 @@ sub get_profile
     my( %results );
     my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
 
-    $results{'error_msg'} = $self->check_connection();
+    $results{'error_msg'} = $self->{'dbconn'}->check_connection(undef);
     if ($results{'error_msg'}) { return( 1, %results); }
 
     # DB query: get the user profile detail
@@ -211,7 +222,7 @@ sub set_profile
     my( %table ) = get_AAAS_table();
     my( %results );
 
-    $results{'error_msg'} = $self->check_connection();
+    $results{'error_msg'} = $self->{'dbconn'}->check_connection(undef);
     if ($results{'error_msg'}) { return( 1, %results); }
 
     # user level provisioning:  # if the user's level equals one of the
@@ -350,7 +361,7 @@ sub activate_account
     my( %table ) = get_AAAS_table();
     my( %results );
 
-    $results{'error_msg'} = $self->check_connection();
+    $results{'error_msg'} = $self->{'dbconn'}->check_connection(undef);
     if ($results{'error_msg'}) { return( 1, %results); }
 
     # get the password from the database
@@ -435,7 +446,7 @@ sub process_registration
     my( $sth, $query );
     my( %results );
 
-    $results{'error_msg'} = $self->check_connection();
+    $results{'error_msg'} = $self->{'dbconn'}->check_connection(undef);
     if ($results{'error_msg'}) { return( 1, %results); }
 
     my( %table ) = get_AAAS_table();
@@ -475,22 +486,59 @@ sub process_registration
     return( 0, %results );
 }
 
-# private
 
-sub check_connection
+##### method get_userlist
+# In:  inref
+# Out: status message and DB results
+sub get_userlist
 {
-    my ( $self ) = @_;
-    my ( %attr ) = (
-        PrintError => 0,
-        RaiseError => 0,
-    );
-    $self->{'dbconn'}->{'dbh'} = DBI->connect(
-             $self->{'configs'}->{'db_use_database'}, 
-             $self->{'configs'}->{'db_login_name'},
-             $self->{'configs'}->{'db_login_passwd'},
-             \%attr);
-    if (!$self->{'dbconn'}->{'dbh'}) { return( "Unable to make database connection"); }
-    return "";
+    my( $self, $inref, $fields_to_display ) = @_;
+    my( $sth, $error_status, $query );
+    my( %results, $arrayref, $rref );
+    my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
+
+    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
+
+    $query = "SELECT ";
+    foreach $_ ( @$fields_to_display ) {
+        $query .= $table{'users'}{$_} . ", ";
+    }
+    # delete the last ", "
+    $query =~ s/,\s$//;
+    $query .= " FROM users ORDER BY $table{'users'}{'last_name'}";
+
+    print STDERR $query, "\n";
+    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
+    if ( !$sth ) {
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
+        return (1, %results);
+    }
+
+    $sth->execute();
+    if ( $DBI::errstr ) {
+        $sth->finish();
+        $results{'error_msg'} = "[ERROR] While getting user list: $DBI::errstr";
+        return( 1, %results );
+    }
+    $arrayref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
+    $sth->finish();
+
+    $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
+    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
+    if (!$sth) {
+        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
+        return (1, %results);
+    }
+    $sth->execute( $arrayref->{'institution_id'} );
+    if ( $sth->errstr ) {
+        $sth->finish();
+        $results{'error_msg'} = "[ERROR] While getting user list: $sth->errstr";
+        return( 1, %results );
+    }
+    $results{'rows'} = $arrayref;
+    $results{'status_msg'} = 'Successfully read user list';
+    return( 0, %results );
+
 }
 
 1;
