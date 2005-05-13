@@ -56,7 +56,8 @@ sub check_db_user
     }
     $soap_params{'dn'} = $cgi->param('dn');
     $auth = AAAS::Client::Auth->new();
-    $soap_params{'password'} = $auth->encode_passwd($cgi->param('password'));
+    #$soap_params{'password'} = $auth->encode_passwd($cgi->param('password'));
+    $soap_params{'password'} = $cgi->param('password');
 
     return(soap_verify_login(\%soap_params));
 }
