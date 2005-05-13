@@ -2,9 +2,9 @@
 
 use AAAS::Client::SOAPClient;
 
+# This will go outside of repository.
 
-my $passwd = crypt('ritazza6', 'oscars');
-my %params = ('dn' => 'oscars', 'password' => $passwd);
+my %params = ('dn' => 'oscars', 'password' => 'ritazza6');
 my($result, %data) = soap_verify_login(\%params);
 if (defined($data{'error_msg'}) && $data{'error_msg'})
 {
