@@ -14,7 +14,7 @@ our @EXPORT = qw( soap_verify_login soap_logout soap_get_profile soap_set_profil
 #####
 
 my $AAAS_server = SOAP::Lite
-  -> uri('http://localhost:2000/AAAS_Dispatcher')
+  -> uri('http://localhost:2000/AAAS/Frontend/User')
   -> proxy ('http://localhost:2000/AAAS_server.pl');
 
 # TODO:  one SOAP call that dispatches according to server, subroutine args
