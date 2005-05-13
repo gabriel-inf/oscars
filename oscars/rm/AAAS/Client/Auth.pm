@@ -10,11 +10,8 @@ use CGI;
 use CGI::Session;
 
 ### password encryption & random string generation (activation key, password reset (future), ...)
-# sub encode_passwd
 # sub generate_random_string
 
-
-our $psalt = 'oscars';
 
 # admin login name (id)
 $admin_dn = 'admin';
@@ -143,19 +140,6 @@ sub logout
     $session->clear(["dn"]);
 }
 
-
-##### method encode_passwd
-# In: $raw_password (plain text)
-# Out: $crypted_password
-#####
-sub encode_passwd
-{
-    my ($self, $raw_pwd) = @_;
-    my( $crypted_pwd );
- 
-    $crypted_pwd = crypt( $raw_pwd, $psalt );
-    return $crypted_pwd;
-}
 
 
 ##### method generate_random_string
