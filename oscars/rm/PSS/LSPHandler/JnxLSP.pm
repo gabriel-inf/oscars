@@ -16,6 +16,7 @@ use JUNOS::Trace;
 use XML::DOM;
 use Config::Auto;
 
+use Data::Dumper;
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -189,7 +190,7 @@ sub initialize
   my ($_self) = @_;
 
       # read configuration file for this package
-  $_self->{'jnxLSPConf'} = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/PSS/LSPHandler/JnxLSP.config');
+  $_self->{'jnxLSPConf'} = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
 
   # Clear error message.
   $_self->{'errMsg'} = 0;
@@ -313,9 +314,9 @@ sub execute_configuration_change
 {
   my ($_self, $_xmlString) = @_;
   my (%_jnxInfo) = (
-    'access' => $_self->{'jnxLSPConf'}->{'access'},
-    'login'  => $_self->{'jnxLSPConf'}->{'login'},
-    'password' => $_self->{'jnxLSPConf'}->{'password'},
+    'access' => $_self->{'jnxLSPConf'}->{'pss_access'},
+    'login'  => $_self->{'jnxLSPConf'}->{'pss_login'},
+    'password' => $_self->{'jnxLSPConf'}->{'pss_password'},
     'hostname' => $_self->{'lsp_from'}
   );
   my ($_xmlDoc);
@@ -407,9 +408,9 @@ sub execute_operational_command
 {
   my ($_self, $_command) = @_;
   my (%_jnxInfo) = (
-    'access' => $_self->{'jnxLSPConf'}->{'access'},
-    'login'  => $_self->{'jnxLSPConf'}->{'login'},
-    'password' => $_self->{'jnxLSPConf'}->{'password'},
+    'access' => $_self->{'jnxLSPConf'}->{'pss_access'},
+    'login'  => $_self->{'jnxLSPConf'}->{'pss_login'},
+    'password' => $_self->{'jnxLSPConf'}->{'pss_password'},
     'hostname' => $_self->{'lsp_from'}
   );
   my ($_jnxRes, $_error);
