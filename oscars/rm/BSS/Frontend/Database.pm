@@ -33,8 +33,8 @@ sub initialize {
         RaiseError => 0,
         PrintError => 0
     );
-    $_self->{'dbh'} = DBI->connect($_self->{'configs'}->{'db_use_database'}, 
-             $_self->{'configs'}->{db_login_name}, $_self->{'configs'}->{'db_login_passwd'})
+    $_self->{'dbh'} = DBI->connect($_self->{'configs'}->{'use_BSS_database'}, 
+             $_self->{'configs'}->{'BSS_login_name'}, $_self->{'configs'}->{'BSS_login_passwd'})
             or die "Couldn't connect to database: " . DBI->errstr;
 }
 

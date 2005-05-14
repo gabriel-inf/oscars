@@ -114,7 +114,6 @@ sub insert_reservation
 
         # insert all fields for reservation into database
         $query = "INSERT INTO reservations VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
-        print STDERR '** ', $query;
 
         $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
         if (!$sth) {
@@ -396,9 +395,9 @@ sub check_connection
         RaiseError => 0,
     );
     $self->{'dbconn'}->{'dbh'} = DBI->connect(
-             $self->{'configs'}->{'db_use_database'}, 
-             $self->{'configs'}->{'db_login_name'},
-             $self->{'configs'}->{'db_login_passwd'},
+             $self->{'configs'}->{'use_BSS_database'}, 
+             $self->{'configs'}->{'BSS_login_name'},
+             $self->{'configs'}->{'BSS_login_passwd'},
              \%attr);
     if (!$self->{'dbconn'}->{'dbh'}) { return( "Unable to make database connection"); }
     return "";
