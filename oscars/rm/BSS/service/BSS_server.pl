@@ -25,7 +25,7 @@ use Config::Auto;
 # slurp up the config file
 our ($configs);
 
-$configs = Config::Auto::parse('BSS.config');
+$configs = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
 
 $db_handler = BSS::Scheduler::ReservationHandler->new('configs' => $configs);
 
@@ -35,7 +35,7 @@ start_scheduler($configs);
 # Create a SOAP server
 #my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
 my $daemon = SOAP::Transport::HTTP::Daemon
-	-> new (LocalPort => $configs->{'server_port'}, Listen => 5, Reuse => 1)
+	-> new (LocalPort => $configs->{'BSS_server_port'}, Listen => 5, Reuse => 1)
 	-> dispatch_to('.', $db_handler)
 	;
 
