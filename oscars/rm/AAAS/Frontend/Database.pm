@@ -77,7 +77,7 @@ sub check_connection
     if (!$self->{'dbh'}) {
         if ($inref) {
             $self->{'dbh'} = DBI->connect(
-                 $self->{'configs'}->{'db_use_database'}, 
+                 $self->{'configs'}->{'use_AAAS_database'}, 
                  $inref->{'dn'},
                  $inref->{'password'},
                  \%attr)
