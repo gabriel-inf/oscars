@@ -79,7 +79,9 @@ sub scheduler {
         #print STDERR "find new\n";
         $error_msg = find_new_reservations($front_end);
         if ($error_msg) {
-            print STDERR '** ', $error_msg, "\n";
+            if ($configs->{'debug'}) {
+                print STDERR '** ', $error_msg, "\n";
+            }
         }
 
 
@@ -87,7 +89,9 @@ sub scheduler {
         #print STDERR "find_exp\n";
         $error_msg = find_expired_reservations($front_end);
         if ($error_msg) {
-            print STDERR '** ', $error_msg, "\n";
+            if ($configs->{'debug'}) {
+                print STDERR '** ', $error_msg, "\n";
+            }
         }
 
         # check every do_poll_time seconds
@@ -114,7 +118,9 @@ sub find_new_reservations {
     #print STDERR "declared vars...\n";
     # configurable
     $timeslot = time() + $configs->{'reservation_time_interval'};
-    print STDERR "pending: $cur_time \n";
+    if ($configs->{'debug'}) {
+        print STDERR "pending: $cur_time \n";
+    }
 
     # find reservations that need to be scheduled
     ($error_msg, $resv) = $front_end->find_pending_reservations($timeslot, $configs->{'PENDING'});

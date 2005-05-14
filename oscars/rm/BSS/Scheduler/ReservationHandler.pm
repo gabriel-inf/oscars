@@ -163,7 +163,9 @@ sub do_remote_trace {
     # try to ping before traceing?
     if ($self->{'configs'}{'use_ping'}) {
         if ( 0 == $self->do_ping($host)) {
-            print STDERR "returning 0 " . "host not pingable\n";
+            if ($self->{'configs'}->{'debug'}) {
+                print STDERR "returning 0 " . "host not pingable\n";
+            }
             return (0, "do_remote_trace:  host $host not pingable");
         }
     }
@@ -172,19 +174,25 @@ sub do_remote_trace {
     $_jnxTraceroute->traceroute($host);
 
     if ($_error = $_jnxTraceroute->get_error())  {
-        print STDERR "do_remote_trace, returning 0 " . $_error . "\n";
+        if ($self->{'configs'}->{'debug'}) {
+            print STDERR "do_remote_trace, returning 0 " . $_error . "\n";
+        }
         return (0, "do_remote_trace: " . $_error);
     }
 
     @hops = $_jnxTraceroute->get_hops();
 
-    print STDERR "hops: " .  $#hops + 1 . "\n";
+    if ($self->{'configs'}->{'debug'}) {
+        print STDERR "hops: " .  $#hops + 1 . "\n";
+    }
 
     # if we didn't hop much, maybe the same router?
     if ($#hops < 0 ) { return (0, "do_remote_trace:  same router?"); }
 
     if ($#hops == 0) { 
-        print STDERR "returning default " . $_jnxTraceroute->{'defaultrouter'} . "\n";
+        if ($self->{'configs'}->{'debug'}) {
+            print STDERR "returning default " . $_jnxTraceroute->{'defaultrouter'} . "\n";
+        }
             # id is 0 if not an edge router (not in interfaces table)
         ($interface_id, $_error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($_jnxTraceroute->{'defaultrouter'});
         return ($interface_id, $_error);
@@ -195,7 +203,9 @@ sub do_remote_trace {
 
     # loop forward till the next router isn't one of ours ...
     while(defined($hops[0]))  {
-        print STDERR "hop:  $hops[0]\n";
+        if ($self->{'configs'}->{'debug'}) {
+            print STDERR "hop:  $hops[0]\n";
+        }
         $prev = $interface_id;
             # id is 0 if not an edge router (not in interfaces table)
         ($interface_id, $_error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($hops[0]);
@@ -204,7 +214,9 @@ sub do_remote_trace {
         }
         shift(@hops);
     }
-    print "at end of do_remote_trace\n";
+    if ($self->{'configs'}->{'debug'}) {
+        print STDERR "at end of do_remote_trace\n";
+    }
 
     # if we didn't find it
     return (0, "do_remote_trace:  Couldn't trace route to $host");
@@ -234,7 +246,9 @@ sub do_local_trace {
     } 
 
     $hops = $tr->hops;
-    print STDERR "hops = $hops\n";
+    if ($self->{'configs'}->{'debug'}) {
+        print STDERR "hops = $hops\n";
+    }
 
     # if we didn't hop much, mabe the same router?
     if ($hops < 2 ) { return (0, "do_local_trace:  same router?"); }
@@ -244,7 +258,9 @@ sub do_local_trace {
         my $ipaddr = $tr->hop_query_host($hops - $i, 0);
         ($interface_id, $error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($ipaddr);
         if (($interface_id != 0) && (!$error)) {
-            print STDERR "FOUND interface_id = $interface_id\n";
+            if ($self->{'configs'}->{'debug'}) {
+                print STDERR "FOUND interface_id = $interface_id\n";
+            }
             return ($interface_id, "");
         } 
         if ($error) { return (0, $error); }
@@ -269,20 +285,28 @@ sub find_interface_ids {
 
     my( $ingress_interface_id, $egress_interface_id, $err_msg);
 
-    print STDERR "running remote tr to $src\n";
+    if ($self->{'configs'}->{'debug'}) {
+        print STDERR "running remote tr to $src\n";
+    }
     ($ingress_interface_id, $err_msg) = $self->do_remote_trace($src);
     if ($err_msg) { return ( 0, 0, $err_msg); }
    
     if ( $self->{'configs'}{'run_traceroute'} )  {
-        print STDERR "running remote tr to $dst\n";
+        if ($self->{'configs'}->{'debug'}) {
+            print STDERR "running remote tr to $dst\n";
+        }
         ($egress_interface_id, $err_msg) = $self->do_remote_trace($dst);
         if ($err_msg) { return (0, 0, $err_msg); }
     } else {
-        print STDERR "running remote (local) tr to $dst\n";
+        if ($self->{'configs'}->{'debug'}) {
+            print STDERR "running remote (local) tr to $dst\n";
+        }
         ($ingress_interface_id, $err_msg) = $self->do_local_trace($src);
         if ($err_msg) { return (0, 0, $err_msg); }
     }
-    print STDERR "ingress: ", $ingress_interface_id, " egress: ", $egress_interface_id, "\n";
+    if ($self->{'configs'}->{'debug'}) {
+        print STDERR "ingress: ", $ingress_interface_id, " egress: ", $egress_interface_id, "\n";
+    }
 
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0))
     {
