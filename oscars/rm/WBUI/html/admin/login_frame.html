@@ -1,7 +1,7 @@
 <html>
 <head>
 	<style type="text/css" media="screen">
-		@import url( './styleSheets/layout.css' );
+		@import url( 'https://oscars.es.net/styleSheets/layout.css' );
 	</style>
 	<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>
 </head>
@@ -9,8 +9,7 @@
 <body>
 <div id="login_ui">
 
-<form method="post" action="https://oscars.es.net/cgi-bin/lib/login.pl?admin=1"
-target="status_frame">
+<form method="post" action="https://oscars.es.net/cgi-bin/lib/login.pl" target="status_frame">
 
 <table>
 <tr>
@@ -26,6 +25,8 @@ target="status_frame">
 	<td><input type="submit" value="Login"></td>
 </tr>
 </table>
+
+<input type="hidden" name="admin_required" value="1">
 
 </form>
 
