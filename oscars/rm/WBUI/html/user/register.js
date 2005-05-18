@@ -36,19 +36,19 @@ function login_name_overlap_check( formObject )
 // check user input and validate it
 function check_form( form )
 {
-	if ( form.dn.value == "" )
+	if ( form.user_dn.value == "" )
 	{
 		alert( "Please enter your desired login name." );
-		form.dn.focus();
+		form.user_dn.focus();
 		return false;
 	}
 
 	var dnRegexp = /\W|\s/;
 
-	if ( dnRegexp.test( form.dn.value ) )
+	if ( dnRegexp.test( form.user_dn.value ) )
 	{
 		alert( "Please use only alphanumeric characters or _ for login name." );
-		form.dn.focus();
+		form.user_dn.focus();
 		return false;
 	}
 
