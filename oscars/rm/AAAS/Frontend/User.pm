@@ -404,7 +404,7 @@ sub get_userlist
 {
     my( $self, $inref, $fields_to_display ) = @_;
     my( $sth, $error_status, $query );
-    my( %results, $arrayref, $rref );
+    my( %mapping, %results, $r, $arrayref, $rref );
 
     if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
@@ -417,18 +417,35 @@ sub get_userlist
     $query .= " FROM users ORDER BY user_last_name";
     ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query);
     if ( $results{'error_msg'} ) { return( 1, %results ); }
+
+    $rref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
     $sth->finish();
 
-    $arrayref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
-
-    $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $arrayref->{'institution_id'});
+        # replace institution id with institution name
+    $query = "SELECT institution_id, institution_name FROM institutions";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query);
     if ( $results{'error_msg'} ) { return( 1, %results ); }
+    $arrayref = $sth->fetchall_arrayref();
+    foreach $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
-    $results{'rows'} = $arrayref;
+    foreach $r (@$rref) {
+        $r->{'institution_id'} = $mapping{$r->{'institution_id'}};
+    }
+
+        # replace numeric user level code with description
+    $query = "SELECT user_level_enum, user_level_description FROM user_levels";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query);
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+    $arrayref = $sth->fetchall_arrayref();
+    foreach $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
+
+    foreach $r (@$rref) {
+        $r->{'user_level'} = $mapping{$r->{'user_level'}};
+    }
+
+    $results{'rows'} = $rref;
     $results{'status_msg'} = 'Successfully read user list';
     return( 0, %results );
-
 }
 
 1;
