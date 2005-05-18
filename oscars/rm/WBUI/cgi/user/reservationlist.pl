@@ -19,7 +19,7 @@ my (%form_params, %results);
 
 
 my $cgi = CGI->new();
-my $dn = check_login(undef, $cgi);
+my ($dn, $user_level, $admin_required) = check_session_status(undef, $cgi);
 
 if (!$error_status) {
     foreach $_ ($cgi->param) {
