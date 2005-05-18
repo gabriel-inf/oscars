@@ -11,9 +11,6 @@ use DBI;
 
 use AAAS::Frontend::Database;
 
-   # TODO:  find better home, where to set
-our $admin_user_level = -1;
-our $admin_dn = 'davidr';
 
 ######################################################################
 sub new {
@@ -34,14 +31,11 @@ sub initialize {
     my ($self) = @_;
     $self->{'dbconn'} = AAAS::Frontend::Database->new('configs' => $self->{'configs'})
             or die "FATAL:  could not connect to database";
+    $self->{'inactive_user'} = 0;
+    $self->{'admin_user'} = 10;
 }
 ######################################################################
 
-
-# TODO:  FIX
-our $non_activated_user_level = -1;
-
-# from login.pl:  login interaction with DB
 
 ##### method verify_login
 # In: reference to hash of parameters
@@ -57,7 +51,7 @@ sub verify_login
     if ($results{'error_msg'}) { return( 1, %results); }
 
     my( %table ) = $self->{'dbconn'}->get_AAAS_table('users');
-    # get the password from the database
+    # get the password and privilege level from the database
     $query = "SELECT $table{'users'}{'password'}, $table{'users'}{'level'} FROM users WHERE $table{'users'}{'dn'} = ?";
 
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
@@ -67,7 +61,6 @@ sub verify_login
     }
     $sth->execute( $inref->{'dn'} );
     if ( $DBI::errstr ) {
-        print "***\n";
         $sth->finish();
         $results{'error_msg'} = "[ERROR] While processing the login: $DBI::errstr";
         return( 1, %results );
@@ -78,35 +71,31 @@ sub verify_login
         $results{'error_msg'} = 'Please check your login name and try again.';
         return (1, %results);
     }
-        # this login name is in the database; compare passwords
-    my $password_matches = 0;
+        # This login name is in the database, do authorization checks.
     my $encoded_password = crypt($inref->{'password'}, 'oscars');
-    while ( my $ref = $sth->fetchrow_arrayref ) {
-        if ( $$ref[1] eq $non_activated_user_level ) {
-            # this account is not authorized & activated yet
-            $sth->finish();
-            $results{'error_msg'} = 'This account is not authorized or activated yet.';
-            return( 1, %results );
-        }
-        elsif ( $$ref[0] eq  $encoded_password ) {
-            $password_matches = 1;
-        }
+    my $ref = $sth->fetchrow_arrayref;
+        # see if user has been activated
+    if ( $$ref[1] eq $self->{'inactive_user'} ) {
+        $results{'error_msg'} = 'This account is not authorized or activated yet.';
     }
-    $sth->finish();
-
-    if ( !$password_matches ) {
+        # if request is from admin login, make sure has admin privileges
+    elsif ( $inref->{'admin_required'} and ($$ref[1] ne $self->{'admin_user'}) ) {
+        $results{'error_msg'} = 'This account does not have administrative privileges.';
+    }
+        # compare passwords
+    elsif ( $$ref[0] ne $encoded_password ) {
         $results{'error_msg'} = 'Please check your password and try again.';
     }
-    else {
-        $results{'status_msg'} = 'The user has successfully logged in.';
-    }
+    $sth->finish();
+    if ($results{'error_msg'}) { return( 1, %results ); }
+
+    $results{'user_level'} = $$ref[1];
+    $results{'status_msg'} = 'The user has successfully logged in.';
     # The first value is unused, but I can't get SOAP to send a correct
     # reply without it so far.
     return( 0, %results );
 }
 
-
-#### from logout.pl:  DB operations associated with logout
 
 sub logout
 {
@@ -127,8 +116,6 @@ sub logout
     return ( 0, %results );
 }
 
-
-# from myprofile.pl:  Profile DB interaction
 
 ##### method get_profile
 # In: reference to hash of parameters
@@ -185,20 +172,18 @@ sub get_profile
     $sth->execute( $results{'institution_id'} );
     if ( $DBI::errstr ) {
         $sth->finish();
-        $results{'error_msg'} = "[ERROR] While getting the user profile: $DBI::errstr";
+        $results{'error_msg'} = "[ERROR] While getting the organization name: $DBI::errstr";
         return( 1, %results );
     }
-    # check whether this person is a registered user
+    # check whether this organization is in the db
     if (!$sth->rows) {
         $sth->finish();
         $results{'error_msg'} = 'No such organization recorded.';
         return (1, %results);
     }
 
-    # flatten it out
-    while (my @data = $sth->fetchrow_array()) {
-        $results{'institution'} = $data[0];
-    }   
+    my @data = $sth->fetchrow_array();
+    $results{'institution'} = $data[0];
 
     $sth->finish();
     my($key, $value);
@@ -507,7 +492,6 @@ sub get_userlist
     $query =~ s/,\s$//;
     $query .= " FROM users ORDER BY $table{'users'}{'last_name'}";
 
-    print STDERR $query, "\n";
     $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
     if ( !$sth ) {
         $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
