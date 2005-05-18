@@ -51,26 +51,17 @@ sub verify_login
     $results{'error_msg'} = $self->{'dbconn'}->check_connection($inref);
     if ($results{'error_msg'}) { return( 1, %results); }
 
-    # get the password and privilege level from the database
+        # Get the password and privilege level from the database, making sure user
+        # exists.
     $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "[DBERROR] Can't prepare statement: $DBI::errstr";
-        return (1, %results);
-    }
-    $sth->execute( $inref->{'user_dn'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While processing the login: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
-    # check whether this person is a registered user
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, 0, $inref->{'user_dn'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
     if (!$sth->rows) {
         $sth->finish();
         $results{'error_msg'} = 'Please check your login name and try again.';
         return (1, %results);
     }
+
         # This login name is in the database, do authorization checks.
     my $encoded_password = crypt($inref->{'user_password'}, 'oscars');
     my $ref = $sth->fetchrow_arrayref;
@@ -138,17 +129,9 @@ sub get_profile
     $query =~ s/,\s$//;
     $query .= " FROM users WHERE user_dn = ?";
 
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( $inref->{'user_dn'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While getting the user profile: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+
     # check whether this person is a registered user
     if (!$sth->rows) {
         $sth->finish();
@@ -163,17 +146,9 @@ sub get_profile
     $sth->finish();
 
     $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( $results{'institution_id'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While getting the organization name: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'institution_id'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+
     # check whether this organization is in the db
     if (!$sth->rows) {
         $sth->finish();
@@ -186,17 +161,8 @@ sub get_profile
     $sth->finish();
 
     $query = "SELECT user_level_description FROM user_levels WHERE user_level_enum = ?";
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( $results{'level'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While getting the user level description: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'user_level'});
+
     @data = $sth->fetchrow_array();
     $results{'level_description'} = $data[0];
     $sth->finish();
@@ -226,18 +192,8 @@ sub set_profile
     # user level provisioning:  # if the user's level equals one of the
     #  read-only levels, don't give them access 
     $query = "SELECT user_level FROM users WHERE user_dn = ?";
-
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( $inref->{'user_dn'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While updating your account profile: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     while ( my $ref = $sth->fetchrow_arrayref ) {
         foreach $read_only_level ( @read_only_user_levels ) {
@@ -262,17 +218,9 @@ sub set_profile
     $query =~ s/,\s$//;
     $query .= " FROM users WHERE user_dn = ?";
 
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( $inref->{'user_dn'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While updating your account profile:  $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+
     # check whether this person is a registered user
     if (!$sth->rows) {
         $sth->finish();
@@ -330,17 +278,9 @@ sub set_profile
     $query =~ s/,\s$//;
     $query .= " FROM users WHERE user_dn = ?";
 
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( @values_to_update, $inref->{'user_dn'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While updating your account information: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, @values_to_update, $inref->{'user_dn'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+
     $sth->finish();
     $results{'status_msg'} = 'Your account information has been updated successfully.';
     return( 0, %results );
@@ -364,17 +304,9 @@ sub activate_account
     # get the password from the database
     $query = "SELECT user_password, user_activation_key, user_level FROM users WHERE user_dn = ?";
 
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( $inref->{'user_dn'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While activating your account: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+
     # check whether this person is a registered user
     if (!$sth->rows) {
         $sth->finish();
@@ -408,18 +340,8 @@ sub activate_account
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
         $query = "UPDATE users SET user_level = ?, pending_level = ?, user_activation_key = '' WHERE user_dn = ?";
-
-        $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-        if (!$sth) {
-            $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-            return (1, %results);
-        }
-        $sth->execute( $pending_level, $inref->{'user_dn'} );
-        if ( $DBI::err ) {
-            $results{'error_msg'} = "[DBERROR] While updating your account information: $DBI::errstr";
-            $sth->finish();
-            return( 1, %results );
-        }
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $pending_level, $inref->{'user_dn'});
+        if ( $results{'error_msg'} ) { return( 1, %results ); }
     }
     else {
         $sth->finish();
@@ -453,6 +375,7 @@ sub process_registration
 	
     # login name overlap check
     $query = "SELECT user_dn FROM users WHERE user_dn = ?";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     if ( $sth->rows > 0 ) {
@@ -465,17 +388,8 @@ sub process_registration
 
     $query = "INSERT INTO users VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-    $sth = $self->{'dbconn'}{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement\n" . $DBI::errstr;
-        return (1, %results);
-    }
-    $sth->execute( @insertions );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While recording your registration. Please contact the webmaster for any inquiries. $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, @insertions);
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
     $sth->finish();
 
     $results{'status_msg'} = 'Your user registration has been recorded successfully. Your login name is <strong>' . $inref->{'user_dn'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.';
@@ -501,34 +415,16 @@ sub get_userlist
     # delete the last ", "
     $query =~ s/,\s$//;
     $query .= " FROM users ORDER BY user_last_name";
-
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if ( !$sth ) {
-        $results{'error_msg'} = "[DBERROR] Can't prepare statement: $DBI::errstr";
-        return (1, %results);
-    }
-
-    $sth->execute();
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While getting user list: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
-    $arrayref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query);
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
     $sth->finish();
 
+    $arrayref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
+
     $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
-    $sth = $self->{'dbconn'}->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $results{'error_msg'} = "Can't prepare statement: $DBI::errstr";
-        return (1, %results);
-    }
-    $sth->execute( $arrayref->{'institution_id'} );
-    if ( $DBI::err ) {
-        $results{'error_msg'} = "[DBERROR] While getting user list: $DBI::errstr";
-        $sth->finish();
-        return( 1, %results );
-    }
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $arrayref->{'institution_id'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+
     $results{'rows'} = $arrayref;
     $results{'status_msg'} = 'Successfully read user list';
     return( 0, %results );

@@ -55,5 +55,25 @@ sub check_connection
 }
 
 
+sub do_query
+{
+    my( $self, $query, @args ) = @_;
+    my( $sth, $error_msg );
+
+    $sth = $self->{'dbh'}->prepare( $query );
+    if ($DBI::err) {
+        $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
+        return ($error_msg);
+    }
+    $sth->execute( @args );
+    if ( $DBI::err ) {
+        $error_msg = "[DBERROR] Executing $query:  $DBI::errstr";
+        $sth->finish();
+        return($error_msg);
+    }
+    return( $sth, '');
+}
+
+
 # Don't touch the line below
 1;
