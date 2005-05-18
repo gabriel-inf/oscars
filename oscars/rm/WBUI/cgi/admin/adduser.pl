@@ -31,14 +31,14 @@ $adminadduser_notification_email_encoding = 'ISO-8859-1';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(undef, $cgi);
+my $error_status = check_session_status(undef, $cgi);
 
 if (!$error_status) {
   foreach $_ ($cgi->param) {
       $form_params{$_} = $cgi->param($_);
   }
   $results{'error_msg'} = validate_params(\%form_params);
-  ($error_status, %results) = soap_check_login_dup(\%form_params);
+  ($error_status, %results) = soap_add_user(\%form_params);
   if (!$error_status) {
       update_frames("main_frame", "", $results{'status_msg'});
   }
