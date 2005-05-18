@@ -1,10 +1,13 @@
 #!/usr/bin/perl -w
 
+use strict;
+
 use AAAS::Client::SOAPClient;
 
 # This will go outside of repository.
 
-my %params = ('dn' => 'oscars', 'password' => 'ritazza6');
+my %params = ('user_dn' => 'oscars', 'user_password' => 'ritazza6');
+#$params{'admin_required'} = 1;
 my($result, %data) = soap_verify_login(\%params);
 if (defined($data{'error_msg'}) && $data{'error_msg'})
 {

@@ -52,9 +52,9 @@ sub set_login_status
     $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
     $sid = $session->id();
     $cookie = $cgi->cookie(CGISESSID => $sid);
-    $session->param("dn", $cgi->param('dn'));
+    $session->param("user_dn", $cgi->param('user_dn'));
     $session->param("admin_required", $cgi->param('admin_required'));
-    $session->param("level", $login_results->{'user_level'});
+    $session->param("user_level", $login_results->{'user_level'});
     print $cgi->header( -cookie=>$cookie );
 }
 
@@ -76,16 +76,16 @@ sub verify_login_status
     # Unauthorized user may know to set CGISESSID cookie. However,
     # an entirely new session (without the dn param) will be 
     # created if there is no valid session with that id.
-    $stored_dn = $session->param("dn");
-    $user_level = $session->param("level");
+    $stored_dn = $session->param("user_dn");
+    $user_level = $session->param("user_level");
     $admin_required = $session->param("admin_required");
     if (!$stored_dn)  {
         return( undef, undef, undef );
     }
     else {
-       $cgi->param(-name=>'dn',-value=>$stored_dn);
+       $cgi->param(-name=>'user_dn',-value=>$stored_dn);
        $cgi->param(-name=>'admin_required',-value=>$admin_required);
-       $cgi->param(-name=>'level',-value=>$user_level);
+       $cgi->param(-name=>'user_level',-value=>$user_level);
        print $cgi->header( );
        return( $stored_dn, $user_level, $admin_required );
     }
@@ -99,7 +99,7 @@ sub logout
     my ($session, $stored_dn);
   
     $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
-    $session->clear(["dn"]);
+    $session->clear(["user_dn"]);
 }
 
 
