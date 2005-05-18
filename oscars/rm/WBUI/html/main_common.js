@@ -143,11 +143,11 @@ function print_admin_bar(activePage)
     document.write('<ul id="tabnav">');
     if (activePage == 'userlist')
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" class="active" title="View list of user accounts">List User Accounts</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" class="active" title="View list of all accounts">List All Accounts</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" title="View list of user accounts">List User Accounts</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/admin/userlist.pl" title="View list of all accounts">List All Accounts</a></li>');
     }
     if (activePage == 'adduser')
     {
@@ -158,13 +158,21 @@ function print_admin_bar(activePage)
         document.write('<li><a href="adduser.html" title="Add a new user account">Add a New User</a></li>');
     
     }
-    if (activePage == 'editprofile')
+    if (activePage == 'adminprofile')
     {
-        document.write('<li><a href="#" class="active" title="View and/or edit admin profile">Admin Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" class="active" title="View and/or edit your information">Admin Profile</a></li>');
     }
     else
     {
-        document.write('<li><a href="editprofile.html" title="View and/or edit admin profile">Admin Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" title="View and/or edit your information">Admin Profile</a></li>');
+    }
+    if (activePage == 'allresvs')
+    {
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" class="active" title="View all reservations">View/Edit All Reservations</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" title="View all reservations">View/Edit All Reservations</a></li>');
     }
     document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
