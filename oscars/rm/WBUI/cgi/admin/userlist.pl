@@ -59,7 +59,7 @@ sub print_userlist
 
     print "<body onload=\"stripe('userlist', '#fff', '#edf3fe');\">\n\n";
 
-    print "<script language=\"javascript\">print_admin_bar('userList');</script>\n\n";
+    print "<script language=\"javascript\">print_admin_bar('userlist');</script>\n\n";
 
     print "<div id=\"zebratable_ui\">\n\n";
 
@@ -99,10 +99,9 @@ sub print_row
 {
     my( $row ) = @_;
 
-    print STDERR Dumper($row);
-    print '    <td><a href="https://oscars.es.net/cgi-bin/admin/userdetail.pl?id=' . $row->{'user_last_name'} . '">' . $row->{'user_last_name'} . '</a></td>' . "\n"; 
+    print '    <td><a href="https://oscars.es.net/cgi-bin/admin/userprofile.pl?id=' . $row->{'user_last_name'} . '">' . $row->{'user_last_name'} . '</a></td>' . "\n"; 
     print "    <td>" . $row->{'user_first_name'} . "</td>\n";
     print "    <td>" . $row->{'user_dn'} . "</td>\n";
-    print "    <td>" . $row->{'level_description'} . "</td>\n";
-    print "    <td>" . $row->{'institution'} . "</td>\n";
+    print "    <td>" . $row->{'user_level'} . "</td>\n";
+    print "    <td>" . $row->{'institution_id'} . "</td>\n";
 }
