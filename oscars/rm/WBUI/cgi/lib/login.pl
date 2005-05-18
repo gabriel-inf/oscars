@@ -26,10 +26,10 @@ my $cgi = CGI->new();
 if (!$results{'error_msg'}) {
     check_session_status(\%results, $cgi);
     if ($cgi->param('admin_required')) {
-        update_frames(0, "status_frame", $startpoint . '/admin/gateway.html', $cgi->param('dn') . " logged in as administrator");
+        update_frames(0, "status_frame", $startpoint . '/admin/gateway.html', $cgi->param('user_dn') . " logged in as administrator");
     }
     else {
-        update_frames(0, "status_frame", $startpoint . '/user/', $cgi->param('dn'). " logged in");
+        update_frames(0, "status_frame", $startpoint . '/user/', $cgi->param('user_dn'). " logged in");
     }
 }
 else {
@@ -48,22 +48,22 @@ sub verify_user
     my( %soap_params, %results );
 
     # validate user input (just check for empty fields)
-    if ( $cgi->param('dn') eq '' )
+    if ( $cgi->param('user_dn') eq '' )
     {
         $results{'error_msg'} = 'Please enter your login name.';
         return( 1, %results );
     }
 
-    if ( $cgi->param('password') eq '' )
+    if ( $cgi->param('user_password') eq '' )
     {
         $results{'error_msg'} = 'Please enter your password.';
         return( 1, %results );
     }
-    $soap_params{'dn'} = $cgi->param('dn');
+    $soap_params{'user_dn'} = $cgi->param('user_dn');
     $soap_params{'admin_required'} = $cgi->param('admin_required');
     $auth = AAAS::Client::Auth->new();
-    #$soap_params{'password'} = $auth->encode_passwd($cgi->param('password'));
-    $soap_params{'password'} = $cgi->param('password');
+    #$soap_params{'user_password'} = $auth->encode_passwd($cgi->param('user_password'));
+    $soap_params{'user_password'} = $cgi->param('user_password');
 
     return(soap_verify_login(\%soap_params));
 }

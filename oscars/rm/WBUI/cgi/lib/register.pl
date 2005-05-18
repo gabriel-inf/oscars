@@ -57,11 +57,11 @@ sub process_user_registration
 
     # validate user input (fairly minimal... Javascript also takes care of form data validation)
     my(%results);
-    if ( $form_params->{'dn'} eq '' ) {
+    if ( $form_params->{'user_dn'} eq '' ) {
         $results{'error_msg'} = 'Please enter your desired login name.';
         return( 1, %results );
     }
-    elsif ( $form_params->{'dn'} =~ /\W|\s/ ) {
+    elsif ( $form_params->{'user_dn'} =~ /\W|\s/ ) {
         $results{'error_msg'} = 'Please use only alphanumeric characters or _ for login name.';
         return( 1, %results );
     }
@@ -91,7 +91,7 @@ sub process_user_registration
 		
     print MAIL $form_params->{'firstname'}, ' ', $form_params->{'lastname'}, ' <', $form_params->{'email_primary'}, '> has requested a new user account. Please visit the user admin Web page to accept or deny this request.', "\n\n";
 
-    print MAIL 'Login Name: ', $form_params->{'dn'}, "\n\n";
+    print MAIL 'Login Name: ', $form_params->{'user_dn'}, "\n\n";
 
     print MAIL 'Primary E-mail Address: ', $form_params->{'email_primary'}, "\n";
     print MAIL 'Secondary E-mail Address: ', $form_params->{'email_secondary'}, "\n";
@@ -105,6 +105,6 @@ sub process_user_registration
 
     ### when everything has been processed successfully...
     # don't forget to show the user's login name
-  return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $form_params->{'dn'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
+  return( 0, 'Your user registration has been recorded successfully. Your login name is <strong>' . $form_params->{'user_dn'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.' );
 
 }

@@ -9,8 +9,9 @@
 require '../lib/general.pl';
 
 use AAAS::Client::SOAPClient;
+use Data::Dumper;
 
-my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'level', 'institution_id' );
+my @fields_to_display = ( 'user_last_name', 'user_first_name', 'user_dn', 'user_level', 'institution_id' );
 
 my (%form_params, %results);
 
@@ -98,9 +99,10 @@ sub print_row
 {
     my( $row ) = @_;
 
+    print STDERR Dumper($row);
     print '    <td><a href="https://oscars.es.net/cgi-bin/admin/userdetail.pl?id=' . $row->{'user_last_name'} . '">' . $row->{'user_last_name'} . '</a></td>' . "\n"; 
     print "    <td>" . $row->{'user_first_name'} . "</td>\n";
     print "    <td>" . $row->{'user_dn'} . "</td>\n";
-    print "    <td>" . $row->{'user_level'} . "</td>\n";
+    print "    <td>" . $row->{'level_description'} . "</td>\n";
     print "    <td>" . $row->{'institution'} . "</td>\n";
 }
