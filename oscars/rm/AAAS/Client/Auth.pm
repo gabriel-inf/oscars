@@ -1,7 +1,7 @@
 package AAAS::Client::Auth;
 #
 # package for user authentication
-# Last modified: April 25, 2005
+# Last modified: May 17, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -9,55 +9,13 @@ package AAAS::Client::Auth;
 use CGI;
 use CGI::Session;
 
-### password encryption & random string generation (activation key, password reset (future), ...)
-# sub generate_random_string
-
-
-# admin login name (id)
-$admin_dn = 'admin';
-
-# admin user level
-$admin_user_level = 10;
-
-# non-activated user level (can't login until authorized & activated)
-$non_activated_user_level = 0;
-
-# read-only user level (can make no changes to the database)
-@read_only_user_levels = ( '2' );
-
-# user level map & description
-# the descriptions will be used for the user list page
-# level 0 needs admin authorization to use the system (level upgrade)
-# level 10 is reserved for system admin
-%user_level_description = (
-	0 => 'Authorization Required',
-	1 => 'Normal User with All Privileges',
-	2 => 'Normal User with Read Privilege Only',
-	10 => 'Administrator',
-	'pending' => 'Pending User Activation',
-);
-
-# user account activation key size (in characters)
-$account_activation_key_size = '35';
-
-# admin tool gateway URI (admin login/registration screen)
-$admin_tool_gateway_URI = 'https://oscars.es.net/admin/';
-
-# main service login URI (user login screen)
-$main_service_login_URI = 'https://oscars.es.net/';
-
-# hardcoded path to the sendmail binary and its flags
-# sendmail is not used in this library, but in multiple other places related to user registration
-# thus the setting is here
-#
-# sendmail options:
-#    -n  no aliasing
-#    -t  read message for "To:"
-#    -oi don't terminate message on line containing '.' alone
-$sendmail_binary_path_and_flags = '/usr/sbin/sendmail -t -n -oi';
-
-# user account activation form URI
-$account_activation_form_URI = 'https://oscars.es.net/user/activateaccount.phtml';
+### class Auth
+# set_login_status:       Sets cookie containing session id
+# verify_login_status:    Checks for cookie containing valid session id,
+#                         authorization level
+# logout:                 Unsets cookies
+# generate_random_string: Password encryption & random string generation (for
+#                         activation key, password reset (future), ...)
 
 
 ######################################################################
@@ -77,9 +35,7 @@ sub new {
 ######################################################################
 sub initialize {
     my ($self) = @_;
-
 }
-
 
 
 ##### method set_login_status
@@ -90,13 +46,15 @@ sub initialize {
 # Out:  None
 sub set_login_status
 {
-    my ($self, $cgi) = @_;
+    my ($self, $cgi, $login_results) = @_;
     my ($session, $sid, $cookie);
 
     $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
     $sid = $session->id();
     $cookie = $cgi->cookie(CGISESSID => $sid);
     $session->param("dn", $cgi->param('dn'));
+    $session->param("admin_required", $cgi->param('admin_required'));
+    $session->param("level", $login_results->{'user_level'});
     print $cgi->header( -cookie=>$cookie );
 }
 
@@ -111,7 +69,7 @@ sub set_login_status
 sub verify_login_status
 {
     my ($self, $cgi) = @_;
-    my ($session, $stored_dn);
+    my ($session, $stored_dn, $user_level, $admin_required);
 
     $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
 
@@ -119,13 +77,17 @@ sub verify_login_status
     # an entirely new session (without the dn param) will be 
     # created if there is no valid session with that id.
     $stored_dn = $session->param("dn");
+    $user_level = $session->param("level");
+    $admin_required = $session->param("admin_required");
     if (!$stored_dn)  {
-        return( $stored_dn );
+        return( undef, undef, undef );
     }
     else {
        $cgi->param(-name=>'dn',-value=>$stored_dn);
+       $cgi->param(-name=>'admin_required',-value=>$admin_required);
+       $cgi->param(-name=>'level',-value=>$user_level);
        print $cgi->header( );
-       return( $stored_dn );
+       return( $stored_dn, $user_level, $admin_required );
     }
 }
 
