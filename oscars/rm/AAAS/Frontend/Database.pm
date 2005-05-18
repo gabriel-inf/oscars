@@ -46,15 +46,13 @@ our( %table );
       'dn' => 'user_dn',
       'password' => 'user_password',
       'email_primary' => 'user_email_primary',
+      'level' => 'user_level',
       'email_secondary' => 'user_email_secondary',
       'phone_primary' => 'user_phone_primary',
       'phone_secondary' => 'user_phone_secondary',
       'description' => 'user_description',
-      'level' => 'user_level',
       'register_time' => 'user_register_time',
       'activation_key' => 'user_activation_key',
-      'pending_level' => 'user_pending_level',
-      'authorization_id' => 'authorization_id',
       'institution_id' => 'institution_id',
   }
 );
