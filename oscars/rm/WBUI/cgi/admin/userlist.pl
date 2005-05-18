@@ -15,7 +15,7 @@ my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'level', 'institution
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $error_status = check_login(undef, $cgi);
+my ($dn, $user_level, $admin_required) = check_session_status(undef, $cgi);
 
 if (!$error_status) {
     foreach $_ ($cgi->param) {
