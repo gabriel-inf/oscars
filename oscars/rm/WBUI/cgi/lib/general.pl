@@ -11,34 +11,29 @@ use Socket;
 
 use AAAS::Client::SOAPClient;
 use AAAS::Client::Auth;
-use BSS::Client::SOAPClient;
 
 
-# contact info
-$webmaster = 'dwrobertson@lbl.gov';
+# Checks session status only; the checks for correct password,
+# administrative level done in front end to database during
+# initial login.
 
-$login_URI = 'https://oscars.es.net/';
-
-
-# checks session status only; database check done elsewhere
-
-sub check_login {
+sub check_session_status {
     my( $login_results, $cgi ) = @_;
     my( $auth );
 
     $auth = AAAS::Client::Auth->new();
     if ( $login_results ) {
-        $auth->set_login_status($cgi);
-        return 1;
+        $auth->set_login_status($cgi, $login_results);
+        return (undef, undef, undef);
     }
     else {
-        my $dn = $auth->verify_login_status($cgi);
-        return($dn);
+        my ($dn, $user_level, $admin_required) = $auth->verify_login_status($cgi);
+        return($dn, $user_level, $admin_required);
     }
 }
 
 
-##### sub update_status_frame
+##### sub update_frames
 ##    Prints to the status frame, and sets location of the main frame if
 ##    a URI is given.
 #

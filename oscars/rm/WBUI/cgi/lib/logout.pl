@@ -11,13 +11,11 @@ require 'general.pl';
 
 
 my $cgi = CGI->new();
-my $dn = check_login(undef, $cgi);
+my ($dn, $user_level, $admin_required) = check_session_status(undef, $cgi);
 
 # nuke session and put the user back at the login screen
 
 if ($dn) { end_session($cgi); }
-
-print "Content-type: text/html\n\n";
 
 update_frames(0, "main_frame", "https://oscars.es.net/login_frame.html", "Please log in.");
 

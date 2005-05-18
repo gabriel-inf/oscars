@@ -12,23 +12,22 @@ use AAAS::Client::SOAPClient;
 require 'general.pl';
 
 # names of the fields to be displayed on the screen
-my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'level', 'register_time', 'activation_key', 'pending_level', 'authorization_id', 'institution_id' );
+my @fields_to_display = ( 'last_name', 'first_name', 'dn', 'email_primary', 'level', 'email_secondary', 'phone_primary', 'phone_secondary', 'description', 'register_time', 'activation_key', 'institution_id' );
 
 
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my $dn = check_login(undef, $cgi);
+($form_params{'dn'}, $form_params{'user_level'}, $form_params{'admin_required'}) = check_session_status(undef, $cgi);
 
-if ($dn) {
+if ($form_params{'dn'}) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
-    $form_params{'dn'} = $dn;
     ($error_status, %results) = soap_get_profile(\%form_params, \@fields_to_display);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});
-        print_profile(\%results);
+        print_profile(\%results, \%form_params);
     }
     else {
         update_frames($error_status, "main_frame", "", $results{'error_msg'});
@@ -44,7 +43,7 @@ exit;
 
 sub print_profile
 {
-    my ($params) = @_;
+    my ($results, $form_params) = @_;
 
     print "<html>\n";
     print "<head>\n";
@@ -56,7 +55,12 @@ sub print_profile
 
     print "<body>\n\n";
 
-    print "<script language=\"javascript\">print_navigation_bar(\"userprofile\");</script>\n\n";
+    if ($form_params->{'admin_required'}) {
+        print "<script language=\"javascript\">print_admin_bar(\"adminprofile\");</script>\n\n";
+    }
+    else {
+        print "<script language=\"javascript\">print_navigation_bar(\"userprofile\");</script>\n\n";
+    }
 
     print "<div id=\"account_ui\">\n\n";
 
@@ -69,7 +73,7 @@ sub print_profile
 
     print "  <th><span class=\"requiredmark\">*</span> Distinguished Name</th>\n";
     print "  <td><input type=\"text\" name=\"dn\" size=\"20\"\n";
-    if ($params->{'dn'}) { print " value=\"$params->{'dn'}\""; }
+    if ($form_params->{'dn'}) { print " value=\"$form_params->{'dn'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
@@ -90,28 +94,28 @@ sub print_profile
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> First Name</th>\n";
     print "  <td><input type=\"text\" name=\"first_name\" size=\"20\"";
-    if ($params->{'first_name'}) { print " value=\"$params->{'first_name'}\""; }
+    if ($results->{'first_name'}) { print " value=\"$results->{'first_name'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Last Name</th>\n";
     print "  <td><input type=\"text\" name=\"last_name\" size=\"20\"";
-    if ($params->{'last_name'}) { print " value=\"$params->{'last_name'}\""; }
+    if ($results->{'last_name'}) { print " value=\"$results->{'last_name'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Organization</th>\n";
     print "  <td><input type=\"text\" name=\"institution\" size=\"40\"";
-    if ($params->{'institution'}) { print " value=\"$params->{'institution'}\""; }
+    if ($results->{'institution'}) { print " value=\"$results->{'institution'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th valign=\"top\">Personal Description</th>\n";
     print "  <td><textarea name=\"description\" rows=\"3\" cols=\"34\"";
-    if ($params->{'description'}) { print " value=\"$params->{'description'}\""; }
+    if ($results->{'description'}) { print " value=\"$results->{'description'}\""; }
     print "  </textarea></td>\n";
     print "</tr>\n";
 
@@ -122,28 +126,28 @@ sub print_profile
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> E-mail (Primary)</th>\n";
     print "  <td><input type=\"text\" name=\"email_primary\" size=\"40\"";
-    if ($params->{'email_primary'}) { print " value=\"$params->{'email_primary'}\""; }
+    if ($results->{'email_primary'}) { print " value=\"$results->{'email_primary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th>E-mail (Secondary)</th>\n";
     print "  <td><input type=\"text\" name=\"email_secondary\" size=\"40\"";
-    if ($params->{'email_secondary'}) { print " value=\"$params->{'email_secondary'}\""; }
+    if ($results->{'email_secondary'}) { print " value=\"$results->{'email_secondary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Phone Number (Primary)</th>\n";
     print "  <td><input type=\"text\" name=\"phone_primary\" size=\"40\"";
-    if ($params->{'phone_primary'}) { print " value=\"$params->{'phone_primary'}\""; }
+    if ($results->{'phone_primary'}) { print " value=\"$results->{'phone_primary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th>Phone Number (Secondary)</th>\n";
     print "  <td><input type=\"text\" name=\"phone_secondary\" size=\"40\"";
-    if ($params->{'phone_secondary'}) { print " value=\"$params->{'phone_secondary'}\""; }
+    if ($results->{'phone_secondary'}) { print " value=\"$results->{'phone_secondary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
