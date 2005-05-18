@@ -25,7 +25,7 @@
 <table>
 <tr>
 	<th><span class="requiredmark">*</span> Login Name</th>
-	<td><!-- ((_User_Login_Name_)) --><input type="hidden" name="dn"></td>
+	<td><!-- ((_User_Login_Name_)) --><input type="hidden" name="user_dn"></td>
 </tr>
 <tr>
 	<th><span class="requiredmark">*</span> User Level</th>
@@ -99,7 +99,7 @@
 		</p>
 		<form method="post" action="https://oscars.es.net/cgi-bin/admin/userlist.pl" onsubmit="return confirm_password_reset(this);">
 			<input type="hidden" name="mode" value="userpasswdreset">
-			<input type="hidden" name="dn">
+			<input type="hidden" name="user_dn">
 			<input type="text" name="password_new" size="20">
 			<input type="submit" value="Reset Password">
 		</form>
@@ -118,7 +118,7 @@
 		</p>
 		<form method="post" action="https://oscars.es.net/cgi-bin/admin/userlist.pl" onsubmit="return confirm_account_delete(this);">
 			<input type="hidden" name="mode" value="useraccdelete">
-			<input type="hidden" name="dn">
+			<input type="hidden" name="user_dn">
 			<input type="submit" value="Delete This User Account">
 		</form>
 		<p>Along with the account, all the reservations made by the user will be deleted as well.</p>
