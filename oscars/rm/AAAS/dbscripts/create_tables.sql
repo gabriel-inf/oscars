@@ -12,15 +12,13 @@ CREATE TABLE IF NOT EXISTS users (
     user_dn VARCHAR(25) NOT NULL,
     user_password varchar(50),
     user_email_primary VARCHAR(100) NOT NULL,
+    user_level INT(2) NOT NULL,
     user_email_secondary VARCHAR(100),
     user_phone_primary VARCHAR(50),
     user_phone_secondary VARCHAR(50),
     user_description TEXT,
-    user_level TINYINT UNSIGNED NOT NULL,
     user_register_time DATETIME,
     user_activation_key VARCHAR(40),
-    user_pending_level TINYINT UNSIGNED,
-    authorization_id INT(6),    -- foreign key
     institution_id INT(6),      -- foreign key
     PRIMARY KEY (user_id)
 
@@ -33,11 +31,12 @@ CREATE TABLE IF NOT EXISTS institutions (
 ) type=MyISAM;
 
 
-CREATE TABLE IF NOT EXISTS authorizations (
-    authorization_id INT(5) NOT NULL AUTO_INCREMENT,
-    authorization_data VARCHAR(512) NOT NULL,
+CREATE TABLE IF NOT EXISTS user_levels (
+    user_level_id INT(5) NOT NULL AUTO_INCREMENT,
+    user_level_enum INT(2) NOT NULL,
+    user_level_description VARCHAR(30) NOT NULL,
     auth_type_id INT(3) NOT NULL,
-    PRIMARY KEY (authorization_id)
+    PRIMARY KEY (user_level_id)
 ) type=MyISAM;
 
 
