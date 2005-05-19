@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List Detail
-# Last modified: May 2, 2005
+# Last modified: May 18, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -16,7 +16,7 @@ require '../lib/general.pl';
 
 
     # names of the fields to be read and displayed on the screen
-my @fields_to_read = ( 'dn', 'id', 'start_time', 'end_time', 'created_time', 'bandwidth', 'burst_limit', 'status', 'src_id', 'dst_id', 'description' );
+my @fields_to_read = ( 'user_dn', 'reservation_id', 'reservation_start_time', 'reservation_end_time', 'reservation_created_time', 'reservation_bandwidth', 'reservation_burst_limit', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'reservation_description' );
 
 my (%form_params, %results);
 
@@ -27,7 +27,7 @@ if ($dn) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
-    $form_params{'dn'} = $dn;
+    $form_params{'user_dn'} = $dn;
     ($error_status, %results) = BSS::Client::SOAPClient::soap_get_resv_detail(\%form_params, \@fields_to_read);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});
@@ -69,24 +69,24 @@ sub print_reservation_detail
 
     print "<table cellspacing=\"0\" width=\"90%\" id=\"reservationlist\">\n";
 
-    ($time_tag, $time_field) = get_time_str($results->{'start_time'});
+    ($time_tag, $time_field) = get_time_str($results->{'reservation_start_time'});
     print "  <tr ><td>Tag:  </td>\n";
-    my $tag = 'OSCARS.' . $results->{'dn'} . '.' . $time_tag . "-" . $results->{'id'};
+    my $tag = 'OSCARS.' . $results->{'user_dn'} . '.' . $time_tag . "-" . $results->{'reservation_id'};
     print "    <td>" . $tag . "</td></tr>\n"; 
 
     print "  <tr ><td>Start Time:  </td><td>$time_field</td></tr>\n";
 
-    ($time_tag, $time_field) = get_time_str($results->{'end_time'});
+    ($time_tag, $time_field) = get_time_str($results->{'reservation_end_time'});
     print "  <tr ><td>End Time:  </td><td>$time_field</td></tr>\n";
 
-    ($time_tag, $time_field) = get_time_str($results->{'created_time'});
+    ($time_tag, $time_field) = get_time_str($results->{'reservation_created_time'});
     print "  <tr ><td>Created Time:  </td><td>$time_field</td></tr>\n";
-    print "  <tr ><td>Bandwidth:  </td><td>$results->{'bandwidth'}</td></tr>\n";
-    print "  <tr ><td>Burst Limit:  </td><td>$results->{'burst_limit'}</td></tr>\n";
-    print "  <tr ><td>Status:  </td><td>$results->{'status'}</td></tr>\n";
-    print "  <tr ><td>Origin:  </td><td>", get_oscars_host($results->{'src_ip'}), "</td></tr>\n";
-    print "  <tr ><td>Destination:  </td><td>", get_oscars_host($results->{'dst_ip'}), "</td></tr>\n";
-    print "  <tr ><td>Description:  </td><td>", $results->{'description'}, "</td></tr>\n";
+    print "  <tr ><td>Bandwidth:  </td><td>$results->{'reservation_bandwidth'}</td></tr>\n";
+    print "  <tr ><td>Burst Limit:  </td><td>$results->{'reservation_burst_limit'}</td></tr>\n";
+    print "  <tr ><td>Status:  </td><td>$results->{'reservation_status'}</td></tr>\n";
+    print "  <tr ><td>Origin:  </td><td>", get_oscars_host($results->{'src_hostaddrs_ip'}), "</td></tr>\n";
+    print "  <tr ><td>Destination:  </td><td>", get_oscars_host($results->{'dst_hostaddrs_ip'}), "</td></tr>\n";
+    print "  <tr ><td>Description:  </td><td>", $results->{'reservation_description'}, "</td></tr>\n";
     print "</table>\n";
 
     print '<br/><br/>';

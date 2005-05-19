@@ -118,10 +118,10 @@ function print_start_datetime_example()
 function check_form( form )
 {
 	/*
-	if ( form.username.value == "" )
+	if ( form.user_dn.value == "" )
 	{
 		alert( "Please enter your distinguished name." );
-		form.username.focus();
+		form.user_dn.focus();
 		return false;
 	}
 	*/
@@ -140,10 +140,10 @@ function check_form( form )
 		return false;
 	}
 
-	if ( form.bandwidth.value == "" )
+	if ( form.reservation_bandwidth.value == "" )
 	{
 		alert( "Please enter the amount of bandwidth that you want to reserve." );
-		form.bandwidth.focus();
+		form.reservation_bandwidth.focus();
 		return false;
 	}
 
@@ -180,10 +180,10 @@ function check_form( form )
 		return false;
 	}
 
-	if ( form.description.value == "" )
+	if ( form.reservation_description.value == "" )
 	{
 		alert( "Please describe the purpose of this reservation request." );
-		form.description.focus();
+		form.reservation_description.focus();
 		return false;
 	}
 
@@ -198,17 +198,17 @@ function check_form( form )
 		return false;
 	}
 
-	if ( validate_numeric(form.bandwidth.value) == false )
+	if ( validate_numeric(form.reservation_bandwidth.value) == false )
 	{
 		alert( "The bandwidth is not a number. Please check again." );
-		form.bandwidth.focus();
+		form.reservation_bandwidth.focus();
 		return false;
 	}
 
-	if ( form.bandwidth.value <= 0 )
+	if ( form.reservation_bandwidth.value <= 0 )
 	{
 		alert( "The amount of bandwidth should be greater than 0. Please check again." );
-		form.bandwidth.focus();
+		form.reservation_bandwidth.focus();
 		return false;
 	}
 
@@ -323,8 +323,8 @@ function check_form( form )
 		return false;
 	}
         reserve_date = new Date(form.start_year.value, form.start_month.value, form.start_date.value, form.start_hour.value, form.start_minute.value, 0, 0);
-        form.start_time.value = reserve_date.getTime() / 1000;
-	if ( form.start_time.value == 0 )
+        form.reservation_start_time.value = reserve_date.getTime() / 1000;
+	if ( form.reservation_start_time.value == 0 )
 	{
 		alert( "Problem with start time." );
 		return false;

@@ -2,7 +2,7 @@
 
 # reservation.pl:  Main interface CGI program for network resource
 #                  reservation process
-# Last modified: April 19, 2005
+# Last modified: May 18, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -50,42 +50,42 @@ sub create_reservation
     my( %soap_params );
     my( %results);
 
-    $soap_params{'id'} =              'NULL';
-    $soap_params{'dn'} =             $dn;
+    $soap_params{'reservation_id'} =              'NULL';
+    $soap_params{'user_dn'} =             $dn;
 
     # in seconds since epoch
-    $soap_params{'start_time'} =     $form_params->{'start_time'};
+    $soap_params{'reservation_start_time'} =     $form_params->{'reservation_start_time'};
     # start time + duration time in seconds
-    $soap_params{'end_time'} =       $form_params->{'start_time'} + $form_params->{'duration_hour'} * 3600;
+    $soap_params{'reservation_end_time'} =       $form_params->{'reservation_start_time'} + $form_params->{'duration_hour'} * 3600;
 
-    $soap_params{'created_time'} =   '';   # filled in scheduler
-    $soap_params{'bandwidth'} =      $form_params->{'bandwidth'} . 'm';
-    $soap_params{'class'} =          '4';
-    $soap_params{'burst_limit'} =    '1m';
-    $soap_params{'status'} =         'pending';
+    $soap_params{'reservation_created_time'} =   '';   # filled in scheduler
+    $soap_params{'reservation_bandwidth'} =      $form_params->{'reservation_bandwidth'} . 'm';
+    $soap_params{'reservation_class'} =          '4';
+    $soap_params{'reservation_burst_limit'} =    '1m';
+    $soap_params{'reservation_status'} =         'pending';
 
     $soap_params{'ingress_interface_id'}= '';   # db lookup in scheduler
     $soap_params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
-    $soap_params{'src_ip'} =         $form_params->{'origin'};
-    $soap_params{'dst_ip'} =         $form_params->{'destination'};
+    $soap_params{'src_hostaddrs_ip'} =         $form_params->{'origin'};
+    $soap_params{'dst_hostaddrs_ip'} =         $form_params->{'destination'};
 
     # TODO:  error checking
-    if (not_an_ip($soap_params{'src_ip'})) {
-        $soap_params{'src_ip'} = inet_ntoa(inet_aton($soap_params{'src_ip'}));
+    if (not_an_ip($soap_params{'src_hostaddrs_ip'})) {
+        $soap_params{'src_hostaddrs_ip'} = inet_ntoa(inet_aton($soap_params{'src_hostaddrs_ip'}));
     }
 
-    if (not_an_ip($soap_params{'dst_ip'})) {
-        $soap_params{'dst_ip'} = inet_ntoa(inet_aton($soap_params{'dst_ip'}));
+    if (not_an_ip($soap_params{'dst_hostaddrs_ip'})) {
+        $soap_params{'dst_hostaddrs_ip'} = inet_ntoa(inet_aton($soap_params{'dst_hostaddrs_ip'}));
     }
 
-    $soap_params{'ingress_port'} =   '';     # db lookup in schedule
-    $soap_params{'egress_port'} =    '';     # db lookup in scheduler
-    $soap_params{'dscp'} =           'ef';     # optional
+    $soap_params{'reservation_ingress_port'} =   '';     # db lookup in schedule
+    $soap_params{'reservation_egress_port'} =    '';     # db lookup in scheduler
+    $soap_params{'reservation_dscp'} =           'ef';     # optional
 
     $soap_params{'lsp_from'} =    '';        # done in PSS
     $soap_params{'lsp_to'} =      '';        # done in PSS
-    $soap_params{'description'} =    $form_params->{'description'};
+    $soap_params{'reservation_description'} =    $form_params->{'reservation_description'};
     return( soap_create_reservation(\%soap_params) );
 }
 

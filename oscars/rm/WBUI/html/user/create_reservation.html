@@ -15,7 +15,7 @@
 
 <form method="post" action="https://oscars.es.net/cgi-bin/user/reservation.pl" target="status_frame" onsubmit="return check_form(this);">
 
-<input type="hidden" name="start_time">
+<input type="hidden" name="reservation_start_time">
 
 <p>Please indicate the origin location and destination, along with the amount of bandwidth you would like to reserve (in Mbps).<br/>
 Origin and destination locations can be either host names or IP addresses. (IPv6 is not supported yet.)</p>
@@ -29,7 +29,7 @@ Origin and destination locations can be either host names or IP addresses. (IPv6
 	<tr>
 		<td><input type="text" name="origin"></td>
 		<td><input type="text" name="destination"></td>
-		<td><input type="text" name="bandwidth" size="10"> Mbps</td>
+		<td><input type="text" name="reservation_bandwidth" size="10"> Mbps</td>
 	</tr>
 </table>
 
@@ -108,7 +108,7 @@ Any field left blank will default to the Example settings.</p>
 <table>
 <tr>
 	<th>Description:</th>
-	<td><textarea name="description" rows="3" cols="34"></textarea></td>
+	<td><textarea name="reservation_description" rows="3" cols="34"></textarea></td>
 </tr>
 </table>
 

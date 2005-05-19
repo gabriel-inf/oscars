@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: May 2, 2005
+# Last modified: May 18, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -13,7 +13,7 @@ require '../lib/general.pl';
 
 
     # names of the fields to be read
-my @fields_to_read = ( 'id', 'dn', 'start_time', 'end_time', 'status', 'src_id', 'dst_id' );
+my @fields_to_read = ( 'reservation_id', 'user_dn', 'reservation_start_time', 'reservation_end_time', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id' );
 
 my (%form_params, %results);
 
@@ -25,7 +25,7 @@ if (!$error_status) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
-    $form_params{'dn'} = $dn;
+    $form_params{'user_dn'} = $dn;
     ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});
@@ -111,8 +111,8 @@ sub print_row
     ($time_tag, $time_field) = get_time_str($row->{'reservation_start_time'});
     # ESnet hard wired for now in tag
     # TODO:  incremental ID at end if multiple ones in same minute
-    $tag = 'OSCARS.' . $row->{'user_dn'} . '.' . $time_tag . '-' . $row->{reservation_id};
-    print '    <td><a href="https://oscars.es.net/cgi-bin/user/resvdetail.pl?id=' . $row->{reservation_id} . '">' . $tag . '</a></td>' . "\n"; 
+    $tag = 'OSCARS.' . $row->{'user_dn'} . '.' . $time_tag . '-' . $row->{'reservation_id'};
+    print '    <td><a href="https://oscars.es.net/cgi-bin/user/resvdetail.pl?reservation_id=' . $row->{reservation_id} . '">' . $tag . '</a></td>' . "\n"; 
   
     print "    <td>" . $time_field . "</td>\n";
 
