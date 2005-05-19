@@ -30,7 +30,7 @@ if (!$error_status) {
     ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});
-        print_reservations(\%results);
+        print_reservations(\%form_params, \%results);
     }
     else {
         update_frames($error_status, "main_frame", "", $results{'error_msg'});
@@ -49,7 +49,7 @@ exit;
 # Out:
 sub print_reservations
 {
-    my ( $results ) = @_;
+    my ( $form_params, $results ) = @_;
     my ( $rowsref, $row );
 
     $rowsref = $results->{'rows'};
@@ -62,7 +62,12 @@ sub print_reservations
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
 
-    print "<script language=\"javascript\">print_navigation_bar('reservationList');</script>\n\n";
+    if ($form_params->{'admin_required'}) {
+        print "<script language=\"javascript\">print_admin_bar('reservationlist');</script>\n\n";
+    }
+    else {
+        print "<script language=\"javascript\">print_navigation_bar('reservationlist');</script>\n\n";
+    }
 
     print "<div id=\"zebratable_ui\">\n\n";
 
@@ -79,6 +84,7 @@ sub print_reservations
     print "    <td >Status</td>\n";
     print "    <td >Origin</td>\n";
     print "    <td >Destination</td>\n";
+    print "    <td >Action</td>\n";
     print "  </tr>\n";
     print "  </thead>\n";
 
@@ -125,4 +131,5 @@ sub print_row
     print "    <td>" . $ip . "</td>\n";
     $ip = get_oscars_host($row->{'dst_hostaddrs_id'});
     print "    <td>" . $ip . "</td>\n";
+    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/resvdelete.pl?reservation_id=' . $row->{reservation_id} . '">DELETE</a></td>' . "\n";
 }
