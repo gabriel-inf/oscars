@@ -63,13 +63,13 @@ sub do_query
     $sth = $self->{'dbh'}->prepare( $query );
     if ($DBI::err) {
         $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
-        return ($error_msg);
+        return (undef, $error_msg);
     }
     $sth->execute( @args );
     if ( $DBI::err ) {
         $error_msg = "[DBERROR] Executing $query:  $DBI::errstr";
         $sth->finish();
-        return($error_msg);
+        return(undef, $error_msg);
     }
     return( $sth, '');
 }
