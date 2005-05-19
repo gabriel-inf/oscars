@@ -21,10 +21,12 @@ my (%form_params, %results);
 my $cgi = CGI->new();
 ($form_params{'user_dn'}, $form_params{'user_level'}, $form_params{'admin_required'}) = check_session_status(undef, $cgi);
 
-print STDERR "** ", $form_params{'user_dn'}, "\n";
 if ($form_params{'user_dn'}) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
+    }
+    if ($form_params{'id'}) {
+        $form_params{'user_dn'} = $form_params{'id'};
     }
     ($error_status, %results) = soap_get_profile(\%form_params, \@fields_to_display);
     if (!$error_status) {
@@ -47,7 +49,6 @@ sub print_profile
 {
     my ($results, $form_params) = @_;
 
-    print STDERR '** ', Dumper($results);
     print "<html>\n";
     print "<head>\n";
     print "<link rel=\"stylesheet\" type=\"text/css\" ";

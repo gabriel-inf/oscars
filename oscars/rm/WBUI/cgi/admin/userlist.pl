@@ -99,7 +99,7 @@ sub print_row
 {
     my( $row ) = @_;
 
-    print '    <td><a href="https://oscars.es.net/cgi-bin/admin/userprofile.pl?id=' . $row->{'user_last_name'} . '">' . $row->{'user_last_name'} . '</a></td>' . "\n"; 
+    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl?id=' . $row->{'user_dn'} . '">' . $row->{'user_last_name'} . '</a></td>' . "\n"; 
     print "    <td>" . $row->{'user_first_name'} . "</td>\n";
     print "    <td>" . $row->{'user_dn'} . "</td>\n";
     print "    <td>" . $row->{'user_level'} . "</td>\n";
