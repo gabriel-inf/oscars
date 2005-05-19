@@ -26,6 +26,7 @@ if (!$error_status) {
         $form_params{$_} = $cgi->param($_);
     }
     $form_params{'user_dn'} = $dn;
+    $form_params{'admin_required'} = $admin_required;
     ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});

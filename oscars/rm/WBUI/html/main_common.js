@@ -168,11 +168,11 @@ function print_admin_bar(activePage)
     }
     if (activePage == 'allresvs')
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" class="active" title="View all reservations">View/Edit All Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/reservationlist.pl" class="active" title="View all reservations">View/Edit All Reservations</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" title="View all reservations">View/Edit All Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/user/reservationlist.pl" title="View all reservations">View/Edit All Reservations</a></li>');
     }
     document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");

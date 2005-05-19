@@ -144,10 +144,17 @@ sub get_reservations
     }
     # delete the last ", "
     $query =~ s/,\s$//;
-    # sort by start time in ascending order
-    $query .= " FROM reservations WHERE user_dn = ? ORDER BY reservation_start_time";
+    # If administrator is making request, show all reservations.
+    # Sort by start time in ascending order.
+    if ($inref->{'admin_required'}) {
+        $query .= " FROM reservations ORDER BY reservation_start_time";
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query);
+    }
+    else {
+        $query .= " FROM reservations WHERE user_dn = ? ORDER BY reservation_start_time";
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    }
 
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     $rref = $sth->fetchall_arrayref({user_dn => 1, reservation_start_time => 2, reservation_end_time => 3, reservation_status => 4, src_hostaddrs_id => 5, dst_hostaddrs_id => 6, reservation_id => 7 });
