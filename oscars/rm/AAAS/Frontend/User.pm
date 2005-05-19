@@ -54,7 +54,7 @@ sub verify_login
         # Get the password and privilege level from the database, making sure user
         # exists.
     $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, 0, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
     if (!$sth->rows) {
         $sth->finish();
