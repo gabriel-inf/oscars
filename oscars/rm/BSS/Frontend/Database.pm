@@ -1,5 +1,5 @@
 # Database.pm:  BSS specific database settings and routines
-# Last modified: May 9, 2005
+# Last modified: May 18, 2005
 # Jason Lee (jrlee@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
@@ -35,55 +35,22 @@ sub initialize {
     );
     $_self->{'dbh'} = DBI->connect($_self->{'configs'}->{'use_BSS_database'}, 
              $_self->{'configs'}->{'BSS_login_name'}, $_self->{'configs'}->{'BSS_login_passwd'})
-            or die "Couldn't connect to database: " . DBI->errstr;
+            or die "Couldn't connect to database: " . $DBI::errstr;
 }
 
 
-##### Settings Begin (Global variables) #####
-
-our( %table, @resv_field_order );
-
-# reservations field names
-%table = (
-  'reservations' => {
-    'id' => 'reservation_id',
-    'start_time' => 'reservation_start_time',
-    'end_time' => 'reservation_end_time',
-    'created_time' => 'reservation_created_time',
-    'bandwidth' => 'reservation_bandwidth',
-    'resv_class' => 'reservation_class',
-    'burst_limit' => 'reservation_burst_limit',
-    'status' => 'reservation_status',
-    'ingress_id' => 'ingress_interface_id',
-    'egress_id' => 'egress_interface_id',
-    'src_id' => 'src_hostaddrs_id',
-    'dst_id' => 'dst_hostaddrs_id',
-    'dn' => 'user_dn',
-    'ingress_port' => 'reservation_ingress_port',
-    'egress_port' => 'reservation_egress_port',
-    'dscp' => 'reservation_dscp',
-    'description' => 'reservation_description',
-  }
-);
-
-@resv_field_order = ('id', 'start_time', 'end_time', 'created_time',
-    'bandwidth', 'class', 'burst_limit', 'status', 'ingress_id', 'egress_id',
-    'src_id', 'dst_id', 'dn', 'ingress_port', 'egress_port', 'dscp',
-    'description');
-
+our @insert_fields = ('reservation_id', 'reservation_start_time', 'reservation_end_time',
+    'reservation_created_time', 'reservation_bandwidth', 'reservation_class',
+    'reservation_burst_limit', 'reservation_status', 'ingress_interface_id',
+    'egress_interface_id', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'user_dn',
+    'reservation_ingress_port', 'reservation_egress_port', 'reservation_dscp',
+    'reservation_description');
 
 
 ######################################################################
-sub get_BSS_table  {
-    my( $self, $table_name ) = @_;
-    return ( %table )
-}
-
-
-######################################################################
-sub get_resv_field_order {
+sub get_fields_to_insert {
     my ($self) = @_;
-    return (@resv_field_order)
+    return (@insert_fields)
 }
 
     
@@ -99,16 +66,10 @@ sub ip_to_xface_id {
     my ($query, $sth, $interface_id, $error_msg);
 
     $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
-    $sth = $self->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $error_msg = "Can't prepare statement\n" . $self->{'dbh'}->errstr;
-        return ( 1, $error_msg );
-    }
-    $sth->execute( $ipaddr );
-    if ( $sth->errstr ) {
+    ($sth, $error_msg) = $self->do_query($query, $ipaddr);
+    if ( $error_msg ) {
         $sth->finish();
-        $error_msg = "[ERROR] While converting from ip to interface id:  $sth->errstr";
-        return( 1, $error_msg );
+        return( 0, $error_msg );
     }
     # no match
     if ($sth->rows == 0 ) {
@@ -132,22 +93,16 @@ sub xface_id_to_loopback {
     my ($query, $sth, $loopback_addr, $error_msg);
 
     $query = 'SELECT router_name FROM routers WHERE router_id = (SELECT router_id from interfaces WHERE interface_id = ?)';
-    $sth = $self->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $error_msg = "Can't prepare statement\n" . $self->{'dbh'}->errstr;
-        return ( 1, $error_msg );
-    }
-    $sth->execute( $interface_id );
-    if ( $sth->errstr ) {
+    ($sth, $error_msg) = $self->do_query($query, $interface_id);
+    if ( $error_msg ) {
         $sth->finish();
-        $error_msg = "[ERROR] While converting from idx to ip:  $sth->errstr";
-        return( 1, $error_msg );
+        return( '', $error_msg );
     }
 
     # no match
     if ($sth->rows == 0 ) {
         $sth->finish();
-        return (0, "No match in database for $interface_id");
+        return ('', "No match in database for $interface_id");
     }
     my @data = $sth->fetchrow_array();
     $loopback_addr = $data[0];
@@ -170,34 +125,19 @@ sub hostaddrs_ip_to_id
 
     # TODO:  make hostaddrs_ip field UNIQUE in hostaddrs?
     $query = 'SELECT hostaddrs_id FROM hostaddrs WHERE hostaddrs_ip = ?';
-
-    $sth = $self->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $error_msg = "Can't prepare statement\n" . $self->{'dbh'}->errstr;
-        return ( 1, $error_msg );
-    }
-    $sth->execute( $ipaddr );
-    if ( $sth->errstr ) {
+    ($sth, $error_msg) = $self->do_query($query, $ipaddr);
+    if ( $error_msg ) {
         $sth->finish();
-        $error_msg = "[ERROR] While fetching host ip:  $sth->errstr";
-        return( 1, $error_msg );
+        return( 0, $error_msg );
     }
 
     # if no matches, insert a row in hostaddrs
     if ($sth->rows == 0 ) {
         $query = "INSERT INTO hostaddrs VALUES ( '', '$ipaddr'  )";
-        print STDERR '-- ', $query, "\n";
-
-        $sth = $self->{'dbh'}->prepare( $query );
-        if (!$sth) {
-            $error_msg = "Can't prepare statement\n" . $self->{'dbh'}->errstr;
-            return ( 1, $error_msg );
-        }
-        $sth->execute();
-        if ( $sth->errstr ) {
+        ($sth, $error_msg) = $self->do_query($query);
+        if ( $error_msg ) {
             $sth->finish();
-            $error_msg = "[ERROR] While fetching host ip:  $sth->errstr";
-            return( 1, $error_msg );
+            return( 0, $error_msg );
         }
         $id = $self->{'dbh'}->{'mysql_insertid'};
     }
@@ -222,15 +162,9 @@ sub hostaddrs_id_to_ip {
     my ($query, $sth, $ipaddr, $error_msg);
 
     $query = 'SELECT hostaddrs_ip FROM hostaddrs WHERE hostaddrs_id = ?';
-    $sth = $self->{'dbh'}->prepare( $query );
-    if (!$sth) {
-        $error_msg = "Can't prepare statement\n" . $self->{'dbh'}->errstr;
-        return ( 1, $error_msg );
-    }
-    $sth->execute( $id );
-    if ( $sth->errstr ) {
+    ($sth, $error_msg) = $self->do_query($query, $id);
+    if ( $error_msg ) {
         $sth->finish();
-        $error_msg = "[ERROR] While converting from host id to ip:  $sth->errstr";
         return( 1, $error_msg );
     }
 
@@ -243,6 +177,26 @@ sub hostaddrs_id_to_ip {
     $ipaddr = $data[0];
     $sth->finish();
     return ($ipaddr, "");
+}
+
+
+sub do_query
+{
+    my( $self, $query, @args ) = @_;
+    my( $sth, $error_msg );
+
+    $sth = $self->{'dbh'}->prepare( $query );
+    if ($DBI::err) {
+        $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
+        return (undef, $error_msg);
+    }
+    $sth->execute( @args );
+    if ( $DBI::err ) {
+        $error_msg = "[DBERROR] Executing $query:  $DBI::errstr";
+        $sth->finish();
+        return(undef, $error_msg);
+    }
+    return( $sth, '');
 }
 
 

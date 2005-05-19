@@ -2,38 +2,36 @@
 
 use DateTime;
 
-use lib '../../..';
-
 use BSS::Client::SOAPClient;
 
 my( %params );
 
     # setup some example stuff
-$params{'id'} =              'NULL';
+$params{'reservation_id'} =              'NULL';
 
     # in seconds since epoch
 my $dt = DateTime->now();
-$params{'start_time'} =     $dt->epoch - 60;   # - 1 minute
-$params{'end_time'} =       $dt->epoch + 120;    # + 5 minutes
+$params{'reservation_start_time'} =     $dt->epoch - 60;   # - 1 minute
+$params{'reservation_end_time'} =       $dt->epoch + 120;    # + 5 minutes
 
-$params{'created_time'} =   '';   # filled in scheduler
-$params{'bandwidth'} =      '10m';
-$params{'class'} =          '4';
-$params{'burst_limit'} =    '1m';
-$params{'status'} =         'pending';
+$params{'reservation_created_time'} =   '';   # filled in scheduler
+$params{'reservation_bandwidth'} =      '10m';
+$params{'reservation_class'} =          '4';
+$params{'reservation_burst_limit'} =    '1m';
+$params{'reservation_status'} =         'pending';
 
-$params{'ingress_id'}= '';   # db lookup in scheduler
-$params{'egress_id'}=  '';   # db lookup in scheduler
+$params{'ingress_interface_id'}= '';   # db lookup in scheduler
+$params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
-$params{'src_ip'} = '192.168.2.2';
-$params{'dst_ip'} = '192.168.0.2';
+$params{'src_hostaddrs_ip'} = '192.168.2.2';
+$params{'dst_hostaddrs_ip'} = '192.168.0.2';
 
-$params{'dn'} =        'oscars';
-$params{'dscp'} =      'ef';
+$params{'user_dn'} =        'davidr';
+$params{'reservation_dscp'} =      'ef';
 
-$params{'ingress_port'} =   '';     # db lookup in schedule
-$params{'egress_port'} =    '';     # db lookup in scheduler
-$params{'description'} =    'This is a test.';
+$params{'reservation_ingress_port'} =   '';     # db lookup in schedule
+$params{'reservation_egress_port'} =    '';     # db lookup in scheduler
+$params{'reservation_description'} =    'This is a test.';
 
 my($result);
 ($result, %data) = soap_create_reservation(\%params);

@@ -253,14 +253,14 @@ sub map_fields
 {
     my ( $front_end, $data ) = @_;
     my ( %results, $error );
-    my ( $ingress_loopback_name, $egress_loopback_name, $src_ip, $dst_ip );
+    my ( $ingress_loopback_name, $egress_loopback_name, $src_hostaddrs_ip, $dst_hostaddrs_ip );
 
      # get loopbacks for routers, given interface ids
     ($ingress_loopback_name, $error) = $front_end->{'dbconn'}->xface_id_to_loopback($data->{'ingress_interface_id'});
     ($egress_loopback_name, $error) = $front_end->{'dbconn'}->xface_id_to_loopback($data->{'egress_interface_id'});
      # get host IP addresses, given id 
-    ($src_ip, $error) = $front_end->{'dbconn'}->hostaddrs_id_to_ip($data->{'src_hostaddrs_id'});
-    ($dst_ip, $error) = $front_end->{'dbconn'}->hostaddrs_id_to_ip($data->{'dst_hostaddrs_id'});
+    ($src_hostaddrs_ip, $error) = $front_end->{'dbconn'}->hostaddrs_id_to_ip($data->{'src_hostaddrs_id'});
+    ($dst_hostaddrs_ip, $error) = $front_end->{'dbconn'}->hostaddrs_id_to_ip($data->{'dst_hostaddrs_id'});
     %results = (
       'name' => "oscars_$data->{'reservation_id'}",
       #'lsp_from' => $ingress_loopback_name,
@@ -271,8 +271,8 @@ sub map_fields
       'bandwidth' => $data->{'reservation_bandwidth'},
       'lsp_class-of-service' => $data->{'reservation_class'},
       'policer_burst-size-limit' =>  $data->{'reservation_burst_limit'},
-      'source-address' => $src_ip,
-      'destination-address' => $dst_ip,
+      'source-address' => $src_hostaddrs_ip,
+      'destination-address' => $dst_hostaddrs_ip,
       'dscp' => $data->{'reservation_dscp'}
     );
     return ( %results );

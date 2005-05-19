@@ -61,7 +61,7 @@ sub create_reservation {
     my ( $self, $inref ) = @_; 
     my ( $error_status, %results );
 
-    ($inref->{'ingress_id'}, $inref->{'egress_id'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_ip'}, $inref->{'dst_ip'});
+    ($inref->{'ingress_interface_id'}, $inref->{'egress_interface_id'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_hostaddrs_ip'}, $inref->{'dst_hostaddrs_ip'});
 
     if ($results{'error_msg'}) { return ( 0, %results ); }
 
