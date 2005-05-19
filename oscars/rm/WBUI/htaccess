@@ -1,1 +1,2 @@
-SetEnv PERL5LIB /home/davidr/oscars/rm:$PERL5LIB
+SetEnv PERL5LIB /usr/local/lib/oscars/rm:$PERL5LIB
+SetEnv OSCARS_HOME /usr/local/lib/oscars/rm
