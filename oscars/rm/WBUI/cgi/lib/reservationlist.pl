@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: May 18, 2005
+# Last modified: May 19, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -9,7 +9,7 @@ use CGI;
 
 use BSS::Client::SOAPClient;
 
-require '../lib/general.pl';
+require 'general.pl';
 
 
     # names of the fields to be read

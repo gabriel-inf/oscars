@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-# reservationlist.pl:  Main service: Reservation List Detail
-# Last modified: May 18, 2005
+# resvdetail.pl:  Main service: Reservation List Detail
+# Last modified: May 19, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -90,7 +90,7 @@ sub print_reservation_detail
     print "</table>\n";
 
     print '<br/><br/>';
-    print '<a href="https://oscars.es.net/cgi-bin/user/reservationlist.pl">Back to reservations list</a>';
+    print '<a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl">Back to reservations list</a>';
 
     print "<p>For inquiries, please contact the project administrator.</p>\n\n";
     print "</div>\n\n";
