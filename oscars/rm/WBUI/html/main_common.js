@@ -160,11 +160,11 @@ function print_admin_bar(activePage)
     }
     if (activePage == 'adminprofile')
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" class="active" title="View and/or edit your information">Admin Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" class="active" title="View and/or edit your information">User Profile</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" title="View and/or edit your information">Admin Profile</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" title="View and/or edit your information">User Profile</a></li>');
     }
     if (activePage == 'allresvs')
     {
