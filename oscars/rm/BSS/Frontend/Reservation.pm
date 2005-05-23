@@ -33,7 +33,7 @@ sub initialize {
 }
 
 
-### Following methods called from SchedulerThread.
+### Following methods called from ReservationHandler.
 
 ################################
 ### insert_reservation
@@ -116,9 +116,17 @@ sub insert_reservation
 }
 
 
-# from reservationlist.pl:  Reservation List DB handling
+##### method delete_reservation
+##### Deletes the reservation by setting the reservation status to cancelled.
+sub delete_reservation
+{
+    my( $self, $inref ) = @_;
 
-##### sub get_reservations
+    return( $self->update_reservation($inref, $self->{'configs'}->{'CANCELLED'}) );
+}
+
+
+##### method get_reservations
 ### get the reservation list from the database and populate the table tag
 # In: reference to hash of parameters
 # Out: success or failure, and status message
@@ -176,17 +184,6 @@ sub get_reservations
     $sth->finish();
     $results{'status_msg'} = 'Successfully read reservations';
     return( 0, %results );
-}
-
-
-    # stub
-sub delete_reservation
-{
-    my( $self, $inref ) = @_;
-    my( %results );
-
-    $results{'error_msg'} = $self->check_connection();
-    if ($results{'error_msg'}) { return( 1, %results); }
 }
 
 
@@ -288,6 +285,8 @@ sub find_expired_reservations  {
 }
 
 
+##### method update_reservation
+##### Updates reservation status.  Used to mark as active, finished, or cancelled.
 ######################################################################
 sub update_reservation {
 
@@ -296,6 +295,14 @@ sub update_reservation {
 
     $results{'error_msg'} = $self->check_connection();
     if ($results{'error_msg'}) { return( 1, %results); }
+
+    if ($status eq $self->{'configs'}->{'CANCELLED'}) {
+            # This ensures that if the reservation is active, the LSP will be torn down the next time
+            # find_expired_reservations runs.
+        $query = qq{ UPDATE reservations SET reservation_end_time = 0 WHERE reservation_id = ?};
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'reservation_id'});
+        if ( $results{'error_msg'} ) { return( 1, %results ); }
+    }
 
     $query = qq{ UPDATE reservations SET reservation_status = ? WHERE reservation_id = ?};
     ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $status, $inref->{'reservation_id'});
