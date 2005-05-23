@@ -89,6 +89,7 @@ function get_timezone_offset()
 }
 
 // print year, date, and time for reservation start time ui example
+// NOTE:  For production use, start time should be in the future.
 // date calculation reference: http://developer.netscape.com/viewsource/goodman_dateobject.html
 function print_start_datetime_example()
 {
@@ -99,19 +100,18 @@ function print_start_datetime_example()
 	var WEEK = DAY * 7;
 	*/
 
-	var nowTime = ( new Date() ).getTime();
-	var boundaryDate = new Date( nowTime + ( 60 * 1000 * 60 * 2 ) ); // 2 hours from now
+	var nowDate = new Date();
 
-	var printYear = boundaryDate.getUTCFullYear();
-	var printMonth = boundaryDate.getUTCMonth() + 1;
-	var printDate = boundaryDate.getUTCDate();
-	var printHour = boundaryDate.getUTCHours();
-	var printMinute = boundaryDate.getUTCMinutes();
+	var printYear = nowDate.getFullYear();
+	var printMonth = nowDate.getMonth() + 1;
+	var printDate = nowDate.getDate();
+	var printHour = nowDate.getHours();
+	var printMinute = nowDate.getMinutes();
 
 
 	document.write( '<td>' + printYear + '</td>' + '<td>' + printMonth + '</td>' + '<td>' + printDate + '</td>' );
 
-	document.write( '<td>' + printHour + '</td>' + '<td>' + printMinute + '</td>' + '<td>UTC</td>' );
+	document.write( '<td>' + printHour + '</td>' + '<td>' + printMinute + '</td>' + '<td></td>' );
 }
 
 // Reference: http://javascript.internet.com/forms/val-date.html
@@ -126,21 +126,21 @@ function check_form( form )
 	}
 	*/
 
-	if ( form.origin.value == "" )
+	if ( (form.origin.value == null) || (form.origin.value == "") || isblank(form.origin.value) )
 	{
 		alert( "Please enter starting host name, or its IP address ." );
 		form.origin.focus();
 		return false;
 	}
 
-	if ( form.destination.value == "" )
+	if ( (form.destination.value == null) || (form.destination.value == "") || isblank(form.destination.value) )
 	{
 		alert( "Please enter destination host name, or its IP address." );
 		form.destination.focus();
 		return false;
 	}
 
-	if ( form.reservation_bandwidth.value == "" )
+	if ( (form.reservation_bandwidth.value == null) || (form.reservation_bandwidth.value == "") || isblank(form.reservation_bandwidth.value) )
 	{
 		alert( "Please enter the amount of bandwidth that you want to reserve." );
 		form.reservation_bandwidth.focus();
@@ -148,39 +148,39 @@ function check_form( form )
 	}
 
         currentDate = new Date();
-	if ( form.start_year.value == "" )
+	if ( (form.start_year.value == null) || (form.start_year.value == "") || isblank(form.start_year.value) )
 	{
-                form.start_year.value = currentDate.getUTCFullYear();
+                form.start_year.value = currentDate.getFullYear();
 	}
 
-	if ( form.start_month.value == "" )
+	if ( (form.start_month.value == null) || (form.start_month.value == "") || isblank(form.start_month.value) )
 	{
-                form.start_month.value = currentDate.getUTCMonth();
+                form.start_month.value = currentDate.getMonth();
 	}
 
-	if ( form.start_date.value == "" )
+	if ( (form.start_date.value == null) || (form.start_date.value == "") || isblank(form.start_date.value) )
 	{
-                form.start_date.value = currentDate.getUTCDate();
+                form.start_date.value = currentDate.getDate();
 	}
 
-	if ( form.start_hour.value == "" )
+	if ( (form.start_hour.value == null) || (form.start_hour.value == "") || isblank(form.start_hour.value) )
 	{
-                form.start_hour.value = currentDate.getUTCHour();
+                form.start_hour.value = currentDate.getHours();
 	}
 
-	if ( form.start_minute.value == "" )
+	if ( (form.start_minute.value == null) || (form.start_minute.value == "") || isblank(form.start_minute.value) )
 	{
-                form.start_minute.value = currentDate.getUTCMinute();
+                form.start_minute.value = currentDate.getMinutes();
 	}
 
-	if ( form.duration_hour.value == "" )
+	if ( (form.duration_hour.value == null) || (form.duration_hour.value == "") || isblank(form.duration_hour.value) )
 	{
 		alert( "Please enter the reservation duration hour." );
 		form.duration_hour.focus();
 		return false;
 	}
 
-	if ( form.reservation_description.value == "" )
+	if ( (form.reservation_description.value == null) || (form.reservation_description.value == "") || isblank(form.reservation_description.value) )
 	{
 		alert( "Please describe the purpose of this reservation request." );
 		form.reservation_description.focus();
@@ -309,19 +309,13 @@ function check_form( form )
 		return false;
 	}
 
-	if ( validate_integer(form.duration_hour.value) == false )
+	if ( validate_numeric(form.duration_hour.value) == false )
 	{
 		alert( "The reservation duration hour is not a number. Please check again." );
 		form.duration_hour.focus();
 		return false;
 	}
 
-	if ( form.duration_hour.value < 2 )
-	{
-		alert( "The duration of reservation should be equal to or greater than two hours. Please check again." );
-		form.duration_hour.focus();
-		return false;
-	}
         reserve_date = new Date(form.start_year.value, form.start_month.value, form.start_date.value, form.start_hour.value, form.start_minute.value, 0, 0);
         form.reservation_start_time.value = reserve_date.getTime() / 1000;
 	if ( form.reservation_start_time.value == 0 )
