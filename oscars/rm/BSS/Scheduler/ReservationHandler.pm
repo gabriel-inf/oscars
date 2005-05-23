@@ -71,10 +71,11 @@ sub create_reservation {
 
 
 ################################
-### Given reservation id, Leave the reservation in the db, but mark status as
-### cancelled (TODO).
+### Given reservation id, leave the reservation in the db, but mark status as
+### cancelled, and set the ending time to 0 so that find_expired_reservations
+### will tear down the LSP if the reservation is active.
 ################################
-sub remove_reservation {
+sub delete_reservation {
     my ( $self, $inref ) = @_;
 		
     my ($error_status, %results) = $self->{'frontend'}->delete_reservation( $inref );
