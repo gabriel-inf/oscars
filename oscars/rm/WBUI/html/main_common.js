@@ -107,11 +107,11 @@ function print_navigation_bar(activePage)
     }
     if (activePage == 'reservationlist')
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" class="active" title="View list of active reservations">View Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" class="active" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" title="View list of active reservations">View Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
     }
     if (activePage == 'userprofile')
     {
@@ -168,11 +168,11 @@ function print_admin_bar(activePage)
     }
     if (activePage == 'reservationlist')
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" class="active" title="View all reservations">View/Edit All Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" class="active" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
     }
     else
     {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" title="View all reservations">View/Edit All Reservations</a></li>');
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
     }
     document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
@@ -314,4 +314,14 @@ function stripe(id)
 			even =  ! even;
 		}
 	}
+}
+
+// From Javascript book, p. 2654
+
+function isblank(s) {
+    for (var i = 0; i < s.length; i++) {
+        var c = s.charAt(i);
+        if ((c != ' ') && (c != '\n') && (c != '')) return false;
+    }
+    return true;
 }
