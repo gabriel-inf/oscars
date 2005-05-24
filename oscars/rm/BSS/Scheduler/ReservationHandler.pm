@@ -63,7 +63,7 @@ sub create_reservation {
 
     ($inref->{'ingress_interface_id'}, $inref->{'egress_interface_id'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_hostaddrs_ip'}, $inref->{'dst_hostaddrs_ip'});
 
-    if ($results{'error_msg'}) { return ( 0, %results ); }
+    if ($results{'error_msg'}) { return ( 1, %results ); }
 
     ( $error_status, %results ) = $self->{'frontend'}->insert_reservation( $inref );
     return ( $error_status, %results );
