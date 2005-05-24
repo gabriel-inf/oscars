@@ -97,7 +97,7 @@ sub traceroute
   }
 
   # Perform the traceroute.
-  if (not(open(_TRACEROUTE_, "ssh -x -a -i $_self->{'jnxConf'}->{'jnx_key'} -l $_self->{'jnxConf'}->{'jnx_user'} $_source traceroute $_destination 2>/dev/null |")))  {
+  if (not(open(_TRACEROUTE_, "ssh -v -x -a -i $_self->{'jnxConf'}->{'jnx_key'} -l $_self->{'jnxConf'}->{'jnx_user'} $_source traceroute $_destination 2>/dev/null |")))  {
     $_self->{'jnxConf'}->{'errMsg'} = "ERROR: Unable to ssh into router and perform traceroute\n";
     return();
   }
