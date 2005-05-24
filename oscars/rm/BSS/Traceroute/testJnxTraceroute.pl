@@ -24,10 +24,26 @@ my (@_hops) = ();
 # Create a traceroute object.
 my ($_jnxTraceroute) = BSS::Traceroute::JnxTraceroute->new();
 
-print("Traceroute: chi-cr1.es.net -> distressed.es.net\n");
+my ($numArgs, $src, $dst);
 
-# Traceroute to distressed.es.net (from default source (chi-cr1.es.net)).
-$_jnxTraceroute->traceroute("distressed.es.net");
+$numArgs = $#ARGV + 1;
+if ($numArgs == 0) {
+    $src = "chi-cr1.es.net";
+    $dst = "distressed.es.net";
+}
+elsif ($numArgs == 2) {
+    $src = $ARGV[0];
+    $dst = $ARGV[1];
+}
+else {
+    print STDERR "Test requires either no or 2 arguments\n";
+    exit;
+}
+
+print("Traceroute: $src -> $dst\n");
+
+# Run traceroute.
+$_jnxTraceroute->traceroute($src, $dst);
 if ($_error = $_jnxTraceroute->get_error())  {
   die($_error);
 }
@@ -47,22 +63,3 @@ while(defined($_hops[0]))  {
 }
 
 print("\n");
-print("Traceroute: aoa-cr1.es.net -> distressed.es.net\n");
-
-# Traceroute to distressed.es.net (from default source (chi-cr1.es.net)).
-$_jnxTraceroute->traceroute("aoa-cr1.es.net", "distressed.es.net");
-
-print("Raw results:\n");
-@_rawTracerouteData = $_jnxTraceroute->get_raw_hop_data();
-while(defined($_rawTracerouteData[0]))  {
-  print('  ' . $_rawTracerouteData[0]);
-  shift(@_rawTracerouteData);
-}
-
-print("Hops:\n");
-@_hops = $_jnxTraceroute->get_hops();
-while(defined($_hops[0]))  {
-  print("  $_hops[0]\n");
-  shift(@_hops);
-}
-
