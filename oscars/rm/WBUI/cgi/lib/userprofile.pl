@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # userprofile.pl:  Main service: My Profile page
-# Last modified: May 10, 2005
+# Last modified: May 23, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -13,7 +13,7 @@ use Data::Dumper;
 require 'general.pl';
 
 # names of the fields to be displayed on the screen
-my @fields_to_display = ( 'user_last_name', 'user_first_name', 'user_dn', 'user_email_primary', 'user_level', 'user_email_secondary', 'user_phone_primary', 'user_phone_secondary', 'user_description', 'user_register_time', 'user_activation_key', 'institution_id' );
+my @fields_to_read = ( 'user_last_name', 'user_first_name', 'user_dn', 'user_password', 'user_email_primary', 'user_level', 'user_email_secondary', 'user_phone_primary', 'user_phone_secondary', 'user_description', 'user_register_time', 'user_activation_key', 'institution_id' );
 
 
 my (%form_params, %results);
@@ -28,7 +28,12 @@ if ($form_params{'user_dn'}) {
     if ($form_params{'id'}) {
         $form_params{'user_dn'} = $form_params{'id'};
     }
-    ($error_status, %results) = soap_get_profile(\%form_params, \@fields_to_display);
+    if ($form_params{'set'}) {
+        ($error_status, %results) = soap_set_profile(\%form_params, \@fields_to_read);
+    }
+    else {
+        ($error_status, %results) = soap_get_profile(\%form_params, \@fields_to_read);
+    }
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});
         print_profile(\%results, \%form_params);
@@ -83,13 +88,13 @@ sub print_profile
 
     print "<tr>\n";
     print "   <th><span class=\"requiredmark\">*</span> Current Password</th>\n";
-    print "   <td><input type=\"password\" name=\"password_current\" size=\"20\"></td>\n";
+    print "   <td><input type=\"password\" name=\"user_password\" size=\"20\"></td>\n";
     print "</tr>\n";
     print "<tr>\n";
     print "   <th>New Password (Enter twice; Leave blank to stay the same)</th>\n";
     print "   <td>\n";
-    print "       <input type=\"password\" name=\"password_new_once\" size=\"20\" style=\"margin-bottom: .3em\"><br>\n";
-    print "       <input type=\"password\" name=\"password_new_twice\" size=\"20\">\n";
+    print "       <input type=\"password\" name=\"password_new_once\" size=\"20\" value=\"\" style=\"margin-bottom: .3em\"><br>\n";
+    print "       <input type=\"password\" name=\"password_new_twice\" size=\"20\" value=\"\">\n";
     print "   </td>\n";
     print "</tr>\n";
     print "</table>\n";
@@ -160,8 +165,8 @@ sub print_profile
     print "<p>Please check your contact information carefully before submitting the form.</p>\n\n";
 
     print "<p>\n";
+    print "    <input type=\"hidden\" name=\"set\" value=\"1\">\n";
     print "    <input type=\"submit\" value=\"Change Profile\">\n";
-    print "    <input type=\"Reset form fields\">\n";
     print "</p>\n";
     print "</form>\n\n";
 
