@@ -79,6 +79,9 @@ sub print_reservations
     print "  <thead>\n";
     print "  <tr>\n";
     print "    <td >Tag</td>\n";
+    if ($form_params->{'admin_required'}) {
+        print "    <td >User</td>\n";
+    }
     print "    <td >Start Time</td>\n";
     print "    <td >End Time</td>\n";
     print "    <td >Status</td>\n";
@@ -92,7 +95,7 @@ sub print_reservations
     foreach $row (@$rowsref) {
         if ($row->{'reservation_status'} ne 'finished') {
             print "  <tr>\n";
-            print_row($row);
+            print_row($row, $form_params->{'admin_required'});
             print "  </tr>\n";
         }
     }
@@ -111,7 +114,7 @@ sub print_reservations
 
 sub print_row
 {
-    my( $row ) = @_;
+    my( $row, $admin_view ) = @_;
     my( $tag, $seconds, $time_field, $time_tag, $ip );
 
 
@@ -121,6 +124,9 @@ sub print_row
     $tag = 'OSCARS.' . $row->{'user_dn'} . '.' . $time_tag . '-' . $row->{'reservation_id'};
     print '    <td><a href="https://oscars.es.net/cgi-bin/user/resvdetail.pl?reservation_id=' . $row->{reservation_id} . '">' . $tag . '</a></td>' . "\n"; 
   
+    if ($admin_view) {
+        print "    <td>" . $row->{'user_dn'} . "</td>\n";
+    }
     print "    <td>" . $time_field . "</td>\n";
 
     ($time_tag, $time_field) = get_time_str($row->{'reservation_end_time'});
