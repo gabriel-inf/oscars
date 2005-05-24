@@ -263,11 +263,10 @@ sub map_fields
     ($dst_hostaddrs_ip, $error) = $front_end->{'dbconn'}->hostaddrs_id_to_ip($data->{'dst_hostaddrs_id'});
     %results = (
       'name' => "oscars_$data->{'reservation_id'}",
-      #'lsp_from' => $ingress_loopback_name,
-      'lsp_from' => 'dev-rt20-e.es.net',
-      #'lsp_to' => $egress_loopback_name,
-          # hard wired for now
-      'lsp_to' => "10.0.0.1",
+      'lsp_from' => $ingress_loopback_name,
+      #'lsp_from' => 'dev-rt20-e.es.net',
+      'lsp_to' => $egress_loopback_name,
+      #'lsp_to' => "10.0.0.1",
       'bandwidth' => $data->{'reservation_bandwidth'},
       'lsp_class-of-service' => $data->{'reservation_class'},
       'policer_burst-size-limit' =>  $data->{'reservation_burst_limit'},
