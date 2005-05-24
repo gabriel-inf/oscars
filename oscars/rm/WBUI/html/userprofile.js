@@ -12,52 +12,55 @@ check_form( form )
 function check_form( form )
 {
 
-	if ( form.password_current.value == "" )
+	if ( (form.password_current.value == null) || (form.password_current.value == "") || isblank(form.password_current.value) )
 	{
 		alert( "Please enter the current password." );
 		form.password_current.focus();
 		return false;
 	}
 
-	if ( form.password_new_once.value != form.password_new_twice.value )
-	{
-		alert( "Please enter the same new password twice for verification." );
-		form.password_new_once.focus();
-		return false;
+	if (!((form.password_new_once.value == "") || (form.password_new_once.value == "") || isblank(form.password_new_once.value)) )
+        {
+	    if ( form.password_new_once.value != form.password_new_twice.value ) {
+		    alert( "Please enter the same new password twice for verification." );
+		    form.password_new_once.focus();
+		    return false;
+            }
+            form.update_password.value = 1;
 	}
 
-	if ( form.firstname.value == "" )
+	if ( (form.user_first_name.value == null) || (form.user_first_name.value == "") || isblank(form.user_first_name.value) )
 	{
 		alert( "Please enter the first name." );
-		form.firstname.focus();
+		form.user_first_name.focus();
 		return false;
 	}
 
-	if ( form.lastname.value == "" )
+	if ( (form.user_last_name.value == null) || (form.user_last_name.value == "") || isblank(form.user_last_name.value) )
 	{
 		alert( "Please enter the last name." );
-		form.lastname.focus();
+		form.user_last_name.focus();
 		return false;
 	}
 
-	if ( form.organization.value == "" )
+	if ( (form.institution.value == null) || (form.institution.value == "") || isblank(form.institution.value) )
 	{
 		alert( "Please enter the organization." );
-		form.organization.focus();
+		form.institution.focus();
 		return false;
 	}
 
-	if ( form.email_primary.value == "" )
+	if ( (form.user_email_primary.value == null) || (form.user_email_primary.value == "") || isblank(form.user_email_primary.value) )
 	{
 		alert( "Please enter the primary e-mail address." );
-		form.email_primary.focus();
+		form.user_email_primary.focus();
 		return false;
 	}
 
-	if ( form.phone_primary.value == "" )
+	if ( (form.user_phone_primary.value == null) || (form.user_phone_primary.value == "") || isblank(form.user_phone_primary.value) )
 	{
 		alert( "Please enter the primary phone number." );
-		form.phone_primary.focus();
+		form.user_phone_primary.focus();
 		return false;
 	}
 	return true;
