@@ -7,7 +7,7 @@ use Exporter;
 
 our @ISA = qw(Exporter);
 
-our @EXPORT = qw( soap_get_reservations soap_create_reservation soap_remove_reservation );
+our @EXPORT = qw( soap_get_reservations soap_create_reservation soap_delete_reservation );
  
 
 #####
@@ -58,10 +58,10 @@ sub soap_create_reservation
 }
 
 
-sub soap_remove_reservation
+sub soap_delete_reservation
 {
     my ($params) = @_;
-    my $response = $BSS_server->remove_reservation($params);
+    my $response = $BSS_server->delete_reservation($params);
     if ($response->fault) {
         print STDERR $response->faultcode, " ", $response->faultstring, "\n";
     }
