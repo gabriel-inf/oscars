@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with user forms.
-# Last modified: April 28, 2005
+# Last modified: May 24, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -37,6 +37,7 @@ sub initialize {
 }
 ######################################################################
 
+## Methods called by user forms.
 
 ##### method verify_login
 # In: reference to hash of parameters
@@ -113,7 +114,7 @@ sub logout
 # Out: status code, status message
 sub get_profile
 {
-    my( $self, $inref, $fields_to_display ) = @_;
+    my( $self, $inref, $fields_to_read ) = @_;
     my( $sth, $query );
     my( @data, %results );
 
@@ -122,7 +123,7 @@ sub get_profile
 
     # DB query: get the user profile detail
     $query = "SELECT ";
-    foreach $_ ( @$fields_to_display ) {
+    foreach $_ ( @$fields_to_read ) {
         $query .= $_ . ", ";
     }
     # delete the last ", "
@@ -140,8 +141,8 @@ sub get_profile
     }
 
     # populate %results with the data fetched from the database
-    @results{@$fields_to_display} = ();
-    $sth->bind_columns( map { \$results{$_} } @$fields_to_display );
+    @results{@$fields_to_read} = ();
+    $sth->bind_columns( map { \$results{$_} } @$fields_to_read );
     $sth->fetch();
     $sth->finish();
 
@@ -181,37 +182,20 @@ sub get_profile
 # Out: status code, status message
 sub set_profile
 {
-    my ( $self, $inref, @fields_to_read ) = @_;
+    my ( $self, $inref, $fields_to_read ) = @_;
     my( $sth, $query, $read_only_level, @read_only_user_levels );
-    my( $update_password, $encrypted_password );   # TODO:  FIX
-    my( %results );
+    my( $current_info, $do_update, %results );
 
     $results{'error_msg'} = $self->{'dbconn'}->check_connection(undef);
     if ($results{'error_msg'}) { return( 1, %results); }
 
-    # user level provisioning:  # if the user's level equals one of the
-    #  read-only levels, don't give them access 
-    $query = "SELECT user_level FROM users WHERE user_dn = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
-    if ( $results{'error_msg'} ) { return( 1, %results ); }
-
-    while ( my $ref = $sth->fetchrow_arrayref ) {
-        foreach $read_only_level ( @read_only_user_levels ) {
-            if ( $$ref[0] eq $read_only_level ) {
-                $sth->finish();
-                $results{'error_msg'} = '[DBERROR] Your user level (Lv. ' . $$ref[0] . ') has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.';
-                return ( 1, %results );
-            }
-        }
-    }
-    $sth->finish();
-
     # Read the current user information from the database to decide which
-    # fields are being updated.
+    # fields are being updated, and user has proper privileges.
 
     # DB query: get the user profile detail
-    $query = "SELECT ";
-    foreach $_ ( @fields_to_read ) {
+    # TODO:  make sure user_level not in fields_to_read already
+    $query = "SELECT user_level, ";
+    foreach $_ ( @$fields_to_read ) {
         $query .= $_ . ", ";
     }
     # delete the last ", "
@@ -223,62 +207,69 @@ sub set_profile
 
     # check whether this person is a registered user
     if (!$sth->rows) {
-        $sth->finish();
         $results{'error_msg'} = 'No such person registered.';
+        $sth->finish();
         return (1, %results);
     }
 
-    # populate %results with the data fetched from the database
-    @results{@fields_to_read} = ();
-    $sth->bind_columns( map { \$results{$_} } @fields_to_read );
-    $sth->fetch();
-
-    ### check the current password with the one in the database before
-    ### proceeding
-    if ( $results{'user_password'} ne $inref->{'password_current'} ) {
-        $sth->finish();
-        return( 1, 'Please check the current password and try again.' );
-    }
-    $sth->finish();
-
-    # determine which fields to update in the user profile table
-    # @fields_to_update and @values_to_update should be an exact match
-    my( @fields_to_update, @values_to_update );
-
-    # if the password needs to be updated, add the new one to the fields/
-    # values to update
-    if ( $update_password ) {
-        push( @fields_to_update, 'user_password' );
-        push( @values_to_update, $encrypted_password );
-    }
-
-    # Remove password from the update comparison list.  'password' is the
-    # last element of the array; remove it from the array
-    $#fields_to_read--;
-
-    # compare the current & newly input user profile data and determine
-    # which fields/values to update
-    foreach $_ ( @fields_to_read ) {
-        if ( $results{$_} ne $inref->{$_} ) {
-            push( @fields_to_update, $_ );
-            push( @values_to_update, $inref->{$_} );
+    # User level provisioning:  if the user's level equals one of the
+    # read-only levels, don't give them access .
+    $current_info = $sth->fetchrow_hashref;
+    foreach $read_only_level ( @read_only_user_levels ) {
+        if ( $current_info->{'user_level'} eq $read_only_level ) {
+            $results{'error_msg'} = "Your user level ($current_info->{'user_level'}) has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.";
+            $sth->finish();
+            return ( 1, %results );
         }
     }
 
+    ### Check the current password with the one in the database before
+    ### proceeding.
+    if ( $current_info->{'user_password'} ne crypt($inref->{'user_password'},'oscars') ) {
+        $results{'error_msg'} = 'Please check the current password and try again.';
+        $sth->finish();
+        return( 1, %results);
+    }
+    $sth->finish();
+
+    $do_update = 0;
+
+    # If the password needs to be updated, set the input password field to
+    # the new one.
+    if ( $inref->{'password_new_once'} ) {
+        $inref->{'user_password'} = crypt($inref->{'password_new_once'}, 'oscars');
+        $do_update = 1;
+    }
+    else {
+        $inref->{'user_password'} = crypt($inref->{'user_password'}, 'oscars');
+    }
+
+    # Compare the current & newly input user profile data and determine
+    # which fields/values to update.  Assign results at this time also.
+    foreach $_ ( @$fields_to_read ) {
+        if ( $current_info->{$_} ne $inref->{$_} ) {
+            $do_update = 1;
+        }
+        $results{$_} = $inref->{$_};
+    }
+
     # if there is nothing to update...
-    if ( $#fields_to_update < 0 ) {
-        return( 1, 'There is no changed information to update.' );
+    if ( !$do_update ) {
+        $results{'error_msg'} = 'There is no changed information to update.';
+        return( 1, %results );
     }
 
     # prepare the query for database update
     $query = "UPDATE users SET ";
-    foreach $_ ( 0 .. $#fields_to_update ) {
-        $query .= $fields_to_update[$_] . " = ?, ";
+    foreach $_ ( @$fields_to_read ) {
+        if ($inref->{$_} ) {
+            $query .= "$_ = '$inref->{$_}', ";
+        }
     }
     $query =~ s/,\s$//;
-    $query .= " FROM users WHERE user_dn = ?";
+    $query .= " WHERE user_dn = ?";
 
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, @values_to_update, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     $sth->finish();
@@ -354,8 +345,6 @@ sub activate_account
 }
 
 
-# register:  user account registration db
-
 ##### method process_registration
 # In:  reference to hash of parameters
 # Out: status message
@@ -396,20 +385,21 @@ sub process_registration
     return( 0, %results );
 }
 
+## Called by Admin tool
 
 ##### method get_userlist
 # In:  inref
 # Out: status message and DB results
 sub get_userlist
 {
-    my( $self, $inref, $fields_to_display ) = @_;
+    my( $self, $inref, $fields_to_read ) = @_;
     my( $sth, $error_status, $query );
     my( %mapping, %results, $r, $arrayref, $rref );
 
     if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
 
     $query = "SELECT ";
-    foreach $_ ( @$fields_to_display ) {
+    foreach $_ ( @$fields_to_read ) {
         $query .= $_ . ", ";
     }
     # delete the last ", "
