@@ -184,7 +184,7 @@ sub set_profile
 {
     my ( $self, $inref, $fields_to_read ) = @_;
     my( $sth, $query, $read_only_level, @read_only_user_levels );
-    my( $current_info, $do_update, %results );
+    my( $current_info, $ref, $do_update, %results );
 
     $results{'error_msg'} = $self->{'dbconn'}->check_connection(undef);
     if ($results{'error_msg'}) { return( 1, %results); }
@@ -207,13 +207,13 @@ sub set_profile
 
     # check whether this person is a registered user
     if (!$sth->rows) {
-        $results{'error_msg'} = 'No such person registered.';
+        $results{'error_msg'} = "The user $inref->{'user_dn'} is not registered.";
         $sth->finish();
         return (1, %results);
     }
 
     # User level provisioning:  if the user's level equals one of the
-    # read-only levels, don't give them access .
+    # read-only levels, don't give them access.
     $current_info = $sth->fetchrow_hashref;
     foreach $read_only_level ( @read_only_user_levels ) {
         if ( $current_info->{'user_level'} eq $read_only_level ) {
@@ -244,6 +244,23 @@ sub set_profile
         $inref->{'user_password'} = crypt($inref->{'user_password'}, 'oscars');
     }
 
+    # Check to see if the institution name provided is in the database.
+    # If so, set the institution id to the primary key in the institutions
+    # table.
+    if ( $inref->{'institution'} ) {
+        $query = "SELECT institution_id FROM institutions WHERE institution_name = ?";
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'institution'});
+        if ( $results{'error_msg'} ) { return( 1, %results ); }
+        if (!$sth->rows) {
+            $results{'error_msg'} = "The organization $inref->{'institution'} is not in the database.";
+            $sth->finish();
+            return (1, %results);
+        }
+        $ref = $sth->fetchrow_hashref;
+        $inref->{'institution_id'} = $ref->{'institution_id'} ;
+        $results{'institution'} = $inref->{'institution'}
+    }
+
     # Compare the current & newly input user profile data and determine
     # which fields/values to update.  Assign results at this time also.
     foreach $_ ( @$fields_to_read ) {
@@ -252,6 +269,7 @@ sub set_profile
         }
         $results{$_} = $inref->{$_};
     }
+    $results{'user_password'} = '';   # unset before passing back
 
     # if there is nothing to update...
     if ( !$do_update ) {
@@ -262,7 +280,7 @@ sub set_profile
     # prepare the query for database update
     $query = "UPDATE users SET ";
     foreach $_ ( @$fields_to_read ) {
-        if ($inref->{$_} ) {
+        if (defined($inref->{$_} )) {
             $query .= "$_ = '$inref->{$_}', ";
         }
     }
@@ -273,7 +291,7 @@ sub set_profile
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     $sth->finish();
-    $results{'status_msg'} = 'Your account information has been updated successfully.';
+    $results{'status_msg'} = "The account information for user $inref->{'user_dn'} has been updated successfully.";
     return( 0, %results );
 }
 
