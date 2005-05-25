@@ -68,7 +68,7 @@ sub create_reservation {
     if ($results{'error_msg'}) { return ( 1, %results ); }
 
     ( $error_status, %results ) = $self->{'frontend'}->insert_reservation( $inref );
-    open (LOGFILE, ">$ENV{'OSCARS_HOME'}/logs/traceroute.$results{'id'}.log") || die "Can't open log file.\n";
+    open (LOGFILE, ">$ENV{'OSCARS_HOME'}/logs/traceroute.oscars_$results{'id'}.log") || die "Can't open log file.\n";
     print LOGFILE $self->{'output_buf'};
     close(LOGFILE);
     return ( $error_status, %results );
