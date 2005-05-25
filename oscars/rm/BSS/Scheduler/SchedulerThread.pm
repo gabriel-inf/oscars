@@ -55,7 +55,7 @@ sub start_scheduler {
     # get a copy of the config
     $configs = shift;
 
-    print STDERR "Starting Scheduler\n";
+    if ($configs->{'debug'}) { print STDERR "Starting Scheduler\n"; }
     my $handler = threads->create("scheduler");
     $handler->detach();
 
@@ -76,22 +76,18 @@ sub scheduler {
     while (1) {
 
         # find reservations that need to be actived
-        #print STDERR "find new\n";
+        if ($configs->{'debug'}) { print STDERR "find new\n"; }
         $error_msg = find_new_reservations($front_end);
         if ($error_msg) {
-            if ($configs->{'debug'}) {
-                print STDERR '** ', $error_msg, "\n";
-            }
+            if ($configs->{'debug'}) { print STDERR '** ', $error_msg, "\n"; }
         }
 
 
         # find reservations that need to be deactivated 
-        #print STDERR "find_exp\n";
+        if ($configs->{'debug'}) { print STDERR "find_exp\n"; }
         $error_msg = find_expired_reservations($front_end);
         if ($error_msg) {
-            if ($configs->{'debug'}) {
-                print STDERR '** ', $error_msg, "\n";
-            }
+            if ($configs->{'debug'}) { print STDERR '** ', $error_msg, "\n"; }
         }
 
         # check every do_poll_time seconds
@@ -110,12 +106,10 @@ sub find_new_reservations {
 
     my ($front_end) = @_;
 
-    #print STDERR "in find_new_res\n";
     my ($timeslot, $resv, $result);
     my ($error_msg);
     my $cur_time = localtime();
 
-    #print STDERR "declared vars...\n";
     # configurable
     $timeslot = time() + $configs->{'reservation_time_interval'};
     if ($configs->{'debug'}) {
@@ -133,7 +127,7 @@ sub find_new_reservations {
         my %lsp_info = map_fields($front_end, $r);
         $result = setup_pss(%lsp_info);
 
-        #print STDERR "update reservation to active\n";
+        if ($configs->{'debug'}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $result, $configs->{'ACTIVE'}, $front_end);
     }
     return "";
@@ -153,7 +147,7 @@ sub find_expired_reservations {
 
     # configurable
     $timeslot = time() + $configs->{reservation_time_interval};
-    #print STDERR "expired: $cur_time \n";
+    if ($configs->{'debug'}) { print STDERR "expired: $cur_time \n"; }
 
     # find active reservation past the timeslot
     ($error_msg, $resv) = $front_end->find_expired_reservations($timeslot, $configs->{'ACTIVE'});
@@ -163,7 +157,7 @@ sub find_expired_reservations {
         my %lsp_info = map_fields($front_end, $r);
         $result = teardown_pss(%lsp_info, $front_end);
 
-        #print STDERR "update reservation to active\n";
+        if ($configs->{'debug'}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $result, $configs->{'FINISHED'}, $front_end);
     }
     return "";
@@ -190,7 +184,7 @@ sub setup_pss {
         print STDERR "Setting up LSP...\n";
         $_jnxLsp->configure_lsp(_LSP_SETUP);
         if ($_error = $_jnxLsp->get_error())  {
-            print STDERR $_error;
+            print STDERR '** ', $_error;
             return 0;
             #die($_error);
         }
@@ -219,7 +213,7 @@ sub teardown_pss {
         print STDERR "Tearing down LSP...\n" ;
         $_jnxLsp->configure_lsp(_LSP_TEARDOWN); 
         if ($_error = $_jnxLsp->get_error())  {
-            print STDERR $_error;
+            print STDERR "** ", $_error;
             return 0;
         }
     }
