@@ -12,10 +12,10 @@ check_form( form )
 function check_form( form )
 {
 
-	if ( (form.password_current.value == null) || (form.password_current.value == "") || isblank(form.password_current.value) )
+	if ( (form.user_password.value == null) || (form.user_password.value == "") || isblank(form.user_password.value) )
 	{
 		alert( "Please enter the current password." );
-		form.password_current.focus();
+		form.user_password.focus();
 		return false;
 	}
 

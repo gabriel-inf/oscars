@@ -82,7 +82,7 @@ sub print_profile
 
     print "  <th><span class=\"requiredmark\">*</span> Distinguished Name</th>\n";
     print "  <td><input type=\"text\" name=\"user_dn\" size=\"20\"\n";
-    if ($form_params->{'user_dn'}) { print " value=\"$form_params->{'user_dn'}\""; }
+    if (defined($form_params->{'user_dn'})) { print " value=\"$form_params->{'user_dn'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
@@ -103,28 +103,28 @@ sub print_profile
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> First Name</th>\n";
     print "  <td><input type=\"text\" name=\"user_first_name\" size=\"20\"";
-    if ($results->{'user_first_name'}) { print " value=\"$results->{'user_first_name'}\""; }
+    if (defined($results->{'user_first_name'})) { print " value=\"$results->{'user_first_name'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Last Name</th>\n";
     print "  <td><input type=\"text\" name=\"user_last_name\" size=\"20\"";
-    if ($results->{'user_last_name'}) { print " value=\"$results->{'user_last_name'}\""; }
+    if (defined($results->{'user_last_name'})) { print " value=\"$results->{'user_last_name'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Organization</th>\n";
     print "  <td><input type=\"text\" name=\"institution\" size=\"40\"";
-    if ($results->{'institution'}) { print " value=\"$results->{'institution'}\""; }
+    if (defined($results->{'institution'})) { print " value=\"$results->{'institution'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th valign=\"top\">Personal Description</th>\n";
-    print "  <td><textarea name=\"user_description\" rows=\"3\" cols=\"34\"";
-    if ($results->{'user_description'}) { print " value=\"$results->{'user_description'}\""; }
+    print "  <td><textarea name=\"user_description\" rows=\"3\" cols=\"34\">";
+    if (defined($results->{'user_description'})) { print "$results->{'user_description'}"; }
     print "  </textarea></td>\n";
     print "</tr>\n";
 
@@ -135,28 +135,28 @@ sub print_profile
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> E-mail (Primary)</th>\n";
     print "  <td><input type=\"text\" name=\"user_email_primary\" size=\"40\"";
-    if ($results->{'user_email_primary'}) { print " value=\"$results->{'user_email_primary'}\""; }
+    if (defined($results->{'user_email_primary'})) { print " value=\"$results->{'user_email_primary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th>E-mail (Secondary)</th>\n";
     print "  <td><input type=\"text\" name=\"user_email_secondary\" size=\"40\"";
-    if ($results->{'user_email_secondary'}) { print " value=\"$results->{'user_email_secondary'}\""; }
+    if (defined($results->{'user_email_secondary'})) { print " value=\"$results->{'user_email_secondary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th><span class=\"requiredmark\">*</span> Phone Number (Primary)</th>\n";
     print "  <td><input type=\"text\" name=\"user_phone_primary\" size=\"40\"";
-    if ($results->{'user_phone_primary'}) { print " value=\"$results->{'user_phone_primary'}\""; }
+    if (defined($results->{'user_phone_primary'})) { print " value=\"$results->{'user_phone_primary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
     print "<tr>\n";
     print "  <th>Phone Number (Secondary)</th>\n";
     print "  <td><input type=\"text\" name=\"user_phone_secondary\" size=\"40\"";
-    if ($results->{'user_phone_secondary'}) { print " value=\"$results->{'user_phone_secondary'}\""; }
+    if (defined($results->{'user_phone_secondary'})) { print " value=\"$results->{'user_phone_secondary'}\""; }
     print "  </td>\n";
     print "</tr>\n";
 
