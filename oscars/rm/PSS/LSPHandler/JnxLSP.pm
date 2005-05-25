@@ -98,6 +98,9 @@ sub configure_lsp
   }
 
   $_xmlString = $_self->read_xml_file($_xmlFile);
+  open (LOGFILE, ">$ENV{'OSCARS_HOME'}/logs/jnxConfig.$_self->{'name'}.log") || die "Can't open log file.\n";
+  print LOGFILE $_xmlString;
+  close(LOGFILE);
 
   # Execute the Junoscript configuration changes if there is no error.
   if (not($_self->get_error()))  {
