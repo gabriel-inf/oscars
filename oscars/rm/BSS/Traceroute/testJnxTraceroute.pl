@@ -31,6 +31,10 @@ if ($numArgs == 0) {
     $src = "chi-cr1.es.net";
     $dst = "distressed.es.net";
 }
+elsif ($numArgs == 1) {
+    $src = "chi-cr1.es.net";
+    $dst = $ARGV[0];
+}
 elsif ($numArgs == 2) {
     $src = $ARGV[0];
     $dst = $ARGV[1];
