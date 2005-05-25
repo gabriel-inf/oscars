@@ -27,7 +27,13 @@ if (!$error_status) {
     }
     $form_params{'user_dn'} = $dn;
     $form_params{'admin_required'} = $admin_required;
-    ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
+        # The reservation id, if present, indicates a deletion
+    if ($form_params{'reservation_id'}) {
+        ($error_status, %results) = soap_delete_reservation(\%form_params, \@fields_to_read);
+    }
+    else {
+        ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
+    }
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});
         print_reservations(\%form_params, \%results);
@@ -39,6 +45,7 @@ if (!$error_status) {
 else {
     print "Location:  https://oscars.es.net/\n\n";
 }
+
 
 exit;
 
@@ -137,5 +144,5 @@ sub print_row
     print "    <td>" . $ip . "</td>\n";
     $ip = get_oscars_host($row->{'dst_hostaddrs_id'});
     print "    <td>" . $ip . "</td>\n";
-    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/resvdelete.pl?reservation_id=' . $row->{reservation_id} . '">DELETE</a></td>' . "\n";
+    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl?reservation_id=' . $row->{reservation_id} . '">DELETE</a></td>' . "\n";
 }
