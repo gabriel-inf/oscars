@@ -90,14 +90,12 @@ sub get_time_str
     if ($hour < 10) {
         $hour = "0" . $hour;
     }
-    $minute = $dt->minute();
+    my $minute = $dt->minute();
     if ($minute < 10) {
         $minute = "0" . $minute;
     }
-    my $time_tag = $year . $month . $day;
     my $time_field = $month . "-" . $day . "&nbsp;&nbsp; " . $hour . ":" . $minute;
-
-    return ( $time_tag, $time_field );
+    return( $time_field );
 }
 
 
