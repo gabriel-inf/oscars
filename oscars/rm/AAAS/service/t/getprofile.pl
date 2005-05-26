@@ -5,7 +5,7 @@ use lib '../../..';
 use AAAS::Client::SOAPClient;
 
 my($value);
-my %params = ('user_dn' => 'davidr' );
+my %params = ('user_dn' => 'dwrobertson@lbl.gov' );
     # names of the fields to be displayed on the screen
 my @fields_to_display = ( 'user_last_name', 'user_first_name', 'user_dn', 'user_email_primary', 'user_level', 'user_email_secondary', 'user_phone_primary', 'user_phone_secondary', 'user_description', 'user_register_time', 'user_activation_key', 'institution_id' );
 
