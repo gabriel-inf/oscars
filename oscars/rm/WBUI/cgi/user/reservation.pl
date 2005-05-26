@@ -81,7 +81,6 @@ sub create_reservation
 
     $soap_params{'reservation_ingress_port'} =   '';     # db lookup in schedule
     $soap_params{'reservation_egress_port'} =    '';     # db lookup in scheduler
-    $soap_params{'reservation_dscp'} =           'ef';     # optional
 
     $soap_params{'lsp_from'} =    '';        # done in PSS
     $soap_params{'lsp_to'} =      '';        # done in PSS
