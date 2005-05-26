@@ -13,7 +13,7 @@ use BSS::Frontend::Database;
 
 use Data::Dumper;
 
-######################################################################
+###############################################################################
 sub new {
     my ($_class, %_args) = @_;
     my ($_self) = {%_args};
@@ -27,27 +27,27 @@ sub new {
     return($_self);
 }
 
-######################################################################
+###############################################################################
 sub initialize {
     my ($self) = @_;
 
-    $self->{'dbconn'} = BSS::Frontend::Database->new('configs' => $self->{'configs'}) or die "FATAL:  could not connect to database";
+    $self->{'dbconn'} = BSS::Frontend::Database->new(
+                       'configs' => $self->{'configs'})
+                        or die "FATAL:  could not connect to database";
 }
 
 
 ### Following methods called from ReservationHandler.
 
-################################
-### insert_reservation
-###
-### Called from the scheduler to insert a row into the reservations table.
-### Error checking has already been done by scheduler and CGI script.
-###
-### IN:  reference to hash.  Hash's keys are all the fields of the reservations
-###      table except for the primary key.
-### OUT: error status (0 success, 1 failure), and the results hash.
-################################
-
+###############################################################################
+## insert_reservation:  Called from the scheduler to insert a row into the
+## reservations table.  Error checking so far is assumed to have been done  by
+## scheduler and CGI script.
+##
+## IN:  reference to hash.  Hash's keys are all the fields of the reservations
+##      table except for the primary key.
+## OUT: error status (0 success, 1 failure), and the results hash.
+###############################################################################
 sub insert_reservation
 {
     my( $self, $inref ) = @_;
@@ -57,18 +57,22 @@ sub insert_reservation
     $results{'error_msg'} = $self->check_connection();
     if ($results{'error_msg'}) { return( 1, %results); }
 
-    my $over_limit = 0; # whether any time segment is over the bandwidth limit
+    # whether any time segment is over the bandwidth limit
+    my $over_limit = 0;
 
-    ###
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
-    $query = "SELECT reservation_bandwidth, reservation_start_time, reservation_end_time FROM reservations WHERE reservation_end_time >= ? AND reservation_start_time <= ?";
+    $query = "SELECT reservation_bandwidth, reservation_start_time,
+              reservation_end_time FROM reservations
+              WHERE reservation_end_time >= ? AND reservation_start_time <= ?";
 
-    $inref->{'reservation_created_time'} = '';  # only holds a time if reservation successful
+    # only holds a time if reservation successful
+    $inref->{'reservation_created_time'} = '';
 
     # handled query with the comparison start & end datetime strings
-
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'reservation_start_time'}, $inref->{'reservation_end_time'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query(
+        $query, $inref->{'reservation_start_time'},
+        $inref->{'reservation_end_time'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # TODO:  find segments of overlap, determine if bandwidth in any is
@@ -81,21 +85,27 @@ sub insert_reservation
     if ( $over_limit ) {
         $sth->finish();
         # TODO:  list of times
-        results{'error_msg'} = '[ERROR] The available bandwidth limit on the network has been reached between '. 'Please modify your reservation request and try again.';
+        results{'error_msg'} = "[ERROR] The available bandwidth limit on " .
+            "the network has been reached between .  " .
+            "Please modify your reservation request and try again.";
         return( 1, %results );
     }
     else {
         $sth->finish();
 
-        if (($inref->{'ingress_interface_id'} == 0) || ($inref->{'egress_interface_id'} == 0))
+        if (($inref->{'ingress_interface_id'} == 0) ||
+            ($inref->{'egress_interface_id'} == 0))
         {
-            $results{'error_msg'} = 'Invalid router id(s): 0.  Unable to do insert.';
+            $results{'error_msg'} = "Invalid router id(s): 0.  Unable to " .
+                                    "do insert.";
             return( 1, %results );
         }
 
         # get ipaddr id from host's and destination's ip addresses
-        $inref->{'src_hostaddrs_id'} = $self->{'dbconn'}->hostaddrs_ip_to_id($inref->{'src_hostaddrs_ip'}); 
-        $inref->{'dst_hostaddrs_id'} = $self->{'dbconn'}->hostaddrs_ip_to_id($inref->{'dst_hostaddrs_ip'}); 
+        $inref->{'src_hostaddrs_id'} = $self->{'dbconn'}->hostaddrs_ip_to_id(
+                                           $inref->{'src_hostaddrs_ip'}); 
+        $inref->{'dst_hostaddrs_id'} = $self->{'dbconn'}->hostaddrs_ip_to_id(
+                                           $inref->{'dst_hostaddrs_ip'}); 
         $inref->{'reservation_created_time'} = time();
 
         my @insertions;   # copy over input fields that will be set in table
@@ -106,8 +116,10 @@ sub insert_reservation
         }
 
         # insert all fields for reservation into database
-        $query = "INSERT INTO reservations VALUES ( " . join( ', ', ('?') x @insertions ) . " )";
-        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, @insertions);
+        $query = "INSERT INTO reservations VALUES (
+                 " . join( ', ', ('?') x @insertions ) . " )";
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                                 @insertions);
         if ( $results{'error_msg'} ) { return( 1, %results ); }
 
         $results{'id'} = $self->{'dbconn'}->{'dbh'}->{'mysql_insertid'};
@@ -116,30 +128,38 @@ sub insert_reservation
 
         # insert reservation_tag field
     my $time_tag = get_time_str($inref->{'reservation_start_time'});
-    $results{'reservation_tag'} = $inref->{'user_dn'} . '.' . $time_tag . "-" . $results{'id'};
-    $query = "UPDATE reservations SET reservation_tag = ? WHERE reservation_id = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'reservation_tag'}, $results{'id'});
+    $results{'reservation_tag'} = $inref->{'user_dn'} . '.' . $time_tag .
+                                  "-" . $results{'id'};
+    $query = "UPDATE reservations SET reservation_tag = ?
+              WHERE reservation_id = ?";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                  $results{'reservation_tag'}, $results{'id'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
-    $results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $results{'id'} . '.';
+    $results{'status_msg'} = "Your reservation has been processed " .
+        "successfully. Your reservation ID number is $results{'id'}.";
     return( 0, %results );
 }
 
 
-##### method delete_reservation
-##### Deletes the reservation by setting the reservation status to cancelled.
+###############################################################################
+## delete_reservation:  Cancels the reservation by setting the reservation
+## status to cancelled.
+###############################################################################
 sub delete_reservation
 {
     my( $self, $inref ) = @_;
 
-    return( $self->update_reservation($inref, $self->{'configs'}->{'CANCELLED'}) );
+    return( $self->update_reservation(
+                $inref, $self->{'configs'}->{'CANCELLED'}) );
 }
 
 
-##### method get_reservations
-### get the reservation list from the database and populate the table tag
-# In: reference to hash of parameters
-# Out: success or failure, and status message
+###############################################################################
+##  get_reservations: gets the reservation list from the database
+## In: reference to hash of parameters
+## Out: success or failure, and status message
+###############################################################################
 sub get_reservations
 {
     my( $self, $inref, $fields_to_read ) = @_;
@@ -169,13 +189,22 @@ sub get_reservations
         ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query);
     }
     else {
-        $query .= " FROM reservations WHERE user_dn = ? ORDER BY reservation_start_time";
-        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+        $query .= " FROM reservations WHERE user_dn = ?
+                    ORDER BY reservation_start_time";
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                         $inref->{'user_dn'});
     }
 
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
-    $rref = $sth->fetchall_arrayref({user_dn => 1, reservation_start_time => 2, reservation_end_time => 3, reservation_status => 4, src_hostaddrs_id => 5, dst_hostaddrs_id => 6, reservation_id => 7, reservation_tag => 8 });
+    $rref = $sth->fetchall_arrayref({user_dn => 1,
+                reservation_start_time => 2,
+                reservation_end_time => 3,
+                reservation_status => 4,
+                src_hostaddrs_id => 5,
+                dst_hostaddrs_id => 6,
+                reservation_id => 7,
+                reservation_tag => 8 });
     $sth->finish();
 
     $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
@@ -197,10 +226,11 @@ sub get_reservations
 }
 
 
-##### sub get_reservation_detail
-### get the reservation detail from the database
-# In: reference to hash of parameters
-# Out: success or failure, and status message
+###############################################################################
+## get_reservation_detail:  gets the reservation details from the database
+## In: reference to hash of parameters
+## Out: success or failure, and status message
+###############################################################################
 sub get_reservation_detail
 {
     my( $self, $inref, $fields_to_display ) = @_;
@@ -218,7 +248,8 @@ sub get_reservation_detail
     # delete the last ", "
     $query =~ s/,\s$//;
     $query .= " FROM reservations WHERE reservation_id = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'reservation_id'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                  $inref->{'reservation_id'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # populate %results with the data fetched from the database
@@ -245,7 +276,7 @@ sub get_reservation_detail
 
 ### Following methods called from SchedulerThread.
 
-######################################################################
+###############################################################################
 sub find_pending_reservations  {
 
     my ( $self, $stime, $status ) = @_;
@@ -255,8 +286,10 @@ sub find_pending_reservations  {
     $results{'error_msg'} = $self->check_connection();
     if ($results{'error_msg'}) { return( 1, %results); }
 
-    $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and reservation_start_time < ?};
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $status, $stime);
+    $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
+                 reservation_start_time < ?};
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                             $status, $stime);
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # get all the data
@@ -268,9 +301,9 @@ sub find_pending_reservations  {
 }
 
 
-######################################################################
-sub find_expired_reservations  {
-
+###############################################################################
+sub find_expired_reservations
+{
     my ( $self, $stime, $status ) = @_;
     my ( $sth, $data, $query, $error_msg);
     my ( %results );
@@ -280,8 +313,10 @@ sub find_expired_reservations  {
 
     #print "expired: Looking at time == " . $stime . "\n";
 
-    $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and reservation_end_time < ?};
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $status, $stime);
+    $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
+                 reservation_end_time < ?};
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                              $status, $stime);
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # get all the data
@@ -295,9 +330,10 @@ sub find_expired_reservations  {
 }
 
 
-##### method update_reservation
-##### Updates reservation status.  Used to mark as active, finished, or cancelled.
-######################################################################
+###############################################################################
+## update_reservation: Updates reservation status.  Used to mark as active,
+## finished, or cancelled.
+###############################################################################
 sub update_reservation {
 
     my ( $self, $inref, $status ) = @_;
@@ -307,15 +343,19 @@ sub update_reservation {
     if ($results{'error_msg'}) { return( 1, %results); }
 
     if ($status eq $self->{'configs'}->{'CANCELLED'}) {
-            # This ensures that if the reservation is active, the LSP will be torn down the next time
-            # find_expired_reservations runs.
-        $query = qq{ UPDATE reservations SET reservation_end_time = 0 WHERE reservation_id = ?};
-        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'reservation_id'});
+        # This ensures that if the reservation is active, the LSP will be torn
+        # down the next time find_expired_reservations runs.
+        $query = qq{ UPDATE reservations SET reservation_end_time = 0
+                     WHERE reservation_id = ?};
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                  $inref->{'reservation_id'});
         if ( $results{'error_msg'} ) { return( 1, %results ); }
     }
 
-    $query = qq{ UPDATE reservations SET reservation_status = ? WHERE reservation_id = ?};
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $status, $inref->{'reservation_id'});
+    $query = qq{ UPDATE reservations SET reservation_status = ?
+                 WHERE reservation_id = ?};
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                          $status, $inref->{'reservation_id'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # close it up
@@ -325,8 +365,9 @@ sub update_reservation {
 }
 
 
-# private
+## private
 
+###############################################################################
 sub check_connection
 {
     my ( $self ) = @_;
@@ -339,10 +380,12 @@ sub check_connection
              $self->{'configs'}->{'BSS_login_name'},
              $self->{'configs'}->{'BSS_login_passwd'},
              \%attr);
-    if (!$self->{'dbconn'}->{'dbh'}) { return( "Unable to make database connection"); }
+    if (!$self->{'dbconn'}->{'dbh'}) { return(
+                                       "Unable to make database connection"); }
     return "";
 }
 
+###############################################################################
 sub get_time_str 
 {
     my( $epoch_seconds ) = @_;
