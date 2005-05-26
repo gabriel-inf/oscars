@@ -30,6 +30,13 @@ if (!$error_status) {
         # The reservation id, if present, indicates a deletion
     if ($form_params{'reservation_id'}) {
         ($error_status, %results) = soap_delete_reservation(\%form_params, \@fields_to_read);
+        if (!$error_status) {
+            # save the status message
+            my $update_status = $results{'status_msg'};
+            # get the updated data
+            ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
+            $results{'status_msg'} = $update_status;
+        }
     }
     else {
         ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
@@ -137,5 +144,5 @@ sub print_row
     print "    <td>" . $ip . "</td>\n";
     $ip = get_oscars_host($row->{'dst_hostaddrs_id'});
     print "    <td>" . $ip . "</td>\n";
-    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl?reservation_id=' . $row->{reservation_id} . '">DELETE</a></td>' . "\n";
+    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl?reservation_id=' . $row->{reservation_id} . '">CANCEL</a></td>' . "\n";
 }
