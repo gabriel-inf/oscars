@@ -78,7 +78,7 @@ sub print_reservations
 
     print "<div id=\"zebratable_ui\">\n\n";
 
-    print "<p><em>View Active Reservations</em><br>\n";
+    print "<p><em>View Reservations</em><br>\n";
     print "<p>Click on the Reservation Tag link to view detailed information about the reservation.\n";
     print "</p>\n\n";
 
@@ -89,8 +89,8 @@ sub print_reservations
     if ($form_params->{'admin_required'}) {
         print "    <td >User</td>\n";
     }
-    print "    <td >Start Time</td>\n";
-    print "    <td >End Time</td>\n";
+    print "    <td >Start Time (UTC)</td>\n";
+    print "    <td >End Time (UTC)</td>\n";
     print "    <td >Status</td>\n";
     print "    <td >Origin</td>\n";
     print "    <td >Destination</td>\n";
