@@ -62,12 +62,17 @@ sub create_reservation {
     my ( $error_status, %results );
 
     $self->{'output_buf'} = "source:  $inref->{'src_hostaddrs_ip'}\n";
-    ($inref->{'ingress_interface_id'}, $inref->{'egress_interface_id'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_hostaddrs_ip'}, $inref->{'dst_hostaddrs_ip'});
+    print STDERR "source:  $inref->{'src_hostaddrs_ip'}\n";
+    ($inref->{'ingress_interface_id'}, $inref->{'egress_interface_id'}, $inref->{'path_list'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_hostaddrs_ip'}, $inref->{'dst_hostaddrs_ip'});
+
+
     $self->{'output_buf'} .= "destination:  $inref->{'dst_hostaddrs_ip'}\n";
+    print STDERR "destination:  $inref->{'dst_hostaddrs_ip'}\n";
 
     if ($results{'error_msg'}) { return ( 1, %results ); }
 
     ( $error_status, %results ) = $self->{'frontend'}->insert_reservation( $inref );
+
     open (LOGFILE, ">$ENV{'OSCARS_HOME'}/logs/traceroute.oscars_$results{'id'}.log") || die "Can't open log file.\n";
     print LOGFILE $self->{'output_buf'};
     close(LOGFILE);
@@ -162,56 +167,64 @@ sub do_ping {
 ################################
 
 sub do_remote_trace {
-    my ( $self, $host )  = @_;
+    my ( $self, $src, $dst )  = @_;
     my (@hops);
-    my ($_error, $interface_id, $prev_ipaddr, $prev_id);
+    my ($error, $interface_id, $prev_ipaddr, $prev_id, $path);
+
+    $path = "";
 
     # try to ping before traceing?
     if ($self->{'configs'}{'use_ping'}) {
-        if ( 0 == $self->do_ping($host)) {
-            return (0, "do_remote_trace:  host $host not pingable");
+        if ( 0 == $self->do_ping($dst)) {
+            return (0, "", "do_remote_trace:  host $dst not pingable");
         }
     }
 
     my ($_jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
-    $_jnxTraceroute->traceroute($host);
 
-    if ($_error = $_jnxTraceroute->get_error())  {
-        return (0, "do_remote_trace: " . $_error);
+    $error = $_jnxTraceroute->traceroute($src, $dst);
+    if ($error)  {
+        return (0, "", "do_remote_trace: " . $error);
     }
 
     @hops = $_jnxTraceroute->get_hops();
 
     # if we didn't hop much, maybe the same router?
-    if ($#hops < 0 ) { return (0, "do_remote_trace:  same router?"); }
+    if ($#hops < 0 ) { return (0, "", "do_remote_trace:  same router?"); }
 
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
-        ($interface_id, $_error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($_jnxTraceroute->{'defaultrouter'});
-        return ($interface_id, $_error);
+        ($interface_id, $error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($self->{'configs'}{'jnx_source'});
+        return ($interface_id, $path, $error);
     }
 
-    # start off with an non-existant router
+    # start off with an non-existent router
     $interface_id = 0;
 
     # loop forward till the next router isn't one of ours ...
     while(defined($hops[0]))  {
         $self->{'output_buf'} .= "do_remote_trace:  hop:  $hops[0]\n";
-            # id is 0 if not an edge router (not in interfaces table)
-        ($interface_id, $_error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($hops[0]);
+        print STDERR "do_remote_trace:  hop:  $hops[0]\n";
+        # id is 0 if not an edge router (not in interfaces table)
+        ($interface_id, $error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($hops[0]);
         if ( $interface_id == 0 ) {
+            # strip trailing ','
+            $path =~ s/,$//;
             $self->{'output_buf'} .= "do_remote_trace:  edge router is $prev_ipaddr\n";
-            return ($prev_id, "");
+            print STDERR "do_remote_trace:  edge router is $prev_ipaddr\n";
+            return ($prev_id, $path, "");
         }
+
+        # add to the path
+        $path = $interface_id . ',' . $path;
         $prev_id = $interface_id;
         $prev_ipaddr = $hops[0];
         shift(@hops);
     }
 
     # if we didn't find it
-    return (0, "do_remote_trace:  Couldn't trace route to $host");
+    return (0, $path, "do_remote_trace:  Couldn't trace route to $src");
 }
-
 
 ################################
 ### do local trace
@@ -237,6 +250,7 @@ sub do_local_trace {
 
     $hops = $tr->hops;
     $self->{'output_buf'} .= "do_local_trace:  hops = $hops\n";
+    print STDERR "do_local_trace:  hops = $hops\n";
 
     # if we didn't hop much, mabe the same router?
     if ($hops < 2 ) { return (0, "do_local_trace:  same router?"); }
@@ -247,6 +261,7 @@ sub do_local_trace {
         ($interface_id, $error) = $self->{'frontend'}->{'dbconn'}->ip_to_xface_id($ipaddr);
         if (($interface_id != 0) && (!$error)) {
             $self->{'output_buf'} .= "do_local_trace:  edge router is $ipaddr\n";
+            print STDERR "do_local_trace:  edge router is $ipaddr\n";
             return ($interface_id, "");
         } 
         if ($error) { return (0, $error); }
@@ -261,21 +276,23 @@ sub do_local_trace {
 ### find edge routers validate both
 ### ends
 ### IN: src and dst hosts
-### OUT: ids of interfaces of 
-### both edge routers
+### OUT: ids of interfaces of the edge routers, 
+### path list (router indexes), and error msg
 ### XXX: validate input
 ################################
 
 sub find_interface_ids {
-    my ($self, $src, $dst) = @_;
+    my ($self, $src, $dst, $path) = @_;
 
-    my( $ingress_interface_id, $egress_interface_id, $err_msg);
+    my( $ingress_interface_id, $egress_interface_id, $path, $err_msg, $start_router);
 
-    ($ingress_interface_id, $err_msg) = $self->do_remote_trace($src);
+    # find the router closest to the src
+    ($ingress_interface_id, $path, $err_msg) = $self->do_remote_trace($self->{'configs'}{'jnx_source'}, $src);
     if ($err_msg) { return ( 0, 0, $err_msg); }
-   
+  
+    # now use the default router to run the traceroute to the dst, and find the egress
     if ( $self->{'configs'}{'run_traceroute'} )  {
-        ($egress_interface_id, $err_msg) = $self->do_remote_trace($dst);
+        ($egress_interface_id, $path, $err_msg) = $self->do_remote_trace($self->{'configs'}{'jnx_source'}, $dst);
         if ($err_msg) { return (0, 0, $err_msg); }
     } else {
         ($ingress_interface_id, $err_msg) = $self->do_local_trace($src);
@@ -284,9 +301,10 @@ sub find_interface_ids {
 
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0))
     {
-        return( 0, 0, "Unable to find route." );
+        return( 0, 0, 0, "Unable to find route." );
     }
-	return ($ingress_interface_id, $egress_interface_id, ""); 
+	##return ($ingress_interface_id, $egress_interface_id, ""); 
+	return ($ingress_interface_id, $egress_interface_id, $path, ""); 
 }
 
 ### last line of a module
