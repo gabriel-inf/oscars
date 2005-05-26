@@ -171,10 +171,6 @@ sub setup_pss {
 
     my (%lspInfo) = @_;   
 
-        # fill in remaining fields
-    $lspInfo{'protocol'} = 'udp';
-    $lspInfo{'source-port'} = '5000';
-
     print STDERR "execing pss to schedule reservations\n";
 
     if ($fakeit == 0 ) {
@@ -266,7 +262,6 @@ sub map_fields
       'policer_burst-size-limit' =>  $data->{'reservation_burst_limit'},
       'source-address' => $src_hostaddrs_ip,
       'destination-address' => $dst_hostaddrs_ip,
-      'dscp' => $data->{'reservation_dscp'}
     );
     return ( %results );
 }
