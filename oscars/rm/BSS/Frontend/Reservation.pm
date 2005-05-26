@@ -1,11 +1,13 @@
 package BSS::Frontend::Reservation;
 
 # Reservation.pm:
-# Last modified: May 9, 2005
+# Last modified: May 25, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
+
+use DateTime;
 
 use BSS::Frontend::Database;
 
@@ -111,6 +113,14 @@ sub insert_reservation
         $results{'id'} = $self->{'dbconn'}->{'dbh'}->{'mysql_insertid'};
     }
     $sth->finish();
+
+        # insert reservation_tag field
+    my $time_tag = get_time_str($inref->{'reservation_start_time'});
+    $results{'reservation_tag'} = $inref->{'user_dn'} . '.' . $time_tag . "-" . $results{'id'};
+    $query = "UPDATE reservations SET reservation_tag = ?";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'reservation_tag'});
+    if ( $results{'error_msg'} ) { return( 1, %results ); }
+
     $results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $results{'id'} . '.';
     return( 0, %results );
 }
@@ -165,7 +175,7 @@ sub get_reservations
 
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
-    $rref = $sth->fetchall_arrayref({user_dn => 1, reservation_start_time => 2, reservation_end_time => 3, reservation_status => 4, src_hostaddrs_id => 5, dst_hostaddrs_id => 6, reservation_id => 7 });
+    $rref = $sth->fetchall_arrayref({user_dn => 1, reservation_start_time => 2, reservation_end_time => 3, reservation_status => 4, src_hostaddrs_id => 5, dst_hostaddrs_id => 6, reservation_id => 7, reservation_tag => 8 });
     $sth->finish();
 
     $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
@@ -332,5 +342,36 @@ sub check_connection
     if (!$self->{'dbconn'}->{'dbh'}) { return( "Unable to make database connection"); }
     return "";
 }
+
+sub get_time_str 
+{
+    my( $epoch_seconds ) = @_;
+
+    my $dt = DateTime->from_epoch( epoch => $epoch_seconds );
+    my $year = $dt->year();
+    if ($year < 10) {
+        $year = "0" . $year;
+    }
+    my $month = $dt->month();
+    if ($month < 10) {
+        $month = "0" . $month;
+    }
+    my $day = $dt->day();
+    if ($day < 10) {
+        $day = "0" . $day;
+    }
+    my $hour = $dt->hour();
+    if ($hour < 10) {
+        $hour = "0" . $hour;
+    }
+    my $minute = $dt->minute();
+    if ($minute < 10) {
+        $minute = "0" . $minute;
+    }
+    my $time_tag = $year . $month . $day;
+
+    return( $time_tag );
+}
+
 
 1;
