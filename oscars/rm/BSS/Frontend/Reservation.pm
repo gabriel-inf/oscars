@@ -117,8 +117,8 @@ sub insert_reservation
         # insert reservation_tag field
     my $time_tag = get_time_str($inref->{'reservation_start_time'});
     $results{'reservation_tag'} = $inref->{'user_dn'} . '.' . $time_tag . "-" . $results{'id'};
-    $query = "UPDATE reservations SET reservation_tag = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'reservation_tag'});
+    $query = "UPDATE reservations SET reservation_tag = ? WHERE reservation_id = ?";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'reservation_tag'}, $results{'id'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     $results{'status_msg'} = 'Your reservation has been processed successfully. Your reservation ID number is ' . $results{'id'} . '.';
