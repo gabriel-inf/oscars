@@ -174,6 +174,14 @@ function print_admin_bar(activePage)
     {
         document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/reservationlist.pl" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
     }
+    if (activePage == 'reservation')
+    {
+        document.write('<li><a href="https://oscars.es.net/user/create_reservation.html" class="active" title="Create a new reservation">Make a Reservation</a></li>');
+    }
+    else
+    {
+        document.write('<li><a href="https://oscars.es.net/user/create_reservation.html" title="Create a new reservation">Make a Reservation</a></li>');
+    }
     document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
     document.write("</div>");
