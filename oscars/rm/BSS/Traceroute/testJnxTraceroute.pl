@@ -47,8 +47,8 @@ else {
 print("Traceroute: $src -> $dst\n");
 
 # Run traceroute.
-$_jnxTraceroute->traceroute($src, $dst);
-if ($_error = $_jnxTraceroute->get_error())  {
+$_error = $_jnxTraceroute->traceroute($src, $dst);
+if ($_error)  {
   die($_error);
 }
 
