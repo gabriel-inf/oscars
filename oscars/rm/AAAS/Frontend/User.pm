@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with user forms.
-# Last modified: May 24, 2005
+# Last modified: May 25, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -13,7 +13,7 @@ use AAAS::Frontend::Database;
 use Data::Dumper;
 
 
-######################################################################
+###############################################################################
 sub new {
     my ($_class, %_args) = @_;
     my ($_self) = {%_args};
@@ -27,35 +27,38 @@ sub new {
     return($_self);
 }
 
-######################################################################
+###############################################################################
 sub initialize {
     my ($self) = @_;
-    $self->{'dbconn'} = AAAS::Frontend::Database->new('configs' => $self->{'configs'})
-            or die "FATAL:  could not connect to database";
+    $self->{'dbconn'} = AAAS::Frontend::Database->new(
+                           'configs' => $self->{'configs'})
+                        or die "FATAL:  could not connect to database";
     $self->{'inactive_user'} = 0;
     $self->{'admin_user'} = 10;
 }
-######################################################################
+
 
 ## Methods called by user forms.
 
-##### method verify_login
-# In: reference to hash of parameters
-# Out: status code, status message
+###############################################################################
+## verify_login
+## In: reference to hash of parameters
+## Out: status code, status message
 sub verify_login
 {
     my( $self, $inref ) = @_;
     my( $query, $sth, %results );
 
-        # at present, multiple users may share a connection; access level needs to be checked on each
-        # method call
+    # At present, multiple users may share a connection; access level needs
+    # to be checked on each method call.
     $results{'error_msg'} = $self->{'dbconn'}->check_connection($inref);
     if ($results{'error_msg'}) { return( 1, %results); }
 
-        # Get the password and privilege level from the database, making sure user
-        # exists.
+    # Get the password and privilege level from the database, making sure user
+    # exists.
     $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                          $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
     if (!$sth->rows) {
         $sth->finish();
@@ -68,11 +71,14 @@ sub verify_login
     my $ref = $sth->fetchrow_arrayref;
         # see if user has been activated
     if ( $$ref[1] eq $self->{'inactive_user'} ) {
-        $results{'error_msg'} = 'This account is not authorized or activated yet.';
+        $results{'error_msg'} = "This account is not authorized or " .
+                                " activated yet.";
     }
         # if request is from admin login, make sure has admin privileges
-    elsif ( $inref->{'admin_required'} and ($$ref[1] ne $self->{'admin_user'}) ) {
-        $results{'error_msg'} = 'This account does not have administrative privileges.';
+    elsif ( $inref->{'admin_required'} and
+            ($$ref[1] ne $self->{'admin_user'}) ) {
+        $results{'error_msg'} = "This account does not have " .
+                                "administrative privileges.";
     }
         # compare passwords
     elsif ( $$ref[0] ne $encoded_password ) {
@@ -89,6 +95,7 @@ sub verify_login
 }
 
 
+###############################################################################
 sub logout
 {
     my( $self ) = @_;
@@ -109,9 +116,10 @@ sub logout
 }
 
 
-##### method get_profile
-# In: reference to hash of parameters
-# Out: status code, status message
+###############################################################################
+## get_profile
+## In: reference to hash of parameters
+## Out: status code, status message
 sub get_profile
 {
     my( $self, $inref, $fields_to_read ) = @_;
@@ -130,7 +138,8 @@ sub get_profile
     $query =~ s/,\s$//;
     $query .= " FROM users WHERE user_dn = ?";
 
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                         $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this person is a registered user
@@ -146,8 +155,10 @@ sub get_profile
     $sth->fetch();
     $sth->finish();
 
-    $query = "SELECT institution_name FROM institutions WHERE institution_id = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'institution_id'});
+    $query = "SELECT institution_name FROM institutions
+              WHERE institution_id = ?";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                   $results{'institution_id'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this organization is in the db
@@ -161,8 +172,10 @@ sub get_profile
     $results{'institution'} = $data[0];
     $sth->finish();
 
-    $query = "SELECT user_level_description FROM user_levels WHERE user_level_enum = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $results{'user_level'});
+    $query = "SELECT user_level_description FROM user_levels
+              WHERE user_level_enum = ?";
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                      $results{'user_level'});
 
     @data = $sth->fetchrow_array();
     $results{'level_description'} = $data[0];
@@ -176,10 +189,10 @@ sub get_profile
     return ( 0, %results );
 }
 
-
-##### method set_profile
-# In: reference to hash of parameters
-# Out: status code, status message
+###############################################################################
+## set_profile
+## In: reference to hash of parameters
+## Out: status code, status message
 sub set_profile
 {
     my ( $self, $inref, $fields_to_read ) = @_;
@@ -202,12 +215,14 @@ sub set_profile
     $query =~ s/,\s$//;
     $query .= " FROM users WHERE user_dn = ?";
 
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                          $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this person is a registered user
     if (!$sth->rows) {
-        $results{'error_msg'} = "The user $inref->{'user_dn'} is not registered.";
+        $results{'error_msg'} = "The user $inref->{'user_dn'} is not " .
+                                "registered.";
         $sth->finish();
         return (1, %results);
     }
@@ -217,7 +232,10 @@ sub set_profile
     $current_info = $sth->fetchrow_hashref;
     foreach $read_only_level ( @read_only_user_levels ) {
         if ( $current_info->{'user_level'} eq $read_only_level ) {
-            $results{'error_msg'} = "Your user level ($current_info->{'user_level'}) has a read-only privilege and you cannot make changes to the database. Please contact the system administrator for any inquiries.";
+            $results{'error_msg'} = "Your user level " .
+                "($current_info->{'user_level'}) has a read-only privilege " .
+                "and you cannot make changes to the database. Please " .
+                "contact the system administrator for any inquiries.";
             $sth->finish();
             return ( 1, %results );
         }
@@ -225,8 +243,10 @@ sub set_profile
 
     ### Check the current password with the one in the database before
     ### proceeding.
-    if ( $current_info->{'user_password'} ne crypt($inref->{'user_password'},'oscars') ) {
-        $results{'error_msg'} = 'Please check the current password and try again.';
+    if ( $current_info->{'user_password'} ne
+             crypt($inref->{'user_password'},'oscars') ) {
+        $results{'error_msg'} = "Please check the current password and " .
+                                "try again.";
         $sth->finish();
         return( 1, %results);
     }
@@ -237,7 +257,8 @@ sub set_profile
     # If the password needs to be updated, set the input password field to
     # the new one.
     if ( $inref->{'password_new_once'} ) {
-        $inref->{'user_password'} = crypt($inref->{'password_new_once'}, 'oscars');
+        $inref->{'user_password'} = crypt(
+                                      $inref->{'password_new_once'}, 'oscars');
         $do_update = 1;
     }
     else {
@@ -248,11 +269,14 @@ sub set_profile
     # If so, set the institution id to the primary key in the institutions
     # table.
     if ( $inref->{'institution'} ) {
-        $query = "SELECT institution_id FROM institutions WHERE institution_name = ?";
-        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'institution'});
+        $query = "SELECT institution_id FROM institutions
+                  WHERE institution_name = ?";
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                      $inref->{'institution'});
         if ( $results{'error_msg'} ) { return( 1, %results ); }
         if (!$sth->rows) {
-            $results{'error_msg'} = "The organization $inref->{'institution'} is not in the database.";
+            $results{'error_msg'} = "The organization " .
+                            "$inref->{'institution'} is not in the database.";
             $sth->finish();
             return (1, %results);
         }
@@ -287,20 +311,21 @@ sub set_profile
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
 
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                          $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     $sth->finish();
-    $results{'status_msg'} = "The account information for user $inref->{'user_dn'} has been updated successfully.";
+    $results{'status_msg'} = "The account information for user " .
+                          "$inref->{'user_dn'} has been updated successfully.";
     return( 0, %results );
 }
 
 
-# activateaccount:  Account Activation DB methods
-
-##### method activate_account
-# In: reference to hash of parameters
-# Out: status code, status message
+###############################################################################
+## activate_account
+## In: reference to hash of parameters
+## Out: status code, status message
 sub activate_account
 {
     my( $self, $inref ) = @_;
@@ -311,9 +336,11 @@ sub activate_account
     if ($results{'error_msg'}) { return( 1, %results); }
 
     # get the password from the database
-    $query = "SELECT user_password, user_activation_key, user_level FROM users WHERE user_dn = ?";
+    $query = "SELECT user_password, user_activation_key, user_level
+              FROM users WHERE user_dn = ?";
 
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                          $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     # check whether this person is a registered user
@@ -334,7 +361,8 @@ sub activate_account
             $non_match_error = 'Please check your password and try again.';
         }
         elsif ( $$ref[1] ne $inref->{'user_activation_key'} ) {
-            $non_match_error = 'Please check the activation key and try again.';
+            $non_match_error = "Please check the activation key and " .
+                               "try again.";
         }
         else {
             $keys_match = 1;
@@ -348,8 +376,10 @@ sub activate_account
     if ( $keys_match ) {
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
-        $query = "UPDATE users SET user_level = ?, pending_level = ?, user_activation_key = '' WHERE user_dn = ?";
-        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $pending_level, $inref->{'user_dn'});
+        $query = "UPDATE users SET user_level = ?, pending_level = ?,
+                  user_activation_key = '' WHERE user_dn = ?";
+        ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                          $pending_level, $inref->{'user_dn'});
         if ( $results{'error_msg'} ) { return( 1, %results ); }
     }
     else {
@@ -358,14 +388,18 @@ sub activate_account
         return( 1, %results );
     }
     $sth->finish();
-    results{'status_msg'} = 'The user account <strong>' . $inref->{'user_dn'} . '</strong> has been successfully activated. You will be redirected to the main service login page in 10 seconds.<br>Please change the password to your own once you sign in.';
+    results{'status_msg'} = "The user account <strong>" .
+       "$inref->{'user_dn'}</strong> has been successfully activated. You " .
+       "will be redirected to the main service login page in 10 seconds. " .
+       "<br>Please change the password to your own once you sign in.";
     return( 0, %results );
 }
 
 
-##### method process_registration
-# In:  reference to hash of parameters
-# Out: status message
+###############################################################################
+## process_registration
+## In:  reference to hash of parameters
+## Out: status message
 sub process_registration
 {
     my( $self, $inref, @insertions ) = @_;
@@ -382,40 +416,49 @@ sub process_registration
 	
     # login name overlap check
     $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, $inref->{'user_dn'});
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                          $inref->{'user_dn'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
     if ( $sth->rows > 0 ) {
         $sth->finish();
-        results{'error_msg'} = 'The selected login name is already taken by someone else; please choose a different login name.';
+        results{'error_msg'} = "The selected login name is already taken " .
+                   "by someone else; please choose a different login name.";
         return( 1, %results );
     }
 
     $sth->finish();
 
-    $query = "INSERT INTO users VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+    $query = "INSERT INTO users VALUES ( " .
+                              "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query, @insertions);
+    ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query,
+                                                                  @insertions);
     if ( $results{'error_msg'} ) { return( 1, %results ); }
     $sth->finish();
 
-    $results{'status_msg'} = 'Your user registration has been recorded successfully. Your login name is <strong>' . $inref->{'user_dn'} . '</strong>. Once your registration is accepted, information on activating your account will be sent to your primary email address.';
+    $results{'status_msg'} = "Your user registration has been recorded " .
+        "successfully. Your login name is <strong>$inref->{'user_dn'}" .
+        "</strong>. Once your registration is accepted, information on " .
+        "activating your account will be sent to your primary email address.";
     return( 0, %results );
 }
 
 ## Called by Admin tool
 
-##### method get_userlist
-# In:  inref
-# Out: status message and DB results
+###############################################################################
+## get_userlist
+## In:  inref
+## Out: status message and DB results
 sub get_userlist
 {
     my( $self, $inref, $fields_to_read ) = @_;
     my( $sth, $error_status, $query );
     my( %mapping, %results, $r, $arrayref, $rref );
 
-    if (!($self->{'dbconn'}->{'dbh'})) { return( 1, "Database connection not valid\n"); }
-
+    if (!($self->{'dbconn'}->{'dbh'})) {
+        return( 1, "Database connection not valid\n");
+    }
     $query = "SELECT ";
     foreach $_ ( @$fields_to_read ) {
         $query .= $_ . ", ";
@@ -426,7 +469,12 @@ sub get_userlist
     ($sth, $results{'error_msg'}) = $self->{'dbconn'}->do_query($query);
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
-    $rref = $sth->fetchall_arrayref({user_last_name => 1, user_first_name => 2, user_dn => 3, user_email_primary => 4, user_level => 5, institution_id => 6 });
+    $rref = $sth->fetchall_arrayref({user_last_name => 1,
+        user_first_name => 2,
+        user_dn => 3,
+        user_email_primary => 4,
+        user_level => 5,
+        institution_id => 6 });
     $sth->finish();
 
         # replace institution id with institution name
