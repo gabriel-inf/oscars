@@ -52,7 +52,6 @@ CREATE TABLE IF NOT EXISTS reservations (
     reservation_start_time INT(9) NOT NULL,
     reservation_end_time INT(9) NOT NULL,
     reservation_created_time INT(9) NOT NULL,
-    -- required for PSS module
     reservation_bandwidth VARCHAR(20) NOT NULL,
     reservation_class   VARCHAR(20) NOT NULL,
     reservation_burst_limit VARCHAR(20) NOT NULL,
@@ -66,6 +65,9 @@ CREATE TABLE IF NOT EXISTS reservations (
     reservation_ingress_port INT(5),
     reservation_egress_port INT(5),
     -- more optional stuff
+    -- human readable identifier
+    reservation_tag VARCHAR(40),
+    reservation_path VARCHAR(80),
     reservation_dscp VARCHAR(8),
     reservation_description VARCHAR(30),
     PRIMARY KEY (reservation_id)
