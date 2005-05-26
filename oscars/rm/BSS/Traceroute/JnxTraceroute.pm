@@ -70,36 +70,18 @@ sub new
 #####
 sub traceroute
 {
-  my ($_self, $_addr1, $_addr2) = @_;
-  my ($_source, $_destination);
-  my ($_hopInfo, $_hopCount);
+  my ($_self, $_src, $_dst) = @_;
+  my ($_hopInfo, $_hopCount, $_cmd);
 
-  # Clear error message.
-  $_self->{'jnxConf'}->{'errMsg'} = 0;
-
-  # If only _addr1 is defined, then
-  #   _source = $_self{"source"}, _destination = _addr1.
-  # If both _addr1 AND _addr2 are defined, then
-  #   _source = $_addr1, _destination = _addr2
-  if (defined($_addr1))  {
-    if (defined($_addr2))  {
-      $_source = $_addr1;
-      $_destination = $_addr2;
-    }
-    else  {
-      $_source = $_self->{'jnxConf'}->{'jnx_source'};
-      $_destination = $_addr1;
-    }
-  }
-  else  {
-    $_self->{'jnxConf'}->{'errMsg'} = "ERROR: Traceroute destination not defined\n";
-    return();
+  if ( !defined($_src) || !defined($_dst) )  {
+    return "ERROR: Traceroute source or destination not defined\n";
   }
 
   # Perform the traceroute.
-  if (not(open(_TRACEROUTE_, "ssh -v -x -a -i $_self->{'jnxConf'}->{'jnx_key'} -l $_self->{'jnxConf'}->{'jnx_user'} $_source traceroute $_destination 2>/dev/null |")))  {
-    $_self->{'jnxConf'}->{'errMsg'} = "ERROR: Unable to ssh into router and perform traceroute\n";
-    return();
+  $_cmd = "ssh -x -a -i $_self->{'jnxConf'}->{'jnx_key'} -l $_self->{'jnxConf'}->{'jnx_user'} $_src traceroute $_dst";
+  print STDERR "$_cmd\n";
+  if (not(open(_TRACEROUTE_, "$_cmd 2>/dev/null |")))  {
+    return "ERROR: Unable to ssh into router and perform traceroute\n";
   }
 
   # Reset hop information.
@@ -119,7 +101,7 @@ sub traceroute
 
     $_hopCount++;
   }
-  return();
+  return "";
 }
 
 #####
@@ -158,23 +140,6 @@ sub get_hops
 
 #####
 #
-# Method: get_error
-# Description:
-#   Return the error message (0 if none).
-# Input: <none>
-# Output: Error message
-#
-#####
-sub get_error
-{
-  my ($_self) = @_;
-
-  return($_self->{'jnxConf'}->{'errMsg'});
-}
-
-
-#####
-#
 # Private methods
 #
 #####
@@ -193,14 +158,6 @@ sub initialize
   my ($_self) = @_;
 
   $_self->{'jnxConf'} = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
-
-  # Clear error message.
-  $_self->{'jnxConf'}->{'errMsg'} = 0;
-
-  # default router to traceroute from
-  $_self->{'defaultrouter'} = $_self->{'jnxConf'}->{'jnx_source'};
-
-  return();
 }
 
 1;
