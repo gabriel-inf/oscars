@@ -69,7 +69,7 @@ sub start_scheduler {
 sub scheduler {
 
     print STDERR "Scheduler running\n";
-    my ($front_end, $result, $error_msg);
+    my ($front_end, $error_msg);
 
     $front_end = BSS::Frontend::Reservation->new('configs' => $configs);
 
@@ -106,7 +106,7 @@ sub find_new_reservations {
 
     my ($front_end) = @_;
 
-    my ($timeslot, $resv, $result);
+    my ($timeslot, $resv, $status, $router_config);
     my ($error_msg);
     my $cur_time = localtime();
 
@@ -125,10 +125,10 @@ sub find_new_reservations {
     foreach my $r (@$resv) {
         ## calls to pss to setup reservations
         my %lsp_info = map_fields($front_end, $r);
-        $result = setup_pss(%lsp_info);
-
+        ($status, $router_config) = setup_pss(%lsp_info);
+        update_log($r, $status, $router_config);
         if ($configs->{'debug'}) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $result, $configs->{'ACTIVE'}, $front_end);
+        update_reservation( $r, $status, $configs->{'ACTIVE'}, $front_end);
     }
     return "";
 }
@@ -143,7 +143,7 @@ sub find_expired_reservations {
     my ($front_end) = @_;
 
     my $cur_time = localtime();
-    my ($timeslot, $resv, $result, $error_msg);
+    my ($timeslot, $resv, $status, $error_msg, $router_config);
 
     # configurable
     $timeslot = time() + $configs->{reservation_time_interval};
@@ -155,10 +155,11 @@ sub find_expired_reservations {
        
     foreach my $r (@$resv) {
         my %lsp_info = map_fields($front_end, $r);
-        $result = teardown_pss(%lsp_info, $front_end);
+        ($status, $router_config) = teardown_pss(%lsp_info, $front_end);
+        update_log($r, $status, $router_config);
 
         if ($configs->{'debug'}) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $result, $configs->{'FINISHED'}, $front_end);
+        update_reservation( $r, $status, $configs->{'FINISHED'}, $front_end);
     }
     return "";
 }
@@ -170,6 +171,7 @@ sub find_expired_reservations {
 sub setup_pss {
 
     my (%lspInfo) = @_;   
+    my ($_error, $status, $router_config);
 
     print STDERR "execing pss to schedule reservations\n";
 
@@ -178,15 +180,14 @@ sub setup_pss {
         my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%lspInfo);
 
         print STDERR "Setting up LSP...\n";
-        $_jnxLsp->configure_lsp(_LSP_SETUP);
+        $router_config = $_jnxLsp->configure_lsp(_LSP_SETUP);
         if ($_error = $_jnxLsp->get_error())  {
-            print STDERR '** ', $_error;
-            return 0;
+            return( $_error, $router_config );
             #die($_error);
         }
     }
     print STDERR "LSP setup complete\n" ;
-    return 1;
+    return( "", $router_config );
 }
 
 ######################################################################
@@ -197,24 +198,20 @@ sub setup_pss {
 sub teardown_pss {
 
     my (%lspInfo) = @_;
-
-        # fill in remaining fields
-    $lspInfo{'protocol'} = 'udp';
-    $lspInfo{'source-port'} = '5000';
+    my ($router_config, $_error);
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
         my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%lspInfo);
 
         print STDERR "Tearing down LSP...\n" ;
-        $_jnxLsp->configure_lsp(_LSP_TEARDOWN); 
+        $router_config = $_jnxLsp->configure_lsp(_LSP_TEARDOWN); 
         if ($_error = $_jnxLsp->get_error())  {
-            print STDERR "** ", $_error;
-            return 0;
+            return( $_error, $router_config );
         }
     }
     print STDERR "LSP teardown complete\n" ;
-    return 1;
+    return ("", $router_config);
 }
 
 
@@ -226,9 +223,9 @@ sub teardown_pss {
 
 sub update_reservation {
 
-    my ($resv, $result, $status, $front_end) = @_;
+    my ($resv, $error_msg, $status, $front_end) = @_;
 
-    if ( $result == 1 ) {
+    if ( !$error_msg ) {
         print STDERR "Changing status to $status\n";
         $front_end->update_reservation($resv, $status)
     } else {
@@ -264,6 +261,19 @@ sub map_fields
       'destination-address' => $dst_hostaddrs_ip,
     );
     return ( %results );
+}
+
+
+sub update_log {
+    my( $r, $status, $router_config);
+
+    $r->{'reservation_tag'} =~ s/@/../;
+    open (LOGFILE, ">>$ENV{'OSCARS_HOME'}/logs/$r->{'reservation_tag'}.log") || die "Can't open log file.\n";
+    if ($status) {
+        print LOGFILE $status;
+    }
+    print LOGFILE $router_config;
+    close(LOGFILE);
 }
 
 
