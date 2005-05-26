@@ -100,6 +100,8 @@ sub logout
   
     $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
     $session->clear(["user_dn"]);
+    $session->clear(["user_level"]);
+    $session->clear(["admin_required"]);
 }
 
 
