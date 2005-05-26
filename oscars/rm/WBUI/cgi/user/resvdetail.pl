@@ -64,21 +64,20 @@ sub print_reservation_detail
 
     print "<div id=\"zebratable_ui\">\n\n";
 
-    print "<p><em>View Reservation</em><br>\n";
-    print "</p>\n\n";
+    print "<p><em>View Reservation</em><br/></p>\n\n";
 
     print "<table cellspacing=\"0\" width=\"90%\" id=\"reservationlist\">\n";
 
     print "  <tr><td>Tag:  </td><td>$results->{'reservation_tag'}</td></tr>\n"; 
 
     $time_field = get_time_str($results->{'reservation_start_time'});
-    print "  <tr><td>Start Time:  </td><td>$time_field</td></tr>\n";
+    print "  <tr><td>Start Time:  </td><td>$time_field (UTC)</td></tr>\n";
 
     $time_field = get_time_str($results->{'reservation_end_time'});
-    print "  <tr> ><td>End Time:  </td><td>$time_field</td></tr>\n";
+    print "  <tr> ><td>End Time:  </td><td>$time_field (UTC)</td></tr>\n";
 
     $time_field = get_time_str($results->{'reservation_created_time'});
-    print "  <tr> ><td>Created Time:  </td><td>$time_field</td></tr>\n";
+    print "  <tr> ><td>Created Time:  </td><td>$time_field (UTC)</td></tr>\n";
     print "  <tr> ><td>Bandwidth:  </td><td>$results->{'reservation_bandwidth'}</td></tr>\n";
     print "  <tr> ><td>Burst Limit:  </td><td>$results->{'reservation_burst_limit'}</td></tr>\n";
     print "  <tr> ><td>Status:  </td><td>$results->{'reservation_status'}</td></tr>\n";
