@@ -26,8 +26,10 @@ if ($form_params{'user_dn'}) {
         $form_params{$_} = $cgi->param($_);
     }
     if ($form_params{'id'}) {
+        $form_params{'admin_dn'} = $form_params{'user_dn'};
         $form_params{'user_dn'} = $form_params{'id'};
     }
+    #print STDERR Dumper(%form_params);
     if ($form_params{'set'}) {
         ($error_status, %results) = soap_set_profile(\%form_params, \@fields_to_read);
     }

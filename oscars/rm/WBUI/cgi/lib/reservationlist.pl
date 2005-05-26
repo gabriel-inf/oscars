@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # reservationlist.pl:  Main service: Reservation List
-# Last modified: May 19, 2005
+# Last modified: May 25, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -13,7 +13,7 @@ require 'general.pl';
 
 
     # names of the fields to be read
-my @fields_to_read = ( 'reservation_id', 'user_dn', 'reservation_start_time', 'reservation_end_time', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id' );
+my @fields_to_read = ( 'reservation_id', 'user_dn', 'reservation_start_time', 'reservation_end_time', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'reservation_tag' );
 
 my (%form_params, %results);
 
@@ -122,22 +122,15 @@ sub print_reservations
 sub print_row
 {
     my( $row, $admin_view ) = @_;
-    my( $tag, $seconds, $time_field, $time_tag, $ip );
+    my( $seconds, $ip );
 
-
-    ($time_tag, $time_field) = get_time_str($row->{'reservation_start_time'});
-    # ESnet hard wired for now in tag
-    # TODO:  incremental ID at end if multiple ones in same minute
-    $tag = 'OSCARS.' . $row->{'user_dn'} . '.' . $time_tag . '-' . $row->{'reservation_id'};
-    print '    <td><a href="https://oscars.es.net/cgi-bin/user/resvdetail.pl?reservation_id=' . $row->{reservation_id} . '">' . $tag . '</a></td>' . "\n"; 
+    print '    <td><a href="https://oscars.es.net/cgi-bin/user/resvdetail.pl?reservation_id=' . $row->{reservation_id} . '">' . $row->{'reservation_tag'} . '</a></td>' . "\n"; 
   
     if ($admin_view) {
         print "    <td>" . $row->{'user_dn'} . "</td>\n";
     }
-    print "    <td>" . $time_field . "</td>\n";
-
-    ($time_tag, $time_field) = get_time_str($row->{'reservation_end_time'});
-    print "    <td>" . $time_field . "</td>\n";
+    print "    <td>" . get_time_str($row->{'reservation_start_time'}) . "</td>\n";
+    print "    <td>" . get_time_str($row->{'reservation_end_time'}) . "</td>\n";
     print "    <td>" . $row->{'reservation_status'} . "</td>\n";
 
     $ip = get_oscars_host($row->{'src_hostaddrs_id'});
