@@ -89,7 +89,6 @@ sub verify_login
 
     $results{'user_level'} = $$ref[1];
     $results{'status_msg'} = 'The user has successfully logged in.';
-    $self->{'dbconn'}->{'dbh'} = undef;
     # The first value is unused, but I can't get SOAP to send a correct
     # reply without it so far.
     return( 0, %results );
