@@ -62,14 +62,23 @@ sub create_reservation {
     my ( $error_status, %results );
 
     $self->{'output_buf'} = "*********************\n";
-    ($inref->{'ingress_interface_id'}, $inref->{'egress_interface_id'}, $inref->{'path_list'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_hostaddrs_ip'}, $inref->{'dst_hostaddrs_ip'});
+    ($inref->{'ingress_interface_id'}, $inref->{'egress_interface_id'}, $inref->{'reservation_path'}, $results{'error_msg'}) = $self->find_interface_ids($inref->{'src_hostaddrs_ip'}, $inref->{'dst_hostaddrs_ip'});
 
     if ($results{'error_msg'}) { return ( 1, %results ); }
 
     ( $error_status, %results ) = $self->{'frontend'}->insert_reservation( $inref );
-    $results{'reservation_tag'} =~ s/@/../;
+    if (!$results{'error_msg'}) {
+        $results{'reservation_tag'} =~ s/@/../;
+    }
+    else {
+        $results{'reservation_tag'} = "fatal_reservation_errors";
+    }
     open (LOGFILE, ">$ENV{'OSCARS_HOME'}/logs/$results{'reservation_tag'}") || die "Can't open log file.\n";
+    print LOGFILE "********************\n";
     print LOGFILE $self->{'output_buf'};
+    if ($results{'error_msg'}) {
+        print LOGFILE $results{'error_msg'}, "\n";
+    }
     close(LOGFILE);
     return ( $error_status, %results );
 }

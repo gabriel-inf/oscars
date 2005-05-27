@@ -51,7 +51,7 @@ sub initialize {
 sub insert_reservation
 {
     my( $self, $inref ) = @_;
-    my( $query, $sth );
+    my( $query, $sth, $arrayref );
     my( %results );
 
     $results{'error_msg'} = $self->check_connection();
@@ -63,8 +63,11 @@ sub insert_reservation
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
     $query = "SELECT reservation_bandwidth, reservation_start_time,
-              reservation_end_time FROM reservations
-              WHERE reservation_end_time >= ? AND reservation_start_time <= ?";
+              reservation_end_time, reservation_path FROM reservations
+              WHERE reservation_end_time >= ? AND
+                  reservation_start_time <= ? AND
+                  (reservation_status = 'pending' OR
+                   reservation_status = 'active')";
 
     # only holds a time if reservation successful
     $inref->{'reservation_created_time'} = '';
@@ -74,20 +77,13 @@ sub insert_reservation
         $query, $inref->{'reservation_start_time'},
         $inref->{'reservation_end_time'});
     if ( $results{'error_msg'} ) { return( 1, %results ); }
-
-    # TODO:  find segments of overlap, determine if bandwidth in any is
-    #        over the limit; return time segments if error
+    $arrayref = $sth->fetchall_arrayref({});
 
     # If no segment is over the limit,  record the reservation to the database.
     # otherwise, return error message (TODO) with the times involved.
-
-    #$results{'id'} unless ( $over_limit );
-    if ( $over_limit ) {
+    ($over_limit, $results{'error_msg'}) = $self->check_oversubscribe($arrayref, $inref);
+    if ( $over_limit || $results{'error_msg'} ) {
         $sth->finish();
-        # TODO:  list of times
-        results{'error_msg'} = "[ERROR] The available bandwidth limit on " .
-            "the network has been reached between .  " .
-            "Please modify your reservation request and try again.";
         return( 1, %results );
     }
     else {
@@ -197,14 +193,7 @@ sub get_reservations
 
     if ( $results{'error_msg'} ) { return( 1, %results ); }
 
-    $rref = $sth->fetchall_arrayref({user_dn => 1,
-                reservation_start_time => 2,
-                reservation_end_time => 3,
-                reservation_status => 4,
-                src_hostaddrs_id => 5,
-                dst_hostaddrs_id => 6,
-                reservation_id => 7,
-                reservation_tag => 8 });
+    $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
     $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
@@ -365,6 +354,101 @@ sub update_reservation {
 }
 
 
+############################################################
+# Convert a string in the form of '100K' to 100000
+############################################################
+
+sub to_bytes {
+    my ($self, $bytes) = @_;
+    my ($mult);
+
+    if ( $bytes =~ /(\d+)(K)/i ) {
+        $mult = 1000;
+    }
+    elsif ($bytes =~ /(\d+)(M)/i )  {
+        $mult = 1000000;
+    }
+    elsif ( $bytes =~ /(\d+)(G)/i )  { 
+        $mult = 1000000000;
+    } else {
+        $mult = 1;
+    }   
+    return ($bytes * $mult)
+}
+############################################################
+# Get the bandwithd of a router interface
+# IN: router interface idx
+# OUT: interface row
+############################################################
+sub get_interface_fields {
+
+    my( $self, $iface_id) = @_;
+    my( $results, $error_msg, $query, $sth);
+
+    $query = "SELECT * FROM interfaces WHERE interface_id = ?";
+    ($sth, $error_msg) = $self->{'dbconn'}->do_query($query, $iface_id);
+    if ($error_msg) { return ( undef, $error_msg ); }
+
+    $results = $sth->fetchrow_hashref();
+
+    return ( $results, '');
+}
+
+############################################################
+# needs the list of active reserverations 
+# at the same time as this (proposed) reservation
+# will also need to query the db for the max 
+# value of the router interfaces to see if we
+# have exceeded it.
+# IN: list of reserverations, new reserveration
+# OUT: valid (0 or 1), and error message
+############################################################
+sub check_oversubscribe {
+    my ( $self, $reservations, $proposed_reservation) = @_;
+    my ( %iface_idxs, @path_array, $row, $reservation_path, $link, $res, $idx );
+    my ( $router_name, $error_msg );
+
+    # XXX: what is the MAX percent we can allocate? for now 50% ...
+    my ( $max_reservation_utilization) = 0.50; 
+
+    @path_array = split(/,/, $proposed_reservation->{'reservation_path'});
+    # assign the new path bandwidths 
+    foreach $link (@path_array) {
+        $iface_idxs{$link} = $self->to_bytes($proposed_reservation->{'reservation_bandwidth'});
+    }
+
+    # loop through all active reservations
+    foreach $res (@$reservations) {
+        # get bandwidth allocated to each idx on that path
+        foreach $reservation_path ( $res->{'reservation_path'} ) {
+            foreach $link ( split(',', $reservation_path) ) {
+                $iface_idxs{$link} += $self->to_bytes($res->{'reservation_bandwidth'});
+            }
+        }
+    }
+
+    # now for each of those interface idx
+    foreach $idx (keys %iface_idxs) {
+        # get max bandwith speed for an idx
+        ($row, $error_msg) = $self->get_interface_fields($idx);
+        if ($error_msg) { return (1, $error_msg); }
+        if (!$row ) { next; }
+
+        if ( $row->{'interface_valid'} == 'False' ) {
+            return ( 1, "interface $idx not valid");
+        }
+ 
+        if ($iface_idxs{$idx} > ($row->{'interface_speed'} * $max_reservation_utilization)) {
+            my $max_utilization = $row->{'interface_speed'} * $max_reservation_utilization/1000000.0;
+            ($router_name, $error_msg) = $self->{'dbconn'}->xface_id_to_loopback($idx);
+            if ($error_msg) { return (1, $error_msg); }
+            return ( 1, "$router_name oversubscribed: " . $iface_idxs{$idx}/1000000 . " Mbps > " . "$max_utilization Mbps" );
+        }
+    }
+    return (0, "");
+}
+
+# vim: et ts=4 sw=4
 ## private
 
 ###############################################################################
