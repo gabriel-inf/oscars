@@ -106,7 +106,7 @@ sub find_new_reservations {
 
     my ($front_end) = @_;
 
-    my ($timeslot, $resv, $status, $router_config);
+    my ($timeslot, $resv, $status);
     my ($error_msg);
     my $cur_time = localtime();
 
@@ -125,8 +125,7 @@ sub find_new_reservations {
     foreach my $r (@$resv) {
         ## calls to pss to setup reservations
         my %lsp_info = map_fields($front_end, $r);
-        ($status, $router_config) = setup_pss(%lsp_info);
-        update_log($r, $status, $router_config);
+        $status = setup_pss(\%lsp_info, $r);
         if ($configs->{'debug'}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{'ACTIVE'}, $front_end);
     }
@@ -143,7 +142,7 @@ sub find_expired_reservations {
     my ($front_end) = @_;
 
     my $cur_time = localtime();
-    my ($timeslot, $resv, $status, $error_msg, $router_config);
+    my ($timeslot, $resv, $status, $error_msg);
 
     # configurable
     $timeslot = time() + $configs->{reservation_time_interval};
@@ -155,8 +154,7 @@ sub find_expired_reservations {
        
     foreach my $r (@$resv) {
         my %lsp_info = map_fields($front_end, $r);
-        ($status, $router_config) = teardown_pss(%lsp_info, $front_end);
-        update_log($r, $status, $router_config);
+        $status = teardown_pss(\%lsp_info, $r);
 
         if ($configs->{'debug'}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{'FINISHED'}, $front_end);
@@ -170,24 +168,24 @@ sub find_expired_reservations {
 ######################################################################
 sub setup_pss {
 
-    my (%lspInfo) = @_;   
-    my ($_error, $status, $router_config);
+    my ($lspInfo, $r) = @_;   
+    my ($_error, $status);
 
     print STDERR "execing pss to schedule reservations\n";
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
-        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%lspInfo);
+        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP($lspInfo);
 
         print STDERR "Setting up LSP...\n";
-        $router_config = $_jnxLsp->configure_lsp(_LSP_SETUP);
+        $_jnxLsp->configure_lsp(_LSP_SETUP, $r);
         if ($_error = $_jnxLsp->get_error())  {
-            return( $_error, $router_config );
+            return( $_error );
             #die($_error);
         }
     }
     print STDERR "LSP setup complete\n" ;
-    return( "", $router_config );
+    return( "" );
 }
 
 ######################################################################
@@ -197,21 +195,21 @@ sub setup_pss {
 ######################################################################
 sub teardown_pss {
 
-    my (%lspInfo) = @_;
-    my ($router_config, $_error);
+    my ($lspInfo, $r) = @_;
+    my ($_error);
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
-        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%lspInfo);
+        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP($lspInfo);
 
         print STDERR "Tearing down LSP...\n" ;
-        $router_config = $_jnxLsp->configure_lsp(_LSP_TEARDOWN); 
+        $_jnxLsp->configure_lsp(_LSP_TEARDOWN, $r); 
         if ($_error = $_jnxLsp->get_error())  {
-            return( $_error, $router_config );
+            return( $_error );
         }
     }
     print STDERR "LSP teardown complete\n" ;
-    return ("", $router_config);
+    return( "" );
 }
 
 
@@ -261,19 +259,6 @@ sub map_fields
       'destination-address' => $dst_hostaddrs_ip,
     );
     return ( %results );
-}
-
-
-sub update_log {
-    my( $r, $status, $router_config);
-
-    $r->{'reservation_tag'} =~ s/@/../;
-    open (LOGFILE, ">>$ENV{'OSCARS_HOME'}/logs/$r->{'reservation_tag'}.log") || die "Can't open log file.\n";
-    if ($status) {
-        print LOGFILE $status;
-    }
-    print LOGFILE $router_config;
-    close(LOGFILE);
 }
 
 
