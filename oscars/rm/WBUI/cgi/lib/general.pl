@@ -41,8 +41,8 @@ sub check_session_status {
 #####
 sub update_frames
 {
-    my ($error_made, $target, $uri, $msg) = @_;
-    if ($error_made) { print "Content-type: text/html\n\n"; }
+    my ($print_type_header, $target, $uri, $msg) = @_;
+    if ($print_type_header) { print "Content-type: text/html\n\n"; }
     print "<html>\n";
     print "<head>\n";
     print "<link rel=\"stylesheet\" type=\"text/css\" ";
