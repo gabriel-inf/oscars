@@ -51,7 +51,7 @@ sub verify_login
 
     # At present, multiple users may share a connection; access level needs
     # to be checked on each method call.
-    $results{'error_msg'} = $self->{'dbconn'}->check_connection($inref);
+    $results{'error_msg'} = $self->{'dbconn'}->check_connection($inref, 1);
     if ($results{'error_msg'}) { return( 1, %results); }
 
     # Get the password and privilege level from the database, making sure user
@@ -89,6 +89,7 @@ sub verify_login
 
     $results{'user_level'} = $$ref[1];
     $results{'status_msg'} = 'The user has successfully logged in.';
+    $self->{'dbconn'}->{'dbh'} = undef;
     # The first value is unused, but I can't get SOAP to send a correct
     # reply without it so far.
     return( 0, %results );

@@ -34,12 +34,12 @@ sub initialize {
 
 sub check_connection
 {
-    my ( $self, $inref ) = @_;
+    my ( $self, $inref, $reconnect ) = @_;
     my ( %attr ) = (
         RaiseError => 0,
         PrintError => 0,
     );
-    if (!$self->{'dbh'}) {
+    if (!$self->{'dbh'} || $reconnect) {
         if ($inref) {
             $self->{'dbh'} = DBI->connect(
                  $self->{'configs'}->{'use_AAAS_database'}, 
