@@ -321,7 +321,7 @@ sub execute_configuration_change
         'hostname' => $_self->{'lsp_from'}
     );
     my ($_xmlDoc);
-    my ($_jnxRes, $_error);
+    my ($_jnxRes, $_error, $_jnx);
 
     # Clear error message.
     $_self->{'errMsg'} = 0;
@@ -330,10 +330,16 @@ sub execute_configuration_change
     my ($_xmlParser) = new XML::DOM::Parser;
 
     # Connect to the JUNOScript server.
-    my ($_jnx) = new JUNOS::Device(%_jnxInfo);
-    unless (ref $_jnx) {
-        $_self->{'errMsg'} = "ERROR: $_jnxInfo{hostname}: failed to connect.\n";
-        return();
+    eval {
+        ($_jnx) = new JUNOS::Device(%_jnxInfo);
+        unless (ref $_jnx) {
+            $_self->{'errMsg'} = "ERROR: $_jnxInfo{hostname}: failed to connect.\n";
+            return();
+        }
+    };
+    if ($@) {
+        print STDERR "ignoring exception $@\n";
+        return;
     }
 
     # Lock the Junoscript configuration database before making any changes
