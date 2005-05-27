@@ -60,8 +60,8 @@ my ($_loadAction) = 'merge';  # Default load action is 'merge'.
 #####
 sub new
 {
-    my ($_class, %_args) = @_;
-    my ($_self) = {%_args};
+    my ($_class, $_args) = @_;
+    my ($_self) = {%$_args};
 
     # Bless $_self into designated class.
     bless($_self, $_class);
@@ -83,7 +83,7 @@ sub new
 #####
 sub configure_lsp
 {
-    my ($_self, $_lspOp) = @_;
+    my ($_self, $_lspOp, $_r) = @_;
     my ($_xmlFile);
     my ($_xmlInput);
     my ($_xmlString) = '';
@@ -98,12 +98,13 @@ sub configure_lsp
     }
 
     $_xmlString = $_self->read_xml_file($_xmlFile);
+    $_self->update_log($_r, $_xmlString);
 
     # Execute the Junoscript configuration changes if there is no error.
     if (not($_self->get_error()))  {
         $_self->execute_configuration_change($_xmlString);
     }
-    return($_xmlString);
+    return;
 }
 
 #####
@@ -329,9 +330,7 @@ sub execute_configuration_change
     my ($_xmlParser) = new XML::DOM::Parser;
 
     # Connect to the JUNOScript server.
-    print STDERR "to connecting\n";
     my ($_jnx) = new JUNOS::Device(%_jnxInfo);
-    print STDERR "past connecting\n";
     unless (ref $_jnx) {
         $_self->{'errMsg'} = "ERROR: $_jnxInfo{hostname}: failed to connect.\n";
         return();
@@ -444,5 +443,17 @@ sub execute_operational_command
     }
     return($_jnxRes->toString());
 }
+
+
+sub update_log {
+    my( $self, $r, $xmlString) = @_;
+
+    $r->{'reservation_tag'} =~ s/@/../;
+    open (LOGFILE, ">> $ENV{'OSCARS_HOME'}/logs/$r->{'reservation_tag'}") || die "Can't open log file.\n";
+    print LOGFILE "**********************************************************************\n";
+    print LOGFILE $xmlString;
+    close(LOGFILE);
+}
+
 
 1;
