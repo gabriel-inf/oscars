@@ -8,6 +8,7 @@ package AAAS::Frontend::Database;
 use strict;
 
 use DBI;
+use Data::Dumper;
 
 ######################################################################
 sub new {
@@ -43,7 +44,8 @@ sub check_connection
         if ($inref) {
             $self->{'dbh'} = DBI->connect(
                  $self->{'configs'}->{'use_AAAS_database'}, 
-                 $inref->{'user_dn'},
+                 $self->{'configs'}->{'AAAS_login_name'}, 
+                 #$inref->{'user_dn'},
                  $inref->{'user_password'},
                  \%attr)
         }
