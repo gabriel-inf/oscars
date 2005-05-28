@@ -107,11 +107,9 @@ sub print_reservations
 
     print "  <tbody>\n";
     foreach $row (@$rowsref) {
-        if ($row->{'reservation_status'} ne 'finished') {
-            print "  <tr>\n";
-            print_row($row, $form_params->{'admin_required'});
-            print "  </tr>\n";
-        }
+        print "  <tr>\n";
+        print_row($row, $form_params->{'admin_required'});
+        print "  </tr>\n";
     }
     print "  </tbody>\n";
     print "</table>\n\n";
