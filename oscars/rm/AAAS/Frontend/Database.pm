@@ -40,13 +40,15 @@ sub check_connection
         RaiseError => 0,
         PrintError => 0,
     );
+    # TODO:  FIX
     if (!$self->{'dbh'} || $reconnect) {
         if ($inref) {
             $self->{'dbh'} = DBI->connect(
                  $self->{'configs'}->{'use_AAAS_database'}, 
                  $self->{'configs'}->{'AAAS_login_name'}, 
+                 'ritazza6',
                  #$inref->{'user_dn'},
-                 $inref->{'user_password'},
+                 #$inref->{'user_password'},
                  \%attr)
         }
         else { return( "You must log in first before accessing the database"); }
