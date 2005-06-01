@@ -72,6 +72,7 @@ sub print_reservations
     print "<link rel=\"stylesheet\" type=\"text/css\" ";
     print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
     print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
+    print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/sorttable.js\"></script>\n";
     print "</head>\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
@@ -89,7 +90,7 @@ sub print_reservations
     print "<p>Click on the Reservation Tag link to view detailed information about the reservation.\n";
     print "</p>\n\n";
 
-    print "<table cellspacing=\"0\" width=\"90%\" id=\"reservationlist\">\n";
+    print "<table cellspacing=\"0\" width=\"90%\" class=\"sortable\" id=\"reservationlist\">\n";
     print "  <thead>\n";
     print "  <tr>\n";
     print "    <td >Tag</td>\n";

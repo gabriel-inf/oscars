@@ -55,6 +55,7 @@ sub print_userlist
     print "<link rel=\"stylesheet\" type=\"text/css\" ";
     print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
     print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
+    print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/sorttable.js\"></script>\n";
     print "</head>\n\n";
 
     print "<body onload=\"stripe('userlist', '#fff', '#edf3fe');\">\n\n";
@@ -67,7 +68,7 @@ sub print_userlist
     print "<p>Click on the user's last name to view detailed user information.\n";
     print "</p>\n\n";
 
-    print "<table cellspacing=\"0\" width=\"90%\" id=\"userlist\">\n";
+    print "<table cellspacing=\"0\" width=\"90%\" class=\"sortable\" id=\"userlist\">\n";
     print "  <thead>\n";
     print "  <tr>\n";
     print "    <td >Last Name</td>\n";
