@@ -155,7 +155,7 @@ function check_form( form )
 
 	if ( (form.start_month.value == null) || (form.start_month.value == "") || isblank(form.start_month.value) )
 	{
-                form.start_month.value = currentDate.getMonth();
+                form.start_month.value = currentDate.getMonth() + 1;
 	}
 
 	if ( (form.start_date.value == null) || (form.start_date.value == "") || isblank(form.start_date.value) )
@@ -316,7 +316,7 @@ function check_form( form )
 		return false;
 	}
 
-        reserve_date = new Date(form.start_year.value, form.start_month.value, form.start_date.value, form.start_hour.value, form.start_minute.value, 0, 0);
+        reserve_date = new Date(form.start_year.value, form.start_month.value - 1, form.start_date.value, form.start_hour.value, form.start_minute.value, 0, 0);
         form.reservation_start_time.value = reserve_date.getTime() / 1000;
 	if ( form.reservation_start_time.value == 0 )
 	{
