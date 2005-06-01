@@ -404,17 +404,17 @@ sub get_interface_fields {
 # OUT: valid (0 or 1), and error message
 ############################################################
 sub check_oversubscribe {
-    my ( $self, $reservations, $proposed_reservation) = @_;
+    my ( $self, $reservations, $inref) = @_;
     my ( %iface_idxs, @path_array, $row, $reservation_path, $link, $res, $idx );
     my ( $router_name, $error_msg );
 
     # XXX: what is the MAX percent we can allocate? for now 50% ...
     my ( $max_reservation_utilization) = 0.50; 
 
-    @path_array = split(/,/, $proposed_reservation->{'reservation_path'});
+    @path_array = split(/,/, $inref->{'reservation_path'});
     # assign the new path bandwidths 
     foreach $link (@path_array) {
-        $iface_idxs{$link} = $self->to_bytes($proposed_reservation->{'reservation_bandwidth'});
+        $iface_idxs{$link} = $self->to_bytes($inref->{'reservation_bandwidth'});
     }
 
     # loop through all active reservations
@@ -440,9 +440,15 @@ sub check_oversubscribe {
  
         if ($iface_idxs{$idx} > ($row->{'interface_speed'} * $max_reservation_utilization)) {
             my $max_utilization = $row->{'interface_speed'} * $max_reservation_utilization/1000000.0;
-            ($router_name, $error_msg) = $self->{'dbconn'}->xface_id_to_loopback($idx);
-            if ($error_msg) { return (1, $error_msg); }
-            return ( 1, "$router_name oversubscribed: " . $iface_idxs{$idx}/1000000 . " Mbps > " . "$max_utilization Mbps" );
+            if ($inref->{'admin_required'}) {
+                ($router_name, $error_msg) = $self->{'dbconn'}->xface_id_to_loopback($idx);
+                if ($error_msg) { return (1, $error_msg); }
+                $error_msg = "$router_name oversubscribed: ";
+            }
+            else {
+                $error_msg = "Route oversubscribed: ";
+            }
+            return ( 1, $error_msg . $iface_idxs{$idx}/1000000 . " Mbps > " . "$max_utilization Mbps" );
         }
     }
     return (0, "");
