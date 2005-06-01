@@ -26,6 +26,7 @@ if ($dn) {
     foreach $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
+    $form_params{'admin_required'} = $admin_required;
     ($error_status, %results) = create_reservation($dn, \%form_params);
     if (!$error_status) {
         update_frames(0, "status_frame", "", $results{'status_msg'});
