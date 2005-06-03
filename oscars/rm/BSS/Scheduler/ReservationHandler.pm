@@ -172,7 +172,7 @@ sub do_ping {
 sub do_remote_trace {
     my ( $self, $src, $dst )  = @_;
     my (@hops);
-    my ($error, $interface_id, $prev_id, @path, $prev_ipaddr);
+    my ($error, $interface_id, $prev_id, @path);
     my ($prev_loopback, $loopback_ip);
 
     @path = ();
@@ -222,14 +222,13 @@ sub do_remote_trace {
         if ($interface_id == 0) {
             $self->{output_buf} .= "edge router is $prev_loopback\n";
             print STDERR "edge router is $prev_loopback\n";
-            return ($prev_id, $prev_ipaddr, \@path, "");
+            return ($prev_id, $prev_loopback, \@path, "");
         }
 
         # add to the path
         push(@path, $interface_id);
         if ($loopback_ip) {
             $prev_id = $interface_id;
-            $prev_ipaddr = $hops[0];
             $prev_loopback = $loopback_ip;
         }
         shift(@hops);
