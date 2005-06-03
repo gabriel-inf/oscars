@@ -1,7 +1,7 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: April 15, 2005
+# Last modified: June 3, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -42,20 +42,20 @@ sub check_session_status {
 sub update_frames
 {
     my ($print_type_header, $target, $uri, $msg) = @_;
-    if ($print_type_header) { print "Content-type: text/html\n\n"; }
-    print "<html>\n";
-    print "<head>\n";
-    print "<link rel=\"stylesheet\" type=\"text/css\" ";
-    print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
-    print "<script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
-    print "</head>\n";
-    print "<body>\n";
+    if ($print_type_header) { print 'Content-type: text/html', "\n\n"; }
+    print '<html>', "\n";
+    print '<head>', "\n";
+    print '<link rel="stylesheet" type="text/css" ';
+    print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
+    print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
+    print '</head>', "\n";
+    print '<body>', "\n";
     print "<script language=\"javascript\">update_status_message(\"$target\", \"$msg\");</script>";
     if ($uri) {
         print "<script language=\"javascript\">update_frame(\"main_frame\", \"$uri\");</script>";
     }
-    print "</body>\n";
-    print "</html>\n";
+    print '</body>', "\n";
+    print '</html>', "\n";
     print "\n\n";
 }
 
