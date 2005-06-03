@@ -4,7 +4,8 @@ use BSS::Client::SOAPClient;
 use Data::Dumper;
 
 my($value);
-my %params = ('reservation_id' => '1' );   # FIX
+    # FIX
+my %params = ('reservation_id' => $ARGV[0] );
     # names of the fields to be read and displayed on the screen
 my @fields_to_read = ( 'reservation_start_time', 'reservation_end_time', 'reservation_created_time', 'reservation_bandwidth', 'reservation_burst_limit', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'reservation_description', 'reservation_tag' );
 
