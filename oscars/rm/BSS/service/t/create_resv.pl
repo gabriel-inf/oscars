@@ -23,11 +23,10 @@ $params{'reservation_status'} =         'pending';
 $params{'ingress_interface_id'}= '';   # db lookup in scheduler
 $params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
-$params{'src_hostaddrs_ip'} = '192.168.2.2';
-$params{'dst_hostaddrs_ip'} = '192.168.0.2';
+$params{'src_hostaddrs_ip'} = 'distressed.es.net';
+$params{'dst_hostaddrs_ip'} = '134.55.210.219';
 
 $params{'user_dn'} =        'davidr';
-$params{'reservation_dscp'} =      'ef';
 
 $params{'reservation_ingress_port'} =   '';     # db lookup in schedule
 $params{'reservation_egress_port'} =    '';     # db lookup in scheduler
