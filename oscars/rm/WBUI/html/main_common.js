@@ -95,7 +95,7 @@ function print_header(formType)
 // ** prints navigation bar, with active page highlighted
 function print_navigation_bar(activePage)
 {
-    document.write("<div>");
+    document.write('<div>');
     document.write('<ul id="tabnav">');
     if (activePage == 'reservation')
     {
@@ -122,8 +122,8 @@ function print_navigation_bar(activePage)
         document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl" title="View and/or edit your personal information">My Profile</a></li>');
     }
     document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
-    document.write("</ul>");
-    document.write("</div>");
+    document.write('</ul>');
+    document.write('</div>');
 }
 
 
@@ -139,7 +139,7 @@ function update_frame(target, uri)
 
 function print_admin_bar(activePage)
 {
-    document.write("<div>");
+    document.write('<div>');
     document.write('<ul id="tabnav">');
     if (activePage == 'userlist')
     {
@@ -195,33 +195,33 @@ function update_status_message(target, msg)
   {
     f = parent.frames['status_frame'].document;
     f.open();
-    f.write("<html>");
+    f.write('<html>');
 
-    f.write("<head>");
+    f.write('<head>');
     f.write('<link rel="stylesheet" type="text/css" href="https://oscars.es.net/styleSheets/layout.css">');
 
     f.write('<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>');
 
-    f.write("</head>");
+    f.write('</head>');
 
-    f.write("<body>");
-    f.write("<div>");
-    f.write("<p class=\"topmessage\">");
+    f.write('<body>');
+    f.write('<div>');
+    f.write('<p class="topmessage">');
     print_current_date(f, 'local');
-    f.write("</script> | ", msg, "</p>");
-    f.write("</div>");
+    f.write('</script> | ', msg, '</p>');
+    f.write('</div>');
 
-    f.write("</body>");
-    f.write("</html>");
+    f.write('</body>');
+    f.write('</html>');
     f.close();
   }
   else
   {
-    document.write("<div>");
-    document.write("<p class=\"topmessage\">");
+    document.write('<div>');
+    document.write('<p class="topmessage">');
     print_current_date(document, 'local');
-    document.write("</script> | ", msg, "</p>");
-    document.write("</div>");
+    document.write('</script> | ', msg, '</p>');
+    document.write('</div>');
   }
 }
 
