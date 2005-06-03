@@ -48,8 +48,8 @@ sub soap_get_profile
 
 sub soap_set_profile
 {
-    my ($params) = @_;
-    my $response = $AAAS_server->set_profile($params);
+    my ($params, $fields_to_read) = @_;
+    my $response = $AAAS_server->set_profile($params, $fields_to_read);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
