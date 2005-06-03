@@ -4,18 +4,9 @@ use strict;
 
 use BSS::Traceroute::JnxTraceroute;
 
-#####
-#
-# Constant definitions.
-#
-#####
-
-
-#####
-#
-# Global variables.
-#
-#####
+##################
+# Global variables
+##################
 my ($_error);
 my (@_rawTracerouteData) = ();
 my (@_hops) = ();
@@ -48,22 +39,20 @@ print("Traceroute: $src -> $dst\n");
 
 # Run traceroute.
 $_error = $_jnxTraceroute->traceroute($src, $dst);
-if ($_error)  {
-  die($_error);
-}
+if ($_error)  { die($_error); }
 
 print("Raw results:\n");
 @_rawTracerouteData = $_jnxTraceroute->get_raw_hop_data();
 while(defined($_rawTracerouteData[0]))  {
-  print('  ' . $_rawTracerouteData[0]);
-  shift(@_rawTracerouteData);
+    print('  ' . $_rawTracerouteData[0]);
+    shift(@_rawTracerouteData);
 }
 
 print("Hops:\n");
 @_hops = $_jnxTraceroute->get_hops();
 while(defined($_hops[0]))  {
-  print("  $_hops[0]\n");
-  shift(@_hops);
+    print("  $_hops[0]\n");
+    shift(@_hops);
 }
 
 print("\n");
