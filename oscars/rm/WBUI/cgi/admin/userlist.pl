@@ -19,16 +19,16 @@ my $cgi = CGI->new();
 my ($dn, $user_level, $admin_required) = check_session_status(undef, $cgi);
 
 if (!$error_status) {
-    foreach $_ ($cgi->param) {
+    for $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
     ($error_status, %results) = soap_get_userlist(\%form_params, \@fields_to_display);
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results{'status_msg'});
+        update_frames($error_status, "main_frame", "", $results{status_msg});
         print_userlist(\%results);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results{'error_msg'});
+        update_frames($error_status, "main_frame", "", $results{error_msg});
     }
 }
 else {
@@ -49,13 +49,13 @@ sub print_userlist
     my ( $results ) = @_;
     my ( $rowsref, $row );
 	
-    $rowsref = $results->{'rows'};
+    $rowsref = $results->{rows};
     print "<html>\n";
     print "<head>\n";
-    print "<link rel=\"stylesheet\" type=\"text/css\" ";
-    print " href=\"https://oscars.es.net/styleSheets/layout.css\">\n";
-    print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/main_common.js\"></script>\n";
-    print "    <script language=\"javascript\" type=\"text/javascript\" src=\"https://oscars.es.net/sorttable.js\"></script>\n";
+    print '<link rel="stylesheet" type=\"text/css" ';
+    print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
+    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
+    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/sorttable.js"></script>', "\n";
     print "</head>\n\n";
 
     print "<body onload=\"stripe('userlist', '#fff', '#edf3fe');\">\n\n";
@@ -68,7 +68,7 @@ sub print_userlist
     print "<p>Click on the user's last name to view detailed user information.\n";
     print "</p>\n\n";
 
-    print "<table cellspacing=\"0\" width=\"90%\" class=\"sortable\" id=\"userlist\">\n";
+    print '<table cellspacing="0" width="90%" class="sortable" id="userlist">', "\n";
     print "  <thead>\n";
     print "  <tr>\n";
     print "    <td >Last Name</td>\n";
@@ -80,7 +80,7 @@ sub print_userlist
     print "  </thead>\n";
 
     print "  <tbody>\n";
-    foreach $row (@$rowsref) {
+    for $row (@$rowsref) {
         print "  <tr>\n";
         print_row($row);
         print "  </tr>\n";
@@ -90,7 +90,7 @@ sub print_userlist
 
     print "</div>\n\n";
 
-    print "<script language=\"javascript\">print_footer();</script>\n";
+    print '<script language="javascript">print_footer();</script>', "\n";
     print "</body>\n";
     print "</html>\n\n";
 }
@@ -100,9 +100,9 @@ sub print_row
 {
     my( $row ) = @_;
 
-    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl?id=' . $row->{'user_dn'} . '">' . $row->{'user_last_name'} . '</a></td>' . "\n"; 
-    print "    <td>" . $row->{'user_first_name'} . "</td>\n";
-    print "    <td>" . $row->{'user_dn'} . "</td>\n";
-    print "    <td>" . $row->{'user_level'} . "</td>\n";
-    print "    <td>" . $row->{'institution_id'} . "</td>\n";
+    print '    <td><a href="https://oscars.es.net/cgi-bin/lib/userprofile.pl?id=' . $row->{user_dn} . '">' . $row->{user_last_name} . '</a></td>' . "\n"; 
+    print "    <td>" . $row->{user_first_name} . "</td>\n";
+    print "    <td>" . $row->{user_dn} . "</td>\n";
+    print "    <td>" . $row->{user_level} . "</td>\n";
+    print "    <td>" . $row->{institution_id} . "</td>\n";
 }
