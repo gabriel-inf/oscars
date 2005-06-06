@@ -74,12 +74,12 @@ sub configure_lsp {
     }
 
     $_xmlString = $_self->read_xml_file($_xmlFile);
-    $_self->update_log($_r, $_xmlString);
 
     # Execute the Junoscript configuration changes if there is no error.
     if (!($_self->get_error()))  {
         $_self->execute_configuration_change($_xmlString);
     }
+    $_self->update_log($_r, $_xmlString);
     return;
 }
 ######
@@ -401,12 +401,17 @@ sub execute_operational_command {
 
 ##############################################################################
 sub update_log {
-    my( $self, $r, $xmlString) = @_;
+    my( $_self, $r, $_xmlString) = @_;
 
+    my $errmsg = $_self->get_error();
+    if ($errmsg)  {
+        $_xmlString .= "\n\n$errmsg\n";
+        print STDERR $_xmlString;
+    }
     $r->{reservation_tag} =~ s/@/../;
     open (LOGFILE, ">> $ENV{OSCARS_HOME}/logs/$r->{reservation_tag}") || die "Can't open log file.\n";
     print LOGFILE "**********************************************************************\n";
-    print LOGFILE $xmlString;
+    print LOGFILE $_xmlString;
     close(LOGFILE);
 }
 ######
