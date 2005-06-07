@@ -65,9 +65,6 @@ sub create_reservation
     $soap_params{reservation_burst_limit} = '1m';
     $soap_params{reservation_status} = 'pending';
 
-    $soap_params{ingress_interface_id}= '';   # db lookup in scheduler
-    $soap_params{egress_interface_id}=  '';   # db lookup in scheduler
-
     $soap_params{src_hostaddrs_ip} = $form_params->{origin};
     $soap_params{dst_hostaddrs_ip} = $form_params->{destination};
 
@@ -80,11 +77,18 @@ sub create_reservation
         $soap_params{dst_hostaddrs_ip} = inet_ntoa(inet_aton($soap_params{dst_hostaddrs_ip}));
     }
 
-    $soap_params{reservation_ingress_port} = '';     # db lookup in schedule
-    $soap_params{reservation_egress_port} = '';     # db lookup in scheduler
-
-    $soap_params{lsp_from} = '';        # done in PSS
-    $soap_params{lsp_to} = '';        # done in PSS
+    # Undefined fields are set in the PSS.
+    if ($form_params->{form_type} eq 'engr') {
+        if ($form_params{lsp_from}) {
+            $soap_params{lsp_from} = $form_params{lsp_from};
+        }
+        if ($form_params{lsp_to}) {
+            $soap_params{lsp_to} = $form_params{lsp_to};
+        }
+        if (defined($form_params{persistent})) {
+            $soap_params{persistent} = $form_params{persistent};
+        }
+    }
     $soap_params{reservation_description} =  $form_params->{reservation_description};
     return( soap_create_reservation(\%soap_params) );
 }

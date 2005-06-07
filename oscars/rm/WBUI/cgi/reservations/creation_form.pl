@@ -143,8 +143,18 @@ sub print_reservation_form
     print '  </tr>', "\n";
     print '</table>', "\n";
 
-    print '<p>Please indicate for how long you want to reserve the bandwidth, starting from the above indicated date and time.', "\n";
-    print 'Fractional hours are permissible at this time.</p>', "\n";
+    if ($form_type ne 'engr') {
+        print '<p>Please indicate the duration of the reservation, ', "\n";
+        print 'starting from the above indicated date and time.  ', "\n";
+        print 'Currently, fractional hours are permissible.</p>', "\n";
+    }
+    else {
+        print '<p>Please indicate the duration of the reservation, ', "\n";
+        print 'starting from the above indicated date and time.  ', "\n";
+        print 'Currently, fractional hours are permissible.  If you ', "\n";
+        print 'have specified a persistent connection, this ', "\n";
+        print 'field is ignored.</p>', "\n";
+    }
     print '<table>', "\n";
     print '  <tr>', "\n";
     print '    <th>Duration:</th>', "\n";
