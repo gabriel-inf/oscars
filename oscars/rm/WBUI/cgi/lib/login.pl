@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: June 6, 2005
+# Last modified: June 7, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -27,6 +27,9 @@ if (!$results{'error_msg'}) {
     check_session_status(\%results, $cgi);
     if ($cgi->param('form_type') eq 'admin') {
         update_frames(0, "status_frame", $startpoint . '/admin/gateway.html', $cgi->param('user_dn') . " logged in as administrator");
+    }
+    elsif ($cgi->param('form_type') eq 'engr') {
+        update_frames(0, "status_frame", $startpoint . '/engr/gateway.html', $cgi->param('user_dn') . " logged in as engineer");
     }
     else {
         update_frames(0, "status_frame", $startpoint . '/user/', $cgi->param('user_dn'). " logged in");
