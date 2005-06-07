@@ -37,7 +37,7 @@ sub print_reservation_form
     print '  <link rel="stylesheet" type="text/css" ';
     print '  href="https://oscars.es.net/styleSheets/layout.css">', "\n";
     print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
-    print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/user/reservation.js"></script>', "\n";
+    print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/reservation.js"></script>', "\n";
     print '</head>', "\n";
 
     print '<body>', "\n";
