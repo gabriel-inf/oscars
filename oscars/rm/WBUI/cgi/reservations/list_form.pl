@@ -76,13 +76,7 @@ sub print_reservations
     print '</head>', "\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
-
-    if ($form_params->{form_type} eq 'admin') {
-        print "<script language=\"javascript\">print_admin_bar('reservationlist');</script>\n\n";
-    }
-    else {
-        print "<script language=\"javascript\">print_navigation_bar('reservationlist');</script>\n\n";
-    }
+    print '<script language="javascript">print_navigation_bar("', $form_params->{form_type}, '", "reservationlist");</script>', "\n";
 
     print '<div id="zebratable_ui">', "\n\n";
 

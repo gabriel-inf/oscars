@@ -60,7 +60,7 @@ sub print_userlist
 
     print "<body onload=\"stripe('userlist', '#fff', '#edf3fe');\">\n\n";
 
-    print "<script language=\"javascript\">print_admin_bar('userlist');</script>\n\n";
+    print "<script language=\"javascript\">print_navigation_bar('admin', 'userlist');</script>\n\n";
 
     print "<div id=\"zebratable_ui\">\n\n";
 

@@ -32,7 +32,7 @@ if ($dn) {
     ($error_status, %results) = BSS::Client::SOAPClient::soap_get_resv_detail(\%form_params, \@fields_to_read);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{status_msg});
-        print_reservation_detail(\%results);
+        print_reservation_detail($form_type, \%results);
     }
     else {
         update_frames($error_status, "main_frame", "", $results{error_msg});
@@ -50,7 +50,7 @@ exit;
 # Out:
 sub print_reservation_detail
 {
-    my ( $results ) = @_;
+    my ( $form_type, $results ) = @_;
 
     print '<html>', "\n";
     print '<head>', "\n";
@@ -61,7 +61,7 @@ sub print_reservation_detail
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
 
-    print "<script language=\"javascript\">print_navigation_bar('reservationList');</script>\n\n";
+    print '<script language="javascript">print_navigation_bar("', $form_type '", "reservationlist");</script>', "\n";
 
     print '<div id="zebratable_ui">', "\n\n";
 

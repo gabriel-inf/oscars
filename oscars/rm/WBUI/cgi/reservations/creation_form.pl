@@ -41,13 +41,7 @@ sub print_reservation_form
     print '</head>', "\n";
 
     print '<body>', "\n";
-
-    if( $form_type eq 'admin' ) {
-        print "<script language=\"javascript\">print_admin_bar('reservation');</script>\n";
-    }
-    else {
-        print "<script language=\"javascript\">print_navigation_bar('reservation');</script>\n";
-    }
+    print '<script language="javascript">print_navigation_bar("', $form_type, '", "reservation");</script>', "\n";
 
     print '<div id="reservation_ui">', "\n";
 

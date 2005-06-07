@@ -65,13 +65,7 @@ sub print_profile
     print '</head>', "\n\n";
 
     print '<body>', "\n\n";
-
-    if ($form_params->{form_type} eq 'admin') {
-        print '<script language="javascript">print_admin_bar("adminprofile");</script>', "\n\n";
-    }
-    else {
-        print '<script language="javascript">print_navigation_bar("userprofile");</script>', "\n\n";
-    }
+    print '<script language="javascript">print_navigation_bar("', $form_params{form_type}, '", "profile");</script>', "\n\n";
 
     print '<div id="account_ui">', "\n\n";
 
