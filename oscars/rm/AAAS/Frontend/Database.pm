@@ -10,7 +10,7 @@ use strict;
 use DBI;
 use Data::Dumper;
 
-######################################################################
+###############################################################################
 sub new {
     my $invocant = shift;
     my $_class = ref($invocant) || $invocant;
@@ -25,14 +25,14 @@ sub new {
     return($_self);
 }
 
-
-######################################################################
 sub initialize {
     my ( $_self ) = @_;
     $_self->{dbh} = undef;
 }
+######
 
-
+###############################################################################
+#
 sub check_connection
 {
     my ( $self, $inref, $reconnect ) = @_;
@@ -51,14 +51,38 @@ sub check_connection
                  #$inref->{user_password},
                  \%attr)
         }
-        else { return( "You must log in first before accessing the database"); }
+        else {
+            return( "You must log in first before accessing the database");
+        }
      
     }
-    if (!$self->{dbh}) { return( "Unable to make database connection: $DBI::errstr"); }
+    if (!$self->{dbh}) {
+        return( "Unable to make database connection: $DBI::errstr");
+    }
     return "";
 }
+######
 
+###############################################################################
+#
+sub get_user_levels {
+    my( $self ) = @_;
 
+    my( %levels, $r, $sth, $query, $error_msg );
+
+    $query = "SELECT user_level_bit, user_level_description FROM user_levels";
+    ($sth, $error_msg) = $self->do_query($query);
+    if( $error_msg ) { return( undef, $error_msg ) };
+    my $rows = $sth->fetchall_arrayref();
+    for $r (@$rows) { $levels{$$r[1]} = $$r[0]; }
+    $levels{'inactive'} = 0;
+    return( \%levels, "" );
+}
+ 
+######
+
+###############################################################################
+#
 sub do_query
 {
     my( $self, $query, @args ) = @_;
@@ -77,6 +101,7 @@ sub do_query
     }
     return( $sth, '');
 }
+######
 
 
 # Don't touch the line below

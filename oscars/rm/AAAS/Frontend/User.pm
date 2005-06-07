@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
-# User.pm:  Database interactions having to do with user forms.
-# Last modified: May 25, 2005
+# User.pm:  Database interactions having to do with admin and user forms.
+# Last modified: June 6, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -27,32 +27,38 @@ sub new {
     return($_self);
 }
 
-###############################################################################
 sub initialize {
     my ($self) = @_;
     $self->{dbconn} = AAAS::Frontend::Database->new(
                            'configs' => $self->{configs})
                         or die "FATAL:  could not connect to database";
-    $self->{inactive_user} = 0;
-    $self->{admin_user} = 10;
 }
+######
 
 
-## Methods called by user forms.
+################################################
+# Methods called from both admin and user forms.
+################################################
 
 ###############################################################################
-## verify_login
-## In: reference to hash of parameters
-## Out: status code, status message
-sub verify_login
-{
+# verify_login
+# In:  reference to hash of parameters
+# Out: status code, status message
+#
+sub verify_login {
     my( $self, $inref ) = @_;
+
     my( $query, $sth, %results );
 
     # At present, multiple users may share a connection; access level needs
     # to be checked on each method call.
     $results{error_msg} = $self->{dbconn}->check_connection($inref, 1);
     if ($results{error_msg}) { return( 1, %results); }
+    # Get user levels
+    if (!defined($self->{user_levels})) {
+        ($self->{user_levels}, $results{error_msg}) = $self->{dbconn}->get_user_levels();
+        if ($results{error_msg}) { return( 1, %results); }
+    }
 
     # Get the password and privilege level from the database, making sure user
     # exists.
@@ -66,21 +72,27 @@ sub verify_login
         return (1, %results);
     }
 
-        # This login name is in the database, do authorization checks.
+    # This login name is in the database, do authorization checks.
     my $encoded_password = crypt($inref->{user_password}, 'oscars');
     my $ref = $sth->fetchrow_arrayref;
-        # see if user has been activated
-    if ( $$ref[1] eq $self->{inactive_user} ) {
+    # see if user has been activated
+    if ( $$ref[1] == $self->{user_levels}->{inactive} ) {
         $results{error_msg} = "This account is not authorized or " .
                                 " activated yet.";
     }
-        # if request is from admin login, make sure has admin privileges
-    elsif ( $inref->{admin_required} and
-            ($$ref[1] ne $self->{admin_user}) ) {
+    # if request is from admin login, make sure has admin privileges
+    elsif ( ( $inref->{form_level} eq 'admin') and
+            (!($$ref[1] & $self->{user_levels}->{admin}))) {
         $results{error_msg} = "This account does not have " .
                                 "administrative privileges.";
     }
-        # compare passwords
+    # if request is from engineeer login, make sure has engr privileges
+    elsif ( ( $inref->{form_level} eq 'engr') and
+            (!($$ref[1] & $self->{user_levels}->{engr}))) {
+        $results{error_msg} = "This account does not have " .
+                                "engineering privileges.";
+    }
+    # compare passwords
     elsif ( $$ref[0] ne $encoded_password ) {
         $results{error_msg} = 'Please check your password and try again.';
     }
@@ -93,12 +105,12 @@ sub verify_login
     # reply without it so far.
     return( 0, %results );
 }
-
+######
 
 ###############################################################################
-sub logout
-{
+sub logout {
     my( $self ) = @_;
+
     my( %results );
 
     if (!$self->{dbconn}->{dbh}) {
@@ -113,15 +125,16 @@ sub logout
     $results{status_msg} = 'Logged out';
     return ( 0, %results );
 }
+######
 
-
-###############################################################################
-## get_profile
-## In: reference to hash of parameters
-## Out: status code, status message
-sub get_profile
-{
+##############################################################################
+# get_profile
+# In:  reference to hash of parameters
+# Out: status code, status message
+#
+sub get_profile {
     my( $self, $inref, $fields_to_read ) = @_;
+
     my( $sth, $query );
     my( @data, %results );
 
@@ -166,30 +179,20 @@ sub get_profile
     $results{institution} = $data[0];
     $sth->finish();
 
-    $query = "SELECT user_level_description FROM user_levels
-              WHERE user_level_enum = ?";
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
-                                                        $results{user_level});
-
-    @data = $sth->fetchrow_array();
-    $results{level_description} = $data[0];
-    $sth->finish();
-    #my($key, $value);
-    #for $key(sort keys %results)
-    #{
-          #$value = $results{$key};
-    #}
+    $results{user_level} = $self->get_level_description($results{user_level}) ;
     $results{status_msg} = 'Retrieved user profile';
     return ( 0, %results );
 }
+######
 
 ###############################################################################
-## set_profile
-## In: reference to hash of parameters
-## Out: status code, status message
-sub set_profile
-{
+# set_profile
+# In:  reference to hash of parameters
+# Out: status code, status message
+#
+sub set_profile {
     my ( $self, $inref, $fields_to_read ) = @_;
+
     my( $sth, $query, $read_only_level, @read_only_user_levels );
     my( $current_info, $ref, $do_update, %results );
 
@@ -309,15 +312,16 @@ sub set_profile
                           "$inref->{user_dn} has been updated successfully.";
     return( 0, %results );
 }
-
+######
 
 ###############################################################################
-## activate_account
-## In: reference to hash of parameters
-## Out: status code, status message
-sub activate_account
-{
+# activate_account
+# In:  reference to hash of parameters
+# Out: status code, status message
+#
+sub activate_account {
     my( $self, $inref ) = @_;
+
     my( $sth, $query );
     my( %results );
 
@@ -360,8 +364,8 @@ sub activate_account
     }
     $sth->finish();
 
-    ### if the input password and the activation key matched against those
-    ### in the database, activate the account
+    # If the input password and the activation key matched against those
+    # in the database, activate the account.
     if ( $keys_match ) {
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
@@ -383,15 +387,38 @@ sub activate_account
        "<br>Please change the password to your own once you sign in.";
     return( 0, %results );
 }
-
+######
 
 ###############################################################################
-## process_registration
-## In:  reference to hash of parameters
-## Out: status message
-sub process_registration
-{
+#
+sub get_level_description {
+    my( $self, $level_flag ) = @_;
+
+    my( $level );
+
+    $level = "";
+    $level_flag += 0;
+    if ($self->{user_levels}->{admin} & $level_flag) {
+        $level .= 'admin ';
+    }
+    if ($self->{user_levels}->{engr} & $level_flag) {
+        $level .= 'engr ';
+    }
+    if ($self->{user_levels}->{user} & $level_flag) {
+        $level .= 'user';
+    }
+    return( $level );
+}
+######
+
+###############################################################################
+# process_registration
+# In:  reference to hash of parameters
+# Out: status message
+#
+sub process_registration {
     my( $self, $inref, @insertions ) = @_;
+
     my( $sth, $query );
     my( %results );
 
@@ -432,13 +459,17 @@ sub process_registration
         "activating your account will be sent to your primary email address.";
     return( 0, %results );
 }
+######
 
-## Called by Admin tool
+######################################
+# Methods called only from admin tool.
+######################################
 
 ###############################################################################
-## get_userlist
-## In:  inref
-## Out: status message and DB results
+# get_userlist
+# In:  inref
+# Out: status message and DB results
+#
 sub get_userlist
 {
     my( $self, $inref, $fields_to_read ) = @_;
@@ -456,7 +487,7 @@ sub get_userlist
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-        # replace institution id with institution name
+    # replace institution id with institution name
     $query = "SELECT institution_id, institution_name FROM institutions";
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
     if ( $results{error_msg} ) { return( 1, %results ); }
@@ -465,22 +496,15 @@ sub get_userlist
 
     for $r (@$rref) {
         $r->{institution_id} = $mapping{$r->{institution_id}};
-    }
-
         # replace numeric user level code with description
-    $query = "SELECT user_level_enum, user_level_description FROM user_levels";
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
-    if ( $results{error_msg} ) { return( 1, %results ); }
-    $arrayref = $sth->fetchall_arrayref();
-    for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
-
-    for $r (@$rref) {
-        $r->{user_level} = $mapping{$r->{user_level}};
+        $r->{user_level} = $self->get_level_description($r->{user_level});
     }
+
 
     $results{rows} = $rref;
     $results{status_msg} = 'Successfully read user list';
     return( 0, %results );
 }
+######
 
 1;
