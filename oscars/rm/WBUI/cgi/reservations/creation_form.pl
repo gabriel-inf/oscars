@@ -65,6 +65,25 @@ sub print_reservation_form
     print '  </tr>', "\n";
     print '</table>', "\n";
 
+    if ($form_type eq 'engr') {
+        print '<p>Your account privileges allow you to explicitly specify the IP ', "\n";
+        print 'address of the ingress and egress OSCARS loopbacks, and to ', "\n";
+        print 'specify a persistent connection.</p>', "\n";
+
+        print '<table>', "\n";
+        print '  <tr>', "\n";
+        print '    <th>LSP from</th>', "\n";
+        print '    <th>LSP to</th>', "\n";
+        print '    <th>Persistent</th>', "\n";
+        print '  </tr>', "\n";
+        print '  <tr>', "\n";
+        print '    <td><input type="text" name="lsp_from"></td>', "\n";
+        print '    <td><input type="text" name="lsp_to"></td>', "\n";
+        print '    <td><input type="checkbox" name="persistent" value="0"></td>', "\n";
+        print '  </tr>', "\n";
+        print '</table>', "\n";
+    }
+
     print '<br/>', "\n";
     print '<p>Below, please indicate the date and time that you want to start to', "\n";
     print 'use your reserved bandwidth.  The default time zone is the local time.</p>', "\n";
