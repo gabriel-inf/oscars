@@ -13,11 +13,14 @@ require 'general.pl';
 my $cgi = CGI->new();
 my $login_frame;
 my ($dn, $user_level, $form_type) = check_session_status(undef, $cgi);
-if (!$form_type) {
+if (!$form_type || ($form_type eq 'user')) {
     $login_frame = "https://oscars.es.net/login_frame.html";
 }
-else {
+elsif ($form_type eq 'admin') {
     $login_frame = "https://oscars.es.net/admin/login_frame.html";
+}
+elsif ($form_type eq 'engr') {
+    $login_frame = "https://oscars.es.net/engr/login_frame.html";
 }
 
 # nuke session and put the user back at the login screen
