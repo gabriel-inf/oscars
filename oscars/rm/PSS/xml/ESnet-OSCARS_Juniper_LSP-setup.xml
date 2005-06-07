@@ -12,7 +12,6 @@
                 <no-cspf/>
                 <setup-priority><user-var>lsp_setup-priority</user-var></setup-priority>
                 <reservation-priority><user-var>lsp_reservation-priority</user-var></reservation-priority>
-                <no-record/>
                 <description><user-var>lsp_description</user-var></description>
             </label-switched-path>
         </mpls>
