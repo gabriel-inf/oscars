@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: May 10, 2005
+# Last modified: June 6, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -12,8 +12,8 @@ require 'general.pl';
 
 my $cgi = CGI->new();
 my $login_frame;
-my ($dn, $user_level, $admin_required) = check_session_status(undef, $cgi);
-if (!$admin_required) {
+my ($dn, $user_level, $form_type) = check_session_status(undef, $cgi);
+if (!$form_type) {
     $login_frame = "https://oscars.es.net/login_frame.html";
 }
 else {

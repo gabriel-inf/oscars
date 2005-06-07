@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: May 10, 2005
+# Last modified: June 6, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -25,7 +25,7 @@ my $cgi = CGI->new();
 
 if (!$results{'error_msg'}) {
     check_session_status(\%results, $cgi);
-    if ($cgi->param('admin_required')) {
+    if ($cgi->param('form_type') eq 'admin') {
         update_frames(0, "status_frame", $startpoint . '/admin/gateway.html', $cgi->param('user_dn') . " logged in as administrator");
     }
     else {
@@ -60,7 +60,7 @@ sub verify_user
         return( 1, %results );
     }
     $soap_params{'user_dn'} = $cgi->param('user_dn');
-    $soap_params{'admin_required'} = $cgi->param('admin_required');
+    $soap_params{'form_type'} = $cgi->param('form_type');
     $auth = AAAS::Client::Auth->new();
     #$soap_params{'user_password'} = $auth->encode_passwd($cgi->param('user_password'));
     $soap_params{'user_password'} = $cgi->param('user_password');

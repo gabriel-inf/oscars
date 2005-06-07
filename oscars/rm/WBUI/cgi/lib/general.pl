@@ -1,7 +1,7 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: June 3, 2005
+# Last modified: June 6, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -27,8 +27,8 @@ sub check_session_status {
         return (undef, undef, undef);
     }
     else {
-        my ($dn, $user_level, $admin_required) = $auth->verify_login_status($cgi);
-        return($dn, $user_level, $admin_required);
+        my ($dn, $user_level, $form_type) = $auth->verify_login_status($cgi);
+        return($dn, $user_level, $form_type);
     }
 }
 
