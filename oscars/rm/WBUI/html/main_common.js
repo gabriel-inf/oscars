@@ -6,8 +6,7 @@ David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
-print_navigation_bar(activePage)
-print_admin_bar(activePage)
+print_navigation_bar(formType, activePage)
 print_current_date()
 hasClass(obj)
 stripe(id)
@@ -48,11 +47,14 @@ function print_current_date(fr, useLocal)
 // ** prints HTML header
 function print_html_header(formType)
 {
-    if (formType == 'user') {
-        document.write('<title>On-demand Secure Circuits and Advance Reservation System</title>');
+    if (formType == 'admin') {
+        document.write('<title>OSCARS Administration Tool</title>');
+    }
+    else if (formType == 'engr') {
+        document.write('<title>OSCARS Engineers</title>');
     }
     else {
-        document.write('<title>OSCARS Administration Tool</title>');
+        document.write('<title>On-demand Secure Circuits and Advance Reservation System</title>');
     }
     document.write('	<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1"a');
     document.write('	<meta name="Author" content="Soo-yeon Hwang">');
@@ -70,45 +72,19 @@ function print_header(formType)
     document.write('<tr>');
     document.write('    <td><a href="http://www.es.net/" target="_blank"><img src="https://oscars.es.net/images/ESnetLogo.png" width="77" height="58" border="0" alt="ESnet Logo" title="ESnet"></a></td>');
     document.write('    <td>');
-    if (formType == 'user') {
-        document.write('	<h1>On-demand Secure Circuits and Advance Reservation System (OSCARS)</h1>');
+    if (formType == 'admin') {
+        document.write('	<h1>OSCARS Administration Tool</h1>');
+    }
+    else if (formType == 'engr') {
+        document.write('	<h1>OSCARS Engineers</h1>');
     }
     else {
-        document.write('	<h1>OSCARS Administration Tool</h1>');
+        document.write('	<h1>On-demand Secure Circuits and Advance Reservation System (OSCARS)</h1>');
     }
     document.write('    <p>In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project</p>');
     document.write('    </td>');
     document.write('</tr>');
     document.write('</table>');
-    document.write('</div>');
-}
-
-
-// ** prints navigation bar, with active page highlighted
-function print_navigation_bar(activePage)
-{
-    document.write('<div>');
-    document.write('<ul id="tabnav">');
-    if (activePage == 'reservation') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/creation_form.pl" class="active" title="Create a new reservation">Make a Reservation</a></li>');
-    }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/creation_form.pl" title="Create a new reservation">Make a Reservation</a></li>');
-    }
-    if (activePage == 'reservationlist') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl" class="active" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
-    }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
-    }
-    if (activePage == 'userprofile') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" class="active" title="View and/or edit your personal information">My Profile</a></li>');
-    }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" title="View and/or edit your personal information">My Profile</a></li>');
-    }
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
-    document.write('</ul>');
     document.write('</div>');
 }
 
@@ -120,27 +96,30 @@ function update_frame(target, uri)
 }
 
 
-// ** prints admin navigation bar, with active page highlighted
-// ** TODO:  Fix duplication with previous function later.
+// ** prints navigation bar for appropriate form type, with active page
+// ** highlighted
 
-function print_admin_bar(activePage)
+function print_navigation_bar(formType, activePage)
 {
     document.write('<div>');
     document.write('<ul id="tabnav">');
-    if (activePage == 'userlist') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" class="active" title="View list of all accounts">List All Accounts</a></li>');
-    }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" title="View list of all accounts">List All Accounts</a></li>');
-    }
-    if (activePage == 'adduser') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" class="active" title="Add a new user account">Add a New User</a></li>');
-    }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" title="Add a new user account">Add a New User</a></li>');
-    
-    }
-    if (activePage == 'adminprofile') {
+
+    if (formType == 'admin') {
+        if (activePage == 'userlist') {
+            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" class="active" title="View list of all accounts">List All Accounts</a></li>');
+        }
+        else {
+            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" title="View list of all accounts">List All Accounts</a></li>');
+        }
+        if (activePage == 'adduser') {
+            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" class="active" title="Add a new user account">Add a New User</a></li>');
+        }
+        else {
+            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" title="Add a new user account">Add a New User</a></li>');
+        }
+    } 
+
+    if (activePage == 'profile') {
         document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" class="active" title="View and/or edit your information">User Profile</a></li>');
     }
     else {
