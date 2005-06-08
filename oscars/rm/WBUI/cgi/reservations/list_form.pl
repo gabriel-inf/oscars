@@ -12,11 +12,7 @@ use BSS::Client::SOAPClient;
 require '../lib/general.pl';
 
 
-    # names of the fields to be read
-my @fields_to_read = ( 'reservation_id', 'user_dn', 'reservation_start_time', 'reservation_end_time', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'reservation_tag' );
-
 my (%form_params, %results);
-
 
 my $cgi = CGI->new();
 my ($dn, $user_level, $form_type) = check_session_status(undef, $cgi);
@@ -29,17 +25,17 @@ if (!$error_status) {
     $form_params{'form_type'} = $form_type;
         # The reservation id, if present, indicates a deletion
     if ($form_params{'reservation_id'}) {
-        ($error_status, %results) = soap_delete_reservation(\%form_params, \@fields_to_read);
+        ($error_status, %results) = soap_delete_reservation(\%form_params);
         if (!$error_status) {
             # save the status message
             my $update_status = $results{'status_msg'};
             # get the updated data
-            ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
+            ($error_status, %results) = soap_get_reservations(\%form_params);
             $results{'status_msg'} = $update_status;
         }
     }
     else {
-        ($error_status, %results) = soap_get_reservations(\%form_params, \@fields_to_read);
+        ($error_status, %results) = soap_get_reservations(\%form_params);
     }
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{'status_msg'});

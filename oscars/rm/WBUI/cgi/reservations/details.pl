@@ -16,9 +16,6 @@ use BSS::Client::SOAPClient;
 require '../lib/general.pl';
 
 
-    # names of the fields to be read and displayed on the screen
-my @fields_to_read = ( 'user_dn', 'reservation_id', 'reservation_tag', 'reservation_start_time', 'reservation_end_time', 'reservation_created_time', 'reservation_bandwidth', 'reservation_burst_limit', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'reservation_description' );
-
 my (%form_params, %results);
 
 my $cgi = CGI->new();
@@ -29,7 +26,7 @@ if ($dn) {
         $form_params{$_} = $cgi->param($_);
     }
     $form_params{user_dn} = $dn;
-    ($error_status, %results) = BSS::Client::SOAPClient::soap_get_resv_detail(\%form_params, \@fields_to_read);
+    ($error_status, %results) = BSS::Client::SOAPClient::soap_get_reservations(\%form_params);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{status_msg});
         print_reservation_detail($form_type, \%results);
@@ -61,7 +58,7 @@ sub print_reservation_detail
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
 
-    print '<script language="javascript">print_navigation_bar("', $form_type '", "reservationlist");</script>', "\n";
+    print '<script language="javascript">print_navigation_bar("', $form_type, '", "reservationlist");</script>', "\n";
 
     print '<div id="zebratable_ui">', "\n\n";
 
