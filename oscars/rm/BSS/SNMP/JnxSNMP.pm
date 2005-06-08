@@ -12,7 +12,10 @@ use SNMP;
 
 use strict;
 
-&SNMP::addMibFiles("$ENV{OSCARS_HOME}/BSS/SNMP/mibs/mib-jnx-mpls.txt"};
+&SNMP::addMibFiles(
+  "$ENV{OSCARS_HOME}/BSS/SNMP/mibs/mib-jnx-smi.txt",
+  "$ENV{OSCARS_HOME}/BSS/SNMP/mibs/mib-jnx-mpls.txt"
+);
 
 
 
