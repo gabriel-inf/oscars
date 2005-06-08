@@ -23,13 +23,10 @@ $params{'reservation_status'} =         'pending';
 $params{'ingress_interface_id'}= '';   # db lookup in scheduler
 $params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
-$params{'src_hostaddrs_ip'} = 'distressed.es.net';
+$params{'src_hostaddrs_ip'} = 'nettrash3.es.net';
 $params{'dst_hostaddrs_ip'} = '134.55.210.219';
 
-$params{'user_dn'} =        'davidr';
-
-$params{'reservation_ingress_port'} =   '';     # db lookup in schedule
-$params{'reservation_egress_port'} =    '';     # db lookup in scheduler
+$params{'user_dn'} =        'dwrobertson@lbl.gov';
 $params{'reservation_description'} =    'This is a test.';
 
 my($result);

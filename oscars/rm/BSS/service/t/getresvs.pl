@@ -1,38 +1,41 @@
 #!/usr/bin/perl -w
 
+use strict;
+
 use BSS::Client::SOAPClient;
 
 use Data::Dumper;
 
-my($value);
-my %params = ('user_dn' => 'dwrobertson@lbl.gov' );   # FIX
-    # names of the fields to be read and displayed on the screen
-my @fields_to_read = ( 'user_dn', 'reservation_start_time', 'reservation_end_time', 'reservation_status', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'reservation_tag' );
+my( %params );
+my $numArgs = $#ARGV + 1;
 
-my($unused, %data) = soap_get_reservations(\%params, \@fields_to_read);
-if (defined($data{'error_msg'}) && $data{'error_msg'})
-{
-    print $data{'error_msg'}, "\n\n";
-}
-elsif (defined($data{'status_msg'}))
-{
-    my ($rows, $r, $f);
+$params{form_type} = 'admin';
 
-    foreach $_ (@fields_to_read)
-    {
-        print $_, ' ';
+if ($numArgs == 2) {
+    if ($ARGV[0] eq '-u') {
+        # only get the reservations for that user
+        $params{user_dn} = $ARGV[1];
     }
-    print "\n";
-    $rows = $data{'rows'};
-    foreach $r (@$rows)
-    {
-        print $r->{'user_dn'}, ' ';
-        print $r->{'reservation_start_time'}, ' ';
-        print $r->{'reservation_end_time'}, ' ';
-        print $r->{'reservation_status'}, ' ';;
-        print $r->{'src_hostaddrs_id'}, ' ';
-        print $r->{'dst_hostaddrs_id'}, ' ';
-        print $r->{'reservation_tag'};
+    else {
+        # only get the reservation with that particular key
+        $params{reservation_id} = $ARGV[1];
+    }
+}
+
+my($unused, %data) = soap_get_reservations(\%params);
+if (defined($data{error_msg}) && $data{error_msg}) {
+    print $data{error_msg}, "\n\n";
+}
+elsif (defined($data{status_msg})) {
+    my ($rows, $r, $f, %c);
+
+    $rows = $data{rows};
+    for $r (@$rows) {
+        for $f (keys %$r) {
+            if (defined($r->{$f})) {
+                print "$f -> $r->{$f}\n";
+            }
+        }
         print "\n";
     }
 }
