@@ -1,7 +1,7 @@
 # Reservation.pm:
-# Last modified: May 25, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: June 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 package BSS::Frontend::Reservation;
 
@@ -11,6 +11,26 @@ use DateTime;
 use Data::Dumper;
 
 use BSS::Frontend::Database;
+
+# until can get MySQL and views going
+my %user_fields = ( 'user_dn' => '',
+                    'reservation_start_time' => '',
+                    'reservation_end_time' => '',
+                    'reservation_status' => '',
+                    'src_hostaddrs_id' => '',
+                    'dst_hostaddrs_id' => '',
+                    'reservation_tag' => '' );
+
+my %detail_fields = ( 'reservation_start_time' => '',
+                    'reservation_end_time' => '',
+                    'reservation_created_time' => '',
+                    'reservation_bandwidth' => '',
+                    'reservation_burst_limit' => '',
+                    'reservation_status' => '',
+                    'src_hostaddrs_id' => '',
+                    'dst_hostaddrs_id' => '',
+                    'reservation_description' => '',
+                    'reservation_tag' => '' );
 
 
 ###############################################################################
@@ -102,12 +122,19 @@ sub insert_reservation {
                                                   $inref->{dst_hostaddrs_ip}); 
         $inref->{reservation_created_time} = time();
 
-        my @insertions;   # copy over input fields that will be set in table
-        my @fields_to_insert = $self->{dbconn}->get_fields_to_insert();
-        for $_ ( @fields_to_insert ) {
-           $results{$_} = $inref->{$_};
-           push(@insertions, $inref->{$_}); 
+        $query = "SHOW COLUMNS from reservations";
+        ($sth, $results{error_msg}) = $self->{dbconn}->do_query( $query );
+        if ( $results{error_msg} ) { return( 1, %results ); }
+        $arrayref = $sth->fetchall_arrayref({});
+        my @insertions;
+        for $_ ( @$arrayref ) {
+           if ($inref->{$_->{Field}}) {
+               $results{$_} = $inref->{$_->{Field}};
+               push(@insertions, $inref->{$_->{Field}}); 
+           }
+           else{ push(@insertions, 'NULL'); }
         }
+        $sth->finish();
 
         # insert all fields for reservation into database
         $query = "INSERT INTO reservations VALUES (
@@ -150,38 +177,30 @@ sub delete_reservation {
 ###############################################################################
 # get_reservations: gets the reservation list from the database
 #
-# In: reference to hash of parameters
+# In: reference to hash of parameters, id if only want one reservation
 # Out: success or failure, and status message
 #
 sub get_reservations {
-    my( $self, $inref, $fields_to_read ) = @_;
+    my( $self, $inref ) = @_;
     my( $sth, $query );
-    my( %mapping, @field_names, $rref, $arrayref, $r, %results );
+    my( %mapping, $rref, $arrayref, $r, %results );
 
     $results{error_msg} = $self->check_connection();
     if ($results{error_msg}) { return( 1, %results); }
 
-    # DB query: get the reservation list
-    # TODO:  selectall
-
-    for $_ ( @$fields_to_read ) {
-        push (@field_names, $_);
+    $query = "SELECT * FROM reservations";
+    # If administrator is making request, show all reservations.  Otherwise,
+    # show only the user's reservations.  If id is given, show only the results
+    # for that reservation.  Sort by start time in ascending order.
+    if ($inref->{reservation_id}) {
+        $query .= " WHERE reservation_id = $inref->{reservation_id}";
     }
-    $query = "SELECT " . join(', ', @field_names);
-
-    # If administrator is making request, show all reservations.
-    # Sort by start time in ascending order.
-    if ($inref->{admin_required}) {
-        $query .= " FROM reservations ORDER BY reservation_start_time";
-        ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
+    elsif ($inref->{user_dn}) {
+        $query .= " WHERE user_dn = '$inref->{user_dn}'";
     }
-    else {
-        $query .= " FROM reservations WHERE user_dn = ?
-                    ORDER BY reservation_start_time";
-        ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
-                                                           $inref->{user_dn});
-    }
-
+    #print STDERR "$query\n";
+    $query .= " ORDER BY reservation_start_time";
+    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
     if ( $results{error_msg} ) { return( 1, %results ); }
 
     $rref = $sth->fetchall_arrayref({});
@@ -194,9 +213,22 @@ sub get_reservations {
     $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
+    my $k;
     for $r (@$rref) {
         $r->{src_hostaddrs_id} = $mapping{$r->{src_hostaddrs_id}};
         $r->{dst_hostaddrs_id} = $mapping{$r->{dst_hostaddrs_id}};
+        for $k (keys %$r) {
+            if ($inref->{user_dn}) {
+                if (!defined($user_fields{$k})) {
+                    $r->{$k} = undef;
+                }
+            }
+            elsif ($inref->{reservation_id}) {
+                if (!defined($detail_fields{$k})) {
+                    $r->{$k} = undef;
+                }
+            }
+        }
     }
     $results{rows} = $rref;
 
@@ -205,50 +237,6 @@ sub get_reservations {
     return( 0, %results );
 }
 ######
-
-###############################################################################
-# get_reservation_detail:  gets the reservation details from the database
-#
-# In: reference to hash of parameters
-# Out: success or failure, and status message
-#
-sub get_reservation_detail {
-    my( $self, $inref, $fields_to_display ) = @_;
-    my( $sth, $query );
-    my( %mapping, $r, $arrayref, %results );
-
-    $results{error_msg} = $self->check_connection();
-    if ($results{error_msg}) { return( 1, %results); }
-
-    # DB query: get the user profile detail
-    $query = "SELECT " . join(', ', @$fields_to_display);
-    $query .= " FROM reservations WHERE reservation_id = ?";
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
-                                                    $inref->{reservation_id});
-    if ( $results{error_msg} ) { return( 1, %results ); }
-
-    # populate %results with the data fetched from the database
-    @results{@$fields_to_display} = ();
-    $sth->bind_columns( map { \$results{$_} } @$fields_to_display );
-    $sth->fetch();
-    $sth->finish();
-
-    $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
-    if ( $results{error_msg} ) { return( 1, %results ); }
-
-    $arrayref = $sth->fetchall_arrayref();
-    for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
-
-    $results{src_hostaddrs_ip} = $mapping{$results{src_hostaddrs_id}};
-    $results{dst_hostaddrs_ip} = $mapping{$results{dst_hostaddrs_id}};
-
-    $sth->finish();
-    $results{status_msg} = 'Successfully got reservation details.';
-    return (0, %results);
-}
-######
-
 
 ### Following methods called from SchedulerThread.
 
@@ -427,7 +415,7 @@ sub check_oversubscribe {
         if ($iface_idxs{$idx} >
             ($row->{interface_speed} * $max_reservation_utilization)) {
             my $max_utilization = $row->{interface_speed} * $max_reservation_utilization/1000000.0;
-            if ($inref->{admin_required}) {
+            if ($inref->{form_type} eq 'admin') {
                 ($router_name, $error_msg) = $self->{dbconn}->xface_id_to_loopback($idx, 'name');
                 if ($error_msg) { return (1, $error_msg); }
                 $error_msg = "$router_name oversubscribed: ";
