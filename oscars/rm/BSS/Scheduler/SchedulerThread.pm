@@ -229,9 +229,20 @@ sub map_fields {
     my ( %results, $error );
     my ( $ingress_loopback_ip, $egress_loopback_ip, $src_hostaddrs_ip, $dst_hostaddrs_ip );
 
-     # get loopbacks for routers, given interface ids
-    ($ingress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback($data->{ingress_interface_id}, 'ip');
-    ($egress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback($data->{egress_interface_id}, 'ip');
+     # get loopbacks for routers, given interface ids, if an engineer
+     # has not specified one  (TODO:  error checking)
+    if (!(defined($data->{lsp_from}))) {
+        ($ingress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback($data->{ingress_interface_id}, 'ip');
+    }
+    else {
+        $ingress_loopback_ip = $data->{lsp_from};
+    }
+    if (!(defined($data->{lsp_to}))) {
+        ($egress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback($data->{egress_interface_id}, 'ip');
+    }
+    else {
+        $egress_loopback_ip = $data->{lsp_to};
+    }
      print "lsp_from: $ingress_loopback_ip, lsp_to:  $egress_loopback_ip\n";
      # get host IP addresses, given id 
     ($src_hostaddrs_ip, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip($data->{src_hostaddrs_id});
@@ -239,9 +250,7 @@ sub map_fields {
     %results = (
       'name' => "oscars_$data->{reservation_id}",
       'lsp_from' => $ingress_loopback_ip,
-      #'lsp_from' => 'dev-rt20-e.es.net',
       'lsp_to' => $egress_loopback_ip,
-      #'lsp_to' => "10.0.0.1",
       'bandwidth' => $data->{reservation_bandwidth},
       'lsp_class-of-service' => $data->{reservation_class},
       'policer_burst-size-limit' =>  $data->{reservation_burst_limit},
