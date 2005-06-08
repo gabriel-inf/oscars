@@ -59,7 +59,7 @@ sub create_reservation {
     my ( $error_status, %results );
 
     $self->{output_buf} = "*********************\n";
-    ($inref->{ingress_interface_id}, $inref->{egress_interface_id}, $inref->{reservation_path}, $results{error_msg}) = $self->find_interface_ids($inref->{src_hostaddrs_ip}, $inref->{dst_hostaddrs_ip});
+    ($inref->{ingress_interface_id}, $inref->{egress_interface_id}, $inref->{reservation_path}, $results{error_msg}) = $self->find_interface_ids($inref);
 
     if ($results{error_msg}) { return ( 1, %results ); }
 
@@ -104,29 +104,9 @@ sub delete_reservation {
 #     or status message
 #
 sub get_reservations {
-    # reference to input hash ref containing fields filled in by user
-    # This routine fills in the remaining fields.
-    my ( $self, $inref, $fields_to_display ) = @_; 
+    my ( $self, $inref ) = @_; 
 
-    my ($error_status, %results) = $self->{frontend}->get_reservations( $inref, $fields_to_display );
-    return ($error_status, %results);
-}
-######
-
-##############################################################################
-# get_reservation_detail
-# IN: ref to hash containing fields corresponding to the reservations table.
-#     Some fields are still empty, and are filled in before inserting a
-#     record
-# OUT: 0 on success, and hash containing all table fields, as well as error
-#     or status message
-#
-sub get_reservation_detail {
-    # inref is a ref to an input hash containing fields filled in by user.
-    # This routine fills in the remaining fields.
-    my ( $self, $inref, $fields_to_display ) = @_; 
-
-    my ($error_status, %results) = $self->{frontend}->get_reservation_detail( $inref, $fields_to_display );
+    my ($error_status, %results) = $self->{frontend}->get_reservations( $inref );
     return ($error_status, %results);
 }
 ######
@@ -292,29 +272,41 @@ sub do_local_trace {
 # TODO: validate input
 #
 sub find_interface_ids {
-    my ($self, $src, $dst, $path) = @_;
+    my ($self, $inref) = @_;
 
-    my( $ingress_interface_id, $egress_interface_id );
+    my( $src, $dst, $ingress_interface_id, $egress_interface_id );
     my( $loopback_ip, $path, $err_msg, $start_router );
 
-    # Use the default router to run the traceroute to the source.
-    # Find the router with an oscars loopback closest to the source 
-    $self->{output_buf} .= "--traceroute:  $self->{configs}{jnx_source} to source $src\n";
-    ($ingress_interface_id, $loopback_ip, $path, $err_msg) = $self->do_remote_trace(
-                                           $self->{configs}{jnx_source}, $src);
+    $src = $inref->{src_hostaddrs_ip};
+    $dst = $inref->{dst_hostaddrs_ip};
+    # If the loopbacks have not already been specified, use the default
+    # router to run the traceroute to the source, and find the router with
+    # an oscars loopback closest to the source 
+    if ($inref->{lsp_from}) {
+        ($ingress_interface_id, $err_msg) = $self->{frontend}->{dbconn}->ip_to_xface_id($inref->{lsp_from});
+    }
+    else {
+        $self->{output_buf} .= "--traceroute:  $self->{configs}{jnx_source} to source $src\n";
+        ($ingress_interface_id, $loopback_ip, $path, $err_msg) = $self->do_remote_trace(
+                                               $self->{configs}{jnx_source}, $src);
+    }
     if ($err_msg) { return ( 0, 0, $err_msg); }
   
-    # Now use the address found in the last step to run the traceroute to the
-    # destination, and find the egress.
-    if ( $self->{configs}{run_traceroute} )  {
-        $self->{output_buf} .= "--traceroute:  $loopback_ip to destination $dst\n";
-        ($egress_interface_id, $loopback_ip, $path, $err_msg) = $self->do_remote_trace(
-                                           $loopback_ip, $dst);
-        if ($err_msg) { return (0, 0, $err_msg); }
-    } else {
-        ($ingress_interface_id, $err_msg) = $self->do_local_trace($src);
-        if ($err_msg) { return (0, 0, $err_msg); }
+    if ($inref->{lsp_to}) {
+        ($egress_interface_id, $err_msg) = $self->{frontend}->{dbconn}->ip_to_xface_id($inref->{lsp_to});
     }
+    else {
+        # Now use the address found in the last step to run the traceroute to the
+        # destination, and find the egress.
+        if ( $self->{configs}{run_traceroute} )  {
+            $self->{output_buf} .= "--traceroute:  $loopback_ip to destination $dst\n";
+            ($egress_interface_id, $loopback_ip, $path, $err_msg) = $self->do_remote_trace(
+                                               $loopback_ip, $dst);
+        } else {
+            ($ingress_interface_id, $err_msg) = $self->do_local_trace($src);
+        }
+    }
+    if ($err_msg) { return (0, 0, $err_msg); }
 
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0))
     {
