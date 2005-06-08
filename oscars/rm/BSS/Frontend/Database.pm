@@ -37,23 +37,6 @@ sub initialize {
 }
 ######
 
-our @insert_fields = ('reservation_id', 'reservation_start_time', 'reservation_end_time',
-    'reservation_created_time', 'reservation_bandwidth', 'reservation_class',
-    'reservation_burst_limit', 'reservation_status', 'ingress_interface_id',
-    'egress_interface_id', 'src_hostaddrs_id', 'dst_hostaddrs_id', 'user_dn',
-    'reservation_ingress_port', 'reservation_egress_port', 'reservation_tag',
-    'reservation_path', 'reservation_dscp', 'reservation_description');
-
-
-##############################################################################
-#
-sub get_fields_to_insert {
-    my ($self) = @_;
-    return (@insert_fields)
-}
-######
-
-    
 ##############################################################################
 # ip_to_xface_id:
 #   Get the db iface id from an ip address.  Called from the scheduler to see
