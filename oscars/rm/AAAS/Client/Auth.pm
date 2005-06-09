@@ -53,7 +53,6 @@ sub set_login_status
     $sid = $session->id();
     $cookie = $cgi->cookie(CGISESSID => $sid);
     $session->param("user_dn", $cgi->param('user_dn'));
-    $session->param("form_type", $cgi->param('form_type'));
     $session->param("user_level", $login_results->{'user_level'});
     print $cgi->header( -cookie=>$cookie );
 }
@@ -69,7 +68,7 @@ sub set_login_status
 sub verify_login_status
 {
     my ($self, $cgi) = @_;
-    my ($session, $stored_dn, $user_level, $form_type);
+    my ($session, $stored_dn, $user_level);
 
     $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
 
@@ -78,16 +77,14 @@ sub verify_login_status
     # created if there is no valid session with that id.
     $stored_dn = $session->param("user_dn");
     $user_level = $session->param("user_level");
-    $form_type = $session->param("form_type");
     if (!$stored_dn)  {
         return( undef, undef, undef );
     }
     else {
        $cgi->param(-name=>'user_dn',-value=>$stored_dn);
-       $cgi->param(-name=>'form_type',-value=>$form_type);
        $cgi->param(-name=>'user_level',-value=>$user_level);
        print $cgi->header( );
-       return( $stored_dn, $user_level, $form_type );
+       return( $stored_dn, $user_level );
     }
 }
 
@@ -101,7 +98,6 @@ sub logout
     $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
     $session->clear(["user_dn"]);
     $session->clear(["user_level"]);
-    $session->clear(["form_type"]);
 }
 
 
