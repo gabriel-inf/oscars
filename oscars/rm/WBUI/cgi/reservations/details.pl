@@ -50,6 +50,7 @@ sub print_reservation_detail
 {
     my ( $user_level, $results ) = @_;
 
+    my $row = @{$results->{rows}}[0];
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
@@ -67,22 +68,22 @@ sub print_reservation_detail
 
     print '<table cellspacing="0" width="90%" id="reservationlist">', "\n";
 
-    print "  <tr><td>Tag:  </td><td>$results->{reservation_tag}</td></tr>\n"; 
+    print "  <tr><td>Tag:  </td><td>$row->{reservation_tag}</td></tr>\n"; 
 
-    $time_field = get_time_str($results->{reservation_start_time});
+    $time_field = get_time_str($row->{reservation_start_time});
     print "  <tr><td>Start Time:  </td><td>$time_field (UTC)</td></tr>\n";
 
-    $time_field = get_time_str($results->{reservation_end_time});
+    $time_field = get_time_str($row->{reservation_end_time});
     print "  <tr> ><td>End Time:  </td><td>$time_field (UTC)</td></tr>\n";
 
-    $time_field = get_time_str($results->{reservation_created_time});
+    $time_field = get_time_str($row->{reservation_created_time});
     print "  <tr> ><td>Created Time:  </td><td>$time_field (UTC)</td></tr>\n";
-    print "  <tr> ><td>Bandwidth:  </td><td>$results->{reservation_bandwidth}</td></tr>\n";
-    print "  <tr> ><td>Burst Limit:  </td><td>$results->{reservation_burst_limit}</td></tr>\n";
-    print "  <tr> ><td>Status:  </td><td>$results->{reservation_status}</td></tr>\n";
-    print "  <tr> ><td>Origin:  </td><td>", get_oscars_host($results->{src_hostaddrs_ip}), "</td></tr>\n";
-    print "  <tr> ><td>Destination:  </td><td>", get_oscars_host($results->{dst_hostaddrs_ip}), "</td></tr>\n";
-    print "  <tr ><td>Description:  </td><td>", $results->{reservation_description}, "</td></tr>\n";
+    print "  <tr> ><td>Bandwidth:  </td><td>$row->{reservation_bandwidth}</td></tr>\n";
+    print "  <tr> ><td>Burst Limit:  </td><td>$row->{reservation_burst_limit}</td></tr>\n";
+    print "  <tr> ><td>Status:  </td><td>$row->{reservation_status}</td></tr>\n";
+    print "  <tr> ><td>Origin:  </td><td>", get_oscars_host($row->{src_hostaddrs_id}), "</td></tr>\n";
+    print "  <tr> ><td>Destination:  </td><td>", get_oscars_host($row->{dst_hostaddrs_id}), "</td></tr>\n";
+    print "  <tr ><td>Description:  </td><td>", $row->{reservation_description}, "</td></tr>\n";
     print "</table>\n";
 
     print '<br/><br/>';

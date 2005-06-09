@@ -8,6 +8,7 @@
 use CGI;
 
 use BSS::Client::SOAPClient;
+use Data::Dumper;
 
 require '../lib/general.pl';
 
