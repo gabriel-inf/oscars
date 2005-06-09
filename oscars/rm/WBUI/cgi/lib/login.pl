@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: June 7, 2005
+# Last modified: June 8, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -56,7 +56,6 @@ sub verify_user
         return( 1, %results );
     }
     $soap_params{'user_dn'} = $cgi->param('user_dn');
-    $soap_params{'user_level'} = $cgi->param('user_level');
     $auth = AAAS::Client::Auth->new();
     #$soap_params{'user_password'} = $auth->encode_passwd($cgi->param('user_password'));
     $soap_params{'user_password'} = $cgi->param('user_password');

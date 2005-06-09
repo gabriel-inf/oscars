@@ -16,7 +16,6 @@ my (%form_params, $results);
 
 my $cgi = CGI->new();
 ($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
-print STDERR Dumper(%form_params);
 
 if ($form_params{user_dn}) {
     for $_ ($cgi->param) {

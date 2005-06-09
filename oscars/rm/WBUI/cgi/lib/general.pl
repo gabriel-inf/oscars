@@ -19,15 +19,15 @@ use AAAS::Client::Auth;
 
 sub check_session_status {
     my( $login_results, $cgi ) = @_;
-    my( $auth );
+    my( $auth, $dn, $user_level );
 
     $auth = AAAS::Client::Auth->new();
     if ( $login_results ) {
-        $auth->set_login_status($cgi, $login_results);
-        return (undef, undef);
+        ($dn, $user_level) = $auth->set_login_status($cgi, $login_results);
+        return ($dn, $user_level);
     }
     else {
-        my ($dn, $user_level) = $auth->verify_login_status($cgi);
+        ($dn, $user_level) = $auth->verify_login_status($cgi);
         return($dn, $user_level);
     }
 }
