@@ -1,6 +1,6 @@
 /*
-Javascript functions for main pagessss
-Last modified: June 6, 2005
+Javascript functions for main pages
+Last modified: June 8, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -45,47 +45,14 @@ function print_current_date(fr, useLocal)
 }
 
 // ** prints HTML header
-function print_html_header(formType)
+function print_html_header()
 {
-    if (formType == 'admin') {
-        document.write('<title>OSCARS Administration Tool</title>');
-    }
-    else if (formType == 'engr') {
-        document.write('<title>OSCARS Engineers</title>');
-    }
-    else {
-        document.write('<title>On-demand Secure Circuits and Advance Reservation System</title>');
-    }
+    document.write('<title>On-demand Secure Circuits and Advance Reservation System</title>');
     document.write('	<meta http-equiv="Content-type" content="text/html; charset=iso-8859-1"a');
     document.write('	<meta name="Author" content="Soo-yeon Hwang">');
     document.write('    <meta name="Keywords" content="">');
     document.write('	<meta name="Description" content="">');
 //    document.write('	<meta http-equiv="Refresh" content="100;URL=./">');
-}
-
-
-// ** prints header
-function print_header(formType)
-{
-    document.write('<div>');
-    document.write('<table id="pagetitle">');
-    document.write('<tr>');
-    document.write('    <td><a href="http://www.es.net/" target="_blank"><img src="https://oscars.es.net/images/ESnetLogo.png" width="77" height="58" border="0" alt="ESnet Logo" title="ESnet"></a></td>');
-    document.write('    <td>');
-    if (formType == 'admin') {
-        document.write('	<h1>OSCARS Administration Tool</h1>');
-    }
-    else if (formType == 'engr') {
-        document.write('	<h1>OSCARS Engineers</h1>');
-    }
-    else {
-        document.write('	<h1>On-demand Secure Circuits and Advance Reservation System (OSCARS)</h1>');
-    }
-    document.write('    <p>In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project</p>');
-    document.write('    </td>');
-    document.write('</tr>');
-    document.write('</table>');
-    document.write('</div>');
 }
 
 
