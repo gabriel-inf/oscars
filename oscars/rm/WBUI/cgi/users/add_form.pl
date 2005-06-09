@@ -13,7 +13,7 @@ require '../lib/general.pl';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}, $form_params{form_type}) = check_session_status(undef, $cgi);
+($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
 
 if ($form_params{user_dn}) {
     for $_ ($cgi->param) {

@@ -12,14 +12,11 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-# names of the fields to be displayed on the screen
-my @fields_to_read = ( 'user_last_name', 'user_first_name', 'user_dn', 'user_password', 'user_email_primary', 'user_level', 'user_email_secondary', 'user_phone_primary', 'user_phone_secondary', 'user_description', 'user_register_time', 'user_activation_key', 'institution_id' );
-
-
-my (%form_params, %results);
+my (%form_params, $results);
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}, $form_params{form_type}) = check_session_status(undef, $cgi);
+($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
+print STDERR Dumper(%form_params);
 
 if ($form_params{user_dn}) {
     for $_ ($cgi->param) {
@@ -29,19 +26,18 @@ if ($form_params{user_dn}) {
         $form_params{admin_dn} = $form_params{user_dn};
         $form_params{user_dn} = $form_params{id};
     }
-    #print STDERR Dumper(%form_params);
     if ($form_params{set}) {
-        ($error_status, %results) = soap_set_profile(\%form_params, \@fields_to_read);
+        ($error_status, $results) = soap_set_profile(\%form_params);
     }
     else {
-        ($error_status, %results) = soap_get_profile(\%form_params, \@fields_to_read);
+        ($error_status, $results) = soap_get_profile(\%form_params);
     }
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results{status_msg});
-        print_profile(\%results, \%form_params);
+        update_frames($error_status, "main_frame", "", $results->{status_msg});
+        print_profile($results, \%form_params);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results{error_msg});
+        update_frames($error_status, "main_frame", "", $results->{error_msg});
     }
 }
 else {
@@ -56,6 +52,7 @@ sub print_profile
 {
     my ($results, $form_params) = @_;
 
+    my $rowref = @{$results->{rows}}[0];
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
@@ -65,7 +62,7 @@ sub print_profile
     print '</head>', "\n\n";
 
     print '<body>', "\n\n";
-    print '<script language="javascript">print_navigation_bar("', $form_params{form_type}, '", "profile");</script>', "\n\n";
+    print '<script language="javascript">print_navigation_bar("', $form_params->{user_level}, '", "profile");</script>', "\n\n";
 
     print '<div id="account_ui">', "\n\n";
 
@@ -101,8 +98,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th><span class="requiredmark">*</span> First Name</th>', "\n";
     print '  <td><input type="text" name="user_first_name" size="20"';
-    if (defined($results->{user_first_name})) {
-        print " value=\"$results->{user_first_name}\"";
+    if (defined($rowref->{user_first_name})) {
+        print " value=\"$rowref->{user_first_name}\"";
     }
     print '  </td>', "\n";
     print '</tr>', "\n";
@@ -110,8 +107,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th><span class="requiredmark">*</span> Last Name</th>', "\n";
     print '  <td><input type="text" name="user_last_name" size="20"';
-    if (defined($results->{user_last_name})) {
-        print " value=\"$results->{user_last_name}\"";
+    if (defined($rowref->{user_last_name})) {
+        print " value=\"$rowref->{user_last_name}\"";
     }
     print '  </td>', "\n";
     print '</tr>', "\n";
@@ -119,8 +116,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th><span class="requiredmark">*</span> Organization</th>', "\n";
     print '  <td><input type="text" name="institution" size="40"';
-    if (defined($results->{institution})) {
-        print " value=\"$results->{institution}\"";
+    if (defined($rowref->{institution})) {
+        print " value=\"$rowref->{institution}\"";
     }
     print '  </td>', "\n";
     print '</tr>', "\n";
@@ -128,8 +125,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th valign="top">Personal Description</th>', "\n";
     print '  <td><textarea name="user_description" rows="3" cols="34">';
-    if (defined($results->{user_description})) {
-         print "$results->{user_description}";
+    if (defined($rowref->{user_description})) {
+         print "$rowref->{user_description}";
     }
     print '  </textarea></td>', "\n";
     print '</tr>', "\n";
@@ -141,8 +138,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th><span class="requiredmark">*</span> E-mail (Primary)</th>', "\n";
     print '  <td><input type="text" name="user_email_primary" size="40"';
-    if (defined($results->{user_email_primary})) {
-        print " value=\"$results->{user_email_primary}\"";
+    if (defined($rowref->{user_email_primary})) {
+        print " value=\"$rowref->{user_email_primary}\"";
     }
     print '  </td>', "\n";
     print '</tr>', "\n";
@@ -150,8 +147,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th>E-mail (Secondary)</th>', "\n";
     print '  <td><input type="text" name="user_email_secondary" size="40"';
-    if (defined($results->{user_email_secondary})) {
-        print " value=\"$results->{user_email_secondary}\"";
+    if (defined($rowref->{user_email_secondary})) {
+        print " value=\"$rowref->{user_email_secondary}\"";
     }
     print '  </td>', "\n";
     print '</tr>', "\n";
@@ -159,8 +156,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th><span class="requiredmark">*</span> Phone Number (Primary)</th>', "\n";
     print '  <td><input type="text" name="user_phone_primary" size="40"';
-    if (defined($results->{user_phone_primary})) { 
-        print " value=\"$results->{user_phone_primary}\"";
+    if (defined($rowref->{user_phone_primary})) { 
+        print " value=\"$rowref->{user_phone_primary}\"";
     }
     print '  </td>', "\n";
     print '</tr>', "\n";
@@ -168,8 +165,8 @@ sub print_profile
     print '<tr>', "\n";
     print '  <th>Phone Number (Secondary)</th>', "\n";
     print '  <td><input type="text" name="user_phone_secondary" size="40"';
-    if (defined($results->{user_phone_secondary})) {
-        print " value=\"$results->{user_phone_secondary}\"";
+    if (defined($rowref->{user_phone_secondary})) {
+        print " value=\"$rowref->{user_phone_secondary}\"";
     }
     print '  </td>', "\n";
     print '</tr>', "\n";
