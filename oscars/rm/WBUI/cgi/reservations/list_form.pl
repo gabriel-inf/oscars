@@ -30,6 +30,8 @@ if (!$error_status) {
         if (!$error_status) {
             # save the status message
             my $update_status = $results{'status_msg'};
+            # undefine reservation_id so get more than just that row
+            $form_params{reservation_id} = undef;
             # get the updated data
             ($error_status, %results) = soap_get_reservations(\%form_params);
             $results{'status_msg'} = $update_status;
