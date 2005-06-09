@@ -24,11 +24,11 @@ sub check_session_status {
     $auth = AAAS::Client::Auth->new();
     if ( $login_results ) {
         $auth->set_login_status($cgi, $login_results);
-        return (undef, undef, undef);
+        return (undef, undef);
     }
     else {
-        my ($dn, $user_level, $form_type) = $auth->verify_login_status($cgi);
-        return($dn, $user_level, $form_type);
+        my ($dn, $user_level) = $auth->verify_login_status($cgi);
+        return($dn, $user_level);
     }
 }
 

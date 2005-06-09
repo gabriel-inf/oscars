@@ -15,28 +15,21 @@ require 'general.pl';
 
 $startpoint = 'https://oscars.es.net/';
 
-my ($error_status, %results);
+my ($error_status, $results);
+my ($user_dn, $user_level);
 my $cgi = CGI->new();
 
 # Check that the user exists, the correct password has been given, the user
 # account has been activated, and the user has the proper privilege level
 # to perform database operations.
-($error_status, %results) = verify_user($cgi);
+($error_status, $results) = verify_user($cgi);
 
-if (!$results{'error_msg'}) {
-    check_session_status(\%results, $cgi);
-    if ($cgi->param('form_type') eq 'admin') {
-        update_frames(0, "status_frame", $startpoint . '/admin/gateway.html', $cgi->param('user_dn') . " logged in as administrator");
-    }
-    elsif ($cgi->param('form_type') eq 'engr') {
-        update_frames(0, "status_frame", $startpoint . '/engr/gateway.html', $cgi->param('user_dn') . " logged in as engineer");
-    }
-    else {
-        update_frames(0, "status_frame", $startpoint . '/user/', $cgi->param('user_dn'). " logged in");
-    }
+if (!$results->{'error_msg'}) {
+    ($user_dn, $user_level) = check_session_status($results, $cgi);
+    update_frames(0, "status_frame", $startpoint . '/oscars_info.html', $cgi->param('user_dn'). " logged in");
 }
 else {
-    update_frames(1, "status_frame", "", $results{'error_msg'}); 
+    update_frames(1, "status_frame", "", $results->{'error_msg'}); 
 }
 
 exit;
@@ -63,7 +56,7 @@ sub verify_user
         return( 1, %results );
     }
     $soap_params{'user_dn'} = $cgi->param('user_dn');
-    $soap_params{'form_type'} = $cgi->param('form_type');
+    $soap_params{'user_level'} = $cgi->param('user_level');
     $auth = AAAS::Client::Auth->new();
     #$soap_params{'user_password'} = $auth->encode_passwd($cgi->param('user_password'));
     $soap_params{'user_password'} = $cgi->param('user_password');
