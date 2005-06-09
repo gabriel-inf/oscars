@@ -34,10 +34,10 @@ sub soap_verify_login
     return ($response->result(), $response->paramsout());
 }
 
-sub soap_get_profile
-{
-    my ($params, $fields_to_display ) = @_;
-    my $response = $AAAS_server->get_profile($params, $fields_to_display);
+sub soap_get_profile {
+    my ( $params ) = @_;
+
+    my $response = $AAAS_server->get_profile($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -46,10 +46,10 @@ sub soap_get_profile
 }
 
 
-sub soap_set_profile
-{
-    my ($params, $fields_to_read) = @_;
-    my $response = $AAAS_server->set_profile($params, $fields_to_read);
+sub soap_set_profile {
+    my ( $params ) = @_;
+
+    my $response = $AAAS_server->set_profile($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
@@ -75,8 +75,8 @@ sub soap_logout
 
 sub soap_get_userlist
 {
-    my ($params, $fields_to_display ) = @_;
-    my $response = $AAAS_server->get_userlist($params, $fields_to_display);
+    my ( $params ) = @_;
+    my $response = $AAAS_server->get_userlist($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
