@@ -18,7 +18,7 @@ use CGI::Session;
 #                         activation key, password reset (future), ...)
 
 
-######################################################################
+##############################################################################
 sub new {
     my ($_class, %_args) = @_;
     my ($_self) = {%_args};
@@ -32,18 +32,20 @@ sub new {
     return($_self);
 }
 
-######################################################################
 sub initialize {
     my ($self) = @_;
 }
+######
 
 
-##### method set_login_status
+##############################################################################
+# set_login_status: Sets cookie containing session id to be used in granting
+#   access.  Note that this does not handle checking whether the user is in 
+#   the database; that is handled by a method in the SOAPClient package.
 #
-# Sets cookie containing session id
-# to be used in grantng access.
 # In:   ref to CGI instance
 # Out:  None
+#
 sub set_login_status
 {
     my ($self, $cgi, $login_results) = @_;
@@ -56,15 +58,15 @@ sub set_login_status
     $session->param("user_level", $login_results->{'user_level'});
     print $cgi->header( -cookie=>$cookie );
 }
+######
 
-
-##### method verify_login_status
-#
-# Must have cookie containing valid session id
-# to be granted access.
+##############################################################################
+# verify_login_status:  Checks to see that a cookie containing a valid session
+# id is set before granting access.
 #
 # In:  ref to CGI instance
 # Out: 1 (logged in)/0 (not logged in)
+#
 sub verify_login_status
 {
     my ($self, $cgi) = @_;
@@ -87,9 +89,10 @@ sub verify_login_status
        return( $stored_dn, $user_level );
     }
 }
+######
 
 
-
+##############################################################################
 sub logout
 {
     my( $self, $cgi ) = @_;
@@ -99,14 +102,15 @@ sub logout
     $session->clear(["user_dn"]);
     $session->clear(["user_level"]);
 }
+######
 
-
-
-##### method generate_random_string
+##############################################################################
+# generate_random_string: Takes care of generating a random string for all
+#     functions
+#
 # In: $string_length
 # Out: $random_string
-# This sub routine takes care of generating a random string for all functions
-#####
+#
 sub generate_random_string
 {
     my $self = shift;
@@ -117,6 +121,7 @@ sub generate_random_string
 
     return $random_string;
 }
+######
 
 
 ##### End of Library File

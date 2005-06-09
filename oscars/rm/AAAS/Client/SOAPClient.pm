@@ -9,21 +9,22 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( soap_verify_login soap_logout soap_get_profile soap_set_profile soap_get_userlist);
 
 
-#####
-## calls to AAAS front end
-#####
+######################################
+# All calls are made to AAAS front end
+######################################
 
 my $AAAS_server = SOAP::Lite
   -> uri('http://localhost:2000/AAAS/Frontend/User')
   -> proxy ('http://localhost:2000/AAAS_server.pl');
 
-# TODO:  one SOAP call that dispatches according to server, subroutine args
 
 
+################################
+# Methods called from user forms
+################################
+
+##############################################################################
 #
-# methods called from user forms
-#
-
 sub soap_verify_login
 {
     my ($params) = @_;
@@ -33,7 +34,10 @@ sub soap_verify_login
     }
     return ($response->result(), $response->paramsout());
 }
+######
 
+##############################################################################
+#
 sub soap_get_profile {
     my ( $params ) = @_;
 
@@ -44,8 +48,10 @@ sub soap_get_profile {
         #  params are either user profile, or error message
     return ($response->result(), $response->paramsout());
 }
+######
 
-
+##############################################################################
+#
 sub soap_set_profile {
     my ( $params ) = @_;
 
@@ -56,8 +62,10 @@ sub soap_set_profile {
         #  params are either user profile, or error message
     return ($response->result(), $response->paramsout());
 }
+######
 
-
+##############################################################################
+#
 sub soap_logout
 {
     my $response = $AAAS_server->logout();
@@ -67,12 +75,15 @@ sub soap_logout
         #  params are either user profile, or error message
     return ($response->result(), $response->paramsout());
 }
+######
     
 
-###
-# methods called from admin forms
-###
+#################################
+# Methods called from admin forms
+#################################
 
+##############################################################################
+#
 sub soap_get_userlist
 {
     my ( $params ) = @_;
@@ -82,5 +93,7 @@ sub soap_get_userlist
     }
     return ($response->result(), $response->paramsout());
 }
+######
 
-
+#####
+1;
