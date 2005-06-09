@@ -1,28 +1,29 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use lib '../../..';
 
 use AAAS::Client::SOAPClient;
+use Data::Dumper;
 
 my($value);
-my %params = ('user_dn' => 'dwrobertson@lbl.gov' );
-    # names of the fields to be displayed on the screen
-my @fields_to_display = ( 'user_last_name', 'user_first_name', 'user_dn', 'user_email_primary', 'user_level', 'user_email_secondary', 'user_phone_primary', 'user_phone_secondary', 'user_description', 'user_register_time', 'user_activation_key', 'institution_id' );
+my %params = ('user_dn' => 'oscars' );
 
-my($unused, %results) = soap_get_profile(\%params, \@fields_to_display);
-if (defined($results{'error_msg'}) && $results{'error_msg'})
+    # names of the fields to be displayed on the screen
+my($unused, $results) = soap_get_profile(\%params);
+if (defined($results->{error_msg}) && $results->{error_msg})
 {
-    print $results{'error_msg'}, "\n\n";
+    print $results->{error_msg}, "\n\n";
 }
-elsif (defined($results{'status_msg'}))
+elsif (defined($results->{status_msg}))
 {
-    print "Status:  ", $results{'status_msg'}, "\n";
+    print "Status:  ", $results->{status_msg}, "\n";
     print "Returning:\n\n";
-    foreach $key(sort keys %results)
+    my @data = @{$results->{rows}}[0];
+    foreach $key(sort keys %{$data[0]} )
     {
         if ($key ne 'status_msg')
         {
-            $value = $results{$key};
+            $value = $data[0]->{$key};
             if ($value) { print "$key -> $value\n"; }
             else { print "$key -> \n"; }
         }
