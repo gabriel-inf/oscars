@@ -12,10 +12,10 @@ require '../lib/general.pl';
 
 
 my $cgi = CGI->new();
-my ($dn, $user_level, $form_type) = check_session_status(undef, $cgi);
+my ($dn, $user_level) = check_session_status(undef, $cgi);
 
 if ($dn) {
-    print_reservation_form($user_level, $form_type);
+    print_reservation_form($user_level);
 }
 else {
     print "Location:  https://oscars.es.net/\n\n";
@@ -29,7 +29,7 @@ exit;
 # Out:  none
 sub print_reservation_form
 {
-    my( $user_level, $form_type ) = @_;
+    my( $user_level ) = @_;
 
     print '<html>', "\n";
     print '<head>', "\n";
@@ -41,7 +41,7 @@ sub print_reservation_form
     print '</head>', "\n";
 
     print '<body>', "\n";
-    print '<script language="javascript">print_navigation_bar("', $form_type, '", "reservation");</script>', "\n";
+    print '<script language="javascript">print_navigation_bar("', $user_level, '", "reservation");</script>', "\n";
 
     print '<div id="reservation_ui">', "\n";
 
@@ -65,7 +65,7 @@ sub print_reservation_form
     print '  </tr>', "\n";
     print '</table>', "\n";
 
-    if ($form_type eq 'engr') {
+    if ($user_level eq 'engr') {
         print '<p>Your account privileges allow you to explicitly specify the IP ', "\n";
         print 'address of the ingress and egress OSCARS loopbacks, and to ', "\n";
         print 'specify a persistent connection.</p>', "\n";
@@ -143,7 +143,7 @@ sub print_reservation_form
     print '  </tr>', "\n";
     print '</table>', "\n";
 
-    if ($form_type ne 'engr') {
+    if ($user_level ne 'engr') {
         print '<p>Please indicate the duration of the reservation, ', "\n";
         print 'starting from the above indicated date and time.  ', "\n";
         print 'Currently, fractional hours are permissible.</p>', "\n";

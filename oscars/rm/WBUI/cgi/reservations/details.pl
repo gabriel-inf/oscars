@@ -2,7 +2,7 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: June 6, 2005
+# Last modified: June 8, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -19,17 +19,18 @@ require '../lib/general.pl';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my ($dn, $user_level, $form_type) = check_session_status(undef, $cgi);
+my ($dn, $user_level) = check_session_status(undef, $cgi);
 
 if ($dn) {
     for $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
     $form_params{user_dn} = $dn;
+    $form_params{user_level} = $user_level;
     ($error_status, %results) = BSS::Client::SOAPClient::soap_get_reservations(\%form_params);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{status_msg});
-        print_reservation_detail($form_type, \%results);
+        print_reservation_detail($user_level, \%results);
     }
     else {
         update_frames($error_status, "main_frame", "", $results{error_msg});
@@ -47,7 +48,7 @@ exit;
 # Out:
 sub print_reservation_detail
 {
-    my ( $form_type, $results ) = @_;
+    my ( $user_level, $results ) = @_;
 
     print '<html>', "\n";
     print '<head>', "\n";
@@ -58,7 +59,7 @@ sub print_reservation_detail
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
 
-    print '<script language="javascript">print_navigation_bar("', $form_type, '", "reservationlist");</script>', "\n";
+    print '<script language="javascript">print_navigation_bar("', $user_level, '", "reservationlist");</script>', "\n";
 
     print '<div id="zebratable_ui">', "\n\n";
 

@@ -20,13 +20,13 @@ my $cgi = CGI->new();
 
 my (%form_params, %results);
 
-my ($dn, $user_level, $form_type) = check_session_status(undef, $cgi);
+my ($dn, $user_level) = check_session_status(undef, $cgi);
 
 if ($dn) {
     for $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
-    $form_params{form_type} = $form_type;
+    $form_params{user_level} = $user_level;
     ($error_status, %results) = create_reservation($dn, \%form_params);
     if (!$error_status) {
         update_frames(0, "status_frame", "", $results{status_msg});
@@ -78,7 +78,7 @@ sub create_reservation
     }
 
     # Undefined fields are set in the PSS.
-    if ($form_params->{form_type} eq 'engr') {
+    if ($form_params->{user_level} eq 'engr') {
         if ($form_params{lsp_from}) {
             $soap_params{lsp_from} = $form_params{lsp_from};
         }

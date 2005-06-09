@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: June 6, 2005
+# Last modified: June 8, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -15,14 +15,14 @@ require '../lib/general.pl';
 my (%form_params, %results);
 
 my $cgi = CGI->new();
-my ($dn, $user_level, $form_type) = check_session_status(undef, $cgi);
+my ($dn, $user_level) = check_session_status(undef, $cgi);
 
 if (!$error_status) {
     for $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
     $form_params{'user_dn'} = $dn;
-    $form_params{'form_type'} = $form_type;
+    $form_params{'user_level'} = $user_level;
         # The reservation id, if present, indicates a deletion
     if ($form_params{'reservation_id'}) {
         ($error_status, %results) = soap_delete_reservation(\%form_params);
@@ -72,7 +72,7 @@ sub print_reservations
     print '</head>', "\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
-    print '<script language="javascript">print_navigation_bar("', $form_params->{form_type}, '", "reservationlist");</script>', "\n";
+    print '<script language="javascript">print_navigation_bar("', $user_level, '", "reservationlist");</script>', "\n";
 
     print '<div id="zebratable_ui">', "\n\n";
 
@@ -84,7 +84,7 @@ sub print_reservations
     print '  <thead>', "\n";
     print '  <tr>', "\n";
     print '    <td >Tag</td>', "\n";
-    if ($form_params->{form_type} eq 'admin') {
+    if ($user_level eq 'admin') {
         print '    <td >User</td>', "\n";
     }
     print '    <td >Start Time (UTC)</td>', "\n";
@@ -99,7 +99,7 @@ sub print_reservations
     print '  <tbody>', "\n";
     for $row (@$rowsref) {
         print '  <tr>', "\n";
-        print_row($row, $form_params->{form_type});
+        print_row($row, $user_level);
         print '  </tr>', "\n";
     }
     print '  </tbody>', "\n";
@@ -117,12 +117,12 @@ sub print_reservations
 
 sub print_row
 {
-    my( $row, $form_type ) = @_;
+    my( $row, $user_level ) = @_;
     my( $seconds, $ip );
 
     print '    <td><a href="https://oscars.es.net/cgi-bin/reservations/details.pl?reservation_id=' . $row->{reservation_id} . '">' . $row->{reservation_tag} . '</a></td>' . "\n"; 
   
-    if ($form_type eq 'admin') {
+    if ($user_level eq 'admin') {
         print "    <td>" . $row->{user_dn} . "</td>\n";
     }
     print "    <td>" . get_time_str($row->{reservation_start_time}) . "</td>\n";
