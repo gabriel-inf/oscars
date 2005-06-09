@@ -57,6 +57,7 @@ sub set_login_status
     $session->param("user_dn", $cgi->param('user_dn'));
     $session->param("user_level", $login_results->{'user_level'});
     print $cgi->header( -cookie=>$cookie );
+    return( $cgi->param('user_dn'), $login_results->{'user_level'} );
 }
 ######
 
