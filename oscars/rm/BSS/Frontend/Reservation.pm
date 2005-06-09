@@ -311,16 +311,16 @@ sub update_reservation {
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
                                                     $inref->{reservation_id});
     if ( $results{error_msg} ) { return( 1, %results ); }
-    $rref = $sth->fetchall_arrayref();
+    $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-    if ( @$rref[0] != $self->{configs}->{CANCELLED}) {;
+    if ( @{$rref}[0]->{reservation_status} ne $self->{configs}->{CANCELLED}) {
         $query = qq{ UPDATE reservations SET reservation_status = ?
                      WHERE reservation_id = ?};
         ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
                                                     $inref->{reservation_id});
         if ( $results{error_msg} ) { return( 1, %results ); }
-     }
+    }
     $sth->finish();
     $results{status_msg} = "Successfully updated reservation.";
     return( 0, %results );
