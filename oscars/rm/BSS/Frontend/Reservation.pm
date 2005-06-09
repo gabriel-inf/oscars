@@ -13,24 +13,25 @@ use Data::Dumper;
 use BSS::Frontend::Database;
 
 # until can get MySQL and views going
-my %user_fields = ( 'user_dn' => '',
-                    'reservation_start_time' => '',
-                    'reservation_end_time' => '',
-                    'reservation_status' => '',
-                    'src_hostaddrs_id' => '',
-                    'dst_hostaddrs_id' => '',
-                    'reservation_tag' => '' );
+my @user_fields = ( 'user_dn',
+                    'reservation_start_time',
+                    'reservation_end_time',
+                    'reservation_status',
+                    'src_hostaddrs_id',
+                    'dst_hostaddrs_id',
+                    'reservation_tag');
 
-my %detail_fields = ( 'reservation_start_time' => '',
-                    'reservation_end_time' => '',
-                    'reservation_created_time' => '',
-                    'reservation_bandwidth' => '',
-                    'reservation_burst_limit' => '',
-                    'reservation_status' => '',
-                    'src_hostaddrs_id' => '',
-                    'dst_hostaddrs_id' => '',
-                    'reservation_description' => '',
-                    'reservation_tag' => '' );
+my @detail_fields = ( 'reservation_id',
+                    'reservation_start_time',
+                    'reservation_end_time',
+                    'reservation_created_time',
+                    'reservation_bandwidth',
+                    'reservation_burst_limit',
+                    'reservation_status',
+                    'src_hostaddrs_id',
+                    'dst_hostaddrs_id',
+                    'reservation_description',
+                    'reservation_tag');
 
 
 ###############################################################################
@@ -188,7 +189,8 @@ sub get_reservations {
     $results{error_msg} = $self->check_connection();
     if ($results{error_msg}) { return( 1, %results); }
 
-    $query = "SELECT * FROM reservations";
+    $query = "SELECT " . join(', ', @user_fields);
+    $query .= " FROM reservations";
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
     # for that reservation.  Sort by start time in ascending order.
@@ -198,7 +200,6 @@ sub get_reservations {
     elsif ($inref->{user_dn}) {
         $query .= " WHERE user_dn = '$inref->{user_dn}'";
     }
-    #print STDERR "$query\n";
     $query .= " ORDER BY reservation_start_time";
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
     if ( $results{error_msg} ) { return( 1, %results ); }
@@ -217,18 +218,6 @@ sub get_reservations {
     for $r (@$rref) {
         $r->{src_hostaddrs_id} = $mapping{$r->{src_hostaddrs_id}};
         $r->{dst_hostaddrs_id} = $mapping{$r->{dst_hostaddrs_id}};
-        for $k (keys %$r) {
-            if ($inref->{user_dn}) {
-                if (!defined($user_fields{$k})) {
-                    $r->{$k} = undef;
-                }
-            }
-            elsif ($inref->{reservation_id}) {
-                if (!defined($detail_fields{$k})) {
-                    $r->{$k} = undef;
-                }
-            }
-        }
     }
     $results{rows} = $rref;
 
@@ -275,8 +264,8 @@ sub find_expired_reservations {
 
     #print "expired: Looking at time == " . $stime . "\n";
 
-    $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
-                 reservation_end_time < ?};
+    $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
+                 reservation_end_time < ?) or (reservation_status = 'cancelled')};
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
                                                             $stime);
     if ( $results{error_msg} ) { return( 1, %results ); }
@@ -299,7 +288,7 @@ sub find_expired_reservations {
 #
 sub update_reservation {
     my ( $self, $inref, $status ) = @_;
-    my ( $sth, $query, %results );
+    my ( $rref, $sth, $query, %results );
 
     $results{error_msg} = $self->check_connection();
     if ($results{error_msg}) { return( 1, %results); }
@@ -314,13 +303,21 @@ sub update_reservation {
         if ( $results{error_msg} ) { return( 1, %results ); }
     }
 
-    $query = qq{ UPDATE reservations SET reservation_status = ?
+    $query = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
+    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
                                                     $inref->{reservation_id});
     if ( $results{error_msg} ) { return( 1, %results ); }
+    $rref = $sth->fetchall_arrayref();
+    $sth->finish();
 
-    # close it up
+    if ( @$rref[0] != $self->{configs}->{CANCELLED}) {;
+        $query = qq{ UPDATE reservations SET reservation_status = ?
+                     WHERE reservation_id = ?};
+        ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
+                                                    $inref->{reservation_id});
+        if ( $results{error_msg} ) { return( 1, %results ); }
+     }
     $sth->finish();
     $results{status_msg} = "Successfully updated reservation.";
     return( 0, %results );
@@ -365,6 +362,7 @@ sub get_interface_fields {
     if ($error_msg) { return ( undef, $error_msg ); }
 
     $results = $sth->fetchrow_hashref();
+    $sth->finish();
 
     return ( $results, '');
 }
