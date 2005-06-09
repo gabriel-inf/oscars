@@ -167,12 +167,13 @@ sub insert_reservation {
 
 ###############################################################################
 # delete_reservation:  Cancels the reservation by setting the reservation
-# status to cancelled.
+# status to pending cancellation.
 #
 sub delete_reservation {
     my( $self, $inref ) = @_;
 
-    return( $self->update_reservation( $inref, $self->{configs}->{CANCELLED}) );
+    return( $self->update_reservation( $inref,
+                                     $self->{configs}->{PENDING_CANCEL}) );
 }
 ######
 
@@ -268,9 +269,10 @@ sub find_expired_reservations {
     #print "expired: Looking at time == " . $stime . "\n";
 
     $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
-                 reservation_end_time < ?) or (reservation_status = 'cancelled')};
+                 reservation_end_time < ?) or (reservation_status = ?)};
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
-                                                            $stime);
+                                        $stime,
+                                        $self->{configs}->{PENDING_CANCEL});
     if ( $results{error_msg} ) { return( 1, %results ); }
 
     # get all the data
@@ -296,16 +298,6 @@ sub update_reservation {
     $results{error_msg} = $self->check_connection();
     if ($results{error_msg}) { return( 1, %results); }
 
-    if ($status eq $self->{configs}->{CANCELLED}) {
-        # This ensures that if the reservation is active, the LSP will be torn
-        # down the next time find_expired_reservations runs.
-        $query = qq{ UPDATE reservations SET reservation_end_time = 0
-                     WHERE reservation_id = ?};
-        ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
-                                                    $inref->{reservation_id});
-        if ( $results{error_msg} ) { return( 1, %results ); }
-    }
-
     $query = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
@@ -314,13 +306,22 @@ sub update_reservation {
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-    if ( @{$rref}[0]->{reservation_status} ne $self->{configs}->{CANCELLED}) {
-        $query = qq{ UPDATE reservations SET reservation_status = ?
-                     WHERE reservation_id = ?};
-        ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
-                                                    $inref->{reservation_id});
-        if ( $results{error_msg} ) { return( 1, %results ); }
+    # If the previous state was pending_cancel, mark it now as cancelled.
+    # If the previous state was pending, and it is to be deleted, mark it
+    # as cancelled instead of pending_cancel.  The latter is used by 
+    # find_expired_reservations as one of the conditions to attempt to
+    # tear down a circuit.
+    my $prev_status = @{$rref}[0]->{reservation_status};
+    if ( ($prev_status eq $self->{configs}->{PENDING_CANCEL}) ||
+         ( ($prev_status eq $self->{configs}->{PENDING}) &&
+            ($status eq $self->{configs}->{PENDING_CANCEL}))) { 
+        $status = $self->{configs}->{CANCELLED};
     }
+    $query = qq{ UPDATE reservations SET reservation_status = ?
+                 WHERE reservation_id = ?};
+    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
+                                                    $inref->{reservation_id});
+    if ( $results{error_msg} ) { return( 1, %results ); }
     $sth->finish();
     $results{status_msg} = "Successfully updated reservation.";
     return( 0, %results );
