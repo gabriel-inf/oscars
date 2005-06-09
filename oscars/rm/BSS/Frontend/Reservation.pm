@@ -1,5 +1,5 @@
 # Reservation.pm:
-# Last modified: June 7, 2005
+# Last modified: June 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -13,7 +13,8 @@ use Data::Dumper;
 use BSS::Frontend::Database;
 
 # until can get MySQL and views going
-my @user_fields = ( 'user_dn',
+my @user_fields = ( 'reservation_id',
+                    'user_dn',
                     'reservation_start_time',
                     'reservation_end_time',
                     'reservation_status',
@@ -144,22 +145,22 @@ sub insert_reservation {
                                                                  @insertions);
         if ( $results{error_msg} ) { return( 1, %results ); }
 
-        $results{id} = $self->{dbconn}->{dbh}->{mysql_insertid};
+        $results{reservation_id} = $self->{dbconn}->{dbh}->{mysql_insertid};
     }
     $sth->finish();
 
         # insert reservation_tag field
     my $time_tag = get_time_str($inref->{reservation_start_time});
     $results{reservation_tag} = $inref->{user_dn} . '.' . $time_tag .  "-" .
-                                $results{id};
+                                $results{reservation_id};
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
-                                  $results{reservation_tag}, $results{id});
+                                  $results{reservation_tag}, $results{reservation_id});
     if ( $results{error_msg} ) { return( 1, %results ); }
 
     $results{status_msg} = "Your reservation has been processed " .
-        "successfully. Your reservation ID number is $results{id}.";
+        "successfully. Your reservation ID number is $results{reservation_id}.";
     return( 0, %results );
 }
 ######
@@ -189,15 +190,17 @@ sub get_reservations {
     $results{error_msg} = $self->check_connection();
     if ($results{error_msg}) { return( 1, %results); }
 
-    $query = "SELECT " . join(', ', @user_fields);
-    $query .= " FROM reservations";
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
     # for that reservation.  Sort by start time in ascending order.
     if ($inref->{reservation_id}) {
+        $query = "SELECT " . join(', ', @detail_fields);
+        $query .= " FROM reservations";
         $query .= " WHERE reservation_id = $inref->{reservation_id}";
     }
     elsif ($inref->{user_dn}) {
+        $query = "SELECT " . join(', ', @user_fields);
+        $query .= " FROM reservations";
         $query .= " WHERE user_dn = '$inref->{user_dn}'";
     }
     $query .= " ORDER BY reservation_start_time";
