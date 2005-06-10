@@ -81,7 +81,7 @@ sub verify_login_status
     $stored_dn = $session->param("user_dn");
     $user_level = $session->param("user_level");
     if (!$stored_dn)  {
-        return( undef, undef, undef );
+        return( undef, undef );
     }
     else {
        $cgi->param(-name=>'user_dn',-value=>$stored_dn);
