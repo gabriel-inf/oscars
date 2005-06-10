@@ -66,9 +66,10 @@ sub soap_set_profile {
 
 ##############################################################################
 #
-sub soap_logout
-{
-    my $response = $AAAS_server->logout();
+sub soap_logout {
+    my ( $params ) = @_;
+  
+    my $response = $AAAS_server->logout($params);
     if ($response->fault) {
         print $response->faultcode, " ", $response->faultstring, "\n";
     }
