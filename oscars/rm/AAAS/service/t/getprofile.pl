@@ -1,12 +1,13 @@
 #!/usr/bin/perl
 
-use lib '../../..';
+use strict;
 
 use AAAS::Client::SOAPClient;
 use Data::Dumper;
 
-my($value);
-my %params = ('user_dn' => 'oscars' );
+my($key, $value);
+my %params = ('user_dn' => 'dwrobertson@lbl.gov',
+              'user_level' => 'user' );
 
     # names of the fields to be displayed on the screen
 my($unused, $results) = soap_get_profile(\%params);

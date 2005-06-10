@@ -6,9 +6,9 @@ use AAAS::Client::SOAPClient;
 
 # This will go outside of repository.
 
-my %params = ('user_dn' => 'oscars', 'user_password' => 'ritazza6');
-#$params{'admin_required'} = 1;
+my %params = ('user_dn' => 'dwrobertson@lbl.gov', 'user_password' => 'shyysh');
 my($result, $data) = soap_verify_login(\%params);
+print STDERR $data->{'user_level'}, "\n";
 if (defined($data->{'error_msg'}) && $data->{'error_msg'})
 {
     print $data->{'error_msg'}, "\n\n";
