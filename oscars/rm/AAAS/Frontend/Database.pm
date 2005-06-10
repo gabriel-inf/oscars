@@ -27,7 +27,8 @@ sub new {
 
 sub initialize {
     my ( $_self ) = @_;
-    $_self->{dbh} = undef;
+    # hash holds database handle for each connected user
+    $_self->{handles} = {};
 }
 ######
 
@@ -35,28 +36,25 @@ sub initialize {
 #
 sub check_connection
 {
-    my ( $self, $inref, $reconnect ) = @_;
+    my ( $self, $user_dn, $do_login, $reconnect ) = @_;
     my ( %attr ) = (
         RaiseError => 0,
         PrintError => 0,
     );
-    # TODO:  FIX
-    if (!$self->{dbh} || $reconnect) {
-        if ($inref) {
-            $self->{dbh} = DBI->connect(
+    # TODO:  FIX, may need views, or different db logins for one thing
+    if ($reconnect || !(defined($self->{handles}->{$user_dn}))) {
+        if ($do_login) {
+            $self->{handles}->{$user_dn} = DBI->connect(
                  $self->{configs}->{use_AAAS_database}, 
                  $self->{configs}->{AAAS_login_name}, 
                  'ritazza6',
-                 #$inref->{user_dn},
-                 #$inref->{user_password},
                  \%attr)
         }
         else {
             return( "You must log in first before accessing the database");
         }
-     
     }
-    if (!$self->{dbh}) {
+    if (!$self->{handles}->{$user_dn}) {
         return( "Unable to make database connection: $DBI::errstr");
     }
     return "";
@@ -66,12 +64,12 @@ sub check_connection
 ###############################################################################
 #
 sub get_user_levels {
-    my( $self ) = @_;
+    my( $self, $user_dn ) = @_;
 
     my( %levels, $r, $sth, $query, $error_msg );
 
     $query = "SELECT user_level_bit, user_level_description FROM user_levels";
-    ($sth, $error_msg) = $self->do_query($query);
+    ($sth, $error_msg) = $self->do_query($user_dn, $query);
     if( $error_msg ) { return( undef, $error_msg ) };
     my $rows = $sth->fetchall_arrayref();
     for $r (@$rows) { $levels{$$r[1]} = $$r[0]; }
@@ -85,10 +83,10 @@ sub get_user_levels {
 #
 sub do_query
 {
-    my( $self, $query, @args ) = @_;
+    my( $self, $user_dn, $query, @args ) = @_;
     my( $sth, $error_msg );
 
-    $sth = $self->{dbh}->prepare( $query );
+    $sth = $self->{handles}->{$user_dn}->prepare( $query );
     if ($DBI::err) {
         $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
         return (undef, $error_msg);
@@ -100,6 +98,25 @@ sub do_query
         return(undef, $error_msg);
     }
     return( $sth, '');
+}
+######
+
+###############################################################################
+sub logout {
+    my( $self, $user_dn ) = @_;
+
+    my $results = {};
+    if (!$self->{handles}->{$user_dn}) {
+        $results->{status_msg} = 'Already logged out.';
+        return ( 0, $results );
+    }
+    if (!$self->{handles}->{$user_dn}->disconnect()) {
+        $results->{error_msg} = "Could not disconnect from database";
+        return ( 1, $results );
+    }
+    $self->{handles}->{$user_dn} = undef;
+    $results->{status_msg} = 'Logged out';
+    return ( 0, $results );
 }
 ######
 

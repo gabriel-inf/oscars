@@ -53,9 +53,9 @@ sub initialize {
 ######
 
 
-################################################
-# Methods called from both admin and user forms.
-################################################
+####################################
+# Methods that need user privileges.
+####################################
 
 ###############################################################################
 # verify_login
@@ -66,58 +66,40 @@ sub verify_login {
     my( $self, $inref ) = @_;
 
     my( $query, $sth, $ref );
-
     my $results = {};
-    # At present, multiple users may share a connection; access level needs
-    # to be checked on each method call.
-    $results->{error_msg} = $self->{dbconn}->check_connection($inref, 1);
+    my $user_dn = $inref->{user_dn};
+
+    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 1, 1);
     if ($results->{error_msg}) { return( 1, $results); }
     # Get user levels
     if (!defined($self->{user_levels})) {
-        ($self->{user_levels}, $results->{error_msg}) = $self->{dbconn}->get_user_levels();
+        ($self->{user_levels}, $results->{error_msg}) = $self->{dbconn}->get_user_levels($user_dn);
         if ($results->{error_msg}) { return( 1, $results); }
     }
 
-    # Get the password and privilege level from the database, making sure user
-    # exists.
+    # Get the password and privilege level from the database.
     $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
-                                                            $inref->{user_dn});
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+                                                              $user_dn);
     if ( $results->{error_msg} ) { return( 1, $results ); }
+    # Make sure user exists.
     if (!$sth->rows) {
         $sth->finish();
         $results->{error_msg} = 'Please check your login name and try again.';
         return (1, $results);
     }
-
-    # This login name is in the database, do authorization checks.
-    my $encoded_password = crypt($inref->{user_password}, 'oscars');
-    $ref = $sth->fetchrow_arrayref;
-    # see if user has been activated
-    if ( $$ref[1] == $self->{user_levels}->{inactive} ) {
-        $results->{error_msg} = "This account is not authorized or " .
-                                " activated yet.";
-    }
-    # if request is from admin login, make sure has admin privileges
-    elsif ( ( $inref->{form_level} eq 'admin') and
-            (!($$ref[1] & $self->{user_levels}->{admin}))) {
-        $results->{error_msg} = "This account does not have " .
-                                "administrative privileges.";
-    }
-    # if request is from engineeer login, make sure has engr privileges
-    elsif ( ( $inref->{form_level} eq 'engr') and
-            (!($$ref[1] & $self->{user_levels}->{engr}))) {
-        $results->{error_msg} = "This account does not have " .
-                                "engineering privileges.";
-    }
     # compare passwords
-    elsif ( $$ref[0] ne $encoded_password ) {
+    my $encoded_password = crypt($inref->{user_password}, 'oscars');
+    $ref = $sth->fetchrow_hashref();
+    if ( $ref->{user_password} ne $encoded_password ) {
         $results->{error_msg} = 'Please check your password and try again.';
     }
     $sth->finish();
+    $results->{error_msg} = $self->check_authorization($ref->{user_level},
+                                                 $self->{user_levels}->{user});
     if ($results->{error_msg}) { return( 1, $results ); }
 
-    $results->{user_level} = $$ref[1];
+    $results->{user_level} = $self->get_str_level($ref->{user_level});
     $results->{status_msg} = 'The user has successfully logged in.';
     # The first value is unused, but I can't get SOAP to send a correct
     # reply without it so far.
@@ -127,20 +109,9 @@ sub verify_login {
 
 ###############################################################################
 sub logout {
-    my( $self ) = @_;
+    my( $self, $params ) = @_;
 
-    my $results = {};
-    if (!$self->{dbconn}->{dbh}) {
-        $results->{status_msg} = 'Already logged out.';
-        return ( 0, $results );
-    }
-    if (!$self->{dbconn}->{dbh}->disconnect()) {
-        $results->{error_msg} = "Could not disconnect from database";
-        return ( 1, $results );
-    }
-    $self->{dbconn}->{dbh} = undef;
-    $results->{status_msg} = 'Logged out';
-    return ( 0, $results );
+    return( $self->{dbconn}->logout($params->{user_dn}) );
 }
 ######
 
@@ -154,17 +125,23 @@ sub get_profile {
 
     my( $sth, $query, $rref );
     my( @data );
-
     my $results = {};
-    $results->{error_msg} = $self->{dbconn}->check_connection(undef);
+    my $user_dn = $inref->{user_dn};
+
+    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
+
+    $results->{error_msg} = $self->check_authorization(
+                                $self->get_numeric_level($inref->{user_level}),
+                                $self->{user_levels}->{user});
+    if ($results->{error_msg}) { return( 1, $results ); }
 
     # DB query: get the user profile detail
     $query = "SELECT " . join(', ', @user_profile_fields);
     $query .= " FROM users where user_dn = ?";
 
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
-                                                           $inref->{user_dn});
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+                                                              $user_dn);
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     # check whether this person is a registered user
@@ -180,7 +157,7 @@ sub get_profile {
 
     $query = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                      @{$rref}[0]->{institution_id});
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
@@ -195,7 +172,7 @@ sub get_profile {
     $results->{institution} = $data[0];
     $sth->finish();
 
-    $results->{user_level} = $self->get_level_description($results->{user_level}) ;
+    $results->{user_level} = $self->get_str_level($results->{user_level}) ;
     $results->{rows} = $rref;
     $results->{status_msg} = 'Retrieved user profile';
     return ( 0, $results );
@@ -212,9 +189,10 @@ sub set_profile {
 
     my( $sth, $query, $read_only_level, @read_only_user_levels );
     my( $current_info, $ref, $do_update );
-
     my $results = {};
-    $results->{error_msg} = $self->{dbconn}->check_connection(undef);
+    my $user_dn = $inref->{user_dn};
+
+    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
     # Read the current user information from the database to decide which
@@ -225,31 +203,26 @@ sub set_profile {
     $query = "SELECT user_level, " . join(', ', @$fields_to_read);
     $query .= " FROM users WHERE user_dn = ?";
 
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
-                                                            $inref->{user_dn});
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+                                                              $user_dn);
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     # check whether this person is a registered user
     if (!$sth->rows) {
-        $results->{error_msg} = "The user $inref->{user_dn} is not " .
+        $results->{error_msg} = "The user $user_dn is not " .
                                 "registered.";
         $sth->finish();
         return (1, $results);
     }
 
-    # User level provisioning:  if the user's level equals one of the
-    # read-only levels, don't give them access.
     $current_info = $sth->fetchrow_hashref;
-    for $read_only_level ( @read_only_user_levels ) {
-        if ( $current_info->{user_level} eq $read_only_level ) {
-            $results->{error_msg} = "Your user level " .
-                "($current_info->{user_level}) has a read-only privilege " .
-                "and you cannot make changes to the database. Please " .
-                "contact the system administrator for any inquiries.";
-            $sth->finish();
-            return ( 1, $results );
-        }
-    }
+    # make sure user has appropriate privileges
+    # TODO:  if admin_dn set, need admin privileges
+    $results->{error_msg} = $self->check_authorization(
+                                $current_info->{user_level},
+                                $self->{user_levels}->{user});
+    if ($results->{error_msg}) { return( 1, $results ); }
+
 
     ### Check the current password with the one in the database before
     ### proceeding.
@@ -281,7 +254,8 @@ sub set_profile {
     if ( $inref->{institution} ) {
         $query = "SELECT institution_id FROM institutions
                   WHERE institution_name = ?";
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                                        $query,
                                                         $inref->{institution});
         if ( $results->{error_msg} ) { return( 1, $results ); }
         if (!$sth->rows) {
@@ -321,13 +295,13 @@ sub set_profile {
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
 
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
-                                                            $inref->{user_dn});
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+                                                              $user_dn);
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     $sth->finish();
     $results->{status_msg} = "The account information for user " .
-                          "$inref->{user_dn} has been updated successfully.";
+                          "$user_dn has been updated successfully.";
     return( 0, $results );
 }
 ######
@@ -342,16 +316,22 @@ sub activate_account {
 
     my( $sth, $query );
     my $results = {};
+    my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection(undef);
+    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
+
+    $results->{error_msg} = $self->check_authorization(
+                                $self->get_numeric_level($inref->{user_level}),
+                                $self->{user_levels}->{user});
+    if ($results->{error_msg}) { return( 1, $results ); }
 
     # get the password from the database
     $query = "SELECT user_password, user_activation_key, user_level
               FROM users WHERE user_dn = ?";
 
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
-                                                            $inref->{user_dn});
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+                                                              $user_dn);
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     # check whether this person is a registered user
@@ -389,8 +369,8 @@ sub activate_account {
         # to 0; empty the activation key field
         $query = "UPDATE users SET user_level = ?, pending_level = ?,
                   user_activation_key = '' WHERE user_dn = ?";
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
-                                            $pending_level, $inref->{user_dn});
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                            $query, $pending_level, $user_dn);
         if ( $results->{error_msg} ) { return( 1, $results ); }
     }
     else {
@@ -400,7 +380,7 @@ sub activate_account {
     }
     $sth->finish();
     $results->{status_msg} = "The user account <strong>" .
-       "$inref->{user_dn}</strong> has been successfully activated. You " .
+       "$user_dn</strong> has been successfully activated. You " .
        "will be redirected to the main service login page in 10 seconds. " .
        "<br>Please change the password to your own once you sign in.";
     return( 0, $results );
@@ -409,12 +389,10 @@ sub activate_account {
 
 ###############################################################################
 #
-sub get_level_description {
+sub get_str_level {
     my( $self, $level_flag ) = @_;
 
-    my( $level );
-
-    $level = "";
+    my $level = "";
     $level_flag += 0;
     if ($self->{user_levels}->{admin} & $level_flag) {
         $level .= 'admin ';
@@ -430,6 +408,50 @@ sub get_level_description {
 ######
 
 ###############################################################################
+#
+sub get_numeric_level {
+    my( $self, $level_str ) = @_;
+
+    my( @privs, $p, $numeric_level );
+
+    $numeric_level = $self->{user_levels}{readonly};
+    @privs = split(' ', $level_str);
+    for $p (@privs) {
+        if ($p eq 'user') {
+            $numeric_level |= $self->{user_levels}{user};
+        }
+        elsif ($p eq 'engr') {
+            $numeric_level |= $self->{user_levels}{engr};
+        }
+        elsif ($p eq 'admin') {
+            $numeric_level |= $self->{user_levels}{admin};
+        }
+    }
+    return( $numeric_level );
+}
+######
+
+###############################################################################
+#
+sub check_authorization {
+    my( $self, $user_priv, $required_privs ) = @_;
+
+    my $error_msg = "";
+
+    # first, see if user has been activated
+    if ( $user_priv == $self->{user_levels}->{inactive} ) {
+        $error_msg = "This account is not authorized or activated yet.";
+    }
+    # next, see if user has at least the required privileges
+    elsif (!($user_priv & $required_privs)) {
+        $error_msg = "This function requires the following privileges: " .
+                     $self->get_str_level($required_privs);
+    }
+    return $error_msg;
+}
+######
+
+###############################################################################
 # process_registration
 # In:  reference to hash of parameters
 # Out: status message
@@ -439,8 +461,9 @@ sub process_registration {
 
     my( $sth, $query );
     my $results = {};
+    my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection(undef);
+    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
     my $encrypted_password = $inref->{password_once};
@@ -450,8 +473,8 @@ sub process_registration {
 	
     # login name overlap check
     $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
-                                                            $inref->{user_dn});
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+                                                              $user_dn);
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     if ( $sth->rows > 0 ) {
@@ -466,22 +489,22 @@ sub process_registration {
     $query = "INSERT INTO users VALUES ( " .
                               "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
 
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                             @insertions);
     if ( $results->{error_msg} ) { return( 1, $results ); }
     $sth->finish();
 
     $results->{status_msg} = "Your user registration has been recorded " .
-        "successfully. Your login name is <strong>$inref->{user_dn}" .
-        "</strong>. Once your registration is accepted, information on " .
+        "successfully. Your login name is <strong>$user_dn</strong>. Once " .
+        "your registration is accepted, information on " .
         "activating your account will be sent to your primary email address.";
     return( 0, $results );
 }
 ######
 
-######################################
-# Methods called only from admin tool.
-######################################
+##############################################
+# Methods requiring administrative privileges.
+##############################################
 
 ###############################################################################
 # get_userlist
@@ -494,13 +517,20 @@ sub get_userlist
     my( $sth, $error_status, $query );
     my( %mapping, $r, $arrayref, $rref );
     my $results = {};
+    my $user_dn = $inref->{user_dn};
 
-    if (!($self->{dbconn}->{dbh})) {
-        return( 1, "Database connection not valid\n");
-    }
+    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+    if ($results->{error_msg}) { return( 1, $results); }
+
+    $results->{error_msg} = $self->check_authorization(
+                                $self->get_numeric_level($inref->{user_level}),
+                                $self->{user_levels}->{admin});
+    if ($results->{error_msg}) { return( 1, $results ); }
+
     $query = "SELECT " . join(', ', @$fields_to_read);
     $query .= " FROM users ORDER BY user_last_name";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query);
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                                              $query);
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     $rref = $sth->fetchall_arrayref({});
@@ -508,14 +538,15 @@ sub get_userlist
 
     # replace institution id with institution name
     $query = "SELECT institution_id, institution_name FROM institutions";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($query);
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                                              $query);
     if ( $results->{error_msg} ) { return( 1, $results ); }
     $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
     for $r (@$rref) {
         $r->{institution_id} = $mapping{$r->{institution_id}};
-        # replace numeric user level code with description
+        # replace numeric user level code with string containing permissions
         $r->{user_level} = $self->get_level_description($r->{user_level});
     }
 
