@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # creation_form.pl:  form for making reservations
-# Last modified: June 6, 2005
+# Last modified: June 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -65,7 +65,7 @@ sub print_reservation_form
     print '  </tr>', "\n";
     print '</table>', "\n";
 
-    if ($user_level eq 'engr') {
+    if (authorized($user_level, "engr")) {
         print '<p>Your account privileges allow you to explicitly specify the IP ', "\n";
         print 'address of the ingress and egress OSCARS loopbacks, and to ', "\n";
         print 'specify a persistent connection.</p>', "\n";
@@ -143,7 +143,7 @@ sub print_reservation_form
     print '  </tr>', "\n";
     print '</table>', "\n";
 
-    if ($user_level ne 'engr') {
+    if (!authorized($user_level, "engr")) {
         print '<p>Please indicate the duration of the reservation, ', "\n";
         print 'starting from the above indicated date and time.  ', "\n";
         print 'Currently, fractional hours are permissible.</p>', "\n";
