@@ -145,8 +145,14 @@ sub get_profile {
     $query = "SELECT " . join(', ', @user_profile_fields);
     $query .= " FROM users where user_dn = ?";
 
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+    if (!$inref->{admin_dn}) {
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                               $user_dn);
+    }
+    else {
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($inref->{admin_dn},
+                                                                $query, $user_dn);
+    }
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     # check whether this person is a registered user
@@ -162,8 +168,14 @@ sub get_profile {
 
     $query = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+    if (!$inref->{admin_dn}) {
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                      @{$rref}[0]->{institution_id});
+    }
+    else {
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($inref->{admin_dn},
+                                             $query, @{$rref}[0]->{institution_id});
+    }
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     # check whether this organization is in the db
