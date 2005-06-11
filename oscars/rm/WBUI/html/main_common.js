@@ -1,12 +1,12 @@
 /*
 Javascript functions for main pages
-Last modified: June 8, 2005
+Last modified: June 10, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
-print_navigation_bar(formType, activePage)
+print_navigation_bar(user_level, activePage)
 print_current_date()
 hasClass(obj)
 stripe(id)
@@ -66,12 +66,12 @@ function update_frame(target, uri)
 // ** prints navigation bar for appropriate form type, with active page
 // ** highlighted
 
-function print_navigation_bar(formType, activePage)
+function print_navigation_bar(userLevel, activePage)
 {
     document.write('<div>');
     document.write('<ul id="tabnav">');
 
-    if (formType == 'admin') {
+    if (userLevel.indexOf("admin") != -1) {
         if (activePage == 'userlist') {
             document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" class="active" title="View list of all accounts">List All Accounts</a></li>');
         }
