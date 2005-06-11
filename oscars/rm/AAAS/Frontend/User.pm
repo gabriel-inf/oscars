@@ -185,10 +185,10 @@ sub get_profile {
 # Out: status code, status message
 #
 sub set_profile {
-    my ( $self, $inref, $fields_to_read ) = @_;
+    my ( $self, $inref ) = @_;
 
-    my( $sth, $query, $read_only_level, @read_only_user_levels );
-    my( $current_info, $ref, $do_update );
+    my( $sth, $query );
+    my( $current_info, $ref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
@@ -199,9 +199,7 @@ sub set_profile {
     # fields are being updated, and user has proper privileges.
 
     # DB query: get the user profile detail
-    # TODO:  make sure user_level not in fields_to_read already
-    $query = "SELECT user_level, " . join(', ', @$fields_to_read);
-    $query .= " FROM users WHERE user_dn = ?";
+    $query .= "SELECT * FROM users WHERE user_dn = ?";
 
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                               $user_dn);
@@ -235,14 +233,11 @@ sub set_profile {
     }
     $sth->finish();
 
-    $do_update = 0;
-
     # If the password needs to be updated, set the input password field to
     # the new one.
     if ( $inref->{password_new_once} ) {
         $inref->{user_password} = crypt( $inref->{password_new_once},
                                          'oscars');
-        $do_update = 1;
     }
     else {
         $inref->{user_password} = crypt($inref->{user_password}, 'oscars');
@@ -269,31 +264,26 @@ sub set_profile {
         $results->{institution} = $inref->{institution}
     }
 
-    # Compare the current & newly input user profile data and determine
-    # which fields/values to update.  Assign results at this time also.
-    for $_ ( @$fields_to_read ) {
-        if ( $current_info->{$_} ne $inref->{$_} ) {
-            $do_update = 1;
-        }
-        $results->{$_} = $inref->{$_};
-    }
     $results->{user_password} = '';   # unset before passing back
 
-    # if there is nothing to update...
-    if ( !$do_update ) {
-        $results->{error_msg} = 'There is no changed information to update.';
-        return( 1, $results );
-    }
+    # find all column names in users table
+    $query = "SHOW COLUMNS from users";
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $query );
+    if ( $results->{error_msg} ) { return( 1, $results ); }
+    my $arrayref = $sth->fetchall_arrayref({});
 
     # prepare the query for database update
     $query = "UPDATE users SET ";
-    for $_ ( @$fields_to_read ) {
-        if (defined($inref->{$_} )) {
-            $query .= "$_ = '$inref->{$_}', ";
-        }
+    for $_ ( @$arrayref ) {
+       if (defined($inref->{$_->{Field}})) {
+           $query .= "$_ = '$inref->{$_}', ";
+       }
+       else{ $query .= "$_ = 'NULL', "; }
     }
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
+    print STDERR $query, "\n";
+    $sth->finish();
 
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                               $user_dn);
@@ -513,7 +503,7 @@ sub process_registration {
 #
 sub get_userlist
 {
-    my( $self, $inref, $fields_to_read ) = @_;
+    my( $self, $inref ) = @_;
     my( $sth, $error_status, $query );
     my( %mapping, $r, $arrayref, $rref );
     my $results = {};
@@ -527,8 +517,7 @@ sub get_userlist
                                 $self->{user_levels}->{admin});
     if ($results->{error_msg}) { return( 1, $results ); }
 
-    $query = "SELECT " . join(', ', @$fields_to_read);
-    $query .= " FROM users ORDER BY user_last_name";
+    $query .= "SELECT * FROM users ORDER BY user_last_name";
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
                                                               $query);
     if ( $results->{error_msg} ) { return( 1, $results ); }
