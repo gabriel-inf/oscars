@@ -128,7 +128,12 @@ sub get_profile {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+    if (!$inref->{admin_dn}) {
+        $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+    }
+    else {
+        $results->{error_msg} = $self->{dbconn}->check_connection($inref->{admin_dn}, 0, 0);
+    }
     if ($results->{error_msg}) { return( 1, $results); }
 
     $results->{error_msg} = $self->check_authorization(
