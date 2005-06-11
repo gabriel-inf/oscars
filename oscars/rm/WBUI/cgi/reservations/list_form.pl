@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: June 8, 2005
+# Last modified: June 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -79,23 +79,21 @@ sub print_reservations
 
     print '<div id="zebratable_ui">', "\n\n";
 
-    print '<p><em>View Reservations</em><br>', "\n";
-    print '<p>Click on the Reservation Tag link to view detailed information about the reservation.', "\n";
+    print '<p><em>View Reservations</em></p>', "\n";
+    print '<p>Click on a column header to sort by that column. ', "\n";
+    print 'Times given are in the time zone of the browser, but are sorted in UTC time. ', "\n";
+    print 'Click on the Reservation Tag link to view detailed information about the reservation. ', "\n";
     print '</p>', "\n\n";
 
     print '<table cellspacing="0" width="90%" class="sortable" id="reservationlist">', "\n";
     print '  <thead>', "\n";
     print '  <tr>', "\n";
     print '    <td >Tag</td>', "\n";
-    if ($user_level eq 'admin') {
-        print '    <td >User</td>', "\n";
-    }
-    print '    <td >Start Time (UTC)</td>', "\n";
-    print '    <td >End Time (UTC)</td>', "\n";
-    print '    <td >Status</td>', "\n";
-    print '    <td >Origin</td>', "\n";
-    print '    <td >Destination</td>', "\n";
-    print '    <td >Action</td>', "\n";
+    print '    <td>Start Time</td>', "\n";
+    print '    <td>End Time</td>', "\n";
+    print '    <td>Status</td>', "\n";
+    print '    <td>Origin</td>', "\n";
+    print '    <td>Destination</td>', "\n";
     print '  </tr>', "\n";
     print '  </thead>', "\n";
 
@@ -125,9 +123,6 @@ sub print_row
 
     print '    <td><a href="https://oscars.es.net/cgi-bin/reservations/details.pl?reservation_id=' . $row->{reservation_id} . '">' . $row->{reservation_tag} . '</a></td>' . "\n"; 
   
-    if ($user_level eq 'admin') {
-        print "    <td>" . $row->{user_dn} . "</td>\n";
-    }
     print "    <td>" . get_time_str($row->{reservation_start_time}) . "</td>\n";
     print "    <td>" . get_time_str($row->{reservation_end_time}) . "</td>\n";
     print "    <td>" . $row->{reservation_status} . "</td>\n";
@@ -136,5 +131,4 @@ sub print_row
     print "    <td>" . $ip . "</td>\n";
     $ip = get_oscars_host($row->{dst_hostaddrs_id});
     print "    <td>" . $ip . "</td>\n";
-    print '    <td><a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl?reservation_id=' . $row->{reservation_id} . '">CANCEL</a></td>' . "\n";
 }

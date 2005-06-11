@@ -2,7 +2,7 @@
 
 # create.pl:  Called by reservation_form.  Contacts the BSS to
 #             create a reservation.
-# Last modified: June 6, 2005
+# Last modified: June 10, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -78,7 +78,7 @@ sub create_reservation
     }
 
     # Undefined fields are set in the PSS.
-    if ($form_params->{user_level} eq 'engr') {
+    if (authorized($form_params->{user_level}, "engr")) {
         if ($form_params{lsp_from}) {
             $soap_params{lsp_from} = $form_params{lsp_from};
         }
