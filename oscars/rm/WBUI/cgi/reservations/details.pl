@@ -2,7 +2,7 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: June 8, 2005
+# Last modified: June 10, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -30,7 +30,7 @@ if ($dn) {
     ($error_status, %results) = BSS::Client::SOAPClient::soap_get_reservations(\%form_params);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results{status_msg});
-        print_reservation_detail($user_level, \%results);
+        print_reservation_detail($user_level, \%form_params, \%results);
     }
     else {
         update_frames($error_status, "main_frame", "", $results{error_msg});
@@ -48,7 +48,7 @@ exit;
 # Out:
 sub print_reservation_detail
 {
-    my ( $user_level, $results ) = @_;
+    my ( $user_level, $form_params, $results ) = @_;
 
     my $row = @{$results->{rows}}[0];
     print '<html>', "\n";
@@ -74,18 +74,25 @@ sub print_reservation_detail
     print "  <tr><td>Start Time:  </td><td>$time_field (UTC)</td></tr>\n";
 
     $time_field = get_time_str($row->{reservation_end_time});
-    print "  <tr> ><td>End Time:  </td><td>$time_field (UTC)</td></tr>\n";
+    print "  <tr><td>End Time:  </td><td>$time_field (UTC)</td></tr>\n";
 
     $time_field = get_time_str($row->{reservation_created_time});
-    print "  <tr> ><td>Created Time:  </td><td>$time_field (UTC)</td></tr>\n";
-    print "  <tr> ><td>Bandwidth:  </td><td>$row->{reservation_bandwidth}</td></tr>\n";
-    print "  <tr> ><td>Burst Limit:  </td><td>$row->{reservation_burst_limit}</td></tr>\n";
-    print "  <tr> ><td>Status:  </td><td>$row->{reservation_status}</td></tr>\n";
-    print "  <tr> ><td>Origin:  </td><td>", get_oscars_host($row->{src_hostaddrs_id}), "</td></tr>\n";
-    print "  <tr> ><td>Destination:  </td><td>", get_oscars_host($row->{dst_hostaddrs_id}), "</td></tr>\n";
-    print "  <tr ><td>Description:  </td><td>", $row->{reservation_description}, "</td></tr>\n";
-    print "</table>\n";
+    print "  <tr><td>Created Time:  </td><td>$time_field (UTC)</td></tr>\n";
+    print "  <tr><td>Bandwidth:  </td><td>$row->{reservation_bandwidth}</td></tr>\n";
+    print "  <tr><td>Burst Limit:  </td><td>$row->{reservation_burst_limit}</td></tr>\n";
+    print "  <tr><td>Status:  </td><td>$row->{reservation_status}</td></tr>\n";
+    print "  <tr><td>Origin:  </td><td>", get_oscars_host($row->{src_hostaddrs_id}), "</td></tr>\n";
+    print "  <tr><td>Destination:  </td><td>", get_oscars_host($row->{dst_hostaddrs_id}), "</td></tr>\n";
+    print "  <tr><td>Description:  </td><td>", $row->{reservation_description}, "</td></tr>\n";
 
+    print '  <tr><td>Action: </td><td>';
+    if (($row->{reservation_status} eq 'pending') ||
+        ($row->{reservation_status} eq 'active')) {
+       print  '<a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl?reservation_id=' . $row->{reservation_id} . '">CANCEL</a></td></tr>' . "\n";
+    }
+    else { print '<td></td></tr>', "\n"; }
+
+    print "</table>\n";
     print '<br/><br/>';
     print '<a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl">Back to reservations list</a>';
 
