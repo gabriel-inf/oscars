@@ -536,7 +536,7 @@ sub get_userlist
     for $r (@$rref) {
         $r->{institution_id} = $mapping{$r->{institution_id}};
         # replace numeric user level code with string containing permissions
-        $r->{user_level} = $self->get_level_description($r->{user_level});
+        $r->{user_level} = $self->get_str_level($r->{user_level});
     }
 
 
