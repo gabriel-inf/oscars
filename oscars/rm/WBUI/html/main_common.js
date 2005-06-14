@@ -1,48 +1,18 @@
 /*
 Javascript functions for main pages
-Last modified: June 10, 2005
+Last modified: June 13, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
 print_navigation_bar(user_level, activePage)
-print_current_date()
 hasClass(obj)
 stripe(id)
+validate_integer( strValue )
+validate_numeric( strValue )
 */
 
-
-var monthMapping = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-
-// ** print current date (format: July 7, 2004) **
-function print_current_date(fr, useLocal)
-{
-    var currentDate = new Date();
-    var currentMonth;
-
-    if (useLocal == 'local') {
-        currentMonth = currentDate.getMonth();
-    }
-    else {
-        currentMonth = currentDate.getUTCMonth();
-    }
-
-    var monthName = monthMapping[currentMonth];
-
-    if (useLocal != 'local') {
-        currentMinutes = currentDate.getUTCMinutes();
-        fr.write( monthName + " " + currentDate.getUTCDate() + ", " + currentDate.getUTCFullYear() + " " + currentDate.getUTCHours() + ":");
-    }
-    else {
-        currentMinutes = currentDate.getMinutes();
-        fr.write( monthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() + " " + currentDate.getHours() + ":");
-    }
-    if (currentMinutes < 10) { fr.write("0") } ;
-    fr.write(currentMinutes);
-    if (useLocal != 'local') { fr.write(" (UTC)") } ;
-}
 
 // ** prints HTML header
 function print_html_header()
@@ -72,38 +42,37 @@ function print_navigation_bar(userLevel, activePage)
     document.write('<ul id="tabnav">');
 
     if (userLevel.indexOf("admin") != -1) {
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" ');
         if (activePage == 'userlist') {
-            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" class="active" title="View list of all accounts">List All Accounts</a></li>');
+            document.write('class="active" ');
         }
-        else {
-            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" title="View list of all accounts">List All Accounts</a></li>');
-        }
+        document.write('title="View list of all accounts">List All Accounts</a></li>');
+
+        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" ');
         if (activePage == 'adduser') {
-            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" class="active" title="Add a new user account">Add a New User</a></li>');
+            document.write('class="active" ');
         }
-        else {
-            document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" title="Add a new user account">Add a New User</a></li>');
-        }
+        document.write('title="Add a new user account">Add a New User</a></li>');
     } 
 
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" ');
     if (activePage == 'profile') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" class="active" title="View and/or edit your information">User Profile</a></li>');
+        document.write('class="active" ');
     }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" title="View and/or edit your information">User Profile</a></li>');
-    }
+    document.write('title="View and/or edit your information">User Profile</a></li>');
+
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl" ');
     if (activePage == 'reservationlist') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl" class="active" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
+        document.write('class="active" ');
     }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl" title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
-    }
+    document.write('title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
+
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/creation_form.pl" ');
     if (activePage == 'reservation') {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/creation_form.pl" class="active" title="Create a new reservation">Make a Reservation</a></li>');
+        document.write(' class="active" ');
     }
-    else {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/creation_form.pl" title="Create a new reservation">Make a Reservation</a></li>');
-    }
+    document.write('title="Create a new reservation">Make a Reservation</a></li>');
+
     document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
     document.write("</div>");
@@ -125,7 +94,7 @@ function update_status_message(target, msg)
         f.write('<body>');
         f.write('<div>');
         f.write('<p class="topmessage">');
-        print_current_date(f, 'local');
+        print_current_date(f, '', 'local');
         f.write('</script> | ', msg, '</p>');
         f.write('</div>');
         f.write('</body>');
@@ -135,7 +104,7 @@ function update_status_message(target, msg)
     else {
         document.write('<div>');
         document.write('<p class="topmessage">');
-        print_current_date(document, 'local');
+        print_current_date('', '', 'local');
         document.write('</script> | ', msg, '</p>');
         document.write('</div>');
     }
@@ -231,6 +200,28 @@ function stripe(id)
             even =  ! even;
         }
     }
+}
+
+// validates that a string contains only valid integer number
+// returns true if valid, otherwise false
+// Reference: http://www.rgagnon.com/jsdetails/js-0063.html
+function validate_integer( strValue )
+{
+    var objRegExp = /(^-?\d\d*$)/;
+
+    //check for integer characters
+    return objRegExp.test(strValue);
+}
+
+// validates that a string contains only valid numbers
+// returns true if valid, otherwise false
+// Reference: http://www.rgagnon.com/jsdetails/js-0063.html
+function validate_numeric( strValue )
+{
+    var objRegExp = /(^-?\d\d*\.\d*$)|(^-?\d\d*$)|(^-?\.\d\d*$)/;
+
+    //check for numeric characters
+    return objRegExp.test(strValue);
 }
 
 // From Javascript book, p. 2654
