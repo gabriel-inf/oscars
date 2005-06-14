@@ -22,30 +22,36 @@ if (!$error_status) {
     for $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
-    $form_params{'user_dn'} = $dn;
-    $form_params{'user_level'} = $user_level;
+    $form_params{user_level} = $user_level;
+    if ( (authorized($form_params{user_level}, "engr")) ||
+         (authorized($form_params{user_level}, "admin"))) {
+        $form_params{admin_dn} = $dn;
+        $form_params{user_dn} = '*';
+    }
+    else { $form_params{user_dn} = $dn; }
+
         # The reservation id, if present, indicates a deletion
-    if ($form_params{'reservation_id'}) {
+    if ($form_params{reservation_id}) {
         ($error_status, %results) = soap_delete_reservation(\%form_params);
         if (!$error_status) {
             # save the status message
-            my $update_status = $results{'status_msg'};
+            my $update_status = $results{status_msg};
             # undefine reservation_id so get more than just that row
             $form_params{reservation_id} = undef;
             # get the updated data
             ($error_status, %results) = soap_get_reservations(\%form_params);
-            $results{'status_msg'} = $update_status;
+            $results{status_msg} = $update_status;
         }
     }
     else {
         ($error_status, %results) = soap_get_reservations(\%form_params);
     }
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results{'status_msg'});
+        update_frames($error_status, "main_frame", "", $results{status_msg});
         print_reservations(\%form_params, \%results);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results{'error_msg'});
+        update_frames($error_status, "main_frame", "", $results{error_msg});
     }
 }
 else {
@@ -60,12 +66,12 @@ exit;
 ##### sub print_reservations
 # In: 
 # Out:
-sub print_reservations
-{
+sub print_reservations {
     my ( $form_params, $results ) = @_;
+
     my ( $rowsref, $row );
 
-    $rowsref = $results->{'rows'};
+    $rowsref = $results->{rows};
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
