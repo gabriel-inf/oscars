@@ -75,7 +75,6 @@ sub print_reservations {
 
     print '<div id="zebratable_ui">', "\n\n";
 
-    print '<p><em>View Reservations</em></p>', "\n";
     print '<p>Click on a column header to sort by that column. ';
     print 'Times given are in the time zone of the browser. ', "\n";
     print 'Click on the Reservation Tag link to view detailed information ';

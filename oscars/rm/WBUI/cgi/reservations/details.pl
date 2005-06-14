@@ -76,16 +76,9 @@ sub print_reservation_detail
     print '    print_navigation_bar("', $user_level, '", "reservationlist");';
     print '</script>', "\n";
 
-    print '<div id="zebratable_ui">', "\n\n";
+    print '<div id="zebratable_ui">', "\n";
 
-    print '<p><form method="post" action="https://oscars.es.net/cgi-bin/';
-    print 'reservations/details.pl">', "\n";
-
-    print '<input type="hidden" name="reservation_id" value="';
-    print $form_params{reservation_id} . '">', "\n";
-
-    print '<input type="submit" value="Refresh">', "\n";
-    print '</form></p>', "\n";
+    print '<p><strong>Reservation Details</strong></p>', "\n";
 
     print '<table cellspacing="0" width="90%" id="reservationlist">', "\n";
 
@@ -142,19 +135,27 @@ sub print_reservation_detail
     print '  <td>' . $row->{reservation_description} . '</td>', "\n";
     print '  </tr>', "\n";
 
-    print '  <tr><td>Action: </td><td>';
     if (($row->{reservation_status} eq 'pending') ||
         ($row->{reservation_status} eq 'active')) {
+       print '<tr><td>Action: </td><td>';
        print  '<a href="https://oscars.es.net/cgi-bin/reservations/details.pl';
        print  '?reservation_id=' . $row->{reservation_id} . '&cancel=1">';
        print  'CANCEL</a></td></tr>' . "\n";
     }
-    else { print '<td></td></tr>', "\n"; }
 
     print "</table>\n";
-    print '<br/><br/>';
+    print '<br/>';
+    print '<p><form method="post" action="https://oscars.es.net/cgi-bin/';
+    print 'reservations/details.pl">', "\n";
+
+    print '<input type="hidden" name="reservation_id" value="';
+    print $form_params{reservation_id} . '">', "\n";
+
+    print '<input type="submit" value="Refresh">', "\n";
+    print '</form></p>', "\n";
+
     print '<a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl">';
-    print 'Back to reservations list</a>', "\n";
+    print '<p><strong>Back to reservations list</strong></a></p>', "\n";
 
     print "<p>For inquiries, please contact the project administrator.</p>\n\n";
     print "</div>\n\n";
