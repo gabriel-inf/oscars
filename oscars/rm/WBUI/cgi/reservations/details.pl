@@ -29,7 +29,7 @@ if ($dn) {
         # Check if reservation is being cancelled
     if ($form_params{cancel}) {
         ($error_status, %results) = soap_delete_reservation(\%form_params);
-        if (!$error_status) {
+        if ($error_status) {
             update_frames($error_status, "main_frame", "", $results{error_msg});
             exit;
         }
