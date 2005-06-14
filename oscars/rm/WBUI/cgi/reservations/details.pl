@@ -2,11 +2,10 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: June 10, 2005
+# Last modified: June 13, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-use DateTime;
 use Socket;
 use CGI;
 use Data::Dumper;
@@ -56,6 +55,7 @@ sub print_reservation_detail
     print '<link rel="stylesheet" type="text/css" ';
     print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
     print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
+    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
     print '</head>', "\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n\n";
@@ -70,14 +70,15 @@ sub print_reservation_detail
 
     print "  <tr><td>Tag:  </td><td>$row->{reservation_tag}</td></tr>\n"; 
 
-    $time_field = get_time_str($row->{reservation_start_time});
-    print "  <tr><td>Start Time:  </td><td>$time_field (UTC)</td></tr>\n";
+    print '  <tr><td>Start Time:  </td><td>';
+    print '<script language="javascript">print_current_date("", ' . $row->{reservation_start_time} . ", 'local');</script></td></tr>\n";
 
-    $time_field = get_time_str($row->{reservation_end_time});
-    print "  <tr><td>End Time:  </td><td>$time_field (UTC)</td></tr>\n";
+    print '  <tr><td>End Time:  </td><td>';
+    print '<script language="javascript">print_current_date("", ' . $row->{reservation_end_time} . ", 'local');</script></td></tr>\n";
 
-    $time_field = get_time_str($row->{reservation_created_time});
-    print "  <tr><td>Created Time:  </td><td>$time_field (UTC)</td></tr>\n";
+    print '  <tr><td>Created Time:  </td><td>';
+    print '<script language="javascript">print_current_date("", ' . $row->{reservation_created_time} . ", 'local');</script></td></tr>\n";
+
     print "  <tr><td>Bandwidth:  </td><td>$row->{reservation_bandwidth}</td></tr>\n";
     print "  <tr><td>Burst Limit:  </td><td>$row->{reservation_burst_limit}</td></tr>\n";
     print "  <tr><td>Status:  </td><td>$row->{reservation_status}</td></tr>\n";

@@ -71,6 +71,7 @@ sub print_reservations
     print '<link rel="stylesheet" type="text/css" ';
     print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
     print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
+    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
     print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/sorttable.js"></script>', "\n";
     print '</head>', "\n\n";
 
@@ -81,7 +82,7 @@ sub print_reservations
 
     print '<p><em>View Reservations</em></p>', "\n";
     print '<p>Click on a column header to sort by that column. ', "\n";
-    print 'Times given are in the time zone of the browser, but are sorted in UTC time. ', "\n";
+    print 'Times given are in the time zone of the browser. ', "\n";
     print 'Click on the Reservation Tag link to view detailed information about the reservation. ', "\n";
     print '</p>', "\n\n";
 
@@ -123,8 +124,8 @@ sub print_row
 
     print '    <td><a href="https://oscars.es.net/cgi-bin/reservations/details.pl?reservation_id=' . $row->{reservation_id} . '">' . $row->{reservation_tag} . '</a></td>' . "\n"; 
   
-    print "    <td>" . get_time_str($row->{reservation_start_time}) . "</td>\n";
-    print "    <td>" . get_time_str($row->{reservation_end_time}) . "</td>\n";
+    print '    <td><script language="javascript">print_current_date("", ' . $row->{reservation_start_time} . ", 'local');</script></td>\n";
+    print '    <td><script language="javascript">print_current_date("", ' . $row->{reservation_end_time} . ", 'local');</script></td>\n";
     print "    <td>" . $row->{reservation_status} . "</td>\n";
 
     $ip = get_oscars_host($row->{src_hostaddrs_id});

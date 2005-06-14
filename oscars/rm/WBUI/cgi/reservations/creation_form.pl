@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # creation_form.pl:  form for making reservations
-# Last modified: June 10, 2005
+# Last modified: June 13, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -37,6 +37,7 @@ sub print_reservation_form
     print '  <link rel="stylesheet" type="text/css" ';
     print '  href="https://oscars.es.net/styleSheets/layout.css">', "\n";
     print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
+    print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
     print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/reservation.js"></script>', "\n";
     print '</head>', "\n";
 

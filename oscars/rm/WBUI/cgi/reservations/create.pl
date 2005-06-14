@@ -6,8 +6,8 @@
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-use DateTime;
 use Socket;
+use DateTime;
 use Data::Dumper;
 use CGI;
 
@@ -56,6 +56,9 @@ sub create_reservation
 
     # in seconds since epoch
     $soap_params{reservation_start_time} = $form_params->{reservation_start_time};
+    # will change which Javascript method sets this up (currently in timeprint.js)
+    $soap_params{reservation_tag} = $form_params->{user_dn} . '.' . get_time_str($form_params->{reservation_start_time}) . "-";
+    
     # start time + duration time in seconds
     $soap_params{reservation_end_time} = $form_params->{reservation_start_time} + $form_params->{duration_hour} * 3600;
 
@@ -93,6 +96,37 @@ sub create_reservation
     return( soap_create_reservation(\%soap_params) );
 }
 
+
+###############################################################################
+sub get_time_str {
+    my( $epoch_seconds ) = @_;
+
+    my $dt = DateTime->from_epoch( epoch => $epoch_seconds );
+    my $year = $dt->year();
+    if ($year < 10) {
+        $year = "0" . $year;
+    }
+    my $month = $dt->month();
+    if ($month < 10) {
+        $month = "0" . $month;
+    }
+    my $day = $dt->day();
+    if ($day < 10) {
+        $day = "0" . $day;
+    }
+    my $hour = $dt->hour();
+    if ($hour < 10) {
+        $hour = "0" . $hour;
+    }
+    my $minute = $dt->minute();
+    if ($minute < 10) {
+        $minute = "0" . $minute;
+    }
+    my $time_tag = $year . $month . $day;
+
+    return( $time_tag );
+}
+######
 
 sub not_an_ip
 {
