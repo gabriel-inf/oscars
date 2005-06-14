@@ -2,12 +2,11 @@
 
 # create.pl:  Called by reservation_form.  Contacts the BSS to
 #             create a reservation.
-# Last modified: June 10, 2005
+# Last modified: June 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
 use Socket;
-use DateTime;
 use Data::Dumper;
 use CGI;
 
@@ -101,24 +100,19 @@ sub create_reservation
 sub get_time_str {
     my( $epoch_seconds ) = @_;
 
-    my $dt = DateTime->from_epoch( epoch => $epoch_seconds );
-    my $year = $dt->year();
-    if ($year < 10) {
-        $year = "0" . $year;
-    }
-    my $month = $dt->month();
+    my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST);
+    ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST) = localtime($epoch_seconds); 
+    $year += 1900;
+    $month += 1;
     if ($month < 10) {
         $month = "0" . $month;
     }
-    my $day = $dt->day();
     if ($day < 10) {
         $day = "0" . $day;
     }
-    my $hour = $dt->hour();
     if ($hour < 10) {
         $hour = "0" . $hour;
     }
-    my $minute = $dt->minute();
     if ($minute < 10) {
         $minute = "0" . $minute;
     }
