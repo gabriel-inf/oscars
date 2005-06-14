@@ -6,7 +6,6 @@
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;
-use DateTime;
 use Socket;
 
 use AAAS::Client::SOAPClient;
@@ -66,6 +65,7 @@ sub update_frames {
     print '<link rel="stylesheet" type="text/css" ';
     print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
     print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
+    print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
     print '</head>', "\n";
     print '<body>', "\n";
     print "<script language=\"javascript\">update_status_message(\"$target\", \"$msg\");</script>";
@@ -87,38 +87,6 @@ sub end_session {
 
     $auth = AAAS::Client::Auth->new();
     $auth->logout($cgi);
-}
-######
-
-##############################################################################
-# get_time_str:  converts from epoch in seconds to current local date and time
-#
-sub get_time_str {
-    my( $epoch_seconds ) = @_;
-
-    my $dt = DateTime->from_epoch( epoch => $epoch_seconds );
-    my $year = $dt->year();
-    if ($year < 10) {
-        $year = "0" . $year;
-    }
-    my $month = $dt->month();
-    if ($month < 10) {
-        $month = "0" . $month;
-    }
-    my $day = $dt->day();
-    if ($day < 10) {
-        $day = "0" . $day;
-    }
-    my $hour = $dt->hour();
-    if ($hour < 10) {
-        $hour = "0" . $hour;
-    }
-    my $minute = $dt->minute();
-    if ($minute < 10) {
-        $minute = "0" . $minute;
-    }
-    my $time_field = $month . "-" . $day . "&nbsp;&nbsp; " . $hour . ":" . $minute;
-    return( $time_field );
 }
 ######
 
