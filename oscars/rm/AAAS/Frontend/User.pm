@@ -299,7 +299,6 @@ sub set_profile {
     }
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
-    print STDERR $query, "\n";
     $sth->finish();
 
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
