@@ -197,9 +197,14 @@ sub get_reservations {
         $query .= " WHERE reservation_id = $inref->{reservation_id}";
     }
     elsif ($inref->{user_dn}) {
-        $query = "SELECT " . join(', ', @user_fields);
-        $query .= " FROM reservations";
-        $query .= " WHERE user_dn = '$inref->{user_dn}'";
+        if ($inref->{user_dn} eq '*') {
+            $query = "SELECT * FROM reservations";
+        }
+        else {
+            $query = "SELECT " . join(', ', @user_fields);
+            $query .= " FROM reservations";
+            $query .= " WHERE user_dn = '$inref->{user_dn}'";
+        }
     }
     $query .= " ORDER BY reservation_start_time";
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
