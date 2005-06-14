@@ -149,10 +149,7 @@ sub insert_reservation {
     }
     $sth->finish();
 
-        # insert reservation_tag field
-    my $time_tag = get_time_str($inref->{reservation_start_time});
-    $results{reservation_tag} = $inref->{user_dn} . '.' . $time_tag .  "-" .
-                                $results{reservation_id};
+    $results{reservation_tag} = $inref->{reservation_tag} . $results{reservation_id};
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
     ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
@@ -456,37 +453,6 @@ sub check_connection {
         return("Unable to make database connection");
     }
     return "";
-}
-######
-
-###############################################################################
-sub get_time_str {
-    my( $epoch_seconds ) = @_;
-
-    my $dt = DateTime->from_epoch( epoch => $epoch_seconds );
-    my $year = $dt->year();
-    if ($year < 10) {
-        $year = "0" . $year;
-    }
-    my $month = $dt->month();
-    if ($month < 10) {
-        $month = "0" . $month;
-    }
-    my $day = $dt->day();
-    if ($day < 10) {
-        $day = "0" . $day;
-    }
-    my $hour = $dt->hour();
-    if ($hour < 10) {
-        $hour = "0" . $hour;
-    }
-    my $minute = $dt->minute();
-    if ($minute < 10) {
-        $minute = "0" . $minute;
-    }
-    my $time_tag = $year . $month . $day;
-
-    return( $time_tag );
 }
 ######
 
