@@ -23,9 +23,8 @@ if (!$error_status) {
         $form_params{$_} = $cgi->param($_);
     }
     $form_params{user_level} = $user_level;
-    if ( (authorized($form_params{user_level}, "engr")) ||
-         (authorized($form_params{user_level}, "admin"))) {
-        $form_params{admin_dn} = $dn;
+    # Get all fields if user has engineer's privileges
+    if ( authorized($form_params{user_level}, "engr") ) {
         $form_params{user_dn} = '*';
     }
     else { $form_params{user_dn} = $dn; }

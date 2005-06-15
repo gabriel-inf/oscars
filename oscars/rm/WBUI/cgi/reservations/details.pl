@@ -82,23 +82,24 @@ sub print_reservation_detail
 
     print '<table cellspacing="0" width="90%" id="reservationlist">', "\n";
 
-    print "  <tr><td>Tag:  </td><td>$row->{reservation_tag}</td></tr>\n"; 
+    print "  <tr><td>Tag</td><td>$row->{reservation_tag}</td></tr>\n"; 
+    print "  <tr><td>User</td><td>$form_params->{user_dn}</td></tr>\n"; 
 
-    print '  <tr><td>Start Time:  </td><td>', "\n";
+    print '  <tr><td>Start time</td><td>', "\n";
     print '    <script language="javascript">', "\n";
     print '    print_current_date("", ' . $row->{reservation_start_time};
     print '                       , "local");', "\n";
     print '    </script>', "\n";
     print '  </td></tr>', "\n";
 
-    print '  <tr><td>End Time:  </td><td>';
+    print '  <tr><td>End time</td><td>';
     print '    <script language="javascript">', "\n";
     print '    print_current_date("", ' . $row->{reservation_end_time};
     print '                       , "local");', "\n";
     print '    </script>', "\n";
     print '  </td></tr>', "\n";
 
-    print '  <tr><td>Created Time:  </td><td>';
+    print '  <tr><td>Created time</td><td>';
     print '    <script language="javascript">', "\n";
     print '    print_current_date("", ' . $row->{reservation_created_time};
     print '                       , "local");', "\n";
@@ -106,32 +107,59 @@ sub print_reservation_detail
     print '  </td></tr>', "\n";
 
     print '  <tr>', "\n";
-    print '  <td>Bandwidth:  </td>', "\n";
+    print '  <td>Bandwidth</td>', "\n";
     print '  <td>' . $row->{reservation_bandwidth} . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
-    print '  <td>Burst Limit:  </td>', "\n";
+    print '  <td>Burst limit</td>', "\n";
     print '  <td>' . $row->{reservation_burst_limit} . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
-    print '  <td>Status:  </td>', "\n";
+    print '  <td>Status</td>', "\n";
     print '  <td>' . $row->{reservation_status} . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
-    print '  <td>Origin:  </td>', "\n";
+    print '  <td>Origin</td>', "\n";
     print '  <td>' . get_oscars_host($row->{src_hostaddrs_id}) . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
-    print '  <td>Destination:  </td>', "\n";
+    print '  <td>Destination</td>', "\n";
     print '  <td>' . get_oscars_host($row->{dst_hostaddrs_id}) . '</td>', "\n";
     print '  </tr>', "\n";
 
+    if ( authorized($form_params{user_level}, "engr") ) {
+        print '  <tr>', "\n";
+        print '  <td>Ingress router</td>', "\n";
+        print '  <td></td>', "\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Ingress loopback</td>', "\n";
+        print '  <td></td>', "\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Egress router</td>', "\n";
+        print '  <td></td>', "\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Egress loopback</td>', "\n";
+        print '  <td></td>', "\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Routers in path</td>', "\n";
+        print '  <td></td>', "\n";
+        print '  </tr>', "\n";
+    }
+
     print '  <tr>', "\n";
-    print '  <td>Description:  </td>', "\n";
+    print '  <td>Description</td>', "\n";
     print '  <td>' . $row->{reservation_description} . '</td>', "\n";
     print '  </tr>', "\n";
 
