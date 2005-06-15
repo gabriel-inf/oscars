@@ -70,14 +70,17 @@ sub do_query
     my( $self, $user_dn, $query, @args ) = @_;
     my( $sth, $error_msg );
 
+    #$print STDERR "** do_query:  $user_dn $query\n";
     $sth = $self->{handles}->{$user_dn}->prepare( $query );
     if ($DBI::err) {
         $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
+        print STDERR "DBERROR ", $error_msg, "\n";
         return (undef, $error_msg);
     }
     $sth->execute( @args );
     if ( $DBI::err ) {
         $error_msg = "[DBERROR] Executing $query:  $DBI::errstr";
+        print STDERR "DBERROR ", $error_msg, "\n";
         $sth->finish();
         return(undef, $error_msg);
     }
