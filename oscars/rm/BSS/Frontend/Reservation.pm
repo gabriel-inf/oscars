@@ -53,7 +53,9 @@ sub initialize {
     my ($self) = @_;
 
     $self->{dbconn} = BSS::Frontend::Database->new(
-                       'configs' => $self->{configs})
+                       'database' => $self->{configs}->{use_BSS_database},
+                       'login' => $self->{configs}->{BSS_login_name},
+                       'password' => $self->{configs}->{BSS_login_passwd})
                         or die "FATAL:  could not connect to database";
 }
 ######
@@ -73,10 +75,11 @@ sub initialize {
 sub insert_reservation {
     my( $self, $inref ) = @_;
     my( $query, $sth, $arrayref );
-    my( %results );
+    my $results = {};
+    my $user_dn = $inref->{user_dn};
 
-    $results{error_msg} = $self->check_connection();
-    if ($results{error_msg}) { return( 1, %results); }
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    if ($results->{error_msg}) { return( 1, $results); }
 
     # whether any time segment is over the bandwidth limit
     my $over_limit = 0;
@@ -94,17 +97,17 @@ sub insert_reservation {
     $inref->{reservation_created_time} = '';
 
     # handled query with the comparison start & end datetime strings
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query( $query,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $user_dn, $query,
             $inref->{reservation_start_time}, $inref->{reservation_end_time});
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    if ( $results->{error_msg} ) { return( 1, $results ); }
     $arrayref = $sth->fetchall_arrayref({});
 
     # If no segment is over the limit,  record the reservation to the database.
     # otherwise, return error message (TODO) with the times involved.
-    ($over_limit, $results{error_msg}) = $self->check_oversubscribe($arrayref, $inref);
-    if ( $over_limit || $results{error_msg} ) {
+    ($over_limit, $results->{error_msg}) = $self->check_oversubscribe($arrayref, $inref);
+    if ( $over_limit || $results->{error_msg} ) {
         $sth->finish();
-        return( 1, %results );
+        return( 1, $results );
     }
     else {
         $sth->finish();
@@ -112,9 +115,9 @@ sub insert_reservation {
         if (($inref->{ingress_interface_id} == 0) ||
             ($inref->{egress_interface_id} == 0))
         {
-            $results{error_msg} = "Invalid router id(s): 0.  Unable to " .
+            $results->{error_msg} = "Invalid router id(s): 0.  Unable to " .
                                     "do insert.";
-            return( 1, %results );
+            return( 1, $results );
         }
 
         # get ipaddr id from host's and destination's ip addresses
@@ -125,13 +128,13 @@ sub insert_reservation {
         $inref->{reservation_created_time} = time();
 
         $query = "SHOW COLUMNS from reservations";
-        ($sth, $results{error_msg}) = $self->{dbconn}->do_query( $query );
-        if ( $results{error_msg} ) { return( 1, %results ); }
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $user_dn, $query );
+        if ( $results->{error_msg} ) { return( 1, $results ); }
         $arrayref = $sth->fetchall_arrayref({});
         my @insertions;
         for $_ ( @$arrayref ) {
            if ($inref->{$_->{Field}}) {
-               $results{$_} = $inref->{$_->{Field}};
+               $results->{$_} = $inref->{$_->{Field}};
                push(@insertions, $inref->{$_->{Field}}); 
            }
            else{ push(@insertions, 'NULL'); }
@@ -141,24 +144,24 @@ sub insert_reservation {
         # insert all fields for reservation into database
         $query = "INSERT INTO reservations VALUES (
                  " . join( ', ', ('?') x @insertions ) . " )";
-        ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                                  @insertions);
-        if ( $results{error_msg} ) { return( 1, %results ); }
+        if ( $results->{error_msg} ) { return( 1, $results ); }
 
-        $results{reservation_id} = $self->{dbconn}->{dbh}->{mysql_insertid};
+        $results->{reservation_id} = $self->{dbconn}->{dbh}->{mysql_insertid};
     }
     $sth->finish();
 
-    $results{reservation_tag} = $inref->{reservation_tag} . $results{reservation_id};
+    $results->{reservation_tag} = $inref->{reservation_tag} . $results->{reservation_id};
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
-                                  $results{reservation_tag}, $results{reservation_id});
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+                                  $results->{reservation_tag}, $results->{reservation_id});
+    if ( $results->{error_msg} ) { return( 1, $results ); }
 
-    $results{status_msg} = "Your reservation has been processed " .
-        "successfully. Your reservation ID number is $results{reservation_id}.";
-    return( 0, %results );
+    $results->{status_msg} = "Your reservation has been processed " .
+        "successfully. Your reservation ID number is $results->{reservation_id}.";
+    return( 0, $results );
 }
 ######
 
@@ -182,11 +185,14 @@ sub delete_reservation {
 #
 sub get_reservations {
     my( $self, $inref ) = @_;
-    my( $sth, $query );
-    my( %mapping, $rref, $arrayref, $r, %results );
 
-    $results{error_msg} = $self->check_connection();
-    if ($results{error_msg}) { return( 1, %results); }
+    my( $sth, $query );
+    my( %mapping, $rref, $arrayref, $r );
+    my $results = {};
+    my $user_dn = $inref->{user_dn};
+
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    if ($results->{error_msg}) { return( 1, $results); }
 
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
@@ -197,7 +203,7 @@ sub get_reservations {
         $query .= " WHERE reservation_id = $inref->{reservation_id}";
     }
     elsif ($inref->{user_dn}) {
-        if ($inref->{user_dn} eq '*') {
+        if ($inref->{user_level} eq 'engr') {
             $query = "SELECT * FROM reservations";
         }
         else {
@@ -207,15 +213,15 @@ sub get_reservations {
         }
     }
     $query .= " ORDER BY reservation_start_time";
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query);
+    if ( $results->{error_msg} ) { return( 1, $results ); }
 
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
     $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query);
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query);
+    if ( $results->{error_msg} ) { return( 1, $results ); }
 
     $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
@@ -225,11 +231,11 @@ sub get_reservations {
         $r->{src_hostaddrs_id} = $mapping{$r->{src_hostaddrs_id}};
         $r->{dst_hostaddrs_id} = $mapping{$r->{dst_hostaddrs_id}};
     }
-    $results{rows} = $rref;
+    $results->{rows} = $rref;
 
     $sth->finish();
-    $results{status_msg} = 'Successfully read reservations';
-    return( 0, %results );
+    $results->{status_msg} = 'Successfully read reservations';
+    return( 0, $results );
 }
 ######
 
@@ -237,18 +243,20 @@ sub get_reservations {
 
 ###############################################################################
 sub find_pending_reservations  { 
-    my ( $self, $stime, $status ) = @_;
-    my ( $sth, $data, $query, $error_msg );
-    my ( %results );
+    my ( $self, $user_dn, $stime, $status ) = @_;
 
-    $results{error_msg} = $self->check_connection();
-    if ($results{error_msg}) { return( 1, %results); }
+    my ( $sth, $data, $query, $error_msg );
+    my $results = {};
+
+    # user dn in this case is the scheduler thread
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    if ($results->{error_msg}) { return( 1, $results); }
 
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query, $status,
                                                             $stime);
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    if ( $results->{error_msg} ) { return( 1, $results ); }
 
     # get all the data
     $data = $sth->fetchall_arrayref({});
@@ -261,21 +269,22 @@ sub find_pending_reservations  {
 
 ###############################################################################
 sub find_expired_reservations {
-    my ( $self, $stime, $status ) = @_;
-    my ( $sth, $data, $query, $error_msg);
-    my ( %results );
+    my ( $self, $user_dn, $stime, $status ) = @_;
 
-    $results{error_msg} = $self->check_connection();
-    if ($results{error_msg}) { return( 1, %results); }
+    my ( $sth, $data, $query, $error_msg);
+    my $results = {};
+
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    if ($results->{error_msg}) { return( 1, $results); }
 
     #print "expired: Looking at time == " . $stime . "\n";
 
     $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query, $status,
                                         $stime,
                                         $self->{configs}->{PENDING_CANCEL});
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    if ( $results->{error_msg} ) { return( 1, $results ); }
 
     # get all the data
     $data = $sth->fetchall_arrayref({});
@@ -295,16 +304,19 @@ sub find_expired_reservations {
 #
 sub update_reservation {
     my ( $self, $inref, $status ) = @_;
-    my ( $rref, $sth, $query, %results );
 
-    $results{error_msg} = $self->check_connection();
-    if ($results{error_msg}) { return( 1, %results); }
+    my ( $rref, $sth, $query );
+    my $results = {};
+    my $user_dn = $inref->{user_dn};
+
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    if ($results->{error_msg}) { return( 1, $results); }
 
     $query = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                     $inref->{reservation_id});
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    if ( $results->{error_msg} ) { return( 1, $results ); }
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
@@ -321,15 +333,18 @@ sub update_reservation {
     }
     $query = qq{ UPDATE reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
-    ($sth, $results{error_msg}) = $self->{dbconn}->do_query($query, $status,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query, $status,
                                                     $inref->{reservation_id});
-    if ( $results{error_msg} ) { return( 1, %results ); }
+    if ( $results->{error_msg} ) { return( 1, $results ); }
     $sth->finish();
-    $results{status_msg} = "Successfully updated reservation.";
-    return( 0, %results );
+    $results->{status_msg} = "Successfully updated reservation.";
+    return( 0, $results );
 }
 ######
 
+#################
+# Private methods
+#################
 
 ###############################################################################
 # to_bytes:  convert a string in the form of '100K' to 100000.
@@ -360,11 +375,12 @@ sub to_bytes {
 # OUT: interface row
 #
 sub get_interface_fields {
-    my( $self, $iface_id) = @_;
-    my( $results, $error_msg, $query, $sth);
+    my( $self, $user_dn, $iface_id) = @_;
+
+    my( $error_msg, $query, $sth, $results);
 
     $query = "SELECT * FROM interfaces WHERE interface_id = ?";
-    ($sth, $error_msg) = $self->{dbconn}->do_query($query, $iface_id);
+    ($sth, $error_msg) = $self->{dbconn}->do_query($user_dn, $query, $iface_id);
     if ($error_msg) { return ( undef, $error_msg ); }
 
     $results = $sth->fetchrow_hashref();
@@ -384,8 +400,10 @@ sub get_interface_fields {
 #
 sub check_oversubscribe {
     my ( $self, $reservations, $inref) = @_;
+
     my ( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
     my ( $router_name, $error_msg );
+    my $user_dn = $inref->{user_dn};
 
     # XXX: what is the MAX percent we can allocate? for now 50% ...
     my ( $max_reservation_utilization) = 0.50; 
@@ -408,7 +426,7 @@ sub check_oversubscribe {
     # now for each of those interface idx
     for $idx (keys %iface_idxs) {
         # get max bandwith speed for an idx
-        ($row, $error_msg) = $self->get_interface_fields($idx);
+        ($row, $error_msg) = $self->get_interface_fields($user_dn, $idx);
         if ($error_msg) { return (1, $error_msg); }
         if (!$row ) { next; }
 
@@ -420,7 +438,7 @@ sub check_oversubscribe {
             ($row->{interface_speed} * $max_reservation_utilization)) {
             my $max_utilization = $row->{interface_speed} * $max_reservation_utilization/1000000.0;
             if ($inref->{form_type} eq 'admin') {
-                ($router_name, $error_msg) = $self->{dbconn}->xface_id_to_loopback($idx, 'name');
+                ($router_name, $error_msg) = $self->{dbconn}->xface_id_to_loopback($user_dn, $idx, 'name');
                 if ($error_msg) { return (1, $error_msg); }
                 $error_msg = "$router_name oversubscribed: ";
             }
@@ -434,30 +452,6 @@ sub check_oversubscribe {
     # spaces
     $inref->{reservation_path} = join(' ', @{$inref->{reservation_path}});
     return (0, "");
-}
-######
-
-
-#################
-# Private methods
-#################
-
-###############################################################################
-sub check_connection {
-    my ( $self ) = @_;
-    my ( %attr ) = (
-        PrintError => 0,
-        RaiseError => 0,
-    );
-    $self->{dbconn}->{dbh} = DBI->connect(
-             $self->{configs}->{use_BSS_database}, 
-             $self->{configs}->{BSS_login_name},
-             $self->{'configs'}->{BSS_login_passwd},
-             \%attr);
-    if (!($self->{dbconn}->{dbh})) {
-        return("Unable to make database connection");
-    }
-    return "";
 }
 ######
 
