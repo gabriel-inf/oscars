@@ -56,28 +56,30 @@ sub create_reservation {
     # reference to input hash ref containing fields filled in by user
     # This routine fills in the remaining fields.
     my ( $self, $inref ) = @_; 
-    my ( $error_status, %results );
+
+    my ( $error_status );
+    my $results = {};
 
     $self->{output_buf} = "*********************\n";
-    ($inref->{ingress_interface_id}, $inref->{egress_interface_id}, $inref->{reservation_path}, $results{error_msg}) = $self->find_interface_ids($inref);
+    ($inref->{ingress_interface_id}, $inref->{egress_interface_id}, $inref->{reservation_path}, $results->{error_msg}) = $self->find_interface_ids($inref);
 
-    if ($results{error_msg}) { return ( 1, %results ); }
+    if ($results->{error_msg}) { return ( 1, $results ); }
 
-    ( $error_status, %results ) = $self->{frontend}->insert_reservation( $inref );
-    if (!$results{error_msg}) {
-        $results{reservation_tag} =~ s/@/../;
+    ( $error_status, $results ) = $self->{frontend}->insert_reservation( $inref );
+    if (!$results->{error_msg}) {
+        $results->{reservation_tag} =~ s/@/../;
     }
     else {
-        $results{reservation_tag} = "fatal_reservation_errors";
+        $results->{reservation_tag} = "fatal_reservation_errors";
     }
-    open (LOGFILE, ">$ENV{OSCARS_HOME}/logs/$results{reservation_tag}") || die "Can't open log file.\n";
+    open (LOGFILE, ">$ENV{OSCARS_HOME}/logs/$results->{reservation_tag}") || die "Can't open log file.\n";
     print LOGFILE "********************\n";
     print LOGFILE $self->{output_buf};
-    if ($results{error_msg}) {
-        print LOGFILE $results{error_msg}, "\n";
+    if ($results->{error_msg}) {
+        print LOGFILE $results->{error_msg}, "\n";
     }
     close(LOGFILE);
-    return ( $error_status, %results );
+    return ( $error_status, $results );
 }
 ######
 
@@ -90,8 +92,8 @@ sub create_reservation {
 sub delete_reservation {
     my ( $self, $inref ) = @_;
 		
-    my ($error_status, %results) = $self->{frontend}->delete_reservation( $inref );
-    return ($error_status, %results);
+    my ($error_status, $results) = $self->{frontend}->delete_reservation( $inref );
+    return ($error_status, $results);
 }
 ######
 
@@ -106,8 +108,8 @@ sub delete_reservation {
 sub get_reservations {
     my ( $self, $inref ) = @_; 
 
-    my ($error_status, %results) = $self->{frontend}->get_reservations( $inref );
-    return ($error_status, %results);
+    my ($error_status, $results) = $self->{frontend}->get_reservations( $inref );
+    return ($error_status, $results);
 }
 ######
 
