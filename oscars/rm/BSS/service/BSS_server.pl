@@ -8,10 +8,11 @@
 use SOAP::Lite;
 use SOAP::Transport::HTTP;
 
+use Config::Auto;
+
 ## we want to thread on each accept, as some requests can take a 
 ## while (i.e. running traceroute)
 #use SOAP::Transport::HTTP::Daemon::ThreadOnAccept;
-use SOAP::Transport::HTTP;
 
 # enable this in the 'production' version
 # don't want to die on 'Broken pipe' or Ctrl-C
@@ -19,8 +20,6 @@ use SOAP::Transport::HTTP;
 
 use BSS::Scheduler::SchedulerThread;
 use BSS::Scheduler::ReservationHandler;
-
-use Config::Auto;
 
 # slurp up the config file
 our ($configs);
