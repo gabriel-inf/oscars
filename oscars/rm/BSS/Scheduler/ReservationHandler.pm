@@ -197,7 +197,6 @@ sub do_remote_trace {
         print STDERR "hop:  $hops[0]\n";
         # id is 0 if not an edge router (not in interfaces table)
         ($interface_id, $error) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $hops[0]);
-        print STDERR "past ip_to_xface_id\n";
         # check to make sure router has a loopback
         if ($interface_id != 0) {
             ($loopback_ip, $error) = $self->{frontend}->{dbconn}->xface_id_to_loopback($user_dn, $interface_id, 'ip');
