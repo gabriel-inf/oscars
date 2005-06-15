@@ -17,7 +17,7 @@ require '../lib/general.pl';
 
 my $cgi = CGI->new();
 
-my (%form_params, %results);
+my (%form_params, $results);
 
 my ($dn, $user_level) = check_session_status(undef, $cgi);
 
@@ -26,12 +26,12 @@ if ($dn) {
         $form_params{$_} = $cgi->param($_);
     }
     $form_params{user_level} = $user_level;
-    ($error_status, %results) = create_reservation($dn, \%form_params);
+    ($error_status, $results) = create_reservation($dn, \%form_params);
     if (!$error_status) {
-        update_frames(0, "status_frame", "", $results{status_msg});
+        update_frames(0, "status_frame", "", $results->{status_msg});
     }
     else {
-        update_frames(0, "status_frame", "", $results{error_msg});
+        update_frames(0, "status_frame", "", $results->{error_msg});
     }
 }
 else {
@@ -48,7 +48,6 @@ sub create_reservation
 {
     my( $dn, $form_params ) = @_;
     my( %soap_params );
-    my( %results);
 
     $soap_params{reservation_id} = 'NULL';
     $soap_params{user_dn} = $dn;

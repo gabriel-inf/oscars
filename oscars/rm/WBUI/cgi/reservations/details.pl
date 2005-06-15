@@ -15,7 +15,7 @@ use BSS::Client::SOAPClient;
 require '../lib/general.pl';
 
 
-my (%form_params, %results);
+my (%form_params, $results);
 
 my $cgi = CGI->new();
 my ($dn, $user_level) = check_session_status(undef, $cgi);
@@ -28,21 +28,21 @@ if ($dn) {
     $form_params{user_level} = $user_level;
         # Check if reservation is being cancelled
     if ($form_params{cancel}) {
-        ($error_status, %results) = soap_delete_reservation(\%form_params);
+        ($error_status, $results) = soap_delete_reservation(\%form_params);
         if ($error_status) {
-            update_frames($error_status, "main_frame", "", $results{error_msg});
+            update_frames($error_status, "main_frame", "", $results->{error_msg});
             exit;
         }
     }
     # print updated reservation info (may be more than just new status)
-    ($error_status, %results) =
+    ($error_status, $results) =
                  BSS::Client::SOAPClient::soap_get_reservations(\%form_params);
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results{status_msg});
-        print_reservation_detail($user_level, \%form_params, \%results);
+        update_frames($error_status, "main_frame", "", $results->{status_msg});
+        print_reservation_detail($user_level, \%form_params, $results);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results{error_msg});
+        update_frames($error_status, "main_frame", "", $results->{error_msg});
     }
 }
 else {

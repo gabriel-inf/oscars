@@ -13,7 +13,7 @@ use Data::Dumper;
 require '../lib/general.pl';
 
 
-my (%form_params, %results);
+my (%form_params, $results);
 
 my $cgi = CGI->new();
 my ($dn, $user_level) = check_session_status(undef, $cgi);
@@ -28,13 +28,13 @@ if (!$error_status) {
         $form_params{user_dn} = '*';
     }
     else { $form_params{user_dn} = $dn; }
-    ($error_status, %results) = soap_get_reservations(\%form_params);
+    ($error_status, $results) = soap_get_reservations(\%form_params);
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results{status_msg});
-        print_reservations(\%form_params, \%results);
+        update_frames($error_status, "main_frame", "", $results->{status_msg});
+        print_reservations(\%form_params, $results);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results{error_msg});
+        update_frames($error_status, "main_frame", "", $results->{error_msg});
     }
 }
 else {
