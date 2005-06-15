@@ -1,14 +1,19 @@
 # Database.pm:  BSS specific database settings and routines
-# Last modified: May 18, 2005
-# Jason Lee (jrlee@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+#               inherits from Common::Database
+# Last modified: June 14, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
+# Jason Lee (jrlee@lbl.gov)
 
 package BSS::Frontend::Database;
 
 use strict; 
 
 use DBI;
+
+use Common::Database;
+
+our @ISA = qw(Common::Database);
 
 ##############################################################################
 sub new {
@@ -25,16 +30,6 @@ sub new {
     return($_self);
 }
 
-sub initialize {
-    my ( $_self ) = @_;
-    my %attr = (
-        RaiseError => 0,
-        PrintError => 0
-    );
-    $_self->{dbh} = DBI->connect($_self->{configs}->{use_BSS_database}, 
-             $_self->{configs}->{BSS_login_name}, $_self->{configs}->{BSS_login_passwd})
-            or die "Couldn't connect to database: " . $DBI::errstr;
-}
 ######
 
 ##############################################################################
@@ -45,11 +40,11 @@ sub initialize {
 # Out: interface id
 #
 sub ip_to_xface_id {
-    my ($self, $ipaddr) = @_;
+    my ($self, $user_dn, $ipaddr) = @_;
     my ($query, $sth, $interface_id, $error_msg);
 
     $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
-    ($sth, $error_msg) = $self->do_query($query, $ipaddr);
+    ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
     if ( $error_msg ) {
         $sth->finish();
         return( 0, $error_msg );
@@ -73,13 +68,13 @@ sub ip_to_xface_id {
 # Out: router name or loopback ip address
 #
 sub xface_id_to_loopback {
-    my ($self, $interface_id, $which) = @_;
+    my ($self, $user_dn, $interface_id, $which) = @_;
     my ($query, $sth, $error_msg);
 
     $query = "SELECT router_name, router_loopback FROM routers
               WHERE router_id = (SELECT router_id from interfaces
                                  WHERE interface_id = ?)";
-    ($sth, $error_msg) = $self->do_query($query, $interface_id);
+    ($sth, $error_msg) = $self->do_query($user_dn, $query, $interface_id);
     if ( $error_msg ) {
         $sth->finish();
         return( "", $error_msg );
@@ -107,13 +102,13 @@ sub xface_id_to_loopback {
 # Out: hostaddrs_id
 #
 sub hostaddrs_ip_to_id {
-    my ($self, $ipaddr) = @_;
+    my ($self, $user_dn, $ipaddr) = @_;
     my ($query, $error_msg, $sth);
     my ($id);
 
     # TODO:  make hostaddrs_ip field UNIQUE in hostaddrs?
     $query = 'SELECT hostaddrs_id FROM hostaddrs WHERE hostaddrs_ip = ?';
-    ($sth, $error_msg) = $self->do_query($query, $ipaddr);
+    ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
     if ( $error_msg ) {
         $sth->finish();
         return( 0, $error_msg );
@@ -122,7 +117,7 @@ sub hostaddrs_ip_to_id {
     # if no matches, insert a row in hostaddrs
     if ($sth->rows == 0 ) {
         $query = "INSERT INTO hostaddrs VALUES ( '', '$ipaddr'  )";
-        ($sth, $error_msg) = $self->do_query($query);
+        ($sth, $error_msg) = $self->do_query($user_dn, $query);
         if ( $error_msg ) {
             $sth->finish();
             return( 0, $error_msg );
@@ -146,11 +141,11 @@ sub hostaddrs_ip_to_id {
 # OUT: hostaddrs_ip
 #
 sub hostaddrs_id_to_ip {
-    my ($self, $id) = @_;
+    my ($self, $user_dn, $id) = @_;
     my ($query, $sth, $ipaddr, $error_msg);
 
     $query = 'SELECT hostaddrs_ip FROM hostaddrs WHERE hostaddrs_id = ?';
-    ($sth, $error_msg) = $self->do_query($query, $id);
+    ($sth, $error_msg) = $self->do_query($user_dn, $query, $id);
     if ( $error_msg ) {
         $sth->finish();
         return( 1, $error_msg );
@@ -165,27 +160,6 @@ sub hostaddrs_id_to_ip {
     $ipaddr = $data[0];
     $sth->finish();
     return ($ipaddr, "");
-}
-######
-
-##############################################################################
-#
-sub do_query {
-    my( $self, $query, @args ) = @_;
-    my( $sth, $error_msg );
-
-    $sth = $self->{dbh}->prepare( $query );
-    if ($DBI::err) {
-        $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
-        return (undef, $error_msg);
-    }
-    $sth->execute( @args );
-    if ( $DBI::err ) {
-        $error_msg = "[DBERROR] Executing $query:  $DBI::errstr";
-        $sth->finish();
-        return(undef, $error_msg);
-    }
-    return( $sth, '');
 }
 ######
 
