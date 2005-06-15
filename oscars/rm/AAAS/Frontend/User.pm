@@ -47,7 +47,9 @@ sub new {
 sub initialize {
     my ($self) = @_;
     $self->{dbconn} = AAAS::Frontend::Database->new(
-                           'configs' => $self->{configs})
+                       'database' => $self->{configs}->{use_AAAS_database},
+                       'login' => $self->{configs}->{AAAS_login_name},
+                       'password' => $self->{configs}->{AAAS_login_passwd})
                         or die "FATAL:  could not connect to database";
 }
 ######
@@ -69,7 +71,7 @@ sub verify_login {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 1, 1);
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 1);
     if ($results->{error_msg}) { return( 1, $results); }
     # Get user levels
     if (!defined($self->{user_levels})) {
@@ -129,10 +131,10 @@ sub get_profile {
     my $user_dn = $inref->{user_dn};
 
     if (!$inref->{admin_dn}) {
-        $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+        $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
     }
     else {
-        $results->{error_msg} = $self->{dbconn}->check_connection($inref->{admin_dn}, 0, 0);
+        $results->{error_msg} = $self->{dbconn}->enforce_connx($inref->{admin_dn}, 0, 0);
     }
     if ($results->{error_msg}) { return( 1, $results); }
 
@@ -209,7 +211,7 @@ sub set_profile {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
     # Read the current user information from the database to decide which
@@ -324,7 +326,7 @@ sub activate_account {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
     $results->{error_msg} = $self->check_authorization(
@@ -469,7 +471,7 @@ sub process_registration {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
     my $encrypted_password = $inref->{password_once};
@@ -525,7 +527,7 @@ sub get_userlist
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->check_connection($user_dn, 0, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
     $results->{error_msg} = $self->check_authorization(
