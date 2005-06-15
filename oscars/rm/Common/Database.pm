@@ -33,9 +33,10 @@ sub initialize {
 ######
 
 ###############################################################################
-# setup_connection:  Sets up database handle for user, if necessary
+# enforce_connx:  Sets up database handle for user, or denies access if
+#                     necessary
 #
-sub setup_connection
+sub enforce_connx
 {
     my ( $self, $user_dn, $do_login, $reconnect ) = @_;
     my ( %attr ) = (
