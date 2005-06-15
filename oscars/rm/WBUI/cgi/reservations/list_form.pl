@@ -25,7 +25,7 @@ if (!$error_status) {
     $form_params{user_level} = $user_level;
     # Get all fields if user has engineer's privileges
     if ( authorized($form_params{user_level}, "engr") ) {
-        $form_params{user_dn} = '*';
+        $form_params{user_level} = 'engr';
     }
     else { $form_params{user_dn} = $dn; }
     ($error_status, $results) = soap_get_reservations(\%form_params);
