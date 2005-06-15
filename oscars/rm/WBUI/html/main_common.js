@@ -41,6 +41,12 @@ function print_navigation_bar(userLevel, activePage)
     document.write('<div>');
     document.write('<ul id="tabnav">');
 
+    document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/info_form.pl" ');
+    if (activePage == 'info') {
+        document.write('class="active" ');
+    }
+    document.write('title="OSCARS information">Information</a></li>');
+
     if (userLevel.indexOf("admin") != -1) {
         document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" ');
         if (activePage == 'userlist') {
