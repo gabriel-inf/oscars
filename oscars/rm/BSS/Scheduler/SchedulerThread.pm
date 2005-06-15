@@ -69,12 +69,15 @@ sub scheduler {
 
     print STDERR "Scheduler running\n";
     $front_end = BSS::Frontend::Reservation->new('configs' => $configs);
+    my $pseudo_user = 'SCHEDULER';
+    $error_msg = $front_end->{dbconn}->enforce_connx($pseudo_user, 1, 1);
+    if ($error_msg) { return( 1, $error_msg); }
 
     while (1) {
 
         # find reservations that need to be actived
         if ($configs->{debug}) { print STDERR "find new\n"; }
-        $error_msg = find_new_reservations($front_end);
+        $error_msg = find_new_reservations($pseudo_user, $front_end);
         if ($error_msg) {
             if ($configs->{debug}) { print STDERR '** ', $error_msg, "\n"; }
         }
@@ -82,7 +85,7 @@ sub scheduler {
 
         # find reservations that need to be deactivated 
         if ($configs->{debug}) { print STDERR "find_exp\n"; }
-        $error_msg = find_expired_reservations($front_end);
+        $error_msg = find_expired_reservations($pseudo_user, $front_end);
         if ($error_msg) {
             if ($configs->{debug}) { print STDERR '** ', $error_msg, "\n"; }
         }
@@ -98,7 +101,7 @@ sub scheduler {
 #    reservatations in db that need to be setup and run in the next N minutes.
 #
 sub find_new_reservations {
-    my ($front_end) = @_;
+    my ($user_dn, $front_end) = @_;
 
     my ($timeslot, $resv, $status);
     my ($error_msg);
@@ -111,7 +114,7 @@ sub find_new_reservations {
     }
 
     # find reservations that need to be scheduled
-    ($error_msg, $resv) = $front_end->find_pending_reservations($timeslot, $configs->{PENDING});
+    ($error_msg, $resv) = $front_end->find_pending_reservations($user_dn, $timeslot, $configs->{PENDING});
     if ($error_msg) {
         return ($error_msg);
     }
@@ -132,7 +135,7 @@ sub find_new_reservations {
 #                             them down
 #
 sub find_expired_reservations {
-    my ($front_end) = @_;
+    my ($user_dn, $front_end) = @_;
 
     my $cur_time = localtime();
     my ($timeslot, $resv, $status, $error_msg);
@@ -142,7 +145,7 @@ sub find_expired_reservations {
     if ($configs->{debug}) { print STDERR "expired: $cur_time \n"; }
 
     # find active reservation past the timeslot
-    ($error_msg, $resv) = $front_end->find_expired_reservations($timeslot, $configs->{ACTIVE});
+    ($error_msg, $resv) = $front_end->find_expired_reservations($user_dn, $timeslot, $configs->{ACTIVE});
     if ($error_msg) { return $error_msg; }
        
     for my $r (@$resv) {
