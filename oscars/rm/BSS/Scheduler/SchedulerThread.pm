@@ -17,7 +17,7 @@ use Data::Dumper;
 use PSS::LSPHandler::JnxLSP;
 
     # Front end to reservations database
-use BSS::Frontend::Reservation;
+use BSS::Frontend::Scheduler;
 
 # try to keep it tight
 use strict;
@@ -68,7 +68,7 @@ sub scheduler {
     my ($front_end, $error_msg);
 
     print STDERR "Scheduler running\n";
-    $front_end = BSS::Frontend::Reservation->new('configs' => $configs);
+    $front_end = BSS::Frontend::Scheduler->new('configs' => $configs);
     my $pseudo_user = 'SCHEDULER';
     $error_msg = $front_end->{dbconn}->enforce_connx($pseudo_user, 1, 1);
     if ($error_msg) { return( 1, $error_msg); }
