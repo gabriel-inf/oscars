@@ -30,6 +30,7 @@ $params{'dst_hostaddrs_ip'} = 'atl-pt1.es.net';
 
 $params{'user_dn'} =        'dwrobertson@lbl.gov';
 $params{'reservation_description'} =    'This is a test.';
+$params{reservation_tag} = $params{user_dn} . '.' . get_time_str($params{reservation_start_time}) . "-";
 
 my($status, $results);
 ($status, $results) = soap_create_reservation(\%params);
@@ -41,3 +42,31 @@ elsif (defined($results->{'status_msg'}))
 {
     print $results->{'status_msg'}, "\n\n";
 }
+
+
+
+###############################################################################
+sub get_time_str {
+    my( $epoch_seconds ) = @_;
+
+    my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST);
+    ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST) = localtime($epoch_seconds); 
+    $year += 1900;
+    $month += 1;
+    if ($month < 10) {
+        $month = "0" . $month;
+    }
+    if ($day < 10) {
+        $day = "0" . $day;
+    }
+    if ($hour < 10) {
+        $hour = "0" . $hour;
+    }
+    if ($minute < 10) {
+        $minute = "0" . $minute;
+    }
+    my $time_tag = $year . $month . $day;
+
+    return( $time_tag );
+}
+######
