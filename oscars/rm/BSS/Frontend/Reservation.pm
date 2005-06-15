@@ -121,9 +121,9 @@ sub insert_reservation {
         }
 
         # get ipaddr id from host's and destination's ip addresses
-        $inref->{src_hostaddrs_id} = $self->{dbconn}->hostaddrs_ip_to_id(
+        $inref->{src_hostaddrs_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
                                                   $inref->{src_hostaddrs_ip}); 
-        $inref->{dst_hostaddrs_id} = $self->{dbconn}->hostaddrs_ip_to_id(
+        $inref->{dst_hostaddrs_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
                                                   $inref->{dst_hostaddrs_ip}); 
         $inref->{reservation_created_time} = time();
 
@@ -148,11 +148,12 @@ sub insert_reservation {
                                                                  @insertions);
         if ( $results->{error_msg} ) { return( 1, $results ); }
 
-        $results->{reservation_id} = $self->{dbconn}->{dbh}->{mysql_insertid};
+        $results->{reservation_id} = $self->{dbconn}->{handles}->{$user_dn}->{mysql_insertid};
     }
     $sth->finish();
 
     $results->{reservation_tag} = $inref->{reservation_tag} . $results->{reservation_id};
+    print STDERR "reservation tag:  ", $results->{reservation_tag}, "\n";
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
@@ -172,7 +173,7 @@ sub insert_reservation {
 sub delete_reservation {
     my( $self, $inref ) = @_;
 
-    return( $self->update_reservation( $inref,
+    return( $self->{dbconn}->update_reservation( $inref,
                                      $self->{configs}->{PENDING_CANCEL}) );
 }
 ######
@@ -297,50 +298,6 @@ sub find_expired_reservations {
 }
 ######
 
-
-###############################################################################
-# update_reservation: Updates reservation status.  Used to mark as active,
-# finished, or cancelled.
-#
-sub update_reservation {
-    my ( $self, $inref, $status ) = @_;
-
-    my ( $rref, $sth, $query );
-    my $results = {};
-    my $user_dn = $inref->{user_dn};
-
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
-    if ($results->{error_msg}) { return( 1, $results); }
-
-    $query = qq{ SELECT reservation_status from reservations
-                 WHERE reservation_id = ?};
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
-                                                    $inref->{reservation_id});
-    if ( $results->{error_msg} ) { return( 1, $results ); }
-    $rref = $sth->fetchall_arrayref({});
-    $sth->finish();
-
-    # If the previous state was pending_cancel, mark it now as cancelled.
-    # If the previous state was pending, and it is to be deleted, mark it
-    # as cancelled instead of pending_cancel.  The latter is used by 
-    # find_expired_reservations as one of the conditions to attempt to
-    # tear down a circuit.
-    my $prev_status = @{$rref}[0]->{reservation_status};
-    if ( ($prev_status eq $self->{configs}->{PENDING_CANCEL}) ||
-         ( ($prev_status eq $self->{configs}->{PENDING}) &&
-            ($status eq $self->{configs}->{PENDING_CANCEL}))) { 
-        $status = $self->{configs}->{CANCELLED};
-    }
-    $query = qq{ UPDATE reservations SET reservation_status = ?
-                 WHERE reservation_id = ?};
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query, $status,
-                                                    $inref->{reservation_id});
-    if ( $results->{error_msg} ) { return( 1, $results ); }
-    $sth->finish();
-    $results->{status_msg} = "Successfully updated reservation.";
-    return( 0, $results );
-}
-######
 
 #################
 # Private methods

@@ -32,6 +32,50 @@ sub new {
 
 ######
 
+###############################################################################
+# update_reservation: Updates reservation status.  Used to mark as active,
+# finished, or cancelled.
+#
+sub update_reservation {
+    my ( $self, $inref, $status ) = @_;
+
+    my ( $rref, $sth, $query );
+    my $results = {};
+    my $user_dn = $inref->{user_dn};
+
+    $results->{error_msg} = $self->enforce_connx($user_dn, 1, 0);
+    if ($results->{error_msg}) { return( 1, $results); }
+
+    $query = qq{ SELECT reservation_status from reservations
+                 WHERE reservation_id = ?};
+    ($sth, $results->{error_msg}) = $self->do_query($user_dn, $query,
+                                                    $inref->{reservation_id});
+    if ( $results->{error_msg} ) { return( 1, $results ); }
+    $rref = $sth->fetchall_arrayref({});
+    $sth->finish();
+
+    # If the previous state was pending_cancel, mark it now as cancelled.
+    # If the previous state was pending, and it is to be deleted, mark it
+    # as cancelled instead of pending_cancel.  The latter is used by 
+    # find_expired_reservations as one of the conditions to attempt to
+    # tear down a circuit.
+    my $prev_status = @{$rref}[0]->{reservation_status};
+    if ( ($prev_status eq $self->{configs}->{PENDING_CANCEL}) ||
+         ( ($prev_status eq $self->{configs}->{PENDING}) &&
+            ($status eq $self->{configs}->{PENDING_CANCEL}))) { 
+        $status = $self->{configs}->{CANCELLED};
+    }
+    $query = qq{ UPDATE reservations SET reservation_status = ?
+                 WHERE reservation_id = ?};
+    ($sth, $results->{error_msg}) = $self->do_query($user_dn, $query, $status,
+                                                    $inref->{reservation_id});
+    if ( $results->{error_msg} ) { return( 1, $results ); }
+    $sth->finish();
+    $results->{status_msg} = "Successfully updated reservation.";
+    return( 0, $results );
+}
+######
+
 ##############################################################################
 # ip_to_xface_id:
 #   Get the db iface id from an ip address.  Called from the scheduler to see
@@ -44,6 +88,7 @@ sub ip_to_xface_id {
     my ($query, $sth, $interface_id, $error_msg);
 
     $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
+    print STDERR "ip_to_xface_id:  $user_dn, $ipaddr, $query\n";
     ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
     if ( $error_msg ) {
         $sth->finish();
@@ -122,7 +167,7 @@ sub hostaddrs_ip_to_id {
             $sth->finish();
             return( 0, $error_msg );
         }
-        $id = $self->{dbh}->{mysql_insertid};
+        $id = $self->{handles}->{$user_dn}->{mysql_insertid};
     }
     else {
         my @data = $sth->fetchrow_array();
