@@ -88,7 +88,6 @@ sub ip_to_xface_id {
     my ($query, $sth, $interface_id, $error_msg);
 
     $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
-    print STDERR "ip_to_xface_id:  $user_dn, $ipaddr, $query\n";
     ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
     if ( $error_msg ) {
         $sth->finish();

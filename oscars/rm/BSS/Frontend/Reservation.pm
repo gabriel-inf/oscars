@@ -153,7 +153,6 @@ sub insert_reservation {
     $sth->finish();
 
     $results->{reservation_tag} = $inref->{reservation_tag} . $results->{reservation_id};
-    print STDERR "reservation tag:  ", $results->{reservation_tag}, "\n";
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
