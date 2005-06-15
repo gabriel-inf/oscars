@@ -217,10 +217,10 @@ sub update_reservation {
 
     if ( !$error_msg ) {
         print STDERR "Changing status to $status\n";
-        $front_end->update_reservation($resv, $status)
+        $front_end->{dbconn}->update_reservation($resv, $status)
     } else {
         print STDERR "Changing status to failed\n";
-        $front_end->update_reservation($resv, $configs->{FAILED})
+        $front_end->{dbconn}->update_reservation($resv, $configs->{FAILED})
     }
 }
 ######
@@ -235,21 +235,21 @@ sub map_fields {
      # get loopbacks for routers, given interface ids, if an engineer
      # has not specified one  (TODO:  error checking)
     if (!(defined($data->{lsp_from}))) {
-        ($ingress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback($data->{ingress_interface_id}, 'ip');
+        ($ingress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback('SCHEDULER', $data->{ingress_interface_id}, 'ip');
     }
     else {
         $ingress_loopback_ip = $data->{lsp_from};
     }
     if (!(defined($data->{lsp_to}))) {
-        ($egress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback($data->{egress_interface_id}, 'ip');
+        ($egress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback('SCHEDULER', $data->{egress_interface_id}, 'ip');
     }
     else {
         $egress_loopback_ip = $data->{lsp_to};
     }
      print "lsp_from: $ingress_loopback_ip, lsp_to:  $egress_loopback_ip\n";
      # get host IP addresses, given id 
-    ($src_hostaddrs_ip, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip($data->{src_hostaddrs_id});
-    ($dst_hostaddrs_ip, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip($data->{dst_hostaddrs_id});
+    ($src_hostaddrs_ip, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{src_hostaddrs_id});
+    ($dst_hostaddrs_ip, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{dst_hostaddrs_id});
     %results = (
       'name' => "oscars_$data->{reservation_id}",
       'lsp_from' => $ingress_loopback_ip,
