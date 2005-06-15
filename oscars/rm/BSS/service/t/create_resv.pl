@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+use strict;
+
 use DateTime;
 
 use BSS::Client::SOAPClient;
@@ -24,18 +26,18 @@ $params{'ingress_interface_id'}= '';   # db lookup in scheduler
 $params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
 $params{'src_hostaddrs_ip'} = 'nettrash3.es.net';
-$params{'dst_hostaddrs_ip'} = '134.55.210.219';
+$params{'dst_hostaddrs_ip'} = 'atl-pt1.es.net';
 
 $params{'user_dn'} =        'dwrobertson@lbl.gov';
 $params{'reservation_description'} =    'This is a test.';
 
-my($result);
-($result, %data) = soap_create_reservation(\%params);
-if (defined($data{'error_msg'}) && $data{'error_msg'})
+my($status, $results);
+($status, $results) = soap_create_reservation(\%params);
+if (defined($results->{'error_msg'}) && $results->{'error_msg'})
 {
-    print $data{'error_msg'}, "\n\n";
+    print $results->{'error_msg'}, "\n\n";
 }
-elsif (defined($data{'status_msg'}))
+elsif (defined($results->{'status_msg'}))
 {
-    print $data{'status_msg'}, "\n\n";
+    print $results->{'status_msg'}, "\n\n";
 }
