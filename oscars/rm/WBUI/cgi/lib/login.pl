@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: June 8, 2005
+# Last modified: June 15, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -26,7 +26,7 @@ my $cgi = CGI->new();
 
 if (!$results->{'error_msg'}) {
     ($user_dn, $user_level) = check_session_status($results, $cgi);
-    update_frames(0, "status_frame", $startpoint . '/oscars_info.html', $cgi->param('user_dn'). " logged in");
+    update_frames(0, "status_frame", $startpoint . '/cgi-bin/lib/info_form.pl', $cgi->param('user_dn'). " logged in");
 }
 else {
     update_frames(1, "status_frame", "", $results->{'error_msg'}); 
