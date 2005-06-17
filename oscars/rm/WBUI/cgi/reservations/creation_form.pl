@@ -1,34 +1,35 @@
 #!/usr/bin/perl
 
 # creation_form.pl:  form for making reservations
-# Last modified: June 13, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: June 17, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 use CGI;
 use Data::Dumper;
 
 require '../lib/general.pl';
 
-
 my $cgi = CGI->new();
 my ($dn, $user_level) = check_session_status(undef, $cgi);
 
-if ($dn) {
-    print_reservation_form($user_level);
-}
-else {
+if (!$dn) {
     print "Location:  https://oscars.es.net/\n\n";
 }
-
+else {
+    print_reservation_form($user_level);
+}
 exit;
 
+######
 
-##### sub print_reservation_form
-# In:   user level, form level 
+###############################################################################
+# print_reservation_form:  prints out the reservation creation form
+#                         accessible from the "Make a Reservation" notebook tab
+# In:   user level
 # Out:  none
-sub print_reservation_form
-{
+#
+sub print_reservation_form {
     my( $user_level ) = @_;
 
     print '<html>', "\n";
@@ -188,3 +189,4 @@ sub print_reservation_form
     print '</body>', "\n";
     print '</html>', "\n";
 }
+######

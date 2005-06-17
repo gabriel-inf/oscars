@@ -2,7 +2,7 @@
 
 # create.pl:  Called by reservation_form.  Contacts the BSS to
 #             create a reservation.
-# Last modified: June 13, 2005
+# Last modified: June 17, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -14,19 +14,34 @@ use BSS::Client::SOAPClient;
 
 require '../lib/general.pl';
 
-
+my (%form_params);
 my $cgi = CGI->new();
 
-my (%form_params, $results);
+($form_params{user_dn}, $form_params{user_level}) =
+                                     check_session_status(undef, $cgi);
+if (!$form_params{user_dn}) {
+    print "Location:  https://oscars.es.net/\n\n";
+    exit;
+}
+for $_ ($cgi->param) {
+    $form_params{$_} = $cgi->param($_);
+}
+process_form(\%form_params);
+exit;
 
-my ($dn, $user_level) = check_session_status(undef, $cgi);
+######
 
-if ($dn) {
-    for $_ ($cgi->param) {
-        $form_params{$_} = $cgi->param($_);
-    }
-    $form_params{user_level} = $user_level;
-    ($error_status, $results) = create_reservation($dn, \%form_params);
+##############################################################################
+# process_form:  Make the SOAP call, and print out the resulting status 
+#                message in the status frame
+#
+sub process_form {
+    my( $form_params ) = @_;
+
+    my( $error_status, $results );
+
+    print STDERR Dumper($form_params);
+    ($error_status, $results) = create_reservation($form_params);
     if (!$error_status) {
         update_frames(0, "status_frame", "", $results->{status_msg});
     }
@@ -34,23 +49,21 @@ if ($dn) {
         update_frames(0, "status_frame", "", $results->{error_msg});
     }
 }
-else {
-    print "Location:  https://oscars.es.net/\n\n";
-}
+######
 
-exit;
-
-
-##### sub create_reservation
-# In: None
+##############################################################################
+# create_reservation:  attempt to create a new reservation, and print out
+#                      the result
+# In:  form parameters
 # Out: None
-sub create_reservation
-{
-    my( $dn, $form_params ) = @_;
+sub create_reservation {
+    my( $form_params ) = @_;
+
     my( %soap_params );
 
+    $soap_params{user_dn} = $form_params{user_dn};
+    $soap_params{user_level} = $form_params{user_level};
     $soap_params{reservation_id} = 'NULL';
-    $soap_params{user_dn} = $dn;
 
     # in seconds since epoch
     $soap_params{reservation_start_time} = $form_params->{reservation_start_time};
@@ -93,9 +106,11 @@ sub create_reservation
     $soap_params{reservation_description} =  $form_params->{reservation_description};
     return( soap_create_reservation(\%soap_params) );
 }
-
+######
 
 ###############################################################################
+# get_time_str:  print formatted time string
+#
 sub get_time_str {
     my( $epoch_seconds ) = @_;
 
@@ -121,9 +136,12 @@ sub get_time_str {
 }
 ######
 
+##############################################################################
+# not_an_ip:  check whether a host name or an IP address has been given
 sub not_an_ip
 {
     my($string) = @_;
 
     return($string !~ /^([\d]+)\.([\d]+)\.([\d]+)\.([\d]+)$/);
 }
+######

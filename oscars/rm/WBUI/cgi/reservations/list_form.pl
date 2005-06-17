@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: June 14, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: June 17, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 use CGI;
 
@@ -13,42 +13,53 @@ use Data::Dumper;
 require '../lib/general.pl';
 
 
-my (%form_params, $results);
-
+my (%form_params);
 my $cgi = CGI->new();
-my ($dn, $user_level) = check_session_status(undef, $cgi);
 
-if (!$error_status) {
-    for $_ ($cgi->param) {
-        $form_params{$_} = $cgi->param($_);
-    }
-    $form_params{user_level} = $user_level;
+($form_params{user_dn}, $form_params{$user_level}) =
+                                       check_session_status(undef, $cgi);
+if (!$form_params{user_dn}) {
+    print "Location:  https://oscars.es.net/\n\n";
+    exit;
+}
+for $_ ($cgi->param) {
+    $form_params{$_} = $cgi->param($_);
+}
+process_form(\%form_params);
+exit;
+
+######
+
+##############################################################################
+# process_form:  Make the SOAP call, and print out the results
+#
+sub process_form {
+    my( $form_params ) = @_;
+
+    my( $error_status, $results );
+
     # Get all fields if user has engineer's privileges
-    if ( authorized($form_params{user_level}, "engr") ) {
-        $form_params{user_level} = 'engr';
+    if ( authorized($form_params->{user_level}, "engr") ) {
+        $form_params->{user_level} = 'engr';
     }
-    else { $form_params{user_dn} = $dn; }
-    ($error_status, $results) = soap_get_reservations(\%form_params);
+    else { $form_params->{user_dn} = $dn; }
+    ($error_status, $results) = soap_get_reservations($form_params);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results->{status_msg});
-        print_reservations(\%form_params, $results);
+        print_reservations($form_params, $results);
     }
     else {
         update_frames($error_status, "main_frame", "", $results->{error_msg});
     }
 }
-else {
-    print "Location:  https://oscars.es.net/\n\n";
-}
+######
 
-
-exit;
-
-
-
-##### sub print_reservations
-# In: 
-# Out:
+##############################################################################
+# print_reservations:  print list of all reservations if the caller has admin
+#                    privileges, otherwise just print that user's reservations
+# In:   form parameters, results of SOAP call
+# Out:  None
+#
 sub print_reservations {
     my ( $form_params, $results ) = @_;
 
@@ -114,12 +125,17 @@ sub print_reservations {
     print '</body>', "\n";
     print '</html>', "\n\n";
 }
+######
 
-
-
-sub print_row
-{
+##############################################################################
+# print_row:  print the table row corresponding to one reservation
+#
+# In:   returned row data, and user level
+# Out:  None
+#
+sub print_row {
     my( $row, $user_level ) = @_;
+
     my( $seconds, $ip );
 
     print '    <td>', "\n";
@@ -149,3 +165,4 @@ sub print_row
     $ip = get_oscars_host($row->{dst_hostaddrs_id});
     print "    <td>" . $ip . "</td>\n";
 }
+######

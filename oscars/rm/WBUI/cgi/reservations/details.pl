@@ -2,9 +2,9 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: June 14, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: June 17, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 use Socket;
 use CGI;
@@ -15,48 +15,59 @@ use BSS::Client::SOAPClient;
 require '../lib/general.pl';
 
 
-my (%form_params, $results);
+my (%form_params);
 
 my $cgi = CGI->new();
-my ($dn, $user_level) = check_session_status(undef, $cgi);
+($form_params{user_dn}, $form_params{user_level}) =
+                                        check_session_status(undef, $cgi);
+if (!$form_params{user_dn}) {
+    print "Location:  https://oscars.es.net/\n\n";
+    exit;
+}
+for $_ ($cgi->param) {
+    $form_params{$_} = $cgi->param($_);
+}
+process_form(\%form_params);
+exit;
 
-if ($dn) {
-    for $_ ($cgi->param) {
-        $form_params{$_} = $cgi->param($_);
-    }
-    $form_params{user_dn} = $dn;
-    $form_params{user_level} = $user_level;
+######
+
+##############################################################################
+# process_form:  Make the SOAP call, and print out the results
+#
+sub process_form {
+    my( $form_params ) = @_;
+
+    my( $error_status, $results );
+
         # Check if reservation is being cancelled
-    if ($form_params{cancel}) {
-        ($error_status, $results) = soap_delete_reservation(\%form_params);
+    if ($form_params->{cancel}) {
+        ($error_status, $results) = soap_delete_reservation($form_params);
         if ($error_status) {
             update_frames($error_status, "main_frame", "", $results->{error_msg});
-            exit;
+            return;
         }
     }
     # print updated reservation info (may be more than just new status)
     ($error_status, $results) =
-                 BSS::Client::SOAPClient::soap_get_reservations(\%form_params);
+                 BSS::Client::SOAPClient::soap_get_reservations($form_params);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results->{status_msg});
-        print_reservation_detail($user_level, \%form_params, $results);
+        print_reservation_detail($user_level, $form_params, $results);
     }
     else {
         update_frames($error_status, "main_frame", "", $results->{error_msg});
     }
 }
-else {
-    print "Location:  https://oscars.es.net/\n\n";
-}
+######
 
-exit;
-
-
-##### sub print_reservation_detail
-# In: 
-# Out:
-sub print_reservation_detail
-{
+##############################################################################
+# print_reservation_detail:  print details of reservation returned by SOAP
+#                            call
+# In:  user level, form parameters, and results of SOAP call 
+# Out: None
+#
+sub print_reservation_detail {
     my ( $user_level, $form_params, $results ) = @_;
 
     my $row = @{$results->{rows}}[0];
@@ -192,4 +203,5 @@ sub print_reservation_detail
     print "</body>\n";
     print "</html>\n\n";
 }
+######
 
