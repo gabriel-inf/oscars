@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
-# add_form.pl:  Admin tool: Add a User page
-# Last modified: June 7, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# add_form.pl:  Add a user (requires admin privileges)
+# Last modified: June 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 # include libraries
 
@@ -15,14 +15,11 @@ my (%form_params, %results);
 my $cgi = CGI->new();
 ($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
 
-if ($form_params{user_dn}) {
-    for $_ ($cgi->param) {
-        $form_params{$_} = $cgi->param($_);
-    }
-    update_frames(0, "status_frame", "", "under construction");
-}
-else {
+if (!$form_params{user_dn}) {
     print "Location:  https://oscars.es.net/\n\n";
 }
-
+for $_ ($cgi->param) {
+    $form_params{$_} = $cgi->param($_);
+}
+update_frames(0, "main_frame", "", "under construction");
 exit;
