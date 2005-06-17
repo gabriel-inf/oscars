@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 # userlist_form.pl:  User List page
-# Last modified: June 6, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: June 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 # include libraries
 require '../lib/general.pl';
@@ -11,16 +11,32 @@ require '../lib/general.pl';
 use AAAS::Client::SOAPClient;
 use Data::Dumper;
 
-my (%form_params, $results);
+my( %form_params );
 
 my $cgi = CGI->new();
-my ($dn, $user_level) = check_session_status(undef, $cgi);
+($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
 
-if (!$error_status) {
-    for $_ ($cgi->param) {
-        $form_params{$_} = $cgi->param($_);
-    }
-    ($error_status, $results) = soap_get_userlist(\%form_params);
+if (!$form_params{user_level}) {
+    print "Location:  https://oscars.es.net/admin/\n\n";
+    exit;
+}
+for $_ ($cgi->param) {
+    $form_params{$_} = $cgi->param($_);
+}
+process_form(\%form_params);
+exit;
+
+######
+
+###############################################################################
+# process_form:  Make the SOAP call, and print out the results
+#
+sub process_form {
+    my( $form_params ) = @_;
+
+    my( $error_status, $results);
+
+    ($error_status, $results) = soap_get_userlist($form_params);
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results->{status_msg});
         print_userlist($results);
@@ -29,19 +45,15 @@ if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results->{error_msg});
     }
 }
-else {
-    print "Location:  https://oscars.es.net/admin/\n\n";
-}
+######
 
-exit;
-
-
-
-##### Beginning of sub routines #####
-
-##### sub print_userlist
+###############################################################################
+# print_userlist:  If the caller has admin privileges print a list of all users
+#                  returned by the SOAP call
+#
 # In:  results of SOAP call
 # Out: None
+#
 sub print_userlist
 {
     my ( $results ) = @_;
@@ -92,8 +104,11 @@ sub print_userlist
     print "</body>\n";
     print "</html>\n\n";
 }
+######
 
-
+###############################################################################
+# print_row:  print the information for one user
+#
 sub print_row
 {
     my( $row ) = @_;
@@ -104,3 +119,4 @@ sub print_row
     print "    <td>" . $row->{user_level} . "</td>\n";
     print "    <td>" . $row->{institution_id} . "</td>\n";
 }
+######

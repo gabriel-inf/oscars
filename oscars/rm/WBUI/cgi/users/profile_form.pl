@@ -12,44 +12,57 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my (%form_params, $results);
+my( %form_params );
 
 my $cgi = CGI->new();
 ($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
 
-if ($form_params{user_dn}) {
-    for $_ ($cgi->param) {
-        $form_params{$_} = $cgi->param($_);
+if (!$form_params{user_dn}) {
+    print "Location:  https://oscars.es.net/\n\n";
+    exit;
+}
+
+for $_ ($cgi->param) {
+    $form_params{$_} = $cgi->param($_);
+}
+process_form(\%form_params);
+exit;
+
+######
+
+##############################################################################
+# process_form:  Make the SOAP call, and print out the results
+#
+sub process_form {
+    my( $form_params ) = @_;
+
+    my( $error_status, $results );
+
+    if ($form_params->{id}) {
+        $form_params->{admin_dn} = $form_params->{user_dn};
+        $form_params->{user_dn} = $form_params->{id};
     }
-    if ($form_params{id}) {
-        $form_params{admin_dn} = $form_params{user_dn};
-        $form_params{user_dn} = $form_params{id};
-    }
-    if ($form_params{set}) {
-        ($error_status, $results) = soap_set_profile(\%form_params);
+    if ($form_params->{set}) {
+        ($error_status, $results) = soap_set_profile($form_params);
     }
     else {
-        ($error_status, $results) = soap_get_profile(\%form_params);
+        ($error_status, $results) = soap_get_profile($form_params);
     }
     if (!$error_status) {
         update_frames($error_status, "main_frame", "", $results->{status_msg});
-        print_profile($results, \%form_params);
+        print_profile($results, $form_params);
     }
     else {
         update_frames($error_status, "main_frame", "", $results->{error_msg});
     }
 }
-else {
-    print "Location:  https://oscars.es.net/\n\n";
-}
+######
 
-exit;
-
-
-
-sub print_profile
-{
-    my ($results, $form_params) = @_;
+##############################################################################
+# print_profile:  print the user profile retrieved via the SOAP call
+#
+sub print_profile {
+    my( $results, $form_params ) = @_;
 
     my $rowref = @{$results->{rows}}[0];
     print '<html>', "\n";
@@ -189,3 +202,4 @@ sub print_profile
     print '</html>', "\n";
     print "\n\n";
 }
+######
