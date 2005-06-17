@@ -64,7 +64,7 @@ sub process_form {
 sub print_profile {
     my( $results, $form_params ) = @_;
 
-    my $rowref = @{$results->{rows}}[0];
+    my $rowref = $results->{row};
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
