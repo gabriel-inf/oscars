@@ -22,13 +22,13 @@ my @user_profile_fields = ( 'user_last_name',
                             'user_dn',
                             'user_password',
                             'user_email_primary',
-                            'user_level',
+#                            'user_level',
                             'user_email_secondary',
                             'user_phone_primary',
                             'user_phone_secondary',
                             'user_description',
-                            'user_register_time',
-                            'user_activation_key',
+#                            'user_register_time',
+#                            'user_activation_key',
                             'institution_id');
 
 
@@ -138,11 +138,13 @@ sub get_profile {
         $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
     }
     else {
-        $results->{error_msg} = $self->{dbconn}->enforce_connx($inref->{admin_dn}, 0, 0);
+        $results->{error_msg} = $self->{dbconn}->enforce_connx(
+                                                     $inref->{admin_dn}, 0, 0);
     }
     if ($results->{error_msg}) { return( 1, $results); }
 
-    $results->{error_msg} = $self->{auth}->verify($inref->{user_level}, 'user', 1);
+    $results->{error_msg} = $self->{auth}->verify($inref->{user_level},
+                                                  'user', 1);
     if ($results->{error_msg}) { return( 1, $results ); }
 
     # DB query: get the user profile detail
@@ -150,12 +152,12 @@ sub get_profile {
     $query .= " FROM users where user_dn = ?";
 
     if (!$inref->{admin_dn}) {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
-                                                              $user_dn);
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                                             $query, $user_dn);
     }
     else {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($inref->{admin_dn},
-                                                                $query, $user_dn);
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query(
+                                         $inref->{admin_dn}, $query, $user_dn);
     }
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
@@ -173,12 +175,14 @@ sub get_profile {
     $query = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
     if (!$inref->{admin_dn}) {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
-                                                     @{$rref}[0]->{institution_id});
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query(
+                                                $user_dn, $query,
+                                                @{$rref}[0]->{institution_id});
     }
     else {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($inref->{admin_dn},
-                                             $query, @{$rref}[0]->{institution_id});
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query(
+                                                $inref->{admin_dn}, $query,
+                                                @{$rref}[0]->{institution_id});
     }
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
@@ -190,11 +194,12 @@ sub get_profile {
     }
 
     @data = $sth->fetchrow_array();
-    $results->{institution} = $data[0];
     $sth->finish();
 
-    $results->{user_level} = $self->{auth}->get_str_level($results->{user_level}) ;
-    $results->{rows} = $rref;
+    $results->{user_level} = $self->{auth}->get_str_level(
+                                                       $results->{user_level});
+    $results->{row} = @{$rref}[0];
+    $results->{row}->{institution} = $data[0];
     $results->{status_msg} = 'Retrieved user profile';
     return ( 0, $results );
 }
@@ -213,14 +218,25 @@ sub set_profile {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
+    if (!$inref->{admin_dn}) {
+        $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
+    }
+    else {
+        $results->{error_msg} = $self->{dbconn}->enforce_connx(
+                                                     $inref->{admin_dn}, 0, 0);
+    }
     if ($results->{error_msg}) { return( 1, $results); }
+
+    $results->{error_msg} = $self->{auth}->verify($inref->{user_level},
+                                                  'user', 1);
+    if ($results->{error_msg}) { return( 1, $results ); }
 
     # Read the current user information from the database to decide which
     # fields are being updated, and user has proper privileges.
 
     # DB query: get the user profile detail
-    $query .= "SELECT * FROM users WHERE user_dn = ?";
+    $query = "SELECT " . join(', ', @user_profile_fields);
+    $query .= ", user_level FROM users where user_dn = ?";
 
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                               $user_dn);
@@ -269,7 +285,7 @@ sub set_profile {
     if ( $inref->{institution} ) {
         $query = "SELECT institution_id FROM institutions
                   WHERE institution_name = ?";
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+	($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
                                                         $query,
                                                         $inref->{institution});
         if ( $results->{error_msg} ) { return( 1, $results ); }
@@ -281,24 +297,13 @@ sub set_profile {
         }
         $ref = $sth->fetchrow_hashref;
         $inref->{institution_id} = $ref->{institution_id} ;
-        $results->{institution} = $inref->{institution}
     }
-
-    $results->{user_password} = '';   # unset before passing back
-
-    # find all column names in users table
-    $query = "SHOW COLUMNS from users";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $query );
-    if ( $results->{error_msg} ) { return( 1, $results ); }
-    my $arrayref = $sth->fetchall_arrayref({});
 
     # prepare the query for database update
     $query = "UPDATE users SET ";
-    for $_ ( @$arrayref ) {
-       if (defined($inref->{$_->{Field}})) {
-           $query .= "$_ = '$inref->{$_}', ";
-       }
-       else{ $query .= "$_ = 'NULL', "; }
+    for $_ (@user_profile_fields) {
+        $query .= "$_ = '$inref->{$_}', ";
+        $ref->{$_} = $inref->{$_};
     }
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
@@ -309,6 +314,9 @@ sub set_profile {
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     $sth->finish();
+    $ref->{institution} = $inref->{institution};
+    $ref->{user_password} = undef;
+    $results->{row} = $ref;
     $results->{status_msg} = "The account information for user " .
                           "$user_dn has been updated successfully.";
     return( 0, $results );
