@@ -14,7 +14,8 @@ use Data::Dumper;
 my( %form_params );
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
+($form_params{user_dn}, $form_params{user_level}) =
+                                         check_session_status(undef, $cgi);
 
 if (!$form_params{user_level}) {
     print "Location:  https://oscars.es.net/admin/\n\n";
