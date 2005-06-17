@@ -70,7 +70,8 @@ sub do_query
     my( $self, $user_dn, $query, @args ) = @_;
     my( $sth, $error_msg );
 
-    #$print STDERR "** do_query:  $user_dn $query\n";
+    #print STDERR '** ', $user_dn, '--', $query, "\n";
+    #print STDERR 'h ', $self->{handles}->{$user_dn}, "\n";
     $sth = $self->{handles}->{$user_dn}->prepare( $query );
     if ($DBI::err) {
         $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
