@@ -9,7 +9,7 @@ David Robertson (dwrobertson@lbl.gov)
 print_html_header()
 update_frame(target, uri)
 print_navigation_bar(user_level, activePage)
-update_status_message(target, msg)
+update_status_message(target, msg, errorFlag)
 print_footer()
 hasClass(obj)
 stripe(id)
@@ -17,6 +17,8 @@ validate_integer( strValue )
 validate_numeric( strValue )
 isblank (strValue)
 */
+
+var timerID = null;
 
 
 // ** prints HTML header
@@ -107,12 +109,23 @@ function update_status_message(target, msg, errorFlag)
     f.write('<div>');
     f.write('<p class="topmessage">');
     print_current_date(f, '', 'local');
+    setup_flash(errorFlag);
     f.write(' | ', msg, '</p>');
     f.write('</div>');
     if (target != 'status_frame') {
         f.write('</body>');
         f.write('</html>');
         f.close();
+    }
+}
+
+function setup_flash(errorFlag) {
+    if (!timerID) {
+        timerID = self.setTimeout("setup_flash", 1000);
+    }
+    else {
+        clearTimeout(timerID);
+        timerID = null;
     }
 }
 
