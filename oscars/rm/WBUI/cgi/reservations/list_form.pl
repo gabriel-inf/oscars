@@ -45,11 +45,11 @@ sub process_form {
     else { $form_params->{user_dn} = $dn; }
     ($error_status, $results) = soap_get_reservations($form_params);
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results->{status_msg});
+        update_frames($error_status, "success", "main_frame", "", $results->{status_msg});
         print_reservations($form_params, $results);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results->{error_msg});
+        update_frames($error_status, "error", "main_frame", "", $results->{error_msg});
     }
 }
 ######
@@ -160,9 +160,9 @@ sub print_row {
 
     print "    <td>" . $row->{reservation_status} . "</td>\n";
 
-    $ip = get_oscars_host($row->{src_hostaddrs_id});
+    $ip = get_oscars_host($row->{src_host_ip});
     print "    <td>" . $ip . "</td>\n";
-    $ip = get_oscars_host($row->{dst_hostaddrs_id});
+    $ip = get_oscars_host($row->{dst_host_ip});
     print "    <td>" . $ip . "</td>\n";
 }
 ######

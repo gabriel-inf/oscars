@@ -43,10 +43,10 @@ sub process_form {
     print STDERR Dumper($form_params);
     ($error_status, $results) = create_reservation($form_params);
     if (!$error_status) {
-        update_frames(0, "status_frame", "", $results->{status_msg});
+        update_frames(0, "success", "status_frame", "", $results->{status_msg});
     }
     else {
-        update_frames(0, "status_frame", "", $results->{error_msg});
+        update_frames(0, "error", "status_frame", "", $results->{error_msg});
     }
 }
 ######
