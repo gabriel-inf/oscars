@@ -34,6 +34,14 @@ my @detail_fields = ( 'reservation_id',
                     'reservation_description',
                     'reservation_tag');
 
+my @detail_admin_fields = ( 'ingress_interface_id',
+                    'egress_interface_id',
+                    'reservation_ingress_port',
+                    'reservation_egress_port',
+                    'reservation_path',
+                    'reservation_dscp',
+                    'reservation_class');
+
 
 ###############################################################################
 sub new {
@@ -198,7 +206,12 @@ sub get_reservations {
     # show only the user's reservations.  If id is given, show only the results
     # for that reservation.  Sort by start time in ascending order.
     if ($inref->{reservation_id}) {
-        $query = "SELECT " . join(', ', @detail_fields);
+        if ($inref->{user_level} ne 'engr') {
+            $query = "SELECT " . join(', ', @detail_fields);
+        }
+        else {
+            $query = "SELECT " . join(', ', (@detail_fields, @detail_admin_fields));
+        }
         $query .= " FROM reservations";
         $query .= " WHERE reservation_id = $inref->{reservation_id}";
     }
@@ -228,11 +241,47 @@ sub get_reservations {
 
     my $k;
     for $r (@$rref) {
-        $r->{src_hostaddrs_id} = $mapping{$r->{src_hostaddrs_id}};
-        $r->{dst_hostaddrs_id} = $mapping{$r->{dst_hostaddrs_id}};
+        $r->{src_host_ip} = $mapping{$r->{src_hostaddrs_id}};
+        $r->{dst_host_ip} = $mapping{$r->{dst_hostaddrs_id}};
     }
-    $results->{rows} = $rref;
 
+    if (($inref->{user_level} eq 'engr') &&
+        $inref->{reservation_id}) {
+        my $hashref;
+        my @path_routers;
+
+        $r = @$rref[0];  # in this case, only one row
+        $query = "SELECT router_name, router_loopback FROM routers";
+        $query .= " WHERE router_id =";
+        $query .= " (SELECT router_id FROM interfaces";
+        $query .= "  WHERE interface_id = ?)";
+
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                               $query,
+                                               $r->{ingress_interface_id});
+        if ( $results->{error_msg} ) { return( 1, $results ); }
+        $hashref = $sth->fetchrow_hashref();
+        $r->{ingress_router_name} = $hashref->{router_name}; 
+        $r->{ingress_loopback} = $hashref->{router_loopback};
+        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                                $query,
+                                                $r->{egress_interface_id});
+        if ( $results->{error_msg} ) { return( 1, $results ); }
+        $hashref = $sth->fetchrow_hashref();
+        $r->{egress_router_name} = $hashref->{router_name}; 
+        $r->{egress_loopback} = $hashref->{router_loopback};
+        @path_routers = split(' ', $r->{reservation_path});
+        $r->{reservation_path} = ();
+        for $_ (@path_routers) {
+            ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
+                                                $query, $_);
+            if ( $results->{error_msg} ) { return( 1, $results ); }
+            $hashref = $sth->fetchrow_hashref();
+            push(@{$r->{reservation_path}}, $hashref->{router_name}); 
+        }
+    }
+
+    $results->{rows} = $rref;
     $sth->finish();
     $results->{status_msg} = 'Successfully read reservations';
     return( 0, $results );
