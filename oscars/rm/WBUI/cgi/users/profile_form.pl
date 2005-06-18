@@ -49,11 +49,11 @@ sub process_form {
         ($error_status, $results) = soap_get_profile($form_params);
     }
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results->{status_msg});
+        update_frames($error_status, "success", "main_frame", "", $results->{status_msg});
         print_profile($results, $form_params);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results->{error_msg});
+        update_frames($error_status, "error", "main_frame", "", $results->{error_msg});
     }
 }
 ######
