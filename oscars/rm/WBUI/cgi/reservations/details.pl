@@ -40,11 +40,19 @@ sub process_form {
 
     my( $error_status, $results );
 
+    # TODO:  FIX
+    if (authorized($form_params->{user_level}, "engr")) {
+        $form_params{user_level} = "engr";
+    }
+    else {
+        $form_params{user_level} = "user";
+    }
         # Check if reservation is being cancelled
     if ($form_params->{cancel}) {
         ($error_status, $results) = soap_delete_reservation($form_params);
         if ($error_status) {
-            update_frames($error_status, "main_frame", "", $results->{error_msg});
+            update_frames($error_status, "error", "main_frame", "",
+                          $results->{error_msg});
             return;
         }
     }
@@ -52,11 +60,12 @@ sub process_form {
     ($error_status, $results) =
                  BSS::Client::SOAPClient::soap_get_reservations($form_params);
     if (!$error_status) {
-        update_frames($error_status, "main_frame", "", $results->{status_msg});
+        update_frames($error_status, "success", "main_frame", "",
+                      $results->{status_msg});
         print_reservation_detail($user_level, $form_params, $results);
     }
     else {
-        update_frames($error_status, "main_frame", "", $results->{error_msg});
+        update_frames($error_status, "error", "main_frame", "", $results->{error_msg});
     }
 }
 ######
@@ -96,6 +105,11 @@ sub print_reservation_detail {
     print "  <tr><td>Tag</td><td>$row->{reservation_tag}</td></tr>\n"; 
     print "  <tr><td>User</td><td>$form_params->{user_dn}</td></tr>\n"; 
 
+    print '  <tr>', "\n";
+    print '  <td>Description</td>', "\n";
+    print '  <td>' . $row->{reservation_description} . '</td>', "\n";
+    print '  </tr>', "\n";
+
     print '  <tr><td>Start time</td><td>', "\n";
     print '    <script language="javascript">', "\n";
     print '    print_current_date("", ' . $row->{reservation_start_time};
@@ -134,45 +148,69 @@ sub print_reservation_detail {
 
     print '  <tr>', "\n";
     print '  <td>Origin</td>', "\n";
-    print '  <td>' . get_oscars_host($row->{src_hostaddrs_id}) . '</td>', "\n";
+    print '  <td>' . get_oscars_host($row->{src_host_ip}) . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
     print '  <td>Destination</td>', "\n";
-    print '  <td>' . get_oscars_host($row->{dst_hostaddrs_id}) . '</td>', "\n";
+    print '  <td>' . get_oscars_host($row->{dst_host_ip}) . '</td>', "\n";
     print '  </tr>', "\n";
 
     if ( authorized($form_params{user_level}, "engr") ) {
         print '  <tr>', "\n";
+        print '  <td>DSCP</td>', "\n";
+        print '  <td>' . $row->{reservation_dscp} . "</td>\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Class</td>', "\n";
+        print '  <td>' . $row->{reservation_class} . "</td>\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
         print '  <td>Ingress router</td>', "\n";
-        print '  <td></td>', "\n";
+        print '  <td>' . $row->{ingress_router_name} . "</td>\n";
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";
         print '  <td>Ingress loopback</td>', "\n";
-        print '  <td></td>', "\n";
+        print '  <td>' . $row->{ingress_loopback} . "</td>\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Ingress port</td>', "\n";
+        print '  <td>' . $row->{reservation_ingress_port} . "</td>\n";
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";
         print '  <td>Egress router</td>', "\n";
-        print '  <td></td>', "\n";
+        print '  <td>' . $row->{egress_router_name} . "</td>\n";
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";
         print '  <td>Egress loopback</td>', "\n";
-        print '  <td></td>', "\n";
+        print '  <td>' . $row->{egress_loopback} . "</td>\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Egress port</td>', "\n";
+        print '  <td>' . $row->{reservation_egress_port} . "</td>\n";
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";
         print '  <td>Routers in path</td>', "\n";
-        print '  <td></td>', "\n";
+        print '  <td>';
+        for $_ (@{$row->{reservation_path}}) {
+            if ($_ ne $row->{egress_router_name}) {
+                print $_, " -> ";
+            }
+            else {
+                print $_;
+            }
+        }
+        print '  </td>', "\n";
         print '  </tr>', "\n";
     }
-
-    print '  <tr>', "\n";
-    print '  <td>Description</td>', "\n";
-    print '  <td>' . $row->{reservation_description} . '</td>', "\n";
-    print '  </tr>', "\n";
 
     if (($row->{reservation_status} eq 'pending') ||
         ($row->{reservation_status} eq 'active')) {
