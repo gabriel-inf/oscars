@@ -1,16 +1,21 @@
 /*
 Javascript functions for main pages
-Last modified: June 13, 2005
+Last modified: June 17, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
+print_html_header()
+update_frame(target, uri)
 print_navigation_bar(user_level, activePage)
+update_status_message(target, msg)
+print_footer()
 hasClass(obj)
 stripe(id)
 validate_integer( strValue )
 validate_numeric( strValue )
+isblank (strValue)
 */
 
 
@@ -86,7 +91,7 @@ function print_navigation_bar(userLevel, activePage)
 
 
 // ** prints new message in status frame
-function update_status_message(target, msg)
+function update_status_message(target, msg, errorFlag)
 {
     if (target != 'status_frame') {
         f = parent.frames['status_frame'].document;
@@ -94,25 +99,20 @@ function update_status_message(target, msg)
         f.write('<html>');
         f.write('<head>');
         f.write('<link rel="stylesheet" type="text/css" href="https://oscars.es.net/styleSheets/layout.css">');
-        f.write('<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>');
         f.write('</head>');
 
         f.write('<body>');
-        f.write('<div>');
-        f.write('<p class="topmessage">');
-        print_current_date(f, '', 'local');
-        f.write('</script> | ', msg, '</p>');
-        f.write('</div>');
+    }
+    else { f = document; }
+    f.write('<div>');
+    f.write('<p class="topmessage">');
+    print_current_date(f, '', 'local');
+    f.write(' | ', msg, '</p>');
+    f.write('</div>');
+    if (target != 'status_frame') {
         f.write('</body>');
         f.write('</html>');
         f.close();
-    }
-    else {
-        document.write('<div>');
-        document.write('<p class="topmessage">');
-        print_current_date('', '', 'local');
-        document.write('</script> | ', msg, '</p>');
-        document.write('</div>');
     }
 }
 
