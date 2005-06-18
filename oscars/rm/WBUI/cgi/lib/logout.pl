@@ -20,7 +20,7 @@ $login_frame = "https://oscars.es.net/login_frame.html";
 
 if ($dn) { end_session($cgi); }
 
-update_frames(0, "main_frame", $login_frame, "Please log in.");
+update_frames(0, "success", "main_frame", $login_frame, "Please log in.");
 
 exit;
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: June 15, 2005
+# Last modified: June 17, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -26,21 +26,26 @@ my $cgi = CGI->new();
 
 if (!$results->{'error_msg'}) {
     ($user_dn, $user_level) = check_session_status($results, $cgi);
-    update_frames(0, "status_frame", $startpoint . '/cgi-bin/lib/info_form.pl', $cgi->param('user_dn'). " logged in");
+    update_frames(0, "success", "status_frame",
+                  $startpoint . '/cgi-bin/lib/info_form.pl',
+                  $cgi->param('user_dn'). " logged in");
 }
 else {
-    update_frames(1, "status_frame", "", $results->{'error_msg'}); 
+    update_frames(1, "error", "status_frame", "", $results->{'error_msg'}); 
 }
-
 exit;
 
+######
 
-##### sub verify_user
+
+##############################################################################
+# verify_user:  Checks if user has an account
 # In:  CGI instance
 # Out: error status, SOAP results
-sub verify_user
-{
+#
+sub verify_user {
     my( $cgi ) = @_;
+
     my( %soap_params, %results );
 
     # validate user input (just check for empty fields)
@@ -57,8 +62,7 @@ sub verify_user
     }
     $soap_params{'user_dn'} = $cgi->param('user_dn');
     $auth = AAAS::Client::Auth->new();
-    #$soap_params{'user_password'} = $auth->encode_passwd($cgi->param('user_password'));
     $soap_params{'user_password'} = $cgi->param('user_password');
-
     return(soap_verify_login(\%soap_params));
 }
+######

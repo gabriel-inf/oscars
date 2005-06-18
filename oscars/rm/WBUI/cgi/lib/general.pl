@@ -57,7 +57,7 @@ sub authorized {
 # In:  uri, error or status msg
 #
 sub update_frames {
-    my ($print_type_header, $target, $uri, $msg) = @_;
+    my ($print_type_header, $status, $target, $uri, $msg) = @_;
 
     if ($print_type_header) { print 'Content-type: text/html', "\n\n"; }
     print '<html>', "\n";
@@ -68,7 +68,7 @@ sub update_frames {
     print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
     print '</head>', "\n";
     print '<body>', "\n";
-    print "<script language=\"javascript\">update_status_message(\"$target\", \"$msg\");</script>";
+    print "<script language=\"javascript\">update_status_message(\"$target\", \"$msg\", \"$status\");</script>";
     if ($uri) {
         print "<script language=\"javascript\">update_frame(\"main_frame\", \"$uri\");</script>";
     }
@@ -106,7 +106,6 @@ sub get_oscars_host {
     }
 }
 ######
-
 
 # Don't touch the line below
 1;
