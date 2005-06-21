@@ -234,13 +234,13 @@ sub map_fields {
 
      # get loopbacks for routers, given interface ids, if an engineer
      # has not specified one  (TODO:  error checking)
-    if (!(defined($data->{lsp_from}))) {
+    if (!$data->{lsp_from}) {
         ($ingress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback('SCHEDULER', $data->{ingress_interface_id}, 'ip');
     }
     else {
         $ingress_loopback_ip = $data->{lsp_from};
     }
-    if (!(defined($data->{lsp_to}))) {
+    if (!$data->{lsp_to}) {
         ($egress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback('SCHEDULER', $data->{egress_interface_id}, 'ip');
     }
     else {
@@ -260,6 +260,18 @@ sub map_fields {
       'source-address' => $src_hostaddrs_ip,
       'destination-address' => $dst_hostaddrs_ip,
     );
+    if ($data->{reservation_ingress_port}) {
+        $results{'source-port'} = $data->{reservation_ingress_port};
+    }
+    if ($data->{reservation_egress_port}) {
+        $results{'destination-port'} = $data->{reservation_engress_port};
+    }
+    if ($data->{reservation_dscp} && ($data->{reservation_dscp} != 'NULL')) {
+        $results{dscp} = $data->{reservation_dscp};
+    }
+    if ($data->{protocol}) {
+        $results{protocol} = $data->{protocol};
+    }
     return ( %results );
 }
 
