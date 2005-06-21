@@ -132,21 +132,27 @@ p.topmessage {
 
 /* reservation form */
 #reservation_ui {
-	padding: 1em;
+	padding: .5em;
 }
 
 #reservation_ui table {
 	font-size: .9em;
 	border: 1px solid #ccc;
-	background: #f6f6f6;
+	background: #f9f9f9;
 }
 
 #reservation_ui th {
 	font-weight: bold;
 }
 
-#reservation_ui th, #reservation_ui td {
-	padding: .4em;
+#reservation_ui th {
+	padding: .2em;
+	text-align: center;
+}
+
+#reservation_ui td {
+	padding: .2em;
+	text-align: left;
 }
 
 #reservation_ui tr.alignright {
@@ -304,11 +310,6 @@ p.topmessage {
 	font-size: .7em;
 	padding: .3em .8em;
 	border-left: 1px solid #ccc;
-}
-
-/* td.nosideborder is not used now; setting a class on <tr> or <td> makes the cell background color disappear */
-#zebratable_ui td.nosideborder {
-	border-left: none;
 }
 
 #zebratable_ui tbody tr.attention td {
