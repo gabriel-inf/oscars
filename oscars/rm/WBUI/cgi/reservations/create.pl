@@ -40,7 +40,6 @@ sub process_form {
 
     my( $error_status, $results );
 
-    print STDERR Dumper($form_params);
     ($error_status, $results) = create_reservation($form_params);
     if (!$error_status) {
         update_frames(0, "success", "status_frame", "", $results->{status_msg});
@@ -76,6 +75,10 @@ sub create_reservation {
     $soap_params{reservation_created_time} = '';   # filled in scheduler
     $soap_params{reservation_bandwidth} = $form_params->{reservation_bandwidth} . 'm';
     $soap_params{reservation_class} = '4';
+    $soap_params{reservation_ingress_port} = $form_params->{reservation_ingress_port};
+    $soap_params{reservation_egress_port} = $form_params->{reservation_egress_port};
+    $soap_params{reservation_dscp} = $form_params->{reservation_dscp};
+    $soap_params{protocol} = $form_params->{protocol};
     $soap_params{reservation_burst_limit} = '1m';
     $soap_params{reservation_status} = 'pending';
 

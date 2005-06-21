@@ -51,8 +51,9 @@ sub print_reservation_form {
 
     print '<input type="hidden" name="reservation_start_time">', "\n";
 
-    print '<p>Please indicate the origin location and destination, along with the amount of bandwidth you would like to reserve (in Mbps).', "\n";
-    print 'Origin and destination locations can be either host names or IP addresses. (IPv6 is not supported yet.)</p>', "\n";
+    print '<p>The origin and destination can be either host names or IP ';
+    print 'addresses (IPv6 is not supported yet).  ';
+    print 'The bandwidth is given in Mbps.</p>', "\n";
 
     print '<table>', "\n";
     print '  <tr>', "\n";
@@ -68,49 +69,80 @@ sub print_reservation_form {
     print '</table>', "\n";
 
     if (authorized($user_level, "engr")) {
-        print '<p>Your account privileges allow you to explicitly specify the IP ', "\n";
-        print 'address of the ingress and egress OSCARS loopbacks, and to ', "\n";
-        print 'specify a persistent connection.</p>', "\n";
+        print '<br/>', "\n";
+        print '<p>The following fields are optional:  ';
+        print '<strong>Ingress loopback</strong> and <strong>Egress loopback</strong> ';
+        print 'indicate the IP addresses of the ingress and egress OSCARS ';
+        print 'loopbacks, and the two port fields indicate the ';
+        print 'corresponding ports. <strong>Protocol</strong> indicates ';
+        print 'the protocol to use. ';
+        print '<strong>DSCP</strong> sets the differentiated services ';
+        print 'code point. ', "\n";
+        print 'Checking <strong>Persistent</strong> makes a ';
+        print 'reservation\'s duration indefinite.</p>';
 
         print '<table>', "\n";
         print '  <tr>', "\n";
-        print '    <th>LSP from</th>', "\n";
-        print '    <th>LSP to</th>', "\n";
+        print '    <th>Ingress loopback</th>', "\n";
+        print '    <th>Egress loopback</th>', "\n";
+        print '    <th>Ingress port</th>', "\n";
+        print '    <th>Egress port</th>', "\n";
+        print '    <th>Protocol</th>', "\n";
+        print '    <th>DSCP</th>', "\n";
         print '    <th>Persistent</th>', "\n";
         print '  </tr>', "\n";
         print '  <tr>', "\n";
         print '    <td><input type="text" name="lsp_from"></td>', "\n";
         print '    <td><input type="text" name="lsp_to"></td>', "\n";
+        print '    <td><input type="text" name="reservation_ingress_port" size="5"></td>', "\n";
+        print '    <td><input type="text" name="reservation_egress_port" size="5"></td>', "\n";
+        print '    <td><input type="text" name="protocol" size="4"></td>', "\n";
+        print '    <td><input type="text" name="reservation_dscp" size="2"></td>', "\n";
         print '    <td><input type="checkbox" name="persistent" value="0"></td>', "\n";
         print '  </tr>', "\n";
         print '</table>', "\n";
     }
 
     print '<br/>', "\n";
-    print '<p>Below, please indicate the date and time that you want to start to', "\n";
-    print 'use your reserved bandwidth.  The default time zone is the local time.</p>', "\n";
-
-    print '<p>For testing, the reservation start time can be now.  For production use, the reservation', "\n";
-    print 'start date and time should be at least two hours later than the current date and time.', "\n";
-    print 'Any field left blank will default to the Example settings.</p>', "\n";
+    print '<p>Indicate the starting date and time, and the duration in hours, ';
+    print 'of your reservation (fractional hours are permissible). ';
+    print 'Any field left blank will default to the example settings ';
+    print 'below the input fields.  The default time zone is the local time.  ';
+    if (authorized($user_level, "engr")) {
+        print 'If you have specified a persistent connection, the ', "\n";
+        print 'duration field is ignored.</p>', "\n";
+    }
+    else {
+        print '</p>', "\n";
+    }
     print '<table>', "\n";
     print '  <tr>', "\n";
-    print '    <th>&nbsp;</th>', "\n";
-    print '    <th>year</th>', "\n";
-    print '    <th>month</th>', "\n";
-    print '    <th>date</th>', "\n";
-    print '    <th>hour</th>', "\n";
-    print '    <th>minute</th>', "\n";
+    print '    <th>Year</th>', "\n";
+    print '    <th>Month</th>', "\n";
+    print '    <th>Date</th>', "\n";
+    print '    <th>Hour</th>', "\n";
+    print '    <th>Minute</th>', "\n";
     print '    <th>UTC offset</th>', "\n";
+    print '    <th>Duration</th>', "\n";
     print '  </tr>', "\n";
     print '  <tr class="alignright">', "\n";
-    print '  <th>Start Time</th>', "\n";
-    print '    <td><input type="text" name="start_year" size="4" maxlength="4"></td>', "\n";
-    print '    <td><input type="text" name="start_month" size="2" maxlength="2"></td>', "\n";
-    print '    <td><input type="text" name="start_date" size="2" maxlength="2"></td>', "\n";
-    print '    <td><input type="text" name="start_hour" size="2" maxlength="2"></td>', "\n";
-    print '    <td><input type="text" name="start_minute" size="2" maxlength="2"></td>', "\n";
-    print '    <td><select name="start_timeoffset">', "\n";
+    print '    <td>';
+    print '      <input type="text" name="start_year" size="4" maxlength="4">';
+    print '    </td>', "\n";
+    print '    <td>';
+    print '      <input type="text" name="start_month" size="2" maxlength="2">';
+    print '    </td>', "\n";
+    print '    <td>';
+    print '      <input type="text" name="start_date" size="2" maxlength="2">';
+    print '    </td>', "\n";
+    print '    <td>';
+    print '      <input type="text" name="start_hour" size="2" maxlength="2">';
+    print '    </td>', "\n";
+    print '    <td>';
+    print '      <input type="text" name="start_minute" size="2" maxlength="2">';
+    print '    </td>', "\n";
+    print '    <td>';
+    print '    <select name="start_timeoffset">', "\n";
     print '    <script language="javascript">print_timezone_offset();</script>', "\n";
     print '        <option value="+00:00">+00:00 (UTC)</option>', "\n";
     print '        <option value="+01:00">+01:00 (CET)</option>', "\n";
@@ -136,51 +168,30 @@ sub print_reservation_form {
     print '        <option value="-09:00">-09:00 (YST)</option>', "\n";
     print '        <option value="-10:00">-10:00 (AHST)</option>', "\n";
     print '        <option value="-11:00">-11:00 (NT)</option>', "\n";
-    print '    </select></td>', "\n";
-    print '  </tr>', "\n";
-    print '  </tr>', "\n";
-    print '  <tr class="alignright">', "\n";
-    print '    <th>{Example}</th>', "\n";
-    print '    <script language="javascript">print_start_datetime_example();</script>', "\n";
-    print '  </tr>', "\n";
-    print '</table>', "\n";
-
-    if (!authorized($user_level, "engr")) {
-        print '<p>Please indicate the duration of the reservation, ', "\n";
-        print 'starting from the above indicated date and time.  ', "\n";
-        print 'Currently, fractional hours are permissible.</p>', "\n";
-    }
-    else {
-        print '<p>Please indicate the duration of the reservation, ', "\n";
-        print 'starting from the above indicated date and time.  ', "\n";
-        print 'Currently, fractional hours are permissible.  If you ', "\n";
-        print 'have specified a persistent connection, this ', "\n";
-        print 'field is ignored.</p>', "\n";
-    }
-    print '<table>', "\n";
-    print '  <tr>', "\n";
-    print '    <th>Duration:</th>', "\n";
+    print '    </select>';
+    print '    </td>', "\n";
     print '    <td>', "\n";
     print '      <input type="text" name="duration_hour" size="4" maxlength="4"> Hours', "\n";
     print '    </td>', "\n";
     print '  </tr>', "\n";
+    print '  <tr class="alignright">', "\n";
+    print '    <script language="javascript">print_time_settings_example();</script>', "\n";
+    print '  </tr>', "\n";
     print '</table>', "\n";
 
+    print '<br/>', "\n";
     print '<p>Please let us know the purpose of making this reservation.</p>', "\n";
     print '<table>', "\n";
     print '  <tr>', "\n";
     print '    <th>Description:</th>', "\n";
-    print '    <td><textarea name="reservation_description" rows="3" cols="34"></textarea></td>', "\n";
+    print '    <td><textarea name="reservation_description" rows="2" cols="72"></textarea></td>', "\n";
     print '  </tr>', "\n";
     print '</table>', "\n";
 
-    print '<p><!-- Unless otherwise noted,  -->All fields except for the date and time are required for reservation.', "\n";
-    print 'Please check the information that you filled in, and press the [Reserve the Resource] button below.</p>', "\n";
-
-    print '<p>', "\n";
-    print '<input type="submit" value="Reserve the Resource">', "\n";
+    print '<br/>', "\n";
+    print '<p>Fields are required unless otherwise indicated.</p>', "\n";
+    print '<input type="submit" value="Reserve bandwidth">', "\n";
     print '<input type="reset" value="Reset form fields">', "\n";
-    print '</p>', "\n";
 
     print '</form>', "\n";
     print '</div>', "\n";
