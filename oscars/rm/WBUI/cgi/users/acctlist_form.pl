@@ -75,7 +75,6 @@ sub print_userlist
 
     print "<div id=\"zebratable_ui\">\n\n";
 
-    print "<p><em>List of Users</em><br>\n";
     print "<p>Click on the user's last name to view detailed user information.\n";
     print "</p>\n\n";
 
