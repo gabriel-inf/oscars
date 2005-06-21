@@ -1,6 +1,6 @@
 /*
 Javascript functions for printing dates and times in various formats
-Last modified: June 13, 2005
+Last modified: June 21, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -9,7 +9,7 @@ David Robertson (dwrobertson@lbl.gov)
 print_current_date()
 print_timezone_offset()
 get_timezone_offset()
-print_start_datetime_example()
+print_time_settings_example()
 check_LeapYear( intYear )
 */
 
@@ -122,10 +122,11 @@ function get_timezone_offset()
     return formattedOffset_string;
 }
 
-// print year, date, and time for reservation start time ui example
+// Prints year, date, time, time zone, and duration for reservation example.
 // NOTE:  For production use, start time should be in the future.
-// date calculation reference: http://developer.netscape.com/viewsource/goodman_dateobject.html
-function print_start_datetime_example()
+// Date calculation reference:
+//     http://developer.netscape.com/viewsource/goodman_dateobject.html
+function print_time_settings_example()
 {
     /* var MINUTE = 60 * 1000; // in milliseconds
        var HOUR = MINUTE * 60;
@@ -144,7 +145,9 @@ function print_start_datetime_example()
     document.write( '<td>' + printMonth + '</td>' );
     document.write( '<td>' + printDate + '</td>' );
     document.write( '<td>' + printHour + '</td>' );
-    document.write( '<td>' + printMinute + '</td>' + '<td></td>' );
+    document.write( '<td>' + printMinute + '</td>' );
+    document.write( '<td>UTC' + get_timezone_offset() + '</td>');
+    document.write( '<td>0.05</td>' );
 }
 
 // Reference: http://javascript.internet.com/forms/val-date.html
@@ -176,9 +179,7 @@ function check_date( form )
 
     if ( isblank(form.duration_hour.value) )
     {
-        alert( "Please enter the reservation duration hour." );
-        form.duration_hour.focus();
-        return false;
+        form.duration_hour.value = 0.05;
     }
 
     if ( validate_integer(form.start_year.value) == false ) {
