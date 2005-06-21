@@ -179,9 +179,12 @@ sub do_remote_trace {
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
         ($interface_id, $error) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $self->{configs}{jnx_source});
+        if ($error)  {
+            return (0, "", \@path, $error);
+        }
+
         if ($interface_id != 0) {
             ($loopback_ip, $error) = $self->{frontend}->{dbconn}->xface_id_to_loopback($user_dn, $interface_id, 'ip');
-            print STDERR '-- ', $loopback_ip, "\n";
         }
         #TODO: FIX
         return ($interface_id, $loopback_ip, \@path, $error);
