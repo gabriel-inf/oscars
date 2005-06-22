@@ -63,7 +63,8 @@ sub initialize {
     $self->{dbconn} = BSS::Frontend::Database->new(
                        'database' => $self->{configs}->{use_BSS_database},
                        'login' => $self->{configs}->{BSS_login_name},
-                       'password' => $self->{configs}->{BSS_login_passwd})
+                       'password' => $self->{configs}->{BSS_login_passwd},
+                       'configs' => $self->{configs})
                         or die "FATAL:  could not connect to database";
     $self->{policy} = BSS::Frontend::Policy->new(
                        'dbconn' => $self->{dbconn});

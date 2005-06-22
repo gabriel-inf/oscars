@@ -1,6 +1,6 @@
 # Database.pm:  BSS specific database settings and routines
 #               inherits from Common::Database
-# Last modified: June 14, 2005
+# Last modified: June 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # Jason Lee (jrlee@lbl.gov)
@@ -10,6 +10,7 @@ package BSS::Frontend::Database;
 use strict; 
 
 use DBI;
+use Data::Dumper;
 
 use Common::Database;
 
