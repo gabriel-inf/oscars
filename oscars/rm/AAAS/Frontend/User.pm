@@ -148,8 +148,8 @@ sub get_profile {
     if ($results->{error_msg}) { return( 1, $results ); }
 
     # DB query: get the user profile detail
-    $query = "SELECT " . join(', ', @user_profile_fields);
-    $query .= " FROM users where user_dn = ?";
+    $query = "SELECT " . join(', ', @user_profile_fields) .
+             " FROM users where user_dn = ?";
 
     if (!$inref->{admin_dn}) {
         ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
@@ -235,8 +235,8 @@ sub set_profile {
     # fields are being updated, and user has proper privileges.
 
     # DB query: get the user profile detail
-    $query = "SELECT " . join(', ', @user_profile_fields);
-    $query .= ", user_level FROM users where user_dn = ?";
+    $query = "SELECT " . join(', ', @user_profile_fields) .
+             ", user_level FROM users where user_dn = ?";
 
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                               $user_dn);
