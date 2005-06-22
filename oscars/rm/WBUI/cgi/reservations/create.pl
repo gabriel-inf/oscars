@@ -58,25 +58,45 @@ sub process_form {
 sub create_reservation {
     my( $form_params ) = @_;
 
-    my( %soap_params );
+    my( %soap_params, $persistent );
 
     $soap_params{user_dn} = $form_params{user_dn};
     $soap_params{user_level} = $form_params{user_level};
     $soap_params{reservation_id} = 'NULL';
 
     # in seconds since epoch
-    $soap_params{reservation_start_time} = $form_params->{reservation_start_time};
-    # will change which Javascript method sets this up (currently in timeprint.js)
-    $soap_params{reservation_tag} = $form_params->{user_dn} . '.' . get_time_str($form_params->{reservation_start_time}) . "-";
-    
-    # start time + duration time in seconds
-    $soap_params{reservation_end_time} = $form_params->{reservation_start_time} + $form_params->{duration_hour} * 3600;
+    $soap_params{reservation_start_time} =
+                         $form_params->{reservation_start_time};
+    # will change which Javascript method sets this up (currently in
+    # timeprint.js)
+    $soap_params{reservation_tag} =
+                         $form_params->{user_dn} . '.' .
+                         get_time_str($form_params->{reservation_start_time}) .
+                         "-";
+    if ($form_params->{duration_hour} eq 'INF') {
+        $persistent = 1;
+    }
+    else {
+        $persistent = 0;
+    } 
+    if (!$persistent) {
+        # start time + duration time in seconds
+        $soap_params{reservation_end_time} =
+                         $form_params->{reservation_start_time} +
+                         $form_params->{duration_hour} * 3600;
+    }
+    else {
+        $soap_params{reservation_end_time} = 2 ** 31 - 1;
+    }
 
     $soap_params{reservation_created_time} = '';   # filled in scheduler
-    $soap_params{reservation_bandwidth} = $form_params->{reservation_bandwidth} . 'm';
     $soap_params{reservation_class} = '4';
-    $soap_params{reservation_ingress_port} = $form_params->{reservation_ingress_port};
-    $soap_params{reservation_egress_port} = $form_params->{reservation_egress_port};
+    $soap_params{reservation_bandwidth} =
+                         $form_params->{reservation_bandwidth} . 'm';
+    $soap_params{reservation_ingress_port} =
+                         $form_params->{reservation_ingress_port};
+    $soap_params{reservation_egress_port} =
+                         $form_params->{reservation_egress_port};
     $soap_params{reservation_dscp} = $form_params->{reservation_dscp};
     $soap_params{protocol} = $form_params->{protocol};
     $soap_params{reservation_burst_limit} = '1m';
@@ -87,11 +107,13 @@ sub create_reservation {
 
     # TODO:  error checking
     if (not_an_ip($soap_params{src_hostaddrs_ip})) {
-        $soap_params{src_hostaddrs_ip} = inet_ntoa(inet_aton($soap_params{src_hostaddrs_ip}));
+        $soap_params{src_hostaddrs_ip} =
+                          inet_ntoa(inet_aton($soap_params{src_hostaddrs_ip}));
     }
 
     if (not_an_ip($soap_params{dst_hostaddrs_ip})) {
-        $soap_params{dst_hostaddrs_ip} = inet_ntoa(inet_aton($soap_params{dst_hostaddrs_ip}));
+        $soap_params{dst_hostaddrs_ip} =
+                          inet_ntoa(inet_aton($soap_params{dst_hostaddrs_ip}));
     }
 
     # Undefined fields are set in the PSS.
@@ -102,11 +124,9 @@ sub create_reservation {
         if ($form_params{lsp_to}) {
             $soap_params{lsp_to} = $form_params{lsp_to};
         }
-        if (defined($form_params{persistent})) {
-            $soap_params{persistent} = $form_params{persistent};
-        }
     }
-    $soap_params{reservation_description} =  $form_params->{reservation_description};
+    $soap_params{reservation_description} =
+                          $form_params->{reservation_description};
     return( soap_create_reservation(\%soap_params) );
 }
 ######
@@ -117,8 +137,10 @@ sub create_reservation {
 sub get_time_str {
     my( $epoch_seconds ) = @_;
 
-    my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST);
-    ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST) = localtime($epoch_seconds); 
+    my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year );
+    my( $is_DST );
+    ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year,
+              $is_DST) = localtime($epoch_seconds); 
     $year += 1900;
     $month += 1;
     if ($month < 10) {

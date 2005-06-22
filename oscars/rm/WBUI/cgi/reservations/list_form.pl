@@ -152,10 +152,15 @@ sub print_row {
     print '    </td>', "\n";
 
     print '    <td>';
-    print '    <script language="javascript">';
-    print '    print_current_date("", ' . $row->{reservation_end_time};
-    print '                      , "local");';
-    print '    </script>', "\n";
+    if ($row->{reservation_end_time} < (2 ** 31 - 1)) {
+        print '    <script language="javascript">';
+        print '    print_current_date("", ' . $row->{reservation_end_time};
+        print '                      , "local");';
+        print '    </script>', "\n";
+    }
+    else {
+        print 'PERSISTENT', "\n";
+    }
     print '    </td>', "\n";
 
     print "    <td>" . $row->{reservation_status} . "</td>\n";

@@ -118,10 +118,15 @@ sub print_reservation_detail {
     print '  </td></tr>', "\n";
 
     print '  <tr><td>End time</td><td>';
-    print '    <script language="javascript">', "\n";
-    print '    print_current_date("", ' . $row->{reservation_end_time};
-    print '                       , "local");', "\n";
-    print '    </script>', "\n";
+    if ($row->{reservation_end_time} < (2 ** 31 - 1)) {
+        print '    <script language="javascript">', "\n";
+        print '    print_current_date("", ' . $row->{reservation_end_time};
+        print '                       , "local");', "\n";
+        print '    </script>', "\n";
+    }
+    else {
+        print 'PERSISTENT', "\n";
+    }
     print '  </td></tr>', "\n";
 
     print '  <tr><td>Created time</td><td>';
