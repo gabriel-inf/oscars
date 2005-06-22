@@ -154,31 +154,22 @@ function print_time_settings_example()
 function check_date( form )
 {
     currentDate = new Date();
-    if ( isblank(form.start_year.value) )
-    {
+    if ( isblank(form.start_year.value) ) {
         form.start_year.value = currentDate.getFullYear();
     }
-    if ( isblank(form.start_month.value) )
-    {
+    if ( isblank(form.start_month.value) ) {
         form.start_month.value = currentDate.getMonth() + 1;
     }
-    if ( isblank(form.start_date.value) )
-    {
+    if ( isblank(form.start_date.value) ) {
         form.start_date.value = currentDate.getDate();
     }
-
-    if ( isblank(form.start_hour.value) )
-    {
+    if ( isblank(form.start_hour.value) ) {
         form.start_hour.value = currentDate.getHours();
     }
-
-    if ( isblank(form.start_minute.value) )
-    {
+    if ( isblank(form.start_minute.value) ) {
         form.start_minute.value = currentDate.getMinutes();
     }
-
-    if ( isblank(form.duration_hour.value) )
-    {
+    if ( isblank(form.duration_hour.value) ) {
         form.duration_hour.value = 0.05;
     }
 
@@ -268,6 +259,9 @@ function check_date( form )
         alert( "The reservation duration hour is not a number. Please check again." );
         form.duration_hour.focus();
         return false;
+    }
+    if (form.persistent.checked) {
+        form.duration_hour.value = 'INF';
     }
 
     reserve_date = new Date(form.start_year.value, form.start_month.value - 1,
