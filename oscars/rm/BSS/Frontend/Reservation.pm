@@ -210,10 +210,11 @@ sub get_reservations {
             $query = "SELECT " . join(', ', @detail_fields);
         }
         else {
-            $query = "SELECT " . join(', ', (@detail_fields, @detail_admin_fields));
+            $query = "SELECT " .
+                     join(', ', (@detail_fields, @detail_admin_fields));
         }
-        $query .= " FROM reservations";
-        $query .= " WHERE reservation_id = $inref->{reservation_id}";
+        $query .= " FROM reservations" .
+                  " WHERE reservation_id = $inref->{reservation_id}";
     }
     elsif ($inref->{user_dn}) {
         if ($inref->{user_level} eq 'engr') {
@@ -221,8 +222,8 @@ sub get_reservations {
         }
         else {
             $query = "SELECT " . join(', ', @user_fields);
-            $query .= " FROM reservations";
-            $query .= " WHERE user_dn = '$inref->{user_dn}'";
+            $query .= " FROM reservations" .
+                      " WHERE user_dn = '$inref->{user_dn}'";
         }
     }
     $query .= " ORDER BY reservation_start_time";
@@ -252,9 +253,9 @@ sub get_reservations {
 
         $r = @$rref[0];  # in this case, only one row
         $query = "SELECT router_name, router_loopback FROM routers";
-        $query .= " WHERE router_id =";
-        $query .= " (SELECT router_id FROM interfaces";
-        $query .= "  WHERE interface_id = ?)";
+        $query .= " WHERE router_id =" .
+                  " (SELECT router_id FROM interfaces" .
+                  "  WHERE interface_id = ?)";
 
         ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
                                                $query,
