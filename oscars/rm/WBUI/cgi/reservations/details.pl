@@ -51,8 +51,7 @@ sub process_form {
     if ($form_params->{cancel}) {
         ($error_status, $results) = soap_delete_reservation($form_params);
         if ($error_status) {
-            update_frames($error_status, "error", "main_frame", "",
-                          $results->{error_msg});
+            update_status_frame(1, $results->{error_msg});
             return;
         }
     }
@@ -60,12 +59,11 @@ sub process_form {
     ($error_status, $results) =
                  BSS::Client::SOAPClient::soap_get_reservations($form_params);
     if (!$error_status) {
-        update_frames($error_status, "success", "main_frame", "",
-                      $results->{status_msg});
         print_reservation_detail($user_level, $form_params, $results);
+        update_status_frame(0, $results->{status_msg});
     }
     else {
-        update_frames($error_status, "error", "main_frame", "", $results->{error_msg});
+        update_status_frame(1, $results->{error_msg});
     }
 }
 ######

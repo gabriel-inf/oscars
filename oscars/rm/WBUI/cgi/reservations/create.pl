@@ -42,10 +42,10 @@ sub process_form {
 
     ($error_status, $results) = create_reservation($form_params);
     if (!$error_status) {
-        update_frames(0, "success", "status_frame", "", $results->{status_msg});
+        update_status_frame(0, $results->{status_msg});
     }
     else {
-        update_frames(0, "error", "status_frame", "", $results->{error_msg});
+        update_status_frame(1, $results->{error_msg});
     }
 }
 ######

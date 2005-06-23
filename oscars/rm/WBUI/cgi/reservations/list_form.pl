@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: June 17, 2005
+# Last modified: June 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -45,11 +45,11 @@ sub process_form {
     else { $form_params->{user_dn} = $dn; }
     ($error_status, $results) = soap_get_reservations($form_params);
     if (!$error_status) {
-        update_frames($error_status, "success", "main_frame", "", $results->{status_msg});
         print_reservations($form_params, $results);
+        update_status_frame(0, $results->{status_msg});
     }
     else {
-        update_frames($error_status, "error", "main_frame", "", $results->{error_msg});
+        update_status_frame(1, $results->{error_msg});
     }
 }
 ######
