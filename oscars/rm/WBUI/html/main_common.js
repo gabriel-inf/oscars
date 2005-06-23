@@ -1,15 +1,15 @@
 /*
 Javascript functions for main pages
-Last modified: June 17, 2005
+Last modified: June 22, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
 print_html_header()
-update_frame(target, uri)
+update_main_frame(uri)
 print_navigation_bar(user_level, activePage)
-update_status_message(target, msg, errorFlag)
+update_status_frame(status, msg)
 print_footer()
 hasClass(obj)
 stripe(id)
@@ -34,9 +34,9 @@ function print_html_header()
 
 
 // ** displays new page in given frame
-function update_frame(target, uri)
+function update_main_frame(uri)
 {
-    parent.frames[target].location = uri;
+    parent.frames['main_frame'].location = uri;
 }
 
 
@@ -93,30 +93,25 @@ function print_navigation_bar(userLevel, activePage)
 
 
 // ** prints new message in status frame
-function update_status_message(target, msg, errorFlag)
+function update_status_frame(status, msg)
 {
-    if (target != 'status_frame') {
-        f = parent.frames['status_frame'].document;
-        f.open();
-        f.write('<html>');
-        f.write('<head>');
-        f.write('<link rel="stylesheet" type="text/css" href="https://oscars.es.net/styleSheets/layout.css">');
-        f.write('</head>');
+    f = parent.frames['status_frame'].document;
+    f.open();
+    f.write('<html>');
+    f.write('<head>');
+    f.write('<link rel="stylesheet" type="text/css" href="https://oscars.es.net/styleSheets/layout.css">');
+    f.write('</head>');
 
-        f.write('<body>');
-    }
-    else { f = document; }
+    f.write('<body>');
     f.write('<div>');
     f.write('<p class="topmessage">');
     print_current_date(f, '', 'local');
-    setup_flash(errorFlag);
+    setup_flash(status);
     f.write(' | ', msg, '</p>');
     f.write('</div>');
-    if (target != 'status_frame') {
-        f.write('</body>');
-        f.write('</html>');
-        f.close();
-    }
+    f.write('</body>');
+    f.write('</html>');
+    f.close();
 }
 
 function setup_flash(errorFlag) {
