@@ -100,13 +100,14 @@ sub verify_login {
     $ref = $sth->fetchrow_hashref();
     if ( $ref->{user_password} ne $encoded_password ) {
         $results->{error_msg} = 'Please check your password and try again.';
+        return (1, $results);
     }
     $sth->finish();
     $results->{error_msg} = $self->{auth}->verify($ref->{user_level}, 'user');
     if ($results->{error_msg}) { return( 1, $results ); }
 
     $results->{user_level} = $self->{auth}->get_str_level($ref->{user_level});
-    $results->{status_msg} = 'The user has successfully logged in.';
+    $results->{status_msg} = $user_dn . ' successfully logged in';
     # The first value is unused, but I can't get SOAP to send a correct
     # reply without it so far.
     return( 0, $results );
