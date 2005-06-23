@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: June 6, 2005
+# Last modified: June 22, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -11,16 +11,16 @@ require 'general.pl';
 
 
 my $cgi = CGI->new();
-my $login_frame;
 my ($dn, $user_level) = check_session_status(undef, $cgi);
-
-$login_frame = "https://oscars.es.net/login_frame.html";
 
 # nuke session and put the user back at the login screen
 
 if ($dn) { end_session($cgi); }
 
-update_frames(0, "success", "main_frame", $login_frame, "Please log in.");
+print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
+print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
+print '<script language="javascript">update_status_frame(1, "Please log in");</script>', "\n\n";
+print '<script language="javascript">update_main_frame("https://oscars.es.net/login_frame.html");</script>', "\n\n";
 
 exit;
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: June 17, 2005
+# Last modified: June 22, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -13,8 +13,6 @@ use AAAS::Client::Auth;
 require 'general.pl';
 
 
-$startpoint = 'https://oscars.es.net/';
-
 my ($error_status, $results);
 my ($user_dn, $user_level);
 my $cgi = CGI->new();
@@ -24,14 +22,13 @@ my $cgi = CGI->new();
 # to perform database operations.
 ($error_status, $results) = verify_user($cgi);
 
-if (!$results->{'error_msg'}) {
+if (!$results->{error_msg}) {
     ($user_dn, $user_level) = check_session_status($results, $cgi);
-    update_frames(0, "success", "status_frame",
-                  $startpoint . '/cgi-bin/lib/info_form.pl',
-                  $cgi->param('user_dn'). " logged in");
+    print_info($user_dn, $user_level);
+    update_status_frame(0, $results->{status_msg});
 }
 else {
-    update_frames(1, "error", "status_frame", "", $results->{'error_msg'}); 
+    update_status_frame(1, $results->{error_msg}); 
 }
 exit;
 
@@ -49,20 +46,19 @@ sub verify_user {
     my( %soap_params, %results );
 
     # validate user input (just check for empty fields)
-    if ( $cgi->param('user_dn') eq '' )
+    if ( !$cgi->param('user_dn') )
     {
-        $results{'error_msg'} = 'Please enter your login name.';
-        return( 1, %results );
+        $results{error_msg} = 'Please enter your login name.';
+        return( 1, \%results );
     }
 
-    if ( $cgi->param('user_password') eq '' )
+    if ( !$cgi->param('user_password') )
     {
-        $results{'error_msg'} = 'Please enter your password.';
-        return( 1, %results );
+        $results{error_msg} = 'Please enter your password.';
+        return( 1, \%results );
     }
-    $soap_params{'user_dn'} = $cgi->param('user_dn');
-    $auth = AAAS::Client::Auth->new();
-    $soap_params{'user_password'} = $cgi->param('user_password');
+    $soap_params{user_dn} = $cgi->param('user_dn');
+    $soap_params{user_password} = $cgi->param('user_password');
     return(soap_verify_login(\%soap_params));
 }
 ######
