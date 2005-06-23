@@ -16,7 +16,7 @@ require '../lib/general.pl';
 my (%form_params);
 my $cgi = CGI->new();
 
-($form_params{user_dn}, $form_params{$user_level}) =
+($form_params{user_dn}, $form_params{user_level}) =
                                        check_session_status(undef, $cgi);
 if (!$form_params{user_dn}) {
     print "Location:  https://oscars.es.net/\n\n";
@@ -41,10 +41,9 @@ sub process_form {
 
     # Get all fields if user has engineer's privileges:  FIX
     $user_level = $form_params->{user_level};
-    if ( authorized($form_params->{user_level}, "engr") ) {
+    if ( authorized($user_level, "engr") ) {
         $form_params->{user_level} = 'engr';
     }
-    else { $form_params->{user_dn} = $dn; }
     ($error_status, $results) = soap_get_reservations($form_params);
     if (!$error_status) {
         print_reservations($user_level, $results);

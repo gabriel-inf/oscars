@@ -217,14 +217,14 @@ sub get_reservations {
         $query .= " FROM reservations" .
                   " WHERE reservation_id = $inref->{reservation_id}";
     }
-    elsif ($inref->{user_dn}) {
+    elsif ($user_dn) {
         if ($inref->{user_level} eq 'engr') {
             $query = "SELECT * FROM reservations";
         }
         else {
             $query = "SELECT " . join(', ', @user_fields);
             $query .= " FROM reservations" .
-                      " WHERE user_dn = '$inref->{user_dn}'";
+                      " WHERE user_dn = '$user_dn'";
         }
     }
     $query .= " ORDER BY reservation_start_time";
