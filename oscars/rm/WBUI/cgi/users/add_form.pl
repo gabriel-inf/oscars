@@ -21,5 +21,5 @@ if (!$form_params{user_dn}) {
 for $_ ($cgi->param) {
     $form_params{$_} = $cgi->param($_);
 }
-update_frames(0, "error", "main_frame", "", "under construction");
+update_status_frame(0, "under construction");
 exit;

@@ -39,11 +39,11 @@ sub process_form {
 
     ($error_status, $results) = soap_get_userlist($form_params);
     if (!$error_status) {
-        update_frames($error_status, "success", "main_frame", "", $results->{status_msg});
         print_userlist($results);
+        update_status_frame(0, $results->{status_msg});
     }
     else {
-        update_frames($error_status, "error", "main_frame", "", $results->{error_msg});
+        update_status_frame(1, $results->{error_msg});
     }
 }
 ######
@@ -61,17 +61,23 @@ sub print_userlist
     my ( $rowsref, $row );
 	
     $rowsref = $results->{rows};
-    print "<html>\n";
-    print "<head>\n";
-    print '<link rel="stylesheet" type=\"text/css" ';
+    print '<html>', "\n";
+    print '<head>', "\n";
+    print '<link rel="stylesheet" type="text/css" ';
     print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
-    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
-    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/sorttable.js"></script>', "\n";
+    print '  <script language="javascript" type="text/javascript" ' .
+               'src="https://oscars.es.net/main_common.js">' .
+             '</script>', "\n";
+    print '  <script language="javascript" type="text/javascript" ' .
+               'src="https://oscars.es.net/sorttable.js">' .
+          '  </script>', "\n";
     print "</head>\n\n";
 
     print "<body onload=\"stripe('userlist', '#fff', '#edf3fe');\">\n\n";
 
-    print "<script language=\"javascript\">print_navigation_bar('admin', 'userlist');</script>\n\n";
+    print '<script language="javascript">' .
+          '  print_navigation_bar("admin", "userlist");' .
+          '</script>', "\n\n";
 
     print "<div id=\"zebratable_ui\">\n\n";
 
