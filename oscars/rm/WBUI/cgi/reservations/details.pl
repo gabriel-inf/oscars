@@ -38,9 +38,10 @@ exit;
 sub process_form {
     my( $form_params ) = @_;
 
-    my( $error_status, $results );
+    my( $user_level, $error_status, $results );
 
     # TODO:  FIX
+    $user_level = $form_params->{user_level};
     if (authorized($form_params->{user_level}, "engr")) {
         $form_params{user_level} = "engr";
     }

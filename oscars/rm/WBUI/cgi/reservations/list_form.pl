@@ -37,15 +37,17 @@ sub process_form {
     my( $form_params ) = @_;
 
     my( $error_status, $results );
+    my( $user_level );
 
-    # Get all fields if user has engineer's privileges
+    # Get all fields if user has engineer's privileges:  FIX
+    $user_level = $form_params->{user_level};
     if ( authorized($form_params->{user_level}, "engr") ) {
         $form_params->{user_level} = 'engr';
     }
     else { $form_params->{user_dn} = $dn; }
     ($error_status, $results) = soap_get_reservations($form_params);
     if (!$error_status) {
-        print_reservations($form_params, $results);
+        print_reservations($user_level, $results);
         update_status_frame(0, $results->{status_msg});
     }
     else {
@@ -61,7 +63,7 @@ sub process_form {
 # Out:  None
 #
 sub print_reservations {
-    my ( $form_params, $results ) = @_;
+    my ( $user_level, $results ) = @_;
 
     my ( $rowsref, $row );
 
@@ -80,7 +82,7 @@ sub print_reservations {
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n";
     print '<script language="javascript">';
-    print 'print_navigation_bar("', $user_level, '", "reservationlist");';
+    print '  print_navigation_bar("', $user_level, '", "reservationlist");';
     print '</script>', "\n";
 
     print '<div id="zebratable_ui">', "\n\n";
