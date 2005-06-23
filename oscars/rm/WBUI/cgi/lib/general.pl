@@ -81,6 +81,7 @@ sub print_info
     print '<body>', "\n\n";
     print '<script language="javascript">print_navigation_bar("', $user_level, '", "info");</script>', "\n\n";
 
+    print '<br/>', "\n";
     print '<p>With the advent of service sensitive applications (such as remote';
     print ' controlled experiments, time constrained massive data', "\n";
     print ' transfers video-conferencing, etc.), it has become apparent';
