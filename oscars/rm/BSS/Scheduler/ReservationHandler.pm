@@ -287,7 +287,17 @@ sub find_interface_ids {
     # router to run the traceroute to the source, and find the router with
     # an oscars loopback closest to the source 
     if ($inref->{lsp_from}) {
+        print STDERR "Ingress:  $inref->{lsp_from}\n";
         ($ingress_interface_id, $err_msg) = $self->{frontend}->{dbconn}->ip_to_xface_id($inref->{user_dn}, $inref->{lsp_from});
+        if ($ingress_interface_id != 0) {
+            ($loopback_ip, $err_msg) = $self->{frontend}->{dbconn}->xface_id_to_loopback(
+                                          $inref->{user_dn},
+                                          $ingress_interface_id, 'ip');
+            if ($err_msg)  { return (0, "", $path, $err_msg); }
+        }
+        else {
+            return (0, "", $path, "Ingress loopback is not a valid OSCARS router");
+        }
     }
     else {
         $self->{output_buf} .= "--traceroute:  $self->{configs}{jnx_source} to source $src\n";
@@ -297,10 +307,20 @@ sub find_interface_ids {
     if ($err_msg) { return ( 0, 0, $path, $err_msg); }
   
     if ($inref->{lsp_to}) {
-        ($egress_interface_id, $err_msg) = $self->{frontend}->{dbconn}->ip_to_xface_id($inref->{user_dn}, $inref->{lsp_to});
+        ($egress_interface_id, $err_msg) = $self->{frontend}->{dbconn}->ip_to_xface_id(
+                                          $inref->{user_dn}, $inref->{lsp_to});
+        if ($egress_interface_id != 0) {
+            ($loopback_ip, $err_msg) = $self->{frontend}->{dbconn}->xface_id_to_loopback(
+                                          $inref->{user_dn},
+                                          $egress_interface_id, 'ip');
+            if ($err_msg)  { return (0, "", $path, $err_msg); }
+        }
+        else {
+            return (0, "", $path, "Egress loopback is not a valid OSCARS router");
+        }
     }
     else {
-        # Now use the address found in the last step to run the traceroute to the
+        # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
         if ( $self->{configs}{run_traceroute} )  {
             $self->{output_buf} .= "--traceroute:  $loopback_ip to destination $dst\n";

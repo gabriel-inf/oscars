@@ -260,16 +260,20 @@ sub map_fields {
       'source-address' => $src_address,
       'destination-address' => $dst_address,
     );
-    if ($data->{reservation_src_port}) {
+    if ($data->{reservation_src_port} &&
+        ($data->{reservation_src_port} != 'NULL')) {
         $results{'source-port'} = $data->{reservation_src_port};
     }
-    if ($data->{reservation_dst_port}) {
+    if ($data->{reservation_dst_port} &&
+      ($data->{reservation_dst_port} != 'NULL')) {
         $results{'destination-port'} = $data->{reservation_dst_port};
     }
-    if ($data->{reservation_dscp} && ($data->{reservation_dscp} != 'NULL')) {
+    if ($data->{reservation_dscp} &&
+      ($data->{reservation_dscp} != 'NULL')) {
         $results{dscp} = $data->{reservation_dscp};
     }
-    if ($data->{reservation_protocol}) {
+    if ($data->{reservation_protocol} &&
+      ($data->{reservation_protocol} != 'NULL')) {
         $results{protocol} = $data->{reservation_protocol};
     }
     return ( %results );
