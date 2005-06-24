@@ -151,7 +151,7 @@ sub print_reservation_detail {
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
-    print '  <td>Origin</td>', "\n";
+    print '  <td>Source</td>', "\n";
     print '  <td>' . get_oscars_host($row->{src_address}) . '</td>', "\n";
     print '  </tr>', "\n";
 
@@ -160,12 +160,27 @@ sub print_reservation_detail {
     print '  <td>' . get_oscars_host($row->{dst_address}) . '</td>', "\n";
     print '  </tr>', "\n";
 
-    if ( authorized($form_params{user_level}, "engr") ) {
-        print '  <tr>', "\n";
-        print '  <td>DSCP</td>', "\n";
-        print '  <td>' . $row->{reservation_dscp} . "</td>\n";
-        print '  </tr>', "\n";
+    print '  <tr>', "\n";
+    print '  <td>Source port</td>', "\n";
+    print '  <td>' . $row->{reservation_src_port} . "</td>\n";
+    print '  </tr>', "\n";
 
+    print '  <tr>', "\n";
+    print '  <td>Destination port</td>', "\n";
+    print '  <td>' . $row->{reservation_dst_port} . "</td>\n";
+    print '  </tr>', "\n";
+
+    print '  <tr>', "\n";
+    print '  <td>Protocol</td>', "\n";
+    print '  <td>' . $row->{reservation_protocol} . "</td>\n";
+    print '  </tr>', "\n";
+
+    print '  <tr>', "\n";
+    print '  <td>DSCP</td>', "\n";
+    print '  <td>' . $row->{reservation_dscp} . "</td>\n";
+    print '  </tr>', "\n";
+
+    if ( authorized($form_params{user_level}, "engr") ) {
         print '  <tr>', "\n";
         print '  <td>Class</td>', "\n";
         print '  <td>' . $row->{reservation_class} . "</td>\n";
@@ -182,11 +197,6 @@ sub print_reservation_detail {
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";
-        print '  <td>Ingress port</td>', "\n";
-        print '  <td>' . $row->{reservation_src_port} . "</td>\n";
-        print '  </tr>', "\n";
-
-        print '  <tr>', "\n";
         print '  <td>Egress router</td>', "\n";
         print '  <td>' . $row->{egress_router_name} . "</td>\n";
         print '  </tr>', "\n";
@@ -194,16 +204,6 @@ sub print_reservation_detail {
         print '  <tr>', "\n";
         print '  <td>Egress loopback</td>', "\n";
         print '  <td>' . $row->{egress_loopback} . "</td>\n";
-        print '  </tr>', "\n";
-
-        print '  <tr>', "\n";
-        print '  <td>Egress port</td>', "\n";
-        print '  <td>' . $row->{reservation_dst_port} . "</td>\n";
-        print '  </tr>', "\n";
-
-        print '  <tr>', "\n";
-        print '  <td>Protocol</td>', "\n";
-        print '  <td>' . $row->{reservation_protocol} . "</td>\n";
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";
