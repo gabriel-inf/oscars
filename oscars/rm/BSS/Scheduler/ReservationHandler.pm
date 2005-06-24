@@ -282,7 +282,6 @@ sub find_interface_ids {
     my( $src, $dst, $ingress_interface_id, $egress_interface_id );
     my( $loopback_ip, $path, $err_msg, $start_router );
 
-    print STDERR Dumper($inref);
     $src = $inref->{src_address};
     $dst = $inref->{dst_address};
     # If the loopbacks have not already been specified, use the default
