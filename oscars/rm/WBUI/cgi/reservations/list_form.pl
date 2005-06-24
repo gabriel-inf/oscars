@@ -166,9 +166,9 @@ sub print_row {
 
     print "    <td>" . $row->{reservation_status} . "</td>\n";
 
-    $ip = get_oscars_host($row->{src_host_ip});
+    $ip = get_oscars_host($row->{src_address});
     print "    <td>" . $ip . "</td>\n";
-    $ip = get_oscars_host($row->{dst_host_ip});
+    $ip = get_oscars_host($row->{dst_address});
     print "    <td>" . $ip . "</td>\n";
 }
 ######

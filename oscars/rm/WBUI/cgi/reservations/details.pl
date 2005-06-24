@@ -152,12 +152,12 @@ sub print_reservation_detail {
 
     print '  <tr>', "\n";
     print '  <td>Origin</td>', "\n";
-    print '  <td>' . get_oscars_host($row->{src_host_ip}) . '</td>', "\n";
+    print '  <td>' . get_oscars_host($row->{src_address}) . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
     print '  <td>Destination</td>', "\n";
-    print '  <td>' . get_oscars_host($row->{dst_host_ip}) . '</td>', "\n";
+    print '  <td>' . get_oscars_host($row->{dst_address}) . '</td>', "\n";
     print '  </tr>', "\n";
 
     if ( authorized($form_params{user_level}, "engr") ) {
@@ -183,7 +183,7 @@ sub print_reservation_detail {
 
         print '  <tr>', "\n";
         print '  <td>Ingress port</td>', "\n";
-        print '  <td>' . $row->{reservation_ingress_port} . "</td>\n";
+        print '  <td>' . $row->{reservation_src_port} . "</td>\n";
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";
@@ -198,7 +198,12 @@ sub print_reservation_detail {
 
         print '  <tr>', "\n";
         print '  <td>Egress port</td>', "\n";
-        print '  <td>' . $row->{reservation_egress_port} . "</td>\n";
+        print '  <td>' . $row->{reservation_dst_port} . "</td>\n";
+        print '  </tr>', "\n";
+
+        print '  <tr>', "\n";
+        print '  <td>Protocol</td>', "\n";
+        print '  <td>' . $row->{reservation_protocol} . "</td>\n";
         print '  </tr>', "\n";
 
         print '  <tr>', "\n";

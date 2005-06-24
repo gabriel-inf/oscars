@@ -91,29 +91,30 @@ sub create_reservation {
 
     $soap_params{reservation_created_time} = '';   # filled in scheduler
     $soap_params{reservation_class} = '4';
+    # convert to bps
     $soap_params{reservation_bandwidth} =
-                         $form_params->{reservation_bandwidth} . 'm';
-    $soap_params{reservation_ingress_port} =
-                         $form_params->{reservation_ingress_port};
-    $soap_params{reservation_egress_port} =
-                         $form_params->{reservation_egress_port};
+                         $form_params->{reservation_bandwidth} * 1000000;
+    $soap_params{reservation_src_port} =
+                         $form_params->{reservation_src_port};
+    $soap_params{reservation_dst_port} =
+                         $form_params->{reservation_dst_port};
     $soap_params{reservation_dscp} = $form_params->{reservation_dscp};
-    $soap_params{protocol} = $form_params->{protocol};
-    $soap_params{reservation_burst_limit} = '1m';
+    $soap_params{reservation_protocol} = $form_params->{reservation_protocol};
+    $soap_params{reservation_burst_limit} = '1000000';
     $soap_params{reservation_status} = 'pending';
 
-    $soap_params{src_hostaddrs_ip} = $form_params->{origin};
-    $soap_params{dst_hostaddrs_ip} = $form_params->{destination};
+    $soap_params{src_address} = $form_params->{src_address};
+    $soap_params{dst_address} = $form_params->{dst_address};
 
     # TODO:  error checking
-    if (not_an_ip($soap_params{src_hostaddrs_ip})) {
-        $soap_params{src_hostaddrs_ip} =
-                          inet_ntoa(inet_aton($soap_params{src_hostaddrs_ip}));
+    if (not_an_ip($soap_params{src_address})) {
+        $soap_params{src_address} =
+                          inet_ntoa(inet_aton($soap_params{src_address}));
     }
 
-    if (not_an_ip($soap_params{dst_hostaddrs_ip})) {
-        $soap_params{dst_hostaddrs_ip} =
-                          inet_ntoa(inet_aton($soap_params{dst_hostaddrs_ip}));
+    if (not_an_ip($soap_params{dst_address})) {
+        $soap_params{dst_address} =
+                          inet_ntoa(inet_aton($soap_params{dst_address}));
     }
 
     # Undefined fields are set in the PSS.

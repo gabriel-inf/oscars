@@ -51,19 +51,19 @@ sub print_reservation_form {
 
     print '<input type="hidden" name="reservation_start_time">', "\n";
 
-    print '<p>The origin and destination can be either host names or IP ';
+    print '<p>The source and destination can be either host names or IP ';
     print 'addresses (IPv6 is not supported yet).  ';
     print 'The bandwidth is given in Mbps.</p>', "\n";
 
     print '<table>', "\n";
     print '  <tr>', "\n";
-    print '    <th>Origin</th>', "\n";
+    print '    <th>Source</th>', "\n";
     print '    <th>Destination</th>', "\n";
     print '    <th>Bandwidth</th>', "\n";
     print '  </tr>', "\n";
     print '  <tr>', "\n";
-    print '    <td><input type="text" name="origin"></td>', "\n";
-    print '    <td><input type="text" name="destination"></td>', "\n";
+    print '    <td><input type="text" name="src_address" size="30"></td>', "\n";
+    print '    <td><input type="text" name="dst_address" size="30"></td>', "\n";
     print '    <td><input type="text" name="reservation_bandwidth" size="10"> Mbps</td>', "\n";
     print '  </tr>', "\n";
     print '</table>', "\n";
@@ -71,46 +71,58 @@ sub print_reservation_form {
     if (authorized($user_level, "engr")) {
         print '<br/>', "\n";
         print '<p>The following fields are optional:  ';
-        print '<strong>Ingress loopback</strong> and <strong>Egress loopback</strong> ';
-        print 'indicate the IP addresses of the ingress and egress OSCARS ';
-        print 'loopbacks, and the two port fields indicate the ';
-        print 'corresponding ports. <strong>Protocol</strong> indicates ';
-        print 'the protocol to use. ';
+        print 'The first three are self descriptive. ';
         print '<strong>DSCP</strong> sets the differentiated services ';
-        print 'code point. ', "\n";
-        print 'Checking <strong>Persistent</strong> makes a ';
-        print 'reservation\'s duration indefinite.</p>';
+        print 'code point.</p>', "\n";
+
+        print '<table>', "\n";
+        print '  <tr>', "\n";
+        print '    <th>Source port</th>', "\n";
+        print '    <th>Destination port</th>', "\n";
+        print '    <th>Protocol</th>', "\n";
+        print '    <th>DSCP</th>', "\n";
+        print '  </tr>', "\n";
+        print '  <tr>', "\n";
+        print '    <td><input type="text" name="reservation_src_port" ' .
+                       'size="5"></td>' . "\n";
+        print '    <td><input type="text" name="reservation_dst_port" ' .
+                       'size="5"></td>' . "\n";
+        print '    <td><input type="text" name="reservation_protocol" ' .
+                       'size="4"></td>' . "\n";
+        print '    <td><input type="text" name="reservation_dscp" ' .
+                       ' size="2"></td>' . "\n";
+        print '  </tr>', "\n";
+        print '</table>', "\n";
+
+        print '<br/>', "\n";
+        print '<p>The optional <strong>Ingress loopback</strong> ';
+        print 'and <strong>Egress loopback</strong> fields ';
+        print 'indicate the IP addresses of the ingress and egress OSCARS ';
+        print 'loopbacks.<br/>  <strong>WARNING</strong>:  Entries in these ';
+        print 'fields may change default routing behavior for the selected ';
+        print 'flow.</p>', "\n";
 
         print '<table>', "\n";
         print '  <tr>', "\n";
         print '    <th>Ingress loopback</th>', "\n";
         print '    <th>Egress loopback</th>', "\n";
-        print '    <th>Ingress port</th>', "\n";
-        print '    <th>Egress port</th>', "\n";
-        print '    <th>Protocol</th>', "\n";
-        print '    <th>DSCP</th>', "\n";
-        print '    <th>Persistent</th>', "\n";
         print '  </tr>', "\n";
         print '  <tr>', "\n";
         print '    <td><input type="text" name="lsp_from"></td>', "\n";
         print '    <td><input type="text" name="lsp_to"></td>', "\n";
-        print '    <td><input type="text" name="reservation_ingress_port" size="5"></td>', "\n";
-        print '    <td><input type="text" name="reservation_egress_port" size="5"></td>', "\n";
-        print '    <td><input type="text" name="protocol" size="4"></td>', "\n";
-        print '    <td><input type="text" name="reservation_dscp" size="2"></td>', "\n";
-        print '    <td><input type="checkbox" name="persistent" value="0"></td>', "\n";
         print '  </tr>', "\n";
         print '</table>', "\n";
     }
 
     print '<br/>', "\n";
     print '<p>Indicate the starting date and time, and the duration in hours, ';
-    print 'of your reservation (fractional hours are permissible). ';
-    print 'Any field left blank will default to the example settings ';
+    print 'of your reservation. ';
+    print 'Fields left blank will default to the examples ';
     print 'below the input fields.  The default time zone is the local time.  ';
     if (authorized($user_level, "engr")) {
-        print 'If you have specified a persistent connection, the ', "\n";
-        print 'duration field is ignored.</p>', "\n";
+        print 'Checking the optional <strong>Persistent</strong> box makes ';
+        print 'a reservation\'s duration indefinite, overriding ';
+        print 'the duration field.</p>', "\n";
     }
     else {
         print '</p>', "\n";
@@ -124,6 +136,9 @@ sub print_reservation_form {
     print '    <th>Minute</th>', "\n";
     print '    <th>UTC offset</th>', "\n";
     print '    <th>Duration</th>', "\n";
+    if (authorized($user_level, "engr")) {
+        print '<th>Persistent</th>', "\n";
+    }
     print '  </tr>', "\n";
     print '  <tr class="alignright">', "\n";
     print '    <td>';
@@ -171,8 +186,14 @@ sub print_reservation_form {
     print '    </select>';
     print '    </td>', "\n";
     print '    <td>', "\n";
-    print '      <input type="text" name="duration_hour" size="4" maxlength="4"> Hours', "\n";
+    print '      <input type="text" name="duration_hour" size="4" ' .
+                     'maxlength="4"> Hours' . "\n";
     print '    </td>', "\n";
+    if (authorized($user_level, "engr")) {
+        print '<td>', "\n";
+        print '  <input type="checkbox" name="persistent" value="0">';
+        print '</td>', "\n";
+    }
     print '  </tr>', "\n";
     print '  <tr class="alignright">', "\n";
     print '    <script language="javascript">print_time_settings_example();</script>', "\n";
