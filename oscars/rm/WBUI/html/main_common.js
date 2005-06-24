@@ -59,13 +59,13 @@ function print_navigation_bar(userLevel, activePage)
         if (activePage == 'userlist') {
             document.write('class="active" ');
         }
-        document.write('title="View list of all accounts">List All Accounts</a></li>');
+        document.write('title="View list of all accounts">List Accounts</a></li>');
 
         document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" ');
         if (activePage == 'adduser') {
             document.write('class="active" ');
         }
-        document.write('title="Add a new user account">Add a New User</a></li>');
+        document.write('title="Add a new user account">Add User</a></li>');
     } 
 
     document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" ');
@@ -84,7 +84,7 @@ function print_navigation_bar(userLevel, activePage)
     if (activePage == 'reservation') {
         document.write(' class="active" ');
     }
-    document.write('title="Create a new reservation">Make a Reservation</a></li>');
+    document.write('title="Create a new reservation">Make Reservation</a></li>');
 
     document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
