@@ -167,9 +167,7 @@ sub do_remote_trace {
 
     my ($_jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
     $error = $_jnxTraceroute->traceroute($src, $dst);
-    if ($error)  {
-        return (0, "", \@path, $error);
-    }
+    if ($error)  { return (0, "", \@path, $error); }
 
     @hops = $_jnxTraceroute->get_hops();
 
@@ -179,12 +177,11 @@ sub do_remote_trace {
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
         ($interface_id, $error) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $self->{configs}{jnx_source});
-        if ($error)  {
-            return (0, "", \@path, $error);
-        }
+        if ($error)  { return (0, "", \@path, $error); }
 
         if ($interface_id != 0) {
             ($loopback_ip, $error) = $self->{frontend}->{dbconn}->xface_id_to_loopback($user_dn, $interface_id, 'ip');
+            if ($error)  { return (0, "", \@path, $error); }
         }
         #TODO: FIX
         return ($interface_id, $loopback_ip, \@path, $error);
@@ -200,9 +197,11 @@ sub do_remote_trace {
         print STDERR "hop:  $hops[0]\n";
         # id is 0 if not an edge router (not in interfaces table)
         ($interface_id, $error) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $hops[0]);
+        if ($error)  { return (0, "", \@path, $error); }
         # check to make sure router has a loopback
         if ($interface_id != 0) {
             ($loopback_ip, $error) = $self->{frontend}->{dbconn}->xface_id_to_loopback($user_dn, $interface_id, 'ip');
+            if ($error)  { return (0, "", \@path, $error); }
         }
         if ($interface_id == 0) {
             $self->{output_buf} .= "edge router is $prev_loopback\n";
@@ -212,7 +211,7 @@ sub do_remote_trace {
 
         # add to the path
         push(@path, $interface_id);
-        if ($loopback_ip) {
+        if ($loopback_ip && ($loopback_ip != 'NULL')) {
             $prev_id = $interface_id;
             $prev_loopback = $loopback_ip;
         }
@@ -295,7 +294,7 @@ sub find_interface_ids {
         ($ingress_interface_id, $loopback_ip, $path, $err_msg) = $self->do_remote_trace($inref->{user_dn},
                                                $self->{configs}{jnx_source}, $src);
     }
-    if ($err_msg) { return ( 0, 0, $err_msg); }
+    if ($err_msg) { return ( 0, 0, $path, $err_msg); }
   
     if ($inref->{lsp_to}) {
         ($egress_interface_id, $err_msg) = $self->{frontend}->{dbconn}->ip_to_xface_id($inref->{user_dn}, $inref->{lsp_to});
@@ -311,11 +310,11 @@ sub find_interface_ids {
             ($ingress_interface_id, $err_msg) = $self->do_local_trace($inref->{user_dn}, $src);
         }
     }
-    if ($err_msg) { return (0, 0, $err_msg); }
+    if ($err_msg) { return (0, 0, $path, $err_msg); }
 
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0))
     {
-        return( 0, 0, 0, "Unable to find route." );
+        return( 0, 0, $path, "Unable to find route." );
     }
 	return ($ingress_interface_id, $egress_interface_id, $path, ""); 
 }

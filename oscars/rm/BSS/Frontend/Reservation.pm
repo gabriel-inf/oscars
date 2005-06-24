@@ -32,14 +32,15 @@ my @detail_fields = ( 'reservation_id',
                     'src_hostaddr_id',
                     'dst_hostaddr_id',
                     'reservation_description',
+                    'reservation_src_port',
+                    'reservation_dst_port',
+                    'reservation_dscp',
+                    'reservation_protocol',
                     'reservation_tag');
 
 my @detail_admin_fields = ( 'ingress_interface_id',
                     'egress_interface_id',
-                    'reservation_src_port',
-                    'reservation_dst_port',
                     'reservation_path',
-                    'reservation_dscp',
                     'reservation_class');
 
 

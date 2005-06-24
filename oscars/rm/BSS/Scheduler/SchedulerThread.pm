@@ -269,8 +269,8 @@ sub map_fields {
     if ($data->{reservation_dscp} && ($data->{reservation_dscp} != 'NULL')) {
         $results{dscp} = $data->{reservation_dscp};
     }
-    if ($data->{protocol}) {
-        $results{protocol} = $data->{protocol};
+    if ($data->{reservation_protocol}) {
+        $results{protocol} = $data->{reservation_protocol};
     }
     return ( %results );
 }

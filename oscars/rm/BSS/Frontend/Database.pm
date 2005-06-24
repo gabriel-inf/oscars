@@ -102,7 +102,7 @@ sub ip_to_xface_id {
     # no match
     if ($sth->rows == 0 ) {
         $sth->finish();
-        return (0, "No match in database for $ipaddr");
+        return (0, "");
     }
     my @data = $sth->fetchrow_array();
     $interface_id = $data[0];
@@ -132,7 +132,8 @@ sub xface_id_to_loopback {
     # no match
     if ($sth->rows == 0 ) {
         $sth->finish();
-        return ("", "No match in database for $interface_id");
+        # not a fatal error
+        return ("", "");
     }
 
     my @data = $sth->fetchrow_array();
@@ -204,7 +205,7 @@ sub hostaddrs_id_to_ip {
     # no match
     if ($sth->rows == 0 ) {
         $sth->finish();
-        return (0, "No match in database for $id");
+        return (0, "");
     }
     my @data = $sth->fetchrow_array();
     $ipaddr = $data[0];
