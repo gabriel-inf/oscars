@@ -1,6 +1,6 @@
 /*
 CSS for main CGI interface
-Last modified: March 31, 2005
+Last modified: June 23, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -211,7 +211,7 @@ p.topmessage {
 	background: #f6f6f6;
 	margin-left: auto;
 	margin-right: auto;
-	width: 21em;
+	#width: 28em;
 }
 
 #login_ui th, #login_ui td {
@@ -223,7 +223,6 @@ p.topmessage {
 }
 
 #login_ui input {
-	width: 10em;
 }
 
 /* new account registration/account information view & edit form */
