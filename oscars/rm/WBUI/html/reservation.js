@@ -1,6 +1,6 @@
 /*
 Javascript functions for reservation CGI interface
-Last modified: June 13, 2005
+Last modified: June 23, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -19,16 +19,16 @@ function check_form( form )
     }
     */
 
-    if ( isblank(form.origin.value) )
+    if ( isblank(form.src_address.value) )
     {
         alert( "Please enter starting host name, or its IP address ." );
-        form.origin.focus();
+        form.src_address.focus();
         return false;
     }
-    if ( isblank(form.destination.value) )
+    if ( isblank(form.dst_address.value) )
     {
         alert( "Please enter destination host name, or its IP address." );
-        form.destination.focus();
+        form.dst_address.focus();
         return false;
     }
     if ( isblank(form.reservation_bandwidth.value) )
@@ -48,9 +48,9 @@ function check_form( form )
     // finished checking empty fields
     // now starting to check whether some fields have proper values
     // for each field, in the order of: check whether its value is a valid number/integer, check whether it's in a proper range, and then check other conditions 
-    if ( form.origin.value == form.destination.value ) {
+    if ( form.src_address.value == form.dst_address.value ) {
         alert( "Please provide different IP adresses for origin and destination." );
-        form.origin.focus();
+        form.src_address.focus();
         return false;
     }
     if ( validate_numeric(form.reservation_bandwidth.value) == false ) {
