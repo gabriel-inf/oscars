@@ -282,8 +282,9 @@ sub find_interface_ids {
     my( $src, $dst, $ingress_interface_id, $egress_interface_id );
     my( $loopback_ip, $path, $err_msg, $start_router );
 
-    $src = $inref->{src_hostaddrs_ip};
-    $dst = $inref->{dst_hostaddrs_ip};
+    print STDERR Dumper($inref);
+    $src = $inref->{src_address};
+    $dst = $inref->{dst_address};
     # If the loopbacks have not already been specified, use the default
     # router to run the traceroute to the source, and find the router with
     # an oscars loopback closest to the source 

@@ -230,7 +230,7 @@ sub map_fields {
     my ( $front_end, $data ) = @_;
 
     my ( %results, $error );
-    my ( $ingress_loopback_ip, $egress_loopback_ip, $src_hostaddrs_ip, $dst_hostaddrs_ip );
+    my ( $ingress_loopback_ip, $egress_loopback_ip, $src_address, $dst_address );
 
      # get loopbacks for routers, given interface ids, if an engineer
      # has not specified one  (TODO:  error checking)
@@ -248,8 +248,8 @@ sub map_fields {
     }
      print "lsp_from: $ingress_loopback_ip, lsp_to:  $egress_loopback_ip\n";
      # get host IP addresses, given id 
-    ($src_hostaddrs_ip, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{src_hostaddrs_id});
-    ($dst_hostaddrs_ip, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{dst_hostaddrs_id});
+    ($src_address, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{src_hostaddr_id});
+    ($dst_address, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{dst_hostaddr_id});
     %results = (
       'name' => "oscars_$data->{reservation_id}",
       'lsp_from' => $ingress_loopback_ip,
@@ -257,14 +257,14 @@ sub map_fields {
       'bandwidth' => $data->{reservation_bandwidth},
       'lsp_class-of-service' => $data->{reservation_class},
       'policer_burst-size-limit' =>  $data->{reservation_burst_limit},
-      'source-address' => $src_hostaddrs_ip,
-      'destination-address' => $dst_hostaddrs_ip,
+      'source-address' => $src_address,
+      'destination-address' => $dst_address,
     );
-    if ($data->{reservation_ingress_port}) {
-        $results{'source-port'} = $data->{reservation_ingress_port};
+    if ($data->{reservation_src_port}) {
+        $results{'source-port'} = $data->{reservation_src_port};
     }
-    if ($data->{reservation_egress_port}) {
-        $results{'destination-port'} = $data->{reservation_engress_port};
+    if ($data->{reservation_dst_port}) {
+        $results{'destination-port'} = $data->{reservation_dst_port};
     }
     if ($data->{reservation_dscp} && ($data->{reservation_dscp} != 'NULL')) {
         $results{dscp} = $data->{reservation_dscp};
