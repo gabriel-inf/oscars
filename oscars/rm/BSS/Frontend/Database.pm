@@ -93,7 +93,7 @@ sub ip_to_xface_id {
         $sth->finish();
         return( 0, $error_msg );
     }
-    $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddrs_ip = ?';
+    $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
     ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
     if ( $error_msg ) {
         $sth->finish();
@@ -148,16 +148,16 @@ sub xface_id_to_loopback {
 ##############################################################################
 # hostaddrs_ip_to_id:  get the primary key in the hostaddrs table, given a
 #     host ip address.  A row is created if that ip address is not present.
-# In:  hostaddrs_ip
-# Out: hostaddrs_id
+# In:  hostaddr_ip
+# Out: hostaddr_id
 #
 sub hostaddrs_ip_to_id {
     my ($self, $user_dn, $ipaddr) = @_;
     my ($query, $error_msg, $sth);
     my ($id);
 
-    # TODO:  make hostaddrs_ip field UNIQUE in hostaddrs?
-    $query = 'SELECT hostaddrs_id FROM hostaddrs WHERE hostaddrs_ip = ?';
+    # TODO:  make hostaddr_ip field UNIQUE in hostaddrs?
+    $query = 'SELECT hostaddr_id FROM hostaddrs WHERE hostaddr_ip = ?';
     ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
     if ( $error_msg ) {
         $sth->finish();
@@ -187,14 +187,14 @@ sub hostaddrs_ip_to_id {
 ##############################################################################
 # hostaddrs_id_to_ip:  get the ip address from the row in the hostaddrs table
 #                      identified by the id.
-# IN:  hostaddrs_id
-# OUT: hostaddrs_ip
+# IN:  hostaddr_id
+# OUT: hostaddr_ip
 #
 sub hostaddrs_id_to_ip {
     my ($self, $user_dn, $id) = @_;
     my ($query, $sth, $ipaddr, $error_msg);
 
-    $query = 'SELECT hostaddrs_ip FROM hostaddrs WHERE hostaddrs_id = ?';
+    $query = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
     ($sth, $error_msg) = $self->do_query($user_dn, $query, $id);
     if ( $error_msg ) {
         $sth->finish();

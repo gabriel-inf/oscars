@@ -51,7 +51,7 @@ sub check_oversubscribe {
 
     # assign the new path bandwidths 
     for $link (@{$inref->{reservation_path}}) {
-        $iface_idxs{$link} = $self->to_bytes($inref->{reservation_bandwidth});
+        $iface_idxs{$link} = $inref->{reservation_bandwidth};
     }
 
     # loop through all active reservations
@@ -59,7 +59,7 @@ sub check_oversubscribe {
         # get bandwidth allocated to each idx on that path
         for $reservation_path ( $res->{reservation_path} ) {
             for $link ( split(' ', $reservation_path) ) {
-                $iface_idxs{$link} += $self->to_bytes($res->{reservation_bandwidth});
+                $iface_idxs{$link} += $res->{reservation_bandwidth};
             }
         }
     }
@@ -99,28 +99,6 @@ sub check_oversubscribe {
 #################
 # Private methods
 #################
-
-###############################################################################
-# to_bytes:  convert a string in the form of '100K' to 100000.
-#
-sub to_bytes {
-    my ($self, $bytes) = @_;
-    my ($mult);
-
-    if ( $bytes =~ /(\d+)(K)/i ) {
-        $mult = 1000;
-    }
-    elsif ($bytes =~ /(\d+)(M)/i )  {
-        $mult = 1000000;
-    }
-    elsif ( $bytes =~ /(\d+)(G)/i )  { 
-        $mult = 1000000000;
-    } else {
-        $mult = 1;
-    }   
-    return ($bytes * $mult)
-}
-######
 
 ###############################################################################
 # get_interface_fields:  get the bandwidth of a router interface.

@@ -18,8 +18,8 @@ my @user_fields = ( 'reservation_id',
                     'reservation_start_time',
                     'reservation_end_time',
                     'reservation_status',
-                    'src_hostaddrs_id',
-                    'dst_hostaddrs_id',
+                    'src_hostaddr_id',
+                    'dst_hostaddr_id',
                     'reservation_tag');
 
 my @detail_fields = ( 'reservation_id',
@@ -29,15 +29,15 @@ my @detail_fields = ( 'reservation_id',
                     'reservation_bandwidth',
                     'reservation_burst_limit',
                     'reservation_status',
-                    'src_hostaddrs_id',
-                    'dst_hostaddrs_id',
+                    'src_hostaddr_id',
+                    'dst_hostaddr_id',
                     'reservation_description',
                     'reservation_tag');
 
 my @detail_admin_fields = ( 'ingress_interface_id',
                     'egress_interface_id',
-                    'reservation_ingress_port',
-                    'reservation_egress_port',
+                    'reservation_src_port',
+                    'reservation_dst_port',
                     'reservation_path',
                     'reservation_dscp',
                     'reservation_class');
@@ -130,10 +130,10 @@ sub insert_reservation {
         }
 
         # get ipaddr id from host's and destination's ip addresses
-        $inref->{src_hostaddrs_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                                                  $inref->{src_hostaddrs_ip}); 
-        $inref->{dst_hostaddrs_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                                                  $inref->{dst_hostaddrs_ip}); 
+        $inref->{src_hostaddr_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
+                                                  $inref->{src_address}); 
+        $inref->{dst_hostaddr_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
+                                                  $inref->{dst_address}); 
         $inref->{reservation_created_time} = time();
 
         $query = "SHOW COLUMNS from reservations";
@@ -200,6 +200,7 @@ sub get_reservations {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
+    print STDERR Dumper($inref);
     $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
@@ -234,7 +235,7 @@ sub get_reservations {
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-    $query = "SELECT hostaddrs_id, hostaddrs_ip FROM hostaddrs";
+    $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query);
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
@@ -243,8 +244,8 @@ sub get_reservations {
 
     my $k;
     for $r (@$rref) {
-        $r->{src_host_ip} = $mapping{$r->{src_hostaddrs_id}};
-        $r->{dst_host_ip} = $mapping{$r->{dst_hostaddrs_id}};
+        $r->{src_address} = $mapping{$r->{src_hostaddr_id}};
+        $r->{dst_address} = $mapping{$r->{dst_hostaddr_id}};
     }
 
     if (($inref->{user_level} eq 'engr') &&
