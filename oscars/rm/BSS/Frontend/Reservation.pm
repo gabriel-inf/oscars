@@ -200,7 +200,6 @@ sub get_reservations {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    print STDERR Dumper($inref);
     $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
     if ($results->{error_msg}) { return( 1, $results); }
 
