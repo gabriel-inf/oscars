@@ -68,32 +68,32 @@ sub print_reservation_form {
     print '  </tr>', "\n";
     print '</table>', "\n";
 
+    print '<br/>', "\n";
+    print '<p>The following fields are optional:  ';
+    print 'The first three are self descriptive. ';
+    print '<strong>DSCP</strong> sets the differentiated services ';
+    print 'code point.</p>', "\n";
+
+    print '<table>', "\n";
+    print '  <tr>', "\n";
+    print '    <th>Source port</th>', "\n";
+    print '    <th>Destination port</th>', "\n";
+    print '    <th>Protocol</th>', "\n";
+    print '    <th>DSCP</th>', "\n";
+    print '  </tr>', "\n";
+    print '  <tr>', "\n";
+    print '    <td><input type="text" name="reservation_src_port" ' .
+                   'size="5"></td>' . "\n";
+    print '    <td><input type="text" name="reservation_dst_port" ' .
+                   'size="5"></td>' . "\n";
+    print '    <td><input type="text" name="reservation_protocol" ' .
+                   'size="4"></td>' . "\n";
+    print '    <td><input type="text" name="reservation_dscp" ' .
+                   ' size="2"></td>' . "\n";
+    print '  </tr>', "\n";
+    print '</table>', "\n";
+
     if (authorized($user_level, "engr")) {
-        print '<br/>', "\n";
-        print '<p>The following fields are optional:  ';
-        print 'The first three are self descriptive. ';
-        print '<strong>DSCP</strong> sets the differentiated services ';
-        print 'code point.</p>', "\n";
-
-        print '<table>', "\n";
-        print '  <tr>', "\n";
-        print '    <th>Source port</th>', "\n";
-        print '    <th>Destination port</th>', "\n";
-        print '    <th>Protocol</th>', "\n";
-        print '    <th>DSCP</th>', "\n";
-        print '  </tr>', "\n";
-        print '  <tr>', "\n";
-        print '    <td><input type="text" name="reservation_src_port" ' .
-                       'size="5"></td>' . "\n";
-        print '    <td><input type="text" name="reservation_dst_port" ' .
-                       'size="5"></td>' . "\n";
-        print '    <td><input type="text" name="reservation_protocol" ' .
-                       'size="4"></td>' . "\n";
-        print '    <td><input type="text" name="reservation_dscp" ' .
-                       ' size="2"></td>' . "\n";
-        print '  </tr>', "\n";
-        print '</table>', "\n";
-
         print '<br/>', "\n";
         print '<p>The optional <strong>Ingress loopback</strong> ';
         print 'and <strong>Egress loopback</strong> fields ';
