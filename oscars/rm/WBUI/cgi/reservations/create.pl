@@ -2,7 +2,7 @@
 
 # create.pl:  Called by reservation_form.  Contacts the BSS to
 #             create a reservation.
-# Last modified: June 17, 2005
+# Last modified: June 24, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -121,9 +121,17 @@ sub create_reservation {
     if (authorized($form_params->{user_level}, "engr")) {
         if ($form_params{lsp_from}) {
             $soap_params{lsp_from} = $form_params{lsp_from};
+            if (not_an_ip($soap_params{lsp_from})) {
+                $soap_params{lsp_from} =
+                          inet_ntoa(inet_aton($soap_params{lsp_from}));
+            }
         }
         if ($form_params{lsp_to}) {
             $soap_params{lsp_to} = $form_params{lsp_to};
+            if (not_an_ip($soap_params{lsp_to})) {
+                $soap_params{lsp_to} =
+                          inet_ntoa(inet_aton($soap_params{lsp_to}));
+            }
         }
     }
     $soap_params{reservation_description} =

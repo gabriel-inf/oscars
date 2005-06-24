@@ -51,30 +51,39 @@ sub print_reservation_form {
 
     print '<input type="hidden" name="reservation_start_time">', "\n";
 
-    print '<p>The source and destination can be either host names or IP ';
-    print 'addresses (IPv6 is not supported yet).  ';
-    print 'The bandwidth is given in Mbps.</p>', "\n";
+    print '<p>Required inputs are bordered in green. ' .
+          'Ranges or types of valid entries are given in parentheses below the ' .
+          ' input fields.</p>' . "\n";
 
     print '<table>', "\n";
     print '  <tr>', "\n";
     print '    <th>Source</th>', "\n";
     print '    <th>Destination</th>', "\n";
-    print '    <th>Bandwidth</th>', "\n";
+    print '    <th>Bandwidth (Mbps)</th>', "\n";
     print '  </tr>', "\n";
     print '  <tr>', "\n";
-    print '    <td><input type="text" name="src_address" size="30"></td>', "\n";
-    print '    <td><input type="text" name="dst_address" size="30"></td>', "\n";
-    print '    <td><input type="text" name="reservation_bandwidth" size="10"> Mbps</td>', "\n";
+    print '    <td bgcolor="00cc44"><input type="text" name="src_address" size="30"></td>', "\n";
+    print '    <td bgcolor="00cc44"><input type="text" name="dst_address" size="30"></td>', "\n";
+    print '    <td bgcolor="00cc44"><input type="text" name="reservation_bandwidth" size="18"></td>', "\n";
+    print '  </tr>', "\n";
+    print '  <tr>', "\n";
+    print '    <td>(Host name or IP address)</td>', "\n";
+    print '    <td>(Host name or IP address)</td>', "\n";
+    print '    <td>(10-10000)</td>', "\n";
     print '  </tr>', "\n";
     print '</table>', "\n";
 
-    print '<br/>', "\n";
-    print '<p>The following fields are optional:  ';
-    print 'The first three are self descriptive. ';
+    print '<br/><br/>', "\n";
+    print '<table cols="4">', "\n";
+    print '  <tr>', "\n";
+    print '    <td colspan="4">', "\n";
     print '<strong>DSCP</strong> sets the differentiated services ';
-    print 'code point.</p>', "\n";
-
-    print '<table>', "\n";
+    print 'code point.', "\n";
+    print '    </td>', "\n";
+    print '  </tr>', "\n";
+    print '  <tr>', "\n";
+    print '    <td colspan="4"> </td>', "\n";
+    print '  </tr>', "\n";
     print '  <tr>', "\n";
     print '    <th>Source port</th>', "\n";
     print '    <th>Destination port</th>', "\n";
@@ -83,26 +92,32 @@ sub print_reservation_form {
     print '  </tr>', "\n";
     print '  <tr>', "\n";
     print '    <td><input type="text" name="reservation_src_port" ' .
-                   'size="5"></td>' . "\n";
+                   'maxlength="5"></td>' . "\n";
     print '    <td><input type="text" name="reservation_dst_port" ' .
-                   'size="5"></td>' . "\n";
+                   'maxlength="5"></td>' . "\n";
     print '    <td><input type="text" name="reservation_protocol" ' .
-                   'size="4"></td>' . "\n";
+                   '></td>' . "\n";
     print '    <td><input type="text" name="reservation_dscp" ' .
-                   ' size="2"></td>' . "\n";
+                   'maxlength="2"></td>' . "\n";
+    print '  </tr>', "\n";
+    print '  <tr>', "\n";
+    print '    <td>(1024-65535)</td>', "\n";
+    print '    <td>(1024-65535)</td>', "\n";
+    print '    <td>(0-255), or string</td>', "\n";
+    print '    <td>(0-63)</td>', "\n";
     print '  </tr>', "\n";
     print '</table>', "\n";
 
     if (authorized($user_level, "engr")) {
         print '<br/>', "\n";
-        print '<p>The optional <strong>Ingress loopback</strong> ';
-        print 'and <strong>Egress loopback</strong> fields ';
-        print 'indicate the IP addresses of the ingress and egress OSCARS ';
-        print 'loopbacks.<br/>  <strong>WARNING</strong>:  Entries in these ';
+        print '<p><strong>WARNING</strong>:  Entries in the following ';
         print 'fields may change default routing behavior for the selected ';
         print 'flow.</p>', "\n";
 
-        print '<table>', "\n";
+        print '<table cols="2">', "\n";
+        print '  <tr>', "\n";
+        print '    <td colspan="2"> </td>', "\n";
+        print '  </tr>', "\n";
         print '  <tr>', "\n";
         print '    <th>Ingress loopback</th>', "\n";
         print '    <th>Egress loopback</th>', "\n";
@@ -110,6 +125,10 @@ sub print_reservation_form {
         print '  <tr>', "\n";
         print '    <td><input type="text" name="lsp_from"></td>', "\n";
         print '    <td><input type="text" name="lsp_to"></td>', "\n";
+        print '  </tr>', "\n";
+        print '  <tr>', "\n";
+        print '    <td>(IP address)</td>', "\n";
+        print '    <td>(IP address)</td>', "\n";
         print '  </tr>', "\n";
         print '</table>', "\n";
     }
@@ -120,7 +139,7 @@ sub print_reservation_form {
     print 'Fields left blank will default to the examples ';
     print 'below the input fields.  The default time zone is the local time.  ';
     if (authorized($user_level, "engr")) {
-        print 'Checking the optional <strong>Persistent</strong> box makes ';
+        print 'Checking the <strong>Persistent</strong> box makes ';
         print 'a reservation\'s duration indefinite, overriding ';
         print 'the duration field.</p>', "\n";
     }
@@ -135,7 +154,7 @@ sub print_reservation_form {
     print '    <th>Hour</th>', "\n";
     print '    <th>Minute</th>', "\n";
     print '    <th>UTC offset</th>', "\n";
-    print '    <th>Duration</th>', "\n";
+    print '    <th>Duration (Hours)</th>', "\n";
     if (authorized($user_level, "engr")) {
         print '<th>Persistent</th>', "\n";
     }
@@ -145,16 +164,16 @@ sub print_reservation_form {
     print '      <input type="text" name="start_year" size="4" maxlength="4">';
     print '    </td>', "\n";
     print '    <td>';
-    print '      <input type="text" name="start_month" size="2" maxlength="2">';
+    print '      <input type="text" name="start_month" size="4" maxlength="2">';
     print '    </td>', "\n";
     print '    <td>';
-    print '      <input type="text" name="start_date" size="2" maxlength="2">';
+    print '      <input type="text" name="start_date" size="4" maxlength="2">';
     print '    </td>', "\n";
     print '    <td>';
-    print '      <input type="text" name="start_hour" size="2" maxlength="2">';
+    print '      <input type="text" name="start_hour" size="4" maxlength="2">';
     print '    </td>', "\n";
     print '    <td>';
-    print '      <input type="text" name="start_minute" size="2" maxlength="2">';
+    print '      <input type="text" name="start_minute" size="4" maxlength="2">';
     print '    </td>', "\n";
     print '    <td>';
     print '    <select name="start_timeoffset">', "\n";
@@ -186,8 +205,8 @@ sub print_reservation_form {
     print '    </select>';
     print '    </td>', "\n";
     print '    <td>', "\n";
-    print '      <input type="text" name="duration_hour" size="4" ' .
-                     'maxlength="4"> Hours' . "\n";
+    print '      <input type="text" name="duration_hour" size="16" ' .
+                     'maxlength="6">' . "\n";
     print '    </td>', "\n";
     if (authorized($user_level, "engr")) {
         print '<td>', "\n";
@@ -198,19 +217,33 @@ sub print_reservation_form {
     print '  <tr class="alignright">', "\n";
     print '    <script language="javascript">print_time_settings_example();</script>', "\n";
     print '  </tr>', "\n";
-    print '</table>', "\n";
-
-    print '<br/>', "\n";
-    print '<p>Please let us know the purpose of making this reservation.</p>', "\n";
-    print '<table>', "\n";
+    print '    <td></td>', "\n";
+    print '    <td>(1-12)</td>', "\n";
+    print '    <td>(1-31)</td>', "\n";
+    print '    <td>(0-23)</td>', "\n";
+    print '    <td>(0-59)</td>', "\n";
+    print '    <td></td>', "\n";
+    print '    <td>(0.01-INF)</td>', "\n";
+    print '    <td></td>', "\n";
     print '  <tr>', "\n";
-    print '    <th>Description:</th>', "\n";
-    print '    <td><textarea name="reservation_description" rows="2" cols="72"></textarea></td>', "\n";
     print '  </tr>', "\n";
     print '</table>', "\n";
 
     print '<br/>', "\n";
-    print '<p>Fields are required unless otherwise indicated.</p>', "\n";
+    print '<br/>', "\n";
+    print '<table cols="1">', "\n";
+    print '  <tr>', "\n";
+    print '    <td>Please let us know the purpose of making this reservation.</td>', "\n";
+    print '  </tr>', "\n";
+    print '  <tr>', "\n";
+    print '    <td></td>', "\n";
+    print '  </tr>', "\n";
+    print '  <tr>', "\n";
+    print '    <td bgcolor="00cc44"><textarea name="reservation_description" rows="2" cols="72"></textarea></td>', "\n";
+    print '  </tr>', "\n";
+    print '</table>', "\n";
+
+    print '<br/>', "\n";
     print '<input type="submit" value="Reserve bandwidth">', "\n";
     print '<input type="reset" value="Reset form fields">', "\n";
 
