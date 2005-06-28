@@ -79,8 +79,8 @@ sub get_stats {
 ##############################################################################
 # get_lsp_stats
 #
-sub get_stats {
-    my( $self, $lsp_info, $inref) = @_;
+sub get_lsp_stats {
+    my( $self, $lsp_info, $inref, $status) = @_;
 
     my $stats = 
         "LSP config by $inref->{user_dn} with parameters:\n" .
@@ -97,7 +97,7 @@ sub get_stats {
         "Bandwidth:        $lsp_info->{bandwidth}\n" .
         "Burst limit:      $lsp_info->{'policer_burst-size-limit'}\n" .
         "Source:           $lsp_info->{'source-address'}\n" .
-        "Destination:      $lsp_info->{'destination_address'}\n";
+        "Destination:      $lsp_info->{'destination-address'}\n";
     if ($lsp_info->{'source-port'}) {
         $stats .= "Source port:      $lsp_info->{'source-port'}\n";
     }
@@ -124,14 +124,18 @@ sub get_stats {
     else { $stats .= "Class:            default\n"; }
 
     if ($lsp_info->{lsp_from}) {
-        $stats .= "Ingress loopback: $lsp_info->{lsp_from}\n\n";
+        $stats .= "Ingress loopback: $lsp_info->{lsp_from}\n";
     }
     else { $stats .= "Ingress loopback: WARNING:  None specified\n"; }
 
     if ($lsp_info->{lsp_to}) {
-        $stats .= "Egress loopback: $lsp_info->{lsp_to}\n\n";
+        $stats .= "Egress loopback: $lsp_info->{lsp_to}\n";
     }
     else { $stats .= "Egress loopback:  WARNING:  None specified\n"; }
+    
+    if ($status) {
+        $stats .= "Error:  $status\n";
+    }
 
     return $stats;
 }
