@@ -13,13 +13,15 @@ use threads::shared;
 
 use Data::Dumper;
 
+use Common::Mail;
+
     # Chins PSS module to configure the routers
 use PSS::LSPHandler::JnxLSP;
 
     # Front end to reservations database
 use BSS::Frontend::Scheduler;
+use BSS::Frontend::Stats;
 
-# try to keep it tight
 use strict;
 
 require Exporter;
@@ -119,10 +121,18 @@ sub find_new_reservations {
         return ($error_msg);
     }
 
+    my( $mailer, $stats, $mail_msg );
+    $mailer = Common::Mail->new();
+    $stats = BSS::Frontend::Stats->new();
     for my $r (@$resv) {
         ## calls to pss to setup reservations
         my %lsp_info = map_fields($front_end, $r);
         $status = setup_pss(\%lsp_info, $r);
+
+        $mail_msg = $stats->get_lsp_stats(\%lsp_info, $r, $status);
+        $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
+                       "LSP set up status", $mail_msg);
+
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{ACTIVE}, $front_end);
     }
@@ -148,9 +158,17 @@ sub find_expired_reservations {
     ($error_msg, $resv) = $front_end->find_expired_reservations($user_dn, $timeslot, $configs->{ACTIVE});
     if ($error_msg) { return $error_msg; }
        
+    my( $mailer, $stats, $mail_msg );
+    $mailer = Common::Mail->new();
+    $stats = BSS::Frontend::Stats->new();
+
     for my $r (@$resv) {
         my %lsp_info = map_fields($front_end, $r);
         $status = teardown_pss(\%lsp_info, $r);
+
+        $mail_msg = $stats->get_lsp_stats(\%lsp_info, $r, $status);
+        $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
+                       "LSP tear down status", $mail_msg);
 
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{FINISHED}, $front_end);
