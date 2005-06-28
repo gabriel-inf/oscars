@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: June 15, 2005
+# Last modified: June 27, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -12,6 +12,7 @@ use Data::Dumper;
 use Common::Mail;
 use BSS::Frontend::Database;
 use BSS::Frontend::Policy;
+use BSS::Frontend::Stats;
 
 # until can get MySQL and views going
 my @user_fields = ( 'reservation_id',
@@ -171,7 +172,8 @@ sub insert_reservation {
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
     my $mailer = Common::Mail->new();
-    my $mail_msg = $self->get_stats($user_dn, $inref, $results) ;
+    my $stats = BSS::Frontend::Stats->new();
+    my $mail_msg = $stats->get_stats($user_dn, $inref, $results) ;
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "Reservation made by $user_dn", $mail_msg);
     
@@ -294,97 +296,6 @@ sub get_reservations {
     $sth->finish();
     $results->{status_msg} = 'Successfully read reservations';
     return( 0, $results );
-}
-######
-
-#################
-# Private methods
-#################
-
-##############################################################################
-# get_stats
-#
-sub get_stats {
-    my( $self, $user_dn, $inref, $results) = @_;
-
-    my $stats = 
-        "Reservation made by $user_dn with parameters:\n" .
-        "Description:      $inref->{description}\n" .
-        "Reservation id:   $results->{reservation_id}\n" .
-        "Start time:       " .
-            $self->get_time_str($inref->{reservation_start_time}) . "\n" .
-        "End time:         " .
-            $self->get_time_str($inref->{reservation_end_time}) . "\n" .
-        "Created time:     " .
-            $self->get_time_str($inref->{reservation_created_time}) . "\n" .
-        "Bandwidth:        $inref->{reservation_bandwidth}\n" .
-        "Burst limit:      $inref->{reservation_burst_limit}\n" .
-        "Source:           $inref->{src_address}\n" .
-        "Destination:      $inref->{dst_address}\n";
-        if ($inref->{reservation_src_port}) {
-            $stats .= "Source port:      $inref->{reservation_src_port}\n";
-        }
-        else {
-            $stats .= "Source port:      default\n";
-        }
-        if ($inref->{reservation_dst_port}) {
-            $stats .= "Destination port: $inref->{reservation_dst_port}\n";
-        }
-        else {
-            $stats .= "Destination port: default\n";
-        }
-        if ($inref->{reservation_protocol}) {
-            $stats .= "Protocol:         $inref->{reservation_protocol}\n";
-        }
-        else {
-            $stats .= "Protocol:         default\n";
-        }
-        if ($inref->{reservation_dscp}) {
-            $stats .= "DSCP:             $inref->{reservation_dscp}\n";
-        }
-        else {
-            $stats .= "DSCP:             default\n";
-        }
-        if ($inref->{reservation_class}) {
-            $stats .= "Class:            $inref->{reservation_class}\n\n";
-        }
-        else {
-            $stats .= "Class:            default\n\n";
-        }
-
-    return $stats;
-}
-######
-                   
-## here temporarily
-
-###############################################################################
-# get_time_str:  print formatted time string
-#
-sub get_time_str {
-    my( $self, $epoch_seconds ) = @_;
-
-    my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year );
-    my( $is_DST );
-    ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year,
-              $is_DST) = localtime($epoch_seconds); 
-    $year += 1900;
-    $month += 1;
-    if ($month < 10) {
-        $month = "0" . $month;
-    }
-    if ($day < 10) {
-        $day = "0" . $day;
-    }
-    if ($hour < 10) {
-        $hour = "0" . $hour;
-    }
-    if ($minute < 10) {
-        $minute = "0" . $minute;
-    }
-    my $time_str = "$month-$day-$year at $hour:$minute";
-
-    return( $time_str );
 }
 ######
 
