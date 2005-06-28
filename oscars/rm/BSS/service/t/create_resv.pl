@@ -21,12 +21,13 @@ $params{'reservation_bandwidth'} =      '10m';
 $params{'reservation_class'} =          '4';
 $params{'reservation_burst_limit'} =    '1m';
 $params{'reservation_status'} =         'pending';
+$params{'reservation_protocol'} =       'udp';
 
 $params{'ingress_interface_id'}= '';   # db lookup in scheduler
 $params{'egress_interface_id'}=  '';   # db lookup in scheduler
 
-$params{'src_hostaddrs_ip'} = 'nettrash3.es.net';
-$params{'dst_hostaddrs_ip'} = 'atl-pt1.es.net';
+$params{'src_address'} = 'nettrash3.es.net';
+$params{'dst_address'} = 'atl-pt1.es.net';
 
 $params{'user_dn'} =        'dwrobertson@lbl.gov';
 $params{'reservation_description'} =    'This is a test.';
@@ -42,8 +43,6 @@ elsif (defined($results->{'status_msg'}))
 {
     print $results->{'status_msg'}, "\n\n";
 }
-
-
 
 ###############################################################################
 sub get_time_str {
