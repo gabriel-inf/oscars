@@ -9,6 +9,7 @@ use strict;
 
 use Data::Dumper;
 
+use Common::Mail;
 use BSS::Frontend::Database;
 use BSS::Frontend::Policy;
 
@@ -169,6 +170,13 @@ sub insert_reservation {
                                   $results->{reservation_tag}, $results->{reservation_id});
     if ( $results->{error_msg} ) { return( 1, $results ); }
 
+    my $mailer = Common::Mail->new();
+    $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
+                       "Reservation made by $user_dn",
+                       "Reservation number $results->{reservation_id} from" .
+                       " $inref->{src_address} to $inref->{dst_address} has" .
+                       " been entered in the BSS database by $user_dn.\n"); 
+    
     $results->{status_msg} = "Your reservation has been processed " .
         "successfully. Your reservation ID number is $results->{reservation_id}.";
     return( 0, $results );
