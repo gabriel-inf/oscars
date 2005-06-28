@@ -68,5 +68,16 @@ sub get_webmaster {
 }
 ######
 
+###############################################################################
+#
+sub get_admins {
+    my( $self ) = @_;
+
+    # for now
+    return( 'dwrobertson@lbl.gov' );
+    #return( 'chin@es.net dwrobertson@lbl.gov' );
+}
+######
+
 # Don't touch the line below
 1;
