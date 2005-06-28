@@ -74,8 +74,8 @@ sub get_admins {
     my( $self ) = @_;
 
     # for now
-    return( 'dwrobertson@lbl.gov' );
-    #return( 'chin@es.net dwrobertson@lbl.gov' );
+    #return( 'dwrobertson@lbl.gov' );
+    return( 'chin@es.net dwrobertson@lbl.gov' );
 }
 ######
 
