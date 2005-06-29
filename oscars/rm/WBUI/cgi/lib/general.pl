@@ -1,7 +1,7 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: June 12, 2005
+# Last modified: June 29, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -9,7 +9,7 @@ use CGI;
 use Socket;
 
 use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
+use Common::Auth;
 
 
 ##############################################################################
@@ -22,7 +22,7 @@ sub check_session_status {
 
     my( $auth, $dn, $user_level );
 
-    $auth = AAAS::Client::Auth->new();
+    $auth = Common::Auth->new();
     if ( $login_results ) {
         ($dn, $user_level) = $auth->set_login_status($cgi, $login_results);
         return ($dn, $user_level);
@@ -115,7 +115,7 @@ sub end_session {
     my( $cgi ) = @_;
     my( $auth );
 
-    $auth = AAAS::Client::Auth->new();
+    $auth = Common::Auth->new();
     $auth->logout($cgi);
 }
 ######

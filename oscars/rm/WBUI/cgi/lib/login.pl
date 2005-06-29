@@ -1,17 +1,16 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: June 22, 2005
+# Last modified: June 29, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use Data::Dumper;
 
 use AAAS::Client::SOAPClient;
-use AAAS::Client::Auth;
+use BSS::Client::SOAPClient;
 
 require 'general.pl';
-
 
 my ($error_status, $results);
 my ($user_dn, $user_level);
@@ -43,22 +42,27 @@ exit;
 sub verify_user {
     my( $cgi ) = @_;
 
-    my( %soap_params, %results );
+    my( %soap_params, %error_only, $error_status, $results );
+    my( $BSS_results );
 
     # validate user input (just check for empty fields)
     if ( !$cgi->param('user_dn') )
     {
-        $results{error_msg} = 'Please enter your login name.';
-        return( 1, \%results );
+        $error_only{error_msg} = 'Please enter your login name.';
+        return( 1, \%error_only );
     }
 
     if ( !$cgi->param('user_password') )
     {
-        $results{error_msg} = 'Please enter your password.';
-        return( 1, \%results );
+        $error_only{error_msg} = 'Please enter your password.';
+        return( 1, \%error_only );
     }
     $soap_params{user_dn} = $cgi->param('user_dn');
     $soap_params{user_password} = $cgi->param('user_password');
-    return(soap_verify_login(\%soap_params));
+    ($error_status, $results) = soap_verify_login(\%soap_params);
+    if (!$results->{error_msg}) {
+        ($error_status, $BSS_results) = BSS::SOAPClient::soap_login_user(\%soap_params);
+    }
+    return( $error_status, $results );
 }
 ######
