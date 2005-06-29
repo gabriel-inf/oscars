@@ -148,6 +148,7 @@ function print_time_settings_example()
     document.write( '<td>' + printMinute + '</td>' );
     document.write( '<td>UTC' + get_timezone_offset() + '</td>');
     document.write( '<td>0.05</td>' );
+    document.write( '<td> </td>' );
 }
 
 // Reference: http://javascript.internet.com/forms/val-date.html
@@ -260,7 +261,7 @@ function check_date( form )
         form.duration_hour.focus();
         return false;
     }
-    if (form.persistent.checked) {
+    if (form.persistent && form.persistent.checked) {
         form.duration_hour.value = 'INF';
     }
 
@@ -269,8 +270,11 @@ function check_date( form )
                             form.start_minute.value, 0, 0);
     form.reservation_start_time.value = reserve_date.getTime() / 1000;
 
-    if ( form.reservation_start_time.value == 0 ) {
+    if ( (validate_integer(form.reservation_start_time.value) == false) ||
+             (form.reservation_start_time.value == 0) ||
+             isblank(form.reservation_start_time.value) ) {
         alert( "Problem with start time." );
+        form.start_hour.focus();
         return false;
     }
     return true;

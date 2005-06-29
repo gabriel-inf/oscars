@@ -1,6 +1,6 @@
 /*
 Javascript functions for reservation CGI interface
-Last modified: June 23, 2005
+Last modified: June 29, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -45,9 +45,9 @@ function check_form( form )
         form.reservation_bandwidth.focus();
         return false;
     }
-    else if ( (form.reservation_bandwidth.value < 10 ) ||
-             (form.reservation_bandwidth.value >= 10000)) {
-        alert( "The amount of bandwidth must be in the range 10-10000 Mbps." );
+    else if ( (form.reservation_bandwidth.value < 1 ) ||
+             (form.reservation_bandwidth.value > 10000)) {
+        alert( "The amount of bandwidth must be in the range 1-10000 Mbps." );
         form.reservation_bandwidth.focus();
         return false;
     }
