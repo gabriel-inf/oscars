@@ -1,6 +1,6 @@
 /*
 Javascript functions for main pages
-Last modified: June 22, 2005
+Last modified: June 29, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -19,6 +19,7 @@ isblank (strValue)
 */
 
 var timerID = null;
+var oscars_home = 'https://oscars.es.net/';
 
 
 // ** prints HTML header
@@ -48,45 +49,45 @@ function print_navigation_bar(userLevel, activePage)
     document.write('<div>');
     document.write('<ul id="tabnav">');
 
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/info_form.pl" ');
+    document.write('<li><a href="' + oscars_home + 'cgi-bin/lib/info_form.pl" ');
     if (activePage == 'info') {
         document.write('class="active" ');
     }
     document.write('title="OSCARS information">Information</a></li>');
 
     if (userLevel.indexOf("admin") != -1) {
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/acctlist_form.pl" ');
+        document.write('<li><a href="' + oscars_home + 'cgi-bin/users/acctlist_form.pl" ');
         if (activePage == 'userlist') {
             document.write('class="active" ');
         }
         document.write('title="View list of all accounts">List Accounts</a></li>');
 
-        document.write('<li><a href="https://oscars.es.net/cgi-bin/users/add_form.pl" ');
+        document.write('<li><a href="' + oscars_home + 'cgi-bin/users/add_form.pl" ');
         if (activePage == 'adduser') {
             document.write('class="active" ');
         }
         document.write('title="Add a new user account">Add User</a></li>');
     } 
 
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl" ');
+    document.write('<li><a href="' + oscars_home + 'cgi-bin/users/profile_form.pl" ');
     if (activePage == 'profile') {
         document.write('class="active" ');
     }
     document.write('title="View and/or edit your information">User Profile</a></li>');
 
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl" ');
+    document.write('<li><a href="' + oscars_home + 'cgi-bin/reservations/list_form.pl" ');
     if (activePage == 'reservationlist') {
         document.write('class="active" ');
     }
     document.write('title="View/Edit selected list of reservations">View/Edit Reservations</a></li>');
 
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/reservations/creation_form.pl" ');
+    document.write('<li><a href="' + oscars_home + 'cgi-bin/reservations/creation_form.pl" ');
     if (activePage == 'reservation') {
         document.write(' class="active" ');
     }
     document.write('title="Create a new reservation">Make Reservation</a></li>');
 
-    document.write('<li><a href="https://oscars.es.net/cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
+    document.write('<li><a href="' + oscars_home + 'cgi-bin/lib/logout.pl" class="logout" title="Log out on click.">Log Out</a></li>');
     document.write("</ul>");
     document.write("</div>");
 }
@@ -99,7 +100,7 @@ function update_status_frame(status, msg)
     f.open();
     f.write('<html>');
     f.write('<head>');
-    f.write('<link rel="stylesheet" type="text/css" href="https://oscars.es.net/styleSheets/layout.css">');
+    f.write('<link rel="stylesheet" type="text/css" href="' + oscars_home + 'styleSheets/layout.css">');
     f.write('</head>');
 
     f.write('<body>');
