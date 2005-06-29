@@ -12,17 +12,15 @@ use BSS::Client::SOAPClient;
 
 require 'general.pl';
 
-my ($error_status, $results);
-my ($user_dn, $user_level);
 my $cgi = CGI->new();
 
 # Check that the user exists, the correct password has been given, the user
 # account has been activated, and the user has the proper privilege level
 # to perform database operations.
-($error_status, $results) = verify_user($cgi);
+my ($error_status, $results) = verify_user($cgi);
 
 if (!$results->{error_msg}) {
-    ($user_dn, $user_level) = check_session_status($results, $cgi);
+    my ($user_dn, $user_level, $oscars_home) = check_session_status($results, $cgi);
     print_info($user_dn, $user_level);
     update_status_frame(0, $results->{status_msg});
 }
@@ -61,7 +59,7 @@ sub verify_user {
     $soap_params{user_password} = $cgi->param('user_password');
     ($error_status, $results) = soap_verify_login(\%soap_params);
     if (!$results->{error_msg}) {
-        ($error_status, $BSS_results) = BSS::SOAPClient::soap_login_user(\%soap_params);
+        ($error_status, $BSS_results) = BSS::Client::SOAPClient::soap_login_user(\%soap_params);
     }
     return( $error_status, $results );
 }

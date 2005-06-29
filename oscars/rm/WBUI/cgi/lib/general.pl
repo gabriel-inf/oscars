@@ -11,6 +11,8 @@ use Socket;
 use AAAS::Client::SOAPClient;
 use Common::Auth;
 
+# To change home directory, change this location
+$oscars_home = 'https://oscars.es.net/';
 
 ##############################################################################
 # check_session_status;  checks CGI session status only; the checks for
@@ -29,7 +31,7 @@ sub check_session_status {
     }
     else {
         ($dn, $user_level) = $auth->verify_login_status($cgi);
-        return($dn, $user_level);
+        return($dn, $user_level, $oscars_home);
     }
 }
 ######
@@ -58,8 +60,10 @@ sub authorized {
 sub update_status_frame {
     my ($status, $msg) = @_;
 
-    print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
-    print '<script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
+    print '<script language="javascript" type="text/javascript" src="' .
+          $oscars_home . 'main_common.js"></script>', "\n";
+    print '<script language="javascript" type="text/javascript" src="' .
+          $oscars_home . 'timeprint.js"></script>', "\n";
     print '<script language="javascript">update_status_frame("' .
               $status . '", "' . $msg . '");</script>', "\n\n";
 }
@@ -72,10 +76,12 @@ sub print_info
 
     print '<html>', "\n";
     print '<head>', "\n";
-    print '<link rel="stylesheet" type="text/css" ';
-    print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
-    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
-    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/userprofile.js"></script>', "\n";
+    print '<link rel="stylesheet" type="text/css" href="' .
+          $oscars_home . 'styleSheets/layout.css">' . "\n";
+    print '    <script language="javascript" type="text/javascript" src="' .
+               $oscars_home . 'main_common.js"></script>', "\n";
+    print '    <script language="javascript" type="text/javascript" src="' .
+               $oscars_home . 'userprofile.js"></script>', "\n";
     print '</head>', "\n\n";
 
     print '<body>', "\n\n";
