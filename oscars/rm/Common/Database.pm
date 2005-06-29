@@ -33,29 +33,30 @@ sub initialize {
 ######
 
 ###############################################################################
-# enforce_connx:  Sets up database handle for user, or denies access if
-#                     necessary
+# login_user:  Sets up database handle for user
 #
-sub enforce_connx
-{
-    my ( $self, $user_dn, $do_login, $reconnect ) = @_;
+sub login_user {
+    my ( $self, $user_dn ) = @_;
+
     my ( %attr ) = (
         RaiseError => 0,
         PrintError => 0,
     );
-    # TODO:  FIX, may need views, or different db logins for one thing
-    if ($reconnect || !(defined($self->{handles}->{$user_dn}))) {
-        if ($do_login) {
-            $self->{handles}->{$user_dn} = DBI->connect(
+    # I couldn't find a foolproof way to check for timeout; Apache::DBI
+    # came closest, but it was too dependent on the driver handling the timeout
+    # correctly.  So instead,
+    # if a handle is left over from a previous session, attempts to disconnect.
+    # If it was timed out, the error is ignored.
+    if ($self->{handles}->{$user_dn}) {
+        $self->{handles}->{$user_dn}->disconnect();
+    }
+
+    # Start with a fresh handle.
+    $self->{handles}->{$user_dn} = DBI->connect(
                  $self->{database}, 
                  $self->{login}, 
                  $self->{password},
-                 \%attr)
-        }
-        else {
-            return( "You must log in first before accessing the database");
-        }
-    }
+                 \%attr);
     if (!$self->{handles}->{$user_dn}) {
         return( "Unable to make database connection: $DBI::errstr");
     }
@@ -65,13 +66,11 @@ sub enforce_connx
 
 ###############################################################################
 #
-sub do_query
-{
+sub do_query {
     my( $self, $user_dn, $query, @args ) = @_;
+
     my( $sth, $error_msg );
 
-    #print STDERR '** ', $user_dn, '--', $query, "\n";
-    #print STDERR 'h ', $self->{handles}->{$user_dn}, "\n";
     $sth = $self->{handles}->{$user_dn}->prepare( $query );
     if ($DBI::err) {
         $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
@@ -108,6 +107,18 @@ sub logout {
 }
 ######
 
+###############################################################################
+# enforce_connection:  Checks to see if user has logged in.
+#
+sub enforce_connection {
+    my ( $self, $user_dn ) = @_;
+
+    if (!$self->{handles}->{$user_dn}) {
+        return( "You must log in first before accessing the database");
+    }
+    return "";
+}
+######
 
 # Don't touch the line below
 1;
