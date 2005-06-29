@@ -2,7 +2,7 @@
 
 # create.pl:  Called by reservation_form.  Contacts the BSS to
 #             create a reservation.
-# Last modified: June 24, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -14,13 +14,13 @@ use BSS::Client::SOAPClient;
 
 require '../lib/general.pl';
 
-my (%form_params);
+my( %form_params, $oscars_home );
 my $cgi = CGI->new();
 
-($form_params{user_dn}, $form_params{user_level}) =
+($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
                                      check_session_status(undef, $cgi);
 if (!$form_params{user_dn}) {
-    print "Location:  https://oscars.es.net/\n\n";
+    print "Location:  $oscars_home\n\n";
     exit;
 }
 for $_ ($cgi->param) {
@@ -58,7 +58,7 @@ sub process_form {
 sub create_reservation {
     my( $form_params ) = @_;
 
-    my( %soap_params, $persistent );
+    my( %soap_params );
 
     $soap_params{user_dn} = $form_params{user_dn};
     $soap_params{user_level} = $form_params{user_level};
@@ -74,19 +74,14 @@ sub create_reservation {
                          get_time_str($form_params->{reservation_start_time}) .
                          "-";
     if ($form_params->{duration_hour} eq 'INF') {
-        $persistent = 1;
+        # persistent
+        $soap_params{reservation_end_time} = 2 ** 31 - 1;
     }
     else {
-        $persistent = 0;
-    } 
-    if (!$persistent) {
         # start time + duration time in seconds
         $soap_params{reservation_end_time} =
                          $form_params->{reservation_start_time} +
                          $form_params->{duration_hour} * 3600;
-    }
-    else {
-        $soap_params{reservation_end_time} = 2 ** 31 - 1;
     }
 
     $soap_params{reservation_created_time} = '';   # filled in scheduler

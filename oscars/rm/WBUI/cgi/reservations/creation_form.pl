@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # creation_form.pl:  form for making reservations
-# Last modified: June 17, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -11,10 +11,10 @@ use Data::Dumper;
 require '../lib/general.pl';
 
 my $cgi = CGI->new();
-my ($dn, $user_level) = check_session_status(undef, $cgi);
+my ($dn, $user_level, $oscars_home) = check_session_status(undef, $cgi);
 
 if (!$dn) {
-    print "Location:  https://oscars.es.net/\n\n";
+    print "Location:  $oscars_home\n\n";
 }
 else {
     print_reservation_form($user_level);
@@ -36,10 +36,13 @@ sub print_reservation_form {
     print '<head>', "\n";
     print '  <style type="text/css" media="screen">', "\n";
     print '  <link rel="stylesheet" type="text/css" ';
-    print '  href="https://oscars.es.net/styleSheets/layout.css">', "\n";
-    print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
-    print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/timeprint.js"></script>', "\n";
-    print '  <script language="javascript" type="text/javascript" src="https://oscars.es.net/reservation.js"></script>', "\n";
+    print '  href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
+    print '  <script language="javascript" type="text/javascript" src="' .
+             $oscars_home . 'main_common.js"></script>' . "\n";
+    print '  <script language="javascript" type="text/javascript" src="' .
+             $oscars_home . 'timeprint.js"></script>', "\n";
+    print '  <script language="javascript" type="text/javascript" src="' .
+             $oscars_home . 'reservation.js"></script>', "\n";
     print '</head>', "\n";
 
     print '<body>', "\n";
@@ -47,7 +50,9 @@ sub print_reservation_form {
 
     print '<div id="reservation_ui">', "\n";
 
-    print '<form method="post" action="https://oscars.es.net/cgi-bin/reservations/create.pl" target="status_frame" onsubmit="return check_form(this);">', "\n";
+    print '<form method="post" action="' . $oscars_home .
+          'cgi-bin/reservations/create.pl" target="status_frame" ' .
+          ' onsubmit="return check_form(this);">' . "\n";
 
     print '<input type="hidden" name="reservation_start_time">', "\n";
 
@@ -158,6 +163,7 @@ sub print_reservation_form {
     if (authorized($user_level, "engr")) {
         print '<th>Persistent</th>', "\n";
     }
+    else { print '<th> </th>', "\n"; }
     print '  </tr>', "\n";
     print '  <tr class="alignright">', "\n";
     print '    <td>';
@@ -208,24 +214,24 @@ sub print_reservation_form {
     print '      <input type="text" name="duration_hour" size="16" ' .
                      'maxlength="6">' . "\n";
     print '    </td>', "\n";
+    print '    <td> ', "\n";
     if (authorized($user_level, "engr")) {
-        print '<td>', "\n";
         print '  <input type="checkbox" name="persistent" value="0">';
-        print '</td>', "\n";
     }
+    print '  </td>', "\n";
     print '  </tr>', "\n";
     print '  <tr class="alignright">', "\n";
     print '    <script language="javascript">print_time_settings_example();</script>', "\n";
     print '  </tr>', "\n";
-    print '    <td></td>', "\n";
+    print '  <tr>', "\n";
+    print '    <td> </td>', "\n";
     print '    <td>(1-12)</td>', "\n";
     print '    <td>(1-31)</td>', "\n";
     print '    <td>(0-23)</td>', "\n";
     print '    <td>(0-59)</td>', "\n";
-    print '    <td></td>', "\n";
+    print '    <td> </td>', "\n";
     print '    <td>(0.01-INF)</td>', "\n";
-    print '    <td></td>', "\n";
-    print '  <tr>', "\n";
+    print '    <td> </td>', "\n";
     print '  </tr>', "\n";
     print '</table>', "\n";
 

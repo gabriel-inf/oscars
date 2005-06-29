@@ -2,7 +2,7 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: June 17, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -15,13 +15,13 @@ use BSS::Client::SOAPClient;
 require '../lib/general.pl';
 
 
-my (%form_params);
+my( %form_params, $oscars );
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}) =
+($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
                                         check_session_status(undef, $cgi);
 if (!$form_params{user_dn}) {
-    print "Location:  https://oscars.es.net/\n\n";
+    print "Location:  $oscars_home\n\n";
     exit;
 }
 for $_ ($cgi->param) {
@@ -82,11 +82,11 @@ sub print_reservation_detail {
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
-    print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
-    print '    <script language="javascript" type="text/javascript"';
-    print '        src="https://oscars.es.net/main_common.js"></script>', "\n";
-    print '    <script language="javascript" type="text/javascript"';
-    print '        src="https://oscars.es.net/timeprint.js"></script>', "\n";
+    print ' href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
+    print '    <script language="javascript" type="text/javascript"' .
+               'src="' . $oscars_home . 'main_common.js"></script>' . "\n";
+    print '    <script language="javascript" type="text/javascript"' .
+               'src="' . $oscars_home . 'timeprint.js"></script>' . "\n";
     print '</head>', "\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n";
@@ -223,16 +223,16 @@ sub print_reservation_detail {
 
     if (($row->{reservation_status} eq 'pending') ||
         ($row->{reservation_status} eq 'active')) {
-       print '<tr><td>Action: </td><td>';
-       print  '<a href="https://oscars.es.net/cgi-bin/reservations/details.pl';
-       print  '?reservation_id=' . $row->{reservation_id} . '&cancel=1">';
+       print '<tr><td>Action: </td><td>' .
+             '<a href="' . $oscars_home . 'cgi-bin/reservations/details.pl' .
+             '?reservation_id=' . $row->{reservation_id} . '&cancel=1">';
        print  'CANCEL</a></td></tr>' . "\n";
     }
 
     print "</table>\n";
     print '<br/>';
-    print '<p><form method="post" action="https://oscars.es.net/cgi-bin/';
-    print 'reservations/details.pl">', "\n";
+    print '<p><form method="post" action="' . $oscars_home .
+              'cgi-bin/reservations/details.pl">' . "\n";
 
     print '<input type="hidden" name="reservation_id" value="';
     print $form_params{reservation_id} . '">', "\n";
@@ -240,7 +240,7 @@ sub print_reservation_detail {
     print '<input type="submit" value="Refresh">', "\n";
     print '</form></p>', "\n";
 
-    print '<a href="https://oscars.es.net/cgi-bin/reservations/list_form.pl">';
+    print '<a href="' . $oscars_home . 'cgi-bin/reservations/list_form.pl">';
     print '<p><strong>Back to reservations list</strong></a></p>', "\n";
 
     print "<p>For inquiries, please contact the project administrator.</p>\n\n";
