@@ -45,7 +45,7 @@ sub send_mail {
     }
     print MAIL "From: $sender\n";
     print MAIL "To:   $recipient\n";
-    print MAIL "Subject:  $subject\n";
+    print MAIL "Subject:  OSCARS: $subject\n";
     print MAIL 'Content-Type: text/plain; charset="' .
                    $self->{notification_email_encoding} . '"' . "\n\n";
 			
