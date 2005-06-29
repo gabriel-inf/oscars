@@ -73,7 +73,10 @@ sub scheduler {
     $front_end = BSS::Frontend::Scheduler->new('configs' => $configs);
     my $pseudo_user = 'SCHEDULER';
     $error_msg = $front_end->{dbconn}->login_user($pseudo_user);
-    if ($error_msg) { return( 1, $error_msg); }
+    if ($error_msg) {
+        print STDERR "$error_msg\n";
+        return( 1, $error_msg);
+    }
 
     while (1) {
 
@@ -83,7 +86,6 @@ sub scheduler {
         if ($error_msg) {
             if ($configs->{debug}) { print STDERR '** ', $error_msg, "\n"; }
         }
-
 
         # find reservations that need to be deactivated 
         if ($configs->{debug}) { print STDERR "find_exp\n"; }
@@ -233,12 +235,15 @@ sub teardown_pss {
 sub update_reservation {
     my ($resv, $error_msg, $status, $front_end) = @_;
 
+    my ($update_status, $update_msg);
+
     if ( !$error_msg ) {
         print STDERR "Changing status to $status\n";
-        $front_end->{dbconn}->update_reservation($resv, $status)
+        # TODO:  FIX
+        ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, $status)
     } else {
         print STDERR "Changing status to failed\n";
-        $front_end->{dbconn}->update_reservation($resv, $configs->{FAILED})
+        ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, $configs->{FAILED})
     }
 }
 ######
