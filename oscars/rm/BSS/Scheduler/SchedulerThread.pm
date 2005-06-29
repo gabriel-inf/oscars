@@ -72,7 +72,7 @@ sub scheduler {
     print STDERR "Scheduler running\n";
     $front_end = BSS::Frontend::Scheduler->new('configs' => $configs);
     my $pseudo_user = 'SCHEDULER';
-    $error_msg = $front_end->{dbconn}->enforce_connx($pseudo_user, 1, 1);
+    $error_msg = $front_end->{dbconn}->login_user($pseudo_user);
     if ($error_msg) { return( 1, $error_msg); }
 
     while (1) {

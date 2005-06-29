@@ -42,6 +42,24 @@ sub initialize {
 ######
 
 ##############################################################################
+sub login_user {
+    my ( $self, $inref ) = @_;
+		
+    my ($error_status, $results) = $self->{frontend}->login_user( $inref );
+    return ($error_status, $results);
+}
+######
+
+##############################################################################
+sub logout {
+    my ( $self, $inref ) = @_;
+		
+    my ($error_status, $results) = $self->{frontend}->logout( $inref );
+    return ($error_status, $results);
+}
+######
+
+##############################################################################
 # create reservation
 # 1) compute routers
 # 2) check bandwidth (y2?)
