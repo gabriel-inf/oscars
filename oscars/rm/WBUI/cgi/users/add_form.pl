@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # add_form.pl:  Add a user (requires admin privileges)
-# Last modified: June 13, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -9,14 +9,14 @@
 
 require '../lib/general.pl';
 
-my( %form_params );
+my( %form_params, $oscars_home );
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}) =
+($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
                                          check_session_status(undef, $cgi);
 
 if (!$form_params{user_level}) {
-    print "Location:  https://oscars.es.net/admin/\n\n";
+    print "Location:  $oscars_home\n\n";
     exit;
 }
 for $_ ($cgi->param) {
@@ -51,11 +51,11 @@ sub print_temp {
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
-    print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
+    print ' href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
     print '    <script language="javascript" type="text/javascript"';
-    print '        src="https://oscars.es.net/main_common.js"></script>', "\n";
+    print '        src="' . $oscars_home . 'main_common.js"></script>', "\n";
     print '    <script language="javascript" type="text/javascript"';
-    print '        src="https://oscars.es.net/timeprint.js"></script>', "\n";
+    print '        src="' . $oscars_home . 'timeprint.js"></script>', "\n";
     print '</head>', "\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n";

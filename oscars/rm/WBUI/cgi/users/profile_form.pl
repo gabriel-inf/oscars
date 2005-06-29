@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # userprofile.pl:  Main service: My Profile page
-# Last modified: June 6, 2005
+# Last modified: June 29, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -12,13 +12,14 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( %form_params );
+my( %form_params, $oscars_home );
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}) = check_session_status(undef, $cgi);
+($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
+                                          check_session_status(undef, $cgi);
 
 if (!$form_params{user_dn}) {
-    print "Location:  https://oscars.es.net/\n\n";
+    print "Location:  $oscars_home\n\n";
     exit;
 }
 
@@ -68,9 +69,11 @@ sub print_profile {
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
-    print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
-    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/main_common.js"></script>', "\n";
-    print '    <script language="javascript" type="text/javascript" src="https://oscars.es.net/userprofile.js"></script>', "\n";
+    print ' href="' . $oscars_home . 'styleSheets/layout.css">' . "\n";
+    print '    <script language="javascript" type="text/javascript"' .
+          '    src="' . $oscars_home . 'main_common.js"></script>' . "\n";
+    print '    <script language="javascript" type="text/javascript" ' .
+          '    src="' . $oscars_home . 'userprofile.js"></script>', "\n";
     print '</head>', "\n\n";
 
     print '<body>', "\n\n";
@@ -80,7 +83,9 @@ sub print_profile {
 
     print '<p><em>View/Edit My Profile</em><br>', "\n";
     print '(Required fields are marked with a <span class="requiredmark">*</span>)</p>', "\n";
-    print '<form method="post" action="https://oscars.es.net/cgi-bin/users/profile_form.pl" onsubmit="return check_form(this);">', "\n";
+    print '<form method="post" action="' .  $oscars_home .
+          'cgi-bin/users/profile_form.pl" ' .
+          'onsubmit="return check_form(this);">' . "\n";
  
     print '<table>', "\n";
     print '<tr>', "\n";

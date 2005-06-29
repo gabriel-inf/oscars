@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # userlist_form.pl:  User List page
-# Last modified: June 13, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -11,14 +11,14 @@ require '../lib/general.pl';
 use AAAS::Client::SOAPClient;
 use Data::Dumper;
 
-my( %form_params );
+my( %form_params, $oscars_home );
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}) =
+($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
                                          check_session_status(undef, $cgi);
 
 if (!$form_params{user_level}) {
-    print "Location:  https://oscars.es.net/admin/\n\n";
+    print "Location:  " . $oscars_home . "\n\n";
     exit;
 }
 for $_ ($cgi->param) {
@@ -64,12 +64,12 @@ sub print_userlist
     print '<html>', "\n";
     print '<head>', "\n";
     print '<link rel="stylesheet" type="text/css" ';
-    print ' href="https://oscars.es.net/styleSheets/layout.css">', "\n";
+    print ' href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
     print '  <script language="javascript" type="text/javascript" ' .
-               'src="https://oscars.es.net/main_common.js">' .
+               'src="' . $oscars_home . 'main_common.js">' .
              '</script>', "\n";
     print '  <script language="javascript" type="text/javascript" ' .
-               'src="https://oscars.es.net/sorttable.js">' .
+               'src="' . $oscars_home . 'sorttable.js">' .
           '  </script>', "\n";
     print "</head>\n\n";
 
@@ -119,7 +119,9 @@ sub print_row
 {
     my( $row ) = @_;
 
-    print '    <td><a href="https://oscars.es.net/cgi-bin/users/profile_form.pl?id=' . $row->{user_dn} . '">' . $row->{user_last_name} . '</a></td>' . "\n"; 
+    print '    <td><a href="' . $oscars_home .
+          'cgi-bin/users/profile_form.pl?id=' . $row->{user_dn} . '">' .
+          $row->{user_last_name} . '</a></td>' . "\n"; 
     print "    <td>" . $row->{user_first_name} . "</td>\n";
     print "    <td>" . $row->{user_dn} . "</td>\n";
     print "    <td>" . $row->{user_level} . "</td>\n";
