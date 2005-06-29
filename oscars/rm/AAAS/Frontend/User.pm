@@ -78,7 +78,7 @@ sub verify_login {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 1);
+    $results->{error_msg} = $self->{dbconn}->login_user($user_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     $results->{error_msg} = $self->{auth}->get_user_levels($user_dn);
@@ -136,11 +136,11 @@ sub get_profile {
     my $user_dn = $inref->{user_dn};
 
     if (!$inref->{admin_dn}) {
-        $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
+        $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
     }
     else {
-        $results->{error_msg} = $self->{dbconn}->enforce_connx(
-                                                     $inref->{admin_dn}, 0, 0);
+        $results->{error_msg} = $self->{dbconn}->enforce_connection(
+                                                     $inref->{admin_dn});
     }
     if ($results->{error_msg}) { return( 1, $results); }
 
@@ -220,11 +220,11 @@ sub set_profile {
     my $user_dn = $inref->{user_dn};
 
     if (!$inref->{admin_dn}) {
-        $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
+        $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
     }
     else {
-        $results->{error_msg} = $self->{dbconn}->enforce_connx(
-                                                     $inref->{admin_dn}, 0, 0);
+        $results->{error_msg} = $self->{dbconn}->enforce_connection(
+                                                     $inref->{admin_dn});
     }
     if ($results->{error_msg}) { return( 1, $results); }
 
@@ -341,7 +341,7 @@ sub get_userlist
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 0, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     $results->{error_msg} = $self->{auth}->verify($inref->{user_level},
