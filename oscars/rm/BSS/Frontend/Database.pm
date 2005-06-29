@@ -38,18 +38,18 @@ sub new {
 # finished, or cancelled.
 #
 sub update_reservation {
-    my ( $self, $inref, $status ) = @_;
+    my ( $self, $login_dn, $inref, $status ) = @_;
 
     my ( $rref, $sth, $query );
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->enforce_connection($user_dn);
+    $results->{error_msg} = $self->enforce_connection($login_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     $query = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
-    ($sth, $results->{error_msg}) = $self->do_query($user_dn, $query,
+    ($sth, $results->{error_msg}) = $self->do_query($login_dn, $query,
                                                     $inref->{reservation_id});
     if ( $results->{error_msg} ) { return( 1, $results ); }
     $rref = $sth->fetchall_arrayref({});
@@ -68,7 +68,7 @@ sub update_reservation {
     }
     $query = qq{ UPDATE reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
-    ($sth, $results->{error_msg}) = $self->do_query($user_dn, $query, $status,
+    ($sth, $results->{error_msg}) = $self->do_query($login_dn, $query, $status,
                                                     $inref->{reservation_id});
     if ( $results->{error_msg} ) { return( 1, $results ); }
     $sth->finish();
