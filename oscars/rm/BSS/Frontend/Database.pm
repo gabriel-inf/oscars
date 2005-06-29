@@ -1,6 +1,6 @@
 # Database.pm:  BSS specific database settings and routines
 #               inherits from Common::Database
-# Last modified: June 21, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # Jason Lee (jrlee@lbl.gov)
@@ -44,7 +44,7 @@ sub update_reservation {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->enforce_connx($user_dn, 1, 0);
+    $results->{error_msg} = $self->enforce_connection($user_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     $query = qq{ SELECT reservation_status from reservations
@@ -88,7 +88,7 @@ sub ip_to_xface_id {
     my ($self, $user_dn, $ipaddr) = @_;
     my ($query, $sth, $interface_id, $error_msg);
 
-    $error_msg = $self->enforce_connx($user_dn, 1, 0);
+    $error_msg = $self->enforce_connection($user_dn);
     if ( $error_msg ) {
         $sth->finish();
         return( 0, $error_msg );

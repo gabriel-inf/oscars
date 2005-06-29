@@ -1,5 +1,5 @@
 # Scheduler.pm:  Database handling for BSS/Scheduler/SchedulerThread.pm
-# Last modified: June 15, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -45,8 +45,8 @@ sub find_pending_reservations  {
     my ( $sth, $data, $query, $error_msg );
     my $results = {};
 
-    # user dn in this case is the scheduler thread
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    # user dn in this case is the scheduler thread pseudo user
+    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
@@ -71,7 +71,7 @@ sub find_expired_reservations {
     my ( $sth, $data, $query, $error_msg);
     my $results = {};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     #print "expired: Looking at time == " . $stime . "\n";

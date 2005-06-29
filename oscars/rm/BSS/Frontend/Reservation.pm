@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: June 27, 2005
+# Last modified: June 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -76,6 +76,32 @@ sub initialize {
 
 
 ###############################################################################
+# login_user
+# In:  reference to hash of parameters
+# Out: status code, status message
+#
+sub login_user {
+    my( $self, $inref ) = @_;
+
+    my $results = {};
+
+    $results->{error_msg} = $self->{dbconn}->login_user($inref->{user_dn});
+    if ($results->{error_msg}) { return( 1, $results); }
+
+    $results->{status_msg} = $inref->{user_dn} . ' successfully logged in';
+    return( 0, $results );
+}
+######
+
+###############################################################################
+sub logout {
+    my( $self, $inref ) = @_;
+
+    return( $self->{dbconn}->logout($inref->{user_dn}) );
+}
+######
+
+###############################################################################
 # insert_reservation:  Called from the scheduler to insert a row into the
 #   reservations table.  Error checking so far is assumed to have been done by
 #   scheduler and CGI script.
@@ -90,7 +116,7 @@ sub insert_reservation {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     # whether any time segment is over the bandwidth limit
@@ -209,7 +235,7 @@ sub get_reservations {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connx($user_dn, 1, 0);
+    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
     if ($results->{error_msg}) { return( 1, $results); }
 
     # If administrator is making request, show all reservations.  Otherwise,
