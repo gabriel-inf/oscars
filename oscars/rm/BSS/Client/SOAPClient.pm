@@ -7,7 +7,7 @@ use Exporter;
 
 our @ISA = qw(Exporter);
 
-our @EXPORT = qw( soap_get_reservations soap_create_reservation soap_delete_reservation );
+our @EXPORT = qw( soap_login_user soap_logout_user soap_get_reservations soap_create_reservation soap_delete_reservation );
  
 
 my $BSS_server = SOAP::Lite
@@ -15,8 +15,37 @@ my $BSS_server = SOAP::Lite
   -> proxy ('http://localhost:3000/BSS_server.pl');
 
 
+##############################################################################
+# soap_login_user:  Called after successful AAAS::soap_verify_login by CGI
+#    script to login to the BSS database.
+#
+sub soap_login_user {
+    my ($params) = @_;
+
+    my $response = $BSS_server->login_user($params);
+    if ($response->fault) {
+        print STDERR $response->faultcode, " ", $response->faultstring, "\n";
+    }
+    return ($response->result(), $response->paramsout());
+}
+######
+
+##############################################################################
+# soap_logout:  Called after AAAS::soap_logout by CGI script.
+#
+sub soap_logout_user {
+    my ($params) = @_;
+
+    my $response = $BSS_server->logout($params);
+    if ($response->fault) {
+        print STDERR $response->faultcode, " ", $response->faultstring, "\n";
+    }
+    return ($response->result(), $response->paramsout());
+}
+######
+
 ##############################################################
-# SOAP client calls to BSS front end, invoked from user forms.
+# Client calls to BSS front end, invoked from user forms.
 ##############################################################
 
 ##############################################################################
