@@ -3,7 +3,7 @@
 use BSS::Client::SOAPClient;
 
 my %params = ('user_dn' => 'dwrobertson@lbl.gov');
-my($result, $data) = soap_logout(\%params);
+my($result, $data) = soap_logout_user(\%params);
 if (defined($data->{'error_msg'}) && $data->{'error_msg'})
 {
     print $data->{'error_msg'}, "\n\n";

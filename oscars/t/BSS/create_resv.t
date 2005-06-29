@@ -17,9 +17,9 @@ $params{'reservation_start_time'} =     $dt->epoch - 60;   # - 1 minute
 $params{'reservation_end_time'} =       $dt->epoch + 120;    # + 5 minutes
 
 $params{'reservation_created_time'} =   '';   # filled in scheduler
-$params{'reservation_bandwidth'} =      '10m';
+$params{'reservation_bandwidth'} =      '10000000';
 $params{'reservation_class'} =          '4';
-$params{'reservation_burst_limit'} =    '1m';
+$params{'reservation_burst_limit'} =    '1000000';
 $params{'reservation_status'} =         'pending';
 $params{'reservation_protocol'} =       'udp';
 
