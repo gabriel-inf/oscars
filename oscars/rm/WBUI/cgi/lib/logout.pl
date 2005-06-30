@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: June 29, 2005
+# Last modified: June 30, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -28,7 +28,7 @@ print '<script language="javascript" type="text/javascript" src="' .
 print '<script language="javascript" type="text/javascript" src="' .
       $oscars_home . 'timeprint.js"></script>', "\n";
 print '<script language="javascript">update_status_frame(1, ' .
-      '"Please log in");</script>', "\n\n";
+      '"Please sign in");</script>', "\n\n";
 print '<script language="javascript">update_main_frame("' .
       $oscars_home . 'login_frame.html");</script>', "\n\n";
 
