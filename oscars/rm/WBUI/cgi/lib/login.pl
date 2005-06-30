@@ -8,7 +8,6 @@
 use Data::Dumper;
 
 use AAAS::Client::SOAPClient;
-use BSS::Client::SOAPClient;
 
 require 'general.pl';
 
@@ -41,7 +40,6 @@ sub verify_user {
     my( $cgi ) = @_;
 
     my( %soap_params, %error_only, $error_status, $results );
-    my( $BSS_results );
 
     # validate user input (just check for empty fields)
     if ( !$cgi->param('user_dn') )
@@ -58,9 +56,6 @@ sub verify_user {
     $soap_params{user_dn} = $cgi->param('user_dn');
     $soap_params{user_password} = $cgi->param('user_password');
     ($error_status, $results) = soap_verify_login(\%soap_params);
-    if (!$results->{error_msg}) {
-        ($error_status, $BSS_results) = BSS::Client::SOAPClient::soap_login_user(\%soap_params);
-    }
     return( $error_status, $results );
 }
 ######
