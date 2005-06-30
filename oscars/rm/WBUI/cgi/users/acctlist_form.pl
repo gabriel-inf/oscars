@@ -92,6 +92,7 @@ sub print_userlist
     print "    <td >Distinguished Name</td>\n";
     print "    <td >Level</td>\n";
     print "    <td >Organization</td>\n";
+    print "    <td >Status</td>\n";
     print "  </tr>\n";
     print "  </thead>\n";
 
@@ -126,5 +127,6 @@ sub print_row
     print "    <td>" . $row->{user_dn} . "</td>\n";
     print "    <td>" . $row->{user_level} . "</td>\n";
     print "    <td>" . $row->{institution_id} . "</td>\n";
+    print "    <td>" . $row->{user_status} . "</td>\n";
 }
 ######
