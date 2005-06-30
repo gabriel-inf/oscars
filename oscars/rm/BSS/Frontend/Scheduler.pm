@@ -1,5 +1,5 @@
 # Scheduler.pm:  Database handling for BSS/Scheduler/SchedulerThread.pm
-# Last modified: June 29, 2005
+# Last modified: June 30, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -45,9 +45,10 @@ sub find_pending_reservations  {
     my ( $sth, $data, $query, $error_msg );
     my $results = {};
 
+    # FIX:  make SCHEDULER a bona fide db user
     # user dn in this case is the scheduler thread pseudo user
-    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    if ($results->{error_msg}) { return( 1, $results); }
+    #$results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
+    #if ($results->{error_msg}) { return( 1, $results); }
 
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
@@ -71,8 +72,9 @@ sub find_expired_reservations {
     my ( $sth, $data, $query, $error_msg);
     my $results = {};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    if ($results->{error_msg}) { return( 1, $results); }
+    # FIX:  make SCHEDULER a bona fide db user
+    #$results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
+    #if ($results->{error_msg}) { return( 1, $results); }
 
     #print "expired: Looking at time == " . $stime . "\n";
 
