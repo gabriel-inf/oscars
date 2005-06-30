@@ -26,9 +26,12 @@ sub new {
 }
 
 sub initialize {
-    my ( $_self ) = @_;
+    my ( $self ) = @_;
     # hash holds database handle for each connected user
-    $_self->{handles} = {};
+    $self->{handles} = {};
+    # handle for unprivileged database access (necessary before first user
+    # login)
+    $self->login_user('unpriv');
 }
 ######
 
@@ -71,6 +74,9 @@ sub do_query {
 
     my( $sth, $error_msg );
 
+    if (!$user_dn) {
+        $user_dn = 'unpriv';
+    }
     $sth = $self->{handles}->{$user_dn}->prepare( $query );
     if ($DBI::err) {
         $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
@@ -85,38 +91,6 @@ sub do_query {
         return(undef, $error_msg);
     }
     return( $sth, '');
-}
-######
-
-###############################################################################
-sub logout {
-    my( $self, $user_dn ) = @_;
-
-    my $results = {};
-    if (!$self->{handles}->{$user_dn}) {
-        $results->{status_msg} = 'Already logged out.';
-        return ( 0, $results );
-    }
-    if (!$self->{handles}->{$user_dn}->disconnect()) {
-        $results->{error_msg} = "Could not disconnect from database";
-        return ( 1, $results );
-    }
-    $self->{handles}->{$user_dn} = undef;
-    $results->{status_msg} = 'Logged out';
-    return ( 0, $results );
-}
-######
-
-###############################################################################
-# enforce_connection:  Checks to see if user has logged in.
-#
-sub enforce_connection {
-    my ( $self, $user_dn ) = @_;
-
-    if (!$self->{handles}->{$user_dn}) {
-        return( "You must log in first before accessing the database");
-    }
-    return "";
 }
 ######
 
