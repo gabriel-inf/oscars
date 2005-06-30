@@ -42,19 +42,11 @@ sub initialize {
 ######
 
 ##############################################################################
-sub login_user {
-    my ( $self, $inref ) = @_;
-		
-    my ($error_status, $results) = $self->{frontend}->login_user( $inref );
-    return ($error_status, $results);
-}
-######
-
-##############################################################################
 sub logout {
     my ( $self, $inref ) = @_;
 		
-    my ($error_status, $results) = $self->{frontend}->logout( $inref );
+    my ($error_status, $results) = $self->{frontend}->{dbconn}->logout(
+                                                         $inref->{user_dn} );
     return ($error_status, $results);
 }
 ######
@@ -207,19 +199,23 @@ sub do_remote_trace {
 
     # start off with an non-existent router
     $interface_id = 0;
-
     # loop forward till the next router isn't one of ours or doesn't have
     # an oscars loopback address
-    while(defined($hops[0]))  {
-        $self->{output_buf} .= "hop:  $hops[0]\n";
-        print STDERR "hop:  $hops[0]\n";
+    my $hop;
+    for $hop (@hops)  {
+        $self->{output_buf} .= "hop:  $hop\n";
+        print STDERR "hop:  $hop\n";
         # id is 0 if not an edge router (not in interfaces table)
-        ($interface_id, $error) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $hops[0]);
-        if ($error)  { return (0, "", \@path, $error); }
+        ($interface_id, $error) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $hop);
+        if ($error)  {
+            return (0, "", \@path, $error);
+        }
         # check to make sure router has a loopback
         if ($interface_id != 0) {
             ($loopback_ip, $error) = $self->{frontend}->{dbconn}->xface_id_to_loopback($user_dn, $interface_id, 'ip');
-            if ($error)  { return (0, "", \@path, $error); }
+            if ($error)  {
+                return (0, "", \@path, $error);
+            }
         }
         if ($interface_id == 0) {
             $self->{output_buf} .= "edge router is $prev_loopback\n";
@@ -233,7 +229,12 @@ sub do_remote_trace {
             $prev_id = $interface_id;
             $prev_loopback = $loopback_ip;
         }
-        shift(@hops);
+    }
+    # Need this in case the last hop is in the database
+    if ($prev_loopback) {
+        $self->{output_buf} .= "edge router is $prev_loopback\n";
+        print STDERR "edge router is $prev_loopback\n";
+        return ($prev_id, $prev_loopback, \@path, "");
     }
 
     # if we didn't find it
