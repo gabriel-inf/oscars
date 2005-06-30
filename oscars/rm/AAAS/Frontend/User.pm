@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with admin and user forms.
-# Last modified: June 8, 2005
+# Last modified: June 30, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -78,15 +78,12 @@ sub verify_login {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->login_user($user_dn);
-    if ($results->{error_msg}) { return( 1, $results); }
-
-    $results->{error_msg} = $self->{auth}->get_user_levels($user_dn);
+    $results->{error_msg} = $self->{auth}->get_user_levels('');
     if ($results->{error_msg}) { return( 1, $results); }
 
     # Get the password and privilege level from the database.
     $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query('', $query,
                                                               $user_dn);
     if ( $results->{error_msg} ) { return( 1, $results ); }
     # Make sure user exists.
@@ -103,8 +100,15 @@ sub verify_login {
         return (1, $results);
     }
     $sth->finish();
+
+    # make sure has at least minimal privileges
     $results->{error_msg} = $self->{auth}->verify($ref->{user_level}, 'user');
     if ($results->{error_msg}) { return( 1, $results ); }
+
+    # if everything is OK, create a db handle for the user, and set their
+    # status to 'Logged in'
+    $results->{error_msg} = $self->{dbconn}->login_user($user_dn);
+    if ($results->{error_msg}) { return( 1, $results); }
 
     $results->{user_level} = $self->{auth}->get_str_level($ref->{user_level});
     $results->{status_msg} = $user_dn . ' successfully logged in';
@@ -374,6 +378,30 @@ sub get_userlist
     $results->{rows} = $rref;
     $results->{status_msg} = 'Successfully read user list';
     return( 0, $results );
+}
+######
+
+####################################
+# Methods called from the BSS.
+####################################
+
+###############################################################################
+# check_login_status
+# In:  reference to hash of parameters
+# Out: status code, status message
+#
+sub check_login_status {
+    my( $self, $inref ) = @_;
+
+    my $results = {};
+    $results->{error_msg} = $self->{dbconn}->enforce_connection($inref->{user_dn});
+    if ($results->{error_msg}) {
+        return( 1, $results );
+    }
+    else {
+        $results->{status_msg} = "User is logged in";
+        return( 0, $results );
+    }
 }
 ######
 
