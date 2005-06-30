@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: June 29, 2005
+# Last modified: June 30, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -74,24 +74,6 @@ sub initialize {
 }
 ######
 
-
-###############################################################################
-# login_user
-# In:  reference to hash of parameters
-# Out: status code, status message
-#
-sub login_user {
-    my( $self, $inref ) = @_;
-
-    my $results = {};
-
-    $results->{error_msg} = $self->{dbconn}->login_user($inref->{user_dn});
-    if ($results->{error_msg}) { return( 1, $results); }
-
-    $results->{status_msg} = $inref->{user_dn} . ' successfully logged in';
-    return( 0, $results );
-}
-######
 
 ###############################################################################
 sub logout {
