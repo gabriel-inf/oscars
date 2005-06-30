@@ -81,17 +81,17 @@ sub scheduler {
     while (1) {
 
         # find reservations that need to be actived
-        if ($configs->{debug}) { print STDERR "find new\n"; }
+        if ($configs->{debug}) { print STDERR "before find new_reservations\n"; }
         $error_msg = find_new_reservations($pseudo_user, $front_end);
         if ($error_msg) {
-            if ($configs->{debug}) { print STDERR '** ', $error_msg, "\n"; }
+            if ($configs->{debug}) { print STDERR 'after find_new_reservations, error: ', $error_msg, "\n"; }
         }
 
         # find reservations that need to be deactivated 
-        if ($configs->{debug}) { print STDERR "find_exp\n"; }
+        if ($configs->{debug}) { print STDERR "before find_expired_reservations\n"; }
         $error_msg = find_expired_reservations($pseudo_user, $front_end);
         if ($error_msg) {
-            if ($configs->{debug}) { print STDERR '** ', $error_msg, "\n"; }
+            if ($configs->{debug}) { print STDERR 'after find_expired_reservations, error: ', $error_msg, "\n"; }
         }
 
         # check every do_poll_time seconds
