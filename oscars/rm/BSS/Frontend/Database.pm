@@ -1,6 +1,6 @@
 # Database.pm:  BSS specific database settings and routines
 #               inherits from Common::Database
-# Last modified: June 29, 2005
+# Last modified: June 30, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # Jason Lee (jrlee@lbl.gov)
@@ -13,6 +13,7 @@ use DBI;
 use Data::Dumper;
 
 use Common::Database;
+use AAAS::Client::SOAPClient;
 
 our @ISA = qw(Common::Database);
 
@@ -34,6 +35,54 @@ sub new {
 ######
 
 ###############################################################################
+sub logout {
+    my( $self, $user_dn ) = @_;
+
+    my $results = {};
+    if (!$self->{handles}->{$user_dn}) {
+        $results->{status_msg} = 'Already logged out.';
+        return ( 0, $results );
+    }
+    if (!$self->{handles}->{$user_dn}->disconnect()) {
+        $results->{error_msg} = "Could not disconnect from database";
+        return ( 1, $results );
+    }
+    if ($user_dn ne 'unpriv') {
+        $self->{handles}->{$user_dn} = undef;
+    }
+    $results->{status_msg} = 'Logged out';
+    return ( 0, $results );
+}
+######
+
+###############################################################################
+# enforce_connection:  Checks to see if user has logged in by making a SOAP
+#     call to the AAAS.
+#
+sub enforce_connection {
+    my( $self, $user_dn ) = @_;
+
+    my( %soap_params );
+
+    $soap_params{user_dn} = $user_dn;
+    my( $error_status, $results ) =
+                AAAS::Client::SOAPClient::soap_check_login(\%soap_params);
+    if ($results->{error_msg}) {
+        print STDERR "soap_check_login error:  $results->{error_msg}\n";
+        return $results->{error_msg};
+    }
+
+    # for now, handle set up per connection
+    $results->{error_msg} = $self->login_user($user_dn);
+    if ($results->{error_msg}) {
+        print STDERR "login_user error:  $results->{error_msg}\n";
+        return($results->{error_msg});
+    }
+    return "";
+}
+######
+
+###############################################################################
 # update_reservation: Updates reservation status.  Used to mark as active,
 # finished, or cancelled.
 #
@@ -43,9 +92,6 @@ sub update_reservation {
     my ( $rref, $sth, $query );
     my $results = {};
     my $user_dn = $inref->{user_dn};
-
-    $results->{error_msg} = $self->enforce_connection($login_dn);
-    if ($results->{error_msg}) { return( 1, $results); }
 
     $query = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
@@ -90,7 +136,6 @@ sub ip_to_xface_id {
 
     $error_msg = $self->enforce_connection($user_dn);
     if ( $error_msg ) {
-        $sth->finish();
         return( 0, $error_msg );
     }
     $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
