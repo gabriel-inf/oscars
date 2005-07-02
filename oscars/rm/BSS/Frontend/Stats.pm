@@ -1,5 +1,5 @@
 # Stats.pm:  Reservation statistics formatting
-# Last modified: June 27, 2005
+# Last modified: July 1, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 package BSS::Frontend::Stats;
@@ -147,10 +147,11 @@ sub get_lsp_stats {
 # get_time_str:  print formatted time string
 #
 sub get_time_str {
-    my( $self, $epoch_seconds ) = @_;
+    my( $self, $epoch_seconds, $gentag ) = @_;
 
     my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year );
-    my( $is_DST );
+    my( $is_DST, $time_str );
+    print '** ', $epoch_seconds, $gentag, "\n";
     ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year,
               $is_DST) = localtime($epoch_seconds); 
     $year += 1900;
@@ -167,8 +168,12 @@ sub get_time_str {
     if ($minute < 10) {
         $minute = "0" . $minute;
     }
-    my $time_str = "$month-$day-$year at $hour:$minute";
-
+    if ($gentag ne 'tag') {
+        $time_str = "$month-$day-$year at $hour:$minute";
+    }
+    else {
+        $time_str = $year . $month . $day;
+    }
     return( $time_str );
 }
 ######
