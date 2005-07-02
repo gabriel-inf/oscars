@@ -55,6 +55,7 @@ sub print_reservation_form {
           ' onsubmit="return check_form(this);">' . "\n";
 
     print '<input type="hidden" name="reservation_start_time">', "\n";
+    print '<input type="hidden" name="reservation_end_time">', "\n";
 
     print '<p>Required inputs are bordered in green. ' .
           'Ranges or types of valid entries are given in parentheses below the ' .
