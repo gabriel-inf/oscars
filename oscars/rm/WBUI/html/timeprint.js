@@ -20,21 +20,21 @@ var monthMapping = ['January', 'February', 'March', 'April', 'May', 'June', 'Jul
 // ** print current date (format: July 1, 2005) **
 function print_current_date(fr, epochSeconds)
 {
-    var currentDate;
+    var localDate;
 
-    currentDate = new Date();
+    localDate = new Date();
     if (epochSeconds) {
-        currentDate.setTime(epochSeconds * 1000);
+        localDate.setTime(epochSeconds * 1000);
     }
     var currentMonth;
 
     if (!fr) { fr = document; }
-    currentMonth = currentDate.getMonth();
+    currentMonth = localDate.getMonth();
 
     var monthName = monthMapping[currentMonth];
 
-    currentMinutes = currentDate.getMinutes();
-    fr.write( monthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() + " " + currentDate.getHours() + ":");
+    currentMinutes = localDate.getMinutes();
+    fr.write( monthName + " " + localDate.getDate() + ", " + localDate.getFullYear() + " " + localDate.getHours() + ":");
 
     if (currentMinutes < 10) { fr.write("0") } ;
     fr.write(currentMinutes);
@@ -95,21 +95,21 @@ function print_time_settings_example()
 // Reference: http://javascript.internet.com/forms/val-date.html
 function check_date( form )
 {
-    currentDate = new Date();
+    localDate = new Date();
     if ( isblank(form.start_year.value) ) {
-        form.start_year.value = currentDate.getFullYear();
+        form.start_year.value = localDate.getFullYear();
     }
     if ( isblank(form.start_month.value) ) {
-        form.start_month.value = currentDate.getMonth() + 1;
+        form.start_month.value = localDate.getMonth() + 1;
     }
     if ( isblank(form.start_date.value) ) {
-        form.start_date.value = currentDate.getDate();
+        form.start_date.value = localDate.getDate();
     }
     if ( isblank(form.start_hour.value) ) {
-        form.start_hour.value = currentDate.getHours();
+        form.start_hour.value = localDate.getHours();
     }
     if ( isblank(form.start_minute.value) ) {
-        form.start_minute.value = currentDate.getMinutes();
+        form.start_minute.value = localDate.getMinutes();
     }
     if ( isblank(form.duration_hour.value) ) {
         form.duration_hour.value = 0.05;
@@ -202,7 +202,11 @@ function check_date( form )
     reserve_date = new Date(form.start_year.value, form.start_month.value - 1,
                             form.start_date.value, form.start_hour.value,
                             form.start_minute.value, 0, 0);
-    form.reservation_start_time.value = reserve_date.getTime() / 1000;
+    // convert result of getTime to seconds, and then subtract the time zone
+    // offset in seconds
+    // form.reservation_start_time.value = (reserve_date.getTime() / 1000) +
+                       // (localDate.getTimezoneOffset() * 60);
+    form.reservation_start_time.value = (reserve_date.getTime() / 1000);
 
     if ( (validate_integer(form.reservation_start_time.value) == false) ||
              (form.reservation_start_time.value == 0) ||
