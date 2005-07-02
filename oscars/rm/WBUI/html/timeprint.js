@@ -80,32 +80,23 @@ function get_timezone_offset()
 }
 
 // Prints year, date, time, time zone, and duration for reservation example.
-// NOTE:  For production use, start time should be in the future.
-// Date calculation reference:
-//     http://developer.netscape.com/viewsource/goodman_dateobject.html
+// NOTE:  For production use, start time should probably be in the future.
 function print_time_settings_example()
 {
-    /* var MINUTE = 60 * 1000; // in milliseconds
-       var HOUR = MINUTE * 60;
-       var DAY = HOUR * 24;
-       var WEEK = DAY * 7;     */
-
     var nowDate = new Date();
+    var dfields = new Array();
 
-    var printYear = nowDate.getFullYear();
-    var printMonth = nowDate.getMonth() + 1;
-    var printDate = nowDate.getDate();
-    var printHour = nowDate.getHours();
-    var printMinute = nowDate.getMinutes();
-
-    document.write( '<td>' + printYear + '</td>' );
-    document.write( '<td>' + printMonth + '</td>' );
-    document.write( '<td>' + printDate + '</td>' );
-    document.write( '<td>' + printHour + '</td>' );
-    document.write( '<td>' + printMinute + '</td>' );
-    document.write( '<td>UTC' + get_timezone_offset() + '</td>');
-    document.write( '<td>0.05</td>' );
-    document.write( '<td> </td>' );
+    dfields[0] = nowDate.getFullYear();
+    dfields[1] = nowDate.getMonth() + 1;
+    dfields[2] = nowDate.getDate();
+    dfields[3] = nowDate.getHours();
+    dfields[4] = nowDate.getMinutes();
+    dfields[5] = 'UTC' + get_timezone_offset();
+    dfields[6] = 0.05;
+    dfields[7] = ' ';
+    for (var i=0 ; i < 8; i++) {
+        document.write(' <td>' + dfields[i] + '</td>' );
+    }
 }
 
 // Reference: http://javascript.internet.com/forms/val-date.html
@@ -141,9 +132,6 @@ function check_date( form )
         form.start_year.focus();
         return false;
     }
-
-    var nowTime = currentDate.getTime();
-    var boundaryTime = 60 * 1000 * 60 * 2 ; // 2 hours
 
     if ( validate_integer(form.start_month.value) == false ) {
         alert( "The reservation start month is not a number. Please check again." );
@@ -218,10 +206,6 @@ function check_date( form )
         form.duration_hour.focus();
         return false;
     }
-    if (form.persistent && form.persistent.checked) {
-        form.duration_hour.value = 'INF';
-    }
-
     reserve_date = new Date(form.start_year.value, form.start_month.value - 1,
                             form.start_date.value, form.start_hour.value,
                             form.start_minute.value, 0, 0);
@@ -230,9 +214,19 @@ function check_date( form )
     if ( (validate_integer(form.reservation_start_time.value) == false) ||
              (form.reservation_start_time.value == 0) ||
              isblank(form.reservation_start_time.value) ) {
-        alert( "Problem with start time." );
+        alert( "Problem with reservation start time." );
         form.start_hour.focus();
         return false;
+    }
+
+    // set Duration field to blank if persistent
+    if (form.persistent && form.persistent.checked) {
+        form.duration_hour.value = '';
+        form.reservation_end_time.value = Math.pow(2, 31) - 1;
+    }
+    else {
+        form.reservation_end_time.value = form.reservation_start_time +
+                                          form.duration_hour * 3600;
     }
     return true;
 }
