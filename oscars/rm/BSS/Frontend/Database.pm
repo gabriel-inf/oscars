@@ -1,6 +1,6 @@
 # Database.pm:  BSS specific database settings and routines
 #               inherits from Common::Database
-# Last modified: June 30, 2005
+# Last modified: July 1, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # Jason Lee (jrlee@lbl.gov)
@@ -193,7 +193,8 @@ sub xface_id_to_loopback {
 
 ##############################################################################
 # hostaddrs_ip_to_id:  get the primary key in the hostaddrs table, given a
-#     host ip address.  A row is created if that ip address is not present.
+#     host name or IP address (column names to be changed).
+#     A row is created if that name or address is not present.
 # In:  hostaddr_ip
 # Out: hostaddr_id
 #
@@ -231,8 +232,8 @@ sub hostaddrs_ip_to_id {
 ######
 
 ##############################################################################
-# hostaddrs_id_to_ip:  get the ip address from the row in the hostaddrs table
-#                      identified by the id.
+# hostaddrs_id_to_ip:  get the host name or IP address from the row in the
+#                      hostaddrs table (names to be changed) identified by id.
 # IN:  hostaddr_id
 # OUT: hostaddr_ip
 #
