@@ -151,7 +151,6 @@ sub get_time_str {
 
     my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year );
     my( $is_DST, $time_str );
-    print '** ', $epoch_seconds, $gentag, "\n";
     ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year,
               $is_DST) = localtime($epoch_seconds); 
     $year += 1900;
