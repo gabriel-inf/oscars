@@ -270,7 +270,7 @@ sub map_fields {
         $egress_loopback_ip = $data->{lsp_to};
     }
      print "lsp_from: $ingress_loopback_ip, lsp_to:  $egress_loopback_ip\n";
-     # get host IP addresses, given id 
+     # get host name or IP address, given id 
     ($src_address, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{src_hostaddr_id});
     ($dst_address, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{dst_hostaddr_id});
     %results = (
