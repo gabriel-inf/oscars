@@ -1,6 +1,6 @@
 /*
 Javascript functions for printing dates and times in various formats
-Last modified: June 21, 2005
+Last modified: July 1, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -17,8 +17,8 @@ check_LeapYear( intYear )
 var monthMapping = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 
-// ** print current date (format: July 7, 2004) **
-function print_current_date(fr, epochSeconds, useLocal)
+// ** print current date (format: July 1, 2005) **
+function print_current_date(fr, epochSeconds)
 {
     var currentDate;
 
@@ -29,26 +29,15 @@ function print_current_date(fr, epochSeconds, useLocal)
     var currentMonth;
 
     if (!fr) { fr = document; }
-    if (useLocal == 'local') {
-        currentMonth = currentDate.getMonth();
-    }
-    else {
-        currentMonth = currentDate.getUTCMonth();
-    }
+    currentMonth = currentDate.getMonth();
 
     var monthName = monthMapping[currentMonth];
 
-    if (useLocal != 'local') {
-        currentMinutes = currentDate.getUTCMinutes();
-        fr.write( monthName + " " + currentDate.getUTCDate() + ", " + currentDate.getUTCFullYear() + " " + currentDate.getUTCHours() + ":");
-    }
-    else {
-        currentMinutes = currentDate.getMinutes();
-        fr.write( monthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() + " " + currentDate.getHours() + ":");
-    }
+    currentMinutes = currentDate.getMinutes();
+    fr.write( monthName + " " + currentDate.getDate() + ", " + currentDate.getFullYear() + " " + currentDate.getHours() + ":");
+
     if (currentMinutes < 10) { fr.write("0") } ;
     fr.write(currentMinutes);
-    if (useLocal != 'local') { fr.write(" (UTC)") } ;
 }
 
 // print local timezone offset
@@ -57,39 +46,7 @@ function print_current_date(fr, epochSeconds, useLocal)
 // getTimezoneOffset() number will be positive if you are behind UTC (e.g., Pacific Daylight Time), and negative if you are ahead of UTC (e.g., Japan).
 function print_timezone_offset()
 {
-//    document.write( '<input type="input" name="local_offset" value="' + get_timezone_offset() + '" size="3" style="text-align: left">' );
-
     document.write( '<option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' );
-}
-
-function get_timezone_offset()
-{
-    var localDate = new Date();
-    var Offset = -( localDate.getTimezoneOffset() / 60 );
-    if ( Offset > 0 ) { Offset = "+" + Offset; }
-    else { Offset = "" + Offset; }	// to string-ize
-
-    // now start formatting the offset in the [+/-]hhmm format (ex. +0930, -0500)
-    var formattedOffset_sign = Offset.substring( 0, 1 );
-    var tempString = Offset.substring( 1, Offset.length );
-    var formattedOffset_array = tempString.split( ".", 2 ); // split the "hour.minute" value
-
-    if ( formattedOffset_array[1] > 0 ) {
-        formattedOffset_array[1] = Number( "0." + formattedOffset_array[1] ) * 60; // change .5 to 30 minutes
-    }
-    else {
-        formattedOffset_array[1] = 0;
-    }
-    formattedOffset_array[1] = "" + formattedOffset_array[1];	// to string-ize
-    if ( formattedOffset_array[0].length < 2 ) {
-        formattedOffset_array[0] = "0" + formattedOffset_array[0];
-    }
-    if ( formattedOffset_array[1].length < 2 ) {
-        formattedOffset_array[1] = "0" + formattedOffset_array[1];
-    }
-    var formattedOffset_string = formattedOffset_sign + formattedOffset_array[0] + formattedOffset_array[1];
-
-    return formattedOffset_string;
 }
 
 function get_timezone_offset()

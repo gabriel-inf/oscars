@@ -2,11 +2,10 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: June 29, 2005
+# Last modified: July 1, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-use Socket;
 use CGI;
 use Data::Dumper;
 
@@ -111,16 +110,16 @@ sub print_reservation_detail {
 
     print '  <tr><td>Start time</td><td>', "\n";
     print '    <script language="javascript">', "\n";
-    print '    print_current_date("", ' . $row->{reservation_start_time};
-    print '                       , "local");', "\n";
+    print '    print_current_date("", "' .
+                                 $row->{reservation_start_time} . '");' . "\n";
     print '    </script>', "\n";
     print '  </td></tr>', "\n";
 
     print '  <tr><td>End time</td><td>';
     if ($row->{reservation_end_time} < (2 ** 31 - 1)) {
         print '    <script language="javascript">', "\n";
-        print '    print_current_date("", ' . $row->{reservation_end_time};
-        print '                       , "local");', "\n";
+        print '    print_current_date("", "' .
+                                  $row->{reservation_end_time} . '");' . "\n";
         print '    </script>', "\n";
     }
     else {
@@ -130,8 +129,8 @@ sub print_reservation_detail {
 
     print '  <tr><td>Created time</td><td>';
     print '    <script language="javascript">', "\n";
-    print '    print_current_date("", ' . $row->{reservation_created_time};
-    print '                       , "local");', "\n";
+    print '    print_current_date("", "' .  $row->{reservation_created_time} .
+                                  '");' . "\n";
     print '    </script>', "\n";
     print '  </td></tr>', "\n";
 
@@ -152,12 +151,12 @@ sub print_reservation_detail {
 
     print '  <tr>', "\n";
     print '  <td>Source</td>', "\n";
-    print '  <td>' . get_oscars_host($row->{src_address}) . '</td>', "\n";
+    print '  <td>' . $row->{src_address} . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
     print '  <td>Destination</td>', "\n";
-    print '  <td>' . get_oscars_host($row->{dst_address}) . '</td>', "\n";
+    print '  <td>' . $row->{dst_address} . '</td>', "\n";
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";

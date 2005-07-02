@@ -1,12 +1,11 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: June 29, 2005
+# Last modified: July 1, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;
-use Socket;
 
 use AAAS::Client::SOAPClient;
 use Common::Auth;
@@ -123,23 +122,6 @@ sub end_session {
 
     $auth = Common::Auth->new();
     $auth->logout($cgi);
-}
-######
-
-##############################################################################
-# get_oscars_host:  finds host name from IP address if possible
-#
-sub get_oscars_host {
-    my( $input ) = @_;
-
-    my $ipaddr = inet_aton($input);
-    my $host = gethostbyaddr($ipaddr, AF_INET);
-    if ($host) {
-        return($host); 
-    }
-    else {
-        return($input); 
-    }
 }
 ######
 

@@ -1,6 +1,6 @@
 /*
 Javascript functions for main pages
-Last modified: June 29, 2005
+Last modified: July 1, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -106,7 +106,7 @@ function update_status_frame(status, msg)
     f.write('<body>');
     f.write('<div>');
     f.write('<p class="topmessage">');
-    print_current_date(f, '', 'local');
+    print_current_date(f, '');
     setup_flash(status);
     f.write(' | ', msg, '</p>');
     f.write('</div>');

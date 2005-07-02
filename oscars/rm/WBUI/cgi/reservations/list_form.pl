@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: June 29, 2005
+# Last modified: July 1, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -148,16 +148,16 @@ sub print_row {
   
     print '    <td>', "\n";
     print '    <script language="javascript">';
-    print '    print_current_date("", ' . $row->{reservation_start_time};
-    print '                       , "local");';
+    print '    print_current_date("", "' . $row->{reservation_start_time} .
+                                  '");';
     print '    </script>', "\n";
     print '    </td>', "\n";
 
     print '    <td>';
     if ($row->{reservation_end_time} < (2 ** 31 - 1)) {
         print '    <script language="javascript">';
-        print '    print_current_date("", ' . $row->{reservation_end_time};
-        print '                      , "local");';
+        print '    print_current_date("", "' . $row->{reservation_end_time} .
+                                     '");';
         print '    </script>', "\n";
     }
     else {
@@ -167,9 +167,7 @@ sub print_row {
 
     print "    <td>" . $row->{reservation_status} . "</td>\n";
 
-    $ip = get_oscars_host($row->{src_address});
-    print "    <td>" . $ip . "</td>\n";
-    $ip = get_oscars_host($row->{dst_address});
-    print "    <td>" . $ip . "</td>\n";
+    print "    <td>" . $row->{src_address} . "</td>\n";
+    print "    <td>" . $row->{dst_address} . "</td>\n";
 }
 ######
