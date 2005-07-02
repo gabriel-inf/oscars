@@ -41,42 +41,35 @@ function print_current_date(fr, epochSeconds)
 }
 
 // print local timezone offset
-// Reference: "What's The Time?" at http://www.htmlgoodies.com/dateandtime/whattime.html
-// Reference: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/script56/html/js56jsmthgettimezone.asp
-// getTimezoneOffset() number will be positive if you are behind UTC (e.g., Pacific Daylight Time), and negative if you are ahead of UTC (e.g., Japan).
 function print_timezone_offset()
 {
     document.write( '<option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' );
 }
 
+// format the time zone offset in [+/-]hhmm format (ex. +0930, -0500)
 function get_timezone_offset()
 {
     var localDate = new Date();
-    var Offset = -( localDate.getTimezoneOffset() / 60 );
-    if ( Offset > 0 ) { Offset = "+" + Offset; }
-    else { Offset = "" + Offset; }	// to string-ize
+    var offset = -(localDate.getTimezoneOffset());
+    var hours = offset / 60;
+    var half_indicator = (offset % 60) / 30;
+    var offset_str;
 
-    // now start formatting the offset in the [+/-]hhmm format (ex. +0930, -0500)
-    var formattedOffset_sign = Offset.substring( 0, 1 );
-    var tempString = Offset.substring( 1, Offset.length );
-    var formattedOffset_array = tempString.split( ".", 2 ); // split the "hour.minute" value
-
-    if ( formattedOffset_array[1] > 0 ) {
-        formattedOffset_array[1] = Number( "0." + formattedOffset_array[1] ) * 60; // change .5 to 30 minutes
+    if (offset >= 0) {
+        offset_str = '+';
+        if (hours < 10) { offset_str += '0'};
     }
     else {
-        formattedOffset_array[1] = 0;
+        offset_str = '-';
+        hours = -hours;
+        if (hours < 10) { offset_str += '0'};
     }
-    formattedOffset_array[1] = "" + formattedOffset_array[1];	// to string-ize
-    if ( formattedOffset_array[0].length < 2 ) {
-        formattedOffset_array[0] = "0" + formattedOffset_array[0];
-    }
-    if ( formattedOffset_array[1].length < 2 ) {
-        formattedOffset_array[1] = "0" + formattedOffset_array[1];
-    }
-    var formattedOffset_string = formattedOffset_sign + formattedOffset_array[0] + formattedOffset_array[1];
+    offset_str += hours;
 
-    return formattedOffset_string;
+    if (half_indicator) { offset_str += '30'; }
+    else { offset_str += '00'; }
+    
+    return offset_str;
 }
 
 // Prints year, date, time, time zone, and duration for reservation example.
@@ -225,8 +218,11 @@ function check_date( form )
         form.reservation_end_time.value = Math.pow(2, 31) - 1;
     }
     else {
-        form.reservation_end_time.value = form.reservation_start_time +
-                                          form.duration_hour * 3600;
+        // one way to coerce to integer types
+        // otherwise '+' operator treats operands as two strings
+        var duration_seconds = form.duration_hour.value * 3600;
+        var int_time = form.reservation_start_time.value / 1;
+        form.reservation_end_time.value = int_time + duration_seconds;
     }
     return true;
 }
