@@ -104,15 +104,6 @@ sub insert_reservation {
     # whether any time segment is over the bandwidth limit
     my $over_limit = 0;
 
-    # was in create.pl
-    if ($inref->{duration_hour} eq 'INF') {
-        #persistent
-        $inref->{reservation_end_time} = 2 ** 31 - 1;
-    }
-    else {
-        $inref->{reservation_end_time} = $inref->{reservation_start_time} +
-                                         $inref->{duration_hour} * 3600;
-    }
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
     $query = "SELECT reservation_bandwidth, reservation_start_time,
