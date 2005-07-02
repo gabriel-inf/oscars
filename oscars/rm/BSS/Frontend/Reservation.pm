@@ -104,6 +104,15 @@ sub insert_reservation {
     # whether any time segment is over the bandwidth limit
     my $over_limit = 0;
 
+    # was in create.pl
+    if ($inref->{duration_hour} eq 'INF') {
+        #persistent
+        $inref->{reservation_end_time} = 2 ** 31 - 1;
+    }
+    else {
+        $inref->{reservation_end_time} = $inref->{reservation_start_time} +
+                                         $inref->{duration_hour} * 3600;
+    }
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
     $query = "SELECT reservation_bandwidth, reservation_start_time,
@@ -140,12 +149,23 @@ sub insert_reservation {
             return( 1, $results );
         }
 
-        # get ipaddr id from host's and destination's ip addresses
+        # get ipaddrs table id from source's and destination's host name or ip address
         $inref->{src_hostaddr_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
                                                   $inref->{src_address}); 
         $inref->{dst_hostaddr_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
                                                   $inref->{dst_address}); 
         $inref->{reservation_created_time} = time();
+
+        # the following fields were previously set in the create.pl CGI script
+        $inref->{reservation_id} = 'NULL';
+        $inref->{reservation_class} = '4';
+        # convert to bps
+        $inref->{reservation_bandwidth} *= 1000000;
+        $inref->{reservation_burst_limit} = 1000000;
+        $inref->{reservation_status} = 'pending';
+        my $stats = BSS::Frontend::Stats->new();
+        $inref->{reservation_tag} = $user_dn . '.' .
+                         $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
 
         $query = "SHOW COLUMNS from reservations";
         ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $user_dn, $query );
