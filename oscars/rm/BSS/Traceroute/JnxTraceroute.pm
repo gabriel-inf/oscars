@@ -50,7 +50,7 @@ sub traceroute
     }
 
     # Perform the traceroute.
-    $_cmd = "ssh -x -a -i $_self->{config}->{jnx_key} -l $_self->{config}->{jnx_user} $_src traceroute $_dst";
+    $_cmd = "ssh -x -a -i $_self->{config}->{jnx_key} -l $_self->{config}->{jnx_user} $_src traceroute $_dst wait 1";
     print STDERR "$_cmd\n";
     if (not(open(_TRACEROUTE_, "$_cmd 2>/dev/null |")))  {
         return "ERROR: Unable to ssh into router and perform traceroute\n";
@@ -67,7 +67,7 @@ sub traceroute
 
         # Get the hop IP address from output, e.g.
         #  1  esnet3-lbl3.es.net (198.129.76.26)  0.628 ms  0.569 ms  0.522 ms
-        $_hopInfo =~ m/\((\d+\.\d+\.\d+\.\d+)\)/;
+        next if ($_hopInfo !~ m/\((\d+\.\d+\.\d+\.\d+)\)/);
         $_self->{hops}[$_hopCount] = $1;
         $_hopCount++;
     }
