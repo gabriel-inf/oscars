@@ -45,9 +45,7 @@ sub initialize {
 sub logout {
     my ( $self, $inref ) = @_;
 		
-    my ($error_status, $results) = $self->{frontend}->{dbconn}->logout(
-                                                         $inref->{user_dn} );
-    return ($error_status, $results);
+    return $self->{frontend}->{dbconn}->logout( $inref->{user_dn} );
 }
 ######
 
@@ -73,9 +71,9 @@ sub create_reservation {
     $self->{output_buf} = "*********************\n";
     ($inref->{ingress_interface_id}, $inref->{egress_interface_id}, $inref->{reservation_path}, $results->{error_msg}) = $self->find_interface_ids($inref);
 
-    if ($results->{error_msg}) { return ( 1, $results ); }
+    if ($results->{error_msg}) { return ( $results ); }
 
-    ( $error_status, $results ) = $self->{frontend}->insert_reservation( $inref );
+    $results  = $self->{frontend}->insert_reservation( $inref );
     if (!$results->{error_msg}) {
         $results->{reservation_tag} =~ s/@/../;
     }
@@ -89,7 +87,7 @@ sub create_reservation {
         print LOGFILE $results->{error_msg}, "\n";
     }
     close(LOGFILE);
-    return ( $error_status, $results );
+    return ( $results );
 }
 ######
 
@@ -102,8 +100,7 @@ sub create_reservation {
 sub delete_reservation {
     my ( $self, $inref ) = @_;
 		
-    my ($error_status, $results) = $self->{frontend}->delete_reservation( $inref );
-    return ($error_status, $results);
+    return $self->{frontend}->delete_reservation( $inref );
 }
 ######
 
@@ -118,8 +115,7 @@ sub delete_reservation {
 sub get_reservations {
     my ( $self, $inref ) = @_; 
 
-    my ($error_status, $results) = $self->{frontend}->get_reservations( $inref );
-    return ($error_status, $results);
+    return $self->{frontend}->get_reservations( $inref );
 }
 ######
 
