@@ -48,21 +48,20 @@ sub logout {
 
     my $results = {};
     if (!$self->{handles}->{$user_dn}) {
-        $results->{status_msg} = 'Already logged out.';
-        return ( 0, $results );
+        $results->{error_msg} = 'Already logged out.';
+        return ( $results );
     }
     if ($user_dn ne 'unpriv') {
         $self->update_user_status($user_dn, 'Logged out');
     }
     if (!$self->{handles}->{$user_dn}->disconnect()) {
         $results->{error_msg} = "Could not disconnect from database";
-        return ( 1, $results );
+        return ( $results );
     }
     if ($user_dn ne 'unpriv') {
         $self->{handles}->{$user_dn} = undef;
     }
-    $results->{status_msg} = 'Logged out';
-    return ( 0, $results );
+    return ( $results );
 }
 ######
 
@@ -100,9 +99,15 @@ sub enforce_connection {
     if (!$ref->{user_status} || ($ref->{user_status} eq 'Logged out')) {
         return( "You must log in first before accessing the database");
     }
-    elsif (!$self->{handles}->{$user_dn}) {
-        $err_msg = $self->login_user($user_dn);
-        if ($err_msg) { return( 1, $err_msg) }
+    #elsif (!$self->{handles}->{$user_dn}) {
+        #$err_msg = $self->login_user($user_dn);
+        #if ($err_msg) { return( 1, $err_msg) }
+    #}
+    # for now, handle set up per connection
+    $err_msg = $self->login_user($user_dn);
+    if ($err_msg) {
+        print STDERR "login_user error:  $err_msg\n";
+        return($err_msg);
     }
     return "";
 }
