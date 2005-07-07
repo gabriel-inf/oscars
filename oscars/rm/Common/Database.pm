@@ -29,9 +29,6 @@ sub initialize {
     my ( $self ) = @_;
     # hash holds database handle for each connected user
     $self->{handles} = {};
-    # handle for unprivileged database access (necessary before first user
-    # login)
-    $self->login_user('unpriv');
 }
 ######
 
@@ -76,6 +73,9 @@ sub do_query {
 
     if (!$user_dn) {
         $user_dn = 'unpriv';
+        # Handle for unprivileged database access.
+        # Makes sure there is a fresh handle for that pseudo-user.
+        $self->login_user('unpriv');
     }
     $sth = $self->{handles}->{$user_dn}->prepare( $query );
     if ($DBI::err) {
