@@ -63,6 +63,20 @@ function check_form( form )
         form.src_address.focus();
         return false;
     }
+    // TODO:  needs more work
+    var sections = form.src_address.value.split('/');
+    if ((sections.length > 1) && (sections[1] < 24)) {
+        alert( "Only CIDR blocks >= 24 (class C) are accepted." );
+        form.src_address.focus();
+        return false;
+    }
+    var sections = form.dst_address.value.split('/');
+    if ((sections.length > 1) && (sections[1] < 24)) {
+        alert( "Only CIDR blocks >= 24 (class C) are accepted." );
+        form.dst_address.focus();
+        return false;
+    }
+
     // check non-required fields if a value has been entered
     if ( !isblank(form.reservation_src_port.value) ) {
         if ( validate_numeric(form.reservation_src_port.value) == false ) {
