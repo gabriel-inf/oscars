@@ -41,17 +41,17 @@ sub logout {
     my $results = {};
     if (!$self->{handles}->{$user_dn}) {
         $results->{status_msg} = 'Already logged out.';
-        return ( 0, $results );
+        return ( $results );
     }
     if (!$self->{handles}->{$user_dn}->disconnect()) {
         $results->{error_msg} = "Could not disconnect from database";
-        return ( 1, $results );
+        return ( $results );
     }
     if ($user_dn ne 'unpriv') {
         $self->{handles}->{$user_dn} = undef;
     }
     $results->{status_msg} = 'Logged out';
-    return ( 0, $results );
+    return ( $results );
 }
 ######
 
@@ -65,8 +65,8 @@ sub enforce_connection {
     my( %soap_params );
 
     $soap_params{user_dn} = $user_dn;
-    my( $error_status, $results ) =
-                AAAS::Client::SOAPClient::soap_check_login(\%soap_params);
+    $soap_params{method} = 'soap_check_login';
+    my $results = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
     if ($results->{error_msg}) {
         print STDERR "soap_check_login error:  $results->{error_msg}\n";
         return $results->{error_msg};
@@ -76,9 +76,9 @@ sub enforce_connection {
     $results->{error_msg} = $self->login_user($user_dn);
     if ($results->{error_msg}) {
         print STDERR "login_user error:  $results->{error_msg}\n";
-        return($results->{error_msg});
+        return $results->{error_msg};
     }
-    return "";
+    return $results->{error_msg};
 }
 ######
 
@@ -97,7 +97,7 @@ sub update_reservation {
                  WHERE reservation_id = ?};
     ($sth, $results->{error_msg}) = $self->do_query($login_dn, $query,
                                                     $inref->{reservation_id});
-    if ( $results->{error_msg} ) { return( 1, $results ); }
+    if ( $results->{error_msg} ) { return( $results ); }
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
@@ -116,10 +116,9 @@ sub update_reservation {
                  WHERE reservation_id = ?};
     ($sth, $results->{error_msg}) = $self->do_query($login_dn, $query, $status,
                                                     $inref->{reservation_id});
-    if ( $results->{error_msg} ) { return( 1, $results ); }
+    if ( $results->{error_msg} ) { return( $results ); }
     $sth->finish();
-    $results->{status_msg} = "Successfully updated reservation.";
-    return( 0, $results );
+    return( $results );
 }
 ######
 

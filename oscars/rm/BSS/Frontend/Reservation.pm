@@ -99,7 +99,7 @@ sub insert_reservation {
     my $user_dn = $inref->{user_dn};
 
     $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    if ($results->{error_msg}) { return( 1, $results); }
+    if ($results->{error_msg}) { return( $results); }
 
     # whether any time segment is over the bandwidth limit
     my $over_limit = 0;
@@ -119,7 +119,7 @@ sub insert_reservation {
     # handled query with the comparison start & end datetime strings
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $user_dn, $query,
             $inref->{reservation_start_time}, $inref->{reservation_end_time});
-    if ( $results->{error_msg} ) { return( 1, $results ); }
+    if ( $results->{error_msg} ) { return( $results ); }
     $arrayref = $sth->fetchall_arrayref({});
 
     # If no segment is over the limit,  record the reservation to the database.
@@ -127,7 +127,7 @@ sub insert_reservation {
     ($over_limit, $results->{error_msg}) = $self->{policy}->check_oversubscribe($arrayref, $inref);
     if ( $over_limit || $results->{error_msg} ) {
         $sth->finish();
-        return( 1, $results );
+        return( $results );
     }
     else {
         $sth->finish();
@@ -137,7 +137,7 @@ sub insert_reservation {
         {
             $results->{error_msg} = "Invalid router id(s): 0.  Unable to " .
                                     "do insert.";
-            return( 1, $results );
+            return( $results );
         }
 
         # get ipaddrs table id from source's and destination's host name or ip address
@@ -160,7 +160,7 @@ sub insert_reservation {
 
         $query = "SHOW COLUMNS from reservations";
         ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $user_dn, $query );
-        if ( $results->{error_msg} ) { return( 1, $results ); }
+        if ( $results->{error_msg} ) { return( $results ); }
         $arrayref = $sth->fetchall_arrayref({});
         my @insertions;
         for $_ ( @$arrayref ) {
@@ -177,7 +177,7 @@ sub insert_reservation {
                  " . join( ', ', ('?') x @insertions ) . " )";
         ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                                                  @insertions);
-        if ( $results->{error_msg} ) { return( 1, $results ); }
+        if ( $results->{error_msg} ) { return( $results ); }
 
         $results->{reservation_id} = $self->{dbconn}->{handles}->{$user_dn}->{mysql_insertid};
     }
@@ -188,7 +188,7 @@ sub insert_reservation {
               WHERE reservation_id = ?";
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
                                   $results->{reservation_tag}, $results->{reservation_id});
-    if ( $results->{error_msg} ) { return( 1, $results ); }
+    if ( $results->{error_msg} ) { return( $results ); }
 
     my $mailer = Common::Mail->new();
     my $stats = BSS::Frontend::Stats->new();
@@ -196,9 +196,7 @@ sub insert_reservation {
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "Reservation made by $user_dn", $mail_msg);
     
-    $results->{status_msg} = "Your reservation has been processed " .
-        "successfully. Your reservation ID number is $results->{reservation_id}.";
-    return( 0, $results );
+    return( $results );
 }
 ######
 
@@ -229,7 +227,7 @@ sub get_reservations {
     my $user_dn = $inref->{user_dn};
 
     $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    if ($results->{error_msg}) { return( 1, $results); }
+    if ($results->{error_msg}) { return( $results ); }
 
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
@@ -257,14 +255,14 @@ sub get_reservations {
     }
     $query .= " ORDER BY reservation_start_time";
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query);
-    if ( $results->{error_msg} ) { return( 1, $results ); }
+    if ( $results->{error_msg} ) { return( $results ); }
 
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
     $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
     ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query);
-    if ( $results->{error_msg} ) { return( 1, $results ); }
+    if ( $results->{error_msg} ) { return( $results ); }
 
     $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
@@ -289,14 +287,14 @@ sub get_reservations {
         ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
                                                $query,
                                                $r->{ingress_interface_id});
-        if ( $results->{error_msg} ) { return( 1, $results ); }
+        if ( $results->{error_msg} ) { return( $results ); }
         $hashref = $sth->fetchrow_hashref();
         $r->{ingress_router_name} = $hashref->{router_name}; 
         $r->{ingress_loopback} = $hashref->{router_loopback};
         ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
                                                 $query,
                                                 $r->{egress_interface_id});
-        if ( $results->{error_msg} ) { return( 1, $results ); }
+        if ( $results->{error_msg} ) { return( $results ); }
         $hashref = $sth->fetchrow_hashref();
         $r->{egress_router_name} = $hashref->{router_name}; 
         $r->{egress_loopback} = $hashref->{router_loopback};
@@ -305,7 +303,7 @@ sub get_reservations {
         for $_ (@path_routers) {
             ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
                                                 $query, $_);
-            if ( $results->{error_msg} ) { return( 1, $results ); }
+            if ( $results->{error_msg} ) { return( $results ); }
             $hashref = $sth->fetchrow_hashref();
             push(@{$r->{reservation_path}}, $hashref->{router_name}); 
         }
@@ -313,8 +311,7 @@ sub get_reservations {
 
     $results->{rows} = $rref;
     $sth->finish();
-    $results->{status_msg} = 'Successfully read reservations';
-    return( 0, $results );
+    return( $results );
 }
 ######
 
