@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: June 30, 2005
+# Last modified: July 6, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -17,7 +17,7 @@ my $cgi = CGI->new();
 my ($user_dn, $user_level, $oscars_home) = check_session_status(undef, $cgi);
 
 # logout user from AAAS and BSS databases
-my ($error_status, $results) = logout_user($user_dn);
+my ($error_msg, $results) = logout_user($user_dn);
 
 # nuke session and put the user back at the login screen
 
@@ -42,14 +42,22 @@ exit;
 sub logout_user {
     my( $user_dn ) = @_;
 
-    my( %soap_params, %error_only, $error_status, $results );
-    my( $BSS_results );
+    my( %soap_params, $BSS_som );
 
     $soap_params{user_dn} = $user_dn;
-    ($error_status, $results) = AAAS::Client::SOAPClient::soap_logout(\%soap_params);
-    if (!$results->{error_msg}) {
-        ($error_status, $BSS_results) = BSS::Client::SOAPClient::soap_logout_user(\%soap_params);
+    $soap_params{method} = 'soap_logout';
+    my $som = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
+    if ($som->faultstring) {
+        return( $som->faultstring, undef );
     }
-    return( $error_status, $results );
+    my $aaa_results = $som->result;
+    if (!$aaa_results->{error_msg}) {
+        $soap_params{method} = 'soap_logout_user';
+        $BSS_som = BSS::Client::SOAPClient::bss_dispatcher(\%soap_params);
+        return( "", $BSS_som->result );
+    }
+    else {
+        return( $aaa_results->{error_msg}, undef );
+    }
 }
 ######
