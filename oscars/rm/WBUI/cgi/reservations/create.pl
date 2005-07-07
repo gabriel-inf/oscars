@@ -39,9 +39,15 @@ sub process_form {
 
     my( $error_status, $results );
 
-    ($error_status, $results) = soap_create_reservation($form_params);
-    if (!$error_status) {
-        update_status_frame(0, $results->{status_msg});
+    $form_params->{method} = 'soap_create_reservation';
+    my $som = bss_dispatcher($form_params);
+    if ($som->faultstring) {
+        update_status_frame(1, $som->faultstring);
+        return;
+    }
+    $results = $som->result;
+    if (!$results->{error_msg}) {
+        update_status_frame(0, "Successfully created reservation with id $results->{reservation_id}");
     }
     else {
         update_status_frame(1, $results->{error_msg});

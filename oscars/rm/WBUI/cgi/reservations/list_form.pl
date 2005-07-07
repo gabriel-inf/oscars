@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: July 1, 2005
+# Last modified: July 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -44,10 +44,16 @@ sub process_form {
     if ( authorized($user_level, "engr") ) {
         $form_params->{user_level} = 'engr';
     }
-    ($error_status, $results) = soap_get_reservations($form_params);
-    if (!$error_status) {
+    $form_params->{method} = 'soap_get_reservations';
+    my $som = bss_dispatcher($form_params);
+    if ($som->faultstring) {
+        update_status_frame(1, $som->faultstring);
+        return;
+    }
+    $results = $som->result;
+    if (!$results->{error_msg}) {
         print_reservations($user_level, $results);
-        update_status_frame(0, $results->{status_msg});
+        update_status_frame(0, "Successfully retrieved reservations.");
     }
     else {
         update_status_frame(1, $results->{error_msg});

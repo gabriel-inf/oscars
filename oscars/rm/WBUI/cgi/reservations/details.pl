@@ -2,7 +2,7 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: July 1, 2005
+# Last modified: July 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -37,7 +37,7 @@ exit;
 sub process_form {
     my( $form_params ) = @_;
 
-    my( $user_level, $error_status, $results );
+    my( $user_level, $som, $results, $status_msg );
 
     # TODO:  FIX
     $user_level = $form_params->{user_level};
@@ -49,18 +49,29 @@ sub process_form {
     }
         # Check if reservation is being cancelled
     if ($form_params->{cancel}) {
-        ($error_status, $results) = soap_delete_reservation($form_params);
-        if ($error_status) {
+        $form_params->{method} = 'soap_delete_reservation';
+        $som = bss_dispatcher($form_params);
+        if ($som->faultstring) {
+            update_status_frame(1, $som->faultstring);
+            return;
+        }
+        $results = $som->result;
+        if ($results->{error_msg}) {
             update_status_frame(1, $results->{error_msg});
             return;
         }
     }
     # print updated reservation info (may be more than just new status)
-    ($error_status, $results) =
-                 BSS::Client::SOAPClient::soap_get_reservations($form_params);
-    if (!$error_status) {
+    $form_params->{method} = 'soap_get_reservations';
+    $som = BSS::Client::SOAPClient::bss_dispatcher($form_params);
+    if ($som->faultstring) {
+        update_status_frame(1, $som->faultstring);
+        return;
+    }
+    $results = $som->result;
+    if (!$results->{error_msg}) {
         print_reservation_detail($user_level, $form_params, $results);
-        update_status_frame(0, $results->{status_msg});
+        update_status_frame(0, "Successfully got reservation details.");
     }
     else {
         update_status_frame(1, $results->{error_msg});
