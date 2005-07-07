@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # add_form.pl:  Add a user (requires admin privileges)
-# Last modified: June 29, 2005
+# Last modified: July 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 

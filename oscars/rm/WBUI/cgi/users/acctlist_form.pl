@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # userlist_form.pl:  User List page
-# Last modified: June 29, 2005
+# Last modified: July 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -35,12 +35,16 @@ exit;
 sub process_form {
     my( $form_params ) = @_;
 
-    my( $error_status, $results);
-
-    ($error_status, $results) = soap_get_userlist($form_params);
-    if (!$error_status) {
+    $form_params{method} = 'soap_get_userlist';
+    my $som = aaas_dispatcher($form_params);
+    if ($som->faultstring) {
+        update_status_frame(1, $som->faultstring);
+        return;
+    }
+    my $results = $som->result;
+    if (!$results{error_msg}) {
         print_userlist($results);
-        update_status_frame(0, $results->{status_msg});
+        update_status_frame(0, "Successfully read user list.");
     }
     else {
         update_status_frame(1, $results->{error_msg});

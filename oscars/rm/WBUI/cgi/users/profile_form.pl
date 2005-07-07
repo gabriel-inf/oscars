@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # userprofile.pl:  Main service: My Profile page
-# Last modified: June 29, 2005
+# Last modified: July 6, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -43,15 +43,23 @@ sub process_form {
         $form_params->{admin_dn} = $form_params->{user_dn};
         $form_params->{user_dn} = $form_params->{id};
     }
-    if ($form_params->{set}) {
-        ($error_status, $results) = soap_set_profile($form_params);
+    if ($form_params->{set}) { $form_params->{method} = 'soap_set_profile'; }
+    else { $form_params->{method} = 'soap_get_profile'; }
+
+    my $som = aaas_dispatcher($form_params);
+    if ( $som->faultstring ) {
+        update_status_frame(1, $som->faultstring);
+        return;
     }
-    else {
-        ($error_status, $results) = soap_get_profile($form_params);
-    }
-    if (!$error_status) {
+    $results = $som->result;
+    if (!$results->{error_msg}) {
         print_profile($results, $form_params);
-        update_status_frame(0, $results->{status_msg});
+        if ($form_params->{set}) {
+            update_status_frame(0, "Successfully updated user profile.");
+        }
+        else {
+            update_status_frame(0, "Successfully retrieved user profile.");
+        }
     }
     else {
         update_status_frame(1, $results->{error_msg});
