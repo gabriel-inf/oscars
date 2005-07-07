@@ -1,13 +1,16 @@
 #!/usr/bin/perl
 
 ####
-# Soap lite server for BSS
+# BSS_server.pl:  Soap lite server for BSS
+# Last modified:  July 6, 2005
+# David Robertson (dwrobertson@lbl.gov)
+# Jason Lee (jrlee@lbl.gov)
 ###
 
 #use SOAP::Lite +trace;
 use SOAP::Lite;
 use SOAP::Transport::HTTP;
-
+use Data::Dumper;
 use Config::Auto;
 
 ## we want to thread on each accept, as some requests can take a 
@@ -18,15 +21,15 @@ use Config::Auto;
 # don't want to die on 'Broken pipe' or Ctrl-C
 #$SIG{PIPE} = $SIG{INT} = 'IGNORE';
 
-use BSS::Scheduler::SchedulerThread;
 use BSS::Scheduler::ReservationHandler;
+use BSS::Scheduler::SchedulerThread;
 
 # slurp up the config file
 our ($configs);
 
 $configs = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
 
-$db_handler = BSS::Scheduler::ReservationHandler->new('configs' => $configs);
+my $dbHandler = BSS::Scheduler::ReservationHandler->new('configs' => $configs);
 
 # start up a thread to monitor the DB
 start_scheduler($configs);
@@ -34,13 +37,40 @@ start_scheduler($configs);
 # Create a SOAP server
 #my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
 my $daemon = SOAP::Transport::HTTP::Daemon
-	-> new (LocalPort => $configs->{'BSS_server_port'}, Listen => 5, Reuse => 1)
-	-> dispatch_to('.', $db_handler)
-	;
+    -> new (LocalPort => $configs->{'BSS_server_port'}, Listen => 5, Reuse => 1)
+    -> dispatch_to('Dispatcher')
+    -> handle;
 
-# and away we go
-$daemon->handle;
+######
 
+package Dispatcher;
 
-# vim: et ts=4 sw=4
+sub dispatch {
+    my ( $self, $inref ) = @_;
 
+    my ( $results );
+
+    if ($inref->{method} eq 'soap_logout_user') {
+        $results = $dbHandler->logout($inref) ;
+    }
+    elsif ($inref->{method} eq 'soap_get_reservations') {
+        $results = $dbHandler->get_reservations($inref) ;
+    }
+    elsif ($inref->{method} eq 'soap_create_reservation') {
+        $results = $dbHandler->create_reservation($inref) ;
+    }
+    elsif ($inref->{method} eq 'soap_delete_reservation') {
+        $results = $dbHandler->delete_reservation($inref) ;
+    }
+    else {
+        $results = {};
+        if ($inref->{method}) {
+            $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
+        }
+        else {
+            $results->{error_msg} = "SOAP method not provided\n";
+        }
+    }
+    return $results;
+}
+######
