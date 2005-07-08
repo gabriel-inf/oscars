@@ -45,15 +45,19 @@ sub traceroute
     my ($_self, $_src, $_dst) = @_;
     my ($_hopInfo, $_hopCount, $_cmd);
 
+    # Clear error message.
+    $_self->{errMsg} = 0;
     if ( !defined($_src) || !defined($_dst) )  {
-        return "ERROR: Traceroute source or destination not defined\n";
+        $_self->{errMsg} = "ERROR: Traceroute source or destination not defined\n";
+        return(0);
     }
 
     # Perform the traceroute.
     $_cmd = "ssh -x -a -i $_self->{config}->{jnx_key} -l $_self->{config}->{jnx_user} $_src traceroute $_dst wait 1";
     print STDERR "$_cmd\n";
     if (not(open(_TRACEROUTE_, "$_cmd 2>/dev/null |")))  {
-        return "ERROR: Unable to ssh into router and perform traceroute\n";
+        $_self->{errMsg} = "ERROR: Unable to ssh into router and perform traceroute\n";
+        return(0);
     }
 
     # Reset hop information.
@@ -71,7 +75,19 @@ sub traceroute
         $_self->{hops}[$_hopCount] = $1;
         $_hopCount++;
     }
-    return "";
+    return(1);
+}
+######
+
+##############################################################################
+# get_error:  Return the error message (0 if none).
+# In:  <none>
+# Out: Error message
+#
+sub get_error {
+    my ($_self) = @_;
+
+    return($_self->{errMsg});
 }
 ######
 
@@ -117,6 +133,8 @@ sub initialize
     my ($_self) = @_;
 
     $_self->{config} = Config::Auto::parse($ENV{OSCARS_HOME} . '/oscars.cfg');
+    # clear error message
+    $_self->{errMsg} = 0;
 }
 ######
 
