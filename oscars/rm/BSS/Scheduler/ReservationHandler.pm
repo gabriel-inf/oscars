@@ -42,6 +42,19 @@ sub initialize {
 ######
 
 ##############################################################################
+# get_error:  Return the error message (0 if none).
+# In:  <none>
+# Out: Error message
+#
+sub get_error {
+    my ($_self) = @_;
+
+    return($_self->{errMsg});
+}
+######
+
+
+##############################################################################
 sub logout {
     my ( $self, $inref ) = @_;
 		
@@ -171,11 +184,12 @@ sub do_remote_trace {
         }
     }
 
-    my ($_jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
-    $error = $_jnxTraceroute->traceroute($src, $dst);
-    if ($error)  { return (0, "", \@path, $error); }
+    my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
+    if (!$jnxTraceroute->traceroute($src, $dst)) {
+        return (0, "", \@path, $jnxTraceroute->get_error());
+    }
 
-    @hops = $_jnxTraceroute->get_hops();
+    @hops = $jnxTraceroute->get_hops();
 
     # if we didn't hop much, maybe the same router?
     if ($#hops < 0 ) { return (0, "", \@path, "same router?"); }
@@ -347,8 +361,7 @@ sub find_interface_ids {
     }
     if ($err_msg) { return (0, 0, $path, $err_msg); }
 
-    if (($ingress_interface_id == 0) || ($egress_interface_id == 0))
-    {
+    if (($ingress_interface_id == 0) || ($egress_interface_id == 0)) {
         return( 0, 0, $path, "Unable to find route." );
     }
 	return ($ingress_interface_id, $egress_interface_id, $path, ""); 
