@@ -89,8 +89,11 @@ sub print_profile {
 
     print '<div id="account_ui">', "\n\n";
 
-    print '<p><em>View/Edit My Profile</em><br>', "\n";
-    print '(Required fields are marked with a <span class="requiredmark">*</span>)</p>', "\n";
+        # This will only happen if coming in from "accounts list" page as admin
+    if ($form_params->{admin_dn}) {
+        print "<h3>Editing profile for user: $form_params->{user_dn}</h3>\n";
+    }
+    print '<p>Required fields are marked with an <span class="requiredmark">*</span></p>', "\n";
     print '<form method="post" action="' .  $oscars_home .
           'cgi-bin/users/profile_form.pl" ' .
           'onsubmit="return check_form(this);">' . "\n";
@@ -98,12 +101,19 @@ sub print_profile {
     print '<table>', "\n";
     print '<tr>', "\n";
 
-    print '  <th><span class="requiredmark">*</span> Distinguished Name</th>', "\n";
-    print '  <td><input type="text" name="user_dn" size="20"', "\n";
-    if (defined($form_params->{user_dn})) {
-        print " value=\"$form_params->{user_dn}\"";
+        # this will only happen if administrator
+    if ($form_params->{admin_dn}) {
+        print '  <th><span class="requiredmark">*</span> Distinguished Name</th>', "\n";
+        print '  <td><input type="text" name="user_dn" size="20"', "\n";
+        if (defined($form_params->{user_dn})) {
+            print " value=\"$form_params->{user_dn}\"";
+        }
+        print '  </td>', "\n";
     }
-    print '  </td>', "\n";
+    else {
+        print '  <th>Distinguished Name</th>', "\n";
+        print "  <td>$form_params->{user_dn}</td>\n";
+    }
     print '</tr>', "\n";
 
     print '<tr>', "\n";
@@ -216,3 +226,5 @@ sub print_profile {
     print "\n\n";
 }
 ######
+
+1;
