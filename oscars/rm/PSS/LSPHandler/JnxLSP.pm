@@ -199,7 +199,6 @@ sub read_xml_file {
 
     $_xmlOutput = '';
 
-    $_self->{errMsg} = 0;
     if (!(open(_XMLFILE, $_xmlFile)))  {
         $_self->{errMsg} = "ERROR: Can't open XML file $_xmlFile\n";
         return(0);
