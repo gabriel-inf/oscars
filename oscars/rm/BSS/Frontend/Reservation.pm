@@ -165,7 +165,7 @@ sub insert_reservation {
         my @insertions;
         for $_ ( @$arrayref ) {
            if ($inref->{$_->{Field}}) {
-               $results->{$_} = $inref->{$_->{Field}};
+               $results->{$_->{Field}} = $inref->{$_->{Field}};
                push(@insertions, $inref->{$_->{Field}}); 
            }
            else{ push(@insertions, 'NULL'); }
