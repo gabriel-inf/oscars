@@ -96,7 +96,7 @@ sub logout {
 #
 sub insert_reservation {
     my( $self, $inref ) = @_;
-    my( $query, $sth, $arrayref );
+    my( $query, $sth, $arrayref, $rref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
@@ -179,6 +179,13 @@ sub insert_reservation {
     $sth = $self->{dbconn}->do_query($user_dn, $query,
                                   $results->{reservation_tag}, $results->{reservation_id});
 
+    # TODO:  some duplication, fix later
+    $query = "SELECT * FROM reservations WHERE reservation_id = ?";
+    $sth = $self->{dbconn}->do_query($user_dn, $query,
+                                     $results->{reservation_id});
+    $rref = $sth->fetchall_arrayref({});
+    $self->get_user_readable_fields($user_dn, $inref, $rref, $results);
+
     my $mailer = Common::Mail->new();
     my $stats = BSS::Frontend::Stats->new();
     my $mail_msg = $stats->get_stats($user_dn, $inref, $results) ;
@@ -211,7 +218,7 @@ sub get_reservations {
     my( $self, $inref ) = @_;
 
     my( $sth, $query );
-    my( %mapping, $rref, $arrayref, $r );
+    my( $rref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
@@ -245,9 +252,25 @@ sub get_reservations {
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-    $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
-    $sth = $self->{dbconn}->do_query($user_dn, $query);
-    $arrayref = $sth->fetchall_arrayref();
+    $self->get_user_readable_fields($user_dn, $inref, $rref, $results);
+    return( $results );
+}
+######
+
+#################
+# Private methods
+#################
+
+##############################################################################
+#
+sub get_user_readable_fields {
+    my( $self, $user_dn, $inref, $rref, $results ) = @_;
+ 
+    my( $r, %mapping );
+
+    my $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
+    my $sth = $self->{dbconn}->do_query($user_dn, $query);
+    my $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
     my $k;
@@ -285,12 +308,10 @@ sub get_reservations {
             push(@{$r->{reservation_path}}, $hashref->{router_name}); 
         }
     }
-
     $results->{rows} = $rref;
     $sth->finish();
-    return( $results );
+    return;
 }
 ######
-
 1;
 # vim: et ts=4 sw=4
