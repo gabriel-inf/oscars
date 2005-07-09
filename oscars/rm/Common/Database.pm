@@ -1,7 +1,7 @@
 package Common::Database;
 
 # Database.pm:  superclass for AAAS and BSS database handling
-# Last modified: June 14, 2005
+# Last modified: July 8, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -9,6 +9,8 @@ use strict;
 
 use DBI;
 use Data::Dumper;
+use Error;
+use Common::Exception;
 
 ###############################################################################
 sub new {
@@ -58,9 +60,9 @@ sub login_user {
                  $self->{password},
                  \%attr);
     if (!$self->{handles}->{$user_dn}) {
-        return( "Unable to make database connection: $DBI::errstr");
+        throw Common::Exception( "Unable to make database connection: $DBI::errstr");
     }
-    return "";
+    return;
 }
 ######
 
@@ -69,28 +71,21 @@ sub login_user {
 sub do_query {
     my( $self, $user_dn, $query, @args ) = @_;
 
-    my( $sth, $error_msg );
-
     if (!$user_dn) {
         $user_dn = 'unpriv';
         # Handle for unprivileged database access.
         # Makes sure there is a fresh handle for that pseudo-user.
         $self->login_user('unpriv');
     }
-    $sth = $self->{handles}->{$user_dn}->prepare( $query );
+    my $sth = $self->{handles}->{$user_dn}->prepare( $query );
     if ($DBI::err) {
-        $error_msg = "[DBERROR] Preparing $query:  $DBI::errstr";
-        print STDERR "DBERROR ", $error_msg, "\n";
-        return (undef, $error_msg);
+        throw Common::Exception("[DBERROR] Preparing $query:  $DBI::errstr");
     }
     $sth->execute( @args );
     if ( $DBI::err ) {
-        $error_msg = "[DBERROR] Executing $query:  $DBI::errstr";
-        print STDERR "DBERROR ", $error_msg, "\n";
-        $sth->finish();
-        return(undef, $error_msg);
+        throw Common::Exception("[DBERROR] Executing $query:  $DBI::errstr");
     }
-    return( $sth, '');
+    return( $sth );
 }
 ######
 
