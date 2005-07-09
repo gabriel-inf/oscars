@@ -7,7 +7,6 @@ use BSS::Traceroute::JnxTraceroute;
 ##################
 # Global variables
 ##################
-my ($_error);
 my (@_rawTracerouteData) = ();
 my (@_hops) = ();
 
@@ -38,8 +37,7 @@ else {
 print("Traceroute: $src -> $dst\n");
 
 # Run traceroute.
-$_error = $_jnxTraceroute->traceroute($src, $dst);
-if ($_error)  { die($_error); }
+$_jnxTraceroute->traceroute($src, $dst);
 
 print("Raw results:\n");
 @_rawTracerouteData = $_jnxTraceroute->get_raw_hop_data();
