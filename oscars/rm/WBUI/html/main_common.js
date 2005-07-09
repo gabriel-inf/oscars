@@ -116,12 +116,15 @@ function update_status_frame(status, msg)
 }
 
 function setup_flash(errorFlag) {
+    var styleSheet = document.styleSheets[0];
     if (!timerID) {
         timerID = self.setTimeout("setup_flash", 1000);
+        //styleSheet.p.topmessage.style.color = "#bb0000";
     }
     else {
         clearTimeout(timerID);
         timerID = null;
+        //styleSheet.p.topmessage.style.color = "#0000bb";
     }
 }
 
