@@ -17,6 +17,7 @@ if ($numArgs == 2) {
     }
     else {
         # only get the reservation with that particular key
+        $params{user_dn} = 'dwrobertson@lbl.gov';
         $params{reservation_id} = $ARGV[1];
     }
 }
@@ -25,20 +26,26 @@ else {
     exit;
 }
 
-my($unused, $results) = soap_get_reservations(\%params);
-if (defined($results->{error_msg}) && $results->{error_msg}) {
-    print $results->{error_msg}, "\n\n";
+$params{method} = 'soap_get_reservations';
+my $som = bss_dispatcher(\%params);
+if ($som->faultstring) {
+    print STDERR $som->faultstring;
+    exit;
 }
-elsif (defined($results->{status_msg})) {
-    my ($rows, $r, $f, %c);
+my $results = $som->result;
+if ($results->{error_msg}) {
+    print STDERR $results->{error_msg}, "\n\n";
+    exit;
+}
 
-    $rows = $results->{rows};
-    for $r (@$rows) {
-        for $f (keys %$r) {
-            if (defined($r->{$f})) {
-                print "$f -> $r->{$f}\n";
-            }
+my ($rows, $r, $f, %c);
+
+$rows = $results->{rows};
+for $r (@$rows) {
+    for $f (keys %$r) {
+        if (defined($r->{$f})) {
+            print "$f -> $r->{$f}\n";
         }
-        print "\n";
     }
+    print "\n";
 }

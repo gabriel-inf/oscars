@@ -1,71 +1,40 @@
 #!/usr/bin/perl -w
 
 use strict;
-
 use DateTime;
 
 use BSS::Client::SOAPClient;
 
 my( %params );
 
-    # setup some example stuff
-$params{'reservation_id'} =              'NULL';
-
     # in seconds since epoch
 my $dt = DateTime->now();
-$params{'reservation_start_time'} =     $dt->epoch - 60;   # - 1 minute
-$params{'reservation_end_time'} =       $dt->epoch + 120;    # + 5 minutes
+$params{reservation_start_time} =     $dt->epoch - 60;   # - 1 minute
+$params{reservation_end_time} =       $dt->epoch + 120;    # + 5 minutes
 
-$params{'reservation_created_time'} =   '';   # filled in scheduler
-$params{'reservation_bandwidth'} =      '10000000';
-$params{'reservation_class'} =          '4';
-$params{'reservation_burst_limit'} =    '1000000';
-$params{'reservation_status'} =         'pending';
-$params{'reservation_protocol'} =       'udp';
+# in Mbps
+$params{reservation_bandwidth} =      '10';
+$params{reservation_protocol} =       'udp';
 
-$params{'ingress_interface_id'}= '';   # db lookup in scheduler
-$params{'egress_interface_id'}=  '';   # db lookup in scheduler
+#$params{src_address} = '134.79.240.36';
+#$params{dst_address} = '192.91.245.29';
+$params{src_address} = 'nettrash3.es.net';
+$params{dst_address} = 'atl-pt1.es.net';
 
-$params{'src_address'} = 'nettrash3.es.net';
-$params{'dst_address'} = 'atl-pt1.es.net';
+$params{user_dn} =        'dwrobertson@lbl.gov';
+$params{reservation_description} =    'This is a test.';
+$params{method} = 'soap_create_reservation'; 
 
-$params{'user_dn'} =        'dwrobertson@lbl.gov';
-$params{'reservation_description'} =    'This is a test.';
-$params{reservation_tag} = $params{user_dn} . '.' . get_time_str($params{reservation_start_time}) . "-";
-
-my($status, $results);
-($status, $results) = soap_create_reservation(\%params);
-if (defined($results->{'error_msg'}) && $results->{'error_msg'})
-{
-    print $results->{'error_msg'}, "\n\n";
+my $som = bss_dispatcher(\%params);
+if ($som->faultstring) {
+    print STDERR $som->faultstring;
+    exit;
 }
-elsif (defined($results->{'status_msg'}))
-{
-    print $results->{'status_msg'}, "\n\n";
+my $results = $som->result;
+if ($results->{error_msg}) {
+    print STDERR $results->{error_msg}, "\n\n";
+    exit;
 }
 
-###############################################################################
-sub get_time_str {
-    my( $epoch_seconds ) = @_;
-
-    my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST);
-    ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year, $is_DST) = localtime($epoch_seconds); 
-    $year += 1900;
-    $month += 1;
-    if ($month < 10) {
-        $month = "0" . $month;
-    }
-    if ($day < 10) {
-        $day = "0" . $day;
-    }
-    if ($hour < 10) {
-        $hour = "0" . $hour;
-    }
-    if ($minute < 10) {
-        $minute = "0" . $minute;
-    }
-    my $time_tag = $year . $month . $day;
-
-    return( $time_tag );
-}
-######
+print STDERR "Your reservation has been processed " .
+        "successfully. Your reservation ID number is $results->{reservation_id}.\n";
