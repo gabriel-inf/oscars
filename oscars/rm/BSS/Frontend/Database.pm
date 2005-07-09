@@ -1,6 +1,6 @@
 # Database.pm:  BSS specific database settings and routines
 #               inherits from Common::Database
-# Last modified: July 1, 2005
+# Last modified: July 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # Jason Lee (jrlee@lbl.gov)
@@ -11,8 +11,10 @@ use strict;
 
 use DBI;
 use Data::Dumper;
+use Error qw(:try);
 
 use Common::Database;
+use Common::Exception;
 use AAAS::Client::SOAPClient;
 
 our @ISA = qw(Common::Database);
@@ -38,20 +40,16 @@ sub new {
 sub logout {
     my( $self, $user_dn ) = @_;
 
-    my $results = {};
     if (!$self->{handles}->{$user_dn}) {
-        $results->{status_msg} = 'Already logged out.';
-        return ( $results );
+        throw Common::Exception("Already logged out.");
     }
     if (!$self->{handles}->{$user_dn}->disconnect()) {
-        $results->{error_msg} = "Could not disconnect from database";
-        return ( $results );
+        throw Common::Exception("Could not disconnect from database");
     }
     if ($user_dn ne 'unpriv') {
         $self->{handles}->{$user_dn} = undef;
     }
-    $results->{status_msg} = 'Logged out';
-    return ( $results );
+    return({});
 }
 ######
 
@@ -69,16 +67,12 @@ sub enforce_connection {
     my $results = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
     if ($results->{error_msg}) {
         print STDERR "soap_check_login error:  $results->{error_msg}\n";
-        return $results->{error_msg};
+        throw Common::Exception("soap_check_login error:  $results->{error_msg}");
     }
 
     # for now, handle set up per connection
-    $results->{error_msg} = $self->login_user($user_dn);
-    if ($results->{error_msg}) {
-        print STDERR "login_user error:  $results->{error_msg}\n";
-        return $results->{error_msg};
-    }
-    return $results->{error_msg};
+    $self->login_user($user_dn);
+    return;
 }
 ######
 
@@ -90,14 +84,11 @@ sub update_reservation {
     my ( $self, $login_dn, $inref, $status ) = @_;
 
     my ( $rref, $sth, $query );
-    my $results = {};
     my $user_dn = $inref->{user_dn};
 
     $query = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
-    ($sth, $results->{error_msg}) = $self->do_query($login_dn, $query,
-                                                    $inref->{reservation_id});
-    if ( $results->{error_msg} ) { return( $results ); }
+    $sth = $self->do_query($login_dn, $query, $inref->{reservation_id});
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
@@ -114,11 +105,10 @@ sub update_reservation {
     }
     $query = qq{ UPDATE reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
-    ($sth, $results->{error_msg}) = $self->do_query($login_dn, $query, $status,
-                                                    $inref->{reservation_id});
-    if ( $results->{error_msg} ) { return( $results ); }
+    $sth = $self->do_query($login_dn, $query, $status,
+                           $inref->{reservation_id});
     $sth->finish();
-    return( $results );
+    return( $status );
 }
 ######
 
@@ -131,27 +121,20 @@ sub update_reservation {
 #
 sub ip_to_xface_id {
     my ($self, $user_dn, $ipaddr) = @_;
-    my ($query, $sth, $interface_id, $error_msg);
+    my ($query, $sth, $interface_id);
 
-    $error_msg = $self->enforce_connection($user_dn);
-    if ( $error_msg ) {
-        return( 0, $error_msg );
-    }
+    $self->enforce_connection($user_dn);
     $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
-    ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
-    if ( $error_msg ) {
-        $sth->finish();
-        return( 0, $error_msg );
-    }
+    $sth = $self->do_query($user_dn, $query, $ipaddr);
     # no match
     if ($sth->rows == 0 ) {
         $sth->finish();
-        return (0, "");
+        return( 0 );
     }
     my @data = $sth->fetchrow_array();
     $interface_id = $data[0];
     $sth->finish();
-    return ($interface_id, "");
+    return ($interface_id);
 }
 ######
 
@@ -162,22 +145,18 @@ sub ip_to_xface_id {
 # Out: router name or loopback ip address
 #
 sub xface_id_to_loopback {
-    my ($self, $user_dn, $interface_id, $which) = @_;
-    my ($query, $sth, $error_msg);
+    my( $self, $user_dn, $interface_id, $which ) = @_;
+    my( $query, $sth );
 
     $query = "SELECT router_name, router_loopback FROM routers
               WHERE router_id = (SELECT router_id from interfaces
                                  WHERE interface_id = ?)";
-    ($sth, $error_msg) = $self->do_query($user_dn, $query, $interface_id);
-    if ( $error_msg ) {
-        $sth->finish();
-        return( "", $error_msg );
-    }
+    $sth = $self->do_query($user_dn, $query, $interface_id);
     # no match
     if ($sth->rows == 0 ) {
         $sth->finish();
-        # not a fatal error
-        return ("", "");
+        # not considered an error
+        return ("");
     }
 
     my @data = $sth->fetchrow_array();
@@ -185,8 +164,10 @@ sub xface_id_to_loopback {
     if ($which eq 'name') { return ($data[0], ""); }
 
     # default, checks for loopback address
-    if (!$data[1]) { return ('', "Router $data[0] has no oscars loopback"); }
-    return ($data[1], "");
+    if (!$data[1]) {
+        throw Common::Exception("Router $data[0] has no oscars loopback");
+    }
+    return ($data[1]);
 }
 ######
 
@@ -198,33 +179,22 @@ sub xface_id_to_loopback {
 # Out: hostaddr_id
 #
 sub hostaddrs_ip_to_id {
-    my ($self, $user_dn, $ipaddr) = @_;
-    my ($query, $error_msg, $sth);
-    my ($id);
+    my( $self, $user_dn, $ipaddr ) = @_;
+    my( $query, $sth, $id );
 
     # TODO:  make hostaddr_ip field UNIQUE in hostaddrs?
     $query = 'SELECT hostaddr_id FROM hostaddrs WHERE hostaddr_ip = ?';
-    ($sth, $error_msg) = $self->do_query($user_dn, $query, $ipaddr);
-    if ( $error_msg ) {
-        $sth->finish();
-        return( 0, $error_msg );
-    }
-
+    $sth = $self->do_query($user_dn, $query, $ipaddr);
     # if no matches, insert a row in hostaddrs
     if ($sth->rows == 0 ) {
         $query = "INSERT INTO hostaddrs VALUES ( '', '$ipaddr'  )";
-        ($sth, $error_msg) = $self->do_query($user_dn, $query);
-        if ( $error_msg ) {
-            $sth->finish();
-            return( 0, $error_msg );
-        }
+        $sth = $self->do_query($user_dn, $query);
         $id = $self->{handles}->{$user_dn}->{mysql_insertid};
     }
     else {
         my @data = $sth->fetchrow_array();
         $id = $data[0];
     }
-
     $sth->finish();
     return ($id);
 }
@@ -237,25 +207,20 @@ sub hostaddrs_ip_to_id {
 # OUT: hostaddr_ip
 #
 sub hostaddrs_id_to_ip {
-    my ($self, $user_dn, $id) = @_;
-    my ($query, $sth, $ipaddr, $error_msg);
+    my( $self, $user_dn, $id ) = @_;
+    my( $query, $sth, $ipaddr );
 
     $query = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
-    ($sth, $error_msg) = $self->do_query($user_dn, $query, $id);
-    if ( $error_msg ) {
-        $sth->finish();
-        return( 1, $error_msg );
-    }
-
+    $sth = $self->do_query($user_dn, $query, $id);
     # no match
     if ($sth->rows == 0 ) {
         $sth->finish();
-        return (0, "");
+        return( 0 );
     }
     my @data = $sth->fetchrow_array();
     $ipaddr = $data[0];
     $sth->finish();
-    return ($ipaddr, "");
+    return( $ipaddr );
 }
 ######
 

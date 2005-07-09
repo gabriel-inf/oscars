@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: June 30, 2005
+# Last modified: July 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -7,9 +7,11 @@ package BSS::Frontend::Reservation;
 
 use strict;
 
+use Error qw(:try);
 use Data::Dumper;
 
 use Common::Mail;
+use Common::Exception;
 use BSS::Frontend::Database;
 use BSS::Frontend::Policy;
 use BSS::Frontend::Stats;
@@ -90,7 +92,7 @@ sub logout {
 #
 # In:  reference to hash.  Hash's keys are all the fields of the reservations
 #      table except for the primary key.
-# Out: error status (0 success, 1 failure), and the results hash.
+# Out: results hash.
 #
 sub insert_reservation {
     my( $self, $inref ) = @_;
@@ -98,11 +100,7 @@ sub insert_reservation {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    if ($results->{error_msg}) { return( $results); }
-
-    # whether any time segment is over the bandwidth limit
-    my $over_limit = 0;
+    $self->{dbconn}->enforce_connection($user_dn);
 
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
@@ -117,27 +115,23 @@ sub insert_reservation {
     $inref->{reservation_created_time} = '';
 
     # handled query with the comparison start & end datetime strings
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $user_dn, $query,
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
             $inref->{reservation_start_time}, $inref->{reservation_end_time});
-    if ( $results->{error_msg} ) { return( $results ); }
     $arrayref = $sth->fetchall_arrayref({});
 
     # If no segment is over the limit,  record the reservation to the database.
-    # otherwise, return error message (TODO) with the times involved.
-    ($over_limit, $results->{error_msg}) = $self->{policy}->check_oversubscribe($arrayref, $inref);
-    if ( $over_limit || $results->{error_msg} ) {
-        $sth->finish();
-        return( $results );
+    # otherwise, throw exception with the times involved.
+    my $over_limit_msg = $self->{policy}->check_oversubscribe($arrayref, $inref);
+    $sth->finish();
+    if ( $over_limit_msg ) {
+        throw Common::Exception($over_limit_msg);
     }
     else {
-        $sth->finish();
-
         if (($inref->{ingress_interface_id} == 0) ||
             ($inref->{egress_interface_id} == 0))
         {
-            $results->{error_msg} = "Invalid router id(s): 0.  Unable to " .
-                                    "do insert.";
-            return( $results );
+            throw Common::Exception("Invalid router id(s): 0.  Unable to " .
+                                    "do insert.");
         }
 
         # get ipaddrs table id from source's and destination's host name or ip address
@@ -159,8 +153,7 @@ sub insert_reservation {
                          $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
 
         $query = "SHOW COLUMNS from reservations";
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query( $user_dn, $query );
-        if ( $results->{error_msg} ) { return( $results ); }
+        $sth = $self->{dbconn}->do_query( $user_dn, $query );
         $arrayref = $sth->fetchall_arrayref({});
         my @insertions;
         for $_ ( @$arrayref ) {
@@ -175,10 +168,7 @@ sub insert_reservation {
         # insert all fields for reservation into database
         $query = "INSERT INTO reservations VALUES (
                  " . join( ', ', ('?') x @insertions ) . " )";
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
-                                                                 @insertions);
-        if ( $results->{error_msg} ) { return( $results ); }
-
+        $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
         $results->{reservation_id} = $self->{dbconn}->{handles}->{$user_dn}->{mysql_insertid};
     }
     $sth->finish();
@@ -186,9 +176,8 @@ sub insert_reservation {
     $results->{reservation_tag} = $inref->{reservation_tag} . $results->{reservation_id};
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
+    $sth = $self->{dbconn}->do_query($user_dn, $query,
                                   $results->{reservation_tag}, $results->{reservation_id});
-    if ( $results->{error_msg} ) { return( $results ); }
 
     my $mailer = Common::Mail->new();
     my $stats = BSS::Frontend::Stats->new();
@@ -226,9 +215,7 @@ sub get_reservations {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    if ($results->{error_msg}) { return( $results ); }
-
+    $self->{dbconn}->enforce_connection($user_dn);
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
     # for that reservation.  Sort by start time in ascending order.
@@ -254,16 +241,12 @@ sub get_reservations {
         }
     }
     $query .= " ORDER BY reservation_start_time";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query);
-    if ( $results->{error_msg} ) { return( $results ); }
-
+    $sth = $self->{dbconn}->do_query($user_dn, $query);
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
     $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query);
-    if ( $results->{error_msg} ) { return( $results ); }
-
+    $sth = $self->{dbconn}->do_query($user_dn, $query);
     $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
@@ -284,26 +267,20 @@ sub get_reservations {
                   " (SELECT router_id FROM interfaces" .
                   "  WHERE interface_id = ?)";
 
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
-                                               $query,
+        $sth = $self->{dbconn}->do_query($user_dn, $query,
                                                $r->{ingress_interface_id});
-        if ( $results->{error_msg} ) { return( $results ); }
         $hashref = $sth->fetchrow_hashref();
         $r->{ingress_router_name} = $hashref->{router_name}; 
         $r->{ingress_loopback} = $hashref->{router_loopback};
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
-                                                $query,
-                                                $r->{egress_interface_id});
-        if ( $results->{error_msg} ) { return( $results ); }
+        $sth = $self->{dbconn}->do_query($user_dn, $query,
+                                         $r->{egress_interface_id});
         $hashref = $sth->fetchrow_hashref();
         $r->{egress_router_name} = $hashref->{router_name}; 
         $r->{egress_loopback} = $hashref->{router_loopback};
         @path_routers = split(' ', $r->{reservation_path});
         $r->{reservation_path} = ();
         for $_ (@path_routers) {
-            ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
-                                                $query, $_);
-            if ( $results->{error_msg} ) { return( $results ); }
+            $sth = $self->{dbconn}->do_query($user_dn, $query, $_);
             $hashref = $sth->fetchrow_hashref();
             push(@{$r->{reservation_path}}, $hashref->{router_name}); 
         }

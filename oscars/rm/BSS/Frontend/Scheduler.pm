@@ -1,5 +1,5 @@
 # Scheduler.pm:  Database handling for BSS/Scheduler/SchedulerThread.pm
-# Last modified: June 30, 2005
+# Last modified: July 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -42,25 +42,17 @@ sub initialize {
 sub find_pending_reservations  { 
     my ( $self, $user_dn, $stime, $status ) = @_;
 
-    my ( $sth, $data, $query, $error_msg );
-    my $results = {};
+    my ( $sth, $data, $query );
 
     # FIX:  make SCHEDULER a bona fide db user
     # user dn in this case is the scheduler thread pseudo user
-    #$results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    #if ($results->{error_msg}) { return( 1, $results); }
+    #$self->{dbconn}->enforce_connection($user_dn);
 
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query, $status,
-                                                            $stime);
-    if ( $results->{error_msg} ) { return( 1, $results ); }
-
-    # get all the data
+    $sth = $self->{dbconn}->do_query($user_dn, $query, $status, $stime);
     $data = $sth->fetchall_arrayref({});
-    # close it up
     $sth->finish();
-
     return( "", $data );
 }
 ######
@@ -69,30 +61,21 @@ sub find_pending_reservations  {
 sub find_expired_reservations {
     my ( $self, $user_dn, $stime, $status ) = @_;
 
-    my ( $sth, $data, $query, $error_msg);
-    my $results = {};
+    my ( $sth, $data, $query );
 
     # FIX:  make SCHEDULER a bona fide db user
-    #$results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    #if ($results->{error_msg}) { return( 1, $results); }
+    #$self->{dbconn}->enforce_connection($user_dn);
 
     #print "expired: Looking at time == " . $stime . "\n";
 
     $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query, $status,
-                                        $stime,
-                                        $self->{configs}->{PENDING_CANCEL});
-    if ( $results->{error_msg} ) { return( 1, $results ); }
-
+    $sth = $self->{dbconn}->do_query($user_dn, $query, $status, $stime,
+                                     $self->{configs}->{PENDING_CANCEL});
     # get all the data
     $data = $sth->fetchall_arrayref({});
-
-    # close it up
     $sth->finish();
-
-    # return the answer
-    return( "", $data );
+    return( $data );
 }
 ######
 

@@ -1,5 +1,5 @@
-# Reservation.pm:  database handling for policy related matters
-# Last modified: June 15, 2005
+# Policy.pm:  database handling for policy related matters
+# Last modified: July 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -9,6 +9,9 @@ use strict;
 
 use DBI;
 use Data::Dumper;
+use Error qw(:try);
+
+use Common::Exception;
 
 ###############################################################################
 sub new {
@@ -43,7 +46,7 @@ sub check_oversubscribe {
     my ( $self, $reservations, $inref) = @_;
 
     my ( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
-    my ( $router_name, $error_msg );
+    my ( $router_name );
     my $user_dn = $inref->{user_dn};
 
     # XXX: what is the MAX percent we can allocate? for now 50% ...
@@ -67,32 +70,31 @@ sub check_oversubscribe {
     # now for each of those interface idx
     for $idx (keys %iface_idxs) {
         # get max bandwith speed for an idx
-        ($row, $error_msg) = $self->get_interface_fields($user_dn, $idx);
-        if ($error_msg) { return (1, $error_msg); }
+        $row = $self->get_interface_fields($user_dn, $idx);
         if (!$row ) { next; }
 
         if ( $row->{interface_valid} == 'False' ) {
-            return ( 1, "interface $idx not valid");
+            throw Common::Exception("interface $idx not valid");
         }
  
         if ($iface_idxs{$idx} >
             ($row->{interface_speed} * $max_reservation_utilization)) {
             my $max_utilization = $row->{interface_speed} * $max_reservation_utilization/1000000.0;
+            my $error_msg;
             if ($inref->{form_type} eq 'admin') {
-                ($router_name, $error_msg) = $self->{dbconn}->xface_id_to_loopback($user_dn, $idx, 'name');
-                if ($error_msg) { return (1, $error_msg); }
+                $router_name = $self->{dbconn}->xface_id_to_loopback($user_dn, $idx, 'name');
                 $error_msg = "$router_name oversubscribed: ";
             }
             else {
                 $error_msg = "Route oversubscribed: ";
             }
-            return ( 1, $error_msg . $iface_idxs{$idx}/1000000 . " Mbps > " . "$max_utilization Mbps" );
+            return($error_msg . $iface_idxs{$idx}/1000000 . " Mbps > " . "$max_utilization Mbps");
         }
     }
     # Replace array @$inref->{reservation_path} with string separated by
     # spaces
     $inref->{reservation_path} = join(' ', @{$inref->{reservation_path}});
-    return (0, "");
+    return( "" );
 }
 ######
 
@@ -109,16 +111,14 @@ sub check_oversubscribe {
 sub get_interface_fields {
     my( $self, $user_dn, $iface_id) = @_;
 
-    my( $error_msg, $query, $sth, $results);
+    my( $query, $sth, $results);
 
     $query = "SELECT * FROM interfaces WHERE interface_id = ?";
-    ($sth, $error_msg) = $self->{dbconn}->do_query($user_dn, $query, $iface_id);
-    if ($error_msg) { return ( undef, $error_msg ); }
-
+    $sth = $self->{dbconn}->do_query($user_dn, $query, $iface_id);
     $results = $sth->fetchrow_hashref();
     $sth->finish();
 
-    return ( $results, '');
+    return ( $results );
 }
 ######
 
