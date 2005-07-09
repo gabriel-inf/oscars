@@ -16,16 +16,16 @@ my $cgi = CGI->new();
 # Check that the user exists, the correct password has been given, the user
 # account has been activated, and the user has the proper privilege level
 # to perform database operations.
-my ($error_msg, $results) = verify_user($cgi);
+my $som = verify_user($cgi);
+$results = $som->result;
 
-if (!$error_msg) {
-    my ($user_dn, $user_level, $oscars_home) = check_session_status($results, $cgi);
-    print_info($user_dn, $user_level);
-    update_status_frame(0, "User $user_dn successfully logged in.");
+if ($results->{error_msg}) {
+    update_status_frame(1, $results->{error_msg}); 
+    exit;
 }
-else {
-    update_status_frame(1, $error_msg); 
-}
+my ($user_dn, $user_level, $oscars_home) = check_session_status($results, $cgi);
+print_info($user_dn, $user_level);
+update_status_frame(0, "User $user_dn successfully logged in.");
 exit;
 
 ######
@@ -52,9 +52,6 @@ sub verify_user {
     $soap_params{user_password} = $cgi->param('user_password');
     $soap_params{method} = 'soap_verify_login'; 
     my $som = aaas_dispatcher(\%soap_params);
-    if ($som->faultstring) {
-        return( $som->faultstring, undef );
-    }
-    return( "", $som->result );
+    return ( '', $som );
 }
 ######
