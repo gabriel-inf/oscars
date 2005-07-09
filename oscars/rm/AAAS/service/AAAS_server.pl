@@ -25,38 +25,45 @@ my $daemon = SOAP::Transport::HTTP::Daemon
 
 package Dispatcher;
 
+use Error qw(:try);
+use Common::Exception;
+
 sub dispatch {
     my ( $self, $inref ) = @_;
 
-    my ( $results );
-
-    if ($inref->{method} eq 'soap_verify_login') {
-        $results = $user->verify_login($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_check_login') {
-        $results = $user->check_login_status($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_get_profile') {
-        $results = $user->get_profile($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_set_profile') {
-        $results = $user->set_profile($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_logout') {
-        $results = $user->logout($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_get_userlist') {
-        $results = $user->get_userlist($inref) ;
-    }
-    else {
-        $results = {};
-        if ($inref->{method}) {
-            $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
+    my $results = {};
+    try {
+        if ($inref->{method} eq 'soap_verify_login') {
+            $results = $user->verify_login($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_check_login') {
+            $results = $user->check_login_status($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_get_profile') {
+            $results = $user->get_profile($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_set_profile') {
+            $results = $user->set_profile($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_logout') {
+            $results = $user->logout($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_get_userlist') {
+            $results = $user->get_userlist($inref) ;
         }
         else {
-            $results->{error_msg} = "SOAP method not provided\n";
+            if ($inref->{method}) {
+                $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
+            }
+            else {
+                $results->{error_msg} = "SOAP method not provided\n";
+            }
         }
     }
+    catch Common::Exception with {
+        my $E = shift;
+        $results->{error_msg} = $E->{-text};
+    };
     return $results;
 }
 ######
