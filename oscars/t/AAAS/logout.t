@@ -3,12 +3,17 @@
 use AAAS::Client::SOAPClient;
 
 my %params = ('user_dn' => 'dwrobertson@lbl.gov');
-my($result, $data) = soap_logout(\%params);
-if (defined($data->{'error_msg'}) && $data->{'error_msg'})
-{
-    print $data->{'error_msg'}, "\n\n";
+$params{method} = 'soap_logout';
+my $som = aaas_dispatcher(\%params);
+if ($som->faultstring) {
+    print STDERR $som->faultstring;
+    exit;
 }
-elsif (defined($data->{'status_msg'}))
-{
-    print $data->{'status_msg'}, "\n\n";
+
+my $results = $som->result;
+if ($results->{'error_msg'}) {
+    print STDERR $results->{error_msg}, "\n\n";
+}
+else {
+    print "\nUser $params{user_dn} logged out.\n\n";
 }

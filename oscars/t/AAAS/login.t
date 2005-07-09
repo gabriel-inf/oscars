@@ -3,17 +3,20 @@
 use strict;
 
 use AAAS::Client::SOAPClient;
-
-# This will go outside of repository.
+use Data::Dumper;
 
 my %params = ('user_dn' => 'dwrobertson@lbl.gov', 'user_password' => 'Shyysh');
-my($result, $data) = soap_verify_login(\%params);
-print STDERR $data->{'user_level'}, "\n";
-if (defined($data->{'error_msg'}) && $data->{'error_msg'})
-{
-    print $data->{'error_msg'}, "\n\n";
+#my %params = ('user_dn' => 'foo@lbl.gov', 'user_password' => 'Shyysh');
+$params{method} = 'soap_verify_login';
+my $som = aaas_dispatcher(\%params);
+if ($som->faultstring) {
+    print STDERR $som->faultstring;
+    exit;
 }
-elsif (defined($data->{'status_msg'}))
-{
-    print $data->{'status_msg'}, "\n\n";
+my $results = $som->result;
+if ($results->{error_msg}) {
+    print STDERR $results->{error_msg}, "\n\n";
+}
+else {
+    print "\nUser $params{user_dn} successfully logged in.\n\n";
 }
