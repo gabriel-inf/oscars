@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with admin and user forms.
-# Last modified: July 6, 2005
+# Last modified: July 8, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -9,7 +9,9 @@ use strict;
 
 use DBI;
 use Data::Dumper;
+use Error qw(:try);
 
+use Common::Exception;
 use AAAS::Frontend::Database;
 use AAAS::Frontend::Registration;
 use AAAS::Frontend::Auth;
@@ -78,37 +80,31 @@ sub verify_login {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{auth}->get_user_levels('');
-    if ($results->{error_msg}) { return( $results); }
+    $self->{auth}->get_user_levels('');
 
     # Get the password and privilege level from the database.
     $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query('', $query,
-                                                              $user_dn);
-    if ( $results->{error_msg} ) { return( $results ); }
+    $sth = $self->{dbconn}->do_query('', $query, $user_dn);
     # Make sure user exists.
     if (!$sth->rows) {
         $sth->finish();
-        $results->{error_msg} = 'Please check your login name and try again.';
-        return ( $results );
+        throw Common::Exception("Please check your login name and try again.");
     }
     # compare passwords
     my $encoded_password = crypt($inref->{user_password}, 'oscars');
     $ref = $sth->fetchrow_hashref();
     if ( $ref->{user_password} ne $encoded_password ) {
-        $results->{error_msg} = 'Please check your password and try again.';
-        return ( $results );
+        $sth->finish();
+        throw Common::Exception("Please check your password and try again.");
     }
     $sth->finish();
 
     # make sure has at least minimal privileges
-    $results->{error_msg} = $self->{auth}->verify($ref->{user_level}, 'user');
-    if ($results->{error_msg}) { return( $results ); }
+    $self->{auth}->verify($ref->{user_level}, 'user');
 
     # if everything is OK, create a db handle for the user, and set their
     # status to 'Logged in'
-    $results->{error_msg} = $self->{dbconn}->login_user($user_dn);
-    if ($results->{error_msg}) { return( $results); }
+    $self->{dbconn}->login_user($user_dn);
 
     $results->{user_level} = $self->{auth}->get_str_level($ref->{user_level});
     # The first value is unused, but I can't get SOAP to send a correct
@@ -139,37 +135,28 @@ sub get_profile {
     my $user_dn = $inref->{user_dn};
 
     if (!$inref->{admin_dn}) {
-        $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
+        $self->{dbconn}->enforce_connection($user_dn);
     }
     else {
-        $results->{error_msg} = $self->{dbconn}->enforce_connection(
-                                                     $inref->{admin_dn});
+        $self->{dbconn}->enforce_connection($inref->{admin_dn});
     }
-    if ($results->{error_msg}) { return( $results); }
-
-    $results->{error_msg} = $self->{auth}->verify($inref->{user_level},
-                                                  'user', 1);
-    if ($results->{error_msg}) { return( $results ); }
+    $self->{auth}->verify($inref->{user_level}, 'user', 1);
 
     # DB query: get the user profile detail
     $query = "SELECT " . join(', ', @user_profile_fields) .
              " FROM users where user_dn = ?";
 
     if (!$inref->{admin_dn}) {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
-                                                             $query, $user_dn);
+        $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
     }
     else {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query(
-                                         $inref->{admin_dn}, $query, $user_dn);
+        $sth = $self->{dbconn}->do_query($inref->{admin_dn}, $query, $user_dn);
     }
-    if ( $results->{error_msg} ) { return( $results ); }
 
     # check whether this person is a registered user
     if (!$sth->rows) {
         $sth->finish();
-        $results->{error_msg} = 'No such user.';
-        return ($results);
+        throw Common::Exception("No such user.");
     }
 
     # populate results with the data fetched from the database
@@ -179,22 +166,18 @@ sub get_profile {
     $query = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
     if (!$inref->{admin_dn}) {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query(
-                                                $user_dn, $query,
-                                                @{$rref}[0]->{institution_id});
+        $sth = $self->{dbconn}->do_query($user_dn, $query,
+                                         @{$rref}[0]->{institution_id});
     }
     else {
-        ($sth, $results->{error_msg}) = $self->{dbconn}->do_query(
-                                                $inref->{admin_dn}, $query,
-                                                @{$rref}[0]->{institution_id});
+        $sth = $self->{dbconn}->do_query($inref->{admin_dn}, $query,
+                                         @{$rref}[0]->{institution_id});
     }
-    if ( $results->{error_msg} ) { return( $results ); }
 
     # check whether this organization is in the db
     if (!$sth->rows) {
         $sth->finish();
-        $results->{error_msg} = 'No such organization recorded.';
-        return ($results);
+        throw Common::Exception("No such organization recorded.");
     }
 
     @data = $sth->fetchrow_array();
@@ -223,18 +206,19 @@ sub set_profile {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
+    # in this case, redirect to user creation
+    if ($inref->{new_user_dn}) {
+        $self->{auth}->verify($inref->{user_level}, 'admin', 1);
+        return $self->{registr}->add_user($inref);
+    }
+
     if (!$inref->{admin_dn}) {
-        $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
+        $self->{dbconn}->enforce_connection($user_dn);
     }
     else {
-        $results->{error_msg} = $self->{dbconn}->enforce_connection(
-                                                     $inref->{admin_dn});
+        $self->{dbconn}->enforce_connection($inref->{admin_dn});
     }
-    if ($results->{error_msg}) { return( $results); }
-
-    $results->{error_msg} = $self->{auth}->verify($inref->{user_level},
-                                                  'user', 1);
-    if ($results->{error_msg}) { return( $results ); }
+    $self->{auth}->verify($inref->{user_level}, 'user', 1);
 
     # Read the current user information from the database to decide which
     # fields are being updated, and user has proper privileges.
@@ -242,35 +226,26 @@ sub set_profile {
     # DB query: get the user profile detail
     $query = "SELECT " . join(', ', @user_profile_fields) .
              ", user_level FROM users where user_dn = ?";
-
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
-                                                              $user_dn);
-    if ( $results->{error_msg} ) { return( $results ); }
+    $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
 
     # check whether this person is a registered user
     if (!$sth->rows) {
-        $results->{error_msg} = "The user $user_dn is not " .
-                                "registered.";
         $sth->finish();
-        return ($results);
+        throw Common::Exception("The user $user_dn is not registered.");
     }
 
     $current_info = $sth->fetchrow_hashref;
     # make sure user has appropriate privileges
     # TODO:  if admin_dn set, need admin privileges
-    $results->{error_msg} = $self->{auth}->verify($current_info->{user_level},
-                                                  'user');
-    if ($results->{error_msg}) { return( $results ); }
-
+    $self->{auth}->verify($current_info->{user_level}, 'user');
 
     ### Check the current password with the one in the database before
     ### proceeding.
     if ( $current_info->{user_password} ne
              crypt($inref->{user_password},'oscars') ) {
-        $results->{error_msg} = "Please check the current password and " .
-                                "try again.";
         $sth->finish();
-        return( $results);
+        throw Common::Exception("Please check the current password and " .
+                                "try again.");
     }
     $sth->finish();
 
@@ -288,20 +263,7 @@ sub set_profile {
     # If so, set the institution id to the primary key in the institutions
     # table.
     if ( $inref->{institution} ) {
-        $query = "SELECT institution_id FROM institutions
-                  WHERE institution_name = ?";
-	($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
-                                                        $query,
-                                                        $inref->{institution});
-        if ( $results->{error_msg} ) { return( $results ); }
-        if (!$sth->rows) {
-            $results->{error_msg} = "The organization " .
-                            "$inref->{institution} is not in the database.";
-            $sth->finish();
-            return ($results);
-        }
-        $ref = $sth->fetchrow_hashref;
-        $inref->{institution_id} = $ref->{institution_id} ;
+        $self->{dbconn}->get_institution_id($inref, $inref->{user_dn});
     }
 
     # prepare the query for database update
@@ -312,13 +274,9 @@ sub set_profile {
     }
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
+    $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
     $sth->finish();
 
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn, $query,
-                                                              $user_dn);
-    if ( $results->{error_msg} ) { return( $results ); }
-
-    $sth->finish();
     $ref->{institution} = $inref->{institution};
     $ref->{user_password} = undef;
     $results->{row} = $ref;
@@ -338,31 +296,22 @@ sub set_profile {
 sub get_userlist
 {
     my( $self, $inref ) = @_;
-    my( $sth, $error_status, $query );
+    my( $sth, $query );
     my( %mapping, $r, $arrayref, $rref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $results->{error_msg} = $self->{dbconn}->enforce_connection($user_dn);
-    if ($results->{error_msg}) { return( $results); }
-
-    $results->{error_msg} = $self->{auth}->verify($inref->{user_level},
-                                                  'admin', 1);
-    if ($results->{error_msg}) { return( $results ); }
+    $self->{dbconn}->enforce_connection($user_dn);
+    $self->{auth}->verify($inref->{user_level}, 'admin', 1);
 
     $query .= "SELECT * FROM users ORDER BY user_last_name";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
-                                                              $query);
-    if ( $results->{error_msg} ) { return( $results ); }
-
+    $sth = $self->{dbconn}->do_query($user_dn, $query);
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
     # replace institution id with institution name
     $query = "SELECT institution_id, institution_name FROM institutions";
-    ($sth, $results->{error_msg}) = $self->{dbconn}->do_query($user_dn,
-                                                              $query);
-    if ( $results->{error_msg} ) { return( $results ); }
+    $sth = $self->{dbconn}->do_query($user_dn, $query);
     $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
@@ -371,7 +320,6 @@ sub get_userlist
         # replace numeric user level code with string containing permissions
         $r->{user_level} = $self->{auth}->get_str_level($r->{user_level});
     }
-
 
     $results->{rows} = $rref;
     return( $results );
@@ -391,14 +339,9 @@ sub check_login_status {
     my( $self, $inref ) = @_;
 
     my $results = {};
-    $results->{error_msg} = $self->{dbconn}->enforce_connection($inref->{user_dn});
-    if ($results->{error_msg}) {
-        return( $results );
-    }
-    else {
-        $results->{status_msg} = "User is logged in";
-        return( $results );
-    }
+    $self->{dbconn}->enforce_connection($inref->{user_dn});
+    $results->{status_msg} = "User is logged in";
+    return( $results );
 }
 ######
 

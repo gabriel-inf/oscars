@@ -2,7 +2,7 @@ package AAAS::Frontend::Database;
 
 # Database.pm:  package for AAAS database handling
 #               inherits from Common::Database
-# Last modified: June 30, 2005
+# Last modified: July 8, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -10,7 +10,9 @@ use strict;
 
 use DBI;
 use Data::Dumper;
+use Error qw(:try);
 
+use Common::Exception;
 use Common::Database;
 
 our @ISA = qw(Common::Database);
@@ -48,15 +50,13 @@ sub logout {
 
     my $results = {};
     if (!$self->{handles}->{$user_dn}) {
-        $results->{error_msg} = 'Already logged out.';
-        return ( $results );
+        throw Common::Exception("Already logged out.");
     }
     if ($user_dn ne 'unpriv') {
         $self->update_user_status($user_dn, 'Logged out');
     }
     if (!$self->{handles}->{$user_dn}->disconnect()) {
-        $results->{error_msg} = "Could not disconnect from database";
-        return ( $results );
+        throw Common::Exception("Could not disconnect from database");
     }
     if ($user_dn ne 'unpriv') {
         $self->{handles}->{$user_dn} = undef;
@@ -69,12 +69,11 @@ sub logout {
 sub update_user_status {
     my( $self, $user_dn, $status ) = @_;
 
-    my( $query, $sth, $err_msg );
+    my( $query, $sth );
 
     $query = "UPDATE users SET user_status = ? WHERE user_dn = '$user_dn'";
-    ($sth, $err_msg) = $self->do_query($user_dn, $query, $status);
-    if ($err_msg) { return $err_msg; }
-    return ( "" );
+    $sth = $self->do_query($user_dn, $query, $status);
+    return;
 }
 ######
 
@@ -84,32 +83,22 @@ sub update_user_status {
 sub enforce_connection {
     my ( $self, $user_dn ) = @_;
 
-    my ( $query, $sth, $err_msg );
+    my ( $query, $sth );
 
     $query = "SELECT user_status FROM users WHERE user_dn = ?";
-    ($sth, $err_msg) = $self->do_query('', $query, $user_dn);
-    if ($err_msg) { return $err_msg; }
+    $sth = $self->do_query('', $query, $user_dn);
 
     if (!$sth->rows) {
         $sth->finish();
-        $err_msg = 'Please check your login name and try again.';
-        return $err_msg;
+        throw Common::Exception("Please check your login name and try again.");
     }
     my $ref = $sth->fetchrow_hashref();
     if (!$ref->{user_status} || ($ref->{user_status} eq 'Logged out')) {
-        return( "You must log in first before accessing the database");
+        throw Common::Exception("You must log in first before accessing the database.");
     }
-    #elsif (!$self->{handles}->{$user_dn}) {
-        #$err_msg = $self->login_user($user_dn);
-        #if ($err_msg) { return( 1, $err_msg) }
-    #}
     # for now, handle set up per connection
-    $err_msg = $self->login_user($user_dn);
-    if ($err_msg) {
-        print STDERR "login_user error:  $err_msg\n";
-        return($err_msg);
-    }
-    return "";
+    $self->login_user($user_dn);
+    return;
 }
 ######
 
@@ -118,17 +107,37 @@ sub enforce_connection {
 sub get_user_levels {
     my( $self, $user_dn ) = @_;
 
-    my( %levels, $r, $sth, $query, $error_msg );
+    my( %levels, $r, $sth, $query );
 
     $query = "SELECT user_level_bit, user_level_description FROM user_levels";
-    ($sth, $error_msg) = $self->do_query($user_dn, $query);
-    if( $error_msg ) { return( undef, $error_msg ) };
+    $sth = $self->do_query($user_dn, $query);
     my $rows = $sth->fetchall_arrayref();
     for $r (@$rows) { $levels{$$r[1]} = $$r[0]; }
     $levels{'inactive'} = 0;
-    return( \%levels, "" );
+    return( \%levels );
 }
- 
+######
+
+###############################################################################
+#
+sub get_institution_id {
+    my( $self, $inref, $user_dn ) = @_;
+
+    my( $sth, $query );
+
+    $query = "SELECT institution_id FROM institutions
+              WHERE institution_name = ?";
+    $sth = $self->do_query($user_dn, $query, $inref->{institution});
+    if (!$sth->rows) {
+        $sth->finish();
+        throw Common::Exception("The organization " .
+                   "$inref->{institution} is not in the database.");
+    }
+    my $ref = $sth->fetchrow_hashref;
+    $inref->{institution_id} = $ref->{institution_id} ;
+    $sth->finish();
+    return;
+}
 ######
 
 # Don't touch the line below
