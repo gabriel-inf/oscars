@@ -1,10 +1,12 @@
 ######################################################################
+# July 8, 2005
+# DWRobertson
+# JRLee
 # Scheduler thread that polls the db looking for 
 # reservataions that need to be scheduled
 #
 # Poll time now comes from the config file.
 #
-# JRLee
 ######################################################################
 package BSS::Scheduler::SchedulerThread;
 
@@ -12,8 +14,10 @@ use threads;
 use threads::shared;
 
 use Data::Dumper;
+use Error qw(:try);
 
 use Common::Mail;
+use Common::Exception;
 
     # Chins PSS module to configure the routers
 use PSS::LSPHandler::JnxLSP;
@@ -44,8 +48,6 @@ my ($configs);
 #fake pss calls for the momment
 my ($fakeit) = 0;
 
-my ($_error);
-
 ##############################################################################
 # start_scheduler:  Start up and detach a thread to do scheduling, and
 #                   return control to the main prog
@@ -67,35 +69,38 @@ sub start_scheduler {
 #
 sub scheduler {
 
-    my ($front_end, $error_msg);
+    my ($front_end);
 
     print STDERR "Scheduler running\n";
     $front_end = BSS::Frontend::Scheduler->new('configs' => $configs);
     my $pseudo_user = 'SCHEDULER';
-    $error_msg = $front_end->{dbconn}->login_user($pseudo_user);
-    if ($error_msg) {
-        print STDERR "$error_msg\n";
-        return( 1, $error_msg);
+    try {
+        $front_end->{dbconn}->login_user($pseudo_user);
     }
+    catch Common::Exception with {
+        my $E = shift;
+        print STDERR $E->{-text};
+    };
 
     while (1) {
+        try {
+            # find reservations that need to be actived
+            if ($configs->{debug}) { print STDERR "before find new_reservations\n"; }
+            find_new_reservations($pseudo_user, $front_end);
+            if ($configs->{debug}) { print STDERR "after find new_reservations\n"; }
 
-        # find reservations that need to be actived
-        if ($configs->{debug}) { print STDERR "before find new_reservations\n"; }
-        $error_msg = find_new_reservations($pseudo_user, $front_end);
-        if ($error_msg) {
-            if ($configs->{debug}) { print STDERR 'after find_new_reservations, error: ', $error_msg, "\n"; }
-        }
+            # find reservations that need to be deactivated 
+            if ($configs->{debug}) { print STDERR "before find_expired_reservations\n"; }
+            find_expired_reservations($pseudo_user, $front_end);
+            if ($configs->{debug}) { print STDERR "after find_expired_reservations\n"; }
 
-        # find reservations that need to be deactivated 
-        if ($configs->{debug}) { print STDERR "before find_expired_reservations\n"; }
-        $error_msg = find_expired_reservations($pseudo_user, $front_end);
-        if ($error_msg) {
-            if ($configs->{debug}) { print STDERR 'after find_expired_reservations, error: ', $error_msg, "\n"; }
-        }
-
-        # check every do_poll_time seconds
-        sleep($configs->{db_poll_time});
+            # check every do_poll_time seconds
+            sleep($configs->{db_poll_time});
+        };
+        catch Common::Exception with {
+            my $E = shift;
+            print STDERR $E->{-text};
+        };
     }
 }
 ######
@@ -118,11 +123,7 @@ sub find_new_reservations {
     }
 
     # find reservations that need to be scheduled
-    ($error_msg, $resv) = $front_end->find_pending_reservations($user_dn, $timeslot, $configs->{PENDING});
-    if ($error_msg) {
-        return ($error_msg);
-    }
-
+    $resv = $front_end->find_pending_reservations($user_dn, $timeslot, $configs->{PENDING});
     my( $mailer, $stats, $mail_msg );
     $mailer = Common::Mail->new();
     $stats = BSS::Frontend::Stats->new();
@@ -150,15 +151,14 @@ sub find_expired_reservations {
     my ($user_dn, $front_end) = @_;
 
     my $cur_time = localtime();
-    my ($timeslot, $resv, $status, $error_msg);
+    my ($timeslot, $resv, $status);
 
     # configurable
     $timeslot = time() + $configs->{reservation_time_interval};
     if ($configs->{debug}) { print STDERR "expired: $cur_time \n"; }
 
     # find active reservation past the timeslot
-    ($error_msg, $resv) = $front_end->find_expired_reservations($user_dn, $timeslot, $configs->{ACTIVE});
-    if ($error_msg) { return $error_msg; }
+    $resv = $front_end->find_expired_reservations($user_dn, $timeslot, $configs->{ACTIVE});
        
     my( $mailer, $stats, $mail_msg );
     $mailer = Common::Mail->new();
@@ -183,21 +183,20 @@ sub find_expired_reservations {
 # setup_pss:  format the args and call pss to do the configuration change
 #
 sub setup_pss {
-    my ($lspInfo, $r) = @_;   
+    my( $lspInfo, $r ) = @_;   
 
-    my ($_error, $status);
+    my( $error );
 
     print STDERR "execing pss to schedule reservations\n";
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
-        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP($lspInfo);
+        my $jnxLsp = new PSS::LSPHandler::JnxLSP($lspInfo);
 
         print STDERR "Setting up LSP...\n";
-        $_jnxLsp->configure_lsp(_LSP_SETUP, $r);
-        if ($_error = $_jnxLsp->get_error())  {
-            return( $_error );
-            #die($_error);
+        $jnxLsp->configure_lsp(_LSP_SETUP, $r);
+        if ($error = $jnxLsp->get_error())  {
+            return( $error );
         }
     }
     print STDERR "LSP setup complete\n" ;
@@ -211,16 +210,16 @@ sub setup_pss {
 sub teardown_pss {
     my ($lspInfo, $r) = @_;
 
-    my ($_error);
+    my ($error);
 
     if ($fakeit == 0 ) {
         # Create an LSP object.
-        my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP($lspInfo);
+        my ($jnxLsp) = new PSS::LSPHandler::JnxLSP($lspInfo);
 
         print STDERR "Tearing down LSP...\n" ;
-        $_jnxLsp->configure_lsp(_LSP_TEARDOWN, $r); 
-        if ($_error = $_jnxLsp->get_error())  {
-            return( $_error );
+        $jnxLsp->configure_lsp(_LSP_TEARDOWN, $r); 
+        if ($error = $jnxLsp->get_error())  {
+            return( $error );
         }
     }
     print STDERR "LSP teardown complete\n" ;
@@ -239,7 +238,6 @@ sub update_reservation {
 
     if ( !$error_msg ) {
         print STDERR "Changing status to $status\n";
-        # TODO:  FIX
         ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, $status)
     } else {
         print STDERR "Changing status to failed\n";

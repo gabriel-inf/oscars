@@ -1,5 +1,6 @@
 ##############################################################################
 # Main package, uses the BSS database front end
+# July 8, 2005
 #
 # JRLee
 # DWRobertson
@@ -8,12 +9,12 @@
 package BSS::Scheduler::ReservationHandler; 
 
 use Data::Dumper;
-
 use Net::Ping;
-
 use Net::Traceroute;
-use BSS::Traceroute::JnxTraceroute;
+use Error qw(:try);
 
+use Common::Exception;
+use BSS::Traceroute::JnxTraceroute;
 # BSS data base front end
 use BSS::Frontend::Reservation;
 
@@ -37,30 +38,17 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{frontend} = BSS::Frontend::Reservation->new('configs' => $self->{configs});
-    # clear error message
-    $self->{error_msg} = 0;
+    $self->{frontend} = BSS::Frontend::Reservation->new(
+                                               'configs' => $self->{configs});
+    $self->{dbconn} = $self->{frontend}->{dbconn};
 }
 ######
-
-##############################################################################
-# get_error:  Return the error message (0 if none).
-# In:  <none>
-# Out: Error message
-#
-sub get_error {
-    my ($self) = @_;
-
-    return($self->{error_msg});
-}
-######
-
 
 ##############################################################################
 sub logout {
     my ( $self, $inref ) = @_;
 		
-    return $self->{frontend}->{dbconn}->logout( $inref->{user_dn} );
+    return $self->{dbconn}->logout( $inref->{user_dn} );
 }
 ######
 
@@ -72,36 +60,26 @@ sub logout {
 # IN: ref to hash containing fields corresponding to the reservations table.
 #     Some fields are still empty, and are filled in before inserting a
 #     record
-# OUT: 0 on success, and hash containing all table fields, as well as error
-#     or status message
+# OUT: 0 on success, and hash containing all table fields
 #
 sub create_reservation {
     # reference to input hash ref containing fields filled in by user
     # This routine fills in the remaining fields.
     my ( $self, $inref ) = @_; 
 
-    my ( $error_status );
     my $results = {};
 
     $self->{output_buf} = "*********************\n";
-    ($inref->{ingress_interface_id}, $inref->{egress_interface_id}, $inref->{reservation_path}) = $self->find_interface_ids($inref);
-    $results->{error_msg} = $self->get_error();
-
-    if ($results->{error_msg}) { return ( $results ); }
+    ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
+            $inref->{reservation_path}) = $self->find_interface_ids($inref);
 
     $results  = $self->{frontend}->insert_reservation( $inref );
-    if (!$results->{error_msg}) {
-        $results->{reservation_tag} =~ s/@/../;
-    }
-    else {
-        $results->{reservation_tag} = "fatal_reservation_errors";
-    }
-    open (LOGFILE, ">$ENV{OSCARS_HOME}/logs/$results->{reservation_tag}") || die "Can't open log file.\n";
+    $results->{reservation_tag} =~ s/@/../;
+    open (LOGFILE, ">$ENV{OSCARS_HOME}/logs/$results->{reservation_tag}") ||
+             die "Can't open log file.\n";
     print LOGFILE "********************\n";
     print LOGFILE $self->{output_buf};
-    if ($results->{error_msg}) {
-        print LOGFILE $results->{error_msg}, "\n";
-    }
+    # TODO:  FIX, need to print to logfile if exception
     close(LOGFILE);
     return ( $results );
 }
@@ -125,8 +103,7 @@ sub delete_reservation {
 # IN: ref to hash containing fields corresponding to the reservations table.
 #     Some fields are still empty, and are filled in before inserting a
 #     record
-# OUT: 0 on success, and hash containing all table fields, as well as error
-#     or status message
+# OUT: 0 on success, and hash containing all table fields
 #
 sub get_reservations {
     my ( $self, $inref ) = @_; 
@@ -149,21 +126,21 @@ sub do_ping {
         my @ping = `/bin/ping -w 10 -c 3 -n  $host`;
         for my $i (@ping) {
             if ( $i =~ /^64 bytes/ ) {  
-                return 1; 
+                return; 
             }
         }
-        return 0;
+        throw Common::Exception("Host $host not pingable");
     # use the Net::Ping system
     } else {
         # make sure its up and pingable first
         my $p = Net::Ping->new(proto=>'icmp');
         if (! $p->ping($host, 5) )  {
             $p->close();
-            return 0;
+            throw Common::Exception("Host $host not pingable");
         }
         $p->close();
     }
-    return 0;
+    throw Common::Exception("Host $host not pingable");
 }
 ######
 
@@ -171,7 +148,7 @@ sub do_ping {
 # do remote trace:  Run traceroute from src to dst.
 #
 # In:   source, destination IP addresses.
-# Out:  interface ID, path, and error message, if any  
+# Out:  interface ID, path  
 #
 sub do_remote_trace {
     my ( $self, $user_dn, $src, $dst )  = @_;
@@ -179,39 +156,23 @@ sub do_remote_trace {
     my ($interface_id, $prev_id, @path);
     my ($prev_loopback, $loopback_ip);
 
-    $self->{error_msg} = 0;
     @path = ();
     # try to ping before traceing?
-    if ($self->{configs}{use_ping}) {
-        if ( 0 == $self->do_ping($dst)) {
-            $self->{error_msg} = "host $dst not pingable";
-            return (0, "", \@path);
-        }
-    }
+    if ($self->{configs}{use_ping}) { $self->do_ping($dst); }
 
     my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
-    if (!$jnxTraceroute->traceroute($src, $dst)) {
-        $self->{error_msg} = $jnxTraceroute->get_error();
-        return (0, "", \@path);
-    }
-
+    $jnxTraceroute->traceroute($src, $dst);
     @hops = $jnxTraceroute->get_hops();
 
     # if we didn't hop much, maybe the same router?
-    if ($#hops < 0 ) {
-        $self->{error_msg} = "same router?";
-        return (0, "", \@path);
-    }
+    if ($#hops < 0 ) { throw Common::Exception("same router?"); }
 
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
-        ($interface_id, $self->{error_msg}) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $self->{configs}{jnx_source});
-        if ($self->{error_msg})  { return (0, "", \@path); }
-
-        if ($interface_id != 0) {
-            ($loopback_ip, $self->{error_msg}) = $self->{frontend}->{dbconn}->xface_id_to_loopback($user_dn, $interface_id, 'ip');
-            if ($self->{error_msg})  { return (0, "", \@path); }
-        }
+        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn,
+                                                $self->{configs}{jnx_source});
+        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
+                                                          $interface_id, 'ip');
         return ($interface_id, $loopback_ip, \@path);
     }
 
@@ -224,17 +185,9 @@ sub do_remote_trace {
         $self->{output_buf} .= "hop:  $hop\n";
         print STDERR "hop:  $hop\n";
         # id is 0 if not an edge router (not in interfaces table)
-        ($interface_id, $self->{error_msg}) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $hop);
-        if ($self->{error_msg})  {
-            return (0, "", \@path);
-        }
-        # check to make sure router has a loopback
-        if ($interface_id != 0) {
-            ($loopback_ip, $self->{error_msg}) = $self->{frontend}->{dbconn}->xface_id_to_loopback($user_dn, $interface_id, 'ip');
-            if ($self->{error_msg})  {
-                return (0, "", \@path);
-            }
-        }
+        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $hop);
+        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
+                                                     $interface_id, 'ip');
         if ($interface_id == 0) {
             $self->{output_buf} .= "edge router is $prev_loopback\n";
             print STDERR "edge router is $prev_loopback\n";
@@ -256,8 +209,8 @@ sub do_remote_trace {
     }
 
     # if we didn't find it
-    $self->{error_msg} = "Couldn't trace route to $src";
-    return (0, "", \@path);
+    throw Common::Exception("Couldn't trace route to $src");
+    return;
 }
 ######
 
@@ -268,21 +221,13 @@ sub do_local_trace {
     my ($self, $user_dn, $host)  = @_;
     my ($tr, $hops, $interface_id);
 
-    $self->{error_msg} = 0;
     # try to ping before traceing?
-    if ($self->{configs}{use_ping}) {
-        if ( 0 == $self->do_ping($host)) {
-            $self->{error_msg} = "do_local_trace: Host $host not pingable";
-            return (0);
-        }
-    }
-
+    if ($self->{configs}{use_ping}) { $self->do_ping($host); }
     $tr = new Net::Traceroute->new( host=>$host, timeout=>30, 
             query_timeout=>3, max_ttl=>20 ) || return (0);
 
     if( !$tr->found ) {
-        $self->{error_msg} = "do_local_trace: $host not found";
-        return (0);
+        throw Common::Exception("do_local_trace: $host not found");
     } 
 
     $hops = $tr->hops;
@@ -291,26 +236,22 @@ sub do_local_trace {
 
     # if we didn't hop much, mabe the same router?
     if ($hops < 2 ) {
-        $self->{error_msg} = "do_local_trace: same router?";
-        return (0);
+        throw Common::Exception("do_local_trace: same router?");
     }
 
     # loop from the last router back, till we find an edge router
     for my $i (1..$hops-1) {
         my $ipaddr = $tr->hop_query_host($hops - $i, 0);
-        ($interface_id, $self->{error_msg}) = $self->{frontend}->{dbconn}->ip_to_xface_id($user_dn, $ipaddr);
-        if (($interface_id != 0) && (!$self->{error_msg})) {
+        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $ipaddr);
+        if ($interface_id != 0) {
             $self->{output_buf} .= "do_local_trace:  edge router is $ipaddr\n";
             print STDERR "do_local_trace:  edge router is $ipaddr\n";
             return ($interface_id);
         } 
-        if ($self->{error_msg}) {
-            return (0);
-        }
      }
     # if we didn't find it
-    $self->{error_msg} = "do_local_trace:  could not find edge router";
-    return (0);
+    throw Common::Exception("do_local_trace:  could not find edge router");
+    return;
 }
 ######
 
@@ -318,8 +259,7 @@ sub do_local_trace {
 # find_interface_ids:  run traceroutes to both hosts.  Find edge routers and
 # validate both ends.
 # IN:  src and dst host IP addresses
-# OUT: ids of interfaces of the edge routers, path list (router indexes), and
-#      error msg
+# OUT: ids of interfaces of the edge routers, path list (router indexes)
 # TODO: validate input
 #
 sub find_interface_ids {
@@ -328,7 +268,6 @@ sub find_interface_ids {
     my( $src, $dst, $ingress_interface_id, $egress_interface_id );
     my( $loopback_ip, $path, $start_router );
 
-    $self->{error_msg} = 0;
     $src = $inref->{src_address};
     $dst = $inref->{dst_address};
     # If the loopbacks have not already been specified, use the default
@@ -336,55 +275,56 @@ sub find_interface_ids {
     # an oscars loopback closest to the source 
     if ($inref->{lsp_from}) {
         print STDERR "Ingress:  $inref->{lsp_from}\n";
-        ($ingress_interface_id, $self->{error_msg}) = $self->{frontend}->{dbconn}->ip_to_xface_id($inref->{user_dn}, $inref->{lsp_from});
+        $ingress_interface_id = $self->{dbconn}->ip_to_xface_id(
+                                       $inref->{user_dn}, $inref->{lsp_from});
         if ($ingress_interface_id != 0) {
-            ($loopback_ip, $self->{error_msg}) = $self->{frontend}->{dbconn}->xface_id_to_loopback(
-                                          $inref->{user_dn},
-                                          $ingress_interface_id, 'ip');
-            if ($self->{error_msg})  { return (0, "", $path); }
+            $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
+                                       $inref->{user_dn},
+                                       $ingress_interface_id, 'ip');
         }
         else {
-            $self->{error_msg} = "Ingress loopback is not a valid OSCARS router";
-            return (0, "", $path);
+            throw Common::Exception(
+                             "Ingress loopback is not a valid OSCARS router");
         }
     }
     else {
-        $self->{output_buf} .= "--traceroute:  $self->{configs}{jnx_source} to source $src\n";
+        $self->{output_buf} .= "--traceroute:  " .
+                              "$self->{configs}{jnx_source} to source $src\n";
         ($ingress_interface_id, $loopback_ip, $path) =
-                $self->do_remote_trace($inref->{user_dn}, $self->{configs}{jnx_source}, $src);
+                $self->do_remote_trace($inref->{user_dn},
+                                       $self->{configs}{jnx_source}, $src);
     }
-    if ($self->get_error()) { return ( 0, 0, $path); }
   
     if ($inref->{lsp_to}) {
-        ($egress_interface_id, $self->{error_msg}) = $self->{frontend}->{dbconn}->ip_to_xface_id(
-                                          $inref->{user_dn}, $inref->{lsp_to});
+        $egress_interface_id = $self->{dbconn}->ip_to_xface_id(
+                                       $inref->{user_dn}, $inref->{lsp_to});
         if ($egress_interface_id != 0) {
-            ($loopback_ip, $self->{error_msg}) = $self->{frontend}->{dbconn}->xface_id_to_loopback(
-                                          $inref->{user_dn},
-                                          $egress_interface_id, 'ip');
-            if ($self->{error_msg})  { return (0, "", $path); }
+            $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
+                                      $inref->{user_dn},
+                                      $egress_interface_id, 'ip');
         }
         else {
-            $self->{error_msg} = "Egress loopback is not a valid OSCARS router";
-            return (0, "", $path);
+            throw Common::Exception(
+                               "Egress loopback is not a valid OSCARS router");
         }
     }
     else {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
         if ( $self->{configs}{run_traceroute} )  {
-            $self->{output_buf} .= "--traceroute:  $loopback_ip to destination $dst\n";
-            ($egress_interface_id, $loopback_ip, $path) = $self->do_remote_trace($inref->{user_dn},
-                                               $loopback_ip, $dst);
+            $self->{output_buf} .= "--traceroute:  " .
+                               "$loopback_ip to destination $dst\n";
+            ($egress_interface_id, $loopback_ip, $path) =
+                    $self->do_remote_trace($inref->{user_dn}, $loopback_ip,
+                                           $dst);
         } else {
-            $ingress_interface_id = $self->do_local_trace($inref->{user_dn}, $src);
+            $ingress_interface_id = $self->do_local_trace($inref->{user_dn},
+                                                          $src);
         }
     }
-    if ($self->{error_msg}) { return (0, 0, $path); }
 
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0)) {
-        $self->{error_msg} = "Unable to find route.";
-        return( 0, 0, $path );
+        throw Common::Exception("Unable to find route.");
     }
 	return ($ingress_interface_id, $egress_interface_id, $path); 
 }
