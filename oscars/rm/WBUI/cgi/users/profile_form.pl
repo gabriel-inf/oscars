@@ -43,6 +43,10 @@ sub process_form {
         $form_params->{admin_dn} = $form_params->{user_dn};
         $form_params->{user_dn} = $form_params->{id};
     }
+    if ($form_params->{new_user_dn}) {
+        $form_params->{admin_dn} = $form_params->{user_dn};
+        $form_params->{user_dn} = $form_params->{new_user_dn};
+    }
     if ($form_params->{set}) { $form_params->{method} = 'soap_set_profile'; }
     else { $form_params->{method} = 'soap_get_profile'; }
 
@@ -51,7 +55,9 @@ sub process_form {
         update_status_frame(1, $som->faultstring);
         return;
     }
+    print STDERR "to results\n";
     $results = $som->result;
+    print STDERR Dumper($results);
     if (!$results->{error_msg}) {
         print_profile($results, $form_params);
         if ($form_params->{set}) {
@@ -90,7 +96,7 @@ sub print_profile {
     print '<div id="account_ui">', "\n\n";
 
         # This will only happen if coming in from "accounts list" page as admin
-    if ($form_params->{admin_dn}) {
+    if ($form_params->{admin_dn} && !$form_params->{new_user_dn}) {
         print "<h3>Editing profile for user: $form_params->{user_dn}</h3>\n";
     }
     print '<p>Required fields are marked with an <span class="requiredmark">*</span></p>', "\n";
@@ -127,6 +133,12 @@ sub print_profile {
     print '       <input type="password" name="password_new_twice" size="20" value="">', "\n";
     print '   </td>', "\n";
     print '</tr>', "\n";
+    if ($form_params->{admin_dn}) {
+        print '<tr>', "\n";
+        print '   <th><span class="requiredmark">*</span> User Level</th>', "\n";
+        print '   <td><input type="text" name="new_user_level" size="20"></td>', "\n";
+        print '</tr>', "\n";
+    }
     print '</table>', "\n";
     print '<table>', "\n";
 

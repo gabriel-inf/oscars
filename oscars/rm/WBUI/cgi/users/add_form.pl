@@ -50,7 +50,8 @@ sub print_add_user_form {
 
     print "<h2>Add a new user (not functional yet)</h2>\n";
     print '<p>Required fields are marked with an <span class="requiredmark">*</span>. ', "\n";
-    print "The Admin Password is the password for $form_params{user_dn}.</p>\n";
+    print "The password for <strong>$form_params{user_dn}</strong>";
+    print " is the <strong>Admin Password</strong>.</p>\n";
     print '<form method="post" action="' .  $oscars_home .
           'cgi-bin/users/profile_form.pl" ' .
           'onsubmit="return check_form(this);">' . "\n";
@@ -59,7 +60,7 @@ sub print_add_user_form {
     print '<tr>', "\n";
 
     print '  <th><span class="requiredmark">*</span> Distinguished Name</th>', "\n";
-    print '  <td><input type="text" name="user_dn" size="20"', "\n";
+    print '  <td><input type="text" name="new_user_dn" size="20"', "\n";
     print '  </td>', "\n";
     print '</tr>', "\n";
 
