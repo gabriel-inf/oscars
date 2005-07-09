@@ -51,9 +51,10 @@ sub print_reservation_form {
     print '<div id="reservation_ui">', "\n";
 
     print '<form method="post" action="' . $oscars_home .
-          'cgi-bin/reservations/create.pl" target="status_frame" ' .
+          'cgi-bin/reservations/details.pl" ' .
           ' onsubmit="return check_form(this);">' . "\n";
 
+    print '<input type="hidden" name="create" value="1">', "\n";
     print '<input type="hidden" name="reservation_start_time">', "\n";
     print '<input type="hidden" name="reservation_end_time">', "\n";
 

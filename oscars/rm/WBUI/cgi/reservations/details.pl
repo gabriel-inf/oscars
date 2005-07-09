@@ -2,7 +2,7 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: July 6, 2005
+# Last modified: July 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -50,6 +50,11 @@ sub process_form {
         # Check if reservation is being cancelled
     if ($form_params->{cancel}) {
         $form_params->{method} = 'soap_delete_reservation';
+    }
+    elsif ($form_params->{create}) {
+        $form_params->{method} = 'soap_create_reservation';
+    }
+    if ($form_params->{method}) {
         $som = bss_dispatcher($form_params);
         if ($som->faultstring) {
             update_status_frame(1, $som->faultstring);
@@ -60,6 +65,12 @@ sub process_form {
             update_status_frame(1, $results->{error_msg});
             return;
         }
+    }
+    if ($form_params->{create}) {
+        $form_params{reservation_id} = $results{reservation_id};
+        print_reservation_detail($user_level, $form_params, $results);
+        update_status_frame(0, "Successfully created reservation with id $results->{reservation_id}");
+        return;
     }
     # print updated reservation info (may be more than just new status)
     $form_params->{method} = 'soap_get_reservations';
@@ -86,7 +97,7 @@ sub process_form {
 # Out: None
 #
 sub print_reservation_detail {
-    my ( $user_level, $form_params, $results ) = @_;
+    my( $user_level, $form_params, $results ) = @_;
 
     my $row = @{$results->{rows}}[0];
     print '<html>', "\n";
