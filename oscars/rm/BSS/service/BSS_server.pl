@@ -2,7 +2,7 @@
 
 ####
 # BSS_server.pl:  Soap lite server for BSS
-# Last modified:  July 6, 2005
+# Last modified:  July 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee (jrlee@lbl.gov)
 ###
@@ -45,32 +45,42 @@ my $daemon = SOAP::Transport::HTTP::Daemon
 
 package Dispatcher;
 
+use Error qw(:try);
+use Common::Exception;
+
 sub dispatch {
     my ( $self, $inref ) = @_;
 
     my ( $results );
 
-    if ($inref->{method} eq 'soap_logout_user') {
-        $results = $dbHandler->logout($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_get_reservations') {
-        $results = $dbHandler->get_reservations($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_create_reservation') {
-        $results = $dbHandler->create_reservation($inref) ;
-    }
-    elsif ($inref->{method} eq 'soap_delete_reservation') {
-        $results = $dbHandler->delete_reservation($inref) ;
-    }
-    else {
-        $results = {};
-        if ($inref->{method}) {
-            $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
+    try {
+        if ($inref->{method} eq 'soap_logout_user') {
+            $results = $dbHandler->logout($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_get_reservations') {
+            $results = $dbHandler->get_reservations($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_create_reservation') {
+            $results = $dbHandler->create_reservation($inref) ;
+        }
+        elsif ($inref->{method} eq 'soap_delete_reservation') {
+            $results = $dbHandler->delete_reservation($inref) ;
         }
         else {
-            $results->{error_msg} = "SOAP method not provided\n";
+            $results = {};
+            if ($inref->{method}) {
+                $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
+            }
+            else {
+                $results->{error_msg} = "SOAP method not provided\n";
+            }
         }
     }
+    catch Common::Exception with {
+        my $E = shift;
+        print STDERR $E->{-text};
+        $results->{error_msg} = $E->{-text};
+    };
     return $results;
 }
 ######
