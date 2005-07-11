@@ -60,7 +60,7 @@ sub logout {
 # IN: ref to hash containing fields corresponding to the reservations table.
 #     Some fields are still empty, and are filled in before inserting a
 #     record
-# OUT: 0 on success, and hash containing all table fields
+# OUT: hash containing all table fields, and logging buffer
 #
 sub create_reservation {
     # reference to input hash ref containing fields filled in by user
@@ -75,13 +75,7 @@ sub create_reservation {
 
     $results  = $self->{frontend}->insert_reservation( $inref );
     $results->{reservation_tag} =~ s/@/../;
-    open (LOGFILE, ">$ENV{OSCARS_HOME}/logs/$results->{reservation_tag}") ||
-             die "Can't open log file.\n";
-    print LOGFILE "********************\n";
-    print LOGFILE $self->{output_buf};
-    # TODO:  FIX, need to print to logfile if exception
-    close(LOGFILE);
-    return ( $results );
+    return ( $results, $self->{output_buf} );
 }
 ######
 
