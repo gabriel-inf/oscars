@@ -2,7 +2,7 @@ package Common::Mail;
 
 # Mail.pm:  handles sending notification mail messages
 # 
-# Last modified: July 7, 2005
+# Last modified: July 11, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -73,8 +73,8 @@ sub get_webmaster {
 sub get_admins {
     my( $self ) = @_;
 
-    #return( 'dwrobertson@lbl.gov' );
-    return( 'oscars-admin@es.net' );
+    #return( 'oscars-admin@es.net' );
+    return( 'dwrobertson@lbl.gov chin@es.net' );
 }
 ######
 
