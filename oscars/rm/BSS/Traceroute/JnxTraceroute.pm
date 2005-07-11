@@ -53,6 +53,10 @@ sub traceroute
         throw Common::Exception("Traceroute source or destination not defined.");
     }
 
+    # Remove subnet mask if necessary.
+    # e.g. 10.0.0.0/8 => 10.0.0.0
+    $dst =~ s/\/\d*$//;
+
     # Perform the traceroute.
     $cmd = "ssh -x -a -i $self->{config}->{jnx_key} -l $self->{config}->{jnx_user} $src traceroute $dst wait 1";
     print STDERR "$cmd\n";
