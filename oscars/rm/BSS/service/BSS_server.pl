@@ -51,7 +51,7 @@ use Common::Exception;
 sub dispatch {
     my ( $self, $inref ) = @_;
 
-    my ( $logging_buf );
+    my ( $logging_buf, $ex );
 
     my $results = {};
     try {
@@ -69,17 +69,17 @@ sub dispatch {
         }
         else {
             if ($inref->{method}) {
-                $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
+                die SOAP::Fault->faultcode('Server')
+                         ->faultstring("No such SOAP method: $inref->{method}\n");
             }
             else {
-                $results->{error_msg} = "SOAP method not provided\n";
+                die SOAP::Fault->faultcode('Server')
+                         ->faultstring("SOAP method not provided\n");
             }
         }
     }
     catch Common::Exception with {
-        my $E = shift;
-        print STDERR $E->{-text}, "\n";
-        $results->{error_msg} = $E->{-text};
+        $ex = shift;
     }
     finally {
         my $logfile_name = "$ENV{OSCARS_HOME}/logs/";
@@ -96,13 +96,18 @@ sub dispatch {
         if ($logging_buf) {
             print LOGFILE $logging_buf;
         }
-        if ($results->{error_msg}) {
+        if ($ex) {
             print LOGFILE "EXCEPTION:\n";
-            print LOGFILE $results->{error_msg};
+            print LOGFILE $ex->{-text};
             print LOGFILE "\n";
         }
         close(LOGFILE);
     };
+    # caught by SOAP to indicate fault
+    if ($ex) {
+        die SOAP::Fault->faultcode('Server')
+                 ->faultstring($ex->{-text});
+    }
     return $results;
 }
 ######
