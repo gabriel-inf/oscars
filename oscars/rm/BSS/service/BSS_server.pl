@@ -51,8 +51,9 @@ use Common::Exception;
 sub dispatch {
     my ( $self, $inref ) = @_;
 
-    my ( $results );
+    my ( $logging_buf );
 
+    my $results = {};
     try {
         if ($inref->{method} eq 'soap_logout_user') {
             $results = $dbHandler->logout($inref) ;
@@ -61,13 +62,12 @@ sub dispatch {
             $results = $dbHandler->get_reservations($inref) ;
         }
         elsif ($inref->{method} eq 'soap_create_reservation') {
-            $results = $dbHandler->create_reservation($inref) ;
+            ($results, $logging_buf) = $dbHandler->create_reservation($inref) ;
         }
         elsif ($inref->{method} eq 'soap_delete_reservation') {
             $results = $dbHandler->delete_reservation($inref) ;
         }
         else {
-            $results = {};
             if ($inref->{method}) {
                 $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
             }
@@ -78,8 +78,30 @@ sub dispatch {
     }
     catch Common::Exception with {
         my $E = shift;
-        print STDERR $E->{-text};
+        print STDERR $E->{-text}, "\n";
         $results->{error_msg} = $E->{-text};
+    }
+    finally {
+        my $logfile_name = "$ENV{OSCARS_HOME}/logs/";
+
+        if ($results->{reservation_tag}) {
+            $logfile_name .= $results->{reservation_tag};
+        }
+        else {
+            $logfile_name .= "fatal_reservation_errors";
+        }
+        open (LOGFILE, ">$logfile_name") ||
+                die "Can't open log file $logfile_name.\n";
+        print LOGFILE "********************\n";
+        if ($logging_buf) {
+            print LOGFILE $logging_buf;
+        }
+        if ($results->{error_msg}) {
+            print LOGFILE "EXCEPTION:\n";
+            print LOGFILE $results->{error_msg};
+            print LOGFILE "\n";
+        }
+        close(LOGFILE);
     };
     return $results;
 }
