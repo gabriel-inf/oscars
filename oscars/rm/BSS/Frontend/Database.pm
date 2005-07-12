@@ -64,10 +64,10 @@ sub enforce_connection {
 
     $soap_params{user_dn} = $user_dn;
     $soap_params{method} = 'soap_check_login';
-    my $results = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
-    if ($results->{error_msg}) {
-        print STDERR "soap_check_login error:  $results->{error_msg}\n";
-        throw Common::Exception("soap_check_login error:  $results->{error_msg}");
+    my $som = aaas_dispatcher(\%soap_params);
+    if ($som->faultstring) {
+        print STDERR $som->faultstring, "\n";
+        throw Common::Exception($som->faultstring);
     }
 
     # for now, handle set up per connection
