@@ -81,6 +81,7 @@ sub dispatch {
     };
     # caught by SOAP to indicate fault
     if ($ex) {
+        #print STDERR $ex->{-text}, "\n";
         die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
     }
