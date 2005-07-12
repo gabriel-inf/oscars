@@ -16,7 +16,12 @@ my $cgi = CGI->new();
 # Check that the user exists, the correct password has been given, the user
 # account has been activated, and the user has the proper privilege level
 # to perform database operations.
-my $som = verify_user($cgi);
+my ($err_msg, $som) = verify_user($cgi);
+if ($err_msg) {
+    update_status_frame(1, $err_msg); 
+    exit;
+}
+
 $results = $som->result;
 
 if ($results->{error_msg}) {
