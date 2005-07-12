@@ -1,5 +1,5 @@
 # Policy.pm:  database handling for policy related matters
-# Last modified: July 8, 2005
+# Last modified: July 11, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -47,10 +47,12 @@ sub check_oversubscribe {
 
     my ( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
     my ( $router_name );
+    # maximum utilization for a particular link
+    my ( $max_utilization );
     my $user_dn = $inref->{user_dn};
 
     # XXX: what is the MAX percent we can allocate? for now 50% ...
-    my ( $max_reservation_utilization) = 0.50; 
+    my ( $max_reservation_utilization ) = 0.50; 
 
     # assign the new path bandwidths 
     for $link (@{$inref->{reservation_path}}) {
@@ -66,35 +68,36 @@ sub check_oversubscribe {
             }
         }
     }
-
     # now for each of those interface idx
     for $idx (keys %iface_idxs) {
         # get max bandwith speed for an idx
         $row = $self->get_interface_fields($user_dn, $idx);
         if (!$row ) { next; }
 
-        if ( $row->{interface_valid} == 'False' ) {
+        if ( $row->{interface_valid} eq 'False' ) {
             throw Common::Exception("interface $idx not valid");
         }
  
-        if ($iface_idxs{$idx} >
-            ($row->{interface_speed} * $max_reservation_utilization)) {
-            my $max_utilization = $row->{interface_speed} * $max_reservation_utilization/1000000.0;
+        $max_utilization = $row->{interface_speed} *
+                           $max_reservation_utilization;
+        if ($iface_idxs{$idx} > $max_utilization) {
             my $error_msg;
+            # only print router name if user has admin privileges
             if ($inref->{form_type} eq 'admin') {
-                $router_name = $self->{dbconn}->xface_id_to_loopback($user_dn, $idx, 'name');
+                $router_name = $self->{dbconn}->xface_id_to_loopback($user_dn,
+                                                                 $idx, 'name');
                 $error_msg = "$router_name oversubscribed: ";
             }
-            else {
-                $error_msg = "Route oversubscribed: ";
-            }
-            return($error_msg . $iface_idxs{$idx}/1000000 . " Mbps > " . "$max_utilization Mbps");
+            else { $error_msg = "Route oversubscribed: "; }
+            throw Common::Exception($error_msg . " " . $iface_idxs{$idx} .
+                  " Mbps > " .  $max_utilization . " Mbps" . "\n");
         }
     }
     # Replace array @$inref->{reservation_path} with string separated by
     # spaces
     $inref->{reservation_path} = join(' ', @{$inref->{reservation_path}});
-    return( "" );
+
+    return;
 }
 ######
 
