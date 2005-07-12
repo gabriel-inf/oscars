@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # AAAS_server.pl:  AAAS SOAP server.
-# Last modified: July 6, 2005
+# Last modified: July 11, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -31,6 +31,7 @@ use Common::Exception;
 sub dispatch {
     my ( $self, $inref ) = @_;
 
+    my( $ex );
     my $results = {};
     try {
         if ($inref->{method} eq 'soap_verify_login') {
@@ -53,17 +54,36 @@ sub dispatch {
         }
         else {
             if ($inref->{method}) {
-                $results->{error_msg} = "No such SOAP method: $inref->{method}\n";
+                die SOAP::Fault->faultcode('Server')
+                         ->faultstring("No such SOAP method: $inref->{method}\n");
             }
             else {
-                $results->{error_msg} = "SOAP method not provided\n";
+                die SOAP::Fault->faultcode('Server')
+                         ->faultstring("SOAP method not provided\n");
             }
         }
     }
     catch Common::Exception with {
-        my $E = shift;
-        $results->{error_msg} = $E->{-text};
+        $ex = shift;
+    }
+    finally {
+        my $logfile_name = "$ENV{OSCARS_HOME}/logs/AAAS.err";
+
+        open (LOGFILE, ">$logfile_name") ||
+                die "Can't open log file $logfile_name.\n";
+        print LOGFILE "********************\n";
+        if ($ex) {
+            print LOGFILE "EXCEPTION:\n";
+            print LOGFILE $ex->{-text};
+            print LOGFILE "\n";
+        }
+        close(LOGFILE);
     };
+    # caught by SOAP to indicate fault
+    if ($ex) {
+        die SOAP::Fault->faultcode('Server')
+                 ->faultstring($ex->{-text});
+    }
     return $results;
 }
 ######
