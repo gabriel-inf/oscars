@@ -33,19 +33,26 @@ sub initialize {
 sub get_stats {
     my( $self, $user_dn, $inref, $results) = @_;
 
+    # only optional fields need to be checked for existence
     my $stats = 
         "Reservation entered by $user_dn with parameters:\n" .
-        "Description:      $inref->{reservation_description}\n" .
-        "Reservation id:   $results->{reservation_id}\n" .
-        "Start time:       " .
+        "Description:      $inref->{reservation_description}\n";
+    if ($results->{reservation_id}) {
+        $stats .= "Reservation id:   $results->{reservation_id}\n";
+    }
+    $stats .= "Start time:       " .
             $self->get_time_str($inref->{reservation_start_time}) . "\n" .
         "End time:         " .
-            $self->get_time_str($inref->{reservation_end_time}) . "\n" .
-        "Created time:     " .
-            $self->get_time_str($inref->{reservation_created_time}) . "\n" .
-        "Bandwidth:        $inref->{reservation_bandwidth}\n" .
-        "Burst limit:      $inref->{reservation_burst_limit}\n" .
-        "Source:           $inref->{src_address}\n" .
+            $self->get_time_str($inref->{reservation_end_time}) . "\n";
+    if ($inref->{reservation_created_time}) {
+        $stats .= "Created time:     " .
+            $self->get_time_str($inref->{reservation_created_time}) . "\n";
+    }
+    $stats .= "Bandwidth:        $inref->{reservation_bandwidth}\n";
+    if ($inref->{reservation_burst_limit}) {
+        $stats .= "Burst limit:      $inref->{reservation_burst_limit}\n";
+    }
+    $stats .= "Source:           $inref->{src_address}\n" .
         "Destination:      $inref->{dst_address}\n";
     if ($inref->{reservation_src_port}) {
         $stats .= "Source port:      $inref->{reservation_src_port}\n";

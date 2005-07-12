@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: July 8, 2005
+# Last modified: July 11, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -100,7 +100,16 @@ sub insert_reservation {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
+    if (($inref->{ingress_interface_id} == 0) ||
+        ($inref->{egress_interface_id} == 0))
+    {
+        throw Common::Exception("Invalid router id(s): 0.  Unable to " .
+                                "do insert.");
+    }
     $self->{dbconn}->enforce_connection($user_dn);
+    # convert requested bandwidth to bps
+    $inref->{reservation_bandwidth} *= 1000000;
+    my $stats = BSS::Frontend::Stats->new();
 
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
@@ -116,68 +125,60 @@ sub insert_reservation {
 
     # handled query with the comparison start & end datetime strings
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-            $inref->{reservation_start_time}, $inref->{reservation_end_time});
+           $inref->{reservation_start_time}, $inref->{reservation_end_time});
     $arrayref = $sth->fetchall_arrayref({});
 
     # If no segment is over the limit,  record the reservation to the database.
-    # otherwise, throw exception with the times involved.
-    my $over_limit_msg = $self->{policy}->check_oversubscribe($arrayref, $inref);
+    # Otherwise, throw exception with the bandwidths and times involved.
+    $self->{policy}->check_oversubscribe($arrayref, $inref);
     $sth->finish();
-    if ( $over_limit_msg ) {
-        throw Common::Exception($over_limit_msg);
-    }
-    else {
-        if (($inref->{ingress_interface_id} == 0) ||
-            ($inref->{egress_interface_id} == 0))
-        {
-            throw Common::Exception("Invalid router id(s): 0.  Unable to " .
-                                    "do insert.");
-        }
 
-        # get ipaddrs table id from source's and destination's host name or ip address
-        $inref->{src_hostaddr_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                                                  $inref->{src_address}); 
-        $inref->{dst_hostaddr_id} = $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                                                  $inref->{dst_address}); 
-        $inref->{reservation_created_time} = time();
+    # Get ipaddrs table id from source's and destination's host name or ip
+    # address.
+    $inref->{src_hostaddr_id} =
+        $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
+                                            $inref->{src_address}); 
+    $inref->{dst_hostaddr_id} =
+        $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
+                                            $inref->{dst_address}); 
+    $inref->{reservation_created_time} = time();
 
-        # the following fields were previously set in the create.pl CGI script
-        $inref->{reservation_id} = 'NULL';
-        $inref->{reservation_class} = '4';
-        # convert to bps
-        $inref->{reservation_bandwidth} *= 1000000;
-        $inref->{reservation_burst_limit} = 1000000;
-        $inref->{reservation_status} = 'pending';
-        my $stats = BSS::Frontend::Stats->new();
-        $inref->{reservation_tag} = $user_dn . '.' .
-                         $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
+    # The following fields were previously set in the create.pl CGI script.
+    $inref->{reservation_id} = 'NULL';
+    $inref->{reservation_class} = '4';
+    # convert to bps
+    $inref->{reservation_burst_limit} = 1000000;
+    $inref->{reservation_status} = 'pending';
+    $inref->{reservation_tag} = $user_dn . '.' .
+        $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
 
-        $query = "SHOW COLUMNS from reservations";
-        $sth = $self->{dbconn}->do_query( $user_dn, $query );
-        $arrayref = $sth->fetchall_arrayref({});
-        my @insertions;
-        for $_ ( @$arrayref ) {
-           if ($inref->{$_->{Field}}) {
-               $results->{$_->{Field}} = $inref->{$_->{Field}};
-               push(@insertions, $inref->{$_->{Field}}); 
-           }
-           else{ push(@insertions, 'NULL'); }
-        }
-        $sth->finish();
-
-        # insert all fields for reservation into database
-        $query = "INSERT INTO reservations VALUES (
-                 " . join( ', ', ('?') x @insertions ) . " )";
-        $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
-        $results->{reservation_id} = $self->{dbconn}->{handles}->{$user_dn}->{mysql_insertid};
+    $query = "SHOW COLUMNS from reservations";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    $arrayref = $sth->fetchall_arrayref({});
+    my @insertions;
+    for $_ ( @$arrayref ) {
+       if ($inref->{$_->{Field}}) {
+           $results->{$_->{Field}} = $inref->{$_->{Field}};
+           push(@insertions, $inref->{$_->{Field}}); 
+       }
+       else{ push(@insertions, 'NULL'); }
     }
     $sth->finish();
 
-    $results->{reservation_tag} = $inref->{reservation_tag} . $results->{reservation_id};
+    # insert all fields for reservation into database
+    $query = "INSERT INTO reservations VALUES (
+             " . join( ', ', ('?') x @insertions ) . " )";
+    $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
+    $results->{reservation_id} =
+            $self->{dbconn}->{handles}->{$user_dn}->{mysql_insertid};
+    $sth->finish();
+
+    $results->{reservation_tag} =
+        $inref->{reservation_tag} . $results->{reservation_id};
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
     $sth = $self->{dbconn}->do_query($user_dn, $query,
-                                  $results->{reservation_tag}, $results->{reservation_id});
+        $results->{reservation_tag}, $results->{reservation_id});
 
     # TODO:  some duplication, fix later
     $query = "SELECT * FROM reservations WHERE reservation_id = ?";
@@ -187,11 +188,9 @@ sub insert_reservation {
     $self->get_user_readable_fields($user_dn, $inref, $rref, $results);
 
     my $mailer = Common::Mail->new();
-    my $stats = BSS::Frontend::Stats->new();
     my $mail_msg = $stats->get_stats($user_dn, $inref, $results) ;
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "Reservation made by $user_dn", $mail_msg);
-    
     return( $results );
 }
 ######
