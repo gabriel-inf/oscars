@@ -340,7 +340,6 @@ sub check_login_status {
 
     my $results = {};
     $self->{dbconn}->enforce_connection($inref->{user_dn});
-    $results->{status_msg} = "User is logged in";
     return( $results );
 }
 ######
