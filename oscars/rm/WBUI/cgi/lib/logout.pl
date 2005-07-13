@@ -17,7 +17,7 @@ my $cgi = CGI->new();
 my ($user_dn, $user_level, $oscars_home) = check_session_status(undef, $cgi);
 
 # logout user from AAAS and BSS databases
-my ($error_msg, $results) = logout_user($user_dn);
+my ($som) = logout_user($user_dn);
 
 # nuke session and put the user back at the login screen
 
@@ -48,16 +48,10 @@ sub logout_user {
     $soap_params{method} = 'soap_logout';
     my $som = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
     if ($som->faultstring) {
-        return( $som->faultstring, undef );
+        return( $som );
     }
-    my $aaa_results = $som->result;
-    if (!$aaa_results->{error_msg}) {
-        $soap_params{method} = 'soap_logout_user';
-        $BSS_som = BSS::Client::SOAPClient::bss_dispatcher(\%soap_params);
-        return( "", $BSS_som->result );
-    }
-    else {
-        return( $aaa_results->{error_msg}, undef );
-    }
+    $soap_params{method} = 'soap_logout_user';
+    $BSS_som = BSS::Client::SOAPClient::bss_dispatcher(\%soap_params);
+    return( $BSS_som );
 }
 ######
