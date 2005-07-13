@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="AAAS" targetNamespace="http://oscars.es.net/AAAS/" xmlns:tns="http://oscars.es.net/AAAS/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://oscars.es.net/AAAS/">
+      <xsd:element name="user_logoutResponse" type="xsd:string"/>
+      <xsd:element name="user_logoutRequest" type="xsd:string"/>
+            <xsd:element name="soap_verify_login" type="xsd:string"></xsd:element>
+            <xsd:element name="soap_check_login" type="xsd:string"></xsd:element>
+            <xsd:element name="soap_get_profile" type="xsd:string"></xsd:element>
+            <xsd:element name="soap_set_profile" type="xsd:string"></xsd:element>
+            <xsd:element name="soap_logout" type="xsd:string"></xsd:element>
+            <xsd:element name="soap_get_userlist" type="xsd:string"></xsd:element>
+        </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="soap_check_loginResponse">
+  	<wsdl:part name="soap_check_loginResponse" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_check_loginRequest">
+  	<wsdl:part name="soap_check_loginRequest" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_verify_loginResponse">
+  	<wsdl:part name="soap_verify_loginResponse" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_verify_loginRequest">
+  	<wsdl:part name="soap_verify_loginRequest" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_get_profileResponse">
+  	<wsdl:part name="soap_get_profileResponse" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_get_profileRequest">
+  	<wsdl:part name="soap_get_profileRequest" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_set_profileResponse">
+  	<wsdl:part name="soap_set_profileResponse" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_set_profileRequest">
+  	<wsdl:part name="soap_set_profileRequest" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_get_userlistResponse">
+  	<wsdl:part name="soap_get_userlistResponse" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="soap_get_userlistRequest">
+  	<wsdl:part name="soap_get_userlistRequest" type="xsd:string"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="AAASSOAP">
+  	<wsdl:operation name="soap_check_login">
+  		<wsdl:input message="tns:soap_check_loginRequest"></wsdl:input>
+  		<wsdl:output message="tns:soap_check_loginResponse"></wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="soap_verify_login">
+  		<wsdl:input message="tns:soap_verify_loginRequest"></wsdl:input>
+  		<wsdl:output message="tns:soap_verify_loginResponse"></wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="soap_get_profile">
+  		<wsdl:input message="tns:soap_get_profileRequest"></wsdl:input>
+  		<wsdl:output message="tns:soap_get_profileResponse"></wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="soap_set_profile">
+  		<wsdl:input message="tns:soap_set_profileRequest"></wsdl:input>
+  		<wsdl:output message="tns:soap_set_profileResponse"></wsdl:output>
+  	</wsdl:operation>
+  	<wsdl:operation name="soap_get_userlist">
+  		<wsdl:input message="tns:soap_get_userlistRequest"></wsdl:input>
+  		<wsdl:output message="tns:soap_get_userlistResponse"></wsdl:output>
+  	</wsdl:operation>
+  </wsdl:portType>
+    <wsdl:binding name="AAASSOAP" type="tns:AAASSOAP"><soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="soap_check_login"><soap:operation soapAction="http://oscars.es.net/AAAS/soap_check_login"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation><wsdl:operation name="soap_verify_login"><soap:operation soapAction="http://oscars.es.net/AAAS/soap_verify_login"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation><wsdl:operation name="soap_get_profile"><soap:operation soapAction="http://oscars.es.net/AAAS/soap_get_profile"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation><wsdl:operation name="soap_set_profile"><soap:operation soapAction="http://oscars.es.net/AAAS/soap_set_profile"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation><wsdl:operation name="soap_get_userlist"><soap:operation soapAction="http://oscars.es.net/AAAS/soap_get_userlist"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding>
+    <wsdl:service name="AAAS">
+    <wsdl:port name="AAASSOAP" binding="tns:AAASSOAP">
+      <soap:address location="http://www.example.org/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
