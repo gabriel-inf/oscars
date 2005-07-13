@@ -55,20 +55,13 @@ sub process_form {
         update_status_frame(1, $som->faultstring);
         return;
     }
-    print STDERR "to results\n";
     $results = $som->result;
-    print STDERR Dumper($results);
-    if (!$results->{error_msg}) {
-        print_profile($results, $form_params);
-        if ($form_params->{set}) {
-            update_status_frame(0, "Successfully updated user profile.");
-        }
-        else {
-            update_status_frame(0, "Successfully retrieved user profile.");
-        }
+    print_profile($results, $form_params);
+    if ($form_params->{set}) {
+        update_status_frame(0, "Successfully updated user profile.");
     }
     else {
-        update_status_frame(1, $results->{error_msg});
+        update_status_frame(0, "Successfully retrieved user profile.");
     }
 }
 ######

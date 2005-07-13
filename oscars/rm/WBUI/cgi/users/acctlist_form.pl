@@ -42,13 +42,8 @@ sub process_form {
         return;
     }
     my $results = $som->result;
-    if (!$results{error_msg}) {
-        print_userlist($results);
-        update_status_frame(0, "Successfully read user list.");
-    }
-    else {
-        update_status_frame(1, $results->{error_msg});
-    }
+    print_userlist($results);
+    update_status_frame(0, "Successfully read user list.");
 }
 ######
 
