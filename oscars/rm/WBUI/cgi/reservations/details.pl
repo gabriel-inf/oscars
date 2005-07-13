@@ -61,10 +61,6 @@ sub process_form {
             return;
         }
         $results = $som->result;
-        if ($results->{error_msg}) {
-            update_status_frame(1, $results->{error_msg});
-            return;
-        }
     }
     if ($form_params->{create}) {
         $form_params{reservation_id} = $results{reservation_id};
@@ -74,19 +70,14 @@ sub process_form {
     }
     # print updated reservation info (may be more than just new status)
     $form_params->{method} = 'soap_get_reservations';
-    $som = BSS::Client::SOAPClient::bss_dispatcher($form_params);
+    $som = bss_dispatcher($form_params);
     if ($som->faultstring) {
         update_status_frame(1, $som->faultstring);
         return;
     }
     $results = $som->result;
-    if (!$results->{error_msg}) {
-        print_reservation_detail($user_level, $form_params, $results);
-        update_status_frame(0, "Successfully got reservation details.");
-    }
-    else {
-        update_status_frame(1, $results->{error_msg});
-    }
+    print_reservation_detail($user_level, $form_params, $results);
+    update_status_frame(0, "Successfully got reservation details.");
 }
 ######
 
