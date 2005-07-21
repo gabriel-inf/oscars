@@ -191,6 +191,8 @@ sub insert_reservation {
     my $mail_msg = $stats->get_stats($user_dn, $inref, $results) ;
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "Reservation made by $user_dn", $mail_msg);
+    $mailer->send_mail($mailer->get_webmaster(), $user_dn,
+                       "Your reservation has been accepted", $mail_msg);
     return( $results );
 }
 ######
