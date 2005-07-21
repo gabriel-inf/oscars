@@ -135,6 +135,9 @@ sub find_new_reservations {
         $mail_msg = $stats->get_lsp_stats(\%lsp_info, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP set up status", $mail_msg);
+        $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
+                       "Your OSCARS circuit set up", $mail_msg);
+
 
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{ACTIVE}, $front_end);
@@ -171,6 +174,8 @@ sub find_expired_reservations {
         $mail_msg = $stats->get_lsp_stats(\%lsp_info, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP tear down status", $mail_msg);
+        $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
+                       "Your OSCARS circuit has been torn down", $mail_msg);
 
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{FINISHED}, $front_end);
