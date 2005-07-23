@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: July 11, 2005
+# Last modified: July 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -110,7 +110,21 @@ sub insert_reservation {
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
     my $stats = BSS::Frontend::Stats->new();
-
+    # convert start and end times to datetime format
+    $query = "SELECT from_unixtime(?)";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_start_time} );
+    $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    if ($inref->{reservation_end_time} < (2**31 - 1)) {
+        $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                          $inref->{reservation_end_time} );
+        $inref->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+    }
+    else {
+        $inref->{reservation_end_time} = $stats->get_infinite_time();
+    }
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
     $query = "SELECT reservation_bandwidth, reservation_start_time,
@@ -141,7 +155,10 @@ sub insert_reservation {
     $inref->{dst_hostaddr_id} =
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
                                             $inref->{dst_address}); 
-    $inref->{reservation_created_time} = time();
+    $query = "SELECT now()";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
 
     # The following fields were previously set in the create.pl CGI script.
     $inref->{reservation_id} = 'NULL';

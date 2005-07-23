@@ -40,13 +40,15 @@ sub get_stats {
     if ($results->{reservation_id}) {
         $stats .= "Reservation id:   $results->{reservation_id}\n";
     }
-    $stats .= "Start time:       " .
-            $self->get_time_str($inref->{reservation_start_time}) . "\n" .
-        "End time:         " .
-            $self->get_time_str($inref->{reservation_end_time}) . "\n";
+    $stats .= "Start time:       $inref->{reservation_start_time}\n";
+    if ($inref->{reservation_end_time} ne $self->get_infinite_time()) {
+        $stats .= "End time:         $inref->{reservation_end_time}\n";
+    }
+    else {
+        $stats .= "End time:         persistent circuit\n";
+    }
     if ($inref->{reservation_created_time}) {
-        $stats .= "Created time:     " .
-            $self->get_time_str($inref->{reservation_created_time}) . "\n";
+        $stats .= "Created time:     $inref->{reservation_created_time}\n";
     }
     $stats .= "Bandwidth:        $inref->{reservation_bandwidth}\n";
     if ($inref->{reservation_burst_limit}) {
@@ -87,20 +89,22 @@ sub get_stats {
 # get_lsp_stats
 #
 sub get_lsp_stats {
-    my( $self, $lsp_info, $inref, $status) = @_;
+    my( $self, $lsp_info, $inref, $status, $config_time) = @_;
 
     my $stats = 
         "LSP config by $inref->{user_dn} with parameters:\n" .
-        "Config time:      " .
-            $self->get_time_str(time()) . "\n" .
+        "Config time:      $config_time\n" .
         "Description:      $inref->{reservation_description}\n" .
         "Reservation id:   $inref->{reservation_id}\n" .
-        "Start time:       " .
-            $self->get_time_str($inref->{reservation_start_time}) . "\n" .
-        "End time:         " .
-            $self->get_time_str($inref->{reservation_end_time}) . "\n" .
-        "Created time:     " .
-            $self->get_time_str($inref->{reservation_created_time}) . "\n" .
+        "Start time:       $inref->{reservation_start_time}\n";
+    if ($inref->{reservation_end_time} ne $self->get_infinite_time()) {
+        $stats .= "End time:         $inref->{reservation_end_time}\n";
+    }
+    else {
+        $stats .= "End time:         persistent circuit\n";
+    }
+    $stats .=
+        "Created time:     $inref->{reservation_created_time}\n" .
         "Bandwidth:        $lsp_info->{bandwidth}\n" .
         "Burst limit:      $lsp_info->{'policer_burst-size-limit'}\n" .
         "Source:           $lsp_info->{'source-address'}\n" .
@@ -143,44 +147,33 @@ sub get_lsp_stats {
     if ($status) {
         $stats .= "Error:  $status\n";
     }
+    else { $stats .= "\n\nLSP configuration successful.\n"; }
 
     return $stats;
 }
 ######
                    
-## here temporarily
-
 ###############################################################################
 # get_time_str:  print formatted time string
 #
 sub get_time_str {
-    my( $self, $epoch_seconds, $gentag ) = @_;
+    my( $self, $dtime, $gentag ) = @_;
 
-    my( $second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year );
-    my( $is_DST, $time_str );
-    ($second, $minute, $hour, $day, $month, $year, $weekday, $day_of_year,
-              $is_DST) = localtime($epoch_seconds); 
-    $year += 1900;
-    $month += 1;
-    if ($month < 10) {
-        $month = "0" . $month;
-    }
-    if ($day < 10) {
-        $day = "0" . $day;
-    }
-    if ($hour < 10) {
-        $hour = "0" . $hour;
-    }
-    if ($minute < 10) {
-        $minute = "0" . $minute;
-    }
     if ($gentag ne 'tag') {
-        $time_str = "$month-$day-$year at $hour:$minute";
+        return $dtime;
     }
-    else {
-        $time_str = $year . $month . $day;
-    }
-    return( $time_str );
+    my @ymd = split(' ', $dtime);
+    return( $ymd[0] );
+}
+######
+
+###############################################################################
+# get_infinite_time:  returns "infinite" time
+#
+sub get_infinite_time {
+    my( $self );
+
+    return '2039-01-01 00:00:00';
 }
 ######
 
