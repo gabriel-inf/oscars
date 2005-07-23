@@ -57,10 +57,10 @@ CREATE TABLE IF NOT EXISTS hostaddrs (
 CREATE TABLE IF NOT EXISTS reservations (
     reservation_id          INT NOT NULL AUTO_INCREMENT,
       -- times are in seconds since epoch (UTC)
-    reservation_start_time  INT UNSIGNED NOT NULL,
-    reservation_end_time    INT UNSIGNED NOT NULL,
+    reservation_start_time  DATETIME NOT NULL,
+    reservation_end_time    DATETIME NOT NULL,
         -- time this entry was created
-    reservation_created_time INT UNSIGNED NOT NULL,
+    reservation_created_time DATETIME NOT NULL,
         -- bandwidth requested (Mbps)
     reservation_bandwidth   BIGINT UNSIGNED NOT NULL,
         -- in Mbps
