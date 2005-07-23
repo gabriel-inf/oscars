@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: July 6, 2005
+# Last modified: July 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -73,11 +73,11 @@ sub print_reservations {
     print '<link rel="stylesheet" type="text/css" ';
     print ' href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
     print '    <script language="javascript" type="text/javascript"' .
-               'src="' . $oscars_home . 'main_common.js"></script>' . "\n";
+               'src="' . $oscars_home . 'scripts/main_common.js"></script>' . "\n";
     print '    <script language="javascript" type="text/javascript"' .
-               'src="' . $oscars_home . 'timeprint.js"></script>' . "\n";
+               'src="' . $oscars_home . 'scripts/timeprint.js"></script>' . "\n";
     print '    <script language="javascript" type="text/javascript"' .
-               'src="' . $oscars_home . 'sorttable.js"></script>', "\n";
+               'src="' . $oscars_home . 'scripts/sorttable.js"></script>', "\n";
     print '</head>', "\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n";

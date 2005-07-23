@@ -2,7 +2,7 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: July 8, 2005
+# Last modified: July 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -96,9 +96,9 @@ sub print_reservation_detail {
     print '<link rel="stylesheet" type="text/css" ';
     print ' href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
     print '    <script language="javascript" type="text/javascript"' .
-               'src="' . $oscars_home . 'main_common.js"></script>' . "\n";
+               'src="' . $oscars_home . 'scripts/main_common.js"></script>' . "\n";
     print '    <script language="javascript" type="text/javascript"' .
-               'src="' . $oscars_home . 'timeprint.js"></script>' . "\n";
+               'src="' . $oscars_home . 'scripts/timeprint.js"></script>' . "\n";
     print '</head>', "\n\n";
 
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n";
