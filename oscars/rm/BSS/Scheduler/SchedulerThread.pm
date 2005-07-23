@@ -1,13 +1,9 @@
-######################################################################
-# July 8, 2005
-# DWRobertson
-# JRLee
-# Scheduler thread that polls the db looking for 
-# reservataions that need to be scheduled
-#
-# Poll time now comes from the config file.
-#
-######################################################################
+# SchedulerThread.pm:  Scheduler thread that polls the db looking for 
+#                      reservations that need to be scheduled
+# Last modified:  July 22, 2005
+# David Robertson (dwrobertson@lbl.gov)
+# Jason Lee (jrlee@lbl.gov)
+
 package BSS::Scheduler::SchedulerThread;
 
 use threads;
@@ -16,15 +12,14 @@ use threads::shared;
 use Data::Dumper;
 use Error qw(:try);
 
-use Common::Mail;
 use Common::Exception;
+use Common::Mail;
 
     # Chins PSS module to configure the routers
 use PSS::LSPHandler::JnxLSP;
 
     # Front end to reservations database
 use BSS::Frontend::Scheduler;
-use BSS::Frontend::Stats;
 
 use strict;
 
@@ -112,35 +107,26 @@ sub scheduler {
 sub find_new_reservations {
     my ($user_dn, $front_end) = @_;
 
-    my ($timeslot, $resv, $status);
+    my ($resv, $status);
     my ($error_msg);
-    my $cur_time = localtime();
-
-    # configurable
-    $timeslot = time() + $configs->{reservation_time_interval};
-    if ($configs->{debug}) {
-        print STDERR "pending: $cur_time \n";
-    }
+    my( $mailer, $mail_msg );
+    $mailer = Common::Mail->new();
 
     # find reservations that need to be scheduled
-    $resv = $front_end->find_pending_reservations($user_dn, $timeslot, $configs->{PENDING});
-    my( $mailer, $stats, $mail_msg );
-    $mailer = Common::Mail->new();
-    $stats = BSS::Frontend::Stats->new();
+    $resv = $front_end->find_pending_reservations($user_dn, $configs->{PENDING});
     for my $r (@$resv) {
         ## calls to pss to setup reservations
         my %lsp_info = map_fields($front_end, $r);
         $status = setup_pss(\%lsp_info, $r);
 
-        $mail_msg = $stats->get_lsp_stats(\%lsp_info, $r, $status);
+        if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
+        update_reservation( $r, $status, $configs->{ACTIVE}, $front_end);
+        $mail_msg = $front_end->get_lsp_stats($user_dn, \%lsp_info, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP set up status", $mail_msg);
         $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
-                       "Your OSCARS circuit set up", $mail_msg);
+                       "Your OSCARS circuit set up status", $mail_msg);
 
-
-        if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $status, $configs->{ACTIVE}, $front_end);
     }
     return "";
 }
@@ -153,32 +139,26 @@ sub find_new_reservations {
 sub find_expired_reservations {
     my ($user_dn, $front_end) = @_;
 
-    my $cur_time = localtime();
-    my ($timeslot, $resv, $status);
-
-    # configurable
-    $timeslot = time() + $configs->{reservation_time_interval};
-    if ($configs->{debug}) { print STDERR "expired: $cur_time \n"; }
-
-    # find active reservation past the timeslot
-    $resv = $front_end->find_expired_reservations($user_dn, $timeslot, $configs->{ACTIVE});
-       
-    my( $mailer, $stats, $mail_msg );
+    my ($resv, $status);
+    my( $mailer, $mail_msg );
     $mailer = Common::Mail->new();
-    $stats = BSS::Frontend::Stats->new();
 
+    # find reservations whose end time is before the current time and
+    # thus expired
+    $resv = $front_end->find_expired_reservations($user_dn, $configs->{ACTIVE});
+       
     for my $r (@$resv) {
         my %lsp_info = map_fields($front_end, $r);
         $status = teardown_pss(\%lsp_info, $r);
 
-        $mail_msg = $stats->get_lsp_stats(\%lsp_info, $r, $status);
+        if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
+        update_reservation( $r, $status, $configs->{FINISHED}, $front_end);
+        $mail_msg = $front_end->get_lsp_stats($user_dn, \%lsp_info, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP tear down status", $mail_msg);
         $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
-                       "Your OSCARS circuit has been torn down", $mail_msg);
+                       "Your OSCARS circuit tear down status", $mail_msg);
 
-        if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $status, $configs->{FINISHED}, $front_end);
     }
     return "";
 }
@@ -240,6 +220,8 @@ sub update_reservation {
     my ($resv, $error_msg, $status, $front_end) = @_;
 
     my ($update_status, $update_msg);
+    my( $mailer, $mail_msg );
+    $mailer = Common::Mail->new();
 
     if ( !$error_msg ) {
         print STDERR "Changing status to $status\n";
