@@ -29,14 +29,10 @@ else {
 $params{method} = 'soap_get_reservations';
 my $som = bss_dispatcher(\%params);
 if ($som->faultstring) {
-    print STDERR $som->faultstring;
+    print STDERR $som->faultstring, "\n";
     exit;
 }
 my $results = $som->result;
-if ($results->{error_msg}) {
-    print STDERR $results->{error_msg}, "\n\n";
-    exit;
-}
 
 my ($rows, $r, $f, %c);
 
