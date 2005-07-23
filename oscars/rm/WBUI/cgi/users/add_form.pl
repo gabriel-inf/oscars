@@ -38,9 +38,9 @@ sub print_add_user_form {
     print '<link rel="stylesheet" type="text/css" ';
     print ' href="' . $oscars_home . 'styleSheets/layout.css">' . "\n";
     print '    <script language="javascript" type="text/javascript"' .
-          '    src="' . $oscars_home . 'main_common.js"></script>' . "\n";
+          '    src="' . $oscars_home . 'scripts/main_common.js"></script>' . "\n";
     print '    <script language="javascript" type="text/javascript" ' .
-          '    src="' . $oscars_home . 'userprofile.js"></script>', "\n";
+          '    src="' . $oscars_home . 'scripts/userprofile.js"></script>', "\n";
     print '</head>', "\n\n";
 
     print '<body>', "\n\n";

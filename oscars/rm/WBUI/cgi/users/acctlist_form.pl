@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # userlist_form.pl:  User List page
-# Last modified: July 6, 2005
+# Last modified: July 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -65,10 +65,10 @@ sub print_userlist
     print '<link rel="stylesheet" type="text/css" ';
     print ' href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
     print '  <script language="javascript" type="text/javascript" ' .
-               'src="' . $oscars_home . 'main_common.js">' .
+               'src="' . $oscars_home . 'scripts/main_common.js">' .
              '</script>', "\n";
     print '  <script language="javascript" type="text/javascript" ' .
-               'src="' . $oscars_home . 'sorttable.js">' .
+               'src="' . $oscars_home . 'scripts/sorttable.js">' .
           '  </script>', "\n";
     print "</head>\n\n";
 
