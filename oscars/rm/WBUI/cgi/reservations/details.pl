@@ -122,18 +122,12 @@ sub print_reservation_detail {
     print '  </tr>', "\n";
 
     print '  <tr><td>Start time</td><td>', "\n";
-    print '    <script language="javascript">', "\n";
-    print '    print_current_date("", "' .
-                                 $row->{reservation_start_time} . '");' . "\n";
-    print '    </script>', "\n";
+    print "$row->{reservation_start_time}\n";
     print '  </td></tr>', "\n";
 
     print '  <tr><td>End time</td><td>';
-    if ($row->{reservation_end_time} < (2 ** 31 - 1)) {
-        print '    <script language="javascript">', "\n";
-        print '    print_current_date("", "' .
-                                  $row->{reservation_end_time} . '");' . "\n";
-        print '    </script>', "\n";
+    if ($row->{reservation_end_time} ne '2039-01-01 00:00:00') {
+        print "$row->{reservation_end_time}\n";
     }
     else {
         print 'PERSISTENT', "\n";
@@ -141,10 +135,7 @@ sub print_reservation_detail {
     print '  </td></tr>', "\n";
 
     print '  <tr><td>Created time</td><td>';
-    print '    <script language="javascript">', "\n";
-    print '    print_current_date("", "' .  $row->{reservation_created_time} .
-                                  '");' . "\n";
-    print '    </script>', "\n";
+    print "    $row->{reservation_created_time}\n";
     print '  </td></tr>', "\n";
 
     print '  <tr>', "\n";
