@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: July 6, 2005
+# Last modified: July 23, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -24,9 +24,9 @@ my ($som) = logout_user($user_dn);
 if ($user_dn) { end_session($cgi); }
 
 print '<script language="javascript" type="text/javascript" src="' .
-      $oscars_home . 'main_common.js"></script>' . "\n";
+      $oscars_home . 'scripts/main_common.js"></script>' . "\n";
 print '<script language="javascript" type="text/javascript" src="' .
-      $oscars_home . 'timeprint.js"></script>', "\n";
+      $oscars_home . 'scripts/timeprint.js"></script>', "\n";
 print '<script language="javascript">update_status_frame(1, ' .
       '"Please sign in");</script>', "\n\n";
 print '<script language="javascript">update_main_frame("' .

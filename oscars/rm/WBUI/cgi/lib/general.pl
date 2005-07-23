@@ -1,7 +1,7 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: July 1, 2005
+# Last modified: July 23, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -60,9 +60,9 @@ sub update_status_frame {
     my ($status, $msg) = @_;
 
     print '<script language="javascript" type="text/javascript" src="' .
-          $oscars_home . 'main_common.js"></script>', "\n";
+          $oscars_home . 'scripts/main_common.js"></script>', "\n";
     print '<script language="javascript" type="text/javascript" src="' .
-          $oscars_home . 'timeprint.js"></script>', "\n";
+          $oscars_home . 'scripts/timeprint.js"></script>', "\n";
     print '<script language="javascript">update_status_frame("' .
               $status . '", "' . $msg . '");</script>', "\n\n";
 }
@@ -78,9 +78,9 @@ sub print_info
     print '<link rel="stylesheet" type="text/css" href="' .
           $oscars_home . 'styleSheets/layout.css">' . "\n";
     print '    <script language="javascript" type="text/javascript" src="' .
-               $oscars_home . 'main_common.js"></script>', "\n";
+               $oscars_home . 'scripts/main_common.js"></script>', "\n";
     print '    <script language="javascript" type="text/javascript" src="' .
-               $oscars_home . 'userprofile.js"></script>', "\n";
+               $oscars_home . 'scripts/userprofile.js"></script>', "\n";
     print '</head>', "\n\n";
 
     print '<body>', "\n\n";
