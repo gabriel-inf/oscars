@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
     user_phone_primary VARCHAR(20),
     user_phone_secondary VARCHAR(20),
     user_description TEXT,
+    user_status VARCHAR(20),
+    user_last_active_time DATETIME,
     user_register_time DATETIME,
     user_activation_key VARCHAR(40),
     institution_id INT(6) NOT NULL, -- foreign key
