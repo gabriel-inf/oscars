@@ -11,16 +11,10 @@ my %params = ('user_dn' => 'dwrobertson@lbl.gov',
 $params{method} = 'soap_get_profile';
 my $som = aaas_dispatcher(\%params);
 if ($som->faultstring) {
-    print STDERR $som->faultstring;
+    print STDERR $som->faultstring, "\n";
     exit;
 }
-
 my $results = $som->result;
-if ($results->{error_msg}) {
-    print STDERR $results->{error_msg}, "\n\n";
-    exit;
-}
-
 print "Status:  Retrieved user profile\n";
 print "Returning:\n\n";
 foreach $key(sort keys %{$results->{row}} )

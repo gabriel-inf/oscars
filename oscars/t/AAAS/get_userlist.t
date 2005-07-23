@@ -14,13 +14,7 @@ if ($som->faultstring) {
     print STDERR $som->faultstring;
     exit;
 }
-
 my $results = $som->result;
-if ($results->{error_msg}) {
-    print STDERR $results->{error_msg}, "\n\n";
-    exit;
-}
-
 print "Status:  Successfully read user list.\n";
 print "Returning:\n\n";
 $data = $results->{rows};
