@@ -88,7 +88,7 @@ sub create_reservation {
 sub delete_reservation {
     my ( $self, $inref ) = @_;
 		
-    return $self->{frontend}->delete_reservation( $inref );
+    return ($self->{frontend}->delete_reservation( $inref ), '');
 }
 ######
 
@@ -102,7 +102,7 @@ sub delete_reservation {
 sub get_reservations {
     my ( $self, $inref ) = @_; 
 
-    return $self->{frontend}->get_reservations( $inref );
+    return ($self->{frontend}->get_reservations( $inref ), '');
 }
 ######
 
