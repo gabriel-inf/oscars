@@ -29,7 +29,7 @@ use Common::Exception;
 my $aaas_user;
 
 sub dispatch {
-    my ( $self, $inref ) = @_;
+    my ( $class_name, $inref ) = @_;
 
     my( $ex );
     my $results = {};
@@ -63,7 +63,6 @@ sub dispatch {
     };
     # caught by SOAP to indicate fault
     if ($ex) {
-        print STDERR $ex->{-text}, "\n";
         die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
     }
@@ -72,10 +71,45 @@ sub dispatch {
 ######
 
 sub validate {
-    my ( $self, $inref ) = @_;
+    my ( $inref ) = @_;
 
-    
-    return( 1 );
+    if ($inref->{method} eq 'verify_login') {
+        if (!($inref->{user_dn})) {
+            throw Common::Exception("Please enter your login name.");
+        }
+        if (!($inref->{user_password})) {
+            throw Common::Exception("Please enter the current password.");
+        }
+    }
+    elsif ($inref->{method} eq 'set_profile') {
+        if (!($inref->{user_password})) {
+            throw Common::Exception("Please enter the current password.");
+        }
+        if ($inref->{password_new_once}) {
+            if (!$inref->{password_new_twice}) {
+                throw Common::Exception("Please enter the same new password twice for verification");
+            }
+            if ($inref->{password_new_once} ne
+                $inref->{password_new_twice}) {
+                throw Common::Exception("Please enter the same new password twice for verification");
+            }
+        }
+        if (!$inref->{user_first_name}) {
+            throw Common::Exception("Please enter the first name.");
+        }
+        if (!$inref->{user_last_name}) {
+            throw Common::Exception("Please enter the last name.");
+        }
+        if (!$inref->{user_institution}) {
+            throw Common::Exception("Please enter the user's organization.");
+        }
+        if (!$inref->{user_email_primary}) {
+            throw Common::Exception("Please enter the primary email address.");
+        }
+        if (!$inref->{user_phone_primary}) {
+            throw Common::Exception("Please enter the primary phone.");
+        }
+    }
 }
 
 ######
