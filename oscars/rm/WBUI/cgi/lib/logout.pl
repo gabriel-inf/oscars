@@ -45,7 +45,7 @@ sub logout_user {
     my( %soap_params, $BSS_som );
 
     $soap_params{user_dn} = $user_dn;
-    $soap_params{method} = 'soap_logout';
+    $soap_params{method} = 'logout';
     my $som = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
     if ($som->faultstring) {
         return( $som );

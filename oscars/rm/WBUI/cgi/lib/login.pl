@@ -48,7 +48,7 @@ sub verify_user {
     }
     $soap_params{user_dn} = $cgi->param('user_dn');
     $soap_params{user_password} = $cgi->param('user_password');
-    $soap_params{method} = 'soap_verify_login'; 
+    $soap_params{method} = 'verify_login'; 
     my $som = aaas_dispatcher(\%soap_params);
     if ($som->faultstring) {
         update_status_frame(1, $som->faultstring); 
