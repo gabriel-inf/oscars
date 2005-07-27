@@ -49,7 +49,7 @@ use Common::Exception;
 my $dbHandler;
 
 sub dispatch {
-    my ( $self, $inref ) = @_;
+    my ( $class_name, $inref ) = @_;
 
     my ( $logging_buf, $ex );
 
@@ -64,11 +64,9 @@ sub dispatch {
     }
     catch Common::Exception with {
         $ex = shift;
-        print STDERR $ex->{-text}, "\n";
     }
     otherwise {
         $ex = shift;
-        print STDERR $ex->{-text}, "\n";
     }
     finally {
         my $logfile_name = "$ENV{OSCARS_HOME}/logs/";
@@ -101,10 +99,62 @@ sub dispatch {
 }
 ######
 
+################################################################################# validate:  server-side validation
+#
 sub validate {
-    my ( $self, $inref ) = @_;
+    my ( $inref ) = @_;
 
+    if ($inref->{method} eq 'create_reservation') {
+        if (!$inref->{reservation_start_time}) {
+            throw Common::Exception("Please enter the reservation starting time");
+        }
+        if (!$inref->{reservation_end_time}) {
+            throw Common::Exception("Please enter the reservation end time");
+        }
+        if (!$inref->{src_address}) {
+            throw Common::Exception("Please enter starting host name or IP address");
+        }
+        if (!$inref->{dst_address}) {
+            throw Common::Exception("Please enter destination host name or IP address");
+        }
+        if (!$inref->{reservation_bandwidth}) {
+            throw Common::Exception("Please enter the bandwidth you wish to reserve");
+        }
+        if (!$inref->{reservation_description}) {
+            throw Common::Exception("Please enter a description of the purpose for this reservation");
+        }
+        if ($inref->{src_address} eq $inref->{dst_address}) {
+            throw Common::Exception("Please provide different addresses for the source and destination");
+        }
+        my @addr_sections = split('/', $inref->{src_address});
+        if ($#addr_sections && ($addr_sections[1] < 24)) {
+            throw Common::Exception("Only CIDR blocks >= 24 (class C) are accepted (source)");
+        }
+        @addr_sections = split('/', $inref->{dst_address});
+        if ($#addr_sections && ($addr_sections[1] < 24)) {
+            throw Common::Exception("Only CIDR blocks >= 24 (class C) are accepted (destination)");
+        }
+        if ($inref->{reservation_src_port}) {
+            if (($inref->{reservation_src_port} < 1024) ||
+                ($inref->{reservation_src_port} > 65535)) {
+                throw Common::Exception("The source port, if given, must be in the range 1024-65535");
+            }
+        }
+        if ($inref->{reservation_dst_port}) {
+            if (($inref->{reservation_dst_port} < 1024) ||
+                ($inref->{reservation_dst_port} > 65535)) {
+                throw Common::Exception("The destination port, if given, must be in the range 1024-65535");
+            }
+        }
+        if ($inref->{reservation_dscp}) {
+            if (($inref->{reservation_dscp} < 0) ||
+                 ($inref->{reservation_dscp} > 63)) {
+                throw Common::Exception("The DSCP, if given, must be in the range 0-63");
+            }
+        }
+    }
 }
+######
 
 ######
 1;
