@@ -63,7 +63,7 @@ sub enforce_connection {
     my( %soap_params );
 
     $soap_params{user_dn} = $user_dn;
-    $soap_params{method} = 'soap_check_login';
+    $soap_params{method} = 'check_login_status';
     my $som = aaas_dispatcher(\%soap_params);
     if ($som->faultstring) {
         print STDERR $som->faultstring, "\n";
