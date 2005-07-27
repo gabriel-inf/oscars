@@ -14,10 +14,8 @@ use AAAS::Frontend::User;
 
 my $config = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
 
-my $user = AAAS::Frontend::User->new('configs' => $config);
-
 my $daemon = SOAP::Transport::HTTP::Daemon
-  -> new (LocalPort => $config->{'AAAS_server_port'})
+  -> new (LocalPort => $config->{'AAAS_server_port'}, Listen => 5, Reuse => 1)
   -> dispatch_to('Dispatcher')
   -> handle;
 
@@ -28,42 +26,26 @@ package Dispatcher;
 use Error qw(:try);
 use Common::Exception;
 
+my $aaas_user;
+
 sub dispatch {
     my ( $self, $inref ) = @_;
 
     my( $ex );
     my $results = {};
+    if (!$aaas_user) {
+        $aaas_user = AAAS::Frontend::User->new('configs' => $config);
+    }
+
     try {
-        if ($inref->{method} eq 'soap_verify_login') {
-            $results = $user->verify_login($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_check_login') {
-            $results = $user->check_login_status($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_get_profile') {
-            $results = $user->get_profile($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_set_profile') {
-            $results = $user->set_profile($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_logout') {
-            $results = $user->logout($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_get_userlist') {
-            $results = $user->get_userlist($inref) ;
-        }
-        else {
-            if ($inref->{method}) {
-                die SOAP::Fault->faultcode('Server')
-                         ->faultstring("No such SOAP method: $inref->{method}\n");
-            }
-            else {
-                die SOAP::Fault->faultcode('Server')
-                         ->faultstring("SOAP method not provided\n");
-            }
-        }
+        validate($inref);
+        my $m = $inref->{method};
+        $results = $aaas_user->$m($inref);
     }
     catch Common::Exception with {
+        $ex = shift;
+    }
+    otherwise {
         $ex = shift;
     }
     finally {
@@ -81,13 +63,20 @@ sub dispatch {
     };
     # caught by SOAP to indicate fault
     if ($ex) {
-        #print STDERR $ex->{-text}, "\n";
+        print STDERR $ex->{-text}, "\n";
         die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
     }
     return $results;
 }
 ######
+
+sub validate {
+    my ( $self, $inref ) = @_;
+
+    
+    return( 1 );
+}
 
 ######
 1;
