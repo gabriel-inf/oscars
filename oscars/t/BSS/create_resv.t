@@ -24,7 +24,7 @@ $params{dst_address} = 'atl-pt1.es.net';
 
 $params{user_dn} =        'dwrobertson@lbl.gov';
 $params{reservation_description} =    'This is a test.';
-$params{method} = 'soap_create_reservation'; 
+$params{method} = 'create_reservation'; 
 
 my $som = bss_dispatcher(\%params);
 if ($som->faultstring) {

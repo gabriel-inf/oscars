@@ -17,7 +17,7 @@ if ($numArgs < 2) {
 $params{'reservation_id'} = $ARGV[0];
 $params{'user_dn'} = $ARGV[1];
 
-$params{method} = 'soap_delete_reservation';
+$params{method} = 'delete_reservation';
 my $som = bss_dispatcher(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring;

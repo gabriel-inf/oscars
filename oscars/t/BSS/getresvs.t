@@ -26,7 +26,7 @@ else {
     exit;
 }
 
-$params{method} = 'soap_get_reservations';
+$params{method} = 'get_reservations';
 my $som = bss_dispatcher(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";
