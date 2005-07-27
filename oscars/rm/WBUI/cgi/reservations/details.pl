@@ -49,10 +49,10 @@ sub process_form {
     }
         # Check if reservation is being cancelled
     if ($form_params->{cancel}) {
-        $form_params->{method} = 'soap_delete_reservation';
+        $form_params->{method} = 'delete_reservation';
     }
     elsif ($form_params->{create}) {
-        $form_params->{method} = 'soap_create_reservation';
+        $form_params->{method} = 'create_reservation';
     }
     if ($form_params->{method}) {
         $som = bss_dispatcher($form_params);
@@ -69,7 +69,7 @@ sub process_form {
         return;
     }
     # print updated reservation info (may be more than just new status)
-    $form_params->{method} = 'soap_get_reservations';
+    $form_params->{method} = 'get_reservations';
     $som = bss_dispatcher($form_params);
     if ($som->faultstring) {
         update_status_frame(1, $som->faultstring);

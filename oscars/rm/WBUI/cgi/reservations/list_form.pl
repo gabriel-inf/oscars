@@ -44,7 +44,7 @@ sub process_form {
     if ( authorized($user_level, "engr") ) {
         $form_params->{user_level} = 'engr';
     }
-    $form_params->{method} = 'soap_get_reservations';
+    $form_params->{method} = 'get_reservations';
     my $som = bss_dispatcher($form_params);
     if ($som->faultstring) {
         update_status_frame(1, $som->faultstring);
