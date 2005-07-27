@@ -35,7 +35,7 @@ exit;
 sub process_form {
     my( $form_params ) = @_;
 
-    $form_params{method} = 'soap_get_userlist';
+    $form_params{method} = 'get_userlist';
     my $som = aaas_dispatcher($form_params);
     if ($som->faultstring) {
         update_status_frame(1, $som->faultstring);

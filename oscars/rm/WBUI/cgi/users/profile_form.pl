@@ -47,8 +47,8 @@ sub process_form {
         $form_params->{admin_dn} = $form_params->{user_dn};
         $form_params->{user_dn} = $form_params->{new_user_dn};
     }
-    if ($form_params->{set}) { $form_params->{method} = 'soap_set_profile'; }
-    else { $form_params->{method} = 'soap_get_profile'; }
+    if ($form_params->{set}) { $form_params->{method} = 'set_profile'; }
+    else { $form_params->{method} = 'get_profile'; }
 
     my $som = aaas_dispatcher($form_params);
     if ( $som->faultstring ) {
