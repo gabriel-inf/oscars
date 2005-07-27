@@ -29,8 +29,6 @@ our ($configs);
 
 $configs = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
 
-my $dbHandler = BSS::Scheduler::ReservationHandler->new('configs' => $configs);
-
 # start up a thread to monitor the DB
 start_scheduler($configs);
 
@@ -48,38 +46,29 @@ package Dispatcher;
 use Error qw(:try);
 use Common::Exception;
 
+my $dbHandler;
+
 sub dispatch {
     my ( $self, $inref ) = @_;
 
     my ( $logging_buf, $ex );
 
     my $results = {};
+    if(!$dbHandler) {
+        $dbHandler = BSS::Scheduler::ReservationHandler->new('configs' => $configs);
+    }
     try {
-        if ($inref->{method} eq 'soap_logout_user') {
-            $results = $dbHandler->logout($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_get_reservations') {
-            $results = $dbHandler->get_reservations($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_create_reservation') {
-            ($results, $logging_buf) = $dbHandler->create_reservation($inref) ;
-        }
-        elsif ($inref->{method} eq 'soap_delete_reservation') {
-            $results = $dbHandler->delete_reservation($inref) ;
-        }
-        else {
-            if ($inref->{method}) {
-                die SOAP::Fault->faultcode('Server')
-                         ->faultstring("No such SOAP method: $inref->{method}\n");
-            }
-            else {
-                die SOAP::Fault->faultcode('Server')
-                         ->faultstring("SOAP method not provided\n");
-            }
-        }
+        validate($inref);
+        my $m = $inref->{method};
+        ($results, $logging_buf) = $dbHandler->$m($inref) ;
     }
     catch Common::Exception with {
         $ex = shift;
+        print STDERR $ex->{-text}, "\n";
+    }
+    otherwise {
+        $ex = shift;
+        print STDERR $ex->{-text}, "\n";
     }
     finally {
         my $logfile_name = "$ENV{OSCARS_HOME}/logs/";
@@ -111,3 +100,11 @@ sub dispatch {
     return $results;
 }
 ######
+
+sub validate {
+    my ( $self, $inref ) = @_;
+
+}
+
+######
+1;
