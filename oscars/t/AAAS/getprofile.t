@@ -8,7 +8,7 @@ use Data::Dumper;
 my($key, $value);
 my %params = ('user_dn' => 'dwrobertson@lbl.gov',
               'user_level' => 'user' );
-$params{method} = 'soap_get_profile';
+$params{method} = 'get_profile';
 my $som = aaas_dispatcher(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";

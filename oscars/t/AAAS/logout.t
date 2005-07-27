@@ -3,7 +3,7 @@
 use AAAS::Client::SOAPClient;
 
 my %params = ('user_dn' => 'dwrobertson@lbl.gov');
-$params{method} = 'soap_logout';
+$params{method} = 'logout';
 my $som = aaas_dispatcher(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";
