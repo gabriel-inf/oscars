@@ -15,7 +15,6 @@ use Error qw(:try);
 
 use Common::Database;
 use Common::Exception;
-use AAAS::Client::SOAPClient;
 
 our @ISA = qw(Common::Database);
 
