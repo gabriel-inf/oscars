@@ -326,22 +326,5 @@ sub get_userlist
 }
 ######
 
-####################################
-# Methods called from the BSS.
-####################################
-
-###############################################################################
-# check_login_status
-# In:  reference to hash of parameters
-# Out: status code, status message
-#
-sub check_login_status {
-    my( $self, $inref ) = @_;
-
-    my $results = {};
-    $self->{dbconn}->enforce_connection($inref->{user_dn});
-    return( $results );
-}
 ######
-
 1;
