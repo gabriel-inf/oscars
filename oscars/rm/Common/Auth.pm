@@ -1,9 +1,9 @@
 package Common::Auth;
 #
 # package for user authentication
-# Last modified: June 29, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: August 2, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 
 use CGI;
@@ -56,6 +56,7 @@ sub set_login_status
     $cookie = $cgi->cookie(CGISESSID => $sid);
     $session->param("user_dn", $cgi->param('user_dn'));
     $session->param("user_level", $login_results->{'user_level'});
+    $session->param("timezone_offset", $cgi->param('timezone_offset'));
     print $cgi->header( -cookie=>$cookie );
     return( $cgi->param('user_dn'), $login_results->{'user_level'} );
 }
@@ -71,7 +72,7 @@ sub set_login_status
 sub verify_login_status
 {
     my ($self, $cgi) = @_;
-    my ($session, $stored_dn, $user_level);
+    my ($session, $stored_dn, $user_level, $timezone_offset);
 
     $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
 
@@ -80,14 +81,15 @@ sub verify_login_status
     # created if there is no valid session with that id.
     $stored_dn = $session->param("user_dn");
     $user_level = $session->param("user_level");
+    $timezone_offset = $session->param("timezone_offset");
     if (!$stored_dn)  {
-        return( undef, undef );
+        return( undef, undef, undef );
     }
     else {
        $cgi->param(-name=>'user_dn',-value=>$stored_dn);
        $cgi->param(-name=>'user_level',-value=>$user_level);
        print $cgi->header( );
-       return( $stored_dn, $user_level );
+       return( $stored_dn, $user_level, $timezone_offset );
     }
 }
 ######
@@ -102,6 +104,7 @@ sub logout
     $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
     $session->clear(["user_dn"]);
     $session->clear(["user_level"]);
+    $session->clear(["timezone_offset"]);
 }
 ######
 
