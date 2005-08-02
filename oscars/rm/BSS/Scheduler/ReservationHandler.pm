@@ -53,7 +53,7 @@ sub logout {
 ######
 
 ##############################################################################
-# create reservation
+# insert_reservation
 # 1) compute routers
 # 2) check bandwidth (y2?)
 # 3) return the reservation id
@@ -62,7 +62,7 @@ sub logout {
 #     record
 # OUT: hash containing all table fields, and logging buffer
 #
-sub create_reservation {
+sub insert_reservation {
     # reference to input hash ref containing fields filled in by user
     # This routine fills in the remaining fields.
     my ( $self, $inref ) = @_; 
