@@ -8,7 +8,6 @@
 use CGI;
 
 use AAAS::Client::SOAPClient;
-use BSS::Client::SOAPClient;
 
 require 'general.pl';
 
@@ -16,7 +15,7 @@ require 'general.pl';
 my $cgi = CGI->new();
 my ($user_dn, $user_level, $oscars_home) = check_session_status(undef, $cgi);
 
-# logout user from AAAS and BSS databases
+# logout user from resource manager
 my ($som) = logout_user($user_dn);
 
 # nuke session and put the user back at the login screen
@@ -35,23 +34,18 @@ print '<script language="javascript">update_main_frame("' .
 exit;
 
 ##############################################################################
-# logout_user:  Closes db connections to AAAS, BSS
+# logout_user:  Closes db connections to AAAS (which closes them in BSS)
 # In:  user email address
 # Out: error status, SOAP results
 #
 sub logout_user {
     my( $user_dn ) = @_;
 
-    my( %soap_params, $BSS_som );
+    my( %soap_params );
 
     $soap_params{user_dn} = $user_dn;
     $soap_params{method} = 'logout';
     my $som = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
-    if ($som->faultstring) {
-        return( $som );
-    }
-    $soap_params{method} = 'soap_logout_user';
-    $BSS_som = BSS::Client::SOAPClient::bss_dispatcher(\%soap_params);
-    return( $BSS_som );
+    return( $som );
 }
 ######
