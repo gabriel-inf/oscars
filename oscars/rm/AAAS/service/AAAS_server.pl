@@ -8,9 +8,7 @@ use strict;
 
 use Config::Auto;
 use SOAP::Transport::HTTP;
-use Data::Dumper;
 
-use AAAS::Frontend::User;
 
 my $config = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
 
@@ -23,8 +21,12 @@ my $daemon = SOAP::Transport::HTTP::Daemon
 
 package Dispatcher;
 
+use Data::Dumper;
 use Error qw(:try);
+
 use Common::Exception;
+use AAAS::Frontend::Validator;
+use AAAS::Frontend::User;
 
 my $aaas_user;
 
@@ -38,7 +40,9 @@ sub dispatch {
     }
 
     try {
-        validate($inref);
+        my $v = AAAS::Frontend::Validator->new();
+        my $err = $v->validate($inref);
+        if ($err) { throw Common::Exception($err); }
         my $m = $inref->{method};
         $results = $aaas_user->$m($inref);
     }
@@ -69,48 +73,6 @@ sub dispatch {
     return $results;
 }
 ######
-
-sub validate {
-    my ( $inref ) = @_;
-
-    if ($inref->{method} eq 'verify_login') {
-        if (!($inref->{user_dn})) {
-            throw Common::Exception("Please enter your login name.");
-        }
-        if (!($inref->{user_password})) {
-            throw Common::Exception("Please enter the current password.");
-        }
-    }
-    elsif ($inref->{method} eq 'set_profile') {
-        if (!($inref->{user_password})) {
-            throw Common::Exception("Please enter the current password.");
-        }
-        if ($inref->{password_new_once}) {
-            if (!$inref->{password_new_twice}) {
-                throw Common::Exception("Please enter the same new password twice for verification");
-            }
-            if ($inref->{password_new_once} ne
-                $inref->{password_new_twice}) {
-                throw Common::Exception("Please enter the same new password twice for verification");
-            }
-        }
-        if (!$inref->{user_first_name}) {
-            throw Common::Exception("Please enter the first name.");
-        }
-        if (!$inref->{user_last_name}) {
-            throw Common::Exception("Please enter the last name.");
-        }
-        if (!$inref->{user_institution}) {
-            throw Common::Exception("Please enter the user's organization.");
-        }
-        if (!$inref->{user_email_primary}) {
-            throw Common::Exception("Please enter the primary email address.");
-        }
-        if (!$inref->{user_phone_primary}) {
-            throw Common::Exception("Please enter the primary phone.");
-        }
-    }
-}
 
 ######
 1;
