@@ -184,7 +184,7 @@ sub print_reservation_form {
     print '      <input type="text" name="start_minute" size="4" maxlength="2">';
     print '    </td>', "\n";
     print '    <td>';
-    print '    <select name="start_timeoffset">', "\n";
+    print '    <select name="timezone_offset">', "\n";
     print '    <script language="javascript">print_timezone_offset();</script>', "\n";
     print '        <option value="+00:00">+00:00 (UTC)</option>', "\n";
     print '        <option value="+01:00">+01:00 (CET)</option>', "\n";

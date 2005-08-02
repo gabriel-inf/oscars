@@ -17,7 +17,8 @@ require '../lib/general.pl';
 my( %form_params, $oscars );
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
+($form_params{user_dn}, $form_params{user_level},
+ $oscars_home, $form_params{timezone_offset}) =
                                         check_session_status(undef, $cgi);
 if (!$form_params{user_dn}) {
     print "Location:  $oscars_home\n\n";
@@ -52,7 +53,7 @@ sub process_form {
         $form_params->{method} = 'delete_reservation';
     }
     elsif ($form_params->{create}) {
-        $form_params->{method} = 'create_reservation';
+        $form_params->{method} = 'insert_reservation';
     }
     if ($form_params->{method}) {
         $som = bss_dispatcher($form_params);

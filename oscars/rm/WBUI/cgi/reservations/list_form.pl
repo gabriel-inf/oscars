@@ -16,7 +16,8 @@ require '../lib/general.pl';
 my( %form_params, $oscars_home );
 my $cgi = CGI->new();
 
-($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
+($form_params{user_dn}, $form_params{user_level},
+ $oscars_home, $form_params{timezone_offset}) =
                                        check_session_status(undef, $cgi);
 if (!$form_params{user_dn}) {
     print "Location:  $oscars_home\n\n";
