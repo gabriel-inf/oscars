@@ -57,6 +57,7 @@ my $form_variables = {
         )
     },
     # currently no tests
+    'check_login_status' => {},
     'get_userlist' => {},
     'logout' => {}
 };
