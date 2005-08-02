@@ -19,6 +19,7 @@ my $cgi = CGI->new();
 $som = verify_user($cgi);
 $results = $som->result;
 
+# Sets cookie specifying the time zone of the browser
 my ($user_dn, $user_level, $oscars_home) = check_session_status($results, $cgi);
 print_info($user_dn, $user_level);
 update_status_frame(0, "User $user_dn successfully logged in.");

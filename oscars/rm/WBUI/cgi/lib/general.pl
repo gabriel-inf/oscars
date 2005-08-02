@@ -1,9 +1,9 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: July 23, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: August 2, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 use CGI;
 
@@ -16,12 +16,13 @@ $oscars_home = 'https://oscars.es.net/';
 ##############################################################################
 # check_session_status;  checks CGI session status only; the checks for
 # correct password and administrative level are done in the front end to the
-# database during initial login.
+# database during initial login.  Sets or gets cookies associated with
+# the user.
 #
 sub check_session_status {
     my( $login_results, $cgi ) = @_;
 
-    my( $auth, $dn, $user_level );
+    my( $auth, $dn, $user_level, $timezone );
 
     $auth = Common::Auth->new();
     if ( $login_results ) {
@@ -29,8 +30,8 @@ sub check_session_status {
         return ($dn, $user_level);
     }
     else {
-        ($dn, $user_level) = $auth->verify_login_status($cgi);
-        return($dn, $user_level, $oscars_home);
+        ($dn, $user_level, $timezone) = $auth->verify_login_status($cgi);
+        return($dn, $user_level, $oscars_home, $timezone);
     }
 }
 ######
