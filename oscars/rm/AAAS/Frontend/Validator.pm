@@ -58,7 +58,11 @@ my $form_variables = {
     },
     # currently no tests
     'get_userlist' => {},
-    'logout' => {}
+    'logout' => {},
+    # validate here or in BSS?
+    'insert_reservation' => {},
+    'delete_reservation' => {},
+    'get_reservations' => {}
 };
 
 ###############################################################################

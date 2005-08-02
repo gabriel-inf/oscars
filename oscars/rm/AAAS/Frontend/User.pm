@@ -15,6 +15,7 @@ use Common::Exception;
 use AAAS::Frontend::Database;
 use AAAS::Frontend::Registration;
 use AAAS::Frontend::Auth;
+use BSS::Client::SOAPClient;
 
 # until can get MySQL 5 and views going
 
@@ -293,9 +294,9 @@ sub set_profile {
 # In:  inref
 # Out: status message and DB results
 #
-sub get_userlist
-{
+sub get_userlist {
     my( $self, $inref ) = @_;
+
     my( $sth, $query );
     my( %mapping, $r, $arrayref, $rref );
     my $results = {};
@@ -325,6 +326,31 @@ sub get_userlist
     return( $results );
 }
 ######
+
+##############################################
+# Calls to the BSS.
+##############################################
+
+sub insert_reservation {
+    my( $self, $form_params ) = @_;
+
+    my $som = bss_dispatcher($form_params);
+    return( $som->result );
+}
+
+sub delete_reservation {
+    my( $self, $form_params ) = @_;
+
+    my $som = bss_dispatcher($form_params);
+    return( $som->result );
+}
+
+sub get_reservations {
+    my( $self, $form_params ) = @_;
+
+    my $som = bss_dispatcher($form_params);
+    return( $som->result );
+}
 
 ######
 1;
