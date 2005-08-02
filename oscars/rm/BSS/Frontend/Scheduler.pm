@@ -48,7 +48,7 @@ sub find_pending_reservations  {
 
     # FIX:  make SCHEDULER a bona fide db user
     # user dn in this case is the scheduler thread pseudo user
-    #$self->{dbconn}->enforce_connection($user_dn);
+    #$self->{dbconn}->login_user($user_dn);
     $query = "SELECT now() + INTERVAL ? SECOND";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                             $self->{configs}->{reservation_time_interval} );
@@ -72,7 +72,7 @@ sub find_expired_reservations {
     my ( $sth, $data, $query );
 
     # FIX:  make SCHEDULER a bona fide db user
-    #$self->{dbconn}->enforce_connection($user_dn);
+    #$self->{dbconn}->login_user($user_dn);
     $query = "SELECT now() + INTERVAL ? SECOND";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                             $self->{configs}->{reservation_time_interval} );

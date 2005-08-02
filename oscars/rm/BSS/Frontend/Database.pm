@@ -54,29 +54,6 @@ sub logout {
 ######
 
 ###############################################################################
-# enforce_connection:  Checks to see if user has logged in by making a SOAP
-#     call to the AAAS.
-#
-sub enforce_connection {
-    my( $self, $user_dn ) = @_;
-
-    my( %soap_params );
-
-    $soap_params{user_dn} = $user_dn;
-    $soap_params{method} = 'check_login_status';
-    my $som = aaas_dispatcher(\%soap_params);
-    if ($som->faultstring) {
-        print STDERR $som->faultstring, "\n";
-        throw Common::Exception($som->faultstring);
-    }
-
-    # for now, handle set up per connection
-    $self->login_user($user_dn);
-    return;
-}
-######
-
-###############################################################################
 # update_reservation: Updates reservation status.  Used to mark as active,
 # finished, or cancelled.
 #
@@ -123,7 +100,7 @@ sub ip_to_xface_id {
     my ($self, $user_dn, $ipaddr) = @_;
     my ($query, $sth, $interface_id);
 
-    $self->enforce_connection($user_dn);
+    $self->login_user($user_dn);
     $query = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
     $sth = $self->do_query($user_dn, $query, $ipaddr);
     # no match

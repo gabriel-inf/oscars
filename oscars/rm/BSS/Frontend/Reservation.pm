@@ -107,7 +107,7 @@ sub insert_reservation {
         throw Common::Exception("Invalid router id(s): 0.  Unable to " .
                                 "do insert.");
     }
-    $self->{dbconn}->enforce_connection($user_dn);
+    $self->{dbconn}->login_user($user_dn);
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
     my $stats = BSS::Frontend::Stats->new();
@@ -263,7 +263,7 @@ sub get_reservations {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $self->{dbconn}->enforce_connection($user_dn);
+    $self->{dbconn}->login_user($user_dn);
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
     # for that reservation.  Sort by start time in ascending order.
