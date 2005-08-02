@@ -7,7 +7,7 @@
 
 use CGI;
 
-use BSS::Client::SOAPClient;
+use AAAS::Client::SOAPClient;
 use Data::Dumper;
 
 require '../lib/general.pl';
@@ -46,7 +46,7 @@ sub process_form {
         $form_params->{user_level} = 'engr';
     }
     $form_params->{method} = 'get_reservations';
-    my $som = bss_dispatcher($form_params);
+    my $som = aaas_dispatcher($form_params);
     if ($som->faultstring) {
         update_status_frame(1, $som->faultstring);
         return;
