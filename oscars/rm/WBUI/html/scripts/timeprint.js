@@ -46,7 +46,13 @@ function print_timezone_offset()
     document.write( '<option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' );
 }
 
-// format the time zone offset in [+/-]hhmm format (ex. +0930, -0500)
+// print timezone hidden input field
+function print_timezone_field()
+{
+    document.write( '<input type="hidden" name="timezone_offset" value="' + get_timezone_offset()  + '">' );
+}
+
+// format the time zone offset in MySQL [+/-]hhmm format (ex. +09:30, -05:00)
 function get_timezone_offset()
 {
     var localDate = new Date();
@@ -65,6 +71,7 @@ function get_timezone_offset()
         if (hours < 10) { offset_str += '0'};
     }
     offset_str += hours;
+    offset_str += ":";
 
     if (half_indicator) { offset_str += '30'; }
     else { offset_str += '00'; }
@@ -88,6 +95,9 @@ function print_time_settings_example()
     dfields[6] = 0.05;
     dfields[7] = ' ';
     for (var i=0 ; i < 8; i++) {
+        if (dfields[i] < 10) {
+            dfields[i] = '0' + dfields[i];
+        }
         document.write(' <td>' + dfields[i] + '</td>' );
     }
 }
@@ -95,79 +105,131 @@ function print_time_settings_example()
 // Reference: http://javascript.internet.com/forms/val-date.html
 function check_date( form )
 {
-    localDate = new Date();
+    var default_year = 0;
+    var default_month = 0;
+    var default_date = 0;
+    var default_hour = 0;
+    var default_minute = 0;
+
+    var localDate = new Date();
     if ( isblank(form.start_year.value) ) {
         form.start_year.value = localDate.getFullYear();
+        default_year = 1;
     }
+    else {
+        if ( validate_integer(form.start_year.value) == false ) {
+            alert( "The reservation start year is not a number. Please check again." );
+            form.start_year.focus();
+            return false;
+        }
+        if ( form.start_year.value.length != 4 ) {
+            alert( "The reservation start year must be in four digits." );
+            form.start_year.focus();
+            return false;
+        }
+    }
+
     if ( isblank(form.start_month.value) ) {
         form.start_month.value = localDate.getMonth() + 1;
+        default_month = 1;
     }
+    else {
+        if ( validate_integer(form.start_month.value) == false ) {
+            alert( "The reservation start month is not a number. Please check again." );
+            form.start_month.focus();
+            return false;
+        }
+        if ( form.start_month.value < 1 || form.start_month.value > 12 ) {
+            alert( "The reservation start month is out of proper range. Please check again." );
+            form.start_month.focus();
+            return false;
+        }
+    }
+
     if ( isblank(form.start_date.value) ) {
         form.start_date.value = localDate.getDate();
+        default_date = 1;
     }
+    else {
+        if ( validate_integer(form.start_date.value) == false ) {
+            alert( "The reservation start date is not a number. Please check again." );
+            form.start_date.focus();
+            return false;
+        }
+    }
+    if (form.start_date.value < 10) {
+        form.start_date.value = '0' + form.start_date.value;
+    }
+
     if ( isblank(form.start_hour.value) ) {
         form.start_hour.value = localDate.getHours();
+        default_hour = 1;
     }
+    else {
+        if ( validate_integer(form.start_hour.value) == false ) {
+            alert( "The reservation start hour is not a number. Please check again." );
+            form.start_hour.focus();
+            return false;
+        }
+        if ( form.start_hour.value < 0 || form.start_hour.value > 23 ) {
+            alert( "The reservation start hour is out of proper range. Please check again." );
+            form.start_hour.focus();
+            return false;
+        }
+    }
+    if (form.start_hour.value < 10) {
+        form.start_hour.value = '0' + form.start_hour.value;
+    }
+
     if ( isblank(form.start_minute.value) ) {
         form.start_minute.value = localDate.getMinutes();
+        default_minute = 1;
     }
+    if (form.start_minute.value < 10) {
+        form.start_minute.value = '0' + form.start_minute.value;
+    }
+
     if ( isblank(form.duration_hour.value) ) {
         form.duration_hour.value = 0.05;
     }
-
-    if ( validate_integer(form.start_year.value) == false ) {
-        alert( "The reservation start year is not a number. Please check again." );
-        form.start_year.focus();
-        return false;
-    }
-    if ( form.start_year.value.length != 4 ) {
-        alert( "The reservation start year must be in four digits." );
-        form.start_year.focus();
-        return false;
+    else {
+        if ( validate_numeric(form.duration_hour.value) == false ) {
+            alert( "The reservation duration hour is not a number. Please check again." );
+            form.duration_hour.focus();
+            return false;
+        }
     }
 
-    if ( validate_integer(form.start_month.value) == false ) {
-        alert( "The reservation start month is not a number. Please check again." );
-        form.start_month.focus();
-        return false;
-    }
-    if ( form.start_month.value < 1 || form.start_month.value > 12 ) {
-        alert( "The reservation start month is out of proper range. Please check again." );
-        form.start_month.focus();
-        return false;
-    }
-    if ( validate_integer(form.start_date.value) == false ) {
-        alert( "The reservation start date is not a number. Please check again." );
-        form.start_date.focus();
-        return false;
-    }
-
-    if ( ( form.start_month.value == 1 || form.start_month.value == 3 || 
-           form.start_month.value == 5 || form.start_month.value == 7 || 
-           form.start_month.value == 8 || form.start_month.value == 10 || 
-           form.start_month.value == 12 ) && ( form.start_date.value > 31 || 
-           form.start_date.value < 1 ) )
-    {
-        alert( "The reservation start date is out of proper range. Please check again." );
-        form.start_date.focus();
-        return false;
-    }
-
-    if ( ( form.start_month.value == 4 || form.start_month.value == 6 || 
-           form.start_month.value == 9 || form.start_month.value == 11 ) && 
-         ( form.start_date.value > 30 || form.start_date.value < 1 ) )
-    {
-        alert( "The reservation start date is out of proper range. Please check again." );
-        form.start_date.focus();
-        return false;
-    }
-
-    if ( form.start_month.value == 2 ) {
-        if ( form.start_date.value < 1 ) {
+    if (!default_month || !default_date) {
+        if ( ( form.start_month.value == 1 || form.start_month.value == 3 || 
+              form.start_month.value == 5 || form.start_month.value == 7 || 
+              form.start_month.value == 8 || form.start_month.value == 10 || 
+              form.start_month.value == 12 ) && ( form.start_date.value > 31 || 
+               form.start_date.value < 1 ) )
+        {
             alert( "The reservation start date is out of proper range. Please check again." );
             form.start_date.focus();
             return false;
         }
+
+        if ( ( form.start_month.value == 4 || form.start_month.value == 6 || 
+               form.start_month.value == 9 || form.start_month.value == 11 ) && 
+             ( form.start_date.value > 30 || form.start_date.value < 1 ) )
+        {
+            alert( "The reservation start date is out of proper range. Please check again." );
+            form.start_date.focus();
+            return false;
+        }
+
+        if ( form.start_month.value == 2 ) {
+            if ( form.start_date.value < 1 ) {
+                alert( "The reservation start date is out of proper range. Please check again." );
+                form.start_date.focus();
+                return false;
+            }
+        }
+    }
+    if (!default_year || !default_date) {
         if ( check_LeapYear(form.start_year.value) == true ) {
             if ( form.start_date.value > 29 ) {
                 alert( "The reservation start date is out of proper range. Please check again." );
@@ -183,50 +245,20 @@ function check_date( form )
             }
         }
     }
+    if (form.start_month.value < 10) {
+        form.start_month.value = '0' + form.start_month.value;
+    }
 
-    if ( validate_integer(form.start_hour.value) == false ) {
-        alert( "The reservation start hour is not a number. Please check again." );
-        form.start_hour.focus();
-        return false;
-    }
-    if ( form.start_hour.value < 0 || form.start_hour.value > 23 ) {
-        alert( "The reservation start hour is out of proper range. Please check again." );
-        form.start_hour.focus();
-        return false;
-    }
-    if ( validate_numeric(form.duration_hour.value) == false ) {
-        alert( "The reservation duration hour is not a number. Please check again." );
-        form.duration_hour.focus();
-        return false;
-    }
-    reserve_date = new Date(form.start_year.value, form.start_month.value - 1,
-                            form.start_date.value, form.start_hour.value,
-                            form.start_minute.value, 0, 0);
-    // convert result of getTime to seconds, and then subtract the time zone
-    // offset in seconds
-    // form.reservation_start_time.value = (reserve_date.getTime() / 1000) +
-                       // (localDate.getTimezoneOffset() * 60);
-    form.reservation_start_time.value = (reserve_date.getTime() / 1000);
-
-    if ( (validate_integer(form.reservation_start_time.value) == false) ||
-             (form.reservation_start_time.value == 0) ||
-             isblank(form.reservation_start_time.value) ) {
-        alert( "Problem with reservation start time." );
-        form.start_hour.focus();
-        return false;
-    }
+    // convert to MySQL YYYY-MM-DD HH:MM:SS format
+    form.reservation_start_time.value = form.start_year.value + '-' +
+                                        form.start_month.value + '-' +
+                                        form.start_date.value + ' ' +
+                                        form.start_hour.value + ':' +
+                                        form.start_minute.value + ':00';
 
     // set Duration field to blank if persistent
     if (form.persistent && form.persistent.checked) {
-        form.duration_hour.value = '';
-        form.reservation_end_time.value = Math.pow(2, 31) - 1;
-    }
-    else {
-        // one way to coerce to integer types
-        // otherwise '+' operator treats operands as two strings
-        var duration_seconds = form.duration_hour.value * 3600;
-        var int_time = form.reservation_start_time.value / 1;
-        form.reservation_end_time.value = int_time + duration_seconds;
+        form.duration_hour.value = Math.pow(2, 31) - 1;
     }
     return true;
 }
