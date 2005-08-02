@@ -40,15 +40,15 @@ sub get_stats {
     if ($results->{reservation_id}) {
         $stats .= "Reservation id:   $results->{reservation_id}\n";
     }
-    $stats .= "Start time:       $inref->{reservation_start_time}\n";
-    if ($inref->{reservation_end_time} ne $self->get_infinite_time()) {
-        $stats .= "End time:         $inref->{reservation_end_time}\n";
+    $stats .= "Start time:       $results->{reservation_start_time}\n";
+    if ($results->{reservation_end_time} ne $self->get_infinite_time()) {
+        $stats .= "End time:         $results->{reservation_end_time}\n";
     }
     else {
         $stats .= "End time:         persistent circuit\n";
     }
-    if ($inref->{reservation_created_time}) {
-        $stats .= "Created time:     $inref->{reservation_created_time}\n";
+    if ($results->{reservation_created_time}) {
+        $stats .= "Created time:     $results->{reservation_created_time}\n";
     }
     $stats .= "Bandwidth:        $inref->{reservation_bandwidth}\n";
     if ($inref->{reservation_burst_limit}) {

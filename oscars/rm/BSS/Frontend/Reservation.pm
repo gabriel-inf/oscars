@@ -99,6 +99,7 @@ sub insert_reservation {
     my( $query, $sth, $arrayref, $rref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
+    my( $duration_seconds );
 
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
@@ -110,15 +111,19 @@ sub insert_reservation {
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
     my $stats = BSS::Frontend::Stats->new();
-    # convert start and end times to datetime format
-    $query = "SELECT from_unixtime(?)";
+    # Expects strings in DATETIME format; converts to UTC
+    $query = "SELECT CONVERT_TZ(?, ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_start_time} );
+                                      $inref->{reservation_start_time},
+                                      $inref->{timezone_offset} );
     $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
-    if ($inref->{reservation_end_time} < (2**31 - 1)) {
+    if ($inref->{duration_hour} < (2**31 - 1)) {
+        $duration_seconds = $inref->{duration_hour} * 3600;
+        $query = "SELECT DATE_ADD(?, INTERVAL ? SECOND)";
         $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                          $inref->{reservation_end_time} );
+                                          $inref->{reservation_start_time},
+                                          $duration_seconds );
         $inref->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
         $sth->finish();
     }
@@ -155,8 +160,9 @@ sub insert_reservation {
     $inref->{dst_hostaddr_id} =
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
                                             $inref->{dst_address}); 
-    $query = "SELECT now()";
-    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    $query = "SELECT CONVERT_TZ(now(), ?, '+00:00')";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{timezone_offset} );
     $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
 
@@ -204,6 +210,23 @@ sub insert_reservation {
     $rref = $sth->fetchall_arrayref({});
     $self->get_user_readable_fields($user_dn, $inref, $rref, $results);
 
+    # convert times back to user's time zone, more fix later
+    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_start_time},
+                                      $inref->{timezone_offset} );
+    $results->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_end_time},
+                                      $inref->{timezone_offset} );
+    $results->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_created_time},
+                                      $inref->{timezone_offset} );
+    $results->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
     my $mailer = Common::Mail->new();
     my $mail_msg = $stats->get_stats($user_dn, $inref, $results) ;
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
@@ -292,9 +315,23 @@ sub get_user_readable_fields {
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
     my $k;
+    # convert back to local time zone
+    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
     for $r (@$rref) {
         $r->{src_address} = $mapping{$r->{src_hostaddr_id}};
         $r->{dst_address} = $mapping{$r->{dst_hostaddr_id}};
+        $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $r->{reservation_start_time},
+                                      $inref->{timezone_offset} );
+        $r->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+        $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $r->{reservation_end_time},
+                                      $inref->{timezone_offset} );
+        $r->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+        $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $r->{reservation_created_time},
+                                      $inref->{timezone_offset} );
+        $r->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
     }
 
     if (($inref->{user_level} eq 'engr') &&
