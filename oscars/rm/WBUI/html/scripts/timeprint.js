@@ -157,9 +157,6 @@ function check_date( form )
             return false;
         }
     }
-    if (form.start_date.value < 10) {
-        form.start_date.value = '0' + form.start_date.value;
-    }
 
     if ( isblank(form.start_hour.value) ) {
         form.start_hour.value = localDate.getHours();
@@ -177,16 +174,10 @@ function check_date( form )
             return false;
         }
     }
-    if (form.start_hour.value < 10) {
-        form.start_hour.value = '0' + form.start_hour.value;
-    }
 
     if ( isblank(form.start_minute.value) ) {
         form.start_minute.value = localDate.getMinutes();
         default_minute = 1;
-    }
-    if (form.start_minute.value < 10) {
-        form.start_minute.value = '0' + form.start_minute.value;
     }
 
     if ( isblank(form.duration_hour.value) ) {
@@ -245,8 +236,17 @@ function check_date( form )
             }
         }
     }
-    if (form.start_month.value < 10) {
+    if ((form.start_month.value < 10) && (form.start_month.value.length == 1)) {
         form.start_month.value = '0' + form.start_month.value;
+    }
+    if ((form.start_date.value < 10) && (form.start_date.value.length == 1)) {
+        form.start_date.value = '0' + form.start_date.value;
+    }
+    if ((form.start_hour.value < 10) && (form.start_hour.value.length == 1)) {
+        form.start_hour.value = '0' + form.start_hour.value;
+    }
+    if ((form.start_minute.value < 10) && (form.start_minute.value.length == 1)) {
+        form.start_minute.value = '0' + form.start_minute.value;
     }
 
     // convert to MySQL YYYY-MM-DD HH:MM:SS format
