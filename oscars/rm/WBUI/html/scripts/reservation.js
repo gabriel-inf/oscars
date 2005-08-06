@@ -9,34 +9,42 @@ David Robertson (dwrobertson@lbl.gov)
 check_form( form )
 */
 
-function check_form( form )
+function check_form( form, user_dn )
 {
-    /*
-    if ( form.user_dn.value == "" ) {
-        alert( "Please enter your distinguished name." );
-        form.user_dn.focus();
-        return false;
+    // Temporary hack: (TODO:  FIX)
+    if ( (user_dn == 'dtyu@bnl.gov') || (user_dn == 'wenji@fnal.gov'))
+    {
+        if (form.lsp_from.value && (form.lsp_from.value != 'chi-sl-sdn1'))
+        {
+             alert( "Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Ingress loopback' field." );
+             form.lsp_from.focus();
+             return false;
+        }
+        if (form.lsp_to.value && (form.lsp_to.value != 'chi-sl-sdn1'))
+        {
+             alert( "Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Egress loopback' field." );
+             form.lsp_to.focus();
+             return false;
+        }
     }
-    */
-
     // Check for empty required fields, and whether non-blank fields have
     // proper values for each field, in the order of: check whether its value
     // is a valid number/integer, check whether it's in a proper range, and
     // then check other conditions 
     if ( isblank(form.src_address.value) )
     {
-        alert( "Please enter starting host name, or its IP address ." );
+        alert( "Please enter starting host name, or its IP address, in the 'Source' field." );
         form.src_address.focus();
         return false;
     }
     if ( isblank(form.dst_address.value) )
     {
-        alert( "Please enter destination host name, or its IP address." );
+        alert( "Please enter destination host name, or its IP address, in the 'Destination' field." );
         form.dst_address.focus();
         return false;
     }
     if ( isblank(form.reservation_bandwidth.value) ) {
-        alert( "Please enter the amount of bandwidth that you want to reserve." );
+        alert( "Please enter the amount of bandwidth that you want to reserve in the 'Bandwidth' field." );
         form.reservation_bandwidth.focus();
         return false;
     }
