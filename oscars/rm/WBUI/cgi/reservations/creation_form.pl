@@ -11,9 +11,9 @@ use Data::Dumper;
 require '../lib/general.pl';
 
 my $cgi = CGI->new();
-my ($dn, $user_level, $oscars_home) = check_session_status(undef, $cgi);
+my ($user_dn, $user_level, $oscars_home) = check_session_status(undef, $cgi);
 
-if (!$dn) {
+if (!$user_dn) {
     print "Location:  $oscars_home\n\n";
 }
 else {
@@ -52,7 +52,7 @@ sub print_reservation_form {
 
     print '<form method="post" action="' . $oscars_home .
           'cgi-bin/reservations/details.pl" ' .
-          ' onsubmit="return check_form(this);">' . "\n";
+          " onsubmit=\"return check_form(this, '$user_dn');\">" . "\n";
 
     print '<input type="hidden" name="create" value="1">', "\n";
     print '<input type="hidden" name="reservation_start_time">', "\n";
