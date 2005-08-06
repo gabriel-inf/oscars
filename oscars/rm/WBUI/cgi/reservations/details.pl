@@ -2,11 +2,12 @@
 
 # details.pl:  Linked to by resvlist_form.pl.  Lists the details of
 #              a reservation.
-# Last modified: July 23, 2005
+# Last modified: August 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
 use CGI;
+use Socket;
 use Data::Dumper;
 
 use AAAS::Client::SOAPClient;
@@ -64,6 +65,20 @@ sub process_form {
         $results = $som->result;
     }
     if ($form_params->{create}) {
+        if ($form_params{lsp_from} && not_an_ip($form_params{lsp_from})) {
+            $form_params{lsp_from} = gethostbyname($form_params{lsp_from});
+            $form_params{lsp_from} = inet_ntoa($form_params{lsp_from});
+        }
+        if ($form_params{lsp_to} && not_an_ip($form_params{lsp_to})) {
+            $form_params{lsp_to} = gethostbyname($form_params{lsp_to});
+            $form_params{lsp_to} = inet_ntoa($form_params{lsp_to});
+        }
+        $som = aaas_dispatcher($form_params);
+        if ($som->faultstring) {
+            update_status_frame(1, $som->faultstring);
+            return;
+        }
+        $results = $som->result;
         $form_params{reservation_id} = $results{reservation_id};
         print_reservation_detail($user_level, $form_params, $results);
         update_status_frame(0, "Successfully created reservation with id $results->{reservation_id}");
@@ -256,3 +271,15 @@ sub print_reservation_detail {
 }
 ######
 
+################################################################################
+sub not_an_ip {
+    my( $form_input ) = @_;
+
+    # simple minded for now
+    my $expr = '^\d+\.\d+\.\d+\.\d+$';
+    return( $form_input !~ $expr );
+}
+######
+
+######
+1;
