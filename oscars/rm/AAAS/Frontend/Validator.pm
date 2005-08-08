@@ -40,7 +40,7 @@ my $form_variables = {
             'error' => "Please enter the user's first name."
             }
         ),
-        'user_institution' => (
+        'institution' => (
             {'regexp' => '.+',
             'error' => "Please enter the user's organization."
             }
