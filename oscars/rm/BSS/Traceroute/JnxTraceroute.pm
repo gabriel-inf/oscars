@@ -58,7 +58,7 @@ sub traceroute
     $dst =~ s/\/\d*$//;
 
     # Perform the traceroute.
-    $cmd = "ssh -x -a -i $self->{config}->{jnx_key} -l $self->{config}->{jnx_user} $src traceroute $dst wait 1";
+    $cmd = "ssh -x -a -i $self->{config}->{jnx_key} -l $self->{config}->{jnx_user} $src traceroute $dst wait $self->{config}->{traceroute_timeout} ttl $self->{config}->{traceroute_ttl}";
     print STDERR "$cmd\n";
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Common::Exception("Unable to ssh into router and perform traceroute.");
