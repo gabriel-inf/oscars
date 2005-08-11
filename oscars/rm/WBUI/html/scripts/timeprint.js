@@ -14,36 +14,94 @@ check_LeapYear( intYear )
 */
 
 
-var monthMapping = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+var month_mapping = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+// from http://www.worldtimezone.com/utc/utc-1200.html
+var timezone_mapping = {
+    '+00:00': "UTC",
+    '+01:00': "CET",
+    '+02:00': "EET",
+    '+03:00': "MSK",
+    '+03:30': "IST",
+    '+04:30': "AFT",
+    '+05:30': "IST",
+    '+08:00': "AWST",
+    '+09:00': "JST",
+    '+09:30': "ACST",
+    '+10:00': "AEST",
+    '+12:00': "NZST",
+    '-03:00': "BST",
+    '-03:30': "NST",
+    '-04:00': "AST",
+    '-05:00': "EST",
+    '-06:00': "CST",
+    '-07:00': "MST",
+    '-08:00': "PST",
+    '-09:00': "AKST",
+    '-10:00': "HST"
+}
 
 
 // ** print current date (format: July 1, 2005) **
-function print_current_date(fr, epochSeconds)
+function print_current_date(fr, epoch_seconds)
 {
-    var localDate;
+    var local_date;
 
-    localDate = new Date();
-    if (epochSeconds) {
-        localDate.setTime(epochSeconds * 1000);
+    local_date = new Date();
+    if (epoch_seconds) {
+        local_date.setTime(epoch_seconds * 1000);
     }
-    var currentMonth;
+    var current_month;
 
     if (!fr) { fr = document; }
-    currentMonth = localDate.getMonth();
+    current_month = local_date.getMonth();
 
-    var monthName = monthMapping[currentMonth];
+    var month_name = month_mapping[current_month];
 
-    currentMinutes = localDate.getMinutes();
-    fr.write( monthName + " " + localDate.getDate() + ", " + localDate.getFullYear() + " " + localDate.getHours() + ":");
+    current_minutes = local_date.getMinutes();
+    fr.write( month_name + " " + local_date.getDate() + ", " + local_date.getFullYear() + " " + local_date.getHours() + ":");
 
-    if (currentMinutes < 10) { fr.write("0") } ;
-    fr.write(currentMinutes);
+    if (current_minutes < 10) { fr.write("0") } ;
+    fr.write(current_minutes);
+}
+
+// print timezone options
+function print_timezone_options()
+{
+    print_timezone_offset();
+    document.write(get_timezone_opt('+00:00') + "\n");
+    document.write(get_timezone_opt('+01:00') + "\n");
+    document.write(get_timezone_opt('+02:00') + "\n");
+    document.write(get_timezone_opt('+03:00') + "\n");
+    document.write(get_timezone_opt('+03:30') + "\n");
+    document.write(get_timezone_opt('+04:30') + "\n");
+    document.write(get_timezone_opt('+05:30') + "\n");
+    document.write(get_timezone_opt('+08:00') + "\n");
+    document.write(get_timezone_opt('+09:00') + "\n");
+    document.write(get_timezone_opt('+09:30') + "\n");
+    document.write(get_timezone_opt('+10:00') + "\n");
+    document.write(get_timezone_opt('+12:00') + "\n");
+    document.write(get_timezone_opt('-03:00') + "\n");
+    document.write(get_timezone_opt('-03:30') + "\n");
+    document.write(get_timezone_opt('-04:00') + "\n");
+    document.write(get_timezone_opt('-05:00') + "\n");
+    document.write(get_timezone_opt('-06:00') + "\n");
+    document.write(get_timezone_opt('-07:00') + "\n");
+    document.write(get_timezone_opt('-08:00') + "\n");
+    document.write(get_timezone_opt('-09:00') + "\n");
+    document.write(get_timezone_opt('-10:00') + "\n");
+}
+
+// build string for one timezone option
+function get_timezone_opt(tz) {
+    return '    <option value="' + tz + '">' + tz + ' (' + 
+                  timezone_mapping[tz] + ')</option>';
 }
 
 // print local timezone offset
 function print_timezone_offset()
 {
-    document.write( '<option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' );
+    document.write( '    <option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' + "\n" );
 }
 
 // print timezone hidden input field
@@ -55,8 +113,8 @@ function print_timezone_field()
 // format the time zone offset in MySQL [+/-]hhmm format (ex. +09:30, -05:00)
 function get_timezone_offset()
 {
-    var localDate = new Date();
-    var offset = -(localDate.getTimezoneOffset());
+    var local_date = new Date();
+    var offset = -(local_date.getTimezoneOffset());
     var hours = offset / 60;
     var half_indicator = (offset % 60) / 30;
     var offset_str;
@@ -83,14 +141,14 @@ function get_timezone_offset()
 // NOTE:  For production use, start time should probably be in the future.
 function print_time_settings_example()
 {
-    var nowDate = new Date();
+    var local_date = new Date();
     var dfields = new Array();
 
-    dfields[0] = nowDate.getFullYear();
-    dfields[1] = nowDate.getMonth() + 1;
-    dfields[2] = nowDate.getDate();
-    dfields[3] = nowDate.getHours();
-    dfields[4] = nowDate.getMinutes();
+    dfields[0] = local_date.getFullYear();
+    dfields[1] = local_date.getMonth() + 1;
+    dfields[2] = local_date.getDate();
+    dfields[3] = local_date.getHours();
+    dfields[4] = local_date.getMinutes();
     dfields[5] = 'UTC' + get_timezone_offset();
     dfields[6] = 0.05;
     dfields[7] = ' ';
@@ -111,9 +169,9 @@ function check_date( form )
     var default_hour = 0;
     var default_minute = 0;
 
-    var localDate = new Date();
+    var local_date = new Date();
     if ( isblank(form.start_year.value) ) {
-        form.start_year.value = localDate.getFullYear();
+        form.start_year.value = local_date.getFullYear();
         default_year = 1;
     }
     else {
@@ -130,7 +188,7 @@ function check_date( form )
     }
 
     if ( isblank(form.start_month.value) ) {
-        form.start_month.value = localDate.getMonth() + 1;
+        form.start_month.value = local_date.getMonth() + 1;
         default_month = 1;
     }
     else {
@@ -147,7 +205,7 @@ function check_date( form )
     }
 
     if ( isblank(form.start_date.value) ) {
-        form.start_date.value = localDate.getDate();
+        form.start_date.value = local_date.getDate();
         default_date = 1;
     }
     else {
@@ -159,7 +217,7 @@ function check_date( form )
     }
 
     if ( isblank(form.start_hour.value) ) {
-        form.start_hour.value = localDate.getHours();
+        form.start_hour.value = local_date.getHours();
         default_hour = 1;
     }
     else {
@@ -176,7 +234,7 @@ function check_date( form )
     }
 
     if ( isblank(form.start_minute.value) ) {
-        form.start_minute.value = localDate.getMinutes();
+        form.start_minute.value = local_date.getMinutes();
         default_minute = 1;
     }
 
