@@ -268,7 +268,7 @@ sub get_reservations {
     # show only the user's reservations.  If id is given, show only the results
     # for that reservation.  Sort by start time in ascending order.
     if ($inref->{reservation_id}) {
-        if ($inref->{user_level} ne 'engr') {
+        if ( !($self->{policy}->authorized($inref->{user_level}, "engr")) ) {
             $query = "SELECT " . join(', ', @detail_fields);
         }
         else {
@@ -279,7 +279,7 @@ sub get_reservations {
                   " WHERE reservation_id = $inref->{reservation_id}";
     }
     elsif ($user_dn) {
-        if ($inref->{user_level} eq 'engr') {
+        if ( $self->{policy}->authorized($inref->{user_level}, "engr") ) {
             $query = "SELECT * FROM reservations";
         }
         else {
@@ -334,7 +334,7 @@ sub get_user_readable_fields {
         $r->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
     }
 
-    if (($inref->{user_level} eq 'engr') &&
+    if ($self->{policy}->authorized($inref->{user_level}, "engr") &&
         $inref->{reservation_id}) {
         my $hashref;
         my @path_routers;

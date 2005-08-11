@@ -49,9 +49,14 @@ sub find_pending_reservations  {
     # FIX:  make SCHEDULER a bona fide db user
     # user dn in this case is the scheduler thread pseudo user
     #$self->{dbconn}->login_user($user_dn);
-    $query = "SELECT now() + INTERVAL ? SECOND";
+    $query = 'SELECT @@global.time_zone';
+    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    my $timezone = $sth->fetchrow_arrayref()->[0];
+
+    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                            $self->{configs}->{reservation_time_interval} );
+                            $self->{configs}->{reservation_time_interval},
+                            $timezone );
     my $timeslot = $sth->fetchrow_arrayref()->[0];
     if ($self->{configs}->{debug}) {
         print STDERR "pending: $timeslot\n";
@@ -73,9 +78,14 @@ sub find_expired_reservations {
 
     # FIX:  make SCHEDULER a bona fide db user
     #$self->{dbconn}->login_user($user_dn);
-    $query = "SELECT now() + INTERVAL ? SECOND";
+    $query = 'SELECT @@global.time_zone';
+    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    my $timezone = $sth->fetchrow_arrayref()->[0];
+
+    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                            $self->{configs}->{reservation_time_interval} );
+                            $self->{configs}->{reservation_time_interval},
+                            $timezone );
     my $timeslot = $sth->fetchrow_arrayref()->[0];
     if ($self->{configs}->{debug}) {
         print STDERR "pending: $timeslot\n";

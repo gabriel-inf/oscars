@@ -101,6 +101,22 @@ sub check_oversubscribe {
 }
 ######
 
+##############################################################################
+# authorized:  Given the user level string, see if the user has the required
+#              privilege.
+#
+sub authorized {
+    my( $self, $user_level, $required_priv ) = @_;
+ 
+    for my $priv (split(' ', $user_level)) {
+        if ($priv eq $required_priv) {
+            return( 1 );
+        }
+    }
+    return( 0 );
+}
+######
+
 #################
 # Private methods
 #################
