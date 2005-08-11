@@ -244,8 +244,9 @@ sub insert_reservation {
 sub delete_reservation {
     my( $self, $inref ) = @_;
 
-    return( $self->{dbconn}->update_reservation( $inref->{user_dn}, $inref,
-                                     $self->{configs}->{PENDING_CANCEL}) );
+    my $status =  $self->{dbconn}->update_reservation( $inref->{user_dn}, $inref,
+                                     $self->{configs}->{PENDING_CANCEL} );
+    return($self->get_reservations($inref));
 }
 ######
 
