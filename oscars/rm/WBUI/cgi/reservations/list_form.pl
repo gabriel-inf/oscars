@@ -38,13 +38,7 @@ sub process_form {
     my( $form_params ) = @_;
 
     my( $error_status, $results );
-    my( $user_level );
 
-    # Get all fields if user has engineer's privileges:  FIX
-    $user_level = $form_params->{user_level};
-    if ( authorized($user_level, "engr") ) {
-        $form_params->{user_level} = 'engr';
-    }
     $form_params->{method} = 'get_reservations';
     my $som = aaas_dispatcher($form_params);
     if ($som->faultstring) {
@@ -52,7 +46,7 @@ sub process_form {
         return;
     }
     $results = $som->result;
-    print_reservations($user_level, $results);
+    print_reservations($results, $form_params->{user_level});
     update_status_frame(0, "Successfully retrieved reservations.");
 }
 ######
@@ -64,7 +58,7 @@ sub process_form {
 # Out:  None
 #
 sub print_reservations {
-    my ( $user_level, $results ) = @_;
+    my ( $results, $user_level ) = @_;
 
     my ( $rowsref, $row );
 
