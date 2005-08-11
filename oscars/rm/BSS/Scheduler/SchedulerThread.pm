@@ -117,7 +117,9 @@ sub find_new_reservations {
     for my $r (@$resv) {
         ## calls to pss to setup reservations
         my %lsp_info = map_fields($front_end, $r);
-        $status = setup_pss(\%lsp_info, $r);
+        if ($configs->{allow_lsp_config}) {
+            $status = setup_pss(\%lsp_info, $r);
+        }
 
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{ACTIVE}, $front_end);
@@ -149,7 +151,9 @@ sub find_expired_reservations {
        
     for my $r (@$resv) {
         my %lsp_info = map_fields($front_end, $r);
-        $status = teardown_pss(\%lsp_info, $r);
+        if ($configs->{allow_lsp_config}) {
+            $status = teardown_pss(\%lsp_info, $r);
+        }
 
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, $configs->{FINISHED}, $front_end);
