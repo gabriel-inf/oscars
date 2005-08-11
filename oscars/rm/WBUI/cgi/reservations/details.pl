@@ -34,57 +34,89 @@ exit;
 ######
 
 ##############################################################################
-# process_form:  Make the SOAP call, and print out the results
+# process_form:  Make the SOAP call based on form parameters, and print out the
+#                results.
 #
 sub process_form {
     my( $form_params ) = @_;
 
-    my( $user_level, $som, $results, $status_msg );
-
-    # TODO:  FIX
-    $user_level = $form_params->{user_level};
-    if (authorized($form_params->{user_level}, "engr")) {
-        $form_params{user_level} = "engr";
-    }
-    else {
-        $form_params{user_level} = "user";
-    }
-        # Check if reservation is being cancelled
-    if ($form_params->{cancel}) {
-        $form_params->{method} = 'delete_reservation';
-    }
-    elsif ($form_params->{create}) {
-        $form_params->{method} = 'insert_reservation';
-    }
-    if ($form_params->{method}) {
-        $som = aaas_dispatcher($form_params);
-        if ($som->faultstring) {
-            update_status_frame(1, $som->faultstring);
-            return;
-        }
-        $results = $som->result;
-    }
+    # if creating reservation
     if ($form_params->{create}) {
-        if ($form_params{lsp_from} && not_an_ip($form_params{lsp_from})) {
-            $form_params{lsp_from} = gethostbyname($form_params{lsp_from});
-            $form_params{lsp_from} = inet_ntoa($form_params{lsp_from});
-        }
-        if ($form_params{lsp_to} && not_an_ip($form_params{lsp_to})) {
-            $form_params{lsp_to} = gethostbyname($form_params{lsp_to});
-            $form_params{lsp_to} = inet_ntoa($form_params{lsp_to});
-        }
-        $som = aaas_dispatcher($form_params);
-        if ($som->faultstring) {
-            update_status_frame(1, $som->faultstring);
-            return;
-        }
-        $results = $som->result;
-        $form_params{reservation_id} = $results{reservation_id};
-        print_reservation_detail($user_level, $form_params, $results);
-        update_status_frame(0, "Successfully created reservation with id $results->{reservation_id}");
+        $form_params->{method} = 'insert_reservation';
+        create_reservation($form_params);
+    }
+    # if cancelling reservation
+    elsif ($form_params->{cancel}) {
+        $form_params->{method} = 'delete_reservation';
+        cancel_reservation($form_params);
+    }
+    # refresh reservation details
+    else {
+        $form_params->{method} = 'get_reservation';
+        get_details($form_params);
+    }
+}
+######
+
+##############################################################################
+# create_reservation:  Make the SOAP call to create the reservation, and print
+#                      out the results
+#
+sub create_reservation {
+    my( $form_params ) = @_;
+
+    my( $som, $results );
+
+    if ($form_params{lsp_from} && not_an_ip($form_params{lsp_from})) {
+        $form_params{lsp_from} = gethostbyname($form_params{lsp_from});
+        $form_params{lsp_from} = inet_ntoa($form_params{lsp_from});
+    }
+    if ($form_params{lsp_to} && not_an_ip($form_params{lsp_to})) {
+        $form_params{lsp_to} = gethostbyname($form_params{lsp_to});
+        $form_params{lsp_to} = inet_ntoa($form_params{lsp_to});
+    }
+    $som = aaas_dispatcher($form_params);
+    if ($som->faultstring) {
+        update_status_frame(1, $som->faultstring);
         return;
     }
-    # print updated reservation info (may be more than just new status)
+    $results = $som->result;
+    $form_params{reservation_id} = $results{reservation_id};
+    print_reservation_detail($form_params, $results);
+    update_status_frame(0, "Successfully created reservation with id $results->{reservation_id}.");
+}
+######
+
+##############################################################################
+# cancel_reservation:  Make the SOAP call to cancel the reservation, and print
+#                      out the results.
+#
+sub cancel_reservation {
+    my( $form_params ) = @_;
+
+    my( $som, $results );
+
+    $som = aaas_dispatcher($form_params);
+    if ($som->faultstring) {
+        update_status_frame(1, $som->faultstring);
+        return;
+    }
+    $results = $som->result;
+    print_reservation_detail($form_params, $results);
+    update_status_frame(0, "Successfully cancelled reservation with id $form_params->{reservation_id}.");
+}
+######
+
+##############################################################################
+# get_details:  Make the SOAP call to get reservation details, and print out
+#               the results.  At the moment, almost duplicates
+#               cancel_reservation
+#
+sub get_details {
+    my( $form_params ) = @_;
+
+    my( $som, $results );
+
     $form_params->{method} = 'get_reservations';
     $som = aaas_dispatcher($form_params);
     if ($som->faultstring) {
@@ -92,7 +124,7 @@ sub process_form {
         return;
     }
     $results = $som->result;
-    print_reservation_detail($user_level, $form_params, $results);
+    print_reservation_detail($form_params, $results);
     update_status_frame(0, "Successfully got reservation details.");
 }
 ######
@@ -104,7 +136,7 @@ sub process_form {
 # Out: None
 #
 sub print_reservation_detail {
-    my( $user_level, $form_params, $results ) = @_;
+    my( $form_params, $results ) = @_;
 
     my $row = @{$results->{rows}}[0];
     print '<html>', "\n";
@@ -120,7 +152,7 @@ sub print_reservation_detail {
     print "<body onload=\"stripe('reservationlist', '#fff', '#edf3fe');\">\n";
 
     print '<script language="javascript">';
-    print '    print_navigation_bar("', $user_level, '", "reservationlist");';
+    print '    print_navigation_bar("', $form_params{user_level}, '", "reservationlist");';
     print '</script>', "\n";
 
     print '<div id="zebratable_ui">', "\n";
