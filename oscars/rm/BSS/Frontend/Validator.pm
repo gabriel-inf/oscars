@@ -85,8 +85,13 @@ sub validate {
         }
         # for all tests 
         for $r ($m->{$k}) {
-            if ($inref->{$k} !~ $r->{regexp}) {
+            if ($r->{regexp} && $inref->{$k} !~ $r->{regexp}) {
                 return $r->{error};
+            }
+            if ($inref->{k}) {
+                if ($r->{test_function} && !($r->{test_function}())) {
+                    return $r->{error};
+                }
             }
         }
     }
