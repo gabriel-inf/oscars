@@ -52,7 +52,7 @@ sub process_form {
     }
     # refresh reservation details
     else {
-        $form_params->{method} = 'get_reservation';
+        $form_params->{method} = 'get_reservations';
         get_details($form_params);
     }
 }
@@ -67,6 +67,7 @@ sub create_reservation {
 
     my( $som, $results );
 
+    print STDERR Dumper($form_params);
     if ($form_params{lsp_from} && not_an_ip($form_params{lsp_from})) {
         $form_params{lsp_from} = gethostbyname($form_params{lsp_from});
         $form_params{lsp_from} = inet_ntoa($form_params{lsp_from});
@@ -117,7 +118,6 @@ sub get_details {
 
     my( $som, $results );
 
-    $form_params->{method} = 'get_reservations';
     $som = aaas_dispatcher($form_params);
     if ($som->faultstring) {
         update_status_frame(1, $som->faultstring);
@@ -213,22 +213,43 @@ sub print_reservation_detail {
 
     print '  <tr>', "\n";
     print '  <td>Source port</td>', "\n";
-    print '  <td>' . $row->{reservation_src_port} . "</td>\n";
+    if ($row->{reservation_src_port}) {
+        print '  <td>' . $row->{reservation_src_port} . "</td>\n";
+    }
+    else {
+        print "  <td>DEFAULT</td>\n";
+    }
+     
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
     print '  <td>Destination port</td>', "\n";
-    print '  <td>' . $row->{reservation_dst_port} . "</td>\n";
+    if ($row->{reservation_dst_port}) {
+        print '  <td>' . $row->{reservation_dst_port} . "</td>\n";
+    }
+    else {
+        print "  <td>DEFAULT</td>\n";
+    }
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
     print '  <td>Protocol</td>', "\n";
-    print '  <td>' . $row->{reservation_protocol} . "</td>\n";
+    if ($row->{reservation_protocol}) {
+        print '  <td>' . $row->{reservation_protocol} . "</td>\n";
+    }
+    else {
+        print "  <td>DEFAULT</td>\n";
+    }
     print '  </tr>', "\n";
 
     print '  <tr>', "\n";
     print '  <td>DSCP</td>', "\n";
-    print '  <td>' . $row->{reservation_dscp} . "</td>\n";
+    if ($row->{reservation_dscp}) {
+        print '  <td>' . $row->{reservation_dscp} . "</td>\n";
+    }
+    else {
+        print "  <td>DEFAULT</td>\n";
+    }
     print '  </tr>', "\n";
 
     if ( authorized($form_params{user_level}, "engr") ) {
