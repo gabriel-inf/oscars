@@ -22,8 +22,6 @@ var timezone_mapping = {
     '+01:00': "CET",
     '+02:00': "EET",
     '+03:00': "MSK",
-    '+03:30': "IST",
-    '+04:30': "AFT",
     '+05:30': "IST",
     '+08:00': "AWST",
     '+09:00': "JST",
@@ -38,6 +36,30 @@ var timezone_mapping = {
     '-07:00': "MST",
     '-08:00': "PST",
     '-09:00': "AKST",
+    '-10:00': "HST"
+}
+
+// This is only approximate; too complex for now.
+var daylight_timezone_mapping = {
+    '+00:00': "UTC",
+    '+01:00': "WEDT",
+    '+02:00': "CEDT",
+    '+03:00': "EEDT",
+    '+04:00': "MSK",
+    '+05:30': "IST",
+    '+08:00': "AWST",
+    '+09:00': "JST",
+    '+10:30': "ACDT",
+    '+11:00': "AEDT",
+    '+13:00': "NZDT",
+    '-02:00': "BDT",
+    '-02:30': "NDT",
+    '-03:00': "ADT",
+    '-04:00': "EDT",
+    '-05:00': "CDT",
+    '-06:00': "MDT",
+    '-07:00': "PDT",
+    '-08:00': "AKDT",
     '-10:00': "HST"
 }
 
@@ -69,33 +91,72 @@ function print_current_date(fr, epoch_seconds)
 function print_timezone_options()
 {
     print_timezone_offset();
-    document.write(get_timezone_opt('+00:00') + "\n");
-    document.write(get_timezone_opt('+01:00') + "\n");
-    document.write(get_timezone_opt('+02:00') + "\n");
-    document.write(get_timezone_opt('+03:00') + "\n");
-    document.write(get_timezone_opt('+03:30') + "\n");
-    document.write(get_timezone_opt('+04:30') + "\n");
-    document.write(get_timezone_opt('+05:30') + "\n");
-    document.write(get_timezone_opt('+08:00') + "\n");
-    document.write(get_timezone_opt('+09:00') + "\n");
-    document.write(get_timezone_opt('+09:30') + "\n");
-    document.write(get_timezone_opt('+10:00') + "\n");
-    document.write(get_timezone_opt('+12:00') + "\n");
-    document.write(get_timezone_opt('-03:00') + "\n");
-    document.write(get_timezone_opt('-03:30') + "\n");
-    document.write(get_timezone_opt('-04:00') + "\n");
-    document.write(get_timezone_opt('-05:00') + "\n");
-    document.write(get_timezone_opt('-06:00') + "\n");
-    document.write(get_timezone_opt('-07:00') + "\n");
-    document.write(get_timezone_opt('-08:00') + "\n");
-    document.write(get_timezone_opt('-09:00') + "\n");
-    document.write(get_timezone_opt('-10:00') + "\n");
+    // TODO:  not every time zone has the same time period during which
+    //        it is in effect; for now, U.S.
+    var local_date = new Date();
+    var offset = -(local_date.getTimezoneOffset());
+    // unlikely that daylight savings in effect on January 1.
+    var standard_time_date = new Date(local_date.getFullYear(), 0, 1, 0, 0, 0, 0);
+    var standard_offset = -(standard_time_date.getTimezoneOffset()); 
+    // fix, should just loop through
+    // if daylight savings not in effect
+    if (offset == standard_offset) {
+        document.write(get_timezone_opt('+00:00', 0) + "\n");
+        document.write(get_timezone_opt('+01:00', 0) + "\n");
+        document.write(get_timezone_opt('+02:00', 0) + "\n");
+        document.write(get_timezone_opt('+03:00', 0) + "\n");
+        document.write(get_timezone_opt('+03:30', 0) + "\n");
+        document.write(get_timezone_opt('+04:30', 0) + "\n");
+        document.write(get_timezone_opt('+05:30', 0) + "\n");
+        document.write(get_timezone_opt('+08:00', 0) + "\n");
+        document.write(get_timezone_opt('+09:00', 0) + "\n");
+        document.write(get_timezone_opt('+09:30', 0) + "\n");
+        document.write(get_timezone_opt('+10:00', 0) + "\n");
+        document.write(get_timezone_opt('+12:00', 0) + "\n");
+        document.write(get_timezone_opt('-03:00', 0) + "\n");
+        document.write(get_timezone_opt('-03:30', 0) + "\n");
+        document.write(get_timezone_opt('-04:00', 0) + "\n");
+        document.write(get_timezone_opt('-05:00', 0) + "\n");
+        document.write(get_timezone_opt('-06:00', 0) + "\n");
+        document.write(get_timezone_opt('-07:00', 0) + "\n");
+        document.write(get_timezone_opt('-08:00', 0) + "\n");
+        document.write(get_timezone_opt('-09:00', 0) + "\n");
+        document.write(get_timezone_opt('-10:00', 0) + "\n");
+    }
+    else {
+        document.write(get_timezone_opt('+00:00', 1) + "\n");
+        document.write(get_timezone_opt('+01:00', 1) + "\n");
+        document.write(get_timezone_opt('+02:00', 1) + "\n");
+        document.write(get_timezone_opt('+03:00', 1) + "\n");
+        document.write(get_timezone_opt('+04:00', 1) + "\n");
+        document.write(get_timezone_opt('+05:30', 1) + "\n");
+        document.write(get_timezone_opt('+08:00', 1) + "\n");
+        document.write(get_timezone_opt('+09:00', 1) + "\n");
+        document.write(get_timezone_opt('+10:30', 1) + "\n");
+        document.write(get_timezone_opt('+11:00', 1) + "\n");
+        document.write(get_timezone_opt('+13:00', 1) + "\n");
+        document.write(get_timezone_opt('-02:00', 1) + "\n");
+        document.write(get_timezone_opt('-02:30', 1) + "\n");
+        document.write(get_timezone_opt('-03:00', 1) + "\n");
+        document.write(get_timezone_opt('-04:00', 1) + "\n");
+        document.write(get_timezone_opt('-05:00', 1) + "\n");
+        document.write(get_timezone_opt('-06:00', 1) + "\n");
+        document.write(get_timezone_opt('-07:00', 1) + "\n");
+        document.write(get_timezone_opt('-08:00', 1) + "\n");
+        document.write(get_timezone_opt('-10:00', 1) + "\n");
+    }
 }
 
 // build string for one timezone option
-function get_timezone_opt(tz) {
-    return '    <option value="' + tz + '">' + tz + ' (' + 
-                  timezone_mapping[tz] + ')</option>';
+function get_timezone_opt(tz, daylight) {
+    if (daylight) {
+        return '    <option value="' + tz + '">' + tz + ' (' + 
+                      daylight_timezone_mapping[tz] + ')</option>';
+    }
+    else {
+        return '    <option value="' + tz + '">' + tz + ' (' + 
+                      timezone_mapping[tz] + ')</option>';
+    }
 }
 
 // print local timezone offset
