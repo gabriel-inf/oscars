@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: July 22, 2005
+# Last modified: August 11, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -202,33 +202,20 @@ sub insert_reservation {
               WHERE reservation_id = ?";
     $sth = $self->{dbconn}->do_query($user_dn, $query,
         $results->{reservation_tag}, $results->{reservation_id});
+    $sth->finish();
 
     # TODO:  some duplication, fix later
     $query = "SELECT * FROM reservations WHERE reservation_id = ?";
     $sth = $self->{dbconn}->do_query($user_dn, $query,
                                      $results->{reservation_id});
     $rref = $sth->fetchall_arrayref({});
-    $self->get_user_readable_fields($user_dn, $inref, $rref, $results);
+    # converts times back to user's time zone, among other things
+    $self->get_user_readable_fields($user_dn, $inref, $rref);
+    $sth->finish();
+    $results->{rows} = $rref;
 
-    # convert times back to user's time zone, more fix later
-    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
-    $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_start_time},
-                                      $inref->{timezone_offset} );
-    $results->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-    $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_end_time},
-                                      $inref->{timezone_offset} );
-    $results->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-    $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_created_time},
-                                      $inref->{timezone_offset} );
-    $results->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
     my $mailer = Common::Mail->new();
-    my $mail_msg = $stats->get_stats($user_dn, $inref, $results) ;
+    my $mail_msg = $stats->get_stats($user_dn, $inref, $rref->[0]) ;
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "Reservation made by $user_dn", $mail_msg);
     $mailer->send_mail($mailer->get_webmaster(), $user_dn,
@@ -294,7 +281,8 @@ sub get_reservations {
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-    $self->get_user_readable_fields($user_dn, $inref, $rref, $results);
+    $self->get_user_readable_fields($user_dn, $inref, $rref);
+    $results->{rows} = $rref;
     return( $results );
 }
 ######
@@ -306,7 +294,7 @@ sub get_reservations {
 ##############################################################################
 #
 sub get_user_readable_fields {
-    my( $self, $user_dn, $inref, $rref, $results ) = @_;
+    my( $self, $user_dn, $inref, $rref ) = @_;
  
     my( $r, %mapping );
 
@@ -314,6 +302,7 @@ sub get_user_readable_fields {
     my $sth = $self->{dbconn}->do_query($user_dn, $query);
     my $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
+    $sth->finish();
 
     my $k;
     # convert back to local time zone
@@ -325,14 +314,29 @@ sub get_user_readable_fields {
                                       $r->{reservation_start_time},
                                       $inref->{timezone_offset} );
         $r->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
         $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $r->{reservation_end_time},
                                       $inref->{timezone_offset} );
         $r->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
         $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $r->{reservation_created_time},
                                       $inref->{timezone_offset} );
         $r->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+        if ($r->{reservation_dscp} eq 'NU') {
+            $r->{reservation_dscp} = '';
+        }
+        if ($r->{reservation_protocol} eq 'NULL') {
+            $r->{reservation_protocol} = '';
+        }
+        if ($r->{reservation_src_port} == 0) {
+            $r->{reservation_src_port} = '';
+        }
+        if ($r->{reservation_dst_port} == 0) {
+            $r->{reservation_dst_port} = '';
+        }
     }
 
     if ($self->{policy}->authorized($inref->{user_level}, "engr") &&
@@ -351,6 +355,8 @@ sub get_user_readable_fields {
         $hashref = $sth->fetchrow_hashref();
         $r->{ingress_router_name} = $hashref->{router_name}; 
         $r->{ingress_loopback} = $hashref->{router_loopback};
+        $sth->finish();
+
         $sth = $self->{dbconn}->do_query($user_dn, $query,
                                          $r->{egress_interface_id});
         $hashref = $sth->fetchrow_hashref();
@@ -358,14 +364,14 @@ sub get_user_readable_fields {
         $r->{egress_loopback} = $hashref->{router_loopback};
         @path_routers = split(' ', $r->{reservation_path});
         $r->{reservation_path} = ();
+        $sth->finish();
         for $_ (@path_routers) {
             $sth = $self->{dbconn}->do_query($user_dn, $query, $_);
             $hashref = $sth->fetchrow_hashref();
             push(@{$r->{reservation_path}}, $hashref->{router_name}); 
+            $sth->finish();
         }
     }
-    $results->{rows} = $rref;
-    $sth->finish();
     return;
 }
 ######

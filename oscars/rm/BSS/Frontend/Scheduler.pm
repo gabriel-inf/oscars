@@ -52,12 +52,14 @@ sub find_pending_reservations  {
     $query = 'SELECT @@global.time_zone';
     $sth = $self->{dbconn}->do_query( $user_dn, $query );
     my $timezone = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
 
     $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                             $self->{configs}->{reservation_time_interval},
                             $timezone );
     my $timeslot = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
     if ($self->{configs}->{debug}) {
         print STDERR "pending: $timeslot\n";
     }
@@ -81,12 +83,14 @@ sub find_expired_reservations {
     $query = 'SELECT @@global.time_zone';
     $sth = $self->{dbconn}->do_query( $user_dn, $query );
     my $timezone = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
 
     $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                             $self->{configs}->{reservation_time_interval},
                             $timezone );
     my $timeslot = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
     if ($self->{configs}->{debug}) {
         print STDERR "pending: $timeslot\n";
     }
@@ -110,8 +114,31 @@ sub get_lsp_stats {
     $query = "SELECT now()";
     $sth = $self->{dbconn}->do_query( $user_dn, $query );
     $config_time = $sth->fetchrow_arrayref()->[0];
-    return $self->{stats}->get_lsp_stats($lsp_info, $inref,
-                                         $status, $config_time);
+    $sth->finish();
+    $query = 'SELECT @@global.time_zone';
+    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    my $timezone = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    # convert back to user's time zone
+    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_start_time},
+                                      $timezone );
+    $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_end_time},
+                                      $timezone );
+    $inref->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_created_time},
+                                      $timezone );
+    $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    my $results = $self->{stats}->get_lsp_stats($lsp_info, $inref,
+                                         $status, $config_time, $timezone);
+    return $results;
 }
 ######
 
