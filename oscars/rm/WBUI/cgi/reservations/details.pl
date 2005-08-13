@@ -67,7 +67,6 @@ sub create_reservation {
 
     my( $som, $results );
 
-    print STDERR Dumper($form_params);
     if ($form_params{lsp_from} && not_an_ip($form_params{lsp_from})) {
         $form_params{lsp_from} = gethostbyname($form_params{lsp_from});
         $form_params{lsp_from} = inet_ntoa($form_params{lsp_from});
