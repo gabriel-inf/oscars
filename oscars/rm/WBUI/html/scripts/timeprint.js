@@ -168,7 +168,7 @@ function print_timezone_offset()
 // print timezone hidden input field
 function print_timezone_field()
 {
-    document.write( '<input type="hidden" name="timezone_offset" value="' + get_timezone_offset()  + '">' );
+    document.write( '<input type="hidden" name="reservation_time_zone" value="' + get_timezone_offset()  + '">' );
 }
 
 // format the time zone offset in MySQL [+/-]hhmm format (ex. +09:30, -05:00)
@@ -249,8 +249,8 @@ function check_date( form )
     }
 
     if ( isblank(form.start_month.value) ) {
-        form.start_month.value = local_date.getMonth() + 1;
-        default_month = 1;
+        form.start_month.value = local_date.getMonth();
+        default_month = 0;
     }
     else {
         if ( validate_integer(form.start_month.value) == false ) {
@@ -258,7 +258,8 @@ function check_date( form )
             form.start_month.focus();
             return false;
         }
-        if ( form.start_month.value < 1 || form.start_month.value > 12 ) {
+        form.start_month.value = parseInt(form.start_month.value) - 1;
+        if ( form.start_month.value < 0 || form.start_month.value > 11 ) {
             alert( "The reservation start month is out of proper range. Please check again." );
             form.start_month.focus();
             return false;
@@ -355,27 +356,17 @@ function check_date( form )
             }
         }
     }
-    if ((form.start_month.value < 10) && (form.start_month.value.length == 1)) {
-        form.start_month.value = '0' + form.start_month.value;
-    }
-    if ((form.start_date.value < 10) && (form.start_date.value.length == 1)) {
-        form.start_date.value = '0' + form.start_date.value;
-    }
-    if ((form.start_hour.value < 10) && (form.start_hour.value.length == 1)) {
-        form.start_hour.value = '0' + form.start_hour.value;
-    }
-    if ((form.start_minute.value < 10) && (form.start_minute.value.length == 1)) {
-        form.start_minute.value = '0' + form.start_minute.value;
-    }
 
-    // convert to MySQL YYYY-MM-DD HH:MM:SS format
-    form.reservation_start_time.value = form.start_year.value + '-' +
-                                        form.start_month.value + '-' +
-                                        form.start_date.value + ' ' +
-                                        form.start_hour.value + ':' +
-                                        form.start_minute.value + ':00';
+    reservation_date = new Date(form.start_year.value,
+                                form.start_month.value,
+                                form.start_date.value,
+                                form.start_hour.value,
+                                form.start_minute.value,
+                                0, 0);
+    form.start_month.value = parseInt(form.start_month.value) + 1;
+    // convert local time to seconds since epoch
+    form.reservation_start_time.value = reservation_date.getTime() / 1000;
 
-    // set Duration field to blank if persistent
     if (form.persistent && form.persistent.checked) {
         form.duration_hour.value = Math.pow(2, 31) - 1;
     }
