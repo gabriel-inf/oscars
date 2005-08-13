@@ -30,6 +30,7 @@ my @detail_fields = ( 'reservation_id',
                     'reservation_start_time',
                     'reservation_end_time',
                     'reservation_created_time',
+                    'reservation_time_zone',
                     'reservation_bandwidth',
                     'reservation_burst_limit',
                     'reservation_status',
@@ -111,11 +112,11 @@ sub insert_reservation {
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
     my $stats = BSS::Frontend::Stats->new();
-    # Expects strings in DATETIME format; converts to UTC
-    $query = "SELECT CONVERT_TZ(?, ?, '+00:00')";
+    # Expects strings in seoncds since epoch; converts to date in UTC time
+    $query = "SELECT CONVERT_TZ(from_unixtime(?), ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $inref->{reservation_start_time},
-                                      $inref->{timezone_offset} );
+                                      $inref->{reservation_time_zone});
     $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     if ($inref->{duration_hour} < (2**31 - 1)) {
@@ -162,7 +163,7 @@ sub insert_reservation {
                                             $inref->{dst_address}); 
     $query = "SELECT CONVERT_TZ(now(), ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{timezone_offset} );
+                                      $inref->{reservation_time_zone} );
     $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
 
@@ -305,24 +306,24 @@ sub get_user_readable_fields {
     $sth->finish();
 
     my $k;
-    # convert back to local time zone
+    # convert to time zone reservation was created in
     $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
     for $r (@$rref) {
         $r->{src_address} = $mapping{$r->{src_hostaddr_id}};
         $r->{dst_address} = $mapping{$r->{dst_hostaddr_id}};
         $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $r->{reservation_start_time},
-                                      $inref->{timezone_offset} );
+                                      $r->{reservation_time_zone} );
         $r->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
         $sth->finish();
         $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $r->{reservation_end_time},
-                                      $inref->{timezone_offset} );
+                                      $r->{reservation_time_zone} );
         $r->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
         $sth->finish();
         $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $r->{reservation_created_time},
-                                      $inref->{timezone_offset} );
+                                      $r->{reservation_time_zone} );
         $r->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
         $sth->finish();
         if ($r->{reservation_dscp} eq 'NU') {

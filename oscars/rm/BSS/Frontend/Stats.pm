@@ -50,7 +50,7 @@ sub get_stats {
     if ($results->{reservation_created_time}) {
         $stats .= "Created time:       $results->{reservation_created_time}\n";
     }
-    $stats .= "(Times are in UTC $inref->{timezone_offset})\n";
+    $stats .= "(Times are in UTC $inref->{reservation_time_zone})\n";
     $stats .= "Bandwidth:          $inref->{reservation_bandwidth}\n";
     if ($inref->{reservation_burst_limit}) {
         $stats .= "Burst limit:         $inref->{reservation_burst_limit}\n";
@@ -90,7 +90,7 @@ sub get_stats {
 # get_lsp_stats
 #
 sub get_lsp_stats {
-    my( $self, $lsp_info, $inref, $status, $config_time, $timezone) = @_;
+    my( $self, $lsp_info, $inref, $status, $config_time) = @_;
 
     my $stats = 
         "LSP config by $inref->{user_dn} with parameters:\n" .
@@ -106,7 +106,7 @@ sub get_lsp_stats {
     }
     $stats .=
         "Created time:       $inref->{reservation_created_time}\n" .
-        "(Times are in UTC $timezone)\n" .
+        "(Times are in UTC $inref->{reservation_time_zone})\n" .
         "Bandwidth:          $lsp_info->{bandwidth}\n" .
         "Burst limit:        $lsp_info->{'policer_burst-size-limit'}\n" .
         "Source:             $lsp_info->{'source-address'}\n" .

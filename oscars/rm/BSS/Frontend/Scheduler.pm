@@ -115,29 +115,25 @@ sub get_lsp_stats {
     $sth = $self->{dbconn}->do_query( $user_dn, $query );
     $config_time = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
-    $query = 'SELECT @@global.time_zone';
-    $sth = $self->{dbconn}->do_query( $user_dn, $query );
-    my $timezone = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-    # convert back to user's time zone
+    # convert to seconds before sending back
     $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $inref->{reservation_start_time},
-                                      $timezone );
+                                      $inref->{reservation_time_zone} );
     $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $inref->{reservation_end_time},
-                                      $timezone );
+                                      $inref->{reservation_time_zone} );
     $inref->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $inref->{reservation_created_time},
-                                      $timezone );
+                                      $inref->{reservation_time_zone} );
     $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     my $results = $self->{stats}->get_lsp_stats($lsp_info, $inref,
-                                         $status, $config_time, $timezone);
+                                         $status, $config_time);
     return $results;
 }
 ######
