@@ -107,12 +107,13 @@ sub find_expired_reservations {
 
 ###############################################################################
 sub get_lsp_stats {
-    my( $self, $user_dn, $lsp_info, $inref, $status, $config_time) = @_;
+    my( $self, $user_dn, $lsp_info, $inref, $status ) = @_;
 
     my( $query, $sth, $config_time );
 
-    $query = "SELECT now()";
-    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    $query = "SELECT CONVERT_TZ(now(), '+00:00', ?)";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $inref->{reservation_time_zone});
     $config_time = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     # convert to seconds before sending back
