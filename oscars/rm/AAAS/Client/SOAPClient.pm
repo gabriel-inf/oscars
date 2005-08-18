@@ -1,6 +1,7 @@
 package AAAS::Client::SOAPClient;
 
 use SOAP::Lite;
+use Data::Dumper;
 
 use Exporter;
 
@@ -24,7 +25,7 @@ my $AAAS_server = SOAP::Lite
 sub aaas_dispatcher
 {
     my ($params) = @_;
-    return $AAAS_server->dispatch($params);
+    return($AAAS_server->dispatch($params));
 }
 ######
 
