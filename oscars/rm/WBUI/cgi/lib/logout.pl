@@ -1,36 +1,30 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: July 23, 2005
+# Last modified: August 17, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;
 
+use Common::Auth;
 use AAAS::Client::SOAPClient;
 
 require 'general.pl';
 
 
 my $cgi = CGI->new();
-my ($user_dn, $user_level, $oscars_home) = check_session_status(undef, $cgi);
+my $auth = Common::Auth->new();
+my ($user_dn, $user_level, $unused, $starting_page) = $auth->verify_session($cgi);
 
 # logout user from resource manager
 my ($som) = logout_user($user_dn);
 
 # nuke session and put the user back at the login screen
 
-if ($user_dn) { end_session($cgi); }
+if ($user_dn) { $auth->end_session($cgi); }
 
-print '<script language="javascript" type="text/javascript" src="' .
-      $oscars_home . 'scripts/main_common.js"></script>' . "\n";
-print '<script language="javascript" type="text/javascript" src="' .
-      $oscars_home . 'scripts/timeprint.js"></script>', "\n";
-print '<script language="javascript">update_status_frame(1, ' .
-      '"Please sign in");</script>', "\n\n";
-print '<script language="javascript">update_main_frame("' .
-      $oscars_home . 'login_frame.html");</script>', "\n\n";
-
+print "Location:  $starting_page/test\n\n";
 exit;
 
 ##############################################################################

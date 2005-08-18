@@ -1,27 +1,26 @@
 #!/usr/bin/perl -w
 
 # info_form.pl:  prints information page
-# Last modified: June 29, 2005
+# Last modified: August 12, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
 use CGI;
 
+use Common::Auth;
+
 require 'general.pl';
 
-my( %form_params, $oscars_home);
-
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
-                                       check_session_status(undef, $cgi);
+my $auth = Common::Auth->new();
+my ($user_dn, $user_level, $unused, $starting_page) = $auth->verify_session($cgi);
 
-if ($form_params{user_dn}) {
-    print_info($form_params{user_dn}, $form_params{user_level});
-    update_status_frame(0, "Information page");
+if ($user_dn) {
+    print $cgi->header( -type=>'text/xml' );
+    update_page("Information page.", \&output_info, $user_dn, $user_level);
 }
 else {
-    print "Location:  $oscars_home\n\n";
+    print "Location:  $starting_page\n\n";
 }
 
 exit;
-

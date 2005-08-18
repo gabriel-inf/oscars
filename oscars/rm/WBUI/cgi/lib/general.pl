@@ -1,128 +1,53 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: August 2, 2005
+# Last modified: August 16, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
 
-use CGI;
-
-use AAAS::Client::SOAPClient;
-use Common::Auth;
-
-# To change home directory, change this location
-$oscars_home = 'https://oscars.es.net/';
 
 ##############################################################################
-# check_session_status;  checks CGI session status only; the checks for
-# correct password and administrative level are done in the front end to the
-# database during initial login.  Sets or gets cookies associated with
-# the user.
+# update_page:  If output_func is null, an error has occurred and only the
+#               error message is printed in the status div on the OSCARS
+#               page.
 #
-sub check_session_status {
-    my( $login_results, $cgi ) = @_;
+sub update_page {
+    my( $msg, $output_func, $user_dn, $user_level) = @_;
 
-    my( $auth, $dn, $user_level, $timezone );
-
-    $auth = Common::Auth->new();
-    if ( $login_results ) {
-        ($dn, $user_level) = $auth->set_login_status($cgi, $login_results);
-        return ($dn, $user_level);
+    print "<xml>\n";
+    print "<msg>\n";
+    print "$msg\n";
+    print "</msg>\n";
+    if ($output_func) {
+        print "<div>\n";
+        $output_func->($user_dn, $user_level);
+        print "</div>\n";
     }
-    else {
-        ($dn, $user_level, $timezone) = $auth->verify_login_status($cgi);
-        return($dn, $user_level, $oscars_home, $timezone);
-    }
+    print "</xml>\n";
 }
 ######
 
 ##############################################################################
-# authorized:  Given the user level string, see if the user has the required
-#              privilege 
-#
-sub authorized {
-    my( $user_level, $required_priv ) = @_;
- 
-    for my $priv (split(' ', $user_level)) {
-        if ($priv eq $required_priv) {
-            return( 1 );
-        }
-    }
-    return( 0 );
-}
-######
+sub output_info {
+    my ($unused1, $unused2) = @_;
 
-##############################################################################
-# update_status_frame:  Updates message in status frame.
-#
-# In:  status, and error or status msg
-#
-sub update_status_frame {
-    my ($status, $msg) = @_;
+    print "<p>With the advent of service sensitive applications (such as remote",
+        " controlled experiments, time constrained massive data",
+        " transfers video-conferencing, etc.), it has become apparent",
+        " that there is a need to augment the services present in",
+        " today's ESnet infrastructure.</p>\n",
 
-    print '<script language="javascript" type="text/javascript" src="' .
-          $oscars_home . 'scripts/main_common.js"></script>', "\n";
-    print '<script language="javascript" type="text/javascript" src="' .
-          $oscars_home . 'scripts/timeprint.js"></script>', "\n";
-    print '<script language="javascript">update_status_frame("' .
-              $status . '", "' . $msg . '");</script>', "\n\n";
-}
-######
+        "<p>Two DOE Office of Science workshops in the past two years have",
+        " clearly identified both science discipline driven network",
+        " requirements and a roadmap for meeting these requirements.",
+        " This project begins to addresses one element of the",
+        " roadmap: dynamically provisioned, QoS paths.</p>\n",
 
-##############################################################################
-sub print_info
-{
-    my ($user_dn, $user_level) = @_;
+        "<p>The focus of the ESnet On-Demand Secure Circuits and",
+        " Advance Reservation System (OSCARS) is to develop and",
+        " deploy a prototype service that enables on-demand provisioning",
+        " of guaranteed bandwidth secure circuits within ESnet.</p>\n",
 
-    print '<html>', "\n";
-    print '<head>', "\n";
-    print '<link rel="stylesheet" type="text/css" href="' .
-          $oscars_home . 'styleSheets/layout.css">' . "\n";
-    print '    <script language="javascript" type="text/javascript" src="' .
-               $oscars_home . 'scripts/main_common.js"></script>', "\n";
-    print '    <script language="javascript" type="text/javascript" src="' .
-               $oscars_home . 'scripts/userprofile.js"></script>', "\n";
-    print '</head>', "\n\n";
-
-    print '<body>', "\n\n";
-    print '<script language="javascript">print_navigation_bar("', $user_level, '", "info");</script>', "\n\n";
-
-    print '<br/>', "\n";
-    print '<p>With the advent of service sensitive applications (such as remote';
-    print ' controlled experiments, time constrained massive data', "\n";
-    print ' transfers video-conferencing, etc.), it has become apparent';
-    print ' that there is a need to augment the services present in';
-    print " today's ESnet infrastructure.</p>", "\n";
-
-    print 'Two DOE Office of Science workshops in the past two years have';
-    print ' clearly identified both science discipline driven network', "\n";
-    print ' requirements and a roadmap for meeting these requirements.';
-    print ' This project begins to addresses one element of the', "\n";
-    print ' roadmap: dynamically provisioned, QoS paths.</p>';
-
-    print '<p>The focus of the ESnet On-Demand Secure Circuits and';
-    print ' Advance Reservation System (OSCARS) is to develop and', "\n";
-    print ' deploy a prototype service that enables on-demand provisioning';
-    print ' of guaranteed bandwidth secure circuits within ESnet.</p>', "\n";
-
-    print '<hr/>', "\n";
-
-    print '<p>To begin using OSCARS, click on one of the notebook tabs.</p>', "\n";
-
-    print '</body>', "\n";
-    print '</html>', "\n";
-}
-######
-
-##############################################################################
-# end_session:  Ends CGI session.
-#
-sub end_session {
-    my( $cgi ) = @_;
-    my( $auth );
-
-    $auth = Common::Auth->new();
-    $auth->logout($cgi);
+        "<p>To begin using OSCARS, click on one of the notebook tabs.</p>\n";
 }
 ######
 
