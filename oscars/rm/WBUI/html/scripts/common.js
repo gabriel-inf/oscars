@@ -14,7 +14,7 @@ isblank (strValue)
 */
 
 var timer_id = null;
-var starting_page = 'https://oscars.es.net/';
+var starting_page = 'https://oscars.es.net';
 
 var login_required = {
     'user_dn': "Please enter your user name.",
@@ -286,18 +286,18 @@ function init_navigation_bar(user_level) {
 // is concentrated here.  Clicking on tab results in call to CGI script.
 function init_tab(form_name, script_type, tab_title, tab_name) {
     var tab_str = '<li id="' + form_name + '">' +
-         '<a style="' + starting_page + 'test/styleSheets/layout.css"' +
+         '<a style="' + starting_page + '/styleSheets/layout.css"' +
 	 ' title="' + tab_title + '"';
     if (form_name != 'logout') {
          tab_str += ' href="#"' +
          ' onclick="new_page(' + "'" + form_name + "', '" + 
-         starting_page + 'cgi-bin/test/' + script_type + '/' + form_name +
+         starting_page + '/cgi-bin/' + script_type + '/' + form_name +
          ".pl'" +
          ');return false;">';
     }
     else {
         tab_str += ' href="' + starting_page +
-         'cgi-bin/test/' + script_type + '/' + form_name + '.pl">';
+         '/cgi-bin/' + script_type + '/' + form_name + '.pl">';
     }
     tab_str += tab_name + '</a></li>';
     return tab_str;
