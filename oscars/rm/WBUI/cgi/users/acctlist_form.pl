@@ -1,24 +1,28 @@
 #!/usr/bin/perl
 
 # userlist_form.pl:  User List page
-# Last modified: July 23, 2005
+# Last modified: August 16, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-# include libraries
-require '../lib/general.pl';
-
-use AAAS::Client::SOAPClient;
+use CGI;
 use Data::Dumper;
 
-my( %form_params, $oscars_home );
+use Common::Auth;
+use AAAS::Client::SOAPClient;
+
+require '../lib/general.pl';
+
+
+my( %form_params, $tz, $starting_page );
 
 my $cgi = CGI->new();
-($form_params{user_dn}, $form_params{user_level}, $oscars_home) =
-                                         check_session_status(undef, $cgi);
-
+my $auth = Common::Auth->new();
+($form_params{user_dn}, $form_params{user_level}, $tz, $starting_page) =
+                                         $auth->verify_session($cgi);
+print $cgi->header( -type=>'text/xml' );
 if (!$form_params{user_level}) {
-    print "Location:  " . $oscars_home . "\n\n";
+    print "Location:  $starting_page\n\n";
     exit;
 }
 for $_ ($cgi->param) {
@@ -38,12 +42,17 @@ sub process_form {
     $form_params{method} = 'get_userlist';
     my $som = aaas_dispatcher($form_params);
     if ($som->faultstring) {
-        update_status_frame(1, $som->faultstring);
+        print $cgi->header( -type=>'text/xml' );
+        update_page($som->faultstring);
         return;
     }
     my $results = $som->result;
+    print "<xml>";
+    print "<msg>Successfully read user list</msg>\n";
+    print "<div id=\"zebratable_ui\">";
     print_userlist($results);
-    update_status_frame(0, "Successfully read user list.");
+    print "</div>";
+    print "</xml>\n";
 }
 ######
 
@@ -58,57 +67,33 @@ sub print_userlist
 {
     my ( $results ) = @_;
     my ( $rowsref, $row );
-	
+    my $even = 0;
+
     $rowsref = $results->{rows};
-    print '<html>', "\n";
-    print '<head>', "\n";
-    print '<link rel="stylesheet" type="text/css" ';
-    print ' href="' . $oscars_home . 'styleSheets/layout.css">', "\n";
-    print '  <script language="javascript" type="text/javascript" ' .
-               'src="' . $oscars_home . 'scripts/main_common.js">' .
-             '</script>', "\n";
-    print '  <script language="javascript" type="text/javascript" ' .
-               'src="' . $oscars_home . 'scripts/sorttable.js">' .
-          '  </script>', "\n";
-    print "</head>\n\n";
+    print "<p>Click on the user's last name to view detailed user information.</p>";
+    print "<table cellspacing=\"0\" width=\"90%\" class=\"sortable\" id=\"userlist\">";
+    print "<thead><tr>\n";
+    print "   <td>Last Name</td>";
+    print "   <td>First Name</td>";
+    print "   <td>Distinguished Name</td>";
+    print "   <td>Level</td>";
+    print "   <td>Organization</td>";
+    print "   <td>Status</td>";
+    print "</tr></thead>\n";
 
-    print "<body onload=\"stripe('userlist', '#fff', '#edf3fe');\">\n\n";
-
-    print '<script language="javascript">' .
-          '  print_navigation_bar("admin", "userlist");' .
-          '</script>', "\n\n";
-
-    print "<div id=\"zebratable_ui\">\n\n";
-
-    print "<p>Click on the user's last name to view detailed user information.\n";
-    print "</p>\n\n";
-
-    print '<table cellspacing="0" width="90%" class="sortable" id="userlist">', "\n";
-    print "  <thead>\n";
-    print "  <tr>\n";
-    print "    <td >Last Name</td>\n";
-    print "    <td >First Name</td>\n";
-    print "    <td >Distinguished Name</td>\n";
-    print "    <td >Level</td>\n";
-    print "    <td >Organization</td>\n";
-    print "    <td >Status</td>\n";
-    print "  </tr>\n";
-    print "  </thead>\n";
-
-    print "  <tbody>\n";
+    print "<tbody>\n";
     for $row (@$rowsref) {
-        print "  <tr>\n";
+        if ($even) {
+            print " <tr class=\"even\">";
+        }
+        else {
+            print " <tr class=\"odd\">";
+        }
         print_row($row);
-        print "  </tr>\n";
+        print " </tr>\n";
+        $even = !$even;
     }
-    print "  </tbody>\n";
-    print "</table>\n\n";
-
-    print "</div>\n\n";
-
-    print '<script language="javascript">print_footer();</script>', "\n";
-    print "</body>\n";
-    print "</html>\n\n";
+    print "</tbody></table>\n";
 }
 ######
 
@@ -119,13 +104,14 @@ sub print_row
 {
     my( $row ) = @_;
 
-    print '    <td><a href="' . $oscars_home .
-          'cgi-bin/users/profile_form.pl?id=' . $row->{user_dn} . '">' .
-          $row->{user_last_name} . '</a></td>' . "\n"; 
-    print "    <td>" . $row->{user_first_name} . "</td>\n";
-    print "    <td>" . $row->{user_dn} . "</td>\n";
-    print "    <td>" . $row->{user_level} . "</td>\n";
-    print "    <td>" . $row->{institution_id} . "</td>\n";
-    print "    <td>" . $row->{user_status} . "</td>\n";
+    print "<td><a href=\"#\" style=\"$starting_page/test/styleSheets/layout.css\"";
+    print " onclick=\"new_page";
+    print "('profile_form', '$starting_page/cgi-bin/test/users/profile_form.pl?id=$row->{user_dn}'",
+        ");return false;\">$row->{user_last_name}</a></td>\n";
+    print "<td>$row->{user_first_name}</td>";
+    print "<td>$row->{user_dn}</td>";
+    print "<td>$row->{user_level}</td>";
+    print "<td>$row->{institution_id}</td>";
+    print "<td>$row->{user_status}</td>";
 }
 ######
