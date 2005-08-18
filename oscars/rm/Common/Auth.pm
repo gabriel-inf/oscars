@@ -1,7 +1,7 @@
 package Common::Auth;
 #
 # package for user authentication
-# Last modified: August 2, 2005
+# Last modified: August 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -10,10 +10,10 @@ use CGI;
 use CGI::Session;
 
 ### class Auth
-# set_login_status:       Sets cookie containing session id
-# verify_login_status:    Checks for cookie containing valid session id,
+# start_session:          Sets cookies associated with session id
+# verify_session:         Checks for cookie containing valid session id,
 #                         authorization level
-# logout:                 Unsets cookies
+# end_session:            Unsets cookies
 # generate_random_string: Password encryption & random string generation (for
 #                         activation key, password reset (future), ...)
 
@@ -34,19 +34,20 @@ sub new {
 
 sub initialize {
     my ($self) = @_;
+    $self->{starting_page} = 'https://oscars.es.net';
 }
 ######
 
 
 ##############################################################################
-# set_login_status: Sets cookie containing session id to be used in granting
+# start_session: Sets cookie containing session id to be used in granting
 #   access.  Note that this does not handle checking whether the user is in 
 #   the database; that is handled by a method in the AAAS SOAPClient package.
 #
 # In:   ref to CGI instance
 # Out:  None
 #
-sub set_login_status
+sub start_session
 {
     my ($self, $cgi, $login_results) = @_;
     my ($session, $sid, $cookie);
@@ -57,19 +58,18 @@ sub set_login_status
     $session->param("user_dn", $cgi->param('user_dn'));
     $session->param("user_level", $login_results->{'user_level'});
     $session->param("timezone_offset", $cgi->param('timezone_offset'));
-    print $cgi->header( -cookie=>$cookie );
-    return( $cgi->param('user_dn'), $login_results->{'user_level'} );
+    return( $cgi->param('user_dn'), $login_results->{'user_level'}, $sid );
 }
 ######
 
 ##############################################################################
-# verify_login_status:  Checks to see that a cookie containing a valid session
+# verify_session:  Checks to see that a cookie containing a valid session
 # id is set before granting access.
 #
 # In:  ref to CGI instance
 # Out: 1 (logged in)/0 (not logged in)
 #
-sub verify_login_status
+sub verify_session
 {
     my ($self, $cgi) = @_;
     my ($session, $stored_dn, $user_level, $timezone_offset);
@@ -83,20 +83,19 @@ sub verify_login_status
     $user_level = $session->param("user_level");
     $timezone_offset = $session->param("timezone_offset");
     if (!$stored_dn)  {
-        return( undef, undef, undef );
+        return( undef, undef, undef, $self->{starting_page} );
     }
     else {
        $cgi->param(-name=>'user_dn',-value=>$stored_dn);
        $cgi->param(-name=>'user_level',-value=>$user_level);
-       print $cgi->header( );
-       return( $stored_dn, $user_level, $timezone_offset );
+       return( $stored_dn, $user_level, $timezone_offset, $self->{starting_page} );
     }
 }
 ######
 
 
 ##############################################################################
-sub logout
+sub end_session
 {
     my( $self, $cgi ) = @_;
     my ($session, $stored_dn);
@@ -117,7 +116,7 @@ sub logout
 #
 sub generate_random_string
 {
-    my $self = shift;
+    my $self = @_;
     my $string_length = $_[0] + 0;	# make it a numeric value
 
     my @alphanumeric = ('a'..'z', 'A'..'Z', 0..9);
@@ -127,7 +126,21 @@ sub generate_random_string
 }
 ######
 
+##############################################################################
+# authorized:  Given the user level string, see if the user has the required
+#              privilege 
+#
+sub authorized {
+    my( $self, $user_level, $required_priv ) = @_;
+ 
+    for my $priv (split(' ', $user_level)) {
+        if ($priv eq $required_priv) {
+            return( 1 );
+        }
+    }
+    return( 0 );
+}
+######
 
-##### End of Library File
-# Don't touch the line below
+######
 1;
