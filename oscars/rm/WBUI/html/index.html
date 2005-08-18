@@ -1,16 +1,93 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-	<script language="javascript" type="text/javascript" src="./scripts/main_common.js"></script>
-        <script language="javascript">print_html_header();</script>
-</head>
+  <head>
+    <title>On-demand Secure Circuits and Advance Reservation System</title>
+      <meta http-equiv="Content-type" content="text/html; charset=iso-8859-1">
+      <meta name="Author" content="Soo-yeon Hwang">
+      <meta name="Keywords" content="">
+      <meta name="Description" content="">
 
-<frameset rows="10%, 6%, *" border="0">
-    <frame src="banner.html" name="banner_frame">
-    <frame src="status_frame.html" name="status_frame">
-    <frame src="login_frame.html" name="main_frame">
-    <noframes>
-        This document can only be viewed in a browser that supports frames.
-    </noframes>
-</frameset>
+      <link rel="stylesheet" type="text/css" href="./styleSheets/layout.css">
+
+      <script language="javascript" type="text/javascript" src="./scripts/sarissa.js"></script>
+      <script language="javascript" type="text/javascript" src="./scripts/common.js"></script>
+      <script language="javascript" type="text/javascript" src="./scripts/timeprint.js"></script>
+      <script language="javascript" type="text/javascript" src="./scripts/sorttable.js"></script>
+  </head>
+
+  <body>
+
+    <table id="pagetitle">
+      <tr>
+        <td>
+          <a href="http://www.internet2.edu/"><img src="./images/internet2_logo.png" width="73" height="58" border="0" alt="Internet2 logo" title="Internet 2"></a>
+        </td>
+        <td>
+           <a href="http://www.es.net/"><img src="./images/ESnetLogo.png" width="77" height="58" border="0" alt="ESnet Logo" title="ESnet"></a>
+        </td>
+        <td>
+          <h1>On-demand Secure Circuits and Advance Reservation System</h1>
+            In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project
+        </td>
+      </tr>
+    </table>
+
+    <div id="status_div" class="topmessage">
+        <script language="javascript">print_current_date(document, '');</script> | Please sign in.
+    </div>
+
+    <div id="nav_div">
+        <p></p>
+    </div>
+
+    <div id="main_div">
+      <form id="login_ui" method="post" action="" onsubmit="return submit_form(this, 'login', 'https://oscars.es.net/cgi-bin/test/lib/login.pl');">
+        <input type="hidden" name="timezone_offset">
+        <table>
+          <tr>
+            <th>Login Name:</th>
+            <td>
+              <input type="text" name="user_dn" size="28">
+            </td>
+          </tr>
+          <tr>
+            <th>Password:</th>
+            <td><input type="password" name="user_password" size="28"></td>
+          </tr>
+          <tr>
+            <th>&nbsp;</th>
+            <td><input type="submit" value="Sign in" size="16">
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+
+    <br/>
+    <hr WIDTH = 80 % NOSHADE >
+    <br/>
+    <center>
+      <font face=arial,helvetica size=-1>
+        <a href="http://www.es.net/">ESnet</a> |
+        <a href="http://www.lbl.gov/">Berkeley Lab</a> |
+        <a href="http://www.lbl.gov/Disclaimers.html">Notice to Users</a> |
+        <a href="http://www.es.net/OSCARS/">OSCARS</a>
+      </font>
+    </center>
+
+    <br/>
+    <center>
+      <table Width="85%">
+        <tr>
+          <td>
+            <font face=arial,helvetica size=2 COLOR=GRAY>
+              <b>Contacts:</b> <a href="mailto:chin@es.net">Chin Guok</a>, 
+              <a href="mailto:DWRobertson@lbl.gov">David Robertson</a><br/>
+            </font>
+	    </td>
+	    <tr> 
+      </table>
+    </center>
+
+  </body>
 </html>

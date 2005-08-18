@@ -73,7 +73,7 @@ form {
 }
 
 
-p.topmessage {
+div.topmessage {
 	font-size: 10px;
 	font-weight: bold;
 	color: #0000bb;
@@ -130,6 +130,15 @@ p.topmessage {
 	background: #fff;
 }
 
+/* table striping */
+tr.odd {
+	background: #eaf0f6;
+}
+
+tr.even {
+	background: #ffffff;
+}
+
 /* reservation form */
 #reservation_ui {
 	padding: .5em;
@@ -139,6 +148,7 @@ p.topmessage {
 	font-size: .9em;
 	border: 1px solid #ccc;
 	background: #f9f9f9;
+	margin-bottom: 1.5em;
 }
 
 #reservation_ui th {
