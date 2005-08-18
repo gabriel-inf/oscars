@@ -30,7 +30,7 @@ for $_ ($cgi->param) {
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"reservation_ui\">\n";
-print_reservation_form($form_params{user_level});
+print_reservation_form(\%form_params);
 print  "</div>\n";
 print  "</xml>\n";
 exit;
@@ -44,15 +44,16 @@ exit;
 # Out:  none
 #
 sub print_reservation_form {
-    my( $user_level ) = @_;
+    my( $form_params ) = @_;
 
     print "<form method=\"post\" action=\"\"";
-    print " onsubmit=\"return submit_form(this, 'details', ";
+    print " onsubmit=\"return submit_form(this, 'creation_form', ";
     print "'$starting_page/cgi-bin/reservations/details.pl');\">";
 
     print '<input type="hidden" name="create" value="1"></input>', "\n";
     print '<input type="hidden" name="reservation_start_time"></input>', "\n";
     print '<input type="hidden" name="reservation_end_time"></input>', "\n";
+    print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
 
     print "<p>Required inputs are bordered in green. ",
           "Ranges or types of valid entries are given in parentheses below the ",
@@ -110,7 +111,7 @@ sub print_reservation_form {
     print    "</tr>\n";
     print "</table>\n";
 
-    if ($auth->authorized($user_level, "engr")) {
+    if ($auth->authorized($form_params->{user_level}, "engr")) {
         print '<p><strong>WARNING</strong>:  Entries in the following ';
         print 'fields may change default routing behavior for the selected ';
         print 'flow.</p>', "\n";
@@ -138,7 +139,7 @@ sub print_reservation_form {
     print "of your reservation. ";
     print "Fields left blank will default to the examples ";
     print "below the input fields.  The default time zone is the local time.  ";
-    if ($auth->authorized($user_level, "engr")) {
+    if ($auth->authorized($form_params->{user_level}, "engr")) {
         print "Checking the <strong>Persistent</strong> box makes ";
         print "a reservation's duration indefinite, overriding ";
         print "the duration field.</p>\n";
@@ -155,7 +156,7 @@ sub print_reservation_form {
     print     "<th>Minute</th>\n";
     print     "<th>UTC offset</th>\n";
     print     "<th>Duration (Hours)</th>\n";
-    if ($auth->authorized($user_level, "engr")) {
+    if ($auth->authorized($form_params->{user_level}, "engr")) {
         print "<th>Persistent</th>\n";
     }
     else { print "<th> </th>\n"; }
@@ -186,7 +187,7 @@ sub print_reservation_form {
                      'maxlength="6">', "\n";
     print     "</input></td>\n";
     print     "<td> \n";
-    if ($auth->authorized($user_level, "engr")) {
+    if ($auth->authorized($form_params->{user_level}, "engr")) {
         print '  <input type="checkbox" name="persistent" value="0">';
     }
     print     "</input></td>\n";

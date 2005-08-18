@@ -72,7 +72,7 @@ sub create_reservation {
         return;
     }
     $results = $som->result;
-    $form_params{reservation_id} = $results{reservation_id};
+    $form_params->{reservation_id} = $results->{reservation_id};
     print_reservation_detail($form_params, $results,
         "Successfully created reservation with id $results->{reservation_id}.");
 }
@@ -252,7 +252,7 @@ sub print_reservation_detail {
     else { print "<td>DEFAULT</td>"; }
     print   "</tr>\n";
 
-    if ( $auth->authorized($form_params{user_level}, "engr") ) {
+    if ( $auth->authorized($form_params->{user_level}, "engr") ) {
         if ($even) { print "<tr class=\"even\">"; }
         else { print "<tr class=\"odd\">"; }
         $even = !$even;
@@ -325,8 +325,9 @@ sub print_reservation_detail {
     print " onsubmit=\"return submit_form(this, ";
     print "'details', '$starting_page/cgi-bin/reservations/details.pl');\">\n";
 
+    print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
     print "<input type=\"hidden\" name=\"reservation_id\" value=";
-    print "\"$form_params{reservation_id}\"></input>\n";
+    print "\"$form_params->{reservation_id}\"></input>\n";
 
     print "<p><input type=\"submit\" value=\"Refresh\"></input></p>\n";
     print "</form>\n";

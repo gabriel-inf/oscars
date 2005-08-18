@@ -32,7 +32,7 @@ for $_ ($cgi->param) {
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"account_ui\">\n";
-print_add_user_form($form_params);
+print_add_user_form(\%form_params);
 print  "</div>\n";
 print  "</xml>\n";
 exit;
@@ -47,11 +47,12 @@ sub print_add_user_form {
 
     print "<h2>Add a new user (not functional yet)</h2>\n";
     print '<p>Required fields are marked with an <span class="requiredmark">*</span>. ', "\n";
-    print "The password for <strong>$form_params{user_dn}</strong>";
+    print "The password for <strong>$form_params->{user_dn}</strong>";
     print " is the <strong>Admin Password</strong>.</p>\n";
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, 'profile_form', ";
     print "'$starting_page/cgi-bin/users/profile_form.pl');\">\n";
+    print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
  
     print '<table>', "\n";
     print '<tr>', "\n";

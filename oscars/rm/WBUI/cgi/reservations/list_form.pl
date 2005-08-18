@@ -49,7 +49,7 @@ sub process_form {
     print "<xml>\n";
     print "<msg>Successfully retrieved reservations.</msg>\n";
     print "<div id=\"zebratable_ui\">\n";
-    print_reservations($results, $form_params->{user_level});
+    print_reservations($results, $form_params);
     print "</div>\n";
     print "</xml>\n";
 }
@@ -62,7 +62,7 @@ sub process_form {
 # Out:  None
 #
 sub print_reservations {
-    my ( $results, $user_level ) = @_;
+    my ( $results, $form_params ) = @_;
 
     my ( $rowsref, $row );
 
@@ -79,6 +79,7 @@ sub print_reservations {
     print " onsubmit=\"return submit_form(this, 'list_form', ";
     print "'$starting_page/cgi-bin/reservations/list_form.pl');\">\n";
     print '<input type="submit" value="Refresh"></input>', "\n";
+    print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
     print "</form></p>\n";
 
     print '<table cellspacing="0" width="90%" class="sortable" ';
@@ -102,7 +103,7 @@ sub print_reservations {
         else {
             print "<tr class=\"odd\">\n";
         }
-        print_row($row, $user_level);
+        print_row($row, $form_params->{user_level});
         print "</tr>\n";
         $even = !$even;
     }
