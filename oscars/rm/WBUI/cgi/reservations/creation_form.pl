@@ -48,7 +48,7 @@ sub print_reservation_form {
 
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, 'details', ";
-    print "'$starting_page/cgi-bin/test/reservations/details.pl');\">";
+    print "'$starting_page/cgi-bin/reservations/details.pl');\">";
 
     print '<input type="hidden" name="create" value="1"></input>', "\n";
     print '<input type="hidden" name="reservation_start_time"></input>', "\n";

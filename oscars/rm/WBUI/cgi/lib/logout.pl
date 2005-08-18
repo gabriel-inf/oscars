@@ -24,7 +24,7 @@ my ($som) = logout_user($user_dn);
 
 if ($user_dn) { $auth->end_session($cgi); }
 
-print "Location:  $starting_page/test\n\n";
+print "Location:  $starting_page\n\n";
 exit;
 
 ##############################################################################

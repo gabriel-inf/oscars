@@ -312,9 +312,9 @@ sub print_reservation_detail {
         print "<td>Action: </td>";
         print "<td>\n";
         print "<a href=\"#\"";
-        print " style=\"$starting_page/test/styleSheets/layout.css\"\n";
+        print " style=\"$starting_page/styleSheets/layout.css\"\n";
         print " onclick=\"return new_page('details', ";
-        print "'$starting_page/cgi-bin/test/reservations/details.pl?reservation_id=$row->{reservation_id}&amp;cancel=1');\"\n";
+        print "'$starting_page/cgi-bin/reservations/details.pl?reservation_id=$row->{reservation_id}&amp;cancel=1');\"\n";
         print ">CANCEL</a>\n";
         print "</td>";
         print "</tr>\n";
@@ -323,7 +323,7 @@ sub print_reservation_detail {
     print "</table>\n";
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, ";
-    print "'details', '$starting_page/cgi-bin/test/reservations/details.pl');\">\n";
+    print "'details', '$starting_page/cgi-bin/reservations/details.pl');\">\n";
 
     print "<input type=\"hidden\" name=\"reservation_id\" value=";
     print "\"$form_params{reservation_id}\"></input>\n";
@@ -331,9 +331,9 @@ sub print_reservation_detail {
     print "<p><input type=\"submit\" value=\"Refresh\"></input></p>\n";
     print "</form>\n";
 
-    print "<p><a href=\"#\" style=\"$starting_page/cgi-bin/test/reservations/list_form.pl\"";
+    print "<p><a href=\"#\" style=\"$starting_page/cgi-bin/reservations/list_form.pl\"";
     print " onclick=\"return new_page";
-    print "('list_form', '$starting_page/cgi-bin/test/reservations/list_form.pl'",
+    print "('list_form', '$starting_page/cgi-bin/reservations/list_form.pl'",
         ");\">$row->{user_last_name}\n";
     print "<strong>Back to reservations list</strong></a></p>\n";
 

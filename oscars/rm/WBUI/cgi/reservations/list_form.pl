@@ -77,7 +77,7 @@ sub print_reservations {
 
     print "<p><form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, 'list_form', ";
-    print "'$starting_page/cgi-bin/test/reservations/list_form.pl');\">\n";
+    print "'$starting_page/cgi-bin/reservations/list_form.pl');\">\n";
     print '<input type="submit" value="Refresh"></input>', "\n";
     print "</form></p>\n";
 
@@ -125,9 +125,9 @@ sub print_row {
     my( $seconds, $ip );
 
     print "<td>\n";
-    print "<a href=\"#\" style=\"$starting_page/test/styleSheets/layout.css\"";
+    print "<a href=\"#\" style=\"$starting_page/styleSheets/layout.css\"";
     print " onclick=\"return new_page('profile_form', ";
-    print "'$starting_page/cgi-bin/test/reservations/details.pl?reservation_id=";
+    print "'$starting_page/cgi-bin/reservations/details.pl?reservation_id=";
     print $row->{reservation_id}, "');\">$row->{reservation_tag}</a></td>\n";
   
     print "<td>\n";
