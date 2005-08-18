@@ -83,7 +83,7 @@ sub print_profile {
     print "<p>Required fields are marked with an <span class=\"requiredmark\">*</span></p>\n"; 
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, 'profile_form', "; 
-    print "'$starting_page/cgi-bin/test/users/profile_form.pl');\">\n";
+    print "'$starting_page/cgi-bin/users/profile_form.pl');\">\n";
     print '<table><tr>';
 
         # this will only happen if user is administrator

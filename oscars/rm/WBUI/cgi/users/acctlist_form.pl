@@ -104,9 +104,9 @@ sub print_row
 {
     my( $row ) = @_;
 
-    print "<td><a href=\"#\" style=\"$starting_page/test/styleSheets/layout.css\"";
+    print "<td><a href=\"#\" style=\"$starting_page/styleSheets/layout.css\"";
     print " onclick=\"new_page";
-    print "('profile_form', '$starting_page/cgi-bin/test/users/profile_form.pl?id=$row->{user_dn}'",
+    print "('profile_form', '$starting_page/cgi-bin/users/profile_form.pl?id=$row->{user_dn}'",
         ");return false;\">$row->{user_last_name}</a></td>\n";
     print "<td>$row->{user_first_name}</td>";
     print "<td>$row->{user_dn}</td>";

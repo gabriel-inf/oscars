@@ -51,7 +51,7 @@ sub print_add_user_form {
     print " is the <strong>Admin Password</strong>.</p>\n";
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, 'profile_form', ";
-    print "'$starting_page/cgi-bin/test/users/profile_form.pl');\">\n";
+    print "'$starting_page/cgi-bin/users/profile_form.pl');\">\n";
  
     print '<table>', "\n";
     print '<tr>', "\n";
