@@ -9,6 +9,7 @@
 package BSS::Scheduler::ReservationHandler; 
 
 use Data::Dumper;
+use Socket;
 use Net::Ping;
 use Net::Traceroute;
 use Error qw(:try);
@@ -70,6 +71,12 @@ sub insert_reservation {
     my $results = {};
 
     $self->{output_buf} = "*********************\n";
+    if ($inref->{lsp_from} && $self->not_an_ip($inref->{lsp_from})) {
+        $inref->{lsp_from} = inet_ntoa(inet_aton($inref->{lsp_from}));
+    }
+    if ($inref->{lsp_to} && $self->not_an_ip($inref->{lsp_to})) {
+        $inref->{lsp_to} = inet_ntoa(inet_aton($inref->{lsp_to}));
+    }
     ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
             $inref->{reservation_path}) = $self->find_interface_ids($inref);
 
@@ -316,11 +323,23 @@ sub find_interface_ids {
                                                           $src);
         }
     }
+    print "almost to end, in: $ingress_interface_id, out: $egress_interface_id\n";
 
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0)) {
         throw Common::Exception("Unable to find route.");
     }
+    print "at end, $ingress_interface_id, $egress_interface_id, $path\n";
 	return ($ingress_interface_id, $egress_interface_id, $path); 
+}
+######
+
+################################################################################
+sub not_an_ip {
+    my( $self, $form_input ) = @_;
+
+    # simple minded for now
+    my $expr = '^\d+\.\d+\.\d+\.\d+$';
+    return( $form_input !~ $expr );
 }
 ######
 
