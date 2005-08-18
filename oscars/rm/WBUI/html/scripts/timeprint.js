@@ -87,6 +87,25 @@ function print_current_date(fr, epoch_seconds)
     fr.write(current_minutes);
 }
 
+function get_date_str() {
+    var local_date;
+
+    local_date = new Date();
+    var current_month;
+
+    current_month = local_date.getMonth();
+
+    var month_name = month_mapping[current_month];
+
+    var current_minutes = local_date.getMinutes();
+    var date_str = month_name + " " + local_date.getDate() + ", " + local_date.getFullYear() + " " + local_date.getHours() + ":";
+
+    if (current_minutes < 10) { date_str += "0" } ;
+    date_str += current_minutes;
+    return date_str;
+}
+
+
 // print timezone options
 function print_timezone_options()
 {
