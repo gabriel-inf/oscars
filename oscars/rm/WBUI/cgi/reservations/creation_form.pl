@@ -177,7 +177,7 @@ sub print_reservation_form {
     print     "<td id=\"get_timezone_options\"> </td>\n";
     print     "<td>\n";
     print       '<input type="text" name="duration_hour" size="16" ',
-                     'maxlength="6">';
+                     'maxlength="16">';
     print     "</input></td>";
     print     "<td> ";
     if ($auth->authorized($form_params->{user_level}, "engr")) {
