@@ -323,12 +323,10 @@ sub find_interface_ids {
                                                           $src);
         }
     }
-    print "almost to end, in: $ingress_interface_id, out: $egress_interface_id\n";
 
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0)) {
         throw Common::Exception("Unable to find route.");
     }
-    print "at end, $ingress_interface_id, $egress_interface_id, $path\n";
 	return ($ingress_interface_id, $egress_interface_id, $path); 
 }
 ######
