@@ -88,6 +88,7 @@ sub verify_session
     else {
        $cgi->param(-name=>'user_dn',-value=>$stored_dn);
        $cgi->param(-name=>'user_level',-value=>$user_level);
+       $cgi->param(-name=>'timezone_offset',-value=>$timezone_offset);
        return( $stored_dn, $user_level, $timezone_offset, $self->{starting_page} );
     }
 }
