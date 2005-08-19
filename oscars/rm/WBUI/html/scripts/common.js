@@ -110,6 +110,12 @@ function get_response(xmlhttp, form_name) {
         var main_node = document.getElementById('main_div');
         main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
     }
+    if (form_name == 'creation_form') {
+        var time_node = document.getElementById('get_timezone_options');
+        time_node.innerHTML = get_timezone_options();
+        var time_node = document.getElementById('get_time_settings_example');
+        time_node.innerHTML = get_time_settings_example();
+    }
 }
 
 // checks validity of particular form
@@ -164,13 +170,13 @@ function check_reservation( form )
              return false;
         }
     }
-    if (typeof(form.reservation_bandwidth.value) != 'number') {
+    if (!(is_numeric(form.reservation_bandwidth.value))) {
         alert( "The bandwidth must be a positive integer." );
         form.reservation_bandwidth.focus();
         return false;
     }
     else if ( (form.reservation_bandwidth.value < 1 ) ||
-             (form.reservation_bandwidth.value > 10000)) {
+            (form.reservation_bandwidth.value > 10000)) {
         alert( "The amount of bandwidth must be in the range 1-10000 Mbps." );
         form.reservation_bandwidth.focus();
         return false;
@@ -197,7 +203,7 @@ function check_reservation( form )
 
     // check non-required fields if a value has been entered
     if ( !isblank(form.reservation_src_port.value) ) {
-        if (typeof(form.reservation_src_port.value) != 'number') {
+        if (!(is_numeric(form.reservation_src_port.value))) {
             alert( "The source port must be a positive integer." );
             form.reservation_src_port.focus();
             return false;
@@ -210,7 +216,7 @@ function check_reservation( form )
         }
     }
     if ( !isblank(form.reservation_dst_port.value) ) {
-        if (typeof(form.reservation_dst_port.value) != 'number' ) {
+        if (!(is_numeric(form.reservation_dst_port.value))) {
             alert( "The destination port must be a positive integer." );
             form.reservation_dst_port.focus();
             return false;
@@ -223,7 +229,7 @@ function check_reservation( form )
         }
     }
     if ( !isblank(form.reservation_dscp.value) ) {
-        if (typeof(form.reservation_dscp.value) != 'number' ) {
+        if (!(is_numeric(form.reservation_dscp.value))) {
             alert( "The DSCP must be a positive integer." );
             form.reservation_dscp.focus();
             return false;
@@ -316,6 +322,10 @@ function setup_flash(errorFlag) {
     }
 }
 
+
+function is_numeric(s) {
+   return( s.match(/(\d)+/) );
+}
 
 // From Javascript book, p. 264
 

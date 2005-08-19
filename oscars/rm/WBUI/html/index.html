@@ -42,7 +42,7 @@
 
     <div id="main_div">
       <form id="login_ui" method="post" action="" onsubmit="return submit_form(this, 'login', 'https://oscars.es.net/cgi-bin/lib/login.pl');">
-        <input type="hidden" name="timezone_offset">
+        <script language="javascript">print_timezone_field();</script>
         <table>
           <tr>
             <th>Login Name:</th>
