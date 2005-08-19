@@ -1,0 +1,46 @@
+David Robertson
+August 19, 2005
+
+Feature enhancements
+
+
+Upgrade to MySQL 5, have views associated with oscars user and admin user.
+
+Use mod_perl.
+
+Purge logs after they get bigger than a specified amount.
+
+Have regular updates to routers, interfaces, and ipaddrs table based on SNMP
+queries (need to integrate use of existing SNMP code).
+
+Return an error message if a server is not running (currently either a blank
+page is returned, or else no action appears to have been taken).
+
+Have status information flash when the status message changes.
+
+Reintegrate Shibboleth material from BRUW.
+
+Get "add user" form working.
+
+Save the current page in use in a cookie, and enable the user to return to
+an OSCARS page after going somewhere else.
+
+Require certificates for DOE user access to OSCARS.
+
+
+Reservations detail page:
+    Make reservation log accessible via this page for engineering users.
+
+    Add modify and delete actions (in addition to cancel).  Delete will
+    move the reservation entry to another table.
+
+    Add "recompute" route button.
+
+    Add additional LSP info rows.
+
+Notifications:
+    If a user explicitly specifies an egress or ingress router, have an
+    asterisk after that field in the notification sent to the admin users.
+
+    Send notifications on modifications and deletion of reservations.
+
