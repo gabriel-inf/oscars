@@ -259,7 +259,7 @@ function check_date( form )
         default_year = 1;
     }
     else {
-        if ( validate_integer(form.start_year.value) == false ) {
+        if (!(is_numeric(form.start_year.value))) {
             alert( "The reservation start year is not a number. Please check again." );
             form.start_year.focus();
             return false;
@@ -276,7 +276,7 @@ function check_date( form )
         default_month = 0;
     }
     else {
-        if ( validate_integer(form.start_month.value) == false ) {
+        if ( !(is_numeric(form.start_month.value))) {
             alert( "The reservation start month is not a number. Please check again." );
             form.start_month.focus();
             return false;
@@ -294,7 +294,7 @@ function check_date( form )
         default_date = 1;
     }
     else {
-        if ( validate_integer(form.start_date.value) == false ) {
+        if (!(is_numeric(form.start_date.value))) {
             alert( "The reservation start date is not a number. Please check again." );
             form.start_date.focus();
             return false;
@@ -306,7 +306,7 @@ function check_date( form )
         default_hour = 1;
     }
     else {
-        if ( validate_integer(form.start_hour.value) == false ) {
+        if (!(is_numeric(form.start_hour.value))) {
             alert( "The reservation start hour is not a number. Please check again." );
             form.start_hour.focus();
             return false;
