@@ -327,7 +327,7 @@ function check_date( form )
         form.duration_hour.value = 0.05;
     }
     else {
-        if ( validate_numeric(form.duration_hour.value) == false ) {
+        if (!(is_numeric(form.duration_hour.value))) {
             alert( "The reservation duration hour is not a number. Please check again." );
             form.duration_hour.focus();
             return false;
