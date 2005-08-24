@@ -91,6 +91,10 @@ function get_response(xmlhttp, form_name) {
         var nav_node = document.getElementById('nav_div');
         nav_node.innerHTML = init_navigation_bar('admin');
     }
+    else {
+        var tab_node = document.getElementById('info_form');
+        tab_node.className = 'active';
+    }
 
     // get text of status message, if any
     var returned_status_nodes = response_dom.getElementsByTagName('msg');
@@ -123,7 +127,7 @@ function check_form( form, form_name )
 {
     if (!form) { return true; }
     if (form_name == 'login') { return check_login( form ); }
-    else if (form_name == 'creation_form') { return check_reservation( form ); }
+    else if (form_name == 'insert') { return check_reservation( form ); }
     else if (form_name == 'profile_form') { return check_user_profile( form ); }
     return true;
 }
@@ -265,7 +269,7 @@ function check_user_profile( form )
 // initializes string representing navigation bar, with info page initially
 // highlighted
 function init_navigation_bar(user_level) {
-    var navBar = '<div>' +
+    var navBar = '<div id="nav_div">' +
         '<ul id="tabnav">' +
         init_tab("info_form", "lib", "Information page", "Information");
 
@@ -295,6 +299,9 @@ function init_tab(form_name, script_type, tab_title, tab_name) {
          '<a style="' + starting_page + '/styleSheets/layout.css"' +
 	 ' title="' + tab_title + '"';
     if (form_name != 'logout') {
+         if (form_name == 'info_form') {
+             tab_str += ' class="active"';
+         }
          tab_str += ' href="#"' +
          ' onclick="new_page(' + "'" + form_name + "', '" + 
          starting_page + '/cgi-bin/' + script_type + '/' + form_name +
