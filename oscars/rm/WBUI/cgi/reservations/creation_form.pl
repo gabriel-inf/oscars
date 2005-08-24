@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # creation_form.pl:  form for making reservations
-# Last modified: August 17, 2005
+# Last modified: August 24, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -47,7 +47,7 @@ sub print_reservation_form {
     my( $form_params, $tz ) = @_;
 
     print "<form method=\"post\" action=\"\"";
-    print " onsubmit=\"return submit_form(this, 'creation_form', ";
+    print " onsubmit=\"return submit_form(this, 'details', ";
     print "'$starting_page/cgi-bin/reservations/details.pl');\">";
 
     print '<input type="hidden" name="create" value="1"></input>', "\n";
