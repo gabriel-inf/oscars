@@ -47,10 +47,9 @@ sub print_reservation_form {
     my( $form_params, $tz ) = @_;
 
     print "<form method=\"post\" action=\"\"";
-    print " onsubmit=\"return submit_form(this, 'details', ";
-    print "'$starting_page/cgi-bin/reservations/details.pl');\">";
+    print " onsubmit=\"return submit_form(this, 'insert', ";
+    print "'$starting_page/cgi-bin/reservations/insert.pl');\">";
 
-    print '<input type="hidden" name="create" value="1"></input>', "\n";
     print '<input type="hidden" name="reservation_start_time"></input>', "\n";
     print '<input type="hidden" name="reservation_end_time"></input>', "\n";
     print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";

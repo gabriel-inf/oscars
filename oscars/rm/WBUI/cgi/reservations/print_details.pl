@@ -1,123 +1,10 @@
 #!/usr/bin/perl
 
-# details.pl:  Lists the details of a reservation.
-# Last modified: August 16, 2005
+# details.pl:  Prints the details of a reservation.
+# Last modified: August 24, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-use CGI;
-use Data::Dumper;
-
-use Common::Auth;
-use AAAS::Client::SOAPClient;
-
-require '../lib/general.pl';
-
-my( %form_params, $tz, $starting_page );
-
-my $cgi = CGI->new();
-my $auth = Common::Auth->new();
-($form_params{user_dn}, $form_params{user_level}, $tz, $starting_page) =
-                                         $auth->verify_session($cgi);
-print $cgi->header( -type=>'text/xml' );
-if (!$form_params{user_level}) {
-    print "Location:  " . $starting_page . "\n\n";
-    exit;
-}
-for $_ ($cgi->param) {
-    $form_params{$_} = $cgi->param($_);
-}
-process_form(\%form_params);
-exit;
-
-######
-
-##############################################################################
-# process_form:  Make the SOAP call based on form parameters, and print out the
-#                results.
-#
-sub process_form {
-    my( $form_params ) = @_;
-
-    # if creating reservation
-    if ($form_params->{create}) {
-        $form_params->{method} = 'insert_reservation';
-        create_reservation($form_params);
-    }
-    # if cancelling reservation
-    elsif ($form_params->{cancel}) {
-        $form_params->{method} = 'delete_reservation';
-        cancel_reservation($form_params);
-    }
-    # refresh reservation details
-    else {
-        $form_params->{method} = 'get_reservations';
-        get_details($form_params);
-    }
-}
-######
-
-##############################################################################
-# create_reservation:  Make the SOAP call to create the reservation, and print
-#                      out the results
-#
-sub create_reservation {
-    my( $form_params ) = @_;
-
-    my( $som, $results );
-
-    $som = aaas_dispatcher($form_params);
-    if ($som->faultstring) {
-        update_page($som->faultstring);
-        return;
-    }
-    $results = $som->result;
-    $form_params->{reservation_id} = $results->{reservation_id};
-    print_reservation_detail($form_params, $results,
-        "Successfully created reservation with id $results->{reservation_id}.");
-}
-######
-
-##############################################################################
-# cancel_reservation:  Make the SOAP call to cancel the reservation, and print
-#                      out the results.
-#
-sub cancel_reservation {
-    my( $form_params ) = @_;
-
-    my( $som, $results );
-
-    $som = aaas_dispatcher($form_params);
-    if ($som->faultstring) {
-        update_page($som->faultstring);
-        return;
-    }
-    $results = $som->result;
-    print_reservation_detail($form_params, $results,
-        "Successfully cancelled reservation with id $form_params->{reservation_id}.");
-}
-######
-
-##############################################################################
-# get_details:  Make the SOAP call to get reservation details, and print out
-#               the results.  At the moment, almost duplicates
-#               cancel_reservation
-#
-sub get_details {
-    my( $form_params ) = @_;
-
-    my( $som, $results );
-
-    $som = aaas_dispatcher($form_params);
-    if ($som->faultstring) {
-        update_page($som->faultstring);
-        return;
-    }
-    $results = $som->result;
-    print_reservation_detail($form_params, $results,
-        "Successfully got reservation details");
-}
-######
 
 ##############################################################################
 # print_reservation_detail:  print details of reservation returned by SOAP
@@ -126,7 +13,7 @@ sub get_details {
 # Out: None
 #
 sub print_reservation_detail {
-    my( $form_params, $results, $msg ) = @_;
+    my( $form_params, $results, $msg, $auth ) = @_;
 
     my $row = @{$results->{rows}}[0];
     my $even = 0;
@@ -314,7 +201,7 @@ sub print_reservation_detail {
         print "<a href=\"#\"";
         print " style=\"$starting_page/styleSheets/layout.css\"\n";
         print " onclick=\"return new_page('details', ";
-        print "'$starting_page/cgi-bin/reservations/details.pl?reservation_id=$row->{reservation_id}&amp;cancel=1');\"\n";
+        print "'$starting_page/cgi-bin/reservations/cancel.pl?reservation_id=$row->{reservation_id}');\"\n";
         print ">CANCEL</a>\n";
         print "</td>";
         print "</tr>\n";
@@ -323,7 +210,7 @@ sub print_reservation_detail {
     print "</table>\n";
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, ";
-    print "'details', '$starting_page/cgi-bin/reservations/details.pl');\">\n";
+    print "'details', '$starting_page/cgi-bin/reservations/get_details.pl');\">\n";
 
     print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
     print "<input type=\"hidden\" name=\"reservation_id\" value=";

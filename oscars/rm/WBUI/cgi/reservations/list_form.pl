@@ -127,8 +127,8 @@ sub print_row {
 
     print "<td>\n";
     print "<a href=\"#\" style=\"$starting_page/styleSheets/layout.css\"";
-    print " onclick=\"return new_page('profile_form', ";
-    print "'$starting_page/cgi-bin/reservations/details.pl?reservation_id=";
+    print " onclick=\"return new_page('get_details', ";
+    print "'$starting_page/cgi-bin/reservations/get_details.pl?reservation_id=";
     print $row->{reservation_id}, "');\">$row->{reservation_tag}</a></td>\n";
   
     print "<td>\n";
