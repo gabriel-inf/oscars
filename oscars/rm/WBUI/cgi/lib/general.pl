@@ -1,9 +1,57 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: August 16, 2005
+# Last modified: August 24, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
+
+use CGI;
+use Data::Dumper;
+
+use Common::Auth;
+use AAAS::Client::SOAPClient;
+
+##############################################################################
+# get_params:  Material common to almost all scripts; has to verify
+#              user is logged in, and copy over form params
+#
+sub get_params {
+
+    my( %form_params, $tz, $starting_page );
+
+    my $cgi = CGI->new();
+    my $auth = Common::Auth->new();
+    ($form_params{user_dn}, $form_params{user_level}, $tz, $starting_page) =
+                                             $auth->verify_session($cgi);
+    print $cgi->header( -type=>'text/xml' );
+    if (!$form_params{user_level}) {
+        print "Location:  " . $starting_page . "\n\n";
+        return (undef, undef);
+    }
+    for $_ ($cgi->param) {
+        $form_params{$_} = $cgi->param($_);
+    }
+    return( \%form_params, $auth );
+}
+######
+
+##############################################################################
+# get_results:  Material common to almost all scripts;
+#               make the SOAP call, and get the results.
+#
+sub get_results {
+    my( $form_params, $method_name ) = @_;
+
+    $form_params->{method} = $method_name;
+    my $som = aaas_dispatcher($form_params);
+    if ($som->faultstring) {
+        update_page($som->faultstring);
+        return undef;
+    }
+    my $results = $som->result;
+    return $results;
+}
+######
 
 ##############################################################################
 # update_page:  If output_func is null, an error has occurred and only the

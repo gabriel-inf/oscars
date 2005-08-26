@@ -1,71 +1,41 @@
 #!/usr/bin/perl -w
 
 # userprofile.pl:  Main service: My Profile page
-# Last modified: August 16, 2005
+# Last modified: August 26, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
-use CGI;
 use Data::Dumper;
-
-use Common::Auth;
-use AAAS::Client::SOAPClient;
 
 require '../lib/general.pl';
 
-my( %form_params, $tz, $starting_page );
+my( $form_params, $auth ) = get_params();
+if ( !$form_params ) { exit; }
 
-my $cgi = CGI->new();
-my $auth = Common::Auth->new();
-($form_params{user_dn}, $form_params{user_level}, $tz, $starting_page) =
-                                          $auth->verify_session($cgi);
-print $cgi->header( -type=>'text/xml' );
-
-if (!$form_params{user_dn}) {
-    print "Location:  $starting_page\n\n";
-    exit;
+if ($form_params->{id}) {
+    $form_params->{admin_dn} = $form_params->{user_dn};
+    $form_params->{user_dn} = $form_params->{id};
 }
-
-for $_ ($cgi->param) {
-    $form_params{$_} = $cgi->param($_);
+if ($form_params->{new_user_dn}) {
+    $form_params->{admin_dn} = $form_params->{user_dn};
+    $form_params->{user_dn} = $form_params->{new_user_dn};
 }
-process_form(\%form_params);
+my $results;
+if ($form_params->{set}) {
+    $results = get_results($form_params, 'set_profile');
+}
+else {
+    $results = get_results($form_params, 'get_profile');
+}
+if (!$results) { exit; }
+
+print "<xml>\n";
+print "<msg>User profile</msg>\n";
+print "<div id=\"account_ui\">\n";
+print_profile($results, $form_params);
+print  "</div>\n";
+print  "</xml>\n";
 exit;
-
-######
-
-##############################################################################
-# process_form:  Make the SOAP call, and print out the results
-#
-sub process_form {
-    my( $form_params ) = @_;
-
-    my( $error_status, $results );
-
-    if ($form_params->{id}) {
-        $form_params->{admin_dn} = $form_params->{user_dn};
-        $form_params->{user_dn} = $form_params->{id};
-    }
-    if ($form_params->{new_user_dn}) {
-        $form_params->{admin_dn} = $form_params->{user_dn};
-        $form_params->{user_dn} = $form_params->{new_user_dn};
-    }
-    if ($form_params->{set}) { $form_params->{method} = 'set_profile'; }
-    else { $form_params->{method} = 'get_profile'; }
-
-    my $som = aaas_dispatcher($form_params);
-    if ( $som->faultstring ) {
-        update_page($som->faultstring);
-        return;
-    }
-    $results = $som->result;
-    print "<xml>\n";
-    print "<msg>User profile</msg>\n";
-    print "<div id=\"account_ui\">\n";
-    print_profile($results, $form_params);
-    print  "</div>\n";
-    print  "</xml>\n";
-}
 ######
 
 ##############################################################################

@@ -5,32 +5,17 @@
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-use CGI;
 use Data::Dumper;
-
-use Common::Auth;
-use AAAS::Client::SOAPClient;
 
 require '../lib/general.pl';
 
-my( %form_params, $starting_page, $tz );
+my( $form_params, $auth ) = get_params();
+if (!($form_params)) { exit; }
 
-my $cgi = CGI->new();
-my $auth = Common::Auth->new();
-($form_params{user_dn}, $form_params{user_level}, $tz, $starting_page) =
-                                         $auth->verify_session($cgi);
-print $cgi->header( -type=>'text/xml' );
-if (!$form_params{user_level}) {
-    print "Location:  " . $starting_page . "\n\n";
-    exit;
-}
-for $_ ($cgi->param) {
-    $form_params{$_} = $cgi->param($_);
-}
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"reservation_ui\">\n";
-print_reservation_form(\%form_params, $tz);
+print_reservation_form($form_params);
 print  "</div>\n";
 print  "</xml>\n";
 exit;
@@ -44,7 +29,7 @@ exit;
 # Out:  none
 #
 sub print_reservation_form {
-    my( $form_params, $tz ) = @_;
+    my( $form_params ) = @_;
 
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, 'insert', ";

@@ -1,58 +1,27 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: August 16, 2005
+# Last modified: August 26, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-use CGI;
 use Data::Dumper;
-
-use Common::Auth;
-use AAAS::Client::SOAPClient;
 
 require '../lib/general.pl';
 
-my( %form_params, $tz, $starting_page );
+my( $form_params, $auth ) = get_params();
+if ( !$form_params ) { exit; }
 
-my $cgi = CGI->new();
-my $auth = Common::Auth->new();
-($form_params{user_dn}, $form_params{user_level}, $tz, $starting_page) =
-                                         $auth->verify_session($cgi);
-if (!$form_params{user_level}) {
-    print "Location:  " . $starting_page . "\n\n";
-    exit;
-}
-for $_ ($cgi->param) {
-    $form_params{$_} = $cgi->param($_);
-}
-process_form(\%form_params);
+my $results = get_results($form_params, 'get_reservations');
+if (!$results) { exit; }
+
+print "<xml>\n";
+print "<msg>Successfully retrieved reservations.</msg>\n";
+print "<div id=\"zebratable_ui\">\n";
+print_reservations($results, $form_params);
+print "</div>\n";
+print "</xml>\n";
 exit;
-######
-
-##############################################################################
-# process_form:  Make the SOAP call, and print out the results
-#
-sub process_form {
-    my( $form_params ) = @_;
-
-    my( $error_status, $results );
-
-    print $cgi->header( -type=>'text/xml' );
-    $form_params->{method} = 'get_reservations';
-    my $som = aaas_dispatcher($form_params);
-    if ($som->faultstring) {
-        update_page($som->faultstring);
-        return;
-    }
-    $results = $som->result;
-    print "<xml>\n";
-    print "<msg>Successfully retrieved reservations.</msg>\n";
-    print "<div id=\"zebratable_ui\">\n";
-    print_reservations($results, $form_params);
-    print "</div>\n";
-    print "</xml>\n";
-}
 ######
 
 ##############################################################################

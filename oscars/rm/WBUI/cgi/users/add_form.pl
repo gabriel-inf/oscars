@@ -1,38 +1,21 @@
 #!/usr/bin/perl
 
 # add_form.pl:  Add a user (requires admin privileges)
-# Last modified: August 16, 2005
+# Last modified: August 26, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-use CGI;
 use Data::Dumper;
-
-use Common::Auth;
-use AAAS::Client::SOAPClient;
 
 require '../lib/general.pl';
 
-my( %form_params, $tz, $starting_page );
+my( $form_params, $auth ) = get_params();
+if ( !$form_params ) { exit; }
 
-my $cgi = CGI->new();
-my $auth = Common::Auth->new();
-($form_params{user_dn}, $form_params{user_level}, $tz, $starting_page) =
-                                          $auth->verify_session($cgi);
-print $cgi->header( -type=>'text/xml' );
-
-if (!$form_params{user_dn}) {
-    print "Location:  $starting_page\n\n";
-    exit;
-}
-
-for $_ ($cgi->param) {
-    $form_params{$_} = $cgi->param($_);
-}
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"account_ui\">\n";
-print_add_user_form(\%form_params);
+print_add_user_form($form_params);
 print  "</div>\n";
 print  "</xml>\n";
 exit;
