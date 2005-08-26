@@ -9,13 +9,13 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( $form_params, $auth ) = get_params();
+my( $form_params, $auth, $starting_page ) = get_params();
 if (!($form_params)) { exit; }
 
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"reservation_ui\">\n";
-print_reservation_form($form_params);
+print_reservation_form($form_params, $starting_page);
 print  "</div>\n";
 print  "</xml>\n";
 exit;
@@ -29,7 +29,7 @@ exit;
 # Out:  none
 #
 sub print_reservation_form {
-    my( $form_params ) = @_;
+    my( $form_params, $starting_page ) = @_;
 
     print "<form method=\"post\" action=\"\"";
     print " onsubmit=\"return submit_form(this, 'insert', ";

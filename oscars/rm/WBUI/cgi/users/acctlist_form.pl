@@ -9,7 +9,7 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( $form_params, $auth ) = get_params();
+my( $form_params, $auth, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
 my $results = get_results($form_params, 'get_userlist');
@@ -18,7 +18,7 @@ if (!$results) { exit; }
 print "<xml>";
 print "<msg>Successfully read user list</msg>\n";
 print "<div id=\"zebratable_ui\">";
-print_userlist($results);
+print_userlist($results, $starting_page);
 print "</div>";
 print "</xml>\n";
 exit;
@@ -33,7 +33,7 @@ exit;
 #
 sub print_userlist
 {
-    my ( $results ) = @_;
+    my ( $results, $starting_page ) = @_;
     my ( $rowsref, $row );
     my $even = 0;
 
@@ -57,7 +57,7 @@ sub print_userlist
         else {
             print " <tr class=\"odd\">";
         }
-        print_row($row);
+        print_row($row, $starting_page);
         print " </tr>\n";
         $even = !$even;
     }

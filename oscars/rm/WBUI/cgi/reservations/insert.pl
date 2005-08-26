@@ -8,7 +8,7 @@
 require '../lib/general.pl';
 require 'print_details.pl';
 
-my( $form_params, $auth ) = get_params();
+my( $form_params, $auth, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
 my $results = get_results($form_params, 'insert_reservation');
@@ -17,7 +17,7 @@ if (!$results) { exit; }
 $form_params->{reservation_id} = $results->{reservation_id};
 print_reservation_detail($form_params, $results,
     "Successfully created reservation with id $results->{reservation_id}.",
-    $auth);
+    $auth, $starting_page);
 exit;
 ######
 

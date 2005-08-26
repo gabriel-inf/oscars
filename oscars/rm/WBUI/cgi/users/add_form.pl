@@ -9,13 +9,13 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( $form_params, $auth ) = get_params();
+my( $form_params, $auth, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"account_ui\">\n";
-print_add_user_form($form_params);
+print_add_user_form($form_params, $stearting_page);
 print  "</div>\n";
 print  "</xml>\n";
 exit;

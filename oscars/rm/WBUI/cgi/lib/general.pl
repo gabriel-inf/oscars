@@ -31,7 +31,7 @@ sub get_params {
     for $_ ($cgi->param) {
         $form_params{$_} = $cgi->param($_);
     }
-    return( \%form_params, $auth );
+    return( \%form_params, $auth, $starting_page );
 }
 ######
 

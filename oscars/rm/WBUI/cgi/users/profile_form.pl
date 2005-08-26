@@ -9,7 +9,7 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( $form_params, $auth ) = get_params();
+my( $form_params, $auth, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
 if ($form_params->{id}) {
@@ -32,7 +32,7 @@ if (!$results) { exit; }
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"account_ui\">\n";
-print_profile($results, $form_params);
+print_profile($results, $form_params, $starting_page);
 print  "</div>\n";
 print  "</xml>\n";
 exit;

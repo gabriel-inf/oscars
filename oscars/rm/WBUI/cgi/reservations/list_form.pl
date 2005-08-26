@@ -9,7 +9,7 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( $form_params, $auth ) = get_params();
+my( $form_params, $auth, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
 my $results = get_results($form_params, 'get_reservations');
@@ -18,7 +18,7 @@ if (!$results) { exit; }
 print "<xml>\n";
 print "<msg>Successfully retrieved reservations.</msg>\n";
 print "<div id=\"zebratable_ui\">\n";
-print_reservations($results, $form_params);
+print_reservations($results, $form_params, $starting_page);
 print "</div>\n";
 print "</xml>\n";
 exit;
@@ -31,7 +31,7 @@ exit;
 # Out:  None
 #
 sub print_reservations {
-    my ( $results, $form_params ) = @_;
+    my ( $results, $form_params, $starting_page ) = @_;
 
     my ( $rowsref, $row );
 
@@ -72,7 +72,7 @@ sub print_reservations {
         else {
             print "<tr class=\"odd\">\n";
         }
-        print_row($row, $form_params->{user_level});
+        print_row($row, $form_params->{user_level}, $starting_page);
         print "</tr>\n";
         $even = !$even;
     }
@@ -90,7 +90,7 @@ sub print_reservations {
 # Out:  None
 #
 sub print_row {
-    my( $row, $user_level ) = @_;
+    my( $row, $user_level, $starting_page ) = @_;
 
     my( $seconds, $ip );
 

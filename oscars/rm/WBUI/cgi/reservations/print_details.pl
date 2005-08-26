@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # details.pl:  Prints the details of a reservation.
-# Last modified: August 24, 2005
+# Last modified: August 26, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -13,7 +13,7 @@
 # Out: None
 #
 sub print_reservation_detail {
-    my( $form_params, $results, $msg, $auth ) = @_;
+    my( $form_params, $results, $msg, $auth, $starting_page ) = @_;
 
     my $row = @{$results->{rows}}[0];
     my $even = 0;
