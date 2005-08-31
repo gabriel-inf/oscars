@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 ESnet<br/><br/>
 
-August 30, 2005<br/>
+August 31, 2005<br/>
 
 <hr>
 
@@ -83,7 +83,7 @@ not being abused.</p>
 <li>An authentication, authorization, and accounting subsystem (AAAS),<br/>
 <li>A bandwidth scheduler subsystem (BSS),<br/>
 <li>A path setup subsystem (PSS), and<br/>
-<li>A client interface (both a manual interface and an API),<br/>
+<li>A client interface (both a interactive interface and an API),<br/>
 </ol>
 
 <br/>
@@ -93,18 +93,22 @@ not being abused.</p>
 <p>The AAAS must handle all external requests and enforce security restrictions,
 including user authentication (y1) and authorization (y2),
 and generate usage records for auditing and accounting (y2/y3).
-Arguments to requests correspond to input fields that are listed
+Arguments to requests correspond to input arguments that are listed
 in the section below on the user interface, and are not duplicated here.</p>
-
-<p>The AAAS must handle requests for accounts (y2), and login requests (y1).
-</p>
 
 <p>User account names must be globally unique.</p>
 
+<p>The AAAS must handle the following requests:</p>
+
+<ol>
+<li>Request for an OSCARS account (y2).
+</li><br/>
+
+<li>Request to login to OSCARS (y1).
+</li><br/>
+
 <p>The AAAS must handle the following requests from users who have 
 successfully logged in:</p>
-
-<ul>
 
 <li>Request to view and edit the details of a user's account profile (y1).
 </li><br/>
@@ -115,25 +119,25 @@ successfully logged in:</p>
 <li>Request to view a user's current allocation and usage (y3).
 </li><br/>
 
-<li>Requests related to the reservation of bandwidth (these requests are 
-forwarded to the BSS, and are detailed in the next section).
-</li><br/>
-</ul>
-
 <p>In addition, there must be user accounts with administrative privileges.
 The AAAS must accept these requests from administrators:</p>
 
-<ul>
 <li>Request to view all user accounts, and to edit their profiles (y1).
 </li><br/>
 
-<li>Request to add or delete a user account (y2).
+<li>Request to add user account (y2).
 </li><br/>
-</ul>
+
+<li>Request to delete a user account (y2).
+</li><br/>
+</ol>
+
+<p>Requests related to the reservation of bandwidth are 
+forwarded to the BSS, and are detailed in the next section.</p>
 
 <h3>BSS</h3>
 
-<p>The BSS must accept reservations, keep track of current reservations, and 
+<p>The BSS must accept reservations, keep track of reservations, and 
 maintain information necessary for future reservations:</p>
 
 <ul>
@@ -171,23 +175,39 @@ the circuit to the alternative path (y3).<br/><br/>
 <p>The BSS must accept the following client requests, forwarded from the
 AAAS:</p>
 
-<ul>
+<ol>
 <li>Request for bandwidth reservation (y1).
 </li><br/>
 
-<li>Request for a list of the client's current reservations (y1).
+<li>Request by a client for a list of that client's reservations (y1).
 </li><br/>
 
-<li>Request for details of a specific reservation (y1).
+<li>Request by a client for details of a reservation that client has made (y1).
 </li><br/>
 
-<li>Request to cancel a reservation that has already been made (y1).
+<li>Request by a client to cancel a reservation that client has made (y1).
 </li><br/>
 
-<li>Request to modify a reservation that has already been made (y2).
+<li>Request by a client to modify a reservation that client has made (y2).
 </li><br/>
-</ul>
  
+<p>In addition, there must be user accounts with system engineer privileges.
+The BSS must accept these requests from system engineers:</p>
+
+<li>Request for a list of all clients' reservations (y1).
+</li><br/>
+
+<li>Request for the details of any client's reservation (y1).
+</li><br/>
+
+<li>Request to cancel a reservation that any client has made (y1).
+</li><br/>
+
+<li>Request to modify a reservation that any client has made (y2).
+</li><br/>
+ 
+</ol>
+
 <p>The following notifications must be made to clients,
 and must include the status of a reservation,
 the bandwidth allocated, and the QoS value (y1).</p>
@@ -204,17 +224,6 @@ the bandwidth allocated, and the QoS value (y1).</p>
 
 <li>Notification of LSP teardown and the status of that teardown (y1), 
 including the total packets/bytes forwarded (y2).
-</li><br/>
-</ul>
-
-<p>In addition, there must be user accounts with system engineer privileges.
-The BSS must accept these requests from system engineers:</p>
-
-<ul>
-<li>Request for a list of all clients' current reservations (y1).
-</li><br/>
-
-<li>Request for the details of any client's reservation (y1).
 </li><br/>
 </ul>
 
@@ -263,23 +272,155 @@ conflict with bandwidth reservation (y2).</p>
 
 <h3>User interface</h3>
 
-<p>The user interface must provide means for making requests associated with
-reserving bandwidth, and with managing a user's account.  
-The interface for manual requests must be simple and intuitive.  It must prompt 
-the user for a
-username/password or certificate before allowing any requests.  It must in
-general operate within the trusted domain of the resource manager.</p>
+<p>The user interface must provide means for making all requests listed in the 
+sections on the AAAS and BSS.  Client requests generated by either interactive 
+(y1) or automated (y2) means must use the same transport and message encoding 
+(for example, SOAP) to communicate with the AAAS.</p>
 
 <p>The API for automated reservations by user applications should utilize
-well-known mechanisms.</p>
+well-known mechanisms.  A service description must be provided that will allow 
+automated use of the API (y2).</p>
 
-<p>Client requests generated by either manual or automated means
-must use the same transport and message encoding (for example, SOAP) to
-communicate with the AAAS.  For the manual interface, forms must
-be provided to gather the information for a request, which may require an 
-additional step of sending the request as a message to the AAAS.
-For the API, a service description must be provided that will allow use of
-the RM.</p>
+<p>The interactive interface must be simple and intuitive.  It must prompt a 
+user for a username/password (y1) or certificate (y2) before allowing any 
+requests.  It must in general operate within the trusted domain of the 
+resource manager.</p>
+
+<p>After login, the interactive interface must provide entry forms to gather 
+the information for requests, which may require an additional step of sending 
+the information gathered as a message to the AAAS.  Several requests may 
+be combined on a single entry form.</p>
+
+<p>For each required and optional request 
+argument listed below, an entry form must have corresponding input fields 
+and/or interactive controls.  The entry form must not include input fields 
+corresponding to arguments requiring special client privileges (administrative 
+and engineering), if the client does not have those privileges.  There must be 
+an area on an entry form for status and error messages (y1), which is updated 
+after each request.</p>
+
+<p>The following sections list the input arguments required for each request,
+and the results returned, if any.</p>
+
+
+<h4>AAAS requests</h4>
+
+<ol>
+<li>Request by a client for an OSCARS account (y2):<br/><br/>
+</li><br/>
+
+<li>Request to login to OSCARS (y1):<br/><br/>
+
+Request arguments must include a login name and a password.  For the
+interactive interface, general OSCARS
+information should be readily available after login.
+</li><br/>
+
+<li>Request to list/modify a user's account profile (y1):<br/><br/>
+</li><br/>
+
+<li>Request for an allocation to use in making reservations (y3):<br/><br/>
+</li><br/>
+
+<li>Request to view client's current allocation and usage (y3):<br/><br/>
+</li><br/>
+
+<p>The following requests require administrative privileges.</p>
+
+<li>Request to view all user accounts (y3):<br/><br/>
+</li><br/>
+
+<li>Request to add a user account (y2):<br/><br/>
+</li><br/>
+
+<li>Request to delete a user account (y2):<br/><br/>
+</li><br/>
+</ol>
+
+<h4>BSS request forms</h4>
+
+<ol>
+<li>Request for bandwidth reservation:<br/><br/>
+
+Request arguments must include the reservation source and destination, the 
+requested bandwidth, and the purpose of the reservation.  Arguments may 
+include the source and destination ports, the protocol to use, the DSCP 
+bit(s), the ingress and egress loopbacks, and the start time and duration of 
+the desired reservation.  If the start time or duration is left out, default 
+values must be used.  If a client has proven that it has engineering 
+privileges, an argument must be included allowing the setup of a persistent 
+circuit.</p>
+
+<p>A disclaimer must be present on the interactive form indicating that if the 
+transit path across ESnet has more than one ingress point, a full traceroute 
+must be provided to ensure that the requested bandwidth is actually 
+available.  An argument for the traceroute, and an argument indicating whether 
+a user wants to set up a bidrectional path, must be included (y2).</p>
+
+<p>Upon successful reservation setup, a listing must be returned with the
+reservation details.
+</li><br/>
+
+<li>Request by a client for a list of that client's reservations (y1):<br/><br/>
+
+A listing of that client's current, finished, and cancelled reservations must 
+be returned as a result of the request.  Each item in the list must include a 
+unique tag for the reservation, and the start time, end time, status, origin, 
+and destination.  A search filter method, or an interactive element, must be 
+provided to narrow the reservations listed, for example by a specific date (y2).
+</li><br/>
+
+<li>Request by a client for details of a reservation that client has made (y1):<br/><br/>
+
+A listing of that reservation's details must be returned as a result of the 
+request.  This information must include the reservation's tag, the user who
+requested it, and the reservation's description, start time, end time,
+creation time, bandwidth, burst limit, status, source, destination,
+source port, destination port, protocol, DSCP bit(s), and class.  If the
+user has engineering privileges, the information must also include the
+reservation's ingress router and loopback, egress router and loopback, and
+the routers in the path traversing ESnet.  
+</li><br/>
+
+<li>Request by a client to cancel a reservation that client has made (y1):<br/><br/>
+
+An API method or interactive element must be provided to cancel a reservation 
+identified by its reservation tag.
+</li><br/>
+
+<li>Request by a client to modify a reservation that client has made (y1):<br/><br/>
+An API method or interactive element must be provided to modify a reservation 
+identified by its reservation tag.  Modifiable arguments must include the 
+reservation start and end time, and start and destination of the path.
+</li><br/>
+
+<p>The following requests require engineering privileges.</p>
+
+<li>Request for a list of all reservations (y1):<br/><br/>
+
+Same as the request for a client's reservation, except that the listing
+includs all reservations.
+</li><br/>
+
+<li>Request for the details of any client's reservations (y1):<br/><br/>
+
+Same as the request for details of a client's reservation, except that the 
+details can be from any client's reservation.
+</li><br/>
+
+<li>Request to cancel a reservation that any client has made (y1):<br/><br/>
+
+Same as the request by a client for the cancellation of that client's 
+reservation, except that any reservation from any client may be cancelled.
+</li><br/>
+
+<li>Request to modify a reservation that any client has made (y1):<br/><br/>
+
+Same as the request by a client for the modification of that client's 
+reservation, except that any reservation from any client may be modified.
+</li><br/>
+
+</ol>
 
 
 </body>
