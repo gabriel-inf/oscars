@@ -128,7 +128,7 @@ function check_form( form, form_name )
     if (!form) { return true; }
     if (form_name == 'login') { return check_login( form ); }
     else if (form_name == 'insert') { return check_reservation( form ); }
-    else if (form_name == 'profile_form') { return check_user_profile( form ); }
+    else if (form_name == 'set_profile') { return check_user_profile( form ); }
     return true;
 }
 
@@ -261,7 +261,6 @@ function check_user_profile( form )
 			form.password_new_once.focus();
 			return false;
 		}
-		form.update_password.value = 1;
 	}
 	return true;
 }
@@ -276,10 +275,10 @@ function init_navigation_bar(user_level) {
     if (user_level.indexOf("admin") != -1) {
         navBar += init_tab("acctlist_form", "users",
                            "List user accounts", "List Accounts"); 
-        navBar += init_tab("add_form", "users",
+        navBar += init_tab("new_user_form", "users",
                            "Add a new user account", "Add User");
     } 
-    navBar += init_tab("profile_form", "users",
+    navBar += init_tab("get_profile", "users",
                        "View and/or edit your information", "User Profile") +
               init_tab("list_form", "reservations",
                        "View/Edit selected list of reservations",
