@@ -100,41 +100,41 @@ Request arguments are listed in the user interface section (see below).</p>
 <p>The AAAS must handle the following requests:</p>
 
 <ol>
-<li>Request for an OSCARS account (y2).
+<li>Request an OSCARS account (y2).
 </li><br/>
 
-<li>Request to login to OSCARS (y1).
+<li>Login to OSCARS (y1).
 </li><br/>
 
 <p>The AAAS must handle the following requests from clients that have 
 successfully logged in:</p>
 
-<li>Request to list the details of that user's account profile (y1).
+<li>List the details of the client's user profile (y1).
 </li><br/>
 
-<li>Request to modify the details of that user's account profile (y1).
+<li>Modify the details of the client's user account profile (y1).
 (y1).
 </li><br/>
 
-<li>Request for an allocation of bandwidth to use in making reservations (y3).
+<li>Request an allocation of bandwidth to use in making reservations (y3).
 </li><br/>
 
-<li>Request to list that user's current allocation and usage (y3).
+<li>List the client's current allocation and usage (y3).
 </li><br/>
 
 <p>In addition, there must be user accounts with administrator privileges.
 The AAAS must accept these requests from administrators:</p>
 
-<li>Request to list all user accounts (y1).
+<li>List all user accounts (y1).
 </li><br/>
 
-<li>Request to modify any user account (y1).
+<li>Modify any user account (y1).
 </li><br/>
 
-<li>Request to add a user account (y2).
+<li>Add a user account (y2).
 </li><br/>
 
-<li>Request to delete a user account (y2).
+<li>Delete a user account (y2).
 </li><br/>
 </ol>
 
@@ -147,18 +147,18 @@ forwarded to the BSS, and are detailed in the next section.</p>
 maintain information necessary for future reservations:</p>
 
 <ul>
-<li>The BSS must maintain a calendaring system to avoid conflicts in
+<li>It must maintain a calendaring system to avoid conflicts in
 reservations (y1/y2).<br/><br/>
 
-<li>The BSS must determine the path that will be taken, and reserve bandwidth
-on the links.  Just prior to the reservation time, the BSS must invoke the
-PSS to set up the circuit.  The BSS must also trigger the teardown
+<li>It must determine the path that will be taken, and reserve bandwidth
+on the links.  Just prior to the reservation time, it must invoke the
+PSS to set up the circuit.  It must also trigger the teardown
 of the circuit when the reservation has expired (y1).<br/><br/>
 
-<li>The BSS must estimate future availability of circuits based on current
+<li>It must estimate future availability of circuits based on current
 and archived network statistics (y3).<br/><br/>
 
-<li>The BSS must take into account scheduled maintenance
+<li>It must take into account scheduled maintenance
 and track unplanned outages.  It must limit new reservations or revise
 existing reservations during those time periods, after determining the 
 the appropriate policy (y3).<br/><br/>
@@ -172,12 +172,11 @@ The BSS must make a request to the PSS to remove the previous circuit and set
 the circuit to the alternative path (y3).<br/><br/>
 </ul>
 
-<p>The BSS must handle policies associated with the scheduling and actual
+<p>The BSS must maintain policies associated with the scheduling and actual
 use of the network:</p>
 
 <ul>
-<li>The BSS must maintain any policy that restricts any resource that the BSS
-tracks.  The BSS must detect any out-of-policy usage, and enforce it (y3).
+<li>It must detect any out-of-policy usage, and enforce it (y3).
 </li><br/>
 
 <li>Upon receiving a reservation request from a client, the BSS
@@ -207,58 +206,58 @@ handle policy enforcement (y1).
 AAAS:</p>
 
 <ol>
-<li>Request for bandwidth reservation (y1).
+<li>Schedule bandwidth reservation (y1).
 </li><br/>
 
-<li>Request by a client for a list of that client's reservations (y1).
+<li>List the client's reservations (y1).
 </li><br/>
 
-<li>Request by a client for details of a reservation that client has made (y1).
+<li>List the details of a reservation the client has made (y1).
 </li><br/>
 
-<li>Request by a client to cancel a reservation that client has made (y1).
+<li>Cancel a reservation the client has made (y1).
 </li><br/>
 
-<li>Request by a client to modify a reservation that client has made (y2).
+<li>Modify a reservation the client has made (y2).
 </li><br/>
  
 <p>In addition, there must be user accounts with system engineer privileges.
 The BSS must accept these requests from clients with engineer privileges:</p>
 
-<li>Request for a list of all clients' reservations (y1).
+<li>List all clients' reservations (y1).
 </li><br/>
 
-<li>Request for the details of any client's reservation (y1).
+<li>List the details of any client's reservation (y1).
 </li><br/>
 
-<li>Request to cancel a reservation that any client has made (y1).
+<li>Cancel a reservation that any client has made (y1).
 </li><br/>
 
-<li>Request to modify a reservation that any client has made (y2).
+<li>Modify a reservation that any client has made (y2).
 </li><br/>
  
 </ol>
 
 <p>The following notifications must be made to clients,
 and must include the status of a reservation,
-the bandwidth allocated, and the QoS value (y1).</p>
+the bandwidth allocated, and the QoS value (y1):</p>
 
 <ul>
-<li>Notification of a reservation being successfully placed (y1).
+<li>A reservation has been successfully placed (y1).
 </li><br/>
 
-<li>Notification of a reservation being changed or cancelled (y2).
+<li>A reservation has been changed or cancelled (y2).
 </li><br/>
 
-<li>Notification of LSP setup and the status of that setup (y1).
+<li>An LSP crcuit has been set up, and the status of that setup (y1).
 </li><br/>
 
-<li>Notification of LSP teardown and the status of that teardown (y1), 
+<li>An LSP circuit has been torn down, and the status of that teardown (y1), 
 including the total packets/bytes forwarded (y2).
 </li><br/>
 
-<li>Notification of the termination of a reservation that was not in 
-compliance with policy (y3).
+<li>A reservation has been terminated that was not in compliance with 
+policy (y3).
 </li><br/>
 </ul>
 
@@ -316,13 +315,13 @@ The arguments are the same as those for the request to modify a user's account
 profile, listed below, except for the absence of the current password.
 </li><br/>
 
-<li>Request to login to OSCARS (y1):<br/><br/>
+<li>Login to OSCARS (y1):<br/><br/>
 
 A login name and a password are mandatory arguments.  For the interactive 
 interface, general OSCARS information should be readily available after login.
 </li><br/>
 
-<li>Request by a client to list the corresponding user's account profile 
+<li>List the client's user profile 
 (y1):<br/><br/>
 
 A listing must be returned from this request that includes the user's
@@ -333,7 +332,7 @@ phone numbers are permitted to be empty.  If the request is from an
 administrator, the listing includes the user's privilege level(s).
 </li><br/>
 
-<li>Request by a client to modify the corresponding user's account profile (y1):<br/><br/>
+<li>Modify the client's user profile (y1):<br/><br/>
 
 The user's current password is a mandatory argument.  If the password
 is to be modified, arguments for the new password, listed twice, are
@@ -349,33 +348,33 @@ phone number are optional arguments.
 TBD.
 </li><br/>
 
-<li>Request to list a client's current allocation and usage (y3):<br/><br/>
+<li>List a client's current allocation and usage (y3):<br/><br/>
 
 TBD.
 </li>
 
 <p>The following requests require administrator privileges.</p>
 
-<li>Request to list all user accounts (y1):<br/><br/>
+<li>List all user accounts (y1):<br/><br/>
 
 The listing returned from the request must include each user's last name,
 first name, unique identifier, privilege level, organizational membership,
 and current login status.
 </li><br/>
 
-<li>Request to modify any user account (y1):<br/><br/>
+<li>Modify any user account (y1):<br/><br/>
 
 Same as request to modify a user's account profile, except that it can be
 done for any user's account.
 </li><br/>
 
-<li>Request to add a user account (y2):<br/><br/>
+<li>Add a user account (y2):<br/><br/>
 
 The arguments are the same as those for the request to modify a user's account 
 profile, listed above, except for the absence of the current password.
 </li><br/>
 
-<li>Request to delete a user account (y2):<br/><br/>
+<li>Delete a user account (y2):<br/><br/>
 
 The user's unique id is a mandatory argument.
 
@@ -385,7 +384,7 @@ The user's unique id is a mandatory argument.
 <h4>BSS requests</h4>
 
 <ol>
-<li>Request for bandwidth reservation:<br/>
+<li>Schedule bandwidth reservation:<br/>
 
 <p>The reservation's source, destination, and requested bandwidth, and the 
 purpose of the reservation are mandatory arguments.  The reservation's start 
@@ -405,7 +404,7 @@ requested bandwidth along the actual path is available.</p>
 reservation details (y1).
 </li><br/>
 
-<li>Request by a client for a list of that client's reservations (y1):<br/><br/>
+<li>List the client's reservations (y1):<br/><br/>
 
 A listing of that client's current, finished, and cancelled reservations must 
 be returned as a result of the request.  Each item in the list must include the
@@ -414,7 +413,7 @@ and destination. (y1)  A search filter method, or an interactive element, must b
 provided to narrow the reservations listed, for example by a specific date (y2).
 </li><br/>
 
-<li>Request by a client for details of a reservation that client has made (y1):<br/><br/>
+<li>List the details of a reservation the client has made (y1):<br/><br/>
 
 A listing of that reservation's details must be returned as a result of the 
 request.  This information must include the reservation's tag, the unique user
@@ -427,13 +426,13 @@ reservation's ingress router and loopback, egress router and loopback, and
 the routers in the path traversing ESnet.  
 </li><br/>
 
-<li>Request by a client to cancel a reservation that client has made (y1):<br/><br/>
+<li>Cancel a reservation the client has made (y1):<br/><br/>
 
 An API method or interactive element must be provided to cancel a reservation 
 identified by its reservation tag.
 </li><br/>
 
-<li>Request by a client to modify a reservation that client has made (y1):<br/><br/>
+<li> Modify a reservation the client has made (y1):<br/><br/>
 An API method or interactive element must be provided to modify a reservation 
 identified by its reservation tag.  Modifiable arguments must include the 
 reservation start and end time, and start and destination of the path.
@@ -441,25 +440,25 @@ reservation start and end time, and start and destination of the path.
 
 <p>The following requests require engineer privileges.</p>
 
-<li>Request for a list of all reservations (y1):<br/><br/>
+<li>List of all reservations (y1):<br/><br/>
 
 Same as the request for a client's reservation, except that the listing
 includes all reservations.
 </li><br/>
 
-<li>Request for the details of any client's reservation (y1):<br/><br/>
+<li>List the details of any client's reservation (y1):<br/><br/>
 
 Same as the request for details of a client's reservation, except that the 
 details can be of any client's reservation.
 </li><br/>
 
-<li>Request to cancel a reservation that any client has made (y1):<br/><br/>
+<li>Cancel a reservation that any client has made (y1):<br/><br/>
 
 Same as the request by a client for the cancellation of that client's 
 reservation, except that any reservation from any client may be cancelled.
 </li><br/>
 
-<li>Request to modify a reservation that any client has made (y1):<br/><br/>
+<li>Modify a reservation that any client has made (y1):<br/><br/>
 
 Same as the request by a client for the modification of that client's 
 reservation, except that any reservation from any client may be modified.
