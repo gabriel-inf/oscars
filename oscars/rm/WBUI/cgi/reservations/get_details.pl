@@ -13,7 +13,8 @@ require 'print_details.pl';
 my( $form_params, $auth, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
-my $results = get_results($form_params, 'get_reservations');
+$form_params->{method} = 'get_reservations';
+my $results = get_results($form_params);
 if ( !$results ) { exit; }
 
 print_reservation_detail($form_params, $results,
