@@ -135,6 +135,8 @@ sub get_profile {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
+    # unless getting a profile, if user has admin privileges, admin and
+    # user dn are the same
     if (!$inref->{admin_dn}) {
         $self->{dbconn}->enforce_connection($user_dn);
     }
@@ -207,12 +209,6 @@ sub set_profile {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    # in this case, redirect to user creation
-    if ($inref->{new_user_dn}) {
-        $self->{auth}->verify($inref->{user_level}, 'admin', 1);
-        return $self->{registr}->add_user($inref);
-    }
-
     if (!$inref->{admin_dn}) {
         $self->{dbconn}->enforce_connection($user_dn);
     }
@@ -260,9 +256,8 @@ sub set_profile {
         $inref->{user_password} = crypt($inref->{user_password}, 'oscars');
     }
 
-    # Check to see if the institution name provided is in the database.
-    # If so, set the institution id to the primary key in the institutions
-    # table.
+    # Set the institution id to the primary key in the institutions
+    # table (user only can select from menu of existing instituions.
     if ( $inref->{institution} ) {
         $self->{dbconn}->get_institution_id($inref, $inref->{user_dn});
     }
@@ -288,6 +283,19 @@ sub set_profile {
 ##############################################
 # Methods requiring administrative privileges.
 ##############################################
+
+###############################################################################
+# add_user
+# In:  reference to hash of parameters
+# Out: status code, status message
+#
+sub add_user {
+    my ( $self, $inref ) = @_;
+
+    $self->{auth}->verify($inref->{user_level}, 'admin', 1);
+    return $self->{registr}->add_user($inref);
+}
+######
 
 ###############################################################################
 # get_userlist
