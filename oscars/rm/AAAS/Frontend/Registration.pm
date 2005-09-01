@@ -166,6 +166,7 @@ sub add_user {
     my $user_dn = $inref->{user_dn};
     my $admin_dn = $inref->{admin_dn};
 
+    print STDERR "add_user\n";
     $self->{dbconn}->enforce_connection($admin_dn);
 
     my $encrypted_password = $inref->{password_once};
@@ -180,8 +181,12 @@ sub add_user {
                    "by someone else; please choose a different login name.");
     }
     $sth->finish();
-    $self->{dbconn}->check_institution($inref, $inref->{admin_dn});
-    $sth->finish();
+
+    # Set the institution id to the primary key in the institutions
+    # table (user only can select from menu of existing instituions).
+    if ( $inref->{institution} ) {
+        $self->{dbconn}->get_institution_id($inref, $inref->{user_dn});
+    }
 
     $inref->{user_password} = crypt($inref->{password_new_once}, 'oscars');
     $query = "SHOW COLUMNS from users";
