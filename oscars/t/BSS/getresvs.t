@@ -2,7 +2,7 @@
 
 use strict;
 
-use BSS::Client::SOAPClient;
+use AAAS::Client::SOAPClient;
 
 use Data::Dumper;
 
@@ -27,7 +27,7 @@ else {
 }
 
 $params{method} = 'get_reservations';
-my $som = bss_dispatcher(\%params);
+my $som = aaas_dispatcher(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";
     exit;
