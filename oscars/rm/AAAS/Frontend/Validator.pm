@@ -56,6 +56,38 @@ my $form_variables = {
             }
         )
     },
+    'add_user' => {
+        'user_password' => (
+            {'regexp' => '.+',
+            'error' => "Please enter the user's current password."
+            }
+        ),
+        'user_last_name' => (
+            {'regexp' => '.+',
+            'error' => "Please enter the user's last name."
+            }
+        ),
+        'user_first_name' => (
+            {'regexp' => '.+',
+            'error' => "Please enter the user's first name."
+            }
+        ),
+        'institution' => (
+            {'regexp' => '.+',
+            'error' => "Please enter the user's organization."
+            }
+        ),
+        'user_email_primary' => (
+            {'regexp' => '.+',
+            'error' => "Please enter the user's primary email address."
+            }
+        ),
+        'user_phone_primary' => (
+            {'regexp' => '.+',
+            'error' => "Please enter the user's primary phone number."
+            }
+        )
+    },
     # currently no tests
     'get_userlist' => {},
     'logout' => {},
