@@ -40,9 +40,8 @@ sub get_params {
 #               make the SOAP call, and get the results.
 #
 sub get_results {
-    my( $form_params, $method_name ) = @_;
+    my( $form_params) = @_;
 
-    $form_params->{method} = $method_name;
     my $som = aaas_dispatcher($form_params);
     if ($som->faultstring) {
         update_page($som->faultstring);
