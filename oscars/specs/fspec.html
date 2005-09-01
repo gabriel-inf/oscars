@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 ESnet<br/><br/>
 
-August 31, 2005<br/>
+September 1, 2005<br/>
 
 <hr>
 
@@ -106,10 +106,13 @@ Request arguments are listed in the user interface section (see below).</p>
 <li>Request to login to OSCARS (y1).
 </li><br/>
 
-<p>The AAAS must handle the following requests from clients who have 
+<p>The AAAS must handle the following requests from clients that have 
 successfully logged in:</p>
 
-<li>Request to list and/or modify the details of that user's account profile 
+<li>Request to list the details of that user's account profile (y1).
+</li><br/>
+
+<li>Request to modify the details of that user's account profile (y1).
 (y1).
 </li><br/>
 
@@ -122,7 +125,10 @@ successfully logged in:</p>
 <p>In addition, there must be user accounts with administrator privileges.
 The AAAS must accept these requests from administrators:</p>
 
-<li>Request to list all user accounts, and to modify any of their profiles (y1).
+<li>Request to list all user accounts (y1).
+</li><br/>
+
+<li>Request to modify any user account (y1).
 </li><br/>
 
 <li>Request to add a user account (y2).
@@ -141,11 +147,6 @@ forwarded to the BSS, and are detailed in the next section.</p>
 maintain information necessary for future reservations:</p>
 
 <ul>
-<li>Upon receiving a reservation request from a client, the BSS
-must extract an authenticated ID and pass it to a Policy Decision Point (PDP)
-to authorize the request.  After authorization is obtained, the BSS
-must attempt to schedule the reservation (y3).<br/><br/>
-
 <li>The BSS must maintain a calendaring system to avoid conflicts in
 reservations (y1/y2).<br/><br/>
 
@@ -169,7 +170,37 @@ the BSS must try to recompute a new path.  It must get the current topology,
 and then determine the new path.
 The BSS must make a request to the PSS to remove the previous circuit and set
 the circuit to the alternative path (y3).<br/><br/>
+</ul>
 
+<p>The BSS must handle policies associated with the scheduling and actual
+use of the network:</p>
+
+<ul>
+<li>The BSS must maintain any policy that restricts any resource that the BSS
+tracks.  The BSS must detect any out-of-policy usage, and enforce it (y3).
+</li><br/>
+
+<li>Upon receiving a reservation request from a client, the BSS
+must extract an authenticated ID and pass it to a Policy Decision Point (PDP)
+to authorize the request (y3).<br/><br/> 
+
+<li>Policies must be in place to avoid any interference by the OSCARS system
+with production traffic.  These may include those intended to prevent
+monopolization of the OSCARS service (y1), and those dictating pre-emption of 
+an existing reservation to resolve resource reservation conflicts due to 
+network outages (y3).
+</li><br/>
+
+<li>The bandwidth used by an application must be compared
+against that requested in the the application's reservation.  If the
+bandwidth used by the application is over any limit, the BSS must determine 
+whether to enforce the relevant policy (y3).
+</li><br/>
+
+<li>The total bandwidth consumed by all currently active OSCARS reservations
+must be tracked, and if total bandwidth is over the limit, the BSS must
+handle policy enforcement (y1).
+</li><br/>
 </ul>
 
 <p>The BSS must accept the following client requests, forwarded from the
@@ -225,37 +256,10 @@ the bandwidth allocated, and the QoS value (y1).</p>
 <li>Notification of LSP teardown and the status of that teardown (y1), 
 including the total packets/bytes forwarded (y2).
 </li><br/>
-</ul>
 
-<p>The BSS must handle policies associated with the scheduling and actual
-use of the network:</p>
-
-<ul>
-<li>Policies must be in place to avoid any interference by the OSCARS system
-with production traffic.  Policies may include those intended to prevent
-monopolization of the OSCARS service (y1), and those dictating pre-emption of an
-existing reservation to resolve resource reservation conflicts due to network
-outages (y2).
+<li>Notification of the termination of a reservation that was not in 
+compliance with policy (y3).
 </li><br/>
-
-<li>The BSS must maintain any policy that restricts any resource that the BSS
-tracks.  The BSS must detect any out-of-policy usage, and enforce it.
-A client must be notified of any
-reservations that were not in compliance with policy and terminated (y3).
-</li><br/>
-
-<li>The bandwidth used by an application must be compared
-against that requested in the the application's reservation.  If the
-BSS determines that bandwidth used by the application is over any limit,
-it must determine whether to enforce the relevant
-policy (y3).
-</li><br/>
-
-<li>The total bandwidth consumed by all currently active OSCARS reservations
-must be tracked, and if total bandwidth is over the limit, the BSS must
-handle policy enforcement (y1).
-</li><br/>
-
 </ul>
 
 <h3>PSS</h3>
@@ -352,11 +356,17 @@ TBD.
 
 <p>The following requests require administrator privileges.</p>
 
-<li>Request to list all user accounts (y3):<br/><br/>
+<li>Request to list all user accounts (y1):<br/><br/>
 
 The listing returned from the request must include each user's last name,
 first name, unique identifier, privilege level, organizational membership,
 and current login status.
+</li><br/>
+
+<li>Request to modify any user account (y1):<br/><br/>
+
+Same as request to modify a user's account profile, except that it can be
+done for any user's account.
 </li><br/>
 
 <li>Request to add a user account (y2):<br/><br/>
@@ -387,9 +397,9 @@ duration if these arguments are empty.  (y1)</p>
 <p>If a request is from an authorized engineer, a traceroute listing, and
 flags for the setup of a persistent circuit and a bidirectional path, are 
 optional arguments.  A disclaimer must be present on the interactive form 
-indicating that if the transit path across ESnet has more than one ingress 
-point, a full traceroute must be provided to ensure that the requested 
-bandwidth is actually available.  (y2)</p>
+indicating that if the transit path across ESnet has more than 
+one ingress point, a full traceroute must be provided to ensure that the 
+requested bandwidth along the actual path is available.</p>
 
 <p>Upon successful reservation setup, a listing must be returned with the
 reservation details (y1).
