@@ -12,7 +12,8 @@ require '../lib/general.pl';
 my( $form_params, $auth, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
-my $results = get_results($form_params, 'get_userlist');
+$form_params->{method} = 'get_userlist';
+my $results = get_results($form_params);
 if (!$results) { exit; }
 
 print "<xml>";
@@ -74,7 +75,8 @@ sub print_row
 
     print "<td><a href=\"#\" style=\"$starting_page/styleSheets/layout.css\"";
     print " onclick=\"new_page";
-    print "('profile_form', '$starting_page/cgi-bin/users/profile_form.pl?id=$row->{user_dn}'",
+    print "('get_profile', ",
+        "'$starting_page/cgi-bin/users/get_profile.pl?id=$row->{user_dn}'",
         ");return false;\">$row->{user_last_name}</a></td>\n";
     print "<td>$row->{user_first_name}</td>";
     print "<td>$row->{user_dn}</td>";
