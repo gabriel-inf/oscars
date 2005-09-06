@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 ESnet<br/><br/>
 
-September 1, 2005<br/>
+September 6, 2005<br/>
 
 <hr>
 
@@ -45,7 +45,8 @@ initial year one implementation.
 <p>This document covers the requirements for the RM and its
 clients.  The requirements for the other major component of
 OSCARS, which handles the details of setting up the guaranteed bandwidth
-circuit using MPLS and RSVP, are outside the scope of this document.</p>
+circuit using MPLS and RSVP, are listed in the OSCARS
+<a href="http://www.es.net/oscars/documents/OSCARS.pdf">full proposal</a>.</p>
 
 <p>Specific design decisions are in a companion document,
 the OSCARS RM <a href="dspec.html">design specification.</a></p>
@@ -83,7 +84,7 @@ not being abused.</p>
 <li>An authentication, authorization, and accounting subsystem (AAAS),<br/>
 <li>A bandwidth scheduler subsystem (BSS),<br/>
 <li>A path setup subsystem (PSS), and<br/>
-<li>A client interface (both a interactive interface and an API),<br/>
+<li>A client interface (both an interactive interface and an API),<br/>
 </ol>
 
 <br/>
@@ -109,17 +110,22 @@ Request arguments are listed in the user interface section (see below).</p>
 <p>The AAAS must handle the following requests from clients that have 
 successfully logged in:</p>
 
+<li>Request information about OSCARS (y1).
+</li><br/>
+
 <li>List the details of the client's user profile (y1).
 </li><br/>
 
 <li>Modify the details of the client's user account profile (y1).
-(y1).
 </li><br/>
 
 <li>Request an allocation of bandwidth to use in making reservations (y3).
 </li><br/>
 
 <li>List the client's current allocation and usage (y3).
+</li><br/>
+
+<li>Logout from OSCARS (y1).
 </li><br/>
 
 <p>In addition, there must be user accounts with administrator privileges.
@@ -159,26 +165,17 @@ of the circuit when the reservation has expired (y1).<br/><br/>
 and archived network statistics (y3).<br/><br/>
 
 <li>It must take into account scheduled maintenance
-and track unplanned outages.  It must limit new reservations or revise
-existing reservations during those time periods, after determining the 
-the appropriate policy (y3).<br/><br/>
-
-<li>
+and track unplanned outages.
 If there is a new scheduled outage that conflicts with a reservation already
 made, or if there is an unplanned outage on one of the interfaces in that path,
-the BSS must try to recompute a new path.  It must get the current topology,
-and then determine the new path.
-The BSS must make a request to the PSS to remove the previous circuit and set
-the circuit to the alternative path (y3).<br/><br/>
+the BSS must retrieve the current topology, and determine a possible new
+path(s). (y3)<br/><br/>
 </ul>
 
 <p>The BSS must maintain policies associated with the scheduling and actual
-use of the network:</p>
+use of the network, detect any out-of-policy usage, and enforce policies:</p>
 
 <ul>
-<li>It must detect any out-of-policy usage, and enforce it (y3).
-</li><br/>
-
 <li>Upon receiving a reservation request from a client, the BSS
 must extract an authenticated ID and pass it to a Policy Decision Point (PDP)
 to authorize the request (y3).<br/><br/> 
@@ -196,10 +193,18 @@ bandwidth used by the application is over any limit, the BSS must determine
 whether to enforce the relevant policy (y3).
 </li><br/>
 
-<li>The total bandwidth consumed by all currently active OSCARS reservations
+<li>The total bandwidth consumed at any link involved in currently active 
+OSCARS reservations
 must be tracked, and if total bandwidth is over the limit, the BSS must
 handle policy enforcement (y1).
 </li><br/>
+
+<li>If there is an outage, the BSS must determine the policy to use, which
+may include limiting new reservations or revising existing reservations
+during that time period.  It may also involve
+making a request to the PSS to remove the previous circuit and set
+the circuit to an alternative path (y3).<br/><br/>
+
 </ul>
 
 <p>The BSS must accept the following client requests, forwarded from the
@@ -321,8 +326,12 @@ A login name and a password are mandatory arguments.  For the interactive
 interface, general OSCARS information should be readily available after login.
 </li><br/>
 
-<li>List the client's user profile 
-(y1):<br/><br/>
+<li>Request information about OSCARS (y1):<br/><br/>
+
+A listing of information about OSCARS must be returned.
+</li><br/>
+
+<li>List the client's user profile (y1):<br/><br/>
 
 A listing must be returned from this request that includes the user's
 unique id, first name, last name, organizational membership, personal
@@ -340,7 +349,6 @@ mandatory.  The user's first name, last name, organizational membership,
 primary email address, and primary phone number are mandatory arguments.
 The user's personal description, secondary email address, and secondary
 phone number are optional arguments.
-
 </li><br/>
 
 <li>Request for an allocation to use in making reservations (y3):<br/><br/>
@@ -351,9 +359,15 @@ TBD.
 <li>List a client's current allocation and usage (y3):<br/><br/>
 
 TBD.
-</li>
+</li><br/>
 
-<p>The following requests require administrator privileges.</p>
+<li>Logout from OSCARS (y1):<br/><br/>
+
+In the interactive interface, the returned page must be the initial login
+page.
+</li><br/>
+
+<p>The following requests require administrator privileges:</p>
 
 <li>List all user accounts (y1):<br/><br/>
 
@@ -383,6 +397,7 @@ The user's unique id is a mandatory argument.
 
 <h4>BSS requests</h4>
 
+<a id="resv">
 <ol>
 <li>Schedule bandwidth reservation:<br/>
 
@@ -398,7 +413,7 @@ flags for the setup of a persistent circuit and a bidirectional path, are
 optional arguments.  A disclaimer must be present on the interactive form 
 indicating that if the transit path across ESnet has more than 
 one ingress point, a full traceroute must be provided to ensure that the 
-requested bandwidth along the actual path is available.</p>
+requested bandwidth along the actual path is available. (y2)</p>
 
 <p>Upon successful reservation setup, a listing must be returned with the
 reservation details (y1).
@@ -432,13 +447,13 @@ An API method or interactive element must be provided to cancel a reservation
 identified by its reservation tag.
 </li><br/>
 
-<li> Modify a reservation the client has made (y1):<br/><br/>
+<li> Modify a reservation the client has made (y2):<br/><br/>
 An API method or interactive element must be provided to modify a reservation 
 identified by its reservation tag.  Modifiable arguments must include the 
 reservation start and end time, and start and destination of the path.
 </li><br/>
 
-<p>The following requests require engineer privileges.</p>
+<p>The following requests require engineer privileges:</p>
 
 <li>List of all reservations (y1):<br/><br/>
 
@@ -458,7 +473,7 @@ Same as the request by a client for the cancellation of that client's
 reservation, except that any reservation from any client may be cancelled.
 </li><br/>
 
-<li>Modify a reservation that any client has made (y1):<br/><br/>
+<li>Modify a reservation that any client has made (y2):<br/><br/>
 
 Same as the request by a client for the modification of that client's 
 reservation, except that any reservation from any client may be modified.
