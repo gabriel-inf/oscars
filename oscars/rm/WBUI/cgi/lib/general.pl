@@ -77,8 +77,8 @@ sub update_page {
 sub output_info {
     my ($unused1, $unused2) = @_;
 
-    print "<p>With the advent of service sensitive applications (such as remote",
-        " controlled experiments, time constrained massive data",
+    print "<div id=\"info_form\"><p>With the advent of service sensitive applications (such as remote",
+	  " controlled experiments, time constrained massive data",
         " transfers video-conferencing, etc.), it has become apparent",
         " that there is a need to augment the services present in",
         " today's ESnet infrastructure.</p>\n",
@@ -94,7 +94,7 @@ sub output_info {
         " deploy a prototype service that enables on-demand provisioning",
         " of guaranteed bandwidth secure circuits within ESnet.</p>\n",
 
-        "<p>To begin using OSCARS, click on one of the notebook tabs.</p>\n";
+        "<p>To begin using OSCARS, click on one of the notebook tabs.</p></div>\n";
 }
 ######
 
