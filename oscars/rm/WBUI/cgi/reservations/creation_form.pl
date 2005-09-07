@@ -50,9 +50,9 @@ sub print_reservation_form {
     print     "<th>Bandwidth (Mbps)</th>";
     print   "</tr>\n";
     print   "<tr>";
-    print     '<td bgcolor="00cc44"><input type="text" name="src_address" size="30"></input></td>';
-    print     '<td bgcolor="00cc44"><input type="text" name="dst_address" size="30"></input></td>';
-    print     '<td bgcolor="00cc44"><input type="text" name="reservation_bandwidth" size="18"></input></td>';
+    print     '<td class="required"><input type="text" name="src_address" size="30"></input></td>';
+    print     '<td class="required"><input type="text" name="dst_address" size="30"></input></td>';
+    print     '<td class="required"><input type="text" name="reservation_bandwidth" size="18"></input></td>';
     print   "</tr>\n";
     print   "<tr>";
     print     "<td>(Host name or IP address)</td>";
@@ -142,7 +142,7 @@ sub print_reservation_form {
     }
     else { print "<th> </th>"; }
     print   "</tr>\n";
-    print   '<tr class="alignright">', "\n";
+    print   "<tr>\n";
     print     "<td>";
     print       '<input type="text" name="start_year" size="4" maxlength="4">';
     print     "</input></td>";
@@ -169,7 +169,7 @@ sub print_reservation_form {
     }
     print     "</input></td>\n";
     print   "</tr>\n";
-    print   "<tr class=\"alignright\" id=\"get_time_settings_example\">\n";
+    print   "<tr id=\"get_time_settings_example\">\n";
     print     "<td colspan=\"8\"> </td>";
     print   "</tr>\n";
     print   "<tr>\n";
@@ -192,7 +192,7 @@ sub print_reservation_form {
     print   "<td></td>\n";
     print   "</tr>\n";
     print   "<tr>\n";
-    print     '<td bgcolor="00cc44"><textarea name="reservation_description" rows="2" cols="72"> </textarea></td>', "\n";
+    print     '<td class="required"><textarea name="reservation_description" rows="2" cols="72"> </textarea></td>', "\n";
 
     print   "</tr>\n";
     print "</table>\n";

@@ -16,7 +16,7 @@ sub print_reservation_detail {
     my( $form_params, $results, $msg, $auth, $starting_page ) = @_;
 
     my $row = @{$results->{rows}}[0];
-    my $even = 0;
+    my $ctr = 0;
 
     print "<xml>";
     print "<msg>$msg</msg>";
@@ -24,33 +24,24 @@ sub print_reservation_detail {
 
     print "<p><strong>Reservation Details</strong></p>\n";
 
-    print '<table cellspacing="0" width="90%" id="reservationlist">', "\n";
+    print '<table width="90%" id="reservationlist">', "\n";
 
-    print   "<tr class=\"odd\">";
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Tag</td><td>$row->{reservation_tag}</td></tr>\n"; 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>User</td><td>$form_params->{user_dn}</td></tr>\n"; 
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print   "<td>Description</td>";
     print   "<td>", $row->{reservation_description}, "</td>";
     print "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print  "<td>Start time</td><td>";
     print     "$row->{reservation_start_time}";
     print   "</td></tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print  "<td>End time</td><td>";
     if ($row->{reservation_end_time} ne '2039-01-01 00:00:00') {
         print "$row->{reservation_end_time}";
@@ -58,50 +49,37 @@ sub print_reservation_detail {
     else { print "PERSISTENT"; }
     print   "</td></tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print  "<td>Created time</td><td>";
     print   "$row->{reservation_created_time}";
     print   "</td></tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Bandwidth</td>";
     print     "<td>", $row->{reservation_bandwidth}, "</td>";
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
+    $ctr = start_row($ctr);
     print     "<td>Burst limit</td>";
     print     "<td>", $row->{reservation_burst_limit}, "</td>";
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Status</td>";
     print     "<td>", $row->{reservation_status}, "</td>";
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Source</td>";
     print     "<td>", $row->{src_address}, "</td>";
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Destination</td>";
     print     "<td>", $row->{dst_address}, "</td>";
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Source port</td>";
     if ($row->{reservation_src_port}) {
         print "<td>", $row->{reservation_src_port}, "</td>";
@@ -109,9 +87,7 @@ sub print_reservation_detail {
     else { print "<td>DEFAULT</td>"; }
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Destination port</td>";
     if ($row->{reservation_dst_port}) {
         print "<td>", $row->{reservation_dst_port}, "</td>";
@@ -119,9 +95,7 @@ sub print_reservation_detail {
     else { print "<td>DEFAULT</td>"; }
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>Protocol</td>";
     if ($row->{reservation_protocol}) {
         print "<td>", $row->{reservation_protocol}, "</td>";
@@ -129,9 +103,7 @@ sub print_reservation_detail {
     else { print "<td>DEFAULT</td>"; }
     print   "</tr>\n";
 
-    if ($even) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    $even = !$even;
+    $ctr = start_row($ctr);
     print     "<td>DSCP</td>";
     if ($row->{reservation_dscp}) {
         print "<td>", $row->{reservation_dscp}, "</td>";
@@ -140,44 +112,32 @@ sub print_reservation_detail {
     print   "</tr>\n";
 
     if ( $auth->authorized($form_params->{user_level}, "engr") ) {
-        if ($even) { print "<tr class=\"even\">"; }
-        else { print "<tr class=\"odd\">"; }
-        $even = !$even;
+        $ctr = start_row($ctr);
         print   "<td>Class</td>";
         print   "<td>", $row->{reservation_class}, "</td>";
         print "</tr>\n";
 
-        if ($even) { print "<tr class=\"even\">"; }
-        else { print "<tr class=\"odd\">"; }
-        $even = !$even;
+        $ctr = start_row($ctr);
         print   "<td>Ingress router</td>";
         print   "<td>", $row->{ingress_router_name}, "</td>";
         print "</tr>\n";
 
-        if ($even) { print "<tr class=\"even\">"; }
-        else { print "<tr class=\"odd\">"; }
-        $even = !$even;
+        $ctr = start_row($ctr);
         print   "<td>Ingress loopback</td>";
         print   "<td>", $row->{ingress_loopback}, "</td>";
         print "</tr>\n";
 
-        if ($even) { print "<tr class=\"even\">"; }
-        else { print "<tr class=\"odd\">"; }
-        $even = !$even;
+        $ctr = start_row($ctr);
         print   "<td>Egress router</td>";
         print   "<td>", $row->{egress_router_name}, "</td>";
         print "</tr>\n";
 
-        if ($even) { print "<tr class=\"even\">"; }
-        else { print "<tr class=\"odd\">"; }
-        $even = !$even;
+        $ctr = start_row($ctr);
         print   "<td>Egress loopback</td>";
         print   "<td>", $row->{egress_loopback}, "</td>";
         print "</tr>\n";
 
-        if ($even) { print "<tr class=\"even\">"; }
-        else { print "<tr class=\"odd\">"; }
-        $even = !$even;
+        $ctr = start_row($ctr);
         print   "<td>Routers in path</td>";
         print   "<td>";
         for $_ (@{$row->{reservation_path}}) {
@@ -193,9 +153,7 @@ sub print_reservation_detail {
 
     if (($row->{reservation_status} eq 'pending') ||
         ($row->{reservation_status} eq 'active')) {
-        if ($even) { print "<tr class=\"even\">"; }
-        else { print "<tr class=\"odd\">"; }
-        $even = !$even;
+        $ctr = start_row($ctr);
         print "<td>Action: </td>";
         print "<td>\n";
         print "<a href=\"#\"";
@@ -230,6 +188,22 @@ sub print_reservation_detail {
     print  "</xml>\n";
 }
 ######
+
+##############################################################################
+# start_row:  prints out tr with class depending on input counter
+#
+# In:  counter
+# Out: incremented counter
+#
+sub start_row {
+    my ($ctr) = @_;
+   
+    if (($ctr % 2) == 0) { print "<tr class=\"even\">"; }
+    else { print "<tr class=\"odd\">"; }
+    return ($ctr + 1);
+}
+######
+
 
 ######
 1;
