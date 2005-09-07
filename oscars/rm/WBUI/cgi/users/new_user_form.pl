@@ -15,7 +15,7 @@ if ( !$form_params ) { exit; }
 
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
-print "<div id=\"account_ui\">\n";
+print "<div id=\"zebratable_ui\">\n";
 if ($auth->authorized($form_params->{user_level}, "admin")) {
     $form_params->{admin_dn} = $form_params->{user_dn};
     $form_params->{method} = 'new_user_form';

@@ -16,9 +16,9 @@ use Data::Dumper;
 sub print_profile {
     my( $results, $form_params, $starting_page ) = @_;
 
+    my $ctr = 0;
     my $row = $results->{row};
 
-    print STDERR Dumper($form_params);
     if ($form_params->{method} ne 'new_user_form') {
         print "<h3>Editing profile for user: $form_params->{user_dn}</h3>\n";
     }
@@ -28,7 +28,7 @@ sub print_profile {
         print "<p>The <strong>Admin Password</strong> is your password";
         print " (for <strong>$form_params->{user_dn}</strong>).</p>\n";
     }
-    print "<p>Required fields are marked with an <span class=\"requiredmark\">*</span></p>\n"; 
+    print "<p>Required fields are outlined in green.</p>\n"; 
     print "<form method=\"post\" action=\"\"";
     if ($form_params->{method} ne 'new_user_form') {
         print " onsubmit=\"return submit_form(this, 'set_profile', "; 
@@ -40,70 +40,83 @@ sub print_profile {
         print "<input type=\"hidden\" name=\"admin_dn\" value=\"$form_params->{user_dn}\"></input>\n";
     }
     print "<table>";
-    print_dn_fields($form_params);
-    print_password_fields($form_params);
+    $ctr = print_dn_fields($form_params, $ctr);
+    $ctr = print_password_fields($form_params, $ctr);
     if ($form_params->{admin_dn}) {
-        print "<tr>",
-              "<th><span class=\"requiredmark\">*</span> User Level</th>",
-              "<td><input type=\"text\" name=\"user_level\" size=\"20\"";
+        $ctr = start_row($ctr);
+        print "<td>User Level</td>",
+              "<td><input class=\"required\" type=\"text\" name=\"user_level\" size=\"40\"";
         if (($form_params->{method} ne 'new_user_form') && (defined($form_params->{user_level}))) {
             print " value=\"$form_params->{user_level}\"";
         }
-        print "   ></input></td></tr>\n";
+        print "></input></td></tr>\n";
     }
-    print "</table>\n<table><tr>",
-        "  <th><span class=\"requiredmark\">*</span> First Name</th>",
-        "  <td><input type=\"text\" name=\"user_first_name\" size=\"20\"";
+
+    $ctr = start_row($ctr);
+    print "<td>First Name</td>",
+        "<td><input class=\"required\" type=\"text\" name=\"user_first_name\" size=\"40\"";
     if (defined($row->{user_first_name})) {
         print " value=\"$row->{user_first_name}\"";
     }
-    print "></input></td></tr>\n<tr>",
-        "  <th><span class=\"requiredmark\">*</span> Last Name</th>",
-        "  <td><input type=\"text\" name=\"user_last_name\" size=\"20\"";
+    print "></input></td></tr>\n";
+
+    $ctr = start_row($ctr);
+    print "<td>Last Name</td>",
+          "<td><input class=\"required\" type=\"text\" name=\"user_last_name\" size=\"40\"";
     if (defined($row->{user_last_name})) {
         print " value=\"$row->{user_last_name}\"";
     }
-    print "></input></td></tr>\n<tr>",
-	  "  <th><span class=\"requiredmark\">*</span> Organization</th>",
-	  "  <td><input type=\"text\" name=\"institution\" size=\"40\"";
+    print "></input></td></tr>\n";
+
+    $ctr = start_row($ctr);
+    print "<td>Organization</td>",
+	  "<td><input class=\"required\" type=\"text\" name=\"institution\" size=\"40\"";
     if (defined($row->{institution})) {
         print " value=\"$row->{institution}\"";
     }
-    print "></input></td></tr><tr>",
-        "  <th valign=\"top\">Personal Description</th>",
-        "  <td><textarea name=\"user_description\" rows=\"3\" cols=\"34\">";
+    print "></input></td></tr>";
+
+    $ctr = start_row($ctr);
+    print "<td valign=\"top\">Personal Description</td>",
+        "<td><textarea name=\"user_description\" rows=\"3\" cols=\"50\">";
     if (defined($row->{user_description})) {
          print "$row->{user_description}";
     }
-    print "  </textarea></td></tr>\n</table>\n";
+    print "</textarea></td></tr>\n";
   
-    print "<table><tr>",
-        "  <th><span class=\"requiredmark\">*</span> E-mail (Primary)</th>",
-        "  <td><input type=\"text\" name=\"user_email_primary\" size=\"40\"";
+    $ctr = start_row($ctr);
+    print "<td>E-mail (Primary)</td>",
+          "<td><input class=\"required\" type=\"text\" name=\"user_email_primary\" size=\"40\"";
     if (defined($row->{user_email_primary})) {
         print " value=\"$row->{user_email_primary}\"";
     }
-    print "></input></td></tr>\n<tr>",
-        "  <th>E-mail (Secondary)</th>",
-        "  <td><input type=\"text\" name=\"user_email_secondary\" size=\"40\"";
+    print "></input></td></tr>\n";
+
+    $ctr = start_row($ctr);
+    print "<td>E-mail (Secondary)</td>",
+          "<td><input type=\"text\" name=\"user_email_secondary\" size=\"40\"";
     if (defined($row->{user_email_secondary})) {
         print " value=\"$row->{user_email_secondary}\"";
     }
-    print "></input></td></tr><tr>\n",
-        "  <th><span class=\"requiredmark\">*</span> Phone Number (Primary)</th>",
-        "  <td><input type=\"text\" name=\"user_phone_primary\" size=\"40\"";
+    print "></input></td></tr>\n";
+
+    $ctr = start_row($ctr);
+    print "<td>Phone Number (Primary)</td>",
+          "<td><input class=\"required\" type=\"text\" name=\"user_phone_primary\" size=\"40\"";
     if (defined($row->{user_phone_primary})) { 
         print " value=\"$row->{user_phone_primary}\"";
     }
     print "></input></td></tr>\n";
 
-    print "<tr>",
-        "  <th>Phone Number (Secondary)</th>",
-        "  <td><input type=\"text\" name=\"user_phone_secondary\" size=\"40\"";
+    $ctr = start_row($ctr);
+    print "<td>Phone Number (Secondary)</td>",
+          "<td><input type=\"text\" name=\"user_phone_secondary\" size=\"40\"";
     if (defined($row->{user_phone_secondary})) {
         print " value=\"$row->{user_phone_secondary}\"";
     }
-    print "></input></td></tr>\n</table>\n";
+    print "></input></td></tr>\n";
+
+    print "</table>\n";
   
     print "<p>Please check your contact information carefully before submitting the form.</p>";
 
@@ -119,19 +132,20 @@ sub print_profile {
 # print_dn_fields:  print rows having to do with user's distinguished name
 #
 sub print_dn_fields {
-    my( $form_params ) = @_;
+    my( $form_params, $ctr ) = @_;
 
-    print "<tr>";
+    $ctr = start_row($ctr);
     if ($form_params->{method} eq 'new_user_form') {
-        print "  <th><span class=\"requiredmark\">*</span> Distinguished Name</th>";
-        print "  <td><input type=\"text\" name=\"user_dn\" size=\"20\"";
+        print "  <td>Distinguished Name</td>";
+        print "  <td><input type=\"text\" name=\"user_dn\" size=\"40\"";
         print "></input>";
     }
     else {
-        print "  <th>Distinguished Name</th>",
+        print "  <td>Distinguished Name</td>",
               "  <td>$form_params->{user_dn}";
     }
     print "</td></tr>\n";
+    return $ctr;
 }
 ######
 
@@ -139,29 +153,67 @@ sub print_dn_fields {
 # print_password_fields:  print rows having to do with passwords
 #
 sub print_password_fields {
-    my( $form_params ) = @_;
+    my( $form_params, $ctr ) = @_;
 
-    print "<tr><th>";
-    if ($form_params->{method} eq 'new_user_form') {
-        print "<span class=\"requiredmark\">*</span> Admin Password</th>\n",
-              "<td><input",
-              " type=\"password\" name=\"user_password\" size=\"20\">";
-        print "</input></td></tr>\n";
-        print "<tr>\n";
-        print "<th><span class=\"requiredmark\">*</span> New User Password (Enter twice)</th>\n";
-    }
+    my $admin_form = 0;
+
+    # TODO:  FIX
+    if ($form_params->{method} eq 'new_user_form') { $admin_form = 1; }
+
+    $ctr = start_row($ctr);
+    print "<td> ";
+    if ($admin_form) { print " Admin Password"; }
+    else { print " Current Password"; }
+    print "</td>";
+    print "<td>";
+    print "<input class=\"required\" type=\"password\" name=\"user_password\" size=\"40\">";
+    print "</input>";
+    print "</td>";
+    print "</tr>\n";
+
+    $ctr = start_row($ctr);
+    print "<td>";
+    if ($admin_form) { print "New User Password"; }
     else {
-        print "<span class=\"requiredmark\">*</span> Current Password</th>",
-            "<td><input",
-            " type=\"password\" name=\"user_password\" size=\"20\">",
-            "</input></td></tr>\n<tr>",
-            "<th>New Password (Enter twice; Leave blank to stay the same)</th>";
+        print "New Password (Enter twice;";
     }
-    print "<td><input type=\"password\" name=\"password_new_once\" size=\"20\"";
-    print " value=\"\" style=\"margin-bottom: .3em\"></input>",
-       "       <input type=\"password\" name=\"password_new_twice\" size=\"20\" value=\"\">",
-       "</input></td></tr>\n";
+    print "</td>";
+    print "<td>";
+    print "<input type=\"password\" name=\"password_new_once\" size=\"40\">";
+    print "</input>";
+    print "</td>";
+    print "</tr>\n";
+
+    $ctr = start_row($ctr);
+    print "<td> ";
+    if ($admin_form) { print " (Enter twice)"; }
+    else { print " Leave blank to stay the same)"; }
+    print "</td>";
+    print "<td>";
+    print "<input type=\"password\" name=\"password_new_twice\" size=\"40\">";
+    print "</input>";
+    print "</td>";
+    print "</tr>\n";
+    return $ctr;
 }
 ######
 
+##############################################################################
+# start_row:  prints out tr with class depending on input counter
+#             currently same as one in reservations/print_detail.pl
+#
+# In:  counter
+# Out: incremented counter
+#
+sub start_row {
+    my ($ctr) = @_;
+   
+    if (($ctr % 2) == 0) { print "<tr class=\"even\">"; }
+    else { print "<tr class=\"odd\">"; }
+    return ($ctr + 1);
+}
+######
+
+
+######
 1;
