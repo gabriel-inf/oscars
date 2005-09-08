@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-# userlist_form.pl:  User List page
-# Last modified: August 26, 2005
+# acctlist_form.pl:  User List page
+# Last modified: September 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -36,7 +36,7 @@ sub print_userlist
 {
     my ( $results, $starting_page ) = @_;
     my ( $rowsref, $row );
-    my $even = 0;
+    my $ctr = 0;
 
     $rowsref = $results->{rows};
     print "<p>Click on the user's last name to view detailed user information.</p>";
@@ -52,15 +52,9 @@ sub print_userlist
 
     print "<tbody>\n";
     for $row (@$rowsref) {
-        if ($even) {
-            print " <tr class=\"even\">";
-        }
-        else {
-            print " <tr class=\"odd\">";
-        }
+        $ctr = start_row($ctr);
         print_row($row, $starting_page);
         print " </tr>\n";
-        $even = !$even;
     }
     print "</tbody></table>\n";
 }
