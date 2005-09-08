@@ -8,6 +8,8 @@
 
 use Data::Dumper;
 
+require '../lib/general.pl';
+
 
 ##############################################################################
 # print_profile:  print user profile form, and resulsts retrieved via a SOAP
@@ -197,23 +199,6 @@ sub print_password_fields {
     return $ctr;
 }
 ######
-
-##############################################################################
-# start_row:  prints out tr with class depending on input counter
-#             currently same as one in reservations/print_detail.pl
-#
-# In:  counter
-# Out: incremented counter
-#
-sub start_row {
-    my ($ctr) = @_;
-   
-    if (($ctr % 2) == 0) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    return ($ctr + 1);
-}
-######
-
 
 ######
 1;
