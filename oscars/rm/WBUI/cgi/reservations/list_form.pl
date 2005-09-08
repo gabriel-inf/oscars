@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: August 26, 2005
+# Last modified: September 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -36,7 +36,7 @@ sub print_reservations {
 
     my ( $rowsref, $row );
 
-    my $even = 0;
+    my $ctr = 0;
     $rowsref = $results->{rows};
 
     print "<p>Click on a column header to sort by that column. ";
@@ -67,15 +67,9 @@ sub print_reservations {
 
     print "<tbody>\n";
     for $row (@$rowsref) {
-        if ($even) { 
-            print "<tr class=\"even\">\n";
-        }
-        else {
-            print "<tr class=\"odd\">\n";
-        }
+        $ctr = start_row($ctr);
         print_row($row, $form_params->{user_level}, $starting_page);
         print "</tr>\n";
-        $even = !$even;
     }
     print "</tbody>\n";
     print "</table>\n\n";

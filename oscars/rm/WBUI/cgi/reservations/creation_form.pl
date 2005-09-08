@@ -39,6 +39,9 @@ sub print_reservation_form {
     print '<input type="hidden" name="reservation_end_time"></input>', "\n";
     print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
 
+    print '<input type="submit" value="Reserve bandwidth"></input>', "\n";
+    print '<input type="reset" value="Reset form fields"></input>', "\n";
+
     print "<p>Required inputs are bordered in green. ",
           "Ranges or types of valid entries are given in parentheses below the ",
           " input fields.</p>\n";
@@ -50,9 +53,9 @@ sub print_reservation_form {
     print     "<th>Bandwidth (Mbps)</th>";
     print   "</tr>\n";
     print   "<tr>";
-    print     '<td class="required"><input type="text" name="src_address" size="30"></input></td>';
-    print     '<td class="required"><input type="text" name="dst_address" size="30"></input></td>';
-    print     '<td class="required"><input type="text" name="reservation_bandwidth" size="18"></input></td>';
+    print     '<td class="required"><input type="text" name="src_address" size="29"></input></td>';
+    print     '<td class="required"><input type="text" name="dst_address" size="29"></input></td>';
+    print     '<td class="required"><input type="text" name="reservation_bandwidth" maxlength="7" size="14"></input></td>';
     print   "</tr>\n";
     print   "<tr>";
     print     "<td>(Host name or IP address)</td>";
@@ -61,13 +64,85 @@ sub print_reservation_form {
     print   "</tr>\n";
     print "</table>\n";
 
-    print "<table cols=\"4\">";
-    print   "<tr>";
-    print     "<td colspan=\"4\">";
-    print     "<strong>DSCP</strong> sets the differentiated services ";
-    print     "code point.";
-    print     "</td>";
+    print "<p>Indicate the starting date and time, and the duration in hours, ";
+    print "of your reservation. ";
+    print "Fields left blank will default to the examples ";
+    print "below the input fields.  The default time zone is the local time.  ";
+    if ($auth->authorized($form_params->{user_level}, "engr")) {
+        print "Checking the <strong>Persistent</strong> box makes ";
+        print "a reservation's duration indefinite, overriding ";
+        print "the duration field.";
+    }
+    print "</p>\n";
+
+    print "<table>\n";
+    print   "<tr>\n";
+    print     "<th>Year</th>";
+    print     "<th>Month</th>";
+    print     "<th>Date</th>";
+    print     "<th>Hour</th>";
+    print     "<th>Minute</th>";
+    print     "<th>UTC offset</th>";
+    print     "<th>Duration (Hours)</th>";
+    if ($auth->authorized($form_params->{user_level}, "engr")) {
+        print "<th>Persistent</th>";
+    }
+    else { print "<th> </th>"; }
     print   "</tr>\n";
+    print   "<tr>\n";
+    print     "<td>";
+    print       '<input type="text" name="start_year" size="6" maxlength="4">';
+    print     "</input></td>";
+    print     "<td>";
+    print       '<input type="text" name="start_month" size="6" maxlength="2">';
+    print     "</input></td>";
+    print     "<td>";
+    print       '<input type="text" name="start_date" size="6" maxlength="2">';
+    print       "</input></td>";
+    print     "<td>";
+    print       '<input type="text" name="start_hour" size="6" maxlength="2">';
+    print     "</input></td>";
+    print     "<td>";
+    print       '<input type="text" name="start_minute" size="6" maxlength="2">';
+    print     "</input></td>";
+    print     "<td id=\"get_timezone_options\"> </td>\n";
+    print     "<td>\n";
+    print       '<input type="text" name="duration_hour" size="10" ',
+                     'maxlength="16">';
+    print     "</input></td>";
+    print     "<td> ";
+    if ($auth->authorized($form_params->{user_level}, "engr")) {
+        print '  <input type="checkbox" name="persistent" value="0">';
+    }
+    print     "</input></td>\n";
+    print   "</tr>\n";
+    print   "<tr id=\"get_time_settings_example\">\n";
+    print     "<td colspan=\"8\"> </td>";
+    print   "</tr>\n";
+    print   "<tr>\n";
+    print     "<td> </td>\n";
+    print     "<td>(1-12)</td>\n";
+    print     "<td>(1-31)</td>\n";
+    print     "<td>(0-23)</td>\n";
+    print     "<td>(0-59)</td>\n";
+    print     "<td> </td>\n";
+    print     "<td>(0.01-INF)</td>\n";
+    print     "<td> </td>\n";
+    print   "</tr>\n";
+    print "</table>\n";
+
+    print     "<p>Please let us know the purpose of making this reservation.</p>\n";
+    print '<table cols="1">', "\n";
+    print   "<tr>\n";
+    print     '<td class="required"><textarea name="reservation_description" rows="2" cols="98"> </textarea></td>', "\n";
+
+    print   "</tr>\n";
+    print "</table>\n";
+
+    print "<p>The following are optional fields.  <strong>DSCP</strong> sets";
+    print " the differentiated services code point.</p>";
+
+    print "<table cols=\"4\">";
     print   "<tr>";
     print     "<td colspan=\"4\"> </td>";
     print   "</tr>\n";
@@ -79,11 +154,11 @@ sub print_reservation_form {
     print   "</tr>\n";
     print   "  <tr>";
     print     "<td><input type=\"text\" name=\"reservation_src_port\"";
-    print           " maxlength=\"5\"></input></td>";
-    print     "<td><input type=\"text\" name=\"reservation_dst_port\" maxlength=\"5\"></input></td>";
-    print     "<td><input type=\"text\" name=\"reservation_protocol\"></input></td>";
+    print           " maxlength=\"5\" size = \"17\"></input></td>";
+    print     "<td><input type=\"text\" name=\"reservation_dst_port\" maxlength=\"5\" size=\"17\"></input></td>";
+    print     "<td><input type=\"text\" name=\"reservation_protocol\" size=\"17\"></input></td>";
     print     "<td><input type=\"text\" name=\"reservation_dscp\"";
-    print           " maxlength=\"2\"></input></td>";
+    print           " maxlength=\"2\" size=\"17\"></input></td>";
     print    "</tr>\n";
     print    "<tr>";
     print      "<td>(1024-65535)</td>";
@@ -116,89 +191,6 @@ sub print_reservation_form {
         print   "</tr>\n";
         print "</table>\n";
     }
-
-    print "<p>Indicate the starting date and time, and the duration in hours, ";
-    print "of your reservation. ";
-    print "Fields left blank will default to the examples ";
-    print "below the input fields.  The default time zone is the local time.  ";
-    if ($auth->authorized($form_params->{user_level}, "engr")) {
-        print "Checking the <strong>Persistent</strong> box makes ";
-        print "a reservation's duration indefinite, overriding ";
-        print "the duration field.";
-    }
-    print "</p>\n";
-
-    print "<table>\n";
-    print   "<tr>\n";
-    print     "<th>Year</th>";
-    print     "<th>Month</th>";
-    print     "<th>Date</th>";
-    print     "<th>Hour</th>";
-    print     "<th>Minute</th>";
-    print     "<th>UTC offset</th>";
-    print     "<th>Duration (Hours)</th>";
-    if ($auth->authorized($form_params->{user_level}, "engr")) {
-        print "<th>Persistent</th>";
-    }
-    else { print "<th> </th>"; }
-    print   "</tr>\n";
-    print   "<tr>\n";
-    print     "<td>";
-    print       '<input type="text" name="start_year" size="4" maxlength="4">';
-    print     "</input></td>";
-    print     "<td>";
-    print       '<input type="text" name="start_month" size="4" maxlength="2">';
-    print     "</input></td>";
-    print     "<td>";
-    print       '<input type="text" name="start_date" size="4" maxlength="2">';
-    print       "</input></td>";
-    print     "<td>";
-    print       '<input type="text" name="start_hour" size="4" maxlength="2">';
-    print     "</input></td>";
-    print     "<td>";
-    print       '<input type="text" name="start_minute" size="4" maxlength="2">';
-    print     "</input></td>";
-    print     "<td id=\"get_timezone_options\"> </td>\n";
-    print     "<td>\n";
-    print       '<input type="text" name="duration_hour" size="16" ',
-                     'maxlength="16">';
-    print     "</input></td>";
-    print     "<td> ";
-    if ($auth->authorized($form_params->{user_level}, "engr")) {
-        print '  <input type="checkbox" name="persistent" value="0">';
-    }
-    print     "</input></td>\n";
-    print   "</tr>\n";
-    print   "<tr id=\"get_time_settings_example\">\n";
-    print     "<td colspan=\"8\"> </td>";
-    print   "</tr>\n";
-    print   "<tr>\n";
-    print     "<td> </td>\n";
-    print     "<td>(1-12)</td>\n";
-    print     "<td>(1-31)</td>\n";
-    print     "<td>(0-23)</td>\n";
-    print     "<td>(0-59)</td>\n";
-    print     "<td> </td>\n";
-    print     "<td>(0.01-INF)</td>\n";
-    print     "<td> </td>\n";
-    print   "</tr>\n";
-    print "</table>\n";
-
-    print '<table cols="1">', "\n";
-    print   "<tr>\n";
-    print     "<td>Please let us know the purpose of making this reservation.</td>\n";
-    print   "</tr>\n";
-    print   "<tr>\n";
-    print   "<td></td>\n";
-    print   "</tr>\n";
-    print   "<tr>\n";
-    print     '<td class="required"><textarea name="reservation_description" rows="2" cols="72"> </textarea></td>', "\n";
-
-    print   "</tr>\n";
-    print "</table>\n";
-
-    print '<input type="submit" value="Reserve bandwidth"></input>', "\n";
-    print '<input type="reset" value="Reset form fields"></input>', "\n";
 
     print "</form>\n";
 }

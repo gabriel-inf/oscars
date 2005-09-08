@@ -1,10 +1,11 @@
 #!/usr/bin/perl
 
-# details.pl:  Prints the details of a reservation.
-# Last modified: August 26, 2005
+# print_details.pl:  Prints the details of a reservation.
+# Last modified: September 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
+require '../lib/general.pl';
 
 ##############################################################################
 # print_reservation_detail:  print details of reservation returned by SOAP
@@ -188,22 +189,6 @@ sub print_reservation_detail {
     print  "</xml>\n";
 }
 ######
-
-##############################################################################
-# start_row:  prints out tr with class depending on input counter
-#
-# In:  counter
-# Out: incremented counter
-#
-sub start_row {
-    my ($ctr) = @_;
-   
-    if (($ctr % 2) == 0) { print "<tr class=\"even\">"; }
-    else { print "<tr class=\"odd\">"; }
-    return ($ctr + 1);
-}
-######
-
 
 ######
 1;
