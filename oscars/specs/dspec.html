@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 ESnet<br/><br/>
 
-September 6, 2005</br>
+September 8, 2005</br>
 
 <hr>
 
@@ -27,11 +27,12 @@ Specifications have been updated based on lessons learned from the
 initial year-one implementation.</p>
 
 <p>Design specifications take into account the fact that security is absolutely 
-essential.  The impact of an abuse could be very
-large.  A DoS attack could prevent reservations from being processed.  If the
-service is compromised, the WAN may be disabled.  During the following
+essential, for reasons stated in the 
+<a href="https://oscars.es.net/specs/fspec.html#security_r">requirements</a>.
+During the following
 discussion of the RM's components, security implications are postponed
-until the final section.</p>
+until the final
+<a href="https://oscars.es.net/specs/dspec.html#security">section</a>.</p>
 
 <br/>
 
@@ -73,10 +74,12 @@ definitions of request and response messages. (y2)</p>
 
 <p>The MySQL database server is used.  The database organization (tables,
 fields, etc.) used the BRUW database as a starting point.  Securing
-the database server is discussed in the final section.</p>
+the database server is discussed in the final 
+<a href="https://oscars.es.net/specs/dspec.html#security">section</a>.</p>
 
 <br/>
 
+<a id="AAAS">
 <h3>AAAS</h3>
 
 <p>The AAAS consists of an Apache2 Web server, a Perl SOAP::Lite server, 
@@ -93,6 +96,7 @@ scripts to send messages to the AAAS front end (y2).</p>
 
 <br/>
 
+<a id="BSS">
 <h3>BSS</h3>
 
 <p>The BSS consists of a Perl SOAP::Lite server, a MySQL database server, and 
@@ -110,7 +114,8 @@ to the "Make Reservation" page by clicking on the tab of that name. (y1)
 </li><br/>
 
 <li>In the interactive interface,  the user fills in mandatory and any 
-optional fields listed in the <a href="fspec.html#resv">requirements</a>, and 
+optional fields listed in the 
+<a href="https://oscars.es.net/specs/fspec.html#resv">requirements</a>, and 
 then 
 submits the reservation request.  At that point the CGI script makes
 a SOAP call
@@ -150,9 +155,6 @@ reservation has expired, at which point a call is made to the PSS library to
 tear down the LSP. (y1)
 </li><br/>
 
-<li>User notifications of successful reservation creation, and
-LSP setup and tear down (see PSS section below) are done via email (y1).
-</li>
 </ol>
 
 <p>In the future, the BSS will use an open-source library (TBD)
@@ -161,6 +163,7 @@ databse triggers to invoke LSP set up and tear down (y2).</p>
 
 <br/>
 
+<a id="PSS">
 <h3>PSS</h3>
 
 <p>The PSS uses 
@@ -261,6 +264,7 @@ or modify any client's reservation.
 
 </ul>
 
+<a id="security">
 <h3>Security</h3>
 
 <p>The Apache2 Web server is used, and only accepts connections
@@ -279,7 +283,14 @@ associated database are only accessible via the AAAS front end.</p>
 accepts requests from clients running on the same machine (i.e. the front end).
 MySQL is configured with the --skip-networking option to ensure this. (y1)</p>
 
-<p>The RM will use ESnet production tools to monitor usage (y2).</p>
+<p>The RM will use ESnet production tools to monitor usage (y2).
+Notifications of successful reservation creation, and
+LSP setup and tear down (see PSS 
+<a href="https://oscars.es.net/specs/dspec.html#PSS">section</a>
+) are done via email to the
+appropriate ESnet personnel (y1).
+</li>
+
 
 
 </body>

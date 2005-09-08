@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 ESnet<br/><br/>
 
-September 6, 2005<br/>
+September 8, 2005<br/>
 
 <hr>
 
@@ -25,14 +25,19 @@ On-Demand Secure Circuits and Advance Reservation System.  The focus of
 OSCARS is on facilitating bandwidth-intensive large scientific projects.</p>
 
 <p>This document lists the requirements for the reservation manager (RM)
-component of OSCARS, updated for year 2 of the project.  The RM's 
-responsibilities include setting up user accounts, setting up and tracking 
-reservations and circuits, handling security and monitoring, and accounting.</p>
-
-<p>If a parenthesized indicator is given following a requirement's description,
+component of OSCARS, updated for year 2 of the project.  The requirements for 
+the RM include setting up user accounts, setting up and tracking 
+reservations and circuits, handling security and monitoring, and accounting.
+(If a parenthesized indicator is given following a requirement's description,
 it indicates the year of the project during which it is scheduled or was
-completed.
-</p>
+completed.)</p>
+
+<a id="security_r">
+<p>Security is absolutely essential.  The impact of an abuse could be very
+large.  A DoS attack could prevent reservations from being processed.  If the
+service is compromised, the WAN may be disabled.  Discussion of the security
+implications of requirements are postponed until the final
+<a href="https://oscars.es.net/specs/fspec.html#security">section</a>.</p>
 
 <p>Current requirements are largely taken from Chin Guok's Powerpoint
 presentations, the OSCARS Web page, discussions with QoS/MPLS researchers at 
@@ -65,14 +70,6 @@ proprietary network management systems, as well as in a completely open source
 mode that other organizations can incorporate and use without additional
 licensing.</p>
 
-<h2>Security</h2>
-
-<p>The administration of an end-to-end circuit must conform to security
-models of all entities along that path.</p>
-
-<p>All components of the service must be monitored to ensure that they are
-not being abused.</p>
-
 <br/>
 <hr>
 
@@ -91,9 +88,7 @@ not being abused.</p>
 
 <h3>AAAS</h3>
 
-<p>The AAAS must handle all external requests and enforce security restrictions,
-including user authentication (y1) and authorization (y2),
-and generate usage records for auditing and accounting (y2/y3).
+<p>The AAAS must handle all external requests.
 Request arguments are listed in the user interface section (see below).</p>
 
 <p>User account names must be globally unique.</p>
@@ -243,6 +238,7 @@ The BSS must accept these requests from clients with engineer privileges:</p>
  
 </ol>
 
+<a id="notifications">
 <p>The following notifications must be made to clients,
 and must include the status of a reservation,
 the bandwidth allocated, and the QoS value (y1):</p>
@@ -306,6 +302,10 @@ corresponding to arguments requiring special client privileges (administrator
 and engineer), if the client does not have those privileges.  There must be 
 an area on each entry form for status and error messages (y1), which must be 
 updated after each request.</p>
+
+<p>All parameters must be validated on the client side before sending
+a request to the AAAS, to avoid unnecessary waiting time for the
+client if there is an error.</p>
 
 <p>The following sections list the mandatory and optional arguments for each 
 request, and the results returned, if any.</p>
@@ -395,9 +395,9 @@ The user's unique id is a mandatory argument.
 </li><br/>
 </ol>
 
+<a id="resv">
 <h4>BSS requests</h4>
 
-<a id="resv">
 <ol>
 <li>Schedule bandwidth reservation:<br/>
 
@@ -480,6 +480,32 @@ reservation, except that any reservation from any client may be modified.
 </li><br/>
 
 </ol>
+
+<a id="security">
+<h2>Security</h2>
+
+<p>The administration of an end-to-end circuit must conform to security
+models of all entities along that path.  In particular, stages leading
+towards the eventual rollout
+of the service must follow the guidelines in the ESnet Security Plan.</p>
+
+<p>Access to OSCARS must require authentication and authorization.
+Messages to OSCARS must be signed and encrypted.  All accesses must
+be logged.</p>
+
+<p>The AAAS must handle all external requests and enforce security restrictions,
+including user authentication (y1) and authorization (y2),
+and generate usage records for auditing and accounting (y2/y3).
+
+<p>Request parameters must be validated on the server side,
+whether the client is either the API, or the interactive interface.</p>
+
+<p>All components of the service must be monitored to ensure that they are
+not being abused.  
+<a href="https://oscars.es.net/specs/fspec.html#notifications">Notifications</a> 
+of sensitive operations such as reservation 
+scheduling and LSP setup must be sent to the appropriate ESnet personnel,
+in addition to the client.</p>
 
 
 </body>
