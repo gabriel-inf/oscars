@@ -1,7 +1,7 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: August 24, 2005
+# Last modified: September 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
@@ -97,6 +97,22 @@ sub output_info {
         "<p>To begin using OSCARS, click on one of the notebook tabs.</p></div>\n";
 }
 ######
+
+##############################################################################
+# start_row:  util to print out tr with class depending on input counter
+#
+# In:  counter
+# Out: incremented counter
+#
+sub start_row {
+    my ($ctr) = @_;
+   
+    if (($ctr % 2) == 0) { print "<tr class=\"even\">"; }
+    else { print "<tr class=\"odd\">"; }
+    return ($ctr + 1);
+}
+######
+
 
 # Don't touch the line below
 1;
