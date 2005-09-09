@@ -112,9 +112,9 @@ sub print_reservation_form {
     print     "</input></td>";
     print     "<td> ";
     if ($auth->authorized($form_params->{user_level}, "engr")) {
-        print '  <input type="checkbox" name="persistent" value="0">';
+        print '  <input type="checkbox" name="persistent" value="0"></input>';
     }
-    print     "</input></td>\n";
+    print     "</td>\n";
     print   "</tr>\n";
     print   "<tr id=\"get_time_settings_example\">\n";
     print     "<td colspan=\"8\"> </td>";
