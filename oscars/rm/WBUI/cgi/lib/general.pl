@@ -65,6 +65,9 @@ sub update_page {
     print "$msg\n";
     print "</msg>\n";
     if ($output_func) {
+        print "<user_level>\n";
+        print "$user_level\n";
+        print "</user_level>\n";
         print "<div>\n";
         $output_func->($user_dn, $user_level);
         print "</div>\n";
