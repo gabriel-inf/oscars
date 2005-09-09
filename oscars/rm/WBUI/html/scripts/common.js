@@ -88,12 +88,16 @@ function get_response(xmlhttp, form_name) {
 
     // print initial navigation bar
     if ((form_name == 'login') && returned_divs.length) {
+        var user_level_node = response_dom.getElementsByTagName('user_level');
+        var user_level = user_level_node[0].firstChild.data;
         var nav_node = document.getElementById('nav_div');
-        nav_node.innerHTML = init_navigation_bar('admin');
+        nav_node.innerHTML = init_navigation_bar(user_level);
     }
     else {
-        var tab_node = document.getElementById('info_form');
-        tab_node.className = 'active';
+        var tab_node = document.getElementById(form_name);
+        if (tab_node) {
+            tab_node.className = 'active';
+        }
     }
 
     // get text of status message, if any
@@ -116,9 +120,13 @@ function get_response(xmlhttp, form_name) {
     }
     if (form_name == 'creation_form') {
         var time_node = document.getElementById('get_timezone_options');
-        time_node.innerHTML = get_timezone_options();
-        var time_node = document.getElementById('get_time_settings_example');
-        time_node.innerHTML = get_time_settings_example();
+        if (time_node) {
+            time_node.innerHTML = get_timezone_options();
+        }
+        time_node = document.getElementById('get_time_settings_example');
+        if (time_node) {
+            time_node.innerHTML = get_time_settings_example();
+        }
     }
 }
 
