@@ -7,11 +7,9 @@
 <h3>Year 2 Update (DRAFT)</h3>
 
 <em>David Robertson, Chin Guok</em><br/>
-ESnet<br/><br/>
+<a href="http://www.es.net">ESnet</a><br/><br/>
 
-September 8, 2005<br/>
-
-<hr>
+September 12, 2005<br/>
 
 <h2>Objective</h2>
 
@@ -29,23 +27,30 @@ component of OSCARS, updated for year 2 of the project.  The requirements for
 the RM include setting up user accounts, setting up and tracking 
 reservations and circuits, handling security and monitoring, and accounting.
 (If a parenthesized indicator is given following a requirement's description,
-it indicates the year of the project during which it is scheduled or was
+ it indicates the year of the project during which it is scheduled or was
 completed.)</p>
 
 <a id="security_r">
 <p>Security is absolutely essential.  The impact of an abuse could be very
 large.  A DoS attack could prevent reservations from being processed.  If the
-service is compromised, the WAN may be disabled.  Discussion of the security
-implications of requirements are postponed until the final
-<a href="https://oscars.es.net/specs/fspec.html#security">section</a>.</p>
+service is compromised, and thus the routers it has access to, the WAN may be 
+disabled.  Discussion of the security
+implications of requirements are postponed until the 
+<a href="https://oscars.es.net/specs/fspec.html#security">section</a>
+on security.</p>
 
 <p>Current requirements are largely taken from Chin Guok's Powerpoint
 presentations, the OSCARS Web page, discussions with QoS/MPLS researchers at 
-other DOE labs, Internet2, and GEANT, and from lessons learned from the 
-initial year one implementation.
+other DOE labs, 
+<a href="http://www.internet2.edu">Internet2</a>, 
+and 
+<a href="http://www.geant2.net">G&Eacute;ANT2</a>, 
+and from lessons learned from the initial year one implementation.
+If possible, there may be code sharing/reuse between these researchers
+and ESnet.  
 </p>
 
-<h2>Scope</h2>
+<h3>Scope</h3>
 
 <p>This document covers the requirements for the RM and its
 clients.  The requirements for the other major component of
@@ -56,22 +61,26 @@ circuit using MPLS and RSVP, are listed in the OSCARS
 <p>Specific design decisions are in a companion document,
 the OSCARS RM <a href="dspec.html">design specification.</a></p>
 
-<h2>Use of standards</h2>
+<p>The RM must interoperate with other autonomous domains, to enable 
+reservations where the end-to-end path may traverse several such domains.  In
+particular it must interoperate with Internet2 and G&Eacute;ANT2.  
+Interdomain operation and security issues are discussed in a 
+separate <a href="https://oscars.es.net/specs/id.html">document.</a></p>
+
+<h3>Standards use</h3>
 
 <p>The RM must use existing standards for authorization,
 authentication, encryption, policy, addressing, resource discovery, messaging,
 etc., wherever possible.  The implementation must also attempt to use a minimum
 number of standards/packages, to make installation as easy as possible.</p>
 
-<h2>Modes of operation</h2>
+<h3>Modes of operation</h3>
 
 <p>The manager must be able to run in conjunction with current ESnet
 proprietary network management systems, as well as in a completely open source
 mode that other organizations can incorporate and use without additional
 licensing.</p>
 
-<br/>
-<hr>
 
 <h2>Reservation manager</h2>
 
@@ -81,10 +90,9 @@ licensing.</p>
 <li>An authentication, authorization, and accounting subsystem (AAAS),<br/>
 <li>A bandwidth scheduler subsystem (BSS),<br/>
 <li>A path setup subsystem (PSS), and<br/>
-<li>A client interface (both an interactive interface and an API),<br/>
+<li>A client interface (both an interactive interface and an API),
 </ol>
 
-<br/>
 
 <h3>AAAS</h3>
 
@@ -168,13 +176,13 @@ path(s). (y3)<br/><br/>
 </ul>
 
 <p>The BSS must maintain policies associated with the scheduling and actual
-use of the network, detect any out-of-policy usage, and enforce policies:</p>
+use of the network, detect any out-of-policy usage, and enforce the policies
+that are not handled by network management tools at the router level.
+Enforcement at the router level is not in the scope of this document, but
+information that may be necessary for such enforcement
+should be communicated to the PSS.</p>
 
 <ul>
-<li>Upon receiving a reservation request from a client, the BSS
-must extract an authenticated ID and pass it to a Policy Decision Point (PDP)
-to authorize the request (y3).<br/><br/> 
-
 <li>Policies must be in place to avoid any interference by the OSCARS system
 with production traffic.  These may include those intended to prevent
 monopolization of the OSCARS service (y1), and those dictating pre-emption of 
@@ -272,7 +280,6 @@ change the router configuration on the start and end of the circuit (y1).</p>
 query routers along the path to check for "illegal" active circuits that could
 conflict with bandwidth reservation (y2).</p>
 
-<br/>
 
 <h3>User interface</h3>
 
@@ -288,7 +295,7 @@ automated use of the API (y2).</p>
 <p>The interactive interface must be simple and intuitive.  It must prompt a 
 user for a username/password (y1) or certificate (y2) before allowing any 
 requests.  It must in general operate within the trusted domain of the 
-resource manager.</p>
+reservations manager.</p>
 
 <p>After login, the interactive interface must provide entry forms to gather 
 the information for requests, which may require an additional step of sending 
@@ -314,7 +321,7 @@ request, and the results returned, if any.</p>
 <h4>AAAS requests</h4>
 
 <ol>
-<li>Request by a client for an OSCARS account (y2):<br/><br/>
+<li>Request by a client for an OSCARS account (y2):</br/><br/>
 
 The arguments are the same as those for the request to modify a user's account 
 profile, listed below, except for the absence of the current password.
@@ -392,7 +399,7 @@ profile, listed above, except for the absence of the current password.
 
 The user's unique id is a mandatory argument.
 
-</li><br/>
+</li>
 </ol>
 
 <a id="resv">
@@ -486,27 +493,42 @@ reservation, except that any reservation from any client may be modified.
 
 <p>The administration of an end-to-end circuit must conform to security
 models of all entities along that path.  In particular, stages leading
-towards the eventual rollout
-of the service must follow the guidelines in the ESnet Security Plan.</p>
+towards the eventual rollout of the service must follow the guidelines in the 
+ESnet Security Plan. (y2/y3)</p>
 
 <p>Access to OSCARS must require authentication and authorization.
-Messages to OSCARS must be signed and encrypted.  All accesses must
-be logged.</p>
+Messages to OSCARS must be signed and encrypted.  Access does not necessarily
+require an OSCARS account.  A valid token or certificate may be sufficient,
+for example if the request is coming from another autonomous domain.
+All accesses must be logged. (y1/y2)</p>
+
+<p>OSCARS accounts must be provided for administrators and the appropriate
+ESnet personnel.  Privilege levels, allowing different levels of access,
+must be maintained and enforced. (y1)</p>
+
+<p>A secure means must be provided to store authentication information during
+login, to avoid the client having to authenticate for each subsequent access to
+OSCARS (y1/y2).</p>
 
 <p>The AAAS must handle all external requests and enforce security restrictions,
 including user authentication (y1) and authorization (y2),
 and generate usage records for auditing and accounting (y2/y3).
 
 <p>Request parameters must be validated on the server side,
-whether the client is either the API, or the interactive interface.</p>
+whether the client is the API or the interactive interface. (y1)</p>
 
 <p>All components of the service must be monitored to ensure that they are
 not being abused.  
-<a href="https://oscars.es.net/specs/fspec.html#notifications">Notifications</a> 
+<a href="https://oscars.es.net/specs/fspec.html#notifications">
+Notifications</a> 
 of sensitive operations such as reservation 
 scheduling and LSP setup must be sent to the appropriate ESnet personnel,
-in addition to the client.</p>
+in addition to the client. (y2/y3)</p>
 
+<p>The machines hosting the interactive interface and the AAAS must also be 
+monitored, and run as few services as possible.  The machines running the BSS 
+and PSS must be firewalled so that only the preceding machines and the
+machines of ESnet administrators have access. (y2)</p>
 
 </body>
 </html>
