@@ -7,13 +7,11 @@
 <h3>Year 2 Update (DRAFT)</h3>
 
 <em>David Robertson, Chin Guok</em><br/>
-ESnet<br/><br/>
+<a href="http://www.es.net/">ESnet</a><br/><br/>
 
-September 8, 2005</br>
+September 12, 2005</br>
 
-<hr>
-
-<h3>Introduction</h3>
+<h2>Introduction</h2>
 
 <p>This document focuses on the design decisions made for implementing
 the <a href="fspec.html">requirements</a> for the reservation manager
@@ -34,9 +32,8 @@ discussion of the RM's components, security implications are postponed
 until the final
 <a href="https://oscars.es.net/specs/dspec.html#security">section</a>.</p>
 
-<br/>
 
-<h3>Grid Service Components</h3>
+<h2>Grid Service Components</h2>
 
 <p>The primary design decision was to implement the authentication,
 authorization, and accounting subsystem (AAAS) and bandwidth scheduler
@@ -53,9 +50,8 @@ module linked in by the BSS. (y1)</p>
 different organizations, will communicate via their respective AAAS's through 
 the setup of federated trust (y2/y3).</p>
 
-<br/>
 
-<h3>Transport</h3>
+<h2>Transport</h2>
 
 <p><a href="http://www.w3.org/TR/soap/">SOAP</a> messages are used for
 communication between all OSCARS components except the PSS.  Identical SOAP
@@ -68,19 +64,18 @@ Language (<a href="http://www.w3.org/TR/wsdl">WSDL</a>).  WSDL provides for
 definitions of data types for message arguments using XML Schema, and
 definitions of request and response messages. (y2)</p>
 
-<br/>
 
-<h3>Database</h3>
+<h2>Database</h2>
 
 <p>The MySQL database server is used.  The database organization (tables,
-fields, etc.) used the BRUW database as a starting point.  Securing
-the database server is discussed in the final 
+fields, etc.) used the BRUW database as a starting point.  Communication
+with the database is handled via the Perl DBI package.
+Securing the database server is discussed in the final 
 <a href="https://oscars.es.net/specs/dspec.html#security">section</a>.</p>
 
-<br/>
 
 <a id="AAAS">
-<h3>AAAS</h3>
+<h2>AAAS</h2>
 
 <p>The AAAS consists of an Apache2 Web server, a Perl SOAP::Lite server, 
 a MySQL database server, and a front end to that database consisting of a set 
@@ -94,10 +89,9 @@ that request to the BSS front end. (y1)</p>
 <p>Requests made via the API will use the same service description as the CGI 
 scripts to send messages to the AAAS front end (y2).</p>
 
-<br/>
 
 <a id="BSS">
-<h3>BSS</h3>
+<h2>BSS</h2>
 
 <p>The BSS consists of a Perl SOAP::Lite server, a MySQL database server, and 
 a Perl front end to that database.  It also includes a Perl package to 
@@ -154,17 +148,15 @@ set up the label-switched path (LSP).  The thread also polls to see if a
 reservation has expired, at which point a call is made to the PSS library to 
 tear down the LSP. (y1)
 </li><br/>
-
 </ol>
 
 <p>In the future, the BSS will use an open-source library (TBD)
 to handle calendaring in conjunction with the AAAS MySQL database, and
 databse triggers to invoke LSP set up and tear down (y2).</p>
 
-<br/>
 
 <a id="PSS">
-<h3>PSS</h3>
+<h2>PSS</h2>
 
 <p>The PSS uses 
 <a href="http://www.juniper.net/support/junoscript/">Junoscript</a>
@@ -173,9 +165,8 @@ to configure Juniper routers (y1), and will use
 to configure Cisco routers.  The PSS
 sets up the LSP, checks for non-valid paths, and tears down the LSP (y1).</p>
 
-<br/>
 
-<h3>User interface</h3>
+<h2>User interface</h2>
 
 <p>The automated interface is a collection of SOAP calls to the AAAS
 front end server.  In the future,
@@ -206,7 +197,7 @@ area depending on which form was submitted. (y1)</p>
 Clicking on a tab takes the user to the form of that name.  The requests
 listed in the functional specification are mapped to forms as follows:</p>
 
-<h4>AAAS-related forms</h4>
+<h3>AAAS-related forms</h3>
 
 <ul>
 <li>The "login" form handles the request to login, and is the only page that 
@@ -243,7 +234,8 @@ login page.
 </li>
 </ul>
 
-<h4>BSS-related forms</h4>
+
+<h3>BSS-related forms</h3>
 
 <ul>
 
@@ -260,22 +252,28 @@ bring up that reservation's details in the main area.  If the user has
 engineer privileges, it handles the request to view all clients'
 reservations, get the details of any client's reservation, and cancel
 or modify any client's reservation.
-</li><br/>
-
+</li>
 </ul>
 
 <a id="security">
-<h3>Security</h3>
+<h2>Security</h2>
 
 <p>The Apache2 Web server is used, and only accepts connections
 via SSL.   Currently it only accept connections from hosts for which a
 firewall filter has been set up.
 httpd processes run as an unprivileged user without a login shell. (y1)</p>
 
+<p>The fact that a client has successfully authenticated during login, and
+their user privilege level obtained from the AAAS database, is
+stored using the Perl CGI::Session package.  The cookie sent to the browser
+contains a reference to that information, rather than the information
+itself. (y1)  This mechanism will be replaced by SSO using certificates
+or tokens (y2).</p>
+
 <p>The only way to access the database servers is via SOAP 
 calls to the AAAS front end.  The AAAS database server only accept requests
 from a database front end, running on the same machine.  The BSS and its 
-associated database are only accessible via the AAAS front end.</p>
+associated database are only accessible via the AAAS front end. (y1)</p>
 
 <p>Signed SOAP messages are used in all instances (y2).</p>
 
@@ -286,11 +284,8 @@ MySQL is configured with the --skip-networking option to ensure this. (y1)</p>
 <p>The RM will use ESnet production tools to monitor usage (y2).
 Notifications of successful reservation creation, and
 LSP setup and tear down (see PSS 
-<a href="https://oscars.es.net/specs/dspec.html#PSS">section</a>
-) are done via email to the
-appropriate ESnet personnel (y1).
-</li>
-
+<a href="https://oscars.es.net/specs/dspec.html#PSS">section</a>)
+are done via email to the appropriate ESnet personnel (y1).</p>
 
 
 </body>
