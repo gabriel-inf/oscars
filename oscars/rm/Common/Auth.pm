@@ -34,7 +34,9 @@ sub new {
 
 sub initialize {
     my ($self) = @_;
-    $self->{starting_page} = 'https://oscars.es.net';
+    # NOTE WELL
+    #$self->{starting_page} = 'https://oscars.es.net';
+    $self->{starting_page} = '..';
 }
 ######
 
