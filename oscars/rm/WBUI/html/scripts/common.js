@@ -311,13 +311,13 @@ function init_tab(form_name, script_type, tab_title, tab_name) {
          }
          tab_str += ' href="#"' +
          ' onclick="new_page(' + "'" + form_name + "', '" + 
-         starting_page + '/cgi-bin/' + script_type + '/' + form_name +
+         '../cgi-bin/' + script_type + '/' + form_name +
          ".pl'" +
          ');return false;">';
     }
     else {
-        tab_str += ' href="' + starting_page +
-         '/cgi-bin/' + script_type + '/' + form_name + '.pl">';
+        tab_str += ' href="' +
+         '../cgi-bin/' + script_type + '/' + form_name + '.pl">';
     }
     tab_str += tab_name + '</a></li>';
     return tab_str;
