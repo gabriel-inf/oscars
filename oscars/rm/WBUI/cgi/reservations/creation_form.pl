@@ -13,7 +13,7 @@ my( $form_params, $auth, $starting_page ) = get_params();
 if (!($form_params)) { exit; }
 
 print "<xml>\n";
-print "<msg>User profile</msg>\n";
+print "<msg>Reservations scheduling</msg>\n";
 print "<div id=\"reservation_ui\">\n";
 print_reservation_form($form_params, $starting_page);
 print  "</div>\n";
