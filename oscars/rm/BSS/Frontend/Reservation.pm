@@ -233,7 +233,7 @@ sub delete_reservation {
     my( $self, $inref ) = @_;
 
     my $status =  $self->{dbconn}->update_reservation( $inref->{user_dn}, $inref,
-                                     $self->{configs}->{PENDING_CANCEL} );
+                                     'precancel' );
     return($self->get_reservations($inref));
 }
 ######

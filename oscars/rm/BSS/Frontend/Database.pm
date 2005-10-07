@@ -74,10 +74,9 @@ sub update_reservation {
     # find_expired_reservations as one of the conditions to attempt to
     # tear down a circuit.
     my $prev_status = @{$rref}[0]->{reservation_status};
-    if ( ($prev_status eq $self->{configs}->{PENDING_CANCEL}) ||
-         ( ($prev_status eq $self->{configs}->{PENDING}) &&
-            ($status eq $self->{configs}->{PENDING_CANCEL}))) { 
-        $status = $self->{configs}->{CANCELLED};
+    if ( ($prev_status eq 'precancel') || ( ($prev_status eq 'pending') &&
+            ($status eq 'precancel'))) { 
+        $status = 'cancelled';
     }
     $query = qq{ UPDATE reservations SET reservation_status = ?
                  WHERE reservation_id = ?};

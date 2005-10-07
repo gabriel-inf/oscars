@@ -97,7 +97,7 @@ sub find_expired_reservations {
     $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
     $sth = $self->{dbconn}->do_query($user_dn, $query, $status, $timeslot,
-                                     $self->{configs}->{PENDING_CANCEL});
+                                     'precancel' );
     # get all the data
     $data = $sth->fetchall_arrayref({});
     $sth->finish();
