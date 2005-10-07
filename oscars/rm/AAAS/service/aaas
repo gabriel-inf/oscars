@@ -1,19 +1,19 @@
 #!/usr/bin/perl -w
 
-# AAAS_server.pl:  AAAS SOAP server.
-# Last modified: July 11, 2005
+# aaas:  AAAS SOAP server.
+# Last modified: October 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
-use Config::Auto;
 use SOAP::Transport::HTTP;
 
+my %configs;
 
-my $config = Config::Auto::parse($ENV{'OSCARS_HOME'} . '/oscars.cfg');
+my $numArgs = $#ARGV + 1;
 
 my $daemon = SOAP::Transport::HTTP::Daemon
-  -> new (LocalPort => $config->{'AAAS_server_port'}, Listen => 5, Reuse => 1)
+  -> new (LocalPort => 2000, Listen => 5, Reuse => 1)
   -> dispatch_to('Dispatcher')
   -> handle;
 
@@ -33,10 +33,15 @@ my $aaas_user;
 sub dispatch {
     my ( $class_name, $inref ) = @_;
 
-    my( $ex );
+    my( $ex,  );
     my $results = {};
     if (!$aaas_user) {
-        $aaas_user = AAAS::Frontend::User->new('configs' => $config);
+            # hard-wired
+        $configs{aaas_database} = 'DBI:mysql:AAAS';
+            # TODO:  use command-line options like in starting MySQL
+        $configs{aaas_login} = 'oscars';
+        $configs{aaas_password} = 'ritazza6';
+        $aaas_user = AAAS::Frontend::User->new('configs' => \%configs);
     }
 
     try {
