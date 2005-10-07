@@ -52,9 +52,9 @@ sub new {
 sub initialize {
     my ($self) = @_;
     $self->{dbconn} = AAAS::Frontend::Database->new(
-                       'database' => $self->{configs}->{use_AAAS_database},
-                       'login' => $self->{configs}->{AAAS_login_name},
-                       'password' => $self->{configs}->{AAAS_login_passwd})
+                       'database' => $self->{configs}->{aaas_database},
+                       'login' => $self->{configs}->{aaas_login},
+                       'password' => $self->{configs}->{aaas_password})
                         or die "FATAL:  could not connect to database";
     $self->{auth} = AAAS::Frontend::Auth->new(
                        'dbconn' => $self->{dbconn});
