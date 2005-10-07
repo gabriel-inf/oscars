@@ -1,0 +1,71 @@
+Notes from meeting with Bob and Maarten
+
+Common description language (for advertising service to other domains)
+UNI v2
+
+1. Ethernet
+
+2. uncompressed DSTREAM
+
+3. lightpath
+
+4. layer 2 (Sonet XDH)
+
+5. Dragon
+
+Chin suggested that since both GEANT2 and I2 have layer 3 implementations,
+can focus on management, inter-domain issues.
+
+Bob suggested that by the 15th, each of us send in a short list of 6 to 8
+items of things to talk about and find consensus, for the agenda.  Tom
+Lehman will be attending.
+
+Chin would like an informal roadmap to come out of the meeting, a timeline
+of collaboration between ESnet, GEANT2, and I2.
+
+The meeting on the 15th will last most of the day, starting around 9.
+
+...
+
+----------------------------------------------------------------
+
+variables
+
+    Shibboleth via GridShib
+
+    MyProxy or FusionGrid to store certs in a central location, where
+    revocation is esaier.
+
+    Assertions about users are in SAML format.  How much of
+    Shibboleth to use as is (but requires complex installation, probably)
+
+AAAS
+
+    Front end, db access still in Perl?
+
+    or
+
+    Separate out authentication component (use SAML, SAOP) into
+    Java component?
+
+    How do various packages do SSO, rather than CGI::Session, which
+    should be replaced.
+
+    User privilege levels whould be replaced with SAML assertions?  All
+    possible users are not going to have OSCARS accounts (inter-domain
+    especially).  Admins and engrs will still have db accounts.
+    assertions for Web forms?
+
+timeline
+
+    SOAP over SSL
+
+    SAML over SSL
+        with auth cert
+        with authorization assertions
+
+specs
+
+    need functional spec for peering, both of scheduling and signalling
+
+    need timeline
