@@ -113,7 +113,7 @@ sub find_new_reservations {
     $mailer = Common::Mail->new();
 
     # find reservations that need to be scheduled
-    $resv = $front_end->find_pending_reservations($user_dn, $configs->{PENDING});
+    $resv = $front_end->find_pending_reservations($user_dn, 'pending');
     for my $r (@$resv) {
         ## calls to pss to setup reservations
         my %lsp_info = map_fields($front_end, $r);
@@ -122,7 +122,7 @@ sub find_new_reservations {
         }
 
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $status, $configs->{ACTIVE}, $front_end);
+        update_reservation( $r, $status, 'active', $front_end);
         $mail_msg = $front_end->get_lsp_stats($user_dn, \%lsp_info, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP set up status", $mail_msg);
@@ -147,7 +147,7 @@ sub find_expired_reservations {
 
     # find reservations whose end time is before the current time and
     # thus expired
-    $resv = $front_end->find_expired_reservations($user_dn, $configs->{ACTIVE});
+    $resv = $front_end->find_expired_reservations($user_dn, 'active');
        
     for my $r (@$resv) {
         my %lsp_info = map_fields($front_end, $r);
@@ -156,7 +156,7 @@ sub find_expired_reservations {
         }
 
         if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $status, $configs->{FINISHED}, $front_end);
+        update_reservation( $r, $status, 'finished', $front_end);
         $mail_msg = $front_end->get_lsp_stats($user_dn, \%lsp_info, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP tear down status", $mail_msg);
@@ -232,7 +232,7 @@ sub update_reservation {
         ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, $status)
     } else {
         print STDERR "Changing status to failed\n";
-        ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, $configs->{FAILED})
+        ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, 'failed')
     }
 }
 ######
