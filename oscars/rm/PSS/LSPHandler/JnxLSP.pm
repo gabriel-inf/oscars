@@ -408,7 +408,7 @@ sub update_log {
         print STDERR $_xmlString;
     }
     $r->{reservation_tag} =~ s/@/../;
-    open (LOGFILE, ">> $ENV{OSCARS_HOME}/logs/$r->{reservation_tag}") || die "Can't open log file.\n";
+    open (LOGFILE, ">> $ENV{HOME}/logs/$r->{reservation_tag}") || die "Can't open log file.\n";
     print LOGFILE "**********************************************************************\n";
     print LOGFILE $_xmlString;
     close(LOGFILE);
