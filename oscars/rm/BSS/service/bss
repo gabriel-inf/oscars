@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
 ####
-# BSS_server.pl:  Soap lite server for BSS
-# Last modified:  July 8, 2005
+# bss.pl:  Soap lite server for BSS
+# Last modified:  October 17, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee (jrlee@lbl.gov)
 ###
@@ -71,7 +71,7 @@ sub dispatch {
         $ex = shift;
     }
     finally {
-        my $logfile_name = "$ENV{OSCARS_HOME}/logs/";
+        my $logfile_name = "$ENV{HOME}/logs/";
 
         if ($results->{reservation_tag}) {
             $logfile_name .= $results->{reservation_tag};
