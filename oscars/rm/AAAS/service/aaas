@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # aaas:  AAAS SOAP server.
-# Last modified: October 7, 2005
+# Last modified: October 17, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -58,7 +58,7 @@ sub dispatch {
         $ex = shift;
     }
     finally {
-        my $logfile_name = "$ENV{OSCARS_HOME}/logs/AAAS.err";
+        my $logfile_name = "$ENV{HOME}/logs/AAAS.err";
 
         open (LOGFILE, ">$logfile_name") ||
                 die "Can't open log file $logfile_name.\n";
