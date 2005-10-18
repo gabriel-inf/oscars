@@ -92,3 +92,40 @@ CREATE TABLE IF NOT EXISTS reservations (
     dst_hostaddr_id         INT NOT NULL, 
     PRIMARY KEY (reservation_id)
 ) type = MyISAM;
+
+-- Table for configuration variables that can exist on a per
+-- reservation basis (one row is for the defaults).  The defaults are used
+-- if the foreign key is null in the reservation.  The defaults can
+-- only be overriden by a user with engineer privileges.
+CREATE TABLE IF NOT EXISTS resvconfs (
+    resvconf_id               INT NOT NULL AUTO_INCREMENT,
+        -- source of traceroutes
+    resvconf_jnx_source       VARCHAR(36) NOT NULL,
+        -- SSH variables to use for Juniper login
+    resvconf_jnx_user         VARCHAR(36) NOT NULL,
+    resvconf_jnx_key          VARCHAR(36) NOT NULL,
+        -- Router access
+    resvconf_pss_access       VARCHAR(36) NOT NULL,
+    resvconf_pss_login        VARCHAR(36) NOT NULL,
+    resvconf_pss_passwd       VARCHAR(36) NOT NULL,
+        -- XML related variables.
+    resvconf_firewall_maker   VARCHAR(36) NOT NULL,
+    resvconf_setup_file       VARCHAR(60) NOT NULL,
+    resvconf_teardown_file    VARCHAR(60) NOT NULL,
+    resvconf_ext_if_filter    VARCHAR(60) NOT NULL,
+        -- traceroute configuration variables
+    resvconf_trace_ttl        INT NOT NULL,
+    resvconf_trace_timeout    INT NOT NULL,
+        -- LSP values.
+    resvconf_CoS              INT NOT NULL,
+    resvconf_setup_priority   INT NOT NULL,
+    resvconf_resv_priority    INT NOT NULL,
+        -- Should I  run traceroute from the routers
+        -- (requires ssh keys setup)
+    resvconf_run_trace        BOOLEAN NOT NULL,
+    resvconf_use_system       BOOLEAN NOT NULL,
+    resvconf_use_ping         BOOLEAN NOT NULL,
+        -- allow LSP configuration
+    resvconf_allow_lsp        BOOLEAN NOT NULL,
+    PRIMARY KEY (resvconf_id)
+) type=MyISAM;
