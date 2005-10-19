@@ -93,39 +93,50 @@ CREATE TABLE IF NOT EXISTS reservations (
     PRIMARY KEY (reservation_id)
 ) type = MyISAM;
 
--- Table for configuration variables that can exist on a per
+
+-- Following two tbbles are for configuration variables that can exist on a per
 -- reservation basis (one row is for the defaults).  The defaults are used
 -- if the foreign key is null in the reservation.  The defaults can
 -- only be overriden by a user with engineer privileges.
-CREATE TABLE IF NOT EXISTS resvconfs (
-    resvconf_id               INT NOT NULL AUTO_INCREMENT,
+
+-- Configuration for route discovery
+CREATE TABLE IF NOT EXISTS trace_confs (
+    trace_conf_id             INT NOT NULL AUTO_INCREMENT,
+      -- traceroute information section
         -- source of traceroutes
-    resvconf_jnx_source       VARCHAR(36) NOT NULL,
+    trace_conf_jnx_source     VARCHAR(36) NOT NULL,
         -- SSH variables to use for Juniper login
-    resvconf_jnx_user         VARCHAR(36) NOT NULL,
-    resvconf_jnx_key          VARCHAR(36) NOT NULL,
-        -- Router access
-    resvconf_pss_access       VARCHAR(36) NOT NULL,
-    resvconf_pss_login        VARCHAR(36) NOT NULL,
-    resvconf_pss_passwd       VARCHAR(36) NOT NULL,
-        -- XML related variables.
-    resvconf_firewall_maker   VARCHAR(36) NOT NULL,
-    resvconf_setup_file       VARCHAR(60) NOT NULL,
-    resvconf_teardown_file    VARCHAR(60) NOT NULL,
-    resvconf_ext_if_filter    VARCHAR(60) NOT NULL,
+    trace_conf_jnx_user       VARCHAR(36) NOT NULL,
+    trace_conf_jnx_key        VARCHAR(36) NOT NULL,
         -- traceroute configuration variables
-    resvconf_trace_ttl        INT NOT NULL,
-    resvconf_trace_timeout    INT NOT NULL,
-        -- LSP values.
-    resvconf_CoS              INT NOT NULL,
-    resvconf_setup_priority   INT NOT NULL,
-    resvconf_resv_priority    INT NOT NULL,
+    trace_conf_ttl            INT NOT NULL,
+    trace_conf_timeout        INT NOT NULL,
         -- Should I  run traceroute from the routers
         -- (requires ssh keys setup)
-    resvconf_run_trace        BOOLEAN NOT NULL,
-    resvconf_use_system       BOOLEAN NOT NULL,
-    resvconf_use_ping         BOOLEAN NOT NULL,
+    trace_conf_run_trace      BOOLEAN NOT NULL,
+    trace_conf_use_system     BOOLEAN NOT NULL,
+    trace_conf_use_ping       BOOLEAN NOT NULL,
+    PRIMARY KEY (trace_conf_id)
+) type=MyISAM;
+
+
+-- Configuration for LSP setup and teardown
+CREATE TABLE IF NOT EXISTS pss_confs (
+    pss_conf_id               INT NOT NULL AUTO_INCREMENT,
+        -- Router access
+    pss_conf_access           VARCHAR(36) NOT NULL,
+    pss_conf_login            VARCHAR(36) NOT NULL,
+    pss_conf_passwd           VARCHAR(36) NOT NULL,
+        -- XML related variables.
+    pss_conf_firewall_marker  VARCHAR(36) NOT NULL,
+    pss_conf_setup_file       VARCHAR(60) NOT NULL,
+    pss_conf_teardown_file    VARCHAR(60) NOT NULL,
+    pss_conf_ext_if_filter    VARCHAR(60) NOT NULL,
+        -- LSP values.
+    pss_conf_CoS              INT NOT NULL,
+    pss_conf_setup_priority   INT NOT NULL,
+    pss_conf_resv_priority    INT NOT NULL,
         -- allow LSP configuration
-    resvconf_allow_lsp        BOOLEAN NOT NULL,
-    PRIMARY KEY (resvconf_id)
+    pss_conf_allow_lsp        BOOLEAN NOT NULL,
+    PRIMARY KEY (pss_conf_id)
 ) type=MyISAM;
