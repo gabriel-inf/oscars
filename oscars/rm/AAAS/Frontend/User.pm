@@ -1,9 +1,9 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with admin and user forms.
-# Last modified: July 8, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: October 18, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang (dapi@umich.edu)
 
 use strict;
 
@@ -51,11 +51,6 @@ sub new {
 
 sub initialize {
     my ($self) = @_;
-    $self->{dbconn} = AAAS::Frontend::Database->new(
-                       'database' => $self->{configs}->{aaas_database},
-                       'login' => $self->{configs}->{aaas_login},
-                       'password' => $self->{configs}->{aaas_password})
-                        or die "FATAL:  could not connect to database";
     $self->{auth} = AAAS::Frontend::Auth->new(
                        'dbconn' => $self->{dbconn});
     $self->{registr} = AAAS::Frontend::Registration->new(

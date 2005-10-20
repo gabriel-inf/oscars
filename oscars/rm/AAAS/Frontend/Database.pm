@@ -2,8 +2,7 @@ package AAAS::Frontend::Database;
 
 # Database.pm:  package for AAAS database handling
 #               inherits from Common::Database
-# Last modified: July 8, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: October 18, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -49,17 +48,17 @@ sub logout {
     my( $self, $user_dn ) = @_;
 
     my $results = {};
-    if (!$self->{handles}->{$user_dn}) {
+    if (!$self->{oscars_logins}->{$user_dn}) {
         throw Common::Exception("Already logged out.");
     }
     if ($user_dn ne 'unpriv') {
         $self->update_user_status($user_dn, 'Logged out');
     }
-    if (!$self->{handles}->{$user_dn}->disconnect()) {
+    if (!$self->{oscars_logins}->{$user_dn}->disconnect()) {
         throw Common::Exception("Could not disconnect from database");
     }
     if ($user_dn ne 'unpriv') {
-        $self->{handles}->{$user_dn} = undef;
+        $self->{oscars_logins}->{$user_dn} = undef;
     }
     return ( $results );
 }
