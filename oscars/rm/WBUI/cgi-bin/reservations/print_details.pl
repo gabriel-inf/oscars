@@ -120,34 +120,34 @@ sub print_reservation_detail {
 
         $ctr = start_row($ctr);
         print   "<td>Ingress router</td>";
-        print   "<td>", $row->{ingress_router_name}, "</td>";
+        print   "<td>", $row->{ingress_router}, "</td>";
         print "</tr>\n";
 
         $ctr = start_row($ctr);
         print   "<td>Ingress loopback</td>";
-        print   "<td>", $row->{ingress_loopback}, "</td>";
+        print   "<td>", $row->{ingress_ip}, "</td>";
         print "</tr>\n";
 
         $ctr = start_row($ctr);
         print   "<td>Egress router</td>";
-        print   "<td>", $row->{egress_router_name}, "</td>";
+        print   "<td>", $row->{egress_router}, "</td>";
         print "</tr>\n";
 
         $ctr = start_row($ctr);
         print   "<td>Egress loopback</td>";
-        print   "<td>", $row->{egress_loopback}, "</td>";
+        print   "<td>", $row->{egress_ip}, "</td>";
         print "</tr>\n";
 
         $ctr = start_row($ctr);
         print   "<td>Routers in path</td>";
         print   "<td>";
+        my $path_str = "";
         for $_ (@{$row->{reservation_path}}) {
-            if ($_ ne $row->{egress_router_name}) {
-                #print $_, " -> ";
-                print $_;
-            }
-            else { print $_; }
+            $path_str .= $_ . " -> ";
         }
+        # remove last '->'
+        substr($path_str, -4, 4) = '';
+        print $path_str;
         print   "</td>";
         print "</tr>\n";
     }
