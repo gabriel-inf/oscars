@@ -1,5 +1,5 @@
 David Robertson
-April 25, 2005
+October 19, 2005
 
 Almost through incorporating BRUW forms.
 
@@ -7,7 +7,7 @@ Copy material in html into:
 
     /usr/local/esnet/virtual-sites/oscars.es.net/web/
 
-Copy material in cgi into:
+Copy material in cgi-bin into:
 
     /usr/local/esnet/virtual-sites/oscars.es.net/cgi-bin/
 
