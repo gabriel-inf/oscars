@@ -1,7 +1,5 @@
 #!/usr/bin/perl -w
 
-use DateTime;
-
 use BSS::Client::SOAPClient;
 
 my( %params );
