@@ -95,7 +95,6 @@ sub insert_reservation {
     my $user_dn = $inref->{user_dn};
     my( $duration_seconds );
 
-    print STDERR Dumper($inref);
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
     {
@@ -222,7 +221,6 @@ sub insert_reservation {
                        "Reservation made by $user_dn", $mail_msg);
     $mailer->send_mail($mailer->get_webmaster(), $user_dn,
                        "Your reservation has been accepted", $mail_msg);
-    print STDERR Dumper($results->{rows});
     return( $results );
 }
 ######
