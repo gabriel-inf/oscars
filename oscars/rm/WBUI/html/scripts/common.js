@@ -22,8 +22,8 @@ var login_required = {
 }
 
 var reservation_required = {
-    'src_address':  "Please enter starting host name, or its IP address, in the 'Source' field.",
-    'dst_address':  "Please enter destination host name, or its IP address, in the 'Destination' field.",
+    'source_host':  "Please enter starting host name, or its IP address, in the 'Source' field.",
+    'destination_host':  "Please enter destination host name, or its IP address, in the 'Destination' field.",
     'reservation_bandwidth': "Please enter the amount of bandwidth you require in the 'Bandwidth' field.",
     'reservation_description': "Please describe the purpose of this reservation request."
 }
@@ -169,16 +169,16 @@ function check_reservation( form )
     if ( (form.user_dn.value == 'dtyu@bnl.gov') ||
          (form.user_dn.value == 'wenji@fnal.gov'))
     {
-        if (form.lsp_from.value && (form.lsp_from.value != 'chi-sl-sdn1'))
+        if (form.ingress_router.value && (form.ingress_router.value != 'chi-sl-sdn1'))
         {
              alert( "Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Ingress loopback' field." );
-             form.lsp_from.focus();
+             form.ingress_router.focus();
              return false;
         }
-        if (form.lsp_to.value && (form.lsp_to.value != 'chi-sl-sdn1'))
+        if (form.egress_router.value && (form.egress_router.value != 'chi-sl-sdn1'))
         {
              alert( "Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Egress loopback' field." );
-             form.lsp_to.focus();
+             form.egress_router.focus();
              return false;
         }
     }
@@ -194,22 +194,22 @@ function check_reservation( form )
         return false;
     }
 
-    if ( form.src_address.value == form.dst_address.value ) {
-        alert( "Please provide different IP addresses for the source and destination." );
-        form.src_address.focus();
+    if ( form.source_host.value == form.destination_host.value ) {
+        alert( "Please provide different host names or IP addresses for the source and destination." );
+        form.source_host.focus();
         return false;
     }
     // TODO:  needs more work
-    var sections = form.src_address.value.split('/');
+    var sections = form.source_host.value.split('/');
     if ((sections.length > 1) && (sections[1] < 24)) {
         alert( "Only CIDR blocks >= 24 (class C) are accepted." );
-        form.src_address.focus();
+        form.source_host.focus();
         return false;
     }
-    var sections = form.dst_address.value.split('/');
+    var sections = form.destination_host.value.split('/');
     if ((sections.length > 1) && (sections[1] < 24)) {
         alert( "Only CIDR blocks >= 24 (class C) are accepted." );
-        form.dst_address.focus();
+        form.destination_host.focus();
         return false;
     }
 
