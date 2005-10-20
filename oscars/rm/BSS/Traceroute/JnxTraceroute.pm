@@ -2,11 +2,11 @@
 # Package: JnxTraceroute.pm
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Execute traceroute on Juniper routers.
+# Last Modified:  October 18, 2005
 #####
 
 package BSS::Traceroute::JnxTraceroute;
 
-use Config::Auto;
 use Data::Dumper;
 use Error qw(:try);
 
@@ -45,7 +45,7 @@ sub new
 #
 sub traceroute
 {
-    my ($self, $src, $dst) = @_;
+    my ($self, $configs, $src, $dst) = @_;
     my ($hopInfo, $hopCount, $cmd);
 
     # Clear error message.
@@ -58,7 +58,10 @@ sub traceroute
     $dst =~ s/\/\d*$//;
 
     # Perform the traceroute.
-    $cmd = "ssh -x -a -i $self->{config}->{jnx_key} -l $self->{config}->{jnx_user} $src traceroute $dst wait $self->{config}->{traceroute_timeout} ttl $self->{config}->{traceroute_ttl}";
+    $cmd = "ssh -x -a -i $configs->{trace_conf_jnx_key} -l " .
+           "$configs->{trace_conf_jnx_user} $src traceroute $dst wait " .
+           "$configs->{trace_conf_timeout} ttl " .
+           "$configs->{trace_conf_ttl}";
     print STDERR "$cmd\n";
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Common::Exception("Unable to ssh into router and perform traceroute.");
@@ -123,8 +126,6 @@ sub get_hops
 sub initialize 
 {
     my ($self) = @_;
-
-    $self->{config} = Config::Auto::parse($ENV{OSCARS_HOME} . '/oscars.cfg');
 }
 ######
 
