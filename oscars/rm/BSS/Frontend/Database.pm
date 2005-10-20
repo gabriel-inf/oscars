@@ -39,14 +39,14 @@ sub new {
 sub logout {
     my( $self, $user_dn ) = @_;
 
-    if (!$self->{handles}->{$user_dn}) {
+    if (!$self->{oscars_logins}->{$user_dn}) {
         throw Common::Exception("Already logged out.");
     }
-    if (!$self->{handles}->{$user_dn}->disconnect()) {
+    if (!$self->{oscars_logins}->{$user_dn}->disconnect()) {
         throw Common::Exception("Could not disconnect from database");
     }
     if ($user_dn ne 'unpriv') {
-        $self->{handles}->{$user_dn} = undef;
+        $self->{oscars_logins}->{$user_dn} = undef;
     }
     return({});
 }
@@ -84,6 +84,62 @@ sub update_reservation {
                            $inref->{reservation_id});
     $sth->finish();
     return( $status );
+}
+######
+
+##############################################################################
+#
+sub get_reservation_id {
+    my( $self, $user_dn ) = @_;
+
+    return( $self->{oscars_logins}->{$user_dn}->{mysql_insertid} );
+}
+######
+
+##############################################################################
+#
+sub get_trace_configs {
+    my( $self ) = @_;
+
+    my( $sth, $query );
+
+        # use default for now
+    $query = "SELECT " .
+            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
+            "trace_conf_ttl, trace_conf_timeout, " .
+            "trace_conf_run_trace, trace_conf_use_system, " .
+            "trace_conf_use_ping "  .
+            "FROM trace_confs where trace_conf_id = 1";
+        #TODO:  FIX!
+    $sth = $self->do_query('', $query);
+    my $configs = $sth->fetchrow_hashref();
+    $sth->finish();
+    return( $configs );
+}
+######
+
+##############################################################################
+#
+sub get_pss_configs {
+    my( $self ) = @_;
+
+    my( $sth, $query );
+
+        # use defaults for now
+    $query = "SELECT " .
+             "pss_conf_access, pss_conf_login, pss_conf_passwd, " .
+             "pss_conf_firewall_marker, " .
+             "pss_conf_setup_file, pss_conf_teardown_file, " .
+             "pss_conf_ext_if_filter, pss_conf_CoS, " .
+             "pss_conf_burst_limit, " .
+             "pss_conf_setup_priority, pss_conf_resv_priority, " .
+             "pss_conf_allow_lsp "  .
+             "FROM pss_confs where pss_conf_id = 1";
+        #TODO:  FIX!
+    $sth = $self->do_query('', $query);
+    my $configs = $sth->fetchrow_hashref();
+    $sth->finish();
+    return( $configs );
 }
 ######
 
@@ -164,7 +220,7 @@ sub hostaddrs_ip_to_id {
     if ($sth->rows == 0 ) {
         $query = "INSERT INTO hostaddrs VALUES ( '', '$ipaddr'  )";
         $sth = $self->do_query($user_dn, $query);
-        $id = $self->{handles}->{$user_dn}->{mysql_insertid};
+        $id = $self->{oscars_logins}->{$user_dn}->{mysql_insertid};
     }
     else {
         my @data = $sth->fetchrow_array();

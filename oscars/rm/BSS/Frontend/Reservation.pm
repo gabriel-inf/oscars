@@ -1,5 +1,5 @@
 # Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: August 11, 2005
+# Last modified: October 18, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -66,12 +66,6 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{dbconn} = BSS::Frontend::Database->new(
-                       'database' => $self->{configs}->{use_BSS_database},
-                       'login' => $self->{configs}->{BSS_login_name},
-                       'password' => $self->{configs}->{BSS_login_passwd},
-                       'configs' => $self->{configs})
-                        or die "FATAL:  could not connect to database";
     $self->{policy} = BSS::Frontend::Policy->new(
                        'dbconn' => $self->{dbconn});
 }
@@ -97,7 +91,7 @@ sub logout {
 #
 sub insert_reservation {
     my( $self, $inref ) = @_;
-    my( $query, $sth, $arrayref, $rref );
+    my( $query, $sth, $arrayref, @resv_array );
     my $results = {};
     my $user_dn = $inref->{user_dn};
     my( $duration_seconds );
@@ -157,21 +151,22 @@ sub insert_reservation {
     # address.
     $inref->{src_hostaddr_id} =
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                                            $inref->{src_address}); 
+                $inref->{source_ip}); 
     $inref->{dst_hostaddr_id} =
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                                            $inref->{dst_address}); 
+                                            $inref->{destination_ip}); 
     $query = "SELECT CONVERT_TZ(now(), ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
                                       $inref->{reservation_time_zone} );
     $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
 
-    # The following fields were previously set in the create.pl CGI script.
+    $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
     $inref->{reservation_id} = 'NULL';
-    $inref->{reservation_class} = '4';
-    # convert to bps
-    $inref->{reservation_burst_limit} = 1000000;
+        # class of service
+    $inref->{reservation_class} = $self->{pss_configs}->{pss_conf_CoS};
+    $inref->{reservation_burst_limit} =
+                                $self->{pss_configs}->{pss_conf_burst_limit};
     $inref->{reservation_status} = 'pending';
     $inref->{reservation_tag} = $user_dn . '.' .
         $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
@@ -193,8 +188,7 @@ sub insert_reservation {
     $query = "INSERT INTO reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
     $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
-    $results->{reservation_id} =
-            $self->{dbconn}->{handles}->{$user_dn}->{mysql_insertid};
+    $results->{reservation_id} = $self->{dbconn}->get_reservation_id($user_dn);
     $sth->finish();
 
     $results->{reservation_tag} =
@@ -205,18 +199,14 @@ sub insert_reservation {
         $results->{reservation_tag}, $results->{reservation_id});
     $sth->finish();
 
-    # TODO:  some duplication, fix later
-    $query = "SELECT * FROM reservations WHERE reservation_id = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query,
-                                     $results->{reservation_id});
-    $rref = $sth->fetchall_arrayref({});
-    # converts times back to user's time zone, among other things
-    $self->get_user_readable_fields($user_dn, $inref, $rref);
+    @resv_array = ($results);
+    # convert times back to user's time zone for mail message
+    $self->convert_times($user_dn, \@resv_array);
     $sth->finish();
-    $results->{rows} = $rref;
+    $results->{rows} = \@resv_array;
 
     my $mailer = Common::Mail->new();
-    my $mail_msg = $stats->get_stats($user_dn, $inref, $rref->[0]) ;
+    my $mail_msg = $stats->get_stats($user_dn, $results) ;
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "Reservation made by $user_dn", $mail_msg);
     $mailer->send_mail($mailer->get_webmaster(), $user_dn,
@@ -282,7 +272,13 @@ sub get_reservations {
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-    $self->get_user_readable_fields($user_dn, $inref, $rref);
+    $self->get_hosts($user_dn, $rref);
+    $self->convert_times($user_dn, $rref);
+    if ($self->{policy}->authorized($inref->{user_level}, "engr") &&
+        $inref->{reservation_id}) {
+        # in this case, only one row
+        $self->get_engr_fields($user_dn, @$rref[0]); 
+    }
     $results->{rows} = $rref;
     return( $results );
 }
@@ -294,87 +290,89 @@ sub get_reservations {
 
 ##############################################################################
 #
-sub get_user_readable_fields {
-    my( $self, $user_dn, $inref, $rref ) = @_;
+sub get_hosts {
+    my( $self, $user_dn, $rref ) = @_;
  
-    my( $r, %mapping );
+    my( $resv, %mapping );
 
     my $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
     my $sth = $self->{dbconn}->do_query($user_dn, $query);
     my $arrayref = $sth->fetchall_arrayref();
-    for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
+    for $resv (@$arrayref) { $mapping{$$resv[0]} = $$resv[1]; }
     $sth->finish();
 
-    my $k;
-    # convert to time zone reservation was created in
-    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
-    for $r (@$rref) {
-        $r->{src_address} = $mapping{$r->{src_hostaddr_id}};
-        $r->{dst_address} = $mapping{$r->{dst_hostaddr_id}};
-        $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $r->{reservation_start_time},
-                                      $r->{reservation_time_zone} );
-        $r->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
-        $sth->finish();
-        $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $r->{reservation_end_time},
-                                      $r->{reservation_time_zone} );
-        $r->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
-        $sth->finish();
-        $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $r->{reservation_created_time},
-                                      $r->{reservation_time_zone} );
-        $r->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
-        $sth->finish();
-        if ($r->{reservation_dscp} eq 'NU') {
-            $r->{reservation_dscp} = '';
-        }
-        if ($r->{reservation_protocol} eq 'NULL') {
-            $r->{reservation_protocol} = '';
-        }
-        if ($r->{reservation_src_port} == 0) {
-            $r->{reservation_src_port} = '';
-        }
-        if ($r->{reservation_dst_port} == 0) {
-            $r->{reservation_dst_port} = '';
-        }
-    }
-
-    if ($self->{policy}->authorized($inref->{user_level}, "engr") &&
-        $inref->{reservation_id}) {
-        my $hashref;
-        my @path_routers;
-
-        $r = @$rref[0];  # in this case, only one row
-        $query = "SELECT router_name, router_loopback FROM routers";
-        $query .= " WHERE router_id =" .
-                  " (SELECT router_id FROM interfaces" .
-                  "  WHERE interface_id = ?)";
-
-        $sth = $self->{dbconn}->do_query($user_dn, $query,
-                                               $r->{ingress_interface_id});
-        $hashref = $sth->fetchrow_hashref();
-        $r->{ingress_router_name} = $hashref->{router_name}; 
-        $r->{ingress_loopback} = $hashref->{router_loopback};
-        $sth->finish();
-
-        $sth = $self->{dbconn}->do_query($user_dn, $query,
-                                         $r->{egress_interface_id});
-        $hashref = $sth->fetchrow_hashref();
-        $r->{egress_router_name} = $hashref->{router_name}; 
-        $r->{egress_loopback} = $hashref->{router_loopback};
-        @path_routers = split(' ', $r->{reservation_path});
-        $r->{reservation_path} = ();
-        $sth->finish();
-        for $_ (@path_routers) {
-            $sth = $self->{dbconn}->do_query($user_dn, $query, $_);
-            $hashref = $sth->fetchrow_hashref();
-            push(@{$r->{reservation_path}}, $hashref->{router_name}); 
-            $sth->finish();
-        }
+    for $resv (@$rref) {
+        $resv->{source_host} = $mapping{$resv->{src_hostaddr_id}};
+        $resv->{destination_host} = $mapping{$resv->{dst_hostaddr_id}};
     }
     return;
 }
 ######
+
+##############################################################################
+#
+sub convert_times {
+    my( $self, $user_dn, $rref ) = @_;
+ 
+    my( $resv, $sth, $query );
+
+    # convert to time zone reservation was created in
+    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
+    for $resv (@$rref) {
+        $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $resv->{reservation_start_time},
+                                      $resv->{reservation_time_zone} );
+        $resv->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+        $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $resv->{reservation_end_time},
+                                      $resv->{reservation_time_zone} );
+        $resv->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+        $sth = $self->{dbconn}->do_query( $user_dn, $query,
+                                      $resv->{reservation_created_time},
+                                      $resv->{reservation_time_zone} );
+        $resv->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+    }
+    return;
+}
+######
+
+##############################################################################
+#
+sub get_engr_fields {
+    my( $self, $user_dn, $resv ) = @_;
+ 
+    my( $hashref, @path_routers, $sth, $query );
+
+    $query = "SELECT router_name, router_loopback FROM routers" .
+             " WHERE router_id =" .
+                  " (SELECT router_id FROM interfaces" .
+                  "  WHERE interface_id = ?)";
+
+    $sth = $self->{dbconn}->do_query($user_dn, $query,
+                                               $resv->{ingress_interface_id});
+    $hashref = $sth->fetchrow_hashref();
+    $resv->{ingress_router} = $hashref->{router_name}; 
+    $sth->finish();
+
+    $sth = $self->{dbconn}->do_query($user_dn, $query,
+                                     $resv->{egress_interface_id});
+    $hashref = $sth->fetchrow_hashref();
+    $resv->{egress_router} = $hashref->{router_name}; 
+    @path_routers = split(' ', $resv->{reservation_path});
+    $resv->{reservation_path} = ();
+    $sth->finish();
+    for $_ (@path_routers) {
+        $sth = $self->{dbconn}->do_query($user_dn, $query, $_);
+        $hashref = $sth->fetchrow_hashref();
+        push(@{$resv->{reservation_path}}, $hashref->{router_name}); 
+        $sth->finish();
+    }
+    return;
+}
+######
+
 1;
 # vim: et ts=4 sw=4

@@ -20,12 +20,12 @@ my $form_variables = {
              'error' => "Please enter the duration in hours."
             }
         ),
-        'src_address' => (
+        'source_host' => (
             {'regexp' => '.+',
              'error' => "Please enter starting host name or IP address."
             }
         ),
-        'dst_address' => (
+        'destination_host' => (
             {'regexp' => '.+',
              'error' => "Please enter destination host name or IP address."
             }

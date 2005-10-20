@@ -1,5 +1,5 @@
 # Stats.pm:  Reservation statistics formatting
-# Last modified: August 11, 2005
+# Last modified: October 19, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 package BSS::Frontend::Stats;
@@ -31,12 +31,12 @@ sub initialize {
 # get_stats
 #
 sub get_stats {
-    my( $self, $user_dn, $inref, $results) = @_;
+    my( $self, $user_dn, $resv, $results) = @_;
 
     # only optional fields need to be checked for existence
     my $stats = 
         "Reservation entered by $user_dn with parameters:\n" .
-        "Description:        $inref->{reservation_description}\n";
+        "Description:        $resv->{reservation_description}\n";
     if ($results->{reservation_id}) {
         $stats .= "Reservation id:     $results->{reservation_id}\n";
     }
@@ -50,35 +50,36 @@ sub get_stats {
     if ($results->{reservation_created_time}) {
         $stats .= "Created time:       $results->{reservation_created_time}\n";
     }
-    $stats .= "(Times are in UTC $inref->{reservation_time_zone})\n";
-    $stats .= "Bandwidth:          $inref->{reservation_bandwidth}\n";
-    if ($inref->{reservation_burst_limit}) {
-        $stats .= "Burst limit:         $inref->{reservation_burst_limit}\n";
+    $stats .= "(Times are in UTC $resv->{reservation_time_zone})\n";
+    $stats .= "Bandwidth:          $resv->{reservation_bandwidth}\n";
+    if ($resv->{reservation_burst_limit}) {
+        $stats .= "Burst limit:         $resv->{reservation_burst_limit}\n";
     }
-    $stats .= "Source:             $inref->{src_address}\n" .
-        "Destination:        $inref->{dst_address}\n";
-    if ($inref->{reservation_src_port}) {
-        $stats .= "Source port:        $inref->{reservation_src_port}\n";
+    $stats .= "Source:             $resv->{source_host}\n" .
+        "Destination:        $resv->{destination_host}\n";
+    if ($resv->{reservation_src_port}) {
+        $stats .= "Source port:        $resv->{reservation_src_port}\n";
     }
     else { $stats .= "Source port:        DEFAULT\n"; }
 
-    if ($inref->{reservation_dst_port}) {
-        $stats .= "Destination port:   $inref->{reservation_dst_port}\n";
+    if ($resv->{reservation_dst_port}) {
+        $stats .= "Destination port:   $resv->{reservation_dst_port}\n";
     }
     else { $stats .= "Destination port:   DEFAULT\n"; }
 
-    if ($inref->{reservation_protocol}) {
-        $stats .= "Protocol:           $inref->{reservation_protocol}\n";
+    if ($resv->{reservation_protocol} &&
+        ($resv->{reservation_protocol} ne 'NULL')) {
+        $stats .= "Protocol:           $resv->{reservation_protocol}\n";
     }
     else { $stats .= "Protocol:           DEFAULT\n"; }
 
-    if ($inref->{reservation_dscp}) {
-        $stats .= "DSCP:               $inref->{reservation_dscp}\n";
+    if ($resv->{reservation_dscp} && ($resv->{reservation_dscp} ne 'NU')) {
+        $stats .= "DSCP:               $resv->{reservation_dscp}\n";
     }
     else { $stats .= "DSCP:               DEFAULT\n"; }
 
-    if ($inref->{reservation_class}) {
-        $stats .= "Class:              $inref->{reservation_class}\n\n";
+    if ($resv->{reservation_class}) {
+        $stats .= "Class:              $resv->{reservation_class}\n\n";
     }
     else { $stats .= "Class:              DEFAULT\n\n"; }
 
@@ -90,61 +91,62 @@ sub get_stats {
 # get_lsp_stats
 #
 sub get_lsp_stats {
-    my( $self, $lsp_info, $inref, $status, $config_time) = @_;
+    my( $self, $resv, $status, $config_time) = @_;
 
     my $stats = 
-        "LSP config by $inref->{user_dn} with parameters:\n" .
+        "LSP config by $resv->{user_dn} with parameters:\n" .
         "Config time:        $config_time\n" .
-        "Description:        $inref->{reservation_description}\n" .
-        "Reservation id:     $inref->{reservation_id}\n" .
-        "Start time:         $inref->{reservation_start_time}\n";
-    if ($inref->{reservation_end_time} ne $self->get_infinite_time()) {
-        $stats .= "End time:           $inref->{reservation_end_time}\n";
+        "Description:        $resv->{reservation_description}\n" .
+        "Reservation id:     $resv->{reservation_id}\n" .
+        "Start time:         $resv->{reservation_start_time}\n";
+    if ($resv->{reservation_end_time} ne $self->get_infinite_time()) {
+        $stats .= "End time:           $resv->{reservation_end_time}\n";
     }
     else {
         $stats .= "End time:           persistent circuit\n";
     }
     $stats .=
-        "Created time:       $inref->{reservation_created_time}\n" .
-        "(Times are in UTC $inref->{reservation_time_zone})\n" .
-        "Bandwidth:          $lsp_info->{bandwidth}\n" .
-        "Burst limit:        $lsp_info->{'policer_burst-size-limit'}\n" .
-        "Source:             $lsp_info->{'source-address'}\n" .
-        "Destination:        $lsp_info->{'destination-address'}\n";
-    if ($lsp_info->{'source-port'}) {
-        $stats .= "Source port:        $lsp_info->{'source-port'}\n";
+        "Created time:       $resv->{reservation_created_time}\n" .
+        "(Times are in UTC $resv->{reservation_time_zone})\n" .
+        "Bandwidth:          $resv->{reservation_bandwidth}\n" .
+        "Burst limit:        $resv->{reservation_burst_limit}\n" .
+        "Source:             $resv->{source_host}\n" .
+        "Destination:        $resv->{destination_host}\n";
+    if ($resv->{reservation_src_port}) {
+        $stats .= "Source port:        $resv->{reservation_src_port}\n";
     }
     else { $stats .= "Source port:        DEFAULT\n"; }
 
-    if ($lsp_info->{'destination-port'}) {
-        $stats .= "Destination port:   $lsp_info->{'destination-port'}\n";
+    if ($resv->{reservation_dst_port}) {
+        $stats .= "Destination port:   $resv->{reservation_dst_port}\n";
     }
     else { $stats .= "Destination port:   DEFAULT\n"; }
 
-    if ($lsp_info->{protocol}) {
-        $stats .= "Protocol:           $lsp_info->{protocol}\n";
+    if ($resv->{reservation_protocol} &&
+        ($resv->{reservation_protocol} ne 'NULL')) {
+        $stats .= "Protocol:           $resv->{reservation_protocol}\n";
     }
     else { $stats .= "Protocol:           DEFAULT\n"; }
 
-    if ($lsp_info->{dscp}) {
-        $stats .= "DSCP:               $lsp_info->{dscp}\n";
+    if ($resv->{reservation_dscp} && ($resv->{reservation_dscp} ne 'NU')) {
+        $stats .= "DSCP:               $resv->{reservation_dscp}\n";
     }
     else { $stats .= "DSCP:               DEFAULT\n"; }
 
-    if ($lsp_info->{'lsp_class-of-service'}) {
-        $stats .= "Class:              $lsp_info->{'lsp_class-of-service'}\n";
+    if ($resv->{reservation_class}) {
+        $stats .= "Class:              $resv->{reservation_class}\n";
     }
     else { $stats .= "Class:   DEFAULT\n"; }
 
-    if ($lsp_info->{lsp_from}) {
-        $stats .= "Ingress loopback:   $lsp_info->{lsp_from}\n";
+    if ($resv->{ingress_router}) {
+        $stats .= "Ingress loopback:   $resv->{ingress_router}\n";
     }
-    else { $stats .= "Ingress loopback:   WARNING:  None specified\n"; }
+    else { $stats .= "Ingress loopback:   $resv->{ingress_ip}\n"; }
 
-    if ($lsp_info->{lsp_to}) {
-        $stats .= "Egress loopback:    $lsp_info->{lsp_to}\n";
+    if ($resv->{egress_router}) {
+        $stats .= "Egress loopback:    $resv->{egress_router}\n";
     }
-    else { $stats .= "Egress loopback:    WARNING:  None specified\n"; }
+    else { $stats .= "Egress loopback:    $resv->{egress_ip}\n"; }
     
     if ($status) {
         $stats .= "Error:              $status\n";

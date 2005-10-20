@@ -1,5 +1,5 @@
 # Scheduler.pm:  Database handling for BSS/Scheduler/SchedulerThread.pm
-# Last modified: July 22, 2005
+# Last modified: October 18, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -30,19 +30,13 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{dbconn} = BSS::Frontend::Database->new(
-                       'database' => $self->{configs}->{use_BSS_database},
-                       'login' => $self->{configs}->{BSS_login_name},
-                       'password' => $self->{configs}->{BSS_login_passwd},
-                       'configs' => $self->{configs})
-                        or die "FATAL:  could not connect to database";
     $self->{stats} = BSS::Frontend::Stats->new();
 }
 ######
 
 ###############################################################################
 sub find_pending_reservations  { 
-    my ( $self, $user_dn, $status ) = @_;
+    my ( $self, $user_dn, $status, $time_interval ) = @_;
 
     my ( $sth, $data, $query );
 
@@ -56,13 +50,9 @@ sub find_pending_reservations  {
 
     $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                            $self->{configs}->{reservation_time_interval},
-                            $timezone );
+                            $time_interval, $timezone );
     my $timeslot = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
-    if ($self->{configs}->{debug}) {
-        print STDERR "pending: $timeslot\n";
-    }
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
     $sth = $self->{dbconn}->do_query($user_dn, $query, $status, $timeslot);
@@ -74,7 +64,7 @@ sub find_pending_reservations  {
 
 ###############################################################################
 sub find_expired_reservations {
-    my ( $self, $user_dn, $status ) = @_;
+    my ( $self, $user_dn, $status, $time_interval ) = @_;
 
     my ( $sth, $data, $query );
 
@@ -87,13 +77,9 @@ sub find_expired_reservations {
 
     $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                            $self->{configs}->{reservation_time_interval},
-                            $timezone );
+                            $time_interval, $timezone );
     my $timeslot = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
-    if ($self->{configs}->{debug}) {
-        print STDERR "pending: $timeslot\n";
-    }
     $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
     $sth = $self->{dbconn}->do_query($user_dn, $query, $status, $timeslot,
@@ -106,35 +92,52 @@ sub find_expired_reservations {
 ######
 
 ###############################################################################
+#
+sub get_time_intervals {
+    my( $self, $user_dn ) = @_;
+
+    my( $sth, $query );
+
+        # just use defaults for now
+    $query = "SELECT server_db_poll_time, server_time_interval" .
+             " FROM servers WHERE server_id = 1";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    my $ref = $sth->fetchrow_hashref();
+    $sth->finish();
+    return( $ref->{server_db_poll_time}, $ref->{server_time_interval} );
+}
+######
+
+###############################################################################
+#
 sub get_lsp_stats {
-    my( $self, $user_dn, $lsp_info, $inref, $status ) = @_;
+    my( $self, $user_dn, $resv, $status ) = @_;
 
     my( $query, $sth, $config_time );
 
     $query = "SELECT CONVERT_TZ(now(), '+00:00', ?)";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_time_zone});
+                                      $resv->{reservation_time_zone});
     $config_time = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     # convert to seconds before sending back
     $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_start_time},
-                                      $inref->{reservation_time_zone} );
-    $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+                                      $resv->{reservation_start_time},
+                                      $resv->{reservation_time_zone} );
+    $resv->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_end_time},
-                                      $inref->{reservation_time_zone} );
-    $inref->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+                                      $resv->{reservation_end_time},
+                                      $resv->{reservation_time_zone} );
+    $resv->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
     $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_created_time},
-                                      $inref->{reservation_time_zone} );
-    $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+                                      $resv->{reservation_created_time},
+                                      $resv->{reservation_time_zone} );
+    $resv->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
     $sth->finish();
-    my $results = $self->{stats}->get_lsp_stats($lsp_info, $inref,
-                                         $status, $config_time);
+    my $results = $self->{stats}->get_lsp_stats($resv, $status, $config_time);
     return $results;
 }
 ######
