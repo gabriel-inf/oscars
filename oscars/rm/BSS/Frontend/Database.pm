@@ -9,6 +9,8 @@ package BSS::Frontend::Database;
 
 use strict; 
 
+use Socket;
+
 use DBI;
 use Data::Dumper;
 use Error qw(:try);
@@ -140,6 +142,98 @@ sub get_pss_configs {
     my $configs = $sth->fetchrow_hashref();
     $sth->finish();
     return( $configs );
+}
+######
+
+##############################################################################
+#
+sub get_host_info {
+    my( $self, $user_dn, $rref ) = @_;
+ 
+    my( $resv, %mapping, $ipaddr );
+
+    my $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
+    my $sth = $self->do_query($user_dn, $query);
+    my $arrayref = $sth->fetchall_arrayref();
+    for $resv (@$arrayref) { $mapping{$$resv[0]} = $$resv[1]; }
+    $sth->finish();
+
+    for $resv (@$rref) {
+        $resv->{source_ip} = $mapping{$resv->{src_hostaddr_id}};
+        $ipaddr = inet_aton($resv->{source_ip});
+        $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
+        $resv->{destination_ip} = $mapping{$resv->{dst_hostaddr_id}};
+        $ipaddr = inet_aton($resv->{destination_ip});
+        $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
+    }
+    return;
+}
+######
+
+##############################################################################
+#
+sub convert_times {
+    my( $self, $user_dn, $rref ) = @_;
+ 
+    my( $resv, $sth, $query );
+
+    # convert to time zone reservation was created in
+    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
+    for $resv (@$rref) {
+        $sth = $self->do_query( $user_dn, $query,
+                                      $resv->{reservation_start_time},
+                                      $resv->{reservation_time_zone} );
+        $resv->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+        $sth = $self->do_query( $user_dn, $query,
+                                      $resv->{reservation_end_time},
+                                      $resv->{reservation_time_zone} );
+        $resv->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+        $sth = $self->do_query( $user_dn, $query,
+                                      $resv->{reservation_created_time},
+                                      $resv->{reservation_time_zone} );
+        $resv->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+    }
+    return;
+}
+######
+
+##############################################################################
+#
+sub get_engr_fields {
+    my( $self, $user_dn, $rref ) = @_;
+ 
+    my( $resv, $hashref, @path_routers, $sth, $query );
+
+    $query = "SELECT router_name, router_loopback FROM routers" .
+             " WHERE router_id =" .
+                  " (SELECT router_id FROM interfaces" .
+                  "  WHERE interface_id = ?)";
+
+    for $resv (@$rref) {
+        $sth = $self->do_query($user_dn, $query, $resv->{ingress_interface_id});
+        $hashref = $sth->fetchrow_hashref();
+        $resv->{ingress_router} = $hashref->{router_name}; 
+        $resv->{ingress_ip} = $hashref->{router_loopback}; 
+        $sth->finish();
+
+        $sth = $self->do_query($user_dn, $query, $resv->{egress_interface_id});
+        $hashref = $sth->fetchrow_hashref();
+        $resv->{egress_router} = $hashref->{router_name}; 
+        $resv->{egress_ip} = $hashref->{router_loopback}; 
+        @path_routers = split(' ', $resv->{reservation_path});
+        $resv->{reservation_path} = ();
+        $sth->finish();
+        for $_ (@path_routers) {
+            $sth = $self->do_query($user_dn, $query, $_);
+            $hashref = $sth->fetchrow_hashref();
+            push(@{$resv->{reservation_path}}, $hashref->{router_name}); 
+            $sth->finish();
+        }
+    }
+    return;
 }
 ######
 

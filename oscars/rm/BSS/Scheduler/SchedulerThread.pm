@@ -123,6 +123,8 @@ sub find_new_reservations {
     # find reservations that need to be scheduled
     $resvs = $front_end->find_pending_reservations($user_dn, 'pending',
                                                             $time_interval);
+    $dbconn->get_host_info($user_dn, $resvs);
+    $dbconn->get_engr_fields($user_dn, $resvs); 
     for my $r (@$resvs) {
         ## calls to pss to setup reservations
         $status = setup_pss($pss_configs, $r);
@@ -155,6 +157,8 @@ sub find_expired_reservations {
     # thus expired
     $resvs = $front_end->find_expired_reservations($user_dn, 'active',
                                                             $time_interval);
+    $dbconn->get_host_info($user_dn, $resvs);
+    $dbconn->get_engr_fields($user_dn, $resvs); 
     # overkill for now
     my $pss_configs = $dbconn->get_pss_configs();
     for my $r (@$resvs) {

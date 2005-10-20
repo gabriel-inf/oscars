@@ -1,5 +1,5 @@
 # Stats.pm:  Reservation statistics formatting
-# Last modified: October 19, 2005
+# Last modified: October 20, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 package BSS::Frontend::Stats;
@@ -31,24 +31,24 @@ sub initialize {
 # get_stats
 #
 sub get_stats {
-    my( $self, $user_dn, $resv, $results) = @_;
+    my( $self, $user_dn, $resv) = @_;
 
     # only optional fields need to be checked for existence
     my $stats = 
         "Reservation entered by $user_dn with parameters:\n" .
         "Description:        $resv->{reservation_description}\n";
-    if ($results->{reservation_id}) {
-        $stats .= "Reservation id:     $results->{reservation_id}\n";
+    if ($resv->{reservation_id}) {
+        $stats .= "Reservation id:     $resv->{reservation_id}\n";
     }
-    $stats .= "Start time:         $results->{reservation_start_time}\n";
-    if ($results->{reservation_end_time} ne $self->get_infinite_time()) {
-        $stats .= "End time:           $results->{reservation_end_time}\n";
+    $stats .= "Start time:         $resv->{reservation_start_time}\n";
+    if ($resv->{reservation_end_time} ne $self->get_infinite_time()) {
+        $stats .= "End time:           $resv->{reservation_end_time}\n";
     }
     else {
         $stats .= "End time:           persistent circuit\n";
     }
-    if ($results->{reservation_created_time}) {
-        $stats .= "Created time:       $results->{reservation_created_time}\n";
+    if ($resv->{reservation_created_time}) {
+        $stats .= "Created time:       $resv->{reservation_created_time}\n";
     }
     $stats .= "(Times are in UTC $resv->{reservation_time_zone})\n";
     $stats .= "Bandwidth:          $resv->{reservation_bandwidth}\n";
