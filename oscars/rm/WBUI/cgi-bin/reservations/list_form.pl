@@ -108,7 +108,7 @@ sub print_row {
 
     print "<td>", $row->{reservation_status}, "</td>\n";
 
-    print "<td>", $row->{src_address}, "</td>\n";
-    print "<td>", $row->{dst_address}, "</td>\n";
+    print "<td>", $row->{source_host}, "</td>\n";
+    print "<td>", $row->{destination_host}, "</td>\n";
 }
 ######

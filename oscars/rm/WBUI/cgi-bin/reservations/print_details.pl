@@ -72,12 +72,12 @@ sub print_reservation_detail {
 
     $ctr = start_row($ctr);
     print     "<td>Source</td>";
-    print     "<td>", $row->{src_address}, "</td>";
+    print     "<td>", $row->{source_host}, "</td>";
     print   "</tr>\n";
 
     $ctr = start_row($ctr);
     print     "<td>Destination</td>";
-    print     "<td>", $row->{dst_address}, "</td>";
+    print     "<td>", $row->{destination_host}, "</td>";
     print   "</tr>\n";
 
     $ctr = start_row($ctr);

@@ -53,8 +53,8 @@ sub print_reservation_form {
     print     "<th>Bandwidth (Mbps)</th>";
     print   "</tr>\n";
     print   "<tr>";
-    print     '<td class="required"><input type="text" name="src_address" size="29"></input></td>';
-    print     '<td class="required"><input type="text" name="dst_address" size="29"></input></td>';
+    print     '<td class="required"><input type="text" name="source_host" size="29"></input></td>';
+    print     '<td class="required"><input type="text" name="destination_host" size="29"></input></td>';
     print     '<td class="required"><input type="text" name="reservation_bandwidth" maxlength="7" size="14"></input></td>';
     print   "</tr>\n";
     print   "<tr>";
@@ -182,12 +182,12 @@ sub print_reservation_form {
         print     "<th>Egress loopback</th>";
         print   "</tr>\n";
         print   "<tr>";
-        print     '<td><input type="text" name="lsp_from"></input></td>';
-        print     '<td><input type="text" name="lsp_to"></input></td>';
+        print     '<td><input type="text" name="ingress_router"></input></td>';
+        print     '<td><input type="text" name="egress_router"></input></td>';
         print   "</tr>\n";
         print   "<tr>";
-        print     "<td>(IP address)</td>";
-        print     "<td>(IP address)</td>";
+        print     "<td>(Host name or IP address)</td>";
+        print     "<td>(Host name or IP address)</td>";
         print   "</tr>\n";
         print "</table>\n";
     }
