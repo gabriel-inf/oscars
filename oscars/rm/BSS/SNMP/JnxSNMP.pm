@@ -6,7 +6,6 @@
 
 package BSS::SNMP::JnxSNMP;
 
-use Config::Auto;
 use Data::Dumper;
 use SNMP;
 
@@ -55,7 +54,7 @@ sub new
 #
 sub query_lsp_snmpdata
 {
-    my ($_self, $_dst) = @_;
+    my ($_self, $_configs, $_dst) = @_;
     my ($_session, $_vars);
     my ($_varBinds, $_varBindEntry, $_varBindEntryVal);
 
@@ -71,7 +70,7 @@ sub query_lsp_snmpdata
     # Initialize SNMP session.
     $_session = new SNMP::Session (
                      'DestHost'       => $_dst,
-                     'Community'      => $_self->{config}->{jnx_snmp},
+                     'Community'      => $_configs->{jnx_snmp},
                      'RemotePort'     => 161,
                      'Timeout'        => 300000,  # 300ms
                      'Retries'        => 3,
@@ -204,9 +203,6 @@ sub get_error {
 sub initialize 
 {
     my ($_self) = @_;
-
-    # read configuration file for this package
-    $_self->{config} = Config::Auto::parse($ENV{OSCARS_HOME} . '/oscars.cfg');
 
     # Clear error message.
     $_self->{errMsg} = 0;
