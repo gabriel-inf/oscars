@@ -67,16 +67,8 @@ sub get_stats {
     }
     else { $stats .= "Destination port:   DEFAULT\n"; }
 
-    if ($resv->{reservation_protocol} &&
-        ($resv->{reservation_protocol} ne 'NULL')) {
-        $stats .= "Protocol:           $resv->{reservation_protocol}\n";
-    }
-    else { $stats .= "Protocol:           DEFAULT\n"; }
-
-    if ($resv->{reservation_dscp} && ($resv->{reservation_dscp} ne 'NU')) {
-        $stats .= "DSCP:               $resv->{reservation_dscp}\n";
-    }
-    else { $stats .= "DSCP:               DEFAULT\n"; }
+    $stats .= "Protocol:           $resv->{reservation_protocol}\n";
+    $stats .= "DSCP:               $resv->{reservation_dscp}\n";
 
     if ($resv->{reservation_class}) {
         $stats .= "Class:              $resv->{reservation_class}\n\n";

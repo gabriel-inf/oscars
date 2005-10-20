@@ -162,9 +162,15 @@ sub get_host_info {
         $resv->{source_ip} = $mapping{$resv->{src_hostaddr_id}};
         $ipaddr = inet_aton($resv->{source_ip});
         $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
+        if (!$resv->{source_host}) {
+            $resv->{source_host} = $resv->{source_ip};
+        }
         $resv->{destination_ip} = $mapping{$resv->{dst_hostaddr_id}};
         $ipaddr = inet_aton($resv->{destination_ip});
         $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
+        if (!$resv->{destination_host}) {
+            $resv->{destination_host} = $resv->{destination_ip};
+        }
     }
     return;
 }

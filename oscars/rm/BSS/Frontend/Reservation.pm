@@ -95,6 +95,7 @@ sub insert_reservation {
     my $user_dn = $inref->{user_dn};
     my( $duration_seconds );
 
+    print STDERR Dumper($inref);
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
     {
@@ -196,6 +197,7 @@ sub insert_reservation {
     # copy over non-db fields
     $hashref->{source_host} = $inref->{source_host};
     $hashref->{destination_host} = $inref->{destination_host};
+
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
     $sth = $self->{dbconn}->do_query($user_dn, $query,
@@ -205,9 +207,14 @@ sub insert_reservation {
     my $results;
     my @resv_array = ($hashref);
     $results->{rows} = \@resv_array;
+    # clean up NULL values
+    $self->check_nulls($results->{rows});
     # convert times back to user's time zone for mail message
     $self->{dbconn}->convert_times($user_dn, $results->{rows});
-    $sth->finish();
+    # get loopback fields if have engr privileges
+    if ($self->{policy}->authorized($inref->{user_level}, "engr")) {
+        $self->{dbconn}->get_engr_fields($user_dn, $results->{rows}); 
+    }
 
     my $mailer = Common::Mail->new();
     my $mail_msg = $stats->get_stats($user_dn, $results->{rows}[0]) ;
@@ -215,6 +222,7 @@ sub insert_reservation {
                        "Reservation made by $user_dn", $mail_msg);
     $mailer->send_mail($mailer->get_webmaster(), $user_dn,
                        "Your reservation has been accepted", $mail_msg);
+    print STDERR Dumper($results->{rows});
     return( $results );
 }
 ######
@@ -281,10 +289,34 @@ sub get_reservations {
         $inref->{reservation_id}) {
         # in this case, only one row
         $self->{dbconn}->get_engr_fields($user_dn, $rref); 
+        $self->check_nulls($rref);
     }
     my $results;
     $results->{rows} = $rref;
     return( $results );
+}
+######
+
+#################
+# Private methods
+#################
+
+sub check_nulls {
+    my( $self, $rref ) = @_ ;
+
+    my( $resv );
+
+    for $resv (@$rref) {
+        # clean up NULL values
+        if (!$resv->{reservation_protocol} ||
+            ($resv->{reservation_protocol} eq 'NULL')) {
+            $resv->{reservation_protocol} = 'DEFAULT';
+        }
+        if (!$resv->{reservation_dscp} ||
+            ($resv->{reservation_dscp} eq 'NU')) {
+            $resv->{reservation_dscp} = 'DEFAULT';
+        }
+    }
 }
 ######
 
