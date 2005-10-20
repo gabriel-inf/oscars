@@ -1,6 +1,6 @@
 # SchedulerThread.pm:  Scheduler thread that polls the db looking for 
 #                      reservations that need to be scheduled
-# Last modified:  July 22, 2005
+# Last modified:  October 18, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee (jrlee@lbl.gov)
 
@@ -19,6 +19,7 @@ use Common::Mail;
 use PSS::LSPHandler::JnxLSP;
 
     # Front end to reservations database
+use BSS::Frontend::Database;
 use BSS::Frontend::Scheduler;
 
 use strict;
@@ -37,21 +38,15 @@ use constant _LSP_TEARDOWN => 0;
 
 ################## GLOBALS ##############################
 # settings from global configuration file 
-my ($configs);
+my ($debug);
+my ($dbconn);
 
-
-#fake pss calls for the momment
-my ($fakeit) = 0;
 
 ##############################################################################
 # start_scheduler:  Start up and detach a thread to do scheduling, and
 #                   return control to the main prog
 #
 sub start_scheduler { 
-    # get a copy of the config
-    $configs = shift;
-
-    if ($configs->{debug}) { print STDERR "Starting Scheduler\n"; }
     my $handler = threads->create("scheduler");
     $handler->detach();
 
@@ -66,31 +61,43 @@ sub scheduler {
 
     my ($front_end);
 
+    my $db_login = 'oscars';
+    my $password = 'ritazza6';
+
+    $dbconn = BSS::Frontend::Database->new(
+                 'database' => 'DBI:mysql:BSS',
+                 'dblogin' => $db_login,
+                 'password' => $password)
+             or die "FATAL:  could not connect to database";
+
     print STDERR "Scheduler running\n";
-    $front_end = BSS::Frontend::Scheduler->new('configs' => $configs);
+    $debug = $dbconn->get_debug_level('');
+    $front_end = BSS::Frontend::Scheduler->new('dbconn' => $dbconn);
     my $pseudo_user = 'SCHEDULER';
     try {
-        $front_end->{dbconn}->login_user($pseudo_user);
+        $dbconn->login_user($pseudo_user);
     }
     catch Common::Exception with {
         my $E = shift;
         print STDERR $E->{-text};
     };
 
+    my ($db_poll_time, $time_interval) =
+         $front_end->get_time_intervals($pseudo_user);
     while (1) {
         try {
             # find reservations that need to be actived
-            if ($configs->{debug}) { print STDERR "before find new_reservations\n"; }
-            find_new_reservations($pseudo_user, $front_end);
-            if ($configs->{debug}) { print STDERR "after find new_reservations\n"; }
+            if ($debug) { print STDERR "before find new_reservations\n"; }
+            find_new_reservations($pseudo_user, $front_end, $time_interval);
+            if ($debug) { print STDERR "after find new_reservations\n"; }
 
             # find reservations that need to be deactivated 
-            if ($configs->{debug}) { print STDERR "before find_expired_reservations\n"; }
-            find_expired_reservations($pseudo_user, $front_end);
-            if ($configs->{debug}) { print STDERR "after find_expired_reservations\n"; }
+            if ($debug) { print STDERR "before find_expired_reservations\n"; }
+            find_expired_reservations($pseudo_user, $front_end, $time_interval);
+            if ($debug) { print STDERR "after find_expired_reservations\n"; }
 
             # check every do_poll_time seconds
-            sleep($configs->{db_poll_time});
+            sleep($db_poll_time);
         };
         catch Common::Exception with {
             my $E = shift;
@@ -105,25 +112,24 @@ sub scheduler {
 #    reservatations in db that need to be setup and run in the next N minutes.
 #
 sub find_new_reservations {
-    my ($user_dn, $front_end) = @_;
+    my ($user_dn, $front_end, $time_interval) = @_;
 
-    my ($resv, $status);
+    my ($resvs, $status);
     my ($error_msg);
     my( $mailer, $mail_msg );
     $mailer = Common::Mail->new();
+    my $pss_configs = $dbconn->get_pss_configs();
 
     # find reservations that need to be scheduled
-    $resv = $front_end->find_pending_reservations($user_dn, 'pending');
-    for my $r (@$resv) {
+    $resvs = $front_end->find_pending_reservations($user_dn, 'pending',
+                                                            $time_interval);
+    for my $r (@$resvs) {
         ## calls to pss to setup reservations
-        my %lsp_info = map_fields($front_end, $r);
-        if ($configs->{allow_lsp_config}) {
-            $status = setup_pss(\%lsp_info, $r);
-        }
+        $status = setup_pss($pss_configs, $r);
 
-        if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
+        if ($debug) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, 'active', $front_end);
-        $mail_msg = $front_end->get_lsp_stats($user_dn, \%lsp_info, $r, $status);
+        $mail_msg = $front_end->get_lsp_stats($user_dn, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP set up status", $mail_msg);
         $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
@@ -139,25 +145,24 @@ sub find_new_reservations {
 #                             them down
 #
 sub find_expired_reservations {
-    my ($user_dn, $front_end) = @_;
+    my ($user_dn, $front_end, $time_interval) = @_;
 
-    my ($resv, $status);
+    my ($resvs, $status);
     my( $mailer, $mail_msg );
     $mailer = Common::Mail->new();
 
     # find reservations whose end time is before the current time and
     # thus expired
-    $resv = $front_end->find_expired_reservations($user_dn, 'active');
-       
-    for my $r (@$resv) {
-        my %lsp_info = map_fields($front_end, $r);
-        if ($configs->{allow_lsp_config}) {
-            $status = teardown_pss(\%lsp_info, $r);
-        }
+    $resvs = $front_end->find_expired_reservations($user_dn, 'active',
+                                                            $time_interval);
+    # overkill for now
+    my $pss_configs = $dbconn->get_pss_configs();
+    for my $r (@$resvs) {
+        $status = teardown_pss($pss_configs, $r);
 
-        if ($configs->{debug}) { print STDERR "update reservation to active\n"; }
+        if ($debug) { print STDERR "update reservation to active\n"; }
         update_reservation( $r, $status, 'finished', $front_end);
-        $mail_msg = $front_end->get_lsp_stats($user_dn, \%lsp_info, $r, $status);
+        $mail_msg = $front_end->get_lsp_stats($user_dn, $r, $status);
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        "LSP tear down status", $mail_msg);
         $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
@@ -172,21 +177,20 @@ sub find_expired_reservations {
 # setup_pss:  format the args and call pss to do the configuration change
 #
 sub setup_pss {
-    my( $lspInfo, $r ) = @_;   
+    my( $pss_configs, $resv_info ) = @_;   
 
     my( $error );
 
     print STDERR "execing pss to schedule reservations\n";
 
-    if ($fakeit == 0 ) {
         # Create an LSP object.
-        my $jnxLsp = new PSS::LSPHandler::JnxLSP($lspInfo);
+    my $lsp_info = map_fields($pss_configs, $resv_info);
+    my $jnxLsp = new PSS::LSPHandler::JnxLSP($lsp_info);
 
-        print STDERR "Setting up LSP...\n";
-        $jnxLsp->configure_lsp(_LSP_SETUP, $r);
-        if ($error = $jnxLsp->get_error())  {
-            return( $error );
-        }
+    print STDERR "Setting up LSP...\n";
+    $jnxLsp->configure_lsp(_LSP_SETUP, $resv_info);
+    if ($error = $jnxLsp->get_error())  {
+        return( $error );
     }
     print STDERR "LSP setup complete\n" ;
     return( "" );
@@ -197,19 +201,18 @@ sub setup_pss {
 # teardown_pss:  format the args and call pss to teardown the configuraion 
 #
 sub teardown_pss {
-    my ($lspInfo, $r) = @_;
+    my ( $pss_configs, $resv_info ) = @_;
 
-    my ($error);
+    my ( $error );
 
-    if ($fakeit == 0 ) {
         # Create an LSP object.
-        my ($jnxLsp) = new PSS::LSPHandler::JnxLSP($lspInfo);
+    my $lsp_info = map_fields($pss_configs, $resv_info);
+    my $jnxLsp = new PSS::LSPHandler::JnxLSP($lsp_info);
 
-        print STDERR "Tearing down LSP...\n" ;
-        $jnxLsp->configure_lsp(_LSP_TEARDOWN, $r); 
-        if ($error = $jnxLsp->get_error())  {
-            return( $error );
-        }
+    print STDERR "Tearing down LSP...\n" ;
+    $jnxLsp->configure_lsp(_LSP_TEARDOWN, $resv_info); 
+    if ($error = $jnxLsp->get_error())  {
+        return( $error );
     }
     print STDERR "LSP teardown complete\n" ;
     return( "" );
@@ -229,67 +232,52 @@ sub update_reservation {
 
     if ( !$error_msg ) {
         print STDERR "Changing status to $status\n";
-        ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, $status)
+        ($update_status, $update_msg) = $dbconn->update_reservation('SCHEDULER', $resv, $status)
     } else {
         print STDERR "Changing status to failed\n";
-        ($update_status, $update_msg) = $front_end->{dbconn}->update_reservation('SCHEDULER', $resv, 'failed')
+        ($update_status, $update_msg) = $dbconn->update_reservation('SCHEDULER', $resv, 'failed')
     }
 }
 ######
 
 ##############################################################################
+#
 sub map_fields {
-    my ( $front_end, $data ) = @_;
+    my ( $pss_configs, $resv ) = @_;
 
-    my ( %results, $error );
-    my ( $ingress_loopback_ip, $egress_loopback_ip, $src_address, $dst_address );
+    my ( %lsp_info );
 
-     # get loopbacks for routers, given interface ids, if an engineer
-     # has not specified one  (TODO:  error checking)
-    if (!$data->{lsp_from}) {
-        ($ingress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback('SCHEDULER', $data->{ingress_interface_id}, 'ip');
-    }
-    else {
-        $ingress_loopback_ip = $data->{lsp_from};
-    }
-    if (!$data->{lsp_to}) {
-        ($egress_loopback_ip, $error) = $front_end->{dbconn}->xface_id_to_loopback('SCHEDULER', $data->{egress_interface_id}, 'ip');
-    }
-    else {
-        $egress_loopback_ip = $data->{lsp_to};
-    }
-     print "lsp_from: $ingress_loopback_ip, lsp_to:  $egress_loopback_ip\n";
-     # get host name or IP address, given id 
-    ($src_address, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{src_hostaddr_id});
-    ($dst_address, $error) = $front_end->{dbconn}->hostaddrs_id_to_ip('SCHEDULER', $data->{dst_hostaddr_id});
-    %results = (
-      'name' => "oscars_$data->{reservation_id}",
-      'lsp_from' => $ingress_loopback_ip,
-      'lsp_to' => $egress_loopback_ip,
-      'bandwidth' => $data->{reservation_bandwidth},
-      'lsp_class-of-service' => $data->{reservation_class},
-      'policer_burst-size-limit' =>  $data->{reservation_burst_limit},
-      'source-address' => $src_address,
-      'destination-address' => $dst_address,
+    %lsp_info = (
+      'name' => "oscars_$resv->{reservation_id}",
+      'lsp_from' => $resv->{ingress_ip},
+      'lsp_to' => $resv->{egress_ip},
+      'bandwidth' => $resv->{reservation_bandwidth},
+      'lsp_class-of-service' => $resv->{reservation_class},
+      'policer_burst-size-limit' =>  $resv->{reservation_burst_limit},
+      'source-address' => $resv->{source_ip},
+      'destination-address' => $resv->{destination_ip},
     );
-    if ($data->{reservation_src_port} &&
-        ($data->{reservation_src_port} != 'NULL')) {
-        $results{'source-port'} = $data->{reservation_src_port};
+    if ($resv->{reservation_src_port} &&
+        ($resv->{reservation_src_port} != 'NULL')) {
+        $lsp_info{'source-port'} = $resv->{reservation_src_port};
     }
-    if ($data->{reservation_dst_port} &&
-      ($data->{reservation_dst_port} != 'NULL')) {
-        $results{'destination-port'} = $data->{reservation_dst_port};
+    if ($resv->{reservation_dst_port} &&
+      ($resv->{reservation_dst_port} != 'NULL')) {
+        $lsp_info{'destination-port'} = $resv->{reservation_dst_port};
     }
-    if ($data->{reservation_dscp} &&
-      ($data->{reservation_dscp} != 'NULL')) {
-        $results{dscp} = $data->{reservation_dscp};
+    if ($resv->{reservation_dscp} &&
+      ($resv->{reservation_dscp} != 'NULL')) {
+        $lsp_info{dscp} = $resv->{reservation_dscp};
     }
-    if ($data->{reservation_protocol} &&
-      ($data->{reservation_protocol} != 'NULL')) {
-        $results{protocol} = $data->{reservation_protocol};
+    if ($resv->{reservation_protocol} &&
+      ($resv->{reservation_protocol} != 'NULL')) {
+        $lsp_info{protocol} = $resv->{reservation_protocol};
     }
-    return ( %results );
+    $lsp_info{configs} = $pss_configs;
+    return ( \%lsp_info );
 }
+######
+
 
 1;
 

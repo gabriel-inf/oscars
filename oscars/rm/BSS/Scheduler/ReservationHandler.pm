@@ -1,6 +1,6 @@
 ##############################################################################
 # Main package, uses the BSS database front end
-# July 8, 2005
+# October 18, 2005 
 #
 # JRLee
 # DWRobertson
@@ -40,8 +40,8 @@ sub initialize {
     my ($self) = @_;
 
     $self->{frontend} = BSS::Frontend::Reservation->new(
-                                               'configs' => $self->{configs});
-    $self->{dbconn} = $self->{frontend}->{dbconn};
+                                               'dbconn' => $self->{dbconn});
+    $self->{configs} = $self->{dbconn}->get_trace_configs();
 }
 ######
 
@@ -71,12 +71,7 @@ sub insert_reservation {
     my $results = {};
 
     $self->{output_buf} = "*********************\n";
-    if ($inref->{lsp_from} && $self->not_an_ip($inref->{lsp_from})) {
-        $inref->{lsp_from} = inet_ntoa(inet_aton($inref->{lsp_from}));
-    }
-    if ($inref->{lsp_to} && $self->not_an_ip($inref->{lsp_to})) {
-        $inref->{lsp_to} = inet_ntoa(inet_aton($inref->{lsp_to}));
-    }
+    $self->convert_addresses($inref);
     ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
             $inref->{reservation_path}) = $self->find_interface_ids($inref);
 
@@ -123,7 +118,7 @@ sub do_ping {
     my ( $self, $host ) = @_;
 
     # use sytem 'ping' command (should be config'd in config file
-    if ($self->{configs}{use_system}) {
+    if ($self->{configs}->{trace_conf_use_system}) {
         my @ping = `/bin/ping -w 10 -c 3 -n  $host`;
         for my $i (@ping) {
             if ( $i =~ /^64 bytes/ ) {  
@@ -159,10 +154,10 @@ sub do_remote_trace {
 
     @path = ();
     # try to ping before traceing?
-    if ($self->{configs}{use_ping}) { $self->do_ping($dst); }
+    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($dst); }
 
     my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
-    $jnxTraceroute->traceroute($src, $dst);
+    $jnxTraceroute->traceroute($self->{configs}, $src, $dst);
     @hops = $jnxTraceroute->get_hops();
 
     # if we didn't hop much, maybe the same router?
@@ -171,9 +166,9 @@ sub do_remote_trace {
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
         $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn,
-                                                $self->{configs}{jnx_source});
+                               $self->{configs}->{trace_conf_jnx_source});
         $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
-                                                          $interface_id, 'ip');
+                               $interface_id, 'ip');
         return ($interface_id, $loopback_ip, \@path);
     }
 
@@ -223,7 +218,7 @@ sub do_local_trace {
     my ($tr, $hops, $interface_id);
 
     # try to ping before traceing?
-    if ($self->{configs}{use_ping}) { $self->do_ping($host); }
+    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($host); }
     $tr = new Net::Traceroute->new( host=>$host, timeout=>30, 
             query_timeout=>3, max_ttl=>20 ) || return (0);
 
@@ -257,6 +252,40 @@ sub do_local_trace {
 ######
 
 ##############################################################################
+# convert_addresses:  convert source and destination, and ingress and
+# egress to IP's, if necessary.
+sub convert_addresses{
+    my( $self, $inref ) = @_;
+
+    if ($self->not_an_ip($inref->{source_host})) {
+        $inref->{source_ip} =
+            inet_ntoa(inet_aton($inref->{source_host}));
+    }
+    else { $inref->{source_ip} = $inref->{source_host}; }
+    if ($self->not_an_ip($inref->{destination_host})) {
+        $inref->{destination_ip} =
+            inet_ntoa(inet_aton($inref->{destination_host}));
+    }
+    else { $inref->{destination_ip} = $inref->{destination_host}; }
+
+    if ($inref->{ingress_router}) {
+        if ($self->not_an_ip($inref->{ingress_router})) {
+            $inref->{ingress_ip} =
+                inet_ntoa(inet_aton($inref->{ingress_router}));
+        }
+        else { $inref->{ingress_ip} = $inref->{ingress_router}; }
+    }
+    if ($inref->{egress_router}) {
+        if ($self->not_an_ip($inref->{egress_router})) {
+            $inref->{egress_ip} =
+                 inet_ntoa(inet_aton($inref->{egress_router}));
+        }
+        else { $inref->{egress_ip} = $inref->{egress_router}; }
+    }
+}
+######
+
+##############################################################################
 # find_interface_ids:  run traceroutes to both hosts.  Find edge routers and
 # validate both ends.
 # IN:  src and dst host IP addresses
@@ -266,18 +295,16 @@ sub do_local_trace {
 sub find_interface_ids {
     my ($self, $inref) = @_;
 
-    my( $src, $dst, $ingress_interface_id, $egress_interface_id );
+    my( $ingress_interface_id, $egress_interface_id );
     my( $loopback_ip, $path, $start_router );
 
-    $src = $inref->{src_address};
-    $dst = $inref->{dst_address};
     # If the loopbacks have not already been specified, use the default
     # router to run the traceroute to the source, and find the router with
     # an oscars loopback closest to the source 
-    if ($inref->{lsp_from}) {
-        print STDERR "Ingress:  $inref->{lsp_from}\n";
+    if ($inref->{ingress_ip}) {
+        print STDERR "Ingress:  $inref->{ingress_ip}\n";
         $ingress_interface_id = $self->{dbconn}->ip_to_xface_id(
-                                       $inref->{user_dn}, $inref->{lsp_from});
+                                       $inref->{user_dn}, $inref->{ingress_ip});
         if ($ingress_interface_id != 0) {
             $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
                                        $inref->{user_dn},
@@ -290,15 +317,17 @@ sub find_interface_ids {
     }
     else {
         $self->{output_buf} .= "--traceroute:  " .
-                              "$self->{configs}{jnx_source} to source $src\n";
+                              "$self->{configs}->{trace_conf_jnx_source} " .
+                              "to source $inref->{source_ip}\n";
         ($ingress_interface_id, $loopback_ip, $path) =
                 $self->do_remote_trace($inref->{user_dn},
-                                       $self->{configs}{jnx_source}, $src);
+                              $self->{configs}->{trace_conf_jnx_source},
+                              $inref->{source_ip});
     }
   
-    if ($inref->{lsp_to}) {
+    if ($inref->{egress_ip}) {
         $egress_interface_id = $self->{dbconn}->ip_to_xface_id(
-                                       $inref->{user_dn}, $inref->{lsp_to});
+                                       $inref->{user_dn}, $inref->{egress_ip});
         if ($egress_interface_id != 0) {
             $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
                                       $inref->{user_dn},
@@ -312,15 +341,15 @@ sub find_interface_ids {
     else {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
-        if ( $self->{configs}{run_traceroute} )  {
+        if ( $self->{configs}->{trace_conf_run_trace} )  {
             $self->{output_buf} .= "--traceroute:  " .
-                               "$loopback_ip to destination $dst\n";
+                       "$loopback_ip to destination $inref->{destination_ip}\n";
             ($egress_interface_id, $loopback_ip, $path) =
                     $self->do_remote_trace($inref->{user_dn}, $loopback_ip,
-                                           $dst);
+                                           $inref->{destination_ip});
         } else {
             $ingress_interface_id = $self->do_local_trace($inref->{user_dn},
-                                                          $src);
+                                                      $inref->{source_ip});
         }
     }
 
