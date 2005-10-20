@@ -1,6 +1,7 @@
 # Package: JnxLSP.pm
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Class and methods to setup/teardown LSPs on Juniper routers.
+# Last Modified:  October 18, 2005
 
 package PSS::LSPHandler::JnxLSP;
 
@@ -9,7 +10,6 @@ use strict;
 use JUNOS::Device;
 use JUNOS::Trace;
 use XML::DOM;
-use Config::Auto;
 
 use Data::Dumper;
 
@@ -37,7 +37,7 @@ my ($_loadAction) = 'merge';  # Default load action is 'merge'.
 ################
 
 ##############################################################################
-# new:  create a jnxLSP.
+# new:  create a JnxLSP.
 # In:  <none>
 # Out: new object
 #
@@ -67,10 +67,12 @@ sub configure_lsp {
     # For LSP setup, use setupXmlFile
     # for teardown, use teardownXmlFile.
     if ($_lspOp == 1)  {
-        $_xmlFile = $ENV{OSCARS_HOME} . '/PSS/xml/' . $_self->{config}->{setupXmlFile};
+        $_xmlFile = $ENV{OSCARS_HOME} . '/PSS/xml/' .
+                    $_self->{configs}->{pss_conf_setup_file};
     }
     else  {
-        $_xmlFile = $ENV{OSCARS_HOME} . '/PSS/xml/' . $_self->{config}->{teardownXmlFile};
+        $_xmlFile = $ENV{OSCARS_HOME} . '/PSS/xml/' .
+                    $_self->{configs}->{pss_conf_teardown_file};
     }
 
     $_xmlString = $_self->read_xml_file($_xmlFile);
@@ -144,38 +146,26 @@ sub get_error {
 #################
 
 ##############################################################################
-# initialize: Initialize jnxLSP with default values if not already populated.
+# initialize: Initialize JnxLSP with default values if not already populated.
 # In:  <none>
 # Out: <none>
 #
 sub initialize {
     my ($_self) = @_;
 
-    # read configuration file for this package
-    $_self->{config} = Config::Auto::parse($ENV{OSCARS_HOME} . '/oscars.cfg');
-
     # Clear error message.
     $_self->{errMsg} = 0;
   
-    if (!defined($_self->{'lsp_class-of-service'}))  {
-        $_self->{'lsp_class-of-service'} = $_self->{config}->{CoS};
-    }
-    if (!defined($_self->{'lsp_setup-priority'}))  {
-        $_self->{'lsp_setup-priority'} = $_self->{config}->{setupPriority};
-    }
-    if (!defined($_self->{'lsp_reservation-priority'}))  {
-        $_self->{'lsp_reservation-priority'} = $_self->{config}->{resvPriority};
-    }
-    if (!defined($_self->{'policer_burst-size-limit'}))  {
-        # Burst size ~1% of bandwidth. (Left undone for now.)
-        $_self->{'policer_burst-size-limit'} = '1m';
-    }
-    if (!defined($_self->{external_interface_filter}))  {
-        $_self->{external_interface_filter} = $_self->{config}->{extIfFilter};
-    }
-    if (!defined($_self->{firewall_filter_marker}))  {
-        $_self->{firewall_filter_marker} = $_self->{config}->{firewallFilterMaker};
-    }
+        # not currently on a per-reservation basis
+    $_self->{'lsp_setup-priority'} =
+                                 $_self->{configs}->{pss_conf_setup_priority};
+    $_self->{'lsp_reservation-priority'} =
+                                 $_self->{configs}->{pss_conf_resv_priority};
+    $_self->{external_interface_filter} =
+                                 $_self->{configs}->{pss_conf_ext_if_filter};
+
+    $_self->{firewall_filter_marker} =
+                                 $_self->{configs}->{pss_conf_firewall_marker};
     return();
 }
 ######
@@ -264,9 +254,9 @@ sub execute_configuration_change {
     my ($_self, $_xmlString) = @_;
 
     my (%_jnxInfo) = (
-        'access' => $_self->{config}->{pss_access},
-        'login'  => $_self->{config}->{pss_login},
-        'password' => $_self->{config}->{pss_password},
+        'access' => $_self->{configs}->{pss_conf_access},
+        'login'  => $_self->{configs}->{pss_conf_login},
+        'password' => $_self->{configs}->{pss_conf_password},
         'hostname' => $_self->{lsp_from}
     );
     my ($_xmlDoc);
@@ -277,6 +267,10 @@ sub execute_configuration_change {
 
     # Initialize the XML Parser.
     my ($_xmlParser) = new XML::DOM::Parser;
+
+    if (!$_self->{configs}->{pss_conf_allow_lsp}) {
+        return("Not configured to allow JUNOScript commands");
+    }
 
     # Connect to the JUNOScript server.
     eval {
@@ -362,9 +356,9 @@ sub execute_operational_command {
     my ($_self, $_command) = @_;
 
     my (%_jnxInfo) = (
-        'access' => $_self->{config}->{pss_access},
-        'login'  => $_self->{config}->{pss_login},
-        'password' => $_self->{config}->{pss_password},
+        'access' => $_self->{configs}->{pss_conf_access},
+        'login'  => $_self->{configs}->{pss_conf_login},
+        'password' => $_self->{configs}->{pss_conf_password},
         'hostname' => $_self->{lsp_from}
     );
     my ($_jnxRes, $_error);
@@ -373,6 +367,9 @@ sub execute_operational_command {
     # Clear error message.
     $_self->{errMsg} = 0;
 
+    if (!$_self->{configs}->{pss_conf_allow_lsp}) {
+        return("Not configured to allow JUNOScript commands");
+    }
     # Connect to the JUNOScript server.
     my ($_jnx) = new JUNOS::Device(%_jnxInfo);
     unless (ref $_jnx) {
