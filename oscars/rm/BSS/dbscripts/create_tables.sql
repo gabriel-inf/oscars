@@ -94,6 +94,31 @@ CREATE TABLE IF NOT EXISTS reservations (
 ) type = MyISAM;
 
 
+-- Table containing default BSS server info, and info about each running server.
+-- When a server is started, it registers itself by creating an entry in
+-- this table.
+CREATE TABLE IF NOT EXISTS servers (
+    server_id               INT NOT NULL AUTO_INCREMENT,
+        -- This has a default value in the db, but can be overriden on the 
+        -- command line.
+    server_port             INT NOT NULL,
+
+        -- debug level
+    server_debug            INT NOT NULL,
+        -- Time (in seconds) between polling the reservation db
+    server_db_poll_time     INT NOT NULL,
+        -- Time interval (in seconds) to search for reservations 
+        -- to schedule must be larger then db_poll time
+    server_time_interval    INT NOT NULL,
+
+    server_start_time       DATETIME,
+    server_end_time         DATETIME,
+
+    server_mail_list        VARCHAR(36) NOT NULL,
+    server_send_mail        BOOLEAN NOT NULL,
+    PRIMARY KEY (server_id)
+) type=MyISAM;
+
 -- Following two tbbles are for configuration variables that can exist on a per
 -- reservation basis (one row is for the defaults).  The defaults are used
 -- if the foreign key is null in the reservation.  The defaults can
@@ -119,7 +144,6 @@ CREATE TABLE IF NOT EXISTS trace_confs (
     PRIMARY KEY (trace_conf_id)
 ) type=MyISAM;
 
-
 -- Configuration for LSP setup and teardown
 CREATE TABLE IF NOT EXISTS pss_confs (
     pss_conf_id               INT NOT NULL AUTO_INCREMENT,
@@ -134,6 +158,8 @@ CREATE TABLE IF NOT EXISTS pss_confs (
     pss_conf_ext_if_filter    VARCHAR(60) NOT NULL,
         -- LSP values.
     pss_conf_CoS              INT NOT NULL,
+        -- in bps
+    pss_conf_burst_limit      INT NOT NULL,
     pss_conf_setup_priority   INT NOT NULL,
     pss_conf_resv_priority    INT NOT NULL,
         -- allow LSP configuration
