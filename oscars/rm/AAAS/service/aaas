@@ -1,19 +1,30 @@
 #!/usr/bin/perl -w
 
 # aaas:  AAAS SOAP server.
-# Last modified: October 17, 2005
+# Last modified: October 19, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use SOAP::Transport::HTTP;
+use Data::Dumper;
+use Term::ReadKey;
 
-my %configs;
+my $db_login = 'oscars';
+my $password = 'ritazza6';
 
-my $numArgs = $#ARGV + 1;
+my $dbconn = AAAS::Frontend::Database->new(
+                 'database' => 'DBI:mysql:AAAS',
+                 'dblogin' => $db_login,
+                 'password' => $password)
+             or die "FATAL:  could not connect to database";
+
+my $request_handler = AAAS::Frontend::User->new('dbconn' => $dbconn);
+
+my $port_number = $dbconn->get_port();
 
 my $daemon = SOAP::Transport::HTTP::Daemon
-  -> new (LocalPort => 2000, Listen => 5, Reuse => 1)
+  -> new (LocalPort => $port_number, Listen => 5, Reuse => 1)
   -> dispatch_to('Dispatcher')
   -> handle;
 
@@ -28,28 +39,18 @@ use Common::Exception;
 use AAAS::Frontend::Validator;
 use AAAS::Frontend::User;
 
-my $aaas_user;
-
 sub dispatch {
     my ( $class_name, $inref ) = @_;
 
     my( $ex,  );
     my $results = {};
-    if (!$aaas_user) {
-            # hard-wired
-        $configs{aaas_database} = 'DBI:mysql:AAAS';
-            # TODO:  use command-line options like in starting MySQL
-        $configs{aaas_login} = 'oscars';
-        $configs{aaas_password} = 'ritazza6';
-        $aaas_user = AAAS::Frontend::User->new('configs' => \%configs);
-    }
 
     try {
         my $v = AAAS::Frontend::Validator->new();
         my $err = $v->validate($inref);
         if ($err) { throw Common::Exception($err); }
         my $m = $inref->{method};
-        $results = $aaas_user->$m($inref);
+        $results = $request_handler->$m($inref);
     }
     catch Common::Exception with {
         $ex = shift;
