@@ -6,61 +6,86 @@
 <body>
 <h1>OSCARS schedule</h1>
 
-<h2>9-12 to 9-16</h2>
+<p>This will be converted to some sort of timeline to reduce redundancies
+and indicate dependencies.</p>
+
+<h2>10-4 to 10-21</h2> 
 
 <ul>
-<li>This schedule completed.</li>
+<li>Replace use of configuration file with AAAS and BSS database tables.</li>
+<li>Meet with Mary and Chin about security requirements.  Decide on
+workable security implementation, and draw up workflow.</li>
+<li>Copy oscars repository to oscars-dev, and private repository to 
+oscars-testing.</li>
+<li>Move databases to oscars-testing.</li>
 </ul>
 
-<h2>9-19 to 10-3</h2>
+<h2>10-21 to 10-28</h2>
 
 <ul>
-<li>I'm on vacation.</li>
+<li>Finish security additions to functional and design specifications.</li>
+<li>Finish moving repository and servers to oscars-dev and oscars-testing.</li>
+<li>Finish post-installation steps for Apache.</li>
+<li>Save the current page in use in a cookie, and enable the user to
+return to an OSCARS page after going someplace else.</li>
 </ul>
 
-<h2>10-4 to 10-14</h2> 
+<h2>10-31 to 11-4</h2>
 
 <ul>
-<li>Meet with Mary about specifications.</li>
-<li>Security additions to functional and design specifications completed.</li>
-<li>Move servers and copy databases to oscars-dev and oscars-testing.</li>
-<li>Add the details for the design specification.</li>
-<li>Install and deploy Shibboleth 1.3 IdP and attribute provider on oscars-testing.</li>
-<li>Install and deploy GridShib on oscars-testing.</li>
-<li>Install and deploy GridProxy (or other centralized certificate management system).
-<li>Install and deploy Globus on oscars-testing.</li>
+<li>Return an error message if a server is not running (currently either
+a blank page is returned, or else no action appears to have been taken).</li>
+<li>If a user explicitly specifies an egress or ingress router, have an
+asterisk after that field in the notification sent to admin users.</li>
+<li>Start redoing AAAS to make it possible to plug in BRUW Shibboleth 
+material (registration pages, etc.).</li>
+<li>Start integration of ROAM material into clients, servers, and database 
+schemas.  Start working on ROAM-style resources, attributes, etc.</li>
 </ul>
 
-<h2>10-17 to 10-28</h2>
+<h2>11-7 to 11-11</h2>
 
 <ul>
-<li>Test Shibboleth, GridShib, GridProxy, and Globus interoperation, without AAAS.</li>
-<li>Reintegrate BRUW Shibboleth material (registration pages, etc.).</li>
+<li>Have status information flash when the status message changes.</li>
 <li>Add forms for user requests for attributes/rights.</li>
 <li>Get administrative page to add user and attributes working.</li>
+<li>Use MySQL 5 views for accesses to db involving oscars user, engr
+user, and admin user (replaces some of current functionality.</li>
 </ul>
 
-<h2>11-1 to 11-12</h2>
+<h2>11-14 to 11-25</h2>
 
 <ul>
-<li>Start redoing AAAS to work with GridShib, Shibboleth, Globus.</li>
-<li>Start specifying Shibboleth attributes and SAML assertions for groups,
-resources.</li>
-<li>Get SOAP::Lite over SSL working.</li>
-</ul>
-
-<h2>11-15 to 11-30</h2>
-
-<ul>
-<li>Finish redoing AAAS.</li>
-<li>SOAP working with WSDL service description.</li>
+<li>Finish integration of ROAM material.</li>
 <li>Get mod_perl rather than straight CGI working.</li>
+<li>Get SOAP::Lite over SSL working.</li>
+<li>SOAP working with WSDL service description.</li>
+<li>Have regular updates to routers, interfaces, and ipaddrs tables
+based on SNMP queries (need to integrate BSS/SNMP code).</li>
+<li>Start working on inter-domain specs documents, including workflow, with 
+input from I2, GEANT2.</li>
 </ul>
 
-<h2>12-1 to Christmas break</h2>
+<h2>11-28 to 12-9</h2>
 
 <ul>
-<li>Finish specifiying initial attributes and assertions, and implement.</li>
+<li>Add modify and delete actions (in addition to cancel) on
+reservation detail page.  Delete will move the reservation entry to another 
+table.</li>
+<li>Send notifications on modifications and delete of reservations.</li>
+<li>Require certificates for API access to OSCARS.</li>
+</ul>
+
+<h2>12-12 to Christmas break</h2>
+
+<ul>
+<li>Purge logs after they get bigger than a specified amount.</li>
+<li>Require reservation log to be accessible via reservation detail page
+for users with engineering privileges.</li>
+<li>Add "recompute route" button" to reservation details page.</li>
+<li>Add additional LSP info rows to reservation details page.</li>
+<li>Finish redoing AAAS.</li>
+<li>Finish interdomain specs.</li>
 </ul>
 
 <h2>1st quarter 2006</h2>
@@ -68,22 +93,22 @@ resources.</li>
 <p>With I2 and G2,</p>
 
 <ul>
-<li>Design workflow involved in inter-domain AAA communication and trust federation.</li>
-<li>Design workflow involved in inter-domain messages for reservations.</li>
+<li>Start implementing inter-domain AAA communication and trust federation.</li>
+<li>Start implementing workflow involved in inter-domain messages for reservations.</li>
 </ul>
 
 <h2>2nd and 3rd quarter, 2006</h2>
 
 <ul>
-<li>Incorporate monitoring within OSCARS.</li>
-<li>Implement inter-domain AAA communication and trust federation.</li>
-<li>Implement inter-domain messages for reservations.</li>
+<li>Finish implementing inter-domain AAA communication and trust 
+federation.</li>
+<li>Finish implementing inter-domain messages for reservations.</li>
 </ul>
 
 <h2>4th quarter 2006</h2>
 
 <ul>
-<li>Finish implemenation of inter-domain AAA and messages for reservation bandwidth.</li>
+<li>Incorporate monitoring within OSCARS.</li>
 <li>Have demo of work completed.</li>
 </ul>
 
