@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 <a href="http://www.es.net">ESnet</a><br/><br/>
 
-September 12, 2005<br/>
+October 25, 2005<br/>
 
 <h2>Objective</h2>
 
@@ -30,7 +30,7 @@ reservations and circuits, handling security and monitoring, and accounting.
  it indicates the year of the project during which it is scheduled or was
 completed.)</p>
 
-<a id="security_r">
+<a id="security">
 <p>Security is absolutely essential.  The impact of an abuse could be very
 large.  A DoS attack could prevent reservations from being processed.  If the
 service is compromised, and thus the routers it has access to, the WAN may be 
@@ -67,12 +67,15 @@ particular it must interoperate with Internet2 and G&Eacute;ANT2.
 Interdomain operation and security issues are discussed in a 
 separate <a href="https://oscars.es.net/specs/id.html">document.</a></p>
 
-<h3>Standards use</h3>
+<h3>Usability</h3>
 
-<p>The RM must use existing standards for authorization,
-authentication, encryption, policy, addressing, resource discovery, messaging,
-etc., wherever possible.  The implementation must also attempt to use a minimum
-number of standards/packages, to make installation as easy as possible.</p>
+<p>Installation and use must be easy as possible.
+A standard, well-known mechanism to implement operations such as transport
+and server capability, for example Apache or SOAP, is to be preferred.
+However, there may be cases where a standard is available for
+a certain operation, but is not available in the coding language chosen
+and is difficult to implement and use.  In such cases, a simple alternative
+mechanism, such as using a database for that operation, is preferable.</p>
 
 <h3>Modes of operation</h3>
 
@@ -293,7 +296,7 @@ well-known mechanisms.  A service description must be provided that will allow
 automated use of the API (y2).</p>
 
 <p>The interactive interface must be simple and intuitive.  It must prompt a 
-user for a username/password (y1) or certificate (y2) before allowing any 
+user for a credential (username/password, y1) before allowing any 
 requests.  It must in general operate within the trusted domain of the 
 reservations manager.</p>
 
@@ -496,11 +499,17 @@ models of all entities along that path.  In particular, stages leading
 towards the eventual rollout of the service must follow the guidelines in the 
 ESnet Security Plan. (y2/y3)</p>
 
+<p>OSCARS security mechanisms must be as easy to install and use as
+possible, as long as security is not compromised.  A difficult to use system
+will not be used.</p>
+
 <p>Access to OSCARS must require authentication and authorization.
-Messages to OSCARS must be signed and encrypted.  Access does not necessarily
-require an OSCARS account.  A valid token or certificate may be sufficient,
-for example if the request is coming from another autonomous domain.
-All accesses must be logged. (y1/y2)</p>
+All accesses must be logged and audited.
+Automated messages to OSCARS must be signed and encrypted.  
+Automated access does not require an OSCARS account, if it does not require 
+administrator or engineer privileges.  A valid certificate is sufficient,
+for example if the request is coming from a reservations manager from
+another autonomous domain. (y1/y2)</p>
 
 <p>OSCARS accounts must be provided for administrators and the appropriate
 ESnet personnel.  Privilege levels, allowing different levels of access,
@@ -525,10 +534,11 @@ of sensitive operations such as reservation
 scheduling and LSP setup must be sent to the appropriate ESnet personnel,
 in addition to the client. (y2/y3)</p>
 
-<p>The machines hosting the interactive interface and the AAAS must also be 
-monitored, and run as few services as possible.  The machines running the BSS 
-and PSS must be firewalled so that only the preceding machines and the
-machines of ESnet administrators have access. (y2)</p>
+<p>The machine hosting the interactive interface must also be 
+monitored, and run as few services as possible.  The machines running the AAAS,
+BSS, and PSS must be firewalled so that only the machine hosting the
+interactive interface, and the machines of ESnet administrators have access.
+ (y2)</p>
 
 </body>
 </html>
