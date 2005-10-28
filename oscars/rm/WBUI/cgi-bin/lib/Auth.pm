@@ -1,7 +1,7 @@
-package Common::Auth;
+package Auth;
 #
 # package for user authentication
-# Last modified: August 5, 2005
+# Last modified: October 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
