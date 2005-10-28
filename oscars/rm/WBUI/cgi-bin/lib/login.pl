@@ -1,16 +1,16 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: August 12, 2005
+# Last modified: October 28, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;
 use Data::Dumper;
 
-use Common::Auth;
 use AAAS::Client::SOAPClient;
 
+require Auth;
 require 'general.pl';
 
 my $cgi = CGI->new();

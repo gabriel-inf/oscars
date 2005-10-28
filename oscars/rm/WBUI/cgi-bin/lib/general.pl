@@ -1,15 +1,15 @@
 # general.pl
 #
 # library for general cgi script usage
-# Last modified: September 6, 2005
+# Last modified: October 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
 use CGI;
 use Data::Dumper;
 
-use Common::Auth;
 use AAAS::Client::SOAPClient;
+require Auth;
 
 ##############################################################################
 # get_params:  Material common to almost all scripts; has to verify

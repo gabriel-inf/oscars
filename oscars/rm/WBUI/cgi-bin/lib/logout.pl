@@ -1,15 +1,15 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: August 17, 2005
+# Last modified: October 28, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;
 
-use Common::Auth;
 use AAAS::Client::SOAPClient;
 
+require Auth;
 require 'general.pl';
 
 

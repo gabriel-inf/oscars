@@ -1,13 +1,13 @@
 #!/usr/bin/perl -w
 
 # info_form.pl:  prints information page
-# Last modified: August 12, 2005
+# Last modified: October 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
 use CGI;
 
-use Common::Auth;
+require Auth;
 
 require 'general.pl';
 
