@@ -298,18 +298,19 @@ paths, and tears down the LSP (y1).</p>
 <a id="security_dr">
 <h2>Security</h2>
 
-<p>In the past, all components ran on the same machine.  Currently an
-Apache2 Web server on an open machine is used to service API requests and CGI 
-form requests.  While there are no firewall protections on this machine,
-it is locked down as much as possible.  Only a minimal set of services
-is allowed, both in general and on the Web server. (This machine also
-provides access to the OSCARS Subversion code repository.) (y1, y2)</p>
+<p>An Apache2 Web server on an open machine is used to forward all requests
+to the OSCARS Web server through the ProxyPass and ProxyPassReverse
+configuration directives.  This machine is locked down as much as possible.  
+Only a minimal set of services is allowed, both in general and on the Web 
+server. (This machine also forwards OSCARS Subversion code repository 
+requests.) (y2)</p>
 
 <p>The AAAS runs on a machine for which a firewall filter has been set up.
-Only ESnet and LBNL personnel's machines are included in the acl's.  The 
-OSCARS Web server acting as the AAAS
-SOAP server only accepts requests from the user-accessible Web server,
-and the BSS SOAP server only accepts requests from the AAAS server. (y2)</p>
+Only ESnet and LBNL personnel's machines are included in the acl's.  The
+OSCARS Web server only accepts requests from the open Web server.  In turn,
+the AAAS SOAP server only accepts requests from the OSCARS Web server,
+and the BSS SOAP server only accepts requests from the AAAS server. (y1, y2)
+</p>
 
 <p>Both Web servers only accept https connections.  On both, httpd processes 
 run as an unprivileged user without a login shell.  Web server startup and 
@@ -318,8 +319,8 @@ shutdown are handled by rc.d scripts. (y1, y2)</p>
 <p>Database server processes run as an unprivileged user without a login 
 shell.  The server only
 accepts requests from database clients running on the same machine (i.e. the 
-SOAP servers).  MySQL is configured with the --skip-networking option to ensure 
-this. Database server startup and shutdown are handled by rc.d scripts.
+SOAP servers).  MySQL is configured with the --skip-networking option to 
+ensure this. Database server startup and shutdown are handled by rc.d scripts.
 (y1, y2)</p>
 
 
@@ -327,7 +328,8 @@ this. Database server startup and shutdown are handled by rc.d scripts.
 
 <h4>Interactive interface</h4>
 
-<p>Users must have an OSCARS account to use the interactive interface.
+<p>Users currently must have an OSCARS account to use the interactive 
+interface.
 They must provide their user name and password via the initial login form.
 The target of the form submission sends a SOAP message to the AAAS, which 
 makes a call to
@@ -344,11 +346,10 @@ requests. (y1, y2)</p>
 
 <h4>API</h4>
 
-<p>Signed SOAP messages are required for all API requests.
-The user-accessible Web server runs openssl code to validate the 
-certificate and extract the associated user's DN.  Upon successful
-authentication, the Web server forwards
-the SOAP message to the AAAS server, along with the user's DN. (y2).</p>
+<p>Signed SOAP messages are required for all API requests.  The OSCARS Web 
+server runs openssl code to validate the certificate and extract the 
+associated user's DN.  Upon successful authentication, the SOAP message is 
+forwarded to the AAAS server, along with the user's DN. (y2).</p>
 
 <h4>Other domains</h4>
 
