@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 <a href="http://www.es.net/">ESnet</a><br/><br/>
 
-October 28, 2005</br>
+October 31, 2005</br>
 
 <h2>Introduction</h2>
 
@@ -34,23 +34,23 @@ are postponed until the final
 
 <p>The 
 <a href="http://discvenue.internet2.edu/">BRUW</a>
-Web pages, including forms , were used as the starting point for the interface 
-design and necessary functionality.  (BRUW is an experimental Internet2 
-bandwidth reservation system.) 
+Web pages, including CGI forms, were used as the starting point for the 
+interface design and necessary functionality.  (BRUW is an experimental 
+Internet2 bandwidth reservation system.) 
 
 
 <h2>Web Service Components</h2>
 
 <p>The primary design decision is to implement the authentication,
 authorization, and accounting subsystem (AAAS) and bandwidth scheduler
-subsystem (BSS) components as Web services.  Web services (WS) standards
-are used wherever possible, including SOAP for transport (y1) and
-WSDL for service descriptions (y2).</p>
+subsystem (BSS) components as Web services.  Web services (WS) standards are 
+used wherever possible, including SOAP for transport (y1), and WSDL for service 
+descriptions (y2).</p>
 
 <p>The BSS, while implemented as a Web service, is only accessible via its 
 associated AAAS.  The AAAS and BSS do not necessarily have
 to run on the same machine.  The path setup subsystem (PSS) is implemented as a
-module linked in by the BSS. (y1)</p>
+module linked in by the BSS. (y)</p>
 
 <p>Different instances of the RM, for example in different organizations, 
 communicate via their respective AAAS's through the setup of federated trust 
@@ -61,13 +61,23 @@ communicate via their respective AAAS's through the setup of federated trust
 <p><a href="http://www.w3.org/TR/soap/">SOAP</a> messages are used for
 communication between all OSCARS components except the PSS.  Identical SOAP
 messages to the AAAS are generated, whether using the interactive 
-interface (y1) or an API (y2).  The Perl SOAP::Lite package is used by 
-clients to make SOAP calls, and by servers to dispatch them. (y1)</p>
+interface (y1) or an API (y2).  mod_soap and the SOAP::Lite package are
+used to handle SOAP calls.  Clients make SOAP calls through the use
+of URL's which are mapped to packages handling the calls
+by some simple configuration of the Apache Web server.  Examples
+of the appropriate directives are provided with the OSCARS
+distribution. (y2)</p>
 
 <p>The AAAS and BSS services are described via the Web Service Definition
 Language (<a href="http://www.w3.org/TR/wsdl">WSDL</a>).  WSDL provides for
 definitions of data types for message arguments using XML Schema, and
-definitions of request and response messages. (y2)</p>
+definitions of request and response messages. (y2)  </p>
+
+<p>The AAAS and BSS SOAP servers are actually SOAP endpoints within the same 
+Apache2 Web server, whose only purpose is to serve SOAP requests (y1, y2).
+For simplicity, they will be referred to as SOAP servers below.  The
+Apache server acting as the AAAS and BSS SOAP servers will be referred to as 
+the OSCARS Web server.</p>
 
 
 <h2>Database</h2>
@@ -75,10 +85,11 @@ definitions of request and response messages. (y2)</p>
 <p>The MySQL 5 database server is used.  The database schemas used the BRUW 
 schema as a starting point.  Communication with the database is handled via 
 the Perl DBI package.  Securing the database server is discussed in the final 
-<a href="https://oscars.es.net/specs/dspec.html#security_dr">section</a>.</p>
+<a href="https://oscars.es.net/specs/dspec.html#security_dr">section</a>.
+(y1, y2)</p>
 
 <p>There are separate databases within the database server for the AAAS
-and the BSS.</p>
+and the BSS. (y1)</p>
 
 
 <h2>User Interface</h2>
@@ -88,7 +99,9 @@ and the BSS.</p>
 <p>The interactive user interface to the RM is a Web-Based User Interface 
 (WBUI), i.e., a browser.  The specific mode of interaction is via CGI form
 submission to a user-accessible Web server, which acts as an intermediary
-between the WBUI and the AAAS.</p>
+between the WBUI and the AAAS.  Currently, CGI scripts handle form
+submissions.  If possible, in year two CGI scripts will be replaced by SOAP
+endpoints (y1, y2)</p>
 
 <p>All forms have three areas:  a banner area, 
 a status area, and a main area for the primary functionality, with a bar
@@ -96,7 +109,7 @@ of navigation tabs at its top.
 (y1)</p.
 
 <p>If an error occurs during the processing of a user request, a SOAP
-faultstring is returned to the CGI script which made the SOAP call. 
+faultstring is returned to the entity which made the SOAP call. 
 This error message is displayed in the status area, and the main area is
 unchanged.  If no error occurred, new information is displayed in the main
 area depending on which form was submitted. (y1)</p>
@@ -117,27 +130,29 @@ authenticates via his email address and password (y1).
 
 <li>After a successful login, the request for information about OSCARS is
 handled by displaying that information in the main area.  Clicking on
-the "info" tab at any time brings that information up again.
+the "info" tab at any time brings that information up again. (y1)
 </li><br/>
 
 <li>The "user profile" form handles the request to list the details of a
 user's account, and the request to modify the details of a user's account.
-It also handles the corresponding requests from a user with administrator
-privileges (list any user's details, and modify any user's details).
+It also handles the corresponding requests from a user with the OSCARS
+administrator permission (list any user's details, and modify any user's 
+details).
+(y1, y2)
 </li><br/>
 
 <li>The "list accounts" form is only available to an administrator.  It
 handles the request to list all user accounts, and the request to delete
-a user account.
+a user account. (y1)
 </li><br/>
 
 <li>The "add user" form is only available to an administrator.  It handles
-the request to add a user.
+the request to add a user. (y1, y2)
 </li><br/>
 
 <li>The "logout" tab handles the request to log a user out.  There is no 
 associated form.  Clicking on that tab takes the user to the initial login 
-page.
+page. (y1)
 </li>
 </ul>
 
@@ -148,51 +163,55 @@ page.
 
 <li>The "make reservation" form handles the request to create a reservation.
 If the request is successful, the details of that reservation are displayed
-in the main area.
+in the main area. (y1)
 </li><br/>
 
 <li>The "view/edit reservations" form handles the request to view a list
 of all a client's reservations, and the requests to modify or cancel a 
 reservation.  The request to view a reservation's details is handled
 through the ability to click on a link available from each reservation, and
-bring up that reservation's details in the main area.  If the user has
-engineer privileges, it handles the request to view all clients'
+bring up that reservation's details in the main area.  If the user has the
+BSS administrator permission, it handles the request to view all clients'
 reservations, get the details of any client's reservation, and cancel
-or modify any client's reservation.
+or modify any client's reservation. (y1, y2)
 </li>
 </ul>
 
 <h3>API</h3>
 
-<p>Requests made via the API use the same WSDL description as the CGI scripts.
+<p>Requests made via the API use the same WSDL description as the targets
+of CGI form submission.
 All requests listed in the
 <a href="https://oscars.es.net/specs/fspec.html#require">requirements</a> 
 are exposed.  However, it is anticipated that aside from reservation
-scheduling, requests will only be made accessible for testing purposes.</p>
+scheduling, requests will only be made accessible for testing purposes.
+(y1, y2)</p>
 
-<p>Clients send messages to the user accessible Web server,
+<p>Clients send SOAP messages to the user accessible Web server,
 which then forwards it to the AAAS SOAP server.
 If an error occurs during the processing of a client request, a SOAP
-faultstring is returned to the client which made the SOAP call. (y1, y2)</p>
+faultstring is returned to the client which made the call. (y1, y2)</p>
 
 <a id="AAAS">
 <h2>AAAS</h2>
 
-<p>The AAAS consists of a Perl SOAP::Lite server, a database within the 
+<p>The AAAS consists of an Apache2 Web server configured for mod_soap,
+a database within the 
 MySQL 5 server, and a set of Perl packages that handle calls dispatched
-from the SOAP server (y1).</p>
+using mod_soap (y1, y2).</p>
 
 <p>If a SOAP request requires AAAS functionality, the AAAS's database is
 modified based on that request.  If it requires BSS functionality, the AAAS
-server forwards the request to the BSS SOAP server. (y1)</p>
+SOAP server forwards the request to the BSS SOAP server. (y1)</p>
 
 
 <a id="BSS">
 <h2>BSS</h2>
 
-<p>The BSS consists of a Perl SOAP::Lite server, a database within the MySQL 5 
-server, and a set of Perl packages that handle calls dispatched from the SOAP 
-server. It also includes a Perl package to determine the route to set up 
+<p>The BSS consists of a SOAP endpoint within the same Apache2 Web 
+server as the AAAS, a database within the MySQL 5 
+server, and a set of Perl packages that handle calls dispatched using mod_soap.
+It also includes a Perl package to determine the route to set up 
 within ESnet, and a scheduler package which runs as a separate thread.
 (y1)</p> 
 
@@ -211,7 +230,9 @@ that name on the navigation form. (y1)</li><br/>
 <a href="https://oscars.es.net/specs/fspec.html#resv">requirements</a>,
 and submits the reservation request. (y1)</li><br/>
 
-<li>The CGI script makes a SOAP call to the AAAS SOAP server. (y2)</li><br/>
+<li>The target of the request (on the user-accessible Web server) makes a
+SOAP call to the AAAS SOAP server. 
+(y2)</li><br/>
 </ul>
 </li>
 
@@ -225,15 +246,14 @@ the parameters specified in the WSDL for the reservation request.
 </ul>
 </li>
 
-<li>The AAAS server forwards the request to the BSS after successful
-authorization (y1, y2). 
+<li>After authorization, the AAAS server forwards the request to the BSS (y1).
 </li><br/>
 
 <li>After checking for valid fields, the BSS executes a traceroute to find
 the path to take within ESnet, based on the source and destination.
 During that process, the BSS finds the ingress and egress ESnet routers, if 
-they have not already been specified by a client that has the "engineer" 
-privilege. (y1)
+they have not already been specified by a client that has the 
+network engineer permission. (y1, y2)
 </li><br/>
 
 <li>Before entering the reservation in the BSS's database, the BSS checks
@@ -279,20 +299,21 @@ paths, and tears down the LSP (y1).</p>
 <h2>Security</h2>
 
 <p>In the past, all components ran on the same machine.  Currently an
-Apache2 Web server on a secured but open machine is used to service
-API requests and form requests.  The Web server only accepts https
-connections.  httpd processes run as an unprivileged user without a 
-login shell. (y1, y2)</p>
+Apache2 Web server on an open machine is used to service API requests and CGI 
+form requests.  While there are no firewall protections on this machine,
+it is locked down as much as possible.  Only a minimal set of services
+is allowed, both in general and on the Web server. (This machine also
+provides access to the OSCARS Subversion code repository.) (y1, y2)</p>
 
 <p>The AAAS runs on a machine for which a firewall filter has been set up.
-Only ESnet and LBNL personnel's machines are included in the acl's.  The AAAS 
-SOAP server only accepts requests from the user-accessible Web server, and the 
-BSS SOAP server only accepts requests from the AAAS server.  Currently the
-AAAS and BSS servers must run on the same machine. (y1, y2)</p>
+Only ESnet and LBNL personnel's machines are included in the acl's.  The 
+OSCARS Web server acting as the AAAS
+SOAP server only accepts requests from the user-accessible Web server,
+and the BSS SOAP server only accepts requests from the AAAS server. (y2)</p>
 
-<p>All SOAP calls use SSL, whether from the Web server to the AAAS server, or
-from the AAAS to the BSS server.  AAAS and BSS SOAP server startup and shutdown 
-are handled by rc.d scripts. (y2)</p>
+<p>Both Web servers only accept https connections.  On both, httpd processes 
+run as an unprivileged user without a login shell.  Web server startup and 
+shutdown are handled by rc.d scripts. (y1, y2)</p>
 
 <p>Database server processes run as an unprivileged user without a login 
 shell.  The server only
@@ -308,45 +329,51 @@ this. Database server startup and shutdown are handled by rc.d scripts.
 
 <p>Users must have an OSCARS account to use the interactive interface.
 They must provide their user name and password via the initial login form.
-The CGI script sends a SOAP message to the AAAS, which makes a call to
+The target of the form submission sends a SOAP message to the AAAS, which 
+makes a call to
 the AAAS database to see if the user's name exists, and whether the
-password matches.  If so, the user's DN is returned to the CGI script
+password matches.  If so, the user's DN is returned to the calling entity,
 and stored using the Perl CGI::Session package.  The cookie sent to the 
 browser contains a reference to that information, rather than the information 
-itself. (y1)</p>
+itself.  The cookie times out after 2 hours. (y1, y2)</p>
 
 <p>After successful login, subsequent form submissions retrieve the
 user's DN from the cookie.  The DN is passed along in the SOAP call to
 the AAAS server.  The server requires the DN for anything besides login 
-requests.</p>
+requests. (y1, y2)</p>
 
 <h4>API</h4>
 
-<p>Signed SOAP messages are required for all API requests.  The URL
-provided in the SOAP message is that of the Web server mentioned
-above.  The Web server runs openssl code to validate the 
+<p>Signed SOAP messages are required for all API requests.
+The user-accessible Web server runs openssl code to validate the 
 certificate and extract the associated user's DN.  Upon successful
 authentication, the Web server forwards
 the SOAP message to the AAAS server, along with the user's DN. (y2).</p>
 
-
 <h4>Other domains</h4>
 
-<p>Users from other administrative domains will authenticate and
-authorize themselves via the other domain's resource manager.
-They will have access to operations that do not require administrative
-or engineer authorizations.
-The other resource manager will have a trust relationship with OSCARS' AAAS,
-and will present a server certificate to allow the appropriate operation.</p>
+<p>Users from other administrative domains authenticate and authorize 
+themselves via the other domain's resource manager.  They only have access to 
+operations not requiring administrator or engineer permissions.  The other 
+resource manager has a trust relationship with the OSCARS AAAS, and presents a 
+server certificate to allow the appropriate operation. (y2)</p>
 
 
 <h3>Authorization</h3>
 
-<p>All operations that require either administrative or engineer authorizations
+<p>The Resource Oriented Authorization Manager (ROAM) is taken as the
+model for handling authorization.  Authorization checks are handled by
+checking the database, given the user's distinguished name.  The two
+initial resources are the OSCARS AAAS and BSS components, and the three
+initial permissions are OSCARS administrator, BSS administrator, and
+network engineer.</p>
+
+<p>All operations that require either administrator or engineer permissions
 require an OSCARS account, even if a user is from another administrative
 domain.  Only about 15 to 20 people are anticipated to require use
 of these operations.  If at some point there is an agreed upon standard
-between domains for authorization roles, this requirement may change.</p>
+between domains for authorization roles, this requirement may change. (y2)</p>
+
 
 <h3>Auditing</h3>
 
@@ -354,6 +381,29 @@ between domains for authorization roles, this requirement may change.</p>
 successful reservation creation, and LSP setup and tear down (see PSS 
 <a href="https://oscars.es.net/specs/dspec.html#PSS">section</a>)
 are done via email to the appropriate ESnet personnel (y1).</p>
+
+
+<h3>Risks</h3>
+
+<p>As simple as possible a solution has been chosen for security, while
+attempting to minimize risk.  If OSCARS is difficult to use, or
+difficult to install, then it won't be used.  When mature Grid-based
+implementations are easier (and faster) to install and use, and 
+available in more languages, then those solutions will be looked into 
+again.</p>
+
+<p>The primary risks are the open machine running the user-accessible Web
+server being compromised, and/or the session ID for the cookie containing
+a user's DN being discovered and used to execute OSCARS operations.
+</p>
+
+<p>The 
+<a href="http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/securing-freebsd.html">Securing FreeBSD</a> guidelines will be followed for the open
+machine and the OSCARS machine.  A firewall filter will be set up allowing
+only port 443 access from the open machine to the OSCARS machine. (y2)</p>
+
+<p>The cookie will initially be set to timeout after two hours to limit
+the exposure from a compromised session key.</p>
 
 </body>
 </html>

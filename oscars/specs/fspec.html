@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 <a href="http://www.es.net">ESnet</a><br/><br/>
 
-October 27, 2005<br/>
+October 31, 2005<br/>
 
 <h2>Objective</h2>
 
@@ -138,8 +138,10 @@ successfully logged in:</p>
 <li>Logout from OSCARS (y1).
 </li><br/>
 
-<p>In addition, there must be user accounts with administrator privileges.
-The AAAS must accept these requests from administrators:</p>
+<p>In addition, there must be an OSCARS administrator permission that can
+be associated with a user.
+The following requests require that a user have the OSCARS administrator
+permission:</p>
 
 <li>List all user accounts (y1).
 </li><br/>
@@ -236,8 +238,10 @@ AAAS:</p>
 <li>Modify a reservation the client has made (y2).
 </li><br/>
  
-<p>In addition, there must be user accounts with system engineer privileges.
-The BSS must accept these requests from clients with engineer privileges:</p>
+<p>In addition, there must be an OSCARS BSS administrator permission that can
+be associated with a user.
+The following requests require that a user have the BSS administrator
+permission:</p>
 
 <li>List all clients' reservations (y1).
 </li><br/>
@@ -312,8 +316,9 @@ be combined on a single entry form.</p>
 <p>For each mandatory and optional
 argument listed below, an entry form must have corresponding input fields 
 and/or interactive controls.  The entry form must not include input fields 
-corresponding to arguments requiring special client privileges (administrator 
-and engineer), if the client does not have those privileges.  There must be 
+corresponding to arguments requiring special permissions (OSCARS 
+administrator, BSS administrator, and network engineer), if the client does 
+not have those permissions.  There must be 
 an area on each entry form for status and error messages (y1), which must be 
 updated after each request.</p>
 
@@ -352,7 +357,7 @@ unique id, first name, last name, organizational membership, personal
 description, primary and secondary email addresses, and primary and
 secondary phone numbers.  The personal description, and secondary email and
 phone numbers are permitted to be empty.  If the request is from an 
-administrator, the listing includes the user's privilege level(s).
+administrator, the listing includes the user's associated permissions.
 </li><br/>
 
 <li>Modify the client's user profile (y1):<br/><br/>
@@ -381,12 +386,12 @@ In the interactive interface, the returned page must be the initial login
 page.
 </li><br/>
 
-<p>The following requests require administrator privileges:</p>
+<p>The following requests require the OSCARS administrator permission:</p>
 
 <li>List all user accounts (y1):<br/><br/>
 
 The listing returned from the request must include each user's last name,
-first name, unique identifier, privilege level, organizational membership,
+first name, unique identifier, permissions if any, organizational membership,
 and current login status.
 </li><br/>
 
@@ -422,9 +427,12 @@ bit(s), the ingress and egress loopbacks, and the start time and duration are
 optional arguments.  Default values must be used for the start time and
 duration if these arguments are empty.  (y1)</p>
 
-<p>If a request is from an authorized engineer, a traceroute listing, and
-flags for the setup of a persistent circuit and a bidirectional path, are 
-optional arguments.  A disclaimer must be present on the interactive form 
+<p>There must be a network engineer permission that can
+be associated with a user, which is required for use of the following
+arguments:
+a traceroute listing, and
+flags for the setup of a persistent circuit and a bidirectional path.
+A disclaimer must be present on the interactive form 
 indicating that if the transit path across ESnet has more than 
 one ingress point, a full traceroute must be provided to ensure that the 
 requested bandwidth along the actual path is available. (y2)</p>
@@ -467,7 +475,7 @@ identified by its reservation tag.  Modifiable arguments must include the
 reservation start and end time, and start and destination of the path.
 </li><br/>
 
-<p>The following requests require engineer privileges:</p>
+<p>The following requests require the BSS administrator permission:</p>
 
 <li>List of all reservations (y1):<br/><br/>
 
@@ -507,25 +515,32 @@ ESnet Security Plan. (y2/y3)</p>
 possible, as long as security is not compromised.  A difficult to use system
 will not be used.</p>
 
-<p>Access to OSCARS must require authentication and authorization.
-All accesses must be logged and audited.
-Automated messages to OSCARS must be signed and encrypted.  
-Automated access does not require an OSCARS account, if it does not require 
-administrator or engineer privileges.  A valid certificate is sufficient,
-for example if the request is coming from a reservations manager from
-another autonomous domain. (y1/y2)</p>
+<p>If the machine hosting the interactive interface is outside a protected
+network, it must run as few services as possible.  The machines running the 
+AAAS, BSS, and PSS must be inside a protected network  so that only the machine
+hosting the interactive interface, and the machines of ESnet personnel 
+have access.  (y2)</p>
+
+<p>Access to OSCARS must require authentication (y1, y2) and authorization 
+(y2).  The AAAS must handle all OSCARS requests from outside the protected
+network, and enforce these restrictions.  It must generate usage records for 
+all accesses, for auditing and accounting (y2/y3).
 
 <p>OSCARS accounts must be provided for administrators and the appropriate
-ESnet personnel.  Privilege levels, allowing different levels of access,
-must be maintained and enforced. (y1)</p>
+ESnet personnel, and only users with those accounts can have OSCARS
+administrator, BSS administrator, and
+network engineer permissions.  These permissions, allowing different 
+levels of access, must be maintained and enforced. (y1)</p>
+
+<p>Automated messages to OSCARS must be signed and encrypted.  
+Automated access does not necessarily require an OSCARS account, if it does 
+not require the above-mentioned permissions.  A valid server certificate 
+is sufficient if the request is coming from a reservations manager from
+another, trusted autonomous domain. (y1/y2)</p>
 
 <p>A secure means must be provided to store authentication information during
 login, to avoid the client having to authenticate for each subsequent access to
 OSCARS (y1/y2).</p>
-
-<p>The AAAS must handle all external requests and enforce security restrictions,
-including user authentication (y1) and authorization (y2),
-and generate usage records for auditing and accounting (y2/y3).
 
 <p>Request parameters must be validated on the server side,
 whether the client is the API or the interactive interface. (y1)</p>
@@ -537,12 +552,6 @@ Notifications</a>
 of sensitive operations such as reservation 
 scheduling and LSP setup must be sent to the appropriate ESnet personnel,
 in addition to the client. (y2/y3)</p>
-
-<p>The machine hosting the interactive interface must also be 
-monitored, and run as few services as possible.  The machines running the AAAS,
-BSS, and PSS must be firewalled so that only the machine hosting the
-interactive interface, and the machines of ESnet administrators have access.
- (y2)</p>
 
 </body>
 </html>
