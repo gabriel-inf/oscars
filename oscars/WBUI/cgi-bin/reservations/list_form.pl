@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # list_form.pl:  page listing reservations
-# Last modified: September 6, 2005
+# Last modified: October 31, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -9,7 +9,7 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( $form_params, $auth, $starting_page ) = get_params();
+my( $form_params, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
 $form_params->{method} = 'get_reservations';

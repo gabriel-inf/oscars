@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # creation_form.pl:  form for making reservations
-# Last modified: August 24, 2005
+# Last modified: October 31, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -9,7 +9,7 @@ use Data::Dumper;
 
 require '../lib/general.pl';
 
-my( $form_params, $auth, $starting_page ) = get_params();
+my( $form_params, $starting_page ) = get_params();
 if (!($form_params)) { exit; }
 
 print "<xml>\n";
@@ -68,7 +68,7 @@ sub print_reservation_form {
     print "of your reservation. ";
     print "Fields left blank will default to the examples ";
     print "below the input fields.  The default time zone is the local time.  ";
-    if ($auth->authorized($form_params->{user_level}, "engr")) {
+    if (authorized($form_params->{user_level}, "engr")) {
         print "Checking the <strong>Persistent</strong> box makes ";
         print "a reservation's duration indefinite, overriding ";
         print "the duration field.";
@@ -84,7 +84,7 @@ sub print_reservation_form {
     print     "<th>Minute</th>";
     print     "<th>UTC offset</th>";
     print     "<th>Duration (Hours)</th>";
-    if ($auth->authorized($form_params->{user_level}, "engr")) {
+    if (authorized($form_params->{user_level}, "engr")) {
         print "<th>Persistent</th>";
     }
     else { print "<th> </th>"; }
@@ -111,7 +111,7 @@ sub print_reservation_form {
                      'maxlength="16">';
     print     "</input></td>";
     print     "<td> ";
-    if ($auth->authorized($form_params->{user_level}, "engr")) {
+    if (authorized($form_params->{user_level}, "engr")) {
         print '  <input type="checkbox" name="persistent" value="0"></input>';
     }
     print     "</td>\n";
@@ -168,7 +168,7 @@ sub print_reservation_form {
     print    "</tr>\n";
     print "</table>\n";
 
-    if ($auth->authorized($form_params->{user_level}, "engr")) {
+    if (authorized($form_params->{user_level}, "engr")) {
         print '<p><strong>WARNING</strong>:  Entries in the following ';
         print 'fields may change default routing behavior for the selected ';
         print 'flow.</p>', "\n";

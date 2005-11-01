@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # print_details.pl:  Prints the details of a reservation.
-# Last modified: September 6, 2005
+# Last modified: October 31, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -14,7 +14,7 @@ require '../lib/general.pl';
 # Out: None
 #
 sub print_reservation_detail {
-    my( $form_params, $results, $msg, $auth, $starting_page ) = @_;
+    my( $form_params, $results, $msg, $starting_page ) = @_;
 
     my $row = @{$results->{rows}}[0];
     my $ctr = 0;
@@ -112,7 +112,7 @@ sub print_reservation_detail {
     else { print "<td>DEFAULT</td>"; }
     print   "</tr>\n";
 
-    if ( $auth->authorized($form_params->{user_level}, "engr") ) {
+    if ( authorized($form_params->{user_level}, "engr") ) {
         $ctr = start_row($ctr);
         print   "<td>Class</td>";
         print   "<td>", $row->{reservation_class}, "</td>";
