@@ -1,19 +1,16 @@
 #!/usr/bin/perl -w
 
 # info_form.pl:  prints information page
-# Last modified: October 28, 2005
+# Last modified: October 31, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
 use CGI;
 
-require Auth;
-
 require 'general.pl';
 
 my $cgi = CGI->new();
-my $auth = Common::Auth->new();
-my ($user_dn, $user_level, $unused, $starting_page) = $auth->verify_session($cgi);
+my ($user_dn, $user_level, $unused, $starting_page) = verify_session($cgi);
 
 if ($user_dn) {
     print $cgi->header( -type=>'text/xml' );

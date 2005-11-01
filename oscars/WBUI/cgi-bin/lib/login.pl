@@ -1,16 +1,13 @@
 #!/usr/bin/perl -w
 
 # login.pl:  Main Service Login script
-# Last modified: October 28, 2005
+# Last modified: October 31, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;
 use Data::Dumper;
 
-use AAAS::Client::SOAPClient;
-
-require Auth;
 require 'general.pl';
 
 my $cgi = CGI->new();
@@ -27,8 +24,7 @@ if ($som->faultstring) {
 $results = $som->result;
 my( $user_dn, $user_level, $sid );
 
-my $auth = Common::Auth->new();
-($user_dn, $user_level, $sid) = $auth->start_session($cgi, $results);
+($user_dn, $user_level, $sid) = start_session($cgi, $results);
 print $cgi->header( -type=>'text/xml', -cookie=>$cgi->cookie(CGISESSID => $sid) );
 update_page("User $user_dn signed in.", \&output_info, $user_dn, $user_level);
 exit;

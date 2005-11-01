@@ -1,28 +1,24 @@
 #!/usr/bin/perl -w
 
 # logout.pl:  Main Service: Logout script
-# Last modified: October 28, 2005
+# Last modified: October 31, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;
 
-use AAAS::Client::SOAPClient;
-
-require Auth;
 require 'general.pl';
 
 
 my $cgi = CGI->new();
-my $auth = Common::Auth->new();
-my ($user_dn, $user_level, $unused, $starting_page) = $auth->verify_session($cgi);
+my ($user_dn, $user_level, $unused, $starting_page) = verify_session($cgi);
 
 # logout user from resource manager
 my ($som) = logout_user($user_dn);
 
 # nuke session and put the user back at the login screen
 
-if ($user_dn) { $auth->end_session($cgi); }
+if ($user_dn) { end_session($cgi); }
 
 print "Location:  https://oscars.es.net/\n\n";
 exit;
@@ -39,7 +35,7 @@ sub logout_user {
 
     $soap_params{user_dn} = $user_dn;
     $soap_params{method} = 'logout';
-    my $som = AAAS::Client::SOAPClient::aaas_dispatcher(\%soap_params);
+    my $som = aaas_dispatcher(\%soap_params);
     return( $som );
 }
 ######
