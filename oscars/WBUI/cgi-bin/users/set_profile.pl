@@ -1,8 +1,7 @@
 #!/usr/bin/perl -w
 
 # set_profile.pl:  update user's profile
-# Last modified: August 26, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified: October 31, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use Data::Dumper;
@@ -10,10 +9,10 @@ use Data::Dumper;
 require '../lib/general.pl';
 require 'print_profile.pl';
 
-my( $form_params, $auth, $starting_page ) = get_params();
+my( $form_params, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
-if ($auth->authorized($form_params->{user_level}, "admin")) {
+if (authorized($form_params->{user_level}, "admin")) {
     $form_params->{admin_dn} = $form_params->{user_dn};
 }
 if ($form_params->{id}) {
