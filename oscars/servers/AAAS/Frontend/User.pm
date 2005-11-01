@@ -15,7 +15,7 @@ use Common::Exception;
 use AAAS::Frontend::Database;
 use AAAS::Frontend::Registration;
 use AAAS::Frontend::Auth;
-use BSS::Client::SOAPClient;
+use AAAS::Frontend::Forwarder;
 
 # until can get MySQL 5 and views going
 
@@ -337,21 +337,21 @@ sub get_userlist {
 sub insert_reservation {
     my( $self, $form_params ) = @_;
 
-    my $som = bss_dispatcher($form_params);
+    my $som = forward($form_params);
     return( $som->result );
 }
 
 sub delete_reservation {
     my( $self, $form_params ) = @_;
 
-    my $som = bss_dispatcher($form_params);
+    my $som = forward($form_params);
     return( $som->result );
 }
 
 sub get_reservations {
     my( $self, $form_params ) = @_;
 
-    my $som = bss_dispatcher($form_params);
+    my $som = forward($form_params);
     return( $som->result );
 }
 
