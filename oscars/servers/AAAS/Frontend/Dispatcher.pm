@@ -1,11 +1,17 @@
 #!/usr/bin/perl
 
-package Dispatcher;
+package AAAS::Frontend::Dispatcher;
+
+####
+# Dispatcher.pm:  Soap lite dispatcher for AAAS
+# Last modified:  November 2, 2005
+# David Robertson (dwrobertson@lbl.gov)
+###
 
 use Error qw(:try);
 use Common::Exception;
-use AAAS::Frontend::Database;
 use AAAS::Frontend::Validator;
+use AAAS::Frontend::Database;
 use AAAS::Frontend::User;
 
 my $db_login = 'oscars';
@@ -18,6 +24,7 @@ my $dbconn = AAAS::Frontend::Database->new(
              or die "FATAL:  could not connect to database";
 
 
+my $request_handler = AAAS::Frontend::User->new('dbconn' => $dbconn);
 
 sub dispatch {
     my ( $class_name, $inref ) = @_;
