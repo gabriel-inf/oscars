@@ -1,25 +1,21 @@
 #!/usr/bin/perl
 
+package BSS::Frontend::Dispatcher;
+
 ####
-# bss.pl:  Soap lite server for BSS
-# Last modified:  October 19, 2005
+# Dispatcher.pm:  Soap lite dispatcher for BSS
+# Last modified:  November 2, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee (jrlee@lbl.gov)
 ###
 
-#use SOAP::Lite +trace;
 use SOAP::Lite;
-use SOAP::Transport::HTTP;
 use Data::Dumper;
+use Error qw(:try);
 
-## we want to thread on each accept, as some requests can take a 
-## while (i.e. running traceroute)
-#use SOAP::Transport::HTTP::Daemon::ThreadOnAccept;
-
-# enable this in the 'production' version
-# don't want to die on 'Broken pipe' or Ctrl-C
-#$SIG{PIPE} = $SIG{INT} = 'IGNORE';
-
+use Common::Exception;
+use BSS::Frontend::Reservation;
+use BSS::Frontend::Validator;
 use BSS::Scheduler::SchedulerThread;
 
 my $db_login = 'oscars';
@@ -31,26 +27,12 @@ my $dbconn = BSS::Frontend::Database->new(
                  'password' => $password)
              or die "FATAL:  could not connect to database";
 
-my $request_handler = BSS::Scheduler::ReservationHandler->new('dbconn' => $dbconn);
+my $request_handler = BSS::Frontend::Reservation->new('dbconn' => $dbconn);
 
 # start up a thread to monitor the DB
 start_scheduler();
 
-# Create a SOAP server
-#my $daemon = SOAP::Transport::HTTP::Daemon::ThreadOnAccept
-my $daemon = SOAP::Transport::HTTP::Daemon
-    -> new (LocalPort => $dbconn->get_port(''), Listen => 5, Reuse => 1)
-    -> dispatch_to('Dispatcher')
-    -> handle;
 
-######
-
-package Dispatcher;
-
-use Error qw(:try);
-use Common::Exception;
-use BSS::Frontend::Validator;
-use BSS::Scheduler::ReservationHandler;
 
 sub dispatch {
     my ( $class_name, $inref ) = @_;
