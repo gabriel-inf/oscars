@@ -1,14 +1,12 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
-# aaas:  AAAS SOAP server.
-# Last modified: October 19, 2005
-# David Robertson (dwrobertson@lbl.gov)
+package Dispatcher;
 
-use strict;
-
-use SOAP::Transport::HTTP;
-use Data::Dumper;
-use Term::ReadKey;
+use Error qw(:try);
+use Common::Exception;
+use AAAS::Frontend::Database;
+use AAAS::Frontend::Validator;
+use AAAS::Frontend::User;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
@@ -19,25 +17,7 @@ my $dbconn = AAAS::Frontend::Database->new(
                  'password' => $password)
              or die "FATAL:  could not connect to database";
 
-my $request_handler = AAAS::Frontend::User->new('dbconn' => $dbconn);
 
-my $port_number = $dbconn->get_port();
-
-my $daemon = SOAP::Transport::HTTP::Daemon
-  -> new (LocalPort => $port_number, Listen => 5, Reuse => 1)
-  -> dispatch_to('Dispatcher')
-  -> handle;
-
-######
-
-package Dispatcher;
-
-use Data::Dumper;
-use Error qw(:try);
-
-use Common::Exception;
-use AAAS::Frontend::Validator;
-use AAAS::Frontend::User;
 
 sub dispatch {
     my ( $class_name, $inref ) = @_;
