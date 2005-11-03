@@ -1,6 +1,6 @@
 ##############################################################################
 # Main package, uses the BSS database front end
-# October 18, 2005 
+# November 2, 2005 
 #
 # JRLee
 # DWRobertson
@@ -16,8 +16,6 @@ use Error qw(:try);
 
 use Common::Exception;
 use BSS::Traceroute::JnxTraceroute;
-# BSS data base front end
-use BSS::Frontend::Reservation;
 
 use strict;
 
@@ -39,8 +37,6 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{frontend} = BSS::Frontend::Reservation->new(
-                                               'dbconn' => $self->{dbconn});
     $self->{configs} = $self->{dbconn}->get_trace_configs();
 }
 ######
@@ -68,43 +64,12 @@ sub insert_reservation {
     # This routine fills in the remaining fields.
     my ( $self, $inref ) = @_; 
 
-    my $results = {};
-
     $self->{output_buf} = "*********************\n";
     $self->convert_addresses($inref);
     ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
             $inref->{reservation_path}) = $self->find_interface_ids($inref);
 
-    $results  = $self->{frontend}->insert_reservation( $inref );
-    $results->{reservation_tag} =~ s/@/../;
-    return ( $results, $self->{output_buf} );
-}
-######
-
-##############################################################################
-# delete_reservation:  Given the reservation id, leave the reservation in the
-#     db, but mark status as cancelled, and set the ending time to 0 so that 
-#     find_expired_reservations will tear down the LSP if the reservation is
-#     active.
-#
-sub delete_reservation {
-    my ( $self, $inref ) = @_;
-		
-    return ($self->{frontend}->delete_reservation( $inref ), '');
-}
-######
-
-##############################################################################
-# get_reservations
-# IN: ref to hash containing fields corresponding to the reservations table.
-#     Some fields are still empty, and are filled in before inserting a
-#     record
-# OUT: 0 on success, and hash containing all table fields
-#
-sub get_reservations {
-    my ( $self, $inref ) = @_; 
-
-    return ($self->{frontend}->get_reservations( $inref ), '');
+    return ( $self->{output_buf} );
 }
 ######
 

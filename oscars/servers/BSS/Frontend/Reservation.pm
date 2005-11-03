@@ -1,5 +1,8 @@
-# Reservation.pm:  Database handling for BSS/Scheduler/ReservationHandler.pm
-# Last modified: October 18, 2005
+# Reservation.pm:  SOAP methods for BSS; calls 
+# BSS::Scheduler::ReservationHandler to set up reservations before
+# inserting info in database
+#
+# Last modified: November 2, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -15,6 +18,7 @@ use Common::Exception;
 use BSS::Frontend::Database;
 use BSS::Frontend::Policy;
 use BSS::Frontend::Stats;
+use BSS::Scheduler::ReservationHandler;
 
 # until can get MySQL and views going
 my @user_fields = ( 'reservation_id',
@@ -68,6 +72,8 @@ sub initialize {
 
     $self->{policy} = BSS::Frontend::Policy->new(
                        'dbconn' => $self->{dbconn});
+    $self->{route_setup} = BSS::Scheduler::ReservationHandler->new(
+                                               'dbconn' => $self->{dbconn});
 }
 ######
 
@@ -95,6 +101,8 @@ sub insert_reservation {
     my $user_dn = $inref->{user_dn};
     my( $duration_seconds );
 
+    $self->{network_setup} =
+    my $output_buf = $self->{route_setup}->insert_reservation( $inref );
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
     {
@@ -221,20 +229,23 @@ sub insert_reservation {
                        "Reservation made by $user_dn", $mail_msg);
     $mailer->send_mail($mailer->get_webmaster(), $user_dn,
                        "Your reservation has been accepted", $mail_msg);
-    return( $results );
+    $results->{reservation_tag} =~ s/@/../;
+    return( $results, $output_buf );
 }
 ######
 
-###############################################################################
-# delete_reservation:  Cancels the reservation by setting the reservation
-# status to pending cancellation.
+##############################################################################
+# delete_reservation:  Given the reservation id, leave the reservation in the
+#     db, but mark status as cancelled, and set the ending time to 0 so that 
+#     find_expired_reservations will tear down the LSP if the reservation is
+#     active.
 #
 sub delete_reservation {
     my( $self, $inref ) = @_;
 
     my $status =  $self->{dbconn}->update_reservation( $inref->{user_dn}, $inref,
                                      'precancel' );
-    return($self->get_reservations($inref));
+    return($self->get_reservations($inref), '');
 }
 ######
 
@@ -291,7 +302,7 @@ sub get_reservations {
     }
     my $results;
     $results->{rows} = $rref;
-    return( $results );
+    return( $results, '' );
 }
 ######
 
