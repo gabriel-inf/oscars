@@ -176,6 +176,42 @@ sub get_host_info {
 }
 ######
 
+###############################################################################
+# setup_times:  
+#
+sub setup_times {
+    my( $self, $inref, $user_dn, $stats );
+
+    my( $query, $sth );
+    my( $duration_seconds );
+
+    # Expects strings in seoncds since epoch; converts to date in UTC time
+    $query = "SELECT CONVERT_TZ(from_unixtime(?), ?, '+00:00')";
+    $sth = $self->do_query( $user_dn, $query,
+                                      $inref->{reservation_start_time},
+                                      $inref->{reservation_time_zone});
+    $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+    if ($inref->{duration_hour} < (2**31 - 1)) {
+        $duration_seconds = $inref->{duration_hour} * 3600;
+        $query = "SELECT DATE_ADD(?, INTERVAL ? SECOND)";
+        $sth = $self->do_query( $user_dn, $query,
+                                          $inref->{reservation_start_time},
+                                          $duration_seconds );
+        $inref->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
+        $sth->finish();
+    }
+    else {
+        $inref->{reservation_end_time} = $stats->get_infinite_time();
+    }
+    $query = "SELECT CONVERT_TZ(now(), ?, '+00:00')";
+    $sth = $self->do_query( $user_dn, $query,
+                                      $inref->{reservation_time_zone} );
+    $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
+    $sth->finish();
+}
+######
+
 ##############################################################################
 #
 sub convert_times {

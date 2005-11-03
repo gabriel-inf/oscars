@@ -12,6 +12,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use Common::Exception;
+use BSS::Frontend::Database;
 
 ###############################################################################
 sub new {
@@ -43,16 +44,31 @@ sub initialize {
 # OUT: valid (0 or 1), and error message
 #
 sub check_oversubscribe {
-    my ( $self, $reservations, $inref) = @_;
+    my ( $self, $inref, $user_dn) = @_;
 
+    my( $query, $sth, $reservations );
     my ( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
     my ( $router_name );
     # maximum utilization for a particular link
     my ( $max_utilization );
-    my $user_dn = $inref->{user_dn};
 
+    my $user_dn = $inref->{user_dn};
     # XXX: what is the MAX percent we can allocate? for now 50% ...
     my ( $max_reservation_utilization ) = 0.50; 
+
+    # Get bandwidth and times of reservations overlapping that of the
+    # reservation request.
+    $query = "SELECT reservation_bandwidth, reservation_start_time,
+              reservation_end_time, reservation_path FROM reservations
+              WHERE reservation_end_time >= ? AND
+                  reservation_start_time <= ? AND
+                  (reservation_status = 'pending' OR
+                   reservation_status = 'active')";
+
+    # handled query with the comparison start & end datetime strings
+    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+           $inref->{reservation_start_time}, $inref->{reservation_end_time});
+    $reservations = $sth->fetchall_arrayref({});
 
     # assign the new path bandwidths 
     for $link (@{$inref->{reservation_path}}) {

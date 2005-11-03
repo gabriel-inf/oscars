@@ -72,19 +72,13 @@ sub initialize {
 
     $self->{policy} = BSS::Frontend::Policy->new(
                        'dbconn' => $self->{dbconn});
+    my $trace_configs = $self->{dbconn}->get_trace_configs();
     $self->{route_setup} = BSS::Scheduler::ReservationHandler->new(
-                                               'dbconn' => $self->{dbconn});
+                                               'dbconn' => $self->{dbconn},
+                                               'configs' => $trace_configs);
 }
 ######
 
-
-###############################################################################
-sub logout {
-    my( $self, $inref ) = @_;
-
-    return( $self->{dbconn}->logout($inref->{user_dn}) );
-}
-######
 
 ###############################################################################
 # insert_reservation:  Called from the scheduler to insert a row into the
@@ -97,11 +91,10 @@ sub logout {
 #
 sub insert_reservation {
     my( $self, $inref ) = @_;
-    my( $query, $sth, $arrayref, @resv_array );
+    my( $query, $sth );
     my $user_dn = $inref->{user_dn};
     my( $duration_seconds );
 
-    $self->{network_setup} =
     my $output_buf = $self->{route_setup}->insert_reservation( $inref );
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
@@ -110,49 +103,12 @@ sub insert_reservation {
                                 "do insert.");
     }
     $self->{dbconn}->login_user($user_dn);
+    my $stats = BSS::Frontend::Stats->new();
+    $self->{dbconn}->setup_times($inref, $user_dn, $stats);
+
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
-    my $stats = BSS::Frontend::Stats->new();
-    # Expects strings in seoncds since epoch; converts to date in UTC time
-    $query = "SELECT CONVERT_TZ(from_unixtime(?), ?, '+00:00')";
-    $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_start_time},
-                                      $inref->{reservation_time_zone});
-    $inref->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-    if ($inref->{duration_hour} < (2**31 - 1)) {
-        $duration_seconds = $inref->{duration_hour} * 3600;
-        $query = "SELECT DATE_ADD(?, INTERVAL ? SECOND)";
-        $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                          $inref->{reservation_start_time},
-                                          $duration_seconds );
-        $inref->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
-        $sth->finish();
-    }
-    else {
-        $inref->{reservation_end_time} = $stats->get_infinite_time();
-    }
-    # Get bandwidth and times of reservations overlapping that of the
-    # reservation request.
-    $query = "SELECT reservation_bandwidth, reservation_start_time,
-              reservation_end_time, reservation_path FROM reservations
-              WHERE reservation_end_time >= ? AND
-                  reservation_start_time <= ? AND
-                  (reservation_status = 'pending' OR
-                   reservation_status = 'active')";
-
-    # only holds a time if reservation successful
-    $inref->{reservation_created_time} = '';
-
-    # handled query with the comparison start & end datetime strings
-    $sth = $self->{dbconn}->do_query( $user_dn, $query,
-           $inref->{reservation_start_time}, $inref->{reservation_end_time});
-    $arrayref = $sth->fetchall_arrayref({});
-
-    # If no segment is over the limit,  record the reservation to the database.
-    # Otherwise, throw exception with the bandwidths and times involved.
-    $self->{policy}->check_oversubscribe($arrayref, $inref);
-    $sth->finish();
+    $self->{policy}->check_oversubscribe($inref, $user_dn);
 
     # Get ipaddrs table id from source's and destination's host name or ip
     # address.
@@ -162,66 +118,10 @@ sub insert_reservation {
     $inref->{dst_hostaddr_id} =
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
                                             $inref->{destination_ip}); 
-    $query = "SELECT CONVERT_TZ(now(), ?, '+00:00')";
-    $sth = $self->{dbconn}->do_query( $user_dn, $query,
-                                      $inref->{reservation_time_zone} );
-    $inref->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
 
-    $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
-    $inref->{reservation_id} = 'NULL';
-        # class of service
-    $inref->{reservation_class} = $self->{pss_configs}->{pss_conf_CoS};
-    $inref->{reservation_burst_limit} =
-                                $self->{pss_configs}->{pss_conf_burst_limit};
-    $inref->{reservation_status} = 'pending';
-    $inref->{reservation_tag} = $user_dn . '.' .
-        $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
-
-    $query = "SHOW COLUMNS from reservations";
-    $sth = $self->{dbconn}->do_query( $user_dn, $query );
-    $arrayref = $sth->fetchall_arrayref({});
-    my @insertions;
-    my $hashref = {}; 
-    for $_ ( @$arrayref ) {
-       if ($inref->{$_->{Field}}) {
-           $hashref->{$_->{Field}} = $inref->{$_->{Field}};
-           push(@insertions, $inref->{$_->{Field}}); 
-       }
-       else{ push(@insertions, 'NULL'); }
-    }
-    $sth->finish();
-
-    # insert all fields for reservation into database
-    $query = "INSERT INTO reservations VALUES (
-             " . join( ', ', ('?') x @insertions ) . " )";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
-    $hashref->{reservation_id} = $self->{dbconn}->get_reservation_id($user_dn);
-    $sth->finish();
-
-    $hashref->{reservation_tag} =
-        $inref->{reservation_tag} . $hashref->{reservation_id};
-    # copy over non-db fields
-    $hashref->{source_host} = $inref->{source_host};
-    $hashref->{destination_host} = $inref->{destination_host};
-
-    $query = "UPDATE reservations SET reservation_tag = ?
-              WHERE reservation_id = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query,
-        $hashref->{reservation_tag}, $hashref->{reservation_id});
-    $sth->finish();
-
-    my $results;
-    my @resv_array = ($hashref);
-    $results->{rows} = \@resv_array;
-    # clean up NULL values
-    $self->check_nulls($results->{rows});
-    # convert times back to user's time zone for mail message
-    $self->{dbconn}->convert_times($user_dn, $results->{rows});
-    # get loopback fields if have engr privileges
-    if ($self->{policy}->authorized($inref->{user_level}, "engr")) {
-        $self->{dbconn}->get_engr_fields($user_dn, $results->{rows}); 
-    }
+    $self->fill_fields($inref, $user_dn, $stats);
+    my $outref = $self->insert_fields($inref, $user_dn);
+    my $results = $self->get_results($inref, $outref, $user_dn);
 
     my $mailer = Common::Mail->new();
     my $mail_msg = $stats->get_stats($user_dn, $results->{rows}[0]) ;
@@ -229,7 +129,6 @@ sub insert_reservation {
                        "Reservation made by $user_dn", $mail_msg);
     $mailer->send_mail($mailer->get_webmaster(), $user_dn,
                        "Your reservation has been accepted", $mail_msg);
-    $results->{reservation_tag} =~ s/@/../;
     return( $results, $output_buf );
 }
 ######
@@ -306,10 +205,109 @@ sub get_reservations {
 }
 ######
 
+###############################################################################
+sub logout {
+    my( $self, $inref ) = @_;
+
+    return( $self->{dbconn}->logout($inref->{user_dn}) );
+}
+######
+
 #################
 # Private methods
 #################
 
+###############################################################################
+# fill_fields:  
+#
+sub fill_fields {
+    my( $self, $inref, $user_dn, $stats );
+
+    $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
+    $inref->{reservation_id} = 'NULL';
+        # class of service
+    $inref->{reservation_class} = $self->{pss_configs}->{pss_conf_CoS};
+    $inref->{reservation_burst_limit} =
+                                $self->{pss_configs}->{pss_conf_burst_limit};
+    $inref->{reservation_status} = 'pending';
+    $inref->{reservation_tag} = $user_dn . '.' .
+        $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
+
+}
+######
+
+###############################################################################
+# insert_fields:  
+#
+sub insert_fields {
+    my( $self, $inref, $user_dn );
+
+    my( $query, $sth );
+
+    $query = "SHOW COLUMNS from reservations";
+    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    my $arrayref = $sth->fetchall_arrayref({});
+    my @insertions;
+    my $outref = {}; 
+    for $_ ( @$arrayref ) {
+       if ($inref->{$_->{Field}}) {
+           $outref->{$_->{Field}} = $inref->{$_->{Field}};
+           push(@insertions, $inref->{$_->{Field}}); 
+       }
+       else{ push(@insertions, 'NULL'); }
+    }
+    $sth->finish();
+
+    # insert all fields for reservation into database
+    $query = "INSERT INTO reservations VALUES (
+             " . join( ', ', ('?') x @insertions ) . " )";
+    $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
+    $outref->{reservation_id} = $self->{dbconn}->get_reservation_id($user_dn);
+    $sth->finish();
+    return( $outref );
+}
+######
+
+
+###############################################################################
+# get_results:  
+#
+sub get_results {
+    my( $self, $inref, $outref, $user_dn );
+
+    my( $query, $sth );
+
+    $outref->{reservation_tag} =
+        $inref->{reservation_tag} . $outref->{reservation_id};
+    # copy over non-db fields
+    $outref->{source_host} = $inref->{source_host};
+    $outref->{destination_host} = $inref->{destination_host};
+
+    $query = "UPDATE reservations SET reservation_tag = ?
+              WHERE reservation_id = ?";
+    $sth = $self->{dbconn}->do_query($user_dn, $query,
+        $outref->{reservation_tag}, $outref->{reservation_id});
+    $sth->finish();
+
+    my @resv_array = ($outref);
+    my $results;
+    $results->{rows} = \@resv_array;
+    # clean up NULL values
+    $self->check_nulls($results->{rows});
+    # convert times back to user's time zone for mail message
+    $self->{dbconn}->convert_times($user_dn, $results->{rows});
+    # get loopback fields if have engr privileges
+    if ($self->{policy}->authorized($inref->{user_level}, "engr")) {
+        $self->{dbconn}->get_engr_fields($user_dn, $results->{rows}); 
+    }
+    $results->{reservation_tag} =~ s/@/../;
+
+}
+######
+
+###############################################################################
+# check_nulls:  
+#
 sub check_nulls {
     my( $self, $rref ) = @_ ;
 
