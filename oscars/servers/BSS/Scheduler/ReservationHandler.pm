@@ -37,15 +37,6 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{configs} = $self->{dbconn}->get_trace_configs();
-}
-######
-
-##############################################################################
-sub logout {
-    my ( $self, $inref ) = @_;
-		
-    return $self->{dbconn}->logout( $inref->{user_dn} );
 }
 ######
 
