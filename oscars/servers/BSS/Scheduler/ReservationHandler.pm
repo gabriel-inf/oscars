@@ -1,12 +1,11 @@
-##############################################################################
-# Main package, uses the BSS database front end
-# November 2, 2005 
+# RouteHandler.pm:  Finds ingress and egress router's and the path between
+#                   them.
 #
-# JRLee
-# DWRobertson
-##############################################################################
+# Last modified: November 5, 2005
+# Jason Lee (jrlee@lbl.gov)
+# David Robertson (dwrobertson@lbl.gov)
 
-package BSS::Scheduler::ReservationHandler; 
+package BSS::Traceroute::RouteHandler; 
 
 use Data::Dumper;
 use Socket;
@@ -40,29 +39,6 @@ sub initialize {
 }
 ######
 
-##############################################################################
-# insert_reservation
-# 1) compute routers
-# 2) check bandwidth (y2?)
-# 3) return the reservation id
-# IN: ref to hash containing fields corresponding to the reservations table.
-#     Some fields are still empty, and are filled in before inserting a
-#     record
-# OUT: hash containing all table fields, and logging buffer
-#
-sub insert_reservation {
-    # reference to input hash ref containing fields filled in by user
-    # This routine fills in the remaining fields.
-    my ( $self, $inref ) = @_; 
-
-    $self->{output_buf} = "*********************\n";
-    $self->convert_addresses($inref);
-    ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
-            $inref->{reservation_path}) = $self->find_interface_ids($inref);
-
-    return ( $self->{output_buf} );
-}
-######
 
 ##############################################################################
 # do ping:
@@ -254,6 +230,9 @@ sub find_interface_ids {
     my( $ingress_interface_id, $egress_interface_id );
     my( $loopback_ip, $path, $start_router );
 
+    $self->{output_buf} = "*********************\n";
+    $self->convert_addresses($inref);
+
     # If the loopbacks have not already been specified, use the default
     # router to run the traceroute to the source, and find the router with
     # an oscars loopback closest to the source 
@@ -312,7 +291,13 @@ sub find_interface_ids {
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0)) {
         throw Common::Exception("Unable to find route.");
     }
-	return ($ingress_interface_id, $egress_interface_id, $path); 
+    ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
+            $inref->{reservation_path}) = $self->find_interface_ids($inref);
+
+    $inref->{ingress_interface_id} = $ingress_interface_id;
+    $inref->{egress_interface_id} = $egress_interface_id;
+    $inref->{reservation_path} = $path;
+    return ( $self->{output_buf} );
 }
 ######
 
