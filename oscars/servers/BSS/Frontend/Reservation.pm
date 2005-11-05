@@ -1,8 +1,8 @@
 # Reservation.pm:  SOAP methods for BSS; calls 
-# BSS::Scheduler::ReservationHandler to set up reservations before
+# BSS::Traceroute::RouteHandler is called to set up route before
 # inserting info in database
 #
-# Last modified: November 2, 2005
+# Last modified: November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -18,7 +18,7 @@ use Common::Exception;
 use BSS::Frontend::Database;
 use BSS::Frontend::Policy;
 use BSS::Frontend::Stats;
-use BSS::Scheduler::ReservationHandler;
+use BSS::Traceroute::RouteHandler;
 
 # until can get MySQL and views going
 my @user_fields = ( 'reservation_id',
@@ -73,7 +73,7 @@ sub initialize {
     $self->{policy} = BSS::Frontend::Policy->new(
                        'dbconn' => $self->{dbconn});
     my $trace_configs = $self->{dbconn}->get_trace_configs();
-    $self->{route_setup} = BSS::Scheduler::ReservationHandler->new(
+    $self->{route_setup} = BSS::Traceroute::RouteHandler->new(
                                                'dbconn' => $self->{dbconn},
                                                'configs' => $trace_configs);
 }
@@ -95,7 +95,7 @@ sub insert_reservation {
     my $user_dn = $inref->{user_dn};
     my( $duration_seconds );
 
-    my $output_buf = $self->{route_setup}->insert_reservation( $inref );
+    my $output_buf = $self->{route_setup}->find_interface_ids( $inref );
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
     {
