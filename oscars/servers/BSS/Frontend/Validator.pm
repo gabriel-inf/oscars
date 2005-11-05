@@ -1,5 +1,5 @@
 # Validator.pm:  Input validation
-# Last modified: August 2, 2005
+# Last modified: November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 package BSS::Frontend::Validator;

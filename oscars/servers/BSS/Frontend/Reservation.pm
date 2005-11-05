@@ -92,7 +92,6 @@ sub initialize {
 sub insert_reservation {
     my( $self, $inref ) = @_;
     my( $query, $sth );
-    my $user_dn = $inref->{user_dn};
     my( $duration_seconds );
 
     my $output_buf = $self->{route_setup}->find_interface_ids( $inref );
@@ -102,32 +101,29 @@ sub insert_reservation {
         throw Common::Exception("Invalid router id(s): 0.  Unable to " .
                                 "do insert.");
     }
-    $self->{dbconn}->login_user($user_dn);
     my $stats = BSS::Frontend::Stats->new();
-    $self->{dbconn}->setup_times($inref, $user_dn, $stats);
+    $self->{dbconn}->setup_times($inref, $stats);
 
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
-    $self->{policy}->check_oversubscribe($inref, $user_dn);
+    $self->{policy}->check_oversubscribe($inref);
 
     # Get ipaddrs table id from source's and destination's host name or ip
     # address.
     $inref->{src_hostaddr_id} =
-        $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                $inref->{source_ip}); 
+        $self->{dbconn}->hostaddrs_ip_to_id($inref->{source_ip}); 
     $inref->{dst_hostaddr_id} =
-        $self->{dbconn}->hostaddrs_ip_to_id($inref->{user_dn},
-                                            $inref->{destination_ip}); 
+        $self->{dbconn}->hostaddrs_ip_to_id($inref->{destination_ip}); 
 
-    $self->fill_fields($inref, $user_dn, $stats);
-    my $outref = $self->insert_fields($inref, $user_dn);
-    my $results = $self->get_results($inref, $outref, $user_dn);
+    $self->fill_fields($inref, $stats);
+    my $outref = $self->insert_fields($inref);
+    my $results = $self->get_results($inref, $outref);
 
     my $mailer = Common::Mail->new();
-    my $mail_msg = $stats->get_stats($user_dn, $results->{rows}[0]) ;
+    my $mail_msg = $stats->get_stats($results->{rows}[0]) ;
     $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
-                       "Reservation made by $user_dn", $mail_msg);
-    $mailer->send_mail($mailer->get_webmaster(), $user_dn,
+                       "Reservation made by $inref->{user_dn}", $mail_msg);
+    $mailer->send_mail($mailer->get_webmaster(), $inref->{user_dn},
                        "Your reservation has been accepted", $mail_msg);
     return( $results, $output_buf );
 }
@@ -142,8 +138,7 @@ sub insert_reservation {
 sub delete_reservation {
     my( $self, $inref ) = @_;
 
-    my $status =  $self->{dbconn}->update_reservation( $inref->{user_dn}, $inref,
-                                     'precancel' );
+    my $status =  $self->{dbconn}->update_reservation( $inref, 'precancel' );
     return($self->get_reservations($inref), '');
 }
 ######
@@ -159,9 +154,7 @@ sub get_reservations {
 
     my( $sth, $query );
     my( $rref );
-    my $user_dn = $inref->{user_dn};
 
-    $self->{dbconn}->login_user($user_dn);
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
     # for that reservation.  Sort by start time in ascending order.
@@ -176,40 +169,32 @@ sub get_reservations {
         $query .= " FROM reservations" .
                   " WHERE reservation_id = $inref->{reservation_id}";
     }
-    elsif ($user_dn) {
+    elsif ($inref->{user_dn}) {
         if ( $self->{policy}->authorized($inref->{user_level}, "engr") ) {
             $query = "SELECT * FROM reservations";
         }
         else {
             $query = "SELECT " . join(', ', @user_fields);
             $query .= " FROM reservations" .
-                      " WHERE user_dn = '$user_dn'";
+                      " WHERE user_dn = '$inref->{user_dn}'";
         }
     }
     $query .= " ORDER BY reservation_start_time";
-    $sth = $self->{dbconn}->do_query($user_dn, $query);
+    $sth = $self->{dbconn}->do_query($query);
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
-    $self->{dbconn}->get_host_info($user_dn, $rref);
-    $self->{dbconn}->convert_times($user_dn, $rref);
+    $self->{dbconn}->get_host_info($rref);
+    $self->{dbconn}->convert_times($rref);
     if ($self->{policy}->authorized($inref->{user_level}, "engr") &&
         $inref->{reservation_id}) {
         # in this case, only one row
-        $self->{dbconn}->get_engr_fields($user_dn, $rref); 
+        $self->{dbconn}->get_engr_fields($rref); 
         $self->check_nulls($rref);
     }
     my $results;
     $results->{rows} = $rref;
     return( $results, '' );
-}
-######
-
-###############################################################################
-sub logout {
-    my( $self, $inref ) = @_;
-
-    return( $self->{dbconn}->logout($inref->{user_dn}) );
 }
 ######
 
@@ -221,7 +206,7 @@ sub logout {
 # fill_fields:  
 #
 sub fill_fields {
-    my( $self, $inref, $user_dn, $stats );
+    my( $self, $inref, $stats );
 
     $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
     $inref->{reservation_id} = 'NULL';
@@ -230,7 +215,7 @@ sub fill_fields {
     $inref->{reservation_burst_limit} =
                                 $self->{pss_configs}->{pss_conf_burst_limit};
     $inref->{reservation_status} = 'pending';
-    $inref->{reservation_tag} = $user_dn . '.' .
+    $inref->{reservation_tag} = $inref->{user_dn} . '.' .
         $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
 
 }
@@ -240,12 +225,12 @@ sub fill_fields {
 # insert_fields:  
 #
 sub insert_fields {
-    my( $self, $inref, $user_dn );
+    my( $self, $inref );
 
     my( $query, $sth );
 
     $query = "SHOW COLUMNS from reservations";
-    $sth = $self->{dbconn}->do_query( $user_dn, $query );
+    $sth = $self->{dbconn}->do_query( $query );
     my $arrayref = $sth->fetchall_arrayref({});
     my @insertions;
     my $outref = {}; 
@@ -261,8 +246,8 @@ sub insert_fields {
     # insert all fields for reservation into database
     $query = "INSERT INTO reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
-    $outref->{reservation_id} = $self->{dbconn}->get_reservation_id($user_dn);
+    $sth = $self->{dbconn}->do_query($query, @insertions);
+    $outref->{reservation_id} = $self->{dbconn}->get_reservation_id();
     $sth->finish();
     return( $outref );
 }
@@ -273,7 +258,7 @@ sub insert_fields {
 # get_results:  
 #
 sub get_results {
-    my( $self, $inref, $outref, $user_dn );
+    my( $self, $inref, $outref );
 
     my( $query, $sth );
 
@@ -285,8 +270,8 @@ sub get_results {
 
     $query = "UPDATE reservations SET reservation_tag = ?
               WHERE reservation_id = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query,
-        $outref->{reservation_tag}, $outref->{reservation_id});
+    $sth = $self->{dbconn}->do_query($query, $outref->{reservation_tag},
+                                     $outref->{reservation_id});
     $sth->finish();
 
     my @resv_array = ($outref);
@@ -295,10 +280,10 @@ sub get_results {
     # clean up NULL values
     $self->check_nulls($results->{rows});
     # convert times back to user's time zone for mail message
-    $self->{dbconn}->convert_times($user_dn, $results->{rows});
+    $self->{dbconn}->convert_times($results->{rows});
     # get loopback fields if have engr privileges
     if ($self->{policy}->authorized($inref->{user_level}, "engr")) {
-        $self->{dbconn}->get_engr_fields($user_dn, $results->{rows}); 
+        $self->{dbconn}->get_engr_fields($results->{rows}); 
     }
     $results->{reservation_tag} =~ s/@/../;
 

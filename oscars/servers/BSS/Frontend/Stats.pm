@@ -1,5 +1,5 @@
 # Stats.pm:  Reservation statistics formatting
-# Last modified: October 20, 2005
+# Last modified: November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 package BSS::Frontend::Stats;
@@ -31,11 +31,11 @@ sub initialize {
 # get_stats
 #
 sub get_stats {
-    my( $self, $user_dn, $resv) = @_;
+    my( $self, $resv) = @_;
 
     # only optional fields need to be checked for existence
     my $stats = 
-        "Reservation entered by $user_dn with parameters:\n" .
+        "Reservation entered by $resv->{user_dn} with parameters:\n" .
         "Description:        $resv->{reservation_description}\n";
     if ($resv->{reservation_id}) {
         $stats .= "Reservation id:     $resv->{reservation_id}\n";

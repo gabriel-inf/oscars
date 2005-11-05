@@ -1,5 +1,5 @@
 # Policy.pm:  database handling for policy related matters
-# Last modified: July 11, 2005
+# Last modified: November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -44,7 +44,7 @@ sub initialize {
 # OUT: valid (0 or 1), and error message
 #
 sub check_oversubscribe {
-    my ( $self, $inref, $user_dn) = @_;
+    my ( $self, $inref) = @_;
 
     my( $query, $sth, $reservations );
     my ( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
@@ -52,7 +52,6 @@ sub check_oversubscribe {
     # maximum utilization for a particular link
     my ( $max_utilization );
 
-    my $user_dn = $inref->{user_dn};
     # XXX: what is the MAX percent we can allocate? for now 50% ...
     my ( $max_reservation_utilization ) = 0.50; 
 
@@ -66,7 +65,7 @@ sub check_oversubscribe {
                    reservation_status = 'active')";
 
     # handled query with the comparison start & end datetime strings
-    $sth = $self->{dbconn}->do_query( $user_dn, $query,
+    $sth = $self->{dbconn}->do_query( $query,
            $inref->{reservation_start_time}, $inref->{reservation_end_time});
     $reservations = $sth->fetchall_arrayref({});
 
@@ -87,7 +86,7 @@ sub check_oversubscribe {
     # now for each of those interface idx
     for $idx (keys %iface_idxs) {
         # get max bandwith speed for an idx
-        $row = $self->get_interface_fields($user_dn, $idx);
+        $row = $self->get_interface_fields($idx);
         if (!$row ) { next; }
 
         if ( $row->{interface_valid} eq 'False' ) {
@@ -100,7 +99,7 @@ sub check_oversubscribe {
             my $error_msg;
             # only print router name if user has admin privileges
             if ($inref->{form_type} eq 'admin') {
-                $router_name = $self->{dbconn}->xface_id_to_loopback($user_dn,
+                $router_name = $self->{dbconn}->xface_id_to_loopback(
                                                                  $idx, 'name');
                 $error_msg = "$router_name oversubscribed: ";
             }
@@ -144,12 +143,12 @@ sub authorized {
 # OUT: interface row
 #
 sub get_interface_fields {
-    my( $self, $user_dn, $iface_id) = @_;
+    my( $self, $iface_id) = @_;
 
     my( $query, $sth, $results);
 
     $query = "SELECT * FROM interfaces WHERE interface_id = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, $iface_id);
+    $sth = $self->{dbconn}->do_query($query, $iface_id);
     $results = $sth->fetchrow_hashref();
     $sth->finish();
 
