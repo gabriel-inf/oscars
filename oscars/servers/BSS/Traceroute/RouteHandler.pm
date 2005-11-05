@@ -39,184 +39,6 @@ sub initialize {
 }
 ######
 
-
-##############################################################################
-# do ping:
-# Freaking Net:Ping uses it own socket, so it has to be
-# root to do icmp. Any smart person would turn off UDP and
-# TCP echo ports ... gezzzz
-#
-sub do_ping {
-    my ( $self, $host ) = @_;
-
-    # use sytem 'ping' command (should be config'd in config file
-    if ($self->{configs}->{trace_conf_use_system}) {
-        my @ping = `/bin/ping -w 10 -c 3 -n  $host`;
-        for my $i (@ping) {
-            if ( $i =~ /^64 bytes/ ) {  
-                return; 
-            }
-        }
-        throw Common::Exception("Host $host not pingable");
-    # use the Net::Ping system
-    } else {
-        # make sure its up and pingable first
-        my $p = Net::Ping->new(proto=>'icmp');
-        if (! $p->ping($host, 5) )  {
-            $p->close();
-            throw Common::Exception("Host $host not pingable");
-        }
-        $p->close();
-    }
-    throw Common::Exception("Host $host not pingable");
-}
-######
-
-##############################################################################
-# do remote trace:  Run traceroute from src to dst.
-#
-# In:   source, destination IP addresses.
-# Out:  interface ID, path  
-#
-sub do_remote_trace {
-    my ( $self, $user_dn, $src, $dst )  = @_;
-    my (@hops);
-    my ($interface_id, $prev_id, @path);
-    my ($prev_loopback, $loopback_ip);
-
-    @path = ();
-    # try to ping before traceing?
-    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($dst); }
-
-    my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
-    $jnxTraceroute->traceroute($self->{configs}, $src, $dst);
-    @hops = $jnxTraceroute->get_hops();
-
-    # if we didn't hop much, maybe the same router?
-    if ($#hops < 0 ) { throw Common::Exception("same router?"); }
-
-    if ($#hops == 0) { 
-            # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn,
-                               $self->{configs}->{trace_conf_jnx_source});
-        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
-                               $interface_id, 'ip');
-        return ($interface_id, $loopback_ip, \@path);
-    }
-
-    # start off with an non-existent router
-    $interface_id = 0;
-    # loop forward till the next router isn't one of ours or doesn't have
-    # an oscars loopback address
-    my $hop;
-    for $hop (@hops)  {
-        $self->{output_buf} .= "hop:  $hop\n";
-        print STDERR "hop:  $hop\n";
-        # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $hop);
-        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
-                                                     $interface_id, 'ip');
-        if ($interface_id == 0) {
-            $self->{output_buf} .= "edge router is $prev_loopback\n";
-            print STDERR "edge router is $prev_loopback\n";
-            return ($prev_id, $prev_loopback, \@path);
-        }
-
-        # add to the path
-        push(@path, $interface_id);
-        if ($loopback_ip && ($loopback_ip != 'NULL')) {
-            $prev_id = $interface_id;
-            $prev_loopback = $loopback_ip;
-        }
-    }
-    # Need this in case the last hop is in the database
-    if ($prev_loopback) {
-        $self->{output_buf} .= "edge router is $prev_loopback\n";
-        print STDERR "edge router is $prev_loopback\n";
-        return ($prev_id, $prev_loopback, \@path);
-    }
-
-    # if we didn't find it
-    throw Common::Exception("Couldn't trace route to $src");
-    return;
-}
-######
-
-##############################################################################
-# do local trace
-#
-sub do_local_trace {
-    my ($self, $user_dn, $host)  = @_;
-    my ($tr, $hops, $interface_id);
-
-    # try to ping before traceing?
-    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($host); }
-    $tr = new Net::Traceroute->new( host=>$host, timeout=>30, 
-            query_timeout=>3, max_ttl=>20 ) || return (0);
-
-    if( !$tr->found ) {
-        throw Common::Exception("do_local_trace: $host not found");
-    } 
-
-    $hops = $tr->hops;
-    $self->{output_buf} .= "do_local_trace:  hops = $hops\n";
-    print STDERR "do_local_trace:  hops = $hops\n";
-
-    # if we didn't hop much, mabe the same router?
-    if ($hops < 2 ) {
-        throw Common::Exception("do_local_trace: same router?");
-    }
-
-    # loop from the last router back, till we find an edge router
-    for my $i (1..$hops-1) {
-        my $ipaddr = $tr->hop_query_host($hops - $i, 0);
-        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $ipaddr);
-        if ($interface_id != 0) {
-            $self->{output_buf} .= "do_local_trace:  edge router is $ipaddr\n";
-            print STDERR "do_local_trace:  edge router is $ipaddr\n";
-            return ($interface_id);
-        } 
-     }
-    # if we didn't find it
-    throw Common::Exception("do_local_trace:  could not find edge router");
-    return;
-}
-######
-
-##############################################################################
-# convert_addresses:  convert source and destination, and ingress and
-# egress to IP's, if necessary.
-sub convert_addresses{
-    my( $self, $inref ) = @_;
-
-    if ($self->not_an_ip($inref->{source_host})) {
-        $inref->{source_ip} =
-            inet_ntoa(inet_aton($inref->{source_host}));
-    }
-    else { $inref->{source_ip} = $inref->{source_host}; }
-    if ($self->not_an_ip($inref->{destination_host})) {
-        $inref->{destination_ip} =
-            inet_ntoa(inet_aton($inref->{destination_host}));
-    }
-    else { $inref->{destination_ip} = $inref->{destination_host}; }
-
-    if ($inref->{ingress_router}) {
-        if ($self->not_an_ip($inref->{ingress_router})) {
-            $inref->{ingress_ip} =
-                inet_ntoa(inet_aton($inref->{ingress_router}));
-        }
-        else { $inref->{ingress_ip} = $inref->{ingress_router}; }
-    }
-    if ($inref->{egress_router}) {
-        if ($self->not_an_ip($inref->{egress_router})) {
-            $inref->{egress_ip} =
-                 inet_ntoa(inet_aton($inref->{egress_router}));
-        }
-        else { $inref->{egress_ip} = $inref->{egress_router}; }
-    }
-}
-######
-
 ##############################################################################
 # find_interface_ids:  run traceroutes to both hosts.  Find edge routers and
 # validate both ends.
@@ -301,6 +123,183 @@ sub find_interface_ids {
 }
 ######
 
+##############################################################################
+# do_remote_trace:  Run traceroute from src to dst.
+#
+# In:   source, destination IP addresses.
+# Out:  interface ID, path  
+#
+sub do_remote_trace {
+    my ( $self, $user_dn, $src, $dst )  = @_;
+    my (@hops);
+    my ($interface_id, $prev_id, @path);
+    my ($prev_loopback, $loopback_ip);
+
+    @path = ();
+    # try to ping before traceing?
+    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($dst); }
+
+    my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
+    $jnxTraceroute->traceroute($self->{configs}, $src, $dst);
+    @hops = $jnxTraceroute->get_hops();
+
+    # if we didn't hop much, maybe the same router?
+    if ($#hops < 0 ) { throw Common::Exception("same router?"); }
+
+    if ($#hops == 0) { 
+            # id is 0 if not an edge router (not in interfaces table)
+        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn,
+                               $self->{configs}->{trace_conf_jnx_source});
+        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
+                               $interface_id, 'ip');
+        return ($interface_id, $loopback_ip, \@path);
+    }
+
+    # start off with an non-existent router
+    $interface_id = 0;
+    # loop forward till the next router isn't one of ours or doesn't have
+    # an oscars loopback address
+    my $hop;
+    for $hop (@hops)  {
+        $self->{output_buf} .= "hop:  $hop\n";
+        print STDERR "hop:  $hop\n";
+        # id is 0 if not an edge router (not in interfaces table)
+        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $hop);
+        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
+                                                     $interface_id, 'ip');
+        if ($interface_id == 0) {
+            $self->{output_buf} .= "edge router is $prev_loopback\n";
+            print STDERR "edge router is $prev_loopback\n";
+            return ($prev_id, $prev_loopback, \@path);
+        }
+
+        # add to the path
+        push(@path, $interface_id);
+        if ($loopback_ip && ($loopback_ip != 'NULL')) {
+            $prev_id = $interface_id;
+            $prev_loopback = $loopback_ip;
+        }
+    }
+    # Need this in case the last hop is in the database
+    if ($prev_loopback) {
+        $self->{output_buf} .= "edge router is $prev_loopback\n";
+        print STDERR "edge router is $prev_loopback\n";
+        return ($prev_id, $prev_loopback, \@path);
+    }
+
+    # if we didn't find it
+    throw Common::Exception("Couldn't trace route to $src");
+    return;
+}
+######
+
+##############################################################################
+# do_local_trace
+#
+sub do_local_trace {
+    my ($self, $user_dn, $host)  = @_;
+    my ($tr, $hops, $interface_id);
+
+    # try to ping before traceing?
+    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($host); }
+    $tr = new Net::Traceroute->new( host=>$host, timeout=>30, 
+            query_timeout=>3, max_ttl=>20 ) || return (0);
+
+    if( !$tr->found ) {
+        throw Common::Exception("do_local_trace: $host not found");
+    } 
+
+    $hops = $tr->hops;
+    $self->{output_buf} .= "do_local_trace:  hops = $hops\n";
+    print STDERR "do_local_trace:  hops = $hops\n";
+
+    # if we didn't hop much, mabe the same router?
+    if ($hops < 2 ) {
+        throw Common::Exception("do_local_trace: same router?");
+    }
+
+    # loop from the last router back, till we find an edge router
+    for my $i (1..$hops-1) {
+        my $ipaddr = $tr->hop_query_host($hops - $i, 0);
+        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $ipaddr);
+        if ($interface_id != 0) {
+            $self->{output_buf} .= "do_local_trace:  edge router is $ipaddr\n";
+            print STDERR "do_local_trace:  edge router is $ipaddr\n";
+            return ($interface_id);
+        } 
+     }
+    # if we didn't find it
+    throw Common::Exception("do_local_trace:  could not find edge router");
+    return;
+}
+######
+
+##############################################################################
+# do_ping:
+# Freaking Net:Ping uses it own socket, so it has to be
+# root to do icmp. Any smart person would turn off UDP and
+# TCP echo ports ... gezzzz
+#
+sub do_ping {
+    my ( $self, $host ) = @_;
+
+    # use sytem 'ping' command (should be config'd in config file
+    if ($self->{configs}->{trace_conf_use_system}) {
+        my @ping = `/bin/ping -w 10 -c 3 -n  $host`;
+        for my $i (@ping) {
+            if ( $i =~ /^64 bytes/ ) {  
+                return; 
+            }
+        }
+        throw Common::Exception("Host $host not pingable");
+    # use the Net::Ping system
+    } else {
+        # make sure its up and pingable first
+        my $p = Net::Ping->new(proto=>'icmp');
+        if (! $p->ping($host, 5) )  {
+            $p->close();
+            throw Common::Exception("Host $host not pingable");
+        }
+        $p->close();
+    }
+    throw Common::Exception("Host $host not pingable");
+}
+######
+
+##############################################################################
+# convert_addresses:  convert source and destination, and ingress and
+# egress to IP's, if necessary.
+sub convert_addresses{
+    my( $self, $inref ) = @_;
+
+    if ($self->not_an_ip($inref->{source_host})) {
+        $inref->{source_ip} =
+            inet_ntoa(inet_aton($inref->{source_host}));
+    }
+    else { $inref->{source_ip} = $inref->{source_host}; }
+    if ($self->not_an_ip($inref->{destination_host})) {
+        $inref->{destination_ip} =
+            inet_ntoa(inet_aton($inref->{destination_host}));
+    }
+    else { $inref->{destination_ip} = $inref->{destination_host}; }
+
+    if ($inref->{ingress_router}) {
+        if ($self->not_an_ip($inref->{ingress_router})) {
+            $inref->{ingress_ip} =
+                inet_ntoa(inet_aton($inref->{ingress_router}));
+        }
+        else { $inref->{ingress_ip} = $inref->{ingress_router}; }
+    }
+    if ($inref->{egress_router}) {
+        if ($self->not_an_ip($inref->{egress_router})) {
+            $inref->{egress_ip} =
+                 inet_ntoa(inet_aton($inref->{egress_router}));
+        }
+        else { $inref->{egress_ip} = $inref->{egress_router}; }
+    }
+}
+######
+
 ################################################################################
 sub not_an_ip {
     my( $self, $form_input ) = @_;
@@ -311,6 +310,5 @@ sub not_an_ip {
 }
 ######
 
-### last line of a module
 1;
 # vim: et ts=4 sw=4
