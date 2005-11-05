@@ -10,9 +10,10 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( forward );
  
 
+# TODO:  FIX
 my $target = SOAP::Lite
-  -> uri('http://localhost:3000/Dispatcher')
-  -> proxy ('http://localhost:3000/BSS_server.pl');
+  -> uri('http://localhost/Dispatcher')
+  -> proxy ('http://localhost/Dispatcher.pm');
 
 
 ##############################################################################

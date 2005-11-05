@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with admin and user forms.
-# Last modified: October 18, 2005
+# Last modified: November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -78,9 +78,10 @@ sub verify_login {
 
     $self->{auth}->get_user_levels('');
 
+    # TODO:  auth needed for this query?
     # Get the password and privilege level from the database.
     $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query('', $query, $user_dn);
+    $sth = $self->{dbconn}->do_query($query, $user_dn);
     # Make sure user exists.
     if (!$sth->rows) {
         $sth->finish();
@@ -98,22 +99,9 @@ sub verify_login {
     # make sure has at least minimal privileges
     $self->{auth}->verify($ref->{user_level}, 'user');
 
-    # if everything is OK, create a db handle for the user, and set their
-    # status to 'Logged in'
-    $self->{dbconn}->login_user($user_dn);
-
+    # TODO:  FIX
     $results->{user_level} = $self->{auth}->get_str_level($ref->{user_level});
-    # The first value is unused, but I can't get SOAP to send a correct
-    # reply without it so far.
     return( $results );
-}
-######
-
-###############################################################################
-sub logout {
-    my( $self, $params ) = @_;
-
-    return( $self->{dbconn}->logout($params->{user_dn}) );
 }
 ######
 
@@ -128,28 +116,16 @@ sub get_profile {
     my( $sth, $query, $rref );
     my( @data );
     my $results = {};
-    my $user_dn = $inref->{user_dn};
 
-    # unless getting a profile, if user has admin privileges, admin and
-    # user dn are the same
-    if (!$inref->{admin_dn}) {
-        $self->{dbconn}->enforce_connection($user_dn);
+    if (!$self->{auth}->authorized($inref->{user_dn}, 'get_profile')) {
+        throw Common::Exception("User not authorized for get_profile");
     }
-    else {
-        $self->{dbconn}->enforce_connection($inref->{admin_dn});
-    }
-    $self->{auth}->verify($inref->{user_level}, 'user', 1);
 
     # DB query: get the user profile detail
     $query = "SELECT " . join(', ', @user_profile_fields) .
              " FROM users where user_dn = ?";
 
-    if (!$inref->{admin_dn}) {
-        $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
-    }
-    else {
-        $sth = $self->{dbconn}->do_query($inref->{admin_dn}, $query, $user_dn);
-    }
+    $sth = $self->{dbconn}->do_query($query, $inref->{user_dn});
 
     # check whether this person is a registered user
     if (!$sth->rows) {
@@ -163,14 +139,8 @@ sub get_profile {
 
     $query = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
-    if (!$inref->{admin_dn}) {
-        $sth = $self->{dbconn}->do_query($user_dn, $query,
-                                         @{$rref}[0]->{institution_id});
-    }
-    else {
-        $sth = $self->{dbconn}->do_query($inref->{admin_dn}, $query,
-                                         @{$rref}[0]->{institution_id});
-    }
+    $sth = $self->{dbconn}->do_query($query,
+                                     @{$rref}[0]->{institution_id});
 
     # check whether this organization is in the db
     if (!$sth->rows) {
@@ -204,13 +174,10 @@ sub set_profile {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    if (!$inref->{admin_dn}) {
-        $self->{dbconn}->enforce_connection($user_dn);
+        # TODO:  setting other person's profile (admin)
+    if (!$self->{auth}->authorized($user_dn, 'set_profile')) {
+        throw Common::Exception("User not authorized for set_profile");
     }
-    else {
-        $self->{dbconn}->enforce_connection($inref->{admin_dn});
-    }
-    $self->{auth}->verify($inref->{user_level}, 'user', 1);
 
     # Read the current user information from the database to decide which
     # fields are being updated, and user has proper privileges.
@@ -218,18 +185,15 @@ sub set_profile {
     # DB query: get the user profile detail
     $query = "SELECT " . join(', ', @user_profile_fields) .
              ", user_level FROM users where user_dn = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
+    $sth = $self->{dbconn}->do_query($query, $user_dn);
 
-    # check whether this person is a registered user
+    # check whether this person is in the database
     if (!$sth->rows) {
         $sth->finish();
-        throw Common::Exception("The user $user_dn is not registered.");
+        throw Common::Exception("The user $user_dn does not have an OSCARS login.");
     }
 
     $current_info = $sth->fetchrow_hashref;
-    # make sure user has appropriate privileges
-    # TODO:  if admin_dn set, need admin privileges
-    $self->{auth}->verify($current_info->{user_level}, 'user');
 
     ### Check the current password with the one in the database before
     ### proceeding.
@@ -265,7 +229,7 @@ sub set_profile {
     }
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
+    $sth = $self->{dbconn}->do_query($query, $user_dn);
     $sth->finish();
 
     $ref->{institution} = $inref->{institution};
@@ -287,7 +251,9 @@ sub set_profile {
 sub add_user {
     my ( $self, $inref ) = @_;
 
-    $self->{auth}->verify($inref->{user_level}, 'admin', 1);
+    if (!$self->{auth}->authorized($inref->{user_dn}, 'add_user')) {
+        throw Common::Exception("User not authorized to add another user");
+    }
     return $self->{registr}->add_user($inref);
 }
 ######
@@ -305,17 +271,18 @@ sub get_userlist {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $self->{dbconn}->enforce_connection($user_dn);
-    $self->{auth}->verify($inref->{user_level}, 'admin', 1);
+    if (!$self->{auth}->authorized($user_dn, 'get_userlist')) {
+        throw Common::Exception("User not authorized to get list of users");
+    }
 
     $query .= "SELECT * FROM users ORDER BY user_last_name";
-    $sth = $self->{dbconn}->do_query($user_dn, $query);
+    $sth = $self->{dbconn}->do_query($query);
     $rref = $sth->fetchall_arrayref({});
     $sth->finish();
 
     # replace institution id with institution name
     $query = "SELECT institution_id, institution_name FROM institutions";
-    $sth = $self->{dbconn}->do_query($user_dn, $query);
+    $sth = $self->{dbconn}->do_query($query);
     $arrayref = $sth->fetchall_arrayref();
     for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
 
@@ -337,6 +304,10 @@ sub get_userlist {
 sub insert_reservation {
     my( $self, $form_params ) = @_;
 
+    if (!$self->{auth}->authorized($form_params->{user_dn},
+                                    'insert_reservation')) {
+        throw Common::Exception("User not authorized to schedule reservation");
+    }
     my $som = forward($form_params);
     return( $som->result );
 }
@@ -344,6 +315,10 @@ sub insert_reservation {
 sub delete_reservation {
     my( $self, $form_params ) = @_;
 
+    if (!$self->{auth}->authorized($form_params->{user_dn},
+                                    'delete_reservation')) {
+        throw Common::Exception("User not authorized to delete reservation");
+    }
     my $som = forward($form_params);
     return( $som->result );
 }
@@ -351,6 +326,10 @@ sub delete_reservation {
 sub get_reservations {
     my( $self, $form_params ) = @_;
 
+    if (!$self->{auth}->authorized($form_params->{user_dn},
+                                    'insert_reservation')) {
+        throw Common::Exception("User not authorized to get list of reservations");
+    }
     my $som = forward($form_params);
     return( $som->result );
 }

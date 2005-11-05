@@ -1,5 +1,5 @@
 # Validator.pm:  Input validation
-# Last modified: July 31, 2005
+# Last modified: November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 package AAAS::Frontend::Validator;
@@ -90,7 +90,6 @@ my $form_variables = {
     },
     # currently no tests
     'get_userlist' => {},
-    'logout' => {},
     # validate here or in BSS?
     'insert_reservation' => {},
     'delete_reservation' => {},

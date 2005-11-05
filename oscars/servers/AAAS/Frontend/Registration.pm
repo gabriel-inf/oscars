@@ -2,7 +2,7 @@ package AAAS::Frontend::Registration;
 
 # Registration.pm:  Database interactions having to do with user registration.
 #                   These methods haven't been fully incorporated yet.
-# Last modified: July 8, 2005
+# Last modified: November 5, 2005
 # Soo-yeon Hwang (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -55,7 +55,7 @@ sub activate_account {
     # get the password from the database
     $query = "SELECT user_password, user_activation_key, user_level
               FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
+    $sth = $self->{dbconn}->do_query($query, $user_dn);
 
     # check whether this person is a registered user
     if (!$sth->rows) {
@@ -91,7 +91,7 @@ sub activate_account {
         # to 0; empty the activation key field
         $query = "UPDATE users SET user_level = ?, pending_level = ?,
                   user_activation_key = '' WHERE user_dn = ?";
-        $sth = $self->{dbconn}->do_query($user_dn, $query, $pending_level,
+        $sth = $self->{dbconn}->do_query($query, $pending_level,
                                          $user_dn);
     }
     else {
@@ -128,7 +128,7 @@ sub process_registration {
 	
     # login name overlap check
     $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, $user_dn);
+    $sth = $self->{dbconn}->do_query($query, $user_dn);
 
     if ( $sth->rows > 0 ) {
         $sth->finish();
@@ -139,7 +139,7 @@ sub process_registration {
 
     $query = "INSERT INTO users VALUES ( " .
                               "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-    $sth = $self->{dbconn}->do_query($user_dn, $query, @insertions);
+    $sth = $self->{dbconn}->do_query($query, @insertions);
     $sth->finish();
 
     $results->{status_msg} = "Your user registration has been recorded " .
@@ -164,16 +164,13 @@ sub add_user {
     my( $current_info, $ref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
-    my $admin_dn = $inref->{admin_dn};
 
     print STDERR "add_user\n";
-    $self->{dbconn}->enforce_connection($admin_dn);
-
     my $encrypted_password = $inref->{password_once};
 
     # login name overlap check
     $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($admin_dn, $query, $user_dn);
+    $sth = $self->{dbconn}->do_query($query, $user_dn);
 
     if ( $sth->rows > 0 ) {
         $sth->finish();
@@ -190,7 +187,7 @@ sub add_user {
 
     $inref->{user_password} = crypt($inref->{password_new_once}, 'oscars');
     $query = "SHOW COLUMNS from users";
-    $sth = $self->{dbconn}->do_query( $admin_dn, $query );
+    $sth = $self->{dbconn}->do_query( $query );
 
     my $arrayref = $sth->fetchall_arrayref({});
     my @insertions;
@@ -206,7 +203,7 @@ sub add_user {
     $query = "INSERT INTO users VALUES ( " .
              join( ', ', ('?') x @insertions ) . " )";
              
-    $sth = $self->{dbconn}->do_query($admin_dn, $query, @insertions);
+    $sth = $self->{dbconn}->do_query($query, @insertions);
     $sth->finish();
     # X out password
     $results->{user_password} = undef;
