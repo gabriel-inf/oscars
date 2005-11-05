@@ -61,10 +61,9 @@ sub find_interface_ids {
     if ($inref->{ingress_ip}) {
         print STDERR "Ingress:  $inref->{ingress_ip}\n";
         $ingress_interface_id = $self->{dbconn}->ip_to_xface_id(
-                                       $inref->{user_dn}, $inref->{ingress_ip});
+                                       $inref->{ingress_ip});
         if ($ingress_interface_id != 0) {
             $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
-                                       $inref->{user_dn},
                                        $ingress_interface_id, 'ip');
         }
         else {
@@ -77,17 +76,16 @@ sub find_interface_ids {
                               "$self->{configs}->{trace_conf_jnx_source} " .
                               "to source $inref->{source_ip}\n";
         ($ingress_interface_id, $loopback_ip, $path) =
-                $self->do_remote_trace($inref->{user_dn},
+                $self->do_remote_trace(
                               $self->{configs}->{trace_conf_jnx_source},
                               $inref->{source_ip});
     }
   
     if ($inref->{egress_ip}) {
         $egress_interface_id = $self->{dbconn}->ip_to_xface_id(
-                                       $inref->{user_dn}, $inref->{egress_ip});
+                                       $inref->{egress_ip});
         if ($egress_interface_id != 0) {
             $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
-                                      $inref->{user_dn},
                                       $egress_interface_id, 'ip');
         }
         else {
@@ -102,10 +100,10 @@ sub find_interface_ids {
             $self->{output_buf} .= "--traceroute:  " .
                        "$loopback_ip to destination $inref->{destination_ip}\n";
             ($egress_interface_id, $loopback_ip, $path) =
-                    $self->do_remote_trace($inref->{user_dn}, $loopback_ip,
+                    $self->do_remote_trace($loopback_ip,
                                            $inref->{destination_ip});
         } else {
-            $ingress_interface_id = $self->do_local_trace($inref->{user_dn},
+            $ingress_interface_id = $self->do_local_trace(
                                                       $inref->{source_ip});
         }
     }
@@ -130,7 +128,7 @@ sub find_interface_ids {
 # Out:  interface ID, path  
 #
 sub do_remote_trace {
-    my ( $self, $user_dn, $src, $dst )  = @_;
+    my ( $self, $src, $dst )  = @_;
     my (@hops);
     my ($interface_id, $prev_id, @path);
     my ($prev_loopback, $loopback_ip);
@@ -148,10 +146,10 @@ sub do_remote_trace {
 
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn,
+        $interface_id = $self->{dbconn}->ip_to_xface_id(
                                $self->{configs}->{trace_conf_jnx_source});
-        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
-                               $interface_id, 'ip');
+        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($interface_id,
+                                                              'ip');
         return ($interface_id, $loopback_ip, \@path);
     }
 
@@ -164,9 +162,9 @@ sub do_remote_trace {
         $self->{output_buf} .= "hop:  $hop\n";
         print STDERR "hop:  $hop\n";
         # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $hop);
-        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($user_dn,
-                                                     $interface_id, 'ip');
+        $interface_id = $self->{dbconn}->ip_to_xface_id($hop);
+        $loopback_ip = $self->{dbconn}->xface_id_to_loopback( $interface_id,
+                                                             'ip');
         if ($interface_id == 0) {
             $self->{output_buf} .= "edge router is $prev_loopback\n";
             print STDERR "edge router is $prev_loopback\n";
@@ -197,7 +195,7 @@ sub do_remote_trace {
 # do_local_trace
 #
 sub do_local_trace {
-    my ($self, $user_dn, $host)  = @_;
+    my ($self, $host)  = @_;
     my ($tr, $hops, $interface_id);
 
     # try to ping before traceing?
@@ -221,7 +219,7 @@ sub do_local_trace {
     # loop from the last router back, till we find an edge router
     for my $i (1..$hops-1) {
         my $ipaddr = $tr->hop_query_host($hops - $i, 0);
-        $interface_id = $self->{dbconn}->ip_to_xface_id($user_dn, $ipaddr);
+        $interface_id = $self->{dbconn}->ip_to_xface_id($ipaddr);
         if ($interface_id != 0) {
             $self->{output_buf} .= "do_local_trace:  edge router is $ipaddr\n";
             print STDERR "do_local_trace:  edge router is $ipaddr\n";
