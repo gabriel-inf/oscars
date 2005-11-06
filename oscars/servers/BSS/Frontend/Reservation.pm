@@ -91,7 +91,6 @@ sub initialize {
 #
 sub insert_reservation {
     my( $self, $inref ) = @_;
-    my( $query, $sth );
     my( $duration_seconds );
 
     my $output_buf = $self->{route_setup}->find_interface_ids( $inref );
@@ -152,8 +151,7 @@ sub delete_reservation {
 sub get_reservations {
     my( $self, $inref ) = @_;
 
-    my( $sth, $query );
-    my( $rref );
+    my( $query );
 
     # If administrator is making request, show all reservations.  Otherwise,
     # show only the user's reservations.  If id is given, show only the results
@@ -180,20 +178,18 @@ sub get_reservations {
         }
     }
     $query .= " ORDER BY reservation_start_time";
-    $sth = $self->{dbconn}->do_query($query);
-    $rref = $sth->fetchall_arrayref({});
-    $sth->finish();
+    my $rows = $self->{dbconn}->do_query($query);
 
-    $self->{dbconn}->get_host_info($rref);
-    $self->{dbconn}->convert_times($rref);
+    $self->{dbconn}->get_host_info($rows);
+    $self->{dbconn}->convert_times($rows);
     if ($self->{policy}->authorized($inref->{user_level}, "engr") &&
         $inref->{reservation_id}) {
         # in this case, only one row
-        $self->{dbconn}->get_engr_fields($rref); 
-        $self->check_nulls($rref);
+        $self->{dbconn}->get_engr_fields($rows); 
+        $self->check_nulls($rows);
     }
     my $results;
-    $results->{rows} = $rref;
+    $results->{rows} = $rows;
     return( $results, '' );
 }
 ######
@@ -227,28 +223,25 @@ sub fill_fields {
 sub insert_fields {
     my( $self, $inref );
 
-    my( $query, $sth );
-
-    $query = "SHOW COLUMNS from reservations";
-    $sth = $self->{dbconn}->do_query( $query );
-    my $arrayref = $sth->fetchall_arrayref({});
+    my $query = "SHOW COLUMNS from reservations";
+    my $rows = $self->{dbconn}->do_query( $query );
     my @insertions;
     my $outref = {}; 
-    for $_ ( @$arrayref ) {
+    # TODO:  necessary to do insertions this way?
+    for $_ ( @$rows ) {
        if ($inref->{$_->{Field}}) {
            $outref->{$_->{Field}} = $inref->{$_->{Field}};
            push(@insertions, $inref->{$_->{Field}}); 
        }
        else{ push(@insertions, 'NULL'); }
     }
-    $sth->finish();
 
     # insert all fields for reservation into database
     $query = "INSERT INTO reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
-    $sth = $self->{dbconn}->do_query($query, @insertions);
+    my $unused = $self->{dbconn}->do_query($query, @insertions);
+    # TODO:  FIX getting reservation id
     $outref->{reservation_id} = $self->{dbconn}->get_reservation_id();
-    $sth->finish();
     return( $outref );
 }
 ######
@@ -260,20 +253,16 @@ sub insert_fields {
 sub get_results {
     my( $self, $inref, $outref );
 
-    my( $query, $sth );
-
     $outref->{reservation_tag} =
         $inref->{reservation_tag} . $outref->{reservation_id};
     # copy over non-db fields
     $outref->{source_host} = $inref->{source_host};
     $outref->{destination_host} = $inref->{destination_host};
 
-    $query = "UPDATE reservations SET reservation_tag = ?
-              WHERE reservation_id = ?";
-    $sth = $self->{dbconn}->do_query($query, $outref->{reservation_tag},
+    my $query = "UPDATE reservations SET reservation_tag = ?
+                 WHERE reservation_id = ?";
+    my $unused = $self->{dbconn}->do_query($query, $outref->{reservation_tag},
                                      $outref->{reservation_id});
-    $sth->finish();
-
     my @resv_array = ($outref);
     my $results;
     $results->{rows} = \@resv_array;

@@ -46,7 +46,7 @@ sub initialize {
 sub check_oversubscribe {
     my ( $self, $inref) = @_;
 
-    my( $query, $sth, $reservations );
+    my( $query, $reservations );
     my ( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
     my ( $router_name );
     # maximum utilization for a particular link
@@ -65,9 +65,8 @@ sub check_oversubscribe {
                    reservation_status = 'active')";
 
     # handled query with the comparison start & end datetime strings
-    $sth = $self->{dbconn}->do_query( $query,
+    $reservations = $self->{dbconn}->do_query( $query,
            $inref->{reservation_start_time}, $inref->{reservation_end_time});
-    $reservations = $sth->fetchall_arrayref({});
 
     # assign the new path bandwidths 
     for $link (@{$inref->{reservation_path}}) {
@@ -145,14 +144,9 @@ sub authorized {
 sub get_interface_fields {
     my( $self, $iface_id) = @_;
 
-    my( $query, $sth, $results);
-
-    $query = "SELECT * FROM interfaces WHERE interface_id = ?";
-    $sth = $self->{dbconn}->do_query($query, $iface_id);
-    $results = $sth->fetchrow_hashref();
-    $sth->finish();
-
-    return ( $results );
+    my $query = "SELECT * FROM interfaces WHERE interface_id = ?";
+    my $rows = $self->{dbconn}->do_query($query, $iface_id);
+    return ( $rows->[0] );
 }
 ######
 

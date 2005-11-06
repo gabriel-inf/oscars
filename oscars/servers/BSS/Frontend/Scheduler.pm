@@ -38,23 +38,18 @@ sub initialize {
 sub find_pending_reservations  { 
     my ( $self, $status, $time_interval ) = @_;
 
-    my ( $sth, $data, $query );
+    my $query = 'SELECT @@global.time_zone AS timezone';
+    my $rows = $self->{dbconn}->do_query( $query );
+    my $timezone = $rows->[0]->{timezone};
 
-    $query = 'SELECT @@global.time_zone';
-    $sth = $self->{dbconn}->do_query( $query );
-    my $timezone = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-
-    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
-    $sth = $self->{dbconn}->do_query( $query, $time_interval, $timezone );
-    my $timeslot = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
+    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00') " .
+             "AS newtime";
+    $rows = $self->{dbconn}->do_query( $query, $time_interval, $timezone );
+    my $timeslot = $rows->[0]->{new_time};
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
-    $sth = $self->{dbconn}->do_query($query, $status, $timeslot);
-    $data = $sth->fetchall_arrayref({});
-    $sth->finish();
-    return( "", $data );
+    $rows = $self->{dbconn}->do_query($query, $status, $timeslot);
+    return( "", $rows );
 }
 ######
 
@@ -62,25 +57,19 @@ sub find_pending_reservations  {
 sub find_expired_reservations {
     my ( $self, $status, $time_interval ) = @_;
 
-    my ( $sth, $data, $query );
+    my $query = 'SELECT @@global.time_zone AS timezone';
+    my $rows = $self->{dbconn}->do_query( $query );
+    my $timezone = $rows->[0]->{timezone};
 
-    $query = 'SELECT @@global.time_zone';
-    $sth = $self->{dbconn}->do_query( $query );
-    my $timezone = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-
-    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')";
-    $sth = $self->{dbconn}->do_query( $query, $time_interval, $timezone );
-    my $timeslot = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
+    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')" .
+             " AS newtime";
+    $rows = $self->{dbconn}->do_query( $query, $time_interval, $timezone );
+    my $timeslot = $rows->[0]->{new_time};
     $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
-    $sth = $self->{dbconn}->do_query($query, $status, $timeslot,
-                                     'precancel' );
-    # get all the data
-    $data = $sth->fetchall_arrayref({});
-    $sth->finish();
-    return( $data );
+    $rows = $self->{dbconn}->do_query($query, $status, $timeslot,
+                                      'precancel' );
+    return( $rows );
 }
 ######
 
@@ -89,15 +78,12 @@ sub find_expired_reservations {
 sub get_time_intervals {
     my( $self ) = @_;
 
-    my( $sth, $query );
-
         # just use defaults for now
-    $query = "SELECT server_db_poll_time, server_time_interval" .
+    my $query = "SELECT server_db_poll_time, server_time_interval" .
              " FROM servers WHERE server_id = 1";
-    $sth = $self->{dbconn}->do_query( $query );
-    my $ref = $sth->fetchrow_hashref();
-    $sth->finish();
-    return( $ref->{server_db_poll_time}, $ref->{server_time_interval} );
+    my $rows = $self->{dbconn}->do_query( $query );
+    return( $rows->[0]->{server_db_poll_time},
+            $rows->[0]->{server_time_interval} );
 }
 ######
 
@@ -106,27 +92,22 @@ sub get_time_intervals {
 sub get_lsp_stats {
     my( $self, $resv, $status ) = @_;
 
-    my( $query, $sth, $config_time );
-
-    $query = "SELECT CONVERT_TZ(now(), '+00:00', ?)";
-    $sth = $self->{dbconn}->do_query( $query, $resv->{reservation_time_zone});
-    $config_time = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
+    my $query = "SELECT CONVERT_TZ(now(), '+00:00', ?) AS newtime";
+    my $rows = $self->{dbconn}->do_query( $query,
+                                          $resv->{reservation_time_zone});
+    my $config_time = $rows->[0]->{newtime};
     # convert to seconds before sending back
-    $query = "SELECT CONVERT_TZ(?, '+00:00', ?)";
-    $sth = $self->{dbconn}->do_query( $query, $resv->{reservation_start_time},
-                                      $resv->{reservation_time_zone} );
-    $resv->{reservation_start_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-    $sth = $self->{dbconn}->do_query( $query, $resv->{reservation_end_time},
-                                      $resv->{reservation_time_zone} );
-    $resv->{reservation_end_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
-    $sth = $self->{dbconn}->do_query( $query,
-                                      $resv->{reservation_created_time},
-                                      $resv->{reservation_time_zone} );
-    $resv->{reservation_created_time} = $sth->fetchrow_arrayref()->[0];
-    $sth->finish();
+    $query = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
+    $rows = $self->{dbconn}->do_query( $query, $resv->{reservation_start_time},
+                                       $resv->{reservation_time_zone} );
+    $resv->{reservation_start_time} = $rows->[0]->{newtime};
+    $rows = $self->{dbconn}->do_query( $query, $resv->{reservation_end_time},
+                                       $resv->{reservation_time_zone} );
+    $resv->{reservation_end_time} = $rows->[0]->{newtime};
+    $rows = $self->{dbconn}->do_query( $query,
+                                       $resv->{reservation_created_time},
+                                       $resv->{reservation_time_zone} );
+    $resv->{reservation_created_time} = $rows->[0]->{newtime};
     my $results = $self->{stats}->get_lsp_stats($resv, $status, $config_time);
     return $results;
 }
