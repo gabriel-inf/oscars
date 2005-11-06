@@ -62,19 +62,14 @@ sub initialize {
 sub get_debug_level {
     my( $self ) = @_;
 
-    my( $sth, $query );
-
         # get default for now
-    $query = 'SELECT server_debug ' .
+    my $query = 'SELECT server_debug ' .
              'FROM servers WHERE server_id = 1';
-    $sth = $self->do_query('', $query);
-    if (!$sth->rows) {
-        $sth->finish();
+    my $rows = $self->do_query('', $query);
+    if (!$rows) {
         throw Common::Exception("Could not find debug level.");
     }
-    my $ref = $sth->fetchrow_hashref();
-    $sth->finish();
-    return( $ref->{server_debug} );
+    return( $rows->[0]->{server_debug} );
 }
 ######
 
@@ -91,7 +86,10 @@ sub do_query {
     if ( $DBI::err ) {
         throw Common::Exception("[DBERROR] Executing $query:  $DBI::errstr");
     }
-    return( $sth );
+    my $rows = $sth->fetchall_arrayref({});
+    # TODO:  error checking
+    $sth->finish();
+    return( $rows );
 }
 ######
 
