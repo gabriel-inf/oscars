@@ -1,13 +1,11 @@
-# SchedulerThread.pm:  Scheduler thread that polls the db looking for 
-#                      reservations that need to be scheduled
+# Poller:  Polls the db looking for reservations that need to be activated
+#          through the set up of LSP's, and those that have expired and
+#          need the associated LSP torn down.
 # Last modified:  November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee (jrlee@lbl.gov)
 
-package BSS::Scheduler::SchedulerThread;
-
-use threads;
-use threads::shared;
+package BSS::Scheduler::Poller;
 
 use Data::Dumper;
 use Error qw(:try);
@@ -18,16 +16,14 @@ use Common::Mail;
     # Chins PSS module to configure the routers
 use PSS::LSPHandler::JnxLSP;
 
-    # Front end to reservations database
-use BSS::Frontend::Database;
-use BSS::Frontend::Scheduler;
+use BSS::Scheduler::Database;
 
 use strict;
 
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(start_scheduler);
+our @EXPORT = qw(scheduler);
 
 
 ################## CONSTANTS ##############################
@@ -41,18 +37,6 @@ use constant _LSP_TEARDOWN => 0;
 my ($debug);
 my ($dbconn);
 
-
-##############################################################################
-# start_scheduler:  Start up and detach a thread to do scheduling, and
-#                   return control to the main prog
-#
-sub start_scheduler { 
-    my $handler = threads->create("scheduler");
-    $handler->detach();
-
-    return 1;
-}
-######
 
 ##############################################################################
 # scheduler: Loop forever checking the DB every N minutes for reserversations
