@@ -1,9 +1,9 @@
-# Scheduler.pm:  Database handling for BSS/Scheduler/SchedulerThread.pm
+# DBRequests.pm:  Database handling for BSS/Scheduler/Poller.pm
 # Last modified: November 5, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
-package BSS::Frontend::Scheduler;
+package BSS::Scheduler::DBRequests;
 
 use strict;
 
