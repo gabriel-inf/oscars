@@ -34,37 +34,27 @@ sub new {
 ###############################################################################
 #
 sub get_user_levels {
-    my( $self, $user_dn ) = @_;
+    my( $self ) = @_;
 
-    my( %levels, $r, $sth, $query );
-
-    $query = "SELECT user_level_bit, user_level_description FROM user_levels";
-    $sth = $self->do_query($query);
-    my $rows = $sth->fetchall_arrayref();
-    for $r (@$rows) { $levels{$$r[1]} = $$r[0]; }
-    $levels{'inactive'} = 0;
-    return( \%levels );
+    my $query = "SELECT user_level_bit, user_level_description FROM user_levels";
+    my $rows = $self->do_query($query);
+    return( $rows );
 }
 ######
 
 ###############################################################################
 #
 sub get_institution_id {
-    my( $self, $inref, $user_dn ) = @_;
+    my( $self, $inref ) = @_;
 
-    my( $sth, $query );
-
-    $query = "SELECT institution_id FROM institutions
-              WHERE institution_name = ?";
-    $sth = $self->do_query($inref->{institution});
-    if (!$sth->rows) {
-        $sth->finish();
+    my $query = "SELECT institution_id FROM institutions
+                WHERE institution_name = ?";
+    my $rows = $self->do_query($inref->{institution});
+    if (!$rows) {
         throw Common::Exception("The organization " .
                    "$inref->{institution} is not in the database.");
     }
-    my $ref = $sth->fetchrow_hashref;
-    $inref->{institution_id} = $ref->{institution_id} ;
-    $sth->finish();
+    $inref->{institution_id} = $rows->[0]->{institution_id} ;
     return;
 }
 ######

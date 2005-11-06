@@ -72,35 +72,28 @@ sub initialize {
 sub verify_login {
     my( $self, $inref ) = @_;
 
-    my( $query, $sth, $ref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $self->{auth}->get_user_levels('');
+    $self->{auth}->get_user_levels();
+    if (!$self->{auth}->authorized($user_dn, 'verify_login')) {
+        throw Common::Exception("User not authorized to verify login");
+    }
 
-    # TODO:  auth needed for this query?
     # Get the password and privilege level from the database.
-    $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($query, $user_dn);
+    my $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
+    my $rows = $self->{dbconn}->do_query($query, $user_dn);
     # Make sure user exists.
-    if (!$sth->rows) {
-        $sth->finish();
+    if (!$rows) {
         throw Common::Exception("Please check your login name and try again.");
     }
     # compare passwords
     my $encoded_password = crypt($inref->{user_password}, 'oscars');
-    $ref = $sth->fetchrow_hashref();
-    if ( $ref->{user_password} ne $encoded_password ) {
-        $sth->finish();
+    if ( $rows->[0]->{user_password} ne $encoded_password ) {
         throw Common::Exception("Please check your password and try again.");
     }
-    $sth->finish();
 
-    # make sure has at least minimal privileges
-    $self->{auth}->verify($ref->{user_level}, 'user');
-
-    # TODO:  FIX
-    $results->{user_level} = $self->{auth}->get_str_level($ref->{user_level});
+    $results->{user_level} = $self->{auth}->get_str_level($rows->[0]->{user_level});
     return( $results );
 }
 ######
@@ -113,48 +106,37 @@ sub verify_login {
 sub get_profile {
     my( $self, $inref ) = @_;
 
-    my( $sth, $query, $rref );
-    my( @data );
-    my $results = {};
+    my( $results );
 
     if (!$self->{auth}->authorized($inref->{user_dn}, 'get_profile')) {
         throw Common::Exception("User not authorized for get_profile");
     }
-
     # DB query: get the user profile detail
-    $query = "SELECT " . join(', ', @user_profile_fields) .
+    my $query = "SELECT " . join(', ', @user_profile_fields) .
              " FROM users where user_dn = ?";
 
-    $sth = $self->{dbconn}->do_query($query, $inref->{user_dn});
+    my $rows = $self->{dbconn}->do_query($query, $inref->{user_dn});
 
     # check whether this person is a registered user
-    if (!$sth->rows) {
-        $sth->finish();
+    if (!$rows) {
         throw Common::Exception("No such user.");
     }
 
-    # populate results with the data fetched from the database
-    $rref = $sth->fetchall_arrayref({});
-    $sth->finish();
-
     $query = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
-    $sth = $self->{dbconn}->do_query($query,
-                                     @{$rref}[0]->{institution_id});
+    my $irows = $self->{dbconn}->do_query($query,
+                                     @{$rows}[0]->{institution_id});
 
     # check whether this organization is in the db
-    if (!$sth->rows) {
-        $sth->finish();
+    if (!$irows) {
         throw Common::Exception("No such organization recorded.");
     }
 
-    @data = $sth->fetchrow_array();
-    $sth->finish();
-
     $results->{user_level} = $self->{auth}->get_str_level(
                                                        $results->{user_level});
-    $results->{row} = @{$rref}[0];
-    $results->{row}->{institution} = $data[0];
+    # TODO:  FIX weird results assignments
+    $results->{row} = @{$rows}[0];
+    $results->{row}->{institution} = $irows->[0]->{institution};
     # X out password
     $results->{row}->{user_password} = undef;
     return ( $results );
@@ -169,9 +151,7 @@ sub get_profile {
 sub set_profile {
     my ( $self, $inref ) = @_;
 
-    my( $sth, $query );
-    my( $current_info, $ref );
-    my $results = {};
+    my $results;
     my $user_dn = $inref->{user_dn};
 
         # TODO:  setting other person's profile (admin)
@@ -183,27 +163,22 @@ sub set_profile {
     # fields are being updated, and user has proper privileges.
 
     # DB query: get the user profile detail
-    $query = "SELECT " . join(', ', @user_profile_fields) .
-             ", user_level FROM users where user_dn = ?";
-    $sth = $self->{dbconn}->do_query($query, $user_dn);
+    my $query = "SELECT " . join(', ', @user_profile_fields) .
+                ", user_level FROM users where user_dn = ?";
+    my $rows = $self->{dbconn}->do_query($query, $user_dn);
 
     # check whether this person is in the database
-    if (!$sth->rows) {
-        $sth->finish();
+    if (!$rows) {
         throw Common::Exception("The user $user_dn does not have an OSCARS login.");
     }
 
-    $current_info = $sth->fetchrow_hashref;
-
     ### Check the current password with the one in the database before
     ### proceeding.
-    if ( $current_info->{user_password} ne
-             crypt($inref->{user_password},'oscars') ) {
-        $sth->finish();
+    if ( $rows->[0]->{user_password} ne
+         crypt($inref->{user_password},'oscars') ) {
         throw Common::Exception("Please check the current password and " .
                                 "try again.");
     }
-    $sth->finish();
 
     # If the password needs to be updated, set the input password field to
     # the new one.
@@ -225,16 +200,16 @@ sub set_profile {
     $query = "UPDATE users SET ";
     for $_ (@user_profile_fields) {
         $query .= "$_ = '$inref->{$_}', ";
-        $ref->{$_} = $inref->{$_};
+        # TODO:  check that query preparation correct
+        $rows->[0]->{$_} = $inref->{$_};
     }
     $query =~ s/,\s$//;
     $query .= " WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($query, $user_dn);
-    $sth->finish();
+    my $unused = $self->{dbconn}->do_query($query, $user_dn);
 
-    $ref->{institution} = $inref->{institution};
-    $ref->{user_password} = undef;
-    $results->{row} = $ref;
+    $rows->[0]->{institution} = $inref->{institution};
+    $rows->[0]->{user_password} = undef;
+    $results->{row} = $rows;
     return( $results );
 }
 ######
@@ -266,33 +241,29 @@ sub add_user {
 sub get_userlist {
     my( $self, $inref ) = @_;
 
-    my( $sth, $query );
-    my( %mapping, $r, $arrayref, $rref );
-    my $results = {};
+    my( %mapping, $r, $results );
     my $user_dn = $inref->{user_dn};
 
     if (!$self->{auth}->authorized($user_dn, 'get_userlist')) {
         throw Common::Exception("User not authorized to get list of users");
     }
 
-    $query .= "SELECT * FROM users ORDER BY user_last_name";
-    $sth = $self->{dbconn}->do_query($query);
-    $rref = $sth->fetchall_arrayref({});
-    $sth->finish();
+    my $query .= "SELECT * FROM users ORDER BY user_last_name";
+    my $rows = $self->{dbconn}->do_query($query);
 
     # replace institution id with institution name
     $query = "SELECT institution_id, institution_name FROM institutions";
-    $sth = $self->{dbconn}->do_query($query);
-    $arrayref = $sth->fetchall_arrayref();
-    for $r (@$arrayref) { $mapping{$$r[0]} = $$r[1]; }
+    my $irows = $self->{dbconn}->do_query($query);
+    # TODO:  do through query instead
+    for $r (@$irows) { $mapping{$$r[0]} = $$r[1]; }
 
-    for $r (@$rref) {
+    for $r (@$rows) {
         $r->{institution_id} = $mapping{$r->{institution_id}};
         # replace numeric user level code with string containing permissions
         $r->{user_level} = $self->{auth}->get_str_level($r->{user_level});
     }
 
-    $results->{rows} = $rref;
+    $results->{rows} = $rows;
     return( $results );
 }
 ######

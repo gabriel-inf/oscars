@@ -45,44 +45,40 @@ sub initialize {
 sub activate_account {
     my( $self, $inref, $required_level ) = @_;
 
-    my( $sth, $query );
-    my $results = {};
+    my ( $r, $results) ;
     my $user_dn = $inref->{user_dn};
 
-    $self->{dbconn}->enforce_connection($user_dn);
-    $self->{auth}->verify($inref->{user_level}, $required_level, 1);
+    $self->{auth}->authorized($inref->{user_level}, $required_level, 1);
 
     # get the password from the database
-    $query = "SELECT user_password, user_activation_key, user_level
-              FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($query, $user_dn);
+    my $query = "SELECT user_password, user_activation_key, user_level
+                 FROM users WHERE user_dn = ?";
+    my $rows = $self->{dbconn}->do_query($query, $user_dn);
 
     # check whether this person is a registered user
-    if (!$sth->rows) {
-        $sth->finish();
+    if (!$rows) {
         throw Common::Exception("Please check your login name and try again.");
     }
 
     my $keys_match = 0;
     my( $pending_level, $non_match_error );
         # this login name is in the database; compare passwords
-    while ( my $ref = $sth->fetchrow_arrayref ) {
-        if ( $$ref[1] eq '' ) {
+    for $r (@$rows) {
+        if ( $r->[0]->{user_activation_key} eq '' ) {
             $non_match_error = 'This account has already been activated.';
         }
-        elsif ( $$ref[0] ne $inref->{user_password} ) {
+        elsif ( $r->[0]->{user_password} ne $inref->{user_password} ) {
             $non_match_error = 'Please check your password and try again.';
         }
-        elsif ( $$ref[1] ne $inref->{user_activation_key} ) {
+        elsif ( $r->[0]->{user_activation_key} ne $inref->{user_activation_key} ) {
             $non_match_error = "Please check the activation key and " .
                                "try again.";
         }
         else {
             $keys_match = 1;
-            $pending_level = $$ref[2];
+            $pending_level = $r->[0]->{user_level};
         }
     }
-    $sth->finish();
 
     # If the input password and the activation key matched against those
     # in the database, activate the account.
@@ -91,14 +87,12 @@ sub activate_account {
         # to 0; empty the activation key field
         $query = "UPDATE users SET user_level = ?, pending_level = ?,
                   user_activation_key = '' WHERE user_dn = ?";
-        $sth = $self->{dbconn}->do_query($query, $pending_level,
+        my $unused = $self->{dbconn}->do_query($query, $pending_level,
                                          $user_dn);
     }
     else {
-        $sth->finish();
         throw Common::Exception($non_match_error);
     }
-    $sth->finish();
     $results->{status_msg} = "The user account <strong>" .
        "$user_dn</strong> has been successfully activated. You " .
        "will be redirected to the main service login page in 10 seconds. " .
@@ -115,11 +109,8 @@ sub activate_account {
 sub process_registration {
     my( $self, $inref, @insertions ) = @_;
 
-    my( $sth, $query );
     my $results = {};
     my $user_dn = $inref->{user_dn};
-
-    $self->{dbconn}->enforce_connection($user_dn);
 
     my $encrypted_password = $inref->{password_once};
 
@@ -127,20 +118,17 @@ sub process_registration {
     my $current_date_time = $inref->{utc_seconds};
 	
     # login name overlap check
-    $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($query, $user_dn);
+    my $query = "SELECT user_dn FROM users WHERE user_dn = ?";
+    my $rows = $self->{dbconn}->do_query($query, $user_dn);
 
-    if ( $sth->rows > 0 ) {
-        $sth->finish();
+    if ( scalar(@$rows) > 0 ) {
         throw Common::Exception("The selected login name is already taken " .
                    "by someone else; please choose a different login name.");
     }
-    $sth->finish();
 
     $query = "INSERT INTO users VALUES ( " .
                               "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-    $sth = $self->{dbconn}->do_query($query, @insertions);
-    $sth->finish();
+    my $unused = $self->{dbconn}->do_query($query, @insertions);
 
     $results->{status_msg} = "Your user registration has been recorded " .
         "successfully. Your login name is <strong>$user_dn</strong>. Once " .
@@ -160,8 +148,6 @@ sub process_registration {
 sub add_user {
     my ( $self, $inref ) = @_;
 
-    my( $sth, $query );
-    my( $current_info, $ref );
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
@@ -169,15 +155,13 @@ sub add_user {
     my $encrypted_password = $inref->{password_once};
 
     # login name overlap check
-    $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    $sth = $self->{dbconn}->do_query($query, $user_dn);
+    my $query = "SELECT user_dn FROM users WHERE user_dn = ?";
+    my $rows = $self->{dbconn}->do_query($query, $user_dn);
 
-    if ( $sth->rows > 0 ) {
-        $sth->finish();
+    if ( scalar(@$rows) > 0 ) {
         throw Common::Exception("The login, $user_dn, is already taken " .
                    "by someone else; please choose a different login name.");
     }
-    $sth->finish();
 
     # Set the institution id to the primary key in the institutions
     # table (user only can select from menu of existing instituions).
@@ -187,24 +171,22 @@ sub add_user {
 
     $inref->{user_password} = crypt($inref->{password_new_once}, 'oscars');
     $query = "SHOW COLUMNS from users";
-    $sth = $self->{dbconn}->do_query( $query );
+    $rows = $self->{dbconn}->do_query( $query );
 
-    my $arrayref = $sth->fetchall_arrayref({});
     my @insertions;
-    for $_ ( @$arrayref ) {
+    # TODO:  FIX way to get insertions fields
+    for $_ ( @$rows ) {
        if ($inref->{$_->{Field}}) {
            $results->{$_->{Field}} = $inref->{$_->{Field}};
            push(@insertions, $inref->{$_->{Field}}); 
        }
        else{ push(@insertions, 'NULL'); }
     }
-    $sth->finish();
 
     $query = "INSERT INTO users VALUES ( " .
              join( ', ', ('?') x @insertions ) . " )";
              
-    $sth = $self->{dbconn}->do_query($query, @insertions);
-    $sth->finish();
+    my $unused = $self->{dbconn}->do_query($query, @insertions);
     # X out password
     $results->{user_password} = undef;
     return( $results );

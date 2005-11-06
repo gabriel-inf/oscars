@@ -35,9 +35,10 @@ sub initialize {
 
 # Get user levels
 sub get_user_levels {
-    my( $self, $user_dn ) = @_;
+    my( $self ) = @_;
 
-    $self->{user_levels} = $self->{dbconn}->get_user_levels($user_dn);
+    # TODO:  FIX, get_user_levels done differently
+    $self->{user_levels} = $self->{dbconn}->get_user_levels();
     return;
 }
 
@@ -66,7 +67,7 @@ sub get_str_level {
 sub authorized {
     my( $self, $user_dn, $resource ) = @_;
 
-    # TODO
+    # TODO: implement authorization through incorporating ROAM
     return 1;
 }
 ######

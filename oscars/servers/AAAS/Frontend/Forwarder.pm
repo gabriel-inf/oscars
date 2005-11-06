@@ -10,7 +10,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( forward );
  
 
-# TODO:  FIX
+# TODO:  may not be on localhost
 my $target = SOAP::Lite
   -> uri('http://localhost/Dispatcher')
   -> proxy ('http://localhost/Dispatcher.pm');
