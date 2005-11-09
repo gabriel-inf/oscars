@@ -2,7 +2,7 @@
 
 use strict;
 
-use AAAS::Client::SOAPClient;
+use SOAP::Lite;
 use Term::ReadKey;
 use Data::Dumper;
 
@@ -15,7 +15,13 @@ chomp($password);
 
 my %params = ('user_dn' => 'dwrobertson@lbl.gov', 'user_password' => $password);
 $params{method} = 'verify_login';
-my $som = aaas_dispatcher(\%params);
+my $aaas_server = SOAP::Lite
+    ->uri('http://198.128.14.164/Dispatcher')
+    ->proxy('https://198.128.14.164/AAAS');
+    #->uri('http://127.0.0.1/Dispatcher')
+    #->proxy('https://127.0.0.1/AAAS');
+
+my $som = $aaas_server->dispatch(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n\n";
     exit;

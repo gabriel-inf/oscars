@@ -2,14 +2,18 @@
 
 use strict;
 
-use AAAS::Client::SOAPClient;
+use SOAP::Lite;
 use Data::Dumper;
 
 my($key, $value);
 my %params = ('user_dn' => 'dwrobertson@lbl.gov',
               'user_level' => 'user' );
 $params{method} = 'get_profile';
-my $som = aaas_dispatcher(\%params);
+my $aaas_server = SOAP::Lite
+    ->uri('http://198.128.14.164/Dispatcher')
+    ->proxy('https://198.128.14.164/AAAS');
+
+my $som = $aaas_server->dispatch(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";
     exit;
