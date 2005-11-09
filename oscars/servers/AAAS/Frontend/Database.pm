@@ -33,17 +33,6 @@ sub new {
 
 ###############################################################################
 #
-sub get_user_levels {
-    my( $self ) = @_;
-
-    my $query = "SELECT user_level_bit, user_level_description FROM user_levels";
-    my $rows = $self->do_query($query);
-    return( $rows );
-}
-######
-
-###############################################################################
-#
 sub get_institution_id {
     my( $self, $inref ) = @_;
 

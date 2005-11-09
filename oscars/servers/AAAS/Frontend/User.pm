@@ -1,7 +1,7 @@
 package AAAS::Frontend::User;
 
 # User.pm:  Database interactions having to do with admin and user forms.
-# Last modified: November 5, 2005
+# Last modified: November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -75,7 +75,6 @@ sub verify_login {
     my $results = {};
     my $user_dn = $inref->{user_dn};
 
-    $self->{auth}->get_user_levels();
     if (!$self->{auth}->authorized($user_dn, 'verify_login')) {
         throw Common::Exception("User not authorized to verify login");
     }
@@ -92,8 +91,6 @@ sub verify_login {
     if ( $rows->[0]->{user_password} ne $encoded_password ) {
         throw Common::Exception("Please check your password and try again.");
     }
-
-    $results->{user_level} = $self->{auth}->get_str_level($rows->[0]->{user_level});
     return( $results );
 }
 ######
@@ -125,15 +122,13 @@ sub get_profile {
     $query = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
     my $irows = $self->{dbconn}->do_query($query,
-                                     @{$rows}[0]->{institution_id});
+                                     $rows->[0]->{institution_id});
 
     # check whether this organization is in the db
     if (!$irows) {
         throw Common::Exception("No such organization recorded.");
     }
 
-    $results->{user_level} = $self->{auth}->get_str_level(
-                                                       $results->{user_level});
     # TODO:  FIX weird results assignments
     $results->{row} = @{$rows}[0];
     $results->{row}->{institution} = $irows->[0]->{institution};
@@ -241,29 +236,25 @@ sub add_user {
 sub get_userlist {
     my( $self, $inref ) = @_;
 
-    my( %mapping, $r, $results );
+    my( $r, $results, $irows, $user );
     my $user_dn = $inref->{user_dn};
 
     if (!$self->{auth}->authorized($user_dn, 'get_userlist')) {
         throw Common::Exception("User not authorized to get list of users");
     }
-
     my $query .= "SELECT * FROM users ORDER BY user_last_name";
-    my $rows = $self->{dbconn}->do_query($query);
+    my $user_rows = $self->{dbconn}->do_query($query);
 
-    # replace institution id with institution name
-    $query = "SELECT institution_id, institution_name FROM institutions";
-    my $irows = $self->{dbconn}->do_query($query);
-    # TODO:  do through query instead
-    for $r (@$irows) { $mapping{$$r[0]} = $$r[1]; }
-
-    for $r (@$rows) {
-        $r->{institution_id} = $mapping{$r->{institution_id}};
-        # replace numeric user level code with string containing permissions
-        $r->{user_level} = $self->{auth}->get_str_level($r->{user_level});
+    for $user (@$user_rows) {
+        # replace institution id with institution name
+        $query = "SELECT institution_name FROM institutions " .
+                 "WHERE institution_id = ?";
+        $irows = $self->{dbconn}->do_query($query, $user->{institution_id});
+        $user->{institution_id} = $irows->[0]->{institution_name};
+        $user->{user_password} = undef;
     }
 
-    $results->{rows} = $rows;
+    $results->{rows} = $user_rows;
     return( $results );
 }
 ######

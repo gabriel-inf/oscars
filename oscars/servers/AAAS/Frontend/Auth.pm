@@ -33,35 +33,6 @@ sub initialize {
 }
 ######
 
-# Get user levels
-sub get_user_levels {
-    my( $self ) = @_;
-
-    # TODO:  FIX, get_user_levels done differently
-    $self->{user_levels} = $self->{dbconn}->get_user_levels();
-    return;
-}
-
-###############################################################################
-#
-sub get_str_level {
-    my( $self, $level_flag ) = @_;
-
-    my $level = "";
-    $level_flag += 0;
-    if ($self->{user_levels}->{admin} & $level_flag) {
-        $level .= 'admin ';
-    }
-    if ($self->{user_levels}->{engr} & $level_flag) {
-        $level .= 'engr ';
-    }
-    if ($self->{user_levels}->{user} & $level_flag) {
-        $level .= 'user';
-    }
-    return( $level );
-}
-######
-
 ###############################################################################
 #
 sub authorized {
