@@ -1,14 +1,13 @@
-#!/usr/bin/perl
-
-package AAAS::Frontend::Dispatcher;
-
-####
-# Dispatcher.pm:  Soap lite dispatcher for AAAS
-# Last modified:  November 2, 2005
+# Dispatcher.pm:  SOAP::Lite dispatcher for AAAS
+# Last modified:  November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
-###
+
+package Dispatcher;
 
 use Error qw(:try);
+
+use lib qw(/usr/local/esnet/servers/prod);
+
 use Common::Exception;
 use AAAS::Frontend::Validator;
 use AAAS::Frontend::Database;
@@ -45,19 +44,7 @@ sub dispatch {
     otherwise {
         $ex = shift;
     }
-    finally {
-        my $logfile_name = "$ENV{HOME}/logs/AAAS.err";
-
-        open (LOGFILE, ">$logfile_name") ||
-                die "Can't open log file $logfile_name.\n";
-        print LOGFILE "********************\n";
-        if ($ex) {
-            print LOGFILE "EXCEPTION:\n";
-            print LOGFILE $ex->{-text};
-            print LOGFILE "\n";
-        }
-        close(LOGFILE);
-    };
+    finally {};
     # caught by SOAP to indicate fault
     if ($ex) {
         die SOAP::Fault->faultcode('Server')
