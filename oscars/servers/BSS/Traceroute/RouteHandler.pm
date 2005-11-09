@@ -36,6 +36,7 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
+    $self->{configs} = $self->{dbconn}->get_trace_configs();
 }
 ######
 
@@ -182,6 +183,7 @@ sub do_remote_trace {
     if ($prev_loopback) {
         $self->{output_buf} .= "edge router is $prev_loopback\n";
         print STDERR "edge router is $prev_loopback\n";
+        my $unused = pop(@path);
         return ($prev_id, $prev_loopback, \@path);
     }
 
@@ -270,26 +272,26 @@ sub do_ping {
 sub convert_addresses{
     my( $self, $inref ) = @_;
 
-    if ($self->not_an_ip($inref->{source_host})) {
+    if (!($self->is_an_ip($inref->{source_host}))) {
         $inref->{source_ip} =
             inet_ntoa(inet_aton($inref->{source_host}));
     }
     else { $inref->{source_ip} = $inref->{source_host}; }
-    if ($self->not_an_ip($inref->{destination_host})) {
+    if (!($self->is_an_ip($inref->{destination_host}))) {
         $inref->{destination_ip} =
             inet_ntoa(inet_aton($inref->{destination_host}));
     }
     else { $inref->{destination_ip} = $inref->{destination_host}; }
 
     if ($inref->{ingress_router}) {
-        if ($self->not_an_ip($inref->{ingress_router})) {
+        if (!($self->is_an_ip($inref->{ingress_router}))) {
             $inref->{ingress_ip} =
                 inet_ntoa(inet_aton($inref->{ingress_router}));
         }
         else { $inref->{ingress_ip} = $inref->{ingress_router}; }
     }
     if ($inref->{egress_router}) {
-        if ($self->not_an_ip($inref->{egress_router})) {
+        if (!($self->is_an_ip($inref->{egress_router}))) {
             $inref->{egress_ip} =
                  inet_ntoa(inet_aton($inref->{egress_router}));
         }
@@ -299,12 +301,12 @@ sub convert_addresses{
 ######
 
 ################################################################################
-sub not_an_ip {
-    my( $self, $form_input ) = @_;
+sub is_an_ip {
+    my( $self, $host ) = @_;
 
-    # simple minded for now
-    my $expr = '^\d+\.\d+\.\d+\.\d+$';
-    return( $form_input !~ $expr );
+    my $regexp = '\d+\.\d+\.\d+\.\d+(/\d+)*';
+    if ($host =~ $regexp) { return 1; }
+    else { return 0; }
 }
 ######
 
