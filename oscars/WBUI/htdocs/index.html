@@ -33,7 +33,7 @@
     </table>
 
     <div id="status_div">
-        <script language="javascript">print_current_date(document, '');</script> | Please sign in.
+        <script language="javascript">print_current_date(document);</script> | Please sign in.
     </div>
 
     <div id="nav_div">
@@ -42,7 +42,6 @@
 
     <div id="main_div">
       <form id="login_ui" method="post" action="" onsubmit="return submit_form(this, 'login', '../cgi-bin/lib/login.pl');">
-        <script language="javascript">print_timezone_field();</script>
         <table>
           <tr>
             <th>Login Name:</th>
