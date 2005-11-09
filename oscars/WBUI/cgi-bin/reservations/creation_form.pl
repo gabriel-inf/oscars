@@ -105,7 +105,7 @@ sub print_reservation_form {
     print     "<td>";
     print       '<input type="text" name="start_minute" size="6" maxlength="2">';
     print     "</input></td>";
-    print     "<td id=\"get_timezone_options\"> </td>\n";
+    print     "<td id=\"tz_option_list\"> </td>\n";
     print     "<td>\n";
     print       '<input type="text" name="duration_hour" size="10" ',
                      'maxlength="16">';
@@ -116,7 +116,7 @@ sub print_reservation_form {
     }
     print     "</td>\n";
     print   "</tr>\n";
-    print   "<tr id=\"get_time_settings_example\">\n";
+    print   "<tr id=\"time_settings_example\">\n";
     print     "<td colspan=\"8\"> </td>";
     print   "</tr>\n";
     print   "<tr>\n";
