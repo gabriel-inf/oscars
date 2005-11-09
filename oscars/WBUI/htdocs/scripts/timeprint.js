@@ -1,104 +1,58 @@
 /*
-Javascript functions for printing dates and times in various formats
-Last modified: July 1, 2005
+Javascript functions for getting dates and times in various formats
+Last modified: November 8, 2005
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
-print_current_date()
-get_timezone_offset()
-get_timezone_offset()
-get_time_settings_example()
-check_LeapYear( intYear )
+print_current_date(frame)
+date_str()
+check_date_fields(form)
+tz_option_list()
+time_settings_example()
+is_standard_time()
+UTC_offset()
+tz_option(tz_offset, local_offset, tz_name)
+is_leap_year( intYear )
 */
 
 
-var month_mapping = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+var month_name = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // from http://www.worldtimezone.com/utc/utc-1200.html
-var timezone_mapping = {
-    '+00:00': "UTC",
-    '+01:00': "CET",
-    '+02:00': "EET",
-    '+03:00': "MSK",
-    '+05:30': "IST",
-    '+08:00': "AWST",
-    '+09:00': "JST",
-    '+09:30': "ACST",
-    '+10:00': "AEST",
-    '+12:00': "NZST",
-    '-03:00': "BST",
-    '-03:30': "NST",
-    '-04:00': "AST",
-    '-05:00': "EST",
-    '-06:00': "CST",
-    '-07:00': "MST",
-    '-08:00': "PST",
-    '-09:00': "AKST",
-    '-10:00': "HST"
-}
+var standard_tz_name = {
+    '+00:00': "UTC", '+01:00': "CET", '+02:00': "EET", '+03:00': "MSK",
+    '+05:30': "IST", '+08:00': "AWST", '+09:00': "JST", '+09:30': "ACST",
+    '+10:00': "AEST", '+12:00': "NZST", '-03:00': "BST", '-03:30': "NST",
+    '-04:00': "AST", '-05:00': "EST", '-06:00': "CST", '-07:00': "MST",
+    '-08:00': "PST", '-09:00': "AKST", '-10:00': "HST" }
 
 // This is only approximate; too complex for now.
-var daylight_timezone_mapping = {
-    '+00:00': "UTC",
-    '+01:00': "WEDT",
-    '+02:00': "CEDT",
-    '+03:00': "EEDT",
-    '+04:00': "MSK",
-    '+05:30': "IST",
-    '+08:00': "AWST",
-    '+09:00': "JST",
-    '+10:30': "ACDT",
-    '+11:00': "AEDT",
-    '+13:00': "NZDT",
-    '-02:00': "BDT",
-    '-02:30': "NDT",
-    '-03:00': "ADT",
-    '-04:00': "EDT",
-    '-05:00': "CDT",
-    '-06:00': "MDT",
-    '-07:00': "PDT",
-    '-08:00': "AKDT",
-    '-10:00': "HST"
+var daylight_tz_name = {
+    '+00:00': "UTC", '+01:00': "WEDT", '+02:00': "CEDT", '+03:00': "EEDT",
+    '+04:00': "MSK", '+05:30': "IST", '+08:00': "AWST", '+09:00': "JST",
+    '+10:30': "ACDT", '+11:00': "AEDT", '+13:00': "NZDT", '-02:00': "BDT",
+    '-02:30': "NDT", '-03:00': "ADT", '-04:00': "EDT", '-05:00': "CDT",
+    '-06:00': "MDT", '-07:00': "PDT", '-08:00': "AKDT", '-10:00': "HST"
 }
 
 
-// ** print current date (format: July 1, 2005) **
-function print_current_date(fr, epoch_seconds)
+// Only called from initial login page.
+function print_current_date(frame)
 {
-    var local_date;
-
-    local_date = new Date();
-    if (epoch_seconds) {
-        local_date.setTime(epoch_seconds * 1000);
-    }
-    var current_month;
-
-    if (!fr) { fr = document; }
-    current_month = local_date.getMonth();
-
-    var month_name = month_mapping[current_month];
-
-    current_minutes = local_date.getMinutes();
-    fr.write( month_name + " " + local_date.getDate() + ", " + local_date.getFullYear() + " " + local_date.getHours() + ":");
-
-    if (current_minutes < 10) { fr.write("0") } ;
-    fr.write(current_minutes);
+    frame.write( date_str() );
 }
 
-function get_date_str() {
-    var local_date;
 
-    local_date = new Date();
-    var current_month;
-
-    current_month = local_date.getMonth();
-
-    var month_name = month_mapping[current_month];
+// Outputs string with current date (format: July 1, 2005 13:00).
+function date_str()
+{
+    var local_date = new Date();
+    var current_month = local_date.getMonth();
 
     var current_minutes = local_date.getMinutes();
-    var date_str = month_name + " " + local_date.getDate() + ", " + local_date.getFullYear() + " " + local_date.getHours() + ":";
+    var date_str = month_name[current_month] + " " + local_date.getDate() + ", " + local_date.getFullYear() + " " + local_date.getHours() + ":";
 
     if (current_minutes < 10) { date_str += "0" } ;
     date_str += current_minutes;
@@ -106,146 +60,8 @@ function get_date_str() {
 }
 
 
-// print timezone options
-function get_timezone_options() {
-    var time_str = '<select name="reservation_time_zone">' + timezone_offset_option();
-    // TODO:  not every time zone has the same time period during which
-    //        it is in effect; for now, U.S.
-    var local_date = new Date();
-    var offset = -(local_date.getTimezoneOffset());
-    // unlikely that daylight savings in effect on January 1.
-    var standard_time_date = new Date(local_date.getFullYear(), 0, 1, 0, 0, 0, 0);
-    var standard_offset = -(standard_time_date.getTimezoneOffset()); 
-    // fix, should just loop through
-    // if daylight savings not in effect
-    if (offset == standard_offset) {
-        time_str += (get_timezone_opt('+00:00', 0) + "\n") +
-        get_timezone_opt('+01:00', 0) + "\n" +
-        get_timezone_opt('+02:00', 0) + "\n" +
-        get_timezone_opt('+03:00', 0) + "\n" +
-        get_timezone_opt('+03:30', 0) + "\n" +
-        get_timezone_opt('+04:30', 0) + "\n" +
-        get_timezone_opt('+05:30', 0) + "\n" +
-        get_timezone_opt('+08:00', 0) + "\n" +
-        get_timezone_opt('+09:00', 0) + "\n" +
-        get_timezone_opt('+09:30', 0) + "\n" +
-        get_timezone_opt('+10:00', 0) + "\n" +
-        get_timezone_opt('+12:00', 0) + "\n" +
-        get_timezone_opt('-03:00', 0) + "\n" +
-        get_timezone_opt('-03:30', 0) + "\n" +
-        get_timezone_opt('-04:00', 0) + "\n" +
-        get_timezone_opt('-05:00', 0) + "\n" +
-        get_timezone_opt('-06:00', 0) + "\n" +
-        get_timezone_opt('-07:00', 0) + "\n" +
-        get_timezone_opt('-08:00', 0) + "\n" +
-        get_timezone_opt('-09:00', 0) + "\n" +
-        get_timezone_opt('-10:00', 0) + "</select>" + "\n";
-    }
-    else {
-        time_str += get_timezone_opt('+00:00', 1) + "\n" +
-        get_timezone_opt('+01:00', 1) + "\n" +
-        get_timezone_opt('+02:00', 1) + "\n" +
-        get_timezone_opt('+03:00', 1) + "\n" +
-        get_timezone_opt('+04:00', 1) + "\n" +
-        get_timezone_opt('+05:30', 1) + "\n" +
-        get_timezone_opt('+08:00', 1) + "\n" +
-        get_timezone_opt('+09:00', 1) + "\n" +
-        get_timezone_opt('+10:30', 1) + "\n" +
-        get_timezone_opt('+11:00', 1) + "\n" +
-        get_timezone_opt('+13:00', 1) + "\n" +
-        get_timezone_opt('-02:00', 1) + "\n" +
-        get_timezone_opt('-02:30', 1) + "\n" +
-        get_timezone_opt('-03:00', 1) + "\n" +
-        get_timezone_opt('-04:00', 1) + "\n" +
-        get_timezone_opt('-05:00', 1) + "\n" +
-        get_timezone_opt('-06:00', 1) + "\n" +
-        get_timezone_opt('-07:00', 1) + "\n" +
-        get_timezone_opt('-08:00', 1) + "\n" +
-        get_timezone_opt('-10:00', 1) + "</select>" + "\n";
-    }
-    return time_str;
-}
-
-// build string for one timezone option
-function get_timezone_opt(tz, daylight) {
-    if (daylight) {
-        return '<option value="' + tz + '">' + tz + ' (' + 
-                daylight_timezone_mapping[tz] + ')</option>';
-    }
-    else {
-        return '<option value="' + tz + '">' + tz + ' (' + 
-                timezone_mapping[tz] + ')</option>';
-    }
-}
-
-// returns string containing local timezone offset
-function timezone_offset_option()
-{
-    var offset_str = '    <option value="' + get_timezone_offset()  + '" selected>UTC ' + get_timezone_offset() + '</option>' + "\n";
-    return offset_str;
-}
-
-// print timezone hidden input field
-function print_timezone_field()
-{
-    document.write( '<input type="hidden" name="reservation_time_zone" value="' + get_timezone_offset()  + '">' );
-}
-
-// format the time zone offset in MySQL [+/-]hhmm format (ex. +09:30, -05:00)
-function get_timezone_offset()
-{
-    var local_date = new Date();
-    var offset = -(local_date.getTimezoneOffset());
-    var hours = offset / 60;
-    var half_indicator = (offset % 60) / 30;
-    var offset_str;
-
-    if (offset >= 0) {
-        offset_str = '+';
-        if (hours < 10) { offset_str += '0'};
-    }
-    else {
-        offset_str = '-';
-        hours = -hours;
-        if (hours < 10) { offset_str += '0'};
-    }
-    offset_str += hours;
-    offset_str += ":";
-
-    if (half_indicator) { offset_str += '30'; }
-    else { offset_str += '00'; }
-    
-    return offset_str;
-}
-
-// Prints year, date, time, time zone, and duration for reservation example.
-// NOTE:  For production use, start time should probably be in the future.
-function get_time_settings_example() {
-    var local_date = new Date();
-    var dfields = new Array();
-
-    dfields[0] = local_date.getFullYear();
-    dfields[1] = local_date.getMonth() + 1;
-    dfields[2] = local_date.getDate();
-    dfields[3] = local_date.getHours();
-    dfields[4] = local_date.getMinutes();
-    dfields[5] = 'UTC' + get_timezone_offset();
-    dfields[6] = 0.05;
-    dfields[7] = ' ';
-    var example_str = "";
-    for (var i=0 ; i < 6; i++) {
-        if (dfields[i] < 10) {
-            dfields[i] = '0' + dfields[i];
-        }
-    }
-    for (var i=0 ; i < 7; i++) {
-        example_str += (' <td>' + dfields[i] + '</td>' );
-    }
-    return example_str;
-}
-
 // Reference: http://javascript.internet.com/forms/val-date.html
-function check_date( form )
+function check_date_fields( form )
 {
     var default_year = 0;
     var default_month = 0;
@@ -364,7 +180,7 @@ function check_date( form )
         }
     }
     if (!default_year || !default_date) {
-        if ( check_LeapYear(form.start_year.value) == true ) {
+        if ( is_leap_year(form.start_year.value) ) {
             if ( form.start_date.value > 29 ) {
                 alert( "The reservation start date is out of proper range. Please check again." );
                 form.start_date.focus();
@@ -396,9 +212,117 @@ function check_date( form )
     return true;
 }
 
+
+// get string with timezone options
+function tz_option_list() {
+    var is_standard = is_standard_time();
+    var options_str = '<select name="reservation_time_zone">';
+    var local_offset = UTC_offset();
+    // if standard (not daylight savings) time
+    if (is_standard) {
+        for (var tz_offset in standard_tz_name)  {
+            options_str += tz_option(tz_offset, local_offset, standard_tz_name[tz_offset]) + "\n";
+        }
+    }
+    else {
+        for (var tz_offset in daylight_tz_name)  {
+            options_str += tz_option(tz_offset, local_offset, standard_tz_name[tz_offset]) + "\n";
+        }
+    }
+    options_str += "</select>\n";
+    return options_str;
+}
+
+
+function is_standard_time()
+{
+    // TODO:  not every time zone has the same time period during which
+    //        it is in effect; for now, U.S.
+    var local_date = new Date();
+    var offset = -(local_date.getTimezoneOffset());
+    // unlikely that daylight savings in effect on January 1.
+    var standard_time_date = new Date(local_date.getFullYear(), 0, 1, 0, 0, 0, 0);
+    var standard_offset = -(standard_time_date.getTimezoneOffset()); 
+    return (offset == standard_offset);
+}
+
+
+// Prints year, date, time, time zone, and duration for reservation example.
+// NOTE:  For production use, start time should probably be in the future.
+function time_settings_example() {
+    var local_date = new Date();
+    var dfields = new Array();
+
+    dfields[0] = local_date.getFullYear();
+    dfields[1] = local_date.getMonth() + 1;
+    dfields[2] = local_date.getDate();
+    dfields[3] = local_date.getHours();
+    dfields[4] = local_date.getMinutes();
+    dfields[5] = 'UTC' + UTC_offset() + ' (';
+    if (is_standard_time()) {
+        dfields[5] += standard_tz_name[UTC_offset()] + ')';
+    }
+    else { dfields[5] += daylight_tz_name[UTC_offset()] + ')'; }
+    dfields[6] = 0.05;
+    dfields[7] = ' ';
+    var example_str = "";
+    for (var i=0 ; i < 6; i++) {
+        if (dfields[i] < 10) {
+            dfields[i] = '0' + dfields[i];
+        }
+    }
+    for (var i=0 ; i < 7; i++) {
+        example_str += (' <td>' + dfields[i] + '</td>' );
+    }
+    return example_str;
+}
+
+
+// private functions
+
+// format the time zone offset in MySQL [+/-]hhmm format (ex. +09:30, -05:00)
+function UTC_offset()
+{
+    var local_date = new Date();
+    var offset = -(local_date.getTimezoneOffset());
+    var hours = offset / 60;
+    var half_indicator = (offset % 60) / 30;
+    var offset_str;
+
+    if (offset >= 0) {
+        offset_str = '+';
+        if (hours < 10) { offset_str += '0'};
+    }
+    else {
+        offset_str = '-';
+        hours = -hours;
+        if (hours < 10) { offset_str += '0'};
+    }
+    offset_str += hours;
+    offset_str += ":";
+
+    if (half_indicator) { offset_str += '30'; }
+    else { offset_str += '00'; }
+    
+    return offset_str;
+}
+
+
+// returns string for one timezone option
+function tz_option(tz, local_offset, tz_name)
+{
+    var option_str;
+
+    option_str = '<option value="' + tz + '"';
+    if (tz == local_offset) { option_str += " selected"; }
+    option_str += '>' + tz + ' (' + tz_name + ')</option>';
+    return option_str;
+}
+
+
 // check whether a year is a leap year
 // Reference: http://javascript.internet.com/forms/val-date.html
-function check_LeapYear( intYear )
+function is_leap_year( intYear )
 {
     if ( intYear % 100 == 0 ) {
         if ( intYear % 400 == 0 ) { return true; }
@@ -408,4 +332,3 @@ function check_LeapYear( intYear )
     }
     return false;
 }
-

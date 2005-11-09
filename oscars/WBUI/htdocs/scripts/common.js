@@ -1,6 +1,6 @@
 /*
-common.js:  Common Javascript functions
-Last modified: August 17, 2005
+common.js:      Javascript functions for form submission
+Last modified:  November 8, 2005
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang (dapi@umich.edu)
 */
@@ -110,7 +110,7 @@ function get_response(xmlhttp, form_name) {
     // update status bar
     var status_node = document.getElementById('status_div');
     if (status_msg) {
-        status_node.innerHTML = get_date_str() + ' | ' + status_msg;
+        status_node.innerHTML = date_str() + ' | ' + status_msg;
     }
 
     // update main portion (only present if there was no error)
@@ -119,13 +119,13 @@ function get_response(xmlhttp, form_name) {
         main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
     }
     if (form_name == 'creation_form') {
-        var time_node = document.getElementById('get_timezone_options');
+        var time_node = document.getElementById('tz_option_list');
         if (time_node) {
-            time_node.innerHTML = get_timezone_options();
+            time_node.innerHTML = tz_option_list();
         }
-        time_node = document.getElementById('get_time_settings_example');
+        time_node = document.getElementById('time_settings_example');
         if (time_node) {
-            time_node.innerHTML = get_time_settings_example();
+            time_node.innerHTML = time_settings_example();
         }
     }
 }
@@ -254,7 +254,7 @@ function check_reservation( form )
         }
     }
     // at this point success only depends on a correct date
-    return check_date(form);
+    return check_date_fields(form);
 }
 
 // checks validity of user profile form
