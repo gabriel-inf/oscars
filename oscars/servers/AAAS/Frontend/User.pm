@@ -1,9 +1,9 @@
-package AAAS::Frontend::User;
+package AAAS::Frontend::SOAPMethods;
 
-# User.pm:  Database interactions having to do with admin and user forms.
-# Last modified: November 8, 2005
+# SOAPMethods.pm: SOAP methods callable from dispatcher.
+# Last modified:  November 9, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 use strict;
 
