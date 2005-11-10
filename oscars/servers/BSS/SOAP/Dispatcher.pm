@@ -1,19 +1,19 @@
 # Dispatcher.pm:  SOAP::Lite dispatcher for BSS
-# Last modified:  November 8, 2005
+# Last modified:  November 9, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Jason Lee (jrlee@lbl.gov)
+# Jason Lee       (jrlee@lbl.gov)
 
 package Dispatcher;
 
 use lib qw(/usr/local/esnet/servers/prod);
 
-print STDERR "BSS Dispatcher\n";
+print STDERR "BSS::SOAP::Dispatcher\n";
 
 use Data::Dumper;
 use Error qw(:try);
 
 use Common::Exception;
-use BSS::Frontend::Reservation;
+use BSS::Frontend::SOAPMethods;
 use BSS::Frontend::Validator;
 
 my $db_login = 'oscars';
@@ -25,7 +25,7 @@ my $dbconn = BSS::Frontend::Database->new(
                  'password' => $password)
              or die "FATAL:  could not connect to database";
 
-my $request_handler = BSS::Frontend::Reservation->new('dbconn' => $dbconn);
+my $request_handler = BSS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
 
 
 
@@ -34,7 +34,7 @@ sub dispatch {
 
     my ( $logging_buf, $ex );
 
-    print STDERR "dispatch called\n";
+    print STDERR "BSS::SOAP::Dispatcher->dispatch() called\n";
     my $results = {};
     try {
         $v = BSS::Frontend::Validator->new();
