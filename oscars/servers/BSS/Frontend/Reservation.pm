@@ -1,4 +1,4 @@
-# Reservation.pm:  SOAP methods for BSS.
+# SOAPMethods.pm:  SOAP methods for BSS.
 # BSS::Traceroute::RouteHandler is called to set up route before
 # inserting info in database
 #
@@ -10,7 +10,7 @@
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
-package BSS::Frontend::Reservation;
+package BSS::Frontend::SOAPMethods;
 
 use strict;
 
