@@ -47,11 +47,12 @@ sub initialize {
 
 ###############################################################################
 sub find_pending_reservations  { 
-    my ( $self, $status, $time_interval ) = @_;
+    my ( $self, $time_interval ) = @_;
 
     my $query = 'SELECT @@global.time_zone AS timezone';
     my $rows = $self->{dbconn}->do_query( $query );
     my $timezone = $rows->[0]->{timezone};
+    my $status = 'pending';
 
     $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00') " .
              "AS newtime";
@@ -66,11 +67,12 @@ sub find_pending_reservations  {
 
 ###############################################################################
 sub find_expired_reservations {
-    my ( $self, $status, $time_interval ) = @_;
+    my ( $self, $time_interval ) = @_;
 
     my $query = 'SELECT @@global.time_zone AS timezone';
     my $rows = $self->{dbconn}->do_query( $query );
     my $timezone = $rows->[0]->{timezone};
+    my $status = 'active';
 
     $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')" .
              " AS newtime";
