@@ -3,7 +3,7 @@
 use strict;
 use Data::Dumper;
 
-use BSS::Client::SOAPClient;
+use SOAP::Lite;
 
 my( %params );
 
@@ -16,13 +16,17 @@ $params{reservation_bandwidth} =      '10';
 $params{reservation_protocol} =       'udp';
 
 $params{source_host} = 'nettrash3.es.net';
-$params{destination_host} = 'atl-pt1.es.net';
+$params{destination_host} = 'atl-cr1.es.net';
 
 $params{user_dn} =        'dwrobertson@lbl.gov';
 $params{reservation_description} =    'This is a test.';
 $params{method} = 'insert_reservation'; 
 
-my $som = bss_dispatcher(\%params);
+my $aaas_server = SOAP::Lite
+    ->uri('http://198.128.14.164/Dispatcher')
+    ->proxy('https://198.128.14.164/BSS');
+
+my $som = $aaas_server->dispatch(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";
     exit;
