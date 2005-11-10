@@ -1,10 +1,14 @@
-# Reservation.pm:  SOAP methods for BSS; calls 
+# Reservation.pm:  SOAP methods for BSS.
 # BSS::Traceroute::RouteHandler is called to set up route before
 # inserting info in database
 #
-# Last modified: November 5, 2005
+# Note that all authentication and authorization handling is assumed
+# to have been previously done by AAAS.  Use caution if running the
+# BSS on a separate machine from the one running the AAAS.
+#
+# Last modified:  November 9, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 package BSS::Frontend::Reservation;
 
@@ -13,7 +17,6 @@ use strict;
 use Error qw(:try);
 use Data::Dumper;
 
-use Common::Mail;
 use Common::Exception;
 use BSS::Frontend::Database;
 use BSS::Frontend::Policy;
@@ -72,19 +75,14 @@ sub initialize {
 
     $self->{policy} = BSS::Frontend::Policy->new(
                        'dbconn' => $self->{dbconn});
-    my $trace_configs = $self->{dbconn}->get_trace_configs();
     $self->{route_setup} = BSS::Traceroute::RouteHandler->new(
-                                               'dbconn' => $self->{dbconn},
-                                               'configs' => $trace_configs);
+                                               'dbconn' => $self->{dbconn});
 }
 ######
 
 
 ###############################################################################
-# insert_reservation:  Called from the scheduler to insert a row into the
-#   reservations table.  Error checking so far is assumed to have been done by
-#   scheduler and CGI script.
-#
+# insert_reservation:  SOAP call to insert a row into the reservations table.  #
 # In:  reference to hash.  Hash's keys are all the fields of the reservations
 #      table except for the primary key.
 # Out: results hash.
@@ -94,14 +92,14 @@ sub insert_reservation {
     my( $duration_seconds );
 
     my $output_buf = $self->{route_setup}->find_interface_ids( $inref );
+    print STDERR "past find_interface_ids\n";
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
     {
         throw Common::Exception("Invalid router id(s): 0.  Unable to " .
                                 "do insert.");
     }
-    my $stats = BSS::Frontend::Stats->new();
-    $self->{dbconn}->setup_times($inref, $stats);
+    $self->{dbconn}->setup_times($inref, $self->get_infinite_time());
 
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
@@ -114,16 +112,9 @@ sub insert_reservation {
     $inref->{dst_hostaddr_id} =
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{destination_ip}); 
 
-    $self->fill_fields($inref, $stats);
+    $self->fill_fields($inref);
     my $outref = $self->insert_fields($inref);
     my $results = $self->get_results($inref, $outref);
-
-    my $mailer = Common::Mail->new();
-    my $mail_msg = $stats->get_stats($results->{rows}[0]) ;
-    $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
-                       "Reservation made by $inref->{user_dn}", $mail_msg);
-    $mailer->send_mail($mailer->get_webmaster(), $inref->{user_dn},
-                       "Your reservation has been accepted", $mail_msg);
     return( $results, $output_buf );
 }
 ######
@@ -137,57 +128,96 @@ sub insert_reservation {
 sub delete_reservation {
     my( $self, $inref ) = @_;
 
-    my $status =  $self->{dbconn}->update_reservation( $inref, 'precancel' );
-    return($self->get_reservations($inref), '');
+    my $status =  $self->{dbconn}->update_status( $inref, 'precancel' );
+    return( $self->get_reservation_details($inref), '');
 }
 ######
 
 ###############################################################################
-# get_reservations: gets the reservation list from the database
+# get_all_reservations: get all reservations from the database
 #
-# In: reference to hash of parameters, id if only want one reservation
-# Out: success or failure, and status message
+# In: reference to hash of parameters
+# Out: reservations if any, and status message
 #
-sub get_reservations {
+sub get_all_reservations {
     my( $self, $inref ) = @_;
 
     my( $query );
 
-    # If administrator is making request, show all reservations.  Otherwise,
-    # show only the user's reservations.  If id is given, show only the results
-    # for that reservation.  Sort by start time in ascending order.
-    if ($inref->{reservation_id}) {
-        if ( !($self->{policy}->authorized($inref->{user_level}, "engr")) ) {
-            $query = "SELECT " . join(', ', @detail_fields);
-        }
-        else {
-            $query = "SELECT " .
-                     join(', ', (@detail_fields, @detail_admin_fields));
-        }
-        $query .= " FROM reservations" .
-                  " WHERE reservation_id = $inref->{reservation_id}";
-    }
-    elsif ($inref->{user_dn}) {
-        if ( $self->{policy}->authorized($inref->{user_level}, "engr") ) {
-            $query = "SELECT * FROM reservations";
-        }
-        else {
-            $query = "SELECT " . join(', ', @user_fields);
-            $query .= " FROM reservations" .
-                      " WHERE user_dn = '$inref->{user_dn}'";
-        }
-    }
-    $query .= " ORDER BY reservation_start_time";
+    $query = "SELECT * FROM reservations" .
+             " ORDER BY reservation_start_time";
     my $rows = $self->{dbconn}->do_query($query);
+    return( $self->process_reservation_request($inref, $rows) );
+}
+######
+
+###############################################################################
+# get_user_reservations: get all user's reservations from the database
+#
+# In:  reference to hash of parameters
+# Out: reservations if any, and status message
+#
+sub get_user_reservations {
+    my( $self, $inref ) = @_;
+
+    my( $query );
+
+    # TODO:  fix authorization
+    if ( $inref->{engr} ) {
+        $query = "SELECT *";
+    }
+    else {
+        $query = "SELECT " . join(', ', @user_fields);
+    }
+    $query .= " FROM reservations" .
+              " WHERE user_dn = ?";
+    $query .= " ORDER BY reservation_start_time";
+    my $rows = $self->{dbconn}->do_query($query, $inref->{user_dn});
+    return( $self->process_reservation_request($inref, $rows) );
+}
+######
+
+###############################################################################
+# get_reservation_details: get details for one reservation
+#
+# In: reference to hash of parameters
+# Out: hash ref of results, status message
+#
+sub get_reservation_details {
+    my( $self, $inref ) = @_;
+
+    my( $query );
+
+        # TODO:  Fix authorization checks
+    if ( !($inref->{engr_permission}) ) {
+        $query = "SELECT " . join(', ', @detail_fields);
+    }
+    else {
+        $query = "SELECT " .
+                 join(', ', (@detail_fields, @detail_admin_fields));
+    }
+    $query .= " FROM reservations" .
+              " WHERE reservation_id = ?" .
+              " ORDER BY reservation_start_time";
+    my $rows = $self->{dbconn}->do_query($query, $inref->{reservation_id});
+    return( $self->process_reservation_request($inref, $rows) );
+}
+######
+
+###############################################################################
+# process_reservation_request: handle get reservation(s) query, and
+#                              reformat results before sending back
+#
+sub process_reservation_request {
+    my( $self, $inref, $rows ) = @_;
 
     $self->{dbconn}->get_host_info($rows);
     $self->{dbconn}->convert_times($rows);
-    if ($self->{policy}->authorized($inref->{user_level}, "engr") &&
-        $inref->{reservation_id}) {
-        # in this case, only one row
+    # TODO:  fix authorization
+    if ( $inref->{engr_permission} ) { 
         $self->{dbconn}->get_engr_fields($rows); 
-        $self->check_nulls($rows);
     }
+    $self->check_nulls($rows);
     my $results;
     $results->{rows} = $rows;
     return( $results, '' );
@@ -199,10 +229,34 @@ sub get_reservations {
 #################
 
 ###############################################################################
+# get_time_str:  print formatted time string
+#
+sub get_time_str {
+    my( $self, $dtime, $gentag ) = @_;
+
+    if ($gentag ne 'tag') {
+        return $dtime;
+    }
+    my @ymd = split(' ', $dtime);
+    return( $ymd[0] );
+}
+######
+
+###############################################################################
+# get_infinite_time:  returns "infinite" time
+#
+sub get_infinite_time {
+    my( $self );
+
+    return '2039-01-01 00:00:00';
+}
+######
+
+###############################################################################
 # fill_fields:  
 #
 sub fill_fields {
-    my( $self, $inref, $stats );
+    my( $self, $inref );
 
     $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
     $inref->{reservation_id} = 'NULL';
@@ -212,7 +266,7 @@ sub fill_fields {
                                 $self->{pss_configs}->{pss_conf_burst_limit};
     $inref->{reservation_status} = 'pending';
     $inref->{reservation_tag} = $inref->{user_dn} . '.' .
-        $stats->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
+        $self->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
 
 }
 ######
@@ -271,6 +325,7 @@ sub get_results {
     # convert times back to user's time zone for mail message
     $self->{dbconn}->convert_times($results->{rows});
     # get loopback fields if have engr privileges
+    # TODO:  Fix authorization checks
     if ($self->{policy}->authorized($inref->{user_level}, "engr")) {
         $self->{dbconn}->get_engr_fields($results->{rows}); 
     }
