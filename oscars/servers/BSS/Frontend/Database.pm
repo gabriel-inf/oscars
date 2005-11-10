@@ -1,11 +1,11 @@
-# Database.pm:  BSS specific database settings and routines
+# DBRequests.pm:  database request methods for front end
 #               inherits from Common::Database
 # Last modified: November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # Jason Lee (jrlee@lbl.gov)
 
-package BSS::Frontend::Database;
+package BSS::Frontend::DBRequests;
 
 use strict; 
 
