@@ -1,6 +1,6 @@
 # Database.pm:  BSS specific database settings and routines
 #               inherits from Common::Database
-# Last modified: November 5, 2005
+# Last modified: November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 # Jason Lee (jrlee@lbl.gov)
@@ -38,10 +38,10 @@ sub new {
 ######
 
 ###############################################################################
-# update_reservation: Updates reservation status.  Used to mark as active,
+# update_status: Updates reservation status.  Used to mark as active,
 # finished, or cancelled.
 #
-sub update_reservation {
+sub update_status {
     my ( $self, $inref, $status ) = @_;
 
     my $query = qq{ SELECT reservation_status from reservations
@@ -62,23 +62,6 @@ sub update_reservation {
                  WHERE reservation_id = ?};
     my $unused = $self->do_query($query, $status, $inref->{reservation_id});
     return( $status );
-}
-######
-
-##############################################################################
-#
-sub get_trace_configs {
-    my( $self ) = @_;
-
-        # use default for now
-    my $query = "SELECT " .
-            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
-            "trace_conf_ttl, trace_conf_timeout, " .
-            "trace_conf_run_trace, trace_conf_use_system, " .
-            "trace_conf_use_ping "  .
-            "FROM trace_confs where trace_conf_id = 1";
-    my $configs = $self->do_query($query);
-    return( $configs );
 }
 ######
 
@@ -107,21 +90,20 @@ sub get_pss_configs {
 sub get_host_info {
     my( $self, $resvrows ) = @_;
  
-    my( $resv, %mapping, $ipaddr );
+    my( $resv, $ipaddr, $hrows );
 
-    my $query = "SELECT hostaddr_id, hostaddr_ip FROM hostaddrs";
-    my $hostrows = $self->do_query($query);
-    # TODO:  FIX, do through query rather than mapping
-    for $resv (@$hostrows) { $mapping{$$resv[0]} = $$resv[1]; }
-
+    my $query = "SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?";
     for $resv (@$resvrows) {
-        $resv->{source_ip} = $mapping{$resv->{src_hostaddr_id}};
+        my $hrows = $self->do_query($query, $resv->{src_hostaddr_id});
+        $resv->{source_ip} = $hrows->[0]->{hostaddr_ip};
         $ipaddr = inet_aton($resv->{source_ip});
         $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
         if (!$resv->{source_host}) {
             $resv->{source_host} = $resv->{source_ip};
         }
-        $resv->{destination_ip} = $mapping{$resv->{dst_hostaddr_id}};
+
+        $hrows = $self->do_query($query, $resv->{dst_hostaddr_id});
+        $resv->{destination_ip} = $hrows->[0]->{hostaddr_ip};
         $ipaddr = inet_aton($resv->{destination_ip});
         $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
         if (!$resv->{destination_host}) {
@@ -136,9 +118,9 @@ sub get_host_info {
 # setup_times:  
 #
 sub setup_times {
-    my( $self, $inref, $stats );
+    my( $self, $inref);
 
-    my( $duration_seconds );
+    my( $duration_seconds, $infinite_time );
 
     # Expects strings in second since epoch; converts to date in UTC time
     my $query = "SELECT CONVERT_TZ(from_unixtime(?), ?, '+00:00')" .
@@ -154,7 +136,7 @@ sub setup_times {
         $inref->{reservation_end_time} = $rows->[0]->{end_time};
     }
     else {
-        $inref->{reservation_end_time} = $stats->get_infinite_time();
+        $inref->{reservation_end_time} = $infinite_time;
     }
     $query = "SELECT CONVERT_TZ(now(), ?, '+00:00') AS time_zone";
     $rows = $self->do_query( $query, $inref->{reservation_time_zone} );
