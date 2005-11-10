@@ -1,22 +1,20 @@
-#!/usr/bin/perl
-
-package BSS::Frontend::Dispatcher;
-
-####
-# Dispatcher.pm:  Soap lite dispatcher for BSS
-# Last modified:  November 2, 2005
+# Dispatcher.pm:  SOAP::Lite dispatcher for BSS
+# Last modified:  November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee (jrlee@lbl.gov)
-###
 
-use SOAP::Lite;
+package Dispatcher;
+
+use lib qw(/usr/local/esnet/servers/prod);
+
+print STDERR "BSS Dispatcher\n";
+
 use Data::Dumper;
 use Error qw(:try);
 
 use Common::Exception;
 use BSS::Frontend::Reservation;
 use BSS::Frontend::Validator;
-use BSS::Scheduler::SchedulerThread;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
@@ -29,9 +27,6 @@ my $dbconn = BSS::Frontend::Database->new(
 
 my $request_handler = BSS::Frontend::Reservation->new('dbconn' => $dbconn);
 
-# start up a thread to monitor the DB
-start_scheduler();
-
 
 
 sub dispatch {
@@ -39,6 +34,7 @@ sub dispatch {
 
     my ( $logging_buf, $ex );
 
+    print STDERR "dispatch called\n";
     my $results = {};
     try {
         $v = BSS::Frontend::Validator->new();
@@ -53,26 +49,6 @@ sub dispatch {
         $ex = shift;
     }
     finally {
-        my $logfile_name = "$ENV{HOME}/logs/";
-
-        if ($results->{reservation_tag}) {
-            $logfile_name .= $results->{reservation_tag};
-        }
-        else {
-            $logfile_name .= "fatal_reservation_errors";
-        }
-        open (LOGFILE, ">$logfile_name") ||
-                die "Can't open log file $logfile_name.\n";
-        print LOGFILE "********************\n";
-        if ($logging_buf) {
-            print LOGFILE $logging_buf;
-        }
-        if ($ex) {
-            print LOGFILE "EXCEPTION:\n";
-            print LOGFILE $ex->{-text};
-            print LOGFILE "\n";
-        }
-        close(LOGFILE);
     };
     # caught by SOAP to indicate fault
     if ($ex) {
