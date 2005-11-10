@@ -12,68 +12,113 @@ and indicate dependencies.</p>
 <h2>10-4 to 10-21</h2> 
 
 <ul>
-<li>Replace use of configuration file with AAAS and BSS database tables.</li>
-<li>Meet with Mary and Chin about security requirements.  Decide on
-workable security implementation, and draw up workflow.</li>
-<li>Copy oscars repository to oscars-dev, and private repository to 
+<li>Replaced use of configuration file with AAAS and BSS database tables.</li>
+<li>Met with Mary and Chin about security requirements.  Decided on
+workable security implementation, and drew up workflow.</li>
+<li>Copied oscars repository to oscars-dev, and private repository to 
 oscars-testing.</li>
-<li>Move databases to oscars-testing.</li>
+<li>Moved databases to oscars-testing.</li>
 </ul>
 
 <h2>10-21 to 10-28</h2>
 
 <ul>
-<li>Finish security additions to functional and design specifications.</li>
-<li>Finish moving repository and servers to oscars-dev and oscars-testing.</li>
-<li>Finish post-installation steps for Apache.</li>
-<li>Save the current page in use in a cookie, and enable the user to
-return to an OSCARS page after going someplace else.</li>
+<li>Continued security additions to functional and design specifications.</li>
+<li>Moved repository and servers to oscars-dev and oscars-testing.</li>
+<li>Continued post-installation steps for Apache.</li>
+<li>Continued modifying security implementation and workflow through
+discussions with Mary.</li>
 </ul>
 
-<h2>10-31 to 11-4</h2>
+<h2>10-31 to 11-6</h2>
 
 <ul>
-<li>Return an error message if a server is not running (currently either
-a blank page is returned, or else no action appears to have been taken).</li>
-<li>If a user explicitly specifies an egress or ingress router, have an
-asterisk after that field in the notification sent to admin users.</li>
-<li>Start redoing AAAS to make it possible to plug in BRUW Shibboleth 
-material (registration pages, etc.).</li>
+<li>Decided to have the oscars-dev Web server act as a reverse proxy to 
+oscars-test.  Moved OSCARS repository to oscars-test.</li>
+<li>Discussed with Mary the usage of SSL in Apache reverse proxy setup,
+and writing a module to handle XML Signatures on oscars-test.</li>
+
+<li>Finish security additions to functional and design specifications,
+including use of reverse proxy.</li>
+<li>Finish post-installation steps for Apache having to do with SSL
+and reverse proxy from oscars-dev to oscars-test.  Test SOAP::Lite
+dispatching to https URL's.</li>
+<li>Get mod_soap working.  Debug AAAS and BSS
+servers working with these changes, whether through browser or API.</li>
+</ul>
+
+<h2>11-7 to 11-13</h2>
+
+<ul>
+<li>Finish move of repository by figuring out error in accessing
+Subversion directories via https (early in week).</li>
+<li>Finish debugging AAAS and BSS servers, at which point the OSCARS repository,
+CGI scripts, and HTML pages are served off of oscars-test.</li>
 <li>Start integration of ROAM material into clients, servers, and database 
-schemas.  Start working on ROAM-style resources, attributes, etc.</li>
+schemas.  Start working on ROAM-style resources, attributes, etc.
+Strip out current authorization mechanisms.</li>
+<li>Work with I2 on integration of BRUW material into OSCARS.</li>
+<li>Make the oscars.es.net IP a virtual host
+on oscars-dev (which is reverse proxied to the Web server on oscars-test).</li>
+<li>John repurposes and readdresses the current oscars.es.net machine.</li>
+<li>Mary works on implementing a module for XML signature generation and 
+validation (this is not necessarily needed for the inter-domain demo
+at the end of November).</li>
 </ul>
 
-<h2>11-7 to 11-11</h2>
+<h2>11-14 to 11-18</h2>
 
 <ul>
-<li>Have status information flash when the status message changes.</li>
+<li>Work on inter-domain specs documents, including workflow, with 
+input from I2, GEANT2.</li>
 <li>Add forms for user requests for attributes/rights.</li>
 <li>Get administrative page to add user and attributes working.</li>
-<li>Use MySQL 5 views for accesses to db involving oscars user, engr
-user, and admin user (replaces some of current functionality.</li>
+<li>Work with I2 on integrating BRUW material, and on inter-domain 
+demo.</li>
+<li>Mary helps I2 with setting up server certificate(s) on their machine(s).
+</li>
+<li> Mary continues working on implementing XML signature generation and 
+validation.</li>
 </ul>
 
-<h2>11-14 to 11-25</h2>
-
+<h2>11-21 to 11-25</h2>
 <ul>
+<li>Require signed certificates for API access to OSCARS, including access
+by another domain's server.</li>
 <li>Finish integration of ROAM material.</li>
-<li>Get mod_perl rather than straight CGI working.</li>
-<li>Get SOAP::Lite over SSL working.</li>
-<li>SOAP working with WSDL service description.</li>
 <li>Have regular updates to routers, interfaces, and ipaddrs tables
 based on SNMP queries (need to integrate BSS/SNMP code).</li>
-<li>Start working on inter-domain specs documents, including workflow, with 
-input from I2, GEANT2.</li>
+<li> Mary continues working on implementation  of module for XML signature 
+generation and validation.</li>
 </ul>
 
-<h2>11-28 to 12-9</h2>
+<h2>11-28 to 12-2</h2>
 
 <ul>
+<li>Complete inter-domain demo to/from I2.</li>
+<li>Save the current page in use in a cookie, and enable the user to
+return to an OSCARS page after going someplace else.</li>
 <li>Add modify and delete actions (in addition to cancel) on
 reservation detail page.  Delete will move the reservation entry to another 
 table.</li>
 <li>Send notifications on modifications and delete of reservations.</li>
-<li>Require certificates for API access to OSCARS.</li>
+<li>If a user explicitly specifies an egress or ingress router, have an
+asterisk after that field in the notification sent to admin users.</li>
+<li> Mary completes initial implementation  of module for XML signature 
+generation and validation.  Works with I2 if they need assistance in
+incorporating it into their version of OSCARS/BRUW.</li>
+</ul>
+
+<h2>12-2 to 12-9</h2>
+
+<ul>
+<li>Return an error message if a server is not running (currently either
+a blank page is returned, or else no action appears to have been taken).</li>
+<li>Use mod_perl for CGI scriptsg.</li>
+<li>SOAP working with WSDL service description.</li>
+<li>Use MySQL 5 views for accesses to db involving oscars user, engr
+user, and admin user (replaces some of current functionality.</li>
+<li>Have status information flash when the status message changes.</li>
 </ul>
 
 <h2>12-12 to Christmas break</h2>
