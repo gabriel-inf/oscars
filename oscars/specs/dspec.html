@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 <a href="http://www.es.net/">ESnet</a><br/><br/>
 
-October 31, 2005</br>
+November 6, 2005</br>
 
 <h2>Introduction</h2>
 
@@ -41,20 +41,26 @@ Internet2 bandwidth reservation system.)
 
 <h2>Web Service Components</h2>
 
-<p>The primary design decision is to implement the authentication,
+<p>One of the primary design decisions is to implement the authentication,
 authorization, and accounting subsystem (AAAS) and bandwidth scheduler
 subsystem (BSS) components as Web services.  Web services (WS) standards are 
-used wherever possible, including SOAP for transport (y1), and WSDL for service 
-descriptions (y2).</p>
+used wherever possible, including SOAP for transport (y1), and WSDL for 
+service descriptions (y2).</p>
 
 <p>The BSS, while implemented as a Web service, is only accessible via its 
-associated AAAS.  The AAAS and BSS do not necessarily have
-to run on the same machine.  The path setup subsystem (PSS) is implemented as a
+associated AAAS.  The AAAS and BSS do not have to run on the same machine, 
+though currently they do.  The path setup subsystem (PSS) is implemented as a
 module linked in by the BSS. (y)</p>
 
 <p>Different instances of the RM, for example in different organizations, 
 communicate via their respective AAAS's through the setup of federated trust 
 (y2/y3).</p>
+
+<p>The other primary decision is to use the functionality of the Apache Web
+server as much as possible.  Apache provides a number of services out of the
+box, which is important for a project with a limited number of personnel.
+Also, it is extensively monitored by the open-source community for any
+security problems.</p>
 
 <h2>Transport</h2>
 
