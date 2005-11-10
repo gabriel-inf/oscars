@@ -1,7 +1,7 @@
 # Poller:  Polls the db looking for reservations that need to be activated
 #          through the set up of LSP's, and those that have expired and
 #          need the associated LSP torn down.
-# Last modified:  November 5, 2005
+# Last modified:  November 6, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee (jrlee@lbl.gov)
 
@@ -11,12 +11,11 @@ use Data::Dumper;
 use Error qw(:try);
 
 use Common::Exception;
-use Common::Mail;
 
     # Chins PSS module to configure the routers
 use PSS::LSPHandler::JnxLSP;
 
-use BSS::Scheduler::Database;
+use BSS::Scheduler::DBRequests;
 
 use strict;
 
@@ -31,46 +30,24 @@ our @EXPORT = qw(scheduler);
 use constant _LSP_SETUP => 1;
 use constant _LSP_TEARDOWN => 0;
 
-
-################## GLOBALS ##############################
-# settings from global configuration file 
-my ($debug);
-my ($dbconn);
-
+my $front_end;
 
 ##############################################################################
 # scheduler: Loop forever checking the DB every N minutes for reserversations
 #
 sub scheduler {
 
-    my ($front_end);
-
-    my $db_login = 'oscars';
-    my $password = 'ritazza6';
-
-    $dbconn = BSS::Frontend::Database->new(
-                 'database' => 'DBI:mysql:BSS',
-                 'dblogin' => $db_login,
-                 'password' => $password)
-             or die "FATAL:  could not connect to database";
-
     print STDERR "Scheduler running\n";
-    $debug = $dbconn->get_debug_level('');
-    $front_end = BSS::Frontend::Scheduler->new('dbconn' => $dbconn);
+    $front_end = BSS::Scheduler::DBRequests->new();
 
     my ($db_poll_time, $time_interval) =
          $front_end->get_time_intervals();
     while (1) {
         try {
             # find reservations that need to be actived
-            if ($debug) { print STDERR "before find new_reservations\n"; }
-            find_new_reservations($front_end, $time_interval);
-            if ($debug) { print STDERR "after find new_reservations\n"; }
-
+            find_new_reservations($time_interval);
             # find reservations that need to be deactivated 
-            if ($debug) { print STDERR "before find_expired_reservations\n"; }
-            find_expired_reservations($front_end, $time_interval);
-            if ($debug) { print STDERR "after find_expired_reservations\n"; }
+            find_expired_reservations($time_interval);
 
             # check every do_poll_time seconds
             sleep($db_poll_time);
@@ -88,30 +65,20 @@ sub scheduler {
 #    reservatations in db that need to be setup and run in the next N minutes.
 #
 sub find_new_reservations {
-    my ($front_end, $time_interval) = @_;
+    my ($time_interval) = @_;
 
     my ($resvs, $status);
     my ($error_msg);
-    my( $mailer, $mail_msg );
-    $mailer = Common::Mail->new();
-    my $pss_configs = $dbconn->get_pss_configs();
+    my $pss_configs = $front_end->{dbconn}->get_pss_configs();
 
     # find reservations that need to be scheduled
     $resvs = $front_end->find_pending_reservations('pending', $time_interval);
-    $dbconn->get_host_info($resvs);
-    $dbconn->get_engr_fields($resvs); 
+    $front_end->{dbconn}->get_host_info($resvs);
+    $front_end->{dbconn}->get_engr_fields($resvs); 
     for my $r (@$resvs) {
-        ## calls to pss to setup reservations
+        # call PSS to schedule LSP
         $status = setup_pss($pss_configs, $r);
-
-        if ($debug) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $status, 'active', $front_end);
-        $mail_msg = $front_end->get_lsp_stats($r, $status);
-        $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
-                       "LSP set up status", $mail_msg);
-        $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
-                       "Your OSCARS circuit set up status", $mail_msg);
-
+        update_reservation( $r, $status, 'active');
     }
     return "";
 }
@@ -122,30 +89,18 @@ sub find_new_reservations {
 #                             them down
 #
 sub find_expired_reservations {
-    my ($front_end, $time_interval) = @_;
+    my ($time_interval) = @_;
 
     my ($resvs, $status);
-    my( $mailer, $mail_msg );
-    $mailer = Common::Mail->new();
 
     # find reservations whose end time is before the current time and
     # thus expired
     $resvs = $front_end->find_expired_reservations('active', $time_interval);
-    $dbconn->get_host_info($resvs);
-    $dbconn->get_engr_fields($resvs); 
     # overkill for now
-    my $pss_configs = $dbconn->get_pss_configs();
+    my $pss_configs = $front_end->{dbconn}->get_pss_configs();
     for my $r (@$resvs) {
         $status = teardown_pss($pss_configs, $r);
-
-        if ($debug) { print STDERR "update reservation to active\n"; }
-        update_reservation( $r, $status, 'finished', $front_end);
-        $mail_msg = $front_end->get_lsp_stats($r, $status);
-        $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
-                       "LSP tear down status", $mail_msg);
-        $mailer->send_mail($mailer->get_webmaster(), $r->{user_dn},
-                       "Your OSCARS circuit tear down status", $mail_msg);
-
+        update_reservation( $r, $status, 'finished');
     }
     return "";
 }
@@ -202,18 +157,16 @@ sub teardown_pss {
 #                     active
 #
 sub update_reservation {
-    my ($resv, $error_msg, $status, $front_end) = @_;
+    my ($resv, $error_msg, $status) = @_;
 
-    my ($update_status, $update_msg);
-    my( $mailer, $mail_msg );
-    $mailer = Common::Mail->new();
+    my ($status, $msg);
 
     if ( !$error_msg ) {
         print STDERR "Changing status to $status\n";
-        ($update_status, $update_msg) = $dbconn->update_reservation('SCHEDULER', $resv, $status)
+        ($status, $msg) = $front_end->{dbconn}->update_status($resv, $status);
     } else {
         print STDERR "Changing status to failed\n";
-        ($update_status, $update_msg) = $dbconn->update_reservation('SCHEDULER', $resv, 'failed')
+        ($status, $msg) = $front_end->{dbconn}->update_status($resv, 'failed');
     }
 }
 ######
