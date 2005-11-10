@@ -41,12 +41,8 @@ sub get_stats {
         $stats .= "Reservation id:     $resv->{reservation_id}\n";
     }
     $stats .= "Start time:         $resv->{reservation_start_time}\n";
-    if ($resv->{reservation_end_time} ne $self->get_infinite_time()) {
-        $stats .= "End time:           $resv->{reservation_end_time}\n";
-    }
-    else {
-        $stats .= "End time:           persistent circuit\n";
-    }
+    $stats .= "End time:           $resv->{reservation_end_time}\n";
+
     if ($resv->{reservation_created_time}) {
         $stats .= "Created time:       $resv->{reservation_created_time}\n";
     }
@@ -90,14 +86,8 @@ sub get_lsp_stats {
         "Config time:        $config_time\n" .
         "Description:        $resv->{reservation_description}\n" .
         "Reservation id:     $resv->{reservation_id}\n" .
-        "Start time:         $resv->{reservation_start_time}\n";
-    if ($resv->{reservation_end_time} ne $self->get_infinite_time()) {
-        $stats .= "End time:           $resv->{reservation_end_time}\n";
-    }
-    else {
-        $stats .= "End time:           persistent circuit\n";
-    }
-    $stats .=
+        "Start time:         $resv->{reservation_start_time}\n" .
+        "End time:           $resv->{reservation_end_time}\n" .
         "Created time:       $resv->{reservation_created_time}\n" .
         "(Times are in UTC $resv->{reservation_time_zone})\n" .
         "Bandwidth:          $resv->{reservation_bandwidth}\n" .
@@ -149,29 +139,5 @@ sub get_lsp_stats {
 }
 ######
                    
-###############################################################################
-# get_time_str:  print formatted time string
-#
-sub get_time_str {
-    my( $self, $dtime, $gentag ) = @_;
-
-    if ($gentag ne 'tag') {
-        return $dtime;
-    }
-    my @ymd = split(' ', $dtime);
-    return( $ymd[0] );
-}
-######
-
-###############################################################################
-# get_infinite_time:  returns "infinite" time
-#
-sub get_infinite_time {
-    my( $self );
-
-    return '2039-01-01 00:00:00';
-}
-######
-
 1;
 # vim: et ts=4 sw=4
