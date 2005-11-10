@@ -30,6 +30,17 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
+    my $db_login = 'oscars';
+    my $password = 'ritazza6';
+
+    $self->{dbconn} = BSS::Frontend::Database->new(
+                 'database' => 'DBI:mysql:BSS',
+                 'dblogin' => $db_login,
+                 'password' => $password)
+             or die "FATAL:  could not connect to database";
+
+    print STDERR "Scheduler running\n";
+    $self->{debug} = $self->{dbconn}->get_debug_level();
     $self->{stats} = BSS::Frontend::Stats->new();
 }
 ######
