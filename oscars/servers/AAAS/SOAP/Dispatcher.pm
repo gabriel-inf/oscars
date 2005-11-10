@@ -9,9 +9,9 @@ use Error qw(:try);
 use lib qw(/usr/local/esnet/servers/prod);
 
 use Common::Exception;
+use AAAS::Frontend::SOAPMethods;
 use AAAS::Frontend::Validator;
 use AAAS::Frontend::Database;
-use AAAS::Frontend::User;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
@@ -23,7 +23,7 @@ my $dbconn = AAAS::Frontend::Database->new(
              or die "FATAL:  could not connect to database";
 
 
-my $request_handler = AAAS::Frontend::User->new('dbconn' => $dbconn);
+my $request_handler = AAAS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
 
 sub dispatch {
     my ( $class_name, $inref ) = @_;
