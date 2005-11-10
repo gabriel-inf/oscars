@@ -1,8 +1,8 @@
 # RouteHandler.pm:  Finds ingress and egress router's and the path between
 #                   them.
 #
-# Last modified: November 5, 2005
-# Jason Lee (jrlee@lbl.gov)
+# Last modified:  November 9, 2005
+# Jason Lee       (jrlee@lbl.gov)
 # David Robertson (dwrobertson@lbl.gov)
 
 package BSS::Traceroute::RouteHandler; 
@@ -15,6 +15,7 @@ use Error qw(:try);
 
 use Common::Exception;
 use BSS::Traceroute::JnxTraceroute;
+use BSS::Traceroute::DBRequests;
 
 use strict;
 
@@ -36,7 +37,9 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{configs} = $self->{dbconn}->get_trace_configs();
+    $self->{db_requests} = new BSS::Traceroute::DBRequests(
+                                               'dbconn' => $self->{dbconn});
+    $self->{configs} = $self->{db_requests}->get_trace_configs()->[0];
 }
 ######
 
@@ -61,10 +64,10 @@ sub find_interface_ids {
     # an oscars loopback closest to the source 
     if ($inref->{ingress_ip}) {
         print STDERR "Ingress:  $inref->{ingress_ip}\n";
-        $ingress_interface_id = $self->{dbconn}->ip_to_xface_id(
+        $ingress_interface_id = $self->{db_requests}->ip_to_xface_id(
                                        $inref->{ingress_ip});
         if ($ingress_interface_id != 0) {
-            $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
+            $loopback_ip = $self->{db_requests}->xface_id_to_loopback(
                                        $ingress_interface_id, 'ip');
         }
         else {
@@ -80,13 +83,14 @@ sub find_interface_ids {
                 $self->do_remote_trace(
                               $self->{configs}->{trace_conf_jnx_source},
                               $inref->{source_ip});
+        print STDERR "ingress:  past remote_trace\n";
     }
   
     if ($inref->{egress_ip}) {
-        $egress_interface_id = $self->{dbconn}->ip_to_xface_id(
+        $egress_interface_id = $self->{db_requests}->ip_to_xface_id(
                                        $inref->{egress_ip});
         if ($egress_interface_id != 0) {
-            $loopback_ip = $self->{dbconn}->xface_id_to_loopback(
+            $loopback_ip = $self->{db_requests}->xface_id_to_loopback(
                                       $egress_interface_id, 'ip');
         }
         else {
@@ -109,6 +113,7 @@ sub find_interface_ids {
         }
     }
 
+    print STDERR "past the mess\n";
     if (($ingress_interface_id == 0) || ($egress_interface_id == 0)) {
         throw Common::Exception("Unable to find route.");
     }
@@ -118,6 +123,7 @@ sub find_interface_ids {
     $inref->{ingress_interface_id} = $ingress_interface_id;
     $inref->{egress_interface_id} = $egress_interface_id;
     $inref->{reservation_path} = $path;
+    print STDERR "to the end of find_interface_ids\n";
     return ( $self->{output_buf} );
 }
 ######
@@ -140,17 +146,22 @@ sub do_remote_trace {
 
     my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{configs}, $src, $dst);
+    print STDERR "past traceroute\n";
     @hops = $jnxTraceroute->get_hops();
+    print STDERR "past get_hops\n";
 
     # if we didn't hop much, maybe the same router?
     if ($#hops < 0 ) { throw Common::Exception("same router?"); }
 
     if ($#hops == 0) { 
+        print STDERR "hops = 0\n";
             # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id(
+        $interface_id = $self->{db_requests}->ip_to_xface_id(
                                $self->{configs}->{trace_conf_jnx_source});
-        $loopback_ip = $self->{dbconn}->xface_id_to_loopback($interface_id,
+        print STDERR "past ip_to_xface_id\n";
+        $loopback_ip = $self->{db_requests}->xface_id_to_loopback($interface_id,
                                                               'ip');
+        print STDERR "past xface_id_to_loopback\n";
         return ($interface_id, $loopback_ip, \@path);
     }
 
@@ -163,9 +174,12 @@ sub do_remote_trace {
         $self->{output_buf} .= "hop:  $hop\n";
         print STDERR "hop:  $hop\n";
         # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id($hop);
-        $loopback_ip = $self->{dbconn}->xface_id_to_loopback( $interface_id,
+        print STDERR "in hops list\n";
+        $interface_id = $self->{db_requests}->ip_to_xface_id($hop);
+        print STDERR "to xface_id_to_loopback\n";
+        $loopback_ip = $self->{db_requests}->xface_id_to_loopback( $interface_id,
                                                              'ip');
+        print STDERR "past xface_id_to_loopback\n";
         if ($interface_id == 0) {
             $self->{output_buf} .= "edge router is $prev_loopback\n";
             print STDERR "edge router is $prev_loopback\n";
@@ -221,7 +235,7 @@ sub do_local_trace {
     # loop from the last router back, till we find an edge router
     for my $i (1..$hops-1) {
         my $ipaddr = $tr->hop_query_host($hops - $i, 0);
-        $interface_id = $self->{dbconn}->ip_to_xface_id($ipaddr);
+        $interface_id = $self->{db_requests}->ip_to_xface_id($ipaddr);
         if ($interface_id != 0) {
             $self->{output_buf} .= "do_local_trace:  edge router is $ipaddr\n";
             print STDERR "do_local_trace:  edge router is $ipaddr\n";

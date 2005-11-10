@@ -1,16 +1,13 @@
 # DBRequests.pm:  Database handling for BSS/Traceroute/RouteHandler.pm
-# Last modified: November 5, 2005
+# Last modified:  November 9, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 package BSS::Traceroute::DBRequests;
 
 use strict;
 
-use DBI;
 use Data::Dumper;
-
-use BSS::Frontend::Database;
 
 ###############################################################################
 sub new {
@@ -29,6 +26,23 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
+}
+######
+
+##############################################################################
+#
+sub get_trace_configs {
+    my( $self ) = @_;
+
+        # use default for now
+    my $query = "SELECT " .
+            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
+            "trace_conf_ttl, trace_conf_timeout, " .
+            "trace_conf_run_trace, trace_conf_use_system, " .
+            "trace_conf_use_ping "  .
+            "FROM trace_confs where trace_conf_id = 1";
+    my $configs = $self->{dbconn}->do_query($query);
+    return( $configs );
 }
 ######
 
@@ -111,3 +125,4 @@ sub hostaddrs_ip_to_id {
 }
 ######
 
+1;
