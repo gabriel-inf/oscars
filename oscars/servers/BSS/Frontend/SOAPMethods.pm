@@ -18,7 +18,7 @@ use Error qw(:try);
 use Data::Dumper;
 
 use Common::Exception;
-use BSS::Frontend::Database;
+use BSS::Frontend::DBRequests;
 use BSS::Frontend::Policy;
 use BSS::Frontend::Stats;
 use BSS::Traceroute::RouteHandler;

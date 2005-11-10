@@ -1,5 +1,5 @@
 # Policy.pm:  database handling for policy related matters
-# Last modified: November 5, 2005
+# Last modified: November 9, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -12,7 +12,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use Common::Exception;
-use BSS::Frontend::Database;
+use BSS::Frontend::DBRequests;
 
 ###############################################################################
 sub new {
