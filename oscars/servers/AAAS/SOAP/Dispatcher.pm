@@ -2,7 +2,7 @@
 # Last modified:  November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
-package Dispatcher;
+package AAAS::SOAP::Dispatcher;
 
 use Error qw(:try);
 
