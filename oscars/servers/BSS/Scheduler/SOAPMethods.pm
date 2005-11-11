@@ -89,6 +89,10 @@ sub find_expired_reservations {
 }
 ######
 
+#################
+# Private methods
+#################
+
 ##############################################################################
 # setup_pss:  format the args and call pss to do the configuration change
 #
