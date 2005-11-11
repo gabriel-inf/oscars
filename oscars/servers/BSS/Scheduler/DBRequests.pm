@@ -1,7 +1,7 @@
-# DBRequests.pm:  Database handling for BSS/Scheduler/Poller.pm
-# Last modified: November 5, 2005
+# DBRequests.pm:  database handling for BSS scheduler
+# Last modified:  November 10, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 package BSS::Scheduler::DBRequests;
 
@@ -10,7 +10,7 @@ use strict;
 use DBI;
 use Data::Dumper;
 
-use BSS::Frontend::Database;
+use BSS::Frontend::DBRequests;
 use BSS::Frontend::Stats;
 
 ###############################################################################
@@ -33,7 +33,7 @@ sub initialize {
     my $db_login = 'oscars';
     my $password = 'ritazza6';
 
-    $self->{dbconn} = BSS::Frontend::Database->new(
+    $self->{dbconn} = BSS::Frontend::DBRequests->new(
                  'database' => 'DBI:mysql:BSS',
                  'dblogin' => $db_login,
                  'password' => $password)
@@ -49,14 +49,9 @@ sub initialize {
 sub find_pending_reservations  { 
     my ( $self, $time_interval ) = @_;
 
-    my $query = 'SELECT @@global.time_zone AS timezone';
-    my $rows = $self->{dbconn}->do_query( $query );
-    my $timezone = $rows->[0]->{timezone};
     my $status = 'pending';
-
-    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00') " .
-             "AS newtime";
-    $rows = $self->{dbconn}->do_query( $query, $time_interval, $timezone );
+    my $query = "SELECT now() + INTERVAL ? SECOND AS newtime";
+    my $rows = $self->{dbconn}->do_query( $query, $time_interval );
     my $timeslot = $rows->[0]->{new_time};
     $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
@@ -69,14 +64,9 @@ sub find_pending_reservations  {
 sub find_expired_reservations {
     my ( $self, $time_interval ) = @_;
 
-    my $query = 'SELECT @@global.time_zone AS timezone';
-    my $rows = $self->{dbconn}->do_query( $query );
-    my $timezone = $rows->[0]->{timezone};
     my $status = 'active';
-
-    $query = "SELECT CONVERT_TZ(now() + INTERVAL ? SECOND, ?, '+00:00')" .
-             " AS newtime";
-    $rows = $self->{dbconn}->do_query( $query, $time_interval, $timezone );
+    my $query = "SELECT now() + INTERVAL ? SECOND AS newtime";
+    my $rows = $self->{dbconn}->do_query( $query, $time_interval );
     my $timeslot = $rows->[0]->{new_time};
     $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
