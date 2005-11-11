@@ -57,23 +57,6 @@ sub initialize {
 ######
 
 ###############################################################################
-# get_debug_level:  gets current debug level (0: off, 1: on)
-#
-sub get_debug_level {
-    my( $self ) = @_;
-
-        # get default for now
-    my $query = 'SELECT server_debug ' .
-             'FROM servers WHERE server_id = 1';
-    my $rows = $self->do_query('', $query);
-    if (!$rows) {
-        throw Common::Exception("Could not find debug level.");
-    }
-    return( $rows->[0]->{server_debug} );
-}
-######
-
-###############################################################################
 #
 sub do_query {
     my( $self, $query, @args ) = @_;
