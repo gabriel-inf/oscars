@@ -1,7 +1,7 @@
 # RouteHandler.pm:  Finds ingress and egress router's and the path between
 #                   them.
 #
-# Last modified:  November 9, 2005
+# Last modified:  November 10, 2005
 # Jason Lee       (jrlee@lbl.gov)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -39,7 +39,8 @@ sub initialize {
 
     $self->{db_requests} = new BSS::Traceroute::DBRequests(
                                                'dbconn' => $self->{dbconn});
-    $self->{configs} = $self->{db_requests}->get_trace_configs()->[0];
+    $self->{trace_configs} = $self->{db_requests}->get_trace_configs()->[0];
+    $self->{pss_configs} = $self->{dbconn}->get_pss_configs()->[0];
 }
 ######
 
@@ -51,80 +52,127 @@ sub initialize {
 # TODO: validate input
 #
 sub find_interface_ids {
-    my ($self, $inref) = @_;
+    my( $self, $src_host, $dst_host, $ingress_ip, $egress_ip) = @_;
 
-    my( $ingress_interface_id, $egress_interface_id );
-    my( $loopback_ip, $path, $start_router );
+    my( $path );
 
+    print STDERR "$src_host, $dst_host, $ingress_ip, $egress_ip\n";
     $self->{output_buf} = "*********************\n";
-    $self->convert_addresses($inref);
-
     # If the loopbacks have not already been specified, use the default
     # router to run the traceroute to the source, and find the router with
     # an oscars loopback closest to the source 
-    if ($inref->{ingress_ip}) {
-        print STDERR "Ingress:  $inref->{ingress_ip}\n";
-        $ingress_interface_id = $self->{db_requests}->ip_to_xface_id(
-                                       $inref->{ingress_ip});
-        if ($ingress_interface_id != 0) {
-            $loopback_ip = $self->{db_requests}->xface_id_to_loopback(
-                                       $ingress_interface_id, 'ip');
-        }
-        else {
-            throw Common::Exception(
-                             "Ingress loopback is not a valid OSCARS router");
-        }
+    if ( !$ingress_ip ) {
+        ($ingress_ip, $path) = $self->find_route_to_src( $src_host );
+    }
+    my $ingress_interface_id = $self->find_interface_id($ingress_ip);
+    if (!$ingress_interface_id) {
+        throw Common::Exception(
+                         "Ingress loopback is not a valid OSCARS router");
+    }
+    print STDERR "Ingress loopback: $ingress_ip\n";
+
+    if ( !$egress_ip ) {
+        ($egress_ip, $path) = $self->find_route_to_dst($ingress_ip, $dst_host);
+    }
+    my $egress_interface_id = $self->find_interface_id($egress_ip);
+    if (!$egress_interface_id) {
+        throw Common::Exception(
+                         "Egress loopback is not a valid OSCARS router");
+    }
+    print STDERR "Egress loopback: $egress_ip\n";
+    return ( $ingress_interface_id, $egress_interface_id,
+             $self->{output_buf} );
+}
+######
+
+##############################################################################
+# get_pss_fields:   get default PSS config fields used in reservation
+#
+sub get_pss_fields {
+    my( $self ) = @_;
+
+        # class of service
+    my $reservation_class = $self->{pss_configs}->{pss_conf_CoS};
+    my $reservation_burst_limit = $self->{pss_configs}->{pss_conf_burst_limit};
+    return( $reservation_class, $reservation_burst_limit );
+}
+######
+
+##############################################################################
+# find_route_to_src:  use the default edge router to run a traceroute to the 
+#     source to find the OSCARS loopback of the ingress router 
+# IN:  source host
+# OUT: ingress loopback IP address, list of routers in path
+#
+sub find_route_to_src {
+    my( $self, $src_host ) = @_;
+
+    my( $ingress_loopback, $path );
+
+    # if source_host is a DNS name, convert to IP address
+    my $ipaddr = $self->name_to_ip($src_host);
+    if ( $self->{trace_configs}->{trace_conf_run_trace} )  {
+        # add to log
+        $self->{output_buf} .= "--traceroute:  " . 
+            "$self->{trace_configs}->{trace_conf_jnx_source} to source " .
+            "$ipaddr\n";
+        # do traceroute
+        ($ingress_loopback, $path) = $self->do_remote_trace(
+                    $self->{trace_configs}->{trace_conf_jnx_source}, $ipaddr);
     }
     else {
+        $self->{output_buf} .= "do_local_trace used\n";
+        ($ingress_loopback, $path) = $self->do_local_trace( $ipaddr );
+    }
+    return ( $ingress_loopback, $path );
+}
+######
+
+##############################################################################
+# find_route_to_dst:  Run a traceroute from the ingress loopback found by
+#     find_route_to_src to the destination host, and find the OSCARS
+#     loopback for the egress router
+# IN:  loopback IP of ingress router
+# OUT: egress loopback IP address, list of routers in path
+#
+sub find_route_to_dst {
+    my( $self, $loopback_ip, $dst_host ) = @_;
+
+    my( $egress_loopback, $path );
+
+    # if destination host is a DNS name, convert to IP address
+    my $ipaddr = $self->name_to_ip($dst_host);
+    if ( $self->{trace_configs}->{trace_conf_run_trace} )  {
+        # add to log
         $self->{output_buf} .= "--traceroute:  " .
-                              "$self->{configs}->{trace_conf_jnx_source} " .
-                              "to source $inref->{source_ip}\n";
-        ($ingress_interface_id, $loopback_ip, $path) =
-                $self->do_remote_trace(
-                              $self->{configs}->{trace_conf_jnx_source},
-                              $inref->{source_ip});
-        print STDERR "ingress:  past remote_trace\n";
-    }
-  
-    if ($inref->{egress_ip}) {
-        $egress_interface_id = $self->{db_requests}->ip_to_xface_id(
-                                       $inref->{egress_ip});
-        if ($egress_interface_id != 0) {
-            $loopback_ip = $self->{db_requests}->xface_id_to_loopback(
-                                      $egress_interface_id, 'ip');
-        }
-        else {
-            throw Common::Exception(
-                               "Egress loopback is not a valid OSCARS router");
-        }
+                               "$loopback_ip to destination $dst_host\n";
+        ($egress_loopback, $path) = $self->do_remote_trace($loopback_ip,
+                                                              $dst_host);
     }
     else {
-        # Use the address found in the last step to run the traceroute to the
-        # destination, and find the egress.
-        if ( $self->{configs}->{trace_conf_run_trace} )  {
-            $self->{output_buf} .= "--traceroute:  " .
-                       "$loopback_ip to destination $inref->{destination_ip}\n";
-            ($egress_interface_id, $loopback_ip, $path) =
-                    $self->do_remote_trace($loopback_ip,
-                                           $inref->{destination_ip});
-        } else {
-            $ingress_interface_id = $self->do_local_trace(
-                                                      $inref->{source_ip});
-        }
+        $self->{output_buf} .= "do_local_trace used\n";
+        ($egress_loopback, $path) = $self->do_local_trace( $ipaddr );
     }
+    return ( $egress_loopback, $path );
+}
+######
 
-    print STDERR "past the mess\n";
-    if (($ingress_interface_id == 0) || ($egress_interface_id == 0)) {
-        throw Common::Exception("Unable to find route.");
+##############################################################################
+# find_interface_id:  Find interface ID, if any, given loopback IP address
+# IN:  loopback IP address
+# OUT: interface ID
+#
+sub find_interface_id {
+    my ($self, $ipaddr) = @_;
+ 
+    my( $loopback );
+
+    my $interface_id = $self->{db_requests}->ip_to_xface_id($ipaddr);
+    if ($interface_id != 0) {
+        $loopback = $self->{db_requests}->xface_id_to_loopback(
+                                                         $interface_id, 'ip');
     }
-    ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
-            $inref->{reservation_path}) = $self->find_interface_ids($inref);
-
-    $inref->{ingress_interface_id} = $ingress_interface_id;
-    $inref->{egress_interface_id} = $egress_interface_id;
-    $inref->{reservation_path} = $path;
-    print STDERR "to the end of find_interface_ids\n";
-    return ( $self->{output_buf} );
+    return ( $interface_id );
 }
 ######
 
@@ -142,10 +190,11 @@ sub do_remote_trace {
 
     @path = ();
     # try to ping before traceing?
-    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($dst); }
-
+    if ($self->{trace_configs}->{trace_conf_use_ping}) {
+        $self->do_ping($dst);
+    }
     my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
-    $jnxTraceroute->traceroute($self->{configs}, $src, $dst);
+    $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst);
     print STDERR "past traceroute\n";
     @hops = $jnxTraceroute->get_hops();
     print STDERR "past get_hops\n";
@@ -157,7 +206,7 @@ sub do_remote_trace {
         print STDERR "hops = 0\n";
             # id is 0 if not an edge router (not in interfaces table)
         $interface_id = $self->{db_requests}->ip_to_xface_id(
-                               $self->{configs}->{trace_conf_jnx_source});
+                            $self->{trace_configs}->{trace_conf_jnx_source});
         print STDERR "past ip_to_xface_id\n";
         $loopback_ip = $self->{db_requests}->xface_id_to_loopback($interface_id,
                                                               'ip');
@@ -215,7 +264,7 @@ sub do_local_trace {
     my ($tr, $hops, $interface_id);
 
     # try to ping before traceing?
-    if ($self->{configs}->{trace_conf_use_ping}) { $self->do_ping($host); }
+    if ($self->{trace_configs}->{trace_conf_use_ping}) { $self->do_ping($host); }
     $tr = new Net::Traceroute->new( host=>$host, timeout=>30, 
             query_timeout=>3, max_ttl=>20 ) || return (0);
 
@@ -258,7 +307,7 @@ sub do_ping {
     my ( $self, $host ) = @_;
 
     # use sytem 'ping' command (should be config'd in config file
-    if ($self->{configs}->{trace_conf_use_system}) {
+    if ($self->{trace_configs}->{trace_conf_use_system}) {
         my @ping = `/bin/ping -w 10 -c 3 -n  $host`;
         for my $i (@ping) {
             if ( $i =~ /^64 bytes/ ) {  
@@ -281,46 +330,17 @@ sub do_ping {
 ######
 
 ##############################################################################
-# convert_addresses:  convert source and destination, and ingress and
-# egress to IP's, if necessary.
-sub convert_addresses{
-    my( $self, $inref ) = @_;
-
-    if (!($self->is_an_ip($inref->{source_host}))) {
-        $inref->{source_ip} =
-            inet_ntoa(inet_aton($inref->{source_host}));
-    }
-    else { $inref->{source_ip} = $inref->{source_host}; }
-    if (!($self->is_an_ip($inref->{destination_host}))) {
-        $inref->{destination_ip} =
-            inet_ntoa(inet_aton($inref->{destination_host}));
-    }
-    else { $inref->{destination_ip} = $inref->{destination_host}; }
-
-    if ($inref->{ingress_router}) {
-        if (!($self->is_an_ip($inref->{ingress_router}))) {
-            $inref->{ingress_ip} =
-                inet_ntoa(inet_aton($inref->{ingress_router}));
-        }
-        else { $inref->{ingress_ip} = $inref->{ingress_router}; }
-    }
-    if ($inref->{egress_router}) {
-        if (!($self->is_an_ip($inref->{egress_router}))) {
-            $inref->{egress_ip} =
-                 inet_ntoa(inet_aton($inref->{egress_router}));
-        }
-        else { $inref->{egress_ip} = $inref->{egress_router}; }
-    }
-}
-######
-
-################################################################################
-sub is_an_ip {
+# name_to_ip:  convert host name to IP address if it isn't already one
+# In:   host name or IP
+# Out:  host IP address
+#
+sub name_to_ip{
     my( $self, $host ) = @_;
 
+    # last group is to handle CIDR blocks
     my $regexp = '\d+\.\d+\.\d+\.\d+(/\d+)*';
-    if ($host =~ $regexp) { return 1; }
-    else { return 0; }
+    if ($host !~ $regexp) { return( inet_ntoa(inet_aton($host)) ); }
+    else { return $host; }
 }
 ######
 
