@@ -123,10 +123,8 @@ sub setup_times {
     my( $duration_seconds, $infinite_time );
 
     # Expects strings in second since epoch; converts to date in UTC time
-    my $query = "SELECT CONVERT_TZ(from_unixtime(?), ?, '+00:00')" .
-                " AS start_time";
-    my $rows = $self->do_query( $query, $inref->{reservation_start_time},
-                                $inref->{reservation_time_zone});
+    my $query = "SELECT from_unixtime(?) AS start_time";
+    my $rows = $self->do_query( $query, $inref->{reservation_start_time});
     $inref->{reservation_start_time} = $rows->[0]->{start_time};
     if ($inref->{duration_hour} < (2**31 - 1)) {
         $duration_seconds = $inref->{duration_hour} * 3600;
@@ -138,9 +136,9 @@ sub setup_times {
     else {
         $inref->{reservation_end_time} = $infinite_time;
     }
-    $query = "SELECT CONVERT_TZ(now(), ?, '+00:00') AS time_zone";
-    $rows = $self->do_query( $query, $inref->{reservation_time_zone} );
-    $inref->{reservation_created_time} = $rows->[0]->{time_zone};
+    $query = "SELECT now() AS created_time";
+    $rows = $self->do_query( $query );
+    $inref->{reservation_created_time} = $rows->[0]->{created_time};
 }
 ######
 
