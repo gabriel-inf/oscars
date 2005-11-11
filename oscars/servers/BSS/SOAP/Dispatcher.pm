@@ -3,11 +3,7 @@
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
 
-package Dispatcher;
-
-use lib qw(/usr/local/esnet/servers/prod);
-
-print STDERR "BSS::SOAP::Dispatcher\n";
+package BSS::SOAP::Dispatcher;
 
 use Data::Dumper;
 use Error qw(:try);
@@ -19,7 +15,7 @@ use BSS::Frontend::Validator;
 my $db_login = 'oscars';
 my $password = 'ritazza6';
 
-my $dbconn = BSS::Frontend::Database->new(
+my $dbconn = BSS::Frontend::DBRequests->new(
                  'database' => 'DBI:mysql:BSS',
                  'dblogin' => $db_login,
                  'password' => $password)
