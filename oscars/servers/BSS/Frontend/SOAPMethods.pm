@@ -6,7 +6,7 @@
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 9, 2005
+# Last modified:  November 10, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -91,8 +91,17 @@ sub insert_reservation {
     my( $self, $inref ) = @_;
     my( $duration_seconds );
 
-    my $output_buf = $self->{route_setup}->find_interface_ids( $inref );
+    my( $output_buf ) = @_;
+    ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
+        $inref->{reservation_path}, $output_buf) =
+                    $self->{route_setup}->find_interface_ids(
+                            $inref->{source_host}, $inref->{destination_host},
+                            $inref->{ingress_router}, $inref->{egress_router});
     print STDERR "past find_interface_ids\n";
+
+    ( $inref->{reservation_class}, $inref->{reservation_burst_limit} ) =
+                    $self->{route_setup}->get_pss_fields();
+
     if (($inref->{ingress_interface_id} == 0) ||
         ($inref->{egress_interface_id} == 0))
     {
@@ -258,12 +267,7 @@ sub get_infinite_time {
 sub fill_fields {
     my( $self, $inref );
 
-    $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
     $inref->{reservation_id} = 'NULL';
-        # class of service
-    $inref->{reservation_class} = $self->{pss_configs}->{pss_conf_CoS};
-    $inref->{reservation_burst_limit} =
-                                $self->{pss_configs}->{pss_conf_burst_limit};
     $inref->{reservation_status} = 'pending';
     $inref->{reservation_tag} = $inref->{user_dn} . '.' .
         $self->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
