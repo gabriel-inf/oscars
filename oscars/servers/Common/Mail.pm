@@ -11,18 +11,14 @@ use strict;
 use Data::Dumper;
 
 ###############################################################################
+#
 sub new {
-    my $invocant = shift;
-    my $_class = ref($invocant) || $invocant;
-    my ($self) = {@_};
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
   
-    # Bless $self into designated class.
-    bless($self, $_class);
-  
-    # Initialize.
+    bless( $self, $class );
     $self->initialize();
-  
-    return($self);
+    return( $self );
 }
 
 sub initialize {

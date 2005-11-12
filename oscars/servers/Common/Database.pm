@@ -1,7 +1,7 @@
 package Common::Database;
 
-# Database.pm:  superclass for AAAS and BSS database handling
-# Last modified: November 5, 2005
+# Database.pm:    superclass for AAAS and BSS database handling
+# Last modified:  November 11, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang (dapi@umich.edu)
 
@@ -13,18 +13,14 @@ use Error;
 use Common::Exception;
 
 ###############################################################################
+#
 sub new {
-    my $invocant = shift;
-    my $_class = ref($invocant) || $invocant;
-    my ($_self) = {@_};
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
   
-    # Bless $_self into designated class.
-    bless($_self, $_class);
-  
-    # Initialize.
-    $_self->initialize();
-  
-    return($_self);
+    bless( $self, $class );
+    $self->initialize();
+    return( $self );
 }
 
 sub initialize {
