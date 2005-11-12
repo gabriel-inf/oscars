@@ -17,19 +17,17 @@ use Common::Database;
 our @ISA = qw(Common::Database);
 
 ###############################################################################
+#
 sub new {
-    my $invocant = shift;
-    my $_class = ref($invocant) || $invocant;
-    my ($_self) = {@_};
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
   
-    # Bless $_self into designated class.
-    bless($_self, $_class);
-  
-    # Initialize.
-    $_self->initialize();
-  
-    return($_self);
+    bless( $self, $class );
+    # call super-classes initialize method
+    $self->initialize();
+    return( $self );
 }
+
 
 ###############################################################################
 #

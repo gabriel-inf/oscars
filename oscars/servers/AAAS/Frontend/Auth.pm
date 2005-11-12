@@ -15,18 +15,16 @@ use Common::Exception;
 use Data::Dumper;
 
 ###############################################################################
+#
 sub new {
-    my ($_class, %_args) = @_;
-    my ($_self) = {%_args};
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
   
-    # Bless $_self into designated class.
-    bless($_self, $_class);
-  
-    # Initialize.
-    $_self->initialize();
-  
-    return($_self);
+    bless( $self, $class );
+    $self->initialize();
+    return( $self );
 }
+
 
 sub initialize {
     my ($self) = @_;
