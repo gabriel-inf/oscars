@@ -20,18 +20,15 @@ use BSS::Traceroute::DBRequests;
 use strict;
 
 
-##############################################################################
+###############################################################################
+#
 sub new {
-    my ($class, %args) = @_;
-    my ($self) = {%args};
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
   
-    # Bless $self into designated class.
-    bless($self, $class);
-  
-    # Initialize.
+    bless( $self, $class );
     $self->initialize();
-
-    return($self);
+    return( $self );
 }
 
 sub initialize {

@@ -24,17 +24,13 @@ use strict;
 # Input:  <none>
 # Output: new object
 #
-sub new
-{
-    my ($class, %args) = @_;
-    my ($self) = {%args};
-
-    # Bless $self into designated class.
-    bless($self, $class);
-
-    # Initialize.
+sub new {
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
+  
+    bless( $self, $class );
     $self->initialize();
-    return($self);
+    return( $self );
 }
 ######
 

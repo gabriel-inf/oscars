@@ -1,5 +1,5 @@
 # DBRequests.pm:  Database handling for BSS/Traceroute/RouteHandler.pm
-# Last modified:  November 9, 2005
+# Last modified:  November 11, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -9,18 +9,16 @@ use strict;
 
 use Data::Dumper;
 
+
 ###############################################################################
+#
 sub new {
-    my ($_class, %_args) = @_;
-    my ($_self) = {%_args};
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
   
-    # Bless $_self into designated class.
-    bless($_self, $_class);
-  
-    # Initialize.
-    $_self->initialize();
-  
-    return($_self);
+    bless( $self, $class );
+    $self->initialize();
+    return( $self );
 }
 
 sub initialize {
