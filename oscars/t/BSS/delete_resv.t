@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use BSS::Client::SOAPClient;
+use SOAP::Lite;
 
 my( %params );
 
@@ -15,10 +15,15 @@ if ($numArgs < 2) {
 $params{'reservation_id'} = $ARGV[0];
 $params{'user_dn'} = $ARGV[1];
 
+$params{server_name} = 'BSS';
 $params{method} = 'delete_reservation';
-my $som = bss_dispatcher(\%params);
+my $soap_server = SOAP::Lite
+    ->uri('http://198.128.14.164/Dispatcher')
+    ->proxy('https://198.128.14.164/SOAP');
+
+my $som = $soap_server->dispatch(\%params);
 if ($som->faultstring) {
-    print STDERR $som->faultstring;
+    print STDERR $som->faultstring, "\n";
     exit;
 }
 my $results = $som->result;

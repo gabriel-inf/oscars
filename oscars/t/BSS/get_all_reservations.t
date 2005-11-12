@@ -9,12 +9,13 @@ use Data::Dumper;
 my( %params );
 my $numArgs = $#ARGV + 1;
 
+$params{server_name} = 'BSS';
 $params{method} = 'get_all_reservations';
-my $aaas_server = SOAP::Lite
+my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/BSS');
+    ->proxy('https://198.128.14.164/SOAP');
 
-my $som = $aaas_server->dispatch(\%params);
+my $som = $soap_server->dispatch(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";
     exit;

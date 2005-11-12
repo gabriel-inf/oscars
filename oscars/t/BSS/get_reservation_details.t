@@ -18,11 +18,12 @@ else {
 }
 
 $params{method} = 'get_reservation_details';
-my $aaas_server = SOAP::Lite
+$params{server_name} = 'BSS';
+my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/BSS');
+    ->proxy('https://198.128.14.164/SOAP');
 
-my $som = $aaas_server->dispatch(\%params);
+my $som = $soap_server->dispatch(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n";
     exit;
