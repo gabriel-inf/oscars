@@ -20,21 +20,18 @@ use Common::Exception;
 
 our @ISA = qw(Common::Database);
 
-##############################################################################
-sub new {
-    my $invocant = shift;
-    my $_class = ref($invocant) || $invocant;
-    my ($_self) = {@_};
-  
-    # Bless $_self into designated class.
-    bless($_self, $_class);
-  
-    # Initialize.
-    $_self->initialize();
-  
-    return($_self);
-}
 
+###############################################################################
+#
+sub new {
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
+  
+    bless( $self, $class );
+    # call super-class's initialize
+    $self->initialize();
+    return( $self );
+}
 ######
 
 ###############################################################################

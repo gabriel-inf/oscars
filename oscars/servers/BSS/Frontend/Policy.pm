@@ -15,17 +15,14 @@ use Common::Exception;
 use BSS::Frontend::DBRequests;
 
 ###############################################################################
+#
 sub new {
-    my ($_class, %_args) = @_;
-    my ($self) = {%_args};
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
   
-    # Bless $self into designated class.
-    bless($self, $_class);
-  
-    # Initialize.
+    bless( $self, $class );
     $self->initialize();
-  
-    return($self);
+    return( $self );
 }
 
 sub initialize {
