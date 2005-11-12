@@ -14,14 +14,15 @@ print STDERR "\n";
 chomp($password);
 
 my %params = ('user_dn' => 'dwrobertson@lbl.gov', 'user_password' => $password);
+$params{server_name} = 'AAAS';
 $params{method} = 'verify_login';
-my $aaas_server = SOAP::Lite
+my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/AAAS');
+    ->proxy('https://198.128.14.164/SOAP');
     #->uri('http://127.0.0.1/Dispatcher')
-    #->proxy('https://127.0.0.1/AAAS');
+    #->proxy('https://127.0.0.1/SOAP');
 
-my $som = $aaas_server->dispatch(\%params);
+my $som = $soap_server->dispatch(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring, "\n\n";
     exit;

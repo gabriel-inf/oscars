@@ -8,12 +8,13 @@ use Data::Dumper;
 my($data, $row, $key, $value);
 my %params = ('user_dn' => 'dwrobertson@lbl.gov',
               'user_level' => 'admin' );
+$params{server_name} = 'AAAS';
 $params{method} = 'get_userlist';
-my $aaas_server = SOAP::Lite
+my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/AAAS');
+    ->proxy('https://198.128.14.164/SOAP');
 
-my $som = $aaas_server->dispatch(\%params);
+my $som = $soap_server->dispatch(\%params);
 if ($som->faultstring) {
     print STDERR $som->faultstring;
     exit;
