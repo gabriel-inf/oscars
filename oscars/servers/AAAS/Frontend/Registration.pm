@@ -49,9 +49,9 @@ sub activate_account {
     $self->{auth}->authorized($inref->{user_level}, $required_level, 1);
 
     # get the password from the database
-    my $query = "SELECT user_password, user_activation_key, user_level
+    my $statement = "SELECT user_password, user_activation_key, user_level
                  FROM users WHERE user_dn = ?";
-    my $rows = $self->{dbconn}->do_query($query, $user_dn);
+    my $rows = $self->{dbconn}->do_query($statement, $user_dn);
 
     # check whether this person is a registered user
     if (!$rows) {
@@ -83,9 +83,9 @@ sub activate_account {
     if ( $keys_match ) {
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
-        $query = "UPDATE users SET user_level = ?, pending_level = ?,
+        $statement = "UPDATE users SET user_level = ?, pending_level = ?,
                   user_activation_key = '' WHERE user_dn = ?";
-        my $unused = $self->{dbconn}->do_query($query, $pending_level,
+        my $unused = $self->{dbconn}->do_query($statement, $pending_level,
                                          $user_dn);
     }
     else {
@@ -116,17 +116,17 @@ sub process_registration {
     my $current_date_time = $inref->{utc_seconds};
 	
     # login name overlap check
-    my $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    my $rows = $self->{dbconn}->do_query($query, $user_dn);
+    my $statement = "SELECT user_dn FROM users WHERE user_dn = ?";
+    my $rows = $self->{dbconn}->do_query($statement, $user_dn);
 
     if ( scalar(@$rows) > 0 ) {
         throw Common::Exception("The selected login name is already taken " .
                    "by someone else; please choose a different login name.");
     }
 
-    $query = "INSERT INTO users VALUES ( " .
+    $statement = "INSERT INTO users VALUES ( " .
                               "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-    my $unused = $self->{dbconn}->do_query($query, @insertions);
+    my $unused = $self->{dbconn}->do_query($statement, @insertions);
 
     $results->{status_msg} = "Your user registration has been recorded " .
         "successfully. Your login name is <strong>$user_dn</strong>. Once " .
@@ -153,8 +153,8 @@ sub add_user {
     my $encrypted_password = $inref->{password_once};
 
     # login name overlap check
-    my $query = "SELECT user_dn FROM users WHERE user_dn = ?";
-    my $rows = $self->{dbconn}->do_query($query, $user_dn);
+    my $statement = "SELECT user_dn FROM users WHERE user_dn = ?";
+    my $rows = $self->{dbconn}->do_query($statement, $user_dn);
 
     if ( scalar(@$rows) > 0 ) {
         throw Common::Exception("The login, $user_dn, is already taken " .
@@ -168,8 +168,8 @@ sub add_user {
     }
 
     $inref->{user_password} = crypt($inref->{password_new_once}, 'oscars');
-    $query = "SHOW COLUMNS from users";
-    $rows = $self->{dbconn}->do_query( $query );
+    $statement = "SHOW COLUMNS from users";
+    $rows = $self->{dbconn}->do_query( $statement );
 
     my @insertions;
     # TODO:  FIX way to get insertions fields
@@ -181,10 +181,10 @@ sub add_user {
        else{ push(@insertions, 'NULL'); }
     }
 
-    $query = "INSERT INTO users VALUES ( " .
+    $statement = "INSERT INTO users VALUES ( " .
              join( ', ', ('?') x @insertions ) . " )";
              
-    my $unused = $self->{dbconn}->do_query($query, @insertions);
+    my $unused = $self->{dbconn}->do_query($statement, @insertions);
     # X out password
     $results->{user_password} = undef;
     return( $results );
