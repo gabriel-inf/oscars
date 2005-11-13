@@ -8,7 +8,6 @@ use Error qw(:try);
 
 use lib qw(/usr/local/esnet/servers/prod);
 
-use Common::Exception;
 use AAAS::Frontend::SOAPMethods;
 use AAAS::Frontend::Validator;
 use AAAS::Frontend::Database;
@@ -34,11 +33,11 @@ sub dispatch {
     try {
         my $v = AAAS::Frontend::Validator->new();
         my $err = $v->validate($inref);
-        if ($err) { throw Common::Exception($err); }
+        if ($err) { throw Error::Simple($err); }
         my $m = $inref->{method};
         $results = $request_handler->$m($inref);
     }
-    catch Common::Exception with {
+    catch Error::Simple with {
         $ex = shift;
     }
     otherwise {
