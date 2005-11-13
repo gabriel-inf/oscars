@@ -30,10 +30,8 @@ if ($som->faultstring) {
 }
 my $results = $som->result;
 
-my ($rows, $r, $f, %c);
-
-$rows = $results->{rows};
-for $r (@$rows) {
+my ($r, $f, %c);
+for $r (@$results) {
     for $f (keys %$r) {
         if (defined($r->{$f})) {
             print "$f -> $r->{$f}\n";

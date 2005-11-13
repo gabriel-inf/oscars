@@ -22,10 +22,9 @@ if ($som->faultstring) {
 }
 my $results = $som->result;
 
-my ($rows, $r, $f, %c);
+my ($r, $f, %c);
 
-$rows = $results->{rows};
-for $r (@$rows) {
+for $r (@$results) {
     for $f (keys %$r) {
         if (defined($r->{$f})) {
             print "$f -> $r->{$f}\n";

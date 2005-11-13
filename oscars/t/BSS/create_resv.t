@@ -16,7 +16,7 @@ $params{reservation_bandwidth} =      '10';
 $params{reservation_protocol} =       'udp';
 
 $params{source_host} = 'nettrash3.es.net';
-$params{destination_host} = 'atl-cr1.es.net';
+$params{destination_host} = 'dc-cr1.es.net';
 
 $params{user_dn} =        'dwrobertson@lbl.gov';
 $params{reservation_description} =    'This is a test.';
@@ -33,9 +33,6 @@ if ($som->faultstring) {
     exit;
 }
 my $results = $som->result;
-my $rows = $results->{rows};
-my $r;
-for $r (@$rows) {
-    print STDERR "Your reservation has been processed " .
-        "successfully. Your reservation ID number is $r->{reservation_id}.\n";
-}
+print STDERR Dumper($results);
+print STDERR "Your reservation has been processed successfully. Your " .
+   "reservation ID number is $results->{reservation_id}.\n";
