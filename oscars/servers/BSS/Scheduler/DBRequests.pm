@@ -47,12 +47,12 @@ sub find_pending_reservations  {
     my ( $self, $time_interval ) = @_;
 
     my $status = 'pending';
-    my $query = "SELECT now() + INTERVAL ? SECOND AS newtime";
-    my $rows = $self->{dbconn}->do_query( $query, $time_interval );
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS newtime";
+    my $rows = $self->{dbconn}->do_query( $statement, $time_interval );
     my $timeslot = $rows->[0]->{new_time};
-    $query = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
+    $statement = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
-    $rows = $self->{dbconn}->do_query($query, $status, $timeslot);
+    $rows = $self->{dbconn}->do_query($statement, $status, $timeslot);
     return( "", $rows );
 }
 ######
@@ -62,12 +62,12 @@ sub find_expired_reservations {
     my ( $self, $time_interval ) = @_;
 
     my $status = 'active';
-    my $query = "SELECT now() + INTERVAL ? SECOND AS newtime";
-    my $rows = $self->{dbconn}->do_query( $query, $time_interval );
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS newtime";
+    my $rows = $self->{dbconn}->do_query( $statement, $time_interval );
     my $timeslot = $rows->[0]->{new_time};
-    $query = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
+    $statement = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
-    $rows = $self->{dbconn}->do_query($query, $status, $timeslot,
+    $rows = $self->{dbconn}->do_query($statement, $status, $timeslot,
                                       'precancel' );
     return( $rows );
 }
@@ -79,9 +79,9 @@ sub get_time_intervals {
     my( $self ) = @_;
 
         # just use defaults for now
-    my $query = "SELECT server_db_poll_time, server_time_interval" .
+    my $statement = "SELECT server_db_poll_time, server_time_interval" .
              " FROM servers WHERE server_id = 1";
-    my $rows = $self->{dbconn}->do_query( $query );
+    my $rows = $self->{dbconn}->do_query( $statement );
     return( $rows->[0]->{server_db_poll_time},
             $rows->[0]->{server_time_interval} );
 }
@@ -92,19 +92,19 @@ sub get_time_intervals {
 sub get_lsp_stats {
     my( $self, $resv, $status ) = @_;
 
-    my $query = "SELECT CONVERT_TZ(now(), '+00:00', ?) AS newtime";
-    my $rows = $self->{dbconn}->do_query( $query,
+    my $statement = "SELECT CONVERT_TZ(now(), '+00:00', ?) AS newtime";
+    my $rows = $self->{dbconn}->do_query( $statement,
                                           $resv->{reservation_time_zone});
     my $config_time = $rows->[0]->{newtime};
     # convert to seconds before sending back
-    $query = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
-    $rows = $self->{dbconn}->do_query( $query, $resv->{reservation_start_time},
+    $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
+    $rows = $self->{dbconn}->do_query( $statement, $resv->{reservation_start_time},
                                        $resv->{reservation_time_zone} );
     $resv->{reservation_start_time} = $rows->[0]->{newtime};
-    $rows = $self->{dbconn}->do_query( $query, $resv->{reservation_end_time},
+    $rows = $self->{dbconn}->do_query( $statement, $resv->{reservation_end_time},
                                        $resv->{reservation_time_zone} );
     $resv->{reservation_end_time} = $rows->[0]->{newtime};
-    $rows = $self->{dbconn}->do_query( $query,
+    $rows = $self->{dbconn}->do_query( $statement,
                                        $resv->{reservation_created_time},
                                        $resv->{reservation_time_zone} );
     $resv->{reservation_created_time} = $rows->[0]->{newtime};
