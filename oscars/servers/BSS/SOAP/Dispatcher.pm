@@ -8,8 +8,8 @@ package BSS::SOAP::Dispatcher;
 use Data::Dumper;
 use Error qw(:try);
 
-use Common::Exception;
 use BSS::Frontend::SOAPMethods;
+use BSS::Frontend::DBRequests;
 use BSS::Frontend::Validator;
 
 my $db_login = 'oscars';
@@ -30,7 +30,6 @@ sub dispatch {
 
     my ( $logging_buf, $ex );
 
-    print STDERR "BSS::SOAP::Dispatcher->dispatch() called\n";
     my $results = {};
     try {
         $v = BSS::Frontend::Validator->new();
@@ -38,7 +37,7 @@ sub dispatch {
         my $m = $inref->{method};
         ($results, $logging_buf) = $request_handler->$m($inref) ;
     }
-    catch Common::Exception with {
+    catch Error::Simple with {
         $ex = shift;
     }
     otherwise {
