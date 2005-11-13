@@ -10,8 +10,6 @@ package BSS::Traceroute::JnxTraceroute;
 use Data::Dumper;
 use Error qw(:try);
 
-use Common::Exception;
-
 use strict;
 
 
@@ -46,7 +44,7 @@ sub traceroute
 
     # Clear error message.
     if ( !defined($src) || !defined($dst) )  {
-        throw Common::Exception("Traceroute source or destination not defined.");
+        throw Error::Simple("Traceroute source or destination not defined.");
     }
 
     # Remove subnet mask if necessary.
@@ -60,7 +58,7 @@ sub traceroute
            "$configs->{trace_conf_ttl}";
     print STDERR "$cmd\n";
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
-        throw Common::Exception("Unable to ssh into router and perform traceroute.");
+        throw Error::Simple("Unable to ssh into router and perform traceroute.");
     }
 
     # Reset hop information.
@@ -78,6 +76,7 @@ sub traceroute
         $self->{hops}[$hopCount] = $1;
         $hopCount++;
     }
+    close(_TRACEROUTE_);
     return(1);
 }
 ######
