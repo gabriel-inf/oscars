@@ -79,7 +79,7 @@ sub verify_login {
     my $query = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
     my $rows = $self->{dbconn}->do_query($query, $user_dn);
     # Make sure user exists.
-    if (!$rows) {
+    if (!@$rows) {
         throw Common::Exception("Please check your login name and try again.");
     }
     # compare passwords
@@ -111,7 +111,9 @@ sub get_profile {
     my $rows = $self->{dbconn}->do_query($query, $inref->{user_dn});
 
     # check whether this person is a registered user
-    if (!$rows) {
+    # (love that syntax:  testing for rows will not work because ref not
+    #  empty)
+    if (!@$rows) {
         throw Common::Exception("No such user.");
     }
 
@@ -121,7 +123,7 @@ sub get_profile {
                                      $rows->[0]->{institution_id});
 
     # check whether this organization is in the db
-    if (!$irows) {
+    if (!@$irows) {
         throw Common::Exception("No such organization recorded.");
     }
 
@@ -159,7 +161,7 @@ sub set_profile {
     my $rows = $self->{dbconn}->do_query($query, $user_dn);
 
     # check whether this person is in the database
-    if (!$rows) {
+    if (!@$rows) {
         throw Common::Exception("The user $user_dn does not have an OSCARS login.");
     }
 

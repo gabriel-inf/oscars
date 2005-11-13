@@ -37,7 +37,7 @@ sub get_institution_id {
     my $query = "SELECT institution_id FROM institutions
                 WHERE institution_name = ?";
     my $rows = $self->do_query($inref->{institution});
-    if (!$rows) {
+    if (!@$rows) {
         throw Common::Exception("The organization " .
                    "$inref->{institution} is not in the database.");
     }
