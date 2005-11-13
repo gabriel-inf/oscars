@@ -1,7 +1,7 @@
 # Policy.pm:  database handling for policy related matters
-# Last modified: November 9, 2005
+# Last modified:   November 12, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 package BSS::Frontend::Policy;
 
@@ -11,7 +11,6 @@ use DBI;
 use Data::Dumper;
 use Error qw(:try);
 
-use Common::Exception;
 use BSS::Frontend::DBRequests;
 
 ###############################################################################
@@ -41,20 +40,20 @@ sub initialize {
 # OUT: valid (0 or 1), and error message
 #
 sub check_oversubscribe {
-    my ( $self, $inref) = @_;
+    my( $self, $inref) = @_;
 
-    my( $query, $reservations );
-    my ( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
-    my ( $router_name );
+    my( $reservations );
+    my( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
+    my( $router_name );
     # maximum utilization for a particular link
-    my ( $max_utilization );
+    my( $max_utilization );
 
     # XXX: what is the MAX percent we can allocate? for now 50% ...
-    my ( $max_reservation_utilization ) = 0.50; 
+    my( $max_reservation_utilization ) = 0.50; 
 
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
-    $query = "SELECT reservation_bandwidth, reservation_start_time,
+    my $statement = "SELECT reservation_bandwidth, reservation_start_time,
               reservation_end_time, reservation_path FROM reservations
               WHERE reservation_end_time >= ? AND
                   reservation_start_time <= ? AND
@@ -62,7 +61,7 @@ sub check_oversubscribe {
                    reservation_status = 'active')";
 
     # handled query with the comparison start & end datetime strings
-    $reservations = $self->{dbconn}->do_query( $query,
+    $reservations = $self->{dbconn}->do_query( $statement,
            $inref->{reservation_start_time}, $inref->{reservation_end_time});
 
     # assign the new path bandwidths 
@@ -86,7 +85,7 @@ sub check_oversubscribe {
         if (!$row ) { next; }
 
         if ( $row->{interface_valid} eq 'False' ) {
-            throw Common::Exception("interface $idx not valid");
+            throw Error::Simple("interface $idx not valid");
         }
  
         $max_utilization = $row->{interface_speed} *
@@ -95,12 +94,11 @@ sub check_oversubscribe {
             my $error_msg;
             # only print router name if user has admin privileges
             if ($inref->{form_type} eq 'admin') {
-                $router_name = $self->{dbconn}->xface_id_to_loopback(
-                                                                 $idx, 'name');
+                $router_name = $self->{dbconn}->id_to_router_name( $idx );
                 $error_msg = "$router_name oversubscribed: ";
             }
             else { $error_msg = "Route oversubscribed: "; }
-            throw Common::Exception($error_msg . " " . $iface_idxs{$idx} .
+            throw Error::Simple($error_msg . " " . $iface_idxs{$idx} .
                   " Mbps > " .  $max_utilization . " Mbps" . "\n");
         }
     }
@@ -125,8 +123,8 @@ sub check_oversubscribe {
 sub get_interface_fields {
     my( $self, $iface_id) = @_;
 
-    my $query = "SELECT * FROM interfaces WHERE interface_id = ?";
-    my $rows = $self->{dbconn}->do_query($query, $iface_id);
+    my $statement = "SELECT * FROM interfaces WHERE interface_id = ?";
+    my $rows = $self->{dbconn}->do_query($statement, $iface_id);
     return ( $rows->[0] );
 }
 ######

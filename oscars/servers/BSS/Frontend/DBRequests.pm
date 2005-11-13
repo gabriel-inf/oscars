@@ -1,25 +1,15 @@
-# DBRequests.pm:  database request methods for front end
-#               inherits from Common::Database
-# Last modified: November 8, 2005
-# David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
-# Jason Lee (jrlee@lbl.gov)
-
 package BSS::Frontend::DBRequests;
 
-use strict; 
+# DBRequests.pm:   package for BSS database request handling
+# Last modified:   November 12, 2005
+# David Robertson (dwrobertson@lbl.gov)
 
-use Socket;
+use strict;
 
 use DBI;
 use Data::Dumper;
 use Error qw(:try);
-
-use Common::Database;
-use Common::Exception;
-
-our @ISA = qw(Common::Database);
-
+use Socket;
 
 ###############################################################################
 #
@@ -28,9 +18,56 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    # call super-class's initialize
     $self->initialize();
     return( $self );
+}
+
+sub initialize {
+    my ( $self ) = @_;
+
+    my ( %attr ) = (
+        RaiseError => 0,
+        PrintError => 0,
+    );
+    # I couldn't find a foolproof way to check for timeout; Apache::DBI
+    # came closest, but it was too dependent on the driver handling the timeout
+    # correctly.  So instead,
+    # if a handle is left over from a previous session, attempts to disconnect.
+    # If it was timed out, the error is ignored.
+    # TODO:  FIX disconnect every time
+    if ($self->{dbh}) {
+        $self->{dbh}->disconnect();
+    }
+    $self->{dbh} = DBI->connect(
+                 $self->{database}, 
+                 $self->{dblogin}, 
+                 $self->{password},
+                 \%attr);
+    if (!$self->{dbh}) {
+        throw Error::Simple( "Unable to make database connection: $DBI::errstr");
+    }
+    return;
+}
+######
+
+###############################################################################
+#
+sub do_query {
+    my( $self, $statement, @args ) = @_;
+
+    # TODO, FIX:  selectall_arrayref probably better
+    my $sth = $self->{dbh}->prepare( $statement );
+    if ($DBI::err) {
+        throw Error::Simple("[DBERROR] Preparing $statement:  $DBI::errstr");
+    }
+    $sth->execute( @args );
+    if ( $DBI::err ) {
+        throw Error::Simple("[DBERROR] Executing $statement:  $DBI::errstr");
+    }
+    my $rows = $sth->fetchall_arrayref({});
+    # TODO, FIX:  if check for err here, get fetch without execute if not
+    # select
+    return( $rows );
 }
 ######
 
@@ -41,9 +78,9 @@ sub new {
 sub update_status {
     my ( $self, $inref, $status ) = @_;
 
-    my $query = qq{ SELECT reservation_status from reservations
+    my $statement = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
-    my $rows = $self->do_query($query, $inref->{reservation_id});
+    my $rows = $self->do_query($statement, $inref->{reservation_id});
 
     # If the previous state was pending_cancel, mark it now as cancelled.
     # If the previous state was pending, and it is to be deleted, mark it
@@ -55,9 +92,9 @@ sub update_status {
             ($status eq 'precancel'))) { 
         $status = 'cancelled';
     }
-    $query = qq{ UPDATE reservations SET reservation_status = ?
+    $statement = qq{ UPDATE reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
-    my $unused = $self->do_query($query, $status, $inref->{reservation_id});
+    my $unused = $self->do_query($statement, $status, $inref->{reservation_id});
     return( $status );
 }
 ######
@@ -68,7 +105,7 @@ sub get_pss_configs {
     my( $self ) = @_;
 
         # use defaults for now
-    my $query = "SELECT " .
+    my $statement = "SELECT " .
              "pss_conf_access, pss_conf_login, pss_conf_passwd, " .
              "pss_conf_firewall_marker, " .
              "pss_conf_setup_file, pss_conf_teardown_file, " .
@@ -77,35 +114,79 @@ sub get_pss_configs {
              "pss_conf_setup_priority, pss_conf_resv_priority, " .
              "pss_conf_allow_lsp "  .
              "FROM pss_confs where pss_conf_id = 1";
-    my $configs = $self->do_query($query);
+    my $configs = $self->do_query($statement);
     return( $configs );
+}
+######
+
+##############################################################################
+# id_to_router_name:  get the router name given the interface primary key.
+# In:  interface table key id
+# Out: router name
+#
+sub id_to_router_name {
+    my( $self, $interface_id ) = @_;
+
+    my $statement = "SELECT router_name FROM routers
+                 WHERE router_id = (SELECT router_id from interfaces
+                                    WHERE interface_id = ?)";
+    my $rows = $self->do_query($statement, $interface_id);
+    # no match
+    if ( !@$rows ) {
+        # not considered an error
+        return ("");
+    }
+    return ($rows->[0]->{router_name}, "");
+}
+######
+
+##############################################################################
+# hostaddrs_ip_to_id:  get the primary key in the hostaddrs table, given an
+#     IP address.  A row is created if that address is not present.
+# In:  hostaddr_ip
+# Out: hostaddr_id
+#
+sub hostaddrs_ip_to_id {
+    my( $self, $ipaddr ) = @_;
+    my( $id );
+
+    my $statement = 'SELECT hostaddr_id FROM hostaddrs WHERE hostaddr_ip = ?';
+    my $rows = $self->do_query($statement, $ipaddr);
+    # if no matches, insert a row in hostaddrs
+    if ( !@$rows ) {
+        $statement = "INSERT INTO hostaddrs VALUES ( NULL, '$ipaddr'  )";
+        my $unused = $self->do_query($statement);
+        $id = $self->{dbh}->{mysql_insertid};
+    }
+    else {
+        $id = $rows->[0]->{hostaddr_id};
+    }
+    return( $id );
 }
 ######
 
 ##############################################################################
 #
 sub get_host_info {
-    my( $self, $resvrows ) = @_;
+    my( $self, $resv ) = @_;
  
-    my( $resv, $ipaddr, $hrows );
+    my( $ipaddr, $hrows );
 
-    my $query = "SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?";
-    for $resv (@$resvrows) {
-        my $hrows = $self->do_query($query, $resv->{src_hostaddr_id});
-        $resv->{source_ip} = $hrows->[0]->{hostaddr_ip};
-        $ipaddr = inet_aton($resv->{source_ip});
-        $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
-        if (!$resv->{source_host}) {
-            $resv->{source_host} = $resv->{source_ip};
-        }
+    my $statement = "SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?";
+    my $hrows = $self->do_query($statement, $resv->{src_hostaddr_id});
+    $resv->{source_ip} = $hrows->[0]->{hostaddr_ip};
+    $ipaddr = inet_aton($resv->{source_ip});
+    $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
+    if (!$resv->{source_host}) {
+        $resv->{source_host} = $resv->{source_ip};
+    }
 
-        $hrows = $self->do_query($query, $resv->{dst_hostaddr_id});
-        $resv->{destination_ip} = $hrows->[0]->{hostaddr_ip};
-        $ipaddr = inet_aton($resv->{destination_ip});
-        $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
-        if (!$resv->{destination_host}) {
-            $resv->{destination_host} = $resv->{destination_ip};
-        }
+    $hrows = $self->do_query($statement, $resv->{dst_hostaddr_id});
+    $resv->{destination_ip} = $hrows->[0]->{hostaddr_ip};
+    $ipaddr = inet_aton($resv->{destination_ip});
+    $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
+    if (!$resv->{destination_host}) {
+        $resv->{destination_host} = $resv->{destination_ip};
     }
     return;
 }
@@ -115,26 +196,26 @@ sub get_host_info {
 # setup_times:  
 #
 sub setup_times {
-    my( $self, $inref);
+    my( $self, $inref, $infinite_time) = @_;
 
-    my( $duration_seconds, $infinite_time );
+    my( $duration_seconds );
 
     # Expects strings in second since epoch; converts to date in UTC time
-    my $query = "SELECT from_unixtime(?) AS start_time";
-    my $rows = $self->do_query( $query, $inref->{reservation_start_time});
+    my $statement = "SELECT from_unixtime(?) AS start_time";
+    my $rows = $self->do_query( $statement, $inref->{reservation_start_time});
     $inref->{reservation_start_time} = $rows->[0]->{start_time};
     if ($inref->{duration_hour} < (2**31 - 1)) {
         $duration_seconds = $inref->{duration_hour} * 3600;
-        $query = "SELECT DATE_ADD(?, INTERVAL ? SECOND) AS end_time";
-        $rows = $self->do_query( $query, $inref->{reservation_start_time},
+        $statement = "SELECT DATE_ADD(?, INTERVAL ? SECOND) AS end_time";
+        $rows = $self->do_query( $statement, $inref->{reservation_start_time},
                                 $duration_seconds );
         $inref->{reservation_end_time} = $rows->[0]->{end_time};
     }
     else {
         $inref->{reservation_end_time} = $infinite_time;
     }
-    $query = "SELECT now() AS created_time";
-    $rows = $self->do_query( $query );
+    $statement = "SELECT now() AS created_time";
+    $rows = $self->do_query( $statement );
     $inref->{reservation_created_time} = $rows->[0]->{created_time};
 }
 ######
@@ -142,23 +223,19 @@ sub setup_times {
 ##############################################################################
 #
 sub convert_times {
-    my( $self, $resvrows ) = @_;
+    my( $self, $resv ) = @_;
  
-    my( $resv, $rows );
-
     # convert to time zone reservation was created in
-    my $query = "SELECT CONVERT_TZ(?, '+00:00', ?) AS new_time";
-    for $resv (@$resvrows) {
-        $rows = $self->do_query( $query, $resv->{reservation_start_time},
-                                   $resv->{reservation_time_zone} );
-        $resv->{reservation_start_time} = $rows->[0]->{new_time};
-        $rows = $self->do_query( $query, $resv->{reservation_end_time},
-                                $resv->{reservation_time_zone} );
-        $resv->{reservation_end_time} = $rows->[0]->{new_time};
-        $rows = $self->do_query( $query, $resv->{reservation_created_time},
-                                $resv->{reservation_time_zone} );
-        $resv->{reservation_created_time} = $rows->[0]->{new_time};
-    }
+    my $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS new_time";
+    my $rows = $self->do_query( $statement, $resv->{reservation_start_time},
+                             $resv->{reservation_time_zone} );
+    $resv->{reservation_start_time} = $rows->[0]->{new_time};
+    $rows = $self->do_query( $statement, $resv->{reservation_end_time},
+                             $resv->{reservation_time_zone} );
+    $resv->{reservation_end_time} = $rows->[0]->{new_time};
+    $rows = $self->do_query( $statement, $resv->{reservation_created_time},
+                             $resv->{reservation_time_zone} );
+    $resv->{reservation_created_time} = $rows->[0]->{new_time};
     return;
 }
 ######
@@ -166,33 +243,37 @@ sub convert_times {
 ##############################################################################
 #
 sub get_engr_fields {
-    my( $self, $resvrows ) = @_;
+    my( $self, $resv ) = @_;
  
-    my( $resv, $rows, @path_routers );
+    my( $rows, @path_routers );
 
-    my $query = "SELECT router_name, router_loopback FROM routers" .
+    my $statement = "SELECT router_name, router_loopback FROM routers" .
                 " WHERE router_id =" .
                   " (SELECT router_id FROM interfaces" .
                   "  WHERE interface_id = ?)";
 
-    for $resv (@$resvrows) {
-        $rows = $self->do_query($query, $resv->{ingress_interface_id});
-        $resv->{ingress_router} = $rows->[0]->{router_name}; 
-        $resv->{ingress_ip} = $rows->[0]->{router_loopback}; 
+    $rows = $self->do_query($statement, $resv->{ingress_interface_id});
+    $resv->{ingress_router} = $rows->[0]->{router_name}; 
+    $resv->{ingress_ip} = $rows->[0]->{router_loopback}; 
 
-        $rows = $self->do_query($query, $resv->{egress_interface_id});
-        $resv->{egress_router} = $rows->[0]->{router_name}; 
-        $resv->{egress_ip} = $rows->[0]->{router_loopback}; 
-        @path_routers = split(' ', $resv->{reservation_path});
-        $resv->{reservation_path} = ();
-        for $_ (@path_routers) {
-            $rows = $self->do_query($query, $_);
-            push(@{$resv->{reservation_path}}, $rows->[0]->{router_name}); 
-        }
+    $rows = $self->do_query($statement, $resv->{egress_interface_id});
+    $resv->{egress_router} = $rows->[0]->{router_name}; 
+    $resv->{egress_ip} = $rows->[0]->{router_loopback}; 
+    @path_routers = split(' ', $resv->{reservation_path});
+    $resv->{reservation_path} = ();
+    for $_ (@path_routers) {
+        $rows = $self->do_query($statement, $_);
+        push(@{$resv->{reservation_path}}, $rows->[0]->{router_name}); 
     }
     return;
 }
 ######
 
+sub get_primary_id {
+    my( $self ) = @_;
+
+    return $self->{dbh}->{mysql_insertid};
+}
+######
 1;
 # vim: et ts=4 sw=4

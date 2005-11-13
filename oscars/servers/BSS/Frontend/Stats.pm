@@ -1,6 +1,8 @@
 # Stats.pm:  Reservation statistics formatting
-# Last modified: November 10, 2005
+# Last modified:  November 12, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# TODO:  fix, keep here, but send formatted message back to AAAS
+#        need to instantiate stats class somewhere
 
 package BSS::Frontend::Stats;
 
@@ -27,7 +29,7 @@ sub initialize {
 # get_stats
 #
 sub get_stats {
-    my( $self, $resv) = @_;
+    my( $self, $resv, $infinite_time) = @_;
 
     # only optional fields need to be checked for existence
     my $stats = 
@@ -37,7 +39,12 @@ sub get_stats {
         $stats .= "Reservation id:     $resv->{reservation_id}\n";
     }
     $stats .= "Start time:         $resv->{reservation_start_time}\n";
-    $stats .= "End time:           $resv->{reservation_end_time}\n";
+    if ($resv->{reservation_end_time} ne $infinite_time) {
+        $stats .= "End time:           $resv->{reservation_end_time}\n";
+    }
+    else {
+        $stats .= "End time:           persistent circuit\n";
+    }
 
     if ($resv->{reservation_created_time}) {
         $stats .= "Created time:       $resv->{reservation_created_time}\n";

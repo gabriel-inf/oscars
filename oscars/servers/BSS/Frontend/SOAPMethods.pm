@@ -6,7 +6,7 @@
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 10, 2005
+# Last modified:  November 12, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -17,7 +17,6 @@ use strict;
 use Error qw(:try);
 use Data::Dumper;
 
-use Common::Exception;
 use BSS::Frontend::DBRequests;
 use BSS::Frontend::Policy;
 use BSS::Frontend::Stats;
@@ -88,24 +87,10 @@ sub insert_reservation {
     my( $self, $inref ) = @_;
     my( $duration_seconds );
 
-    my( $output_buf ) = @_;
-    ($inref->{ingress_interface_id}, $inref->{egress_interface_id},
-        $inref->{reservation_path}, $output_buf) =
-                    $self->{route_setup}->find_interface_ids(
-                            $inref->{source_host}, $inref->{destination_host},
-                            $inref->{ingress_router}, $inref->{egress_router});
-    print STDERR "past find_interface_ids\n";
-
+    my $output_buf = $self->{route_setup}->find_interface_ids($inref);
+    $self->{dbconn}->setup_times($inref, $self->get_infinite_time());
     ( $inref->{reservation_class}, $inref->{reservation_burst_limit} ) =
                     $self->{route_setup}->get_pss_fields();
-
-    if (($inref->{ingress_interface_id} == 0) ||
-        ($inref->{egress_interface_id} == 0))
-    {
-        throw Common::Exception("Invalid router id(s): 0.  Unable to " .
-                                "do insert.");
-    }
-    $self->{dbconn}->setup_times($inref, $self->get_infinite_time());
 
     # convert requested bandwidth to bps
     $inref->{reservation_bandwidth} *= 1000000;
@@ -118,9 +103,7 @@ sub insert_reservation {
     $inref->{dst_hostaddr_id} =
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{destination_ip}); 
 
-    $self->fill_fields($inref);
-    my $outref = $self->insert_fields($inref);
-    my $results = $self->get_results($inref, $outref);
+    my $results = $self->get_results($inref);
     return( $results, $output_buf );
 }
 ######
@@ -135,7 +118,7 @@ sub delete_reservation {
     my( $self, $inref ) = @_;
 
     my $status =  $self->{dbconn}->update_status( $inref, 'precancel' );
-    return( $self->get_reservation_details($inref), '');
+    return( $self->get_reservation_details($inref));
 }
 ######
 
@@ -148,11 +131,9 @@ sub delete_reservation {
 sub get_all_reservations {
     my( $self, $inref ) = @_;
 
-    my( $query );
-
-    $query = "SELECT * FROM reservations" .
+    my $statement = "SELECT * FROM reservations" .
              " ORDER BY reservation_start_time";
-    my $rows = $self->{dbconn}->do_query($query);
+    my $rows = $self->{dbconn}->do_query($statement);
     return( $self->process_reservation_request($inref, $rows) );
 }
 ######
@@ -166,19 +147,19 @@ sub get_all_reservations {
 sub get_user_reservations {
     my( $self, $inref ) = @_;
 
-    my( $query );
+    my( $statement );
 
     # TODO:  fix authorization
-    if ( $inref->{engr} ) {
-        $query = "SELECT *";
+    if ( $inref->{engr_permission} ) {
+        $statement = "SELECT *";
     }
     else {
-        $query = "SELECT " . join(', ', @user_fields);
+        $statement = "SELECT " . join(', ', @user_fields);
     }
-    $query .= " FROM reservations" .
+    $statement .= " FROM reservations" .
               " WHERE user_dn = ?";
-    $query .= " ORDER BY reservation_start_time";
-    my $rows = $self->{dbconn}->do_query($query, $inref->{user_dn});
+    $statement .= " ORDER BY reservation_start_time";
+    my $rows = $self->{dbconn}->do_query($statement, $inref->{user_dn});
     return( $self->process_reservation_request($inref, $rows) );
 }
 ######
@@ -192,20 +173,20 @@ sub get_user_reservations {
 sub get_reservation_details {
     my( $self, $inref ) = @_;
 
-    my( $query );
+    my( $statement );
 
         # TODO:  Fix authorization checks
     if ( !($inref->{engr_permission}) ) {
-        $query = "SELECT " . join(', ', @detail_fields);
+        $statement = "SELECT " . join(', ', @detail_fields);
     }
     else {
-        $query = "SELECT " .
+        $statement = "SELECT " .
                  join(', ', (@detail_fields, @detail_admin_fields));
     }
-    $query .= " FROM reservations" .
+    $statement .= " FROM reservations" .
               " WHERE reservation_id = ?" .
               " ORDER BY reservation_start_time";
-    my $rows = $self->{dbconn}->do_query($query, $inref->{reservation_id});
+    my $rows = $self->{dbconn}->do_query($statement, $inref->{reservation_id});
     return( $self->process_reservation_request($inref, $rows) );
 }
 ######
@@ -217,16 +198,18 @@ sub get_reservation_details {
 sub process_reservation_request {
     my( $self, $inref, $rows ) = @_;
 
-    $self->{dbconn}->get_host_info($rows);
-    $self->{dbconn}->convert_times($rows);
+    my( $resv );
+
     # TODO:  fix authorization
     if ( $inref->{engr_permission} ) { 
         $self->{dbconn}->get_engr_fields($rows); 
     }
-    $self->check_nulls($rows);
-    my $results;
-    $results->{rows} = $rows;
-    return( $results, '' );
+    for $resv ( @$rows ) {
+        $self->{dbconn}->convert_times($resv);
+        $self->{dbconn}->get_host_info($resv);
+        $self->check_nulls($resv);
+    }
+    return( $rows, '' );
 }
 ######
 
@@ -238,11 +221,8 @@ sub process_reservation_request {
 # get_time_str:  print formatted time string
 #
 sub get_time_str {
-    my( $self, $dtime, $gentag ) = @_;
+    my( $self, $dtime ) = @_;
 
-    if ($gentag ne 'tag') {
-        return $dtime;
-    }
     my @ymd = split(' ', $dtime);
     return( $ymd[0] );
 }
@@ -252,86 +232,59 @@ sub get_time_str {
 # get_infinite_time:  returns "infinite" time
 #
 sub get_infinite_time {
-    my( $self );
+    my( $self ) = @_;
 
     return '2039-01-01 00:00:00';
 }
 ######
 
 ###############################################################################
-# fill_fields:  
+# get_results:  
 #
-sub fill_fields {
-    my( $self, $inref );
+sub get_results {
+    my( $self, $inref ) = @_;
 
-    $inref->{reservation_id} = 'NULL';
-    $inref->{reservation_status} = 'pending';
-    $inref->{reservation_tag} = $inref->{user_dn} . '.' .
-        $self->get_time_str($inref->{reservation_start_time}, 'tag') .  "-";
-
-}
-######
-
-###############################################################################
-# insert_fields:  
-#
-sub insert_fields {
-    my( $self, $inref );
-
-    my $query = "SHOW COLUMNS from reservations";
-    my $rows = $self->{dbconn}->do_query( $query );
+    # build fields to insert
+    my $statement = "SHOW COLUMNS from reservations";
+    my $rows = $self->{dbconn}->do_query( $statement );
     my @insertions;
-    my $outref = {}; 
+    my $results = {}; 
     # TODO:  necessary to do insertions this way?
     for $_ ( @$rows ) {
        if ($inref->{$_->{Field}}) {
-           $outref->{$_->{Field}} = $inref->{$_->{Field}};
+           $results->{$_->{Field}} = $inref->{$_->{Field}};
            push(@insertions, $inref->{$_->{Field}}); 
        }
        else{ push(@insertions, 'NULL'); }
     }
 
     # insert all fields for reservation into database
-    $query = "INSERT INTO reservations VALUES (
+    $statement = "INSERT INTO reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
-    my $unused = $self->{dbconn}->do_query($query, @insertions);
-    # TODO:  FIX getting reservation id
-    $outref->{reservation_id} = $self->{dbconn}->get_reservation_id();
-    return( $outref );
-}
-######
-
-
-###############################################################################
-# get_results:  
-#
-sub get_results {
-    my( $self, $inref, $outref );
-
-    $outref->{reservation_tag} =
-        $inref->{reservation_tag} . $outref->{reservation_id};
+    my $unused = $self->{dbconn}->do_query($statement, @insertions);
+    $results->{reservation_id} = $self->{dbconn}->get_primary_id();
     # copy over non-db fields
-    $outref->{source_host} = $inref->{source_host};
-    $outref->{destination_host} = $inref->{destination_host};
-
-    my $query = "UPDATE reservations SET reservation_tag = ?
-                 WHERE reservation_id = ?";
-    my $unused = $self->{dbconn}->do_query($query, $outref->{reservation_tag},
-                                     $outref->{reservation_id});
-    my @resv_array = ($outref);
-    my $results;
-    $results->{rows} = \@resv_array;
+    $results->{source_host} = $inref->{source_host};
+    $results->{destination_host} = $inref->{destination_host};
     # clean up NULL values
-    $self->check_nulls($results->{rows});
+    $self->check_nulls($results);
     # convert times back to user's time zone for mail message
-    $self->{dbconn}->convert_times($results->{rows});
-    # get loopback fields if have engr privileges
-    # TODO:  Fix authorization checks
-    if ($self->{policy}->authorized($inref->{user_level}, "engr")) {
-        $self->{dbconn}->get_engr_fields($results->{rows}); 
-    }
-    $results->{reservation_tag} =~ s/@/../;
+    $self->{dbconn}->convert_times($results);
 
+    # set user-semi-readable tag
+    $results->{reservation_tag} = $inref->{user_dn} . '.' .
+        $self->get_time_str($inref->{reservation_start_time}) .  "-" .
+        $results->{reservation_id};
+    $statement = "UPDATE reservations SET reservation_tag = ?
+                 WHERE reservation_id = ?";
+    $unused = $self->{dbconn}->do_query($statement,
+                      $results->{reservation_tag}, $results->{reservation_id});
+    # get loopback fields if have engr privileges
+    # TODO:  need authorization for these fields
+    $self->{dbconn}->get_engr_fields($results); 
+    $results->{reservation_tag} =~ s/@/../;
+    $results->{reservation_status} = 'pending';
+    return $results;
 }
 ######
 
@@ -339,20 +292,18 @@ sub get_results {
 # check_nulls:  
 #
 sub check_nulls {
-    my( $self, $rref ) = @_ ;
+    my( $self, $resv ) = @_ ;
 
     my( $resv );
 
-    for $resv (@$rref) {
-        # clean up NULL values
-        if (!$resv->{reservation_protocol} ||
-            ($resv->{reservation_protocol} eq 'NULL')) {
-            $resv->{reservation_protocol} = 'DEFAULT';
-        }
-        if (!$resv->{reservation_dscp} ||
-            ($resv->{reservation_dscp} eq 'NU')) {
-            $resv->{reservation_dscp} = 'DEFAULT';
-        }
+    # clean up NULL values
+    if (!$resv->{reservation_protocol} ||
+        ($resv->{reservation_protocol} eq 'NULL')) {
+        $resv->{reservation_protocol} = 'DEFAULT';
+    }
+    if (!$resv->{reservation_dscp} ||
+        ($resv->{reservation_dscp} eq 'NU')) {
+        $resv->{reservation_dscp} = 'DEFAULT';
     }
 }
 ######
