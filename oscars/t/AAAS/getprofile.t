@@ -22,12 +22,12 @@ if ($som->faultstring) {
 my $results = $som->result;
 print "Status:  Retrieved user profile\n";
 print "Returning:\n\n";
-foreach $key(sort keys %{$results->{row}} )
+foreach $key(sort keys %{$results} )
 {
     if (($key ne 'status_msg') &&
-        defined($results->{row}->{$key}))
+        defined($results->{$key}))
     {
-        $value = $results->{row}->{$key};
+        $value = $results->{$key};
         if ($value) { print "$key -> $value\n"; }
         else { print "$key -> \n"; }
     }

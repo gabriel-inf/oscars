@@ -22,8 +22,7 @@ if ($som->faultstring) {
 my $results = $som->result;
 print "Status:  Successfully read user list.\n";
 print "Returning:\n\n";
-$data = $results->{rows};
-for $row (@$data) {
+for $row (@$results) {
     for $key (sort keys %$row )
     {
         $value = $row->{$key};
