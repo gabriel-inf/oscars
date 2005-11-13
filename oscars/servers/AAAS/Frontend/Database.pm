@@ -1,8 +1,7 @@
 package AAAS::Frontend::Database;
 
-# Database.pm:  package for AAAS database handling
-#               inherits from Common::Database
-# Last modified: November 5, 2005
+# Database.pm:     package for AAAS database request handling
+# Last modified:   November 12, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -11,11 +10,6 @@ use DBI;
 use Data::Dumper;
 use Error qw(:try);
 
-use Common::Exception;
-use Common::Database;
-
-our @ISA = qw(Common::Database);
-
 ###############################################################################
 #
 sub new {
@@ -23,22 +17,70 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    # call super-classes initialize method
     $self->initialize();
     return( $self );
 }
 
+sub initialize {
+    my ( $self ) = @_;
+
+    my ( %attr ) = (
+        RaiseError => 0,
+        PrintError => 0,
+    );
+    # I couldn't find a foolproof way to check for timeout; Apache::DBI
+    # came closest, but it was too dependent on the driver handling the timeout
+    # correctly.  So instead,
+    # if a handle is left over from a previous session, attempts to disconnect.
+    # If it was timed out, the error is ignored.
+    # TODO:  FIX
+    if ($self->{dbh}) {
+        $self->{dbh}->disconnect();
+    }
+    $self->{dbh} = DBI->connect(
+                 $self->{database}, 
+                 $self->{dblogin}, 
+                 $self->{password},
+                 \%attr);
+    if (!$self->{dbh}) {
+        throw Error::Simple( "Unable to make database connection: $DBI::errstr");
+    }
+    return;
+}
+######
+
+###############################################################################
+#
+sub do_query {
+    my( $self, $statement, @args ) = @_;
+
+    # TODO, FIX:  selectall_arrayref probably better
+    my $sth = $self->{dbh}->prepare( $statement );
+    if ($DBI::err) {
+        throw Error::Simple("[DBERROR] Preparing $statement:  $DBI::errstr");
+    }
+    $sth->execute( @args );
+    if ( $DBI::err ) {
+        throw Error::Simple("[DBERROR] Executing $statement:  $DBI::errstr");
+    }
+    my $rows = $sth->fetchall_arrayref({});
+    if ( $DBI::err ) {
+        throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
+    }
+    return( $rows );
+}
+######
 
 ###############################################################################
 #
 sub get_institution_id {
     my( $self, $inref ) = @_;
 
-    my $query = "SELECT institution_id FROM institutions
+    my $statement = "SELECT institution_id FROM institutions
                 WHERE institution_name = ?";
     my $rows = $self->do_query($inref->{institution});
     if (!@$rows) {
-        throw Common::Exception("The organization " .
+        throw Error::Simple("The organization " .
                    "$inref->{institution} is not in the database.");
     }
     $inref->{institution_id} = $rows->[0]->{institution_id} ;

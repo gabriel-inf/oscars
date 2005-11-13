@@ -1,17 +1,13 @@
 package AAAS::Frontend::Auth;
 
-# Auth.pm:  Database interactions dealing with authorization.
-# Last modified: November 5, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Auth.pm: Database interactions dealing with authorization.
+#          Need to be re-implemented.                 
+# Last modified:  November 12, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
-use DBI;
-
-use AAAS::Frontend::Database;
 use Error qw(:try);
-use Common::Exception;
 use Data::Dumper;
 
 ###############################################################################
