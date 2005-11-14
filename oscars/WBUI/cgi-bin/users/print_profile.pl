@@ -2,8 +2,8 @@
 
 # print_profile.pl:   Print profile page.  Used in getting a profile,
 #                     updating a profile, and adding a user.
-# Last modified: August 26, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified:  November 13, 2005
+# Soo-yeon Hwang  (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use Data::Dumper;
@@ -19,7 +19,6 @@ sub print_profile {
     my( $results, $form_params, $starting_page ) = @_;
 
     my $ctr = 0;
-    my $row = $results->{row};
 
     if ($form_params->{method} ne 'new_user_form') {
         print "<h3>Editing profile for user: $form_params->{user_dn}</h3>\n";
@@ -57,64 +56,64 @@ sub print_profile {
     $ctr = start_row($ctr);
     print "<td>First Name</td>",
         "<td><input class=\"required\" type=\"text\" name=\"user_first_name\" size=\"40\"";
-    if (defined($row->{user_first_name})) {
-        print " value=\"$row->{user_first_name}\"";
+    if (defined($results->{user_first_name})) {
+        print " value=\"$results->{user_first_name}\"";
     }
     print "></input></td></tr>\n";
 
     $ctr = start_row($ctr);
     print "<td>Last Name</td>",
           "<td><input class=\"required\" type=\"text\" name=\"user_last_name\" size=\"40\"";
-    if (defined($row->{user_last_name})) {
-        print " value=\"$row->{user_last_name}\"";
+    if (defined($results->{user_last_name})) {
+        print " value=\"$results->{user_last_name}\"";
     }
     print "></input></td></tr>\n";
 
     $ctr = start_row($ctr);
     print "<td>Organization</td>",
 	  "<td><input class=\"required\" type=\"text\" name=\"institution\" size=\"40\"";
-    if (defined($row->{institution})) {
-        print " value=\"$row->{institution}\"";
+    if (defined($results->{institution})) {
+        print " value=\"$results->{institution}\"";
     }
     print "></input></td></tr>";
 
     $ctr = start_row($ctr);
     print "<td valign=\"top\">Personal Description</td>",
         "<td><textarea name=\"user_description\" rows=\"3\" cols=\"50\">";
-    if (defined($row->{user_description})) {
-         print "$row->{user_description}";
+    if (defined($results->{user_description})) {
+         print "$results->{user_description}";
     }
     print "</textarea></td></tr>\n";
   
     $ctr = start_row($ctr);
     print "<td>E-mail (Primary)</td>",
           "<td><input class=\"required\" type=\"text\" name=\"user_email_primary\" size=\"40\"";
-    if (defined($row->{user_email_primary})) {
-        print " value=\"$row->{user_email_primary}\"";
+    if (defined($results->{user_email_primary})) {
+        print " value=\"$results->{user_email_primary}\"";
     }
     print "></input></td></tr>\n";
 
     $ctr = start_row($ctr);
     print "<td>E-mail (Secondary)</td>",
           "<td><input type=\"text\" name=\"user_email_secondary\" size=\"40\"";
-    if (defined($row->{user_email_secondary})) {
-        print " value=\"$row->{user_email_secondary}\"";
+    if (defined($results->{user_email_secondary})) {
+        print " value=\"$results->{user_email_secondary}\"";
     }
     print "></input></td></tr>\n";
 
     $ctr = start_row($ctr);
     print "<td>Phone Number (Primary)</td>",
           "<td><input class=\"required\" type=\"text\" name=\"user_phone_primary\" size=\"40\"";
-    if (defined($row->{user_phone_primary})) { 
-        print " value=\"$row->{user_phone_primary}\"";
+    if (defined($results->{user_phone_primary})) { 
+        print " value=\"$results->{user_phone_primary}\"";
     }
     print "></input></td></tr>\n";
 
     $ctr = start_row($ctr);
     print "<td>Phone Number (Secondary)</td>",
           "<td><input type=\"text\" name=\"user_phone_secondary\" size=\"40\"";
-    if (defined($row->{user_phone_secondary})) {
-        print " value=\"$row->{user_phone_secondary}\"";
+    if (defined($results->{user_phone_secondary})) {
+        print " value=\"$results->{user_phone_secondary}\"";
     }
     print "></input></td></tr>\n";
 

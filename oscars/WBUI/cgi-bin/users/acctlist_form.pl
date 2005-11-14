@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 # acctlist_form.pl:  User List page
-# Last modified: October 31, 2005
-# David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified:     November 13, 2005
+# David Robertson    (dwrobertson@lbl.gov)
+# Soo-yeon Hwang     (dapi@umich.edu)
 
 use Data::Dumper;
 
@@ -35,10 +35,9 @@ exit;
 sub print_userlist
 {
     my ( $results, $starting_page ) = @_;
-    my ( $rowsref, $row );
+    my ( $row );
     my $ctr = 0;
 
-    $rowsref = $results->{rows};
     print "<p>Click on the user's last name to view detailed user information.</p>";
     print "<table cellspacing=\"0\" width=\"90%\" class=\"sortable\" id=\"userlist\">";
     print "<thead><tr>\n";
@@ -51,7 +50,7 @@ sub print_userlist
     print "</tr></thead>\n";
 
     print "<tbody>\n";
-    for $row (@$rowsref) {
+    for $row (@$results) {
         $ctr = start_row($ctr);
         print_row($row, $starting_page);
         print " </tr>\n";
