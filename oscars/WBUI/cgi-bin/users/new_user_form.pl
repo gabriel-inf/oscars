@@ -15,6 +15,7 @@ if ( !$form_params ) { exit; }
 print "<xml>\n";
 print "<msg>User profile</msg>\n";
 print "<div id=\"zebratable_ui\">\n";
+$form_params->{server_name} = 'AAAS';
 $form_params->{method} = 'new_user_form';
 print_profile(undef, $form_params, $starting_page);
 print  "</div>\n";

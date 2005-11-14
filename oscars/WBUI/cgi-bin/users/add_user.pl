@@ -13,6 +13,7 @@ require 'print_profile.pl';
 my( $form_params, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
+$form_params->{server_name} = 'AAAS';
 $form_params->{method} = 'add_user';
 my $results = get_results($form_params);
 if (!$results) { exit; }
