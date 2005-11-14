@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-# insert.pl:  Insert a reservation to be scheduled.
-# Last modified: October 31, 2005
+# insert.pl:      Insert a reservation to be scheduled.
+# Last modified:  November 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 require '../lib/general.pl';

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-# details.pl:  Lists the details of a reservation.
-# Last modified: October 31, 2005
+# details.pl:     Lists the details of a reservation.
+# Last modified:  November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use Data::Dumper;

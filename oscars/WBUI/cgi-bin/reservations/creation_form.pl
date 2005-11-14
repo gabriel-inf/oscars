@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 # creation_form.pl:  form for making reservations
-# Last modified: October 31, 2005
-# David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Last modified:     November 13, 2005
+# David Robertson    (dwrobertson@lbl.gov)
+# Soo-yeon Hwang     (dapi@umich.edu)
 
 use Data::Dumper;
 

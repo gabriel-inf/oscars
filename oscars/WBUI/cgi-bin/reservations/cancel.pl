@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-# cancel.pl:  Cancel a reservation.
-# Last modified: October 31, 2005
+# cancel.pl:      Cancel a reservation.
+# Last modified:  November 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 require '../lib/general.pl';
