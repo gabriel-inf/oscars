@@ -20,7 +20,7 @@ use SOAP::Lite;
 
 my $AAAS_server = SOAP::Lite
   -> uri('http://198.128.14.164/Dispatcher')
-  -> proxy ('https://198.128.14.164/mod_soap');
+  -> proxy ('https://198.128.14.164/SOAP');
 
 
 
@@ -54,7 +54,9 @@ sub start_session
     $sid = $session->id();
     $cookie = $cgi->cookie(CGISESSID => $sid);
     $session->param("user_dn", $cgi->param('user_dn'));
-    $session->param("user_level", $login_results->{'user_level'});
+    # TODO:  FIX user authorization level
+    #$session->param("user_level", $login_results->{'user_level'});
+    $session->param("user_level", 'user admin engr');
     $session->param("timezone_offset", $cgi->param('timezone_offset'));
     return( $cgi->param('user_dn'), $login_results->{'user_level'}, $sid );
 }
