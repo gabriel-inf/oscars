@@ -1,6 +1,6 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  November 8, 2005
+Last modified:  November 13, 2005
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang (dapi@umich.edu)
 */
@@ -14,7 +14,8 @@ isblank (strValue)
 */
 
 var timer_id = null;
-var starting_page = 'https://oscars.es.net';
+// TODO:  FIX hard-wired URL
+var starting_page = 'https://oscars-test.es.net';
 
 var login_required = {
     'user_dn': "Please enter your user name.",
