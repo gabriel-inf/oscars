@@ -13,7 +13,8 @@ my( $form_params, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
 
 $form_params->{server_name} = 'BSS';
-$form_params->{method} = 'get_reservations';
+# TODO:  FIX, either user or all
+$form_params->{method} = 'get_user_reservations';
 my $results = get_results($form_params);
 if (!$results) { exit; }
 
@@ -100,10 +101,12 @@ sub print_row {
     print "</td>\n";
 
     print "<td>";
-    if ($row->{reservation_end_time} ne '2039-01-01 00:00:00') {
+    if ($row->{reservation_end_time}) {
         print $row->{reservation_end_time};
     }
-    else { print "PERSISTENT\n"; }
+    else {
+        print 'PERSISTENT';
+    }
     print "</td>\n";
 
     print "<td>", $row->{reservation_status}, "</td>\n";

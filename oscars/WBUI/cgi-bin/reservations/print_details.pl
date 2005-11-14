@@ -43,10 +43,10 @@ sub print_reservation_detail {
 
     $ctr = start_row($ctr);
     print  "<td>End time</td><td>";
-    if ($results->{reservation_end_time} ne '2039-01-01 00:00:00') {
+    if ($results->{reservation_end_time}) {
         print "$results->{reservation_end_time}";
     }
-    else { print "PERSISTENT"; }
+    else { print 'PERSISTENT'; }
     print   "</td></tr>\n";
 
     $ctr = start_row($ctr);
