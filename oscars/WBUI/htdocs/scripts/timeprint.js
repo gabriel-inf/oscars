@@ -195,8 +195,7 @@ function check_date_fields( form )
             }
         }
     }
-
-    reservation_date = new Date(form.start_year.value,
+   reservation_date = new Date(form.start_year.value,
                                 form.start_month.value,
                                 form.start_date.value,
                                 form.start_hour.value,
