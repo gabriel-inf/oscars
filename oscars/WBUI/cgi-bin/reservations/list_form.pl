@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
-# list_form.pl:  page listing reservations
-# Last modified: October 31, 2005
+# list_form.pl:   page listing reservations
+# Last modified:  November 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 use Data::Dumper;
 
@@ -34,10 +34,9 @@ exit;
 sub print_reservations {
     my ( $results, $form_params, $starting_page ) = @_;
 
-    my ( $rowsref, $row );
+    my ( $row );
 
     my $ctr = 0;
-    $rowsref = $results->{rows};
 
     print "<p>Click on a column header to sort by that column. ";
     print "Times given are in the time zone of the browser. \n";
@@ -66,7 +65,7 @@ sub print_reservations {
     print "</thead>\n";
 
     print "<tbody>\n";
-    for $row (@$rowsref) {
+    for $row (@$results) {
         $ctr = start_row($ctr);
         print_row($row, $form_params->{user_level}, $starting_page);
         print "</tr>\n";
