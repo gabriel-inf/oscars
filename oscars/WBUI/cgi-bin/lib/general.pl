@@ -1,7 +1,7 @@
 # general.pl
 #
-# library for general cgi script usage
-# Last modified: October 31, 2005
+# Routines used by other CGI scripts
+# Last modified:  November 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
@@ -19,8 +19,8 @@ use SOAP::Lite;
 ######################################
 
 my $AAAS_server = SOAP::Lite
-  -> uri('http://localhost:2000/Dispatcher')
-  -> proxy ('http://localhost:2000/AAAS_server.pl');
+  -> uri('http://198.128.14.164/Dispatcher')
+  -> proxy ('https://198.128.14.164/mod_soap');
 
 
 
