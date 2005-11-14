@@ -21,7 +21,8 @@ my ($som) = logout_user($user_dn);
 
 if ($user_dn) { end_session($cgi); }
 
-print "Location:  https://oscars.es.net/\n\n";
+# TODO:  FIX hard-coded URL
+print "Location:  https://oscars-test.es.net/\n\n";
 exit;
 
 ##############################################################################
@@ -35,6 +36,7 @@ sub logout_user {
     my( %soap_params );
 
     $soap_params{user_dn} = $user_dn;
+    $soap_params{server_name} = 'AAAS';
     $soap_params{method} = 'logout';
     my $som = aaas_dispatcher(\%soap_params);
     return( $som );
