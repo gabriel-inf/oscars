@@ -199,6 +199,8 @@ sub update_page {
     print "<msg>\n";
     print "$msg\n";
     print "</msg>\n";
+    # TODO:  FIX  blanket access
+    $user_level = 'auth engr user';
     if ($output_func) {
         print qq{
           <user_level>$user_level</user_level>
