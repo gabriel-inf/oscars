@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-# get_profile.pl:  get user's profile
-# Last modified: October 31, 2005
+# get_profile.pl: get user's profile
+# Last modified:  November 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use Data::Dumper;
@@ -11,14 +11,6 @@ require 'print_profile.pl';
 
 my( $form_params, $starting_page ) = get_params();
 if ( !$form_params ) { exit; }
-
-if (authorized($form_params->{user_level}, "admin")) {
-    $form_params->{admin_dn} = $form_params->{user_dn};
-}
-
-if ($form_params->{id}) {
-    $form_params->{user_dn} = $form_params->{id};
-}
 
 $form_params->{method} = 'get_profile';
 my $results = get_results($form_params);

@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
-# add_user.pl:  Add a user (requires admin privileges)
-# Last modified: October 31, 2005
+# add_user.pl:    Add a user (requires admin privileges)
+# Last modified:  November 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 use Data::Dumper;
 
