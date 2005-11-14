@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 
-# login.pl:  Main Service Login script
-# Last modified: October 31, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# login.pl:       If login is successful, the user is sent to navigation page
+# Last modified:  November 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 use CGI;
 use Data::Dumper;

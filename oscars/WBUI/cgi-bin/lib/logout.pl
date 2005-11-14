@@ -1,8 +1,9 @@
 #!/usr/bin/perl -w
 
-# logout.pl:  Main Service: Logout script
-# Last modified: October 31, 2005
-# Soo-yeon Hwang (dapi@umich.edu)
+# logout.pl: User is sent back to the login page, and has to login again
+#            to use the system
+# Last modified:  November 13, 2005
+# Soo-yeon Hwang  (dapi@umich.edu)
 # David Robertson (dwrobertson@lbl.gov)
 
 use CGI;

@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 
-# info_form.pl:  prints information page
-# Last modified: October 31, 2005
+# info_form.pl:   prints information page
+# Last modified:  November 8, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 use CGI;
 
