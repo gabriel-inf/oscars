@@ -20,9 +20,7 @@ if (!$results) { exit; }
 
 print "<xml>\n";
 print "<msg>Successfully retrieved reservations.</msg>\n";
-print "<div id=\"zebratable_ui\">\n";
 print_reservations($results, $form_params, $starting_page);
-print "</div>\n";
 print "</xml>\n";
 exit;
 ######
@@ -36,46 +34,38 @@ exit;
 sub print_reservations {
     my ( $results, $form_params, $starting_page ) = @_;
 
-    my ( $row );
+    print qq{
+    <div id="zebratable_ui">
+    <p>Click on a column header to sort by that column. Times given are in the
+    time zone of the browser.  Click on the Reservation Tag link to view
+    detailed information about the reservation.</p>
 
-    my $ctr = 0;
+    <p><form method="post" action="" onsubmit="return submit_form(this,
+        'list_form', '$starting_page/cgi-bin/reservations/list_form.pl');">
+    <input type="submit" value="Refresh"></input>
+    <input type="hidden" name="user_dn" value="$form_params->{user_dn}">
+    </input>
+    </form></p>
 
-    print "<p>Click on a column header to sort by that column. ";
-    print "Times given are in the time zone of the browser. \n";
-    print "Click on the Reservation Tag link to view detailed information ";
-    print "about the reservation.\n";
-    print "</p>\n\n";
+    <table cellspacing="0" width="90%" class="sortable" id="reservationlist">
+    <thead>
+      <tr><td>Tag</td><td>Start Time</td><td>End Time</td><td>Status</td>
+          <td>Origin</td><td>Destination</td>
+      </tr>
+    </thead>
 
-    print "<p><form method=\"post\" action=\"\"";
-    print " onsubmit=\"return submit_form(this, 'list_form', ";
-    print "'$starting_page/cgi-bin/reservations/list_form.pl');\">\n";
-    print '<input type="submit" value="Refresh"></input>', "\n";
-    print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
-    print "</form></p>\n";
-
-    print '<table cellspacing="0" width="90%" class="sortable" ';
-    print     'id="reservationlist">', "\n";
-    print "<thead>\n";
-    print   "<tr>\n";
-    print     "<td >Tag</td>\n";
-    print     "<td>Start Time</td>\n";
-    print     "<td>End Time</td>\n";
-    print     "<td>Status</td>\n";
-    print     "<td>Origin</td>\n";
-    print     "<td>Destination</td>\n";
-    print   "</tr>\n";
-    print "</thead>\n";
-
-    print "<tbody>\n";
-    for $row (@$results) {
-        $ctr = start_row($ctr);
-        print_row($row, $form_params->{user_level}, $starting_page);
-        print "</tr>\n";
+    <tbody>
+    };
+    for my $row (@$results) {
+        print_row($row, $starting_page);
     }
-    print "</tbody>\n";
-    print "</table>\n\n";
+    print qq{
+    </tbody>
+    </table>
 
-    print "<p>For inquiries, please contact the project administrator.</p>\n";
+    <p>For inquiries, please contact the project administrator.</p>
+    </div>
+    };
 }
 ######
 
@@ -86,32 +76,28 @@ sub print_reservations {
 # Out:  None
 #
 sub print_row {
-    my( $row, $user_level, $starting_page ) = @_;
+    my( $row, $starting_page ) = @_;
 
-    my( $seconds, $ip );
+    my( $end_time );
 
-    print "<td>\n";
-    print "<a href=\"#\" style=\"$starting_page/styleSheets/layout.css\"";
-    print " onclick=\"return new_page('get_details', ";
-    print "'$starting_page/cgi-bin/reservations/get_details.pl?reservation_id=";
-    print $row->{reservation_id}, "');\">$row->{reservation_tag}</a></td>\n";
-  
-    print "<td>\n";
-    print   $row->{reservation_start_time};
-    print "</td>\n";
-
-    print "<td>";
-    if ($row->{reservation_end_time}) {
-        print $row->{reservation_end_time};
+    if ($row->{reservation_end_time} ne '2039-01-01 00:00:00') {
+        $end_time = $row->{reservation_end_time};
     }
-    else {
-        print 'PERSISTENT';
-    }
-    print "</td>\n";
-
-    print "<td>", $row->{reservation_status}, "</td>\n";
-
-    print "<td>", $row->{source_host}, "</td>\n";
-    print "<td>", $row->{destination_host}, "</td>\n";
+    else { $end_time = 'PERSISTENT'; }
+    print qq{
+    <tr>
+      <td>
+      <a href="#" style="$starting_page/styleSheets/layout.css"
+       onclick="return new_page('get_details',
+       '$starting_page/cgi-bin/reservations/get_details.pl?reservation_id="
+       $row->{reservation_id}');">$row->{reservation_tag}</a>
+      </td>
+      <td>$row->{reservation_start_time}</td>
+      <td>$end_time</td>
+      <td>$row->{reservation_status}</td>
+      <td>$row->{source_host}</td>
+      <td>$row->{destination_host}</td>
+    </tr>
+    };
 }
 ######

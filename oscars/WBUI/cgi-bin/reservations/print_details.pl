@@ -5,7 +5,7 @@
 # David Robertson    (dwrobertson@lbl.gov)
 # Soo-yeon Hwang     (dapi@umich.edu)
 
-require '../lib/general.pl';
+#require '../lib/general.pl';
 
 ##############################################################################
 # print_reservation_detail:  print details of reservation returned by SOAP
@@ -16,181 +16,95 @@ require '../lib/general.pl';
 sub print_reservation_detail {
     my( $form_params, $results, $msg, $starting_page ) = @_;
 
-    my $ctr = 0;
+    my( $end_time );
 
+    if ($row->{reservation_end_time} ne '2039-01-01 00:00:00') {
+        $end_time = $row->{reservation_end_time};
+    }
+    else { $end_time = 'PERSISTENT'; }
+    my $src_port = $results->{reservation_src_port} || 'DEFAULT';
+    my $dst_port = $results->{reservation_dst_port} || 'DEFAULT';
+    my $protocol = $results->{reservation_protocol} || 'DEFAULT';
+    my $dscp = $results->{reservation_dscp} || 'DEFAULT';
     print "<xml>";
     print "<msg>$msg</msg>";
-    print '<div id="zebratable_ui">', "\n";
 
-    print "<p><strong>Reservation Details</strong></p>\n";
+    print qq{
+    <div id="zebratable_ui">
+    <p><strong>Reservation Details</strong></p>
 
-    print '<table width="90%" id="reservationlist">', "\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Tag</td><td>$results->{reservation_tag}</td></tr>\n"; 
-    $ctr = start_row($ctr);
-    print     "<td>User</td><td>$form_params->{user_dn}</td></tr>\n"; 
-
-    $ctr = start_row($ctr);
-    print   "<td>Description</td>";
-    print   "<td>", $results->{reservation_description}, "</td>";
-    print "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print  "<td>Start time</td><td>";
-    print     "$results->{reservation_start_time}";
-    print   "</td></tr>\n";
-
-    $ctr = start_row($ctr);
-    print  "<td>End time</td><td>";
-    if ($results->{reservation_end_time}) {
-        print "$results->{reservation_end_time}";
-    }
-    else { print 'PERSISTENT'; }
-    print   "</td></tr>\n";
-
-    $ctr = start_row($ctr);
-    print  "<td>Created time</td><td>";
-    print   "$results->{reservation_created_time}";
-    print   "</td></tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Bandwidth</td>";
-    print     "<td>", $results->{reservation_bandwidth}, "</td>";
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Burst limit</td>";
-    print     "<td>", $results->{reservation_burst_limit}, "</td>";
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Status</td>";
-    print     "<td>", $results->{reservation_status}, "</td>";
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Source</td>";
-    print     "<td>", $results->{source_host}, "</td>";
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Destination</td>";
-    print     "<td>", $results->{destination_host}, "</td>";
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Source port</td>";
-    if ($results->{reservation_src_port}) {
-        print "<td>", $results->{reservation_src_port}, "</td>";
-    }
-    else { print "<td>DEFAULT</td>"; }
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Destination port</td>";
-    if ($results->{reservation_dst_port}) {
-        print "<td>", $results->{reservation_dst_port}, "</td>";
-    }
-    else { print "<td>DEFAULT</td>"; }
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>Protocol</td>";
-    if ($results->{reservation_protocol}) {
-        print "<td>", $results->{reservation_protocol}, "</td>";
-    }
-    else { print "<td>DEFAULT</td>"; }
-    print   "</tr>\n";
-
-    $ctr = start_row($ctr);
-    print     "<td>DSCP</td>";
-    if ($results->{reservation_dscp}) {
-        print "<td>", $results->{reservation_dscp}, "</td>";
-    }
-    else { print "<td>DEFAULT</td>"; }
-    print   "</tr>\n";
-
+    <table width="90%" id="reservationlist">
+      <tr><td>Tag</td><td>$results->{reservation_tag}</td></tr>
+      <tr><td>User</td><td>$form_params->{user_dn}</td></tr> 
+      <tr><td>Description</td><td>$results->{reservation_description}</tr>
+      <tr><td>Start time</td><td>$results->{reservation_start_time}</td></tr>
+      <tr><td>End time</td><td>$end_time</td></tr>
+      <tr><td>Created time</td><td>$results->{reservation_created_time}
+        </td></tr>
+      <tr><td>Bandwidth</td><td>$results->{reservation_bandwidth}</td></tr>
+      <tr><td>Burst limit</td><td>$results->{reservation_burst_limit}</td></tr>
+      <tr><td>Status</td><td>$results->{reservation_status}</td></tr>
+      <tr><td>Source</td><td>$results->{source_host}</td></tr>
+      <tr><td>Destination</td><td>$results->{destination_host}</td></tr>
+      <tr><td>Source port</td><td>$src_port</td></tr>
+      <tr><td>Destination port</td>$dst_port</td></tr>
+      <tr><td>Protocol</td><td>$protocol</td></tr>
+      <tr><td>DSCP</td><td>$dscp</td></tr>
+    };
     # TODO:  AAAS must undef these if user doesn't have authorization to set
+    #        If one of these isn't set, none are set
     if ( $results->{reservaton_class} ) {
-        $ctr = start_row($ctr);
-        print   "<td>Class</td>";
-        print   "<td>", $results->{reservation_class}, "</td>";
-        print "</tr>\n";
-    }
-    if ( $results->{ingress_router} ) {
-        $ctr = start_row($ctr);
-        print   "<td>Ingress router</td>";
-        print   "<td>", $results->{ingress_router}, "</td>";
-        print "</tr>\n";
-    }
-    if ( $results->{ingress_ip} ) {
-        $ctr = start_row($ctr);
-        print   "<td>Ingress loopback</td>";
-        print   "<td>", $results->{ingress_ip}, "</td>";
-        print "</tr>\n";
-    }
-    if ( $results->{egress_router} ) {
-        $ctr = start_row($ctr);
-        print   "<td>Egress router</td>";
-        print   "<td>", $results->{egress_router}, "</td>";
-        print "</tr>\n";
-    }
-    if ( $results->{egress_ip} ) {
-        $ctr = start_row($ctr);
-        print   "<td>Egress loopback</td>";
-        print   "<td>", $results->{egress_ip}, "</td>";
-        print "</tr>\n";
-    }
-    if ( $results->{reservation_path} ) {
-        $ctr = start_row($ctr);
-        print   "<td>Routers in path</td>";
-        print   "<td>";
+        print qq{
+        <tr><td>Class</td><td>$results->{reservation_class}</td></tr>
+        <tr><td>Ingress router</td><td>$results->{ingress_router}</td></tr>
+        <tr><td>Ingress loopback</td><td>$results->{ingress_ip}</td></tr>
+        <tr><td>Egress router</td><td>$results->{egress_router}</td></tr>
+        <tr><td>Egress loopback</td><td>$results->{egress_ip}</td></tr>
+        <tr><td>Routers in path</td><td>
+        };
         my $path_str = "";
         for $_ (@{$results->{reservation_path}}) {
             $path_str .= $_ . " -> ";
         }
         # remove last '->'
         substr($path_str, -4, 4) = '';
-        print $path_str;
-        print   "</td>";
-        print "</tr>\n";
+        print qq{
+        $path_str</td></tr>
+        };
     }
 
     if (($results->{reservation_status} eq 'pending') ||
         ($results->{reservation_status} eq 'active')) {
-        $ctr = start_row($ctr);
-        print "<td>Action: </td>";
-        print "<td>\n";
-        print "<a href=\"#\"";
-        print " style=\"$starting_page/styleSheets/layout.css\"\n";
-        print " onclick=\"return new_page('details', ";
-        print "'$starting_page/cgi-bin/reservations/cancel.pl?reservation_id=$results->{reservation_id}');\"\n";
-        print ">CANCEL</a>\n";
-        print "</td>";
-        print "</tr>\n";
+        print qq{
+          <td>Action: </td>
+          <td><a href="#" style="$starting_page/styleSheets/layout.css"
+            onclick="return new_page('details',
+            '$starting_page/cgi-bin/reservations/cancel.pl?reservation_id=$results->{reservation_id}')";
+            >CANCEL</a></td></tr>
+        };
     }
 
-    print "</table>\n";
-    print "<form method=\"post\" action=\"\"";
-    print " onsubmit=\"return submit_form(this, ";
-    print "'details', '$starting_page/cgi-bin/reservations/get_details.pl');\">\n";
+    print qq{
+    </table>
+    <form method="post" action="" onsubmit="return submit_form(this,
+        'details', '$starting_page/cgi-bin/reservations/get_details.pl');">
+    <input type="hidden" name="user_dn" value="$form_params->{user_dn}">
+    </input>
+    <input type="hidden" name="reservation_id"
+           value="$form_params->{reservation_id}">
+    </input>
+    <p><input type="submit" value="Refresh"> 
+    </input></p>
+    </form>
 
-    print "<input type=\"hidden\" name=\"user_dn\" value=\"$form_params->{user_dn}\"></input>\n";
-    print "<input type=\"hidden\" name=\"reservation_id\" value=";
-    print "\"$form_params->{reservation_id}\"></input>\n";
-
-    print "<p><input type=\"submit\" value=\"Refresh\"></input></p>\n";
-    print "</form>\n";
-
-    print "<p><a href=\"#\" style=\"$starting_page/cgi-bin/reservations/list_form.pl\"";
-    print " onclick=\"return new_page";
-    print "('list_form', '$starting_page/cgi-bin/reservations/list_form.pl'",
-        ");\">$results->{user_last_name}\n";
-    print "<strong>Back to reservations list</strong></a></p>\n";
-
-    print "<p>For inquiries, please contact the project administrator.</p>\n\n";
-    print  "</div>\n";
+    <p><a href="#" style="$starting_page/cgi-bin/reservations/list_form.pl"
+          onclick="return new_page('list_form',
+          '$starting_page/cgi-bin/reservations/list_form.pl');">
+          $results->{user_last_name}
+    <strong>Back to reservations list</strong></a></p>
+    <p>For inquiries, please contact the project administrator.</p>
+    </div>
+    };
     print  "</xml>\n";
 }
 ######

@@ -14,9 +14,7 @@ if (!($form_params)) { exit; }
 
 print "<xml>\n";
 print "<msg>Reservations scheduling</msg>\n";
-print "<div id=\"reservation_ui\">\n";
 print_reservation_form($form_params, $starting_page);
-print  "</div>\n";
 print  "</xml>\n";
 exit;
 
@@ -31,13 +29,17 @@ exit;
 sub print_reservation_form {
     my( $form_params, $starting_page ) = @_;
 
-    print "<form method=\"post\" action=\"\"";
-    print " onsubmit=\"return submit_form(this, 'insert', ";
-    print "'$starting_page/cgi-bin/reservations/insert.pl');\">";
-
     print qq{
+    <div id="reservation_ui">
+    <form method="post" action=""
+      onsubmit="return submit_form(this, 'insert',
+        '$starting_page/cgi-bin/reservations/insert.pl');">
+
+      <input type="hidden" name="reservation_start_time"></input>
+      <input type="hidden" name="reservation_end_time"></input>
       <input type="hidden" name="user_dn" value="$form_params->{user_dn}">
       </input>
+
       <input type="submit" value="Reserve bandwidth"></input>
       <input type="reset" value="Reset form fields"></input>
 
@@ -206,7 +208,9 @@ sub print_reservation_form {
       <tr><td>(Host name or IP address)</td><td>(Host name or IP address)</td>
       </tr>
     </table>
-    </form> };
-    };
+    </form>
+    </div>
+      };
+    }
 }
 ######
