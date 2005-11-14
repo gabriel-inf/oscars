@@ -200,12 +200,11 @@ sub update_page {
     print "$msg\n";
     print "</msg>\n";
     if ($output_func) {
-        print "<user_level>\n";
-        print "$user_level\n";
-        print "</user_level>\n";
-        print "<div>\n";
-        $output_func->($user_dn, $user_level);
-        print "</div>\n";
+        print qq{
+          <user_level>$user_level</user_level>
+          <div>
+        };
+        print $output_func->($user_dn, $user_level), "</div>\n";
     }
     print "</xml>\n";
 }
@@ -215,24 +214,32 @@ sub update_page {
 sub output_info {
     my ($unused1, $unused2) = @_;
 
-    print "<div id=\"info_form\"><p>With the advent of service sensitive applications (such as remote",
-	  " controlled experiments, time constrained massive data",
-        " transfers video-conferencing, etc.), it has become apparent",
-        " that there is a need to augment the services present in",
-        " today's ESnet infrastructure.</p>\n",
+    print qq{
+      <div id="info_form">
+      <p>
+      With the advent of service sensitive applications (such as remote-
+      controlled experiments, time constrained massive data transfers,
+      video-conferencing, etc.), it has become apparent that there is a need
+      to augment the services present in today's ESnet infrastructure.
+      </p>
 
-        "<p>Two DOE Office of Science workshops in the past two years have",
-        " clearly identified both science discipline driven network",
-        " requirements and a roadmap for meeting these requirements.",
-        " This project begins to addresses one element of the",
-        " roadmap: dynamically provisioned, QoS paths.</p>\n",
+      <p>
+      Two DOE Office of Science workshops in the past two years have clearly 
+      identified both science discipline driven network requirements and a 
+      roadmap for meeting these requirements.  This project begins to 
+      address one element of the roadmap: dynamically provisioned, QoS paths.
+      </p>
 
-        "<p>The focus of the ESnet On-Demand Secure Circuits and",
-        " Advance Reservation System (OSCARS) is to develop and",
-        " deploy a prototype service that enables on-demand provisioning",
-        " of guaranteed bandwidth secure circuits within ESnet.</p>\n",
+      <p>
+      The focus of the ESnet On-Demand Secure Circuits and Advance Reservation 
+      System (OSCARS) is to develop and deploy a prototype service that enables 
+      on-demand provisioning of guaranteed bandwidth secure circuits within 
+      ESnet.
+      </p>
 
-        "<p>To begin using OSCARS, click on one of the notebook tabs.</p></div>\n";
+      <p>To begin using OSCARS, click on one of the notebook tabs.</p>
+      </div>
+    };
 }
 ######
 
