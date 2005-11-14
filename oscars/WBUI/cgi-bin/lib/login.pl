@@ -44,6 +44,7 @@ sub verify_user {
 
     $soap_params{user_dn} = $cgi->param('user_dn');
     $soap_params{user_password} = $cgi->param('user_password');
+    $soap_params{server_name} = 'AAAS';
     $soap_params{method} = 'verify_login'; 
     return ( aaas_dispatcher(\%soap_params) );
 }
