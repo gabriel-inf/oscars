@@ -25,11 +25,17 @@ sub print_profile {
     }
     # This will only happen if coming in from "accounts list" page as admin
     else {
-        print "<h3>Add a new user</h3>\n";
-        print "<p>The <strong>Admin Password</strong> is your password";
-        print " (for <strong>$form_params->{user_dn}</strong>).</p>\n";
+        print qq{
+          <h3>Add a new user</h3>
+          <p>
+          The <strong>Admin Password</strong> is your password for 
+          <strong>$form_params->{user_dn}</strong>.
+          </p>]
+        };
     }
-    print "<p>Required fields are outlined in green.</p>\n"; 
+    print qq{
+      <p>Required fields are outlined in green.</p>
+    };
     print "<form method=\"post\" action=\"\"";
     if ($form_params->{method} ne 'new_user_form') {
         print " onsubmit=\"return submit_form(this, 'set_profile', "; 
@@ -165,12 +171,14 @@ sub print_password_fields {
     print "<td> ";
     if ($admin_form) { print " Admin Password"; }
     else { print " Current Password"; }
-    print "</td>";
-    print "<td>";
-    print "<input class=\"required\" type=\"password\" name=\"user_password\" size=\"40\">";
-    print "</input>";
-    print "</td>";
-    print "</tr>\n";
+    print qq{
+      </td>
+      <td>
+        <input class="required" type="password" name="user_password" size="40">
+        </input>
+      </td>
+      </tr>
+    };
 
     $ctr = start_row($ctr);
     print "<td>";
@@ -178,23 +186,25 @@ sub print_password_fields {
     else {
         print "New Password (Enter twice;";
     }
-    print "</td>";
-    print "<td>";
-    print "<input type=\"password\" name=\"password_new_once\" size=\"40\">";
-    print "</input>";
-    print "</td>";
-    print "</tr>\n";
+    print qq {
+      </td>
+      <td>
+        <input type="password" name="password_new_once" size="40"></input>
+      </td>
+      </tr>
+    };
 
     $ctr = start_row($ctr);
     print "<td> ";
     if ($admin_form) { print " (Enter twice)"; }
     else { print " Leave blank to stay the same)"; }
-    print "</td>";
-    print "<td>";
-    print "<input type=\"password\" name=\"password_new_twice\" size=\"40\">";
-    print "</input>";
-    print "</td>";
-    print "</tr>\n";
+    print qq {
+      </td>
+      <td>
+        <input type="password" name="password_new_twice" size="40"></input>
+      </td>
+      </tr>
+    };
     return $ctr;
 }
 ######
