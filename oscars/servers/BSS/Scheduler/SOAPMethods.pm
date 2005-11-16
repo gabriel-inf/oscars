@@ -1,21 +1,21 @@
-# SOAPMethods.pm:  SOAP methods for BSS Scheduler.
+package BSS::Scheduler::SOAPMethods;
+
+# SOAP methods for BSS Scheduler.
 #
 # Note that all authentication and authorization handling is assumed
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 9, 2005
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
 
-package BSS::Scheduler::SOAPMethods;
 
 use strict;
 
 use Error qw(:try);
 use Data::Dumper;
 
-use Common::Exception;
 use BSS::Scheduler::DBRequests;
 use PSS::LSPHandler::JnxLSP;
 
@@ -51,6 +51,7 @@ sub find_new_reservations {
     my ($resvs, $status);
     my ($error_msg);
 
+    print STDERR "BSS Scheduler: searching for reservations to schedule\n";
     # find reservations that need to be scheduled
     $resvs = $self->{db_requests}->find_pending_reservations(
                                                       $inref->{time_interval});
@@ -74,10 +75,13 @@ sub find_expired_reservations {
 
     my ($resvs, $status);
 
+    print STDERR "BSS Scheduler: searching for expired reservations\n";
     # find reservations whose end time is before the current time and
     # thus expired
     $resvs = $self->{db_requests}->find_expired_reservations(
                                                      $inref->{time_interval});
+    $self->{dbconn}->get_host_info($resvs);
+    $self->{dbconn}->get_engr_fields($resvs); 
     for my $r (@$resvs) {
         $status = teardown_pss($self->{configs}, $r);
         update_reservation( $r, $status, 'finished');
@@ -145,13 +149,13 @@ sub update_reservation {
 
     my ($status, $msg);
 
+    print STDERR "Changing status of $resv->{reservation_id} to ";
     if ( !$error_msg ) {
-        print STDERR "Changing status to $status\n";
         ($status, $msg) = $self->{dbconn}->update_status($resv, $status);
     } else {
-        print STDERR "Changing status to failed\n";
         ($status, $msg) = $self->{dbconn}->update_status($resv, 'failed');
     }
+    print STDERR "$status\n";
 }
 ######
 
