@@ -43,7 +43,12 @@ sub dispatch {
     otherwise {
         $ex = shift;
     }
-    finally {};
+    finally {
+        if ($ex) {
+            print STDERR "AAAS EXCEPTION:\n";
+            print STDERR "AAAS: $ex->{-text}\n";
+        }
+    };
     # caught by SOAP to indicate fault
     if ($ex) {
         die SOAP::Fault->faultcode('Server')
