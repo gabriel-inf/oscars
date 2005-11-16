@@ -51,7 +51,6 @@ sub find_interface_ids {
 
     my( $loopback_ip, $path );
 
-    $self->{output_buf} = "***********************************\n";
     # If the loopbacks have not already been specified, use the default
     # router to run the traceroute to the source, and find the router with
     # an oscars loopback closest to the source 
@@ -70,7 +69,7 @@ sub find_interface_ids {
     }
     else {
         $inref->{source_ip} = $self->name_to_ip($inref->{source_host});
-        $self->{output_buf} .= "--traceroute:  " .
+        print STDERR "--traceroute:  " .
              "$self->{trace_configs}->{trace_conf_jnx_source} to source $inref->{source_ip}\n";
         ($inref->{ingress_interface_id}, $loopback_ip, $path) =
             $self->do_traceroute(
@@ -94,12 +93,12 @@ sub find_interface_ids {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
         $inref->{destination_ip} = $self->name_to_ip($inref->{destination_host});
-        $self->{output_buf} .= "--traceroute:  " .
+        print STDERR "--traceroute:  " .
                        "$loopback_ip to destination $inref->{destination_ip}}\n";
         ($inref->{egress_interface_id}, $loopback_ip, $inref->{reservation_path}) =
             $self->do_traceroute($loopback_ip, $inref->{destination_ip});
     }
-    return ($self->{output_buf}); 
+    return; 
 }
 ######
 
@@ -154,14 +153,12 @@ sub do_traceroute {
     # an oscars loopback address
     my $hop;
     for $hop (@hops)  {
-        $self->{output_buf} .= "hop:  $hop\n";
         print STDERR "hop:  $hop\n";
         # id is 0 if not an edge router (not in interfaces table)
         $interface_id = $self->{db_requests}->ip_to_xface_id( $hop );
         $loopback_ip =
             $self->{db_requests}->xface_id_to_loopback( $interface_id );
         if (!$interface_id) {
-            $self->{output_buf} .= "edge router is $prev_loopback\n";
             print STDERR "edge router is $prev_loopback\n";
             return ($prev_id, $prev_loopback, \@path);
         }
@@ -175,7 +172,6 @@ sub do_traceroute {
     }
     # Need this in case the last hop is in the database
     if ($prev_loopback) {
-        $self->{output_buf} .= "edge router is $prev_loopback\n";
         print STDERR "edge router is $prev_loopback\n";
         my $unused = pop(@path);
         return ($prev_id, $prev_loopback, \@path);
