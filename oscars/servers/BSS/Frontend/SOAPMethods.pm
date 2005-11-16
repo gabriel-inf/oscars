@@ -1,16 +1,15 @@
-# SOAPMethods.pm:  SOAP methods for BSS.
-# BSS::Traceroute::RouteHandler is called to set up route before
-# inserting info in database
+package BSS::Frontend::SOAPMethods;
+
+# SOAP methods for BSS.
 #
 # Note that all authentication and authorization handling is assumed
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 12, 2005
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
-package BSS::Frontend::SOAPMethods;
 
 use strict;
 
@@ -78,16 +77,19 @@ sub initialize {
 
 
 ###############################################################################
-# insert_reservation:  SOAP call to insert a row into the reservations table.  #
+# insert_reservation:  SOAP call to insert a row into the reservations table. 
+#     BSS::Traceroute::RouteHandler is called to set up the route before
+#     inserting a reservation in the database
 # In:  reference to hash.  Hash's keys are all the fields of the reservations
 #      table except for the primary key.
-# Out: results hash.
+# Out: ref to results hash.
 #
 sub insert_reservation {
     my( $self, $inref ) = @_;
     my( $duration_seconds );
 
-    my $output_buf = $self->{route_setup}->find_interface_ids($inref);
+    # inref fields having to do with traceroute modified in find_interface_ids
+    $self->{route_setup}->find_interface_ids($inref);
     $self->{dbconn}->setup_times($inref, $self->get_infinite_time());
     ( $inref->{reservation_class}, $inref->{reservation_burst_limit} ) =
                     $self->{route_setup}->get_pss_fields();
@@ -104,7 +106,7 @@ sub insert_reservation {
         $self->{dbconn}->hostaddrs_ip_to_id($inref->{destination_ip}); 
 
     my $results = $self->get_results($inref);
-    return( $results, $output_buf );
+    return $results;
 }
 ######
 
@@ -118,7 +120,7 @@ sub delete_reservation {
     my( $self, $inref ) = @_;
 
     my $status =  $self->{dbconn}->update_status( $inref, 'precancel' );
-    return( $self->get_reservation_details($inref));
+    return $self->get_reservation_details($inref);
 }
 ######
 
@@ -134,7 +136,7 @@ sub get_all_reservations {
     my $statement = "SELECT * FROM reservations" .
              " ORDER BY reservation_start_time";
     my $rows = $self->{dbconn}->do_query($statement);
-    return( $self->process_reservation_request($inref, $rows) );
+    return $self->process_reservation_request($inref, $rows);
 }
 ######
 
@@ -160,7 +162,7 @@ sub get_user_reservations {
               " WHERE user_dn = ?";
     $statement .= " ORDER BY reservation_start_time";
     my $rows = $self->{dbconn}->do_query($statement, $inref->{user_dn});
-    return( $self->process_reservation_request($inref, $rows) );
+    return $self->process_reservation_request($inref, $rows);
 }
 ######
 
@@ -187,7 +189,7 @@ sub get_reservation_details {
               " WHERE reservation_id = ?" .
               " ORDER BY reservation_start_time";
     my $rows = $self->{dbconn}->do_query($statement, $inref->{reservation_id});
-    return( $self->process_reservation_request($inref, $rows) );
+    return $self->process_reservation_request($inref, $rows);
 }
 ######
 
@@ -209,7 +211,7 @@ sub process_reservation_request {
         $self->{dbconn}->get_host_info($resv);
         $self->check_nulls($resv);
     }
-    return( $rows, '' );
+    return $rows;
 }
 ######
 
@@ -224,7 +226,7 @@ sub get_time_str {
     my( $self, $dtime ) = @_;
 
     my @ymd = split(' ', $dtime);
-    return( $ymd[0] );
+    return $ymd[0];
 }
 ######
 
