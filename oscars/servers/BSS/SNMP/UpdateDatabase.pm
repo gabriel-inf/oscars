@@ -1,10 +1,12 @@
-# UpdateDatabase.pm:  Reads ifrefpoll files to update database with latest
-#                     router and interface information
-# Last modified:   November 14, 2005
+package BSS::SNMP::UpdateDatabase;
+
+# Reads ifrefpoll files to update database with latest router and interface 
+# information
+#
+# Last modified:   November 15, 2005
 # David Robertson  (dwrobertson@lbl.gov)
 # Jason Lee        (jrlee@lbl.gov)
 
-package BSS::SNMP::UpdateDatabase;
 
 use strict;
 
@@ -41,12 +43,12 @@ sub initialize {
 # ipaddrs table Currently only inserts on empty tables are tested.
 # 
 sub update_router_info {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
     my( @file_list, $routers, $interfaces );
 
-    chdir($inref->{directory});
-    opendir(DATADIR, ".") or die "Directory: $inref->{directory}: $!";
+    chdir($params->{directory});
+    opendir(DATADIR, ".") or die "Directory: $params->{directory}: $!";
     # For now, assumes all files are data files
     @file_list = grep { $_ ne '.' and $_ ne '..' } readdir(DATADIR);
     closedir(DATADIR);
@@ -179,9 +181,9 @@ sub update_routers_table {
 
     my $statement = "SELECT router_id, router_name, router_loopback
                      FROM routers WHERE router_name = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $router_name);
+    my $row = $self->{dbconn}->get_row($statement, $router_name);
     # no match; need to do an insert
-    if ( !@$rows ) {
+    if ( !$row ) {
         $statement = "INSERT into routers VALUES ( NULL, True,
                      '$router_name', '$mpls_loopback',
                      $network_id)";
@@ -189,7 +191,6 @@ sub update_routers_table {
         $router_id = $self->{dbconn}->{dbh}->{mysql_insertid};
         return( $router_id );
     }
-    my $row = $rows->[0];
     $router_id = $row->{router_id};
     if ($row->{router_loopback} ne $mpls_loopback) {
         $statement = "UPDATE routers SET router_loopback = ?
@@ -215,7 +216,7 @@ sub update_xfaces_table {
     my $statement = "SELECT interface_id, interface_speed, interface_descr,
                      interface_alias from interfaces
                      WHERE router_id = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $router_id);
+    my $row = $self->{dbconn}->get_row($statement, $router_id);
     # calculate bandwidth given by new data
     my $new_speed = 0;
     if (defined($xface->{ifSpeed})) {
@@ -227,7 +228,7 @@ sub update_xfaces_table {
         }
     }
     # no match; need to do an insert
-    if (!@$rows) {
+    if ( !$row ) {
         $statement = "INSERT into interfaces VALUES ( NULL, True,
                   $new_speed, '$xface->{ifDescr}', '$xface->{ifAlias}',
                   $router_id)";
@@ -235,7 +236,6 @@ sub update_xfaces_table {
         $interface_id = $self->{dbconn}->{dbh}->{mysql_insertid};
         return( $interface_id );
     }
-    my $row = $rows->[0];
     $interface_id = $row->{interface_id};
     if (($row->{interface_speed} != $new_speed) ||
         ($row->{interface_descr} != $xface->{ifDescr}) ||
@@ -266,16 +266,16 @@ sub update_ipaddrs_table {
     # TODO:  handling case where interface_id is different?
     my $statement = "SELECT ipaddrs_id, ipaddrs_ip FROM ipaddrs
                      WHERE ipaddrs_ip = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $interface_ip);
+    my $row = $self->{dbconn}->get_row($statement, $interface_ip);
     # no match; need to do an insert
-    if (!$rows) {
+    if ( !$row ) {
         $statement = "INSERT into ipaddrs VALUES ( NULL, $interface_ip,
                   $interface_id)";
         $unused = $self->{dbconn}->do_query($statement);
         $ipaddrs_id = $self->{dbconn}->{dbh}->{mysql_insertid};
         return( $ipaddrs_id );
     }
-    $ipaddrs_id = $rows->[0]->{ipaddrs_id};
+    $ipaddrs_id = $row->{ipaddrs_id};
     return( $ipaddrs_id );
 }
 ######
