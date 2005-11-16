@@ -1,7 +1,8 @@
 package BSS::Frontend::DBRequests;
 
-# DBRequests.pm:   package for BSS database request handling
-# Last modified:   November 12, 2005
+# General BSS database requests.  Traceroute and scheduler-specific requests
+# are in Traceroute::DBRequests and Scheduler::DBRequests.
+# Last modified:   November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -170,12 +171,10 @@ sub hostaddrs_ip_to_id {
 sub get_host_info {
     my( $self, $resv ) = @_;
  
-    my( $ipaddr, $hrows );
-
     my $statement = "SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?";
     my $hrows = $self->do_query($statement, $resv->{src_hostaddr_id});
     $resv->{source_ip} = $hrows->[0]->{hostaddr_ip};
-    $ipaddr = inet_aton($resv->{source_ip});
+    my $ipaddr = inet_aton($resv->{source_ip});
     $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
     if (!$resv->{source_host}) {
         $resv->{source_host} = $resv->{source_ip};
