@@ -1,9 +1,10 @@
-# DBRequests.pm:  Database handling for BSS/Traceroute/RouteHandler.pm
-# Last modified:  November 11, 2005
+package BSS::Traceroute::DBRequests;
+
+# Database requests made by Traceroute packages
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
-package BSS::Traceroute::DBRequests;
 
 use strict;
 
@@ -39,8 +40,8 @@ sub get_trace_configs {
             "trace_conf_run_trace, trace_conf_use_system, " .
             "trace_conf_use_ping "  .
             "FROM trace_confs where trace_conf_id = 1";
-    my $configs = $self->{dbconn}->do_query($statement);
-    return( $configs );
+    my $configs = $self->{dbconn}->get_row($statement);
+    return $configs;
 }
 ######
 
@@ -55,11 +56,9 @@ sub ip_to_xface_id {
     my ($self, $ipaddr) = @_;
 
     my $statement = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
-    my $rows = $self->{dbconn}->do_query($statement, $ipaddr);
-    if ( !@$rows ) {
-        return( undef );
-    }
-    return( $rows->[0]->{interface_id} );
+    my $row = $self->{dbconn}->get_row($statement, $ipaddr);
+    if ( !$row ) { return undef; }
+    return $row->{interface_id};
 }
 ######
 
@@ -74,17 +73,14 @@ sub xface_id_to_loopback {
     my $statement = "SELECT router_name, router_loopback FROM routers
                  WHERE router_id = (SELECT router_id from interfaces
                                     WHERE interface_id = ?)";
-    my $rows = $self->{dbconn}->do_query($statement, $interface_id);
-    # no match
-    if ( !@$rows ) {
-        # not considered an error
-        return( undef );
-    }
+    my $row = $self->{dbconn}->get_row($statement, $interface_id);
+    # it is not considered to be an error when no rows are returned
+    if ( !$row ) { return undef; }
     # check for loopback address
-    if (!$rows->[0]->{router_loopback}) {
-        throw Error::Simple("Router $rows->[0]->{router_name} has no oscars loopback");
+    if (!$row->{router_loopback}) {
+        throw Error::Simple("Router $row->{router_name} has no oscars loopback");
     }
-    return( $rows->[0]->{router_loopback} );
+    return $row->{router_loopback};
 }
 ######
 

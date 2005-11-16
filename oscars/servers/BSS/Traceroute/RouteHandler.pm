@@ -1,11 +1,11 @@
-# RouteHandler.pm:  Finds ingress and egress routers and the path between
-#                   them.
+package BSS::Traceroute::RouteHandler; 
+
+# Finds ingress and egress routers and the path between them.
 #
-# Last modified:  November 12, 2005
+# Last modified:  November 15, 2005
 # Jason Lee       (jrlee@lbl.gov)
 # David Robertson (dwrobertson@lbl.gov)
 
-package BSS::Traceroute::RouteHandler; 
 
 use Data::Dumper;
 use Socket;
@@ -34,8 +34,8 @@ sub initialize {
 
     $self->{db_requests} = new BSS::Traceroute::DBRequests(
                                                'dbconn' => $self->{dbconn});
-    $self->{trace_configs} = $self->{db_requests}->get_trace_configs()->[0];
-    $self->{pss_configs} = $self->{dbconn}->get_pss_configs()->[0];
+    $self->{trace_configs} = $self->{db_requests}->get_trace_configs();
+    $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
 }
 ######
 
@@ -47,56 +47,56 @@ sub initialize {
 # OUT: ids of interfaces of the edge routers, path list (router indexes)
 #
 sub find_interface_ids {
-    my( $self, $inref) = @_;
+    my( $self, $params) = @_;
 
     my( $loopback_ip, $path );
 
     # If the loopbacks have not already been specified, use the default
     # router to run the traceroute to the source, and find the router with
     # an oscars loopback closest to the source 
-    if ($inref->{ingress_router}) {
+    if ($params->{ingress_router}) {
         # converts to IP address if it is a host name
-        $inref->{ingress_ip} = $self->name_to_ip($inref->{ingress_router});
-        $inref->{ingress_interface_id} = $self->{db_requests}->ip_to_xface_id( $inref->{ingress_ip} );
-        if ($inref->{ingress_interface_id} != 0) {
+        $params->{ingress_ip} = $self->name_to_ip($params->{ingress_router});
+        $params->{ingress_interface_id} = $self->{db_requests}->ip_to_xface_id( $params->{ingress_ip} );
+        if ($params->{ingress_interface_id} != 0) {
             $loopback_ip =
-                $self->{db_requests}->xface_id_to_loopback( $inref->{ingress_interface_id} );
+                $self->{db_requests}->xface_id_to_loopback( $params->{ingress_interface_id} );
         }
         else {
             throw Error::Simple(
-             "Ingress router $inref->{ingress_router} does not have an OSCARS loopback");
+             "Ingress router $params->{ingress_router} does not have an OSCARS loopback");
         }
     }
     else {
-        $inref->{source_ip} = $self->name_to_ip($inref->{source_host});
+        $params->{source_ip} = $self->name_to_ip($params->{source_host});
         print STDERR "--traceroute:  " .
-             "$self->{trace_configs}->{trace_conf_jnx_source} to source $inref->{source_ip}\n";
-        ($inref->{ingress_interface_id}, $loopback_ip, $path) =
+             "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}\n";
+        ($params->{ingress_interface_id}, $loopback_ip, $path) =
             $self->do_traceroute(
-              $self->{trace_configs}->{trace_conf_jnx_source}, $inref->{source_ip});
+              $self->{trace_configs}->{trace_conf_jnx_source}, $params->{source_ip});
     }
   
-    if ($inref->{egress_router}) {
-        $inref->{egress_ip} = $self->name_to_ip($inref->{egress_router});
-        $inref->{egress_interface_id} =
-            $self->{db_requests}->ip_to_xface_id( $inref->{egress_ip} );
-        if ($inref->{egress_interface_id} != 0) {
+    if ($params->{egress_router}) {
+        $params->{egress_ip} = $self->name_to_ip($params->{egress_router});
+        $params->{egress_interface_id} =
+            $self->{db_requests}->ip_to_xface_id( $params->{egress_ip} );
+        if ($params->{egress_interface_id} != 0) {
             $loopback_ip =
-                $self->{db_requests}->xface_id_to_loopback( $inref->{egress_interface_id} );
+                $self->{db_requests}->xface_id_to_loopback( $params->{egress_interface_id} );
         }
         else {
             throw Error::Simple(
-             "Egress router $inref->{egress_router} does not have an OSCARS loopback");
+             "Egress router $params->{egress_router} does not have an OSCARS loopback");
         }
     }
     else {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
-        $inref->{destination_ip} = $self->name_to_ip($inref->{destination_host});
+        $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
         print STDERR "--traceroute:  " .
-                       "$loopback_ip to destination $inref->{destination_ip}}\n";
-        ($inref->{egress_interface_id}, $loopback_ip, $inref->{reservation_path}) =
-            $self->do_traceroute($loopback_ip, $inref->{destination_ip});
+                       "$loopback_ip to destination $params->{destination_ip}}\n";
+        ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
+            $self->do_traceroute($loopback_ip, $params->{destination_ip});
     }
     return; 
 }

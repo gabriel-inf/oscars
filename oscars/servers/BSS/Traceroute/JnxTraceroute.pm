@@ -1,11 +1,8 @@
-##############################################################################
-# Package: JnxTraceroute.pm
-# Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
-# Description:  Execute traceroute on Juniper routers.
-# Last Modified:  October 18, 2005
-#####
-
 package BSS::Traceroute::JnxTraceroute;
+
+# Executes traceroute on Juniper routers.
+# Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
+# Last Modified:  November 15, 2005
 
 use Data::Dumper;
 use Error qw(:try);
@@ -77,7 +74,7 @@ sub traceroute
         $hopCount++;
     }
     close(_TRACEROUTE_);
-    return(1);
+    return 1;
 }
 ######
 
@@ -91,7 +88,7 @@ sub get_raw_hop_data
 {
     my ($self) = @_;
 
-    return(@{$self->{rawHopData}});
+    return @{$self->{rawHopData}};
 }
 ######
 
@@ -104,7 +101,7 @@ sub get_hops
 {
     my ($self) = @_;
 
-    return(@{$self->{hops}});
+    return @{$self->{hops}};
 }
 ######
 
