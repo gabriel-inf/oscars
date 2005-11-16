@@ -1,10 +1,10 @@
-package Frontend::Mail;
+package AAAS::Frontend::Mail;
 
-# Mail.pm:  handles sending notification mail messages
+# Handles all notification email messages.
 # 
-# Last modified: July 11, 2005
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang (dapi@umich.edu)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 use strict;
 
@@ -37,7 +37,7 @@ sub send_mail {
     my( $self, $sender, $recipient, $subject, $msg ) = @_;
 
     if (!open(MAIL, "|$self->{sendmail_cmd} $recipient")) {
-        return( $! );           
+        return $!;           
     }
     print MAIL "From: $sender\n";
     print MAIL "To:   $recipient\n";
@@ -50,8 +50,8 @@ sub send_mail {
     print MAIL "---------------------------------------------------\n";
     print MAIL "=== This is an auto-generated e-mail ===\n";
 
-    if (!close( MAIL )) { return( $! ); }
-    return( "" );
+    if (!close( MAIL )) { return $!; }
+    return "";
 }
 ######
 
@@ -60,7 +60,7 @@ sub send_mail {
 sub get_webmaster {
     my( $self ) = @_;
 
-    return( $self->{webmaster} );
+    return $self->{webmaster};
 }
 ######
 
@@ -69,8 +69,8 @@ sub get_webmaster {
 sub get_admins {
     my( $self ) = @_;
 
-    #return( 'oscars-admin@es.net' );
-    return( 'dwrobertson@lbl.gov chin@es.net' );
+    #return 'oscars-admin@es.net';
+    return 'dwrobertson@lbl.gov chin@es.net';
 }
 ######
 

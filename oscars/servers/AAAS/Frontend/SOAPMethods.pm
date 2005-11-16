@@ -1,7 +1,9 @@
 package AAAS::Frontend::SOAPMethods;
 
-# SOAPMethods.pm: SOAP methods callable from dispatcher.
-# Last modified:  November 9, 2005
+# AAAS SOAP methods callable from AAAS::SOAP::Dispatcher.  Authorization and 
+# parameter validation are performed by the dispatcher.
+#
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -14,7 +16,6 @@ use Error qw(:try);
 use SOAP::Lite;
 
 use AAAS::Frontend::Database;
-use AAAS::Frontend::Auth;
 
 # until can get MySQL 5 and views going
 
@@ -46,11 +47,6 @@ sub new {
 
 sub initialize {
     my ($self) = @_;
-    $self->{auth} = AAAS::Frontend::Auth->new(
-                       'dbconn' => $self->{dbconn});
-    $self->{target} = SOAP::Lite
-                       -> uri('http://198.128.14.164/Dispatcher')
-                       -> proxy ('https://198.128.14.164/BSS');
 }
 ######
 
@@ -65,28 +61,23 @@ sub initialize {
 # Out: status code, status message
 #
 sub verify_login {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
-    my $results = {};
-    my $user_dn = $inref->{user_dn};
-
-    if (!$self->{auth}->authorized($user_dn, 'verify_login')) {
-        throw Error::Simple("User not authorized to verify login");
-    }
+    my $user_dn = $params->{user_dn};
 
     # Get the password and privilege level from the database.
     my $statement = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $user_dn);
+    my $results = $self->{dbconn}->get_row($statement, $user_dn);
     # Make sure user exists.
-    if (!@$rows) {
+    if ( !$results ) {
         throw Error::Simple("Please check your login name and try again.");
     }
     # compare passwords
-    my $encoded_password = crypt($inref->{user_password}, 'oscars');
-    if ( $rows->[0]->{user_password} ne $encoded_password ) {
+    my $encoded_password = crypt($params->{user_password}, 'oscars');
+    if ( $results->{user_password} ne $encoded_password ) {
         throw Error::Simple("Please check your password and try again.");
     }
-    return( $results );
+    return $results;
 }
 ######
 
@@ -96,40 +87,35 @@ sub verify_login {
 # Out: status code, status message
 #
 sub get_profile {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
-    my( $results );
-
-    if (!$self->{auth}->authorized($inref->{user_dn}, 'get_profile')) {
-        throw Error::Simple("User not authorized for get_profile");
-    }
     # DB query: get the user profile detail
     my $statement = "SELECT " . join(', ', @user_profile_fields) .
              " FROM users where user_dn = ?";
 
-    my $rows = $self->{dbconn}->do_query($statement, $inref->{user_dn});
+    my $results = $self->{dbconn}->get_row($statement, $params->{user_dn});
 
     # check whether this person is a registered user
     # (love that syntax:  testing for rows will not work because ref not
     #  empty)
-    if (!@$rows) {
-        throw Error::Simple("No such user.");
+    if ( !$results ) {
+        throw Error::Simple("No such user $params->{user_dn}.");
     }
 
     $statement = "SELECT institution_name FROM institutions
               WHERE institution_id = ?";
-    my $irows = $self->{dbconn}->do_query($statement,
-                                     $rows->[0]->{institution_id});
+    my $irow = $self->{dbconn}->get_row($statement,
+                                        $results->{institution_id});
 
     # check whether this organization is in the db
-    if (!@$irows) {
-        throw Error::Simple("No such organization recorded.");
+    if ( !$irow ) {
+        throw Error::Simple(
+            "Organization $irow->{institution} not found.");
     }
-    $results = @{$rows}[0];
-    $results->{institution} = $irows->[0]->{institution};
+    $results->{institution} = $irow->{institution};
     # X out password
     $results->{user_password} = undef;
-    return ( $results );
+    return $results;
 }
 ######
 
@@ -139,14 +125,9 @@ sub get_profile {
 # Out: status code, status message
 #
 sub set_profile {
-    my ( $self, $inref ) = @_;
+    my ( $self, $params ) = @_;
 
-    my $user_dn = $inref->{user_dn};
-
-        # TODO:  setting other person's profile (admin)
-    if (!$self->{auth}->authorized($user_dn, 'set_profile')) {
-        throw Error::Simple("User not authorized for set_profile");
-    }
+    my $user_dn = $params->{user_dn};
 
     # Read the current user information from the database to decide which
     # fields are being updated, and user has proper privileges.
@@ -154,51 +135,51 @@ sub set_profile {
     # DB query: get the user profile detail
     my $statement = "SELECT " . join(', ', @user_profile_fields) .
                 ", user_level FROM users where user_dn = ?";
-    my $results = $self->{dbconn}->do_query($statement, $user_dn);
+    my $results = $self->{dbconn}->get_row($statement, $user_dn);
 
     # check whether this person is in the database
-    if (!@$results) {
-        throw Error::Simple("The user $user_dn does not have an OSCARS login.");
+    if ( !$results ) {
+        throw Error::Simple("User $user_dn does not have an OSCARS login.");
     }
 
     ### Check the current password with the one in the database before
     ### proceeding.
-    if ( $results->[0]->{user_password} ne
-         crypt($inref->{user_password},'oscars') ) {
-        throw Error::Simple("Please check the current password and " .
-                                "try again.");
+    if ( $results->{user_password} ne
+         crypt($params->{user_password},'oscars') ) {
+        throw Error::Simple(
+            "Please check the current password and try again.");
     }
 
     # If the password needs to be updated, set the input password field to
     # the new one.
-    if ( $inref->{password_new_once} ) {
-        $inref->{user_password} = crypt( $inref->{password_new_once},
+    if ( $params->{password_new_once} ) {
+        $params->{user_password} = crypt( $params->{password_new_once},
                                          'oscars');
     }
     else {
-        $inref->{user_password} = crypt($inref->{user_password}, 'oscars');
+        $params->{user_password} = crypt($params->{user_password}, 'oscars');
     }
 
     # Set the institution id to the primary key in the institutions
     # table (user only can select from menu of existing instituions.
-    if ( $inref->{institution} ) {
-        $self->{dbconn}->get_institution_id($inref, $inref->{user_dn});
+    if ( $params->{institution} ) {
+        $self->{dbconn}->get_institution_id($params, $params->{user_dn});
     }
 
     # prepare the query for database update
     $statement = "UPDATE users SET ";
     for $_ (@user_profile_fields) {
-        $statement .= "$_ = '$inref->{$_}', ";
+        $statement .= "$_ = '$params->{$_}', ";
         # TODO:  check that query preparation correct
-        $results->[0]->{$_} = $inref->{$_};
+        $results->{$_} = $params->{$_};
     }
     $statement =~ s/,\s$//;
     $statement .= " WHERE user_dn = ?";
     my $unused = $self->{dbconn}->do_query($statement, $user_dn);
 
-    $results->[0]->{institution} = $inref->{institution};
-    $results->[0]->{user_password} = undef;
-    return( $results );
+    $results->{institution} = $params->{institution};
+    $results->{user_password} = undef;
+    return $results;
 }
 ######
 
@@ -214,42 +195,39 @@ sub set_profile {
 # Out: status code, status message
 #
 sub add_user {
-    my ( $self, $inref ) = @_;
+    my ( $self, $params ) = @_;
 
     my $results = {};
-    my $user_dn = $inref->{user_dn};
+    my $user_dn = $params->{user_dn};
 
-    if (!$self->{auth}->authorized($inref->{user_dn}, 'add_user')) {
-        throw Error::Simple("User not authorized to add another user");
-    }
     print STDERR "add_user\n";
-    my $encrypted_password = $inref->{password_once};
+    my $encrypted_password = $params->{password_once};
 
     # login name overlap check
     my $statement = "SELECT user_dn FROM users WHERE user_dn = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $user_dn);
+    my $row = $self->{dbconn}->get_row($statement, $user_dn);
 
-    if ( scalar(@$rows) > 0 ) {
+    if ( $row ) {
         throw Error::Simple("The login, $user_dn, is already taken " .
                    "by someone else; please choose a different login name.");
     }
 
     # Set the institution id to the primary key in the institutions
     # table (user only can select from menu of existing instituions).
-    if ( $inref->{institution} ) {
-        $self->{dbconn}->get_institution_id($inref, $inref->{user_dn});
+    if ( $params->{institution} ) {
+        $self->{dbconn}->get_institution_id($params, $params->{user_dn});
     }
 
-    $inref->{user_password} = crypt($inref->{password_new_once}, 'oscars');
+    $params->{user_password} = crypt($params->{password_new_once}, 'oscars');
     $statement = "SHOW COLUMNS from users";
-    $rows = $self->{dbconn}->do_query( $statement );
+    my $rows = $self->{dbconn}->do_query( $statement );
 
     my @insertions;
     # TODO:  FIX way to get insertions fields
     for $_ ( @$rows ) {
-       if ($inref->{$_->{Field}}) {
-           $results->{$_->{Field}} = $inref->{$_->{Field}};
-           push(@insertions, $inref->{$_->{Field}}); 
+       if ($params->{$_->{Field}}) {
+           $results->{$_->{Field}} = $params->{$_->{Field}};
+           push(@insertions, $params->{$_->{Field}}); 
        }
        else{ push(@insertions, 'NULL'); }
     }
@@ -260,36 +238,33 @@ sub add_user {
     my $unused = $self->{dbconn}->do_query($statement, @insertions);
     # X out password
     $results->{user_password} = undef;
-    return( $results );
+    return $results;
 }
 ######
 
 ###############################################################################
 # get_userlist
-# In:  inref
+# In:  params
 # Out: status message and DB results
 #
 sub get_userlist {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
-    my( $r, $irows, $user );
-    my $user_dn = $inref->{user_dn};
+    my( $r, $irow, $user );
+    my $user_dn = $params->{user_dn};
 
-    if (!$self->{auth}->authorized($user_dn, 'get_userlist')) {
-        throw Error::Simple("User not authorized to get list of users");
-    }
     my $statement .= "SELECT * FROM users ORDER BY user_last_name";
-    my $user_rows = $self->{dbconn}->do_query($statement);
+    my $results = $self->{dbconn}->do_query($statement);
 
-    for $user (@$user_rows) {
+    for $user (@$results) {
         # replace institution id with institution name
         $statement = "SELECT institution_name FROM institutions " .
                  "WHERE institution_id = ?";
-        $irows = $self->{dbconn}->do_query($statement, $user->{institution_id});
-        $user->{institution_id} = $irows->[0]->{institution_name};
+        $irow = $self->{dbconn}->get_row($statement, $user->{institution_id});
+        $user->{institution_id} = $irow->{institution_name};
         $user->{user_password} = undef;
     }
-    return( $user_rows );
+    return $results;
 }
 ######
 
@@ -303,41 +278,37 @@ sub get_userlist {
 # Out: status code, status message
 #
 sub activate_account {
-    my( $self, $inref, $required_level ) = @_;
+    my( $self, $params, $required_level ) = @_;
 
-    my ( $r, $results) ;
-    my $user_dn = $inref->{user_dn};
-
-    $self->{auth}->authorized($inref->{user_level}, $required_level, 1);
+    my ( $results) ;
+    my $user_dn = $params->{user_dn};
 
     # get the password from the database
     my $statement = "SELECT user_password, user_activation_key, user_level
                  FROM users WHERE user_dn = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $user_dn);
+    my $row = $self->{dbconn}->get_row($statement, $user_dn);
 
     # check whether this person is a registered user
-    if (!$rows) {
+    if ( !$row ) {
         throw Error::Simple("Please check your login name and try again.");
     }
 
     my $keys_match = 0;
     my( $pending_level, $non_match_error );
         # this login name is in the database; compare passwords
-    for $r (@$rows) {
-        if ( $r->[0]->{user_activation_key} eq '' ) {
-            $non_match_error = 'This account has already been activated.';
-        }
-        elsif ( $r->[0]->{user_password} ne $inref->{user_password} ) {
-            $non_match_error = 'Please check your password and try again.';
-        }
-        elsif ( $r->[0]->{user_activation_key} ne $inref->{user_activation_key} ) {
-            $non_match_error = "Please check the activation key and " .
-                               "try again.";
-        }
-        else {
-            $keys_match = 1;
-            $pending_level = $r->[0]->{user_level};
-        }
+    if ( $row->{user_activation_key} eq '' ) {
+        $non_match_error = 'This account has already been activated.';
+    }
+    elsif ( $row->{user_password} ne $params->{user_password} ) {
+        $non_match_error = 'Please check your password and try again.';
+    }
+    elsif ( $row->{user_activation_key} ne $params->{user_activation_key} ) {
+        $non_match_error = "Please check the activation key and " .
+                           "try again.";
+    }
+    else {
+        $keys_match = 1;
+        $pending_level = $row->{user_level};
     }
 
     # If the input password and the activation key matched against those
@@ -357,7 +328,7 @@ sub activate_account {
        "$user_dn</strong> has been successfully activated. You " .
        "will be redirected to the main service login page in 10 seconds. " .
        "<br>Please change the password to your own once you sign in.";
-    return( $results );
+    return $results;
 }
 ######
 
@@ -367,21 +338,21 @@ sub activate_account {
 # Out: status message
 #
 sub process_registration {
-    my( $self, $inref, @insertions ) = @_;
+    my( $self, $params, @insertions ) = @_;
 
     my $results = {};
-    my $user_dn = $inref->{user_dn};
+    my $user_dn = $params->{user_dn};
 
-    my $encrypted_password = $inref->{password_once};
+    my $encrypted_password = $params->{password_once};
 
     # get current date/time string in GMT
-    my $current_date_time = $inref->{utc_seconds};
+    my $current_date_time = $params->{utc_seconds};
 	
     # login name overlap check
     my $statement = "SELECT user_dn FROM users WHERE user_dn = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $user_dn);
+    my $row = $self->{dbconn}->get_row($statement, $user_dn);
 
-    if ( scalar(@$rows) > 0 ) {
+    if ( $row ) {
         throw Error::Simple("The selected login name is already taken " .
                    "by someone else; please choose a different login name.");
     }
@@ -394,46 +365,9 @@ sub process_registration {
         "successfully. Your login name is <strong>$user_dn</strong>. Once " .
         "your registration is accepted, information on " .
         "activating your account will be sent to your primary email address.";
-    return( $results );
+    return $results;
 }
 ######
-
-##############################################
-# Calls to the BSS.
-##############################################
-
-sub insert_reservation {
-    my( $self, $form_params ) = @_;
-
-    if (!$self->{auth}->authorized($form_params->{user_dn},
-                                    'insert_reservation')) {
-        throw Error::Simple("User not authorized to schedule reservation");
-    }
-    my $som = $self->{target}->dispatch($form_params);
-    return( $som->result );
-}
-
-sub delete_reservation {
-    my( $self, $form_params ) = @_;
-
-    if (!$self->{auth}->authorized($form_params->{user_dn},
-                                    'delete_reservation')) {
-        throw Error::Simple("User not authorized to delete reservation");
-    }
-    my $som = $self->{target}->dispatch($form_params);
-    return( $som->result );
-}
-
-sub get_reservations {
-    my( $self, $form_params ) = @_;
-
-    if (!$self->{auth}->authorized($form_params->{user_dn},
-                                    'insert_reservation')) {
-        throw Error::Simple("User not authorized to get list of reservations");
-    }
-    my $som = $self->{target}->dispatch($form_params);
-    return( $som->result );
-}
 
 ######
 1;

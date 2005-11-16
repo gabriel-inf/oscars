@@ -1,8 +1,9 @@
 package AAAS::Frontend::Auth;
 
-# Auth.pm: Database interactions dealing with authorization.
-#          Need to be re-implemented.                 
-# Last modified:  November 12, 2005
+# Database interactions dealing with authorization.  TODO:  needs to be 
+# reimplemented.                 
+#
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;

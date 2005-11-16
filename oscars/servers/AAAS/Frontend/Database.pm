@@ -1,6 +1,6 @@
 package AAAS::Frontend::Database;
 
-# Database.pm:     package for AAAS database request handling
+# AAAS database request handling.
 # Last modified:   November 12, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -49,6 +49,7 @@ sub initialize {
 }
 ######
 
+# TODO:  FIX duplication
 ###############################################################################
 #
 sub do_query {
@@ -67,23 +68,43 @@ sub do_query {
     if ( $DBI::err ) {
         throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
     }
-    return( $rows );
+    return $rows;
+}
+######
+
+###############################################################################
+#
+sub get_row {
+    my( $self, $statement, @args ) = @_;
+
+    my $sth = $self->{dbh}->prepare( $statement );
+    if ($DBI::err) {
+        throw Error::Simple("[DBERROR] Preparing $statement:  $DBI::errstr");
+    }
+    $sth->execute( @args );
+    if ( $DBI::err ) {
+        throw Error::Simple("[DBERROR] Executing $statement:  $DBI::errstr");
+    }
+    my $rows = $sth->fetchall_arrayref({});
+    if ( !@$rows ) { return undef; }
+    # TODO:  error checking if more than one row
+    return $rows->[0];
 }
 ######
 
 ###############################################################################
 #
 sub get_institution_id {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
     my $statement = "SELECT institution_id FROM institutions
                 WHERE institution_name = ?";
-    my $rows = $self->do_query($inref->{institution});
-    if (!@$rows) {
+    my $row = $self->get_row($params->{institution});
+    if ( !$row ) {
         throw Error::Simple("The organization " .
-                   "$inref->{institution} is not in the database.");
+                   "$params->{institution} is not in the database.");
     }
-    $inref->{institution_id} = $rows->[0]->{institution_id} ;
+    $params->{institution_id} = $row->{institution_id} ;
     return;
 }
 ######

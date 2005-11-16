@@ -1,14 +1,18 @@
-# Validator.pm:  Input validation
-# Last modified: November 5, 2005
+package AAAS::Frontend::Validator;
+
+# Called by AAAS::SOAP::Dispatcher to determine whether parameters are
+# valid before handling them by the AAAS or forwarding them to the BSS.
+# 
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
-package AAAS::Frontend::Validator;
 
 use strict;
 
 use Data::Dumper;
 
-my $form_variables = {
+my $tests = {
+     # AAAS
     'verify_login' => {
         # must be valid email address
         'user_dn' => (
@@ -22,8 +26,6 @@ my $form_variables = {
             }
         )
     },
-    # currently no tests
-    'get_profile' => {},
     'set_profile' => {
         'user_password' => (
             {'regexp' => '.+',
@@ -88,12 +90,51 @@ my $form_variables = {
             }
         )
     },
-    # currently no tests
+
+    # BSS
+    'insert_reservation' => {
+        'reservation_start_time' => (
+            {'regexp' => '.+',
+             'error' => "Please enter the reservation starting time."
+            }
+        ),
+        'duration_hour' => (
+            {'regexp' => '.+',
+             'error' => "Please enter the duration in hours."
+            }
+        ),
+        'source_host' => (
+            {'regexp' => '.+',
+             'error' => "Please enter starting host name or IP address."
+            }
+        ),
+        'destination_host' => (
+            {'regexp' => '.+',
+             'error' => "Please enter destination host name or IP address."
+            }
+        ),
+        'reservation_bandwidth' => (
+            {'regexp' => '.+',
+             'error' => "Please enter the bandwidth you wish to reserve."
+            }
+        ),
+        'reservation_description' => (
+            {'regexp' => '.+',
+             'error' => "Please enter a description of the purpose for this reservation."
+            }
+        ),
+    },
+    # no tests yet
+    # AAAS
+    'get_profile' => {},
     'get_userlist' => {},
-    # validate here or in BSS?
-    'insert_reservation' => {},
+    # BSS
     'delete_reservation' => {},
-    'get_reservations' => {}
+    'get_all_reservations' => {},
+    'get_user_reservations' => {},
+    'get_reservation_details' => {},
+    'find_pending_reservatiosn' => {},
+    'find_expired_reservatiosn' => {}
 };
 
 ###############################################################################
@@ -117,25 +158,29 @@ sub initialize {
 ## validate:  input validation
 #
 sub validate {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
-    my( $m, $k, $r );
-
-    $m = $form_variables->{$inref->{method}};
-    if (!$m) {
-        return "Cannot validate $inref->{method}";
+    my $pmethod = $tests->{$params->{method}};
+    if ( !$pmethod ) {
+        return "Cannot validate $params->{method}";
     }
-    # validate form variables for that method
-    for $k (keys %{$m}) {
+    # validate parameters for that method
+    for my $ptest (keys %{$pmethod}) {
         # set to blank string if not defined
-        if (!defined($inref->{$k})) {
-            $inref->{$k} = '';
+        if (!defined($params->{$ptest})) {
+            $params->{$ptest} = '';
         }
         # for all tests 
-        for $r ($m->{$k}) {
-            if ($inref->{$k} !~ $r->{regexp}) {
-                return $r->{error};
+        for my $t ($pmethod->{$ptest}) {
+            if ($params->{$ptest} !~ $t->{regexp}) {
+                return $t->{error};
             }
+            if ($params->{ptest}) {
+                if ($t->{test_function} && !($t->{test_function}())) {
+                    return $t->{error};
+                }
+            }
+
         }
     }
     return "";
