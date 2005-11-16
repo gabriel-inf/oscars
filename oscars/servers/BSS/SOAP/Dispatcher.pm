@@ -1,16 +1,17 @@
-# Dispatcher.pm:  SOAP::Lite dispatcher for BSS
-# Last modified:  November 9, 2005
+package BSS::SOAP::Dispatcher;
+
+# SOAP::Lite dispatcher for BSS.  Note well:  calls to the BSS are currently
+# assumed to have already been validated and authorized through the AAAS.
+#
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
-
-package BSS::SOAP::Dispatcher;
 
 use Data::Dumper;
 use Error qw(:try);
 
 use BSS::Frontend::SOAPMethods;
 use BSS::Frontend::DBRequests;
-use BSS::Frontend::Validator;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
@@ -24,18 +25,15 @@ my $dbconn = BSS::Frontend::DBRequests->new(
 my $request_handler = BSS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
 
 
-
 sub dispatch {
-    my ( $class_name, $inref ) = @_;
+    my ( $class_name, $params ) = @_;
 
     my ( $ex );
 
     my $results = {};
     try {
-        $v = BSS::Frontend::Validator->new();
-        $v->validate($inref);
-        my $m = $inref->{method};
-        my $results = $request_handler->$m($inref) ;
+        my $m = $params->{method};
+        $results = $request_handler->$m($params) ;
     }
     catch Error::Simple with {
         $ex = shift;
