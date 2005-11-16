@@ -37,7 +37,7 @@ sub initialize {
     $self->{LSP_TEARDOWN} = 0;
     $self->{db_requests} = new BSS::Scheduler::DBRequests(
                                                'dbconn' => $self->{dbconn});
-    $self->{configs} = $self->{db_requests}->get_pss_configs()->[0];
+    $self->{configs} = $self->{db_requests}->get_pss_configs();
 }
 ######
 
@@ -46,7 +46,7 @@ sub initialize {
 #    reservatations in db that need to be setup and run in the next N minutes.
 #
 sub find_new_reservations {
-    my ($self, $inref) = @_;
+    my ($self, $params) = @_;
 
     my ($resvs, $status);
     my ($error_msg);
@@ -54,7 +54,7 @@ sub find_new_reservations {
     print STDERR "BSS Scheduler: searching for reservations to schedule\n";
     # find reservations that need to be scheduled
     $resvs = $self->{db_requests}->find_pending_reservations(
-                                                      $inref->{time_interval});
+                                                      $params->{time_interval});
     $self->{dbconn}->get_host_info($resvs);
     $self->{dbconn}->get_engr_fields($resvs); 
     for my $r (@$resvs) {
@@ -71,7 +71,7 @@ sub find_new_reservations {
 #                             them down
 #
 sub find_expired_reservations {
-    my ($self, $inref) = @_;
+    my ($self, $params) = @_;
 
     my ($resvs, $status);
 
@@ -79,7 +79,7 @@ sub find_expired_reservations {
     # find reservations whose end time is before the current time and
     # thus expired
     $resvs = $self->{db_requests}->find_expired_reservations(
-                                                     $inref->{time_interval});
+                                                     $params->{time_interval});
     $self->{dbconn}->get_host_info($resvs);
     $self->{dbconn}->get_engr_fields($resvs); 
     for my $r (@$resvs) {
@@ -111,10 +111,10 @@ sub setup_pss {
     print STDERR "Setting up LSP...\n";
     $jnxLsp->configure_lsp($self->{LSP_SETUP}, $resv_info);
     if ($error = $jnxLsp->get_error())  {
-        return( $error );
+        return $error;
     }
     print STDERR "LSP setup complete\n" ;
-    return( "" );
+    return "";
 }
 ######
 
@@ -133,10 +133,10 @@ sub teardown_pss {
     print STDERR "Tearing down LSP...\n" ;
     $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $resv_info); 
     if ($error = $jnxLsp->get_error())  {
-        return( $error );
+        return $error;
     }
     print STDERR "LSP teardown complete\n" ;
-    return( "" );
+    return "";
 }
 ######
 
@@ -193,7 +193,7 @@ sub map_fields {
         $lsp_info{protocol} = $resv->{reservation_protocol};
     }
     $lsp_info{configs} = $self->{configs};
-    return ( \%lsp_info );
+    return \%lsp_info;
 }
 ######
 
