@@ -11,6 +11,8 @@ use DBI;
 use Data::Dumper;
 use Error qw(:try);
 
+use SOAP::Lite;
+
 use AAAS::Frontend::Database;
 use AAAS::Frontend::Auth;
 
