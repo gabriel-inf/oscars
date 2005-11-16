@@ -35,12 +35,12 @@ sub initialize {
 ######
 
 ##############################################################################
-# update_router_db: 
-
-# SOAP method call.  Gets latest SNMP data to update routers, interfaces, and 
+# update_router_info: 
+#
+# Gets latest SNMP data to update routers, interfaces, and 
 # ipaddrs table Currently only inserts on empty tables are tested.
 # 
-sub update_router_db {
+sub update_router_info {
     my( $self, $inref ) = @_;
 
     my( @file_list, $routers, $interfaces );
@@ -51,7 +51,7 @@ sub update_router_db {
     @file_list = grep { $_ ne '.' and $_ ne '..' } readdir(DATADIR);
     closedir(DATADIR);
     ($routers, $interfaces) = $self->read_snmp_files(@file_list);
-    $self->update($routers, $interfaces);
+    #$self->update_db($routers, $interfaces);
 }
 ######
 
@@ -73,8 +73,10 @@ sub read_snmp_files {
     for my $fname (@file_list) {
         ($router_info, $interface_info) = $self->read_snmp_data($fname);
         ($router_name, $path, $suffix) = fileparse($fname,@suffixlist);
+        print STDERR "foo: $router_name\n";
         $routers{$router_name} = $router_info;
         $interfaces{$router_name} = $interface_info;
+        print Dumper($interfaces{$router_name});
     }
     return( \%routers, \%interfaces );
 }
@@ -117,6 +119,7 @@ sub read_snmp_data {
             next;
         }
         @fields = split;
+        if (!$fields[1]) { next; }
         #  TODO:  error checking
         if ($fields[1] =~ /(ipAdEntIfIndex.)([\d\.]*)/) {
             $router_info{$2} = $fields[2];
@@ -131,13 +134,13 @@ sub read_snmp_data {
 ######
 
 ##############################################################################
-# update:  Compares current info with routers, interfaces, and ipaddrs
+# update_db:  Compares current info with routers, interfaces, and ipaddrs
 #             tables.
 #
 # In:   db instance, and two hashes keyed by router name
 # Out:  Error if any
 #
-sub update {
+sub update_db {
     my( $self, $routers, $interfaces ) = @_;
 
     my( $router_id, $mpls_loopback );
@@ -145,7 +148,7 @@ sub update {
     # for now (ESnet)
     my $network_id = 1;
     for my $router_name (sort keys %$routers) {   # sort by router name
-        print '** ', $router_name, "\n";
+        print STDERR '** ', $router_name, "\n";
         $mpls_loopback = undef;
         for my $ipaddr (sort keys %{$routers->{$router_name}}) {    # sort by IP
             if ($ipaddr =~ /134\.55\.75\.*/) {
@@ -153,23 +156,26 @@ sub update {
                  last;
             }
         }
-        $router_id = $self->check_routers_table($network_id, $router_name,
-                                                $mpls_loopback);
+        if ($mpls_loopback) {
+            $router_id = $self->update_routers_table($network_id, $router_name,
+                                                     $mpls_loopback);
+            $self->update_xfaces_table($router_id, $interfaces->{router_name});
+        }
     } 
 }
 ######
 
 ##############################################################################
-# check_routers_table:  Compares router name and loopback with routers table,
+# update_routers_table: Compares router name and loopback with routers table,
 #                       and does inserts and updates as necessary.
 #
 # In:   router name, router MPLS loopback address
 # Out:  primary key, and error message, if any
 #
-sub check_routers_table {
-    my( $self, $network_id, $router_name, $router_id, $mpls_loopback ) = @_;
+sub update_routers_table {
+    my( $self, $network_id, $router_name, $mpls_loopback ) = @_;
 
-    my( $unused );
+    my( $router_id, $unused );
 
     my $statement = "SELECT router_id, router_name, router_loopback
                      FROM routers WHERE router_name = ?";
@@ -195,13 +201,13 @@ sub check_routers_table {
 ######
 
 ##############################################################################
-# check_xfaces_table:  Compares current row with interfaces table, and does
-#                      inserts and updates if necessary.
+# update_xfaces_table:  Compares current row with interfaces table, and does
+#                       inserts and updates if necessary.
 #
 # In:   router id, and ref to hash containing interface fields
 # Out:  primary key in interfaces, and error message, if any
 #
-sub check_xfaces_table {
+sub update_xfaces_table {
     my( $self, $router_id, $xface ) = @_;
 
     my( $interface_id, $unused );
@@ -246,13 +252,13 @@ sub check_xfaces_table {
 ######
 
 ##############################################################################
-# check_ipaddrs_table:  Compares current row with ipaddrs table, and does
-#                       inserts and updates if necessary.
+# update_ipaddrs_table:  Compares current row with ipaddrs table, and does
+#                        inserts and updates if necessary.
 #
 # In:   interface id, and interface IP address
 # Out:  primary key in ipaddrs, and error message, if any
 #
-sub check_ipaddrs_table {
+sub update_ipaddrs_table {
 
     my( $self, $interface_id, $interface_ip ) = @_;
     my( $ipaddrs_id, $unused );
