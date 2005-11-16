@@ -1,16 +1,27 @@
-# Dispatcher.pm:  SOAP::Lite dispatcher for AAAS
-# Last modified:  November 8, 2005
-# David Robertson (dwrobertson@lbl.gov)
-
 package AAAS::SOAP::Dispatcher;
 
+# SOAP::Lite dispatcher for AAAS.  Validates parameters and does authorization
+# checks through calls to AAAS::Frontend packages before handing them to
+# either the AAAS::Frontend::SOAPMethods package, or forwarding them to the
+# BSS SOAP server.
+
+# Last modified:  November 15, 2005
+# David Robertson (dwrobertson@lbl.gov)
+
 use Error qw(:try);
+
+use Data::Dumper;
 
 use lib qw(/usr/local/esnet/servers/prod);
 
 use AAAS::Frontend::SOAPMethods;
 use AAAS::Frontend::Validator;
+use AAAS::Frontend::Auth;
 use AAAS::Frontend::Database;
+
+# TODO:  FIX, means BSS needs to run on same server
+#        To fix, will need virtual hosts for AAAS and BSS
+use BSS::SOAP::Dispatcher;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
@@ -23,19 +34,33 @@ my $dbconn = AAAS::Frontend::Database->new(
 
 
 my $request_handler = AAAS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
+my $auth = AAAS::Frontend::Auth->new( 'dbconn' => $self->{dbconn});
 
 sub dispatch {
-    my ( $class_name, $inref ) = @_;
+    my ( $class_name, $params ) = @_;
 
     my( $ex,  );
     my $results = {};
 
     try {
         my $v = AAAS::Frontend::Validator->new();
-        my $err = $v->validate($inref);
+        my $err = $v->validate($params);
         if ($err) { throw Error::Simple($err); }
-        my $m = $inref->{method};
-        $results = $request_handler->$m($inref);
+        my $m = $params->{method};
+        if (!$auth->authorized($params->{user_dn}, $m)) {
+            throw Error::Simple(
+                "User $params->{user_dn} not authorized to make $m call");
+        }
+        # AAAS handles this call
+        if ( $params->{server_name} ne 'BSS' ) {
+            $results = $request_handler->$m($params);
+        }
+        # forward to BSS SOAP server
+        else {
+            print STDERR "forwarding\n";
+            $results = BSS::SOAP::Dispatcher::dispatch('BSS::SOAP::Dispatcher', $params);
+            print STDERR Dumper($results);
+        }
     }
     catch Error::Simple with {
         $ex = shift;
