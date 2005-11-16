@@ -28,14 +28,14 @@ my $request_handler = BSS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
 sub dispatch {
     my ( $class_name, $inref ) = @_;
 
-    my ( $logging_buf, $ex );
+    my ( $ex );
 
     my $results = {};
     try {
         $v = BSS::Frontend::Validator->new();
         $v->validate($inref);
         my $m = $inref->{method};
-        ($results, $logging_buf) = $request_handler->$m($inref) ;
+        my $results = $request_handler->$m($inref) ;
     }
     catch Error::Simple with {
         $ex = shift;
@@ -44,6 +44,10 @@ sub dispatch {
         $ex = shift;
     }
     finally {
+        if ($ex) {
+            print STDERR "BSS EXCEPTION:\n";
+            print STDERR "BSS: $ex->{-text}\n";
+        }
     };
     # caught by SOAP to indicate fault
     if ($ex) {
