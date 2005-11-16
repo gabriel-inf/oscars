@@ -51,6 +51,8 @@ sub initialize {
 }
 ######
 
+# TODO:  FIX duplication
+
 ###############################################################################
 #
 sub do_query {
@@ -68,7 +70,27 @@ sub do_query {
     my $rows = $sth->fetchall_arrayref({});
     # TODO, FIX:  if check for err here, get fetch without execute if not
     # select
-    return( $rows );
+    return $rows;
+}
+######
+
+###############################################################################
+#
+sub get_row {
+    my( $self, $statement, @args ) = @_;
+
+    my $sth = $self->{dbh}->prepare( $statement );
+    if ($DBI::err) {
+        throw Error::Simple("[DBERROR] Preparing $statement:  $DBI::errstr");
+    }
+    $sth->execute( @args );
+    if ( $DBI::err ) {
+        throw Error::Simple("[DBERROR] Executing $statement:  $DBI::errstr");
+    }
+    my $rows = $sth->fetchall_arrayref({});
+    if ( !@$rows ) { return undef; }
+    # TODO:  error checking if more than one row
+    return $rows->[0];
 }
 ######
 
@@ -77,26 +99,26 @@ sub do_query {
 # finished, or cancelled.
 #
 sub update_status {
-    my ( $self, $inref, $status ) = @_;
+    my ( $self, $params, $status ) = @_;
 
     my $statement = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
-    my $rows = $self->do_query($statement, $inref->{reservation_id});
+    my $row = $self->get_row($statement, $params->{reservation_id});
 
     # If the previous state was pending_cancel, mark it now as cancelled.
     # If the previous state was pending, and it is to be deleted, mark it
     # as cancelled instead of pending_cancel.  The latter is used by 
     # find_expired_reservations as one of the conditions to attempt to
     # tear down a circuit.
-    my $prev_status = $rows->[0]->{reservation_status};
+    my $prev_status = $row->{reservation_status};
     if ( ($prev_status eq 'precancel') || ( ($prev_status eq 'pending') &&
             ($status eq 'precancel'))) { 
         $status = 'cancelled';
     }
     $statement = qq{ UPDATE reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
-    my $unused = $self->do_query($statement, $status, $inref->{reservation_id});
-    return( $status );
+    my $unused = $self->do_query($statement, $status, $params->{reservation_id});
+    return $status;
 }
 ######
 
@@ -115,8 +137,8 @@ sub get_pss_configs {
              "pss_conf_setup_priority, pss_conf_resv_priority, " .
              "pss_conf_allow_lsp "  .
              "FROM pss_confs where pss_conf_id = 1";
-    my $configs = $self->do_query($statement);
-    return( $configs );
+    my $configs = $self->get_row($statement);
+    return $configs;
 }
 ######
 
@@ -131,13 +153,13 @@ sub id_to_router_name {
     my $statement = "SELECT router_name FROM routers
                  WHERE router_id = (SELECT router_id from interfaces
                                     WHERE interface_id = ?)";
-    my $rows = $self->do_query($statement, $interface_id);
+    my $row = $self->get_row($statement, $interface_id);
     # no match
-    if ( !@$rows ) {
+    if ( !$row ) {
         # not considered an error
-        return ("");
+        return "";
     }
-    return ($rows->[0]->{router_name}, "");
+    return $row->{router_name};
 }
 ######
 
@@ -149,20 +171,17 @@ sub id_to_router_name {
 #
 sub hostaddrs_ip_to_id {
     my( $self, $ipaddr ) = @_;
-    my( $id );
 
+    # TODO:  fix schema, possible hostaddr_ip would not be unique
     my $statement = 'SELECT hostaddr_id FROM hostaddrs WHERE hostaddr_ip = ?';
-    my $rows = $self->do_query($statement, $ipaddr);
+    my $row = $self->get_row($statement, $ipaddr);
     # if no matches, insert a row in hostaddrs
-    if ( !@$rows ) {
+    if ( !$row ) {
         $statement = "INSERT INTO hostaddrs VALUES ( NULL, '$ipaddr'  )";
         my $unused = $self->do_query($statement);
-        $id = $self->{dbh}->{mysql_insertid};
+        return $self->{dbh}->{mysql_insertid};
     }
-    else {
-        $id = $rows->[0]->{hostaddr_id};
-    }
-    return( $id );
+    else { return $row->{hostaddr_id}; }
 }
 ######
 
@@ -172,16 +191,17 @@ sub get_host_info {
     my( $self, $resv ) = @_;
  
     my $statement = "SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?";
-    my $hrows = $self->do_query($statement, $resv->{src_hostaddr_id});
-    $resv->{source_ip} = $hrows->[0]->{hostaddr_ip};
+    my $hrow = $self->get_row($statement, $resv->{src_hostaddr_id});
+    $resv->{source_ip} = $hrow->{hostaddr_ip};
     my $ipaddr = inet_aton($resv->{source_ip});
     $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
     if (!$resv->{source_host}) {
         $resv->{source_host} = $resv->{source_ip};
     }
 
-    $hrows = $self->do_query($statement, $resv->{dst_hostaddr_id});
-    $resv->{destination_ip} = $hrows->[0]->{hostaddr_ip};
+    $hrow = $self->get_row($statement, $resv->{dst_hostaddr_id});
+    # TODO:  FIX, hrow might be empty
+    $resv->{destination_ip} = $hrow->{hostaddr_ip};
     $ipaddr = inet_aton($resv->{destination_ip});
     $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
     if (!$resv->{destination_host}) {
@@ -195,27 +215,27 @@ sub get_host_info {
 # setup_times:  
 #
 sub setup_times {
-    my( $self, $inref, $infinite_time) = @_;
+    my( $self, $params, $infinite_time) = @_;
 
     my( $duration_seconds );
 
     # Expects strings in second since epoch; converts to date in UTC time
     my $statement = "SELECT from_unixtime(?) AS start_time";
-    my $rows = $self->do_query( $statement, $inref->{reservation_start_time});
-    $inref->{reservation_start_time} = $rows->[0]->{start_time};
-    if ($inref->{duration_hour} < (2**31 - 1)) {
-        $duration_seconds = $inref->{duration_hour} * 3600;
+    my $row = $self->get_row( $statement, $params->{reservation_start_time});
+    $params->{reservation_start_time} = $row->{start_time};
+    if ($params->{duration_hour} < (2**31 - 1)) {
+        $duration_seconds = $params->{duration_hour} * 3600;
         $statement = "SELECT DATE_ADD(?, INTERVAL ? SECOND) AS end_time";
-        $rows = $self->do_query( $statement, $inref->{reservation_start_time},
+        $row = $self->get_row( $statement, $params->{reservation_start_time},
                                 $duration_seconds );
-        $inref->{reservation_end_time} = $rows->[0]->{end_time};
+        $params->{reservation_end_time} = $row->{end_time};
     }
     else {
-        $inref->{reservation_end_time} = $infinite_time;
+        $params->{reservation_end_time} = $infinite_time;
     }
     $statement = "SELECT now() AS created_time";
-    $rows = $self->do_query( $statement );
-    $inref->{reservation_created_time} = $rows->[0]->{created_time};
+    $row = $self->get_row( $statement );
+    $params->{reservation_created_time} = $row->{created_time};
 }
 ######
 
@@ -226,15 +246,15 @@ sub convert_times {
  
     # convert to time zone reservation was created in
     my $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS new_time";
-    my $rows = $self->do_query( $statement, $resv->{reservation_start_time},
+    my $row = $self->get_row( $statement, $resv->{reservation_start_time},
                              $resv->{reservation_time_zone} );
-    $resv->{reservation_start_time} = $rows->[0]->{new_time};
-    $rows = $self->do_query( $statement, $resv->{reservation_end_time},
+    $resv->{reservation_start_time} = $row->{new_time};
+    $row = $self->get_row( $statement, $resv->{reservation_end_time},
                              $resv->{reservation_time_zone} );
-    $resv->{reservation_end_time} = $rows->[0]->{new_time};
-    $rows = $self->do_query( $statement, $resv->{reservation_created_time},
+    $resv->{reservation_end_time} = $row->{new_time};
+    $row = $self->get_row( $statement, $resv->{reservation_created_time},
                              $resv->{reservation_time_zone} );
-    $resv->{reservation_created_time} = $rows->[0]->{new_time};
+    $resv->{reservation_created_time} = $row->{new_time};
     return;
 }
 ######
@@ -244,25 +264,24 @@ sub convert_times {
 sub get_engr_fields {
     my( $self, $resv ) = @_;
  
-    my( $rows, @path_routers );
-
     my $statement = "SELECT router_name, router_loopback FROM routers" .
                 " WHERE router_id =" .
                   " (SELECT router_id FROM interfaces" .
                   "  WHERE interface_id = ?)";
 
-    $rows = $self->do_query($statement, $resv->{ingress_interface_id});
-    $resv->{ingress_router} = $rows->[0]->{router_name}; 
-    $resv->{ingress_ip} = $rows->[0]->{router_loopback}; 
+    # TODO:  FIX row might be empty
+    my $row = $self->get_row($statement, $resv->{ingress_interface_id});
+    $resv->{ingress_router} = $row->{router_name}; 
+    $resv->{ingress_ip} = $row->{router_loopback}; 
 
-    $rows = $self->do_query($statement, $resv->{egress_interface_id});
-    $resv->{egress_router} = $rows->[0]->{router_name}; 
-    $resv->{egress_ip} = $rows->[0]->{router_loopback}; 
-    @path_routers = split(' ', $resv->{reservation_path});
+    $row = $self->get_row($statement, $resv->{egress_interface_id});
+    $resv->{egress_router} = $row->{router_name}; 
+    $resv->{egress_ip} = $row->{router_loopback}; 
+    my @path_routers = split(' ', $resv->{reservation_path});
     $resv->{reservation_path} = ();
     for $_ (@path_routers) {
-        $rows = $self->do_query($statement, $_);
-        push(@{$resv->{reservation_path}}, $rows->[0]->{router_name}); 
+        $row = $self->get_row($statement, $_);
+        push(@{$resv->{reservation_path}}, $row->{router_name}); 
     }
     return;
 }

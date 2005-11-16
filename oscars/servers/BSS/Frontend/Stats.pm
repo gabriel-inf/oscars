@@ -1,10 +1,12 @@
-# Stats.pm:  Reservation statistics formatting
-# Last modified:  November 12, 2005
+package BSS::Frontend::Stats;
+
+# Reservation statistics formatting.
+#
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # TODO:  fix, keep here, but send formatted message back to AAAS
 #        need to instantiate stats class somewhere
 
-package BSS::Frontend::Stats;
 
 use strict;
 

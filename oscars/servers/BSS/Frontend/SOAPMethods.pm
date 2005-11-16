@@ -85,27 +85,27 @@ sub initialize {
 # Out: ref to results hash.
 #
 sub insert_reservation {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
     my( $duration_seconds );
 
-    # inref fields having to do with traceroute modified in find_interface_ids
-    $self->{route_setup}->find_interface_ids($inref);
-    $self->{dbconn}->setup_times($inref, $self->get_infinite_time());
-    ( $inref->{reservation_class}, $inref->{reservation_burst_limit} ) =
+    # params fields having to do with traceroute modified in find_interface_ids
+    $self->{route_setup}->find_interface_ids($params);
+    $self->{dbconn}->setup_times($params, $self->get_infinite_time());
+    ( $params->{reservation_class}, $params->{reservation_burst_limit} ) =
                     $self->{route_setup}->get_pss_fields();
 
     # convert requested bandwidth to bps
-    $inref->{reservation_bandwidth} *= 1000000;
-    $self->{policy}->check_oversubscribe($inref);
+    $params->{reservation_bandwidth} *= 1000000;
+    $self->{policy}->check_oversubscribe($params);
 
     # Get ipaddrs table id from source's and destination's host name or ip
     # address.
-    $inref->{src_hostaddr_id} =
-        $self->{dbconn}->hostaddrs_ip_to_id($inref->{source_ip}); 
-    $inref->{dst_hostaddr_id} =
-        $self->{dbconn}->hostaddrs_ip_to_id($inref->{destination_ip}); 
+    $params->{src_hostaddr_id} =
+        $self->{dbconn}->hostaddrs_ip_to_id($params->{source_ip}); 
+    $params->{dst_hostaddr_id} =
+        $self->{dbconn}->hostaddrs_ip_to_id($params->{destination_ip}); 
 
-    my $results = $self->get_results($inref);
+    my $results = $self->get_results($params);
     return $results;
 }
 ######
@@ -117,10 +117,10 @@ sub insert_reservation {
 #     active.
 #
 sub delete_reservation {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
-    my $status =  $self->{dbconn}->update_status( $inref, 'precancel' );
-    return $self->get_reservation_details($inref);
+    my $status =  $self->{dbconn}->update_status( $params, 'precancel' );
+    return $self->get_reservation_details($params);
 }
 ######
 
@@ -131,12 +131,12 @@ sub delete_reservation {
 # Out: reservations if any, and status message
 #
 sub get_all_reservations {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
     my $statement = "SELECT * FROM reservations" .
              " ORDER BY reservation_start_time";
     my $rows = $self->{dbconn}->do_query($statement);
-    return $self->process_reservation_request($inref, $rows);
+    return $self->process_reservation_request($params, $rows);
 }
 ######
 
@@ -147,12 +147,12 @@ sub get_all_reservations {
 # Out: reservations if any, and status message
 #
 sub get_user_reservations {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
     my( $statement );
 
     # TODO:  fix authorization
-    if ( $inref->{engr_permission} ) {
+    if ( $params->{engr_permission} ) {
         $statement = "SELECT *";
     }
     else {
@@ -161,8 +161,8 @@ sub get_user_reservations {
     $statement .= " FROM reservations" .
               " WHERE user_dn = ?";
     $statement .= " ORDER BY reservation_start_time";
-    my $rows = $self->{dbconn}->do_query($statement, $inref->{user_dn});
-    return $self->process_reservation_request($inref, $rows);
+    my $rows = $self->{dbconn}->do_query($statement, $params->{user_dn});
+    return $self->process_reservation_request($params, $rows);
 }
 ######
 
@@ -173,12 +173,12 @@ sub get_user_reservations {
 # Out: hash ref of results, status message
 #
 sub get_reservation_details {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
     my( $statement );
 
         # TODO:  Fix authorization checks
-    if ( !($inref->{engr_permission}) ) {
+    if ( !($params->{engr_permission}) ) {
         $statement = "SELECT " . join(', ', @detail_fields);
     }
     else {
@@ -188,8 +188,8 @@ sub get_reservation_details {
     $statement .= " FROM reservations" .
               " WHERE reservation_id = ?" .
               " ORDER BY reservation_start_time";
-    my $rows = $self->{dbconn}->do_query($statement, $inref->{reservation_id});
-    return $self->process_reservation_request($inref, $rows);
+    my $rows = $self->{dbconn}->do_query($statement, $params->{reservation_id});
+    return $self->process_reservation_request($params, $rows);
 }
 ######
 
@@ -198,12 +198,12 @@ sub get_reservation_details {
 #                              reformat results before sending back
 #
 sub process_reservation_request {
-    my( $self, $inref, $rows ) = @_;
+    my( $self, $params, $rows ) = @_;
 
     my( $resv );
 
     # TODO:  fix authorization
-    if ( $inref->{engr_permission} ) { 
+    if ( $params->{engr_permission} ) { 
         $self->{dbconn}->get_engr_fields($rows); 
     }
     for $resv ( @$rows ) {
@@ -244,7 +244,7 @@ sub get_infinite_time {
 # get_results:  
 #
 sub get_results {
-    my( $self, $inref ) = @_;
+    my( $self, $params ) = @_;
 
     # build fields to insert
     my $statement = "SHOW COLUMNS from reservations";
@@ -253,9 +253,9 @@ sub get_results {
     my $results = {}; 
     # TODO:  necessary to do insertions this way?
     for $_ ( @$rows ) {
-       if ($inref->{$_->{Field}}) {
-           $results->{$_->{Field}} = $inref->{$_->{Field}};
-           push(@insertions, $inref->{$_->{Field}}); 
+       if ($params->{$_->{Field}}) {
+           $results->{$_->{Field}} = $params->{$_->{Field}};
+           push(@insertions, $params->{$_->{Field}}); 
        }
        else{ push(@insertions, 'NULL'); }
     }
@@ -266,16 +266,16 @@ sub get_results {
     my $unused = $self->{dbconn}->do_query($statement, @insertions);
     $results->{reservation_id} = $self->{dbconn}->get_primary_id();
     # copy over non-db fields
-    $results->{source_host} = $inref->{source_host};
-    $results->{destination_host} = $inref->{destination_host};
+    $results->{source_host} = $params->{source_host};
+    $results->{destination_host} = $params->{destination_host};
     # clean up NULL values
     $self->check_nulls($results);
     # convert times back to user's time zone for mail message
     $self->{dbconn}->convert_times($results);
 
     # set user-semi-readable tag
-    $results->{reservation_tag} = $inref->{user_dn} . '.' .
-        $self->get_time_str($inref->{reservation_start_time}) .  "-" .
+    $results->{reservation_tag} = $params->{user_dn} . '.' .
+        $self->get_time_str($params->{reservation_start_time}) .  "-" .
         $results->{reservation_id};
     $statement = "UPDATE reservations SET reservation_tag = ?
                  WHERE reservation_id = ?";

@@ -1,9 +1,11 @@
-# Policy.pm:  database handling for policy related matters
-# Last modified:   November 12, 2005
+package BSS::Frontend::Policy;
+
+# Database requests for policy related matters.
+#
+# Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
-package BSS::Frontend::Policy;
 
 use strict;
 
@@ -40,7 +42,7 @@ sub initialize {
 # OUT: valid (0 or 1), and error message
 #
 sub check_oversubscribe {
-    my( $self, $inref) = @_;
+    my( $self, $params) = @_;
 
     my( $reservations );
     my( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
@@ -62,11 +64,11 @@ sub check_oversubscribe {
 
     # handled query with the comparison start & end datetime strings
     $reservations = $self->{dbconn}->do_query( $statement,
-           $inref->{reservation_start_time}, $inref->{reservation_end_time});
+           $params->{reservation_start_time}, $params->{reservation_end_time});
 
     # assign the new path bandwidths 
-    for $link (@{$inref->{reservation_path}}) {
-        $iface_idxs{$link} = $inref->{reservation_bandwidth};
+    for $link (@{$params->{reservation_path}}) {
+        $iface_idxs{$link} = $params->{reservation_bandwidth};
     }
 
     # loop through all active reservations
@@ -93,7 +95,7 @@ sub check_oversubscribe {
         if ($iface_idxs{$idx} > $max_utilization) {
             my $error_msg;
             # only print router name if user has admin privileges
-            if ($inref->{form_type} eq 'admin') {
+            if ($params->{form_type} eq 'admin') {
                 $router_name = $self->{dbconn}->id_to_router_name( $idx );
                 $error_msg = "$router_name oversubscribed: ";
             }
@@ -102,9 +104,9 @@ sub check_oversubscribe {
                   " Mbps > " .  $max_utilization . " Mbps" . "\n");
         }
     }
-    # Replace array @$inref->{reservation_path} with string separated by
+    # Replace array @$params->{reservation_path} with string separated by
     # spaces
-    $inref->{reservation_path} = join(' ', @{$inref->{reservation_path}});
+    $params->{reservation_path} = join(' ', @{$params->{reservation_path}});
 
     return;
 }
@@ -124,8 +126,8 @@ sub get_interface_fields {
     my( $self, $iface_id) = @_;
 
     my $statement = "SELECT * FROM interfaces WHERE interface_id = ?";
-    my $rows = $self->{dbconn}->do_query($statement, $iface_id);
-    return ( $rows->[0] );
+    my $row = $self->{dbconn}->get_row($statement, $iface_id);
+    return $row;
 }
 ######
 
