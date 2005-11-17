@@ -31,6 +31,17 @@ sub initialize {
 ######
 
 ###############################################################################
+# gen_message:  Generates mail message, if appropriate, from method results
+#
+sub gen_message {
+    my( $self, $method_name, $results ) = @_;
+
+    my( $subject_line, $message );
+    return( $subject_line, $message );
+}
+######
+
+###############################################################################
 # send_mail:  Mails message.  Used by both AAAS and BSS for notifications
 #
 sub send_mail {
