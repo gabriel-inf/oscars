@@ -3,7 +3,7 @@ package AAAS::Frontend::Validator;
 # Called by AAAS::SOAP::Dispatcher to determine whether parameters are
 # valid before handling them by the AAAS or forwarding them to the BSS.
 # 
-# Last modified:  November 15, 2005
+# Last modified:  November 16, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
@@ -13,7 +13,7 @@ use Data::Dumper;
 
 my $tests = {
      # AAAS
-    'verify_login' => {
+    'login' => {
         # must be valid email address
         'user_dn' => (
             {'regexp' => '.+',
