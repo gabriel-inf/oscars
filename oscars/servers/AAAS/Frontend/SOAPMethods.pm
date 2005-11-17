@@ -20,19 +20,12 @@ use AAAS::Frontend::Database;
 # until can get MySQL 5 and views going
 
 # names of the fields to be displayed on the screen
-my @user_profile_fields = ( 'user_last_name',
-                            'user_first_name',
-                            'user_dn',
-                            'user_password',
-                            'user_email_primary',
-#                            'user_level',
-                            'user_email_secondary',
-                            'user_phone_primary',
-                            'user_phone_secondary',
-                            'user_description',
-#                            'user_register_time',
-#                            'user_activation_key',
-                            'institution_id');
+my $user_profile_fields =
+     'user_last_name, user_first_name, user_dn, user_password, ' .
+     'user_email_primary, user_email_secondary, ' .
+     'user_phone_primary, user_phone_secondary, user_description, ' .
+#    'user_register_time, user_activation_key, ' .
+     'institution_id';
 
 ###############################################################################
 #
@@ -56,11 +49,11 @@ sub initialize {
 ####################################
 
 ###############################################################################
-# verify_login
+# login
 # In:  reference to hash of parameters
-# Out: status code, status message
+# Out: FIX
 #
-sub verify_login {
+sub login {
     my( $self, $params ) = @_;
 
     my $user_dn = $params->{user_dn};
@@ -90,8 +83,7 @@ sub get_profile {
     my( $self, $params ) = @_;
 
     # DB query: get the user profile detail
-    my $statement = "SELECT " . join(', ', @user_profile_fields) .
-             " FROM users where user_dn = ?";
+    my $statement = "SELECT $user_profile_fields FROM users where user_dn = ?";
 
     my $results = $self->{dbconn}->get_row($statement, $params->{user_dn});
 
@@ -133,8 +125,7 @@ sub set_profile {
     # fields are being updated, and user has proper privileges.
 
     # DB query: get the user profile detail
-    my $statement = "SELECT " . join(', ', @user_profile_fields) .
-                ", user_level FROM users where user_dn = ?";
+    my $statement = "SELECT $user_profile_fields FROM users where user_dn = ?";
     my $results = $self->{dbconn}->get_row($statement, $user_dn);
 
     # check whether this person is in the database
@@ -168,7 +159,8 @@ sub set_profile {
 
     # prepare the query for database update
     $statement = "UPDATE users SET ";
-    for $_ (@user_profile_fields) {
+    my @fields = split(', ', $user_profile_fields);
+    for $_ (@fields) {
         $statement .= "$_ = '$params->{$_}', ";
         # TODO:  check that query preparation correct
         $results->{$_} = $params->{$_};
