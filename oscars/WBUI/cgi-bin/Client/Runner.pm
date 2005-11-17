@@ -1,6 +1,6 @@
 package Client::Runner;
 
-# Runner:  Calls SOAPAdapter to make SOAP call and format results for output
+# Calls SOAPAdapter to make SOAP call and format results for output.
 # Last modified:  November 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
