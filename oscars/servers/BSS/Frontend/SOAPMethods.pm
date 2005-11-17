@@ -6,10 +6,9 @@ package BSS::Frontend::SOAPMethods;
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 15, 2005
+# Last modified:  November 16, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
-
 
 use strict;
 
@@ -18,41 +17,13 @@ use Data::Dumper;
 
 use BSS::Frontend::DBRequests;
 use BSS::Frontend::Policy;
-use BSS::Frontend::Stats;
 use BSS::Traceroute::RouteHandler;
 
 # until can get MySQL and views going
-my @user_fields = ( 'reservation_id',
-                    'user_dn',
-                    'reservation_start_time',
-                    'reservation_end_time',
-                    'reservation_status',
-                    'src_hostaddr_id',
-                    'dst_hostaddr_id',
-                    'reservation_tag');
-
-my @detail_fields = ( 'reservation_id',
-                    'reservation_start_time',
-                    'reservation_end_time',
-                    'reservation_created_time',
-                    'reservation_time_zone',
-                    'reservation_bandwidth',
-                    'reservation_burst_limit',
-                    'reservation_status',
-                    'src_hostaddr_id',
-                    'dst_hostaddr_id',
-                    'reservation_description',
-                    'reservation_src_port',
-                    'reservation_dst_port',
-                    'reservation_dscp',
-                    'reservation_protocol',
-                    'reservation_tag');
-
-my @detail_admin_fields = ( 'ingress_interface_id',
-                    'egress_interface_id',
-                    'reservation_path',
-                    'reservation_class');
-
+my $user_fields =
+    'reservation_id, user_dn, ' .
+    'reservation_start_time, reservation_end_time, reservation_status, ' .
+    'src_hostaddr_id, dst_hostaddr_id, reservation_tag';
 
 ###############################################################################
 #
@@ -156,11 +127,10 @@ sub get_user_reservations {
         $statement = "SELECT *";
     }
     else {
-        $statement = "SELECT " . join(', ', @user_fields);
+        $statement = "SELECT $user_fields";
     }
-    $statement .= " FROM reservations" .
-              " WHERE user_dn = ?";
-    $statement .= " ORDER BY reservation_start_time";
+    $statement .= ' FROM reservations WHERE user_dn = ?' .
+                  ' ORDER BY reservation_start_time';
     my $rows = $self->{dbconn}->do_query($statement, $params->{user_dn});
     return $self->process_reservation_request($params, $rows);
 }
@@ -179,12 +149,9 @@ sub get_reservation_details {
 
         # TODO:  Fix authorization checks
     if ( !($params->{engr_permission}) ) {
-        $statement = "SELECT " . join(', ', @detail_fields);
+        $statement = "SELECT $user_fields";
     }
-    else {
-        $statement = "SELECT " .
-                 join(', ', (@detail_fields, @detail_admin_fields));
-    }
+    else { $statement = "SELECT *"; }
     $statement .= " FROM reservations" .
               " WHERE reservation_id = ?" .
               " ORDER BY reservation_start_time";
