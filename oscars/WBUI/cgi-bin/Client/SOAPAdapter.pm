@@ -1,7 +1,5 @@
 package Client::SOAPAdapter;
 
-# SOAPAdapter:
-#
 # Takes CGI parameters, and modifies them if necessary before sending them to 
 # the SOAP server.  With some form submissions, additional parameters may be
 # added to have the same interface as the API.
@@ -41,7 +39,7 @@ sub initialize {
     my ($self) = @_;
 
     print STDERR "initialize called\n";
-    $self->{auth} = Client::UserSession->new();
+    $self->{session} = Client::UserSession->new();
     $self->{args} = $ENV{'QUERY_STRING'};
     $self->{URI} = $ENV{'REQUEST_URI'};
     $self->{cgi} = CGI->new();
@@ -57,8 +55,8 @@ sub initialize {
 sub make_soap_call {
     my( $self, $server ) = @_;
 
-    my( $user_dn, $user_level ) = $self->auth->verify_session($self->{cgi});
-    my $soap_params = $self->adapt_params( $user_dn, $user_level );
+    my $stored_token = $self->session->verify_session($self->{cgi});
+    my $soap_params = $self->adapt_params( $stored_token );
     my $som = $server->dispatch($soap_params);
     if ($som->faultstring) {
         $self->update_page($som->faultstring);
@@ -69,19 +67,25 @@ sub make_soap_call {
 ######
 
 ##############################################################################
-# output:  Format SOAP results, and output XML.  (Javascript adds HTML
-#          portion.)
+# output:  If output_func is null, an error has occurred and only the
+#               error message is printed in the status div on the OSCARS
+#               page.
 #
 sub output {
-    my( $self, $results ) = @_;
+    my( $self, $msg, $output_func, $user_dn ) = @_;
 
     print "<xml>\n";
-    #print "<msg>User profile</msg>\n";
-    #print "<div id=\"zebratable_ui\">\n";
-    print "<msg>Test</msg>\n";
-    #print_profile($results, $form_params, $starting_page, 'get_profile');
-    print  "</div>\n";
-    print  "</xml>\n";
+    print "<msg>\n";
+    print "$msg\n";
+    print "</msg>\n";
+    if ($output_func) {
+        print qq{
+          <user_level>$user_level</user_level>
+          <div>
+        };
+        print $output_func->($user_dn, $user_level), "</div>\n";
+    }
+    print "</xml>\n";
 }
 ######
 
@@ -113,31 +117,6 @@ sub adapt_params {
     #        from hash of methods
     $soap_params->{method} = 'foo';  
     return( $soap_params );
-}
-######
-
-##############################################################################
-# update_page:  If output_func is null, an error has occurred and only the
-#               error message is printed in the status div on the OSCARS
-#               page.
-#
-sub update_page {
-    my( $self, $msg, $output_func, $user_dn, $user_level) = @_;
-
-    print "<xml>\n";
-    print "<msg>\n";
-    print "$msg\n";
-    print "</msg>\n";
-    # TODO:  FIX  blanket access
-    my $user_level = 'auth engr user';
-    if ($output_func) {
-        print qq{
-          <user_level>$user_level</user_level>
-          <div>
-        };
-        print $output_func->($user_dn, $user_level), "</div>\n";
-    }
-    print "</xml>\n";
 }
 ######
 
