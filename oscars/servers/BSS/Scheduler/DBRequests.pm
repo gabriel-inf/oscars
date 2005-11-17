@@ -1,7 +1,7 @@
 package BSS::Scheduler::DBRequests;
 
 # Database request handling for BSS scheduler
-# Last modified:  November 15, 2005
+# Last modified:  November 16, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -11,7 +11,6 @@ use DBI;
 use Data::Dumper;
 
 use BSS::Frontend::DBRequests;
-use BSS::Frontend::Stats;
 
 ###############################################################################
 #
@@ -37,8 +36,6 @@ sub initialize {
              or die "FATAL:  could not connect to database";
 
     print STDERR "Scheduler running\n";
-    $self->{debug} = $self->{dbconn}->get_debug_level();
-    $self->{stats} = BSS::Frontend::Stats->new();
 }
 ######
 
@@ -84,32 +81,6 @@ sub get_time_intervals {
     my $row = $self->{dbconn}->get_row( $statement );
     return( $row->{server_db_poll_time},
             $row->{server_time_interval} );
-}
-######
-
-###############################################################################
-#
-sub get_lsp_stats {
-    my( $self, $resv, $status ) = @_;
-
-    my $statement = "SELECT CONVERT_TZ(now(), '+00:00', ?) AS newtime";
-    my $row = $self->{dbconn}->get_row( $statement,
-                                        $resv->{reservation_time_zone});
-    my $config_time = $row->{newtime};
-    # convert to seconds before sending back
-    $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
-    $row = $self->{dbconn}->get_row( $statement, $resv->{reservation_start_time},
-                                     $resv->{reservation_time_zone} );
-    $resv->{reservation_start_time} = $row->{newtime};
-    $row = $self->{dbconn}->get_row( $statement, $resv->{reservation_end_time},
-                                     $resv->{reservation_time_zone} );
-    $resv->{reservation_end_time} = $row->{newtime};
-    $row = $self->{dbconn}->get_row( $statement,
-                                     $resv->{reservation_created_time},
-                                     $resv->{reservation_time_zone} );
-    $resv->{reservation_created_time} = $row->{newtime};
-    my $results = $self->{stats}->get_lsp_stats($resv, $status, $config_time);
-    return $results;
 }
 ######
 
