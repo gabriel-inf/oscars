@@ -1,4 +1,4 @@
-package AAAS::Frontend::Stats;
+package AAAS::Frontend::Notifications;
 
 # Reservation statistics formatting.
 #
