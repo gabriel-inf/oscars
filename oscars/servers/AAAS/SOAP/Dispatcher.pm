@@ -5,7 +5,7 @@ package AAAS::SOAP::Dispatcher;
 # either the AAAS::Frontend::SOAPMethods package, or forwarding them to the
 # BSS SOAP server.
 
-# Last modified:  November 15, 2005
+# Last modified:  November 17, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use Error qw(:try);
@@ -18,6 +18,7 @@ use AAAS::Frontend::SOAPMethods;
 use AAAS::Frontend::Validator;
 use AAAS::Frontend::Auth;
 use AAAS::Frontend::Database;
+use AAAS::Frontend::Mail;
 
 # TODO:  FIX, means BSS needs to run on same server
 #        To fix, will need virtual hosts for AAAS and BSS
@@ -46,20 +47,18 @@ sub dispatch {
         my $v = AAAS::Frontend::Validator->new();
         my $err = $v->validate($params);
         if ($err) { throw Error::Simple($err); }
-        my $m = $params->{method};
-        if (!$auth->authorized($params->{user_dn}, $m)) {
+        my $method_name = $params->{method};
+        if (!$auth->authorized($params->{user_dn}, $method_name)) {
             throw Error::Simple(
                 "User $params->{user_dn} not authorized to make $m call");
         }
         # AAAS handles this call
         if ( $params->{server_name} ne 'BSS' ) {
-            $results = $request_handler->$m($params);
+            $results = $request_handler->$method_name($params);
         }
         # forward to BSS SOAP server
         else {
-            print STDERR "forwarding\n";
             $results = BSS::SOAP::Dispatcher::dispatch('BSS::SOAP::Dispatcher', $params);
-            print STDERR Dumper($results);
         }
     }
     catch Error::Simple with {
@@ -78,6 +77,15 @@ sub dispatch {
     if ($ex) {
         die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
+    }
+    my $mailer = AAAS::Frontend::Mail->new();
+    my( $subject_line, $mail_msg ) =
+        $mailer->gen_message($method_name, $results) ;
+    if ($mail_msg) {
+        $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
+                       $subject_line, $mail_msg);
+        $mailer->send_mail($mailer->get_webmaster(), $params->{user_dn},
+                       $subject_line, $mail_msg);
     }
     return $results;
 }
