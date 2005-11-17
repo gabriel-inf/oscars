@@ -1,21 +1,25 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  November 13, 2005
+Last modified:  November 16, 2005
 David Robertson (dwrobertson@lbl.gov)
-Soo-yeon Hwang (dapi@umich.edu)
+Soo-yeon Hwang  (dapi@umich.edu)
 */
 
 /* List of functions:
-submit_form(form, which)
-check_form(form, which);
-init_navigation_bar(user_level)
-update_status_frame(status, msg)
-isblank (strValue)
+submit_form(form, url, params_str)
+new_page(url)
+get_response(xmlhttp, method_name)
+check_form(form, method_name);
+check_for_required(form, required)
+check_login(form)
+check_reservation(form)
+check_user_profile(form)
+flash_status_bar(timer_id)
+is_numeric(value)
+is_blank(str)
 */
 
 var timer_id = null;
-// TODO:  FIX hard-wired URL
-var starting_page = 'https://oscars-test.es.net';
 
 var login_required = {
     'user_dn': "Please enter your user name.",
@@ -40,45 +44,35 @@ var user_profile_required = {
                     
 // checks validity of form settings, and uses Sarissa to post request
 // and get back result
-function submit_form( form, form_name, form_url )
+function submit_form( form, url, params_str )
 {
-    var valid = check_form( form, form_name );
+    var method_name = ;   // get from url
+    var valid = check_form( form, method_name );
     if (!valid) { return false; }
 
     // adapted from http://www.devx.com/DevX/Tip/17500
-    var xmlhttp, send_str, resultStr;
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('POST', form_url, false);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('POST', url, false);
     xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    send_str = "";
-    if (form.elements) {
-        var form_elements = form.elements;
-        var num_elements = form.elements.length;
-        for (var e=0; e < num_elements; e++) {
-            if (form_elements[e].value && form_elements[e].name) {
-                send_str += form_elements[e].name + '=' + form_elements[e].value + '&';
-            }
-        }
-    } 
-    // remove trailing &, and send
-    xmlhttp.send(send_str.substring(0, send_str.length-1));
-    get_response(xmlhttp, form_name);
+    xmlhttp.send(params_str);
+    get_response(xmlhttp, method_name);
     return false;
 }
 
 // updates status and main portion of page (same as above, but not with
 // form submission
-function new_page(form_name, url) {
+function new_page(url) {
+    var method_name = // TODO:  get from url
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open('GET', url, false);
-    var send_str = "";
-    xmlhttp.send(send_str);
-    get_response(xmlhttp, form_name);
+    var params_str = "";
+    xmlhttp.send(params_str);
+    get_response(xmlhttp, method_name);
     return false;
 }
 
 // gets back response from XMLHttpRequest
-function get_response(xmlhttp, form_name) {
+function get_response(xmlhttp, method_name) {
     var response_dom = xmlhttp.responseXML;
     //alert(Sarissa.serialize(response_dom));
     //alert(xmlhttp.responseText);
@@ -88,14 +82,14 @@ function get_response(xmlhttp, form_name) {
     var returned_divs = response_dom.getElementsByTagName('div');
 
     // print initial navigation bar
-    if ((form_name == 'login') && returned_divs.length) {
-        var user_level_node = response_dom.getElementsByTagName('user_level');
-        var user_level = user_level_node[0].firstChild.data;
-        var nav_node = document.getElementById('nav_div');
-        nav_node.innerHTML = init_navigation_bar(user_level);
+    if ((method_name == 'login') && returned_divs.length) {
+        var nav_str_node = response_dom.getElementsByTagName('nav_string');
+        var nav_str = nav_str_node[0].firstChild.data;
+        var nav_bar_node = document.getElementById('nav_div');
+        nav_bar_node.innerHTML = nav_str;
     }
     else {
-        var tab_node = document.getElementById(form_name);
+        var tab_node = document.getElementById(method_name);
         if (tab_node) {
             tab_node.className = 'active';
         }
@@ -119,7 +113,7 @@ function get_response(xmlhttp, form_name) {
         var main_node = document.getElementById('main_div');
         main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
     }
-    if (form_name == 'creation_form') {
+    if (method_name == 'creation_form') {
         var time_node = document.getElementById('tz_option_list');
         if (time_node) {
             time_node.innerHTML = tz_option_list();
@@ -132,12 +126,12 @@ function get_response(xmlhttp, form_name) {
 }
 
 // checks validity of particular form
-function check_form( form, form_name )
+function check_form( form, method_name )
 {
     if (!form) { return true; }
-    if (form_name == 'login') { return check_login( form ); }
-    else if (form_name == 'insert') { return check_reservation( form ); }
-    else if (form_name == 'set_profile') { return check_user_profile( form ); }
+    if (method_name == 'login') { return check_login( form ); }
+    else if (method_name == 'insert') { return check_reservation( form ); }
+    else if (method_name == 'set_profile') { return check_user_profile( form ); }
     return true;
 }
 
@@ -145,7 +139,7 @@ function check_form( form, form_name )
 function check_for_required( form, required )
 {
     for (field in required) {
-        if ( isblank(form[field].value) ) {
+        if ( is_blank(form[field].value) ) {
             alert( required[field] );
             form[field].focus();
             return false;
@@ -215,7 +209,7 @@ function check_reservation( form )
     }
 
     // check non-required fields if a value has been entered
-    if ( !isblank(form.reservation_src_port.value) ) {
+    if ( !is_blank(form.reservation_src_port.value) ) {
         if (!(is_numeric(form.reservation_src_port.value))) {
             alert( "The source port must be a positive integer." );
             form.reservation_src_port.focus();
@@ -228,7 +222,7 @@ function check_reservation( form )
             return false;
         }
     }
-    if ( !isblank(form.reservation_dst_port.value) ) {
+    if ( !is_blank(form.reservation_dst_port.value) ) {
         if (!(is_numeric(form.reservation_dst_port.value))) {
             alert( "The destination port must be a positive integer." );
             form.reservation_dst_port.focus();
@@ -241,7 +235,7 @@ function check_reservation( form )
             return false;
         }
     }
-    if ( !isblank(form.reservation_dscp.value) ) {
+    if ( !is_blank(form.reservation_dscp.value) ) {
         if (!(is_numeric(form.reservation_dscp.value))) {
             alert( "The DSCP must be a positive integer." );
             form.reservation_dscp.focus();
@@ -264,7 +258,7 @@ function check_user_profile( form )
 	var valid = check_for_required( form, user_profile_required );
 	if (!valid) { return false; }
 
-	if ( !(isblank(form.password_new_once.value)) ) {
+	if ( !(is_blank(form.password_new_once.value)) ) {
 		if ( form.password_new_once.value != form.password_new_twice.value ) {
 			alert( "Please enter the same new password twice for verification." );
 			form.password_new_once.focus();
@@ -274,57 +268,7 @@ function check_user_profile( form )
 	return true;
 }
 
-// initializes string representing navigation bar, with info page initially
-// highlighted
-function init_navigation_bar(user_level) {
-    var navBar = '<div id="nav_div">' +
-        '<ul id="tabnav">' +
-        init_tab("info_form", "lib", "Information page", "Information");
-
-    if (user_level.indexOf("admin") != -1) {
-        navBar += init_tab("acctlist_form", "users",
-                           "List user accounts", "List Accounts"); 
-        navBar += init_tab("new_user_form", "users",
-                           "Add a new user account", "Add User");
-    } 
-    navBar += init_tab("get_profile", "users",
-                       "View and/or edit your information", "User Profile") +
-              init_tab("list_form", "reservations",
-                       "View/Edit selected list of reservations",
-                       "View/Edit Reservations") +
-              init_tab("creation_form", "reservations",
-                       "Create a new reservation", "Make Reservation") +
-              init_tab("logout", "lib", "Log out on click", "Log out");
-    navBar += '</ul></div>';
-    return navBar;
-}
-
-
-// Initializes string for one tab.  All the dynamic HTML generation kruft
-// is concentrated here.  Clicking on tab results in call to CGI script.
-function init_tab(form_name, script_type, tab_title, tab_name) {
-    var tab_str = '<li id="' + form_name + '">' +
-         '<a style="' + starting_page + '/styleSheets/layout.css"' +
-	 ' title="' + tab_title + '"';
-    if (form_name != 'logout') {
-         if (form_name == 'info_form') {
-             tab_str += ' class="active"';
-         }
-         tab_str += ' href="#"' +
-         ' onclick="new_page(' + "'" + form_name + "', '" + 
-         '../cgi-bin/' + script_type + '/' + form_name +
-         ".pl'" +
-         ');return false;">';
-    }
-    else {
-        tab_str += ' href="' +
-         '../cgi-bin/' + script_type + '/' + form_name + '.pl">';
-    }
-    tab_str += tab_name + '</a></li>';
-    return tab_str;
-}
-
-function setup_flash(errorFlag) {
+function flash_status_bar(timer_id) {
     var style_sheet = document.style_sheet[0];
     if (!timer_id) {
         timer_id = self.setTimeout("setup_flash", 1000);
@@ -344,7 +288,7 @@ function is_numeric(s) {
 
 // From Javascript book, p. 264
 
-function isblank(s) {
+function is_blank(s) {
     for (var i = 0; i < s.length; i++) {
         var c = s.charAt(i);
         if ((c != ' ') && (c != '\n') && (c != '')) return false;
