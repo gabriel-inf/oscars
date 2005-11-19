@@ -9,22 +9,8 @@ use strict;
 
 use Data::Dumper;
 
-###############################################################################
-#
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    $self->initialize();
-    return( $self );
-}
-
-sub initialize {
-    my ($self) = @_;
-
-}
-######
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 ##############################################################################
 # output:  print details of reservation returned by SOAP call

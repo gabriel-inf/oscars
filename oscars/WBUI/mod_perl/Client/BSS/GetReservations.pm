@@ -7,25 +7,10 @@ package Client::BSS::GetReservations;
 
 use strict;
 
-use Error qw(:try);
 use Data::Dumper;
 
-###############################################################################
-#
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    $self->initialize();
-    return( $self );
-}
-
-sub initialize {
-    my ($self) = @_;
-
-}
-######
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 ##############################################################################
 # output:  print list of all reservations if the caller has 
