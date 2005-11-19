@@ -15,7 +15,7 @@ our @ISA = qw{Client::SOAPAdapter};
 ##############################################################################
 # Overrides super-class call to avoid trying to verify a non-existent session.
 #
-sub pre_call {
+sub before_call {
     my( $self, $params ) = @_;
 }
 
@@ -58,7 +58,7 @@ sub output {
 ##############################################################################
 # overrides super-class call
 #
-sub post_call {
+sub after_call {
     my( $self, $params );
 
     my( $sid );
