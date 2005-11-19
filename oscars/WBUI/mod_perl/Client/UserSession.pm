@@ -1,12 +1,11 @@
 package Client::UserSession;
 
 # Handles user session.
-# Last modified:  November 17, 2005
+# Last modified:  November 18, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
-use Error qw(:try);
 use Data::Dumper;
 
 use CGI;
