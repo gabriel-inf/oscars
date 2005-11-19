@@ -10,16 +10,8 @@ use strict;
 use CGI;
 use Data::Dumper;
 
-###############################################################################
-#
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
-}
-######
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 ###############################################################################
 # output:  If the caller has admin privileges print a list of 

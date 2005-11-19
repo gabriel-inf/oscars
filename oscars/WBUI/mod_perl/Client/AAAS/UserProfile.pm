@@ -9,16 +9,8 @@ use strict;
 
 use Data::Dumper;
 
-###############################################################################
-#
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
-}
-######
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 ##############################################################################
 # output: print add user form, and results from SOAP call, if any

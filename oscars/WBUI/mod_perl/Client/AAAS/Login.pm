@@ -9,18 +9,11 @@ use strict;
 
 use Data::Dumper;
 
-###############################################################################
-#
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
-}
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 ##############################################################################
-# Overrides to avoid trying to verify a non-existent session.
+# Overrides super-class call to avoid trying to verify a non-existent session.
 #
 sub pre_call {
     my( $self, $params ) = @_;
