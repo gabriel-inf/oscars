@@ -13,6 +13,7 @@ use Client::SOAPAdapter;
 ###############################################################################
 #
 sub run {
+
     my ( $method_name, %args );
 
     my $soap_server = SOAP::Lite
@@ -27,7 +28,7 @@ sub run {
     }
     #my $uri = $ENV{'REQUEST_URI'};
     my $factory = Client::SOAPAdapterFactory->new();
-    my $adapter = $factory->create_instance($method_name, \%args);
+    my $adapter = $factory->instantiate($method_name, \%args);
     my $soap_params = $adapter->before_call();
     my $results = $adapter->make_call($soap_server, $soap_params);
     $adapter->after_call($results);
