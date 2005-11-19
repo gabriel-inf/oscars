@@ -1,28 +1,4 @@
-package Client::SOAPAdapter;
-
-# Takes CGI parameters, and modifies them if necessary before sending them to 
-# the SOAP server.  With some form submissions, additional parameters may be
-# added to have the same interface as the API.
-#
-# When the SOAP results are returned, they are incorporated into the XML
-# output.
-# 
-# general.pl is the starting point.  Some methods are likely to be split off
-# into other classes.
-
-# Last modified:  November 15, 2005
-# David Robertson (dwrobertson@lbl.gov)
-
-use strict;
-
-use Error qw(:try);
-use Data::Dumper;
-
-use CGI;
-use SOAP::Lite;
-
-use Client::UserSession;
-
+package Client::SOAPAdapterFactory;
 
 ###############################################################################
 #
@@ -38,120 +14,97 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    print STDERR "initialize called\n";
-    $self->{session} = Client::UserSession->new();
-    $self->{args} = $ENV{'QUERY_STRING'};
-    $self->{URI} = $ENV{'REQUEST_URI'};
+    # TODO:  create correct instance of SOAPAdapter
+}
+######
+
+
+package Client::SOAPAdapter;
+
+# Last modified:  November 18, 2005
+# David Robertson (dwrobertson@lbl.gov)
+
+use strict;
+
+use Error qw(:try);
+use Data::Dumper;
+
+use CGI;
+use SOAP::Lite;
+
+use Client::UserSession;
+
+###############################################################################
+#
+sub new {
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
+  
+    bless( $self, $class );
+    $self->initialize();
+    return( $self );
+}
+
+sub initialize {
+    my ($self) = @_;
+
+    my $args = $ENV{'QUERY_STRING'};
+    my $uri = $ENV{'REQUEST_URI'};
     $self->{cgi} = CGI->new();
-    # don't make print to STDOUT before instantiating this class
-    print $self->{cgi}->header( -type=>'text/xml' );
+    $self->{session} = Client::UserSession->new();
 }
 ######
 
 ##############################################################################
-# make_soap_call:  Copy CGI paramaters into SOAP parameters, and make
-#                  SOAP call
+# pre_call:  Perform operations necessary before making SOAP call
 #
-sub make_soap_call {
-    my( $self, $server ) = @_;
+sub pre_call {
+    my( $self ) = @_;
 
-    my $stored_token = $self->session->verify_session($self->{cgi});
-    my $soap_params = $self->adapt_params( $stored_token );
-    my $som = $server->dispatch($soap_params);
+    my( $params );
+
+    # Note that CGI param is a method call, not a hash lookup
+    for $_ ($self->{cgi}->param) {
+        $params->{$_} = $self->{cgi}->param($_);
+    }
+    $params->{signed_on} = $self->{session}->verify_session($self->{cgi});
+    return( $params );
+}
+######
+
+##############################################################################
+# make_call:  make SOAP call, and get results
+#
+sub make_call {
+    my( $self, $soap_server, $soap_params ) = @_;
+
+    my $som = $soap_server->dispatch($soap_params);
     if ($som->faultstring) {
-        $self->update_page($som->faultstring);
+        # TODO:  return error in status
+        #$self->update_page($som->faultstring);
         return undef;
     }
-    return( $som->result );
+    return $som->result;
 }
 ######
 
 ##############################################################################
-# output:  If output_func is null, an error has occurred and only the
-#               error message is printed in the status div on the OSCARS
-#               page.
+# output:  formats and prints results to send back to browser
 #
 sub output {
-    my( $self, $msg, $output_func, $user_dn ) = @_;
+    my( $self, $results ) = @_;
 
-    print "<xml>\n";
-    print "<msg>\n";
-    print "$msg\n";
-    print "</msg>\n";
-    if ($output_func) {
-        print qq{
-          <user_level>$user_level</user_level>
-          <div>
-        };
-        print $output_func->($user_dn, $user_level), "</div>\n";
-    }
-    print "</xml>\n";
 }
 ######
 
-
-################################
-# Private methods.
-################################
-
 ##############################################################################
-# adapt_params:  Adapt CGI paramaters to the expected SOAP parameters
+# post_call:  Perform any operations necessary after making SOAP call
 #
-sub adapt_params {
+sub post_call {
+    my( $self, $results ) = @_;
 
-    my( $self, $user_dn, $user_permissions ) = @_;
-
-    my( $soap_params );
-
-    if (!$user_permissions) {
-        # TODO:  fix
-        print "Location:  " . "https://oscars-test.es.net/" . "\n\n";
-        return (undef, undef);
-    }
-    for $_ ($self->{cgi}->param) {
-        $soap_params->{$_} = $self->{cgi}->param($_);
-    }
-    $soap_params->{user_dn} = $user_dn;
-    $soap_params->{user_permissions} = $user_permissions;
-    # TODO:  get method from query string of URI, as well as server name
-    #        from hash of methods
-    $soap_params->{method} = 'foo';  
-    return( $soap_params );
 }
 ######
 
-# TODO: make into HTML fragment
-##############################################################################
-sub output_info {
-    my( $self, $unused1, $unused2 ) = @_;
-
-    print qq{
-      <div id="info_form">
-      <p>
-      With the advent of service sensitive applications (such as remote-
-      controlled experiments, time constrained massive data transfers,
-      video-conferencing, etc.), it has become apparent that there is a need
-      to augment the services present in today's ESnet infrastructure.
-      </p>
-
-      <p>
-      Two DOE Office of Science workshops in the past two years have clearly 
-      identified both science discipline driven network requirements and a 
-      roadmap for meeting these requirements.  This project begins to 
-      address one element of the roadmap: dynamically provisioned, QoS paths.
-      </p>
-
-      <p>
-      The focus of the ESnet On-Demand Secure Circuits and Advance Reservation 
-      System (OSCARS) is to develop and deploy a prototype service that enables 
-      on-demand provisioning of guaranteed bandwidth secure circuits within 
-      ESnet.
-      </p>
-
-      <p>To begin using OSCARS, click on one of the notebook tabs.</p>
-      </div>
-    };
-}
 ######
-
 1;

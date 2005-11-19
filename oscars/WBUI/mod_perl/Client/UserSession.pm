@@ -19,13 +19,7 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
-
-
-sub initialize {
-    my ($self) = @_;
 }
 ######
 
@@ -40,12 +34,11 @@ sub initialize {
 #
 sub start_session
 {
-    my ($self, $cgi, $login_results) = @_;
-    my ($session, $sid, $cookie);
+    my( $self, $cgi ) = @_;
 
-    $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
-    $sid = $session->id();
-    $cookie = $cgi->cookie(CGISESSID => $sid);
+    my $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
+    my $sid = $session->id();
+    my $cookie = $cgi->cookie(CGISESSID => $sid);
     $session->param("auth_token", $cgi->param('auth_token'));
     return( $cgi->param('auth_token'), $sid );
 }
