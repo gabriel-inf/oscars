@@ -127,7 +127,7 @@ my $tests = {
     # no tests yet
     # AAAS
     'get_profile' => {},
-    'get_userlist' => {},
+    'get_user_list' => {},
     # BSS
     'delete_reservation' => {},
     'get_all_reservations' => {},
@@ -160,6 +160,9 @@ sub initialize {
 sub validate {
     my( $self, $params ) = @_;
 
+    for $_ (keys(%$params)) {
+        print STDERR "param: $_, value: $params->{$_}\n";
+    }
     my $pmethod = $tests->{$params->{method}};
     if ( !$pmethod ) {
         return "Cannot validate $params->{method}";
