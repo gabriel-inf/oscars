@@ -1,3 +1,4 @@
+###############################################################################
 package Client::Runner;
 
 # Calls SOAPAdapter to make SOAP call and format results for output.
@@ -6,12 +7,13 @@ package Client::Runner;
 
 use strict;
 
-use Apache2::RequestIO;
 use CGI qw{:cgi};
 use SOAP::Lite;
 use Data::Dumper;
 
 use Client::SOAPAdapter;
+
+#______________________________________________________________________________
 
 
 ###############################################################################
@@ -35,8 +37,7 @@ sub run {
     my $results = $adapter->make_call($soap_server, \%soap_params);
     $adapter->post_process($results);
     $adapter->output($results);
-}
-######
+} #____________________________________________________________________________
 
 ######
 1;
