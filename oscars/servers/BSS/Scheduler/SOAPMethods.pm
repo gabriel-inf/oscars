@@ -1,3 +1,4 @@
+###############################################################################
 package BSS::Scheduler::SOAPMethods;
 
 # SOAP methods for BSS Scheduler.
@@ -6,10 +7,9 @@ package BSS::Scheduler::SOAPMethods;
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 15, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
-
 
 use strict;
 
@@ -19,8 +19,7 @@ use Data::Dumper;
 use BSS::Scheduler::DBRequests;
 use PSS::LSPHandler::JnxLSP;
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -38,10 +37,10 @@ sub initialize {
     $self->{db_requests} = new BSS::Scheduler::DBRequests(
                                                'dbconn' => $self->{dbconn});
     $self->{configs} = $self->{db_requests}->get_pss_configs();
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # find_new_reservations:  find reservations to run.  Find all the
 #    reservatations in db that need to be setup and run in the next N minutes.
 #
@@ -63,10 +62,10 @@ sub find_new_reservations {
         update_reservation( $r, $status, 'active');
     }
     return "";
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # find_expired_reservations:  find reservations that have expired, and tear
 #                             them down
 #
@@ -87,14 +86,14 @@ sub find_expired_reservations {
         update_reservation( $r, $status, 'finished');
     }
     return "";
-}
-######
+} #____________________________________________________________________________ 
+
 
 #################
 # Private methods
 #################
 
-##############################################################################
+###############################################################################
 # setup_pss:  format the args and call pss to do the configuration change
 #
 sub setup_pss {
@@ -115,10 +114,10 @@ sub setup_pss {
     }
     print STDERR "LSP setup complete\n" ;
     return "";
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # teardown_pss:  format the args and call pss to teardown the configuraion 
 #
 sub teardown_pss {
@@ -137,10 +136,10 @@ sub teardown_pss {
     }
     print STDERR "LSP teardown complete\n" ;
     return "";
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # update_reservation: change the status of the reservervation from pending to
 #                     active
 #
@@ -156,10 +155,10 @@ sub update_reservation {
         ($status, $msg) = $self->{dbconn}->update_status($resv, 'failed');
     }
     print STDERR "$status\n";
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 #
 sub map_fields {
     my ( $self, $resv ) = @_;
@@ -194,10 +193,10 @@ sub map_fields {
     }
     $lsp_info{configs} = $self->{configs};
     return \%lsp_info;
-}
+} #____________________________________________________________________________ 
+
+
 ######
-
-
 1;
 
 # vim: et ts=4 sw=4
