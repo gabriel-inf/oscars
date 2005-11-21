@@ -1,45 +1,15 @@
-# Last modified:  November 18, 2005
+# SOAPAdapter packages
+# Last modified:  November 20, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
+###############################################################################
 package Client::SOAPAdapterFactory;
-    use strict;
-    use Data::Dumper;
 
-###############################################################################
-#
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
-}
+use strict;
+use Data::Dumper;
 
-sub instantiate {
-    my( $self, $requested_type, $args ) = @_;
-
-    my @loc_array      = split('::', $requested_type); 
-    shift(@loc_array);  # remove parent directory
-    my $location       = join('/', @loc_array) . ".pm";
-    my $subclass       = "$requested_type";
-
-    require $location;
-    return $subclass->new(%$args);
-}
-
-#############################################################################
-
-package Client::SOAPAdapter;
-    use strict;
-
-    use Data::Dumper;
-    use CGI;
-    use SOAP::Lite;
-
-    use Client::UserSession;
-
-###############################################################################
+#******************************************************************************
 #
 sub new {
     my( $class, %args ) = @_;
@@ -51,31 +21,79 @@ sub new {
 }
 
 sub initialize {
-    my ($self) = @_;
-
-    $self->{cgi} = CGI->new();
-    $self->{session} = Client::UserSession->new();
-}
-######
-
-##############################################################################
-# before_call:  Perform operations necessary before making SOAP call
-#
-sub before_call {
     my( $self ) = @_;
 
-    my( $params );
+    # TODO:  Fix when have virtual hosts for AAAS and BSS
+    $self->{class_mapping} = {
+        'login' => 'Client::AAAS::Login',
+        'logout' => 'Client::AAAS::Logout',
+    };
+    $self->{location_mapping} = {
+        'login' => 'Client/AAAS/Login',
+        'logout' => 'Client/AAAS/Logout',
+    };
+} #___________________________________________________________________________                                         
 
-    # Note that CGI param is a method call, not a hash lookup
+
+#******************************************************************************
+#
+sub instantiate {
+    my( $self, $cgi ) = @_;
+
+    my $method_name = $cgi->param('method'); 
+    my $location = $self->{location_mapping}->{$method_name} . ".pm";
+    require $location;
+    return $self->{class_mapping}->{$method_name}->new('cgi' => $cgi);
+} #___________________________________________________________________________                                         
+
+
+###############################################################################
+package Client::SOAPAdapter;
+#
+#  This class is only used in conjunction with a subclass.
+
+
+use strict;
+
+use Data::Dumper;
+use SOAP::Lite;
+use CGI;
+
+
+#******************************************************************************
+# authenticate
+#
+sub authenticate {
+    my( $self ) = @_;
+
+    return $self->{session}->verify_session($self->{cgi});
+} #___________________________________________________________________________                                         
+
+
+#******************************************************************************
+# authorize:  TODO
+#
+sub authorize {
+    my( $self, $user_dn ) = @_;
+
+    return 1;
+} #___________________________________________________________________________                                         
+
+
+#******************************************************************************
+# modify_params:  Do any modification of CGI params to transform them
+#                 into the arguments that the SOAP call expects.
+#
+sub modify_params {
+    my( $self, $params ) = @_;
+
     for $_ ($self->{cgi}->param) {
         $params->{$_} = $self->{cgi}->param($_);
     }
-    $params->{signed_on} = $self->{session}->verify_session($self->{cgi});
-    return( $params );
-}
-######
+} #___________________________________________________________________________                                         
 
-##############################################################################
+
+#******************************************************************************
 # make_call:  make SOAP call, and get results
 #
 sub make_call {
@@ -88,26 +106,25 @@ sub make_call {
         return undef;
     }
     return $som->result;
-}
-######
+} #___________________________________________________________________________                                         
 
-##############################################################################
+
+#******************************************************************************
+# post_process:  Perform any operations necessary after making SOAP call
+#
+sub post_process {
+    my( $self, $results ) = @_;
+
+} #___________________________________________________________________________                                         
+
+
+#******************************************************************************
 # output:  formats and prints results to send back to browser
 #
 sub output {
     my( $self, $results ) = @_;
 
-}
-######
-
-##############################################################################
-# after_call:  Perform any operations necessary after making SOAP call
-#
-sub after_call {
-    my( $self, $results ) = @_;
-
-}
-######
+} #___________________________________________________________________________                                         
 
 ######
 1;
