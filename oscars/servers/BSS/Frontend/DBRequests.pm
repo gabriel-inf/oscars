@@ -1,8 +1,9 @@
+###############################################################################
 package BSS::Frontend::DBRequests;
 
 # General BSS database requests.  Traceroute and scheduler-specific requests
 # are in Traceroute::DBRequests and Scheduler::DBRequests.
-# Last modified:   November 15, 2005
+# Last modified:   November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -12,8 +13,7 @@ use Data::Dumper;
 use Error qw(:try);
 use Socket;
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -47,8 +47,7 @@ sub initialize {
     if (!$self->{dbh}) {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }
-}
-######
+} #____________________________________________________________________________ 
 
 # TODO:  FIX duplication
 
@@ -70,8 +69,7 @@ sub do_query {
     # TODO, FIX:  if check for err here, get fetch without execute if not
     # select
     return $rows;
-}
-######
+} #____________________________________________________________________________ 
 
 ###############################################################################
 #
@@ -90,8 +88,8 @@ sub get_row {
     if ( !@$rows ) { return undef; }
     # TODO:  error checking if more than one row
     return $rows->[0];
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # update_status: Updates reservation status.  Used to mark as active,
@@ -118,10 +116,10 @@ sub update_status {
                  WHERE reservation_id = ?};
     my $unused = $self->do_query($statement, $status, $params->{reservation_id});
     return $status;
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 #
 sub get_pss_configs {
     my( $self ) = @_;
@@ -138,10 +136,10 @@ sub get_pss_configs {
              "FROM pss_confs where pss_conf_id = 1";
     my $configs = $self->get_row($statement);
     return $configs;
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # id_to_router_name:  get the router name given the interface primary key.
 # In:  interface table key id
 # Out: router name
@@ -159,10 +157,10 @@ sub id_to_router_name {
         return "";
     }
     return $row->{router_name};
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # hostaddrs_ip_to_id:  get the primary key in the hostaddrs table, given an
 #     IP address.  A row is created if that address is not present.
 # In:  hostaddr_ip
@@ -181,10 +179,10 @@ sub hostaddrs_ip_to_id {
         return $self->{dbh}->{mysql_insertid};
     }
     else { return $row->{hostaddr_id}; }
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 #
 sub get_host_info {
     my( $self, $resv ) = @_;
@@ -206,8 +204,8 @@ sub get_host_info {
     if (!$resv->{destination_host}) {
         $resv->{destination_host} = $resv->{destination_ip};
     }
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # setup_times:  
@@ -234,10 +232,10 @@ sub setup_times {
     $statement = "SELECT now() AS created_time";
     $row = $self->get_row( $statement );
     $params->{reservation_created_time} = $row->{created_time};
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 #
 sub convert_times {
     my( $self, $resv ) = @_;
@@ -253,10 +251,10 @@ sub convert_times {
     $row = $self->get_row( $statement, $resv->{reservation_created_time},
                              $resv->{reservation_time_zone} );
     $resv->{reservation_created_time} = $row->{new_time};
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 #
 sub get_engr_fields {
     my( $self, $resv ) = @_;
@@ -280,14 +278,18 @@ sub get_engr_fields {
         $row = $self->get_row($statement, $_);
         push(@{$resv->{reservation_path}}, $row->{router_name}); 
     }
-}
-######
+} #____________________________________________________________________________ 
 
+
+###############################################################################
+#
 sub get_primary_id {
     my( $self ) = @_;
 
     return $self->{dbh}->{mysql_insertid};
-}
+} #____________________________________________________________________________ 
+
+
 ######
 1;
 # vim: et ts=4 sw=4

@@ -1,8 +1,9 @@
+###############################################################################
 package BSS::Frontend::Policy;
 
 # Database requests for policy related matters.
 #
-# Last modified:  November 15, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -15,22 +16,14 @@ use Error qw(:try);
 
 use BSS::Frontend::DBRequests;
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
-
-sub initialize {
-    my ($self) = @_;
-}
-
-######
+} #____________________________________________________________________________ 
 
 
 ###############################################################################
@@ -107,8 +100,8 @@ sub check_oversubscribe {
     # Replace array @$params->{reservation_path} with string separated by
     # spaces
     $params->{reservation_path} = join(' ', @{$params->{reservation_path}});
-}
-######
+} #____________________________________________________________________________ 
+
 
 #################
 # Private methods
@@ -126,8 +119,8 @@ sub get_interface_fields {
     my $statement = "SELECT * FROM interfaces WHERE interface_id = ?";
     my $row = $self->{dbconn}->get_row($statement, $iface_id);
     return $row;
-}
-######
+} #____________________________________________________________________________ 
+
 
 1;
 # vim: et ts=4 sw=4
