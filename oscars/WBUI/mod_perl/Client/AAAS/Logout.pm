@@ -9,7 +9,7 @@ package Client::AAAS::Logout;
 use strict;
 
 use Data::Dumper;
-use CGI qw{:cgi};
+use CGI;
 
 use Client::UserSession;
 
@@ -59,8 +59,7 @@ sub output {
     my( $self, $results ) = @_;
 
     # TODO:  FIX hard-coded URL
-    print STDERR "Logout output called\n";
-    print "Location:  https://oscars-test.es.net/\n\n";
+    print $self->{cgi}->redirect('https://oscars-test.es.net/');
 } #____________________________________________________________________________ 
 
 ######
