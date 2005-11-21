@@ -28,6 +28,8 @@ sub output {
 
     my $params_str;
 
+    print $self->{cgi}->header(
+         -type=>'text/xml');
     print "<xml>\n";
     print qq{
     <msg>Successfully retrieved reservations.</msg>
