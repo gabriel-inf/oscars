@@ -11,22 +11,41 @@ use strict;
 use Client::SOAPAdapter;
 our @ISA = qw{Client::SOAPAdapter};
 
-#******************************************************************************
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
+#______________________________________________________________________________ 
+
+
+###############################################################################
+# Currently a noop.
+#
+sub make_call {
+    my( $self, $soap_server, $soap_params ) = @_;
+
+    return {};
 } #____________________________________________________________________________ 
 
 
-#******************************************************************************
-sub output {
-    my( $self ) = @_;
+###############################################################################
+# post_process:  Perform any operations necessary after making SOAP call
+#
+sub post_process {
+    my( $self, $results ) = @_;
 
+    $results->{use_xml_tag} = 1;
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# Outputs information section.
+sub output {
+    my( $self, $results ) = @_;
+
+    if ($results->{use_xml_tag}) {
+        print $self->{cgi}->header(
+             -type=>'text/xml');
+        print "<xml><msg>Information page</msg>\n";
+    }
     print qq{
-      <div id="info_form">
+      <div id="get_info">
       <p>
       With the advent of service sensitive applications (such as remote-
       controlled experiments, time constrained massive data transfers,
@@ -51,6 +70,10 @@ sub output {
       <p>To begin using OSCARS, click on one of the notebook tabs.</p>
       </div>
     };
+    if ($results->{use_xml_tag}) {
+        print "</xml>\n";
+    }
+    print STDERR "info output finished\n";
 } #____________________________________________________________________________ 
 
 
