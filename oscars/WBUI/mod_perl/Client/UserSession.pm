@@ -8,7 +8,7 @@ use strict;
 
 use Data::Dumper;
 
-use CGI;
+use CGI qw{:cgi};
 use CGI::Session;
 
 ###############################################################################
@@ -38,8 +38,8 @@ sub start_session
     my $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
     my $sid = $session->id();
     my $cookie = $cgi->cookie(CGISESSID => $sid);
-    $session->param("auth_token", $cgi->param('auth_token'));
-    return( $cgi->param('auth_token'), $sid );
+    $session->param("user_dn", $cgi->param('user_dn'));
+    return( $cgi->param('user_dn'), $sid );
 }
 ######
 
