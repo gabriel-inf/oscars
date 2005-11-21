@@ -158,7 +158,6 @@ sub get_times {
                                      $resv->{reservation_created_time},
                                      $resv->{reservation_time_zone} );
     $resv->{reservation_created_time} = $row->{newtime};
-    return;
 }
 ######
 

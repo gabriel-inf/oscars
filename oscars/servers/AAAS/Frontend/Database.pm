@@ -45,7 +45,6 @@ sub initialize {
     if (!$self->{dbh}) {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }
-    return;
 }
 ######
 
@@ -105,7 +104,6 @@ sub get_institution_id {
                    "$params->{institution} is not in the database.");
     }
     $params->{institution_id} = $row->{institution_id} ;
-    return;
 }
 ######
 
