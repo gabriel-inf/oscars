@@ -9,7 +9,7 @@
 <em>David Robertson, Chin Guok</em><br/>
 <a href="http://www.es.net/">ESnet</a><br/><br/>
 
-November 6, 2005</br>
+November 21, 2005</br>
 
 <h2>Introduction</h2>
 
@@ -104,10 +104,9 @@ and the BSS. (y1)</p>
 
 <p>The interactive user interface to the RM is a Web-Based User Interface 
 (WBUI), i.e., a browser.  The specific mode of interaction is via CGI form
-submission to a user-accessible Web server, which acts as an intermediary
-between the WBUI and the AAAS.  Currently, CGI scripts handle form
-submissions.  If possible, in year two CGI scripts will be replaced by SOAP
-endpoints (y1, y2)</p>
+submission to a user-accessible Web server, which forwards the requests to
+the AAAS SOAP server.  mod_perl Apache request handlers are used to translate
+CGI requests, including form parameters, into SOAP calls.  (y1, y2)</p>
 
 <p>All forms have three areas:  a banner area, 
 a status area, and a main area for the primary functionality, with a bar
@@ -214,11 +213,12 @@ SOAP server forwards the request to the BSS SOAP server. (y1)</p>
 <a id="BSS">
 <h2>BSS</h2>
 
-<p>The BSS consists of a SOAP endpoint within the same Apache2 Web 
-server as the AAAS, a database within the MySQL 5 
-server, and a set of Perl packages that handle calls dispatched using mod_soap.
-It also includes a Perl package to determine the route to set up 
-within ESnet, and a scheduler package which runs as a separate thread.
+<p>The BSS consists of a SOAP endpoint within the same Apache2 Web server as 
+the AAAS, a database within the MySQL 5 server, and a set of Perl packages that
+handle calls dispatched using mod_soap.  SOAP calls are used to
+to find pending and expired reservations (these calls are not currently exposed
+via the interactive interface).  The BSS also includes a Perl package to 
+determine the route to set up within ESnet.
 (y1)</p> 
 
 <p>The process of making and scheduling a reservation is as follows
@@ -277,9 +277,9 @@ time, and the primary key of the row in the database. (y1)
 message and the reservation details to the client (y1).
 </li><br/>
  
-<li>A separate scheduler thread within the BSS periodically polls the database 
+<li>A cron script periodically polls the database 
 to see if reservations have become current, in which case the PSS library is 
-called to set up the label-switched path (LSP).  The thread also polls to see 
+called to set up the label-switched path (LSP).  The script also polls to see 
 if a reservation has expired, at which point a call is made to the PSS library 
 to tear down the LSP. (y1)
 </li><br/>
