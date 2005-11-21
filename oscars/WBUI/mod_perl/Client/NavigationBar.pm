@@ -64,9 +64,9 @@ sub initialize {
            onclick="new_section('view_reservations');return false;"
            href="#">View/Edit Reservations</a>
       </li>
-      <li id="create_reservation">
+      <li id="create_reservation_form">
         <a style="/styleSheets/layout.css" title="Create a new reservation"
-           onclick="new_section('create_reservation');return false;"
+           onclick="new_section('create_reservation_form');return false;"
            href="#">Make Reservation</a>
       </li>
       <li id="logout">
