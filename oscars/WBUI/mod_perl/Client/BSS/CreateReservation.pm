@@ -1,4 +1,4 @@
-package Client::BSS::ScheduleReservation;
+package Client::BSS::CreateReservation;
 
 # Handles request to schedule a reservation.
 #
@@ -13,6 +13,16 @@ use Client::SOAPAdapter;
 our @ISA = qw{Client::SOAPAdapter};
 
 ###############################################################################
+# Currently a noop.
+#
+sub make_call {
+    my( $self, $soap_server, $soap_params ) = @_;
+
+    return {};
+} #____________________________________________________________________________ 
+
+
+###############################################################################
 # output:  prints out the reservation creation form
 #          accessible from the "Make a Reservation" notebook tab
 # In:   results of SOAP call
@@ -23,16 +33,19 @@ sub output {
 
     my $params_str;
 
+    print $self->{cgi}->header(
+         -type=>'text/xml');
     print "<xml>\n";
     print qq{
     <msg>Reservation creation form</msg>
     <div id="reservation_ui">
     <form method="post" action=""
-      onsubmit="return submit_form(this, '/perl/adapt.pl?method=insert',
-                                   '$params_str');">
+      onsubmit="return submit_form(this,
+                                   '/perl/adapt.pl?method=create_reservation',
+                                   '');">
       <input type="hidden" name="reservation_start_time"></input>
       <input type="hidden" name="reservation_end_time"></input>
-      <input type="hidden" name="user_dn" value="$results->{user_dn}">
+      <input type="hidden" name="user_dn" value="$self->{user_dn}">
       </input>
       <input type="submit" value="Reserve bandwidth"></input>
       <input type="reset" value="Reset form fields"></input>
@@ -62,7 +75,7 @@ sub output {
       your reservation.  Fields left blank will default to the examples below 
       the input fields.  The default time zone is the local time.
     };
-    if (authorized($results->{user_level}, "engr")) {
+    if ($results->{engr}) {
         print qq{
           Checking the <strong>Persistent</strong> box makes a reservation's 
           duration indefinite, overriding the duration field.
@@ -74,7 +87,7 @@ sub output {
         <tr><th>Year</th>   <th>Month</th>      <th>Date</th> <th>Hour</th>
             <th>Minute</th> <th>UTC offset</th> <th>Duration (Hours)</th>
     };
-    if (authorized($results->{user_level}, "engr")) {
+    if ($results->{engr}) {
         print "<th>Persistent</th>";
     }
     else { print "<th> </th>"; }
@@ -104,7 +117,7 @@ sub output {
         </td>
         <td>
     };
-    if (authorized($results->{user_level}, "engr")) {
+    if ($results->{engr}) {
         print '  <input type="checkbox" name="persistent" value="0"></input>';
     }
     print qq{
@@ -152,7 +165,7 @@ sub output {
     </table>
     };
 
-    if (authorized($results->{user_level}, "engr")) {
+    if ($results->{engr}) {
         print qq{
     <p>
     <strong>WARNING</strong>:  Entries in the following fields may change 
@@ -168,13 +181,15 @@ sub output {
       <tr><td>(Host name or IP address)</td><td>(Host name or IP address)</td>
       </tr>
     </table>
+    };
+    }
+    print qq{
     </form>
     </div>
-      };
-    }
+    };
     print "</xml>\n";
-}
-######
+} #____________________________________________________________________________ 
+
 
 ######
 1;
