@@ -7,7 +7,7 @@ package BSS::Frontend::SOAPMethods;
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 16, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -27,8 +27,6 @@ my $user_fields =
     'src_hostaddr_id, dst_hostaddr_id, reservation_tag';
 
 
-#******************************************************************************
-#
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -45,10 +43,10 @@ sub initialize {
                        'dbconn' => $self->{dbconn});
     $self->{route_setup} = BSS::Traceroute::RouteHandler->new(
                                                'dbconn' => $self->{dbconn});
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
 
 
-#******************************************************************************
+###############################################################################
 # create_reservation:  SOAP call to insert a row into the reservations table. 
 #     BSS::Traceroute::RouteHandler is called to set up the route before
 #     inserting a reservation in the database
@@ -79,10 +77,10 @@ sub create_reservation {
 
     my $results = $self->get_results($params);
     return $results;
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
 
 
-#******************************************************************************
+###############################################################################
 # delete_reservation:  Given the reservation id, leave the reservation in the
 #     db, but mark status as cancelled, and set the ending time to 0 so that 
 #     find_expired_reservations will tear down the LSP if the reservation is
@@ -93,97 +91,57 @@ sub delete_reservation {
 
     my $status =  $self->{dbconn}->update_status( $params, 'precancel' );
     return $self->get_reservation_details($params);
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
 
 
-#******************************************************************************
-# get_all_reservations: get all reservations from the database
+###############################################################################
+# view_reservations: get all reservations from the database that satisfy a
+#     particular SQL filter
 #
 # In: reference to hash of parameters
 # Out: reservations if any, and status message
 #
-sub get_all_reservations {
+sub view_reservations {
     my( $self, $params ) = @_;
 
-    my $statement = "SELECT * FROM reservations" .
-             " ORDER BY reservation_start_time";
-    my $rows = $self->{dbconn}->do_query($statement);
-    return $self->process_reservation_request($params, $rows);
-} #____________________________________________________________________________                                         
+    my( $statement, $rows );
 
-#******************************************************************************
-# get_user_reservations: get all user's reservations from the database
-#
-# In:  reference to hash of parameters
-# Out: reservations if any, and status message
-#
-sub get_user_reservations {
-    my( $self, $params ) = @_;
-
-    my( $statement );
-
-    # TODO:  fix authorization
+    # TODO:  fix authorizations, unprivileged user can access another
+    #        person's reservations, etc.
     if ( $params->{engr_permission} ) {
         $statement = "SELECT *";
     }
     else {
         $statement = "SELECT $user_fields";
     }
-    $statement .= ' FROM reservations WHERE user_dn = ?' .
-                  ' ORDER BY reservation_start_time';
-    my $rows = $self->{dbconn}->do_query($statement, $params->{user_dn});
-    return $self->process_reservation_request($params, $rows);
-} #____________________________________________________________________________                                         
-
-#******************************************************************************
-# get_reservation_details: get details for one reservation
-#
-# In: reference to hash of parameters
-# Out: hash ref of results, status message
-#
-sub get_reservation_details {
-    my( $self, $params ) = @_;
-
-    my( $statement );
-
-        # TODO:  Fix authorization checks
-    if ( !($params->{engr_permission}) ) {
-        $statement = "SELECT $user_fields";
+    if ($params->{sql_filter} ne 'all') {
+        my @filter_pair = split('=', $params->{sql_filter});
+        $statement .= " FROM reservations WHERE $filter_pair[0] = ?" .
+                      ' ORDER BY reservation_start_time';
+        $rows = $self->{dbconn}->do_query($statement, $filter_pair[1]);
     }
-    else { $statement = "SELECT *"; }
-    $statement .= " FROM reservations" .
-              " WHERE reservation_id = ?" .
-              " ORDER BY reservation_start_time";
-    my $rows = $self->{dbconn}->do_query($statement, $params->{reservation_id});
-    return $self->process_reservation_request($params, $rows);
-} #____________________________________________________________________________                                         
-
-#******************************************************************************
-# process_reservation_request: handle get reservation(s) query, and
-#                              reformat results before sending back
-#
-sub process_reservation_request {
-    my( $self, $params, $rows ) = @_;
-
-    my( $resv );
-
-    # TODO:  fix authorization
+    else {
+        $statement .= ' FROM reservations' .
+                      ' ORDER BY reservation_start_time';
+        $rows = $self->{dbconn}->do_query($statement);
+    }
     if ( $params->{engr_permission} ) { 
         $self->{dbconn}->get_engr_fields($rows); 
     }
-    for $resv ( @$rows ) {
+    for my $resv ( @$rows ) {
         $self->{dbconn}->convert_times($resv);
         $self->{dbconn}->get_host_info($resv);
         $self->check_nulls($resv);
     }
     return $rows;
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
+
 
 #################
 # Private methods
 #################
 
-#******************************************************************************
+###############################################################################
 # get_time_str:  print formatted time string
 #
 sub get_time_str {
@@ -191,18 +149,20 @@ sub get_time_str {
 
     my @ymd = split(' ', $dtime);
     return $ymd[0];
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
 
-#******************************************************************************
+
+###############################################################################
 # get_infinite_time:  returns "infinite" time
 #
 sub get_infinite_time {
     my( $self ) = @_;
 
     return '2039-01-01 00:00:00';
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
 
-#******************************************************************************
+
+###############################################################################
 # get_results:  
 #
 sub get_results {
@@ -249,9 +209,10 @@ sub get_results {
     $results->{reservation_tag} =~ s/@/../;
     $results->{reservation_status} = 'pending';
     return $results;
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
 
-#******************************************************************************
+
+###############################################################################
 # check_nulls:  
 #
 sub check_nulls {
@@ -268,7 +229,8 @@ sub check_nulls {
         ($resv->{reservation_dscp} eq 'NU')) {
         $resv->{reservation_dscp} = 'DEFAULT';
     }
-} #____________________________________________________________________________                                         
+} #____________________________________________________________________________ 
+
 
 ######
 1;
