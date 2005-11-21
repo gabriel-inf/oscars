@@ -1,8 +1,9 @@
+###############################################################################
 package BSS::Traceroute::JnxTraceroute;
 
 # Executes traceroute on Juniper routers.
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
-# Last Modified:  November 15, 2005
+# Last Modified:  November 21, 2005
 
 use Data::Dumper;
 use Error qw(:try);
@@ -10,26 +11,16 @@ use Error qw(:try);
 use strict;
 
 
-################
-# Public methods
-################
-
-##############################################################################
-# new:  create a JnxTraceroute.
-# Input:  <none>
-# Output: new object
-#
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # traceroute:  traceroute from a Juniper router.
 # Input:  source, destination
 # Output: <none>
@@ -75,10 +66,10 @@ sub traceroute
     }
     close(_TRACEROUTE_);
     return 1;
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # get_raw_hop_data:  returns the raw traceroute data in an array.
 # Input: <none>
 # Output: Array of raw traceroute data, e.g.
@@ -89,8 +80,8 @@ sub get_raw_hop_data
     my ($self) = @_;
 
     return @{$self->{rawHopData}};
-}
-######
+} #____________________________________________________________________________ 
+
 
 ##############################################################################
 # get_hops:  returns the IP addresses of the hops in an array.
@@ -102,23 +93,8 @@ sub get_hops
     my ($self) = @_;
 
     return @{$self->{hops}};
-}
+} #____________________________________________________________________________ 
+
+
 ######
-
-#################
-# Private methods
-#################
-
-##############################################################################
-# initialize: initialize jnxTraceroute with default values if not already
-#             populated.
-# Input: <none>
-# Output: <none>
-#
-sub initialize 
-{
-    my ($self) = @_;
-}
-######
-
 1;

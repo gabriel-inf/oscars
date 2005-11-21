@@ -1,7 +1,8 @@
+###############################################################################
 package BSS::Traceroute::DBRequests;
 
 # Database requests made by Traceroute packages
-# Last modified:  November 15, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -11,24 +12,16 @@ use strict;
 use Data::Dumper;
 
 
-###############################################################################
-#
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
+} #____________________________________________________________________________ 
 
-sub initialize {
-    my ($self) = @_;
 
-}
-######
-
-##############################################################################
+###############################################################################
 #
 sub get_trace_configs {
     my( $self ) = @_;
@@ -42,10 +35,10 @@ sub get_trace_configs {
             "FROM trace_confs where trace_conf_id = 1";
     my $configs = $self->{dbconn}->get_row($statement);
     return $configs;
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # ip_to_xface_id:
 #   Get the db iface id from an ip address. If a router is an edge router
 #   there will be a corresponding address in the ipaddrs table.
@@ -59,10 +52,10 @@ sub ip_to_xface_id {
     my $row = $self->{dbconn}->get_row($statement, $ipaddr);
     if ( !$row ) { return undef; }
     return $row->{interface_id};
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # xface_id_to_loopback:  get the loopback ip from the interface primary key.
 # In:  interface table primary key
 # Out: loopback ip address
@@ -81,8 +74,8 @@ sub xface_id_to_loopback {
         throw Error::Simple("Router $row->{router_name} has no oscars loopback");
     }
     return $row->{router_loopback};
-}
-######
+} #____________________________________________________________________________ 
+
 
 ######
 1;

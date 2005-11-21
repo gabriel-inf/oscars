@@ -1,25 +1,23 @@
+###############################################################################
 package BSS::Traceroute::RouteHandler; 
 
 # Finds ingress and egress routers and the path between them.
 #
-# Last modified:  November 15, 2005
+# Last modified:  November 21, 2005
 # Jason Lee       (jrlee@lbl.gov)
 # David Robertson (dwrobertson@lbl.gov)
-
 
 use Data::Dumper;
 use Socket;
 use Net::Ping;
 use Error qw(:try);
 
+use strict;
+
 use BSS::Traceroute::JnxTraceroute;
 use BSS::Traceroute::DBRequests;
 
-use strict;
 
-
-###############################################################################
-#
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -36,10 +34,10 @@ sub initialize {
                                                'dbconn' => $self->{dbconn});
     $self->{trace_configs} = $self->{db_requests}->get_trace_configs();
     $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # find_interface_ids:  run traceroutes to both hosts.  Find edge routers and
 # validate both ends.
 # IN:  src and dst host names or IP addresses, ingress and egress routers
@@ -98,10 +96,10 @@ sub find_interface_ids {
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
             $self->do_traceroute($loopback_ip, $params->{destination_ip});
     }
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # get_pss_fields:   get default PSS config fields used in reservation
 #
 sub get_pss_fields {
@@ -111,10 +109,10 @@ sub get_pss_fields {
     my $reservation_class = $self->{pss_configs}->{pss_conf_CoS};
     my $reservation_burst_limit = $self->{pss_configs}->{pss_conf_burst_limit};
     return( $reservation_class, $reservation_burst_limit );
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # do remote trace:  Run traceroute from src to dst.
 #
 # In:   source, destination IP addresses.
@@ -178,10 +176,10 @@ sub do_traceroute {
 
     # if we didn't find it
     throw Error::Simple("Couldn't trace route to $src");
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # do_ping:
 # Freaking Net:Ping uses it own socket, so it has to be
 # root to do icmp. Any smart person would turn off UDP and
@@ -210,10 +208,10 @@ sub do_ping {
         $p->close();
     }
     throw Error::Simple("Host $host not pingable");
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # name_to_ip:  convert host name to IP address if it isn't already one
 # In:   host name or IP
 # Out:  host IP address
@@ -225,8 +223,9 @@ sub name_to_ip{
     my $regexp = '\d+\.\d+\.\d+\.\d+(/\d+)*';
     if ($host !~ $regexp) { return( inet_ntoa(inet_aton($host)) ); }
     else { return $host; }
-}
-######
+} #____________________________________________________________________________ 
 
+
+######
 1;
 # vim: et ts=4 sw=4
