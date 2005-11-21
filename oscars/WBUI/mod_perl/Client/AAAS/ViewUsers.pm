@@ -3,7 +3,7 @@ package Client::AAAS::ViewUsers;
 
 # Handles get user list form submission
 #
-# Last modified:  November 20, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -27,6 +27,8 @@ our @ISA = qw{Client::SOAPAdapter};
 sub output {
     my ( $self, $results ) = @_;
 
+    print $self->{cgi}->header(
+         -type=>'text/xml');
     print "<xml>\n";
     print qq{
       <msg>Successfully read user list.</msg>
@@ -58,8 +60,7 @@ sub print_row {
     print qq{
     <tr>
       <td><a href="#" style="/styleSheets/layout.css"
-        onclick="new_section(
-        '/perl/adapt.pl?method=get_profile;id=$row->{user_dn}');
+        onclick="new_section('get_profile', 'id=$row->{user_dn}');
         return false;">$row->{user_last_name}</a></td>
       <td>$row->{user_first_name}</td> <td>$row->{user_dn}</td>
       <td>$row->{user_level}</td>      <td>$row->{institution_id}</td>
