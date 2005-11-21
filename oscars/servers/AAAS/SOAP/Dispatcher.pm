@@ -1,3 +1,4 @@
+###############################################################################
 package AAAS::SOAP::Dispatcher;
 
 # SOAP::Lite dispatcher for AAAS.  Validates parameters and does authorization
@@ -5,7 +6,7 @@ package AAAS::SOAP::Dispatcher;
 # either the AAAS::Frontend::SOAPMethods package, or forwarding them to the
 # BSS SOAP server.
 
-# Last modified:  November 17, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use Error qw(:try);
@@ -37,6 +38,10 @@ my $dbconn = AAAS::Frontend::Database->new(
 my $request_handler = AAAS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
 my $auth = AAAS::Frontend::Auth->new( 'dbconn' => $self->{dbconn});
 
+#______________________________________________________________________________ 
+
+
+###############################################################################
 sub dispatch {
     my ( $class_name, $params ) = @_;
 
@@ -88,8 +93,8 @@ sub dispatch {
                        $subject_line, $mail_msg);
     }
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ######
 1;
