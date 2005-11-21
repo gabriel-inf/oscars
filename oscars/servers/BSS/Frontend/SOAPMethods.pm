@@ -1,3 +1,4 @@
+###############################################################################
 package BSS::Frontend::SOAPMethods;
 
 # SOAP methods for BSS.
@@ -25,7 +26,8 @@ my $user_fields =
     'reservation_start_time, reservation_end_time, reservation_status, ' .
     'src_hostaddr_id, dst_hostaddr_id, reservation_tag';
 
-###############################################################################
+
+#******************************************************************************
 #
 sub new {
     my( $class, %args ) = @_;
@@ -43,19 +45,18 @@ sub initialize {
                        'dbconn' => $self->{dbconn});
     $self->{route_setup} = BSS::Traceroute::RouteHandler->new(
                                                'dbconn' => $self->{dbconn});
-}
-######
+} #____________________________________________________________________________                                         
 
 
-###############################################################################
-# insert_reservation:  SOAP call to insert a row into the reservations table. 
+#******************************************************************************
+# create_reservation:  SOAP call to insert a row into the reservations table. 
 #     BSS::Traceroute::RouteHandler is called to set up the route before
 #     inserting a reservation in the database
 # In:  reference to hash.  Hash's keys are all the fields of the reservations
 #      table except for the primary key.
 # Out: ref to results hash.
 #
-sub insert_reservation {
+sub create_reservation {
     my( $self, $params ) = @_;
     my( $duration_seconds );
 
@@ -78,10 +79,10 @@ sub insert_reservation {
 
     my $results = $self->get_results($params);
     return $results;
-}
-######
+} #____________________________________________________________________________                                         
 
-##############################################################################
+
+#******************************************************************************
 # delete_reservation:  Given the reservation id, leave the reservation in the
 #     db, but mark status as cancelled, and set the ending time to 0 so that 
 #     find_expired_reservations will tear down the LSP if the reservation is
@@ -92,10 +93,10 @@ sub delete_reservation {
 
     my $status =  $self->{dbconn}->update_status( $params, 'precancel' );
     return $self->get_reservation_details($params);
-}
-######
+} #____________________________________________________________________________                                         
 
-###############################################################################
+
+#******************************************************************************
 # get_all_reservations: get all reservations from the database
 #
 # In: reference to hash of parameters
@@ -108,10 +109,9 @@ sub get_all_reservations {
              " ORDER BY reservation_start_time";
     my $rows = $self->{dbconn}->do_query($statement);
     return $self->process_reservation_request($params, $rows);
-}
-######
+} #____________________________________________________________________________                                         
 
-###############################################################################
+#******************************************************************************
 # get_user_reservations: get all user's reservations from the database
 #
 # In:  reference to hash of parameters
@@ -133,10 +133,9 @@ sub get_user_reservations {
                   ' ORDER BY reservation_start_time';
     my $rows = $self->{dbconn}->do_query($statement, $params->{user_dn});
     return $self->process_reservation_request($params, $rows);
-}
-######
+} #____________________________________________________________________________                                         
 
-###############################################################################
+#******************************************************************************
 # get_reservation_details: get details for one reservation
 #
 # In: reference to hash of parameters
@@ -157,10 +156,9 @@ sub get_reservation_details {
               " ORDER BY reservation_start_time";
     my $rows = $self->{dbconn}->do_query($statement, $params->{reservation_id});
     return $self->process_reservation_request($params, $rows);
-}
-######
+} #____________________________________________________________________________                                         
 
-###############################################################################
+#******************************************************************************
 # process_reservation_request: handle get reservation(s) query, and
 #                              reformat results before sending back
 #
@@ -179,14 +177,13 @@ sub process_reservation_request {
         $self->check_nulls($resv);
     }
     return $rows;
-}
-######
+} #____________________________________________________________________________                                         
 
 #################
 # Private methods
 #################
 
-###############################################################################
+#******************************************************************************
 # get_time_str:  print formatted time string
 #
 sub get_time_str {
@@ -194,20 +191,18 @@ sub get_time_str {
 
     my @ymd = split(' ', $dtime);
     return $ymd[0];
-}
-######
+} #____________________________________________________________________________                                         
 
-###############################################################################
+#******************************************************************************
 # get_infinite_time:  returns "infinite" time
 #
 sub get_infinite_time {
     my( $self ) = @_;
 
     return '2039-01-01 00:00:00';
-}
-######
+} #____________________________________________________________________________                                         
 
-###############################################################################
+#******************************************************************************
 # get_results:  
 #
 sub get_results {
@@ -254,10 +249,9 @@ sub get_results {
     $results->{reservation_tag} =~ s/@/../;
     $results->{reservation_status} = 'pending';
     return $results;
-}
-######
+} #____________________________________________________________________________                                         
 
-###############################################################################
+#******************************************************************************
 # check_nulls:  
 #
 sub check_nulls {
@@ -274,8 +268,8 @@ sub check_nulls {
         ($resv->{reservation_dscp} eq 'NU')) {
         $resv->{reservation_dscp} = 'DEFAULT';
     }
-}
-######
+} #____________________________________________________________________________                                         
 
+######
 1;
 # vim: et ts=4 sw=4

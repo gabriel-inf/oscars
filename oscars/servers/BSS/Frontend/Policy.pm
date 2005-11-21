@@ -107,8 +107,6 @@ sub check_oversubscribe {
     # Replace array @$params->{reservation_path} with string separated by
     # spaces
     $params->{reservation_path} = join(' ', @{$params->{reservation_path}});
-
-    return;
 }
 ######
 

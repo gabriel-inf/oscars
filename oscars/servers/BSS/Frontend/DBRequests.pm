@@ -47,7 +47,6 @@ sub initialize {
     if (!$self->{dbh}) {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }
-    return;
 }
 ######
 
@@ -207,7 +206,6 @@ sub get_host_info {
     if (!$resv->{destination_host}) {
         $resv->{destination_host} = $resv->{destination_ip};
     }
-    return;
 }
 ######
 
@@ -255,7 +253,6 @@ sub convert_times {
     $row = $self->get_row( $statement, $resv->{reservation_created_time},
                              $resv->{reservation_time_zone} );
     $resv->{reservation_created_time} = $row->{new_time};
-    return;
 }
 ######
 
@@ -283,7 +280,6 @@ sub get_engr_fields {
         $row = $self->get_row($statement, $_);
         push(@{$resv->{reservation_path}}, $row->{router_name}); 
     }
-    return;
 }
 ######
 
