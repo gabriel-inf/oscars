@@ -1,5 +1,5 @@
 ###############################################################################
-package Client::AAAS::GetUserList;
+package Client::AAAS::ViewUsers;
 
 # Handles get user list form submission
 #
