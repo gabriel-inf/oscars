@@ -1,8 +1,9 @@
+###############################################################################
 package AAAS::Frontend::Mail;
 
 # Handles all notification email messages.
 # 
-# Last modified:  November 15, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -10,8 +11,7 @@ use strict;
 
 use Data::Dumper;
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -27,8 +27,8 @@ sub initialize {
     $self->{notification_email_encoding} = 'ISO-8859-1';
     $self->{sendmail_cmd} = '/usr/sbin/sendmail -oi';
     $self->{webmaster} = 'dwrobertson@lbl.gov';
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # gen_message:  Generates mail message, if appropriate, from method results
@@ -38,8 +38,8 @@ sub gen_message {
 
     my( $subject_line, $message );
     return( $subject_line, $message );
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # send_mail:  Mails message.  Used by both AAAS and BSS for notifications
@@ -63,8 +63,8 @@ sub send_mail {
 
     if (!close( MAIL )) { return $!; }
     return "";
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 #
@@ -72,8 +72,8 @@ sub get_webmaster {
     my( $self ) = @_;
 
     return $self->{webmaster};
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 #
@@ -82,8 +82,8 @@ sub get_admins {
 
     #return 'oscars-admin@es.net';
     return 'dwrobertson@lbl.gov chin@es.net';
-}
-######
+} #____________________________________________________________________________ 
 
-# Don't touch the line below
+
+######
 1;

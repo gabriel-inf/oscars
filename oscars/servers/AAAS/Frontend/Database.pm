@@ -1,7 +1,8 @@
+###############################################################################
 package AAAS::Frontend::Database;
 
 # AAAS database request handling.
-# Last modified:   November 12, 2005
+# Last modified:   November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -10,8 +11,7 @@ use DBI;
 use Data::Dumper;
 use Error qw(:try);
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -45,8 +45,8 @@ sub initialize {
     if (!$self->{dbh}) {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }
-}
-######
+} #____________________________________________________________________________ 
+
 
 # TODO:  FIX duplication
 ###############################################################################
@@ -68,8 +68,8 @@ sub do_query {
         throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
     }
     return $rows;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 #
@@ -88,8 +88,8 @@ sub get_row {
     if ( !@$rows ) { return undef; }
     # TODO:  error checking if more than one row
     return $rows->[0];
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 #
@@ -104,8 +104,8 @@ sub get_institution_id {
                    "$params->{institution} is not in the database.");
     }
     $params->{institution_id} = $row->{institution_id} ;
-}
-######
+} #____________________________________________________________________________ 
 
-# Don't touch the line below
+
+######
 1;

@@ -1,9 +1,10 @@
+###############################################################################
 package AAAS::Frontend::SOAPMethods;
 
 # AAAS SOAP methods callable from AAAS::SOAP::Dispatcher.  Authorization and 
 # parameter validation are performed by the dispatcher.
 #
-# Last modified:  November 15, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -27,26 +28,15 @@ my $user_profile_fields =
 #    'user_register_time, user_activation_key, ' .
      'institution_id';
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
+} #____________________________________________________________________________ 
 
-sub initialize {
-    my ($self) = @_;
-}
-######
-
-
-####################################
-# Methods that need user privileges.
-####################################
 
 ###############################################################################
 # login
@@ -71,13 +61,13 @@ sub login {
         throw Error::Simple("Please check your password and try again.");
     }
     $results->{user_dn} = $user_dn;
-    # censor
+    # X out password
     $results->{user_password} = undef;
     return $results;
-}
-######
+} #____________________________________________________________________________ 
 
-##############################################################################
+
+###############################################################################
 # get_profile
 # In:  reference to hash of parameters
 # Out: status code, status message
@@ -111,8 +101,8 @@ sub get_profile {
     # X out password
     $results->{user_password} = undef;
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # set_profile
@@ -175,8 +165,8 @@ sub set_profile {
     $results->{institution} = $params->{institution};
     $results->{user_password} = undef;
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ##############################################
 # Methods requiring administrative privileges.
@@ -234,15 +224,15 @@ sub add_user {
     # X out password
     $results->{user_password} = undef;
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
-# get_user_list
+# view_users
 # In:  params
 # Out: status message and DB results
 #
-sub get_user_list {
+sub view_users {
     my( $self, $params ) = @_;
 
     my( $r, $irow, $user );
@@ -260,8 +250,8 @@ sub get_user_list {
         $user->{user_password} = undef;
     }
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ################################################
 # Registration methods (require admin permission).
@@ -324,8 +314,8 @@ sub activate_account {
        "will be redirected to the main service login page in 10 seconds. " .
        "<br>Please change the password to your own once you sign in.";
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # process_registration
@@ -361,8 +351,8 @@ sub process_registration {
         "your registration is accepted, information on " .
         "activating your account will be sent to your primary email address.";
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ######
 1;

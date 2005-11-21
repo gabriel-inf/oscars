@@ -1,9 +1,10 @@
+###############################################################################
 package AAAS::Frontend::Validator;
 
 # Called by AAAS::SOAP::Dispatcher to determine whether parameters are
 # valid before handling them by the AAAS or forwarding them to the BSS.
 # 
-# Last modified:  November 16, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
@@ -92,7 +93,7 @@ my $tests = {
     },
 
     # BSS
-    'insert_reservation' => {
+    'create_reservation' => {
         'reservation_start_time' => (
             {'regexp' => '.+',
              'error' => "Please enter the reservation starting time."
@@ -127,32 +128,23 @@ my $tests = {
     # no tests yet
     # AAAS
     'get_profile' => {},
-    'get_user_list' => {},
+    'view_users' => {},
     # BSS
     'delete_reservation' => {},
-    'get_all_reservations' => {},
-    'get_user_reservations' => {},
-    'get_reservation_details' => {},
-    'find_pending_reservatiosn' => {},
-    'find_expired_reservatiosn' => {}
+    'view_reservations' => {},
+    'find_pending_reservations' => {},
+    'find_expired_reservations' => {}
 };
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
+} #____________________________________________________________________________ 
 
-
-sub initialize {
-    my ($self) = @_;
-}
-######
 
 ###############################################################################
 ## validate:  input validation
@@ -187,17 +179,18 @@ sub validate {
         }
     }
     return "";
-}
-######
+} #____________________________________________________________________________ 
 
+
+###############################################################################
 sub numeric_compare {
     my( $self, $val, $lesser_val, $greater_val ) = @_;
 
     if ($lesser_val > $val) { return 0; }
     if ($greater_val < $val) { return 0; }
     return 1;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ######
 1;

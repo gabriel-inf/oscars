@@ -1,30 +1,26 @@
+###############################################################################
 package AAAS::Frontend::Notifications;
 
 # Reservation statistics formatting.
 #
-# Last modified:  November 17, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-###############################################################################
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
+} #____________________________________________________________________________ 
 
-sub initialize {
-    my ($self) = @_;
-}
-######
 
-##############################################################################
+###############################################################################
 # create_reservation_msg
 #
 sub create_reservation_msg {
@@ -74,10 +70,10 @@ sub create_reservation_msg {
     else { $msg .= "Class:              DEFAULT\n\n"; }
 
     return $msg;
-}
-######
+} #____________________________________________________________________________ 
+
                    
-##############################################################################
+###############################################################################
 # lsp_configure_msg
 #
 sub lsp_configure_msg {
@@ -134,8 +130,8 @@ sub lsp_configure_msg {
     
     $msg .= "$resv->{lsp_status}\n";
     return $msg;
-}
-######
+} #____________________________________________________________________________ 
+
                    
 ###############################################################################
 #
@@ -158,8 +154,9 @@ sub get_times {
                                      $resv->{reservation_created_time},
                                      $resv->{reservation_time_zone} );
     $resv->{reservation_created_time} = $row->{newtime};
-}
-######
+} #____________________________________________________________________________ 
 
+
+######
 1;
 # vim: et ts=4 sw=4

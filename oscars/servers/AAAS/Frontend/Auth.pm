@@ -1,9 +1,10 @@
+###############################################################################
 package AAAS::Frontend::Auth;
 
 # Database interactions dealing with authorization.  TODO:  needs to be 
 # reimplemented.                 
 #
-# Last modified:  November 17, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -11,8 +12,7 @@ use strict;
 use Error qw(:try);
 use Data::Dumper;
 
-###############################################################################
-#
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -53,8 +53,8 @@ sub initialize {
         # scheduler pseudo-user
         'SCHEDULER' => 'engr',
     };
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # TODO: implement authorization through incorporating ROAM
@@ -65,7 +65,6 @@ sub authorized {
     my @permissions_required = $self->{method_permissions}->{$method_name};
     my $permissions_granted = $self->{user_permissions}->{$user_dn};
     return 1;
-}
-######
+} #____________________________________________________________________________ 
 
 1;
