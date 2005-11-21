@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
-use strict;
-
 use SOAP::Lite;
+
+use strict;
 
 use Data::Dumper;
 
@@ -13,7 +13,17 @@ if ($numArgs == 1) {
     $params{sql_filter} = $ARGV[0];
 }
 else {
-    print STDERR "usage:  ./get_user_reservations.pl sql_filter\n";
+    print "usage:  ./get_user_reservations.pl sql_filter\n";
+    print "example SQL filters (used in a statement after a WHERE):\n\n";
+
+    print "*\n";
+    print "\tgets all reservations you have permissions for\n\n";
+
+    print "user_dn = 'dwrobertson\@lbl.gov'\n";
+    print "\tgets all reservations for a particular user\n\n";
+
+    print "reservation_id = 14\n";
+    print "\tgets the details for a particular reservation\n";
     exit;
 }
 
