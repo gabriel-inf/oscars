@@ -15,12 +15,10 @@ chomp($password);
 
 my %params = ('user_dn' => 'dwrobertson@lbl.gov', 'user_password' => $password);
 $params{server_name} = 'AAAS';
-$params{method} = 'verify_login';
+$params{method} = 'login';
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
     ->proxy('https://198.128.14.164/SOAP');
-    #->uri('http://127.0.0.1/Dispatcher')
-    #->proxy('https://127.0.0.1/SOAP');
 
 my $som = $soap_server->dispatch(\%params);
 if ($som->faultstring) {
