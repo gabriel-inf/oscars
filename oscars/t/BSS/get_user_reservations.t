@@ -10,14 +10,14 @@ my( %params );
 my $numArgs = $#ARGV + 1;
 
 if ($numArgs == 1) {
-    $params{user_dn} = $ARGV[0];
+    $params{sql_filter} = $ARGV[0];
 }
 else {
-    print STDERR "usage:  ./get_user_reservations.pl user_dn\n";
+    print STDERR "usage:  ./get_user_reservations.pl sql_filter\n";
     exit;
 }
 
-$params{method} = 'get_user_reservations';
+$params{method} = 'view_reservations';
 $params{server_name} = 'BSS';
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
