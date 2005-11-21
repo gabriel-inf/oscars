@@ -43,7 +43,7 @@ sub output {
     <strong>$self->{user_dn}</strong>.</p>
     <p>Required fields are outlined in green.</p>
     <form method="post" action="" onsubmit="
-        return submit_form(this, '/perl/adapt.pl?method=add_user', '');">
+        return submit_form(this, 'add_user', '');">
     <table>
     <tr>
       <td>Distinguished Name</td>
