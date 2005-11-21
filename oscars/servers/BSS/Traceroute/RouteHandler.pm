@@ -98,7 +98,6 @@ sub find_interface_ids {
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
             $self->do_traceroute($loopback_ip, $params->{destination_ip});
     }
-    return; 
 }
 ######
 
@@ -179,7 +178,6 @@ sub do_traceroute {
 
     # if we didn't find it
     throw Error::Simple("Couldn't trace route to $src");
-    return;
 }
 ######
 
