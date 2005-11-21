@@ -9,7 +9,7 @@ my( %params );
 
 $params{reservation_start_time} = time();
 $params{duration_hour} =       0.04;    # duration 5 minutes
-$params{reservation_time_zone} = "-07:00";
+$params{reservation_time_zone} = "-08:00";
 
 # in Mbps
 $params{reservation_bandwidth} =      '10';
