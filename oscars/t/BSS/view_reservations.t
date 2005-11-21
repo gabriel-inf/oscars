@@ -16,7 +16,7 @@ else {
     print "usage:  ./get_user_reservations.pl sql_filter\n";
     print "example SQL filters (used in a statement after a WHERE):\n\n";
 
-    print "*\n";
+    print "all\n";
     print "\tgets all reservations you have permissions for\n\n";
 
     print "user_dn = 'dwrobertson\@lbl.gov'\n";
