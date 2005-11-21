@@ -36,15 +36,15 @@ sub initialize {
     $self->{LSP_TEARDOWN} = 0;
     $self->{db_requests} = new BSS::Scheduler::DBRequests(
                                                'dbconn' => $self->{dbconn});
-    $self->{configs} = $self->{db_requests}->get_pss_configs();
+    $self->{configs} = $self->{dbconn}->get_pss_configs();
 } #____________________________________________________________________________ 
 
 
 ###############################################################################
-# find_new_reservations:  find reservations to run.  Find all the
+# find_pending_reservations:  find reservations to run.  Find all the
 #    reservatations in db that need to be setup and run in the next N minutes.
 #
-sub find_new_reservations {
+sub find_pending_reservations {
     my ($self, $params) = @_;
 
     my ($resvs, $status);
@@ -54,6 +54,10 @@ sub find_new_reservations {
     # find reservations that need to be scheduled
     $resvs = $self->{db_requests}->find_pending_reservations(
                                                       $params->{time_interval});
+    print STDERR Dumper($resvs);
+    if (!@$resvs) { print STDERR "OK\n"; return $resvs; }
+
+    print STDERR "why here?\n";
     $self->{dbconn}->get_host_info($resvs);
     $self->{dbconn}->get_engr_fields($resvs); 
     for my $r (@$resvs) {
@@ -61,7 +65,7 @@ sub find_new_reservations {
         $status = setup_pss($r);
         update_reservation( $r, $status, 'active');
     }
-    return "";
+    return $resvs;
 } #____________________________________________________________________________ 
 
 
@@ -79,6 +83,8 @@ sub find_expired_reservations {
     # thus expired
     $resvs = $self->{db_requests}->find_expired_reservations(
                                                      $params->{time_interval});
+    print STDERR Dumper($resvs);
+    if (!@$resvs) { print STDERR "OK\n"; return $resvs; }
     $self->{dbconn}->get_host_info($resvs);
     $self->{dbconn}->get_engr_fields($resvs); 
     for my $r (@$resvs) {

@@ -35,7 +35,6 @@ sub initialize {
                  'password' => $password)
              or die "FATAL:  could not connect to database";
 
-    print STDERR "Scheduler running\n";
 } #____________________________________________________________________________ 
 
 
@@ -45,13 +44,12 @@ sub find_pending_reservations  {
     my ( $self, $time_interval ) = @_;
 
     my $status = 'pending';
-    my $statement = "SELECT now() + INTERVAL ? SECOND AS newtime";
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
     my $row = $self->{dbconn}->get_row( $statement, $time_interval );
     my $timeslot = $row->{new_time};
     $statement = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
-    my $rows = $self->{dbconn}->do_query($statement, $status, $timeslot);
-    return $rows;
+    return $self->{dbconn}->do_query($statement, $status, $timeslot);
 } #____________________________________________________________________________ 
 
 
@@ -61,14 +59,13 @@ sub find_expired_reservations {
     my ( $self, $time_interval ) = @_;
 
     my $status = 'active';
-    my $statement = "SELECT now() + INTERVAL ? SECOND AS newtime";
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
     my $row = $self->{dbconn}->get_row( $statement, $time_interval );
     my $timeslot = $row->{new_time};
     $statement = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
-    my $rows = $self->{dbconn}->do_query($statement, $status, $timeslot,
+    return $self->{dbconn}->do_query($statement, $status, $timeslot,
                                         'precancel' );
-    return $rows;
 } #____________________________________________________________________________ 
 
 
