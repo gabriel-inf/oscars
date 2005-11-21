@@ -1,3 +1,4 @@
+###############################################################################
 package Client::UserSession;
 
 # Handles user session.
@@ -11,19 +12,16 @@ use Data::Dumper;
 use CGI qw{:cgi};
 use CGI::Session;
 
-###############################################################################
-#
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
     return( $self );
-}
-######
+} #____________________________________________________________________________
 
 
-##############################################################################
+###############################################################################
 # start_session: Sets cookie containing session id to be used in granting
 #   access.  Note that this does not handle checking whether the user is in 
 #   the database; that is handled by a method in the AAAS.
@@ -40,10 +38,10 @@ sub start_session
     my $cookie = $cgi->cookie(CGISESSID => $sid);
     $session->param("user_dn", $cgi->param('user_dn'));
     return( $cgi->param('user_dn'), $sid );
-}
-######
+} #____________________________________________________________________________
 
-##############################################################################
+
+###############################################################################
 # verify_session:  Checks to see that a cookie containing a valid session
 # id is set before granting access.
 #
@@ -67,18 +65,18 @@ sub verify_session
        $cgi->param(-name=>'user_dn',-value=>$stored_token);
        return( $stored_token );
     }
-}
-######
+} #____________________________________________________________________________
 
-##############################################################################
+
+###############################################################################
 sub end_session
 {
     my( $self, $cgi ) = @_;
   
     my $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
     $session->clear(["user_dn"]);
-}
-######
+} #____________________________________________________________________________
+
 
 ######
 1;
