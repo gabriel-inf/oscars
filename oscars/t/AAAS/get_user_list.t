@@ -9,7 +9,7 @@ my($data, $row, $key, $value);
 my %params = ('user_dn' => 'dwrobertson@lbl.gov',
               'user_level' => 'admin' );
 $params{server_name} = 'AAAS';
-$params{method} = 'get_userlist';
+$params{method} = 'get_user_list';
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
     ->proxy('https://198.128.14.164/SOAP');
