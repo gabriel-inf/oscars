@@ -70,6 +70,9 @@ sub login {
     if ( $results->{user_password} ne $encoded_password ) {
         throw Error::Simple("Please check your password and try again.");
     }
+    $results->{user_dn} = $user_dn;
+    # censor
+    $results->{user_password} = undef;
     return $results;
 }
 ######
@@ -235,11 +238,11 @@ sub add_user {
 ######
 
 ###############################################################################
-# get_userlist
+# get_user_list
 # In:  params
 # Out: status message and DB results
 #
-sub get_userlist {
+sub get_user_list {
     my( $self, $params ) = @_;
 
     my( $r, $irow, $user );
