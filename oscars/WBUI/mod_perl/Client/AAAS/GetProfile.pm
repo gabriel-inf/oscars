@@ -32,9 +32,7 @@ sub output {
     <h3>Editing profile for user: $self->{user_dn}</h3>
     <p>Required fields are outlined in green.</p>
     <form method="post" action=""
-        onsubmit="return submit_form(this,
-                                     '/perl/adapt.pl?method=set_profile',
-                                     '');">
+        onsubmit="return submit_form(this, 'set_profile', '');">
     <table>
       <tr>
         <td>Distinguished Name</td>
