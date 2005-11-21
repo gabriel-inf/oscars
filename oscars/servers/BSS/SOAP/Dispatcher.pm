@@ -1,9 +1,10 @@
+###############################################################################
 package BSS::SOAP::Dispatcher;
 
 # SOAP::Lite dispatcher for BSS.  Note well:  calls to the BSS are currently
 # assumed to have already been validated and authorized through the AAAS.
 #
-# Last modified:  November 15, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
 
@@ -24,7 +25,10 @@ my $dbconn = BSS::Frontend::DBRequests->new(
 
 my $request_handler = BSS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
 
+#______________________________________________________________________________
 
+
+###############################################################################
 sub dispatch {
     my ( $class_name, $params ) = @_;
 
@@ -53,8 +57,8 @@ sub dispatch {
                  ->faultstring($ex->{-text});
     }
     return $results;
-}
-######
+} #____________________________________________________________________________ 
+
 
 ######
 1;
