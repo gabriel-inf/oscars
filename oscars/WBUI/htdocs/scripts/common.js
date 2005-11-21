@@ -6,8 +6,8 @@ Soo-yeon Hwang  (dapi@umich.edu)
 */
 
 /* List of functions:
-submit_form(form, url, params_str)
-new_page(url)
+submit_form(form, method_name, params_str)
+new_page(method_name)
 get_response(xmlhttp, method_name)
 check_form(form, method_name);
 check_for_required(form, required)
@@ -44,16 +44,27 @@ var user_profile_required = {
                     
 // checks validity of form settings, and uses Sarissa to post request
 // and get back result
-function submit_form( form, url, params_str )
+function submit_form( form, method_name, params_str )
 {
-    var method_name = ;   // get from url
     var valid = check_form( form, method_name );
     if (!valid) { return false; }
 
     // adapted from http://www.devx.com/DevX/Tip/17500
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('POST', url, false);
+    xmlhttp.open('POST', '/perl/adapt.pl', false);
     xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    if (!params_str) {
+        params_str = 'method=' + method_name + ';';
+        if (form.elements) {
+            var form_elements = form.elements;
+            var num_elements = form.elements.length;
+            for (var e=0; e < num_elements; e++) {
+                if (form_elements[e].value && form_elements[e].name) {
+                    params_str += form_elements[e].name + '=' + form_elements[e].value + ';';
+                }
+            }
+        } 
+    }
     xmlhttp.send(params_str);
     get_response(xmlhttp, method_name);
     return false;
@@ -61,10 +72,9 @@ function submit_form( form, url, params_str )
 
 // updates status and main portion of page (same as above, but not with
 // form submission
-function new_page(url) {
-    var method_name = // TODO:  get from url
+function new_page( method_name ) {
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('GET', url, false);
+    xmlhttp.open('GET', '/perl/adapt.pl?' + method_name , false);
     var params_str = "";
     xmlhttp.send(params_str);
     get_response(xmlhttp, method_name);
@@ -81,18 +91,25 @@ function get_response(xmlhttp, method_name) {
     // occurred.
     var returned_divs = response_dom.getElementsByTagName('div');
 
-    // print initial navigation bar
+    // Initialize navigation bar on login
     if ((method_name == 'login') && returned_divs.length) {
-        var nav_str_node = response_dom.getElementsByTagName('nav_string');
-        var nav_str = nav_str_node[0].firstChild.data;
-        var nav_bar_node = document.getElementById('nav_div');
-        nav_bar_node.innerHTML = nav_str;
-    }
-    else {
-        var tab_node = document.getElementById(method_name);
-        if (tab_node) {
-            tab_node.className = 'active';
+        var nav_node = document.getElementById('nav_div');
+        if (nav_node) {
+            var returned_nav_nodes =
+                           response_dom.getElementsByTagName('navigation_bar');
+            var nav_bar_str = '';
+            if (returned_nav_nodes.length) {
+                nav_bar_str = Sarissa.serialize(returned_nav_nodes[0]);
+                alert(nav_bar_str);
+                nav_node.innerHTML = nav_bar_str;
+            }
         }
+    }
+
+    // Update navigation bar
+    var tab_node = document.getElementById(method_name);
+    if (tab_node) {
+        tab_node.className = 'active';
     }
 
     // get text of status message, if any
@@ -255,18 +272,19 @@ function check_reservation( form )
 // checks validity of user profile form
 function check_user_profile( form )
 {
-	var valid = check_for_required( form, user_profile_required );
-	if (!valid) { return false; }
+    var valid = check_for_required( form, user_profile_required );
+    if (!valid) { return false; }
 
-	if ( !(is_blank(form.password_new_once.value)) ) {
-		if ( form.password_new_once.value != form.password_new_twice.value ) {
-			alert( "Please enter the same new password twice for verification." );
-			form.password_new_once.focus();
-			return false;
-		}
-	}
+    if ( !(is_blank(form.password_new_once.value)) ) {
+        if ( form.password_new_once.value != form.password_new_twice.value ) {
+            alert( "Please enter the same new password twice for verification." );
+            form.password_new_once.focus();
+            return false;
+        }
+    }
 	return true;
 }
+
 
 function flash_status_bar(timer_id) {
     var style_sheet = document.style_sheet[0];
