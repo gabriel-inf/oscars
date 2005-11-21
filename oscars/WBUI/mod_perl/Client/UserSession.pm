@@ -59,12 +59,12 @@ sub verify_session
     # Unauthorized user may know to set CGISESSID cookie. However,
     # an entirely new session (without the dn param) will be 
     # created if there is no valid session with that id.
-    my $stored_token = $session->param("auth_token");
+    my $stored_token = $session->param("user_dn");
     if (!$stored_token)  {
         return( undef );
     }
     else {
-       $cgi->param(-name=>'auth_token',-value=>$stored_token);
+       $cgi->param(-name=>'user_dn',-value=>$stored_token);
        return( $stored_token );
     }
 }
@@ -76,7 +76,7 @@ sub end_session
     my( $self, $cgi ) = @_;
   
     my $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
-    $session->clear(["auth_token"]);
+    $session->clear(["user_dn"]);
 }
 ######
 
