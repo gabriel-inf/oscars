@@ -21,7 +21,7 @@ $params{destination_host} = 'dc-cr1.es.net';
 $params{user_dn} =        'dwrobertson@lbl.gov';
 $params{reservation_description} =    'This is a test.';
 $params{server_name} = 'BSS';
-$params{method} = 'insert_reservation'; 
+$params{method} = 'create_reservation'; 
 
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
