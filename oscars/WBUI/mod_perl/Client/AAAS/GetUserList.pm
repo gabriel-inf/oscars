@@ -1,17 +1,21 @@
+###############################################################################
 package Client::AAAS::GetUserList;
 
 # Handles get user list form submission
 #
-# Last modified:  November 18, 2005
+# Last modified:  November 20, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
-use CGI;
 use Data::Dumper;
 
+use Client::UserSession;
 use Client::SOAPAdapter;
 our @ISA = qw{Client::SOAPAdapter};
+
+#____________________________________________________________________________ 
+
 
 ###############################################################################
 # output:  If the caller has admin privileges print a list of 
@@ -21,7 +25,7 @@ our @ISA = qw{Client::SOAPAdapter};
 # Out: None
 #
 sub output {
-    my ( $self, $params ) = @_;
+    my ( $self, $results ) = @_;
 
     print "<xml>\n";
     print qq{
@@ -36,14 +40,14 @@ sub output {
         </tr></thead>
       <tbody>
     };
-    for my $row (@$params) { $self->print_row( $row ); }
+    for my $row (@$results) { $self->print_row( $row ); }
     print qq{
       </tbody></table>
       </div>";
     };
     print "</xml>\n";
-}
-######
+} #____________________________________________________________________________ 
+
 
 ###############################################################################
 # print_row:  print the information for one user
@@ -54,7 +58,7 @@ sub print_row {
     print qq{
     <tr>
       <td><a href="#" style="/styleSheets/layout.css"
-        onclick="new_page(
+        onclick="new_section(
         '/perl/adapt.pl?method=get_profile;id=$row->{user_dn}');
         return false;">$row->{user_last_name}</a></td>
       <td>$row->{user_first_name}</td> <td>$row->{user_dn}</td>
