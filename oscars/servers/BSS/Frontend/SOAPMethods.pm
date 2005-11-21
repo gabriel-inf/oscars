@@ -19,6 +19,7 @@ use Data::Dumper;
 use BSS::Frontend::DBRequests;
 use BSS::Frontend::Policy;
 use BSS::Traceroute::RouteHandler;
+use BSS::Scheduler::SOAPMethods;
 
 # until can get MySQL and views going
 my $user_fields =
@@ -42,6 +43,8 @@ sub initialize {
     $self->{policy} = BSS::Frontend::Policy->new(
                        'dbconn' => $self->{dbconn});
     $self->{route_setup} = BSS::Traceroute::RouteHandler->new(
+                                               'dbconn' => $self->{dbconn});
+    $self->{scheduler} = BSS::Scheduler::SOAPMethods->new(
                                                'dbconn' => $self->{dbconn});
 } #____________________________________________________________________________ 
 
@@ -135,6 +138,31 @@ sub view_reservations {
     }
     return $rows;
 } #____________________________________________________________________________ 
+
+
+#################
+# Scheduler methods
+#################
+
+###############################################################################
+# find_pending_reservations
+#
+sub find_pending_reservations {
+    my( $self, $params ) = @_;
+
+    return $self->{scheduler}->find_pending_reservations($params);
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# find_expired_reservations
+#
+sub find_expired_reservations {
+    my( $self, $params ) = @_;
+
+    return $self->{scheduler}->find_expired_reservations($params);
+} #____________________________________________________________________________ 
+
 
 
 #################
