@@ -115,15 +115,6 @@ p.notice {
     padding: 1em;
 }
 
-/* generic table striping */
-tr.odd {
-    background: #eaf0f6;
-}
-
-tr.even {
-    background: #ffffff;
-}
-
 /* generic table */
 table {
     font-size: .9em;
@@ -174,26 +165,14 @@ td {
     margin-right: auto;
 }
 
-#zebra thead tr td {
-    background: #eaf0f6;
-    border-bottom: 1px solid #666666;
+#zebra thead {
+    background: #eeeeee;
+    border: 2px solid #666666;
     font-weight: bold;
 }
 
-#zebra tr td {
+#zebra tbody tr {
     font-size: .7em;
     padding: .3em .8em;
     border-left: 1px solid #ccc;
 }
-
-#zebra tbody tr.attention td {
-    background-color: #3d80df;
-    color: #fff;
-    border-left: 1px solid #346dbe;
-    border-bottom: 1px solid #7daaea;
-}
-
-#zebra tbody tr.attention td a {
-    color: #fff;
-}
-
