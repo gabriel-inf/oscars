@@ -4,7 +4,7 @@ package AAAS::Frontend::SOAPMethods;
 # AAAS SOAP methods callable from AAAS::SOAP::Dispatcher.  Authorization and 
 # parameter validation are performed by the dispatcher.
 #
-# Last modified:  November 21, 2005
+# Last modified:  November 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -39,9 +39,10 @@ sub new {
 
 
 ###############################################################################
-# login
+# login:  Log in to OSCARS.
+#
 # In:  reference to hash of parameters
-# Out: FIX
+# Out: reference to hash of results containing user dn and user level.
 #
 sub login {
     my( $self, $params ) = @_;
@@ -68,14 +69,16 @@ sub login {
 
 
 ###############################################################################
-# get_profile
+# get_profile:  Gets the user profile from the database.  If the user has
+#     admin privileges, show all fields.  If the user is an admin, they can
+#     request the profile of another user.
+#
 # In:  reference to hash of parameters
-# Out: status code, status message
+# Out: reference to hash of results
 #
 sub get_profile {
     my( $self, $params ) = @_;
 
-    # DB query: get the user profile detail
     my $statement = "SELECT $user_profile_fields FROM users where user_dn = ?";
 
     my $results = $self->{dbconn}->get_row($statement, $params->{user_dn});
@@ -105,9 +108,11 @@ sub get_profile {
 
 
 ###############################################################################
-# set_profile
+# set_profile:  Modifies the user profile for a particular user.  If the
+#     user has admin privileges, they can set the information for another
+#     user.
 # In:  reference to hash of parameters
-# Out: status code, status message
+# Out: reference to hash of results
 #
 sub set_profile {
     my ( $self, $params ) = @_;
@@ -168,16 +173,17 @@ sub set_profile {
 } #____________________________________________________________________________ 
 
 
-##############################################
-# Methods requiring administrative privileges.
-##############################################
+#################################################################
+# The following methods can only be accessed by a user with admin
+# privileges.
+#################################################################
+
 
 ###############################################################################
-# add_user:  when doing directly from "add user" page, rather than going 
-#            through the registration process
+# add_user:  Add a user to the OSCARS database.
 #
 # In:  reference to hash of parameters
-# Out: status code, status message
+# Out: reference to hash of results
 #
 sub add_user {
     my ( $self, $params ) = @_;
@@ -228,9 +234,9 @@ sub add_user {
 
 
 ###############################################################################
-# view_users
-# In:  params
-# Out: status message and DB results
+# view_users:  Retrieves the profile information for all users.
+# In:  reference to hash of parameters
+# Out: reference to hash of results
 #
 sub view_users {
     my( $self, $params ) = @_;
@@ -253,14 +259,16 @@ sub view_users {
 } #____________________________________________________________________________ 
 
 
-################################################
-# Registration methods (require admin permission).
-################################################
+####################################################################
+# Registration methods (not functional; require Shibboleth, and code
+# modifications).
+####################################################################
 
 ###############################################################################
-# activate_account
+# activate_account:  Activate a user's account.  Not functional.
+#
 # In:  reference to hash of parameters
-# Out: status code, status message
+# Out: reference to hash of results
 #
 sub activate_account {
     my( $self, $params, $required_level ) = @_;
@@ -318,9 +326,10 @@ sub activate_account {
 
 
 ###############################################################################
-# process_registration
+# process_registration:  Process a user's registration.  Not functional
+#
 # In:  reference to hash of parameters
-# Out: status message
+# Out: reference to hash of results
 #
 sub process_registration {
     my( $self, $params, @insertions ) = @_;
