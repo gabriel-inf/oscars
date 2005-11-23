@@ -45,6 +45,7 @@ sub output_details {
     <p><strong>Reservation Details</strong></p>
 
     <table width='90%' id='zebra'>
+      <tbody>
       <tr><td>Tag</td><td>$results->{reservation_tag}</td></tr>
       <tr><td>User</td><td>$results->{user_dn}</td></tr> 
       <tr><td>Description</td><td>$results->{reservation_description}</td></tr>
@@ -81,6 +82,7 @@ sub output_details {
         $path_str
         </td>
         </tr>
+      </tbody>
     </table>
     <p>
         };

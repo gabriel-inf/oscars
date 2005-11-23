@@ -3,7 +3,7 @@ package Client::BSS::ViewReservations;
 
 # Handles request to view a given set of reservations.
 #
-# Last modified:  November 22, 2005
+# Last modified:  November 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
