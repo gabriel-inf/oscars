@@ -48,6 +48,7 @@ sub modify_params {
     my( $self, $params ) = @_;
 
     $params->{server_name} = 'AAAS';
+    $params->{user_level} = 2;   # TODO:  FIX user level
     $self->SUPER::modify_params($params);
 } #____________________________________________________________________________
 
@@ -58,6 +59,8 @@ sub modify_params {
 sub post_process {
     my( $self, $results ) = @_;
 
+    $self->{user_dn} = $results->{user_dn};
+    $self->{user_level} = $results->{user_level};
     my $sid = $self->{session}->start_session($self->{cgi}, $results);
     print $self->{cgi}->header(
          -type=>'text/xml',
