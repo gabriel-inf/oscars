@@ -227,7 +227,8 @@ sub get_results {
     $results->{reservation_tag} = $params->{user_dn} . '.' .
         $self->get_time_str($params->{reservation_start_time}) .  "-" .
         $results->{reservation_id};
-    $statement = "UPDATE reservations SET reservation_tag = ?
+    $statement = "UPDATE reservations SET reservation_tag = ?,
+                 reservation_status = 'pending'
                  WHERE reservation_id = ?";
     $unused = $self->{dbconn}->do_query($statement,
                       $results->{reservation_tag}, $results->{reservation_id});
