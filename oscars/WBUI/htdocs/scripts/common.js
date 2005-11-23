@@ -1,13 +1,13 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  November 16, 2005
+Last modified:  November 22, 2005
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
 
 /* List of functions:
 submit_form(form, method_name, params_str)
-new_page(method_name)
+new_section(method_name, params)
 get_response(xmlhttp, method_name)
 check_form(form, method_name);
 check_for_required(form, required)
@@ -42,8 +42,8 @@ var user_profile_required = {
     'user_phone_primary': "Please enter the user's primary phone number."
 }
                     
-// checks validity of form settings, and uses Sarissa to post request
-// and get back result
+// Checks validity of form settings, and uses Sarissa to post request
+// and get back result.
 function submit_form( form, method_name, params_str )
 {
     var valid = check_form( form, method_name );
@@ -70,18 +70,22 @@ function submit_form( form, method_name, params_str )
     return false;
 }
 
-// updates status and main portion of page (same as above, but not with
-// form submission
-function new_page( method_name ) {
+// Updates status and main portion of page (same as above, but without
+// form submission).
+function new_section( method_name, params ) {
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('GET', '/perl/adapt.pl?' + method_name , false);
-    var params_str = "";
-    xmlhttp.send(params_str);
+    var url = '/perl/adapt.pl?method=' + method_name;
+    if (params) {
+        url += ';' + params;
+    }
+    xmlhttp.open('GET', url, false);
+    var empty_str = "";
+    xmlhttp.send(empty_str);
     get_response(xmlhttp, method_name);
     return false;
 }
 
-// gets back response from XMLHttpRequest
+// Gets back response from XMLHttpRequest.
 function get_response(xmlhttp, method_name) {
     var response_dom = xmlhttp.responseXML;
     //alert(Sarissa.serialize(response_dom));
@@ -100,7 +104,6 @@ function get_response(xmlhttp, method_name) {
             var nav_bar_str = '';
             if (returned_nav_nodes.length) {
                 nav_bar_str = Sarissa.serialize(returned_nav_nodes[0]);
-                alert(nav_bar_str);
                 nav_node.innerHTML = nav_bar_str;
             }
         }
@@ -130,7 +133,7 @@ function get_response(xmlhttp, method_name) {
         var main_node = document.getElementById('main_div');
         main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
     }
-    if (method_name == 'creation_form') {
+    if (method_name == 'create_reservation_form') {
         var time_node = document.getElementById('tz_option_list');
         if (time_node) {
             time_node.innerHTML = tz_option_list();
@@ -142,17 +145,19 @@ function get_response(xmlhttp, method_name) {
     }
 }
 
-// checks validity of particular form
+// Checks validity of particular form.
 function check_form( form, method_name )
 {
     if (!form) { return true; }
     if (method_name == 'login') { return check_login( form ); }
-    else if (method_name == 'insert') { return check_reservation( form ); }
+    else if (method_name == 'create_reservation') { 
+        return check_reservation( form );
+    }
     else if (method_name == 'set_profile') { return check_user_profile( form ); }
     return true;
 }
 
-// checks to make sure all required fields are present
+// Checks to make sure all required fields are present.
 function check_for_required( form, required )
 {
     for (field in required) {
@@ -165,13 +170,13 @@ function check_for_required( form, required )
     return true;
 }
 
-// checks validity of login form
+// Checks validity of login form.
 function check_login( form )
 {
     return check_for_required( form, login_required );
 }
 
-// checks validity of create reservation form
+// Checks validity of create reservation form.
 function check_reservation( form )
 {
     var valid = check_for_required( form, reservation_required );
@@ -269,7 +274,7 @@ function check_reservation( form )
     return check_date_fields(form);
 }
 
-// checks validity of user profile form
+// Checks validity of user profile form.
 function check_user_profile( form )
 {
     var valid = check_for_required( form, user_profile_required );
