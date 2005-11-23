@@ -32,9 +32,9 @@ sub output {
     print "<xml>\n";
     print qq{
       <msg>Successfully read user list.</msg>
-    <div id="zebratable_ui">
+    <div id='zebratable_ui'>
       <p>Click on the user's last name to view detailed user information.</p>
-      <table cellspacing="0" width="90%" class="sortable" id="userlist">
+      <table cellspacing='0' width='90%' class='sortable' id='userlist'>
         <thead><tr>
           <td>Last Name</td>          <td>First Name</td>
           <td>Distinguished Name</td> <td>Level</td>
@@ -45,7 +45,7 @@ sub output {
     for my $row (@$results) { $self->print_row( $row ); }
     print qq{
       </tbody></table>
-      </div>";
+      </div>;
     };
     print "</xml>\n";
 } #____________________________________________________________________________ 
@@ -59,7 +59,7 @@ sub print_row {
 
     print qq{
     <tr>
-      <td><a href="#" style="/styleSheets/layout.css"
+      <td><a href='#' style='/styleSheets/layout.css'
         onclick="new_section('get_profile', 'id=$row->{user_dn}');
         return false;">$row->{user_last_name}</a></td>
       <td>$row->{user_first_name}</td> <td>$row->{user_dn}</td>

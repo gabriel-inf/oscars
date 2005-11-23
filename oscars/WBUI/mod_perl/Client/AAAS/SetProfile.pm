@@ -27,7 +27,7 @@ sub output {
         -type=>'text/xml');
     print "<xml>\n";
     print qq{
-    <msg>Successfully updated user $self->{user_dn}'s proifle</msg>
+    <msg>Successfully updated user $self->{user_dn}'s profile</msg>
     };
     print "</xml>\n";
 } #____________________________________________________________________________

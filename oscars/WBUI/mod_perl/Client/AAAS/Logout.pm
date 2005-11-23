@@ -3,7 +3,7 @@ package Client::AAAS::Logout;
 
 # Handles user login.
 #
-# Last modified:  November 20, 2005
+# Last modified:  November 21, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -45,8 +45,7 @@ sub post_process {
 sub output {
     my( $self, $results ) = @_;
 
-    # TODO:  FIX hard-coded URL
-    print $self->{cgi}->redirect('https://oscars-test.es.net/');
+    print $self->{cgi}->redirect('/');
 } #____________________________________________________________________________ 
 
 ######

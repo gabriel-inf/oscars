@@ -3,7 +3,7 @@ package Client::AAAS::Login;
 
 # Handles user login.
 #
-# Last modified:  November 20, 2005
+# Last modified:  November 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -18,7 +18,7 @@ use Client::GetInfo;
 use Client::SOAPAdapter;
 our @ISA = qw{Client::SOAPAdapter};
 
-#____________________________________________________________________________ 
+#_____________________________________________________________________________ 
 
 
 ###############################################################################
@@ -28,7 +28,19 @@ our @ISA = qw{Client::SOAPAdapter};
 sub authenticate {
     my( $self ) = @_;
 
-} #____________________________________________________________________________ 
+    return 1;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# Overrides super-class call to avoid trying to authorize a non-existent 
+# session.  In this case, the SOAP call is used to authorize.
+#
+sub authorize {
+    my( $self ) = @_;
+
+    return 1;
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -37,7 +49,7 @@ sub modify_params {
 
     $params->{server_name} = 'AAAS';
     $self->SUPER::modify_params($params);
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -46,14 +58,11 @@ sub modify_params {
 sub post_process {
     my( $self, $results ) = @_;
 
-    my( $sid );
-
-    ($results->{user_dn}, $sid ) =
-                                $self->{session}->start_session($self->{cgi});
+    my $sid = $self->{session}->start_session($self->{cgi}, $results);
     print $self->{cgi}->header(
          -type=>'text/xml',
          -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -62,18 +71,15 @@ sub output {
 
     my $info = Client::GetInfo->new();
     my $navigation_bar = Client::NavigationBar->new();
-    for $_ (keys(%$results)) {
-        if ($results->{$_}) {
-            print STDERR "result: $_, value: $results->{$_}\n";
-        }
-    }
     print "<xml>\n";
-    print "<msg>User $results->{user_dn} signed in.</msg>\n";
-    # TODO:  FIX hard-wired admin
-    $navigation_bar->initialize('admin');
+    print "<msg>User $self->{user_dn} signed in.</msg>\n";
+    if ($self->{session}->authorized($results->{user_level}, 'admin')) {
+        $navigation_bar->initialize('admin');
+    }
+    else { $navigation_bar->initialize('user'); }
     $info->output($results);
     print "</xml>\n";
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 ######
 1;

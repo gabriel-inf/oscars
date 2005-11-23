@@ -31,7 +31,7 @@ sub output {
     <div>
     <h3>Editing profile for user: $self->{user_dn}</h3>
     <p>Required fields are outlined in green.</p>
-    <form method="post" action=""
+    <form method='post' action=''
         onsubmit="return submit_form(this, 'set_profile', '');">
     <table>
       <tr>
@@ -40,20 +40,20 @@ sub output {
       </tr>
     };
     $self->output_password_fields($results);
-    if ($results->{admin}) {
+    if ($self->{session}->authorized($results->{user_level}, 'admin')) {
         print qq{
         <tr>
           <td>User Level</td>
           <td>
-            <input class="required" type="text" name="user_level" size="40"
-                   value="notdone"></input>
+            <input class='required' type='text' name='user_level' size='40'
+                   value="$results->{user_level}"></input>
           </td>
         </tr>
         };
     }
     $self->output_profile_fields($results);
     print qq{
-    <p><input type="submit" value="Change Profile"></input></p>
+    <p><input type='submit' value='Change Profile'></input></p>
     </form>
     <p>For inquiries, please contact the project administrator.</p>
     </div>
@@ -68,12 +68,11 @@ sub output {
 sub output_profile_fields {
     my( $self, $row ) = @_;
 
-    print STDERR Dumper($row);
     print qq{
       <tr>
         <td>First Name</td>
         <td>
-          <input class="required" type="text" name="user_first_name" size="40"
+          <input class='required' type='text' name='user_first_name' size='40'
                  value="$row->{user_first_name}">
           </input>
         </td>
@@ -81,7 +80,7 @@ sub output_profile_fields {
       <tr>
         <td>Last Name</td>
         <td>
-          <input class="required" type="text" name="user_last_name" size="40"
+          <input class='required' type='text' name='user_last_name' size='40'
                  value="$row->{user_last_name}">
           </input>
         </td>
@@ -89,15 +88,15 @@ sub output_profile_fields {
       <tr>
         <td>Organization</td>
         <td>
-          <input class="required" type="text" name="institution" size="40"
-                 value="notdone">
+          <input class='required' type='text' name='institution' size='40'
+                 value="$row->{institution_id}">
           </input>
         </td>
       </tr>
       <tr>
-        <td valign="top">Personal Description</td>
+        <td valign='top'>Personal Description</td>
         <td>
-          <textarea name="user_description" rows="3" cols="50">
+          <textarea name='user_description' rows='3' cols='50'>
               $row->{user_description}
           </textarea>
         </td>
@@ -105,15 +104,15 @@ sub output_profile_fields {
       <tr>
         <td>E-mail (Primary)</td>
         <td>
-          <input class="required" type="text" name="user_email_primary"
-                 size="40" value="$row->{user_email_primary}">
+          <input class='required' type='text' name='user_email_primary'
+                 size='40' value="$row->{user_email_primary}">
           </input>
         </td>
       </tr>
       <tr>
         <td>E-mail (Secondary)</td>
         <td>
-          <input type="text" name="user_email_secondary" size="40"
+          <input type='text' name='user_email_secondary' size='40'
                  value="$row->{user_email_secondary}">
           </input>
         </td>
@@ -121,15 +120,15 @@ sub output_profile_fields {
       <tr>
         <td>Phone Number (Primary)</td>
         <td>
-          <input class="required" type="text" name="user_phone_primary"
-                 size="40" value="$row->{user_phone_primary}">
+          <input class='required' type='text' name='user_phone_primary'
+                 size='40' value="$row->{user_phone_primary}">
            </input>
         </td>
       </tr>
       <tr>
         <td>Phone Number (Secondary)</td>
         <td>
-          <input type="text" name="user_phone_secondary" size="40"
+          <input type='text' name='user_phone_secondary' size='40'
                  value="$row->{user_phone_secondary}">
           </input>
         </td>
@@ -151,20 +150,20 @@ sub output_password_fields {
       <tr>
         <td>Current Password</td>
         <td>
-          <input class="required" type="password" name="user_password" 
-                 size="40"></input>
+          <input class='required' type='password' name='user_password' 
+                 size='40'></input>
         </td>
       </tr>
       <tr>
         <td>New Password (Enter twice )</td>
         <td>
-          <input type="password" name="password_new_once" size="40"></input>
+          <input type='password' name='password_new_once' size='40'></input>
         </td>
       </tr>
       <tr>
         <td>(Leave blank to stay the same)</td>
         <td>
-          <input type="password" name="password_new_twice" size="40"></input>
+          <input type='password' name='password_new_twice' size='40'></input>
         </td>
       </tr>
     };
