@@ -41,18 +41,17 @@ sub output {
     print "<xml>\n";
     print qq{
     <msg>Successfully retrieved reservations.</msg>
-    <div id='zebratable_ui'>
+    <div>
     <p>Click on a column header to sort by that column. Times given are in the
     time zone of the browser.  Click on the Reservation Tag link to view
     detailed information about the reservation.</p>
 
-    <p><form method='post' action='' onsubmit="return submit_form(this,
-            'view_reservations', '');">
+    <p><form method="post" action="" 
+             onsubmit="return submit_form(this, 'view_reservations', '');">
     <input type='submit' value='Refresh'></input>
-    </input>
     </form></p>
 
-    <table cellspacing='0' width='90%' class='sortable' id='reservationlist'>
+    <table cellspacing='0' width='90%' class='sortable' id='zebra'>
     <thead>
       <tr><td>Tag</td><td>Start Time</td><td>End Time</td><td>Status</td>
           <td>Origin</td><td>Destination</td>
