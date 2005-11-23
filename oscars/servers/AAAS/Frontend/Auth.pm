@@ -1,70 +1,65 @@
 ###############################################################################
 package AAAS::Frontend::Auth;
 
-# Database interactions dealing with authorization.  TODO:  needs to be 
-# reimplemented.                 
+# Database interactions dealing with authorization.  TODO:  convert to ROAM.
 #
-# Last modified:  November 21, 2005
+# Last modified:   November 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
+# Soo-yeon Hwang  (dapi@umich.edu)
 
 use strict;
 
-use Error qw(:try);
 use Data::Dumper;
+
+use AAAS::Frontend::Database;
+use Error qw(:try);
 
 
 sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
+    my ($class, %args) = @_;
+    my ($self) = {%args};
   
-    bless( $self, $class );
+    # Bless $_self into designated class.
+    bless($self, $class);
     $self->initialize();
-    return( $self );
+    return($self);
 }
 
+
 sub initialize {
-    my ($self) = @_;
+    my( $self ) = @_;
 
-    # These data structures are purely temporary, until ROAM incorporated
-
-    # Permissions required to access methods.  Second permission in list
-    # is required to access other user's information and reservations
+    # TODO:  replace hashes with db calls, ROAM
+    my %levs = (
+        'user' => 2,
+        'engr' => 4,
+        'admin' => 8,
+    );
     $self->{method_permissions} = {
-     # AAAS
-        'set_profile' => ( 'user', 'admin' ),
-        'get_profile' => ( 'user', 'admin' ),
-        'add_user' => ( 'admin', 'admin' ),
-        'get_user_list' => ( 'admin', 'admin' ),
-    # BSS
-        'create_reservation' => ( 'user', 'engr' ),
-        'delete_reservation' => ( 'user', 'engr' ),
-        'get_user_reservations' => ( 'user', 'engr' ),
-        'get_reservation_details' => ( 'user', 'engr' ),
-        'get_all_reservations' => ( 'engr', 'engr' ),
-        'find_pending_reservations' => ( 'engr', 'engr' ),
-        'find_expired_reservations' => ( 'engr', 'engr' ),
+        'login' => $levs{user},
+        'get_info' => $levs{user},
+        'get_profile' => $levs{user},
+        'set_profile' => $levs{user},
+        'logout' => $levs{user},
+        'view_users' => $levs{admin},
+        'add_user' => $levs{admin},
+        'create_reservation_form' => $levs{user},
+        'create_reservation' => $levs{user},
+        'cancel_reservation' => $levs{user},
+        'view_reservations' => $levs{user},
+        'view_details' => $levs{user},
     };
-
-    # List of each user's permissions
-    $self->{user_permissions} = {
-        'dwrobertson@lbl.gov' => 'engr admin user',
-        'chin@es.net' => 'engr admin user',
-        'mrthompson@lbl.gov' => 'engr admin user',
-        # scheduler pseudo-user
-        'SCHEDULER' => 'engr',
-    };
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
-# TODO: implement authorization through incorporating ROAM
 #
 sub authorized {
-    my( $self, $user_dn, $method_name ) = @_;
+    my( $self, $user_level, $method_name ) = @_;
 
-    my @permissions_required = $self->{method_permissions}->{$method_name};
-    my $permissions_granted = $self->{user_permissions}->{$user_dn};
-    return 1;
-} #____________________________________________________________________________ 
+    return( $user_level & $self->{method_permissions}->{$method_name} );
+} #____________________________________________________________________________
 
+
+######
 1;
