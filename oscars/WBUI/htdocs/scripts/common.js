@@ -1,6 +1,6 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  November 22, 2005
+Last modified:  November 23, 2005
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
@@ -17,6 +17,8 @@ check_user_profile(form)
 flash_status_bar(timer_id)
 is_numeric(value)
 is_blank(str)
+has_class(obj)
+stripe(id)
 */
 
 var timer_id = null;
@@ -134,6 +136,7 @@ function get_response(xmlhttp, method_name) {
     }
     var main_node = document.getElementById('main_div');
     main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
+    stripe('zebra');
 
     if (method_name == 'create_reservation_form') {
         var time_node = document.getElementById('tz_option_list');
@@ -319,4 +322,60 @@ function is_blank(s) {
         if ((c != ' ') && (c != '\n') && (c != '')) return false;
     }
     return true;
+}
+
+// ** apply zebra stripe to a table **
+// Reference: http://www.alistapart.com/articles/zebratables/
+
+// This function is needed to work around a bug in IE related to element 
+// attributes.
+function has_class(obj) {
+    var result = false;
+    if ( obj.getAttributeNode("class") != null ) {
+        result = obj.getAttributeNode("class").value;
+    }
+    return result;
+}
+
+function stripe(id) {
+    // Flag that keeps track of whether the current row is odd or even.
+    var even = false
+
+    // If arguments are provided to specify the colours of the even & odd rows,
+    // then use the them.  Otherwise use the following defaults:
+    var evenColor = arguments[1] ? arguments[1] : "#fff";
+    var oddColor = arguments[2] ? arguments[2] : "#eee";
+
+    // Obtain reference to the desired table.  If no such table exists, abort.
+    var table = document.getElementById(id);
+    if (! table) { return; }
+
+    // By definition, tables can have more than one tbody element, so we'll 
+    // have to get the list of children
+    var tbodies = table.getElementsByTagName("tbody");
+
+    // and iterate through them...
+    for (var h = 0; h < tbodies.length; h++) {
+        // Find all the <tr> elements... 
+        var trs = tbodies[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+            // avoid rows that have a class attribute or backgroundColor style
+            if (!has_class(trs[i]) && ! trs[i].style.backgroundColor) {
+               // get all the cells in this row...
+               var tds = trs[i].getElementsByTagName("td");
+
+               // and iterate through them...
+               for (var j = 0; j < tds.length; j++) {
+                   var mytd = tds[j];
+                   // avoid cells that have a class attribute or 
+                   // backgroundColor style
+                   if ( !(has_class(mytd)) && !(mytd.style.backgroundColor)) {
+                       mytd.style.backgroundColor = even ? evenColor : oddColor;
+                   }
+               }
+            }
+            // flip from odd to even, or vice-versa
+            even =  ! even;
+        }
+    }
 }
