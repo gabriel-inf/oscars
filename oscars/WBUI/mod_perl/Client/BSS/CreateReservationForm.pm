@@ -86,7 +86,7 @@ sub output {
       your reservation.  Fields left blank will default to the examples below 
       the input fields.  The default time zone is the local time.
     };
-    if ($self->{session}->authorized($results->{user_level}, 'engr')) {
+    if ($self->{session}->authorized($self->{user_level}, 'engr')) {
         print qq{
           Checking the <strong>Persistent</strong> box makes a reservation's 
           duration indefinite, overriding the duration field.
@@ -98,7 +98,7 @@ sub output {
         <tr><th>Year</th>   <th>Month</th>      <th>Date</th> <th>Hour</th>
             <th>Minute</th> <th>UTC offset</th> <th>Duration (Hours)</th>
     };
-    if ($self->{session}->authorized($results->{user_level}, 'engr')) {
+    if ($self->{session}->authorized($self->{user_level}, 'engr')) {
         print '<th>Persistent</th>';
     }
     else { print '<th> </th>'; }
@@ -128,7 +128,7 @@ sub output {
         </td>
         <td>
     };
-    if ($self->{session}->authorized($results->{user_level}, 'engr')) {
+    if ($self->{session}->authorized($self->{user_level}, 'engr')) {
         print "  <input type='checkbox' name='persistent' value='0'></input>";
     }
     print qq{
@@ -176,7 +176,7 @@ sub output {
     </table>
     };
 
-    if ($self->{session}->authorized($results->{user_level}, 'engr')) {
+    if ($self->{session}->authorized($self->{user_level}, 'engr')) {
         print qq{
     <p>
     <strong>WARNING</strong>:  Entries in the following fields may change 
