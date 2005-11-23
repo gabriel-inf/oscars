@@ -73,7 +73,6 @@ sub output {
     if ($results->{use_xml_tag}) {
         print "</xml>\n";
     }
-    print STDERR "info output finished\n";
 } #____________________________________________________________________________ 
 
 
