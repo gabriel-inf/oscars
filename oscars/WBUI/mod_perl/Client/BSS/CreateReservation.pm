@@ -1,5 +1,5 @@
 ###############################################################################
-package Client::BSS::ViewDetails;
+package Client::BSS::CreateReservation;
 
 # Handles request to view a given set of reservations, or a particular
 # reservation's details.
