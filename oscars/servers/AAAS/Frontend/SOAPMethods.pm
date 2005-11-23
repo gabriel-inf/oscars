@@ -50,16 +50,16 @@ sub login {
     my $user_dn = $params->{user_dn};
 
     # Get the password and privilege level from the database.
-    my $statement = "SELECT user_password, user_level FROM users WHERE user_dn = ?";
+    my $statement = 'SELECT user_password, user_level FROM users WHERE user_dn = ?';
     my $results = $self->{dbconn}->get_row($statement, $user_dn);
     # Make sure user exists.
     if ( !$results ) {
-        throw Error::Simple("Please check your login name and try again.");
+        throw Error::Simple('Please check your login name and try again.');
     }
     # compare passwords
     my $encoded_password = crypt($params->{user_password}, 'oscars');
     if ( $results->{user_password} ne $encoded_password ) {
-        throw Error::Simple("Please check your password and try again.");
+        throw Error::Simple('Please check your password and try again.');
     }
     $results->{user_dn} = $user_dn;
     # X out password
@@ -79,9 +79,22 @@ sub login {
 sub get_profile {
     my( $self, $params ) = @_;
 
-    my $statement = "SELECT $user_profile_fields FROM users where user_dn = ?";
+    my( $statement, $results );
 
-    my $results = $self->{dbconn}->get_row($statement, $params->{user_dn});
+    if ( $params->{admin_permission} ) {
+        $statement = 'SELECT * FROM users where user_dn = ?';
+        # coming in from view users list
+        if( $params->{id} ) {
+            $results = $self->{dbconn}->get_row($statement, $params->{id});
+        }
+        else {
+            $results = $self->{dbconn}->get_row($statement, $params->{user_dn});
+        }
+    }
+    else {
+        $statement = "SELECT $user_profile_fields FROM users where user_dn = ?";
+        $results = $self->{dbconn}->get_row($statement, $params->{user_dn});
+    }
 
     # check whether this person is a registered user
     # (love that syntax:  testing for rows will not work because ref not
@@ -90,17 +103,16 @@ sub get_profile {
         throw Error::Simple("No such user $params->{user_dn}.");
     }
 
-    $statement = "SELECT institution_name FROM institutions
-              WHERE institution_id = ?";
+    $statement = 'SELECT institution_name FROM institutions
+              WHERE institution_id = ?';
     my $irow = $self->{dbconn}->get_row($statement,
                                         $results->{institution_id});
 
     # check whether this organization is in the db
     if ( !$irow ) {
-        throw Error::Simple(
-            "Organization $irow->{institution} not found.");
+        throw Error::Simple( 'Organization not found.' );
     }
-    $results->{institution} = $irow->{institution};
+    $results->{institution_id} = $irow->{institution_name};
     # X out password
     $results->{user_password} = undef;
     return $results;
@@ -134,9 +146,9 @@ sub set_profile {
     ### Check the current password with the one in the database before
     ### proceeding.
     if ( $results->{user_password} ne
-         crypt($params->{user_password},'oscars') ) {
+         crypt($params->{user_password}, 'oscars') ) {
         throw Error::Simple(
-            "Please check the current password and try again.");
+            'Please check the current password and try again.');
     }
 
     # If the password needs to be updated, set the input password field to
@@ -156,7 +168,7 @@ sub set_profile {
     }
 
     # prepare the query for database update
-    $statement = "UPDATE users SET ";
+    $statement = 'UPDATE users SET ';
     my @fields = split(', ', $user_profile_fields);
     for $_ (@fields) {
         $statement .= "$_ = '$params->{$_}', ";
@@ -164,7 +176,7 @@ sub set_profile {
         $results->{$_} = $params->{$_};
     }
     $statement =~ s/,\s$//;
-    $statement .= " WHERE user_dn = ?";
+    $statement .= ' WHERE user_dn = ?';
     my $unused = $self->{dbconn}->do_query($statement, $user_dn);
 
     $results->{institution} = $params->{institution};
@@ -191,16 +203,15 @@ sub add_user {
     my $results = {};
     my $user_dn = $params->{user_dn};
 
-    print STDERR "add_user\n";
     my $encrypted_password = $params->{password_once};
 
     # login name overlap check
-    my $statement = "SELECT user_dn FROM users WHERE user_dn = ?";
+    my $statement = 'SELECT user_dn FROM users WHERE user_dn = ?';
     my $row = $self->{dbconn}->get_row($statement, $user_dn);
 
     if ( $row ) {
         throw Error::Simple("The login, $user_dn, is already taken " .
-                   "by someone else; please choose a different login name.");
+                   'by someone else; please choose a different login name.');
     }
 
     # Set the institution id to the primary key in the institutions
@@ -210,7 +221,7 @@ sub add_user {
     }
 
     $params->{user_password} = crypt($params->{password_new_once}, 'oscars');
-    $statement = "SHOW COLUMNS from users";
+    $statement = 'SHOW COLUMNS from users';
     my $rows = $self->{dbconn}->do_query( $statement );
 
     my @insertions;
@@ -244,13 +255,13 @@ sub view_users {
     my( $r, $irow, $user );
     my $user_dn = $params->{user_dn};
 
-    my $statement .= "SELECT * FROM users ORDER BY user_last_name";
+    my $statement .= 'SELECT * FROM users ORDER BY user_last_name';
     my $results = $self->{dbconn}->do_query($statement);
 
     for $user (@$results) {
         # replace institution id with institution name
-        $statement = "SELECT institution_name FROM institutions " .
-                 "WHERE institution_id = ?";
+        $statement = 'SELECT institution_name FROM institutions ' .
+                 'WHERE institution_id = ?';
         $irow = $self->{dbconn}->get_row($statement, $user->{institution_id});
         $user->{institution_id} = $irow->{institution_name};
         $user->{user_password} = undef;
@@ -277,13 +288,13 @@ sub activate_account {
     my $user_dn = $params->{user_dn};
 
     # get the password from the database
-    my $statement = "SELECT user_password, user_activation_key, user_level
-                 FROM users WHERE user_dn = ?";
+    my $statement = 'SELECT user_password, user_activation_key, user_level
+                 FROM users WHERE user_dn = ?';
     my $row = $self->{dbconn}->get_row($statement, $user_dn);
 
     # check whether this person is a registered user
     if ( !$row ) {
-        throw Error::Simple("Please check your login name and try again.");
+        throw Error::Simple('Please check your login name and try again.');
     }
 
     my $keys_match = 0;
@@ -296,8 +307,8 @@ sub activate_account {
         $non_match_error = 'Please check your password and try again.';
     }
     elsif ( $row->{user_activation_key} ne $params->{user_activation_key} ) {
-        $non_match_error = "Please check the activation key and " .
-                           "try again.";
+        $non_match_error = 'Please check the activation key and ' .
+                           'try again.';
     }
     else {
         $keys_match = 1;
@@ -317,10 +328,10 @@ sub activate_account {
     else {
         throw Error::Simple($non_match_error);
     }
-    $results->{status_msg} = "The user account <strong>" .
+    $results->{status_msg} = 'The user account <strong>' .
        "$user_dn</strong> has been successfully activated. You " .
-       "will be redirected to the main service login page in 10 seconds. " .
-       "<br>Please change the password to your own once you sign in.";
+       'will be redirected to the main service login page in 10 seconds. ' .
+       '<br>Please change the password to your own once you sign in.';
     return $results;
 } #____________________________________________________________________________ 
 
@@ -343,22 +354,22 @@ sub process_registration {
     my $current_date_time = $params->{utc_seconds};
 	
     # login name overlap check
-    my $statement = "SELECT user_dn FROM users WHERE user_dn = ?";
+    my $statement = 'SELECT user_dn FROM users WHERE user_dn = ?';
     my $row = $self->{dbconn}->get_row($statement, $user_dn);
 
     if ( $row ) {
-        throw Error::Simple("The selected login name is already taken " .
-                   "by someone else; please choose a different login name.");
+        throw Error::Simple('The selected login name is already taken ' .
+                   'by someone else; please choose a different login name.');
     }
 
-    $statement = "INSERT INTO users VALUES ( " .
-                              "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+    $statement = 'INSERT INTO users VALUES ( ' .
+                              '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )';
     my $unused = $self->{dbconn}->do_query($statement, @insertions);
 
-    $results->{status_msg} = "Your user registration has been recorded " .
+    $results->{status_msg} = 'Your user registration has been recorded ' .
         "successfully. Your login name is <strong>$user_dn</strong>. Once " .
-        "your registration is accepted, information on " .
-        "activating your account will be sent to your primary email address.";
+        'your registration is accepted, information on ' .
+        'activating your account will be sent to your primary email address.';
     return $results;
 } #____________________________________________________________________________ 
 
