@@ -17,7 +17,6 @@ check_user_profile(form)
 flash_status_bar(timer_id)
 is_numeric(value)
 is_blank(str)
-has_class(obj)
 stripe(id)
 */
 
@@ -147,6 +146,10 @@ function get_response(xmlhttp, method_name) {
         if (time_node) {
             time_node.innerHTML = time_settings_example();
         }
+    }
+    else if ((method_name == 'view_reservations') ||
+             (method_name == 'view_users') ) {
+        sortables_init();
     }
 }
 
@@ -326,25 +329,11 @@ function is_blank(s) {
 
 // ** apply zebra stripe to a table **
 // Reference: http://www.alistapart.com/articles/zebratables/
-
-// This function is needed to work around a bug in IE related to element 
-// attributes.
-function has_class(obj) {
-    var result = false;
-    if ( obj.getAttributeNode("class") != null ) {
-        result = obj.getAttributeNode("class").value;
-    }
-    return result;
-}
+// Adapted to just use style sheet for color, and not to worry about
+// class membership or background color of table row.  Coloring is done
+// at the row rather than the column level.
 
 function stripe(id) {
-    // Flag that keeps track of whether the current row is odd or even.
-    var even = false
-
-    // If arguments are provided to specify the colours of the even & odd rows,
-    // then use the them.  Otherwise use the following defaults:
-    var evenColor = arguments[1] ? arguments[1] : "#fff";
-    var oddColor = arguments[2] ? arguments[2] : "#eee";
 
     // Obtain reference to the desired table.  If no such table exists, abort.
     var table = document.getElementById(id);
@@ -359,23 +348,9 @@ function stripe(id) {
         // Find all the <tr> elements... 
         var trs = tbodies[h].getElementsByTagName("tr");
         for (var i = 0; i < trs.length; i++) {
-            // avoid rows that have a class attribute or backgroundColor style
-            if (!has_class(trs[i]) && ! trs[i].style.backgroundColor) {
-               // get all the cells in this row...
-               var tds = trs[i].getElementsByTagName("td");
-
-               // and iterate through them...
-               for (var j = 0; j < tds.length; j++) {
-                   var mytd = tds[j];
-                   // avoid cells that have a class attribute or 
-                   // backgroundColor style
-                   if ( !(has_class(mytd)) && !(mytd.style.backgroundColor)) {
-                       mytd.style.backgroundColor = even ? evenColor : oddColor;
-                   }
-               }
+            if ((i % 2) == 1) {
+                trs[i].style.backgroundColor = "#ffffff" ;
             }
-            // flip from odd to even, or vice-versa
-            even =  ! even;
         }
     }
 }
