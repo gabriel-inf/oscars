@@ -54,6 +54,7 @@ sub output {
     <form method='post' action='' onsubmit="return submit_form(this,
                                                              'add_user', '');">
     <table id='zebra'>
+    <tbody>
     <tr>
       <td>Distinguished Name</td>
       <td>
@@ -74,6 +75,7 @@ sub output {
     $self->output_profile_fields();
 
     print qq{
+    </tbody>
     </table>
 
     <p>Please check your contact information carefully before submitting 
