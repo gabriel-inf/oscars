@@ -66,13 +66,14 @@ sub output {
 sub print_row {
     my( $self, $row ) = @_;
 
+    my $str_level = $self->{session}->get_str_level($row->{user_level});
     print qq{
     <tr>
       <td><a href='#' style='/styleSheets/layout.css'
         onclick="new_section('get_profile', 'id=$row->{user_dn}');
         return false;">$row->{user_last_name}</a></td>
       <td>$row->{user_first_name}</td> <td>$row->{user_dn}</td>
-      <td>$row->{user_level}</td>      <td>$row->{institution_id}</td>
+      <td>$str_level</td>      <td>$row->{institution_id}</td>
       <td>$row->{user_status}</td>
     </tr>
     };
