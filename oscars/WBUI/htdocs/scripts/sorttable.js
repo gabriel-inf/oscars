@@ -2,7 +2,8 @@
 // The code is covered by the MIT license:
 //     http://www.kryogenix.org/code/browser/licence.html
 
-addEvent(window, "load", sortables_init);
+// addEvent(window, "load", sortables_init);
+// Changed so that call sortables_init explicitly - David Robertson
 
 var SORT_COLUMN_INDEX;
 
@@ -91,9 +92,31 @@ function ts_resortTable(lnk) {
     
     // We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
     // don't do sortbottom rows
-    for (i=0;i<newRows.length;i++) { if (!newRows[i].className || (newRows[i].className && (newRows[i].className.indexOf('sortbottom') == -1))) table.tBodies[0].appendChild(newRows[i]);}
+    // David Robertson:  restripe as resort; a hack at the moment
+    for (i=0;i<newRows.length;i++) {
+        if (!newRows[i].className || (newRows[i].className && (newRows[i].className.indexOf('sortbottom') == -1))) {
+            if ((i %2) == 0) {
+                newRows[i].style.backgroundColor = "#ffffff"; 
+            }
+            else {
+                newRows[i].style.backgroundColor = "#eaf0f6"; 
+            }
+            table.tBodies[0].appendChild(newRows[i]);
+        }
+    }
     // do sortbottom rows only
-    for (i=0;i<newRows.length;i++) { if (newRows[i].className && (newRows[i].className.indexOf('sortbottom') != -1)) table.tBodies[0].appendChild(newRows[i]);}
+    for (i=0;i<newRows.length;i++) {
+        if (newRows[i].className && (newRows[i].className.indexOf('sortbottom') != -1))
+        {
+            if ((i %2) == 0) {
+                newRows[i].style.backgroundColor = "#ffffff"; 
+            }
+            else {
+                newRows[i].style.backgroundColor = "#eaf0f6"; 
+            }
+            table.tBodies[0].appendChild(newRows[i]);
+        }
+    }
     
     // Delete any other arrows there may be showing
     var allspans = document.getElementsByTagName("span");
