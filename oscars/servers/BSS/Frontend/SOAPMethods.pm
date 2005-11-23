@@ -111,11 +111,11 @@ sub view_reservations {
     my( $statement, $rows );
 
     if ( $params->{engr_permission} ) {
-        $statement = "SELECT * FROM reservations";
+        $statement = 'SELECT * FROM reservations';
     }
     else {
         $statement = "SELECT $user_fields FROM reservations" .
-                     " WHERE user_dn = ?";
+                     ' WHERE user_dn = ?';
     }
     $statement .= ' ORDER BY reservation_start_time';
     if ( $params->{engr_permission} ) {
@@ -154,13 +154,13 @@ sub view_details {
     my( $statement, $row );
 
     if ( $params->{engr_permission} ) {
-        $statement = "SELECT * FROM reservations";
-        $statement .= " WHERE reservation_id = ?";
+        $statement = 'SELECT * FROM reservations';
+        $statement .= ' WHERE reservation_id = ?';
     }
     else {
         $statement = "SELECT $user_fields FROM reservations" .
-                     " WHERE user_dn = ?";
-        $statement .= " AND reservation_id = ?";
+                     ' WHERE user_dn = ?';
+        $statement .= ' AND reservation_id = ?';
     }
     if ( $params->{engr_permission} ) {
         $row = $self->{dbconn}->get_row($statement, $params->{reservation_id});
@@ -240,7 +240,7 @@ sub get_results {
     my( $self, $params ) = @_;
 
     # build fields to insert
-    my $statement = "SHOW COLUMNS from reservations";
+    my $statement = 'SHOW COLUMNS from reservations';
     my $rows = $self->{dbconn}->do_query( $statement );
     my @insertions;
     my $results = {}; 
