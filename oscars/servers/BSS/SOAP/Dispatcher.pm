@@ -32,6 +32,19 @@ my $request_handler = BSS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
 sub dispatch {
     my ( $class_name, $params ) = @_;
 
+    my $m = $params->{method};
+    my $results = $request_handler->$m($params) ;
+    return $results;
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# Replace dispatch with this when have BSS SOAP server going again (rather
+# than direct call to dispatch with hash of params
+#
+sub todo {
+    my ( $class_name, $params ) = @_;
+
     my ( $ex );
 
     my $results = {};
