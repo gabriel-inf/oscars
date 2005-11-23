@@ -35,7 +35,10 @@ sub modify_params {
 sub output {
     my( $self, $results ) = @_;
 
-    Client::BSS::Details::output_details($results, $self->{session});
+    print $self->{cgi}->header(
+                               -type=>'text/xml');
+    Client::BSS::Details::output_details(
+                              $results, $self->{session}, $self->{user_level});
 } #____________________________________________________________________________
 
 

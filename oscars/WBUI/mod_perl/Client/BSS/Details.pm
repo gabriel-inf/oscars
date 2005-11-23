@@ -23,7 +23,7 @@ our @ISA = qw{Client::SOAPAdapter};
 # Out:  None
 #
 sub output_details {
-    my( $results, $session ) = @_;
+    my( $results, $session, $user_level ) = @_;
 
     my( $end_time );
 
@@ -47,22 +47,21 @@ sub output_details {
     <table width='90%' id='reservationlist'>
       <tr><td>Tag</td><td>$results->{reservation_tag}</td></tr>
       <tr><td>User</td><td>$results->{user_dn}</td></tr> 
-      <tr><td>Description</td><td>$results->{reservation_description}</tr>
+      <tr><td>Description</td><td>$results->{reservation_description}</td></tr>
       <tr><td>Start time</td><td>$results->{reservation_start_time}</td></tr>
       <tr><td>End time</td><td>$end_time</td></tr>
-      <tr><td>Created time</td><td>$results->{reservation_created_time}
-        </td></tr>
+      <tr><td>Created time</td><td>$results->{reservation_created_time}</td></tr>
       <tr><td>Bandwidth</td><td>$results->{reservation_bandwidth}</td></tr>
       <tr><td>Burst limit</td><td>$results->{reservation_burst_limit}</td></tr>
       <tr><td>Status</td><td>$results->{reservation_status}</td></tr>
       <tr><td>Source</td><td>$results->{source_host}</td></tr>
       <tr><td>Destination</td><td>$results->{destination_host}</td></tr>
       <tr><td>Source port</td><td>$src_port</td></tr>
-      <tr><td>Destination port</td>$dst_port</td></tr>
+      <tr><td>Destination port</td><td>$dst_port</td></tr>
       <tr><td>Protocol</td><td>$protocol</td></tr>
       <tr><td>DSCP</td><td>$dscp</td></tr>
     };
-    if ($session->authorized($results->{user_level}, 'engr')) {
+    if ($session->authorized($user_level, 'engr')) {
         print qq{
         <tr><td>Class</td><td>$results->{reservation_class}</td></tr>
         <tr><td>Ingress router</td><td>$results->{ingress_router}</td></tr>
@@ -73,10 +72,10 @@ sub output_details {
         };
         my $path_str = '';
         for $_ (@{$results->{reservation_path}}) {
-            $path_str .= $_ . ' -> ';
+            $path_str .= $_ . ' - ';
         }
         # remove last '->'
-        substr($path_str, -4, 4) = '';
+        substr($path_str, -3, 3) = '';
         print qq{
         $path_str</td></tr>
         };
@@ -93,25 +92,20 @@ sub output_details {
             >CANCEL</a></td></tr>
         };
     }
+    if (($results->{reservation_status} eq 'pending') ||
+        ($results->{reservation_status} eq 'active')) {
+        print qq{
+          <td>Action: </td>
+          <td><a href='#' style='/styleSheets/layout.css'
+            onclick="return new_section(
+            'cancel_reservation',
+            'reservation_id=$results->{reservation_id}')";
+            >CANCEL</a></td></tr>
+        };
+    }
 
     print qq{
     </table>
-    <form method='post' action='' onsubmit="return submit_form(this,
-          'view_details', 'reservation_id=$results->{reservation_id}");"
-    <input type='hidden' name='user_dn' value="$results->{user_dn}">
-    </input>
-    <input type='hidden' name='reservation_id'
-           value="$results->{reservation_id}">
-    </input>
-    <p><input type='submit' value='Refresh'> 
-    </input></p>
-    </form>
-
-    <p><a href='#' style='/styleSheets/layout.css'
-          onclick="return new_section('view_reservations', '');">
-          $results->{user_last_name}
-    <strong>Back to reservations list</strong></a></p>
-    <p>For inquiries, please contact the project administrator.</p>
     </div>
     };
     print  "</xml>\n";
