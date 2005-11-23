@@ -130,8 +130,9 @@ my $tests = {
     'get_profile' => {},
     'view_users' => {},
     # BSS
-    'delete_reservation' => {},
+    'cancel_reservation' => {},
     'view_reservations' => {},
+    'view_details' => {},
     'find_pending_reservations' => {},
     'find_expired_reservations' => {}
 };
