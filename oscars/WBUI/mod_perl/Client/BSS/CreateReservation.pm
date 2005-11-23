@@ -1,42 +1,34 @@
 ###############################################################################
-package Client::BSS::CreateReservation;
+package Client::BSS::ViewDetails;
 
-# Handles displaying the details of a reservation that has just been made.
+# Handles request to view a given set of reservations, or a particular
+# reservation's details.
 #
-# Last modified:  November 21, 2005
+# Last modified:  November 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
+use Client::BSS::Details;
+
 use Client::SOAPAdapter;
 our @ISA = qw{Client::SOAPAdapter};
 
-#______________________________________________________________________________ 
+#_____________________________________________________________________________ 
 
 
 ###############################################################################
-# output:  TODO:  need to print out reservation details
+# output:  print details of reservation created by SOAP call
 # In:   results of SOAP call
 # Out:  None
 #
 sub output {
     my( $self, $results ) = @_;
 
-    my $params_str;
-
-    print $self->{cgi}->header(
-         -type=>'text/xml');
-    print "<xml>\n";
-    print qq{
-    <msg>Successfully created reservation</msg>
-    <div id="reservation_ui">
-    <p>TODO</p>
-    </div>
-    };
-    print "</xml>\n";
-} #____________________________________________________________________________ 
+    Client::BSS::Details::output_details($results, $self->{session});
+} #____________________________________________________________________________
 
 
 ######
