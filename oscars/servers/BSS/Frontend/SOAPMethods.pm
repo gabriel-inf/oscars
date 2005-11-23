@@ -84,52 +84,51 @@ sub create_reservation {
 
 
 ###############################################################################
-# delete_reservation:  Given the reservation id, leave the reservation in the
+# cancel_reservation:  Given the reservation id, leave the reservation in the
 #     db, but mark status as cancelled, and set the ending time to 0 so that 
 #     find_expired_reservations will tear down the LSP if the reservation is
 #     active.
 #
-sub delete_reservation {
+sub cancel_reservation {
     my( $self, $params ) = @_;
 
     my $status =  $self->{dbconn}->update_status( $params, 'precancel' );
-    return $self->get_reservation_details($params);
+    return $self->view_details($params);
 } #____________________________________________________________________________ 
 
 
 ###############################################################################
-# view_reservations: get all reservations from the database that satisfy a
-#     particular SQL filter
+# view_reservations:  get reservations from the database.  If the user has
+#     engr privileges, they can view all reservations.  Otherwise they can
+#     only view their own.
 #
-# In: reference to hash of parameters
-# Out: reservations if any, and status message
+# In:  reference to hash of parameters
+# Out: reference to array of hashes
 #
 sub view_reservations {
     my( $self, $params ) = @_;
 
     my( $statement, $rows );
 
-    # TODO:  fix authorizations, unprivileged user can access another
-    #        person's reservations, etc.
     if ( $params->{engr_permission} ) {
-        $statement = "SELECT *";
+        $statement = "SELECT * FROM reservations";
     }
     else {
-        $statement = "SELECT $user_fields";
+        $statement = "SELECT $user_fields FROM reservations" .
+                     " WHERE user_dn = ?";
     }
-    if ($params->{sql_filter} ne 'all') {
-        my @filter_pair = split('=', $params->{sql_filter});
-        $statement .= " FROM reservations WHERE $filter_pair[0] = ?" .
-                      ' ORDER BY reservation_start_time';
-        $rows = $self->{dbconn}->do_query($statement, $filter_pair[1]);
-    }
-    else {
-        $statement .= ' FROM reservations' .
-                      ' ORDER BY reservation_start_time';
+    $statement .= ' ORDER BY reservation_start_time';
+    if ( $params->{engr_permission} ) {
         $rows = $self->{dbconn}->do_query($statement);
     }
-    if ( $params->{engr_permission} ) { 
-        $self->{dbconn}->get_engr_fields($rows); 
+    else {
+        $rows = $self->{dbconn}->do_query($statement, $params->{user_dn});
+    }
+    
+    # get additional fields if getting reservation details and user
+    # has permission
+    if ( $params->{engr_permission} && $params->{reservation_id} ) { 
+        $self->{dbconn}->get_engr_fields($rows->[0]); 
     }
     for my $resv ( @$rows ) {
         $self->{dbconn}->convert_times($resv);
@@ -137,6 +136,50 @@ sub view_reservations {
         $self->check_nulls($resv);
     }
     return $rows;
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# view_details:  get reservation details from the database, given its
+#     reservation id.  If a user has engr privileges, they can view any 
+#     reservation's details.  Otherwise they can only view reservations that
+#     they have made, with less of the details.
+#
+# In:  reference to hash of parameters
+# Out: reservations if any, and status message
+#
+sub view_details {
+    my( $self, $params ) = @_;
+
+    my( $statement, $row );
+
+    if ( $params->{engr_permission} ) {
+        $statement = "SELECT * FROM reservations";
+        $statement .= " WHERE reservation_id = ?";
+    }
+    else {
+        $statement = "SELECT $user_fields FROM reservations" .
+                     " WHERE user_dn = ?";
+        $statement .= " AND reservation_id = ?";
+    }
+    if ( $params->{engr_permission} ) {
+        $row = $self->{dbconn}->get_row($statement, $params->{reservation_id});
+    }
+    else {
+        $row = $self->{dbconn}->get_row($statement, $params->{user_dn},
+                                        $params->{reservation_id});
+    }
+    if (!$row) { return $row; }
+    
+    # get additional fields if getting reservation details and user
+    # has permission
+    if ( $params->{engr_permission} ) { 
+        $self->{dbconn}->get_engr_fields($row); 
+    }
+    $self->{dbconn}->convert_times($row);
+    $self->{dbconn}->get_host_info($row);
+    $self->check_nulls($row);
+    return $row;
 } #____________________________________________________________________________ 
 
 
