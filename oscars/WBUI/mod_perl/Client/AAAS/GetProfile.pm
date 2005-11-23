@@ -3,7 +3,7 @@ package Client::AAAS::GetProfile;
 
 # Handles get_profile form submission
 #
-# Last modified:  November 21, 2005
+# Last modified:  November 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -16,6 +16,15 @@ our @ISA = qw{Client::SOAPAdapter};
 #______________________________________________________________________________
 
 
+###############################################################################
+sub modify_params {
+    my( $self, $params ) = @_;
+
+    $params->{server_name} = 'AAAS';
+    $self->SUPER::modify_params($params);
+} #____________________________________________________________________________
+
+
 ##############################################################################
 # output:  print user profile form, and results retrieved via
 # a SOAP call, if any
@@ -23,6 +32,8 @@ our @ISA = qw{Client::SOAPAdapter};
 sub output {
     my( $self, $results ) = @_;
 
+    # using cached authorization level
+    my $str_level = $self->{session}->get_str_level($self->{user_level});
     print $self->{cgi}->header(
         -type=>'text/xml');
     print "<xml>\n";
@@ -40,13 +51,13 @@ sub output {
       </tr>
     };
     $self->output_password_fields($results);
-    if ($self->{session}->authorized($results->{user_level}, 'admin')) {
+    if ($self->{session}->authorized($self->{user_level}, 'admin')) {
         print qq{
         <tr>
           <td>User Level</td>
           <td>
             <input class='required' type='text' name='user_level' size='40'
-                   value="$results->{user_level}"></input>
+                   value="$str_level"></input>
           </td>
         </tr>
         };
