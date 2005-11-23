@@ -20,6 +20,15 @@ our @ISA = qw{Client::SOAPAdapter};
 
 
 ###############################################################################
+sub modify_params {
+    my( $self, $params ) = @_;
+
+    $params->{server_name} = 'BSS';
+    $self->SUPER::modify_params($params);
+} #____________________________________________________________________________
+
+
+###############################################################################
 # output:  print details of reservation created by SOAP call
 # In:   results of SOAP call
 # Out:  None

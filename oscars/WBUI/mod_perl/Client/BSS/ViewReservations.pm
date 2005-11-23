@@ -17,6 +17,15 @@ our @ISA = qw{Client::SOAPAdapter};
 
 
 ###############################################################################
+sub modify_params {
+    my( $self, $params ) = @_;
+
+    $params->{server_name} = 'BSS';
+    $self->SUPER::modify_params($params);
+} #____________________________________________________________________________
+
+
+###############################################################################
 # output:  print list of all reservations if the caller has 
 #          engr privileges, otherwise just print that user's reservations
 # In:   results of SOAP call
@@ -40,7 +49,6 @@ sub output {
     <p><form method='post' action='' onsubmit="return submit_form(this,
             'view_reservations', '');">
     <input type='submit' value='Refresh'></input>
-    <input type='hidden' name='user_dn' value="$results->{user_dn}">
     </input>
     </form></p>
 
