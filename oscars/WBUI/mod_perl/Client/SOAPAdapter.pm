@@ -34,8 +34,9 @@ sub initialize {
         'add_user' => 'Client::AAAS::AddUser',
         'create_reservation_form' => 'Client::BSS::CreateReservationForm',
         'create_reservation' => 'Client::BSS::CreateReservation',
-        'delete_reservation' => 'Client::BSS::DeleteReservation',
+        'cancel_reservation' => 'Client::BSS::CancelReservation',
         'view_reservations' => 'Client::BSS::ViewReservations',
+        'view_details' => 'Client::BSS::ViewDetails',
     };
     $self->{location_mapping} = {
         'login' => 'Client/AAAS/Login',
@@ -47,8 +48,9 @@ sub initialize {
         'add_user' => 'Client/AAAS/AddUser',
         'create_reservation_form' => 'Client/BSS/CreateReservationForm',
         'create_reservation' => 'Client/BSS/CreateReservation',
-        'delete_reservation' => 'Client/BSS/DeleteReservation',
+        'cancel_reservation' => 'Client/BSS/CancelReservation',
         'view_reservations' => 'Client/BSS/ViewReservations',
+        'view_details' => 'Client/BSS/ViewDetails',
     };
 } #___________________________________________________________________________                                         
 
@@ -92,6 +94,25 @@ sub initialize {
     $self->{session} = Client::UserSession->new();
 } #____________________________________________________________________________ 
 
+###############################################################################
+# handle_request:  handles all phases of the request; may be nested to
+#     handle multiple requests
+#
+sub handle_request {
+    my( $self, $soap_server ) = @_;
+
+    my( %soap_params );
+
+    my $user_dn = $self->authenticate();
+        # TODO:  handle cleanly when not authenticated or authorized
+    if (!$user_dn) { return; }
+    my $user_level = $self->authorize($user_dn);
+    if (!$user_level) { return; }
+    $self->modify_params(\%soap_params);  # adapts from CGI params
+    my $results = $self->make_call($soap_server, \%soap_params);
+    $self->post_process($results);
+    $self->output($results);
+}
 
 ###############################################################################
 # authenticate
@@ -105,12 +126,13 @@ sub authenticate {
 
 
 ###############################################################################
-# authorize:  TODO
+# authorize:  TODO with real authorization
 #
 sub authorize {
-    my( $self, $user_dn ) = @_;
+    my( $self ) = @_;
 
-    return 1;
+    $self->{user_level} = $self->{session}->authorize_session($self->{cgi});
+    return $self->{user_level};
 } #___________________________________________________________________________                                         
 
 
