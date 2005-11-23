@@ -3,7 +3,7 @@ package Client::AAAS::ViewUsers;
 
 # Handles get user list form submission
 #
-# Last modified:  November 21, 2005
+# Last modified:  November 22, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -15,6 +15,15 @@ use Client::SOAPAdapter;
 our @ISA = qw{Client::SOAPAdapter};
 
 #____________________________________________________________________________ 
+
+
+###############################################################################
+sub modify_params {
+    my( $self, $params ) = @_;
+
+    $params->{server_name} = 'AAAS';
+    $self->SUPER::modify_params($params);
+} #____________________________________________________________________________
 
 
 ###############################################################################
