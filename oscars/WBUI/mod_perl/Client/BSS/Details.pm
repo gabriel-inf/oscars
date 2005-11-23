@@ -41,10 +41,10 @@ sub output_details {
     print "<xml>\n";
     print qq{
     <msg>Successfully got reservation details.</msg>
-    <div id='zebratable_ui'>
+    <div>
     <p><strong>Reservation Details</strong></p>
 
-    <table width='90%' id='reservationlist'>
+    <table width='90%' id='zebra'>
       <tr><td>Tag</td><td>$results->{reservation_tag}</td></tr>
       <tr><td>User</td><td>$results->{user_dn}</td></tr> 
       <tr><td>Description</td><td>$results->{reservation_description}</td></tr>
@@ -68,44 +68,48 @@ sub output_details {
         <tr><td>Ingress loopback</td><td>$results->{ingress_ip}</td></tr>
         <tr><td>Egress router</td><td>$results->{egress_router}</td></tr>
         <tr><td>Egress loopback</td><td>$results->{egress_ip}</td></tr>
-        <tr><td>Routers in path</td><td>
+        <tr><td>Routers in path</td>
+        <td>
         };
         my $path_str = '';
         for $_ (@{$results->{reservation_path}}) {
             $path_str .= $_ . ' - ';
         }
-        # remove last '->'
+        # remove last '-'
         substr($path_str, -3, 3) = '';
         print qq{
-        $path_str</td></tr>
-        };
-    }
-
-    if (($results->{reservation_status} eq 'pending') ||
-        ($results->{reservation_status} eq 'active')) {
-        print qq{
-          <td>Action: </td>
-          <td><a href='#' style='/styleSheets/layout.css'
-            onclick="return new_section(
-            'cancel_reservation',
-            'reservation_id=$results->{reservation_id}')";
-            >CANCEL</a></td></tr>
+        $path_str
+        </td>
+        </tr>
+    </table>
+    <p>
         };
     }
     if (($results->{reservation_status} eq 'pending') ||
         ($results->{reservation_status} eq 'active')) {
         print qq{
-          <td>Action: </td>
-          <td><a href='#' style='/styleSheets/layout.css'
-            onclick="return new_section(
-            'cancel_reservation',
-            'reservation_id=$results->{reservation_id}')";
-            >CANCEL</a></td></tr>
+        <form method="post" action=""
+              onsubmit="return submit_form(this, 'cancel_reservation', '');">
+        <input type='submit' value='CANCEL'></input>
+        <input type='hidden' name='reservation_id'
+               value="$results->{reservation_id}"></input>
+        </form>
         };
     }
 
     print qq{
-    </table>
+    <form method="post" action=""
+          onsubmit="return submit_form(this, 'view_details', '');">
+    <input type='submit' value='Refresh'></input>
+    <input type='hidden' name='reservation_id'
+           value="$results->{reservation_id}"></input>
+    </form>
+    </p>
+
+    <p><a href='#' style='/styleSheets/layout.css'
+          onclick="return new_section('view_reservations', '');">
+    <strong>Back to reservations list</strong></a></p>
+    <p>For inquiries, please contact the project administrator.</p>
     </div>
     };
     print  "</xml>\n";
