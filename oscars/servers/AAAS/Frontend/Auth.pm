@@ -49,15 +49,38 @@ sub initialize {
         'view_reservations' => $levs{user},
         'view_details' => $levs{user},
     };
+    $self->{method_section_permissions} = {
+        'get_profile' => $levs{admin},
+        'set_profile' => $levs{admin},
+        'create_reservation_form' => $levs{engr},
+        'create_reservation' => $levs{engr},
+        'cancel_reservation' => $levs{engr},
+        'view_reservations' => $levs{engr},
+        'view_details' => $levs{engr},
+    };
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
 sub authorized {
-    my( $self, $user_level, $method_name ) = @_;
+    my( $self, $params, $method_name ) = @_;
 
-    return( $user_level & $self->{method_permissions}->{$method_name} );
+    if ( !($params->{user_level} & 
+           $self->{method_permissions}->{$method_name}) ) {
+        return 0;
+    }
+    my $section_permission =
+                          $self->{method_section_permissions}->{$method_name};
+    if ($section_permission) {
+        if ( $params->{user_level} &  $section_permission ) {
+            if ($section_permission eq 'admin' ) {
+                $params->{admin_permission} = 1;
+            }
+            else { $params->{engr_permission} = 1; }
+        }
+    }
+    return 1;
 } #____________________________________________________________________________
 
 
