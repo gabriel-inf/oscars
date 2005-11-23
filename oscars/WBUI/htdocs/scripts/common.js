@@ -129,10 +129,12 @@ function get_response(xmlhttp, method_name) {
     }
 
     // update main portion (only present if there was no error)
-    if (returned_divs.length) {
-        var main_node = document.getElementById('main_div');
-        main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
+    if (!returned_divs.length) {
+        return;
     }
+    var main_node = document.getElementById('main_div');
+    main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
+
     if (method_name == 'create_reservation_form') {
         var time_node = document.getElementById('tz_option_list');
         if (time_node) {
