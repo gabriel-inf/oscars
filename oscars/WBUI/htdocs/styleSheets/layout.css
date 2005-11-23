@@ -167,32 +167,33 @@ td {
 }
 
 /* zebra table for user/reservation lists */
-#zebratable_ui table {
+/* zebra table for lists */
+#zebra table {
     border: 1px solid #666666;
     margin-left: auto;
     margin-right: auto;
 }
 
-#zebratable_ui thead tr td {
+#zebra thead tr td {
     background: #eaf0f6;
     border-bottom: 1px solid #666666;
     font-weight: bold;
 }
 
-#zebratable_ui tr td {
+#zebra tr td {
     font-size: .7em;
     padding: .3em .8em;
     border-left: 1px solid #ccc;
 }
 
-#zebratable_ui tbody tr.attention td {
+#zebra tbody tr.attention td {
     background-color: #3d80df;
     color: #fff;
     border-left: 1px solid #346dbe;
     border-bottom: 1px solid #7daaea;
 }
 
-#zebratable_ui tbody tr.attention td a {
+#zebra tbody tr.attention td a {
     color: #fff;
 }
 
