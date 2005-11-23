@@ -3,13 +3,15 @@ package AAAS::Frontend::Mail;
 
 # Handles all notification email messages.
 # 
-# Last modified:  November 21, 2005
+# Last modified:  November 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
 use strict;
 
 use Data::Dumper;
+
+use AAAS::Frontend::Notifications;
 
 
 sub new {
@@ -27,6 +29,9 @@ sub initialize {
     $self->{notification_email_encoding} = 'ISO-8859-1';
     $self->{sendmail_cmd} = '/usr/sbin/sendmail -oi';
     $self->{webmaster} = 'dwrobertson@lbl.gov';
+    $self->{method_mappings} = {
+        'create_reservation' =>  AAAS::Frontend::Notifications::create_reservation,
+    }
 } #____________________________________________________________________________ 
 
 
@@ -37,6 +42,12 @@ sub gen_message {
     my( $self, $method_name, $results ) = @_;
 
     my( $subject_line, $message );
+
+    if ( $self->{method_mappings}->{$method_name} ) {
+        $message = $self->{method_mappings}->{$method_name}($results);
+        # TODO:  FIX subject line
+        $subject_line = 'OSCARS: ' . $method_name;
+    }
     return( $subject_line, $message );
 } #____________________________________________________________________________ 
 
@@ -81,7 +92,8 @@ sub get_admins {
     my( $self ) = @_;
 
     #return 'oscars-admin@es.net';
-    return 'dwrobertson@lbl.gov chin@es.net';
+    #return 'dwrobertson@lbl.gov chin@es.net';
+    return 'dwrobertson@lbl.gov';
 } #____________________________________________________________________________ 
 
 

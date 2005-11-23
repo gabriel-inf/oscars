@@ -3,7 +3,7 @@ package AAAS::Frontend::Notifications;
 
 # Reservation statistics formatting.
 #
-# Last modified:  November 21, 2005
+# Last modified:  November 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -21,9 +21,9 @@ sub new {
 
 
 ###############################################################################
-# create_reservation_msg
+# create_reservation
 #
-sub create_reservation_msg {
+sub create_reservation {
     my( $self, $resv, $infinite_time) = @_;
 
     # only optional fields need to be checked for existence
@@ -74,9 +74,9 @@ sub create_reservation_msg {
 
                    
 ###############################################################################
-# lsp_configure_msg
+# lsp_configure
 #
-sub lsp_configure_msg {
+sub lsp_configure {
     my( $self, $resv ) = @_;
 
     my $msg = 
