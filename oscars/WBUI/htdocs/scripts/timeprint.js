@@ -70,7 +70,7 @@ function check_date_fields( form )
     var default_minute = 0;
 
     var local_date = new Date();
-    if ( isblank(form.start_year.value) ) {
+    if ( is_blank(form.start_year.value) ) {
         form.start_year.value = local_date.getFullYear();
         default_year = 1;
     }
@@ -87,7 +87,7 @@ function check_date_fields( form )
         }
     }
 
-    if ( isblank(form.start_month.value) ) {
+    if ( is_blank(form.start_month.value) ) {
         form.start_month.value = local_date.getMonth();
         default_month = 0;
     }
@@ -105,7 +105,7 @@ function check_date_fields( form )
         }
     }
 
-    if ( isblank(form.start_date.value) ) {
+    if ( is_blank(form.start_date.value) ) {
         form.start_date.value = local_date.getDate();
         default_date = 1;
     }
@@ -117,7 +117,7 @@ function check_date_fields( form )
         }
     }
 
-    if ( isblank(form.start_hour.value) ) {
+    if ( is_blank(form.start_hour.value) ) {
         form.start_hour.value = local_date.getHours();
         default_hour = 1;
     }
@@ -134,12 +134,12 @@ function check_date_fields( form )
         }
     }
 
-    if ( isblank(form.start_minute.value) ) {
+    if ( is_blank(form.start_minute.value) ) {
         form.start_minute.value = local_date.getMinutes();
         default_minute = 1;
     }
 
-    if ( isblank(form.duration_hour.value) ) {
+    if ( is_blank(form.duration_hour.value) ) {
         form.duration_hour.value = 0.05;
     }
     else {
