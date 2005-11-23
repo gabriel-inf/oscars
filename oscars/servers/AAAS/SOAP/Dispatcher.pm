@@ -53,9 +53,9 @@ sub dispatch {
         my $err = $v->validate($params);
         if ($err) { throw Error::Simple($err); }
         my $method_name = $params->{method};
-        if (!$auth->authorized($params->{user_level}, $method_name)) {
+        if (!$auth->authorized($params, $method_name)) {
             throw Error::Simple(
-                "User $params->{user_dn} not authorized to make $m call");
+                "User $params->{user_dn} not authorized to make $method_name call");
         }
         # AAAS handles this call
         if ( $params->{server_name} ne 'BSS' ) {
