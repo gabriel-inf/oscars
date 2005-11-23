@@ -53,7 +53,7 @@ sub output {
     <p>Required fields are outlined in green.</p>
     <form method='post' action='' onsubmit="return submit_form(this,
                                                              'add_user', '');">
-    <table>
+    <table id='zebra'>
     <tr>
       <td>Distinguished Name</td>
       <td>
@@ -72,7 +72,12 @@ sub output {
     </tr>
     };
     $self->output_profile_fields();
+
     print qq{
+    </table>
+
+    <p>Please check your contact information carefully before submitting 
+    the form.</p>
     <p><input type='submit' value='Create Profile'></input></p>
     </form>
     <p>For inquiries, please contact the project administrator.</p>
@@ -144,10 +149,6 @@ sub output_profile_fields {
           <input type='text' name='user_phone_secondary' size='40'></input>
         </td>
       </tr>
-      </table>
-
-      <p>Please check your contact information carefully before submitting 
-      the form.</p>
     };
 } #____________________________________________________________________________
 

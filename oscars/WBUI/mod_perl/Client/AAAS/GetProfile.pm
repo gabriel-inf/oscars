@@ -44,7 +44,7 @@ sub output {
     <p>Required fields are outlined in green.</p>
     <form method='post' action=''
         onsubmit="return submit_form(this, 'set_profile', '');">
-    <table>
+    <table id='zebra'>
       <tr>
         <td>Distinguished Name</td>
         <td>$self->{user_dn}</td>
@@ -64,9 +64,12 @@ sub output {
     }
     $self->output_profile_fields($results);
     print qq{
-    <p><input type='submit' value='Change Profile'></input></p>
-    </form>
-    <p>For inquiries, please contact the project administrator.</p>
+      </table>
+      <p>Please check your contact information carefully before submitting 
+      the form.</p>
+      <p><input type='submit' value='Change Profile'></input></p>
+      </form>
+      <p>For inquiries, please contact the project administrator.</p>
     </div>
     };
     print "</xml>\n";
@@ -144,9 +147,6 @@ sub output_profile_fields {
           </input>
         </td>
       </tr>
-      </table>
-      <p>Please check your contact information carefully before submitting 
-      the form.</p>
     };
 } #____________________________________________________________________________
 

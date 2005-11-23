@@ -41,9 +41,9 @@ sub output {
     print "<xml>\n";
     print qq{
       <msg>Successfully read user list.</msg>
-    <div id='zebratable_ui'>
+    <div>
       <p>Click on the user's last name to view detailed user information.</p>
-      <table cellspacing='0' width='90%' class='sortable' id='userlist'>
+      <table cellspacing='0' width='90%' class='sortable' id='zebra'>
         <thead><tr>
           <td>Last Name</td>          <td>First Name</td>
           <td>Distinguished Name</td> <td>Level</td>
