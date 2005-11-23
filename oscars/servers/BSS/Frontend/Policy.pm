@@ -48,11 +48,11 @@ sub check_oversubscribe {
 
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
-    my $statement = "SELECT reservation_bandwidth, reservation_start_time,
+    my $statement = 'SELECT reservation_bandwidth, reservation_start_time,
               reservation_end_time, reservation_path FROM reservations
               WHERE reservation_end_time >= ? AND
-                  reservation_start_time <= ? AND
-                  (reservation_status = 'pending' OR
+                  reservation_start_time <= ? AND ' .
+                  " (reservation_status = 'pending' OR
                    reservation_status = 'active')";
 
     # handled query with the comparison start & end datetime strings
@@ -92,9 +92,9 @@ sub check_oversubscribe {
                 $router_name = $self->{dbconn}->id_to_router_name( $idx );
                 $error_msg = "$router_name oversubscribed: ";
             }
-            else { $error_msg = "Route oversubscribed: "; }
-            throw Error::Simple($error_msg . " " . $iface_idxs{$idx} .
-                  " Mbps > " .  $max_utilization . " Mbps" . "\n");
+            else { $error_msg = 'Route oversubscribed: '; }
+            throw Error::Simple("$error_msg  $iface_idxs{$idx}" .
+                  " Mbps > $max_utilization Mbps\n");
         }
     }
     # Replace array @$params->{reservation_path} with string separated by
@@ -116,7 +116,7 @@ sub check_oversubscribe {
 sub get_interface_fields {
     my( $self, $iface_id) = @_;
 
-    my $statement = "SELECT * FROM interfaces WHERE interface_id = ?";
+    my $statement = 'SELECT * FROM interfaces WHERE interface_id = ?';
     my $row = $self->{dbconn}->get_row($statement, $iface_id);
     return $row;
 } #____________________________________________________________________________ 

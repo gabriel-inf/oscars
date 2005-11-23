@@ -125,15 +125,15 @@ sub get_pss_configs {
     my( $self ) = @_;
 
         # use defaults for now
-    my $statement = "SELECT " .
-             "pss_conf_access, pss_conf_login, pss_conf_passwd, " .
-             "pss_conf_firewall_marker, " .
-             "pss_conf_setup_file, pss_conf_teardown_file, " .
-             "pss_conf_ext_if_filter, pss_conf_CoS, " .
-             "pss_conf_burst_limit, " .
-             "pss_conf_setup_priority, pss_conf_resv_priority, " .
-             "pss_conf_allow_lsp "  .
-             "FROM pss_confs where pss_conf_id = 1";
+    my $statement = 'SELECT ' .
+             'pss_conf_access, pss_conf_login, pss_conf_passwd, ' .
+             'pss_conf_firewall_marker, ' .
+             'pss_conf_setup_file, pss_conf_teardown_file, ' .
+             'pss_conf_ext_if_filter, pss_conf_CoS, ' .
+             'pss_conf_burst_limit, ' .
+             'pss_conf_setup_priority, pss_conf_resv_priority, ' .
+             'pss_conf_allow_lsp '  .
+             'FROM pss_confs where pss_conf_id = 1';
     my $configs = $self->get_row($statement);
     return $configs;
 } #____________________________________________________________________________ 
@@ -147,14 +147,14 @@ sub get_pss_configs {
 sub id_to_router_name {
     my( $self, $interface_id ) = @_;
 
-    my $statement = "SELECT router_name FROM routers
+    my $statement = 'SELECT router_name FROM routers
                  WHERE router_id = (SELECT router_id from interfaces
-                                    WHERE interface_id = ?)";
+                                    WHERE interface_id = ?)';
     my $row = $self->get_row($statement, $interface_id);
     # no match
     if ( !$row ) {
         # not considered an error
-        return "";
+        return '';
     }
     return $row->{router_name};
 } #____________________________________________________________________________ 
@@ -187,7 +187,7 @@ sub hostaddrs_ip_to_id {
 sub get_host_info {
     my( $self, $resv ) = @_;
  
-    my $statement = "SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?";
+    my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
     my $hrow = $self->get_row($statement, $resv->{src_hostaddr_id});
     $resv->{source_ip} = $hrow->{hostaddr_ip};
     my $ipaddr = inet_aton($resv->{source_ip});
@@ -216,12 +216,12 @@ sub setup_times {
     my( $duration_seconds );
 
     # Expects strings in second since epoch; converts to date in UTC time
-    my $statement = "SELECT from_unixtime(?) AS start_time";
+    my $statement = 'SELECT from_unixtime(?) AS start_time';
     my $row = $self->get_row( $statement, $params->{reservation_start_time});
     $params->{reservation_start_time} = $row->{start_time};
     if ($params->{duration_hour} < (2**31 - 1)) {
         $duration_seconds = $params->{duration_hour} * 3600;
-        $statement = "SELECT DATE_ADD(?, INTERVAL ? SECOND) AS end_time";
+        $statement = 'SELECT DATE_ADD(?, INTERVAL ? SECOND) AS end_time';
         $row = $self->get_row( $statement, $params->{reservation_start_time},
                                 $duration_seconds );
         $params->{reservation_end_time} = $row->{end_time};
@@ -229,7 +229,7 @@ sub setup_times {
     else {
         $params->{reservation_end_time} = $infinite_time;
     }
-    $statement = "SELECT now() AS created_time";
+    $statement = 'SELECT now() AS created_time';
     $row = $self->get_row( $statement );
     $params->{reservation_created_time} = $row->{created_time};
 } #____________________________________________________________________________ 
@@ -259,10 +259,10 @@ sub convert_times {
 sub get_engr_fields {
     my( $self, $resv ) = @_;
  
-    my $statement = "SELECT router_name, router_loopback FROM routers" .
-                " WHERE router_id =" .
-                  " (SELECT router_id FROM interfaces" .
-                  "  WHERE interface_id = ?)";
+    my $statement = 'SELECT router_name, router_loopback FROM routers' .
+                ' WHERE router_id =' .
+                  ' (SELECT router_id FROM interfaces' .
+                  '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty
     my $row = $self->get_row($statement, $resv->{ingress_interface_id});
