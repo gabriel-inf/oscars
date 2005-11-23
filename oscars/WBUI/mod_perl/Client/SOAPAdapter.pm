@@ -110,6 +110,9 @@ sub handle_request {
     if (!$user_level) { return; }
     $self->modify_params(\%soap_params);  # adapts from CGI params
     my $results = $self->make_call($soap_server, \%soap_params);
+    if (!$results) {
+        return;
+    }
     $self->post_process($results);
     $self->output($results);
 }
@@ -157,8 +160,7 @@ sub make_call {
 
     my $som = $soap_server->dispatch($soap_params);
     if ($som->faultstring) {
-        # TODO:  return error in status
-        #$self->update_page($som->faultstring);
+        $self->update_status_msg($som->faultstring);
         return undef;
     }
     return $som->result;
@@ -180,6 +182,21 @@ sub post_process {
 sub output {
     my( $self, $results ) = @_;
 
+} #___________________________________________________________________________                                         
+
+###############################################################################
+# update_status_msg:  Currently called on if there has been a SOAP fault
+#
+sub update_status_msg {
+    my( $self, $msg ) = @_;
+
+    print $self->{cgi}->header(
+        -type=>'text/xml');
+    print "<xml>\n";
+    print qq{
+    <msg>$msg</msg>
+    };
+    print "</xml>\n";
 } #___________________________________________________________________________                                         
 
 ######
