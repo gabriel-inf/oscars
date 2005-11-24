@@ -2,7 +2,7 @@
 package BSS::Scheduler::DBRequests;
 
 # Database request handling for BSS scheduler
-# Last modified:  November 21, 2005
+# Last modified:  November 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -80,6 +80,31 @@ sub get_time_intervals {
     my $row = $self->{dbconn}->get_row( $statement );
     return( $row->{server_db_poll_time},
             $row->{server_time_interval} );
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+#
+sub map_to_ips {
+    my( $self, $resv ) = @_;
+ 
+    my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
+    my $row = $self->{dbconn}->get_row($statement, $resv->{src_hostaddr_id});
+    $resv->{source_ip} = $row->{hostaddr_ip};
+    my $row = $self->{dbconn}->get_row($statement, $resv->{dst_hostaddr_id});
+    $resv->{destination_ip} = $row->{hostaddr_ip};
+
+    $statement = 'SELECT router_loopback FROM routers' .
+                ' WHERE router_id =' .
+                ' (SELECT router_id FROM interfaces' .
+                '  WHERE interface_id = ?)';
+
+    # TODO:  FIX row might be empty
+    $row = $self->{dbconn}->get_row($statement, $resv->{ingress_interface_id});
+    $resv->{ingress_ip} = $row->{router_loopback}; 
+
+    $row = $self->{dbconn}->get_row($statement, $resv->{egress_interface_id});
+    $resv->{egress_ip} = $row->{router_loopback}; 
 } #____________________________________________________________________________ 
 
 
