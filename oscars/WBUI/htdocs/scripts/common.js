@@ -42,6 +42,11 @@ var user_profile_required = {
     'user_email_primary': "Please enter the user's primary email address.",
     'user_phone_primary': "Please enter the user's primary phone number."
 }
+
+var navigation_names = new Array(
+                          'get_info', 'view_users', 'add_user', 'get_profile',
+                          'view_reservations', 'create_reservation_form' );
+    
                     
 // Checks validity of form settings, and uses Sarissa to post request
 // and get back result.
@@ -109,11 +114,17 @@ function get_response(xmlhttp, method_name) {
             }
         }
     }
-
-    // Update navigation bar
-    var tab_node = document.getElementById(method_name);
-    if (tab_node) {
-        tab_node.className = 'active';
+    else {
+        // Update navigation bar
+        for (var i = 0; i < navigation_names.length; i++) {
+            var tab_node = document.getElementById(navigation_names[i]);
+            if (tab_node) {
+                if (navigation_names[i] == method_name) {
+                    tab_node.className = 'active';
+                }
+                else { tab_node.className = 'inactive'; }
+            }
+        }
     }
 
     // get text of status message, if any
@@ -327,11 +338,12 @@ function is_blank(s) {
     return true;
 }
 
-// ** apply zebra stripe to a table **
-// Reference: http://www.alistapart.com/articles/zebratables/
-// Adapted to just use style sheet for color, and not to worry about
-// class membership or background color of table row.  Coloring is done
-// at the row rather than the column level.
+
+// Apply zebra stripe to a table
+//     Reference: http://www.alistapart.com/articles/zebratables/
+//     Adapted to just use style sheet for color, and not to worry about
+//     class membership or background color of table row.  Coloring is done
+//     at the row rather than the column level.
 
 function stripe(id) {
 
