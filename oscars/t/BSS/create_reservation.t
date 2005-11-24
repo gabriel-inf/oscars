@@ -19,6 +19,7 @@ $params{source_host} = 'nettrash3.es.net';
 $params{destination_host} = 'dc-cr1.es.net';
 
 $params{user_dn} =        'dwrobertson@lbl.gov';
+$params{user_level} =        '15';
 $params{reservation_description} =    'This is a test.';
 $params{server_name} = 'BSS';
 $params{method} = 'create_reservation'; 

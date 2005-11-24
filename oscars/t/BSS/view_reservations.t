@@ -6,29 +6,23 @@ use strict;
 
 use Data::Dumper;
 
-my( %params );
-my $numArgs = $#ARGV + 1;
+my( %params, @arg_pair );
 
-if ($numArgs == 1) {
-    $params{sql_filter} = $ARGV[0];
-}
-else {
-    print "usage:  ./get_user_reservations.pl sql_filter\n";
-    print "example SQL filters (used in a statement after a WHERE):\n\n";
-
-    print "all\n";
-    print "\tgets all reservations you have permissions for\n\n";
-
-    print "user_dn = 'dwrobertson\@lbl.gov'\n";
-    print "\tgets all reservations for a particular user\n\n";
-
-    print "reservation_id = 14\n";
-    print "\tgets the details for a particular reservation\n";
+if ($#ARGV < 0) {
+    print STDERR "Usage:  view_details user_level (user or engr)\n";
     exit;
 }
 
 $params{method} = 'view_reservations';
 $params{server_name} = 'BSS';
+$params{user_dn} = 'dwrobertson@lbl.gov';
+if ($ARGV[0] eq 'user') { $params{user_level} = 2; }
+elsif ($ARGV[0] eq 'engr') { $params{user_level} = 2 | 4; }
+else {
+    print STDERR "Invalid argument:  must be user or engr\n";
+    exit;
+}
+
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
     ->proxy('https://198.128.14.164/SOAP');
@@ -48,4 +42,13 @@ for $r (@$results) {
         }
     }
     print "\n";
+}
+
+sub usage {
+    print STDERR "Invalid command-line arguments:\n";
+    print STDERR "To get all reservations:\n";
+    print STDERR "\t view_reservations.t engr\n";
+    print STDERR "To get all reservations for a specific user:\n";
+    print STDERR "\t view_reservations.t user\n";
+    exit;
 }

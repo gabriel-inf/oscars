@@ -10,6 +10,7 @@ my %params;
 $params{time_interval} = 20;
 $params{method} = 'find_expired_reservations';
 $params{server_name} = 'BSS';
+$params{user_level} = 4;
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
     ->proxy('https://198.128.14.164/SOAP');
