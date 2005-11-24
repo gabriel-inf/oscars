@@ -34,13 +34,15 @@ sub output {
 
     # using cached authorization level
     my $str_level = $self->{session}->get_str_level($self->{user_level});
+    # may be accessing another user's profile if an administrator
+    my $dn = $results->{id} ? $results->{id} : $self->{user_dn};
     print $self->{cgi}->header(
         -type=>'text/xml');
     print "<xml>\n";
     print qq{
     <msg>User profile</msg>
     <div>
-    <h3>Editing profile for user: $self->{user_dn}</h3>
+    <h3>Editing profile for user: $dn</h3>
     <p>Required fields are outlined in green.</p>
     <form method='post' action=''
         onsubmit="return submit_form(this, 'set_profile', '');">
@@ -48,7 +50,7 @@ sub output {
       <tbody>
       <tr>
         <td>Distinguished Name</td>
-        <td>$self->{user_dn}</td>
+        <td>$dn</td>
       </tr>
     };
     $self->output_password_fields($results);
@@ -84,6 +86,13 @@ sub output {
 sub output_profile_fields {
     my( $self, $row ) = @_;
 
+    # take care of non_required fields
+    my $user_description =
+        $row->{user_description} ? $row->{user_description} : "";
+    my $user_email_secondary =
+        $row->{user_email_secondary} ? $row->{user_email_secondary} : "";
+    my $user_phone_secondary =
+        $row->{user_phone_secondary} ? $row->{user_phone_secondary} : "";
     print qq{
       <tr>
         <td>First Name</td>
@@ -113,7 +122,7 @@ sub output_profile_fields {
         <td valign='top'>Personal Description</td>
         <td>
           <textarea name='user_description' rows='3' cols='50'>
-              $row->{user_description}
+              $user_description
           </textarea>
         </td>
       </tr>
@@ -129,7 +138,7 @@ sub output_profile_fields {
         <td>E-mail (Secondary)</td>
         <td>
           <input type='text' name='user_email_secondary' size='40'
-                 value="$row->{user_email_secondary}">
+                 value="$user_email_secondary">
           </input>
         </td>
       </tr>
@@ -145,7 +154,7 @@ sub output_profile_fields {
         <td>Phone Number (Secondary)</td>
         <td>
           <input type='text' name='user_phone_secondary' size='40'
-                 value="$row->{user_phone_secondary}">
+                 value="$user_phone_secondary">
           </input>
         </td>
       </tr>
