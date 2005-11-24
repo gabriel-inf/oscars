@@ -10,6 +10,7 @@ my %params = ('user_dn' => 'dwrobertson@lbl.gov',
               'user_level' => 'user' );
 $params{server_name} = 'AAAS';
 $params{method} = 'get_profile';
+$params{user_level} = 2;
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
     ->proxy('https://198.128.14.164/SOAP');
