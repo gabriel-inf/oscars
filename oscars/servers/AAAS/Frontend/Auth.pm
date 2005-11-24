@@ -48,6 +48,8 @@ sub initialize {
         'cancel_reservation' => $levs{user},
         'view_reservations' => $levs{user},
         'view_details' => $levs{user},
+        'find_pending_reservations' => $levs{engr},
+        'find_expired_reservations' => $levs{engr},
     };
     $self->{method_section_permissions} = {
         'get_profile' => $levs{admin},
