@@ -30,35 +30,35 @@ sub initialize {
     my( $self ) = @_;
 
     # TODO:  replace hashes with db calls, ROAM
-    my %levs = (
+    $self->{levs} = {
         'user' => 2,
         'engr' => 4,
         'admin' => 8,
-    );
+    };
     $self->{method_permissions} = {
-        'login' => $levs{user},
-        'get_info' => $levs{user},
-        'get_profile' => $levs{user},
-        'set_profile' => $levs{user},
-        'logout' => $levs{user},
-        'view_users' => $levs{admin},
-        'add_user' => $levs{admin},
-        'create_reservation_form' => $levs{user},
-        'create_reservation' => $levs{user},
-        'cancel_reservation' => $levs{user},
-        'view_reservations' => $levs{user},
-        'view_details' => $levs{user},
-        'find_pending_reservations' => $levs{engr},
-        'find_expired_reservations' => $levs{engr},
+        'login' => $self->{levs}->{user},
+        'get_info' => $self->{levs}->{user},
+        'get_profile' => $self->{levs}->{user},
+        'set_profile' => $self->{levs}->{user},
+        'logout' => $self->{levs}->{user},
+        'view_users' => $self->{levs}->{admin},
+        'add_user' => $self->{levs}->{admin},
+        'create_reservation_form' => $self->{levs}->{user},
+        'create_reservation' => $self->{levs}->{user},
+        'cancel_reservation' => $self->{levs}->{user},
+        'view_reservations' => $self->{levs}->{user},
+        'view_details' => $self->{levs}->{user},
+        'find_pending_reservations' => $self->{levs}->{engr},
+        'find_expired_reservations' => $self->{levs}->{engr},
     };
     $self->{method_section_permissions} = {
-        'get_profile' => $levs{admin},
-        'set_profile' => $levs{admin},
-        'create_reservation_form' => $levs{engr},
-        'create_reservation' => $levs{engr},
-        'cancel_reservation' => $levs{engr},
-        'view_reservations' => $levs{engr},
-        'view_details' => $levs{engr},
+        'get_profile' => $self->{levs}->{admin},
+        'set_profile' => $self->{levs}->{admin},
+        'create_reservation_form' => $self->{levs}->{engr},
+        'create_reservation' => $self->{levs}->{engr},
+        'cancel_reservation' => $self->{levs}->{engr},
+        'view_reservations' => $self->{levs}->{engr},
+        'view_details' => $self->{levs}->{engr},
     };
 } #____________________________________________________________________________
 
@@ -76,10 +76,10 @@ sub authorized {
                           $self->{method_section_permissions}->{$method_name};
     if ($section_permission) {
         if ( $params->{user_level} &  $section_permission ) {
-            if ($section_permission eq 'admin' ) {
-                $params->{admin_permission} = 1;
+            if ($section_permission == $self->{levs}->{engr} ) {
+                $params->{engr_permission} = 1;
             }
-            else { $params->{engr_permission} = 1; }
+            else { $params->{admin_permission} = 1; }
         }
     }
     return 1;
