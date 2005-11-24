@@ -24,11 +24,13 @@ sub new {
 # create_reservation
 #
 sub create_reservation {
-    my( $self, $resv, $infinite_time) = @_;
+    my( $self, $user_dn, $resv) = @_;
 
+    # TODO:  FIX! infinite_time
+    my $infinite_time = 'foo';
     # only optional fields need to be checked for existence
     my $msg = 
-        "Reservation entered by $resv->{user_dn} with parameters:\n" .
+        "Reservation entered by $user_dn with parameters:\n" .
         "Description:        $resv->{reservation_description}\n";
     if ($resv->{reservation_id}) {
         $msg .= "Reservation id:     $resv->{reservation_id}\n";
@@ -77,10 +79,10 @@ sub create_reservation {
 # lsp_configure
 #
 sub lsp_configure {
-    my( $self, $resv ) = @_;
+    my( $self, $user_dn, $resv ) = @_;
 
     my $msg = 
-        "LSP config by $resv->{user_dn} with parameters:\n" .
+        "LSP config by $user_dn with parameters:\n" .
         "Config time:        $resv->{lsp_config_time}\n" .
         "Description:        $resv->{reservation_description}\n" .
         "Reservation id:     $resv->{reservation_id}\n" .

@@ -29,9 +29,10 @@ sub initialize {
     $self->{notification_email_encoding} = 'ISO-8859-1';
     $self->{sendmail_cmd} = '/usr/sbin/sendmail -oi';
     $self->{webmaster} = 'dwrobertson@lbl.gov';
-    $self->{method_mappings} = {
-        'create_reservation' =>  AAAS::Frontend::Notifications::create_reservation,
-    }
+    $self->{notifier} = AAAS::Frontend::Notifications->new();
+    $self->{method_mail} = {
+        'create_reservation' =>  1,
+    };
 } #____________________________________________________________________________ 
 
 
@@ -39,14 +40,15 @@ sub initialize {
 # gen_message:  Generates mail message, if appropriate, from method results
 #
 sub gen_message {
-    my( $self, $method_name, $results ) = @_;
+    my( $self, $user_dn, $method_name, $results ) = @_;
 
     my( $subject_line, $message );
 
-    if ( $self->{method_mappings}->{$method_name} ) {
-        $message = $self->{method_mappings}->{$method_name}($results);
+    print STDERR "method_name, $method_name\n";
+    if ( $self->{method_mail}->{$method_name} ) {
+        $message = $self->{notifier}->$method_name($user_dn, $results);
         # TODO:  FIX subject line
-        $subject_line = 'OSCARS: ' . $method_name;
+        $subject_line = $method_name;
     }
     return( $subject_line, $message );
 } #____________________________________________________________________________ 
