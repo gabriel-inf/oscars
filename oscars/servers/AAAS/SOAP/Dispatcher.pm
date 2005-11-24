@@ -47,12 +47,13 @@ sub dispatch {
 
     my( $ex,  );
     my $results = {};
+    my $method_name;
 
     try {
         my $v = AAAS::Frontend::Validator->new();
         my $err = $v->validate($params);
         if ($err) { throw Error::Simple($err); }
-        my $method_name = $params->{method};
+        $method_name = $params->{method};
         if (!$auth->authorized($params, $method_name)) {
             throw Error::Simple(
                 "User $params->{user_dn} not authorized to make $method_name call");
@@ -85,7 +86,7 @@ sub dispatch {
     }
     my $mailer = AAAS::Frontend::Mail->new();
     my( $subject_line, $mail_msg ) =
-        $mailer->gen_message($method_name, $results) ;
+        $mailer->gen_message($params->{user_dn}, $method_name, $results) ;
     if ($mail_msg) {
         $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
                        $subject_line, $mail_msg);
