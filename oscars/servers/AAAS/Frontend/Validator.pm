@@ -153,9 +153,9 @@ sub new {
 sub validate {
     my( $self, $params ) = @_;
 
-    for $_ (keys(%$params)) {
-        print STDERR "param: $_, value: $params->{$_}\n";
-    }
+    #for $_ (keys(%$params)) {
+        #print STDERR "param: $_, value: $params->{$_}\n";
+    #}
     my $pmethod = $tests->{$params->{method}};
     if ( !$pmethod ) {
         return "Cannot validate $params->{method}";
