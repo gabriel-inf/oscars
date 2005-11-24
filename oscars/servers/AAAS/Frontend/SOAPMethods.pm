@@ -102,6 +102,9 @@ sub get_profile {
     if ( !$results ) {
         throw Error::Simple("No such user $params->{user_dn}.");
     }
+    if ( $params->{id} ) {
+        $results->{id} = $params->{id};
+    }
 
     $statement = 'SELECT institution_name FROM institutions
               WHERE institution_id = ?';
@@ -129,6 +132,7 @@ sub get_profile {
 sub set_profile {
     my ( $self, $params ) = @_;
 
+    #print STDERR Dumper($params);
     my $user_dn = $params->{user_dn};
 
     # Read the current user information from the database to decide which
