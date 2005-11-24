@@ -66,12 +66,13 @@ sub configure_lsp {
 
     # For LSP setup, use setupXmlFile
     # for teardown, use teardownXmlFile.
+    # TODO:  FIX hard-wired directory
     if ($_lspOp == 1)  {
-        $_xmlFile = $ENV{OSCARS_HOME} . '/PSS/xml/' .
+        $_xmlFile = '/home/oscars/PSS/xml/' .
                     $_self->{configs}->{pss_conf_setup_file};
     }
     else  {
-        $_xmlFile = $ENV{OSCARS_HOME} . '/PSS/xml/' .
+        $_xmlFile = '/home/oscars/PSS/xml/' .
                     $_self->{configs}->{pss_conf_teardown_file};
     }
 
@@ -209,6 +210,7 @@ sub read_xml_file {
 
         $_xmlOutput .= $_xmlInput;
     }
+    close(_XMLFILE);
     return($_xmlOutput);
 }
 
@@ -405,10 +407,7 @@ sub update_log {
         print STDERR $_xmlString;
     }
     $r->{reservation_tag} =~ s/@/../;
-    open (LOGFILE, ">> $ENV{HOME}/logs/$r->{reservation_tag}") || die "Can't open log file.\n";
-    print LOGFILE "**********************************************************************\n";
-    print LOGFILE $_xmlString;
-    close(LOGFILE);
+    print STDERR $_xmlString;
 }
 ######
 
