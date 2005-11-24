@@ -7,7 +7,7 @@ package BSS::Scheduler::SOAPMethods;
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 21, 2005
+# Last modified:  November 23, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
 
@@ -45,25 +45,22 @@ sub initialize {
 #    reservatations in db that need to be setup and run in the next N minutes.
 #
 sub find_pending_reservations {
-    my ($self, $params) = @_;
+    my( $self, $params ) = @_;
 
-    my ($resvs, $status);
-    my ($error_msg);
+    my( $resvs, $status );
+    my( $error_msg );
 
     print STDERR "BSS Scheduler: searching for reservations to schedule\n";
     # find reservations that need to be scheduled
     $resvs = $self->{db_requests}->find_pending_reservations(
                                                       $params->{time_interval});
-    print STDERR Dumper($resvs);
-    if (!@$resvs) { print STDERR "OK\n"; return $resvs; }
+    if (!@$resvs) { return $resvs; }
 
-    print STDERR "why here?\n";
-    $self->{dbconn}->get_host_info($resvs);
-    $self->{dbconn}->get_engr_fields($resvs); 
     for my $r (@$resvs) {
+        $self->{db_requests}->map_to_ips($r);
         # call PSS to schedule LSP
-        $status = setup_pss($r);
-        update_reservation( $r, $status, 'active');
+        $error_msg = $self->setup_pss($r);
+        $self->update_reservation( $r, $error_msg, 'active');
     }
     return $resvs;
 } #____________________________________________________________________________ 
@@ -76,20 +73,20 @@ sub find_pending_reservations {
 sub find_expired_reservations {
     my ($self, $params) = @_;
 
-    my ($resvs, $status);
+    my( $resvs, $status );
+    my( $error_msg );
 
     print STDERR "BSS Scheduler: searching for expired reservations\n";
     # find reservations whose end time is before the current time and
     # thus expired
     $resvs = $self->{db_requests}->find_expired_reservations(
                                                      $params->{time_interval});
-    print STDERR Dumper($resvs);
     if (!@$resvs) { print STDERR "OK\n"; return $resvs; }
-    $self->{dbconn}->get_host_info($resvs);
-    $self->{dbconn}->get_engr_fields($resvs); 
+
     for my $r (@$resvs) {
-        $status = teardown_pss($self->{configs}, $r);
-        update_reservation( $r, $status, 'finished');
+        $self->{db_requests}->map_to_ips($r);
+        $error_msg = $self->teardown_pss($self->{configs}, $r);
+        $self->update_reservation( $r, $error_msg, 'finished');
     }
     return "";
 } #____________________________________________________________________________ 
@@ -110,7 +107,7 @@ sub setup_pss {
     print STDERR "execing pss to schedule reservations\n";
 
         # Create an LSP object.
-    my $lsp_info = map_fields($self->{configs}, $resv_info);
+    my $lsp_info = $self->map_fields($self->{configs}, $resv_info);
     my $jnxLsp = new PSS::LSPHandler::JnxLSP($lsp_info);
 
     print STDERR "Setting up LSP...\n";
@@ -132,7 +129,7 @@ sub teardown_pss {
     my ( $error );
 
         # Create an LSP object.
-    my $lsp_info = map_fields($self->{configs}, $resv_info);
+    my $lsp_info = $self->map_fields($self->{configs}, $resv_info);
     my $jnxLsp = new PSS::LSPHandler::JnxLSP($lsp_info);
 
     print STDERR "Tearing down LSP...\n" ;
@@ -152,13 +149,11 @@ sub teardown_pss {
 sub update_reservation {
     my ($self, $resv, $error_msg, $status) = @_;
 
-    my ($status, $msg);
-
-    print STDERR "Changing status of $resv->{reservation_id} to ";
+    print STDERR "Updating status of reservation $resv->{reservation_id} to ";
     if ( !$error_msg ) {
-        ($status, $msg) = $self->{dbconn}->update_status($resv, $status);
+        $status = $self->{dbconn}->update_status($resv, $status);
     } else {
-        ($status, $msg) = $self->{dbconn}->update_status($resv, 'failed');
+        $status = $self->{dbconn}->update_status($resv, 'failed');
     }
     print STDERR "$status\n";
 } #____________________________________________________________________________ 
