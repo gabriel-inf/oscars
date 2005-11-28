@@ -47,22 +47,22 @@ sub initialize {
 sub find_pending_reservations {
     my( $self, $params ) = @_;
 
-    my( $resvs, $status );
+    my( $reservations, $status );
     my( $error_msg );
 
     print STDERR "BSS Scheduler: searching for reservations to schedule\n";
     # find reservations that need to be scheduled
-    $resvs = $self->{db_requests}->find_pending_reservations(
+    $reservations = $self->{db_requests}->find_pending_reservations(
                                                       $params->{time_interval});
-    if (!@$resvs) { return $resvs; }
+    if (!@$reservations) { return $reservations; }
 
-    for my $r (@$resvs) {
-        $self->{db_requests}->map_to_ips($r);
+    for my $resv (@$reservations) {
+        $self->{db_requests}->map_to_ips($resv);
         # call PSS to schedule LSP
-        $error_msg = $self->setup_pss($r);
-        $self->update_reservation( $r, $error_msg, 'active');
+        $resv->{lsp_status} = $self->setup_pss($resv);
+        $self->update_reservation( $resv, 'active' );
     }
-    return $resvs;
+    return $reservations;
 } #____________________________________________________________________________ 
 
 
@@ -73,22 +73,22 @@ sub find_pending_reservations {
 sub find_expired_reservations {
     my ($self, $params) = @_;
 
-    my( $resvs, $status );
+    my( $reservations, $status );
     my( $error_msg );
 
     print STDERR "BSS Scheduler: searching for expired reservations\n";
     # find reservations whose end time is before the current time and
     # thus expired
-    $resvs = $self->{db_requests}->find_expired_reservations(
+    $reservations = $self->{db_requests}->find_expired_reservations(
                                                      $params->{time_interval});
-    if (!@$resvs) { print STDERR "OK\n"; return $resvs; }
+    if (!@$reservations) { return $reservations; }
 
-    for my $r (@$resvs) {
-        $self->{db_requests}->map_to_ips($r);
-        $error_msg = $self->teardown_pss($self->{configs}, $r);
-        $self->update_reservation( $r, $error_msg, 'finished');
+    for my $resv (@$reservations) {
+        $self->{db_requests}->map_to_ips($resv);
+        $resv->{lsp_status} = $self->teardown_pss($self->{configs}, $resv);
+        $self->update_reservation( $resv, 'finished' );
     }
-    return "";
+    return $reservations;
 } #____________________________________________________________________________ 
 
 
@@ -147,10 +147,11 @@ sub teardown_pss {
 #                     active
 #
 sub update_reservation {
-    my ($self, $resv, $error_msg, $status) = @_;
+    my ($self, $resv, $status) = @_;
 
     print STDERR "Updating status of reservation $resv->{reservation_id} to ";
-    if ( !$error_msg ) {
+    if ( !$resv->{lsp_status} ) {
+        $resv->{lsp_status} = "Successful configuration";
         $status = $self->{dbconn}->update_status($resv, $status);
     } else {
         $status = $self->{dbconn}->update_status($resv, 'failed');
