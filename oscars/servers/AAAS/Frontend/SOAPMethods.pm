@@ -132,7 +132,6 @@ sub get_profile {
 sub set_profile {
     my ( $self, $params ) = @_;
 
-    #print STDERR Dumper($params);
     my $user_dn = $params->{user_dn};
 
     # Read the current user information from the database to decide which
