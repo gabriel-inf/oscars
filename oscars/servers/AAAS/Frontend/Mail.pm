@@ -3,7 +3,7 @@ package AAAS::Frontend::Mail;
 
 # Handles all notification email messages.
 # 
-# Last modified:  November 23, 2005
+# Last modified:  November 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -32,6 +32,9 @@ sub initialize {
     $self->{notifier} = AAAS::Frontend::Notifications->new();
     $self->{method_mail} = {
         'create_reservation' =>  1,
+        'cancel_reservation' =>  1,
+        'find_pending_reservations' =>  1,
+        'find_expired_reservations' =>  1,
     };
 } #____________________________________________________________________________ 
 
@@ -44,11 +47,9 @@ sub gen_message {
 
     my( $subject_line, $message );
 
-    print STDERR "method_name, $method_name\n";
     if ( $self->{method_mail}->{$method_name} ) {
-        $message = $self->{notifier}->$method_name($user_dn, $results);
-        # TODO:  FIX subject line
-        $subject_line = $method_name;
+        ( $subject_line, $message ) = 
+            $self->{notifier}->$method_name($user_dn, $results);
     }
     return( $subject_line, $message );
 } #____________________________________________________________________________ 

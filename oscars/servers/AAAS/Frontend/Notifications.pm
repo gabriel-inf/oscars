@@ -3,7 +3,7 @@ package AAAS::Frontend::Notifications;
 
 # Reservation statistics formatting.
 #
-# Last modified:  November 23, 2005
+# Last modified:  November 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -17,7 +17,7 @@ sub new {
   
     bless( $self, $class );
     return( $self );
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -26,12 +26,36 @@ sub new {
 sub create_reservation {
     my( $self, $user_dn, $resv) = @_;
 
+    my $msg = "Reservation scheduled by $user_dn with parameters:\n";
+    $msg .= $self->reservation_stats($resv);
+    my $subject_line = "Reservation scheduled for $user_dn";
+    return( $subject_line, $msg );
+} #____________________________________________________________________________
+
+
+###############################################################################
+# cancel_reservation
+#
+sub cancel_reservation {
+    my( $self, $user_dn, $resv) = @_;
+
+    my $msg = "Reservation cancelled by $user_dn with parameters:\n";
+    $msg .= $self->reservation_stats($resv);
+    my $subject_line = "Reservation cancelled by $user_dn";
+    return( $subject_line, $msg );
+} #____________________________________________________________________________
+
+
+###############################################################################
+# reservation_stats
+#
+sub reservation_stats {
+    my( $self, $resv) = @_;
+
     # TODO:  FIX! infinite_time
     my $infinite_time = 'foo';
     # only optional fields need to be checked for existence
-    my $msg = 
-        "Reservation entered by $user_dn with parameters:\n" .
-        "Description:        $resv->{reservation_description}\n";
+    my $msg = "Description:        $resv->{reservation_description}\n";
     if ($resv->{reservation_id}) {
         $msg .= "Reservation id:     $resv->{reservation_id}\n";
     }
@@ -71,18 +95,52 @@ sub create_reservation {
     }
     else { $msg .= "Class:              DEFAULT\n\n"; }
 
-    return $msg;
-} #____________________________________________________________________________ 
+    return( $msg );
+} #____________________________________________________________________________
 
-                   
+
 ###############################################################################
-# lsp_configure
+# find_pending_reservations
 #
-sub lsp_configure {
-    my( $self, $user_dn, $resv ) = @_;
+sub find_pending_reservations {
+    my( $self, $user_dn, $reservations) = @_;
+
+    my $subject_line = "Circuit set up status for $user_dn";
+    my $msg =
+          "Circuit set up for $user_dn, for reservation(s) with parameters:\n";
+    for my $resv ( @$reservations ) {
+            # TODO:  if more than one reservation, fix duplicated effort
+        $self->convert_times($resv);
+        $msg .= $self->reservation_lsp_stats($user_dn, $resv);
+    }
+    return( $subject_line, $msg );
+} #____________________________________________________________________________
+
+
+###############################################################################
+# find_expired_reservations
+#
+sub find_expired_reservations {
+    my( $self, $user_dn, $reservations) = @_;
+
+    my $subject_line = "Circuit tear down status for $user_dn";
+    my $msg =
+       "Circuit tear down for $user_dn, for reservation(s) with parameters:\n";
+    for my $resv ( @$reservations ) {
+        $self->convert_times($resv);
+        $msg .= $self->reservation_lsp_stats( $resv );
+    }
+    return( $subject_line, $msg );
+} #____________________________________________________________________________
+
+
+###############################################################################
+# reservation_lsp_stats
+#
+sub reservation_lsp_stats {
+    my( $self, $resv ) = @_;
 
     my $msg = 
-        "LSP config by $user_dn with parameters:\n" .
         "Config time:        $resv->{lsp_config_time}\n" .
         "Description:        $resv->{reservation_description}\n" .
         "Reservation id:     $resv->{reservation_id}\n" .
@@ -137,14 +195,13 @@ sub lsp_configure {
                    
 ###############################################################################
 #
-sub get_times {
+sub convert_times {
     my( $self, $resv ) = @_;
 
     my $statement = "SELECT CONVERT_TZ(now(), '+00:00', ?) AS newtime";
     my $row = $self->{dbconn}->get_row( $statement,
                                         $resv->{reservation_time_zone});
     $resv->{lsp_config_time} = $row->{newtime};
-    # convert to seconds before sending back
     $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
     $row = $self->{dbconn}->get_row( $statement, $resv->{reservation_start_time},
                                      $resv->{reservation_time_zone} );
