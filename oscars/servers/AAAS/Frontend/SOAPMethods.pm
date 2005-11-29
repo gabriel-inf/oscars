@@ -4,7 +4,7 @@ package AAAS::Frontend::SOAPMethods;
 # AAAS SOAP methods callable from AAAS::SOAP::Dispatcher.  Authorization and 
 # parameter validation are performed by the dispatcher.
 #
-# Last modified:  November 22, 2005
+# Last modified:  November 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -167,11 +167,11 @@ sub set_profile {
     # Set the institution id to the primary key in the institutions
     # table (user only can select from menu of existing instituions.
     if ( $params->{institution} ) {
-        $self->{dbconn}->get_institution_id($params, $params->{user_dn});
+        $self->{dbconn}->get_institution_id($params);
     }
 
     # prepare the query for database update
-    $statement = 'UPDATE users SET ';
+    my $statement = 'UPDATE users SET ';
     my @fields = split(', ', $user_profile_fields);
     for $_ (@fields) {
         $statement .= "$_ = '$params->{$_}', ";
@@ -180,6 +180,7 @@ sub set_profile {
     }
     $statement =~ s/,\s$//;
     $statement .= ' WHERE user_dn = ?';
+    print STDERR "foo: $statement\n";
     my $unused = $self->{dbconn}->do_query($statement, $user_dn);
 
     $results->{institution} = $params->{institution};
@@ -188,10 +189,43 @@ sub set_profile {
 } #____________________________________________________________________________ 
 
 
+###############################################################################
+# view_institutions:  Retrieves information for all institutions (used in
+#     get_profile, set_profile, and add_user).
+#
+# In:  reference to hash of parameters
+# Out: reference to hash of results
+#
+sub view_institutions {
+    my( $self, $params ) = @_;
+
+    my $statement = 'SELECT institution_name from institutions';
+    my $results = $self->{dbconn}->do_query($statement);
+    return $results;
+
+} #____________________________________________________________________________ 
+
+
 #################################################################
 # The following methods can only be accessed by a user with admin
 # privileges.
 #################################################################
+
+
+###############################################################################
+# view_permissions:  Retrieves information for all permissions (used in
+#     get_profile, set_profile, and add_user).
+#
+# In:  reference to hash of parameters
+# Out: reference to hash of results
+#
+sub view_permissions {
+    my( $self, $params ) = @_;
+
+    my $statement = 'SELECT user_level_description from user_levels';
+    my $results = $self->{dbconn}->do_query($statement);
+    return $results;
+} #____________________________________________________________________________ 
 
 
 ###############################################################################
@@ -204,23 +238,23 @@ sub add_user {
     my ( $self, $params ) = @_;
 
     my $results = {};
-    my $user_dn = $params->{user_dn};
+    $params->{user_dn} = $params->{id};
 
     my $encrypted_password = $params->{password_once};
 
     # login name overlap check
     my $statement = 'SELECT user_dn FROM users WHERE user_dn = ?';
-    my $row = $self->{dbconn}->get_row($statement, $user_dn);
+    my $row = $self->{dbconn}->get_row($statement, $params->{user_dn});
 
     if ( $row ) {
-        throw Error::Simple("The login, $user_dn, is already taken " .
+        throw Error::Simple("The login, $params->{user_dn}, is already taken " .
                    'by someone else; please choose a different login name.');
     }
 
     # Set the institution id to the primary key in the institutions
     # table (user only can select from menu of existing instituions).
     if ( $params->{institution} ) {
-        $self->{dbconn}->get_institution_id($params, $params->{user_dn});
+        $self->{dbconn}->get_institution_id($params);
     }
 
     $params->{user_password} = crypt($params->{password_new_once}, 'oscars');
@@ -242,8 +276,24 @@ sub add_user {
              
     my $unused = $self->{dbconn}->do_query($statement, @insertions);
     # X out password
+    $results->{id} = $params->{user_dn};
     $results->{user_password} = undef;
     return $results;
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# delete_user:  Deletes user with the given distinguished name
+#
+# In:  reference to hash of parameters
+# Out: reference to hash of results
+#
+sub delete_user {
+    my( $self, $params ) = @_;
+
+    my $statement = 'DELETE from users where user_dn = ?';
+    my $unused = $self->{dbconn}->do_query($statement, $params->{id});
+    return $params;
 } #____________________________________________________________________________ 
 
 
