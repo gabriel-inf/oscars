@@ -4,204 +4,71 @@
 </head>
 
 <body>
-<h1>OSCARS schedule and progress a/o 11-17-2005</h1>
+<h1>OSCARS schedule and progress a/o 11-28-2005</h1>
 
 <p>This will be converted to some sort of timeline to reduce redundancies
 and indicate dependencies.</p>
 
-<h2>10-4 to 10-21</h2> 
-
-<ul>
-<li>Replaced use of configuration file with AAAS and BSS database tables.
-Subversion updates to configuration file had been problematic, since some 
-information in it was private to ESnet, but all config fields and 
-corresponding values were necessary for OSCARS configuration.
-This modification required changes in large sections of the code, in all
-components.</li>
-<br/>
-
-<li>Met with Mary and Chin about security requirements.  Drew up initial
-workflow.</li>
-<br/>
-
-<li>Copied oscars repository to oscars-dev.es.net, and private repository to 
-oscars-test.es.net in preparation for migration from current oscars.es.net 
-machine. </li>
-<br/>
-
-<li>Worked on post-installation steps for MySQL.
-Copied databases to oscars-test from oscars.es.net.</li>
-<br/>
-
-<li>Worked on security additions to functional and design specifications.</li>
-<br/>
-
-<li>OSCARS meeting with Chin and BRUW, JRA3, SA3, JRA5.</li>
-<br/>
-</ul>
-
-<h2>10-21 to 10-28</h2>
-
-<ul>
-<li>Continued security additions to functional and design specifications.</li>
-<br/>
-
-<li>Moved OSCARS repository from oscars-dev to oscars-test, and 
-started testing AAAS and BSS servers on oscars-test.  (At this point
-the plan was to have the WBUI and CGI scripts on oscars-dev) 
-The semi- production servers still ran on oscars.es.net.</li>
-<br/>
-
-<li>Continued modifying security implementation and workflow through
-discussions with Mary.  In retrospect, more would have been accomplished
-in this and the previous period if I had gotten Mary more seriously 
-involved earlier, as I was getting bogged down in the security details.</li>
-<br/>
-
-<li>Started working on httpd configuration files for oscars-dev and
-oscars-test for new setup.  Read large amount of material on 
-Apache Web server.
-<br/>
-</ul>
-
-<h2>10-31 to 11-6</h2>
-
-<ul>
-<li>Decided to have the oscars-dev Web server act only as a reverse proxy to 
-the oscars-test Web server, and have the WBUI and CGI scripts on oscars-test.
-</li>
-<br/>
-
-<li>Discussed with Mary the usage of SSL in Apache reverse proxy setup,
-and writing a module to handle XML Signatures on oscars-test.</li>
-<br/>
-
-<li>Cleaned up database query utility methods, so that all requests and
-result handling are done
-in the same way.  Cleaned up way database connection handle is used.</li>
-<br/>
-
-<li>Finished security additions to functional specification.</li>
-<br/>
-
-<li>Continued working on httpd configuration files for oscars-dev and
-oscars-test for new setup.</li>
-<br/>
-
-</ul>
-
-<h2>11-7 to 11-13</h2>
-
-<ul>
-<li>Cleaned up time zone handling so that reservations from users from
-other time zones finally have correct times.</li>
-<br/>
-
-<li>Got mod_soap working to enable use of Apache as a host for SOAP endpoints,
-as opposed to running separate processes for AAAS and BSS.  The functionality
-provided by Apache then becomes more available, for example logging.
-</li>
-<br/>
-
-<li>Refactored database query, traceroute, and LSP config handling material in 
-BSS, so that material necessary for traceroutes and LSP configuration all 
-consolidated in the appropriate directories.  The boundaries had previously
-been muddled.</li>
-<br/>
-
-<li> Debugged AAAS and BSS servers working with these changes, whether the 
-client was the browser or the API.</li>
-<br/>
-
-<li>Mary worked on implementing a module for XML signature generation and 
-validation.</li>
-<br/>
-
-<li>Continued working on httpd configuration files for oscars-dev and
-oscars-test for new setup.</li>
-<br/>
-
-<li>Started major overhaul of CGI scripts in preparation for use of
-mod_perl to handle form submissions.</li>
-<br/>
-
-<li>Started to make reservation LSP setup a set of SOAP calls.  Previously
-LSP configuration had been performed by a 
-separate thread started by the BSS, which had polled the database
-regularly to see if reservations had become current or expired.
-Converting the functionality to SOAP calls enables the use of cron
-scripts to perform schedling.
-It will also enable later functionality such as
-explicitly claiming a reservation, rather than having all reservations
-automatically be claimed on reaching their scheduled time.</li>
-<br/>
-</li>
-</ul>
-
 <h2>11-14 to 11-20</h2>
 
 <ul>
-<li>Finish move of repository by figuring out error in accessing
-Subversion directories via https or http (as opposed to file://)).</li>
+<li>Continued debugging WBUI and the AAAS and BSS servers on oscars-test with
+the new modifications.</li>
 <br/>
 
-<li>Finish security additions to design specification, including use of 
+<li>Finished security additions to design specification, including use of 
 reverse proxy.</li>
 <br/>
 
-<li>Finish working on httpd configuration files for oscars-dev and
-oscars-test for new setup.  Figure out why either server can
-be accessed through
-https directly, but a reverse proxy from oscars-dev to
-oscars-test results in the SSL connection being refused.</li>
-<br/>
-
 <li>Moved notification messages and BSS method parameter validation to
-AAAS SOAP Dispatcher.  This was done to have all auditing and validation in one 
+AAAS SOAP Dispatcher.  This was done to have all auditing and validation in one
 place, to make it easier to have a chain of request handlers in one
 place.  This will make it easier to add additional request handlers in
 the Dispatcher, such as the one to validate XML Signature, or any handlers for
 BRUW-specific AAA material.</li>
 <br/>
 
-<li>Use mod_perl instead of CGI scripts, reading large amount of mod_perl
-material in the process.  Using mod_perl brings in a large amount of
+<li>Used mod_perl instead of CGI scripts, completely refactoring the previous 
+scripts into an object oriented version.  Read large amount of 
+mod_perl material in the process.  Using mod_perl brings in a large amount of
 functionality for free.</li>
+<br/>
+
+<li>Reworked authorization mechanisms in preparation for moving
+to ROAM authorization service.</li>
+<br/>
+
+<li>Started work on regular updates to routers, interfaces, and ipaddrs tables
+based on SNMP queries (need to integrate BSS/SNMP code).</li>
 <br/>
 
 <li>Mary continued working on implementing XML signature generation and 
 validation.</li>
 <br/>
 
-<li>Rework authorization mechanisms in preparation for moving
-to ROAM authorization service.</li>
-<br/>
-
 </ul>
 
 <h2>11-21 to 11-23</h2>
 <ul>
-<li>Start integration of ROAM material into clients, servers, and database 
-schemas.  Start working on ROAM-style resources, attributes, etc.</li>
+
+<li>Continued work on regular updates to routers, interfaces, and ipaddrs tables
+based on SNMP queries (need to integrate BSS/SNMP code).</li>
 <br/>
 
-<li>Work with I2 on integrating BRUW material, and on inter-domain 
-demo.</li>
+<li>Finished working on httpd configuration files for oscars-dev and
+oscars-test for new setup.  Got reverse proxying from oscars-dev to 
+oscars-test working with firewall filter help from John Webster.</li>
 <br/>
 
-<li>Finish debugging AAAS and BSS servers, at which point the OSCARS repository,
-CGI scripts, and HTML pages are served off of oscars-test.</li>
+<li>Finished debugging WBUI and the AAAS and BSS servers on oscars-test with the
+new modifications, finishing the migration process from the old oscars.es.net 
+machine (except for Subversion).</li>
 <br/>
 
-<li>Make the oscars.es.net IP a virtual host on oscars-dev (which is 
-reverse proxied to the Web server on oscars-test).  Old machine will be
-readdressed.</li>
+<li>Wrote framework for sending notifications based on SOAP method name.</li>
 <br/>
 
-<li>Send notifications on modifications and deletion of reservations.</li>
-<br/>
-
-<li> Mary continues working on implementation  of module for XML signature 
+<li> Mary continued working on implementation  of module for XML signature 
 generation and validation, to be able to require signed certificates for API 
 access to OSCARS, including access by another domain's server.</li>
 <br/>
@@ -211,20 +78,33 @@ access to OSCARS, including access by another domain's server.</li>
 <h2>11-28 to 12-2</h2>
 
 <ul>
+
+<li>Finish move of repository by figuring out error in accessing
+Subversion directories via https or http (as opposed to file://)).
+May require upgrading to FreeBSD 6.0.</li>
+<br/>
+
+<li>Make the oscars.es.net IP a virtual host on oscars-dev (which is 
+reverse proxied to the Web server on oscars-test).  Old machine will be
+readdressed.</li>
+<br/>
+
+<li>Integrate ROAM material into clients, servers, and database 
+schemas.  Start working on ROAM-style resources, attributes, etc.</li>
+<br/>
+
 <li>Work on inter-domain specs documents, including workflow, with 
 input from I2, GEANT2.</li>
 <br/>
 
-<li>Finish integration of ROAM material.</li>
+<li>Work with I2 on integrating BRUW material, and on inter-domain 
+demo.</li>
 <br/>
 
 <li>Get administrative page to add user and attributes working.</li>
 <br/>
 
-<li>Add forms for user requests for attributes/rights.</li>
-<br/>
-
-<li>Have regular updates to routers, interfaces, and ipaddrs tables
+<li>Finish regular updates to routers, interfaces, and ipaddrs tables
 based on SNMP queries (need to integrate BSS/SNMP code).</li>
 <br/>
 
@@ -233,13 +113,21 @@ generation and validation.  Works with I2 if they need assistance in
 incorporating it into their version of OSCARS/BRUW.</li>
 <br/>
 
-<li>Complete inter-domain demo to/from I2.</li>
-<br/>
 </ul>
 
 <h2>12-2 to 12-9</h2>
 
 <ul>
+
+<li>Move from using mod_perl in a CGI-like way to request handlers.</li>
+<br/>
+
+<li>Add forms for user requests for attributes/rights.</li>
+<br/>
+
+<li>Test the inter-domain demo to/from I2.</li>
+<br/>
+
 <li>Save the current page in use in a cookie, and enable the user to
 return to an OSCARS page after going someplace else.</li>
 <br/>
