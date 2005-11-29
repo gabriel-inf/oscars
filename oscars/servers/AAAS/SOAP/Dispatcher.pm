@@ -84,15 +84,8 @@ sub dispatch {
         die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
     }
-    my $mailer = AAAS::Frontend::Mail->new();
-    my( $subject_line, $mail_msg ) =
-        $mailer->gen_message($params->{user_dn}, $method_name, $results) ;
-    if ($mail_msg) {
-        $mailer->send_mail($mailer->get_webmaster(), $mailer->get_admins(),
-                       $subject_line, $mail_msg);
-        $mailer->send_mail($mailer->get_webmaster(), $params->{user_dn},
-                       $subject_line, $mail_msg);
-    }
+    my $mailer = AAAS::Frontend::Mail->new('dbconn' => $dbconn);
+    $mailer->send_message($params->{user_dn}, $method_name, $results) ;
     return $results;
 } #____________________________________________________________________________ 
 
