@@ -3,7 +3,7 @@ package Client::AAAS::GetProfile;
 
 # Handles get_profile form submission
 #
-# Last modified:  November 22, 2005
+# Last modified:  November 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -25,6 +25,30 @@ sub modify_params {
 } #____________________________________________________________________________
 
 
+###############################################################################
+# make_call:  make SOAP calls to get profile, and get permissions list
+#
+sub make_call {
+    my( $self, $soap_server, $soap_params ) = @_;
+
+    # First make call to get profile (any exceptions are handled there)
+    my $results = $self->SUPER::make_call($soap_server, $soap_params);
+
+    # and then get back list of permissions for use in permissions menu
+    # (if admin)
+    if ($self->{session}->authorized($self->{user_level}, 'admin')) {
+        $soap_params->{method} = 'view_permissions';
+        my $som = $soap_server->dispatch($soap_params);
+        if ($som->faultstring) {
+            $self->update_status_msg($som->faultstring);
+            return undef;
+        }
+        $self->{permissions_list} = $som->result;
+    }
+    return $results;
+} #____________________________________________________________________________
+
+
 ##############################################################################
 # output:  print user profile form, and results retrieved via
 # a SOAP call, if any
@@ -32,8 +56,15 @@ sub modify_params {
 sub output {
     my( $self, $results ) = @_;
 
-    # using cached authorization level
-    my $str_level = $self->{session}->get_str_level($self->{user_level});
+    my( $str_level );
+
+    # use cached authorization level if not admin
+    if ($self->{session}->authorized($self->{user_level}, 'admin')) {
+        $str_level = $self->{session}->get_str_level($results->{user_level});
+    }
+    else {
+        $str_level = $self->{session}->get_str_level($self->{user_level});
+    }
     # may be accessing another user's profile if an administrator
     my $dn = $results->{id} ? $results->{id} : $self->{user_dn};
     print $self->{cgi}->header(
@@ -54,18 +85,7 @@ sub output {
       </tr>
     };
     $self->output_password_fields($results);
-    if ($self->{session}->authorized($self->{user_level}, 'admin')) {
-        print qq{
-        <tr>
-          <td>User Level</td>
-          <td>
-            <input class='required' type='text' name='user_level' size='40'
-                   value="$str_level"></input>
-          </td>
-        </tr>
-        };
-    }
-    $self->output_profile_fields($results);
+    $self->output_profile_fields($results, $str_level);
     print qq{
       </tbody>
       </table>
@@ -84,7 +104,7 @@ sub output {
 # output_profile_fields:  print fields of user profile
 #
 sub output_profile_fields {
-    my( $self, $row ) = @_;
+    my( $self, $row, $str_level ) = @_;
 
     # take care of non_required fields
     my $user_description =
@@ -93,7 +113,35 @@ sub output_profile_fields {
         $row->{user_email_secondary} ? $row->{user_email_secondary} : "";
     my $user_phone_secondary =
         $row->{user_phone_secondary} ? $row->{user_phone_secondary} : "";
-    print qq{
+    if ($self->{session}->authorized($self->{user_level}, 'admin')) {
+        print qq{
+          <tr>
+            <td>Permissions</td>
+            <td><select class='requiredMenu' name='permissions' multiple='1'>
+        };
+        my @fields = split(' ', $str_level);
+        print STDERR Dumper(@fields);
+        my %user_permissions;
+        my %all_permissions;
+        for $_ (@fields) {
+            $user_permissions{$_} = 1;
+        }
+        for $_ (@{$self->{permissions_list}}) {
+            $all_permissions{$_->{user_level_description}} = 1;
+        }
+        for $_ (keys(%all_permissions)) {
+            if ($user_permissions{$_}) {
+                print "<option value='$_' selected='yes'>$_</option>";
+            }
+            else { print "<option value='$_'>$_</option>"; }
+        }
+        print qq{
+        </select>
+        </td>
+        </tr>
+        }
+      }
+      print qq{
       <tr>
         <td>First Name</td>
         <td>

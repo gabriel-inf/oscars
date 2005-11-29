@@ -1,7 +1,7 @@
 ###############################################################################
-package Client::AAAS::AddUser;
+package Client::AAAS::DeleteUser;
 
-# Handles adding a user to the database.
+# Handles deleting a user from the database.
 #
 # Last modified:  November 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
@@ -28,15 +28,15 @@ sub modify_params {
 
 
 ###############################################################################
-# make_call:  make SOAP calls to add user, and get user list
+# make_call:  make SOAP calls to delete user and get back user list
 #
 sub make_call {
     my( $self, $soap_server, $soap_params ) = @_;
 
-    # First make call to add user (any exceptions are handled there)
+    # First make call to delete user (any exceptions are handled there)
     my $results = $self->SUPER::make_call($soap_server, $soap_params);
 
-    # and then get back list of users, including new user
+    # and then get back list of users, minus deleted user
     $self->{id} = $results->{id};
     $soap_params->{method} = 'view_users';
     my $som = $soap_server->dispatch($soap_params);
@@ -49,8 +49,7 @@ sub make_call {
 
 
 ##############################################################################
-# output:  print user profile form, and results retrieved via
-# a SOAP call, if any
+# output:  prints the resulting list after user deletion
 #
 sub output {
     my( $self, $results ) = @_;
@@ -59,7 +58,7 @@ sub output {
         -type=>'text/xml');
     print "<xml>\n";
     print qq{
-    <msg>$self->{user_dn} successfully added user $self->{id}</msg>
+    <msg>$self->{user_dn} successfully deleted user $self->{id}</msg>
     };
     Client::AAAS::Users::output_users( $results, $self->{session});
     print "</xml>\n";
