@@ -3,7 +3,7 @@ package AAAS::Frontend::Mail;
 
 # Handles all notification email messages.
 # 
-# Last modified:  November 28, 2005
+# Last modified:  November 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -29,7 +29,8 @@ sub initialize {
     $self->{notification_email_encoding} = 'ISO-8859-1';
     $self->{sendmail_cmd} = '/usr/sbin/sendmail -oi';
     $self->{webmaster} = 'dwrobertson@lbl.gov';
-    $self->{notifier} = AAAS::Frontend::Notifications->new();
+    $self->{notifier} = AAAS::Frontend::Notifications->new(
+                                              'dbconn' => $self->{dbconn});
     $self->{method_mail} = {
         'create_reservation' =>  1,
         'cancel_reservation' =>  1,
@@ -40,18 +41,32 @@ sub initialize {
 
 
 ###############################################################################
-# gen_message:  Generates mail message, if appropriate, from method results
+# send message:  send mail message, if appropriate, from method results
 #
-sub gen_message {
+sub send_message {
     my( $self, $user_dn, $method_name, $results ) = @_;
 
-    my( $subject_line, $message );
-
     if ( $self->{method_mail}->{$method_name} ) {
-        ( $subject_line, $message ) = 
+         my $messages = 
             $self->{notifier}->$method_name($user_dn, $results);
+         for my $msg (@$messages) {
+             $self->send_mailings($msg);
+         }
     }
-    return( $subject_line, $message );
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# send_mailings:  Send mail to user and administrator(s).
+#
+sub send_mailings {
+    my( $self, $msg ) = @_;
+
+    $self->send_mail($self->{webmaster}, $msg->{user},
+                     'OSCARS: ' . $msg->{subject_line}, $msg->{msg});
+    $self->send_mail($self->{webmaster}, $self->get_admins(),
+                     'OSCARS: Admin,' . $msg->{subject_line}, $msg->{msg});
+    
 } #____________________________________________________________________________ 
 
 
@@ -66,7 +81,7 @@ sub send_mail {
     }
     print MAIL "From: $sender\n";
     print MAIL "To:   $recipient\n";
-    print MAIL "Subject:  OSCARS: $subject\n";
+    print MAIL "Subject:  $subject\n";
     print MAIL 'Content-Type: text/plain; charset="' .
                    $self->{notification_email_encoding} . '"' . "\n\n";
 			
@@ -77,16 +92,7 @@ sub send_mail {
 
     if (!close( MAIL )) { return $!; }
     return "";
-} #____________________________________________________________________________ 
-
-
-###############################################################################
-#
-sub get_webmaster {
-    my( $self ) = @_;
-
-    return $self->{webmaster};
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -97,7 +103,7 @@ sub get_admins {
     #return 'oscars-admin@es.net';
     #return 'dwrobertson@lbl.gov chin@es.net';
     return 'dwrobertson@lbl.gov';
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ######

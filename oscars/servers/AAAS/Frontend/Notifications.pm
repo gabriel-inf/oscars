@@ -3,7 +3,7 @@ package AAAS::Frontend::Notifications;
 
 # Reservation statistics formatting.
 #
-# Last modified:  November 28, 2005
+# Last modified:  November 29, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -26,10 +26,12 @@ sub new {
 sub create_reservation {
     my( $self, $user_dn, $resv) = @_;
 
+    my( @messages );
     my $msg = "Reservation scheduled by $user_dn with parameters:\n";
     $msg .= $self->reservation_stats($resv);
-    my $subject_line = "Reservation scheduled for $user_dn";
-    return( $subject_line, $msg );
+    my $subject_line = "Reservation scheduled by $user_dn";
+    push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_dn } ); 
+    return( \@messages );
 } #____________________________________________________________________________
 
 
@@ -39,10 +41,12 @@ sub create_reservation {
 sub cancel_reservation {
     my( $self, $user_dn, $resv) = @_;
 
+    my( @messages );
     my $msg = "Reservation cancelled by $user_dn with parameters:\n";
     $msg .= $self->reservation_stats($resv);
     my $subject_line = "Reservation cancelled by $user_dn";
-    return( $subject_line, $msg );
+    push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_dn } ); 
+    return( \@messages );
 } #____________________________________________________________________________
 
 
@@ -105,15 +109,22 @@ sub reservation_stats {
 sub find_pending_reservations {
     my( $self, $user_dn, $reservations) = @_;
 
-    my $subject_line = "Circuit set up status for $user_dn";
-    my $msg =
-          "Circuit set up for $user_dn, for reservation(s) with parameters:\n";
-    for my $resv ( @$reservations ) {
-            # TODO:  if more than one reservation, fix duplicated effort
-        $self->convert_times($resv);
-        $msg .= $self->reservation_lsp_stats($user_dn, $resv);
+    if (!@$reservations) {
+        return( undef, undef );
     }
-    return( $subject_line, $msg );
+    my( @messages );
+    my( $subject_line, $msg );
+
+    for my $resv ( @$reservations ) {
+        $self->convert_times($resv);
+        $subject_line = "Circuit set up status for $resv->{user_dn}";
+        $msg =
+          "Circuit set up for $resv->{user_dn}, for reservation(s) with parameters:\n";
+            # TODO:  if more than one reservation, fix duplicated effort
+        $msg .= $self->reservation_lsp_stats( $resv );
+        push( @messages, {'msg' => $msg, 'subject_line' => $subject_line, 'user' => $resv->{user_dn} } );
+    }
+    return( \@messages );
 } #____________________________________________________________________________
 
 
@@ -123,14 +134,21 @@ sub find_pending_reservations {
 sub find_expired_reservations {
     my( $self, $user_dn, $reservations) = @_;
 
-    my $subject_line = "Circuit tear down status for $user_dn";
-    my $msg =
-       "Circuit tear down for $user_dn, for reservation(s) with parameters:\n";
+    if (!@$reservations) {
+        return( undef, undef );
+    }
+    my( @messages );
+    my( $subject_line, $msg );
+
     for my $resv ( @$reservations ) {
         $self->convert_times($resv);
+        $subject_line = "Circuit tear down status for $resv->{user_dn}";
+        $msg =
+            "Circuit tear down for $resv->{user_dn}, for reservation(s) with parameters:\n";
         $msg .= $self->reservation_lsp_stats( $resv );
+        push( @messages, {'msg' => $msg, 'subject_line' => $subject_line, 'user' => $resv->{user_dn} } );
     }
-    return( $subject_line, $msg );
+    return( \@messages );
 } #____________________________________________________________________________
 
 
@@ -150,8 +168,8 @@ sub reservation_lsp_stats {
         "(Times are in UTC $resv->{reservation_time_zone})\n" .
         "Bandwidth:          $resv->{reservation_bandwidth}\n" .
         "Burst limit:        $resv->{reservation_burst_limit}\n" .
-        "Source:             $resv->{source_host}\n" .
-        "Destination:        $resv->{destination_host}\n";
+        "Source:             $resv->{source_ip}\n" .
+        "Destination:        $resv->{destination_ip}\n";
     if ($resv->{reservation_src_port}) {
         $msg .= "Source port:        $resv->{reservation_src_port}\n";
     }
@@ -198,8 +216,12 @@ sub reservation_lsp_stats {
 sub convert_times {
     my( $self, $resv ) = @_;
 
-    my $statement = "SELECT CONVERT_TZ(now(), '+00:00', ?) AS newtime";
-    my $row = $self->{dbconn}->get_row( $statement,
+    my $statement = "SELECT now() AS newtime";
+    my $row = $self->{dbconn}->get_row( $statement );
+    my $newtime = $row->{newtime};
+
+    my $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
+    $row = $self->{dbconn}->get_row( $statement, $newtime,
                                         $resv->{reservation_time_zone});
     $resv->{lsp_config_time} = $row->{newtime};
     $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
