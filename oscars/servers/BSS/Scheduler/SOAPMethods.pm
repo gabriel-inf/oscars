@@ -85,7 +85,7 @@ sub find_expired_reservations {
 
     for my $resv (@$reservations) {
         $self->{db_requests}->map_to_ips($resv);
-        $resv->{lsp_status} = $self->teardown_pss($self->{configs}, $resv);
+        $resv->{lsp_status} = $self->teardown_pss($resv);
         $self->update_reservation( $resv, 'finished' );
     }
     return $reservations;
@@ -107,7 +107,7 @@ sub setup_pss {
     print STDERR "execing pss to schedule reservations\n";
 
         # Create an LSP object.
-    my $lsp_info = $self->map_fields($self->{configs}, $resv_info);
+    my $lsp_info = $self->map_fields($resv_info);
     my $jnxLsp = new PSS::LSPHandler::JnxLSP($lsp_info);
 
     print STDERR "Setting up LSP...\n";
@@ -129,7 +129,7 @@ sub teardown_pss {
     my ( $error );
 
         # Create an LSP object.
-    my $lsp_info = $self->map_fields($self->{configs}, $resv_info);
+    my $lsp_info = $self->map_fields($resv_info);
     my $jnxLsp = new PSS::LSPHandler::JnxLSP($lsp_info);
 
     print STDERR "Tearing down LSP...\n" ;
