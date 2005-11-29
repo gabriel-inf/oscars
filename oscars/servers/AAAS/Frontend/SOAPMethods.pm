@@ -180,7 +180,6 @@ sub set_profile {
     }
     $statement =~ s/,\s$//;
     $statement .= ' WHERE user_dn = ?';
-    print STDERR "foo: $statement\n";
     my $unused = $self->{dbconn}->do_query($statement, $user_dn);
 
     $results->{institution} = $params->{institution};
