@@ -3,7 +3,7 @@ package AAAS::Frontend::Auth;
 
 # Database interactions dealing with authorization.  TODO:  convert to ROAM.
 #
-# Last modified:   November 22, 2005
+# Last modified:   November 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -40,9 +40,13 @@ sub initialize {
         'get_info' => $self->{levs}->{user},
         'get_profile' => $self->{levs}->{user},
         'set_profile' => $self->{levs}->{user},
+        'view_institutions' => $self->{levs}->{user},
         'logout' => $self->{levs}->{user},
         'view_users' => $self->{levs}->{admin},
+        'view_permissions' => $self->{levs}->{admin},
+        'add_user_form' => $self->{levs}->{admin},
         'add_user' => $self->{levs}->{admin},
+        'delete_user' => $self->{levs}->{admin},
         'create_reservation_form' => $self->{levs}->{user},
         'create_reservation' => $self->{levs}->{user},
         'cancel_reservation' => $self->{levs}->{user},

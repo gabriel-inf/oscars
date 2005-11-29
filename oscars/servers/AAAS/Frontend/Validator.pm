@@ -4,7 +4,7 @@ package AAAS::Frontend::Validator;
 # Called by AAAS::SOAP::Dispatcher to determine whether parameters are
 # valid before handling them by the AAAS or forwarding them to the BSS.
 # 
-# Last modified:  November 21, 2005
+# Last modified:  November 28, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
@@ -129,6 +129,10 @@ my $tests = {
     # AAAS
     'get_profile' => {},
     'view_users' => {},
+    'add_user_form' => {},
+    'delete_user' => {},
+    'view_institutions' => {},
+    'view_permissions' => {},
     # BSS
     'cancel_reservation' => {},
     'view_reservations' => {},
