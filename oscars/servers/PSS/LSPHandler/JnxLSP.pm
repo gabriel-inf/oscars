@@ -1,9 +1,10 @@
-# Package: JnxLSP.pm
+###############################################################################
+package PSS::LSPHandler::JnxLSP;
+
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Class and methods to setup/teardown LSPs on Juniper routers.
 # Last Modified:  October 18, 2005
 
-package PSS::LSPHandler::JnxLSP;
 
 use strict;
 
@@ -17,40 +18,46 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw();
 
-######################
 # JUNOScript constants
-######################
 
 use constant _STATE_CONNECTED => 1;
 use constant _STATE_LOCKED => 2;
 use constant _STATE_CONFIG_LOADED => 3;
 
-##################
 # Global variables
-##################
+
 my ($_configFormat) = 'xml';  # Default Junoscript configuration format is XML.
 my ($_loadAction) = 'merge';  # Default load action is 'merge'.
 
 
-################
-# Public methods
-################
-
-##############################################################################
-# new:  create a JnxLSP.
-# In:  <none>
-# Out: new object
-#
 sub new {
-    my ($_class, $_args) = @_;
+    my ($class, $args) = @_;
 
-    my ($_self) = {%$_args};
-
-    bless($_self, $_class);      # Bless $_self into designated class.
-    $_self->initialize();        # Initialize.
-    return($_self);
+    my ($self) = {%$args};
+    bless($self, $class);
+    $self->initialize();
+    return($self);
 }
-######
+
+sub initialize {
+    my ($self) = @_;
+
+    # Clear error message.
+    $self->{errMsg} = 0;
+  
+        # not currently on a per-reservation basis
+    $self->{'lsp_setup-priority'} =
+                                 $self->{configs}->{pss_conf_setup_priority};
+    $self->{'lsp_reservation-priority'} =
+                                 $self->{configs}->{pss_conf_resv_priority};
+    $self->{external_interface_filter} =
+                                 $self->{configs}->{pss_conf_ext_if_filter};
+
+    $self->{firewall_filter_marker} =
+                                 $self->{configs}->{pss_conf_firewall_marker};
+    return();
+} #____________________________________________________________________________
+
 
 ##############################################################################
 # configure_lsp:  Configure an LSP on a Juniper router.
@@ -58,34 +65,32 @@ sub new {
 # Out: <none>
 #
 sub configure_lsp {
-    my ($_self, $_lspOp, $_r) = @_;
+    my ($self, $lsp_op, $resv) = @_;
 
-    my ($_xmlFile);
-    my ($_xmlInput);
-    my ($_xmlString) = '';
+    my $xmlFile;
 
     # For LSP setup, use setupXmlFile
     # for teardown, use teardownXmlFile.
     # TODO:  FIX hard-wired directory
-    if ($_lspOp == 1)  {
-        $_xmlFile = '/home/oscars/PSS/xml/' .
-                    $_self->{configs}->{pss_conf_setup_file};
+    if ($lsp_op == 1)  {
+        $xmlFile = '/home/oscars/PSS/xml/' .
+                    $self->{configs}->{pss_conf_setup_file};
     }
     else  {
-        $_xmlFile = '/home/oscars/PSS/xml/' .
-                    $_self->{configs}->{pss_conf_teardown_file};
+        $xmlFile = '/home/oscars/PSS/xml/' .
+                    $self->{configs}->{pss_conf_teardown_file};
     }
 
-    $_xmlString = $_self->read_xml_file($_xmlFile);
+    my $xmlString = $self->read_xml_file($xmlFile);
 
     # Execute the Junoscript configuration changes if there is no error.
-    if (!($_self->get_error()))  {
-        $_self->execute_configuration_change($_xmlString);
+    if (!($self->get_error()))  {
+        $self->execute_configuration_change($xmlString);
     }
-    $_self->update_log($_r, $_xmlString);
+    $self->update_log($resv, $xmlString);
     return;
-}
-######
+} #____________________________________________________________________________
+
 
 ##############################################################################
 # get_lsp_status: Get the LSP status on a Juniper router.
@@ -94,40 +99,39 @@ sub configure_lsp {
 # Out: -1 => NA (e.g not found), 0 => down, 1 => up
 #
 sub get_lsp_status {
-    my ($_self) = @_;
+    my ($self) = @_;
 
-    my (@_resultArray, $_result);
-    my ($_found) = 0;
-    my ($_state) = -1;
+    my (@resultArray, $_result);
+    my $state = -1;
 
-    $_result = $_self->execute_operational_command("get_mpls_lsp_information");
-    @_resultArray = split(/\n/, $_result);
+    $_result = $self->execute_operational_command("get_mpls_lsp_information");
+    @resultArray = split(/\n/, $_result);
 
-    while (defined($_resultArray[0]))  {
-        $_result = shift(@_resultArray);
+    while (defined($resultArray[0]))  {
+        $_result = shift(@resultArray);
 
         # Update the value with the LSP state (0 => down, 1 => up).
         # NB: In the XML query, we'll see the <state> BEFORE the <name>
         if  ($_result =~ m/^<lsp-state>(\w+)<\/lsp-state>$/)  {
             if (lc($1) eq 'up')  {
-                $_state = 1;
+                $state = 1;
             }
             elsif (lc($1) eq 'dn')  {
-                $_state = 0;
+                $state = 0;
             }
             else  {
-                $_state = -1;
+                $state = -1;
             }
         }
 
         # If we locate the LSP, set the status to 1.
-        elsif ($_result =~ m/^<name>$_self->{name}<\/name>$/)  {
-            return($_state);
+        elsif ($_result =~ m/^<name>$self->{name}<\/name>$/)  {
+            return($state);
         }
     }
     return(-1);
-}
-######
+} #____________________________________________________________________________
+
 
 ##############################################################################
 # get_error:  Return the error message (0 if none).
@@ -135,41 +139,15 @@ sub get_lsp_status {
 # Out: Error message
 #
 sub get_error {
-    my ($_self) = @_;
+    my ($self) = @_;
 
-    return($_self->{errMsg});
-}
-######
+    return($self->{errMsg});
+} #____________________________________________________________________________
 
 
 #################
 # Private methods
 #################
-
-##############################################################################
-# initialize: Initialize JnxLSP with default values if not already populated.
-# In:  <none>
-# Out: <none>
-#
-sub initialize {
-    my ($_self) = @_;
-
-    # Clear error message.
-    $_self->{errMsg} = 0;
-  
-        # not currently on a per-reservation basis
-    $_self->{'lsp_setup-priority'} =
-                                 $_self->{configs}->{pss_conf_setup_priority};
-    $_self->{'lsp_reservation-priority'} =
-                                 $_self->{configs}->{pss_conf_resv_priority};
-    $_self->{external_interface_filter} =
-                                 $_self->{configs}->{pss_conf_ext_if_filter};
-
-    $_self->{firewall_filter_marker} =
-                                 $_self->{configs}->{pss_conf_firewall_marker};
-    return();
-}
-######
 
 ##############################################################################
 # read_xml_file:
@@ -180,39 +158,41 @@ sub initialize {
 # Out: xmlOutput => XML string to push to routers, 0 => failure
 #
 sub read_xml_file {
-    my ($_self, $_xmlFile) = @_;
+    my ($self, $xmlFile) = @_;
 
-    my ($_lspInfo);
-    my ($_xmlInput, $_xmlOutput);
+    my $config_name;
+    my ($xmlInput, $xmlOutput);
 
     # Clear error message.
-    $_self->{errMsg} = 0;
+    $self->{errMsg} = 0;
 
-    $_xmlOutput = '';
+    $xmlOutput = '';
 
-    if (!(open(_XMLFILE, $_xmlFile)))  {
-        $_self->{errMsg} = "ERROR: Can't open XML file $_xmlFile\n";
+    if (!(open(_XMLFILE, $xmlFile)))  {
+        $self->{errMsg} = "ERROR: Can't open XML file $xmlFile\n";
         return(0);
     }
-
-    while ($_xmlInput = <_XMLFILE>)  {
+    while ($xmlInput = <_XMLFILE>)  {
 
         # Ignore <?xml version=...?>
-        next if ($_xmlFile =~ m/<\?xml.*\?>/);
+        next if ($xmlFile =~ m/<\?xml.*\?>/);
 
-        for $_lspInfo (keys %{$_self})  {
-            $_xmlInput =~ s/<user-var>$_lspInfo<\/user-var>/$_self->{$_lspInfo}/g;
+        for $config_name (keys %{$self})  {
+            if ($config_name ne 'configs') {
+                $xmlInput =~ s/<user-var>$config_name<\/user-var>/$self->{$config_name}/g;
+            }
         }
 
         # If the string has a user-var that is not defined, throw the line away.
         # (Most likely it was an optional Junoscript configuration line.)
-        next if ($_xmlInput =~ m/<user-var>[a-zA-Z0-9_-]*<\/user-var>/);
+        next if ($xmlInput =~ m/<user-var>[a-zA-Z0-9_-]*<\/user-var>/);
 
-        $_xmlOutput .= $_xmlInput;
+        $xmlOutput .= $xmlInput;
     }
     close(_XMLFILE);
-    return($_xmlOutput);
-}
+    return($xmlOutput);
+} #____________________________________________________________________________
+
 
 ##############################################################################
 # graceful_shutdown:  Gracefully shutdown.
@@ -223,28 +203,28 @@ sub read_xml_file {
 # Out: <none>
 #
 sub graceful_shutdown {
-    my ($_jnx, $_state) = @_;
+    my ($jnx, $state) = @_;
 
-    if ($_state >= _STATE_CONFIG_LOADED) {
+    if ($state >= _STATE_CONFIG_LOADED) {
         eval {
-            $_jnx->load_configuration(rollback => 0);
+            $jnx->load_configuration(rollback => 0);
         };
     }
 
-    if ($_state >= _STATE_LOCKED)  {
+    if ($state >= _STATE_LOCKED)  {
         eval {
-            $_jnx->unlock_configuration();
+            $jnx->unlock_configuration();
         };
     }
 
-    if ($_state >= _STATE_CONNECTED)  {
+    if ($state >= _STATE_CONNECTED)  {
         eval {
-            $_jnx->request_end_session();
-            $_jnx->disconnect();
+            $jnx->request_end_session();
+            $jnx->disconnect();
         }
     }
-}
-######
+} #____________________________________________________________________________
+
 
 ##############################################################################
 # execute_configuration_change: Make configuration changes in a Juniper router.
@@ -253,32 +233,31 @@ sub graceful_shutdown {
 # Out: <none>
 #
 sub execute_configuration_change {
-    my ($_self, $_xmlString) = @_;
+    my ($self, $xmlString) = @_;
 
-    my (%_jnxInfo) = (
-        'access' => $_self->{configs}->{pss_conf_access},
-        'login'  => $_self->{configs}->{pss_conf_login},
-        'password' => $_self->{configs}->{pss_conf_password},
-        'hostname' => $_self->{lsp_from}
+    my (%jnxInfo) = (
+        'access' => $self->{configs}->{pss_conf_access},
+        'login'  => $self->{configs}->{pss_conf_login},
+        'password' => $self->{configs}->{pss_conf_password},
+        'hostname' => $self->{lsp_from}
     );
-    my ($_xmlDoc);
-    my ($_jnxRes, $_error, $_jnx);
+    my $jnx;
 
     # Clear error message.
-    $_self->{errMsg} = 0;
+    $self->{errMsg} = 0;
 
     # Initialize the XML Parser.
     my ($_xmlParser) = new XML::DOM::Parser;
 
-    if (!$_self->{configs}->{pss_conf_allow_lsp}) {
+    if (!$self->{configs}->{pss_conf_allow_lsp}) {
         return("Not configured to allow JUNOScript commands");
     }
 
     # Connect to the JUNOScript server.
     eval {
-        ($_jnx) = new JUNOS::Device(%_jnxInfo);
-        unless (ref $_jnx) {
-            $_self->{errMsg} = "ERROR: $_jnxInfo{hostname}: failed to connect.\n";
+        ($jnx) = new JUNOS::Device(%jnxInfo);
+        unless (ref $jnx) {
+            $self->{errMsg} = "ERROR: $jnxInfo{hostname}: failed to connect.\n";
             return();
         }
     };
@@ -288,19 +267,19 @@ sub execute_configuration_change {
     }
 
     # Lock the Junoscript configuration database before making any changes
-    $_jnxRes = $_jnx->lock_configuration();
-    $_error = $_jnxRes->getFirstError();
-    if ($_error)  {
-        $_self->{errMsg} = "ERROR: $_jnxInfo{hostname}: failed to lock configuration.  Reason: $_error->{message}.\n";
-        graceful_shutdown($_jnx, _STATE_CONNECTED);
+    my $jnxRes = $jnx->lock_configuration();
+    my $error = $jnxRes->getFirstError();
+    if ($error)  {
+        $self->{errMsg} = "ERROR: $jnxInfo{hostname}: failed to lock configuration.  Reason: $error->{message}.\n";
+        graceful_shutdown($jnx, _STATE_CONNECTED);
         return();
     }
 
     # Load the Junoscript configuration.
-    $_xmlDoc = $_xmlParser->parsestring($_xmlString);
-    unless (ref($_xmlDoc)) {
-        $_self->{errMsg} = "ERROR: Cannot parse $_xmlString, check to make sure the XML data is well-formed\n";
-        graceful_shutdown($_jnx, _STATE_LOCKED);
+    my $xmlDoc = $_xmlParser->parsestring($xmlString);
+    unless (ref($xmlDoc)) {
+        $self->{errMsg} = "ERROR: Cannot parse $xmlString, check to make sure the XML data is well-formed\n";
+        graceful_shutdown($jnx, _STATE_LOCKED);
         return();
     }
 
@@ -308,43 +287,43 @@ sub execute_configuration_change {
     # has any parsing errors, the grace_shutdown will still take place.  Do
     # not leave the database in an exclusive lock state.
     eval {
-        $_jnxRes = $_jnx->load_configuration(
+        $jnxRes = $jnx->load_configuration(
                      'format' => $_configFormat,
                      'action' => $_loadAction,
-                     'configuration' => $_xmlDoc);
+                     'configuration' => $xmlDoc);
     };
     if ($@) {
-        $_self->{errMsg} = "ERROR: Failed to load the configuration.   Reason: $@\n";
-        graceful_shutdown($_jnx, _STATE_CONFIG_LOADED);
+        $self->{errMsg} = "ERROR: Failed to load the configuration.   Reason: $@\n";
+        graceful_shutdown($jnx, _STATE_CONFIG_LOADED);
         return();
     }
 
-    unless (ref($_jnxRes))  {
-        $_self->{errMsg} = "ERROR: Failed to load the configuration\n";
-        graceful_shutdown($_jnx, _STATE_LOCKED);
+    unless (ref($jnxRes))  {
+        $self->{errMsg} = "ERROR: Failed to load the configuration\n";
+        graceful_shutdown($jnx, _STATE_LOCKED);
         return();
     }
 
-    $_error = $_jnxRes->getFirstError();
-    if ($_error)  {
-        $_self->{errMsg} = "ERROR: Failed to load the configuration.  Reason: $_error->{message}\n";
-        graceful_shutdown($_jnx, _STATE_CONFIG_LOADED);
+    $error = $jnxRes->getFirstError();
+    if ($error)  {
+        $self->{errMsg} = "ERROR: Failed to load the configuration.  Reason: $error->{message}\n";
+        graceful_shutdown($jnx, _STATE_CONFIG_LOADED);
         return();
     }
 
     # Commit the change.
-    $_jnxRes = $_jnx->commit_configuration();
-    $_error = $_jnxRes->getFirstError();
-    if ($_error)  {
-        $_self->{errMsg} = "ERROR: Failed to commit configuration.  Reason: $_error->{message}.\n";
-        graceful_shutdown($_jnx, _STATE_CONFIG_LOADED);
+    $jnxRes = $jnx->commit_configuration();
+    $error = $jnxRes->getFirstError();
+    if ($error)  {
+        $self->{errMsg} = "ERROR: Failed to commit configuration.  Reason: $error->{message}.\n";
+        graceful_shutdown($jnx, _STATE_CONFIG_LOADED);
     }
   
     # Configuration successfully commited.
-    graceful_shutdown($_jnx, _STATE_LOCKED);
+    graceful_shutdown($jnx, _STATE_LOCKED);
     return();
-}
-######
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # execute_operational_command: Perform operational command in a Juniper router.
@@ -355,60 +334,60 @@ sub execute_configuration_change {
 #      results of query
 #
 sub execute_operational_command {
-    my ($_self, $_command) = @_;
+    my ($self, $command) = @_;
 
-    my (%_jnxInfo) = (
-        'access' => $_self->{configs}->{pss_conf_access},
-        'login'  => $_self->{configs}->{pss_conf_login},
-        'password' => $_self->{configs}->{pss_conf_password},
-        'hostname' => $_self->{lsp_from}
+    my %jnxInfo = (
+        'access' => $self->{configs}->{pss_conf_access},
+        'login'  => $self->{configs}->{pss_conf_login},
+        'password' => $self->{configs}->{pss_conf_password},
+        'hostname' => $self->{lsp_from}
     );
-    my ($_jnxRes, $_error);
-    my (%_queryArgs) = ('detail' => 0);  # 1 => "extensive" or "detail" view.
+    my %queryArgs = ('detail' => 0);  # 1 => "extensive" or "detail" view.
 
     # Clear error message.
-    $_self->{errMsg} = 0;
+    $self->{errMsg} = 0;
 
-    if (!$_self->{configs}->{pss_conf_allow_lsp}) {
+    if (!$self->{configs}->{pss_conf_allow_lsp}) {
         return("Not configured to allow JUNOScript commands");
     }
     # Connect to the JUNOScript server.
-    my ($_jnx) = new JUNOS::Device(%_jnxInfo);
-    unless (ref $_jnx) {
-        $_self->{errMsg} = "ERROR: $_jnxInfo{hostname}: failed to connect.\n";
+    my ($jnx) = new JUNOS::Device(%jnxInfo);
+    unless (ref $jnx) {
+        $self->{errMsg} = "ERROR: $jnxInfo{hostname}: failed to connect.\n";
         return(0);
     }
 
     # Send the command and receive a XML::DOM object.
-    # jrl my $_jnxRes = $_jnx->$_command( %_queryArgs );
-    $_jnxRes = $_jnx->$_command( %_queryArgs );
-    unless (ref($_jnxRes))  {
-        die "ERROR: $_jnxInfo{hostname}: failed to execute command $_command.\n";
+    my $jnxRes = $jnx->$command( %queryArgs );
+    unless (ref($jnxRes))  {
+        die "ERROR: $jnxInfo{hostname}: failed to execute command $command.\n";
     }
 
     # Check and see if there were any errors in executing the command.
-    $_error = $_jnxRes->getFirstError();
-    if ($_error)  {
-        # jrl $_self->{errMsg} = "ERROR: $_jnxInfo{hostname} - ", $_error->{message}, "\n";
-        $_self->{errMsg} = "ERROR: $_jnxInfo{hostname} - " . $_error->{message} . "\n";
+    my $error = $jnxRes->getFirstError();
+    if ($error)  {
+        # jrl $self->{errMsg} = "ERROR: $jnxInfo{hostname} - ", $error->{message}, "\n";
+        $self->{errMsg} = "ERROR: $jnxInfo{hostname} - " . $error->{message} . "\n";
         return(0);
     }
-    return($_jnxRes->toString());
-}
-######
+    return($jnxRes->toString());
+} #____________________________________________________________________________
+
 
 ##############################################################################
+#
 sub update_log {
-    my( $_self, $r, $_xmlString) = @_;
+    my( $self, $r, $xmlString) = @_;
 
-    my $errmsg = $_self->get_error();
+    my $errmsg = $self->get_error();
     if ($errmsg)  {
-        $_xmlString .= "\n\n$errmsg\n";
-        print STDERR $_xmlString;
+        $xmlString .= "\n\n$errmsg\n";
+        print STDERR $xmlString;
     }
     $r->{reservation_tag} =~ s/@/../;
-    print STDERR $_xmlString;
-}
-######
+    print STDERR $xmlString;
+} #____________________________________________________________________________
 
+
+######
 1;
