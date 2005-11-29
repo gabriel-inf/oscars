@@ -11,9 +11,6 @@ use strict;
 
 use Data::Dumper;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
-
 #_____________________________________________________________________________ 
 
 
