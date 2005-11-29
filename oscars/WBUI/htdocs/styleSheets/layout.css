@@ -139,6 +139,11 @@ td {
     padding: 0;
 }
 
+.requiredMenu {
+    border: 3px solid #0c4;
+    padding: 0;
+}
+
 #login_ui {
     padding: .2em;
 }
