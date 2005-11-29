@@ -64,9 +64,9 @@ sub do_query {
         throw Error::Simple("[DBERROR] Executing $statement:  $DBI::errstr");
     }
     my $rows = $sth->fetchall_arrayref({});
-    if ( $DBI::err ) {
-        throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
-    }
+    #if ( $DBI::err ) {
+        #throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
+    #}
     return $rows;
 } #____________________________________________________________________________ 
 
@@ -98,7 +98,7 @@ sub get_institution_id {
 
     my $statement = "SELECT institution_id FROM institutions
                 WHERE institution_name = ?";
-    my $row = $self->get_row($params->{institution});
+    my $row = $self->get_row($statement, $params->{institution});
     if ( !$row ) {
         throw Error::Simple("The organization " .
                    "$params->{institution} is not in the database.");
