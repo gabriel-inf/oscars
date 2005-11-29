@@ -47,8 +47,8 @@ sub initialize {
       </li>
       <li>
         <a style="/styleSheets/layout.css" title="Add a new user account"
-           id="add_user"
-           onclick="new_section('add_user');return false;"
+           id="add_user_form"
+           onclick="new_section('add_user_form');return false;"
            href="#">Add User</a>
       </li>
       };
