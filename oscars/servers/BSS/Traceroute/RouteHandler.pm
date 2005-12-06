@@ -3,7 +3,7 @@ package BSS::Traceroute::RouteHandler;
 
 # Finds ingress and egress routers and the path between them.
 #
-# Last modified:  November 21, 2005
+# Last modified:  December 2, 2005
 # Jason Lee       (jrlee@lbl.gov)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -13,7 +13,6 @@ use Net::Ping;
 use Error qw(:try);
 
 use strict;
-
 use BSS::Traceroute::JnxTraceroute;
 use BSS::Traceroute::DBRequests;
 
@@ -67,11 +66,12 @@ sub find_interface_ids {
     }
     else {
         $params->{source_ip} = $self->name_to_ip($params->{source_host});
-        print STDERR "--traceroute:  " .
-             "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}\n";
+        $params->{logger}->write("--traceroute:  " .
+             "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}");
         ($params->{ingress_interface_id}, $loopback_ip, $path) =
             $self->do_traceroute(
-              $self->{trace_configs}->{trace_conf_jnx_source}, $params->{source_ip});
+              $self->{trace_configs}->{trace_conf_jnx_source},
+              $params->{source_ip}, $params->{logger});
     }
   
     if ($params->{egress_router}) {
@@ -91,10 +91,11 @@ sub find_interface_ids {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
         $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
-        print STDERR "--traceroute:  " .
-                       "$loopback_ip to destination $params->{destination_ip}}\n";
+        $params->{logger}->write("--traceroute:  " .
+                       "$loopback_ip to destination $params->{destination_ip}}");
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
-            $self->do_traceroute($loopback_ip, $params->{destination_ip});
+            $self->do_traceroute($loopback_ip, $params->{destination_ip},
+                                 $params->{logger});
     }
 } #____________________________________________________________________________ 
 
@@ -119,7 +120,7 @@ sub get_pss_fields {
 # Out:  interface ID, path  
 #
 sub do_traceroute {
-    my ( $self, $src, $dst )  = @_;
+    my ( $self, $src, $dst, $logger )  = @_;
     my (@hops);
     my ($interface_id, $prev_id, @path);
     my ($prev_loopback, $loopback_ip);
@@ -129,7 +130,7 @@ sub do_traceroute {
     if ($self->{trace_configs}->{trace_conf_use_ping}) { $self->do_ping($dst); }
 
     my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
-    $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst);
+    $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst, $logger);
     @hops = $jnxTraceroute->get_hops();
 
     # if we didn't hop much, maybe the same router?
@@ -150,13 +151,13 @@ sub do_traceroute {
     # an oscars loopback address
     my $hop;
     for $hop (@hops)  {
-        print STDERR "hop:  $hop\n";
+        $logger->write("hop:  $hop");
         # id is 0 if not an edge router (not in interfaces table)
         $interface_id = $self->{db_requests}->ip_to_xface_id( $hop );
         $loopback_ip =
             $self->{db_requests}->xface_id_to_loopback( $interface_id );
         if (!$interface_id) {
-            print STDERR "edge router is $prev_loopback\n";
+            $logger->write("edge router is $prev_loopback");
             return ($prev_id, $prev_loopback, \@path);
         }
 
@@ -169,7 +170,7 @@ sub do_traceroute {
     }
     # Need this in case the last hop is in the database
     if ($prev_loopback) {
-        print STDERR "edge router is $prev_loopback\n";
+        $logger->write("edge router is $prev_loopback");
         my $unused = pop(@path);
         return ($prev_id, $prev_loopback, \@path);
     }
