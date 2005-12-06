@@ -29,7 +29,7 @@ sub create_reservation {
     my( @messages );
     my $msg = "Reservation scheduled by $user_dn with parameters:\n";
     $msg .= $self->reservation_stats($resv);
-    my $subject_line = "Reservation scheduled by $user_dn";
+    my $subject_line = "Reservation scheduled by $user_dn.";
     push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_dn } ); 
     return( \@messages );
 } #____________________________________________________________________________
@@ -44,7 +44,7 @@ sub cancel_reservation {
     my( @messages );
     my $msg = "Reservation cancelled by $user_dn with parameters:\n";
     $msg .= $self->reservation_stats($resv);
-    my $subject_line = "Reservation cancelled by $user_dn";
+    my $subject_line = "Reservation cancelled by $user_dn.";
     push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_dn } ); 
     return( \@messages );
 } #____________________________________________________________________________
@@ -117,7 +117,7 @@ sub find_pending_reservations {
 
     for my $resv ( @$reservations ) {
         $self->convert_times($resv);
-        $subject_line = "Circuit set up status for $resv->{user_dn}";
+        $subject_line = "Circuit set up status for $resv->{user_dn}.";
         $msg =
           "Circuit set up for $resv->{user_dn}, for reservation(s) with parameters:\n";
             # TODO:  if more than one reservation, fix duplicated effort
@@ -142,7 +142,7 @@ sub find_expired_reservations {
 
     for my $resv ( @$reservations ) {
         $self->convert_times($resv);
-        $subject_line = "Circuit tear down status for $resv->{user_dn}";
+        $subject_line = "Circuit tear down status for $resv->{user_dn}.";
         $msg =
             "Circuit tear down for $resv->{user_dn}, for reservation(s) with parameters:\n";
         $msg .= $self->reservation_lsp_stats( $resv );
