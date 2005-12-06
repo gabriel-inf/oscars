@@ -151,7 +151,14 @@ sub modify_params {
     my( $self, $params ) = @_;
 
     for $_ ($self->{cgi}->param) {
-        $params->{$_} = $self->{cgi}->param($_);
+        # NOTE that param is a method call 
+        # kludge for now
+        if ($_ ne 'permissions') {
+            $params->{$_} = $self->{cgi}->param($_);
+        }
+        else {
+            @{$params->{$_}} = $self->{cgi}->param($_);
+        }
     }
 } #___________________________________________________________________________                                         
 
