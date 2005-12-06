@@ -63,9 +63,9 @@ sub send_mailings {
     my( $self, $msg ) = @_;
 
     $self->send_mail($self->{webmaster}, $msg->{user},
-                     'OSCARS: ' . $msg->{subject_line}, $msg->{msg});
+                     'OSCARS:  ' . $msg->{subject_line}, $msg->{msg});
     $self->send_mail($self->{webmaster}, $self->get_admins(),
-                     'OSCARS: Admin,' . $msg->{subject_line}, $msg->{msg});
+                     'OSCARS:  Admin notice.  ' . $msg->{subject_line}, $msg->{msg});
     
 } #____________________________________________________________________________ 
 
