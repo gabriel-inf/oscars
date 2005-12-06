@@ -3,7 +3,7 @@ package BSS::Traceroute::JnxTraceroute;
 
 # Executes traceroute on Juniper routers.
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
-# Last Modified:  November 21, 2005
+# Last Modified:  December 2, 2005
 
 use Data::Dumper;
 use Error qw(:try);
@@ -27,7 +27,7 @@ sub new {
 #
 sub traceroute
 {
-    my ($self, $configs, $src, $dst) = @_;
+    my ($self, $configs, $src, $dst, $logger) = @_;
     my ($hopInfo, $hopCount, $cmd);
 
     # Clear error message.
@@ -44,7 +44,7 @@ sub traceroute
            "$configs->{trace_conf_jnx_user} $src traceroute $dst wait " .
            "$configs->{trace_conf_timeout} ttl " .
            "$configs->{trace_conf_ttl}";
-    print STDERR "$cmd\n";
+    $logger->write($cmd);
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Error::Simple("Unable to ssh into router and perform traceroute.");
     }
