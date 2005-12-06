@@ -4,166 +4,83 @@
 </head>
 
 <body>
-<h1>OSCARS schedule and progress a/o 11-28-2005</h1>
-
-<p>This will be converted to some sort of timeline to reduce redundancies
-and indicate dependencies.</p>
-
-<h2>11-14 to 11-20</h2>
-
-<ul>
-<li>Continued debugging WBUI and the AAAS and BSS servers on oscars-test with
-the new modifications.</li>
-<br/>
-
-<li>Finished security additions to design specification, including use of 
-reverse proxy.</li>
-<br/>
-
-<li>Moved notification messages and BSS method parameter validation to
-AAAS SOAP Dispatcher.  This was done to have all auditing and validation in one
-place, to make it easier to have a chain of request handlers in one
-place.  This will make it easier to add additional request handlers in
-the Dispatcher, such as the one to validate XML Signature, or any handlers for
-BRUW-specific AAA material.</li>
-<br/>
-
-<li>Used mod_perl instead of CGI scripts, completely refactoring the previous 
-scripts into an object oriented version.  Read large amount of 
-mod_perl material in the process.  Using mod_perl brings in a large amount of
-functionality for free.</li>
-<br/>
-
-<li>Reworked authorization mechanisms in preparation for moving
-to ROAM authorization service.</li>
-<br/>
-
-<li>Started work on regular updates to routers, interfaces, and ipaddrs tables
-based on SNMP queries (need to integrate BSS/SNMP code).</li>
-<br/>
-
-<li>Mary continued working on implementing XML signature generation and 
-validation.</li>
-<br/>
-
-</ul>
-
-<h2>11-21 to 11-23</h2>
-<ul>
-
-<li>Continued work on regular updates to routers, interfaces, and ipaddrs tables
-based on SNMP queries (need to integrate BSS/SNMP code).</li>
-<br/>
-
-<li>Finished working on httpd configuration files for oscars-dev and
-oscars-test for new setup.  Got reverse proxying from oscars-dev to 
-oscars-test working with firewall filter help from John Webster.</li>
-<br/>
-
-<li>Finished debugging WBUI and the AAAS and BSS servers on oscars-test with the
-new modifications, finishing the migration process from the old oscars.es.net 
-machine (except for Subversion).</li>
-<br/>
-
-<li>Wrote framework for sending notifications based on SOAP method name.</li>
-<br/>
-
-<li> Mary continued working on implementation  of module for XML signature 
-generation and validation, to be able to require signed certificates for API 
-access to OSCARS, including access by another domain's server.</li>
-<br/>
-
-</ul>
+<h1>OSCARS schedule and progress a/o 12-5-2005</h1>
 
 <h2>11-28 to 12-2</h2>
 
 <ul>
 
-<li>Finish move of repository by figuring out error in accessing
-Subversion directories via https or http (as opposed to file://)).
-May require upgrading to FreeBSD 6.0.</li>
+<li>Finished move of repository by figuring out error in accessing
+Subversion directories via https or http (as opposed to file://)).</li>
 <br/>
 
-<li>Make the oscars.es.net IP a virtual host on oscars-dev (which is 
-reverse proxied to the Web server on oscars-test).  Old machine will be
-readdressed.</li>
+<li>Met with Chin to discuss OSCARS development.</li>
 <br/>
 
-<li>Integrate ROAM material into clients, servers, and database 
-schemas.  Start working on ROAM-style resources, attributes, etc.</li>
+<li>Met with Mary to discuss WSRF-Lite and XML signature handling. </li>
 <br/>
 
-<li>Work on inter-domain specs documents, including workflow, with 
-input from I2, GEANT2.</li>
+<li>Started work on improving OSCARS logging capabilities.</li>
 <br/>
 
-<li>Work with I2 on integrating BRUW material, and on inter-domain 
-demo.</li>
+<li>Added SOAP calls to add and delete user, and to list all institutions
+and user permissions.  The latter two are necessary for the add user form.</li>
 <br/>
 
-<li>Get administrative page to add user and attributes working.</li>
+<li>Added capability to send mailings for multiple actions within a single SOAP
+call, for example when there are multiple reservations having LSP configuration
+set up or torn down.</li>
 <br/>
 
-<li>Finish regular updates to routers, interfaces, and ipaddrs tables
-based on SNMP queries (need to integrate BSS/SNMP code).</li>
+<li>Fixed several bugs in scheduler, including one relating to the previous
+bullet item and multiple reservations being found.</li>
 <br/>
-
-<li> Mary completes initial implementation  of module for XML signature 
-generation and validation.  Works with I2 if they need assistance in
-incorporating it into their version of OSCARS/BRUW.</li>
-<br/>
-
 </ul>
 
 <h2>12-2 to 12-9</h2>
 
 <ul>
+<li>Integrate ROAM material into clients, servers, and database schemas.  
+Work on ROAM-style resources, attributes, etc.</li>
+<br/>
 
-<li>Move from using mod_perl in a CGI-like way to request handlers.</li>
+<li>Work with I2 on inter-domain specs documents, integrating BRUW material, 
+and develping and testing inter-domain demo.</li>
+<br/>
+
+<li>Make service interface as much like JRA5 UNI as possible.</li>
+<br/>
+
+<li>Fix bugs in setting user permissions in the add user form.</li>
+<br/>
+
+<li>Finish regular updates to routers, interfaces, and ipaddrs tables based on 
+SNMP queries (need to integrate BSS/SNMP code).</li>
+<br/>
+
+<li>Finish logging improvements.</li>
+<br/>
+
+<li> Mary completes initial implementation  of module for XML signature 
+generation and validation.</li>
+<br/>
+
+</ul>
+
+<h2>12-12 to 12-16</h2>
+
+<ul>
+<li>SOAP working with WSDL service description.</li>
 <br/>
 
 <li>Add forms for user requests for attributes/rights.</li>
 <br/>
 
-<li>Test the inter-domain demo to/from I2.</li>
+<li>Move from using mod_perl in a CGI-like way to request handlers.</li>
 <br/>
 
-<li>Save the current page in use in a cookie, and enable the user to
-return to an OSCARS page after going someplace else.</li>
-<br/>
-
-<li>Add modify and delete actions (in addition to cancel) on
-reservation detail page.  Delete will move the reservation entry to another 
-table.</li>
-<br/>
-
-<li>Return an error message if a server is not running (currently either
-a blank page is returned, or else no action appears to have been taken).</li>
-<br/>
-
-<li>If a user explicitly specifies an egress or ingress router, have an
-asterisk after that field in the notification sent to admin users.</li>
-<br/>
-
-<li>SOAP working with WSDL service description.</li>
-<br/>
-
-<li>Have status information flash when the status message changes.</li>
-<br/>
-</ul>
-
-<h2>12-12 to Christmas break</h2>
-
-<ul>
-<li>Use MySQL 5 views to more cleanly allow access to different fields
-in a table, based on user permissions.</li>
-<br/>
-
-<li>Purge logs after they get bigger than a specified amount.</li>
-<br/>
-
-<li>Require reservation log to be accessible via reservation detail page
-for users with engineering privileges.</li>
+<li>Require reservation log to be accessible via reservation detail page for 
+users with engineering privileges.</li>
 <br/>
 
 <li>Add "recompute route" button" to reservation details page.</li>
@@ -175,8 +92,37 @@ for users with engineering privileges.</li>
 <li>Finish interdomain specs.</li>
 <br/>
 
-<li>Finish redoing AAAS.</li>
+<li>Finish redoing AAAS (logging, ROAM, XML signatures).</li>
 <br/>
+</ul>
+
+<h2>12-19 to Christmas break</h2>
+
+<ul>
+<li>Add modify and delete actions (in addition to cancel) on
+reservation detail page.  Delete will move the reservation entry to another 
+table.</li>
+<br/>
+
+<li>Return an error message if a server is not running (currently either
+a blank page is returned, or else no action appears to have been taken).</li>
+<br/>
+
+<li>Save the current page in use in a cookie, and enable the user to
+return to an OSCARS page after going someplace else.</li>
+<br/>
+
+<li>Use MySQL 5 views to more cleanly allow access to different fields
+in a table, based on user permissions.</li>
+<br/>
+
+<li>If a user explicitly specifies an egress or ingress router, have an
+asterisk after that field in the notification sent to admin users.</li>
+<br/>
+
+<li>Purge logs after they get bigger than a specified amount.</li>
+<br/>
+
 </ul>
 
 <h2>1st quarter 2006</h2>
