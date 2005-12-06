@@ -117,10 +117,9 @@ sub output_profile_fields {
         print qq{
           <tr>
             <td>Permissions</td>
-            <td><select class='requiredMenu' name='permissions' multiple='1'>
+            <td><select class='requiredMenu' name='permissions' multiple='multiple' size='3'>
         };
         my @fields = split(' ', $str_level);
-        print STDERR Dumper(@fields);
         my %user_permissions;
         my %all_permissions;
         for $_ (@fields) {
