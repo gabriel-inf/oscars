@@ -7,14 +7,14 @@ package BSS::Frontend::SOAPMethods;
 # to have been previously done by AAAS.  Use caution if running the
 # BSS on a separate machine from the one running the AAAS.
 #
-# Last modified:  November 21, 2005
+# Last modified:  December 1, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
-use strict;
-
 use Error qw(:try);
 use Data::Dumper;
+
+use strict;
 
 use BSS::Frontend::DBRequests;
 use BSS::Frontend::Policy;
