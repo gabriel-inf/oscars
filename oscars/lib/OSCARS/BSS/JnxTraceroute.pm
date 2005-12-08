@@ -1,5 +1,5 @@
 ###############################################################################
-package BSS::JnxTraceroute;
+package OSCARS::BSS::JnxTraceroute;
 
 # Executes traceroute on Juniper routers.
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
