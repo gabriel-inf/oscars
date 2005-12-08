@@ -2,7 +2,7 @@
 
 use strict;
 
-use PSS::LSPHandler::JnxLSP;
+use OSCARS::PSS::JnxLSP;
 
 #####
 #
@@ -62,7 +62,7 @@ my (%_lspInfo) = (
 );
 
 # Create an LSP object.
-my ($_jnxLsp) = new PSS::LSPHandler::JnxLSP(%_lspInfo);
+my ($_jnxLsp) = new OSCARS::PSS::JnxLSP(%_lspInfo);
 
 
 # Setup an LSP.
