@@ -1,5 +1,5 @@
 ###############################################################################
-package PSS::LSPHandler::JnxLSP;
+package OSCARS::PSS::JnxLSP;
 
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Class and methods to setup/teardown LSPs on Juniper routers.
