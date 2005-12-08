@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::BSS::CancelReservation;
+package Client::BSS::CancelReservation;
 
 # Makes a SOAP call to cancel the reservation listed in the reservation
 # details form, and displays the modified reservation results.
@@ -11,10 +11,10 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::BSS::Details;
+use Client::BSS::Details;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #______________________________________________________________________________
 
@@ -38,7 +38,7 @@ sub output {
 
     print $self->{cgi}->header(
                                -type=>'text/xml');
-    OSCARS::WBUI::BSS::Details::output_details(
+    Client::BSS::Details::output_details(
                               $results, $self->{session}, $self->{user_level});
 } #____________________________________________________________________________
 

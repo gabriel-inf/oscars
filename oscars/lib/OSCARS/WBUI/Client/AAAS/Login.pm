@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::AAAS::Login;
+package Client::AAAS::Login;
 
 # Handles user login.
 #
@@ -11,12 +11,12 @@ use strict;
 use Data::Dumper;
 use CGI qw{:cgi};
 
-use OSCARS::WBUI::UserSession;
-use OSCARS::WBUI::NavigationBar;
-use OSCARS::WBUI::GetInfo;
+use Client::UserSession;
+use Client::NavigationBar;
+use Client::GetInfo;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #_____________________________________________________________________________ 
 
@@ -72,8 +72,8 @@ sub post_process {
 sub output {
     my( $self, $results ) = @_;
 
-    my $info = OSCARS::WBUI::GetInfo->new();
-    my $navigation_bar = OSCARS::WBUI::NavigationBar->new();
+    my $info = Client::GetInfo->new();
+    my $navigation_bar = Client::NavigationBar->new();
     print "<xml>\n";
     print "<msg>User $self->{user_dn} signed in.</msg>\n";
     if ($self->{session}->authorized($results->{user_level}, 'admin')) {

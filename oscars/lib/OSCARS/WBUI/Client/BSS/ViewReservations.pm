@@ -1,5 +1,5 @@
 ##############################################################################
-package OSCARS::WBUI::BSS::ViewReservations;
+package Client::BSS::ViewReservations;
 
 # Handles request to view a given set of reservations.
 #
@@ -10,8 +10,8 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #_____________________________________________________________________________
 

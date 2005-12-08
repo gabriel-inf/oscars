@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::BSS::ViewDetails;
+package Client::BSS::ViewDetails;
 
 # Handles request to view a particular reservation's details.
 #
@@ -10,10 +10,10 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::BSS::Details;
+use Client::BSS::Details;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #_____________________________________________________________________________ 
 
@@ -37,7 +37,7 @@ sub output {
 
     print $self->{cgi}->header(
                                -type=>'text/xml');
-    OSCARS::WBUI::BSS::Details::output_details(
+    Client::BSS::Details::output_details(
                               $results, $self->{session}, $self->{user_level});
 } #____________________________________________________________________________
 

@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::AAAS::Users;
+package Client::AAAS::Users;
 
 # Handles output of list of users; used by ViewUsers, AddUsers, and
 # DeleteUsers

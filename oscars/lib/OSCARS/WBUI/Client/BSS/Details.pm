@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::BSS::Details;
+package Client::BSS::Details;
 
 # Handles output of a particular reservation's details.  output_details is
 # called by CancelReservation, CreateReservation, and ViewDetails.

@@ -65,7 +65,6 @@ sub instantiate {
 
     my $method_name = $cgi->param('method'); 
     my $location = $self->{location_mapping}->{$method_name} . ".pm";
-    print STDERR "$location\n";
     require $location;
     return $self->{class_mapping}->{$method_name}->new('cgi' => $cgi);
 } #___________________________________________________________________________                                         

@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::AAAS::GetProfile;
+package Client::AAAS::GetProfile;
 
 # Handles get_profile form submission
 #
@@ -10,8 +10,8 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #______________________________________________________________________________
 

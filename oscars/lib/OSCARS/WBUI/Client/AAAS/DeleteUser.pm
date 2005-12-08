@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::AAAS::DeleteUser;
+package Client::AAAS::DeleteUser;
 
 # Handles deleting a user from the database.
 #
@@ -10,10 +10,10 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::AAAS::Users;
+use Client::AAAS::Users;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #______________________________________________________________________________
 
@@ -60,7 +60,7 @@ sub output {
     print qq{
     <msg>$self->{user_dn} successfully deleted user $self->{id}</msg>
     };
-    OSCARS::WBUI::AAAS::Users::output_users( $results, $self->{session});
+    Client::AAAS::Users::output_users( $results, $self->{session});
     print "</xml>\n";
 } #____________________________________________________________________________
 

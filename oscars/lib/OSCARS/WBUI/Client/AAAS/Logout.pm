@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::AAAS::Logout;
+package Client::AAAS::Logout;
 
 # Handles user logout.
 #
@@ -11,10 +11,10 @@ use strict;
 use Data::Dumper;
 use CGI;
 
-use OSCARS::WBUI::UserSession;
+use Client::UserSession;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #____________________________________________________________________________ 
 
