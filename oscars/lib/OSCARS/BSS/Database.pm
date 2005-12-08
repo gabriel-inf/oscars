@@ -301,7 +301,7 @@ sub get_trace_configs {
             "trace_conf_run_trace, trace_conf_use_system, " .
             "trace_conf_use_ping "  .
             "FROM trace_confs where trace_conf_id = 1";
-    my $configs = $self->{dbconn}->get_row($statement);
+    my $configs = $self->get_row($statement);
     return $configs;
 } #____________________________________________________________________________ 
 
@@ -317,7 +317,7 @@ sub ip_to_xface_id {
     my ($self, $ipaddr) = @_;
 
     my $statement = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
-    my $row = $self->{dbconn}->get_row($statement, $ipaddr);
+    my $row = $self->get_row($statement, $ipaddr);
     if ( !$row ) { return undef; }
     return $row->{interface_id};
 } #____________________________________________________________________________ 
@@ -334,7 +334,7 @@ sub xface_id_to_loopback {
     my $statement = "SELECT router_name, router_loopback FROM routers
                  WHERE router_id = (SELECT router_id from interfaces
                                     WHERE interface_id = ?)";
-    my $row = $self->{dbconn}->get_row($statement, $interface_id);
+    my $row = $self->get_row($statement, $interface_id);
     # it is not considered to be an error when no rows are returned
     if ( !$row ) { return undef; }
     # check for loopback address
@@ -352,11 +352,11 @@ sub find_pending_reservations  {
 
     my $status = 'pending';
     my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
-    my $row = $self->{dbconn}->get_row( $statement, $time_interval );
+    my $row = $self->get_row( $statement, $time_interval );
     my $timeslot = $row->{new_time};
     $statement = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
-    return $self->{dbconn}->do_query($statement, $status, $timeslot);
+    return $self->do_query($statement, $status, $timeslot);
 } #____________________________________________________________________________ 
 
 
@@ -367,11 +367,11 @@ sub find_expired_reservations {
 
     my $status = 'active';
     my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
-    my $row = $self->{dbconn}->get_row( $statement, $time_interval );
+    my $row = $self->get_row( $statement, $time_interval );
     my $timeslot = $row->{new_time};
     $statement = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
-    return $self->{dbconn}->do_query($statement, $status, $timeslot,
+    return $self->do_query($statement, $status, $timeslot,
                                         'precancel' );
 } #____________________________________________________________________________ 
 
@@ -384,7 +384,7 @@ sub get_time_intervals {
         # just use defaults for now
     my $statement = "SELECT server_db_poll_time, server_time_interval" .
              " FROM servers WHERE server_id = 1";
-    my $row = $self->{dbconn}->get_row( $statement );
+    my $row = $self->get_row( $statement );
     return( $row->{server_db_poll_time}, $row->{server_time_interval} );
 } #____________________________________________________________________________ 
 
@@ -395,9 +395,9 @@ sub map_to_ips {
     my( $self, $resv ) = @_;
  
     my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
-    my $row = $self->{dbconn}->get_row($statement, $resv->{src_hostaddr_id});
+    my $row = $self->get_row($statement, $resv->{src_hostaddr_id});
     $resv->{source_ip} = $row->{hostaddr_ip};
-    my $row = $self->{dbconn}->get_row($statement, $resv->{dst_hostaddr_id});
+    my $row = $self->get_row($statement, $resv->{dst_hostaddr_id});
     $resv->{destination_ip} = $row->{hostaddr_ip};
 
     $statement = 'SELECT router_loopback FROM routers' .
@@ -406,10 +406,10 @@ sub map_to_ips {
                 '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty
-    $row = $self->{dbconn}->get_row($statement, $resv->{ingress_interface_id});
+    $row = $self->get_row($statement, $resv->{ingress_interface_id});
     $resv->{ingress_ip} = $row->{router_loopback}; 
 
-    $row = $self->{dbconn}->get_row($statement, $resv->{egress_interface_id});
+    $row = $self->get_row($statement, $resv->{egress_interface_id});
     $resv->{egress_ip} = $row->{router_loopback}; 
 } #____________________________________________________________________________ 
 
