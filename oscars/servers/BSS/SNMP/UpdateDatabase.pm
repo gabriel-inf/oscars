@@ -1,9 +1,10 @@
+###############################################################################
 package BSS::SNMP::UpdateDatabase;
 
 # Reads ifrefpoll files to update database with latest router and interface 
 # information
 #
-# Last modified:   November 15, 2005
+# Last modified:   December 7, 2005
 # David Robertson  (dwrobertson@lbl.gov)
 # Jason Lee        (jrlee@lbl.gov)
 
@@ -15,26 +16,26 @@ use Data::Dumper;
 
 use BSS::Frontend::DBRequests;
 
-###############################################################################
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
     $self->initialize();
-    return( $self );
+    return $self;
 }
 
 sub initialize {
     my ($self) = @_;
 
     $self->{dbconn} = BSS::Frontend::DBRequests->new(
-                              'database' => 'DBI:mysql:BSSTest',
+                              'database' => 'DBI:mysql:BSS',
                               'dblogin' => 'oscars',
                               'password' => 'ritazza6')
                       or die "FATAL:  could not connect to database";
-}
-######
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # update_router_info: 
@@ -54,8 +55,7 @@ sub update_router_info {
     closedir(DATADIR);
     ($routers, $interfaces) = $self->read_snmp_files(@file_list);
     #$self->update_db($routers, $interfaces);
-}
-######
+} #___________________________________________________________________________
 
 
 ##############################################################################
@@ -81,8 +81,8 @@ sub read_snmp_files {
         print Dumper($interfaces{$router_name});
     }
     return( \%routers, \%interfaces );
-}
-######
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # read_snmp_data:  Reads data for one snmp output file.
@@ -132,8 +132,8 @@ sub read_snmp_data {
     }
     close(SNMP_OUT);
     return( \%router_info, \@interface_info);
-}
-######
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # update_db:  Compares current info with routers, interfaces, and ipaddrs
@@ -164,8 +164,8 @@ sub update_db {
             $self->update_xfaces_table($router_id, $interfaces->{router_name});
         }
     } 
-}
-######
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # update_routers_table: Compares router name and loopback with routers table,
@@ -189,7 +189,7 @@ sub update_routers_table {
                      $network_id)";
         $unused = $self->{dbconn}->do_query($statement);
         $router_id = $self->{dbconn}->{dbh}->{mysql_insertid};
-        return( $router_id );
+        return $router_id;
     }
     $router_id = $row->{router_id};
     if ($row->{router_loopback} ne $mpls_loopback) {
@@ -197,9 +197,9 @@ sub update_routers_table {
                       WHERE router_id = ?";
         $unused = $self->{dbconn}->do_query($statement, $mpls_loopback, $router_id);
     }
-    return( $router_id );
-}
-######
+    return $router_id;
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # update_xfaces_table:  Compares current row with interfaces table, and does
@@ -234,7 +234,7 @@ sub update_xfaces_table {
                   $router_id)";
         $unused = $self->{dbconn}->do_query($statement);
         $interface_id = $self->{dbconn}->{dbh}->{mysql_insertid};
-        return( $interface_id );
+        return $interface_id;
     }
     $interface_id = $row->{interface_id};
     if (($row->{interface_speed} != $new_speed) ||
@@ -247,9 +247,9 @@ sub update_xfaces_table {
                                  $xface->{ifDescr}, $xface->{ifAlias},
                                  $interface_id);
     }
-    return( $interface_id );
-}
-######
+    return $interface_id;
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # update_ipaddrs_table:  Compares current row with ipaddrs table, and does
@@ -273,12 +273,12 @@ sub update_ipaddrs_table {
                   $interface_id)";
         $unused = $self->{dbconn}->do_query($statement);
         $ipaddrs_id = $self->{dbconn}->{dbh}->{mysql_insertid};
-        return( $ipaddrs_id );
+        return $ipaddrs_id;
     }
     $ipaddrs_id = $row->{ipaddrs_id};
-    return( $ipaddrs_id );
-}
+    return $ipaddrs_id;
+} #___________________________________________________________________________
+
+
 ######
-
-
 1;
