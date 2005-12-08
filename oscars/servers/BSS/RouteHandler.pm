@@ -1,9 +1,9 @@
 ###############################################################################
-package BSS::Traceroute::RouteHandler; 
+package OSCARS::BSS::RouteHandler; 
 
 # Finds ingress and egress routers and the path between them.
 #
-# Last modified:  December 2, 2005
+# Last modified:  December 7, 2005
 # Jason Lee       (jrlee@lbl.gov)
 # David Robertson (dwrobertson@lbl.gov)
 
@@ -13,8 +13,8 @@ use Net::Ping;
 use Error qw(:try);
 
 use strict;
-use BSS::Traceroute::JnxTraceroute;
-use BSS::Traceroute::DBRequests;
+use OSCARS::BSS::JnxTraceroute;
+use OSCARS::BSS::Database;
 
 
 sub new {
@@ -29,9 +29,7 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{db_requests} = new BSS::Traceroute::DBRequests(
-                                               'dbconn' => $self->{dbconn});
-    $self->{trace_configs} = $self->{db_requests}->get_trace_configs();
+    $self->{trace_configs} = $self->{dbconn}->get_trace_configs();
     $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
 } #____________________________________________________________________________ 
 
@@ -54,10 +52,10 @@ sub find_interface_ids {
     if ($params->{ingress_router}) {
         # converts to IP address if it is a host name
         $params->{ingress_ip} = $self->name_to_ip($params->{ingress_router});
-        $params->{ingress_interface_id} = $self->{db_requests}->ip_to_xface_id( $params->{ingress_ip} );
+        $params->{ingress_interface_id} = $self->{dbconn}->ip_to_xface_id( $params->{ingress_ip} );
         if ($params->{ingress_interface_id} != 0) {
             $loopback_ip =
-                $self->{db_requests}->xface_id_to_loopback( $params->{ingress_interface_id} );
+                $self->{dbconn}->xface_id_to_loopback( $params->{ingress_interface_id} );
         }
         else {
             throw Error::Simple(
@@ -77,10 +75,10 @@ sub find_interface_ids {
     if ($params->{egress_router}) {
         $params->{egress_ip} = $self->name_to_ip($params->{egress_router});
         $params->{egress_interface_id} =
-            $self->{db_requests}->ip_to_xface_id( $params->{egress_ip} );
+            $self->{dbconn}->ip_to_xface_id( $params->{egress_ip} );
         if ($params->{egress_interface_id} != 0) {
             $loopback_ip =
-                $self->{db_requests}->xface_id_to_loopback( $params->{egress_interface_id} );
+                $self->{dbconn}->xface_id_to_loopback( $params->{egress_interface_id} );
         }
         else {
             throw Error::Simple(
@@ -129,7 +127,7 @@ sub do_traceroute {
     # try to ping before traceing?
     if ($self->{trace_configs}->{trace_conf_use_ping}) { $self->do_ping($dst); }
 
-    my ($jnxTraceroute) = new BSS::Traceroute::JnxTraceroute();
+    my ($jnxTraceroute) = new OSCARS::BSS::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst, $logger);
     @hops = $jnxTraceroute->get_hops();
 
@@ -138,10 +136,10 @@ sub do_traceroute {
 
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{db_requests}->ip_to_xface_id(
+        $interface_id = $self->{dbconn}->ip_to_xface_id(
                               $self->{trace_configs}->{trace_conf_jnx_source});
         $loopback_ip =
-            $self->{db_requests}->xface_id_to_loopback( $interface_id );
+            $self->{dbconn}->xface_id_to_loopback( $interface_id );
         return ($interface_id, $loopback_ip, \@path);
     }
 
@@ -153,9 +151,9 @@ sub do_traceroute {
     for $hop (@hops)  {
         $logger->write("hop:  $hop");
         # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{db_requests}->ip_to_xface_id( $hop );
+        $interface_id = $self->{dbconn}->ip_to_xface_id( $hop );
         $loopback_ip =
-            $self->{db_requests}->xface_id_to_loopback( $interface_id );
+            $self->{dbconn}->xface_id_to_loopback( $interface_id );
         if (!$interface_id) {
             $logger->write("edge router is $prev_loopback");
             return ($prev_id, $prev_loopback, \@path);

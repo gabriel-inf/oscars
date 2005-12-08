@@ -1,29 +1,29 @@
 ###############################################################################
-package BSS::SOAP::Dispatcher;
+package OSCARS::BSS::Dispatcher;
 
 # SOAP::Lite dispatcher for BSS.  Note well:  calls to the BSS are currently
 # assumed to have already been validated and authorized through the AAAS.
 #
-# Last modified:  November 21, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
 
 use Data::Dumper;
 use Error qw(:try);
 
-use BSS::Frontend::SOAPMethods;
-use BSS::Frontend::DBRequests;
+use OSCARS::BSS::Database;
+use OSCARS::BSS::Methods;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
 
-my $dbconn = BSS::Frontend::DBRequests->new(
+my $dbconn = OSCARS::BSS::Database->new(
                  'database' => 'DBI:mysql:BSS',
                  'dblogin' => $db_login,
                  'password' => $password)
              or die "FATAL:  could not connect to database";
 
-my $request_handler = BSS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
+my $request_handler = OSCARS::BSS::Methods->new('dbconn' => $dbconn);
 
 #______________________________________________________________________________
 

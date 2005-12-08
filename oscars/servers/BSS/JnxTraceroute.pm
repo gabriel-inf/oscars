@@ -1,9 +1,9 @@
 ###############################################################################
-package BSS::Traceroute::JnxTraceroute;
+package BSS::JnxTraceroute;
 
 # Executes traceroute on Juniper routers.
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
-# Last Modified:  December 2, 2005
+# Last Modified:  December 7, 2005
 
 use Data::Dumper;
 use Error qw(:try);

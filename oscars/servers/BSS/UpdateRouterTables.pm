@@ -1,5 +1,5 @@
 ###############################################################################
-package BSS::SNMP::UpdateDatabase;
+package OSCARS::BSS::UpdateRouterTables;
 
 # Reads ifrefpoll files to update database with latest router and interface 
 # information
@@ -14,7 +14,7 @@ use strict;
 use File::Basename;
 use Data::Dumper;
 
-use BSS::Frontend::DBRequests;
+use OSCARS::BSS::Database;
 
 
 sub new {
@@ -29,7 +29,7 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{dbconn} = BSS::Frontend::DBRequests->new(
+    $self->{dbconn} = OSCARS::BSS::Database->new(
                               'database' => 'DBI:mysql:BSS',
                               'dblogin' => 'oscars',
                               'password' => 'ritazza6')

@@ -1,5 +1,5 @@
 ##############################################################################
-package BSS::SNMP::JnxSNMP;
+package OSCARS::BSS::JnxSNMP;
 
 # Authors: Chin Guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Queries MPLS SNMP MIB on Juniper routers.

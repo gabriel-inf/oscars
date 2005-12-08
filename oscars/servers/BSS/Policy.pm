@@ -1,9 +1,9 @@
 ###############################################################################
-package BSS::Frontend::Policy;
+package OSCARS::BSS::Policy;
 
 # Database requests for policy related matters.
 #
-# Last modified:  November 21, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -14,7 +14,7 @@ use DBI;
 use Data::Dumper;
 use Error qw(:try);
 
-use BSS::Frontend::DBRequests;
+use OSCARS::BSS::Database;
 
 
 sub new {

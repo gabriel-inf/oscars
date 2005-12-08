@@ -1,9 +1,8 @@
 ###############################################################################
-package BSS::Frontend::DBRequests;
+package OSCARS::BSS::Database;
 
-# General BSS database requests.  Traceroute and scheduler-specific requests
-# are in Traceroute::DBRequests and Scheduler::DBRequests.
-# Last modified:   November 21, 2005
+# BSS database requests.
+# Last modified:   December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -287,6 +286,131 @@ sub get_primary_id {
     my( $self ) = @_;
 
     return $self->{dbh}->{mysql_insertid};
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+#
+sub get_trace_configs {
+    my( $self ) = @_;
+
+        # use default for now
+    my $statement = "SELECT " .
+            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
+            "trace_conf_ttl, trace_conf_timeout, " .
+            "trace_conf_run_trace, trace_conf_use_system, " .
+            "trace_conf_use_ping "  .
+            "FROM trace_confs where trace_conf_id = 1";
+    my $configs = $self->{dbconn}->get_row($statement);
+    return $configs;
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# ip_to_xface_id:
+#   Get the db iface id from an ip address. If a router is an edge router
+#   there will be a corresponding address in the ipaddrs table.
+# In:  interface ip address
+# Out: interface id
+#
+sub ip_to_xface_id {
+    my ($self, $ipaddr) = @_;
+
+    my $statement = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
+    my $row = $self->{dbconn}->get_row($statement, $ipaddr);
+    if ( !$row ) { return undef; }
+    return $row->{interface_id};
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# xface_id_to_loopback:  get the loopback ip from the interface primary key.
+# In:  interface table primary key
+# Out: loopback ip address
+#
+sub xface_id_to_loopback {
+    my( $self, $interface_id ) = @_;
+
+    my $statement = "SELECT router_name, router_loopback FROM routers
+                 WHERE router_id = (SELECT router_id from interfaces
+                                    WHERE interface_id = ?)";
+    my $row = $self->{dbconn}->get_row($statement, $interface_id);
+    # it is not considered to be an error when no rows are returned
+    if ( !$row ) { return undef; }
+    # check for loopback address
+    if (!$row->{router_loopback}) {
+        throw Error::Simple("Router $row->{router_name} has no oscars loopback");
+    }
+    return $row->{router_loopback};
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+#
+sub find_pending_reservations  { 
+    my ( $self, $time_interval ) = @_;
+
+    my $status = 'pending';
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
+    my $row = $self->{dbconn}->get_row( $statement, $time_interval );
+    my $timeslot = $row->{new_time};
+    $statement = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
+                 reservation_start_time < ?};
+    return $self->{dbconn}->do_query($statement, $status, $timeslot);
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+#
+sub find_expired_reservations {
+    my ( $self, $time_interval ) = @_;
+
+    my $status = 'active';
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
+    my $row = $self->{dbconn}->get_row( $statement, $time_interval );
+    my $timeslot = $row->{new_time};
+    $statement = qq{ SELECT * FROM reservations WHERE (reservation_status = ? and
+                 reservation_end_time < ?) or (reservation_status = ?)};
+    return $self->{dbconn}->do_query($statement, $status, $timeslot,
+                                        'precancel' );
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+#
+sub get_time_intervals {
+    my( $self ) = @_;
+
+        # just use defaults for now
+    my $statement = "SELECT server_db_poll_time, server_time_interval" .
+             " FROM servers WHERE server_id = 1";
+    my $row = $self->{dbconn}->get_row( $statement );
+    return( $row->{server_db_poll_time}, $row->{server_time_interval} );
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+#
+sub map_to_ips {
+    my( $self, $resv ) = @_;
+ 
+    my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
+    my $row = $self->{dbconn}->get_row($statement, $resv->{src_hostaddr_id});
+    $resv->{source_ip} = $row->{hostaddr_ip};
+    my $row = $self->{dbconn}->get_row($statement, $resv->{dst_hostaddr_id});
+    $resv->{destination_ip} = $row->{hostaddr_ip};
+
+    $statement = 'SELECT router_loopback FROM routers' .
+                ' WHERE router_id =' .
+                ' (SELECT router_id FROM interfaces' .
+                '  WHERE interface_id = ?)';
+
+    # TODO:  FIX row might be empty
+    $row = $self->{dbconn}->get_row($statement, $resv->{ingress_interface_id});
+    $resv->{ingress_ip} = $row->{router_loopback}; 
+
+    $row = $self->{dbconn}->get_row($statement, $resv->{egress_interface_id});
+    $resv->{egress_ip} = $row->{router_loopback}; 
 } #____________________________________________________________________________ 
 
 
