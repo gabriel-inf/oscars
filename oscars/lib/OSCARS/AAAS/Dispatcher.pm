@@ -17,7 +17,7 @@ use lib qw(/usr/local/esnet/servers/prod);
 use strict;
 
 use OSCARS::AAAS::Logger;
-use OSCARS::AAAS::SOAPMethods;
+use OSCARS::AAAS::Methods;
 use OSCARS::AAAS::Validator;
 use OSCARS::AAAS::Auth;
 use OSCARS::AAAS::Database;
