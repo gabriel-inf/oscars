@@ -1,20 +1,20 @@
 ###############################################################################
-package Client::AAAS::ViewUsers;
+package OSCARS::WBUI::AAAS::ViewUsers;
 
 # Handles get user list form submission
 #
-# Last modified:  November 22, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-use Client::UserSession;
-use Client::AAAS::Users;
+use OSCARS::WBUI::UserSession;
+use OSCARS::WBUI::AAAS::Users;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #____________________________________________________________________________ 
 
@@ -44,7 +44,7 @@ sub output {
     print qq{
       <msg>Successfully read user list.</msg>
     };
-    Client::AAAS::Users::output_users( $results, $self->{session});
+    OSCARS::WBUI::AAAS::Users::output_users( $results, $self->{session});
     print "</xml>\n";
 }
 

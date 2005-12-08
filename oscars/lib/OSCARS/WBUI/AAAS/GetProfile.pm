@@ -1,17 +1,17 @@
 ###############################################################################
-package Client::AAAS::GetProfile;
+package OSCARS::WBUI::AAAS::GetProfile;
 
 # Handles get_profile form submission
 #
-# Last modified:  November 28, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #______________________________________________________________________________
 

@@ -1,11 +1,11 @@
 ###############################################################################
-# SOAPAdapter packages
-# Last modified:  November 21, 2005
+package OSCARS::WBUI::SOAPAdapterFactory;
+
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
 ###############################################################################
-package Client::SOAPAdapterFactory;
 
 use strict;
 use Data::Dumper;
@@ -25,36 +25,36 @@ sub initialize {
 
     # TODO:  Fix when have virtual hosts for AAAS and BSS
     $self->{class_mapping} = {
-        'login' => 'Client::AAAS::Login',
-        'get_info' => 'Client::GetInfo',
-        'get_profile' => 'Client::AAAS::GetProfile',
-        'set_profile' => 'Client::AAAS::SetProfile',
-        'logout' => 'Client::AAAS::Logout',
-        'view_users' => 'Client::AAAS::ViewUsers',
-        'add_user_form' => 'Client::AAAS::AddUserForm',
-        'add_user' => 'Client::AAAS::AddUser',
-        'delete_user' => 'Client::AAAS::DeleteUser',
-        'create_reservation_form' => 'Client::BSS::CreateReservationForm',
-        'create_reservation' => 'Client::BSS::CreateReservation',
-        'cancel_reservation' => 'Client::BSS::CancelReservation',
-        'view_reservations' => 'Client::BSS::ViewReservations',
-        'view_details' => 'Client::BSS::ViewDetails',
+        'login' => 'OSCARS::WBUI::AAAS::Login',
+        'get_info' => 'OSCARS::WBUI::GetInfo',
+        'get_profile' => 'OSCARS::WBUI::AAAS::GetProfile',
+        'set_profile' => 'OSCARS::WBUI::AAAS::SetProfile',
+        'logout' => 'OSCARS::WBUI::AAAS::Logout',
+        'view_users' => 'OSCARS::WBUI::AAAS::ViewUsers',
+        'add_user_form' => 'OSCARS::WBUI::AAAS::AddUserForm',
+        'add_user' => 'OSCARS::WBUI::AAAS::AddUser',
+        'delete_user' => 'OSCARS::WBUI::AAAS::DeleteUser',
+        'create_reservation_form' => 'OSCARS::WBUI::BSS::CreateReservationForm',
+        'create_reservation' => 'OSCARS::WBUI::BSS::CreateReservation',
+        'cancel_reservation' => 'OSCARS::WBUI::BSS::CancelReservation',
+        'view_reservations' => 'OSCARS::WBUI::BSS::ViewReservations',
+        'view_details' => 'OSCARS::WBUI::BSS::ViewDetails',
     };
     $self->{location_mapping} = {
-        'login' => 'Client/AAAS/Login',
-        'get_info' => 'Client/GetInfo',
-        'get_profile' => 'Client/AAAS/GetProfile',
-        'set_profile' => 'Client/AAAS/SetProfile',
-        'logout' => 'Client/AAAS/Logout',
-        'view_users' => 'Client/AAAS/ViewUsers',
-        'add_user_form' => 'Client/AAAS/AddUserForm',
-        'add_user' => 'Client/AAAS/AddUser',
-        'delete_user' => 'Client/AAAS/DeleteUser',
-        'create_reservation_form' => 'Client/BSS/CreateReservationForm',
-        'create_reservation' => 'Client/BSS/CreateReservation',
-        'cancel_reservation' => 'Client/BSS/CancelReservation',
-        'view_reservations' => 'Client/BSS/ViewReservations',
-        'view_details' => 'Client/BSS/ViewDetails',
+        'login' => 'OSCARS/WBUI/AAAS/Login',
+        'get_info' => 'OSCARS/WBUI/GetInfo',
+        'get_profile' => 'OSCARS/WBUI/AAAS/GetProfile',
+        'set_profile' => 'OSCARS/WBUI/AAAS/SetProfile',
+        'logout' => 'OSCARS/WBUI/AAAS/Logout',
+        'view_users' => 'OSCARS/WBUI/AAAS/ViewUsers',
+        'add_user_form' => 'OSCARS/WBUI/AAAS/AddUserForm',
+        'add_user' => 'OSCARS/WBUI/AAAS/AddUser',
+        'delete_user' => 'OSCARS/WBUI/AAAS/DeleteUser',
+        'create_reservation_form' => 'OSCARS/WBUI/BSS/CreateReservationForm',
+        'create_reservation' => 'OSCARS/WBUI/BSS/CreateReservation',
+        'cancel_reservation' => 'OSCARS/WBUI/BSS/CancelReservation',
+        'view_reservations' => 'OSCARS/WBUI/BSS/ViewReservations',
+        'view_details' => 'OSCARS/WBUI/BSS/ViewDetails',
     };
 } #___________________________________________________________________________                                         
 
@@ -71,7 +71,7 @@ sub instantiate {
 
 
 ###############################################################################
-package Client::SOAPAdapter;
+package OSCARS::WBUI::SOAPAdapter;
 #
 
 use strict;
@@ -80,7 +80,7 @@ use Data::Dumper;
 use SOAP::Lite;
 use CGI;
 
-use Client::UserSession;
+use OSCARS::WBUI::UserSession;
 
 
 sub new {
@@ -95,7 +95,7 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{session} = Client::UserSession->new();
+    $self->{session} = OSCARS::WBUI::UserSession->new();
 } #____________________________________________________________________________ 
 
 ###############################################################################

@@ -1,15 +1,15 @@
 ###############################################################################
-package Client::GetInfo;
+package OSCARS::WBUI::GetInfo;
 
 # Handles printing initial navigation page.
 #
-# Last modified:  November 20, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #______________________________________________________________________________ 
 

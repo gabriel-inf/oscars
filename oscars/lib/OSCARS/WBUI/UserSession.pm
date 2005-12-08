@@ -1,8 +1,8 @@
 ###############################################################################
-package Client::UserSession;
+package OSCARS::WBUI::UserSession;
 
 # Handles user session.
-# Last modified:  November 22, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;

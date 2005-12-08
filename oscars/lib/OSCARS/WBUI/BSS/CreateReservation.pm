@@ -1,20 +1,20 @@
 ###############################################################################
-package Client::BSS::CreateReservation;
+package OSCARS::WBUI::BSS::CreateReservation;
 
 # Handles request to view a given set of reservations, or a particular
 # reservation's details.
 #
-# Last modified:  November 22, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-use Client::BSS::Details;
+use OSCARS::WBUI::BSS::Details;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #_____________________________________________________________________________ 
 
@@ -38,7 +38,7 @@ sub output {
 
     print $self->{cgi}->header(
                                -type=>'text/xml');
-    Client::BSS::Details::output_details(
+    OSCARS::WBUI::BSS::Details::output_details(
                               $results, $self->{session}, $self->{user_level});
 } #____________________________________________________________________________
 

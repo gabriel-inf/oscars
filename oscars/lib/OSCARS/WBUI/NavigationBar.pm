@@ -1,9 +1,9 @@
 ###############################################################################
-package Client::NavigationBar;
+package OSCARS::WBUI::NavigationBar;
 
 # Handles printing navigation bar, and indicating which page is active
 #
-# Last modified:  November 20, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;

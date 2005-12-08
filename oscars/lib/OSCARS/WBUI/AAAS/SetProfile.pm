@@ -1,17 +1,17 @@
 ###############################################################################
-package Client::AAAS::SetProfile;
+package OSCARS::WBUI::AAAS::SetProfile;
 
 # Handles modifying a user's profile.
 #
-# Last modified:  November 22, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #______________________________________________________________________________
 

@@ -1,10 +1,10 @@
 ###############################################################################
-package Client::AAAS::Users;
+package OSCARS::WBUI::AAAS::Users;
 
 # Handles output of list of users; used by ViewUsers, AddUsers, and
 # DeleteUsers
 #
-# Last modified:  November 28, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;

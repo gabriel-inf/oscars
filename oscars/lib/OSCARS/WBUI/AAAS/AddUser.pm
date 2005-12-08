@@ -1,19 +1,19 @@
 ###############################################################################
-package Client::AAAS::AddUser;
+package OSCARS::WBUI::AAAS::AddUser;
 
 # Handles adding a user to the database.
 #
-# Last modified:  November 28, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-use Client::AAAS::Users;
+use OSCARS::WBUI::AAAS::Users;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #______________________________________________________________________________
 
@@ -61,7 +61,7 @@ sub output {
     print qq{
     <msg>$self->{user_dn} successfully added user $self->{id}</msg>
     };
-    Client::AAAS::Users::output_users( $results, $self->{session});
+    OSCARS::WBUI::AAAS::Users::output_users( $results, $self->{session});
     print "</xml>\n";
 } #____________________________________________________________________________
 

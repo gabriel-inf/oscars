@@ -1,9 +1,9 @@
 ###############################################################################
-package Client::AAAS::Logout;
+package OSCARS::WBUI::AAAS::Logout;
 
-# Handles user login.
+# Handles user logout.
 #
-# Last modified:  November 22, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -11,10 +11,10 @@ use strict;
 use Data::Dumper;
 use CGI;
 
-use Client::UserSession;
+use OSCARS::WBUI::UserSession;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #____________________________________________________________________________ 
 

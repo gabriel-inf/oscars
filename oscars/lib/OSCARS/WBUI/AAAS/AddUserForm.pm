@@ -1,17 +1,17 @@
 ###############################################################################
-package Client::AAAS::AddUserForm;
+package OSCARS::WBUI::AAAS::AddUserForm;
 
 # Handles add_user form output
 #
-# Last modified:  November 28, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #______________________________________________________________________________
 

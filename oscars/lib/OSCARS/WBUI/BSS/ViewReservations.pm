@@ -1,17 +1,17 @@
 ##############################################################################
-package Client::BSS::ViewReservations;
+package OSCARS::WBUI::BSS::ViewReservations;
 
 # Handles request to view a given set of reservations.
 #
-# Last modified:  November 23, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
 
 use Data::Dumper;
 
-use Client::SOAPAdapter;
-our @ISA = qw{Client::SOAPAdapter};
+use OSCARS::WBUI::SOAPAdapter;
+our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 #_____________________________________________________________________________
 
