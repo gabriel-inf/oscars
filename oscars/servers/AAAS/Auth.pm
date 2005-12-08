@@ -1,9 +1,9 @@
 ###############################################################################
-package AAAS::Frontend::Auth;
+package OSCARS::AAAS::Auth;
 
 # Database interactions dealing with authorization.  TODO:  convert to ROAM.
 #
-# Last modified:   November 28, 2005
+# Last modified:   December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -11,7 +11,7 @@ use strict;
 
 use Data::Dumper;
 
-use AAAS::Frontend::Database;
+use OSCARS::AAAS::Database;
 use Error qw(:try);
 
 

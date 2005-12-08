@@ -1,10 +1,10 @@
 ###############################################################################
-package AAAS::Frontend::SOAPMethods;
+package OSCARS::AAAS::Methods;
 
 # AAAS SOAP methods callable from AAAS::SOAP::Dispatcher.  Authorization and 
 # parameter validation are performed by the dispatcher.
 #
-# Last modified:  November 28, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -16,7 +16,7 @@ use Error qw(:try);
 
 use SOAP::Lite;
 
-use AAAS::Frontend::Database;
+use OSCARS::AAAS::Database;
 
 # until can get MySQL 5 and views going
 

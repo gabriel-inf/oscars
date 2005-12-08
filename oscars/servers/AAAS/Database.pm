@@ -1,8 +1,8 @@
 ###############################################################################
-package AAAS::Frontend::Database;
+package OSCARS::AAAS::Database;
 
 # AAAS database request handling.
-# Last modified:   November 21, 2005
+# Last modified:   December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;

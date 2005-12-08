@@ -1,9 +1,9 @@
 ###############################################################################
-package AAAS::Frontend::Mail;
+package OSCARS::AAAS::Mail;
 
 # Handles all notification email messages.
 # 
-# Last modified:  November 29, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Soo-yeon Hwang  (dapi@umich.edu)
 
@@ -11,7 +11,7 @@ use strict;
 
 use Data::Dumper;
 
-use AAAS::Frontend::Notifications;
+use OSCARS::AAAS::Notifications;
 
 
 sub new {
@@ -29,7 +29,7 @@ sub initialize {
     $self->{notification_email_encoding} = 'ISO-8859-1';
     $self->{sendmail_cmd} = '/usr/sbin/sendmail -oi';
     $self->{webmaster} = 'dwrobertson@lbl.gov';
-    $self->{notifier} = AAAS::Frontend::Notifications->new(
+    $self->{notifier} = OSCARS::AAAS::Notifications->new(
                                               'dbconn' => $self->{dbconn});
     $self->{method_mail} = {
         'create_reservation' =>  1,

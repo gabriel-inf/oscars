@@ -1,9 +1,9 @@
 ###############################################################################
-package AAAS::Frontend::Notifications;
+package OSCARS::AAAS::Notifications;
 
 # Reservation statistics formatting.
 #
-# Last modified:  November 29, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;

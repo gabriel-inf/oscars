@@ -1,7 +1,7 @@
 ###############################################################################
-package AAAS::Frontend::Validator;
+package OSCARS::AAAS::Validator;
 
-# Called by AAAS::SOAP::Dispatcher to determine whether parameters are
+# Called by OSCARS::AAAS::Dispatcher to determine whether parameters are
 # valid before handling them by the AAAS or forwarding them to the BSS.
 # 
 # Last modified:  November 28, 2005

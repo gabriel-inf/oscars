@@ -1,12 +1,12 @@
 ###############################################################################
-package AAAS::SOAP::Dispatcher;
+package OSCARS::AAAS::Dispatcher;
 
 # SOAP::Lite dispatcher for AAAS.  Validates parameters and does authorization
-# checks through calls to AAAS::Frontend packages before handing them to
-# either the AAAS::Frontend::SOAPMethods package, or forwarding them to the
+# checks through calls to AAAS packages before handing them to
+# either the OSCARS::AAAS::Methods package, or forwarding them to the
 # BSS SOAP server.
 
-# Last modified:  December 6, 2005
+# Last modified:  December 7, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use Error qw(:try);
@@ -16,29 +16,29 @@ use lib qw(/usr/local/esnet/servers/prod);
 
 use strict;
 
-use AAAS::Frontend::Logger;
-use AAAS::Frontend::SOAPMethods;
-use AAAS::Frontend::Validator;
-use AAAS::Frontend::Auth;
-use AAAS::Frontend::Database;
-use AAAS::Frontend::Mail;
+use OSCARS::AAAS::Logger;
+use OSCARS::AAAS::SOAPMethods;
+use OSCARS::AAAS::Validator;
+use OSCARS::AAAS::Auth;
+use OSCARS::AAAS::Database;
+use OSCARS::AAAS::Mail;
 
 # TODO:  FIX, means BSS needs to run on same server
 #        To fix, will need virtual hosts for AAAS and BSS
-use BSS::SOAP::Dispatcher;
+use OSCARS::BSS::Dispatcher;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
 
-my $dbconn = AAAS::Frontend::Database->new(
+my $dbconn = OSCARS::AAAS::Database->new(
                  'database' => 'DBI:mysql:AAAS',
                  'dblogin' => $db_login,
                  'password' => $password)
              or die "FATAL:  could not connect to database";
 
 
-my $request_handler = AAAS::Frontend::SOAPMethods->new('dbconn' => $dbconn);
-my $auth = AAAS::Frontend::Auth->new( 'dbconn' => $dbconn);
+my $request_handler = OSCARS::AAAS::Methods->new('dbconn' => $dbconn);
+my $auth = OSCARS::AAAS::Auth->new( 'dbconn' => $dbconn);
 
 #______________________________________________________________________________ 
 
@@ -53,7 +53,7 @@ sub dispatch {
 
     try {
         $method_name = $params->{method};
-        $params->{logger} = AAAS::Frontend::Logger->new(
+        $params->{logger} = OSCARS::AAAS::Logger->new(
                                'dir' => '/home/davidr/oscars/tmp',
                                'params' => $params);
         $params->{logger}->open();
@@ -61,7 +61,7 @@ sub dispatch {
             throw Error::Simple(
                 "User $params->{user_dn} not authorized to make $method_name call");
         }
-        my $v = AAAS::Frontend::Validator->new();
+        my $v = OSCARS::AAAS::Validator->new();
         my $err = $v->validate($params);
         if ($err) { throw Error::Simple($err); }
         # AAAS handles this call
@@ -70,7 +70,7 @@ sub dispatch {
         }
         # forward to BSS SOAP server
         else {
-            $results = BSS::SOAP::Dispatcher::dispatch('BSS::SOAP::Dispatcher', $params);
+            $results = OSCARS::BSS::Dispatcher::dispatch('OSCARS::BSS::Dispatcher', $params);
         }
     }
     catch Error::Simple with {
@@ -86,7 +86,7 @@ sub dispatch {
         }
     };
     $params->{logger}->close();
-    my $mailer = AAAS::Frontend::Mail->new('dbconn' => $dbconn);
+    my $mailer = OSCARS::AAAS::Mail->new('dbconn' => $dbconn);
     $mailer->send_message($params->{user_dn}, $method_name, $results) ;
     # caught by SOAP to indicate fault
     if ($ex) {
