@@ -1,10 +1,10 @@
 ##############################################################################
-# Package: JnxSNMP.pm
-# Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
-# Description:  Queries MPLS SNMP MIB on Juniper routers.
-#####
-
 package BSS::SNMP::JnxSNMP;
+
+# Authors: Chin Guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
+# Description:  Queries MPLS SNMP MIB on Juniper routers.
+# Last modified:  December 7, 2005
+
 
 use Data::Dumper;
 use SNMP;
@@ -17,60 +17,37 @@ use strict;
 );
 
 
+sub new {
+    my( $class, %args ) = @_;
 
-##################
-# Global variables
-##################
-my (%_lspInfoHash);  # Stores MPLS LSP SNMP data.
+    my( $self ) = {%args};
+    bless($self, $class);
+    return $self;
+} #___________________________________________________________________________
 
-
-################
-# Public methods
-################
-
-##############################################################################
-# new:  create a JnxSNMP.
-# Input:  <none>
-# Output: new object
-#
-sub new
-{
-    my ($_class, %_args) = @_;
-    my ($_self) = {%_args};
-
-    # Bless $_self into designated class.
-    bless($_self, $_class);
-
-    # Initialize.
-    $_self->initialize();
-    return($_self);
-}
-######
 
 ##############################################################################
 # query_lsp_snmpdata:  query LSP SNMP data from a Juniper router.
 # Input:  destination
 # Output: <none>
 #
-sub query_lsp_snmpdata
-{
-    my ($_self, $_configs, $_dst) = @_;
-    my ($_session, $_vars);
-    my ($_varBinds, $_varBindEntry, $_varBindEntryVal);
-
+sub query_lsp_snmpdata {
+    my( $self, $configs, $dst ) = @_;
 
     # Clear error message.
-    $_self->{errMsg} = 0;
+    $self->{errMsg} = 0;
+    # Clear lsp information.
+    $self->{lspInfo} = ();
 
-    if ( !defined($_dst) )  {
-        $_self->{errMsg} = "ERROR: SNMP destination not defined\n";
+    if ( !defined($dst) )  {
+        $self->{errMsg} = "ERROR: SNMP destination not defined\n";
         return;
     }
 
     # Initialize SNMP session.
-    $_session = new SNMP::Session (
-                     'DestHost'       => $_dst,
-                     'Community'      => $_configs->{jnx_snmp},
+    my $session = new SNMP::Session (
+                     'DestHost'       => $dst,
+                     'Community'      => $configs->{jnx_snmp},
                      'RemotePort'     => 161,
                      'Timeout'        => 300000,  # 300ms
                      'Retries'        => 3,
@@ -82,49 +59,46 @@ sub query_lsp_snmpdata
                    );
 
     # Set MIB to query.
-    $_vars = new SNMP::VarList (['mplsLspList']);  # Repeated variable.
+    my $vars = new SNMP::VarList (['mplsLspList']);  # Repeated variable.
 
     # Do the bulkwalk of the 0 non-repeaters, and the repeaters.  Ask for no
     # more than 8 values per response packet.  If the caller already knows how
     # many instances will be returned for the repeaters, it can ask only for
     # that many repeaters.
-    my (@_response) = $_session->bulkwalk(0, 5, $_vars);
+    my @response = $session->bulkwalk(0, 5, $vars);
 
-    if ($_session->{ErrorNum})  {
-        $_self->{errMsg} = "ERROR: Cannot do bulkwalk: $_session->{ErrorStr} ($_session->{ErrorNum})\n";
+    if ($session->{ErrorNum})  {
+        $self->{errMsg} = "ERROR: Cannot do bulkwalk: $session->{ErrorStr} ($session->{ErrorNum})\n";
         return;
     }
-
-    # Clear lsp information.
-    %_lspInfoHash = ();
-    $_self->{lsp} = ();
+    $self->{lsp} = ();
 
     # Process the results.
-    for $_varBinds (@_response)  {
+    for my $varBinds (@response)  {
 
         # Process the returned list of varbinds using the SNMP::Varbind methods.
-        for $_varBindEntry (@$_varBinds)  {
+        for my $varBindEntry (@$varBinds)  {
 
-            # Place results into the global lspInfoHash.
+            # Place results into lspInfo.
             # Example of results:
             #   tag: mplsLspName
             #   iid: 111.115.99.97.114.115.95.53.49.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
             #   val:oscars_51
             #   type:OCTETSTR
             #   name:mplsLspName
-            $_lspInfoHash{$_varBindEntry->iid}{$_varBindEntry->tag} = $_varBindEntry->val;
+            $self->{lspInfo}{$varBindEntry->{iid}{$varBindEntry->{tag}} = $varBindEntry->{val};
 
             # If the tag is 'mplsLspName', we will create a reference for it in self->{lsp}.
             # e.g.
-            #   $_self->{lsp}{oscars_51} = 111.115.99.97.114.115.95.53.49.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
-            if ($_varBindEntry->tag eq 'mplsLspName')  {
-                $_self->{lsp}{$_varBindEntry->val} = $_varBindEntry->iid;
+            #   $self->{lsp}{oscars_51} = 111.115.99.97.114.115.95.53.49.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+            if ($varBindEntry->{tag} eq 'mplsLspName')  {
+                $self->{lsp}{$varBindEntry->{val}} = $varBindEntry->{iid};
             }
         }
     }
     return;
-}
-######
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # get_lsp_info:  returns LSP information retrieved from SNMP query.
@@ -132,50 +106,50 @@ sub query_lsp_snmpdata
 #        lspVar => which OID value to return (e.g. "mplsLspState") (optional)
 # Output: an array containing the lspName.lspVar and value
 #
-sub get_lsp_info
-{
-    my ($_self, $_lspName, $_lspVar) = @_;
-    my (@_lspNameArray) = ();
-    my (@_lspInfoArray) = ();
+sub get_lsp_info {
+    my( $self, $lspName, $lspVar ) = @_;
+
+    my @lspNameArray = ();
+    my @lspInfoArray = ();
 
     # Figure out which LSP to pull info from.
     # If lspName is not specified, grab all LSPs.
-    if (defined($_lspName))  {
-        push(@_lspNameArray, $_lspName);
+    if (defined($lspName))  {
+        push(@lspNameArray, $lspName);
     }
     else  {
-        foreach $_lspName (sort keys %{$_self->{lsp}})  {
-            push(@_lspNameArray, $_lspName);
+        foreach $lspName (sort keys %{$self->{lsp}})  {
+            push(@lspNameArray, $lspName);
         }
     }
 
-    for $_lspName (@_lspNameArray)  {
-        if (not(defined($_self->{lsp}{$_lspName})))  {
-            $_self->{errMsg} = "ERROR: No such LSP \"$_lspName\"\n";
+    for $lspName (@lspNameArray)  {
+        if (not(defined($self->{lsp}{$lspName})))  {
+            $self->{errMsg} = "ERROR: No such LSP \"$lspName\"\n";
             return;
         }
         else  {
 
             # If lspVar is specified, then just select that variable.
-            if (defined($_lspVar))  {
-                if (not(defined($_lspInfoHash{$_self->{lsp}{$_lspName}}{$_lspVar})))  {
-                    $_self->{errMsg} = "ERROR: No such LSP variable \"$_lspName.$_lspVar\"\n";
+            if (defined($lspVar))  {
+                if (not(defined($self->{lspInfo}{$self->{lsp}{$lspName}}{$lspVar})))  {
+                    $self->{errMsg} = "ERROR: No such LSP variable \"$lspName.$lspVar\"\n";
                     return;
                 }
                 else  {
-                    push(@_lspInfoArray, "$_lspName.$_lspVar", $_lspInfoHash{$_self->{lsp}{$_lspName}}{$_lspVar});
+                    push(@lspInfoArray, "$lspName.$lspVar", $self->{lspInfo}{$self->{lsp}{$lspName}}{$lspVar});
                 }
             }
             else  {
-                foreach $_lspVar (sort keys %{$_lspInfoHash{$_self->{lsp}{$_lspName}}})  {
-                    push(@_lspInfoArray, "$_lspName.$_lspVar", $_lspInfoHash{$_self->{lsp}{$_lspName}}{$_lspVar});
+                foreach $lspVar (sort keys %{$self->{lspInfo}{$self->{lsp}{$lspName}}})  {
+                    push(@lspInfoArray, "$lspName.$lspVar", $self->{lspInfo}{$self->{lsp}{$lspName}}{$lspVar});
                 }
             }
         }
     }
-    return(@_lspInfoArray);
-}
-######
+    return \@lspInfoArray;
+} #___________________________________________________________________________
+
 
 ##############################################################################
 # get_error:  Return the error message (0 if none).
@@ -183,32 +157,11 @@ sub get_lsp_info
 # Out: Error message
 #
 sub get_error {
-    my ($_self) = @_;
+    my( $self ) = @_;
 
-    return($_self->{errMsg});
-}
+    return $self->{errMsg};
+} #___________________________________________________________________________
+
+
 ######
-
-
-#################
-# Private methods
-#################
-
-##############################################################################
-# initialize: initialize jnxSNMP with default values if not already
-#             populated.
-# Input: <none>
-# Output: <none>
-#
-sub initialize 
-{
-    my ($_self) = @_;
-
-    # Clear error message.
-    $_self->{errMsg} = 0;
-
-    return();
-}
-######
-
 1;
