@@ -1,5 +1,5 @@
 ##############################################################################
-package OSCARS::Dispatcher;
+package Dispatcher;
 
 # SOAP::Lite meta-dispatcher for all servers
 # Last modified:  Dedember 7, 2005
