@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::Runner;
+package Client::Runner;
 
 # Calls SOAPAdapter to make SOAP call and format results for output.
 # Last modified:  December 7, 2005
@@ -11,7 +11,7 @@ use CGI qw{:cgi};
 use SOAP::Lite;
 use Data::Dumper;
 
-use OSCARS::WBUI::SOAPAdapter;
+use Client::SOAPAdapter;
 
 #______________________________________________________________________________
 
@@ -25,7 +25,7 @@ sub run {
     my $soap_server = SOAP::Lite
                           -> uri('http://198.128.14.164/Dispatcher')
                           -> proxy ('https://198.128.14.164/SOAP');
-    my $factory = OSCARS::WBUI::SOAPAdapterFactory->new();
+    my $factory = Client::SOAPAdapterFactory->new();
     my $cgi = CGI->new();
     my $adapter = $factory->instantiate($cgi);
     $adapter->handle_request($soap_server);

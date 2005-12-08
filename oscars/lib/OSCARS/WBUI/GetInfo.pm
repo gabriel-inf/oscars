@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::GetInfo;
+package Client::GetInfo;
 
 # Handles printing initial navigation page.
 #
@@ -8,8 +8,8 @@ package OSCARS::WBUI::GetInfo;
 
 use strict;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+use Client::SOAPAdapter;
+our @ISA = qw{Client::SOAPAdapter};
 
 #______________________________________________________________________________ 
 

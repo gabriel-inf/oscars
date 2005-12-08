@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::NavigationBar;
+package Client::NavigationBar;
 
 # Handles printing navigation bar, and indicating which page is active
 #

@@ -1,5 +1,5 @@
 ###############################################################################
-package OSCARS::WBUI::UserSession;
+package Client::UserSession;
 
 # Handles user session.
 # Last modified:  December 7, 2005
