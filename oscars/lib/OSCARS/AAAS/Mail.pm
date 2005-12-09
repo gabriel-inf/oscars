@@ -28,7 +28,6 @@ sub initialize {
     # email text encoding
     $self->{notification_email_encoding} = 'ISO-8859-1';
     $self->{sendmail_cmd} = '/usr/sbin/sendmail -oi';
-    $self->{webmaster} = 'dwrobertson@lbl.gov';
     $self->{notifier} = OSCARS::AAAS::Notifications->new(
                                               'dbconn' => $self->{dbconn});
     $self->{method_mail} = {
@@ -46,13 +45,17 @@ sub initialize {
 sub send_message {
     my( $self, $user_dn, $method_name, $results ) = @_;
 
+    my( $err_msg );
+
     if ( $self->{method_mail}->{$method_name} ) {
          my $messages = 
             $self->{notifier}->$method_name($user_dn, $results);
          for my $msg (@$messages) {
-             $self->send_mailings($msg);
+             $err_msg = $self->send_mailings($msg);
+             if ($err_msg) { return $err_msg; }
          }
     }
+    return '';
 } #____________________________________________________________________________ 
 
 
@@ -62,11 +65,13 @@ sub send_message {
 sub send_mailings {
     my( $self, $msg ) = @_;
 
-    $self->send_mail($self->{webmaster}, $msg->{user},
+    my $err_msg = $self->send_mail($self->get_webmaster(), $msg->{user},
                      'OSCARS:  ' . $msg->{subject_line}, $msg->{msg});
-    $self->send_mail($self->{webmaster}, $self->get_admins(),
+    if ($err_msg) { return $err_msg; }
+    $err_msg = $self->send_mail($self->get_webmaster(), $self->get_admins(),
                      'OSCARS:  Admin notice.  ' . $msg->{subject_line}, $msg->{msg});
-    
+    if ($err_msg) { return $err_msg; }
+    return '';
 } #____________________________________________________________________________ 
 
 
@@ -97,12 +102,21 @@ sub send_mail {
 
 ###############################################################################
 #
+sub get_webmaster {
+    my( $self ) = @_;
+
+    return 'dwrobertson@lbl.gov';
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
 sub get_admins {
     my( $self ) = @_;
 
     #return 'oscars-admin@es.net';
-    #return 'dwrobertson@lbl.gov chin@es.net';
-    return 'dwrobertson@lbl.gov';
+    return 'dwrobertson@lbl.gov chin@es.net';
+    #return 'dwrobertson@lbl.gov';
 } #____________________________________________________________________________
 
 
