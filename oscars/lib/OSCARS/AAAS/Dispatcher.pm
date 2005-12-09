@@ -56,7 +56,7 @@ sub dispatch {
         $params->{logger} = OSCARS::AAAS::Logger->new(
                                'dir' => '/home/davidr/oscars/tmp',
                                'params' => $params);
-        $params->{logger}->open();
+        $params->{logger}->start_log();
         if (!$auth->authorized($params, $method_name)) {
             throw Error::Simple(
                 "User $params->{user_dn} not authorized to make $method_name call");
@@ -85,7 +85,7 @@ sub dispatch {
             print STDERR "AAAS: $ex->{-text}\n";
         }
     };
-    $params->{logger}->close();
+    $params->{logger}->end_log();
     my $mailer = OSCARS::AAAS::Mail->new('dbconn' => $dbconn);
     $mailer->send_message($params->{user_dn}, $method_name, $results) ;
     # caught by SOAP to indicate fault
