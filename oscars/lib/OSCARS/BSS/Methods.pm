@@ -324,8 +324,6 @@ sub get_results {
 sub check_nulls {
     my( $self, $resv ) = @_ ;
 
-    my( $resv );
-
     # clean up NULL values
     if (!$resv->{reservation_protocol} ||
         ($resv->{reservation_protocol} eq 'NULL')) {
@@ -350,7 +348,7 @@ sub setup_pss {
 
         # Create an LSP object.
     my $lsp_info = $self->map_fields($resv_info);
-    my $jnxLsp = new PSS::JnxLSP($lsp_info);
+    my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
     print STDERR "Setting up LSP...\n";
     $jnxLsp->configure_lsp($self->{LSP_SETUP}, $resv_info);
@@ -372,7 +370,7 @@ sub teardown_pss {
 
         # Create an LSP object.
     my $lsp_info = $self->map_fields($resv_info);
-    my $jnxLsp = new PSS::JnxLSP($lsp_info);
+    my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
     print STDERR "Tearing down LSP...\n" ;
     $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $resv_info); 
