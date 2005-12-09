@@ -64,7 +64,7 @@ sub get_profile {
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Retrieved user profile\n";
-    $msg .= "Returning:\n" . to_string($results);
+    $msg .= to_string($results);
     $msg .= "\n";
     return( 1, $msg );
 } #___________________________________________________________________________
@@ -102,7 +102,6 @@ sub view_institutions {
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Retrieved list of institutions\n";
-    $msg .= "Returning:\n";
     for my $row (@$results) {
         $msg .= to_string($row);
     }
@@ -147,7 +146,7 @@ sub add_user {
 
     my $results = $som->result;
     my $msg = "\nStatus:  Retrieved user profile\n";
-    $msg .= "Returning:\n" . to_string($results);
+    $msg .= to_string($results);
     $msg .= "\n";
     return( 1, $msg );
 } #___________________________________________________________________________
@@ -166,9 +165,7 @@ sub delete_user {
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
-    my $msg = "\nStatus:  Retrieved user profile\n";
-    $msg .= "Returning:\n" . to_string($results);
-    $msg .= "\n";
+    my $msg = "\nStatus:  Deleted user $user_dn\n";
     return( 1, $msg );
 } #___________________________________________________________________________
 
@@ -187,7 +184,6 @@ sub view_users {
 
     my $results = $som->result;
     my $msg = "\nStatus:  Successfully read user list.\n";
-    $msg .= "Returning:\n";
     for my $row (@$results) {
         $msg .= to_string($row);
     }
@@ -200,7 +196,7 @@ sub view_users {
 sub to_string {
     my( $results ) = @_;
 
-    my($key, $value);
+    my( $key, $value );
 
     my $msg = '';
     foreach $key(sort keys %{$results} ) {
