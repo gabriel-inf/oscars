@@ -2,10 +2,13 @@
 package Client::Runner;
 
 # Calls SOAPAdapter to make SOAP call and format results for output.
-# Last modified:  December 7, 2005
+# Last modified:  December 9, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
+
+# TODO:  check security implications
+use lib qw(/usr/local/esnet/servers/prod);
 
 use CGI qw{:cgi};
 use SOAP::Lite;
@@ -21,10 +24,9 @@ use Client::SOAPAdapter;
 sub run {
     my ( %soap_params );
 
-    # TODO: fix URL
     my $soap_server = SOAP::Lite
-                          -> uri('http://198.128.14.164/Dispatcher')
-                          -> proxy ('https://198.128.14.164/SOAP');
+                          -> uri('http://localhost:2000/OSCARS::AAAS::Dispatcher')
+                          -> proxy('http://localhost:2000/aaas');
     my $factory = Client::SOAPAdapterFactory->new();
     my $cgi = CGI->new();
     my $adapter = $factory->instantiate($cgi);
