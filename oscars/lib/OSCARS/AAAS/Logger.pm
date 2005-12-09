@@ -37,37 +37,38 @@ sub initialize {
 
 ###############################################################################
 #
-sub open {
+sub start_log {
     my( $self ) = @_;
 
-    @{$self->{buf_strings}} = ( "<html>\n<body>\n" );
+    @{$self->{buf_strings}} = ( );
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub write {
+sub write_log {
     my( $self, $buf ) = @_;
 
-    push(@{$self->{buf_strings}}, "$buf<br/>\n");
+    push(@{$self->{buf_strings}}, "$buf<br/>");
     $self->{output_written} = 1;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub close {
+sub end_log {
     my( $self ) = @_;
 
     if (!$self->{output_written} && 
         ($self->{recurrent_methods}->{$self->{params}->{method}})) {
         return;
     }
-    push(@{$self->{buf_strings}}, "</body>\n</html>\n");
     my $fname = "$self->{dir}/$self->{params}->{method}.html";
     open (LOGFILE, ">$fname") ||
             die "Can't open log file $fname.\n";
-    print LOGFILE join('', @{$self->{buf_strings}});
+    print LOGFILE "<html><body>\n";
+    print LOGFILE join('\n', @{$self->{buf_strings}});
+    print LOGFILE "</body></html>\n";
     close(LOGFILE);
 } #____________________________________________________________________________
 
