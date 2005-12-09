@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+use SOAP::Transport::HTTP;
+
+use strict;
+
+use lib qw(/usr/local/esnet/servers/prod);
+
+my $daemon = SOAP::Transport::HTTP::Daemon
+  -> new (LocalPort => 2000, Listen => 5, Reuse => 1)
+  -> dispatch_to('OSCARS::AAAS::Dispatcher')
+  -> handle;
+
