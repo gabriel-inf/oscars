@@ -1,193 +1,166 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test qw(plan ok skip);
-
-plan tests => 6;
+use Test::Simple tests => 2;
 
 use SOAP::Lite;
 use Data::Dumper;
 
-my( %params );
-
-$params{reservation_start_time} = time();
-$params{duration_hour} =       0.04;    # duration 5 minutes
-$params{reservation_time_zone} = "-08:00";
-
-# in Mbps
-$params{reservation_bandwidth} =      '10';
-$params{reservation_protocol} =       'udp';
-
-$params{source_host} = 'nettrash3.es.net';
-$params{destination_host} = 'dc-cr1.es.net';
-
-$params{user_dn} =        'dwrobertson@lbl.gov';
-$params{user_level} =        '15';
-$params{reservation_description} =    'This is a test.';
-$params{server_name} = 'BSS';
-$params{method} = 'create_reservation'; 
-
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
     ->proxy('https://198.128.14.164/SOAP');
+ok($soap_server);
 
-my $som = $soap_server->dispatch(\%params);
-if ($som->faultstring) {
-    print STDERR $som->faultstring, "\n";
-    exit;
-}
-my $results = $som->result;
-print STDERR Dumper($results);
-print STDERR "Your reservation has been processed successfully. Your " .
-   "reservation ID number is $results->{reservation_id}.\n";
+my( $status, $msg ) = create_reservation($soap_server,
+                          'dwrobertson@lbl.gov', '15',
+                          'nettrash3.es.net', 'dc-cr1.es.net');
+ok( $status, $msg );
+print STDERR $msg;
 
 #############################################################################
+#
+sub create_reservation {
+    my( $soap_server, $user_dn, $user_level, $src, $dst ) = @_;
 
-my( %params );
+    my %params;
 
-$numArgs = $#ARGV + 1;
-if ($numArgs < 2) {
-    print STDERR "You must provide a reservation id and a user dn\n";
-    exit;
-}
+    $params{user_dn} = $user_dn;
+    $params{user_level} = $user_level;
+    $params{source_host} = $src;
+    $params{destination_host} = $dst;
+
+    $params{reservation_start_time} = time();
+    $params{duration_hour} =       0.04;    # duration 5 minutes
+    $params{reservation_time_zone} = "-08:00";
+
+    # in Mbps
+    $params{reservation_bandwidth} =      '10';
+    $params{reservation_protocol} =       'udp';
+
+    $params{reservation_description} =    'This is a test.';
+    $params{server_name} = 'BSS';
+    $params{method} = 'create_reservation'; 
+
+    my $som = $soap_server->dispatch(\%params);
+    if ($som->faultstring) { return( 0, $som->faultstring ); }
+
+    my $results = $som->result;
+    my $msg = "\nStatus: Your reservation has been processed successfully.\n";
+    $msg .= "Details:\n" . to_string($results);
+    return( 1, $msg );
+} #___________________________________________________________________________
+
+
+#############################################################################
+#
+sub cancel_reservation {
+    my( $soap_server, $user_dn, $reservation_id ) = @_;
+
+    my %params;
 
     # Delete the reservation with the given id (set its status
     # to cancelled).
-$params{'reservation_id'} = $ARGV[0];
-$params{'user_dn'} = $ARGV[1];
+    $params{user_dn} = $user_dn;
+    $params{reservation_id} = $reservation_id;
+    $params{server_name} = 'BSS';
+    $params{method} = 'cancel_reservation';
 
-$params{server_name} = 'BSS';
-$params{method} = 'delete_reservation';
-my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
+    my $som = $soap_server->dispatch(\%params);
+    if ($som->faultstring) { return( 0, $som->faultstring ); }
 
-my $som = $soap_server->dispatch(\%params);
-if ($som->faultstring) {
-    print STDERR $som->faultstring, "\n";
-    exit;
-}
-my $results = $som->result;
-if ($results->{error_msg}) {
-    print STDERR $results->{error_msg}, "\n\n";
-    exit;
-}
+    my $results = $som->result;
+    my $msg = "\nSuccessfully cancelled reservation $params{reservation_id}\n";
+    return( 1, $msg );
+} #___________________________________________________________________________
 
-print STDERR "Successfully cancelled reservation $params{reservation_id}\n";
 
 #############################################################################
+#
+sub view_reservations {
+    my ( $soap_server, $user_dn, $user_level ) = @_;
 
-my( %params, @arg_pair );
+    my %params;
 
-if ($#ARGV < 0) {
-    print STDERR "Usage:  view_reservations user_level (user or engr)\n";
-    exit;
-}
+    $params{user_dn} = $user_dn;
+    $params{user_level} = $user_level;
+    $params{server_name} = 'BSS';
+    $params{method} = 'view_reservations';
 
-$params{method} = 'view_reservations';
-$params{server_name} = 'BSS';
-$params{user_dn} = 'dwrobertson@lbl.gov';
-if ($ARGV[0] eq 'user') { $params{user_level} = 2; }
-elsif ($ARGV[0] eq 'engr') { $params{user_level} = 2 | 4; }
-else {
-    print STDERR "Invalid argument:  must be user or engr\n";
-    exit;
-}
+    my $som = $soap_server->dispatch(\%params);
+    if ($som->faultstring) { return( 0, $som->faultstring ); }
 
-my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
+    my $results = $som->result;
+    my $msg = "\nReservations:\n";
+    for my $row (@$results) {
+        $msg .= to_string($row);
+    }
+    $msg .= "\n";
+    return( 1, $msg );
+} #___________________________________________________________________________
 
-my $som = $soap_server->dispatch(\%params);
-if ($som->faultstring) {
-    print STDERR $som->faultstring, "\n";
-    exit;
-}
-my $results = $som->result;
-my ($r, $f, %c);
 
-for $r (@$results) {
-    for $f (keys %$r) {
-        if (defined($r->{$f})) {
-            print "$f -> $r->{$f}\n";
+#############################################################################
+#
+sub view_details {
+    my ( $soap_server, $user_dn, $user_level, $reservation_id ) = @_;
+
+    my %params ;
+
+    $params{user_dn} = $user_dn;
+    $params{user_level} = $user_level;
+    $params{reservation_id} = $reservation_id;
+    $params{server_name} = 'BSS';
+    $params{method} = 'view_details';
+
+    my $som = $soap_server->dispatch(\%params);
+    if ($som->faultstring) { return( 0, $som->faultstring ); }
+
+    my $results = $som->result;
+    my $msg = "\nReservation details:\n";
+    my $msg .= to_string($results);
+    return( 1, $msg );
+} #___________________________________________________________________________
+
+
+#############################################################################
+#
+sub test_scheduling_reservations {
+    my ( $soap_server, $method_name, $user_level ) = @_;
+
+    my %params;
+
+    $params{method} = $method_name;
+    $params{user_level} = $user_level;
+    $params{time_interval} = 20;
+    $params{server_name} = 'BSS';
+
+    my $som = $soap_server->dispatch(\%params);
+    if ($som->faultstring) { return( 0, $som->faultstring ); }
+    my $results = $som->result;
+
+    for my $row (@$results) {
+        $msg .= to_string($row);
+    }
+    $msg .= "\n";
+    return( 1, $msg );
+} #___________________________________________________________________________
+
+
+##############################################################################
+#
+sub to_string {
+    my( $results ) = @_;
+
+    my( $key, $value );
+
+    my $msg = '';
+    foreach $key(sort keys %{$results} ) {
+        if (($key ne 'status_msg') &&
+            defined($results->{$key})) {
+            $value = $results->{$key};
+            if ($value) { $msg .= "$key -> $value\n"; }
+            else { $msg .= "$key -> \n"; }
         }
     }
-    print "\n";
-}
-
-#############################################################################
-
-my( %params );
-
-$params{reservation_id} = $ARGV[0];
-$params{method} = 'view_details';
-$params{server_name} = 'BSS';
-$params{user_dn} = 'dwrobertson@lbl.gov';
-$params{user_level} = 15;
-my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
-
-my $som = $soap_server->dispatch(\%params);
-if ($som->faultstring) {
-    print STDERR $som->faultstring, "\n";
-    exit;
-}
-my $results = $som->result;
-print STDERR Dumper($results);
-
-#############################################################################
-
-my %params;
-$params{time_interval} = 20;
-$params{method} = 'find_pending_reservations';
-$params{server_name} = 'BSS';
-$params{user_level} = 4;
-my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
-
-my $som = $soap_server->dispatch(\%params);
-if ($som->faultstring) {
-    print STDERR $som->faultstring, "\n";
-    exit;
-}
-my $results = $som->result;
-my ($r, $f, %c);
-
-for $r (@$results) {
-    for $f (keys %$r) {
-        if (defined($r->{$f})) {
-            print "$f -> $r->{$f}\n";
-        }
-    }
-    print "\n";
-}
-
-#############################################################################
-
-my %params;
-$params{time_interval} = 20;
-$params{method} = 'find_expired_reservations';
-$params{server_name} = 'BSS';
-$params{user_level} = 4;
-my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
-
-my $som = $soap_server->dispatch(\%params);
-if ($som->faultstring) {
-    print STDERR $som->faultstring, "\n";
-    exit;
-}
-my $results = $som->result;
-my ($r, $f, %c);
-
-for $r (@$results) {
-    for $f (keys %$r) {
-        if (defined($r->{$f})) {
-            print "$f -> $r->{$f}\n";
-        }
-    }
-    print "\n";
-}
+    return $msg;
+} #___________________________________________________________________________
