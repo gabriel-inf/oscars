@@ -60,10 +60,10 @@ sub end_log {
     my( $self ) = @_;
 
     if (!$self->{output_written} && 
-        ($self->{recurrent_methods}->{$self->{params}->{method}})) {
+        ($self->{recurrent_methods}->{$self->{method}})) {
         return;
     }
-    my $fname = "$self->{dir}/$self->{params}->{method}.html";
+    my $fname = "$self->{dir}/$self->{method}.html";
     open (LOGFILE, ">$fname") ||
             die "Can't open log file $fname.\n";
     print LOGFILE "<html><body>\n";
