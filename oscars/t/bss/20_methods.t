@@ -9,8 +9,8 @@ use Data::Dumper;
 my( $status, $msg, $reservation_id );
 
 my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
+    ->uri('http://localhost:3000/OSCARS/BSS/Dispatcher')
+    ->proxy('http://localhost:3000/bss');
 ok($soap_server);
 
 ( $status, $msg ) = view_reservations($soap_server,
@@ -97,7 +97,7 @@ sub cancel_reservation {
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
-    my $msg = "\nSuccessfully cancelled reservation $params{reservation_id}\n";
+    my $msg = "\nSuccessfully cancelled reservation $results->{reservation_id}\n";
     return( 1, $msg );
 } #___________________________________________________________________________
 
