@@ -4,13 +4,15 @@
 
 use SOAP::Lite;
 
+use lib qw(/usr/local/esnet/servers/prod);
+
 use strict;
 
 my %params;
 
 my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
+    ->uri('http://localhost:2000/OSCARS/AAAS/Dispatcher')
+    ->proxy('https://localhost:2000/aaas');
 
 $params{time_interval} = 20;
 $params{method} = 'find_pending_reservations';
