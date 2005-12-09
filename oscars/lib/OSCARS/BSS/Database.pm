@@ -397,7 +397,7 @@ sub map_to_ips {
     my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
     my $row = $self->get_row($statement, $resv->{src_hostaddr_id});
     $resv->{source_ip} = $row->{hostaddr_ip};
-    my $row = $self->get_row($statement, $resv->{dst_hostaddr_id});
+    $row = $self->get_row($statement, $resv->{dst_hostaddr_id});
     $resv->{destination_ip} = $row->{hostaddr_ip};
 
     $statement = 'SELECT router_loopback FROM routers' .
