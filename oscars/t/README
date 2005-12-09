@@ -1,0 +1,12 @@
+Self test suite for OSCARS, adapted from the libwww-perl self test suite
+------------------------------------------------------------------------
+
+Tests are invoked by running the ./TEST script, but usually you run
+the tests with "make test" at the top OSCARS directory.  Use -v
+option for verbose tests.  You might run an individual test like this:
+
+  ./TEST -v aaas/01_login
+
+or all tests in a directory like this
+
+  ./TEST aaas
