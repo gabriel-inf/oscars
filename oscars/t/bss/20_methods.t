@@ -1,19 +1,46 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 2;
+use Test::Simple tests => 7;
 
 use SOAP::Lite;
 use Data::Dumper;
+
+my( $status, $msg, $reservation_id );
 
 my $soap_server = SOAP::Lite
     ->uri('http://198.128.14.164/Dispatcher')
     ->proxy('https://198.128.14.164/SOAP');
 ok($soap_server);
 
-my( $status, $msg ) = create_reservation($soap_server,
+( $status, $msg ) = view_reservations($soap_server,
+                          'drobertson@lbl.gov', 15);
+ok( $status, $msg );
+print STDERR $msg;
+
+( $status, $msg, $reservation_id ) = create_reservation($soap_server,
                           'dwrobertson@lbl.gov', '15',
                           'nettrash3.es.net', 'dc-cr1.es.net');
+ok( $status, $msg );
+print STDERR $msg;
+
+( $status, $msg ) = view_details($soap_server, 'dwrobertson@lbl.gov', 15,
+                                   $reservation_id);
+ok( $status, $msg );
+print STDERR $msg;
+
+( $status, $msg ) = test_scheduling_reservations($soap_server,
+                          'find_pending_reservations', 15);
+ok( $status, $msg );
+print STDERR $msg;
+
+( $status, $msg ) = test_scheduling_reservations($soap_server,
+                          'find_expired_reservations', 15);
+ok( $status, $msg );
+print STDERR $msg;
+
+( $status, $msg ) = cancel_reservation($soap_server, 'dwrobertson@lbl.gov',
+                                       15, $reservation_id);
 ok( $status, $msg );
 print STDERR $msg;
 
@@ -47,20 +74,21 @@ sub create_reservation {
     my $results = $som->result;
     my $msg = "\nStatus: Your reservation has been processed successfully.\n";
     $msg .= "Details:\n" . to_string($results);
-    return( 1, $msg );
+    return( 1, $msg, $results->{reservation_id} );
 } #___________________________________________________________________________
 
 
 #############################################################################
 #
 sub cancel_reservation {
-    my( $soap_server, $user_dn, $reservation_id ) = @_;
+    my( $soap_server, $user_dn, $user_level, $reservation_id ) = @_;
 
     my %params;
 
     # Delete the reservation with the given id (set its status
     # to cancelled).
     $params{user_dn} = $user_dn;
+    $params{user_level} = $user_level;
     $params{reservation_id} = $reservation_id;
     $params{server_name} = 'BSS';
     $params{method} = 'cancel_reservation';
@@ -117,7 +145,7 @@ sub view_details {
 
     my $results = $som->result;
     my $msg = "\nReservation details:\n";
-    my $msg .= to_string($results);
+    $msg .= to_string($results);
     return( 1, $msg );
 } #___________________________________________________________________________
 
@@ -138,6 +166,7 @@ sub test_scheduling_reservations {
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
+    my $msg = "\nReservations handled:\n";
     for my $row (@$results) {
         $msg .= to_string($row);
     }
