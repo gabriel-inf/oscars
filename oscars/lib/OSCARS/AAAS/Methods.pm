@@ -171,7 +171,7 @@ sub set_profile {
     }
 
     # prepare the query for database update
-    my $statement = 'UPDATE users SET ';
+    $statement = 'UPDATE users SET ';
     my @fields = split(', ', $user_profile_fields);
     for $_ (@fields) {
         $statement .= "$_ = '$params->{$_}', ";
