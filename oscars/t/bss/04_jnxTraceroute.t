@@ -1,57 +1,61 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::Simple tests => 1;
+use Test::Simple tests => 5;
 
+use OSCARS::AAAS::Logger;
+use OSCARS::BSS::Database;
 use OSCARS::BSS::JnxTraceroute;
 
-##################
-# Global variables
-##################
-my (@_rawTracerouteData) = ();
-my (@_hops) = ();
-
+my %params = ( 'method' => 'test' );
+my $logger = OSCARS::AAAS::Logger->new(
+                               'dir' => '/home/davidr/oscars/tmp',
+                               'params' => \%params);
+ok($logger);
+$logger->start_log();
 
 # Create a traceroute object.
-my ($_jnxTraceroute) = OSCARS::BSS::JnxTraceroute->new();
+my $jnxTraceroute = OSCARS::BSS::JnxTraceroute->new();
+ok($jnxTraceroute);
 
-my ($numArgs, $src, $dst);
+my $dbconn = OSCARS::BSS::Database->new(
+                 'database' => 'DBI:mysql:BSS',
+                 'dblogin' => 'oscars',
+                 'password' => 'ritazza6');
+ok($dbconn);
 
-$numArgs = $#ARGV + 1;
-if ($numArgs == 0) {
-    $src = "chi-cr1.es.net";
-    $dst = "distressed.es.net";
+my $configs = $dbconn->get_trace_configs();
+ok($configs);
+my $src = 'chi-cr1.es.net';
+my $dst = 'distressed.es.net';
+my( $status, $msg ) = 
+        test_traceroute( $jnxTraceroute, $configs, $src, $dst, $logger );
+ok( $status, $msg );
+print STDERR $msg;
+$logger->end_log();
+
+##############################################################################
+#
+sub test_traceroute {
+    my( $jnxTraceroute, $configs, $src, $dst, $logger ) = @_;
+
+    my $msg = "\nTraceroute: chi-cr1.es.net to distressed.es.net\n";
+    # Run traceroute.
+    $jnxTraceroute->traceroute($configs, $src, $dst, $logger);
+
+    $msg .= "Raw results:\n";
+    my @rawTracerouteData = $jnxTraceroute->get_raw_hop_data();
+    while(defined($rawTracerouteData[0]))  {
+        $msg .= '  ' . $rawTracerouteData[0];
+        shift(@rawTracerouteData);
+    }
+
+    $msg .= "Hops:\n";
+    my @hops = $jnxTraceroute->get_hops();
+    while(defined($hops[0]))  {
+        $msg .= "  $hops[0]\n";
+        shift(@hops);
+    }
+    $msg .= "\n";
+    return( 1, $msg );
 }
-elsif ($numArgs == 1) {
-    $src = "chi-cr1.es.net";
-    $dst = $ARGV[0];
-}
-elsif ($numArgs == 2) {
-    $src = $ARGV[0];
-    $dst = $ARGV[1];
-}
-else {
-    print STDERR "Test requires either no or 2 arguments\n";
-    exit;
-}
-
-print("Traceroute: $src -> $dst\n");
-
-# Run traceroute.
-$_jnxTraceroute->traceroute($src, $dst);
-
-print("Raw results:\n");
-@_rawTracerouteData = $_jnxTraceroute->get_raw_hop_data();
-while(defined($_rawTracerouteData[0]))  {
-    print('  ' . $_rawTracerouteData[0]);
-    shift(@_rawTracerouteData);
-}
-
-print("Hops:\n");
-@_hops = $_jnxTraceroute->get_hops();
-while(defined($_hops[0]))  {
-    print("  $_hops[0]\n");
-    shift(@_hops);
-}
-
-print("\n");
