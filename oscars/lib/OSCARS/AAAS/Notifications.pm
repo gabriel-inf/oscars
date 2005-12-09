@@ -220,7 +220,7 @@ sub convert_times {
     my $row = $self->{dbconn}->get_row( $statement );
     my $newtime = $row->{newtime};
 
-    my $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
+    $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
     $row = $self->{dbconn}->get_row( $statement, $newtime,
                                         $resv->{reservation_time_zone});
     $resv->{lsp_config_time} = $row->{newtime};
