@@ -5,5 +5,5 @@ use Test::Simple tests => 1;
 
 use OSCARS::BSS::RouteHandler;
 
-$rh = OSCARS::BSS::RouteHandler->new();
+my $rh = OSCARS::BSS::RouteHandler->new();
 ok($rh);

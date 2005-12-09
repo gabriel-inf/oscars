@@ -5,5 +5,5 @@ use Test::Simple tests => 1;
 
 use OSCARS::BSS::Policy;
 
-$policy = OSCARS::BSS::Policy->new();
+my $policy = OSCARS::BSS::Policy->new();
 ok($policy);
