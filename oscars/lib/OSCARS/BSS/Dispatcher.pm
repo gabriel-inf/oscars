@@ -4,13 +4,14 @@ package OSCARS::BSS::Dispatcher;
 # SOAP::Lite dispatcher for BSS.  Note well:  calls to the BSS are currently
 # assumed to have already been validated and authorized through the AAAS.
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 9, 2005
 # David Robertson (dwrobertson@lbl.gov)
 # Jason Lee       (jrlee@lbl.gov)
 
 use Data::Dumper;
 use Error qw(:try);
 
+use OSCARS::AAAS::Logger;
 use OSCARS::BSS::Database;
 use OSCARS::BSS::Methods;
 
@@ -29,28 +30,21 @@ my $request_handler = OSCARS::BSS::Methods->new('dbconn' => $dbconn);
 
 
 ###############################################################################
-sub dispatch {
-    my ( $class_name, $params ) = @_;
-
-    my $m = $params->{method};
-    my $results = $request_handler->$m($params) ;
-    return $results;
-} #____________________________________________________________________________ 
-
-
-###############################################################################
-# Replace dispatch with this when have BSS SOAP server going again (rather
-# than direct call to dispatch with hash of params
 #
-sub todo {
+sub dispatch {
     my ( $class_name, $params ) = @_;
 
     my ( $ex );
 
     my $results = {};
     try {
-        my $m = $params->{method};
-        $results = $request_handler->$m($params) ;
+        my $method_name = $params->{method};
+        if (!$params->{logger}) {
+            $params->{logger} =
+                OSCARS::AAAS::Logger->new( 'dir' => '/home/oscars/logs',
+                                           'method' => $method_name);
+        }
+        $results = $request_handler->$method_name($params) ;
     }
     catch Error::Simple with {
         $ex = shift;
