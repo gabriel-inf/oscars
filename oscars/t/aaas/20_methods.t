@@ -7,8 +7,8 @@ use SOAP::Lite;
 use Data::Dumper;
 
 my $soap_server = SOAP::Lite
-    ->uri('http://198.128.14.164/Dispatcher')
-    ->proxy('https://198.128.14.164/SOAP');
+    ->uri('http://localhost:2000/OSCARS/AAAS/Dispatcher')
+    ->proxy('http://localhost:2000/aaas');
 
 ok($soap_server);
 
