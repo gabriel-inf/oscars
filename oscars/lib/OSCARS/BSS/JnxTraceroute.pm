@@ -44,7 +44,7 @@ sub traceroute
            "$configs->{trace_conf_jnx_user} $src traceroute $dst wait " .
            "$configs->{trace_conf_timeout} ttl " .
            "$configs->{trace_conf_ttl}";
-    $logger->write($cmd);
+    $logger->write_log($cmd);
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Error::Simple("Unable to ssh into router and perform traceroute.");
     }

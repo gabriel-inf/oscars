@@ -64,7 +64,7 @@ sub find_interface_ids {
     }
     else {
         $params->{source_ip} = $self->name_to_ip($params->{source_host});
-        $params->{logger}->write("--traceroute:  " .
+        $params->{logger}->write_log("--traceroute:  " .
              "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}");
         ($params->{ingress_interface_id}, $loopback_ip, $path) =
             $self->do_traceroute(
@@ -89,7 +89,7 @@ sub find_interface_ids {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
         $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
-        $params->{logger}->write("--traceroute:  " .
+        $params->{logger}->write_log("--traceroute:  " .
                        "$loopback_ip to destination $params->{destination_ip}}");
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
             $self->do_traceroute($loopback_ip, $params->{destination_ip},
@@ -149,13 +149,13 @@ sub do_traceroute {
     # an oscars loopback address
     my $hop;
     for $hop (@hops)  {
-        $logger->write("hop:  $hop");
+        $logger->write_log("hop:  $hop");
         # id is 0 if not an edge router (not in interfaces table)
         $interface_id = $self->{dbconn}->ip_to_xface_id( $hop );
         $loopback_ip =
             $self->{dbconn}->xface_id_to_loopback( $interface_id );
         if (!$interface_id) {
-            $logger->write("edge router is $prev_loopback");
+            $logger->write_log("edge router is $prev_loopback");
             return ($prev_id, $prev_loopback, \@path);
         }
 
@@ -168,7 +168,7 @@ sub do_traceroute {
     }
     # Need this in case the last hop is in the database
     if ($prev_loopback) {
-        $logger->write("edge router is $prev_loopback");
+        $logger->write_log("edge router is $prev_loopback");
         my $unused = pop(@path);
         return ($prev_id, $prev_loopback, \@path);
     }
