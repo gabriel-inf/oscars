@@ -31,8 +31,8 @@ sub initialize {
     $self->{notifier} = OSCARS::AAAS::Notifications->new(
                                               'dbconn' => $self->{dbconn});
     $self->{method_mail} = {
-        'create_reservation' =>  1,
-        'cancel_reservation' =>  1,
+        'CreateReservation' =>  1,
+        'CancelReservation' =>  1,
         'find_pending_reservations' =>  1,
         'find_expired_reservations' =>  1,
     };

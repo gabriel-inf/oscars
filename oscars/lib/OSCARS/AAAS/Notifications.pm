@@ -3,7 +3,7 @@ package OSCARS::AAAS::Notifications;
 
 # Reservation statistics formatting.
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -21,9 +21,9 @@ sub new {
 
 
 ###############################################################################
-# create_reservation
+# CreateReservation
 #
-sub create_reservation {
+sub CreateReservation {
     my( $self, $user_dn, $resv) = @_;
 
     my( @messages );
@@ -36,9 +36,9 @@ sub create_reservation {
 
 
 ###############################################################################
-# cancel_reservation
+# CancelReservation
 #
-sub cancel_reservation {
+sub CancelReservation {
     my( $self, $user_dn, $resv) = @_;
 
     my( @messages );
