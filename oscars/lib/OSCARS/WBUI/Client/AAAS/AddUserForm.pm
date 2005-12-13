@@ -3,7 +3,7 @@ package Client::AAAS::AddUserForm;
 
 # Handles add_user form output
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -20,7 +20,6 @@ our @ISA = qw{Client::SOAPAdapter};
 sub modify_params {
     my( $self, $params ) = @_;
 
-    $params->{server_name} = 'AAAS';
     $self->SUPER::modify_params($params);
 } #____________________________________________________________________________
 
@@ -69,7 +68,7 @@ sub output {
     <strong>$self->{user_dn}</strong>.</p>
     <p>Required fields are outlined in green.</p>
     <form method='post' action='' onsubmit="return submit_form(this,
-                                                             'add_user', '');">
+                                                     'AAAS', 'AddUser', '');">
     <table id='zebra'>
     <tbody>
     <tr>

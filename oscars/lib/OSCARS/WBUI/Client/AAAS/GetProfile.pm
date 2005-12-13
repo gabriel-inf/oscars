@@ -3,7 +3,7 @@ package Client::AAAS::GetProfile;
 
 # Handles get_profile form submission
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -20,7 +20,6 @@ our @ISA = qw{Client::SOAPAdapter};
 sub modify_params {
     my( $self, $params ) = @_;
 
-    $params->{server_name} = 'AAAS';
     $self->SUPER::modify_params($params);
 } #____________________________________________________________________________
 
@@ -76,7 +75,7 @@ sub output {
     <h3>Editing profile for user: $dn</h3>
     <p>Required fields are outlined in green.</p>
     <form method='post' action=''
-        onsubmit="return submit_form(this, 'set_profile', '');">
+        onsubmit="return submit_form(this, 'AAAS', 'SetProfile', '');">
     <table id='zebra'>
       <tbody>
       <tr>

@@ -3,7 +3,7 @@ package Client::BSS::ViewReservations;
 
 # Handles request to view a given set of reservations.
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -20,7 +20,6 @@ our @ISA = qw{Client::SOAPAdapter};
 sub modify_params {
     my( $self, $params ) = @_;
 
-    $params->{server_name} = 'BSS';
     $self->SUPER::modify_params($params);
 } #____________________________________________________________________________
 
@@ -47,7 +46,7 @@ sub output {
     detailed information about the reservation.</p>
 
     <p><form method="post" action="" 
-             onsubmit="return submit_form(this, 'view_reservations', '');">
+             onsubmit="return submit_form(this, 'BSS', 'ViewReservations', '');">
     <input type='submit' value='Refresh'></input>
     </form></p>
 
@@ -91,8 +90,8 @@ sub print_row {
     <tr>
       <td>
       <a href='#' style='/styleSheets/layout.css'
-       onclick="return new_section(
-          'view_details', 'reservation_id=$row->{reservation_id}');"
+       onclick="return new_section('BSS', 
+          'ViewDetails', 'reservation_id=$row->{reservation_id}');"
           >$row->{reservation_tag}</a>
       </td>
       <td>$row->{reservation_start_time}</td>

@@ -1,7 +1,7 @@
 ###############################################################################
 package Client::SOAPAdapterFactory;
 
-# Last modified:  December 7, 2005
+# Last modified:  December 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 
@@ -16,46 +16,7 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
-
-sub initialize {
-    my( $self ) = @_;
-
-    # TODO:  Fix when have virtual hosts for AAAS and BSS
-    $self->{class_mapping} = {
-        'login' => 'Client::AAAS::Login',
-        'get_info' => 'Client::GetInfo',
-        'get_profile' => 'Client::AAAS::GetProfile',
-        'set_profile' => 'Client::AAAS::SetProfile',
-        'logout' => 'Client::AAAS::Logout',
-        'view_users' => 'Client::AAAS::ViewUsers',
-        'add_user_form' => 'Client::AAAS::AddUserForm',
-        'add_user' => 'Client::AAAS::AddUser',
-        'delete_user' => 'Client::AAAS::DeleteUser',
-        'create_reservation_form' => 'Client::BSS::CreateReservationForm',
-        'create_reservation' => 'Client::BSS::CreateReservation',
-        'cancel_reservation' => 'Client::BSS::CancelReservation',
-        'view_reservations' => 'Client::BSS::ViewReservations',
-        'view_details' => 'Client::BSS::ViewDetails',
-    };
-    $self->{location_mapping} = {
-        'login' => 'Client/AAAS/Login',
-        'get_info' => 'Client/GetInfo',
-        'get_profile' => 'Client/AAAS/GetProfile',
-        'set_profile' => 'Client/AAAS/SetProfile',
-        'logout' => 'Client/AAAS/Logout',
-        'view_users' => 'Client/AAAS/ViewUsers',
-        'add_user_form' => 'Client/AAAS/AddUserForm',
-        'add_user' => 'Client/AAAS/AddUser',
-        'delete_user' => 'Client/AAAS/DeleteUser',
-        'create_reservation_form' => 'Client/BSS/CreateReservationForm',
-        'create_reservation' => 'Client/BSS/CreateReservation',
-        'cancel_reservation' => 'Client/BSS/CancelReservation',
-        'view_reservations' => 'Client/BSS/ViewReservations',
-        'view_details' => 'Client/BSS/ViewDetails',
-    };
 } #___________________________________________________________________________                                         
 
 ###############################################################################
@@ -64,9 +25,11 @@ sub instantiate {
     my( $self, $cgi ) = @_;
 
     my $method_name = $cgi->param('method'); 
-    my $location = $self->{location_mapping}->{$method_name} . ".pm";
+    my $server_name = $cgi->param('server_name');
+    my $location = 'Client/' . $server_name . '/' . $method_name . '.pm';
     require $location;
-    return $self->{class_mapping}->{$method_name}->new('cgi' => $cgi);
+    my $class_name = 'Client::' . $server_name . '::' . $method_name;
+    return $class_name->new('cgi' => $cgi);
 } #___________________________________________________________________________                                         
 
 

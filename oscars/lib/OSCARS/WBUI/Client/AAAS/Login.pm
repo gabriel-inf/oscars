@@ -47,7 +47,6 @@ sub authorize {
 sub modify_params {
     my( $self, $params ) = @_;
 
-    $params->{server_name} = 'AAAS';
     $params->{user_level} = 2;   # TODO:  FIX user level
     $self->SUPER::modify_params($params);
 } #____________________________________________________________________________

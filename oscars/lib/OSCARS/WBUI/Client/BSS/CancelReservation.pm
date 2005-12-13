@@ -4,7 +4,7 @@ package Client::BSS::CancelReservation;
 # Makes a SOAP call to cancel the reservation listed in the reservation
 # details form, and displays the modified reservation results.
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -23,7 +23,6 @@ our @ISA = qw{Client::SOAPAdapter};
 sub modify_params {
     my( $self, $params ) = @_;
 
-    $params->{server_name} = 'BSS';
     $self->SUPER::modify_params($params);
 } #____________________________________________________________________________
 

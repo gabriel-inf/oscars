@@ -53,12 +53,12 @@ sub print_user {
     print qq{
     <tr>
       <td><a href='#' style='/styleSheets/layout.css'
-        onclick="new_section('get_profile', 'id=$row->{user_dn}');
+        onclick="new_section('AAAS', 'GetProfile', 'id=$row->{user_dn}');
         return false;">$row->{user_last_name}</a></td>
       <td>$row->{user_first_name}</td> <td>$row->{user_dn}</td>
       <td>$str_level</td>      <td>$row->{institution_id}</td>
       <td><a href='#' style='/styleSheets/layout.css'
-        onclick="new_section('delete_user', 'id=$row->{user_dn}');
+        onclick="new_section('AAAS', 'DeleteUser', 'id=$row->{user_dn}');
         return false;">Delete</a></td>
     </tr>
     };

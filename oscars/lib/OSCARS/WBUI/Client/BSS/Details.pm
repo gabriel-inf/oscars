@@ -88,7 +88,7 @@ sub output_details {
         ($results->{reservation_status} eq 'active')) {
         print qq{
         <form method="post" action=""
-              onsubmit="return submit_form(this, 'cancel_reservation', '');">
+              onsubmit="return submit_form(this, 'BSS', 'CancelReservation', '');">
         <input type='submit' value='CANCEL'></input>
         <input type='hidden' name='reservation_id'
                value="$results->{reservation_id}"></input>
@@ -98,7 +98,7 @@ sub output_details {
 
     print qq{
     <form method="post" action=""
-          onsubmit="return submit_form(this, 'view_details', '');">
+          onsubmit="return submit_form(this, 'BSS', 'ViewDetails', '');">
     <input type='submit' value='Refresh'></input>
     <input type='hidden' name='reservation_id'
            value="$results->{reservation_id}"></input>
@@ -106,7 +106,7 @@ sub output_details {
     </p>
 
     <p><a href='#' style='/styleSheets/layout.css'
-          onclick="return new_section('view_reservations', '');">
+          onclick="return new_section('BSS', 'ViewReservations', '');">
     <strong>Back to reservations list</strong></a></p>
     <p>For inquiries, please contact the project administrator.</p>
     </div>

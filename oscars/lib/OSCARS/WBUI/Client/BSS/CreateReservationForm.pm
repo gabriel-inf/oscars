@@ -3,7 +3,7 @@ package Client::BSS::CreateReservationForm;
 
 # Handles request to display the make reservation form.
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 13, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -20,7 +20,6 @@ our @ISA = qw{Client::SOAPAdapter};
 sub modify_params {
     my( $self, $params ) = @_;
 
-    $params->{server_name} = 'BSS';
     $self->SUPER::modify_params($params);
 } #____________________________________________________________________________
 
@@ -53,7 +52,7 @@ sub output {
     <msg>Reservation creation form</msg>
     <div id='reservation_ui'>
     <form method='post' action=''
-      onsubmit="return submit_form(this, 'create_reservation', '');">
+      onsubmit="return submit_form(this, 'BSS', 'CreateReservation', '');">
       <input type='hidden' name='reservation_start_time'></input>
       <input type='hidden' name='reservation_end_time'></input>
       <input type='hidden' name='user_dn' value="$self->{user_dn}">

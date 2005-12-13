@@ -25,7 +25,7 @@ sub run {
     my ( %soap_params );
 
     my $soap_server = SOAP::Lite
-                          -> uri('http://localhost:2000/OSCARS::AAAS::Dispatcher')
+                          -> uri('http://localhost:2000/OSCARS/AAAS/Dispatcher')
                           -> proxy('http://localhost:2000/aaas');
     my $factory = Client::SOAPAdapterFactory->new();
     my $cgi = CGI->new();
