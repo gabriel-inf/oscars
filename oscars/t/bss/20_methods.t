@@ -14,7 +14,7 @@ my $soap_server = SOAP::Lite
 ok($soap_server);
 
 ( $status, $msg ) = view_reservations($soap_server,
-                          'drobertson@lbl.gov', 15);
+                          'dwrobertson@lbl.gov', 15);
 ok( $status, $msg );
 print STDERR $msg;
 
@@ -30,12 +30,12 @@ ok( $status, $msg );
 print STDERR $msg;
 
 ( $status, $msg ) = test_scheduling_reservations($soap_server,
-                          'find_pending_reservations', 15);
+                          'find_pending_reservations', 'scheduler', 15);
 ok( $status, $msg );
 print STDERR $msg;
 
 ( $status, $msg ) = test_scheduling_reservations($soap_server,
-                          'find_expired_reservations', 15);
+                          'find_expired_reservations', 'scheduler', 15);
 ok( $status, $msg );
 print STDERR $msg;
 
@@ -153,11 +153,12 @@ sub view_details {
 #############################################################################
 #
 sub test_scheduling_reservations {
-    my ( $soap_server, $method_name, $user_level ) = @_;
+    my ( $soap_server, $method_name, $user_dn, $user_level ) = @_;
 
     my %params;
 
     $params{method} = $method_name;
+    $params{user_dn} = $user_dn;
     $params{user_level} = $user_level;
     $params{time_interval} = 20;
     $params{server_name} = 'BSS';
