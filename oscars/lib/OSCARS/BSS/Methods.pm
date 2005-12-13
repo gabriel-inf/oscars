@@ -98,7 +98,7 @@ sub CancelReservation {
     my( $self, $params ) = @_;
 
     my $status =  $self->{dbconn}->update_status( $params, 'precancel' );
-    return $self->view_details($params);
+    return $self->ViewDetails($params);
 } #____________________________________________________________________________ 
 
 
