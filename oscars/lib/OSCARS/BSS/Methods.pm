@@ -19,6 +19,7 @@ use strict;
 use OSCARS::BSS::Database;
 use OSCARS::BSS::Policy;
 use OSCARS::BSS::RouteHandler;
+use OSCARS::BSS::UpdateRouterTables;
 use OSCARS::PSS::JnxLSP;
 
 # until can get MySQL and views going
@@ -43,6 +44,8 @@ sub initialize {
     $self->{policy} = OSCARS::BSS::Policy->new( 'dbconn' => $self->{dbconn});
     $self->{route_setup} = OSCARS::BSS::RouteHandler->new(
                       'dbconn' => $self->{dbconn});
+    $self->{router_updater} = OSCARS::BSS::UpdateRouterTables->new(
+                      'dbconn' => $self->{dbconn});
     # PSS setup
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
@@ -52,14 +55,14 @@ sub initialize {
 
 
 ###############################################################################
-# create_reservation:  SOAP call to insert a row into the reservations table. 
+# CreateReservation:  SOAP call to insert a row into the reservations table. 
 #     OSCARS::BSS::RouteHandler is called to set up the route before
 #     inserting a reservation in the database
 # In:  reference to hash.  Hash's keys are all the fields of the reservations
 #      table except for the primary key.
 # Out: ref to results hash.
 #
-sub create_reservation {
+sub CreateReservation {
     my( $self, $params ) = @_;
     my( $duration_seconds );
 
@@ -86,12 +89,12 @@ sub create_reservation {
 
 
 ###############################################################################
-# cancel_reservation:  Given the reservation id, leave the reservation in the
+# CancelReservation:  Given the reservation id, leave the reservation in the
 #     db, but mark status as cancelled, and set the ending time to 0 so that 
 #     find_expired_reservations will tear down the LSP if the reservation is
 #     active.
 #
-sub cancel_reservation {
+sub CancelReservation {
     my( $self, $params ) = @_;
 
     my $status =  $self->{dbconn}->update_status( $params, 'precancel' );
@@ -100,14 +103,14 @@ sub cancel_reservation {
 
 
 ###############################################################################
-# view_reservations:  get reservations from the database.  If the user has
+# ViewReservations:  get reservations from the database.  If the user has
 #     engr privileges, they can view all reservations.  Otherwise they can
 #     only view their own.
 #
 # In:  reference to hash of parameters
 # Out: reference to array of hashes
 #
-sub view_reservations {
+sub ViewReservations {
     my( $self, $params ) = @_;
 
     my( $statement, $rows );
@@ -142,7 +145,7 @@ sub view_reservations {
 
 
 ###############################################################################
-# view_details:  get reservation details from the database, given its
+# ViewDetails:  get reservation details from the database, given its
 #     reservation id.  If a user has engr privileges, they can view any 
 #     reservation's details.  Otherwise they can only view reservations that
 #     they have made, with less of the details.
@@ -150,7 +153,7 @@ sub view_reservations {
 # In:  reference to hash of parameters
 # Out: reservations if any, and status message
 #
-sub view_details {
+sub ViewDetails {
     my( $self, $params ) = @_;
 
     my( $statement, $row );
@@ -200,7 +203,7 @@ sub find_pending_reservations {
     my( $reservations, $status );
     my( $error_msg );
 
-    print STDERR "BSS Scheduler: searching for reservations to schedule\n";
+    $params->{logger}->write_log("BSS Scheduler: searching for reservations to schedule");
     # find reservations that need to be scheduled
     $reservations = $self->{dbconn}->find_pending_reservations(
                                                       $params->{time_interval});
@@ -209,8 +212,8 @@ sub find_pending_reservations {
     for my $resv (@$reservations) {
         $self->{dbconn}->map_to_ips($resv);
         # call PSS to schedule LSP
-        $resv->{lsp_status} = $self->setup_pss($resv);
-        $self->update_reservation( $resv, 'active' );
+        $resv->{lsp_status} = $self->setup_pss($params, $resv);
+        $self->update_reservation( $params, $resv, 'active' );
     }
     return $reservations;
 } #____________________________________________________________________________ 
@@ -226,7 +229,7 @@ sub find_expired_reservations {
     my( $reservations, $status );
     my( $error_msg );
 
-    print STDERR "BSS Scheduler: searching for expired reservations\n";
+    $params->{logger}->write_log("BSS Scheduler: searching for expired reservations");
     # find reservations whose end time is before the current time and
     # thus expired
     $reservations = $self->{dbconn}->find_expired_reservations(
@@ -235,10 +238,22 @@ sub find_expired_reservations {
 
     for my $resv (@$reservations) {
         $self->{dbconn}->map_to_ips($resv);
-        $resv->{lsp_status} = $self->teardown_pss($resv);
+        $resv->{lsp_status} = $self->teardown_pss($params, $resv);
         $self->update_reservation( $resv, 'finished' );
     }
     return $reservations;
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# update_router_tables:  Update information in router, interface, and ipaddrs
+#                        tables
+#
+sub update_router_tables {
+    my ($self, $params) = @_;
+
+    $self->{router_updater}->update_router_info($params);
+    return { 'msg' => 'success' } ;
 } #____________________________________________________________________________ 
 
 
@@ -340,22 +355,22 @@ sub check_nulls {
 # setup_pss:  format the args and call pss to do the configuration change
 #
 sub setup_pss {
-    my( $self, $resv_info ) = @_;   
+    my( $self, $params, $resv_info ) = @_;   
 
     my( $error );
 
-    print STDERR "execing pss to schedule reservations\n";
+    $params->{logger}->write_log("Creating lsp_info...");
 
         # Create an LSP object.
     my $lsp_info = $self->map_fields($resv_info);
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
-    print STDERR "Setting up LSP...\n";
+    $params->{logger}->write_log("Setting up LSP...");
     $jnxLsp->configure_lsp($self->{LSP_SETUP}, $resv_info);
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
-    print STDERR "LSP setup complete\n" ;
+    $params->{logger}->write_log("LSP setup complete");
     return "";
 } #____________________________________________________________________________ 
 
@@ -364,7 +379,7 @@ sub setup_pss {
 # teardown_pss:  format the args and call pss to teardown the configuraion 
 #
 sub teardown_pss {
-    my ( $self, $resv_info ) = @_;
+    my ( $self, $params, $resv_info ) = @_;
 
     my ( $error );
 
@@ -372,12 +387,12 @@ sub teardown_pss {
     my $lsp_info = $self->map_fields($resv_info);
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
-    print STDERR "Tearing down LSP...\n" ;
+    $params->{logger}->write_log("Tearing down LSP...");
     $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $resv_info); 
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
-    print STDERR "LSP teardown complete\n" ;
+    $params->{logger}->write_log("LSP teardown complete");
     return "";
 } #____________________________________________________________________________ 
 
@@ -387,16 +402,16 @@ sub teardown_pss {
 #                     active
 #
 sub update_reservation {
-    my ($self, $resv, $status) = @_;
+    my ($self, $params, $resv, $status) = @_;
 
-    print STDERR "Updating status of reservation $resv->{reservation_id} to ";
+    $params->{logger}->write_log("Updating status of reservation $resv->{reservation_id} to ");
     if ( !$resv->{lsp_status} ) {
         $resv->{lsp_status} = "Successful configuration";
         $status = $self->{dbconn}->update_status($resv, $status);
     } else {
         $status = $self->{dbconn}->update_status($resv, 'failed');
     }
-    print STDERR "$status\n";
+    $params->{logger}->write_log("$status");
 } #____________________________________________________________________________ 
 
 

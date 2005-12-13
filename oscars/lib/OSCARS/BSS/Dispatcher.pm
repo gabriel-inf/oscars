@@ -39,11 +39,10 @@ sub dispatch {
     my $results = {};
     try {
         my $method_name = $params->{method};
-        if (!$params->{logger}) {
-            $params->{logger} =
+        $params->{logger} =
                 OSCARS::AAAS::Logger->new( 'dir' => '/home/oscars/logs',
                                            'method' => $method_name);
-        }
+        $params->{logger}->start_log( $params->{user_dn} );
         $results = $request_handler->$method_name($params) ;
     }
     catch Error::Simple with {
@@ -54,10 +53,11 @@ sub dispatch {
     }
     finally {
         if ($ex) {
-            print STDERR "BSS EXCEPTION:\n";
-            print STDERR "BSS: $ex->{-text}\n";
+            $params->{logger}->write_log("BSS EXCEPTION:");
+            $params->{logger}->write_log("BSS: $ex->{-text}");
         }
     };
+    $params->{logger}->end_log( $results );
     # caught by SOAP to indicate fault
     if ($ex) {
         die SOAP::Fault->faultcode('Server')

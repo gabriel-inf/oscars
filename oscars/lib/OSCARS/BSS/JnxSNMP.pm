@@ -3,7 +3,7 @@ package OSCARS::BSS::JnxSNMP;
 
 # Authors: Chin Guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Queries MPLS SNMP MIB on Juniper routers.
-# Last modified:  December 7, 2005
+# Last modified:  December 9, 2005
 
 
 use Data::Dumper;
@@ -12,8 +12,8 @@ use SNMP;
 use strict;
 
 &SNMP::addMibFiles(
-  "$ENV{OSCARS_HOME}/BSS/SNMP/mibs/mib-jnx-smi.txt",
-  "$ENV{OSCARS_HOME}/BSS/SNMP/mibs/mib-jnx-mpls.txt"
+  "$ENV{OSCARS_HOME}/BSS/mibs/mib-jnx-smi.txt",
+  "$ENV{OSCARS_HOME}/BSS/mibs/mib-jnx-mpls.txt"
 );
 
 
