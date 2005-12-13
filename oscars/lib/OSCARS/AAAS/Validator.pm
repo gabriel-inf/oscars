@@ -14,7 +14,7 @@ use Data::Dumper;
 
 my $tests = {
      # AAAS
-    'login' => {
+    'Login' => {
         # must be valid email address
         'user_dn' => (
             {'regexp' => '.+',
@@ -27,7 +27,7 @@ my $tests = {
             }
         )
     },
-    'set_profile' => {
+    'SetProfile' => {
         'user_password' => (
             {'regexp' => '.+',
             'error' => "Please enter the user's current password."
@@ -59,7 +59,7 @@ my $tests = {
             }
         )
     },
-    'add_user' => {
+    'AddUser' => {
         'user_password' => (
             {'regexp' => '.+',
             'error' => "Please enter the user's current password."
@@ -93,7 +93,7 @@ my $tests = {
     },
 
     # BSS
-    'create_reservation' => {
+    'CreateReservation' => {
         'reservation_start_time' => (
             {'regexp' => '.+',
              'error' => "Please enter the reservation starting time."
@@ -127,16 +127,16 @@ my $tests = {
     },
     # no tests yet
     # AAAS
-    'get_profile' => {},
-    'view_users' => {},
-    'add_user_form' => {},
-    'delete_user' => {},
+    'GetProfile' => {},
+    'ViewUsers' => {},
+    'AddUserForm' => {},
+    'DeleteUser' => {},
     'view_institutions' => {},
     'view_permissions' => {},
     # BSS
-    'cancel_reservation' => {},
-    'view_reservations' => {},
-    'view_details' => {},
+    'CancelReservation' => {},
+    'ViewReservations' => {},
+    'ViewDetails' => {},
     'find_pending_reservations' => {},
     'find_expired_reservations' => {}
 };

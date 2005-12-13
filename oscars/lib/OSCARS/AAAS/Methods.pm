@@ -39,12 +39,12 @@ sub new {
 
 
 ###############################################################################
-# login:  Log in to OSCARS.
+# Login:  Log in to OSCARS.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results containing user dn and user level.
 #
-sub login {
+sub Login {
     my( $self, $params ) = @_;
 
     my $user_dn = $params->{user_dn};
@@ -69,14 +69,14 @@ sub login {
 
 
 ###############################################################################
-# get_profile:  Gets the user profile from the database.  If the user has
+# GetProfile:  Gets the user profile from the database.  If the user has
 #     admin privileges, show all fields.  If the user is an admin, they can
 #     request the profile of another user.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub get_profile {
+sub GetProfile {
     my( $self, $params ) = @_;
 
     my( $statement, $results );
@@ -123,13 +123,13 @@ sub get_profile {
 
 
 ###############################################################################
-# set_profile:  Modifies the user profile for a particular user.  If the
+# SetProfile:  Modifies the user profile for a particular user.  If the
 #     user has admin privileges, they can set the information for another
 #     user.
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub set_profile {
+sub SetProfile {
     my ( $self, $params ) = @_;
 
     my $user_dn = $params->{user_dn};
@@ -228,12 +228,12 @@ sub view_permissions {
 
 
 ###############################################################################
-# add_user:  Add a user to the OSCARS database.
+# AddUser:  Add a user to the OSCARS database.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub add_user {
+sub AddUser {
     my ( $self, $params ) = @_;
 
     my $results = {};
@@ -282,12 +282,12 @@ sub add_user {
 
 
 ###############################################################################
-# delete_user:  Deletes user with the given distinguished name
+# DeleteUser:  Deletes user with the given distinguished name
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub delete_user {
+sub DeleteUser {
     my( $self, $params ) = @_;
 
     my $statement = 'DELETE from users where user_dn = ?';
@@ -297,11 +297,11 @@ sub delete_user {
 
 
 ###############################################################################
-# view_users:  Retrieves the profile information for all users.
+# ViewUsers:  Retrieves the profile information for all users.
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub view_users {
+sub ViewUsers {
     my( $self, $params ) = @_;
 
     my( $r, $irow, $user );
