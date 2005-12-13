@@ -50,7 +50,7 @@ var navigation_names = new Array(
                     
 // Checks validity of form settings, and uses Sarissa to post request
 // and get back result.
-function submit_form( form, method_name, params_str )
+function submit_form( form, server_name, method_name, extra_params )
 {
     var valid = check_form( form, method_name );
     if (!valid) { return false; }
@@ -59,17 +59,16 @@ function submit_form( form, method_name, params_str )
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open('POST', '/perl/adapt.pl', false);
     xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    if (!params_str) {
-        params_str = 'method=' + method_name + ';';
-        if (form.elements) {
-            var form_elements = form.elements;
-            var num_elements = form.elements.length;
-            for (var e=0; e < num_elements; e++) {
-                if (form_elements[e].value && form_elements[e].name) {
-                    params_str += form_elements[e].name + '=' + form_elements[e].value + ';';
-                }
+    var params_str = 'method=' + method_name + ';';
+    params_str += 'server_name=' + server_name + ';';
+    if (form.elements) {
+        var form_elements = form.elements;
+        var num_elements = form.elements.length;
+        for (var e=0; e < num_elements; e++) {
+            if (form_elements[e].value && form_elements[e].name) {
+                params_str += form_elements[e].name + '=' + form_elements[e].value + ';';
             }
-        } 
+        }
     }
     xmlhttp.send(params_str);
     get_response(xmlhttp, method_name);
@@ -78,9 +77,9 @@ function submit_form( form, method_name, params_str )
 
 // Updates status and main portion of page (same as above, but without
 // form submission).
-function new_section( method_name, params ) {
+function new_section( server_name, method_name, params ) {
     var xmlhttp = new XMLHttpRequest();
-    var url = '/perl/adapt.pl?method=' + method_name;
+    var url = '/perl/adapt.pl?method=' + method_name + ';server_name=' + server_name;
     if (params) {
         url += ';' + params;
     }
@@ -102,7 +101,7 @@ function get_response(xmlhttp, method_name) {
     var returned_divs = response_dom.getElementsByTagName('div');
 
     // Initialize navigation bar on login
-    if ((method_name == 'login') && returned_divs.length) {
+    if ((method_name == 'Login') && returned_divs.length) {
         var nav_node = document.getElementById('nav_div');
         if (nav_node) {
             var returned_nav_nodes =
@@ -148,7 +147,7 @@ function get_response(xmlhttp, method_name) {
     main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
     stripe('zebra');
 
-    if (method_name == 'create_reservation_form') {
+    if (method_name == 'CreateReservationForm') {
         var time_node = document.getElementById('tz_option_list');
         if (time_node) {
             time_node.innerHTML = tz_option_list();
@@ -158,8 +157,8 @@ function get_response(xmlhttp, method_name) {
             time_node.innerHTML = time_settings_example();
         }
     }
-    else if ((method_name == 'view_reservations') ||
-             (method_name == 'view_users') ) {
+    else if ((method_name == 'ViewReservations') ||
+             (method_name == 'ViewUsers') ) {
         sortables_init();
     }
 }
@@ -168,11 +167,11 @@ function get_response(xmlhttp, method_name) {
 function check_form( form, method_name )
 {
     if (!form) { return true; }
-    if (method_name == 'login') { return check_login( form ); }
-    else if (method_name == 'create_reservation') { 
+    if (method_name == 'Login') { return check_login( form ); }
+    else if (method_name == 'CreateReservation') { 
         return check_reservation( form );
     }
-    else if (method_name == 'set_profile') { return check_user_profile( form ); }
+    else if (method_name == 'SetProfile') { return check_user_profile( form ); }
     return true;
 }
 
