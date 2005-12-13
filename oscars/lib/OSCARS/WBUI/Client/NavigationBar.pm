@@ -33,7 +33,7 @@ sub initialize {
       <li>
         <a style="/styleSheets/layout.css" title="Information page"
            class="active" id="get_info"
-           onclick="new_section('AAAS', 'GetInfo');return false;"
+           onclick="new_section('', 'GetInfo');return false;"
            href="#">Information</a>
       </li>
     };

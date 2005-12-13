@@ -24,11 +24,19 @@ sub new {
 sub instantiate {
     my( $self, $cgi ) = @_;
 
+    my( $location, $class_name );
+
     my $method_name = $cgi->param('method'); 
     my $server_name = $cgi->param('server_name');
-    my $location = 'Client/' . $server_name . '/' . $method_name . '.pm';
+    if ($server_name) {
+        $location = 'Client/' . $server_name . '/' . $method_name . '.pm';
+        $class_name = 'Client::' . $server_name . '::' . $method_name;
+    }
+    else {
+        $location = 'Client/' . $method_name . '.pm';
+        $class_name = 'Client::' . $method_name;
+    }
     require $location;
-    my $class_name = 'Client::' . $server_name . '::' . $method_name;
     return $class_name->new('cgi' => $cgi);
 } #___________________________________________________________________________                                         
 
