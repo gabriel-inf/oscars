@@ -44,12 +44,15 @@ my $BSS_server = SOAP::Lite
 sub dispatch {
     my ( $class_name, $params ) = @_;
 
-    my( $ex,  );
     my $results = {};
-    my $method_name;
+    my ( $method_name, $som, $ex );
 
     try {
         $method_name = $params->{method};
+        $params->{logger} = OSCARS::AAAS::Logger->new(
+                           'dir' => '/home/oscars/logs',
+                           'method' => $method_name);
+        $params->{logger}->start_log($params->{user_dn});
         if (!$auth->authorized($params, $method_name)) {
             throw Error::Simple(
                 "User $params->{user_dn} not authorized to make $method_name call");
@@ -59,34 +62,25 @@ sub dispatch {
         if ($err) { throw Error::Simple($err); }
         # either AAAS handles this call
         if ( $params->{server_name} eq 'AAAS' ) {
-            $params->{logger} = OSCARS::AAAS::Logger->new(
-                               'dir' => '/home/oscars/logs',
-                               'method' => $method_name);
-            $params->{logger}->start_log($params->{user_dn});
             $results = $request_handler->$method_name($params);
         }
         # or else it is forwarded to the BSS SOAP server
         else {
-            my $som = $BSS_server->dispatch($params);
+            $som = $BSS_server->dispatch($params);
             $results = $som->result;
         }
     }
-    catch Error::Simple with {
-        $ex = shift;
-    }
-    otherwise {
-        $ex = shift;
-    }
+    catch Error::Simple with { $ex = shift; }
+    otherwise { $ex = shift; }
     finally {
-        if ($ex) {
-            if ( $params->{logger} ) {
-                $params->{logger}->write_log("AAAS EXCEPTION:\n");
-                $params->{logger}->write_log("AAAS: $ex->{-text}\n");
-            }
-            else {
-                print STDERR "AAAS EXCEPTION:\n";
-                print STDERR "AAAS: $ex->{-text}\n";
-            }
+        if ( $ex ) {
+            $params->{logger}->write_log("AAAS EXCEPTION:\n");
+            $params->{logger}->write_log("AAAS: $ex->{-text}\n");
+        }
+        # only will happen with BSS exception
+        if ( $som && $som->faultstring ) {
+            $params->{logger}->write_log("BSS EXCEPTION:\n");
+            $params->{logger}->write_log("BSS: $som->faultstring\n");
         }
     };
     if ( $params->{logger} ) { $params->{logger}->end_log($results); }
@@ -97,6 +91,11 @@ sub dispatch {
     if ($ex) {
         die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
+    }
+    # if BSS exception occurred
+    if ($som && $som->faultstring) {
+        die SOAP::Fault->faultcode('Server')
+                 ->faultstring($som->faultstring);
     }
     return $results;
 } #____________________________________________________________________________ 
