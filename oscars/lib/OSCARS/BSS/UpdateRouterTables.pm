@@ -4,7 +4,7 @@ package OSCARS::BSS::UpdateRouterTables;
 # Reads ifrefpoll files to update database with latest router and interface 
 # information
 #
-# Last modified:   December 7, 2005
+# Last modified:   December 13, 2005
 # David Robertson  (dwrobertson@lbl.gov)
 # Jason Lee        (jrlee@lbl.gov)
 
@@ -30,7 +30,7 @@ sub initialize {
     my ($self) = @_;
 
     $self->{dbconn} = OSCARS::BSS::Database->new(
-                              'database' => 'DBI:mysql:BSS',
+                              'database' => 'DBI:mysql:BSSTest',
                               'dblogin' => 'oscars',
                               'password' => 'ritazza6')
                       or die "FATAL:  could not connect to database";
@@ -41,20 +41,21 @@ sub initialize {
 # update_router_info: 
 #
 # Gets latest SNMP data to update routers, interfaces, and 
-# ipaddrs table Currently only inserts on empty tables are tested.
+# ipaddrs table.  Currently only inserts on empty tables are tested.
 # 
 sub update_router_info {
     my( $self, $params ) = @_;
 
-    my( @file_list, $routers, $interfaces );
+    my( @file_list, $router_info );
 
     chdir($params->{directory});
     opendir(DATADIR, ".") or die "Directory: $params->{directory}: $!";
     # For now, assumes all files are data files
     @file_list = grep { $_ ne '.' and $_ ne '..' } readdir(DATADIR);
     closedir(DATADIR);
-    ($routers, $interfaces) = $self->read_snmp_files(@file_list);
-    #$self->update_db($routers, $interfaces);
+    $router_info = $self->read_snmp_files(@file_list);
+    $self->update_db($router_info);
+    return 1;
 } #___________________________________________________________________________
 
 
@@ -62,76 +63,88 @@ sub update_router_info {
 # read_snmp_files:  reads list of SNMP output files
 #
 # In:   list of file names
-# Out:  refs to two hashes; each hash is keyed by the router name associated
-#       with it.
 #
 sub read_snmp_files {
     my( $self, @file_list ) = @_;
 
-    my( %interfaces, %routers, $router_name, $router_info, $interface_info );
+    my( %routers, $router_name, $router_info, $interface_info );
     my( $path, $suffix );
 
     my @suffixlist = (".out");
     for my $fname (@file_list) {
-        ($router_info, $interface_info) = $self->read_snmp_data($fname);
+        $interface_info = $self->read_snmp_data($fname);
         ($router_name, $path, $suffix) = fileparse($fname,@suffixlist);
-        print STDERR "foo: $router_name\n";
-        $routers{$router_name} = $router_info;
-        $interfaces{$router_name} = $interface_info;
-        print Dumper($interfaces{$router_name});
+        $routers{$router_name} = $interface_info;
     }
-    return( \%routers, \%interfaces );
+    return( \%routers );
 } #___________________________________________________________________________
 
 
 ##############################################################################
 # read_snmp_data:  Reads data for one snmp output file.
 #
-# It assumes snmp output, for example
+# It assumes snmp output in a particular order, for example
 #  time              var                   data
-# 1117523019     ifDescr.24                gr-0/0/0
-# 1117523019     ipAdEntIfIndex.127.0.0.1  16
+# ...
+# 1117523019     ifDescr.116                lo0.0
+# ...
+# 1117523019     ifAlias.116                snv2-sdn1::loopback:show:na
+# ...
+# 1117523019     ifSpeed.116                0
+# ...
+# 1117523019     ifHighSpeed.116            0
 #
-# Two cases are handled.  If a row is an ipAdEntIfIndex entry, the second
-# part of the "var" field (the IP address) is used as a key into a hash 
-# (routers), and the data field (the interface index) is the hash value.
-#
-# In the other case, the interface number is used as an index into an array
-# of hashes (interfaces).  The first portion of the "var" field is used as
-# the hash key, and the "data" field is the value.  The interface index is
-# the second portion of the "var" field.
-#
-# In:   file name
-# Out:  ref to hash keying IP address to interface index, and ref to array of
-#       hashes indexed by interface index
+# 1117523019     ipAdEntIfIndex.127.0.0.1   116
 #
 sub read_snmp_data {
     my( $self, $fname ) = @_;
 
-    my( $time_ctr, %router_info, @interface_info, @fields );
+    my( %interface_info, $snmp_time, $snmp_var, $snmp_data );
+    my( @snmp_fields, $ipaddr, $section_info ); 
+    my $current_section = '';
 
+    my %ipInfo = ();
+    my %ifInfo = ();
     open SNMP_OUT, $fname or die("Unable to open: $!\n");
-    $time_ctr = 0;
     while(<SNMP_OUT>) {
         chomp;
-        if (/sysUpTimeInstance./) {
-            $time_ctr++ ;
-            # ignore subsequent times (delineated by sysUpTimeInstance)
-            if ($time_ctr > 1) { last; }
-            next;
+        ( $snmp_time, $snmp_var, $snmp_data ) = split;
+        if (!$snmp_var) { next; }
+        @snmp_fields = split('\.', $snmp_var);
+        if ($snmp_fields[0] ne $current_section) {
+            if ($snmp_fields[0] eq 'sysUpTimeInstance') {
+                if ($current_section) { last; }
+                else { next; }
+            }
+            else  {
+                $current_section = $snmp_fields[0];
+            }
         }
-        @fields = split;
-        if (!$fields[1]) { next; }
-        #  TODO:  error checking
-        if ($fields[1] =~ /(ipAdEntIfIndex.)([\d\.]*)/) {
-            $router_info{$2} = $fields[2];
+        # first part is name, second part is index
+        if ($current_section ne 'ipAdEntIfIndex') {
+            if ($snmp_fields[1]) {
+                if (!$ifInfo{$snmp_fields[1]}) {
+                    $ifInfo{$snmp_fields[1]} = { index => $snmp_fields[1] };
+                }
+                $ifInfo{$snmp_fields[1]}{$current_section} = $snmp_data;
+            }
         }
-        elsif ($fields[1] =~ /(\w+\.)([\d\.]*)/) {
-            $interface_info[$2]{substr($1, 0, -1)} = $fields[2];
+        # second part is IP address, $snmp_data is index
+        else {
+            $ipaddr = join('.', @snmp_fields[1, 2, 3, 4]);
+            $ipInfo{$ipaddr} = $snmp_data;
         }
     }
     close(SNMP_OUT);
-    return( \%router_info, \@interface_info);
+    my $idx;
+    for my $ip (keys(%ipInfo)) {
+        $idx = $ipInfo{$ip};
+        if ($ifInfo{$idx}) {
+            $interface_info{$ip} = $ifInfo{$idx};
+        }
+        else { $interface_info{$ip} = undef; }
+    }
+    return( \%interface_info );
 } #___________________________________________________________________________
 
 
@@ -143,25 +156,31 @@ sub read_snmp_data {
 # Out:  Error if any
 #
 sub update_db {
-    my( $self, $routers, $interfaces ) = @_;
+    my( $self, $router_info ) = @_;
 
-    my( $router_id, $mpls_loopback );
+    my( $router_id, $mpls_loopback, $interface, $interface_id );
 
     # for now (ESnet)
     my $network_id = 1;
-    for my $router_name (sort keys %$routers) {   # sort by router name
-        print STDERR '** ', $router_name, "\n";
-        $mpls_loopback = undef;
-        for my $ipaddr (sort keys %{$routers->{$router_name}}) {    # sort by IP
+    for my $router_name (sort keys %$router_info) {   # sort by router name
+        print STDERR "$router_name\n";
+        $mpls_loopback = 'NULL';
+        for my $ipaddr (sort keys %{$router_info->{$router_name}}) {    # sort by IP
             if ($ipaddr =~ /134\.55\.75\.*/) {
                  $mpls_loopback = $ipaddr;
                  last;
             }
         }
-        if ($mpls_loopback) {
-            $router_id = $self->update_routers_table($network_id, $router_name,
-                                                     $mpls_loopback);
-            $self->update_xfaces_table($router_id, $interfaces->{router_name});
+        $router_id = $self->update_routers_table($network_id, $router_name,
+                                                 $mpls_loopback);
+        for my $ip (keys(%{$router_info->{$router_name}})) {
+            $interface = $router_info->{$router_name}->{$ip};
+            if ($interface) {
+                $interface_id = $self->update_xfaces_table($router_id, $interface);
+                if ($interface_id) {
+                    $self->update_ipaddrs_table($interface_id, $ip);
+                }
+            }
         }
     } 
 } #___________________________________________________________________________
@@ -185,13 +204,13 @@ sub update_routers_table {
     # no match; need to do an insert
     if ( !$row ) {
         $statement = "INSERT into routers VALUES ( NULL, True,
-                     '$router_name', '$mpls_loopback',
-                     $network_id)";
+                     '$router_name', '$mpls_loopback', $network_id)";
         $unused = $self->{dbconn}->do_query($statement);
         $router_id = $self->{dbconn}->{dbh}->{mysql_insertid};
         return $router_id;
     }
     $router_id = $row->{router_id};
+    if (!$row->{router_loopback}) { $row->router_loopback = 'NULL'; }
     if ($row->{router_loopback} ne $mpls_loopback) {
         $statement = "UPDATE routers SET router_loopback = ?
                       WHERE router_id = ?";
@@ -213,40 +232,43 @@ sub update_xfaces_table {
 
     my( $interface_id, $unused );
 
-    my $statement = "SELECT interface_id, interface_speed, interface_descr,
-                     interface_alias from interfaces
-                     WHERE router_id = ?";
-    my $row = $self->{dbconn}->get_row($statement, $router_id);
+    my $statement = "SELECT interface_id, interface_snmp_id, interface_speed,
+                     interface_descr, interface_alias from interfaces
+                     WHERE router_id = ? AND interface_snmp_id = ?";
+    my $row = $self->{dbconn}->get_row($statement, $router_id,
+                                       $xface->{index});
+
+    # defaults if non-required fields not set
+    if (!$xface->{ifDescr}) { $xface->{ifDescr} = 'NULL'; }
+    if (!$xface->{ifAlias}) { $xface->{ifAlias} = 'NULL'; }
+    if (!$xface->{ifSpeed}) { $xface->{ifSpeed} = 0; }
+    if (!$xface->{ifHighSpeed}) { $xface->{ifHighSpeed} = 0; }
+
     # calculate bandwidth given by new data
     my $new_speed = 0;
-    if (defined($xface->{ifSpeed})) {
+    if ($xface->{ifSpeed}) {
         $new_speed = $xface->{ifSpeed};
     }
-    if (defined($xface->{ifHighSpeed})) {
+    if ($xface->{ifHighSpeed}) {
         if ($new_speed < ($xface->{ifHighSpeed} * 1000000)) {
             $new_speed = $xface->{ifHighSpeed} * 1000000;
         }
     }
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into interfaces VALUES ( NULL, True,
-                  $new_speed, '$xface->{ifDescr}', '$xface->{ifAlias}',
-                  $router_id)";
+        $statement = "INSERT into interfaces VALUES ( NULL, True, 
+                  $xface->{index}, $new_speed, '$xface->{ifDescr}',
+                  '$xface->{ifAlias}', $router_id)";
         $unused = $self->{dbconn}->do_query($statement);
         $interface_id = $self->{dbconn}->{dbh}->{mysql_insertid};
         return $interface_id;
     }
     $interface_id = $row->{interface_id};
-    if (($row->{interface_speed} != $new_speed) ||
-        ($row->{interface_descr} != $xface->{ifDescr}) ||
-        ($row->{interface_alias} != $xface->{ifAlias})) {
-        $statement = "UPDATE interfaces SET interface_speed = ?,
+    $statement = "UPDATE interfaces SET interface_speed = ?,
                   interface_descr = ?, interface_alias = ?
                   WHERE interface_id = ?";
-        $unused = $self->{dbconn}->do_query($statement, $new_speed,
-                                 $xface->{ifDescr}, $xface->{ifAlias},
-                                 $interface_id);
-    }
+    $unused = $self->{dbconn}->do_query($statement, $new_speed,
+                  $xface->{ifDescr}, $xface->{ifAlias}, $interface_id);
     return $interface_id;
 } #___________________________________________________________________________
 
@@ -264,12 +286,12 @@ sub update_ipaddrs_table {
     my( $ipaddrs_id, $unused );
 
     # TODO:  handling case where interface_id is different?
-    my $statement = "SELECT ipaddrs_id, ipaddrs_ip FROM ipaddrs
-                     WHERE ipaddrs_ip = ?";
+    my $statement = "SELECT ipaddr_id, ipaddr_ip, interface_id FROM ipaddrs
+                     WHERE ipaddr_ip = ?";
     my $row = $self->{dbconn}->get_row($statement, $interface_ip);
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into ipaddrs VALUES ( NULL, $interface_ip,
+        $statement = "INSERT into ipaddrs VALUES ( NULL, '$interface_ip',
                   $interface_id)";
         $unused = $self->{dbconn}->do_query($statement);
         $ipaddrs_id = $self->{dbconn}->{dbh}->{mysql_insertid};
