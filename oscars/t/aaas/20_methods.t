@@ -14,12 +14,12 @@ ok($soap_server);
 
     # TODO:  have completely unprivileged user, except for logging in
     #        so password here doesn't matter
-my ($status, $msg) = login($soap_server, 'dwrobertson@lbl.gov',
+my ($status, $msg) = Login($soap_server, 'dwrobertson@lbl.gov',
                                 'ritazza6');
 ok($status, $msg);
 print STDERR $msg;
 
-($status, $msg) = get_profile($soap_server, 'dwrobertson@lbl.gov', 2);
+($status, $msg) = GetProfile($soap_server, 'dwrobertson@lbl.gov', 2);
 ok($status, $msg);
 print STDERR $msg;
 
@@ -31,18 +31,18 @@ print STDERR $msg;
 ok($status, $msg);
 print STDERR $msg;
 
-($status, $msg) = view_users($soap_server, 'dwrobertson@lbl.gov', 15);
+($status, $msg) = ViewUsers($soap_server, 'dwrobertson@lbl.gov', 15);
 ok($status, $msg);
 print STDERR $msg;
 
 ##############################################################################
 #
-sub login {
+sub Login {
     my( $soap_server, $user_dn, $user_password ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_password' => $user_password);
     $params{server_name} = 'AAAS';
-    $params{method} = 'login';
+    $params{method} = 'Login';
     $params{user_level} = 2;
 
     my $som = $soap_server->dispatch(\%params);
@@ -53,12 +53,12 @@ sub login {
 
 ##############################################################################
 #
-sub get_profile {
+sub GetProfile {
     my( $soap_server, $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
     $params{server_name} = 'AAAS';
-    $params{method} = 'get_profile';
+    $params{method} = 'GetProfile';
 
     my $som = $soap_server->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -172,12 +172,12 @@ sub delete_user {
 
 ##############################################################################
 #
-sub view_users {
+sub ViewUsers {
     my( $soap_server, $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
     $params{server_name} = 'AAAS';
-    $params{method} = 'view_users';
+    $params{method} = 'ViewUsers';
 
     my $som = $soap_server->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
