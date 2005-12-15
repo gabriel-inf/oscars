@@ -12,8 +12,9 @@ my %params;
 
 my $soap_server = SOAP::Lite
     ->uri('http://localhost:2000/OSCARS/AAAS/Dispatcher')
-    ->proxy('https://localhost:2000/aaas');
+    ->proxy('http://localhost:2000/aaas');
 
+$params{user_dn} = 'scheduler';
 $params{time_interval} = 20;
 $params{method} = 'find_pending_reservations';
 $params{server_name} = 'BSS';
