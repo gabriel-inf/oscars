@@ -366,7 +366,7 @@ sub setup_pss {
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
     $params->{logger}->write_log("Setting up LSP...");
-    $jnxLsp->configure_lsp($self->{LSP_SETUP}, $resv_info);
+    $jnxLsp->configure_lsp($self->{LSP_SETUP}, $resv_info, $params->{logger});
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
@@ -388,7 +388,7 @@ sub teardown_pss {
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
     $params->{logger}->write_log("Tearing down LSP...");
-    $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $resv_info); 
+    $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $resv_info, $params->{logger}); 
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
