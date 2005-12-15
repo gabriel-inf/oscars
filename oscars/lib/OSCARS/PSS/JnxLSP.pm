@@ -65,10 +65,11 @@ sub initialize {
 # Out: <none>
 #
 sub configure_lsp {
-    my ($self, $lsp_op, $resv) = @_;
+    my ($self, $lsp_op, $resv, $logger) = @_;
 
     my $xmlFile;
 
+    $self->{logger} = $logger;
     # For LSP setup, use setupXmlFile
     # for teardown, use teardownXmlFile.
     # TODO:  FIX hard-wired directory
@@ -262,7 +263,7 @@ sub execute_configuration_change {
         }
     };
     if ($@) {
-        print STDERR "ignoring exception $@\n";
+        $self->{logger}->write_log("ignoring exception $@\n");
         return;
     }
 
@@ -360,7 +361,8 @@ sub execute_operational_command {
     # Send the command and receive a XML::DOM object.
     my $jnxRes = $jnx->$command( %queryArgs );
     unless (ref($jnxRes))  {
-        die "ERROR: $jnxInfo{hostname}: failed to execute command $command.\n";
+        $self->{errMsg} = "ERROR: $jnxInfo{hostname}: failed to execute command $command.\n";
+        return(0);
     }
 
     # Check and see if there were any errors in executing the command.
@@ -382,10 +384,10 @@ sub update_log {
     my $errmsg = $self->get_error();
     if ($errmsg)  {
         $xmlString .= "\n\n$errmsg\n";
-        print STDERR $xmlString;
+        $self->{logger}->write_log($xmlString);
     }
     $r->{reservation_tag} =~ s/@/../;
-    print STDERR $xmlString;
+    $self->{logger}->write_log($xmlString);
 } #____________________________________________________________________________
 
 
