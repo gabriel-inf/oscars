@@ -49,6 +49,7 @@ sub dispatch {
     my $method_name;
 
     try {
+        $dbconn->reconnect();  # TODO:  FIX reconnecting every time
         $method_name = $params->{method};
         if (!$auth->authorized($params, $method_name)) {
             throw Error::Simple(
