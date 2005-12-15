@@ -66,7 +66,7 @@ sub create_reservation {
 
     $params{reservation_description} =    'This is a test.';
     $params{server_name} = 'BSS';
-    $params{method} = 'create_reservation'; 
+    $params{method} = 'CreateReservation'; 
 
     my $som = $soap_server->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -91,7 +91,7 @@ sub cancel_reservation {
     $params{user_level} = $user_level;
     $params{reservation_id} = $reservation_id;
     $params{server_name} = 'BSS';
-    $params{method} = 'cancel_reservation';
+    $params{method} = 'CancelReservation';
 
     my $som = $soap_server->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -112,7 +112,7 @@ sub view_reservations {
     $params{user_dn} = $user_dn;
     $params{user_level} = $user_level;
     $params{server_name} = 'BSS';
-    $params{method} = 'view_reservations';
+    $params{method} = 'ViewReservations';
 
     my $som = $soap_server->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -138,7 +138,7 @@ sub view_details {
     $params{user_level} = $user_level;
     $params{reservation_id} = $reservation_id;
     $params{server_name} = 'BSS';
-    $params{method} = 'view_details';
+    $params{method} = 'ViewDetails';
 
     my $som = $soap_server->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
