@@ -19,7 +19,7 @@ my $db_login = 'oscars';
 my $password = 'ritazza6';
 
 my $dbconn = OSCARS::BSS::Database->new(
-                 'database' => 'DBI:mysql:BSS',
+                 'database' => 'DBI:mysql:BSSTest',
                  'dblogin' => $db_login,
                  'password' => $password)
              or die "FATAL:  could not connect to database";
@@ -38,6 +38,7 @@ sub dispatch {
 
     my $results = {};
     try {
+        $dbconn->reconnect();  # TODO:  FIX reconnecting every time
         my $method_name = $params->{method};
         $params->{logger} =
                 OSCARS::AAAS::Logger->new( 'dir' => '/home/oscars/logs',

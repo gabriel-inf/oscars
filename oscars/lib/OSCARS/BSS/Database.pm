@@ -2,7 +2,7 @@
 package OSCARS::BSS::Database;
 
 # BSS database requests.
-# Last modified:   December 7, 2005
+# Last modified:   December 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use strict;
@@ -13,28 +13,32 @@ use Error qw(:try);
 use Socket;
 
 
+# TODO:  FIX duplication
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
+    $self->reconnect();
     return( $self );
-}
+} #____________________________________________________________________________ 
 
-sub initialize {
-    my ( $self ) = @_;
+###############################################################################
+#
+sub reconnect {
+    my( $self ) = @_;
 
     my ( %attr ) = (
         RaiseError => 0,
         PrintError => 0,
     );
+
     # I couldn't find a foolproof way to check for timeout; Apache::DBI
     # came closest, but it was too dependent on the driver handling the timeout
     # correctly.  So instead,
     # if a handle is left over from a previous session, attempts to disconnect.
     # If it was timed out, the error is ignored.
-    # TODO:  FIX disconnect every time
+    # TODO:  FIX
     if ($self->{dbh}) {
         $self->{dbh}->disconnect();
     }
@@ -47,8 +51,6 @@ sub initialize {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }
 } #____________________________________________________________________________ 
-
-# TODO:  FIX duplication
 
 ###############################################################################
 #
