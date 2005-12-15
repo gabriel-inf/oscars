@@ -67,7 +67,7 @@ sub find_interface_ids {
         $params->{logger}->write_log("--traceroute:  " .
              "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}");
         ($params->{ingress_interface_id}, $loopback_ip, $path) =
-            $self->do_traceroute(
+            $self->do_traceroute('find_ingress', 
               $self->{trace_configs}->{trace_conf_jnx_source},
               $params->{source_ip}, $params->{logger});
     }
@@ -92,8 +92,8 @@ sub find_interface_ids {
         $params->{logger}->write_log("--traceroute:  " .
                        "$loopback_ip to destination $params->{destination_ip}}");
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
-            $self->do_traceroute($loopback_ip, $params->{destination_ip},
-                                 $params->{logger});
+            $self->do_traceroute('find_egress', $loopback_ip,
+                               $params->{destination_ip}, $params->{logger});
     }
 } #____________________________________________________________________________ 
 
@@ -112,16 +112,16 @@ sub get_pss_fields {
 
 
 ###############################################################################
-# do remote trace:  Run traceroute from src to dst.
+# do_traceroute:  Run traceroute from src to dst.
 #
 # In:   source, destination IP addresses.
 # Out:  interface ID, path  
 #
 sub do_traceroute {
-    my ( $self, $src, $dst, $logger )  = @_;
+    my ( $self, $action, $src, $dst, $logger )  = @_;
     my (@hops);
-    my ($interface_id, $prev_id, @path);
-    my ($prev_loopback, $loopback_ip);
+    my ($interface_id, $edge_id, @path);
+    my ($edge_loopback, $loopback_ip);
 
     @path = ();
     # try to ping before traceing?
@@ -155,22 +155,22 @@ sub do_traceroute {
         $loopback_ip =
             $self->{dbconn}->xface_id_to_loopback( $interface_id );
         if (!$interface_id) {
-            $logger->write_log("edge router is $prev_loopback");
-            return ($prev_id, $prev_loopback, \@path);
+            $logger->write_log("edge router is $edge_loopback");
+            return ($edge_id, $edge_loopback, \@path);
         }
 
         # add to the path
         push(@path, $interface_id);
-        if ($loopback_ip && ($loopback_ip != 'NULL')) {
-            $prev_id = $interface_id;
-            $prev_loopback = $loopback_ip;
+        if (($action eq 'find_egress') || ($loopback_ip && ($loopback_ip != 'NULL'))) {
+            $edge_id = $interface_id;
+            $edge_loopback = $loopback_ip;
         }
     }
     # Need this in case the last hop is in the database
-    if ($prev_loopback) {
-        $logger->write_log("edge router is $prev_loopback");
+    if ($edge_loopback) {
+        $logger->write_log("edge router is $edge_loopback");
         my $unused = pop(@path);
-        return ($prev_id, $prev_loopback, \@path);
+        return ($edge_id, $edge_loopback, \@path);
     }
 
     # if we didn't find it
