@@ -203,7 +203,6 @@ sub find_pending_reservations {
     my( $reservations, $status );
     my( $error_msg );
 
-    $params->{logger}->write_log("BSS Scheduler: searching for reservations to schedule");
     # find reservations that need to be scheduled
     $reservations = $self->{dbconn}->find_pending_reservations(
                                                       $params->{time_interval});
@@ -229,7 +228,6 @@ sub find_expired_reservations {
     my( $reservations, $status );
     my( $error_msg );
 
-    $params->{logger}->write_log("BSS Scheduler: searching for expired reservations");
     # find reservations whose end time is before the current time and
     # thus expired
     $reservations = $self->{dbconn}->find_expired_reservations(
