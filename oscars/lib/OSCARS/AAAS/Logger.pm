@@ -6,7 +6,7 @@ package OSCARS::AAAS::Logger;
 # names depending on a reservation tag).  Output is buffered until the
 # instance is closed.
 #
-# Last modified:  December 7, 2005
+# Last modified:  December 15, 2005
 # David Robertson (dwrobertson@lbl.gov)
 
 use Data::Dumper;
@@ -60,7 +60,7 @@ sub write_log {
 sub end_log {
     my( $self, $results ) = @_;
 
-    if (!$self->{output_written} && 
+    if ((!$self->{output_written} && (!@$results)) && 
         ($self->{recurrent_methods}->{$self->{method}})) {
         return;
     }
