@@ -239,7 +239,7 @@ sub execute_configuration_change {
     my (%jnxInfo) = (
         'access' => $self->{configs}->{pss_conf_access},
         'login'  => $self->{configs}->{pss_conf_login},
-        'password' => $self->{configs}->{pss_conf_password},
+        'password' => $self->{configs}->{pss_conf_passwd},
         'hostname' => $self->{lsp_from}
     );
     my $jnx;
