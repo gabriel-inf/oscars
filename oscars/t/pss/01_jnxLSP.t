@@ -1,19 +1,29 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::Simple tests => 5;
+use Test qw(plan ok skip);
+
+plan tests => 1;
 
 use OSCARS::PSS::JnxLSP;
 
-use constant LSP_SETUP => 1;
-use constant LSP_TEARDOWN => 0;
+#####
+#
+# Constant definitions.
+#
+#####
+use constant _LSP_SETUP => 1;
+use constant _LSP_TEARDOWN => 0;
 
-my $src = '192.168.2.2';
-my $dst = '192.168.0.2';
-my $lsp_from = 'dev-rt20-e.es.net';
-my $lsp_to = '10.0.0.1';
 
-test_lsp($src, $dst, $lsp_from, $lsp_to);
+#####
+#
+# Global variables.
+#
+#####
+my ($_error);
+my ($_lspState);
+
 
 #####
 #
@@ -39,59 +49,57 @@ test_lsp($src, $dst, $lsp_from, $lsp_to);
 #
 #####
 
-##############################################################################
-#
-sub test_lsp {
-    my( $src, $dst, $lsp_from, $lsp_to ) = @_;
+# Initialize LSP information.
+my (%_lspInfo) = (
+  'name' => 'oscars_resvID_oscars',
+  'lsp_from' => 'dev-rt20-e.es.net',
+  'lsp_to' => '10.0.0.1',
+  'bandwidth' => '29m',
+  'lsp_class-of-service' => '4',
+  'policer_burst-size-limit' => '1m',
+  'source-address' => '192.168.2.2',
+  'destination-address' => '192.168.0.2',
+  'dscp' => 'ef',
+  'protocol' => 'udp',
+  'source-port' => '5000',
+);
 
-    # Initialize LSP information.
-    my %lspInfo = (
-        'name' => 'oscars_resvID_oscars',
-        'lsp_from' => $lsp_from,
-        'lsp_to' => $lsp_to,
-        'bandwidth' => '10m',
-        'lsp_class-of-service' => '4',
-        'policer_burst-size-limit' => '1m',
-        'source-address' => $src,
-        'destination-address' => $dst,
-        'dscp' => '4',
-        'protocol' => 'udp',
-        'source-port' => '5000',
-    );
+# Create an LSP object.
+my ($_jnxLsp) = new OSCARS::PSS::JnxLSP(%_lspInfo);
 
-    # Create an LSP object.
-    my $jnxLsp = new OSCARS::PSS::JnxLSP(%lspInfo);
-    ok($jnxLsp);
 
-    # Setup an LSP.
-    print STDERR "Setting up LSP...\n";
-    $jnxLsp->configure_lsp(LSP_SETUP);
-    my $error = $jnxLsp->get_error();
-    ok($error);
-
-    print STDERR "LSP setup complete\n";
-    print STDERR "\n";
-
-    # Check that state of the LSP.
-    print STDERR "Checking LSP state...  (expected result is 1=>Up)\n";
-    my $lspState = $jnxLsp->get_lsp_status();
-    $error = $jnxLsp->get_error();
-    ok($error);
-    print STDERR "LSP State: $lspState (-1=>NA, 0=>Down, 1=>Up)\n";
-    print STDERR "\n";
-
-    # Teardown an LSP.
-    print STDERR "Tearing down LSP...\n";
-    $jnxLsp->configure_lsp(LSP_TEARDOWN);
-    $error = $jnxLsp->get_error();
-    ok($error);
-    print STDERR "LSP teardown complete\n";
-    print STDERR "\n";
-
-    # Check that state of the LSP.
-    print STDERR "Checking LSP state...  (expected result is -1=>NA)\n";
-    $lspState = $jnxLsp->get_lsp_status();
-    $error = $jnxLsp->get_error();
-    ok($error);
-    print STDERR "LSP State: $lspState (-1=>NA, 0=>Down, 1=>Up)\n";
+# Setup an LSP.
+print("Setting up LSP...\n");
+$_jnxLsp->configure_lsp(_LSP_SETUP);
+if ($_error = $_jnxLsp->get_error())  {
+  die($_error);
 }
+print("LSP setup complete\n");
+print("\n");
+
+# Check that state of the LSP.
+print("Checking LSP state...  (expected result is 1=>Up)\n");
+$_lspState = $_jnxLsp->get_lsp_status();
+if ($_error = $_jnxLsp->get_error())  {
+  die($_error);
+}
+print("LSP State: $_lspState (-1=>NA, 0=>Down, 1=>Up)\n");
+print("\n");
+
+
+# Teardown an LSP.
+print("Tearing down LSP...\n");
+$_jnxLsp->configure_lsp(_LSP_TEARDOWN);
+if ($_error = $_jnxLsp->get_error())  {
+  die($_error);
+}
+print("LSP teardown complete\n");
+print("\n");
+
+# Check that state of the LSP.
+print("Checking LSP state...  (expected result is -1=>NA)\n");
+$_lspState = $_jnxLsp->get_lsp_status();
+if ($_error = $_jnxLsp->get_error())  {
+  die($_error);
+}
+print("LSP State: $_lspState (-1=>NA, 0=>Down, 1=>Up)\n");
