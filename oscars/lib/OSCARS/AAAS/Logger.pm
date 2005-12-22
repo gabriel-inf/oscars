@@ -60,7 +60,7 @@ sub write_log {
 sub end_log {
     my( $self, $results ) = @_;
 
-    if ((!$self->{output_written} && (!@$results)) && 
+    if ((!$self->{output_written}) && 
         ($self->{recurrent_methods}->{$self->{method}})) {
         return;
     }
