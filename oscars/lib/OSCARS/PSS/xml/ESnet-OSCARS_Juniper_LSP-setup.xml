@@ -8,6 +8,7 @@
                 <metric>65535</metric>
                 <bandwidth><user-var>bandwidth</user-var></bandwidth>
                 <class-of-service><user-var>lsp_class-of-service</user-var></class-of-service>
+                <no-decrement-ttl/>
                 <no-cspf/>
                 <setup-priority><user-var>lsp_setup-priority</user-var></setup-priority>
                 <reservation-priority><user-var>lsp_reservation-priority</user-var></reservation-priority>
