@@ -1,17 +1,35 @@
-###############################################################################
-package OSCARS::AAAS::Auth;
+#==============================================================================
+package OSCARS::AAAS::AuthZ;
 
-# Database interactions dealing with authorization.  TODO:  convert to ROAM.
-#
-# Last modified:   December 7, 2005
-# David Robertson (dwrobertson@lbl.gov)
-# Soo-yeon Hwang  (dapi@umich.edu)
+=head1 NAME
+
+OSCARS::AAAS::AuthZ - handles authorization for OSCARS.
+
+=head1 SYNOPSIS
+
+  use OSCARS::AAAS::AuthZ;
+
+=head1 DESCRIPTION
+
+This module contains simple authorization for all SOAP Method instances.
+TODO:  convert to ROAM.
+
+=head1 AUTHOR
+
+David Robertson (dwrobertson@lbl.gov)
+
+=head1 LAST MODIFIED
+
+December 21, 2005
+
+=cut
+
 
 use strict;
 
 use Data::Dumper;
 
-use OSCARS::AAAS::Database;
+#use OSCARS::AAAS::Database;
 use Error qw(:try);
 
 
@@ -40,10 +58,10 @@ sub initialize {
         'GetInfo' => $self->{levs}->{user},
         'GetProfile' => $self->{levs}->{user},
         'SetProfile' => $self->{levs}->{user},
-        'view_institutions' => $self->{levs}->{user},
+        'ViewInstitutions' => $self->{levs}->{user},
         'Logout' => $self->{levs}->{user},
         'ViewUsers' => $self->{levs}->{admin},
-        'view_permissions' => $self->{levs}->{admin},
+        'ViewPermissions' => $self->{levs}->{admin},
         'AddUserForm' => $self->{levs}->{admin},
         'AddUser' => $self->{levs}->{admin},
         'DeleteUser' => $self->{levs}->{admin},
@@ -52,8 +70,8 @@ sub initialize {
         'CancelReservation' => $self->{levs}->{user},
         'ViewReservations' => $self->{levs}->{user},
         'ViewDetails' => $self->{levs}->{user},
-        'find_pending_reservations' => $self->{levs}->{engr},
-        'find_expired_reservations' => $self->{levs}->{engr},
+        'FindPendingReservations' => $self->{levs}->{engr},
+        'FindExpiredReservations' => $self->{levs}->{engr},
     };
     $self->{method_section_permissions} = {
         'GetProfile' => $self->{levs}->{admin},
@@ -70,8 +88,9 @@ sub initialize {
 ###############################################################################
 #
 sub authorized {
-    my( $self, $params, $method_name ) = @_;
+    my( $self, $params ) = @_;
 
+    my $method_name = $params->{method};
     if ( !($params->{user_level} & 
            $self->{method_permissions}->{$method_name}) ) {
         return 0;
