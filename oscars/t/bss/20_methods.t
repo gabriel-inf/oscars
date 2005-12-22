@@ -1,53 +1,57 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 7;
+use Test::Simple tests => 8;
 
 use SOAP::Lite;
 use Data::Dumper;
 
+use OSCARS::ResourceManager;
+
 my( $status, $msg, $reservation_id );
+my $server_name = 'BSS';
+my $resource_manager = OSCARS::ResourceManager->new(
+                                                'server_name' => $server_name);
+ok($resource_manager);
 
-my $soap_server = SOAP::Lite
-    ->uri('http://localhost:3000/OSCARS/BSS/Dispatcher')
-    ->proxy('http://localhost:3000/bss');
-ok($soap_server);
+my( $uri, $proxy ) = $resource_manager->get_proxy_info($server_name);
+my $soap_proxy = $resource_manager->set_proxy( $uri, $proxy );
+ok($soap_proxy);
 
-( $status, $msg ) = view_reservations($soap_server,
-                          'dwrobertson@lbl.gov', 15);
+( $status, $msg ) = ViewReservations('dwrobertson@lbl.gov', 15);
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg, $reservation_id ) = create_reservation($soap_server,
+( $status, $msg, $reservation_id ) = CreateReservation(
                           'dwrobertson@lbl.gov', '15',
                           'nettrash3.es.net', 'dc-cr1.es.net');
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = view_details($soap_server, 'dwrobertson@lbl.gov', 15,
-                                   $reservation_id);
+( $status, $msg ) = ViewDetails('dwrobertson@lbl.gov', 15, $reservation_id);
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = test_scheduling_reservations($soap_server,
-                          'find_pending_reservations', 'scheduler', 15);
+( $status, $msg ) = test_scheduling_reservations(
+                          'FindPendingReservations', 'scheduler', 15);
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = test_scheduling_reservations($soap_server,
-                          'find_expired_reservations', 'scheduler', 15);
+( $status, $msg ) = test_scheduling_reservations(
+                          'FindExpiredReservations', 'scheduler', 15);
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = cancel_reservation($soap_server, 'dwrobertson@lbl.gov',
-                                       15, $reservation_id);
+( $status, $msg ) = CancelReservation('dwrobertson@lbl.gov', 15,
+                                       $reservation_id);
 ok( $status, $msg );
 print STDERR $msg;
+
 
 #############################################################################
 #
-sub create_reservation {
-    my( $soap_server, $user_dn, $user_level, $src, $dst ) = @_;
+sub CreateReservation {
+    my( $user_dn, $user_level, $src, $dst ) = @_;
 
     my %params;
 
@@ -68,7 +72,7 @@ sub create_reservation {
     $params{server_name} = 'BSS';
     $params{method} = 'CreateReservation'; 
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
@@ -80,8 +84,8 @@ sub create_reservation {
 
 #############################################################################
 #
-sub cancel_reservation {
-    my( $soap_server, $user_dn, $user_level, $reservation_id ) = @_;
+sub CancelReservation {
+    my( $user_dn, $user_level, $reservation_id ) = @_;
 
     my %params;
 
@@ -93,7 +97,7 @@ sub cancel_reservation {
     $params{server_name} = 'BSS';
     $params{method} = 'CancelReservation';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
@@ -104,8 +108,8 @@ sub cancel_reservation {
 
 #############################################################################
 #
-sub view_reservations {
-    my ( $soap_server, $user_dn, $user_level ) = @_;
+sub ViewReservations {
+    my ( $user_dn, $user_level ) = @_;
 
     my %params;
 
@@ -114,7 +118,7 @@ sub view_reservations {
     $params{server_name} = 'BSS';
     $params{method} = 'ViewReservations';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
@@ -129,8 +133,8 @@ sub view_reservations {
 
 #############################################################################
 #
-sub view_details {
-    my ( $soap_server, $user_dn, $user_level, $reservation_id ) = @_;
+sub ViewDetails {
+    my ( $user_dn, $user_level, $reservation_id ) = @_;
 
     my %params ;
 
@@ -140,7 +144,7 @@ sub view_details {
     $params{server_name} = 'BSS';
     $params{method} = 'ViewDetails';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
@@ -153,7 +157,7 @@ sub view_details {
 #############################################################################
 #
 sub test_scheduling_reservations {
-    my ( $soap_server, $method_name, $user_dn, $user_level ) = @_;
+    my ( $method_name, $user_dn, $user_level ) = @_;
 
     my %params;
 
@@ -163,7 +167,7 @@ sub test_scheduling_reservations {
     $params{time_interval} = 20;
     $params{server_name} = 'BSS';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 

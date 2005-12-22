@@ -1,107 +1,120 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::Simple tests => 1;
+use Test::Simple tests => 5;
 
+use OSCARS::Database;
 use OSCARS::BSS::JnxSNMP;
 
-##################
-# Global variables
-##################
-my ($_error);
-my ($_dst) = 'ga-rt1';
-my (@_lspInfo);
-my ($_lspName);
-my ($_lspVar);
-my ($_val);
+my $db_login = 'oscars';
+my $password = 'ritazza6';
+ 
+my $dbconn = OSCARS::Database->new(
+                 'database' => 'DBI:mysql:BSS',
+                 'dblogin' => $db_login,
+                 'password' => $password);
+ok($dbconn);
+$dbconn->connect('BSS');
+my $configs = get_pss_configs($dbconn);
+
+my $dst = 'dc-cr1';
+my ( $error, @lspInfo, $lspName, $lspVar, $val );
 
 
-##################
-# Subroutines
-##################
-sub print_vars  {
+# Create a query object instance
+my $jnxSNMP = OSCARS::BSS::JnxSNMP->new();
 
-  print("Results:\n");
-  while (scalar(@_lspInfo))  {
-    $_lspVar = shift(@_lspInfo);
-    $_val = shift(@_lspInfo);
-    print("$_lspVar = $_val\n");
-  }
-}
-#####
-
-
-##################
-# Main
-##################
-# Create a traceroute object.
-my ($_jnxSNMP) = OSCARS::BSS::JnxSNMP->new();
-
-print("Device: $_dst  LSPName: $_lspName  LSPVar: $_lspVar\n");
+print STDERR "Device: $dst  LSPName: $lspName  LSPVar: $lspVar\n";
 
 # Get LSP SNMP data.
-$_jnxSNMP->query_lsp_snmpdata($_dst);
-if ($_error = $_jnxSNMP->get_error())  {
-  die($_error);
-}
-
-
-
-# Get all LSP info.
-undef($_lspName);
-undef($_lspVar);
+$jnxSNMP->query_lsp_snmpdata($configs, $dst);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
 
 # Print LSP SNMP data.
-@_lspInfo = $_jnxSNMP->get_lsp_info($_lspName, $_lspVar);
-if ($_error = $_jnxSNMP->get_error())  {
-  die($_error);
-}
-print("\n");
-print("Exe: get_lsp_info(undef, undef)\n");
-print_vars;
+@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
 
+print STDERR "\n";
+print STDERR "Exe: get_lsp_info(undef, undef)\n";
+print_vars();
 
 
 # Get all oscars_ga-nersc_test-be-lsp info.
-$_lspName = "oscars_ga-nersc_test-be-lsp";
-undef($_lspVar);
+$lspName = "oscars_ga-nersc_test-be-lsp";
+undef($lspVar);
 
 # Print LSP SNMP data.
-@_lspInfo = $_jnxSNMP->get_lsp_info($_lspName, $_lspVar);
-if ($_error = $_jnxSNMP->get_error())  {
-  die($_error);
-}
-print("\n");
-print("Exe: get_lsp_info(oscars_ga-nersc_test-be-lsp, undef)\n");
-print_vars;
+@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
 
+print STDERR "\nExe: get_lsp_info(oscars_ga-nersc_test-be-lsp, undef)\n";
+print_vars();
 
 
 # Get all mplsLspStatesinfo.
-undef($_lspName);
-$_lspVar = 'mplsLspState';
+undef($lspName);
+$lspVar = 'mplsLspState';
 
 # Print LSP SNMP data.
-@_lspInfo = $_jnxSNMP->get_lsp_info($_lspName, $_lspVar);
-if ($_error = $_jnxSNMP->get_error())  {
-  die($_error);
-}
-print("\n");
-print("Exe: get_lsp_info(undef, mplsLspState)\n");
-print_vars;
+@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
 
-
+print STDERR "\nExe: get_lsp_info(undef, mplsLspState)\n";
+print_vars();
 
 # Get all mplsPathRecordRoute for oscars_ga-nersc_test-be-lsp.
-$_lspName = 'oscars_ga-nersc_test-be-lsp';
-$_lspVar = 'mplsPathRecordRoute';
+$lspName = 'oscars_ga-nersc_test-be-lsp';
+$lspVar = 'mplsPathRecordRoute';
 
 # Print LSP SNMP data.
-@_lspInfo = $_jnxSNMP->get_lsp_info($_lspName, $_lspVar);
-if ($_error = $_jnxSNMP->get_error())  {
-  die($_error);
-}
-print("\n");
-print("Exe: get_lsp_info(oscars_ga-nersc_test-be-lsp, mplsLspState)\n");
-print_vars;
+@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
+
+print STDERR "\nExe: get_lsp_info(oscars_ga-nersc_test-be-lsp, mplsLspState)\n";
+print_vars();
+
+
+###############################################################################
+# Adapted from OSCARS::BSS::RouteHandler->get_pss_configs
+#
+sub get_pss_configs {
+    my( $dbconn ) = @_;
+
+        # use defaults for now
+    my $statement = 'SELECT ' .
+             'pss_conf_access, pss_conf_login, pss_conf_passwd, ' .
+             'pss_conf_firewall_marker, ' .
+             'pss_conf_setup_file, pss_conf_teardown_file, ' .
+             'pss_conf_ext_if_filter, pss_conf_CoS, ' .
+             'pss_conf_burst_limit, ' .
+             'pss_conf_setup_priority, pss_conf_resv_priority, ' .
+             'pss_conf_allow_lsp '  .
+             'FROM pss_confs where pss_conf_id = 1';
+    my $configs = $dbconn->get_row($statement);
+    return $configs;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub print_vars  {
+
+  print STDERR "Results:\n";
+  while (scalar(@lspInfo))  {
+    $lspVar = shift(@lspInfo);
+    $val = shift(@lspInfo);
+    print STDERR "$lspVar = $val\n";
+  }
+} #___________________________________________________________________________
+
 

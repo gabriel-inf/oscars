@@ -3,41 +3,41 @@
 use strict;
 use Test::Simple tests => 5;
 
-use OSCARS::AAAS::Logger;
-use OSCARS::BSS::Database;
+use OSCARS::Logger;
+use OSCARS::Database;
 use OSCARS::BSS::JnxTraceroute;
 
-my $logger = OSCARS::AAAS::Logger->new( 'dir' => '/home/oscars/logs',
-                                        'method' => 'test');
+my $logger = OSCARS::Logger->new( 'dir' => '/home/oscars/logs',
+                                  'method' => 'test');
 ok($logger);
-$logger->start_log();
 
 # Create a traceroute object.
 my $jnxTraceroute = OSCARS::BSS::JnxTraceroute->new();
 ok($jnxTraceroute);
 
-my $dbconn = OSCARS::BSS::Database->new(
+my $dbconn = OSCARS::Database->new(
                  'database' => 'DBI:mysql:BSS',
                  'dblogin' => 'oscars',
                  'password' => 'ritazza6');
 ok($dbconn);
+$dbconn->connect('BSS');
 
-my $configs = $dbconn->get_trace_configs();
+my $configs = get_trace_configs($dbconn);
 ok($configs);
-my $src = 'chi-cr1.es.net';
-my $dst = 'distressed.es.net';
+my $src = 'nettrash3.es.net';
+my $dst = 'dc-cr1.es.net';
 my( $status, $msg ) = 
         test_traceroute( $jnxTraceroute, $configs, $src, $dst, $logger );
 ok( $status, $msg );
 print STDERR $msg;
-$logger->end_log();
+$logger->end_log('test', '');
 
 ##############################################################################
 #
 sub test_traceroute {
     my( $jnxTraceroute, $configs, $src, $dst, $logger ) = @_;
 
-    my $msg = "\nTraceroute: chi-cr1.es.net to distressed.es.net\n";
+    my $msg = "\nTraceroute: nettrash3.es.net to dc-cr1.es.net\n";
     # Run traceroute.
     $jnxTraceroute->traceroute($configs, $src, $dst, $logger);
 
@@ -56,4 +56,22 @@ sub test_traceroute {
     }
     $msg .= "\n";
     return( 1, $msg );
-}
+} #____________________________________________________________________________
+
+
+###############################################################################
+# Adapted from method in OSCARS::BSS::RouteHandler
+#
+sub get_trace_configs {
+    my( $dbconn ) = @_;
+
+        # use default for now
+    my $statement = "SELECT " .
+            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
+            "trace_conf_ttl, trace_conf_timeout, " .
+            "trace_conf_run_trace, trace_conf_use_system, " .
+            "trace_conf_use_ping "  .
+            "FROM trace_confs where trace_conf_id = 1";
+    my $configs = $dbconn->get_row($statement);
+    return $configs;
+} #____________________________________________________________________________
