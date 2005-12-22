@@ -63,9 +63,14 @@ CREATE TABLE IF NOT EXISTS allocations (
 -- an entry in this table.
 CREATE TABLE IF NOT EXISTS servers (
     server_id               INT NOT NULL AUTO_INCREMENT,
-        -- This has a default value in the db, but can be overriden on 
-        -- the command line.
+      -- Same name as the associated OSCARS component
+    server_name             TEXT,
+      -- whether this server should be started
+    server_use              BOOLEAN NOT NULL,
     server_port             INT NOT NULL,
+      -- used to start SOAP::Lite server
+    server_uri              TEXT,
+    server_proxy            TEXT,
 
         -- debug level
     server_debug            INT NOT NULL,
