@@ -1,51 +1,56 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 6;
+use Test::Simple tests => 7;
 
 use SOAP::Lite;
 use Data::Dumper;
 
-my $soap_server = SOAP::Lite
-    ->uri('http://localhost:2000/OSCARS/AAAS/Dispatcher')
-    ->proxy('http://localhost:2000/aaas');
+use OSCARS::ResourceManager;
 
-ok($soap_server);
+my $server_name = 'AAAS';
+my $resource_manager = OSCARS::ResourceManager->new(
+                                                'server_name' => $server_name);
+ok($resource_manager);
+
+my( $uri, $proxy ) = $resource_manager->get_proxy_info($server_name);
+my $soap_proxy = $resource_manager->set_proxy( $uri, $proxy );
+
+ok($soap_proxy);
 
     # TODO:  have completely unprivileged user, except for logging in
     #        so password here doesn't matter
-my ($status, $msg) = Login($soap_server, 'dwrobertson@lbl.gov',
-                                'ritazza6');
+my ($status, $msg) = Login('dwrobertson@lbl.gov', 'ritazza6');
 ok($status, $msg);
 print STDERR $msg;
 
-($status, $msg) = GetProfile($soap_server, 'dwrobertson@lbl.gov', 2);
+($status, $msg) = GetProfile('dwrobertson@lbl.gov', 2);
 ok($status, $msg);
 print STDERR $msg;
 
-($status, $msg) = view_institutions($soap_server, 'dwrobertson@lbl.gov', 2);
+($status, $msg) = ViewInstitutions('dwrobertson@lbl.gov', 2);
 ok($status, $msg);
 print STDERR $msg;
 
-($status, $msg) = view_permissions($soap_server, 'dwrobertson@lbl.gov', 15);
+($status, $msg) = ViewPermissions('dwrobertson@lbl.gov', 15);
 ok($status, $msg);
 print STDERR $msg;
 
-($status, $msg) = ViewUsers($soap_server, 'dwrobertson@lbl.gov', 15);
+($status, $msg) = ViewUsers('dwrobertson@lbl.gov', 15);
 ok($status, $msg);
 print STDERR $msg;
 
 ##############################################################################
 #
 sub Login {
-    my( $soap_server, $user_dn, $user_password ) = @_;
+    my( $user_dn, $user_password ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_password' => $user_password);
-    $params{server_name} = 'AAAS';
+    $params{server_name} = $server_name;
     $params{method} = 'Login';
     $params{user_level} = 2;
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     return( 1, "\nUser $params{user_dn} successfully logged in.\n" );
 } #___________________________________________________________________________
@@ -54,13 +59,13 @@ sub Login {
 ##############################################################################
 #
 sub GetProfile {
-    my( $soap_server, $user_dn, $user_level ) = @_;
+    my( $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
-    $params{server_name} = 'AAAS';
+    $params{server_name} = $server_name;
     $params{method} = 'GetProfile';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Retrieved user profile\n";
@@ -72,15 +77,15 @@ sub GetProfile {
 
 ##############################################################################
 #
-sub set_profile {
-    my( $soap_server, $user_dn, $user_level ) = @_;
+sub SetProfile {
+    my( $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
-    $params{server_name} = 'AAAS';
-    $params{method} = 'set_profile';
+    $params{server_name} = $server_name;
+    $params{method} = 'SetProfile';
     $params{user_level} = 2;
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Set user profile\n";
@@ -91,14 +96,14 @@ sub set_profile {
 
 ##############################################################################
 #
-sub view_institutions {
-    my( $soap_server, $user_dn, $user_level ) = @_;
+sub ViewInstitutions {
+    my( $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
-    $params{server_name} = 'AAAS';
-    $params{method} = 'view_institutions';
+    $params{server_name} = $server_name;
+    $params{method} = 'ViewInstitutions';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Retrieved list of institutions\n";
@@ -112,14 +117,14 @@ sub view_institutions {
 
 ##############################################################################
 #
-sub view_permissions {
-    my( $soap_server, $user_dn, $user_level ) = @_;
+sub ViewPermissions {
+    my( $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
-    $params{server_name} = 'AAAS';
-    $params{method} = 'view_permissions';
+    $params{server_name} = $server_name;
+    $params{method} = 'ViewPermissions';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
@@ -134,14 +139,14 @@ sub view_permissions {
 
 ##############################################################################
 #
-sub add_user {
-    my( $soap_server, $user_dn, $user_level ) = @_;
+sub AddUser {
+    my( $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
-    $params{server_name} = 'AAAS';
-    $params{method} = 'add_user';
+    $params{server_name} = $server_name;
+    $params{method} = 'AddUser';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
@@ -154,14 +159,14 @@ sub add_user {
 
 ##############################################################################
 #
-sub delete_user {
-    my( $soap_server, $user_dn, $user_level ) = @_;
+sub DeleteUser {
+    my( $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
-    $params{server_name} = 'AAAS';
-    $params{method} = 'delete_user';
+    $params{server_name} = $server_name;
+    $params{method} = 'DeleteUser';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
@@ -173,13 +178,13 @@ sub delete_user {
 ##############################################################################
 #
 sub ViewUsers {
-    my( $soap_server, $user_dn, $user_level ) = @_;
+    my( $user_dn, $user_level ) = @_;
 
     my %params = ('user_dn' => $user_dn, 'user_level' => $user_level );
-    $params{server_name} = 'AAAS';
+    $params{server_name} = $server_name;
     $params{method} = 'ViewUsers';
 
-    my $som = $soap_server->dispatch(\%params);
+    my $som = $soap_proxy->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;

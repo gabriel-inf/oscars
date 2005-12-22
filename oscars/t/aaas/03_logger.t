@@ -3,8 +3,8 @@
 use strict;
 use Test::Simple tests => 1;
 
-use OSCARS::AAAS::Logger;
+use OSCARS::Logger;
 
-my $logger = OSCARS::AAAS::Logger->new('dir' => '/home/oscars/logs', 
+my $logger = OSCARS::Logger->new('dir' => '/home/oscars/logs', 
                                        'method' => 'test');
 ok($logger);

@@ -3,12 +3,12 @@
 use strict;
 use Test::Simple tests => 1;
 
-use OSCARS::AAAS::Database;
+use OSCARS::Database;
 
 my $db_login = 'oscars';
 my $password = 'ritazza6';
  
-my $dbconn = OSCARS::AAAS::Database->new(
+my $dbconn = OSCARS::Database->new(
                  'database' => 'DBI:mysql:AAAS',
                  'dblogin' => $db_login,
                  'password' => $password);

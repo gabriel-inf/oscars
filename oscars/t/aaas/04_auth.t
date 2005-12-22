@@ -3,7 +3,7 @@
 use strict;
 use Test::Simple tests => 1;
 
-use OSCARS::AAAS::Auth;
+use OSCARS::AAAS::AuthZ;
 
-my $auth = OSCARS::AAAS::Auth->new();
+my $auth = OSCARS::AAAS::AuthZ->new();
 ok($auth);

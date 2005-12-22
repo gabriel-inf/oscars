@@ -3,15 +3,15 @@
 use strict;
 use Test::Simple tests => 2;
 
-use OSCARS::AAAS::Mail;
+use OSCARS::Mail;
 
-my $mailer = OSCARS::AAAS::Mail->new();
+my $mailer = OSCARS::Mail->new();
 ok($mailer);
 
 my $sender = $mailer->get_webmaster();
 my $recipient = $mailer->get_webmaster();
 my $subject = 'test';
-my $msg = "This is a test.\n";
+my $msg = "This is a test on oscars-dev.\n";
 
 my $err_msg =
        $mailer->send_mail($sender, $recipient, $subject, $msg); 
