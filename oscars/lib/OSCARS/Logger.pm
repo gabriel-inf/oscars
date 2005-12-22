@@ -1,0 +1,152 @@
+# =============================================================================
+package OSCARS::Logger; 
+
+=head1 NAME
+
+OSCARS::Logger - Logger for OSCARS.
+
+=head1 SYNOPSIS
+
+  use OSCARS::Logger;
+
+=head1 DESCRIPTION
+
+This package contains methods for writing log messages to a file
+(currently there is a log file for each SOAP method access).
+
+Log files are in HTML format.  There are cases where
+the file name won't be ready until results are returned (for example, file
+names depending on a reservation tag), so output is buffered until the
+instance is closed.
+
+=head1 AUTHOR
+
+David Robertson (dwrobertson@lbl.gov)
+
+=head1 LAST MODIFIED
+
+December 19, 2005
+
+=cut
+
+# Last modified:  December 16, 2005
+# David Robertson (dwrobertson@lbl.gov)
+
+sub new {
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
+  
+    bless( $self, $class );
+    $self->initialize();
+    return( $self );
+}
+
+sub initialize {
+    my( $self ) = @_;
+
+    $self->{recurrent} = 0;
+    $self->{output_written} = 0;
+    @{$self->{buf_strings}} = ( );
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub write_log {
+    my( $self, $buf ) = @_;
+
+    push(@{$self->{buf_strings}}, "$buf<br/>");
+    $self->{output_written} = 1;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub end_log {
+    my( $self, $user_dn, $results ) = @_;
+
+    if ((!$self->{output_written} && (!@$results)) && $self->{recurrent}) {
+        return;
+    }
+    my( $sec, $min, $hour, $monthday, $month, $year, $weekday, $yearday,
+        $isdaylight ) = localtime();
+    $year += 1900;
+    $month += 1;
+    if ($month < 10) { $month = '0' . $month; }
+    if ($monthday < 10) { $monthday = '0' . $monthday; }
+    $user_dn =~ s/@/./;
+    # TODO:  non-portable
+    my $fname = "$self->{dir}/$user_dn";
+    if (!(-d $fname)) {
+        mkdir($fname, 0755) || die "Cannot mkdir: $fname";
+    }
+    my $ctr = 1;
+    $fname = "$self->{dir}/$user_dn/$self->{method}.$year.$month.$monthday.$ctr.html";
+    while (-e $fname) {
+        $ctr += 1;
+        $fname = "$self->{dir}/$user_dn/$self->{method}.$year.$month.$monthday.$ctr.html";
+    }
+    open (LOGFILE, ">$fname") ||
+            die "Can't open log file $fname.\n";
+    print LOGFILE "<html><head><title>$self->{method}</title></head><body>\n";
+    print LOGFILE "<h2>$self->{method}</h2>\n";
+    print LOGFILE "<h3>Output</h3>\n";
+    print LOGFILE join("\n", @{$self->{buf_strings}});
+    if ($results) {
+        print LOGFILE "\n<h3>Results</h3>\n";
+        if (ref($results) ne "ARRAY") {
+            print LOGFILE to_string($results);
+        }
+        else {
+            for my $row (@$results) {
+                print LOGFILE to_string($row);
+            }
+        }
+        print LOGFILE "\n";
+    }
+    print LOGFILE "</body></html>\n";
+    close(LOGFILE);
+} #____________________________________________________________________________
+
+
+##############################################################################
+#
+sub set_recurrent {
+    my( $self, $flag ) = @_;
+
+    $self->{recurrent} = $flag;
+} #____________________________________________________________________________
+
+
+##############################################################################
+#
+sub to_string {
+    my( $results ) = @_;
+
+    my( $key, $value );
+
+    my $msg = '';
+    foreach $key(sort keys %{$results} ) {
+        if (($key ne 'status_msg') &&
+            defined($results->{$key})) {
+            $value = $results->{$key};
+            if ($value) {
+                if (ref($value) eq 'ARRAY') {
+                    $msg .= "$key -> ";
+                    for my $row (@$value) {
+                        $msg .= "$row ";
+                    }
+                    $msg .= "\n";
+                }
+                else { $msg .= "$key -> $value<br/>\n"; }
+            }
+            else {
+                $msg .= "$key -> <br/>\n";
+            }
+        }
+    }
+    return $msg;
+} #___________________________________________________________________________
+
+######
+1;
