@@ -1,11 +1,30 @@
 ###############################################################################
 package OSCARS::BSS::RouteHandler; 
 
-# Finds ingress and egress routers and the path between them.
-#
-# Last modified:  December 7, 2005
-# Jason Lee       (jrlee@lbl.gov)
-# David Robertson (dwrobertson@lbl.gov)
+=head1 NAME
+
+OSCARS::BSS::RouteHandler - Finds ingress and egress routers.
+
+=head1 SYNOPSIS
+
+  use OSCARS::BSS::RouteHandler;
+
+=head1 DESCRIPTION
+
+Performs traceroute from source to destination host, and given that, finds
+the ingress and egress routers.
+
+=head1 AUTHORS
+
+Jason Lee (jrlee@lbl.gov),
+David Robertson (dwrobertson@lbl.gov)
+
+=head1 LAST MODIFIED
+
+December 21, 2005
+
+=cut
+
 
 use Data::Dumper;
 use Socket;
@@ -13,8 +32,8 @@ use Net::Ping;
 use Error qw(:try);
 
 use strict;
+use OSCARS::User;
 use OSCARS::BSS::JnxTraceroute;
-use OSCARS::BSS::Database;
 
 
 sub new {
@@ -29,9 +48,9 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{trace_configs} = $self->{dbconn}->get_trace_configs();
-    $self->{pss_configs} = $self->{dbconn}->get_pss_configs();
-} #____________________________________________________________________________ 
+    $self->{trace_configs} = $self->get_trace_configs();
+    $self->{pss_configs} = $self->get_pss_configs();
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -42,7 +61,7 @@ sub initialize {
 # OUT: ids of interfaces of the edge routers, path list (router indexes)
 #
 sub find_interface_ids {
-    my( $self, $params) = @_;
+    my( $self, $logger, $params) = @_;
 
     my( $loopback_ip, $path );
 
@@ -52,10 +71,10 @@ sub find_interface_ids {
     if ($params->{ingress_router}) {
         # converts to IP address if it is a host name
         $params->{ingress_ip} = $self->name_to_ip($params->{ingress_router});
-        $params->{ingress_interface_id} = $self->{dbconn}->ip_to_xface_id( $params->{ingress_ip} );
+        $params->{ingress_interface_id} = $self->ip_to_xface_id( $params->{ingress_ip} );
         if ($params->{ingress_interface_id} != 0) {
             $loopback_ip =
-                $self->{dbconn}->xface_id_to_loopback( $params->{ingress_interface_id} );
+                $self->xface_id_to_loopback( $params->{ingress_interface_id} );
         }
         else {
             throw Error::Simple(
@@ -64,21 +83,21 @@ sub find_interface_ids {
     }
     else {
         $params->{source_ip} = $self->name_to_ip($params->{source_host});
-        $params->{logger}->write_log("--traceroute:  " .
+        $logger->write_log("--traceroute:  " .
              "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}");
         ($params->{ingress_interface_id}, $loopback_ip, $path) =
             $self->do_traceroute('find_ingress', 
               $self->{trace_configs}->{trace_conf_jnx_source},
-              $params->{source_ip}, $params->{logger});
+              $params->{source_ip}, $logger);
     }
   
     if ($params->{egress_router}) {
         $params->{egress_ip} = $self->name_to_ip($params->{egress_router});
         $params->{egress_interface_id} =
-            $self->{dbconn}->ip_to_xface_id( $params->{egress_ip} );
+            $self->ip_to_xface_id( $params->{egress_ip} );
         if ($params->{egress_interface_id} != 0) {
             $loopback_ip =
-                $self->{dbconn}->xface_id_to_loopback( $params->{egress_interface_id} );
+                $self->xface_id_to_loopback( $params->{egress_interface_id} );
         }
         else {
             throw Error::Simple(
@@ -89,13 +108,13 @@ sub find_interface_ids {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
         $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
-        $params->{logger}->write_log("--traceroute:  " .
+        $logger->write_log("--traceroute:  " .
                        "$loopback_ip to destination $params->{destination_ip}}");
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
             $self->do_traceroute('find_egress', $loopback_ip,
-                               $params->{destination_ip}, $params->{logger});
+                               $params->{destination_ip}, $logger);
     }
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -108,7 +127,7 @@ sub get_pss_fields {
     my $reservation_class = $self->{pss_configs}->{pss_conf_CoS};
     my $reservation_burst_limit = $self->{pss_configs}->{pss_conf_burst_limit};
     return( $reservation_class, $reservation_burst_limit );
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -136,10 +155,10 @@ sub do_traceroute {
 
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id(
+        $interface_id = $self->ip_to_xface_id(
                               $self->{trace_configs}->{trace_conf_jnx_source});
         $loopback_ip =
-            $self->{dbconn}->xface_id_to_loopback( $interface_id );
+            $self->xface_id_to_loopback( $interface_id );
         return ($interface_id, $loopback_ip, \@path);
     }
 
@@ -151,9 +170,9 @@ sub do_traceroute {
     for $hop (@hops)  {
         $logger->write_log("hop:  $hop");
         # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->{dbconn}->ip_to_xface_id( $hop );
+        $interface_id = $self->ip_to_xface_id( $hop );
         $loopback_ip =
-            $self->{dbconn}->xface_id_to_loopback( $interface_id );
+            $self->xface_id_to_loopback( $interface_id );
         if (!$interface_id) {
             $logger->write_log("edge router is $edge_loopback");
             return ($edge_id, $edge_loopback, \@path);
@@ -175,7 +194,7 @@ sub do_traceroute {
 
     # if we didn't find it
     throw Error::Simple("Couldn't trace route to $src");
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -207,7 +226,7 @@ sub do_ping {
         $p->close();
     }
     throw Error::Simple("Host $host not pingable");
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -222,7 +241,83 @@ sub name_to_ip{
     my $regexp = '\d+\.\d+\.\d+\.\d+(/\d+)*';
     if ($host !~ $regexp) { return( inet_ntoa(inet_aton($host)) ); }
     else { return $host; }
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub get_trace_configs {
+    my( $self ) = @_;
+
+        # use default for now
+    my $statement = "SELECT " .
+            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
+            "trace_conf_ttl, trace_conf_timeout, " .
+            "trace_conf_run_trace, trace_conf_use_system, " .
+            "trace_conf_use_ping "  .
+            "FROM trace_confs where trace_conf_id = 1";
+    my $configs = $self->{user}->get_row($statement);
+    return $configs;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub get_pss_configs {
+    my( $self ) = @_;
+
+        # use defaults for now
+    my $statement = 'SELECT ' .
+             'pss_conf_access, pss_conf_login, pss_conf_passwd, ' .
+             'pss_conf_firewall_marker, ' .
+             'pss_conf_setup_file, pss_conf_teardown_file, ' .
+             'pss_conf_ext_if_filter, pss_conf_CoS, ' .
+             'pss_conf_burst_limit, ' .
+             'pss_conf_setup_priority, pss_conf_resv_priority, ' .
+             'pss_conf_allow_lsp '  .
+             'FROM pss_confs where pss_conf_id = 1';
+    my $configs = $self->{user}->get_row($statement);
+    return $configs;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# ip_to_xface_id:
+#   Get the db iface id from an ip address. If a router is an edge router
+#   there will be a corresponding address in the ipaddrs table.
+# In:  interface ip address
+# Out: interface id
+#
+sub ip_to_xface_id {
+    my ($self, $ipaddr) = @_;
+
+    my $statement = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
+    my $row = $self->{user}->get_row($statement, $ipaddr);
+    if ( !$row ) { return undef; }
+    return $row->{interface_id};
+} #____________________________________________________________________________
+
+
+###############################################################################
+# xface_id_to_loopback:  get the loopback ip from the interface primary key.
+# In:  interface table primary key
+# Out: loopback ip address
+#
+sub xface_id_to_loopback {
+    my( $self, $interface_id ) = @_;
+
+    my $statement = "SELECT router_name, router_loopback FROM routers
+                 WHERE router_id = (SELECT router_id from interfaces
+                                    WHERE interface_id = ?)";
+    my $row = $self->{user}->get_row($statement, $interface_id);
+    # it is not considered to be an error when no rows are returned
+    if ( !$row ) { return undef; }
+    # check for loopback address
+    if (!$row->{router_loopback}) {
+        throw Error::Simple("Router $row->{router_name} has no oscars loopback");
+    }
+    return $row->{router_loopback};
+} #____________________________________________________________________________
 
 
 ######

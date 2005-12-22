@@ -1,9 +1,28 @@
-##############################################################################
+#=============================================================================
 package OSCARS::BSS::JnxSNMP;
 
-# Authors: Chin Guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
-# Description:  Queries MPLS SNMP MIB on Juniper routers.
-# Last modified:  December 9, 2005
+=head1 NAME
+
+OSCARS::BSS::JnxSNMP - Queries MPLS SNMP MIB on Juniper routers.
+
+=head1 SYNOPSIS
+
+  use OSCARS::BSS::JnxSNMP;
+
+=head1 DESCRIPTION
+
+Queries MPLS SNMP MIB on Juniper routers.  Not currently functional.
+
+=head1 AUTHORS
+
+Chin Guok (chin@es.net),
+David Robertson (dwrobertson@lbl.gov)
+
+=head1 LAST MODIFIED
+
+December 21, 2005
+
+=cut
 
 
 use Data::Dumper;
@@ -11,9 +30,10 @@ use SNMP;
 
 use strict;
 
+# TODO:  fix hard-coded file path
 &SNMP::addMibFiles(
-  "$ENV{OSCARS_HOME}/BSS/mibs/mib-jnx-smi.txt",
-  "$ENV{OSCARS_HOME}/BSS/mibs/mib-jnx-mpls.txt"
+  "/home/oscars/mibs/mib-jnx-smi.txt",
+  "/home/oscars/mibs/mib-jnx-mpls.txt"
 );
 
 
@@ -37,7 +57,7 @@ sub query_lsp_snmpdata {
     # Clear error message.
     $self->{errMsg} = 0;
     # Clear lsp information.
-    $self->{lspInfo} = ();
+    $self->{lspInfo} = {};
 
     if ( !defined($dst) )  {
         $self->{errMsg} = "ERROR: SNMP destination not defined\n";
@@ -47,7 +67,7 @@ sub query_lsp_snmpdata {
     # Initialize SNMP session.
     my $session = new SNMP::Session (
                      'DestHost'       => $dst,
-                     'Community'      => $configs->{jnx_snmp},
+                     'Community'      => $configs->{pss_conf_passwd},
                      'RemotePort'     => 161,
                      'Timeout'        => 300000,  # 300ms
                      'Retries'        => 3,
@@ -71,7 +91,8 @@ sub query_lsp_snmpdata {
         $self->{errMsg} = "ERROR: Cannot do bulkwalk: $session->{ErrorStr} ($session->{ErrorNum})\n";
         return;
     }
-    $self->{lsp} = ();
+    $self->{lsp} = {};
+    my( $iid, $tag );
 
     # Process the results.
     for my $varBinds (@response)  {
@@ -86,13 +107,15 @@ sub query_lsp_snmpdata {
             #   val:oscars_51
             #   type:OCTETSTR
             #   name:mplsLspName
-            $self->{lspInfo}{$varBindEntry->{iid}{$varBindEntry->{tag}} = $varBindEntry->{val};
+            $iid = $varBindEntry->{iid};
+            $tag = $varBindEntry->{tag};
+            $self->{lspInfo}->{$iid}->{$tag} = $varBindEntry->{val};
 
             # If the tag is 'mplsLspName', we will create a reference for it in self->{lsp}.
             # e.g.
             #   $self->{lsp}{oscars_51} = 111.115.99.97.114.115.95.53.49.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
-            if ($varBindEntry->{tag} eq 'mplsLspName')  {
-                $self->{lsp}{$varBindEntry->{val}} = $varBindEntry->{iid};
+            if ($tag eq 'mplsLspName')  {
+                $self->{lsp}->{$varBindEntry->{val}} = $iid;
             }
         }
     }
@@ -132,16 +155,17 @@ sub get_lsp_info {
 
             # If lspVar is specified, then just select that variable.
             if (defined($lspVar))  {
-                if (not(defined($self->{lspInfo}{$self->{lsp}{$lspName}}{$lspVar})))  {
+                if (not(defined($self->{lspInfo}->{$self->{lsp}{$lspName}}{$lspVar})))  {
                     $self->{errMsg} = "ERROR: No such LSP variable \"$lspName.$lspVar\"\n";
                     return;
                 }
                 else  {
-                    push(@lspInfoArray, "$lspName.$lspVar", $self->{lspInfo}{$self->{lsp}{$lspName}}{$lspVar});
+                    push(@lspInfoArray, "$lspName.$lspVar",
+                         $self->{lspInfo}->{$self->{lsp}->{$lspName}}{$lspVar});
                 }
             }
             else  {
-                foreach $lspVar (sort keys %{$self->{lspInfo}{$self->{lsp}{$lspName}}})  {
+                foreach $lspVar (sort keys %{$self->{lspInfo}->{$self->{lsp}{$lspName}}})  {
                     push(@lspInfoArray, "$lspName.$lspVar", $self->{lspInfo}{$self->{lsp}{$lspName}}{$lspVar});
                 }
             }

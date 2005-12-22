@@ -1,9 +1,29 @@
 ###############################################################################
 package OSCARS::BSS::JnxTraceroute;
 
-# Executes traceroute on Juniper routers.
-# Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
-# Last Modified:  December 7, 2005
+=head1 NAME
+
+OSCARS::BSS::JnxTraceroute - Executes traceroute on Juniper routers.
+
+=head1 SYNOPSIS
+
+  use OSCARS::BSS::JnxTraceroute;
+
+=head1 DESCRIPTION
+
+Executes traceroute on Juniper routers.
+
+=head1 AUTHORS
+
+Chin Guok (chin@es.net),
+David Robertson (dwrobertson@lbl.gov)
+
+=head1 LAST MODIFIED
+
+December 19, 2005
+
+=cut
+
 
 use Data::Dumper;
 use Error qw(:try);

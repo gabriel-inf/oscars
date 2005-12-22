@@ -1,0 +1,277 @@
+###############################################################################
+package OSCARS::BSS::ReservationCommon;
+
+=head1 NAME
+
+OSCARS::BSS::ReservationCommon - Common functionality for OSCARS reservation 
+methods.
+
+=head1 SYNOPSIS
+
+  use OSCARS::BSS::ReservationCommon;
+
+=head1 DESCRIPTION
+
+Common functionality for SOAP methods dealing with reservation creation, 
+cancellation, and viewing.
+
+=head1 AUTHORS
+
+David Robertson (dwrobertson@lbl.gov)
+
+=head1 LAST MODIFIED
+
+December 21, 2005
+
+=cut
+
+
+use strict;
+
+use Data::Dumper;
+use Error qw(:try);
+use Socket;
+
+use OSCARS::User;
+
+sub new {
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
+  
+    bless( $self, $class );
+    $self->initialize();
+    return( $self );
+}
+
+sub initialize {
+    my( $self ) = @_;
+
+    # until can get views going
+    $self->{user_fields} = 'reservation_id, user_dn, ' .
+        'reservation_start_time, reservation_end_time, reservation_status, ' .
+        'src_hostaddr_id, dst_hostaddr_id, reservation_tag';
+
+} #____________________________________________________________________________ 
+
+
+###############################################################################
+# view_details:  get reservation details from the database, given its
+#     reservation id.  If a user has engr privileges, they can view any 
+#     reservation's details.  Otherwise they can only view reservations that
+#     they have made, with less of the details.
+#
+# In:  reference to hash of parameters
+# Out: reservations if any, and status message
+#
+sub view_details {
+    my( $self ) = @_;
+
+    my( $statement, $row );
+
+    my $user_dn = $self->{user}->{dn};
+    if ( $self->{params}->{engr_permission} ) {
+        $statement = 'SELECT * FROM reservations';
+        $statement .= ' WHERE reservation_id = ?';
+    }
+    else {
+        $statement = "SELECT $self->{user_fields} FROM reservations" .
+                     ' WHERE user_dn = ?';
+        $statement .= ' AND reservation_id = ?';
+    }
+    if ( $self->{params}->{engr_permission} ) {
+        $row = $self->{user}->get_row($statement, $self->{params}->{reservation_id});
+    }
+    else {
+        $row = $self->{user}->get_row($statement, $user_dn,
+                                        $self->{params}->{reservation_id});
+    }
+    if (!$row) { return $row; }
+    
+    # get additional fields if getting reservation details and user
+    # has permission
+    if ( $self->{params}->{engr_permission} ) { 
+        $self->get_engr_fields($row); 
+    }
+    $self->{time_methods}->convert_times($row);
+    $self->get_host_info($row);
+    $self->check_nulls($row);
+    return $row;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# update_status: Updates reservation status.  Used to mark as active,
+# finished, or cancelled.
+#
+sub update_status {
+    my ( $self, $status ) = @_;
+
+    my $statement = qq{ SELECT reservation_status from reservations
+                 WHERE reservation_id = ?};
+    my $row = $self->{user}->get_row($statement, $self->{params}->{reservation_id});
+
+    # If the previous state was pending_cancel, mark it now as cancelled.
+    # If the previous state was pending, and it is to be deleted, mark it
+    # as cancelled instead of pending_cancel.  The latter is used by 
+    # find_expired_reservations as one of the conditions to attempt to
+    # tear down a circuit.
+    my $prev_status = $row->{reservation_status};
+    if ( ($prev_status eq 'precancel') || ( ($prev_status eq 'pending') &&
+            ($status eq 'precancel'))) { 
+        $status = 'cancelled';
+    }
+    $statement = qq{ UPDATE reservations SET reservation_status = ?
+                 WHERE reservation_id = ?};
+    my $unused = $self->{user}->do_query($statement, $status, $self->{params}->{reservation_id});
+    return $status;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub get_host_info {
+    my( $self, $resv ) = @_;
+ 
+    my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
+    my $hrow = $self->{user}->get_row($statement, $resv->{src_hostaddr_id});
+    $resv->{source_ip} = $hrow->{hostaddr_ip};
+    my $ipaddr = inet_aton($resv->{source_ip});
+    $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
+    if (!$resv->{source_host}) {
+        $resv->{source_host} = $resv->{source_ip};
+    }
+
+    $hrow = $self->{user}->get_row($statement, $resv->{dst_hostaddr_id});
+    # TODO:  FIX, hrow might be empty
+    $resv->{destination_ip} = $hrow->{hostaddr_ip};
+    $ipaddr = inet_aton($resv->{destination_ip});
+    $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
+    if (!$resv->{destination_host}) {
+        $resv->{destination_host} = $resv->{destination_ip};
+    }
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub get_engr_fields {
+    my( $self, $resv ) = @_;
+ 
+    my $statement = 'SELECT router_name, router_loopback FROM routers' .
+                ' WHERE router_id =' .
+                  ' (SELECT router_id FROM interfaces' .
+                  '  WHERE interface_id = ?)';
+
+    # TODO:  FIX row might be empty
+    my $row = $self->{user}->get_row($statement, $resv->{ingress_interface_id});
+    $resv->{ingress_router} = $row->{router_name}; 
+    $resv->{ingress_ip} = $row->{router_loopback}; 
+
+    $row = $self->{user}->get_row($statement, $resv->{egress_interface_id});
+    $resv->{egress_router} = $row->{router_name}; 
+    $resv->{egress_ip} = $row->{router_loopback}; 
+    my @path_routers = split(' ', $resv->{reservation_path});
+    $resv->{reservation_path} = ();
+    for $_ (@path_routers) {
+        $row = $self->{user}->get_row($statement, $_);
+        push(@{$resv->{reservation_path}}, $row->{router_name}); 
+    }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# hostaddrs_ip_to_id:  get the primary key in the hostaddrs table, given an
+#     IP address.  A row is created if that address is not present.
+# In:  hostaddr_ip
+# Out: hostaddr_id
+#
+sub hostaddrs_ip_to_id {
+    my( $self, $ipaddr ) = @_;
+
+    # TODO:  fix schema, possible hostaddr_ip would not be unique
+    my $statement = 'SELECT hostaddr_id FROM hostaddrs WHERE hostaddr_ip = ?';
+    my $row = $self->{user}->get_row($statement, $ipaddr);
+    # if no matches, insert a row in hostaddrs
+    if ( !$row ) {
+        $statement = "INSERT INTO hostaddrs VALUES ( NULL, '$ipaddr'  )";
+        my $unused = $self->{user}->do_query($statement);
+        return $self->{dbh}->{mysql_insertid};
+    }
+    else { return $row->{hostaddr_id}; }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# check_nulls:  
+#
+sub check_nulls {
+    my( $self, $resv ) = @_ ;
+
+    # clean up NULL values
+    if (!$resv->{reservation_protocol} ||
+        ($resv->{reservation_protocol} eq 'NULL')) {
+        $resv->{reservation_protocol} = 'DEFAULT';
+    }
+    if (!$resv->{reservation_dscp} ||
+        ($resv->{reservation_dscp} eq 'NU')) {
+        $resv->{reservation_dscp} = 'DEFAULT';
+    }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# reservation_stats
+#
+sub reservation_stats {
+    my( $self, $resv) = @_;
+
+    # TODO:  FIX! infinite_time
+    my $infinite_time = 'foo';
+    # only optional fields need to be checked for existence
+    my $msg = "Description:        $resv->{reservation_description}\n";
+    if ($resv->{reservation_id}) {
+        $msg .= "Reservation id:     $resv->{reservation_id}\n";
+    }
+    $msg .= "Start time:         $resv->{reservation_start_time}\n";
+    if ($resv->{reservation_end_time} ne $infinite_time) {
+        $msg .= "End time:           $resv->{reservation_end_time}\n";
+    }
+    else {
+        $msg .= "End time:           persistent circuit\n";
+    }
+
+    if ($resv->{reservation_created_time}) {
+        $msg .= "Created time:       $resv->{reservation_created_time}\n";
+    }
+    $msg .= "(Times are in UTC $resv->{reservation_time_zone})\n";
+    $msg .= "Bandwidth:          $resv->{reservation_bandwidth}\n";
+    if ($resv->{reservation_burst_limit}) {
+        $msg .= "Burst limit:         $resv->{reservation_burst_limit}\n";
+    }
+    $msg .= "Source:             $resv->{source_host}\n" .
+        "Destination:        $resv->{destination_host}\n";
+    if ($resv->{reservation_src_port}) {
+        $msg .= "Source port:        $resv->{reservation_src_port}\n";
+    }
+    else { $msg .= "Source port:        DEFAULT\n"; }
+
+    if ($resv->{reservation_dst_port}) {
+        $msg .= "Destination port:   $resv->{reservation_dst_port}\n";
+    }
+    else { $msg .= "Destination port:   DEFAULT\n"; }
+
+    $msg .= "Protocol:           $resv->{reservation_protocol}\n";
+    $msg .= "DSCP:               $resv->{reservation_dscp}\n";
+
+    if ($resv->{reservation_class}) {
+        $msg .= "Class:              $resv->{reservation_class}\n\n";
+    }
+    else { $msg .= "Class:              DEFAULT\n\n"; }
+
+    return( $msg );
+} #____________________________________________________________________________
+
+
+######
+1;
+# vim: et ts=4 sw=4
