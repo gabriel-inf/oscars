@@ -98,28 +98,32 @@ CREATE TABLE IF NOT EXISTS reservations (
 -- When a server is started, it registers itself by creating an entry in
 -- this table.
 CREATE TABLE IF NOT EXISTS servers (
-    server_id               INT NOT NULL AUTO_INCREMENT,
-        -- This has a default value in the db, but can be overriden on the 
-        -- command line.
-    server_port             INT NOT NULL,
-
+    server_id			INT NOT NULL AUTO_INCREMENT,
+      -- Same name as the associated OSCARS component
+    server_name                 TEXT,
+      -- whether this server should be started
+    server_use                  BOOLEAN NOT NULL,
+    server_port			INT NOT NULL,
+      -- used to start SOAP::Lite server
+    server_uri              TEXT,
+    server_proxy            TEXT,
         -- debug level
-    server_debug            INT NOT NULL,
+    server_debug		INT NOT NULL,
         -- Time (in seconds) between polling the reservation db
-    server_db_poll_time     INT NOT NULL,
+    server_db_poll_time		INT NOT NULL,
         -- Time interval (in seconds) to search for reservations 
         -- to schedule must be larger then db_poll time
-    server_time_interval    INT NOT NULL,
+    server_time_interval	INT NOT NULL,
+    server_start_time		DATETIME,
+    server_end_time		DATETIME,
 
-    server_start_time       DATETIME,
-    server_end_time         DATETIME,
-
-    server_mail_list        VARCHAR(36) NOT NULL,
-    server_send_mail        BOOLEAN NOT NULL,
+    server_mail_list		TEXT NOT NULL,
+    server_send_mail		BOOLEAN NOT NULL,
     PRIMARY KEY (server_id)
 ) type=MyISAM;
 
--- Following two tbbles are for configuration variables that can exist on a per
+
+-- Following two tables are for configuration variables that can exist on a per
 -- reservation basis (one row is for the defaults).  The defaults are used
 -- if the foreign key is null in the reservation.  The defaults can
 -- only be overriden by a user with engineer privileges.
