@@ -92,10 +92,27 @@ sub view_details {
     if ( $self->{params}->{engr_permission} ) { 
         $self->get_engr_fields($row); 
     }
-    $self->{time_methods}->convert_times($row);
     $self->get_host_info($row);
     $self->check_nulls($row);
     return $row;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# update_reservation: change the status of the reservervation from pending to
+#                     active
+#
+sub update_reservation {
+    my ($self, $resv, $status, $logger) = @_;
+
+    $logger->write_log("Updating status of reservation $resv->{reservation_id} to ");
+    if ( !$resv->{lsp_status} ) {
+        $resv->{lsp_status} = "Successful configuration";
+        $status = $self->update_status($resv, $status);
+    } else {
+        $status = $self->update_status($resv, 'failed');
+    }
+    $logger->write_log("$status");
 } #____________________________________________________________________________
 
 
@@ -124,6 +141,26 @@ sub update_status {
                  WHERE reservation_id = ?};
     my $unused = $self->{user}->do_query($statement, $status, $self->{params}->{reservation_id});
     return $status;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub get_pss_configs {
+    my( $self ) = @_;
+
+        # use defaults for now
+    my $statement = 'SELECT ' .
+             'pss_conf_access, pss_conf_login, pss_conf_passwd, ' .
+             'pss_conf_firewall_marker, ' .
+             'pss_conf_setup_file, pss_conf_teardown_file, ' .
+             'pss_conf_ext_if_filter, pss_conf_CoS, ' .
+             'pss_conf_burst_limit, ' .
+             'pss_conf_setup_priority, pss_conf_resv_priority, ' .
+             'pss_conf_allow_lsp '  .
+             'FROM pss_confs where pss_conf_id = 1';
+    my $configs = $self->{user}->get_row($statement);
+    return $configs;
 } #____________________________________________________________________________
 
 

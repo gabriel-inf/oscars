@@ -49,7 +49,6 @@ sub initialize {
     my ($self) = @_;
 
     $self->{trace_configs} = $self->get_trace_configs();
-    $self->{pss_configs} = $self->get_pss_configs();
 } #____________________________________________________________________________
 
 
@@ -114,19 +113,6 @@ sub find_interface_ids {
             $self->do_traceroute('find_egress', $loopback_ip,
                                $params->{destination_ip}, $logger);
     }
-} #____________________________________________________________________________
-
-
-###############################################################################
-# get_pss_fields:   get default PSS config fields used in reservation
-#
-sub get_pss_fields {
-    my( $self ) = @_;
-
-        # class of service
-    my $reservation_class = $self->{pss_configs}->{pss_conf_CoS};
-    my $reservation_burst_limit = $self->{pss_configs}->{pss_conf_burst_limit};
-    return( $reservation_class, $reservation_burst_limit );
 } #____________________________________________________________________________
 
 
@@ -256,26 +242,6 @@ sub get_trace_configs {
             "trace_conf_run_trace, trace_conf_use_system, " .
             "trace_conf_use_ping "  .
             "FROM trace_confs where trace_conf_id = 1";
-    my $configs = $self->{user}->get_row($statement);
-    return $configs;
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
-sub get_pss_configs {
-    my( $self ) = @_;
-
-        # use defaults for now
-    my $statement = 'SELECT ' .
-             'pss_conf_access, pss_conf_login, pss_conf_passwd, ' .
-             'pss_conf_firewall_marker, ' .
-             'pss_conf_setup_file, pss_conf_teardown_file, ' .
-             'pss_conf_ext_if_filter, pss_conf_CoS, ' .
-             'pss_conf_burst_limit, ' .
-             'pss_conf_setup_priority, pss_conf_resv_priority, ' .
-             'pss_conf_allow_lsp '  .
-             'FROM pss_confs where pss_conf_id = 1';
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________

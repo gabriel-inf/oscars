@@ -42,7 +42,11 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
-                                                     'user' => $self->{user});
+                                               'user' => $self->{user},
+                                               'params' => $self->{params});
+    $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
+                                                'user' => $self->{user},
+                                                'params' => $self->{params});
 } #____________________________________________________________________________
 
 
@@ -56,7 +60,9 @@ sub soap_method {
     my( $self ) = @_;
 
     my $status =  $self->{resv_methods}->update_status( 'precancel' );
-    return $self->{resv_methods}->view_details();
+    my $results = $self->{resv_methods}->view_details();
+    $self->{time_methods}->convert_times($results);
+    return $results;
 } #____________________________________________________________________________
 
 

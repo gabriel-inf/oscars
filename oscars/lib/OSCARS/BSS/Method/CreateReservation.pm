@@ -22,7 +22,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+December 22, 2005
 
 =cut
 
@@ -45,11 +45,13 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{route_setup} = OSCARS::BSS::RouteHandler->new(
-                                                     'user' => $self->{user});
+                                                'user' => $self->{user});
     $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
-                                                     'user' => $self->{user});
+                                                'user' => $self->{user},
+                                                'params' => $self->{params});
     $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
-                                                     'user' => $self->{user});
+                                                'user' => $self->{user},
+                                                'params' => $self->{params});
     $self->{param_tests} = {
         'reservation_start_time' => (
             {'regexp' => '.+',
@@ -100,8 +102,11 @@ sub soap_method {
     # params fields having to do with traceroute modified in find_interface_ids
     $self->{route_setup}->find_interface_ids($self->{logger}, $self->{params});
     $self->{time_methods}->setup_times();
-    ( $self->{params}->{reservation_class}, $self->{params}->{reservation_burst_limit} ) =
-                    $self->{route_setup}->get_pss_fields();
+
+    my $pss_configs = $self->{resv_methods}->get_pss_configs();
+    $self->{params}->{reservation_class} = $pss_configs->{pss_conf_CoS};
+    $self->{params}->{reservation_burst_limit} =
+                                     $pss_configs->{pss_conf_burst_limit};
 
     # convert requested bandwidth to bps
     $self->{params}->{reservation_bandwidth} *= 1000000;
@@ -114,7 +119,9 @@ sub soap_method {
     $self->{params}->{dst_hostaddr_id} =
         $self->{resv_methods}->hostaddrs_ip_to_id($self->{params}->{destination_ip}); 
 
-    my $results = $self->get_results($self->{params});
+    print STDERR "to get_results\n";
+    my $results = $self->get_results();
+    print STDERR "past get_results\n";
     return $results;
 } #____________________________________________________________________________
 
@@ -229,25 +236,30 @@ sub get_results {
     my $results = {}; 
     # TODO:  necessary to do insertions this way?
     for $_ ( @$rows ) {
-       if ($self->params->{$_->{Field}}) {
+       if ($self->{params}->{$_->{Field}}) {
            $results->{$_->{Field}} = $self->{params}->{$_->{Field}};
            push(@insertions, $self->{params}->{$_->{Field}}); 
        }
        else{ push(@insertions, 'NULL'); }
     }
+    print STDERR "past copies\n";
 
     # insert all fields for reservation into database
     $statement = "INSERT INTO reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
     my $unused = $self->{user}->do_query($statement, @insertions);
+    print STDERR "past do_query\n";
     $results->{reservation_id} = $self->{user}->get_primary_id();
     # copy over non-db fields
     $results->{source_host} = $self->{params}->{source_host};
     $results->{destination_host} = $self->{params}->{destination_host};
     # clean up NULL values
+    print STDERR "to check_nulls\n";
     $self->{resv_methods}->check_nulls($results);
+    print STDERR "to convert_times\n";
     # convert times back to user's time zone for mail message
     $self->{time_methods}->convert_times($results);
+    print STDERR "past convert_times\n";
 
     # set user-semi-readable tag
     $results->{reservation_tag} = $user_dn . '.' .
@@ -259,9 +271,11 @@ sub get_results {
                  WHERE reservation_id = ?";
     $unused = $self->{user}->do_query($statement,
                       $results->{reservation_tag}, $results->{reservation_id});
+    print STDERR "past update\n";
     # get loopback fields if have engr privileges
     # TODO:  need authorization for these fields
     $self->{resv_methods}->get_engr_fields($results); 
+    print STDERR "past get_engr_fields\n";
     $results->{reservation_tag} =~ s/@/../;
     $results->{reservation_status} = 'pending';
     return $results;
@@ -277,7 +291,7 @@ sub generate_messages {
     my( @messages );
     my $user_dn = $self->{user}->{dn};
     my $msg = "Reservation scheduled by $user_dn with parameters:\n";
-    $msg .= $self->reservation_stats($resv);
+    $msg .= $self->{resv_methods}->reservation_stats($resv);
     my $subject_line = "Reservation scheduled by $user_dn.";
     push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_dn } ); 
     return( \@messages );

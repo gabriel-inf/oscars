@@ -36,6 +36,7 @@ use Error qw(:try);
 use OSCARS::User;
 use OSCARS::BSS::SchedulerCommon;
 use OSCARS::BSS::TimeConversionCommon;
+use OSCARS::BSS::ReservationCommon;
 use OSCARS::PSS::JnxLSP;
 
 use OSCARS::Method;
@@ -46,9 +47,13 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{sched_methods} = OSCARS::BSS::SchedulerCommon->new(
-                                                     'user' => $self->{user});
+                                                 'user' => $self->{user});
     $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
-                                                     'user' => $self->{user});
+                                                 'user' => $self->{user},
+                                                 'params' => $self->{params});
+    $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
+                                                'user' => $self->{user},
+                                                'params' => $self->{params});
     $self->{logger}->set_recurrent(1);
 } #____________________________________________________________________________
 
@@ -71,7 +76,8 @@ sub soap_method {
         $self->{sched_methods}->map_to_ips($resv);
         # call PSS to schedule LSP
         $resv->{lsp_status} = $self->setup_pss($resv);
-        $self->{sched_methods}->update_reservation( $resv, 'active' );
+        $self->{resv_methods}->update_reservation( $resv, 'active', 
+                                                    $self->{logger} );
     }
     return $reservations;
 } #____________________________________________________________________________
@@ -133,6 +139,7 @@ sub setup_pss {
 
         # Create an LSP object.
     my $lsp_info = $self->{sched_methods}->map_fields($resv_info);
+    $lsp_info->{configs} = $self->{resv_methods}->get_pss_configs();
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
     $self->{logger}->write_log("Setting up LSP...");

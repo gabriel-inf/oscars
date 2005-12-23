@@ -79,24 +79,6 @@ sub map_to_ips {
 
 
 ###############################################################################
-# update_reservation: change the status of the reservervation from pending to
-#                     active
-#
-sub update_reservation {
-    my ($self, $resv, $status) = @_;
-
-    $self->{params}->{logger}->write_log("Updating status of reservation $resv->{reservation_id} to ");
-    if ( !$resv->{lsp_status} ) {
-        $resv->{lsp_status} = "Successful configuration";
-        $status = $self->update_status($resv, $status);
-    } else {
-        $status = $self->update_status($resv, 'failed');
-    }
-    $self->{params}->{logger}->write_log("$status");
-} #____________________________________________________________________________
-
-
-###############################################################################
 #
 sub map_fields {
     my ( $self, $resv ) = @_;
@@ -129,7 +111,6 @@ sub map_fields {
       ($resv->{reservation_protocol} != 'NULL')) {
         $lsp_info{protocol} = $resv->{reservation_protocol};
     }
-    $lsp_info{configs} = $self->{pss_configs};
     return \%lsp_info;
 } #____________________________________________________________________________
 

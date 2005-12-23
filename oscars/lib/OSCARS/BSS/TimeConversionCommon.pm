@@ -109,6 +109,17 @@ sub setup_times {
 
 
 ###############################################################################
+# get_time_str:  print formatted time string
+#
+sub get_time_str {
+    my( $self, $dtime ) = @_;
+
+    my @ymd = split(' ', $dtime);
+    return $ymd[0];
+} #____________________________________________________________________________ 
+
+
+###############################################################################
 # get_infinite_time:  returns "infinite" time
 #
 sub get_infinite_time {

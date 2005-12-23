@@ -44,9 +44,11 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
-                                                     'user' => $self->{user});
+                                                 'user' => $self->{user},
+                                                 'params' => $self->{params});
     $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
-                                                     'user' => $self->{user});
+                                                 'user' => $self->{user},
+                                                 'logger' => $self->{logger});
 } #____________________________________________________________________________
 
 

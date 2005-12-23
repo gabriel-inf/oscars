@@ -44,10 +44,11 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
-                                                     'user' => $self->{user});
     $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
                                                      'user' => $self->{user});
+    $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
+                                     'params' => $self->{params},
+                                     'user' => $self->{user});
 } #____________________________________________________________________________
 
 
@@ -63,7 +64,9 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    return $self->{resv_methods}->view_details();
+    my $results = $self->{resv_methods}->view_details();
+    $self->{time_methods}->convert_times($results);
+    return $results;
 } #____________________________________________________________________________
 
 
