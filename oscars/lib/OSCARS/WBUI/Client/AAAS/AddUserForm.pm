@@ -32,14 +32,14 @@ sub make_call {
 
     my $results = {};
 
-    $soap_params->{method} = 'view_institutions';
+    $soap_params->{method} = 'ViewInstitutions';
     my $som = $soap_server->dispatch($soap_params);
     if ($som->faultstring) {
         $self->update_status_msg($som->faultstring);
         return undef;
     }
     $results->{institutions} = $som->result;
-    $soap_params->{method} = 'view_permissions';
+    $soap_params->{method} = 'ViewPermissions';
     $som = $soap_server->dispatch($soap_params);
     if ($som->faultstring) {
         $self->update_status_msg($som->faultstring);

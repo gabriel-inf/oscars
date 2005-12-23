@@ -36,7 +36,7 @@ sub make_call {
     # and then get back list of permissions for use in permissions menu
     # (if admin)
     if ($self->{session}->authorized($self->{user_level}, 'admin')) {
-        $soap_params->{method} = 'view_permissions';
+        $soap_params->{method} = 'ViewPermissions';
         my $som = $soap_server->dispatch($soap_params);
         if ($som->faultstring) {
             $self->update_status_msg($som->faultstring);

@@ -32,7 +32,7 @@ sub initialize {
     <ul id="tabnav">
       <li>
         <a style="/styleSheets/layout.css" title="Information page"
-           class="active" id="get_info"
+           class="active" id="GetInfo"
            onclick="new_section('', 'GetInfo');return false;"
            href="#">Information</a>
       </li>
@@ -41,13 +41,13 @@ sub initialize {
       print qq{
       <li>
         <a style="/styleSheets/layout.css" title="List user accounts"
-           id="view_users"
+           id="ViewUsers"
            onclick="new_section('AAAS', 'ViewUsers');return false;"
            href="#">List Accounts</a>
       </li>
       <li>
         <a style="/styleSheets/layout.css" title="Add a new user account"
-           id="add_user_form"
+           id="AddUserForm"
            onclick="new_section('AAAS', 'AddUserForm');return false;"
            href="#">Add User</a>
       </li>
@@ -57,20 +57,20 @@ sub initialize {
       <li>
         <a style="/styleSheets/layout.css" 
            title="View and/or edit your information"
-           id="get_profile"
+           id="GetProfile"
            onclick="new_section('AAAS', 'GetProfile');return false;"
            href="#">User Profile</a>
       </li>
       <li>
         <a style="/styleSheets/layout.css" 
            title="View/Edit selected list of reservations"
-           id="view_reservations"
+           id="ViewReservations"
            onclick="new_section('BSS', 'ViewReservations');return false;"
            href="#">View/Edit Reservations</a>
       </li>
       <li>
         <a style="/styleSheets/layout.css" title="Create a new reservation"
-           id="create_reservation_form"
+           id="CreateReserationForm"
            onclick="new_section('BSS', 'CreateReservationForm');return false;"
            href="#">Make Reservation</a>
       </li>

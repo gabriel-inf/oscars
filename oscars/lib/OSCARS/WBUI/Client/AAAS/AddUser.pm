@@ -37,7 +37,7 @@ sub make_call {
 
     # and then get back list of users, including new user
     $self->{id} = $results->{id};
-    $soap_params->{method} = 'view_users';
+    $soap_params->{method} = 'ViewUsers';
     my $som = $soap_server->dispatch($soap_params);
     if ($som->faultstring) {
         $self->update_status_msg($som->faultstring);
