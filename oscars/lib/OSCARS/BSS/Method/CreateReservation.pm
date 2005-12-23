@@ -119,9 +119,7 @@ sub soap_method {
     $self->{params}->{dst_hostaddr_id} =
         $self->{resv_methods}->hostaddrs_ip_to_id($self->{params}->{destination_ip}); 
 
-    print STDERR "to get_results\n";
     my $results = $self->get_results();
-    print STDERR "past get_results\n";
     return $results;
 } #____________________________________________________________________________
 
@@ -242,24 +240,19 @@ sub get_results {
        }
        else{ push(@insertions, 'NULL'); }
     }
-    print STDERR "past copies\n";
 
     # insert all fields for reservation into database
     $statement = "INSERT INTO reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
     my $unused = $self->{user}->do_query($statement, @insertions);
-    print STDERR "past do_query\n";
     $results->{reservation_id} = $self->{user}->get_primary_id();
     # copy over non-db fields
     $results->{source_host} = $self->{params}->{source_host};
     $results->{destination_host} = $self->{params}->{destination_host};
     # clean up NULL values
-    print STDERR "to check_nulls\n";
     $self->{resv_methods}->check_nulls($results);
-    print STDERR "to convert_times\n";
     # convert times back to user's time zone for mail message
     $self->{time_methods}->convert_times($results);
-    print STDERR "past convert_times\n";
 
     # set user-semi-readable tag
     $results->{reservation_tag} = $user_dn . '.' .
@@ -271,11 +264,9 @@ sub get_results {
                  WHERE reservation_id = ?";
     $unused = $self->{user}->do_query($statement,
                       $results->{reservation_tag}, $results->{reservation_id});
-    print STDERR "past update\n";
     # get loopback fields if have engr privileges
     # TODO:  need authorization for these fields
     $self->{resv_methods}->get_engr_fields($results); 
-    print STDERR "past get_engr_fields\n";
     $results->{reservation_tag} =~ s/@/../;
     $results->{reservation_status} = 'pending';
     return $results;
