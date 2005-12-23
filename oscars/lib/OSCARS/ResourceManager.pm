@@ -82,11 +82,12 @@ sub get_proxy_info {
                     ' WHERE server_name = ?';
     my $results = $self->{admin}->do_query($statement, $server_name);
     my $len = scalar(@$results);
+    return( $results->[0]->{server_uri}, $results->[0]->{server_proxy} );
     # TODO: error message if > 1
-    if ($len == 1) {
-        return( $results->[0]->{server_uri}, $results->[0]->{server_proxy} );
-    }
-    return( undef, undef );
+    #if ($len == 1) {
+        #return( $results->[0]->{server_uri}, $results->[0]->{server_proxy} );
+    #}
+    #return( undef, undef );
 } #____________________________________________________________________________
 
 

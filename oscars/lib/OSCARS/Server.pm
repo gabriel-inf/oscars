@@ -32,7 +32,8 @@ sub start_server {
     my $portnum = $resource_manager->get_daemon_info();
 
     # set up proxy if it will be necessary to forward requests
-    my( $uri, $proxy ) = $resource_manager->get_proxy_info();
+    # TODO:  fix hard-wiring BSS
+    my( $uri, $proxy ) = $resource_manager->get_proxy_info('BSS');
     if ($proxy) { $resource_manager->set_proxy($uri, $proxy); }
 
     if ($server_name) {
@@ -112,7 +113,8 @@ sub dispatch {
          }
          # Method is not on this server.  Forward to the correct one.
          else {
-             $results = $resource_manager->forward($params);
+             my $som = $resource_manager->forward($params);
+             $results = $som->result;
          }
     }
     catch Error::Simple with { $ex = shift; }
@@ -125,7 +127,7 @@ sub dispatch {
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
         }
-        else { $handler->post_process($results); }
+        elsif ($handler) { $handler->post_process($results); }
     };
     return $results;
 } #____________________________________________________________________________
