@@ -78,7 +78,8 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{logger} = OSCARS::Logger->new( 'dir' => '/home/oscars/logs');
+    $self->{logger} = OSCARS::Logger->new( 'dir' => '/home/oscars/logs',
+                                       'method' => $self->{params}->{method});
     $self->{mailer} = OSCARS::Mail->new();
     $self->{param_tests} = {};
 } #____________________________________________________________________________
