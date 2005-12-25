@@ -65,7 +65,7 @@ sub write_log {
 sub end_log {
     my( $self, $user_dn, $results ) = @_;
 
-    if ((!$self->{output_written} && (!@$results)) && $self->{recurrent}) {
+    if ((!$self->{output_written} && $self->{recurrent})) {
         return;
     }
     my( $sec, $min, $hour, $monthday, $month, $year, $weekday, $yearday,

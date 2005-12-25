@@ -32,7 +32,7 @@ sub start_server {
     my $portnum = $resource_manager->get_daemon_info();
 
     # set up proxy if it will be necessary to forward requests
-    # TODO:  fix hard-wiring BSS
+    # TODO:  fix hard-wiring 
     my( $uri, $proxy ) = $resource_manager->get_proxy_info('BSS');
     if ($proxy) { $resource_manager->set_proxy($uri, $proxy); }
 
@@ -90,7 +90,8 @@ sub dispatch {
     my $results = {};
     my( $user, $handler );
 
-    my $logger = OSCARS::Logger->new( 'dir' => '/home/oscars/logs');
+    my $logger = OSCARS::Logger->new( 'dir' => '/home/oscars/logs',
+                                      'method' => $params->{method});
     try {
         if (!$resource_manager->authenticate($params)) {
             throw Error::Simple(
@@ -110,6 +111,7 @@ sub dispatch {
             if ($err) { throw Error::Simple($err); }
             # call SOAP method
             $results = $handler->soap_method();
+            $handler->{logger}->end_log($params->{user_dn}, $results);
          }
          # Method is not on this server.  Forward to the correct one.
          else {
@@ -123,6 +125,7 @@ sub dispatch {
         if ($ex) {
             print STDERR $ex->{-text}, "\n";
             $logger->write_log($ex->{-text});
+            $logger->end_log($params->{user_dn}, $results);
                 # caught by SOAP to indicate fault
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
