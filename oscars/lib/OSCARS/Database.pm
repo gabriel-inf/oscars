@@ -50,6 +50,8 @@ sub connect {
         PrintError => 0,
     );
 
+    # Temporary kludge; 12-24-2005
+    if ($database_name eq 'BSS') { $database_name = 'BSSTest'; }
     # I couldn't find a foolproof way to check for timeout; Apache::DBI
     # came closest, but it was too dependent on the driver handling the timeout
     # correctly.  So instead,
