@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+December 25, 2005
 
 =cut
 
@@ -59,7 +59,7 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    my $status =  $self->{resv_methods}->update_status( 'precancel' );
+    my $status =  $self->{resv_methods}->update_status( $self->{params}->{reservation_id}, 'precancel' );
     my $results = $self->{resv_methods}->view_details();
     $self->{time_methods}->convert_times($results);
     return $results;

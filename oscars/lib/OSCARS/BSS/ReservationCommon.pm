@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+December 25, 2005
 
 =cut
 
@@ -108,9 +108,9 @@ sub update_reservation {
     $logger->write_log("Updating status of reservation $resv->{reservation_id} to ");
     if ( !$resv->{lsp_status} ) {
         $resv->{lsp_status} = "Successful configuration";
-        $status = $self->update_status($resv, $status);
+        $status = $self->update_status($resv->{reservation_id}, $status);
     } else {
-        $status = $self->update_status($resv, 'failed');
+        $status = $self->update_status($resv->{reservation_id}, 'failed');
     }
     $logger->write_log("$status");
 } #____________________________________________________________________________
@@ -121,11 +121,11 @@ sub update_reservation {
 # finished, or cancelled.
 #
 sub update_status {
-    my ( $self, $status ) = @_;
+    my ( $self, $reservation_id, $status ) = @_;
 
     my $statement = qq{ SELECT reservation_status from reservations
                  WHERE reservation_id = ?};
-    my $row = $self->{user}->get_row($statement, $self->{params}->{reservation_id});
+    my $row = $self->{user}->get_row($statement, $reservation_id);
 
     # If the previous state was pending_cancel, mark it now as cancelled.
     # If the previous state was pending, and it is to be deleted, mark it
@@ -139,7 +139,7 @@ sub update_status {
     }
     $statement = qq{ UPDATE reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
-    my $unused = $self->{user}->do_query($statement, $status, $self->{params}->{reservation_id});
+    my $unused = $self->{user}->do_query($statement, $status, $reservation_id);
     return $status;
 } #____________________________________________________________________________
 
