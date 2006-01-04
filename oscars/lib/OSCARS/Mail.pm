@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 19, 2005
+January 4, 2006
 
 =cut
 
@@ -52,17 +52,13 @@ sub initialize {
 # send message:  send mail message, if appropriate, from method results
 #
 sub send_message {
-    my( $self, $user_dn, $method_name, $results ) = @_;
+    my( $self, $messages ) = @_;
 
     my( $err_msg );
 
-    if ( $self->{method_mail}->{$method_name} ) {
-         my $messages = 
-            $self->{notifier}->$method_name($user_dn, $results);
-         for my $msg (@$messages) {
-             $err_msg = $self->send_mailings($msg);
-             if ($err_msg) { return $err_msg; }
-         }
+    for my $msg (@$messages) {
+         $err_msg = $self->send_mailings($msg);
+         if ($err_msg) { return $err_msg; }
     }
     return '';
 } #____________________________________________________________________________ 
