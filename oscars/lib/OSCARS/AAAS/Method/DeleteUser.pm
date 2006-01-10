@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::AAAS::Method::DeleteUser;
 
 =head1 NAME
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -46,6 +46,8 @@ sub soap_method {
 
     my $statement = 'DELETE from users where user_dn = ?';
     my $unused = $self->{user}->do_query($statement, $self->{params}->{id});
+    $self->{logger}->add_string("Deleted user with id $self->{params}->{id}");
+    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     return $self->{params};
 } #____________________________________________________________________________
 

@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::AAAS::Method::ProcessRegistration;
 
 =head1 NAME
@@ -22,7 +22,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -72,6 +72,8 @@ sub soap_method {
         "successfully. Your login name is <strong>$user_dn</strong>. Once " .
         'your registration is accepted, information on ' .
         'activating your account will be sent to your primary email address.';
+    $self->{logger}->add_string($results->{status_msg});
+    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 

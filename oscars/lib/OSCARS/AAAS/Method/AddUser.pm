@@ -26,7 +26,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -133,6 +133,9 @@ sub soap_method {
     # X out password
     $results->{id} = $user_dn;
     $results->{user_password} = undef;
+    $self->{logger}->add_string("Successfully added OSCARS user $user_dn");
+    $self->{logger}->add_hash($results);
+    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 

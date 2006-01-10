@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::AAAS::Method::ViewUsers;
 
 =head1 NAME
@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -57,6 +57,8 @@ sub soap_method {
         $user->{institution_id} = $irow->{institution_name};
         $user->{user_password} = undef;
     }
+    $self->{logger}->add_string("Successfully viewed user list");
+    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 
