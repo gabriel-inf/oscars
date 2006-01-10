@@ -263,7 +263,7 @@ sub execute_configuration_change {
         }
     };
     if ($@) {
-        $self->{logger}->write_log("ignoring exception $@\n");
+        $self->{logger}->add_string("ignoring exception $@\n");
         return;
     }
 
@@ -384,10 +384,10 @@ sub update_log {
     my $errmsg = $self->get_error();
     if ($errmsg)  {
         $xmlString .= "\n\n$errmsg\n";
-        $self->{logger}->write_log($xmlString);
+        $self->{logger}->add_string($xmlString);
     }
     $r->{reservation_tag} =~ s/@/../;
-    $self->{logger}->write_log($xmlString);
+    $self->{logger}->add_string($xmlString);
 } #____________________________________________________________________________
 
 
