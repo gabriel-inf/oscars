@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::JnxTraceroute;
 
 =head1 NAME
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 19, 2005
+January 9, 2006
 
 =cut
 
@@ -64,7 +64,7 @@ sub traceroute
            "$configs->{trace_conf_jnx_user} $src traceroute $dst wait " .
            "$configs->{trace_conf_timeout} ttl " .
            "$configs->{trace_conf_ttl}";
-    $logger->write_log($cmd);
+    $logger->add_string($cmd);
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Error::Simple("Unable to ssh into router and perform traceroute.");
     }

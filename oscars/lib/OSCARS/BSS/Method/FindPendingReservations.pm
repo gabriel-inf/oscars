@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::Method::FindPendingReservations;
 
 =head1 NAME
@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 25, 2005
+January 9, 2006
 
 =cut
 
@@ -54,7 +54,6 @@ sub initialize {
     $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
                                                 'user' => $self->{user},
                                                 'params' => $self->{params});
-    $self->{logger}->set_recurrent(1);
 } #____________________________________________________________________________
 
 
@@ -70,14 +69,16 @@ sub soap_method {
 
     # find reservations that need to be scheduled
     $reservations = $self->find_pending_reservations($self->{params}->{time_interval});
-    if (!@$reservations) { return $reservations; }
-
     for my $resv (@$reservations) {
         $self->{sched_methods}->map_to_ips($resv);
         # call PSS to schedule LSP
         $resv->{lsp_status} = $self->setup_pss($resv);
         $self->{resv_methods}->update_reservation( $resv, 'active', 
                                                     $self->{logger} );
+        $self->{logger}->add_hash($resv);
+    }
+    if (@$reservations) {
+        $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     }
     return $reservations;
 } #____________________________________________________________________________
@@ -135,19 +136,19 @@ sub setup_pss {
 
     my( $error );
 
-    $self->{logger}->write_log("Creating lsp_info...");
+    $self->{logger}->add_string("Creating lsp_info...");
 
         # Create an LSP object.
     my $lsp_info = $self->{sched_methods}->map_fields($resv_info);
     $lsp_info->{configs} = $self->{resv_methods}->get_pss_configs();
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
-    $self->{logger}->write_log("Setting up LSP...");
+    $self->{logger}->add_string("Setting up LSP...");
     $jnxLsp->configure_lsp($self->{LSP_SETUP}, $resv_info, $self->{logger});
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
-    $self->{logger}->write_log("LSP setup complete");
+    $self->{logger}->add_string("LSP setup complete");
     return "";
 } #____________________________________________________________________________
 

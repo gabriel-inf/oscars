@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::TimeConversionCommon;
 
 =head1 NAME
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 

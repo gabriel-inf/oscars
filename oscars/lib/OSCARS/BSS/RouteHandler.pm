@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::RouteHandler; 
 
 =head1 NAME
@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -82,7 +82,7 @@ sub find_interface_ids {
     }
     else {
         $params->{source_ip} = $self->name_to_ip($params->{source_host});
-        $logger->write_log("--traceroute:  " .
+        $logger->add_string("--traceroute:  " .
              "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}");
         ($params->{ingress_interface_id}, $loopback_ip, $path) =
             $self->do_traceroute('find_ingress', 
@@ -107,7 +107,7 @@ sub find_interface_ids {
         # Use the address found in the last step to run the traceroute to the
         # destination, and find the egress.
         $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
-        $logger->write_log("--traceroute:  " .
+        $logger->add_string("--traceroute:  " .
                        "$loopback_ip to destination $params->{destination_ip}}");
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
             $self->do_traceroute('find_egress', $loopback_ip,
@@ -154,13 +154,13 @@ sub do_traceroute {
     # an oscars loopback address
     my $hop;
     for $hop (@hops)  {
-        $logger->write_log("hop:  $hop");
+        $logger->add_string("hop:  $hop");
         # id is 0 if not an edge router (not in interfaces table)
         $interface_id = $self->ip_to_xface_id( $hop );
         $loopback_ip =
             $self->xface_id_to_loopback( $interface_id );
         if (!$interface_id) {
-            $logger->write_log("edge router is $edge_loopback");
+            $logger->add_string("edge router is $edge_loopback");
             return ($edge_id, $edge_loopback, \@path);
         }
 
@@ -173,7 +173,7 @@ sub do_traceroute {
     }
     # Need this in case the last hop is in the database
     if ($edge_loopback) {
-        $logger->write_log("edge router is $edge_loopback");
+        $logger->add_string("edge router is $edge_loopback");
         my $unused = pop(@path);
         return ($edge_id, $edge_loopback, \@path);
     }

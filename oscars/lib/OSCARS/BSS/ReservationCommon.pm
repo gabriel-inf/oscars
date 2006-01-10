@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::ReservationCommon;
 
 =head1 NAME
@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 25, 2005
+January 9, 2006
 
 =cut
 
@@ -105,14 +105,14 @@ sub view_details {
 sub update_reservation {
     my ($self, $resv, $status, $logger) = @_;
 
-    $logger->write_log("Updating status of reservation $resv->{reservation_id} to ");
+    $logger->add_string("Updating status of reservation $resv->{reservation_id} to ");
     if ( !$resv->{lsp_status} ) {
         $resv->{lsp_status} = "Successful configuration";
         $status = $self->update_status($resv->{reservation_id}, $status);
     } else {
         $status = $self->update_status($resv->{reservation_id}, 'failed');
     }
-    $logger->write_log("$status");
+    $logger->add_string("$status");
 } #____________________________________________________________________________
 
 

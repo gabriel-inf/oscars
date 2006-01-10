@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::Method::CreateReservation;
 
 =head1 NAME
@@ -22,7 +22,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 22, 2005
+January 9, 2006
 
 =cut
 
@@ -120,6 +120,8 @@ sub soap_method {
         $self->{resv_methods}->hostaddrs_ip_to_id($self->{params}->{destination_ip}); 
 
     my $results = $self->get_results();
+    $self->add_hash($results);
+    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 

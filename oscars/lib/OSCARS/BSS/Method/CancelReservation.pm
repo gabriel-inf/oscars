@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::Method::CancelReservation;
 
 =head1 NAME
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 25, 2005
+January 9, 2006
 
 =cut
 
@@ -62,6 +62,8 @@ sub soap_method {
     my $status =  $self->{resv_methods}->update_status( $self->{params}->{reservation_id}, 'precancel' );
     my $results = $self->{resv_methods}->view_details();
     $self->{time_methods}->convert_times($results);
+    $self->{logger}->add_hash($results);
+    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 

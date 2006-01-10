@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::Method::ViewReservations;
 
 =head1 NAME
@@ -22,7 +22,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -91,6 +91,8 @@ sub soap_method {
         $self->{resv_methods}->get_host_info($resv);
         $self->{resv_methods}->check_nulls($resv);
     }
+    $self->{logger}->add_string('Successfully viewed current reservations');
+    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     return $rows;
 } #____________________________________________________________________________
 

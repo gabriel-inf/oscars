@@ -1,4 +1,4 @@
-###############################################################################
+#==============================================================================
 package OSCARS::BSS::Method::FindExpiredReservations;
 
 =head1 NAME
@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 25, 2005
+January 9, 2006
 
 =cut
 
@@ -55,7 +55,6 @@ sub initialize {
     $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
                                                 'user' => $self->{user},
                                                 'params' => $self->{params});
-    $self->{logger}->set_recurrent(1);
 } #____________________________________________________________________________
 
 
@@ -72,13 +71,16 @@ sub soap_method {
     # find reservations whose end time is before the current time and
     # thus expired
     $reservations = $self->find_expired_reservations($self->{params}->{time_interval});
-    if (!@$reservations) { return $reservations; }
 
     for my $resv (@$reservations) {
         $self->{sched_methods}->map_to_ips($resv);
         $resv->{lsp_status} = $self->teardown_pss($resv);
         $self->{resv_methods}->update_reservation( $resv, 'finished',
                                                    $self->{logger} );
+        $self->{logger}->add_hash($resv);
+    }
+    if (@$reservations) { 
+        $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     }
     return $reservations;
 } #____________________________________________________________________________
@@ -141,12 +143,12 @@ sub teardown_pss {
     $lsp_info->{configs} = $self->{resv_methods}->get_pss_configs();
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
-    $self->{logger}->write_log("Tearing down LSP...");
+    $self->{logger}->add_string("Tearing down LSP...");
     $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $resv_info, $self->{logger}); 
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
-    $self->{logger}->write_log("LSP teardown complete");
+    $self->{logger}->add_string("LSP teardown complete");
     return "";
 } #____________________________________________________________________________
 
