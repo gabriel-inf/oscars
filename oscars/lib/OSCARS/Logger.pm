@@ -1,4 +1,4 @@
-# =============================================================================
+#==============================================================================
 package OSCARS::Logger; 
 
 =head1 NAME
@@ -25,12 +25,11 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 19, 2005
+January 9, 2006
 
 =cut
 
-# Last modified:  December 16, 2005
-# David Robertson (dwrobertson@lbl.gov)
+use strict;
 
 sub new {
     my( $class, %args ) = @_;
@@ -44,29 +43,58 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{recurrent} = 0;
-    $self->{output_written} = 0;
     @{$self->{buf_strings}} = ( );
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub write_log {
+sub add_string {
     my( $self, $buf ) = @_;
 
     push(@{$self->{buf_strings}}, "$buf<br/>");
-    $self->{output_written} = 1;
 } #____________________________________________________________________________
+
+
+##############################################################################
+#
+sub add_hash {
+    my( $self, $hashref ) = @_;
+
+    my( $key, $value );
+
+    my $buf = '';
+    foreach $key(sort keys %{$hashref} ) {
+        if (($key ne 'status_msg') &&
+            defined($hashref->{$key})) {
+            $value = $hashref->{$key};
+            if ($value) {
+                if (ref($value) eq 'ARRAY') {
+                    $buf .= "$key -> ";
+                    for my $row (@$value) {
+                        $buf .= "$row ";
+                    }
+                    $buf .= "\n";
+                }
+                else { $buf .= "$key -> $value<br/>\n"; }
+            }
+            else {
+                $buf .= "$key -> <br/>\n";
+            }
+        }
+    }
+    push(@{$self->{buf_strings}}, "$buf<br/>");
+} #___________________________________________________________________________
+
 
 
 ###############################################################################
 #
-sub end_log {
-    my( $self, $user_dn, $results ) = @_;
+sub write_file {
+    my( $self, $user, $id, $exception_flag ) = @_;
 
-    if ((!$self->{output_written} && $self->{recurrent})) {
-        return;
+    if ( !$self->{dir} ) {
+        $self->{dir} = '/home/oscars/logs';
     }
     my( $sec, $min, $hour, $monthday, $month, $year, $weekday, $yearday,
         $isdaylight ) = localtime();
@@ -74,79 +102,35 @@ sub end_log {
     $month += 1;
     if ($month < 10) { $month = '0' . $month; }
     if ($monthday < 10) { $monthday = '0' . $monthday; }
-    $user_dn =~ s/@/./;
+    $user =~ s/@/./;
     # TODO:  non-portable
-    my $fname = "$self->{dir}/$user_dn";
+    my $fname = "$self->{dir}/$user";
     if (!(-d $fname)) {
         mkdir($fname, 0755) || die "Cannot mkdir: $fname";
     }
     my $ctr = 1;
-    $fname = "$self->{dir}/$user_dn/$self->{method}.$year.$month.$monthday.$ctr.html";
+    if (!$exception_flag) {
+        $fname = "$self->{dir}/$user/$id.$year.$month.$monthday.$ctr.html";
+    }
+    else {
+        $fname = "$self->{dir}/$user/EX.$id.$year.$month.$monthday.$ctr.html";
+    }
     while (-e $fname) {
         $ctr += 1;
-        $fname = "$self->{dir}/$user_dn/$self->{method}.$year.$month.$monthday.$ctr.html";
+        $fname = "$self->{dir}/$user/$id.$year.$month.$monthday.$ctr.html";
     }
     open (LOGFILE, ">$fname") ||
             die "Can't open log file $fname.\n";
-    print LOGFILE "<html><head><title>$self->{method}</title></head><body>\n";
-    print LOGFILE "<h2>$self->{method}</h2>\n";
+    print LOGFILE "<html><head><title>$id</title></head><body>\n";
+    print LOGFILE "<h2>$id</h2>\n";
     print LOGFILE "<h3>Output</h3>\n";
     print LOGFILE join("\n", @{$self->{buf_strings}});
-    if ($results) {
-        print LOGFILE "\n<h3>Results</h3>\n";
-        if (ref($results) ne "ARRAY") {
-            print LOGFILE to_string($results);
-        }
-        else {
-            for my $row (@$results) {
-                print LOGFILE to_string($row);
-            }
-        }
-        print LOGFILE "\n";
-    }
     print LOGFILE "</body></html>\n";
     close(LOGFILE);
+    # clear string buffers
+    @{$self->{buf_strings}} = ( );
 } #____________________________________________________________________________
 
-
-##############################################################################
-#
-sub set_recurrent {
-    my( $self, $flag ) = @_;
-
-    $self->{recurrent} = $flag;
-} #____________________________________________________________________________
-
-
-##############################################################################
-#
-sub to_string {
-    my( $results ) = @_;
-
-    my( $key, $value );
-
-    my $msg = '';
-    foreach $key(sort keys %{$results} ) {
-        if (($key ne 'status_msg') &&
-            defined($results->{$key})) {
-            $value = $results->{$key};
-            if ($value) {
-                if (ref($value) eq 'ARRAY') {
-                    $msg .= "$key -> ";
-                    for my $row (@$value) {
-                        $msg .= "$row ";
-                    }
-                    $msg .= "\n";
-                }
-                else { $msg .= "$key -> $value<br/>\n"; }
-            }
-            else {
-                $msg .= "$key -> <br/>\n";
-            }
-        }
-    }
-    return $msg;
-} #___________________________________________________________________________
 
 ######
 1;
