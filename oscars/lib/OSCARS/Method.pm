@@ -53,7 +53,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -78,8 +78,7 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{logger} = OSCARS::Logger->new( 'dir' => '/home/oscars/logs',
-                                       'method' => $self->{params}->{method});
+    $self->{logger} = OSCARS::Logger->new();
     $self->{mailer} = OSCARS::Mail->new();
     $self->{param_tests} = {};
 } #____________________________________________________________________________
@@ -125,6 +124,17 @@ sub soap_method {
     my( $self ) = @_;
 
     return undef;
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# write_exception:  Write exception to log.
+#
+sub write_exception {
+    my( $self, $exception_text, $method_name ) = @_;
+
+    $self->{logger}->add_string($exception_text);
+    $self->{logger}->write_file($self->{user}, $method_name, 1);
 } #___________________________________________________________________________ 
 
 

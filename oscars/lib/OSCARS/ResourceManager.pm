@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -32,6 +32,7 @@ use Error qw(:try);
 
 use strict;
 
+use OSCARS::Logger;
 use OSCARS::User;
 
 sub new {
@@ -51,6 +52,7 @@ sub initialize {
     $self->{admin}->connect($self->{server_name});
     my $auth_factory = OSCARS::AuthFactory->new();
     $self->{authz} = $auth_factory->instantiate($self->{server_name});
+    $self->{logger} = OSCARS::Logger->new();
 } #____________________________________________________________________________
 
 
@@ -110,10 +112,15 @@ sub set_proxy {
 sub forward {
     my( $self, $params ) = @_;
 
+    my $som;
     if ($self->{proxy_server}) {
-        $self->{proxy_server}->dispatch($params);
+        $som = $self->{proxy_server}->dispatch($params);
     }
-    # TODO:  error message if attempting to forward with non-existent proxy
+    else {
+        $self->{logger}->add_string('Unable to forward; no proxy server');
+        $self->{logger}->write_file('manager', $params->{method}, 1);
+    }
+    return $som;
 } #____________________________________________________________________________
 
 
@@ -149,6 +156,17 @@ sub authorized {
 
     if ($self->{authz}) { return $self->{authz}->authorized($params); }
     return 1;
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# write_exception:  Write exception to log.
+#
+sub write_exception {
+    my( $self, $exception_text, $method_name ) = @_;
+
+    $self->{logger}->add_string($exception_text);
+    $self->{logger}->write_file('manager', $method_name, 1);
 } #___________________________________________________________________________ 
 
 
