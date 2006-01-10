@@ -69,7 +69,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+January 9, 2006
 
 =cut
 
@@ -80,7 +80,6 @@ use SOAP::Lite;
 use strict;
 
 use OSCARS::ResourceManager;
-use OSCARS::Logger;
 use OSCARS::Method;
 
 
@@ -93,8 +92,6 @@ sub dispatch {
     my $results = {};
     my( $user, $handler );
 
-    my $logger = OSCARS::Logger->new( 'dir' => '/home/oscars/logs',
-                                      'method' => $params->{method});
     try {
         if (!$resource_manager->authenticate($params)) {
             throw Error::Simple(
@@ -114,7 +111,6 @@ sub dispatch {
             if ($err) { throw Error::Simple($err); }
             # call SOAP method
             $results = $handler->soap_method();
-            $handler->{logger}->end_log($params->{user_dn}, $results);
          }
          # Method is not on this server.  Forward to the correct one.
          else {
@@ -127,8 +123,13 @@ sub dispatch {
     finally {
         if ($ex) {
             print STDERR $ex->{-text}, "\n";
-            $logger->write_log($ex->{-text});
-            $logger->end_log($params->{user_dn}, $results);
+            if ( !$handler ) {
+                $resource_manager->write_exception($ex->{-text},
+                                                   $params->{method}),
+            }
+            else {
+                $handler->write_exception($ex->{-text}, $params->{method});
+            }
                 # caught by SOAP to indicate fault
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
