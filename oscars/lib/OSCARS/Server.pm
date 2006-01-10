@@ -1,3 +1,5 @@
+#!/usr/bin/perl -w
+
 #==============================================================================
 package OSCARS::Server;
 
@@ -37,6 +39,7 @@ sub start_server {
     if ($proxy) { $resource_manager->set_proxy($uri, $proxy); }
 
     if ($server_name) {
+        $SOAP::Constants::MAX_CONTENT_SIZE = 10000;
         my $daemon = SOAP::Transport::HTTP::Daemon
             -> new (LocalPort => $portnum, Listen => 5, Reuse => 1)
             -> dispatch_to('OSCARS::Dispatcher');
