@@ -123,6 +123,7 @@ sub write_file {
             die "Can't open log file $fname.\n";
     print LOGFILE "<html><head><title>$id</title></head><body>\n";
     print LOGFILE "<h2>$id</h2>\n";
+    print LOGFILE "<h2>Time:  $hour:$min:$sec</h2>\n";
     print LOGFILE "<h3>Output</h3>\n";
     print LOGFILE join("\n", @{$self->{buf_strings}});
     print LOGFILE "</body></html>\n";
