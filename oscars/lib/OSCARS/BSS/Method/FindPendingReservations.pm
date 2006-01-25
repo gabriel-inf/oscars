@@ -46,6 +46,8 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
+    $self->{LSP_SETUP} = 1;
+    $self->{LSP_TEARDOWN} = 0;
     $self->{sched_methods} = OSCARS::BSS::SchedulerCommon->new(
                                                  'user' => $self->{user});
     $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
