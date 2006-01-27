@@ -61,12 +61,10 @@ sub connect {
     if ($self->{dbh}) {
         $self->{dbh}->disconnect();
     }
-    $self->{database} = 'DBI:mysql:' . $database_name;
-    $self->{dbh} = DBI->connect(
-                 $self->{database}, 
-                 $self->{login}, 
-                 $self->{password},
-                 \%attr);
+    $self->{dsn} = "DBI:mysql:" . $database_name .
+                   ";mysql_read_default_file=$ENV{HOME}/.my.cnf";
+    $self->{dbh} = DBI->connect( $self->{dsn}, undef, undef, \%attr );
+
     if (!$self->{dbh}) {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }

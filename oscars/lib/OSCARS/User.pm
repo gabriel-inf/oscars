@@ -39,17 +39,8 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
 }
-
-sub initialize {
-    my( $self ) = @_;
-
-    $self->{login} = 'oscars';
-    $self->{password} = 'ritazza6';
-} #____________________________________________________________________________
-
 
 ######
 1;
