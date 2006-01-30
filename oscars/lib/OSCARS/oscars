@@ -12,8 +12,8 @@ use OSCARS::ResourceManager;
 
 my $len = scalar(@ARGV);
 if ($len != 1) {
-    print STDERR "Usage:\t\tperl Server.pm component_name\n";
-    print STDERR "Example:\tperl Server.pm AAAS\n";
+    print STDERR "Usage:\t\toscars component_name\n";
+    print STDERR "Example:\toscars AAAS\n";
     exit;
 }
 
@@ -35,8 +35,8 @@ sub start_server {
 
     # set up proxy if it will be necessary to forward requests
     # TODO:  fix hard-wiring 
-    my( $uri, $proxy ) = $resource_manager->get_proxy_info('BSS');
-    if ($proxy) { $resource_manager->set_proxy($uri, $proxy); }
+    #my( $uri, $proxy ) = $resource_manager->get_proxy_info('BSS');
+    #if ($proxy) { $resource_manager->set_proxy($uri, $proxy); }
 
     if ($server_name) {
         $SOAP::Constants::MAX_CONTENT_SIZE = 10000;
@@ -69,7 +69,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+January 30, 2006
 
 =cut
 
@@ -102,9 +102,10 @@ sub dispatch {
                 "User $params->{user_dn} not authorized to make $params->{method} call");
         }
         # if handler is present on this server
-        if ($server_name eq $params->{server_name}) {
+        #if ($server_name eq $params->{server_name}) {
+        if (1) {
             $user = $resource_manager->get_user($params->{user_dn});
-            $user->connect($server_name);
+            $user->connect($params->{server_name});
             my $factory = OSCARS::MethodFactory->new();
             $handler = $factory->instantiate( $user, $params );
             my $err = $handler->validate();
