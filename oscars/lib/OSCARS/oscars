@@ -10,35 +10,40 @@ use Data::Dumper;
 
 use OSCARS::ResourceManager;
 
-my $len = scalar(@ARGV);
-if ($len != 1) {
-    print STDERR "Usage:\t\toscars component_name\n";
-    print STDERR "Example:\toscars AAAS\n";
-    exit;
-}
+my ( $database, $aaa_component, $bss_component );
 
-my $server_name = $ARGV[0];
+my $len = scalar(@ARGV);
+if ($len == 1) {
+    my $first_arg = $ARGV[0];
+    if ($first_arg eq '-h') {
+        print STDERR "Usage:\t\toscars database_name\n";
+        print STDERR "Examples:\toscars\n";
+        print STDERR "\t\toscars AAAS\n";
+        exit;
+    }
+    else { $database = $ARGV[0]; }
+}
+if ( !$database ) { $database = 'AAAS'; }
+if ( !$aaa_component ) { $aaa_component = 'AAAS'; }
+if ( !$bss_component ) { $bss_component = 'BSS'; }
+
+
 my $resource_manager;
 
-if ($server_name) {
-    start_server($server_name);
+if ($database) {
+    start_daemon();
 }
 
 ###############################################################################
 #
-sub start_server {
-    my ( $server_name ) = @_;
+sub start_daemon {
 
-    $resource_manager = 
-                   OSCARS::ResourceManager->new('server_name' => $server_name);
-    my $portnum = $resource_manager->get_daemon_info();
+    $resource_manager = OSCARS::ResourceManager->new(
+                                              'database' => $database);
+    $resource_manager->add_client($bss_component, 1);
 
-    # set up proxy if it will be necessary to forward requests
-    # TODO:  fix hard-wiring 
-    #my( $uri, $proxy ) = $resource_manager->get_proxy_info('BSS');
-    #if ($proxy) { $resource_manager->set_proxy($uri, $proxy); }
-
-    if ($server_name) {
+    my $portnum = $resource_manager->get_daemon_info($aaa_component);
+    if ($portnum) {
         $SOAP::Constants::MAX_CONTENT_SIZE = 10000;
         my $daemon = SOAP::Transport::HTTP::Daemon
             -> new (LocalPort => $portnum, Listen => 5, Reuse => 1)
@@ -69,7 +74,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 30, 2006
+February 10, 2006
 
 =cut
 
@@ -82,6 +87,7 @@ use strict;
 use OSCARS::ResourceManager;
 use OSCARS::Method;
 
+my $users = {};
 
 ###############################################################################
 #
@@ -89,35 +95,30 @@ sub dispatch {
     my ( $class_name, $params ) = @_;
 
     my( $ex );
-    my $results = {};
-    my( $user, $handler );
+    my( $user, $authorizations, $handler, $som );
 
+    my $results = {};
     try {
-        if (!$resource_manager->authenticate($params)) {
-            throw Error::Simple(
-                "User $params->{user_dn} not able to authenticate to make $params->{method} call");
-        }
-        if (!$resource_manager->authorized($params)) {
-            throw Error::Simple(
-                "User $params->{user_dn} not authorized to make $params->{method} call");
-        }
-        # if handler is present on this server
-        #if ($server_name eq $params->{server_name}) {
-        if (1) {
-            $user = $resource_manager->get_user($params->{user_dn});
-            $user->connect($params->{server_name});
+        $user = get_user($params->{user_dn});
+        $resource_manager->authenticate($user, $params);
+        $authorizations =
+            $resource_manager->authorized($user, $params, 'Method');
+
+	# if equal to one, already set by other component
+	if ($params->{authorizations} != 1) {
+            $params->{authorizations} = $authorizations;
+	}
+        # if BSS component is not on this server
+	if ($resource_manager->has_client($params->{server})) {
+            $som = $resource_manager->forward($params);
+            $results = $som->result;
+	}
+        else {
             my $factory = OSCARS::MethodFactory->new();
             $handler = $factory->instantiate( $user, $params );
-            my $err = $handler->validate();
-            if ($err) { throw Error::Simple($err); }
             # call SOAP method
             $results = $handler->soap_method();
-         }
-         # Method is not on this server.  Forward to the correct one.
-         else {
-             my $som = $resource_manager->forward($params);
-             $results = $som->result;
-         }
+        }
     }
     catch Error::Simple with { $ex = shift; }
     otherwise { $ex = shift; }
@@ -135,9 +136,30 @@ sub dispatch {
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
         }
-        elsif ($handler) { $handler->post_process($results); }
+        elsif ($handler) {
+            $handler->post_process($results);
+	    if ($params->{authorizations} != 1) {
+                $results->{authorizations} = $authorizations;
+            }
+	}
     };
     return $results;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# Gets user instance from user list if it exists; otherwise create an instance
+# associated with the component and distinguished name given.
+#
+sub get_user {
+    my( $user_dn ) = @_;
+
+    if (!$users->{$user_dn}) {
+        $users->{$user_dn} = OSCARS::User->new(
+                                   'dn' => $user_dn,
+                                   'database' => $database);
+    }
+    return $users->{$user_dn};
 } #____________________________________________________________________________
 
 
