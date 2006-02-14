@@ -1,19 +1,19 @@
 /*
 Javascript functions for getting dates and times in various formats
-Last modified: November 8, 2005
+Last modified: February 12, 2006
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* List of functions:
-print_current_date(frame)
+print_current_date( frame )
 date_str()
-check_date_fields(form)
-tz_option_list()
-time_settings_example()
+check_date_fields( form )
+time_zone_options()
+local_time_settings()
 is_standard_time()
 UTC_offset()
-tz_option(tz_offset, local_offset, tz_name)
+time_zone_option( tz_offset, local_offset, tz_name )
 is_leap_year( intYear )
 */
 
@@ -39,15 +39,13 @@ var daylight_tz_name = {
 
 
 // Only called from initial login page.
-function print_current_date(frame)
-{
+function print_current_date(frame) {
     frame.write( date_str() );
 }
 
 
 // Outputs string with current date (format: July 1, 2005 13:00).
-function date_str()
-{
+function date_str() {
     var local_date = new Date();
     var current_month = local_date.getMonth();
 
@@ -61,8 +59,7 @@ function date_str()
 
 
 // Reference: http://javascript.internet.com/forms/val-date.html
-function check_date_fields( form )
-{
+function check_date_fields( form ) {
     var default_year = 0;
     var default_month = 0;
     var default_date = 0;
@@ -213,19 +210,19 @@ function check_date_fields( form )
 
 
 // get string with timezone options
-function tz_option_list() {
+function time_zone_options() {
     var is_standard = is_standard_time();
     var options_str = '<select name="reservation_time_zone">';
     var local_offset = UTC_offset();
     // if standard (not daylight savings) time
     if (is_standard) {
         for (var tz_offset in standard_tz_name)  {
-            options_str += tz_option(tz_offset, local_offset, standard_tz_name[tz_offset]) + "\n";
+            options_str += time_zone_option(tz_offset, local_offset, standard_tz_name[tz_offset]) + "\n";
         }
     }
     else {
         for (var tz_offset in daylight_tz_name)  {
-            options_str += tz_option(tz_offset, local_offset, standard_tz_name[tz_offset]) + "\n";
+            options_str += time_zone_option(tz_offset, local_offset, standard_tz_name[tz_offset]) + "\n";
         }
     }
     options_str += "</select>\n";
@@ -233,8 +230,7 @@ function tz_option_list() {
 }
 
 
-function is_standard_time()
-{
+function is_standard_time() {
     // TODO:  not every time zone has the same time period during which
     //        it is in effect; for now, U.S.
     var local_date = new Date();
@@ -246,42 +242,22 @@ function is_standard_time()
 }
 
 
-// Prints year, date, time, time zone, and duration for reservation example.
-// NOTE:  For production use, start time should probably be in the future.
-function time_settings_example() {
+// Prints local time zone setting
+function local_time_zone() {
     var local_date = new Date();
-    var dfields = new Array();
-
-    dfields[0] = local_date.getFullYear();
-    dfields[1] = local_date.getMonth() + 1;
-    dfields[2] = local_date.getDate();
-    dfields[3] = local_date.getHours();
-    dfields[4] = local_date.getMinutes();
-    dfields[5] = 'UTC' + UTC_offset() + ' (';
+    var local_tz = 'UTC' + UTC_offset() + ' (';
     if (is_standard_time()) {
-        dfields[5] += standard_tz_name[UTC_offset()] + ')';
+        local_tz += standard_tz_name[UTC_offset()] + ')';
     }
-    else { dfields[5] += daylight_tz_name[UTC_offset()] + ')'; }
-    dfields[6] = 0.05;
-    dfields[7] = ' ';
-    var example_str = "";
-    for (var i=0 ; i < 6; i++) {
-        if (dfields[i] < 10) {
-            dfields[i] = '0' + dfields[i];
-        }
-    }
-    for (var i=0 ; i < 7; i++) {
-        example_str += (' <td>' + dfields[i] + '</td>' );
-    }
-    return example_str;
+    else { local_tz += daylight_tz_name[UTC_offset()] + ')'; }
+    return local_tz;
 }
 
 
 // private functions
 
 // format the time zone offset in MySQL [+/-]hhmm format (ex. +09:30, -05:00)
-function UTC_offset()
-{
+function UTC_offset() {
     var local_date = new Date();
     var offset = -(local_date.getTimezoneOffset());
     var hours = offset / 60;
@@ -308,8 +284,7 @@ function UTC_offset()
 
 
 // returns string for one timezone option
-function tz_option(tz, local_offset, tz_name)
-{
+function time_zone_option(tz, local_offset, tz_name) {
     var option_str;
 
     option_str = '<option value="' + tz + '"';
@@ -321,8 +296,7 @@ function tz_option(tz, local_offset, tz_name)
 
 // check whether a year is a leap year
 // Reference: http://javascript.internet.com/forms/val-date.html
-function is_leap_year( intYear )
-{
+function is_leap_year( intYear ) {
     if ( intYear % 100 == 0 ) {
         if ( intYear % 400 == 0 ) { return true; }
     }
