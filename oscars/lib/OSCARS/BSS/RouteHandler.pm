@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 10, 2006
 
 =cut
 
@@ -241,7 +241,7 @@ sub get_trace_configs {
             "trace_conf_ttl, trace_conf_timeout, " .
             "trace_conf_run_trace, trace_conf_use_system, " .
             "trace_conf_use_ping "  .
-            "FROM trace_confs where trace_conf_id = 1";
+            "FROM BSS.trace_confs where trace_conf_id = 1";
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -257,7 +257,7 @@ sub get_trace_configs {
 sub ip_to_xface_id {
     my ($self, $ipaddr) = @_;
 
-    my $statement = 'SELECT interface_id FROM ipaddrs WHERE ipaddr_ip = ?';
+    my $statement = 'SELECT interface_id FROM BSS.ipaddrs WHERE ipaddr_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
     if ( !$row ) { return undef; }
     return $row->{interface_id};
@@ -272,8 +272,8 @@ sub ip_to_xface_id {
 sub xface_id_to_loopback {
     my( $self, $interface_id ) = @_;
 
-    my $statement = "SELECT router_name, router_loopback FROM routers
-                 WHERE router_id = (SELECT router_id from interfaces
+    my $statement = "SELECT router_name, router_loopback FROM BSS.routers
+                 WHERE router_id = (SELECT router_id from BSS.interfaces
                                     WHERE interface_id = ?)";
     my $row = $self->{user}->get_row($statement, $interface_id);
     # it is not considered to be an error when no rows are returned

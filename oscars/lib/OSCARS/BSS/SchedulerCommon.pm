@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 10, 2006
 
 =cut
 
@@ -46,10 +46,10 @@ sub get_time_intervals {
     my( $self ) = @_;
 
         # just use defaults for now
-    my $statement = "SELECT server_db_poll_time, server_time_interval" .
-             " FROM servers WHERE server_id = 1";
+    my $statement = "SELECT scheduler_db_poll_time, scheduler_time_interval" .
+             " FROM BSS.scheduler_confs WHERE scheduler_conf_id = 1";
     my $row = $self->{user}->get_row( $statement );
-    return( $row->{server_db_poll_time}, $row->{server_time_interval} );
+    return( $row->{scheduler_db_poll_time}, $row->{scheduler_time_interval} );
 } #____________________________________________________________________________
 
 
@@ -58,15 +58,15 @@ sub get_time_intervals {
 sub map_to_ips {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
+    my $statement = 'SELECT hostaddr_ip FROM BSS.hostaddrs WHERE hostaddr_id = ?';
     my $row = $self->{user}->get_row($statement, $resv->{src_hostaddr_id});
     $resv->{source_ip} = $row->{hostaddr_ip};
     $row = $self->{user}->get_row($statement, $resv->{dst_hostaddr_id});
     $resv->{destination_ip} = $row->{hostaddr_ip};
 
-    $statement = 'SELECT router_loopback FROM routers' .
+    $statement = 'SELECT router_loopback FROM BSS.routers' .
                 ' WHERE router_id =' .
-                ' (SELECT router_id FROM interfaces' .
+                ' (SELECT router_id FROM BSS.interfaces' .
                 '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty

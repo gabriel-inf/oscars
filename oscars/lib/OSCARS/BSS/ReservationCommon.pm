@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 10, 2006
 
 =cut
 
@@ -39,59 +39,40 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
-
-sub initialize {
-    my( $self ) = @_;
-
-    # until can get views going
-    $self->{user_fields} = 'reservation_id, user_dn, ' .
-        'reservation_start_time, reservation_end_time, reservation_status, ' .
-        'src_hostaddr_id, dst_hostaddr_id, reservation_tag';
-
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
 # view_details:  get reservation details from the database, given its
-#     reservation id.  If a user has engr privileges, they can view any 
-#     reservation's details.  Otherwise they can only view reservations that
-#     they have made, with less of the details.
+#     reservation id.  If a user has the proper authorization, he can view any 
+#     reservation's details.  Otherwise he can only view reservations that
+#     he has made, with less of the details.
 #
 # In:  reference to hash of parameters
 # Out: reservations if any, and status message
 #
 sub view_details {
-    my( $self ) = @_;
+    my( $self, $params ) = @_;
 
     my( $statement, $row );
 
     my $user_dn = $self->{user}->{dn};
-    if ( $self->{params}->{engr_permission} ) {
-        $statement = 'SELECT * FROM reservations';
+    if ( $params->{authorizations}->{ChangeDefaultRouting} ) {
+        $statement = 'SELECT * FROM BSS.reservations';
         $statement .= ' WHERE reservation_id = ?';
+        $row = $self->{user}->get_row($statement, $params->{reservation_id});
+        $self->get_engr_fields($row); 
     }
     else {
-        $statement = "SELECT $self->{user_fields} FROM reservations" .
-                     ' WHERE user_dn = ?';
-        $statement .= ' AND reservation_id = ?';
-    }
-    if ( $self->{params}->{engr_permission} ) {
-        $row = $self->{user}->get_row($statement, $self->{params}->{reservation_id});
-    }
-    else {
+        $statement = "SELECT * FROM BSS.reservations" .
+                     ' WHERE user_dn = ?' .
+                     ' AND reservation_id = ?';
         $row = $self->{user}->get_row($statement, $user_dn,
-                                        $self->{params}->{reservation_id});
+                                      $params->{reservation_id});
     }
     if (!$row) { return $row; }
     
-    # get additional fields if getting reservation details and user
-    # has permission
-    if ( $self->{params}->{engr_permission} ) { 
-        $self->get_engr_fields($row); 
-    }
     $self->get_host_info($row);
     $self->check_nulls($row);
     return $row;
@@ -123,7 +104,7 @@ sub update_reservation {
 sub update_status {
     my ( $self, $reservation_id, $status ) = @_;
 
-    my $statement = qq{ SELECT reservation_status from reservations
+    my $statement = qq{ SELECT reservation_status from BSS.reservations
                  WHERE reservation_id = ?};
     my $row = $self->{user}->get_row($statement, $reservation_id);
 
@@ -137,7 +118,7 @@ sub update_status {
             ($status eq 'precancel'))) { 
         $status = 'cancelled';
     }
-    $statement = qq{ UPDATE reservations SET reservation_status = ?
+    $statement = qq{ UPDATE BSS.reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
     my $unused = $self->{user}->do_query($statement, $status, $reservation_id);
     return $status;
@@ -158,7 +139,7 @@ sub get_pss_configs {
              'pss_conf_burst_limit, ' .
              'pss_conf_setup_priority, pss_conf_resv_priority, ' .
              'pss_conf_allow_lsp '  .
-             'FROM pss_confs where pss_conf_id = 1';
+             'FROM BSS.pss_confs where pss_conf_id = 1';
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -169,7 +150,7 @@ sub get_pss_configs {
 sub get_host_info {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT hostaddr_ip FROM hostaddrs WHERE hostaddr_id = ?';
+    my $statement = 'SELECT hostaddr_ip FROM BSS.hostaddrs WHERE hostaddr_id = ?';
     my $hrow = $self->{user}->get_row($statement, $resv->{src_hostaddr_id});
     $resv->{source_ip} = $hrow->{hostaddr_ip};
     my $ipaddr = inet_aton($resv->{source_ip});
@@ -194,9 +175,9 @@ sub get_host_info {
 sub get_engr_fields {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT router_name, router_loopback FROM routers' .
+    my $statement = 'SELECT router_name, router_loopback FROM BSS.routers' .
                 ' WHERE router_id =' .
-                  ' (SELECT router_id FROM interfaces' .
+                  ' (SELECT router_id FROM BSS.interfaces' .
                   '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty
@@ -226,11 +207,11 @@ sub hostaddrs_ip_to_id {
     my( $self, $ipaddr ) = @_;
 
     # TODO:  fix schema, possible hostaddr_ip would not be unique
-    my $statement = 'SELECT hostaddr_id FROM hostaddrs WHERE hostaddr_ip = ?';
+    my $statement = 'SELECT hostaddr_id FROM BSS.hostaddrs WHERE hostaddr_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
     # if no matches, insert a row in hostaddrs
     if ( !$row ) {
-        $statement = "INSERT INTO hostaddrs VALUES ( NULL, '$ipaddr'  )";
+        $statement = "INSERT INTO BSS.hostaddrs VALUES ( NULL, '$ipaddr'  )";
         my $unused = $self->{user}->do_query($statement);
         return $self->{dbh}->{mysql_insertid};
     }

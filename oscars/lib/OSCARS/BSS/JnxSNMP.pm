@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+Febraury 13, 2006
 
 =cut
 
@@ -30,19 +30,24 @@ use SNMP;
 
 use strict;
 
-# TODO:  fix hard-coded file path
-&SNMP::addMibFiles(
-  "/home/oscars/mibs/mib-jnx-smi.txt",
-  "/home/oscars/mibs/mib-jnx-mpls.txt"
-);
-
 
 sub new {
     my( $class, %args ) = @_;
 
     my( $self ) = {%args};
     bless($self, $class);
+    $self->initialize();
     return $self;
+}
+
+sub initialize {
+    my( $self ) = @_;
+
+    # TODO:  fix hard-coded file path
+    &SNMP::addMibFiles(
+        "/home/oscars/mibs/mib-jnx-smi.txt",
+        "/home/oscars/mibs/mib-jnx-mpls.txt"
+    );
 } #___________________________________________________________________________
 
 
