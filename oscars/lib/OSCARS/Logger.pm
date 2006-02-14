@@ -94,7 +94,7 @@ sub write_file {
     my( $self, $user, $id, $exception_flag ) = @_;
 
     if ( !$self->{dir} ) {
-        $self->{dir} = '/home/oscars/logs';
+        $self->{dir} = "$ENV{HOME}/logs";
     }
     my( $sec, $min, $hour, $monthday, $month, $year, $weekday, $yearday,
         $isdaylight ) = localtime();
