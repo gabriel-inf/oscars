@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 13, 2006
 
 =cut
 
@@ -83,28 +83,29 @@ sub convert_lsp_times {
 # setup_times:  
 #
 sub setup_times {
-    my( $self, $infinite_time) = @_;
+    my( $self, $start_time, $duration_hour ) = @_;
 
-    my( $duration_seconds );
+    my( $duration_seconds, $end_time, $current_time );
 
     my $infinite_time = $self->get_infinite_time();
     # Expects strings in second since epoch; converts to date in UTC time
     my $statement = 'SELECT from_unixtime(?) AS start_time';
-    my $row = $self->{user}->get_row( $statement, $self->{params}->{reservation_start_time});
-    $self->{params}->{reservation_start_time} = $row->{start_time};
-    if ($self->{params}->{duration_hour} < (2**31 - 1)) {
-        $duration_seconds = $self->{params}->{duration_hour} * 3600;
+    my $row = $self->{user}->get_row( $statement, $start_time);
+    $start_time = $row->{start_time};
+    if ($duration_hour < (2**31 - 1)) {
+        $duration_seconds = $duration_hour * 3600;
         $statement = 'SELECT DATE_ADD(?, INTERVAL ? SECOND) AS end_time';
-        $row = $self->{user}->get_row( $statement, $self->{params}->{reservation_start_time},
-                                $duration_seconds );
-        $self->{params}->{reservation_end_time} = $row->{end_time};
+        $row = $self->{user}->get_row( $statement, $start_time,
+                                       $duration_seconds );
+        $end_time = $row->{end_time};
     }
     else {
-        $self->{params}->{reservation_end_time} = $infinite_time;
+        $end_time = $infinite_time;
     }
     $statement = 'SELECT now() AS created_time';
     $row = $self->{user}->get_row( $statement );
-    $self->{params}->{reservation_created_time} = $row->{created_time};
+    $current_time = $row->{created_time};
+    return( $start_time, $end_time, $current_time );
 } #____________________________________________________________________________
 
 
