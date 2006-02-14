@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 10, 2006
 
 =cut
 
@@ -47,11 +47,18 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{users} = {};
-    $self->{admin} = OSCARS::User->new( 'dn' => 'admin' );
-    $self->{admin}->connect($self->{server_name});
-    my $auth_factory = OSCARS::AuthFactory->new();
-    $self->{authz} = $auth_factory->instantiate($self->{server_name});
+    $self->{clients} = {};
+    $self->{admin} = OSCARS::User->new(
+                            'dn' => 'admin',
+                            'database' => $self->{database});
+    my $authZ_factory = OSCARS::AuthZFactory->new();
+    # currently only exists for AAAS; BSS depends on AAAS first doing AAA
+    $self->{authZ} = $authZ_factory->instantiate($self->{database},
+                                                 $self->{admin});
+
+    my $authN_factory = OSCARS::AuthNFactory->new();
+    # currently only exists for AAAS; BSS depends on AAAS first doing AAA
+    $self->{authN} = $authN_factory->instantiate($self->{database});
     $self->{logger} = OSCARS::Logger->new();
 } #____________________________________________________________________________
 
@@ -60,64 +67,63 @@ sub initialize {
 # Gets information necessary to start SOAP::Lite daemon.
 #
 sub get_daemon_info {
-    my( $self ) = @_;
+    my( $self, $component_name ) = @_;
 
-    my $statement = 'SELECT server_port FROM servers' .
-                    ' WHERE server_name = ?';
-    my $results = $self->{admin}->do_query($statement, $self->{server_name});
-    if (!@$results) { return undef; }
-    my $len = scalar(@$results);
-    # TODO:  error message
-    if ($len > 1) { return undef; }
-
-    return $results->[0]->{server_port};
+    my $statement = 'SELECT daemon_port FROM daemons WHERE daemon_component_name = ?';
+    my $results = $self->{admin}->get_row($statement, $component_name);
+    if (!$results) { return undef; }
+    my $server_port = $results->{daemon_port};
+    return $server_port;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# Gets information necessary to set up SOAP::Lite proxy.
+# Adds SOAP::Lite client for given component to clients hash, indexed by
+# component name.
 #
-sub get_proxy_info {
-    my( $self, $server_name ) = @_;
+sub add_client {
+    my( $self, $component_name, $no_local ) = @_;
 
-    my $statement = 'SELECT server_uri, server_proxy FROM servers' .
-                    ' WHERE server_name = ?';
-    my $results = $self->{admin}->do_query($statement, $server_name);
-    my $len = scalar(@$results);
-    return( $results->[0]->{server_uri}, $results->[0]->{server_proxy} );
-    # TODO: error message if > 1
-    #if ($len == 1) {
-        #return( $results->[0]->{server_uri}, $results->[0]->{server_proxy} );
-    #}
-    #return( undef, undef );
+    my $statement = 'SELECT * FROM daemons WHERE daemon_component_name = ?';
+    my $results = $self->{admin}->get_row($statement, $component_name);
+    if (!$results) { return undef; }
+    if ( ($results->{daemon_host_name} eq 'localhost' ) && $no_local ) {
+        return undef;
+    }
+    my $server_port = $results->{daemon_port};
+    my $uri = 'http://' . $results->{daemon_host_name} . ':' . $server_port .
+             '/OSCARS/' . $results->{daemon_dispatcher_class};
+    my $proxy = 'http://' . $results->{daemon_host_name} . ':' . $server_port .
+             '/OSCARS/' . $results->{daemon_server_class};
+    $self->{clients}->{component_name} = SOAP::Lite
+                                        -> uri($uri)
+                                        -> proxy($proxy);
+    return $self->{clients}->{component_name};
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# Sets up SOAP::Lite proxy.
+# See if need to use client to forward to another machine
 #
-sub set_proxy {
-    my( $self, $uri, $proxy ) = @_;
+sub has_client {
+    my( $self, $component_name ) = @_;
 
-    $self->{proxy_server} = SOAP::Lite
-                 -> uri($uri)
-                 -> proxy($proxy);
-    return $self->{proxy_server};
+    if ($self->{clients}->{$component_name}) { return 1; }
+    else { return 0; }
 } #____________________________________________________________________________
-
 
 ###############################################################################
 # Dispatch to server on another machine.
 #
 sub forward {
-    my( $self, $params ) = @_;
+    my( $self, $component_name, $params ) = @_;
 
     my $som;
-    if ($self->{proxy_server}) {
-        $som = $self->{proxy_server}->dispatch($params);
+    if ( $self->{clients}->{$component_name} ) {
+        $som = $self->{clients}->{$component_name}->dispatch($params);
     }
     else {
-        $self->{logger}->add_string('Unable to forward; no proxy server');
+        $self->{logger}->add_string('Unable to forward; no such server');
         $self->{logger}->write_file('manager', $params->{method}, 1);
     }
     return $som;
@@ -125,38 +131,48 @@ sub forward {
 
 
 ###############################################################################
-# Gets user instance from user list if it exists; otherwise create an instance
-# associated with the distinguished name given.
-#
-sub get_user {
-    my( $self, $user_dn ) = @_;
-
-    if (!$self->{users}->{$user_dn}) {
-        $self->{users}->{$user_dn} = OSCARS::User->new( 'dn' => $user_dn );
-    }
-    return $self->{users}->{$user_dn};
-} #____________________________________________________________________________
-
-
-###############################################################################
-# authenticate
+# authenticate:  Attempts to authenticate user.  Currently will only succeed
+#    with Login method.
 #
 sub authenticate {
-    my( $self ) = @_;
+    my( $self, $user, $params ) = @_;
 
-    return 1;
+    my( $status );
+
+    if ( $self->{authN} ) {
+        $status = $self->{authN}->authenticate($user, $params);
+    }
+    else {
+        $status = 1;
+        $user->set_authenticated($status);
+    }
+    return $status;
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# authorized
-#
+# authorized:  See if user has authorization to use a given resource.
 sub authorized {
-    my( $self, $params ) = @_;
+    my( $self, $user, $resource_name ) = @_;
 
-    if ($self->{authz}) { return $self->{authz}->authorized($params); }
-    return 1;
+    if ( $self->{authZ} ) {
+        return $self->{authZ}->authorized($user, $resource_name);
+    }
+    else { return 1; }
 } #___________________________________________________________________________ 
+
+
+###############################################################################
+# Only used by OSCARS tests.
+#
+sub get_test_account {
+    my( $self, $role ) = @_;
+
+    my $statement = 'SELECT user_dn, user_password FROM users ' .
+                    'WHERE user_dn = ?';
+    my $results = $self->{admin}->get_row($statement, $role);
+    return( $results->{user_dn}, $results->{user_password} );
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -171,7 +187,7 @@ sub write_exception {
 
 
 #==============================================================================
-package OSCARS::AuthFactory;
+package OSCARS::AuthZFactory;
 
 use strict;
 use Data::Dumper;
@@ -188,16 +204,51 @@ sub new {
 ###############################################################################
 #
 sub instantiate {
-    my( $self, $server_name ) = @_;
+    my( $self, $database, $user ) = @_;
 
-    my $authz;
+    my $authZ;
 
-    my $location = 'OSCARS/' . $server_name . '/AuthZ.pm';
-    my $class_name = 'OSCARS::' . $server_name . '::AuthZ';
+    my $location = 'OSCARS/' . $database . '/AuthZ.pm';
+    my $class_name = 'OSCARS::' . $database . '::AuthZ';
     eval { require $location };
-    # create instance only if the module exists
-    if (!$@) { $authz = $class_name->new(); }
-    return $authz;
+    if (!$@) { $authZ = $class_name->new('database' => $database,
+		                         'user' => $user);
+    }
+    else { $authZ = undef; }
+    return $authZ;
+} #___________________________________________________________________________ 
+
+
+
+
+#==============================================================================
+package OSCARS::AuthNFactory;
+
+use strict;
+use Data::Dumper;
+
+sub new {
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
+  
+    bless( $self, $class );
+    return( $self );
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+#
+sub instantiate {
+    my( $self, $database ) = @_;
+
+    my $authN;
+
+    my $location = 'OSCARS/' . $database . '/AuthN.pm';
+    my $class_name = 'OSCARS::' . $database . '::AuthN';
+    eval { require $location };
+    if (!$@) { $authN = $class_name->new('database' => $database); }
+    else { $authN = undef; }
+    return $authN;
 } #___________________________________________________________________________ 
 
 

@@ -20,9 +20,9 @@ sub instantiate {
 
     my( $location, $class_name );
 
-    $location = 'OSCARS/' . $params->{server_name} . '/Method/' .
+    $location = 'OSCARS/' . $params->{server} . '/Method/' .
                     $params->{method} . '.pm';
-    $class_name = 'OSCARS::' . $params->{server_name} . '::Method::' .
+    $class_name = 'OSCARS::' . $params->{server} . '::Method::' .
                     $params->{method};
     require $location;
     return $class_name->new( 'user'   => $user,
@@ -53,14 +53,15 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 10, 2006
 
 =cut
-
 
 use strict;
 
 use Data::Dumper;
+use Error qw(:try);
+
 use SOAP::Lite;
 
 use OSCARS::Mail;
@@ -92,18 +93,21 @@ sub validate {
 
     my( $test );
 
+    my $op = $self->{params}->{op};
+    if ( !$op ) { return; }
+
     # for all tests 
-    for my $test_name (keys(%{$self->{param_tests}})) {
+    for my $test_name (keys(%{$self->{param_tests}->{$op}})) {
         #print STDERR "$test_name\n";
-        $test = $self->{param_tests}->{$test_name};
+        $test = $self->{param_tests}->{op}->{$test_name};
         if (!$self->{params}->{$test_name}) {
-            return "Cannot validate $self->{params}->{method}, test $test_name failed\n";
+            throw Error::Simple(
+                "Cannot validate $self->{params}->{method}, test $test_name failed");
         }
         if ($self->{params}->{$test_name} !~ $test->{regexp}) {
-            return $test->{error};
+            throw Error::Simple( $test->{error} );
         }
     }
-    return "";
 } #____________________________________________________________________________
 
 

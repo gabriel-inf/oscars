@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 20, 2005
+February 10, 2006
 
 =cut
 
@@ -50,8 +50,6 @@ sub connect {
         PrintError => 0,
     );
 
-    # Temporary kludge; 12-24-2005
-    if ($database_name eq 'BSS') { $database_name = 'BSSTest'; }
     # I couldn't find a foolproof way to check for timeout; Apache::DBI
     # came closest, but it was too dependent on the driver handling the timeout
     # correctly.  So instead,
@@ -64,7 +62,6 @@ sub connect {
     $self->{dsn} = "DBI:mysql:" . $database_name .
                    ";mysql_read_default_file=$ENV{HOME}/.my.cnf";
     $self->{dbh} = DBI->connect( $self->{dsn}, undef, undef, \%attr );
-
     if (!$self->{dbh}) {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }
