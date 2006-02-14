@@ -25,7 +25,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+February 10, 2006
 
 =cut
 
@@ -58,7 +58,7 @@ sub soap_method {
     closedir(DATADIR);
     $router_info = $self->read_snmp_files(@file_list);
     $self->update_db($router_info);
-    return 1;
+    return $router_info;
 } #___________________________________________________________________________
 
 
@@ -202,11 +202,11 @@ sub update_routers_table {
     my( $router_id, $unused );
 
     my $statement = "SELECT router_id, router_name, router_loopback
-                     FROM routers WHERE router_name = ?";
+                     FROM BSS.routers WHERE router_name = ?";
     my $row = $self->{user}->get_row($statement, $router_name);
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into routers VALUES ( NULL, True,
+        $statement = "INSERT into BSS.routers VALUES ( NULL, True,
                      '$router_name', '$mpls_loopback', $network_id)";
         $unused = $self->{user}->do_query($statement);
         $router_id = $self->{user}->{dbh}->{mysql_insertid};
@@ -215,7 +215,7 @@ sub update_routers_table {
     $router_id = $row->{router_id};
     if (!$row->{router_loopback}) { $row->router_loopback = 'NULL'; }
     if ($row->{router_loopback} ne $mpls_loopback) {
-        $statement = "UPDATE routers SET router_loopback = ?
+        $statement = "UPDATE BSS.routers SET router_loopback = ?
                       WHERE router_id = ?";
         $unused = $self->{user}->do_query($statement, $mpls_loopback, $router_id);
     }
@@ -236,7 +236,7 @@ sub update_xfaces_table {
     my( $interface_id, $unused );
 
     my $statement = "SELECT interface_id, interface_snmp_id, interface_speed,
-                     interface_descr, interface_alias from interfaces
+                     interface_descr, interface_alias from BSS.interfaces
                      WHERE router_id = ? AND interface_snmp_id = ?";
     my $row = $self->{user}->get_row($statement, $router_id,
                                        $xface->{index});
@@ -259,7 +259,7 @@ sub update_xfaces_table {
     }
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into interfaces VALUES ( NULL, True, 
+        $statement = "INSERT into BSS.interfaces VALUES ( NULL, True, 
                   $xface->{index}, $new_speed, '$xface->{ifDescr}',
                   '$xface->{ifAlias}', $router_id)";
         $unused = $self->{user}->do_query($statement);
@@ -267,7 +267,7 @@ sub update_xfaces_table {
         return $interface_id;
     }
     $interface_id = $row->{interface_id};
-    $statement = "UPDATE interfaces SET interface_speed = ?,
+    $statement = "UPDATE BSS.interfaces SET interface_speed = ?,
                   interface_descr = ?, interface_alias = ?
                   WHERE interface_id = ?";
     $unused = $self->{user}->do_query($statement, $new_speed,
@@ -289,12 +289,12 @@ sub update_ipaddrs_table {
     my( $ipaddrs_id, $unused );
 
     # TODO:  handling case where interface_id is different?
-    my $statement = "SELECT ipaddr_id, ipaddr_ip, interface_id FROM ipaddrs
+    my $statement = "SELECT ipaddr_id, ipaddr_ip, interface_id FROM BSS.ipaddrs
                      WHERE ipaddr_ip = ?";
     my $row = $self->{user}->get_row($statement, $interface_ip);
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into ipaddrs VALUES ( NULL, '$interface_ip',
+        $statement = "INSERT into BSS.ipaddrs VALUES ( NULL, '$interface_ip',
                   $interface_id)";
         $unused = $self->{user}->do_query($statement);
         $ipaddrs_id = $self->{user}->get_primary_id();

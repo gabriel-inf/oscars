@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 10, 2006
 
 =cut
 
@@ -51,11 +51,9 @@ sub initialize {
     $self->{sched_methods} = OSCARS::BSS::SchedulerCommon->new(
                                                  'user' => $self->{user});
     $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
-                                                 'user' => $self->{user},
-                                                 'params' => $self->{params});
+                                                 'user' => $self->{user});
     $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
-                                                'user' => $self->{user},
-                                                'params' => $self->{params});
+                                                'user' => $self->{user});
 } #____________________________________________________________________________
 
 
@@ -82,7 +80,9 @@ sub soap_method {
     if (@$reservations) {
         $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
     }
-    return $reservations;
+    my $results = {};
+    $results->{list} = $reservations;
+    return $results;
 } #____________________________________________________________________________
 
 
@@ -90,8 +90,9 @@ sub soap_method {
 # generate_messages:  generate email message
 #
 sub generate_messages {
-    my( $self, $reservations ) = @_;
+    my( $self, $results ) = @_;
 
+    my $reservations = $results->{list};
     if (!@$reservations) {
         return( undef, undef );
     }
@@ -124,7 +125,7 @@ sub find_pending_reservations  {
     my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
     my $row = $self->{user}->get_row( $statement, $time_interval );
     my $timeslot = $row->{new_time};
-    $statement = qq{ SELECT * FROM reservations WHERE reservation_status = ? and
+    $statement = qq{ SELECT * FROM BSS.reservations WHERE reservation_status = ? and
                  reservation_start_time < ?};
     return $self->{user}->do_query($statement, $status, $timeslot);
 } #____________________________________________________________________________
