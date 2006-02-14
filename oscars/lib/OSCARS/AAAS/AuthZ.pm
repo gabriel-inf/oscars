@@ -11,8 +11,8 @@ OSCARS::AAAS::AuthZ - handles authorization for OSCARS.
 
 =head1 DESCRIPTION
 
-This module contains simple authorization for all SOAP Method instances.
-TODO:  convert to ROAM.
+This module handles OSCARS authorization.  It queries the database to
+see if a user is authorized to perform an action.
 
 =head1 AUTHOR
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-December 21, 2005
+February 10, 2006
 
 =cut
 
@@ -29,7 +29,7 @@ use strict;
 
 use Data::Dumper;
 
-#use OSCARS::AAAS::Database;
+use OSCARS::Database;
 use Error qw(:try);
 
 
@@ -37,77 +37,126 @@ sub new {
     my ($class, %args) = @_;
     my ($self) = {%args};
   
-    # Bless $_self into designated class.
     bless($self, $class);
     $self->initialize();
     return($self);
 }
 
-
 sub initialize {
     my( $self ) = @_;
 
-    # TODO:  replace hashes with db calls, ROAM
-    $self->{levs} = {
-        'user' => 2,
-        'engr' => 4,
-        'admin' => 8,
-    };
-    $self->{method_permissions} = {
-        'Login' => $self->{levs}->{user},
-        'GetInfo' => $self->{levs}->{user},
-        'GetProfile' => $self->{levs}->{user},
-        'SetProfile' => $self->{levs}->{user},
-        'ViewInstitutions' => $self->{levs}->{user},
-        'Logout' => $self->{levs}->{user},
-        'ViewUsers' => $self->{levs}->{admin},
-        'ViewPermissions' => $self->{levs}->{admin},
-        'AddUserForm' => $self->{levs}->{admin},
-        'AddUser' => $self->{levs}->{admin},
-        'DeleteUser' => $self->{levs}->{admin},
-        'CreateReservationForm' => $self->{levs}->{user},
-        'CreateReservation' => $self->{levs}->{user},
-        'CancelReservation' => $self->{levs}->{user},
-        'ViewReservations' => $self->{levs}->{user},
-        'ViewDetails' => $self->{levs}->{user},
-        'FindPendingReservations' => $self->{levs}->{engr},
-        'FindExpiredReservations' => $self->{levs}->{engr},
-    };
-    $self->{method_section_permissions} = {
-        'GetProfile' => $self->{levs}->{admin},
-        'SetProfile' => $self->{levs}->{admin},
-        'CreateReservationForm' => $self->{levs}->{engr},
-        'CreateReservation' => $self->{levs}->{engr},
-        'CancelReservation' => $self->{levs}->{engr},
-        'ViewReservations' => $self->{levs}->{engr},
-        'ViewDetails' => $self->{levs}->{engr},
-    };
+    $self->set_permissions($self->{user});
+    $self->set_authorizations($self->{user});
 } #____________________________________________________________________________
 
 
 ###############################################################################
+# set_permissions:  Gets all permissions associated with all resources, and
+#                   caches them.
 #
-sub authorized {
-    my( $self, $params ) = @_;
+sub set_permissions {
+    my( $self, $user ) = @_;
 
-    my $method_name = $params->{method};
-    if ( !($params->{user_level} & 
-           $self->{method_permissions}->{$method_name}) ) {
-        return 0;
-    }
-    my $section_permission =
-                          $self->{method_section_permissions}->{$method_name};
-    if ($section_permission) {
-        if ( $params->{user_level} &  $section_permission ) {
-            if ($section_permission == $self->{levs}->{engr} ) {
-                $params->{engr_permission} = 1;
-            }
-            else { $params->{admin_permission} = 1; }
+    my( $row, $resource_name, $permission_name );
+
+    my $statement = "SELECT resource_id, permission_id " .
+                    "FROM resourcepermissions";
+    my $results = $user->do_query($statement);
+    my $resource_permissions = {};
+    $statement = "SELECT resource_name FROM resources " .
+                 "WHERE resource_id = ?";
+    my $pstatement = "SELECT permission_name FROM permissions " .
+                 "WHERE permission_id = ?";
+    for my $perm ( @$results ) {
+	$row = $user->get_row($statement, $perm->{resource_id});
+	$resource_name = $row->{resource_name};
+        if ( !$resource_permissions->{$resource_name} ) {
+            $resource_permissions->{$resource_name} = {};
         }
+	$row = $user->get_row($pstatement, $perm->{permission_id});
+	$permission_name = $row->{permission_name};
+        $resource_permissions->{$resource_name}->{$permission_name} = 1;
     }
-    return 1;
+    $self->{resource_permissions} = $resource_permissions;
 } #____________________________________________________________________________
 
+
+###############################################################################
+# set_authorizations:  gets all authorizations from database, and caches them.
+#
+sub set_authorizations {
+    my( $self, $user ) = @_;
+
+    my( $row, $user_dn, $resource_name, $permission_name );
+
+    my $auths = {};
+    my $statement = "SELECT user_id, resource_id, permission_id " .
+                    "FROM authorizations";
+    my $results = $user->do_query($statement);
+    my $ustatement = "SELECT user_dn from users where user_id = ?";
+    my $rstatement = "SELECT resource_name FROM resources " .
+                     "WHERE resource_id = ?";
+    my $pstatement = "SELECT permission_name FROM permissions " .
+                     "WHERE permission_id = ?";
+    for my $auth ( @$results ) {
+	$row = $user->get_row($ustatement, $auth->{user_id});
+	$user_dn = $row->{user_dn};
+        if ( !$auths->{$user_dn} ) {
+            $auths->{$user_dn} = {};
+        }
+	$row = $user->get_row($rstatement, $auth->{resource_id});
+	$resource_name = $row->{resource_name};
+        if ( !$auths->{$user_dn}->{$resource_name} ) {
+            $auths->{$user_dn}->{$resource_name} = {};
+	}
+	$row = $user->get_row($pstatement, $auth->{permission_id});
+	$permission_name = $row->{permission_name};
+        $auths->{$user_dn}->{$resource_name}->{$permission_name} = 1;
+    }
+    $self->{authorizations} = $auths;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# authorized:  See if user has authorization to use a given resource.
+sub authorized {
+    my( $self, $user, $params ) = @_;
+
+    my $resource_name = $params->{method};
+    my $user_dn = $user->{dn};
+    if ( !$self->{authorizations}->{$user_dn}->{$resource_name} ||
+         !$self->{resource_permissions}->{$resource_name} ) {
+            throw Error::Simple(
+                "User $user_dn not authorized to use $resource_name");
+    }
+    my $permissions_necessary =
+            $self->{resource_permissions}->{$resource_name};
+    my $permissions_obtained =
+            $self->{authorizations}->{$user_dn}->{$resource_name};
+    # user must have all necessary permissions
+    for my $testperm (keys %{$permissions_necessary} ) {
+	if ( !$permissions_obtained->{$testperm} ) {
+            throw Error::Simple(
+                "User $user_dn not authorized to use $resource_name");
+        }
+    } 
+    return $self->get_authorizations($user_dn);
+} #____________________________________________________________________________
+
+
+###############################################################################
+# get_authorizations:  Get all authorizations, or just associations
+#    associated with a particular user.
+#
+sub get_authorizations {
+    my( $self, $selected_user ) = @_;
+
+    if ( $selected_user ) {
+        return $self->{authorizations}->{$selected_user};
+    }
+    return $self->{authorizations};
+} #____________________________________________________________________________
+	   
 
 ######
 1;
