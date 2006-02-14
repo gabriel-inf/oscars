@@ -1,6 +1,6 @@
 /*
-CSS for main CGI interface
-Last modified: September 5, 2005
+CSS for OSCARS Web pages
+Last modified: January 25, 2006
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -52,7 +52,7 @@ p.notice {
 }
 
 
-#status_div {
+#status-div {
     font-size: 0.9em;
     font-weight: bold;
     color: #0000bb;
@@ -109,7 +109,7 @@ p.notice {
 }
 
 /* notices section at bottom */
-#notices_div {
+#notices-div {
     color: gray;
     margin: 1em;
     padding: 1em;
@@ -127,6 +127,7 @@ table {
 
 th {
     font-weight: bold;
+    font-size: 1.1em;
     padding: .2em;
 }
 
@@ -135,49 +136,45 @@ td {
 }
 
 .required {
-    border: 2px solid #0c4;
+    border: 3px solid #0a0;
+    padding: 0;
+}
+
+.warning {
+    border: 3px solid #d00;
     padding: 0;
 }
 
 .requiredMenu {
-    border: 3px solid #0c4;
+    border: 1px solid #0b0;
     padding: 0;
 }
 
-#login_ui {
+#login-ui {
     padding: .2em;
 }
 
-#get_info {
+#get-info {
     text-align: left;
 }
 
-#reservation_ui {
+#reservation-ui {
     text-align: left;
     margin-top:  2%;
     margin-right: 4%;
 }
 
-#reservation_ui table {
+table#reservation-ui {
     margin-left: 5%;
 }
 
-/* zebra table for user/reservation lists */
-/* zebra table for lists */
-#zebra table {
-    border: 1px solid #666666;
-    margin-left: auto;
-    margin-right: auto;
+table.auth-ui {
+    background: #ffffff;
+    border: 0px;
+    margin: 0px;
+    padding: 0px;
 }
 
-#zebra thead {
-    background: #eeeeee;
-    border: 2px solid #666666;
-    font-weight: bold;
-}
-
-#zebra tbody tr {
-    font-size: .7em;
-    padding: .3em .8em;
-    border-left: 1px solid #ccc;
+td.auth-ui-td {
+    vertical-align: top;
 }
