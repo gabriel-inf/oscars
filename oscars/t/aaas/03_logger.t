@@ -5,6 +5,5 @@ use Test::Simple tests => 1;
 
 use OSCARS::Logger;
 
-my $logger = OSCARS::Logger->new('dir' => '/home/oscars/logs', 
-                                       'method' => 'test');
+my $logger = OSCARS::Logger->new();
 ok($logger);

@@ -1,15 +1,30 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 1;
+use Test::Simple tests => 2;
 
 use OSCARS::Database;
+use Error qw{:try};
 
-my $db_login = 'oscars';
-my $password = 'ritazza6';
+my $msg = "\n";
+my $ex;
  
-my $dbconn = OSCARS::Database->new(
-                 'database' => 'DBI:mysql:AAAS',
-                 'dblogin' => $db_login,
-                 'password' => $password);
+my $dbconn = OSCARS::Database->new();
 ok($dbconn);
+
+try {
+    $dbconn->connect('AAAS');
+}
+catch Error::Simple with { $ex = shift; }
+otherwise { $ex = shift; }
+finally {
+    if ($ex) {
+        $msg .= $ex->{-text};
+    }
+    else { 
+        $msg .= "Successful database connection";
+    }
+    $msg .= "\n";
+    print STDERR $msg;
+    ok( !$ex, $msg );
+};
