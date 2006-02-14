@@ -6,14 +6,7 @@ use Test::Simple tests => 5;
 use OSCARS::Database;
 use OSCARS::BSS::JnxSNMP;
 
-my $db_login = 'oscars';
-my $password = 'ritazza6';
- 
-my $dbconn = OSCARS::Database->new(
-                 'database' => 'DBI:mysql:BSS',
-                 'dblogin' => $db_login,
-                 'password' => $password);
-ok($dbconn);
+my $dbconn = OSCARS::Database->new();
 $dbconn->connect('BSS');
 my $configs = get_pss_configs($dbconn);
 
