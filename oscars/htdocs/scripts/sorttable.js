@@ -13,9 +13,10 @@ function sortables_init() {
     tbls = document.getElementsByTagName("table");
     for (ti=0;ti<tbls.length;ti++) {
         thisTbl = tbls[ti];
-        if (((' '+thisTbl.className+' ').indexOf("sortable") != -1) && (thisTbl.id)) {
+        if (((' '+thisTbl.className+' ').indexOf("sortable") != -1)) {
             //initTable(thisTbl.id);
             ts_makeSortable(thisTbl);
+            //tse_makeSelectable(thisTbl);
         }
     }
 }
@@ -31,6 +32,10 @@ function ts_makeSortable(table) {
         var cell = firstRow.cells[i];
         var txt = ts_getInnerText(cell);
         cell.innerHTML = '<a href="#" style="text-decoration:none" class="sortheader" onclick="ts_resortTable(this);return false;">'+txt+'<span class="sortarrow">&nbsp;&nbsp;&nbsp;</span></a>';
+    }
+    // David Robertson: do initial zebra striping
+    for (i=0;i<table.rows.length;i++) {
+        tse_zebraStripe(table.rows[i], i, 0);
     }
 }
 
@@ -92,15 +97,10 @@ function ts_resortTable(lnk) {
     
     // We appendChild rows that already exist to the tbody, so it moves them rather than creating new ones
     // don't do sortbottom rows
-    // David Robertson:  restripe as resort; a hack at the moment
+    // David Robertson:  restripe while resorting
     for (i=0;i<newRows.length;i++) {
         if (!newRows[i].className || (newRows[i].className && (newRows[i].className.indexOf('sortbottom') == -1))) {
-            if ((i %2) == 0) {
-                newRows[i].style.backgroundColor = "#ffffff"; 
-            }
-            else {
-                newRows[i].style.backgroundColor = "#eaf0f6"; 
-            }
+            tse_zebraStripe(newRows[i], i, 1);
             table.tBodies[0].appendChild(newRows[i]);
         }
     }
@@ -108,12 +108,7 @@ function ts_resortTable(lnk) {
     for (i=0;i<newRows.length;i++) {
         if (newRows[i].className && (newRows[i].className.indexOf('sortbottom') != -1))
         {
-            if ((i %2) == 0) {
-                newRows[i].style.backgroundColor = "#ffffff"; 
-            }
-            else {
-                newRows[i].style.backgroundColor = "#eaf0f6"; 
-            }
+            tse_zebraStripe(newRows[i], i, 1);
             table.tBodies[0].appendChild(newRows[i]);
         }
     }
