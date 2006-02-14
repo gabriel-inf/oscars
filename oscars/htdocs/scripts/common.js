@@ -1,41 +1,37 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  November 23, 2005
+Last modified:  February 13, 2005
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
 
 /* List of functions:
-submit_form(form, method_name, params_str)
-new_section(method_name, params)
-get_response(xmlhttp, method_name)
-check_form(form, method_name);
+submit_form(form, params)
+new_section(params)
+get_response(xmlhttp)
 check_for_required(form, required)
 check_login(form)
 check_reservation(form)
-check_user_profile(form)
-flash_status_bar(timer_id)
+check_profile_modification(form)
+check_add_user(form)
 is_numeric(value)
 is_blank(str)
-stripe(id)
 */
 
-var timer_id = null;
-
+// TODO:  objects
 var login_required = {
     'user_dn': "Please enter your user name.",
     'user_password': "Please enter your password."
 }
 
 var reservation_required = {
-    'source_host':  "Please enter starting host name, or its IP address, in the 'Source' field.",
+    'source_host': "Please enter starting host name, or its IP address, in the 'Source' field.",
     'destination_host':  "Please enter destination host name, or its IP address, in the 'Destination' field.",
     'reservation_bandwidth': "Please enter the amount of bandwidth you require in the 'Bandwidth' field.",
     'reservation_description': "Please describe the purpose of this reservation request."
 }
 
-var user_profile_required = {
-    'user_password': "Please enter the current password.",
+var profile_modification_required = {
     'user_last_name': "Please enter the user's last name.",
     'user_first_name': "Please enter the user's first name.",
     'institution':  "Please enter the user's organization.",
@@ -43,56 +39,65 @@ var user_profile_required = {
     'user_phone_primary': "Please enter the user's primary phone number."
 }
 
-var navigation_names = new Array(
-                          'get_info', 'view_users', 'add_user', 'get_profile',
-                          'view_reservations', 'create_reservation_form' );
-    
-                    
+var add_user_required = {
+    'selected_user': "Please enter the new user's distinguished name.",
+    'password_new_once': "Please enter the new user's password.",
+    'user_last_name': "Please enter the new user's last name.",
+    'user_first_name': "Please enter the new user's first name.",
+    'institution':  "Please enter the new user's organization.",
+    'user_email_primary': "Please enter the new user's primary email address.",
+    'user_phone_primary': "Please enter the new user's primary phone number."
+}
+
 // Checks validity of form settings, and uses Sarissa to post request
 // and get back result.
-function submit_form( form, server_name, method_name, extra_params )
-{
-    var valid = check_form( form, method_name );
-    if (!valid) { return false; }
+function submit_form( form, params, check_function ) {
+    if ( check_function ) {
+        var valid = check_function( form );
+        if (!valid) { return false; }
+    }
 
     // adapted from http://www.devx.com/DevX/Tip/17500
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open('POST', '/perl/adapt.pl', false);
-    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    var params_str = 'method=' + method_name + ';';
-    params_str += 'server_name=' + server_name + ';';
+    xmlhttp.setRequestHeader('Content-Type',
+                             'application/x-www-form-urlencoded');
     if (form.elements) {
         var form_elements = form.elements;
         var num_elements = form.elements.length;
         for (var e=0; e < num_elements; e++) {
             if (form_elements[e].value && form_elements[e].name) {
-                params_str += form_elements[e].name + '=' + form_elements[e].value + ';';
+                params +=
+                   form_elements[e].name + '=' + form_elements[e].value + ';';
             }
         }
     }
-    xmlhttp.send(params_str);
-    get_response(xmlhttp, method_name);
+    xmlhttp.send(params.substring(0, params.length-1));
+    get_response(xmlhttp);
     return false;
 }
 
 // Updates status and main portion of page (same as above, but without
 // form submission).
-function new_section( server_name, method_name, params ) {
-    var xmlhttp = new XMLHttpRequest();
-    var url = '/perl/adapt.pl?method=' + method_name + ';server_name=' + server_name;
-    if (params) {
-        url += ';' + params;
-    }
-    xmlhttp.open('GET', url, false);
+function new_section( params ) {
     var empty_str = "";
+    var xmlhttp = new XMLHttpRequest();
+    var url = '/perl/adapt.pl?' + params;
+    xmlhttp.open('GET', url, false);
     xmlhttp.send(empty_str);
-    get_response(xmlhttp, method_name);
+    get_response(xmlhttp);
     return false;
 }
 
 // Gets back response from XMLHttpRequest.
-function get_response(xmlhttp, method_name) {
+function get_response(xmlhttp) {
     var response_dom = xmlhttp.responseXML;
+    if (!response_dom) {
+        var status_node = document.getElementById('status-div');
+        status_node.innerHTML = date_str() + ' Please contact dwrobertson@lbl.gov to make sure that the OSCARS server is running.';
+        return;
+    }
+
     //alert(Sarissa.serialize(response_dom));
     //alert(xmlhttp.responseText);
 
@@ -100,30 +105,14 @@ function get_response(xmlhttp, method_name) {
     // occurred.
     var returned_divs = response_dom.getElementsByTagName('div');
 
-    // Initialize navigation bar on login
-    if ((method_name == 'Login') && returned_divs.length) {
-        var nav_node = document.getElementById('nav_div');
-        if (nav_node) {
-            var returned_nav_nodes =
+    // Rewrite navigation bar
+    var returned_nav_nodes =
                            response_dom.getElementsByTagName('navigation_bar');
-            var nav_bar_str = '';
-            if (returned_nav_nodes.length) {
-                nav_bar_str = Sarissa.serialize(returned_nav_nodes[0]);
-                nav_node.innerHTML = nav_bar_str;
-            }
-        }
-    }
-    else {
-        // Update navigation bar
-        for (var i = 0; i < navigation_names.length; i++) {
-            var tab_node = document.getElementById(navigation_names[i]);
-            if (tab_node) {
-                if (navigation_names[i] == method_name) {
-                    tab_node.className = 'active';
-                }
-                else { tab_node.className = 'inactive'; }
-            }
-        }
+    var nav_bar_str = '';
+    var nav_node = document.getElementById('nav-div');
+    if (returned_nav_nodes.length) {
+        nav_bar_str = Sarissa.serialize(returned_nav_nodes[0]);
+        nav_node.innerHTML = nav_bar_str;
     }
 
     // get text of status message, if any
@@ -134,7 +123,7 @@ function get_response(xmlhttp, method_name) {
     }
 
     // update status bar
-    var status_node = document.getElementById('status_div');
+    var status_node = document.getElementById('status-div');
     if (status_msg) {
         status_node.innerHTML = date_str() + ' | ' + status_msg;
     }
@@ -143,43 +132,27 @@ function get_response(xmlhttp, method_name) {
     if (!returned_divs.length) {
         return;
     }
-    var main_node = document.getElementById('main_div');
+    var main_node = document.getElementById('main-div');
     main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
-    stripe('zebra');
 
-    if (method_name == 'CreateReservationForm') {
-        var time_node = document.getElementById('tz_option_list');
-        if (time_node) {
-            time_node.innerHTML = tz_option_list();
-        }
-        time_node = document.getElementById('time_settings_example');
-        if (time_node) {
-            time_node.innerHTML = time_settings_example();
-        }
+    // only used with time zones in CreateReservationForm:  TODO:  FIX
+    var time_node = document.getElementById('time-zone-options');
+    if (time_node) {
+        time_node.innerHTML = time_zone_options();
     }
-    else if ((method_name == 'ViewReservations') ||
-             (method_name == 'ViewUsers') ) {
-        sortables_init();
+    time_node = document.getElementById('local-time-zone');
+    if (time_node) {
+        time_node.innerHTML = local_time_zone();
     }
-}
 
-// Checks validity of particular form.
-function check_form( form, method_name )
-{
-    if (!form) { return true; }
-    if (method_name == 'Login') { return check_login( form ); }
-    else if (method_name == 'CreateReservation') { 
-        return check_reservation( form );
-    }
-    else if (method_name == 'SetProfile') { return check_user_profile( form ); }
-    return true;
+    sortables_init();
 }
 
 // Checks to make sure all required fields are present.
 function check_for_required( form, required )
 {
     for (field in required) {
-        if ( is_blank(form[field].value) ) {
+        if ( form[field] && is_blank(form[field].value) ) {
             alert( required[field] );
             form[field].focus();
             return false;
@@ -293,9 +266,17 @@ function check_reservation( form )
 }
 
 // Checks validity of user profile form.
-function check_user_profile( form )
+function check_profile_modification( form )
 {
-    var valid = check_for_required( form, user_profile_required );
+    var valid = check_for_required( form, profile_modification_required );
+    if (!valid) { return false; }
+    return true;
+}
+
+// Checks validity of add user form.
+function check_add_user( form )
+{
+    var valid = check_for_required( form, add_user_required );
     if (!valid) { return false; }
 
     if ( !(is_blank(form.password_new_once.value)) ) {
@@ -305,23 +286,8 @@ function check_user_profile( form )
             return false;
         }
     }
-	return true;
+    return true;
 }
-
-
-function flash_status_bar(timer_id) {
-    var style_sheet = document.style_sheet[0];
-    if (!timer_id) {
-        timer_id = self.setTimeout("setup_flash", 1000);
-        //style_sheet.p.topmessage.style.color = "#bb0000";
-    }
-    else {
-        clearTimeout(timer_id);
-        timer_id = null;
-	//style_sheet.p.topmessage.style.color = "#0000bb";
-    }
-}
-
 
 function is_numeric(s) {
    return( s.match(/(\d)+/) );
@@ -335,33 +301,4 @@ function is_blank(s) {
         if ((c != ' ') && (c != '\n') && (c != '')) return false;
     }
     return true;
-}
-
-
-// Apply zebra stripe to a table
-//     Reference: http://www.alistapart.com/articles/zebratables/
-//     Adapted to just use style sheet for color, and not to worry about
-//     class membership or background color of table row.  Coloring is done
-//     at the row rather than the column level.
-
-function stripe(id) {
-
-    // Obtain reference to the desired table.  If no such table exists, abort.
-    var table = document.getElementById(id);
-    if (! table) { return; }
-
-    // By definition, tables can have more than one tbody element, so we'll 
-    // have to get the list of children
-    var tbodies = table.getElementsByTagName("tbody");
-
-    // and iterate through them...
-    for (var h = 0; h < tbodies.length; h++) {
-        // Find all the <tr> elements... 
-        var trs = tbodies[h].getElementsByTagName("tr");
-        for (var i = 0; i < trs.length; i++) {
-            if ((i % 2) == 1) {
-                trs[i].style.backgroundColor = "#ffffff" ;
-            }
-        }
-    }
 }
