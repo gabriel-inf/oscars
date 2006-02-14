@@ -20,17 +20,14 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+February 10, 2006
 
 =cut
-
 
 use strict;
 
 use Data::Dumper;
 use Error qw(:try);
-
-use OSCARS::User;
 
 our @ISA = qw{OSCARS::Method};
 
@@ -56,8 +53,9 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Log in to OSCARS.
-#
+# soap_method:  Log in to OSCARS.  Authentication, if it was necessary, has
+#               already been performed by the resource manager
+#               querying OSCARS::AAAS::AuthN
 # In:  reference to hash of parameters
 # Out: reference to hash of results containing user dn and user level.
 #
@@ -65,24 +63,11 @@ sub soap_method {
     my( $self ) = @_;
 
     my $user_dn = $self->{user}->{dn};
-
-    # Get the password and privilege level from the database.
-    my $statement = 'SELECT user_password, user_level FROM users WHERE user_dn = ?';
-    my $results = $self->{user}->get_row($statement, $user_dn);
-    # Make sure user exists.
-    if ( !$results ) {
-        throw Error::Simple('Please check your login name and try again.');
-    }
-    # compare passwords
-    my $encoded_password = crypt($self->{params}->{user_password}, 'oscars');
-    if ( $results->{user_password} ne $encoded_password ) {
-        throw Error::Simple('Please check your password and try again.');
-    }
-    $results->{user_dn} = $user_dn;
-    # X out password
-    $results->{user_password} = undef;
     $self->{logger}->add_string("User $user_dn successfully logged in");
-    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
+    $self->{logger}->write_file($user_dn, $self->{params}->{method});
+    my $results = {};
+    $results->{user_dn} = $user_dn;
+    $results->{user_password} = 'hidden';
     return $results;
 } #____________________________________________________________________________
 
