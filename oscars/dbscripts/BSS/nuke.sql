@@ -1,9 +1,9 @@
-DROP TABLE networks;
+DROP TABLE domains;
 DROP TABLE routers;
 DROP TABLE interfaces;
 DROP TABLE ipaddrs;
 DROP TABLE hostaddrs;
 DROP TABLE reservations;
-DROP TABLE servers;
 DROP TABLE trace_confs;
 DROP TABLE pss_confs;
+DROP TABLE daemons;
