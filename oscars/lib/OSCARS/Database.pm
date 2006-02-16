@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+February 15, 2006
 
 =cut
 
@@ -49,23 +49,22 @@ sub connect {
         RaiseError => 0,
         PrintError => 0,
     );
-
-    # I couldn't find a foolproof way to check for timeout; Apache::DBI
-    # came closest, but it was too dependent on the driver handling the timeout
-    # correctly.  So instead,
-    # if a handle is left over from a previous session, attempts to disconnect.
-    # If it was timed out, the error is ignored.
-    # TODO:  FIX
-    if ($self->{dbh}) {
-        $self->{dbh}->disconnect();
-    }
     $self->{dsn} = "DBI:mysql:" . $database_name .
                    ";mysql_read_default_file=$ENV{HOME}/.my.cnf";
     $self->{dbh} = DBI->connect( $self->{dsn}, undef, undef, \%attr );
     if (!$self->{dbh}) {
         throw Error::Simple( "Unable to make database connection: $DBI::errstr");
     }
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub disconnect {
+    my( $self ) = @_;
+
+    $self->{dbh}->disconnect();
+} #____________________________________________________________________________
 
 
 ###############################################################################
