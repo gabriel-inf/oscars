@@ -11,7 +11,7 @@ OSCARS::ResourceManager - resource manager for OSCARS.
 
 =head1 DESCRIPTION
 
-Handles maintenance of user list and server startup.
+Handles resources and authorizations associated with OSCARS.
 
 =head1 AUTHOR
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+February 15, 2006
 
 =cut
 
@@ -48,13 +48,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{clients} = {};
-    $self->{admin} = OSCARS::User->new(
-                            'dn' => 'admin',
-                            'database' => $self->{database});
     my $authZ_factory = OSCARS::AuthZFactory->new();
     # currently only exists for AAAS; BSS depends on AAAS first doing AAA
-    $self->{authZ} = $authZ_factory->instantiate($self->{database},
-                                                 $self->{admin});
+    $self->{authZ} = $authZ_factory->instantiate($self->{database});
 
     my $authN_factory = OSCARS::AuthNFactory->new();
     # currently only exists for AAAS; BSS depends on AAAS first doing AAA
@@ -70,7 +66,10 @@ sub get_daemon_info {
     my( $self, $component_name ) = @_;
 
     my $statement = 'SELECT daemon_port FROM daemons WHERE daemon_component_name = ?';
-    my $results = $self->{admin}->get_row($statement, $component_name);
+    my $dbconn = OSCARS::Database->new();
+    $dbconn->connect($self->{database});
+    my $results = $dbconn->get_row($statement, $component_name);
+    $dbconn->disconnect();
     if (!$results) { return undef; }
     my $server_port = $results->{daemon_port};
     return $server_port;
@@ -85,7 +84,10 @@ sub add_client {
     my( $self, $component_name, $no_local ) = @_;
 
     my $statement = 'SELECT * FROM daemons WHERE daemon_component_name = ?';
-    my $results = $self->{admin}->get_row($statement, $component_name);
+    my $dbconn = OSCARS::Database->new();
+    $dbconn->connect($self->{database});
+    my $results = $dbconn->get_row($statement, $component_name);
+    $dbconn->disconnect();
     if (!$results) { return undef; }
     if ( ($results->{daemon_host_name} eq 'localhost' ) && $no_local ) {
         return undef;
@@ -170,7 +172,10 @@ sub get_test_account {
 
     my $statement = 'SELECT user_dn, user_password FROM users ' .
                     'WHERE user_dn = ?';
-    my $results = $self->{admin}->get_row($statement, $role);
+    my $dbconn = OSCARS::Database->new();
+    $dbconn->connect($self->{database});
+    my $results = $dbconn->get_row($statement, $role);
+    $dbconn->disconnect();
     return( $results->{user_dn}, $results->{user_password} );
 } #____________________________________________________________________________
 
@@ -204,16 +209,14 @@ sub new {
 ###############################################################################
 #
 sub instantiate {
-    my( $self, $database, $user ) = @_;
+    my( $self, $database ) = @_;
 
     my $authZ;
 
     my $location = 'OSCARS/' . $database . '/AuthZ.pm';
     my $class_name = 'OSCARS::' . $database . '::AuthZ';
     eval { require $location };
-    if (!$@) { $authZ = $class_name->new('database' => $database,
-		                         'user' => $user);
-    }
+    if (!$@) { $authZ = $class_name->new('database' => $database); }
     else { $authZ = undef; }
     return $authZ;
 } #___________________________________________________________________________ 
