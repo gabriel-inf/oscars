@@ -177,7 +177,6 @@ sub cancel_reservation {
     $self->{time_lib}->convert_times($results);
     $self->{logger}->add_hash($results);
     $self->{logger}->write_file($user->{dn}, $params->{method});
-    print STDERR Dumper($results);
     return $results;
 } #____________________________________________________________________________
 
