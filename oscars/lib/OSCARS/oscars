@@ -98,6 +98,10 @@ sub dispatch {
     my( $user, $authorizations, $handler, $som );
 
     my $results = {};
+    if ($params->{method} eq 'Logout') {
+        remove_user($params->{user_dn});
+	return $results;
+    }
     try {
         $user = get_user($params->{user_dn});
         $resource_manager->authenticate($user, $params);
@@ -160,6 +164,17 @@ sub get_user {
                                    'database' => $database);
     }
     return $users->{$user_dn};
+} #____________________________________________________________________________
+
+
+###############################################################################
+# Removes given user from the user list.
+#
+sub remove_user {
+    my( $user_dn ) = @_;
+
+    if ( $users->{$user_dn} ) { $users->{$user_dn}->disconnect(); }
+    $users->{$user_dn} = undef;
 } #____________________________________________________________________________
 
 
