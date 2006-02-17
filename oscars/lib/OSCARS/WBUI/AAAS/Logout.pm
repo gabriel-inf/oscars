@@ -36,16 +36,6 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# Currently a noop.
-#
-sub make_call {
-    my( $self, $soap_server, $soap_params ) = @_;
-
-    return {};
-} #____________________________________________________________________________
-
-
-###############################################################################
 # post_process:  In this case, closes CGI session.
 #
 sub post_process {
