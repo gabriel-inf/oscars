@@ -32,30 +32,32 @@ use Error qw(:try);
 
 use strict;
 
+use SOAP::Lite +trace => 'debug';
+
 use OSCARS::Logger;
 use OSCARS::User;
 
 sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    $self->initialize();
-    return( $self );
+	my( $class, %args ) = @_;
+	my( $self ) = { %args };
+
+	bless( $self, $class );
+	$self->initialize();
+	return( $self );
 }
 
 sub initialize {
-    my( $self ) = @_;
+	my( $self ) = @_;
 
-    $self->{clients} = {};
-    my $authZ_factory = OSCARS::AuthZFactory->new();
-    # currently only exists for AAAS; BSS depends on AAAS first doing AAA
-    $self->{authZ} = $authZ_factory->instantiate($self->{database});
+	$self->{clients} = {};
+	my $authZ_factory = OSCARS::AuthZFactory->new();
+	# currently only exists for AAAS; BSS depends on AAAS first doing AAA
+	$self->{authZ} = $authZ_factory->instantiate($self->{database});
 
-    my $authN_factory = OSCARS::AuthNFactory->new();
-    # currently only exists for AAAS; BSS depends on AAAS first doing AAA
-    $self->{authN} = $authN_factory->instantiate($self->{database});
-    $self->{logger} = OSCARS::Logger->new();
+	my $authN_factory = OSCARS::AuthNFactory->new();
+	# currently only exists for AAAS; BSS depends on AAAS first doing AAA
+	$self->{authN} = $authN_factory->instantiate($self->{database});
+	$self->{logger} = OSCARS::Logger->new();
 } #____________________________________________________________________________
 
 
@@ -83,20 +85,48 @@ sub get_daemon_info {
 sub add_client {
     my( $self, $component_name, $no_local ) = @_;
 
+    my( $protocol, $hostname, $port );
+
     my $statement = 'SELECT * FROM daemons WHERE daemon_component_name = ?';
     my $dbconn = OSCARS::Database->new();
     $dbconn->connect($self->{database});
-    my $results = $dbconn->get_row($statement, $component_name);
+    my $server = $dbconn->get_row($statement, $component_name);
+    $statement = 'SELECT * FROM clients WHERE daemon_id = ?';
+    my $client = $dbconn->get_row($statement, $server->{daemon_id});
     $dbconn->disconnect();
-    if (!$results) { return undef; }
-    if ( ($results->{daemon_host_name} eq 'localhost' ) && $no_local ) {
+    if (!$server) { return undef; }
+    if (!$client) { return undef; }
+    if ( ($server->{daemon_host_name} eq 'localhost' ) && $no_local ) {
         return undef;
     }
-    my $server_port = $results->{daemon_port};
-    my $uri = 'http://' . $results->{daemon_host_name} . ':' . $server_port .
-             '/OSCARS/' . $results->{daemon_dispatcher_class};
-    my $proxy = 'http://' . $results->{daemon_host_name} . ':' . $server_port .
-             '/OSCARS/' . $results->{daemon_server_class};
+    if ( $client->{client_host_name} ) {
+        if ( $client->{client_host_name} eq 'localhost' ) {
+	    $protocol = 'http';
+	}
+        else { $protocol = 'https'; }
+	$hostname = $client->{client_host_name};
+	if ( $client->{client_port} ) {
+            $port = $client->{client_port};
+        }
+    }
+    else {
+        if ( $server->{daemon_host_name} eq 'localhost' ) {
+	    $protocol = 'http';
+        }
+        else { $protocol = 'https'; }
+        $hostname = $server->{daemon_host_name};
+        if ( $server->{server_port} ) {
+            $port = $server->{daemon_port};
+        };
+    }
+    my $uri = $protocol . '://' . $hostname;
+    if ($port) {
+      $uri .=	':' . $port;
+    }
+    $uri .= '/OSCARS/';
+    my $proxy = $uri . $server->{daemon_server_class};
+    $uri .= $server->{daemon_dispatcher_class};
+    print STDERR "$uri, $proxy\n";
     $self->{clients}->{component_name} = SOAP::Lite
                                         -> uri($uri)
                                         -> proxy($proxy);
