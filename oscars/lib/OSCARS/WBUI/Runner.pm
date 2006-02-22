@@ -17,18 +17,16 @@ and formats the results for output.
 =head1 AUTHOR
 
 David Robertson (dwrobertson@lbl.gov)
+Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-January 10, 2006
+February 22, 2006
 
 =cut
 
 
 use strict;
-
-# TODO:  check security implications
-use lib qw(/usr/local/esnet/servers/prod);
 
 use CGI qw{:cgi};
 use SOAP::Lite;
@@ -42,16 +40,34 @@ use OSCARS::WBUI::SOAPAdapter;
 ###############################################################################
 #
 sub run {
-    my ( %soap_params );
+    my($soap_uri, $soap_proxy, $hop, $params);
+    my ( $cgi, %soap_params );
 
+    if ( @_ > 0 ) {
+        shift @_;
+        $soap_uri = shift @_;
+        $soap_proxy = shift @_;
+        $hop = shift @_;
+        $params = shift @_;
+        $cgi = CGI->new($params);
+        $cgi->param(-name => 'source_host', -value => $hop);
+       	if($cgi->param("method") ne 'Login') {
+            $cgi->param(-name => 'method', -value => 'CreateReservation')
+	}
+    }
+    else {
+        $soap_uri = 'http://localhost:2000/OSCARS/Dispatcher';
+        $soap_proxy = 'http://localhost:2000/Server';
+        $cgi = CGI->new();
+    }
     my $soap_server = SOAP::Lite
-                          -> uri('http://localhost:2000/OSCARS/Dispatcher')
-                          -> proxy('http://localhost:2000/Server');
+                          -> uri( $soap_uri )
+                          -> proxy( $soap_proxy );
     my $factory = OSCARS::WBUI::SOAPAdapterFactory->new();
-    my $cgi = CGI->new();
     my $adapter = $factory->instantiate($cgi);
     $adapter->handle_request($soap_server);
 } #____________________________________________________________________________
+
 
 ######
 1;
