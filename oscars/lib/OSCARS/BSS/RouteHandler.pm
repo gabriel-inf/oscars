@@ -18,10 +18,11 @@ the ingress and egress routers.
 
 Jason Lee (jrlee@lbl.gov),
 David Robertson (dwrobertson@lbl.gov)
+Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+February 22, 2006
 
 =cut
 
@@ -87,7 +88,7 @@ sub find_interface_ids {
         ($params->{ingress_interface_id}, $loopback_ip, $path) =
             $self->do_traceroute('find_ingress', 
               $self->{trace_configs}->{trace_conf_jnx_source},
-              $params->{source_ip}, $logger);
+              $params->{source_ip}, $logger, $params);
     }
   
     if ($params->{egress_router}) {
@@ -111,7 +112,7 @@ sub find_interface_ids {
                        "$loopback_ip to destination $params->{destination_ip}}");
         ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
             $self->do_traceroute('find_egress', $loopback_ip,
-                               $params->{destination_ip}, $logger);
+                               $params->{destination_ip}, $logger, $params);
     }
 } #____________________________________________________________________________
 
@@ -123,10 +124,10 @@ sub find_interface_ids {
 # Out:  interface ID, path  
 #
 sub do_traceroute {
-    my ( $self, $action, $src, $dst, $logger )  = @_;
+    my ( $self, $action, $src, $dst, $logger, $params )  = @_;
     my (@hops);
     my ($interface_id, $edge_id, @path);
-    my ($edge_loopback, $loopback_ip);
+    my ($edge_loopback, $loopback_ip, $network_id);
 
     @path = ();
     # try to ping before traceing?
@@ -153,15 +154,34 @@ sub do_traceroute {
     # loop forward till the next router isn't one of ours or doesn't have
     # an oscars loopback address
     my $hop;
+    my $is_on_primary_network = 0;
+
     for $hop (@hops)  {
         $logger->add_string("hop:  $hop");
         # id is 0 if not an edge router (not in interfaces table)
         $interface_id = $self->ip_to_xface_id( $hop );
-        $loopback_ip =
+        ($loopback_ip, $network_id) =
             $self->xface_id_to_loopback( $interface_id );
-        if (!$interface_id) {
+        if($is_on_primary_network && $network_id && $network_id != 1){
+            #Get component name
+      		my $component_name = $self->xdomain_name($network_id);
+      		
+           #CONTACT OTHER DOMAINS BSS
+      		print "Method: " . $params->{"method"} . "\n";
+            #my $xdomain_results = Client::Runner->run($aaas_uri, $aaas_proxy, $loopback_ip, $params);
+            my $xdomain_results;
+      		
+      		#PARSE RESULTS
+      		print "=" x 30;
+      		print "\n" . $xdomain_results . "\n";
+      		print "=" x 30 . "\n";
+      		
+            return ($edge_id, $edge_loopback, \@path); 
+        }elsif (!$interface_id && $is_on_primary_network) {
             $logger->add_string("edge router is $edge_loopback");
             return ($edge_id, $edge_loopback, \@path);
+        }elsif($interface_id){
+            $is_on_primary_network = 1;
         }
 
         # add to the path
@@ -272,8 +292,8 @@ sub ip_to_xface_id {
 sub xface_id_to_loopback {
     my( $self, $interface_id ) = @_;
 
-    my $statement = "SELECT router_name, router_loopback FROM BSS.routers
-                 WHERE router_id = (SELECT router_id from BSS.interfaces
+    my $statement = "SELECT router_name, router_loopback, network_id FROM BSS.routers
+                 WHERE router_id = (SELECT router_id from interfaces
                                     WHERE interface_id = ?)";
     my $row = $self->{user}->get_row($statement, $interface_id);
     # it is not considered to be an error when no rows are returned
@@ -282,9 +302,24 @@ sub xface_id_to_loopback {
     if (!$row->{router_loopback}) {
         throw Error::Simple("Router $row->{router_name} has no oscars loopback");
     }
-    return $row->{router_loopback};
+    return ($row->{router_loopback}, $row->{network_id});
 } #____________________________________________________________________________
 
+###############################################################################
+# xdomain_name:  get name of remote network; used by AAAS to get uri and proxy 
+#                
+# In:  network table primary key
+# Out: network's  AAAS uri and AAAS proxy
+#
+sub xdomain_uri_proxy {
+    my( $self, $network_id ) = @_;
+
+    my $statement = "SELECT domain_name FROM BSS.domains WHERE domain_id = ?";
+    my $row = $self->{user}->get_row($statement, $network_id);
+    if ( !$row ) { return undef; }    
+    
+    return ($row->{network_aaas_uri}, $row->{network_aaas_proxy});
+} #____________________________________________________________________________ 
 
 ######
 1;
