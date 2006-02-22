@@ -86,3 +86,18 @@ CREATE TABLE IF NOT EXISTS daemons (
     daemon_send_mail		BOOLEAN NOT NULL,
     PRIMARY KEY (daemon_id)
 ) type=MyISAM;
+
+
+-- Table  for clients.  If host name and port are not NULL, and are not the 
+-- same as in the corresponding daemon's, they are used help to build up the
+-- server and proxy strings.  This depends on the proper rewrite
+-- rule being set up in the Apache configuration file to map from host
+-- and port to the daemon host and port.
+CREATE TABLE IF NOT EXISTS clients (
+    client_id			INT NOT NULL AUTO_INCREMENT,
+      -- only usable when a rewrite rule has been set up
+    client_host_name		TEXT,
+    client_port			INT,
+    daemon_id                   INT NOT NULL,   -- foreign key
+    PRIMARY KEY (client_id)
+) type=MyISAM;
