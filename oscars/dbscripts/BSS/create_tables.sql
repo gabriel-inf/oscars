@@ -4,7 +4,9 @@ USE BSS;
 -- table for administrative domain, e.g. ESnet
 CREATE TABLE IF NOT EXISTS domains (
     domain_id			INT NOT NULL AUTO_INCREMENT,
-    domain_name		TEXT NOT NULL,
+    domain_name			TEXT NOT NULL,
+        -- whether OSCARS server handles this domain
+    local_domain		BOOLEAN NOT NULL,
     PRIMARY KEY (domain_id)
 ) type=MyISAM;
 
@@ -15,8 +17,8 @@ CREATE TABLE IF NOT EXISTS routers (
     router_name			TEXT NOT NULL,
         -- loopback interface IP, if present
     router_loopback		TEXT,
-        -- key of corresponding AS in networks table
-    network_id			INT NOT NULL,	-- foreign key
+        -- key of corresponding AS in domains table
+    domain_id			INT NOT NULL,	-- foreign key
     PRIMARY KEY (router_id)
 ) type=MyISAM;
 
@@ -48,10 +50,12 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
 ) type=MyISAM;
 
 -- table for source and destination IP addresses
-CREATE TABLE IF NOT EXISTS hostaddrs (
-    hostaddr_id			INT NOT NULL AUTO_INCREMENT,
-    hostaddr_ip			TEXT NOT NULL,
-    PRIMARY KEY (hostaddr_id)
+CREATE TABLE IF NOT EXISTS hosts (
+    host_id			INT NOT NULL AUTO_INCREMENT,
+    host_ip			TEXT NOT NULL,
+    host_cidr_block             INT,
+    host_name                   TEXT,
+    PRIMARY KEY (host_id)
 ) type=MyISAM;
 
 -- table holding reservation information
@@ -85,15 +89,16 @@ CREATE TABLE IF NOT EXISTS reservations (
         -- human readable identifier
     reservation_tag		TEXT,
         -- space separated list of addresses of routers in path
+        -- This will be normalized by adding a paths table
     reservation_path		TEXT,
     reservation_description	TEXT,
       -- foreign keys (not optional)
         -- keys of ingress and egress interfaces in interfaces table
     ingress_interface_id	INT NOT NULL,	-- foreign key
     egress_interface_id		INT NOT NULL,	-- foreign key
-        -- keys of source and destination addresses in hostaddrs table
-    src_hostaddr_id		INT NOT NULL,   -- foreign key 
-    dst_hostaddr_id		INT NOT NULL,	-- foreign key 
+        -- keys of source and destination addresses in hosts table
+    src_host_id			INT NOT NULL,   -- foreign key 
+    dst_host_id			INT NOT NULL,	-- foreign key 
     PRIMARY KEY (reservation_id)
 ) type = MyISAM;
 
@@ -129,8 +134,6 @@ CREATE TABLE IF NOT EXISTS trace_confs (
         -- Whether to run traceroute from the routers
         -- (requires ssh keys setup)
     trace_conf_run_trace	BOOLEAN NOT NULL,
-    trace_conf_use_system	BOOLEAN NOT NULL,
-    trace_conf_use_ping		BOOLEAN NOT NULL,
     PRIMARY KEY (trace_conf_id)
 ) type=MyISAM;
 
