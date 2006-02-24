@@ -40,26 +40,9 @@ use OSCARS::WBUI::SOAPAdapter;
 ###############################################################################
 #
 sub run {
-    my($soap_uri, $soap_proxy, $hop, $params);
-    my ( $cgi, %soap_params );
-
-    if ( @_ > 0 ) {
-        shift @_;
-        $soap_uri = shift @_;
-        $soap_proxy = shift @_;
-        $hop = shift @_;
-        $params = shift @_;
-        $cgi = CGI->new($params);
-        $cgi->param(-name => 'source_host', -value => $hop);
-       	if($cgi->param("method") ne 'Login') {
-            $cgi->param(-name => 'method', -value => 'CreateReservation')
-	}
-    }
-    else {
-        $soap_uri = 'http://localhost:2000/OSCARS/Dispatcher';
-        $soap_proxy = 'http://localhost:2000/Server';
-        $cgi = CGI->new();
-    }
+    my $soap_uri = 'http://localhost:2000/OSCARS/Dispatcher';
+    my $soap_proxy = 'http://localhost:2000/Server';
+    my $cgi = CGI->new();
     my $soap_server = SOAP::Lite
                           -> uri( $soap_uri )
                           -> proxy( $soap_proxy );
