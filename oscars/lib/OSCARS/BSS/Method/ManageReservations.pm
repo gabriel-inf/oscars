@@ -150,10 +150,10 @@ sub create_reservation {
 
     # Get ipaddrs table id from source's and destination's host name or ip
     # address.
-    $params->{src_hostaddr_id} =
-        $self->{resv_lib}->hostaddrs_ip_to_id($params->{source_ip}); 
-    $params->{dst_hostaddr_id} =
-        $self->{resv_lib}->hostaddrs_ip_to_id($params->{destination_ip}); 
+    $params->{src_host_id} =
+        $self->{resv_lib}->host_ip_to_id($params->{source_ip}); 
+    $params->{dst_host_id} =
+        $self->{resv_lib}->host_ip_to_id($params->{destination_ip}); 
 
     my $results = $self->build_results($user, $params);
     $self->{logger}->add_hash($results);

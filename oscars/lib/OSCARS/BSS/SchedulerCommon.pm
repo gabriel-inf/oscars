@@ -58,11 +58,11 @@ sub get_time_intervals {
 sub map_to_ips {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT hostaddr_ip FROM BSS.hostaddrs WHERE hostaddr_id = ?';
-    my $row = $self->{user}->get_row($statement, $resv->{src_hostaddr_id});
-    $resv->{source_ip} = $row->{hostaddr_ip};
-    $row = $self->{user}->get_row($statement, $resv->{dst_hostaddr_id});
-    $resv->{destination_ip} = $row->{hostaddr_ip};
+    my $statement = 'SELECT host_ip FROM BSS.hosts WHERE host_id = ?';
+    my $row = $self->{user}->get_row($statement, $resv->{src_host_id});
+    $resv->{source_ip} = $row->{host_ip};
+    $row = $self->{user}->get_row($statement, $resv->{dst_host_id});
+    $resv->{destination_ip} = $row->{host_ip};
 
     $statement = 'SELECT router_loopback FROM BSS.routers' .
                 ' WHERE router_id =' .

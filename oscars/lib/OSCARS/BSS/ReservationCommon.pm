@@ -150,18 +150,18 @@ sub get_pss_configs {
 sub get_host_info {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT hostaddr_ip FROM BSS.hostaddrs WHERE hostaddr_id = ?';
-    my $hrow = $self->{user}->get_row($statement, $resv->{src_hostaddr_id});
-    $resv->{source_ip} = $hrow->{hostaddr_ip};
+    my $statement = 'SELECT host_ip FROM BSS.hosts WHERE host_id = ?';
+    my $hrow = $self->{user}->get_row($statement, $resv->{src_host_id});
+    $resv->{source_ip} = $hrow->{host_ip};
     my $ipaddr = inet_aton($resv->{source_ip});
     $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
     if (!$resv->{source_host}) {
         $resv->{source_host} = $resv->{source_ip};
     }
 
-    $hrow = $self->{user}->get_row($statement, $resv->{dst_hostaddr_id});
+    $hrow = $self->{user}->get_row($statement, $resv->{dst_host_id});
     # TODO:  FIX, hrow might be empty
-    $resv->{destination_ip} = $hrow->{hostaddr_ip};
+    $resv->{destination_ip} = $hrow->{host_ip};
     $ipaddr = inet_aton($resv->{destination_ip});
     $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
     if (!$resv->{destination_host}) {
@@ -198,24 +198,24 @@ sub get_engr_fields {
 
 
 ###############################################################################
-# hostaddrs_ip_to_id:  get the primary key in the hostaddrs table, given an
+# host_ip_to_id:  get the primary key in the hosts table, given an
 #     IP address.  A row is created if that address is not present.
-# In:  hostaddr_ip
-# Out: hostaddr_id
+# In:  host_ip
+# Out: host_id
 #
-sub hostaddrs_ip_to_id {
+sub host_ip_to_id {
     my( $self, $ipaddr ) = @_;
 
-    # TODO:  fix schema, possible hostaddr_ip would not be unique
-    my $statement = 'SELECT hostaddr_id FROM BSS.hostaddrs WHERE hostaddr_ip = ?';
+    # TODO:  fix schema, possible host_ip would not be unique
+    my $statement = 'SELECT host_id FROM BSS.hosts WHERE host_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
-    # if no matches, insert a row in hostaddrs
+    # if no matches, insert a row in hosts
     if ( !$row ) {
-        $statement = "INSERT INTO BSS.hostaddrs VALUES ( NULL, '$ipaddr'  )";
+        $statement = "INSERT INTO BSS.hosts VALUES ( NULL, '$ipaddr'  )";
         my $unused = $self->{user}->do_query($statement);
         return $self->{dbh}->{mysql_insertid};
     }
-    else { return $row->{hostaddr_id}; }
+    else { return $row->{host_id}; }
 } #____________________________________________________________________________
 
 
