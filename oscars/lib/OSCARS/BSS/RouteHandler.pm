@@ -22,17 +22,16 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-February 22, 2006
+February 24, 2006
 
 =cut
 
+use strict;
 
 use Data::Dumper;
 use Socket;
-use Net::Ping;
 use Error qw(:try);
 
-use strict;
 use OSCARS::User;
 use OSCARS::BSS::JnxTraceroute;
 
@@ -71,14 +70,10 @@ sub find_interface_ids {
     if ($params->{ingress_router}) {
         # converts to IP address if it is a host name
         $params->{ingress_ip} = $self->name_to_ip($params->{ingress_router});
-        $params->{ingress_interface_id} = $self->ip_to_xface_id( $params->{ingress_ip} );
-        if ($params->{ingress_interface_id} != 0) {
-            $loopback_ip =
-                $self->xface_id_to_loopback( $params->{ingress_interface_id} );
-        }
-        else {
-            throw Error::Simple(
-             "Ingress router $params->{ingress_router} does not have an OSCARS loopback");
+        ($params->{ingress_interface_id}, $loopback_ip) = 
+                $self->get_loopback( $params->{ingress_ip} );
+        if( !$params->{ingress_interface_id} ) {
+            throw Error::Simple("Router $params->{ingress_router} has no OSCARS loopback");
         }
     }
     else {
@@ -93,15 +88,10 @@ sub find_interface_ids {
   
     if ($params->{egress_router}) {
         $params->{egress_ip} = $self->name_to_ip($params->{egress_router});
-        $params->{egress_interface_id} =
-            $self->ip_to_xface_id( $params->{egress_ip} );
-        if ($params->{egress_interface_id} != 0) {
-            $loopback_ip =
-                $self->xface_id_to_loopback( $params->{egress_interface_id} );
-        }
-        else {
-            throw Error::Simple(
-             "Egress router $params->{egress_router} does not have an OSCARS loopback");
+        ($params->{egress_interface_id}, $loopback_ip) = 
+                $self->get_loopback( $params->{egress_ip} );
+        if( !$params->{egress_interface_id} ) {
+            throw Error::Simple("Router $params->{egress_router} has no OSCARS loopback");
         }
     }
     else {
@@ -124,15 +114,12 @@ sub find_interface_ids {
 # Out:  interface ID, path  
 #
 sub do_traceroute {
-    my ( $self, $action, $src, $dst, $logger, $params )  = @_;
-    my (@hops);
-    my ($interface_id, $edge_id, @path);
-    my ($edge_loopback, $loopback_ip, $network_id);
+    my( $self, $action, $src, $dst, $logger, $params )  = @_;
+    my( @hops );
+    my( $interface_id, $edge_id, @path );
+    my( $edge_loopback, $loopback_ip );
 
     @path = ();
-    # try to ping before traceing?
-    if ($self->{trace_configs}->{trace_conf_use_ping}) { $self->do_ping($dst); }
-
     my ($jnxTraceroute) = new OSCARS::BSS::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst, $logger);
     @hops = $jnxTraceroute->get_hops();
@@ -142,10 +129,8 @@ sub do_traceroute {
 
     if ($#hops == 0) { 
             # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->ip_to_xface_id(
+        ($interface_id, $loopback_ip) = $self->get_loopback(
                               $self->{trace_configs}->{trace_conf_jnx_source});
-        $loopback_ip =
-            $self->xface_id_to_loopback( $interface_id );
         return ($interface_id, $loopback_ip, \@path);
     }
 
@@ -154,35 +139,20 @@ sub do_traceroute {
     # loop forward till the next router isn't one of ours or doesn't have
     # an oscars loopback address
     my $hop;
-    my $is_on_primary_network = 0;
 
     for $hop (@hops)  {
         $logger->add_string("hop:  $hop");
         # id is 0 if not an edge router (not in interfaces table)
-        $interface_id = $self->ip_to_xface_id( $hop );
-        ($loopback_ip, $network_id) =
-            $self->xface_id_to_loopback( $interface_id );
-        if($is_on_primary_network && $network_id && $network_id != 1){
-            #Get component name
-      		my $component_name = $self->xdomain_name($network_id);
-      		
-           #CONTACT OTHER DOMAINS BSS
-      		print "Method: " . $params->{"method"} . "\n";
-            #my $xdomain_results = Client::Runner->run($aaas_uri, $aaas_proxy, $loopback_ip, $params);
-            my $xdomain_results;
-      		
-      		#PARSE RESULTS
-      		print "=" x 30;
-      		print "\n" . $xdomain_results . "\n";
-      		print "=" x 30 . "\n";
-      		
-            return ($edge_id, $edge_loopback, \@path); 
-        }elsif (!$interface_id && $is_on_primary_network) {
+        ( $interface_id, $loopback_ip )  = $self->get_loopback( $hop );
+        if( !$interface_id ) {
             $logger->add_string("edge router is $edge_loopback");
             return ($edge_id, $edge_loopback, \@path);
-        }elsif($interface_id){
-            $is_on_primary_network = 1;
         }
+        my( $is_local, $domain_name ) =
+                                 $self->check_domain( $interface_id );
+           # pass back hops, through AAAS, to AAAS of server handling other
+           # domain
+        if( !$is_local ){ return (-1, $domain_name, \@path); }
 
         # add to the path
         push(@path, $interface_id);
@@ -191,47 +161,14 @@ sub do_traceroute {
             $edge_loopback = $loopback_ip;
         }
     }
-    # Need this in case the last hop is in the database
+    # Need this in case the last hop corresponds to a router in the database
     if ($edge_loopback) {
         $logger->add_string("edge router is $edge_loopback");
         my $unused = pop(@path);
         return ($edge_id, $edge_loopback, \@path);
     }
-
     # if we didn't find it
     throw Error::Simple("Couldn't trace route to $src");
-} #____________________________________________________________________________
-
-
-###############################################################################
-# do_ping:
-# Freaking Net:Ping uses it own socket, so it has to be
-# root to do icmp. Any smart person would turn off UDP and
-# TCP echo ports ... gezzzz
-#
-sub do_ping {
-    my ( $self, $host ) = @_;
-
-    # use sytem 'ping' command (should be config'd in config file
-    if ($self->{trace_configs}->{trace_conf_use_system}) {
-        my @ping = `/bin/ping -w 10 -c 3 -n  $host`;
-        for my $i (@ping) {
-            if ( $i =~ /^64 bytes/ ) {  
-                return; 
-            }
-        }
-        throw Error::Simple("Host $host not pingable");
-    # use the Net::Ping system
-    } else {
-        # make sure its up and pingable first
-        my $p = Net::Ping->new(proto=>'icmp');
-        if (! $p->ping($host, 5) )  {
-            $p->close();
-            throw Error::Simple("Host $host not pingable");
-        }
-        $p->close();
-    }
-    throw Error::Simple("Host $host not pingable");
 } #____________________________________________________________________________
 
 
@@ -259,8 +196,7 @@ sub get_trace_configs {
     my $statement = "SELECT " .
             "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
             "trace_conf_ttl, trace_conf_timeout, " .
-            "trace_conf_run_trace, trace_conf_use_system, " .
-            "trace_conf_use_ping "  .
+            "trace_conf_run_trace " .
             "FROM BSS.trace_confs where trace_conf_id = 1";
     my $configs = $self->{user}->get_row($statement);
     return $configs;
@@ -268,57 +204,54 @@ sub get_trace_configs {
 
 
 ###############################################################################
-# ip_to_xface_id:
-#   Get the db iface id from an ip address. If a router is an edge router
-#   there will be a corresponding address in the ipaddrs table.
+# get_loopback:
+#   Gets the loopback IP, if any, given an IP address. If a router is an edge 
+#   router, it will have a loopback address.
 # In:  interface ip address
-# Out: interface id
+# Out: loopback IP address, if any
 #
-sub ip_to_xface_id {
+sub get_loopback {
     my ($self, $ipaddr) = @_;
 
-    my $statement = 'SELECT interface_id FROM BSS.ipaddrs WHERE ipaddr_ip = ?';
+    my $statement = 'SELECT router_loopback, i.interface_id AS interface_id ' .
+        'FROM BSS.routers b ' .
+        'INNER JOIN BSS.interfaces i ON b.router_id = i.router_id ' .
+        'INNER JOIN BSS.ipaddrs ip ON i.interface_id = ip.interface_id ' .
+        'WHERE ip.ipaddr_ip = ?';
+    my $statement = 'SELECT router_loopback, i.interface_id AS interface_id ' .
+        'FROM BSS.routers b ' .
+        'INNER JOIN BSS.interfaces i ON b.router_id = i.router_id ' .
+        'INNER JOIN BSS.ipaddrs ip ON i.interface_id = ip.interface_id ' .
+        'WHERE ip.ipaddr_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
-    if ( !$row ) { return undef; }
-    return $row->{interface_id};
-} #____________________________________________________________________________
-
-
-###############################################################################
-# xface_id_to_loopback:  get the loopback ip from the interface primary key.
-# In:  interface table primary key
-# Out: loopback ip address
-#
-sub xface_id_to_loopback {
-    my( $self, $interface_id ) = @_;
-
-    my $statement = "SELECT router_name, router_loopback, network_id FROM BSS.routers
-                 WHERE router_id = (SELECT router_id from interfaces
-                                    WHERE interface_id = ?)";
-    my $row = $self->{user}->get_row($statement, $interface_id);
-    # it is not considered to be an error when no rows are returned
-    if ( !$row ) { return undef; }
-    # check for loopback address
+    # not necessarily an error; up to caller about what to do
+    if ( !$row ) { return( undef, undef ); }
     if (!$row->{router_loopback}) {
         throw Error::Simple("Router $row->{router_name} has no oscars loopback");
     }
-    return ($row->{router_loopback}, $row->{network_id});
+    return ($row->{interface_id}, $row->{router_loopback});
 } #____________________________________________________________________________
 
-###############################################################################
-# xdomain_name:  get name of remote network; used by AAAS to get uri and proxy 
-#                
-# In:  network table primary key
-# Out: network's  AAAS uri and AAAS proxy
-#
-sub xdomain_uri_proxy {
-    my( $self, $network_id ) = @_;
 
-    my $statement = "SELECT domain_name FROM BSS.domains WHERE domain_id = ?";
-    my $row = $self->{user}->get_row($statement, $network_id);
-    if ( !$row ) { return undef; }    
-    
-    return ($row->{network_aaas_uri}, $row->{network_aaas_proxy});
+###############################################################################
+# check_domain:  check whether router is on the local network
+#                
+# In:  interface primary key
+# Out: whether in the local domain, and the domain's name (used to
+#      look up uri and proxy by the AAAS)
+#
+sub check_domain {
+    my( $self, $interface_id ) = @_;
+
+    my $statement = 'SELECT domain_name, local_domain FROM BSS.domains d ' .
+        'INNER JOIN BSS.routers r ON d.domain_id = r.domain_id ' .
+        'INNER JOIN BSS.interfaces i ON r.router_id = i.router_id ' .
+        'WHERE i.interface_id = ?';
+    my $row = $self->{user}->get_row($statement, $interface_id);
+    if ( !$row ) {
+        throw Error::Simple("No domain associated with interface key $interface_id");
+    }    
+    return ($row->{local_domain}, $row->{domain_name});
 } #____________________________________________________________________________ 
 
 ######
