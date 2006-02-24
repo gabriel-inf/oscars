@@ -32,7 +32,7 @@ use Error qw(:try);
 
 use strict;
 
-use SOAP::Lite +trace => 'debug';
+use SOAP::Lite;
 
 use OSCARS::Logger;
 use OSCARS::User;
@@ -126,7 +126,6 @@ sub add_client {
     $uri .= '/OSCARS/';
     my $proxy = $uri . $server->{daemon_server_class};
     $uri .= $server->{daemon_dispatcher_class};
-    print STDERR "$uri, $proxy\n";
     $self->{clients}->{component_name} = SOAP::Lite
                                         -> uri($uri)
                                         -> proxy($proxy);
