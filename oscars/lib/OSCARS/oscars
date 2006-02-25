@@ -101,6 +101,7 @@ sub dispatch {
     if ($params->{method} eq 'Logout') {
         remove_user($params->{user_dn});
 	$results->{user_dn} = $params->{user_dn};
+	$results->{authorizations} = $params->{authorizations};
 	return $results;
     }
     try {
