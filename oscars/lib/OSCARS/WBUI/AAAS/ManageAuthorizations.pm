@@ -61,67 +61,28 @@ sub output_results {
 
     print qq{
     <div>
-    <p>Select a user to view the user's authorizations.
-       Click on a resource and permission, and then 'Add', to add an 
-       authorization for a user.</p>
+    <p>Select a user to view a list of the user's currently valid 
+       authorizations, and a list of authorizations that could be added.
+       Click on an ungranted resource and permission, and then 'Grant', to add 
+       an authorization for a user.  Click on a granted resource and
+       permission, and then 'Revoke' to revoke an authorization. </p>
     <form method='post' action=''>
     <table width='90%' class='auth-ui'>
     <tr>
     };
-    $self->output_table('Users', $results->{users}, 'user_dn');
-    $self->output_table('Roles', $results->{roles}, 'user_dn');
-    print qq{
-      <td class='auth-ui-td'>
-        <table class='auth-ui'>
-           <tr><td><input type='button'
-                  onclick='return tse_addAuthorization(this);' 
-                  value='Assign -&gt;'></input></td></tr>
-           <tr><td><input type='button' value='Remove &lt;-'></input></td></tr>
-        </table>
-      </td>
-    };
-    $self->output_authorizations($results);
+    $self->grantee_table('Users', $results->{users}, 'user_dn');
+    $self->grantee_table('Roles', $results->{roles}, 'user_dn');
+    $self->ops_table();
+    $self->authorizations_table($results);
     print qq{ </tr></table></form></div> };
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# output_authorizations:  output authorizations table
+# grantee_table:  output table listing users or roles that can be
+#     assigned authorizations
 #
-sub output_authorizations {
-    my( $self, $results ) = @_;
-
-    print qq{
-      <td class='auth-ui-td'>
-      <table id='Authorizations.Authorizations' class='sortable'>
-      <thead><tr><td>Resource</td><td>Permission</td></tr></thead>
-      <tbody>
-    };
-    if ( $results->{id} ) {
-        $self->output_auth_pairs($results->{authorizations}->{$results->{id}});
-    }
-    print qq{ </tbody></table></td> };
-} #____________________________________________________________________________
-
-
-###############################################################################
-# output_auth_pairs  output table of resource permission pairs
-#
-sub output_auth_pairs {
-    my( $self, $results ) = @_;
-
-    for my $rkey (sort keys %{$results}) {
-        for my $pkey (sort keys %{$results->{$rkey}}) {
-            print qq{ <tr><td>$rkey</td><td>$pkey</td></tr> };
-        }
-    }
-} #____________________________________________________________________________
-
-
-###############################################################################
-# output_table:  output table for one component of authorization
-#
-sub output_table {
+sub grantee_table {
     my( $self, $header_name, $results, $key ) = @_;
 
     print qq{
@@ -132,6 +93,50 @@ sub output_table {
     };
     for my $name (sort keys %{$results}) {
         print qq{ <tr><td>$name</td></tr> };
+    }
+    print qq{ </tbody></table></td> };
+} #____________________________________________________________________________
+
+
+###############################################################################
+# ops_table:  output table listing operations to be performed on
+#     permissions (add, delete)
+#
+sub ops_table {
+    my( $self ) = @_;
+
+    print qq{
+      <td class='auth-ui-td'>
+        <table class='auth-ui'>
+           <tr><td><input type='button'
+                  onclick='return tse_addAuthorization(this);' 
+                  value='Grant -&gt;'></input></td></tr>
+           <tr><td><input type='button' value='Revoke &lt;-'></input></td></tr>
+        </table>
+      </td>
+    };
+} #____________________________________________________________________________
+
+
+###############################################################################
+# authorizations_table:  output authorizations table
+#
+sub authorizations_table {
+    my( $self, $results ) = @_;
+
+    print qq{
+      <td class='auth-ui-td'>
+      <table id='Authorizations.Authorizations' class='sortable'>
+      <thead><tr><td>Resource</td><td>Permission</td></tr></thead>
+      <tbody>
+    };
+    if ( $results->{id} ) {
+        my $grantee = $results->{authorizations}->{$results->{id}};
+        for my $rkey (sort keys %{$grantee}) {
+            for my $pkey (sort keys %{$grantee->{$rkey}}) {
+                print qq{ <tr><td>$rkey</td><td>$pkey</td></tr> };
+	    }
+	}
     }
     print qq{ </tbody></table></td> };
 } #____________________________________________________________________________

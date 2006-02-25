@@ -105,19 +105,6 @@ sub output {
           </li>
         };
     }
-    if ( $authorizations->{ManagePermissions} &&
-         $authorizations->{ManagePermissions}->{exec} ) {
-      $tab = 'ManagePermissions';
-      if ( $tab eq $active_tab ) { $active_status = 'active'; }
-      else { $active_status = 'inactive'; }
-      print qq{
-        <li>
-          <a style="/styleSheets/layout.css" title="Manage permissions"
-             onclick="return new_section('server=$server;method=$tab;');"
-             class='$active_status' href="#">Permissions</a>
-        </li>
-      };
-    }
     if ( $authorizations->{ManageResources} &&
          $authorizations->{ManageResources}->{exec} ) {
       $tab = 'ManageResources';
