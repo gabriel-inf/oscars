@@ -148,7 +148,7 @@ sub create_reservation {
     $params->{reservation_bandwidth} *= 1000000;
     $self->check_oversubscribe($user, $params);
 
-    # Get ipaddrs table id from source's and destination's host name or ip
+    # Get hosts table id from source's and destination's host name or ip
     # address.
     $params->{src_host_id} =
         $self->{resv_lib}->host_ip_to_id($params->{source_ip}); 
