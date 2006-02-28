@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+February 28, 2006
 
 =cut
 
@@ -131,15 +131,7 @@ sub get_pss_configs {
     my( $self ) = @_;
 
         # use defaults for now
-    my $statement = 'SELECT ' .
-             'pss_conf_access, pss_conf_login, pss_conf_passwd, ' .
-             'pss_conf_firewall_marker, ' .
-             'pss_conf_setup_file, pss_conf_teardown_file, ' .
-             'pss_conf_ext_if_filter, pss_conf_CoS, ' .
-             'pss_conf_burst_limit, ' .
-             'pss_conf_setup_priority, pss_conf_resv_priority, ' .
-             'pss_conf_allow_lsp '  .
-             'FROM BSS.pss_confs where pss_conf_id = 1';
+    my $statement = 'SELECT * FROM BSS.pss_confs where pss_conf_id = 1';
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -213,7 +205,7 @@ sub host_ip_to_id {
     if ( !$row ) {
         $statement = "INSERT INTO BSS.hosts VALUES ( NULL, '$ipaddr'  )";
         my $unused = $self->{user}->do_query($statement);
-        return $self->{dbh}->{mysql_insertid};
+        return $self->{user}->{dbh}->{mysql_insertid};
     }
     else { return $row->{host_id}; }
 } #____________________________________________________________________________
