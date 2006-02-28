@@ -53,8 +53,6 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
 CREATE TABLE IF NOT EXISTS hosts (
     host_id			INT NOT NULL AUTO_INCREMENT,
     host_ip			TEXT NOT NULL,
-    host_cidr_block             INT,
-    host_name                   TEXT,
     PRIMARY KEY (host_id)
 ) type=MyISAM;
 
