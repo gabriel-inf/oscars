@@ -116,13 +116,22 @@ sub dispatch {
 	}
         # if BSS component is not on this server
 	if ($resource_manager->has_client($params->{server})) {
-            $som = $resource_manager->forward($params);
+            $som = $resource_manager->forward('BSS', $params);
             $results = $som->result;
 	}
         else {
             my $factory = OSCARS::MethodFactory->new();
             $handler = $factory->instantiate( $user, $params );
             # call SOAP method
+            $results = $handler->soap_method();
+	    if ( $results->{next_domain} ) {
+                $resource_manager->add_client($results->{next_domain}, 1);
+		$som = $resource_manager->forward($results->{next_domain},
+                                                  $params);
+		$results = $som->result;
+            }	
+	    # call method again with results
+            $handler = $factory->instantiate( $user, $results );
             $results = $handler->soap_method();
         }
     }
