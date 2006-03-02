@@ -109,6 +109,7 @@ sub find_interface_ids {
         throw Error::Simple("Egress router $params->{egress_router} has no loopback");
     }
     my $unused = pop(@$path);
+    #$params->{next_domain} = $next_domain;
     $params->{reservation_path} = $path;
 } #____________________________________________________________________________
 
@@ -152,8 +153,10 @@ sub do_traceroute {
         if ( $interface_test ) {
             push( @path, $interface_test );
         }
-        $next_domain = $self->get_domain($hop);
-        if ($next_domain ne 'local') { last; }
+        else {
+            #$next_domain = $self->get_domain($hop);
+            last;
+        }
     }
     return( \@path, $loopback_ip, $interface_id, $next_domain );
 } #____________________________________________________________________________
@@ -245,10 +248,10 @@ sub get_interface {
 sub get_domain {
     my( $self, $ipaddr ) = @_;
 
-    my $domain_name;
+    my $domain_name = 'local';
 
-    return ( 'local' );
-} #____________________________________________________________________________ 
+    return $domain_name;
+} #____________________________________________________________________________
 
 
 ######
