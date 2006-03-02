@@ -135,6 +135,10 @@ sub create_reservation {
 
     # params fields having to do with traceroute modified in find_interface_ids
     $self->{route_setup}->find_interface_ids($self->{logger}, $params);
+    # if next_domain is set, forward to OSCARS/BRUW server in next domain
+    if ($params->{next_domain} ) {
+        return $params;
+    }
     ( $params->{reservation_start_time}, $params->{reservation_end_time},
       $params->{reservation_created_time} ) =
           $self->{time_lib}->setup_times( $params->{reservation_start_time},
