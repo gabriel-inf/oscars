@@ -16,13 +16,13 @@ the ingress and egress routers.
 
 =head1 AUTHORS
 
-Jason Lee (jrlee@lbl.gov),
 David Robertson (dwrobertson@lbl.gov)
+Jason Lee (jrlee@lbl.gov),
 Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-February 24, 2006
+February 28, 2006
 
 =cut
 
@@ -53,122 +53,109 @@ sub initialize {
 
 
 ###############################################################################
-# find_interface_ids:  run traceroutes to both hosts.  Find edge routers and
-# validate both ends.
-# IN:  src and dst host names or IP addresses, ingress and egress routers
-#      if user specified
+# find_interface_ids:  Finds ingress and egress routers if they have not
+#     already been specified, and gets the interface ids of the routers'
+#     associated loopbacks.  It also checks to see if the next hop past the
+#     egress router is in a domain running an OSCARS/BRUW server.
+# IN:  OSCARS::Logger instance, and hash containing source name or IP,
+#     destination name or IP, and ingress and egress router names or IP's,
+#     if the user had permission to specify them
 # OUT: ids of interfaces of the edge routers, path list (router indexes)
 #
 sub find_interface_ids {
     my( $self, $logger, $params) = @_;
 
-    my( $loopback_ip, $path );
+    my( $path, $src, $dst, $next_domain );
 
-    # If the loopbacks have not already been specified, use the default
-    # router to run the traceroute to the source, and find the router with
-    # an oscars loopback closest to the source 
-    if ($params->{ingress_router}) {
-        # converts to IP address if it is a host name
-        $params->{ingress_ip} = $self->name_to_ip($params->{ingress_router});
-        ($params->{ingress_interface_id}, $loopback_ip) = 
-                $self->get_loopback( $params->{ingress_ip} );
-        if( !$params->{ingress_interface_id} ) {
-            throw Error::Simple("Router $params->{ingress_router} has no OSCARS loopback");
-        }
+    # converts to IP address if it is a host name
+    $params->{source_ip} = $self->name_to_ip($params->{source_host});
+    if( !$params->{source_ip} ) {
+        throw Error::Simple("Unable to look up IP address of source");
+    }
+    $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
+    if( !$params->{destination_ip} ) {
+        throw Error::Simple("Unable to look up IP address of destination");
+    }
+    #  If the egress router is given, use it as the source of the traceroute.
+    #  Otherwise use the default router as the source.  The destination
+    #  of the traceroute is the source given for the reservation.  The ingress 
+    #  router chosen will be the router closest to the source that has
+    #  a loopback.
+    if ( $params->{egress_router} ) {
+        # A straight copy if it is already an IP address.
+        $src = $self->name_to_loopback( $params->{egress_router} );
     }
     else {
-        $params->{source_ip} = $self->name_to_ip($params->{source_host});
-        $logger->add_string("--traceroute:  " .
-             "$self->{trace_configs}->{trace_conf_jnx_source} to source $params->{source_ip}");
-        ($params->{ingress_interface_id}, $loopback_ip, $path) =
-            $self->do_traceroute('find_ingress', 
-              $self->{trace_configs}->{trace_conf_jnx_source},
-              $params->{source_ip}, $logger, $params);
+        $src =
+           $self->name_to_ip( $self->{trace_configs}->{trace_conf_jnx_source} );
+    }
+    $dst = $params->{source_ip};
+    $logger->add_string("--traceroute (reverse):  Source $src to destination $dst");
+    # Run a traceroute and find the loopback IP, the associated interface,
+    # and whether the next hop is an OSCARS/BRUW router.
+    ( $path, $params->{ingress_ip}, $params->{ingress_interface_id}, $next_domain ) =
+        $self->do_traceroute( $src, $params->{source_ip}, $logger );
+    if( !$params->{ingress_interface_id} ) {
+        throw Error::Simple("Ingress router $params->{ingress_router} has no loopback");
     }
   
-    if ($params->{egress_router}) {
-        $params->{egress_ip} = $self->name_to_ip($params->{egress_router});
-        ($params->{egress_interface_id}, $loopback_ip) = 
-                $self->get_loopback( $params->{egress_ip} );
-        if( !$params->{egress_interface_id} ) {
-            throw Error::Simple("Router $params->{egress_router} has no OSCARS loopback");
-        }
+    # Run a traceroute from the ingress_ip arrived at in the last step to the 
+    # destination given in the reservation.
+    $logger->add_string("--traceroute:  Source $src to destination $dst");
+    ( $path, $params->{egress_ip}, $params->{egress_interface_id}, $next_domain ) =
+        $self->do_traceroute(
+            $params->{ingress_ip}, $params->{destination_ip}, $logger );
+    if( !$params->{egress_interface_id} ) {
+        throw Error::Simple("Egress router $params->{egress_router} has no loopback");
     }
-    else {
-        # Use the address found in the last step to run the traceroute to the
-        # destination, and find the egress.
-        $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
-        $logger->add_string("--traceroute:  " .
-                       "$loopback_ip to destination $params->{destination_ip}}");
-        ($params->{egress_interface_id}, $loopback_ip, $params->{reservation_path}) =
-            $self->do_traceroute('find_egress', $loopback_ip,
-                               $params->{destination_ip}, $logger, $params);
-    }
+    my $unused = pop(@$path);
+    $params->{reservation_path} = $path;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# do_traceroute:  Run traceroute from src to dst.
-#
-# In:   source, destination IP addresses.
-# Out:  interface ID, path  
+# do_traceroute:  Run traceroute from src to dst, find the last hop with a
+#      loopback address, and find the domain name of the first hop outside
+#      of the local domain.
+# In:   source, destination IP addresses, OSCARS::Logger instance.
+# Out:  IP of last hop within domain 
 #
 sub do_traceroute {
-    my( $self, $action, $src, $dst, $logger, $params )  = @_;
-    my( @hops );
-    my( $interface_id, $edge_id, @path );
-    my( $edge_loopback, $loopback_ip );
+    my( $self, $src, $dst, $logger )  = @_;
 
-    @path = ();
-    my ($jnxTraceroute) = new OSCARS::BSS::JnxTraceroute();
+    my $jnxTraceroute = new OSCARS::BSS::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst, $logger);
-    @hops = $jnxTraceroute->get_hops();
+    my @hops = $jnxTraceroute->get_hops();
+    my @path = ();
 
     # if we didn't hop much, maybe the same router?
-    if ($#hops < 0 ) { throw Error::Simple("same router?"); }
+    if ( $#hops < 0 ) { throw Error::Simple("same router?"); }
 
-    if ($#hops == 0) { 
-            # id is 0 if not an edge router (not in interfaces table)
-        ($interface_id, $loopback_ip) = $self->get_loopback(
-                              $self->{trace_configs}->{trace_conf_jnx_source});
-        return ($interface_id, $loopback_ip, \@path);
-    }
+    if ( $#hops == 0) { return( $self->get_loopback( $src ), 'local' ); }
 
-    # start off with an non-existent router
-    $interface_id = 0;
-    # loop forward till the next router isn't one of ours or doesn't have
-    # an oscars loopback address
-    my $hop;
-
-    for $hop (@hops)  {
+    # Loop through hops, identifying last local hop with a loopback, and
+    # first hop outside local domain, if any, and its domain.
+    my $interface_test = 1;
+    my $interface_id = 0;
+    my $loopback_test = 'l';
+    my $loopback_ip = '';
+    my $next_domain;
+    for my $hop ( @hops )  {
         $logger->add_string("hop:  $hop");
-        # id is 0 if not an edge router (not in interfaces table)
-        ( $interface_id, $loopback_ip )  = $self->get_loopback( $hop );
-        if( !$interface_id ) {
-            $logger->add_string("edge router is $edge_loopback");
-            return ($edge_id, $edge_loopback, \@path);
+        # following two are for edge router IP and interface id
+        $loopback_test = $self->get_loopback( $hop );
+        $interface_test = $self->get_interface( $hop );
+        if ( $loopback_test ) {
+            $loopback_ip = $loopback_test;
+            $interface_id = $interface_test;
         }
-        my( $is_local, $domain_name ) =
-                                 $self->check_domain( $interface_id );
-           # pass back hops, through AAAS, to AAAS of server handling other
-           # domain
-        if( !$is_local ){ return (-1, $domain_name, \@path); }
-
-        # add to the path
-        push(@path, $interface_id);
-        if (($action eq 'find_egress') || ($loopback_ip && ($loopback_ip != 'NULL'))) {
-            $edge_id = $interface_id;
-            $edge_loopback = $loopback_ip;
+        if ( $interface_test ) {
+            push( @path, $interface_test );
         }
+        $next_domain = $self->get_domain($hop);
+        if ($next_domain ne 'local') { last; }
     }
-    # Need this in case the last hop corresponds to a router in the database
-    if ($edge_loopback) {
-        $logger->add_string("edge router is $edge_loopback");
-        my $unused = pop(@path);
-        return ($edge_id, $edge_loopback, \@path);
-    }
-    # if we didn't find it
-    throw Error::Simple("Couldn't trace route to $src");
+    return( \@path, $loopback_ip, $interface_id, $next_domain );
 } #____________________________________________________________________________
 
 
@@ -188,71 +175,81 @@ sub name_to_ip{
 
 
 ###############################################################################
+# name_to_loopback:  convert host name to loopback address if it isn't already 
+#                    one (TODO:  error checking)
+# In:   host name or loopback address 
+# Out:  loopback address
+#
+sub name_to_loopback{
+    my( $self, $name ) = @_;
+
+    # last group is to handle CIDR blocks
+    my $regexp = '\d+\.\d+\.\d+\.\d+(/\d+)*';
+    if ($name !~ $regexp) { return( $self->get_loopback($name) ); }
+    else { return $name; }
+} #____________________________________________________________________________
+
+
+###############################################################################
 #
 sub get_trace_configs {
     my( $self ) = @_;
 
         # use default for now
-    my $statement = "SELECT " .
-            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
-            "trace_conf_ttl, trace_conf_timeout, " .
-            "trace_conf_run_trace " .
-            "FROM BSS.trace_confs where trace_conf_id = 1";
+    my $statement = "SELECT * FROM BSS.trace_confs where trace_conf_id = 1";
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_loopback:
-#   Gets the loopback IP, if any, given an IP address. If a router is an edge 
-#   router, it will have a loopback address.
+# get_loopback:  Gets loopback address, if any, of router. 
 # In:  interface ip address
 # Out: loopback IP address, if any
 #
 sub get_loopback {
     my ($self, $ipaddr) = @_;
 
-    my $statement = 'SELECT router_loopback, i.interface_id AS interface_id ' .
-        'FROM BSS.routers b ' .
-        'INNER JOIN BSS.interfaces i ON b.router_id = i.router_id ' .
-        'INNER JOIN BSS.ipaddrs ip ON i.interface_id = ip.interface_id ' .
-        'WHERE ip.ipaddr_ip = ?';
-    my $statement = 'SELECT router_loopback, i.interface_id AS interface_id ' .
+    my $statement = 'SELECT router_loopback ' .
         'FROM BSS.routers b ' .
         'INNER JOIN BSS.interfaces i ON b.router_id = i.router_id ' .
         'INNER JOIN BSS.ipaddrs ip ON i.interface_id = ip.interface_id ' .
         'WHERE ip.ipaddr_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
-    # not necessarily an error; up to caller about what to do
-    if ( !$row ) { return( undef, undef ); }
-    if (!$row->{router_loopback}) {
-        throw Error::Simple("Router $row->{router_name} has no oscars loopback");
-    }
-    return ($row->{interface_id}, $row->{router_loopback});
+    return( $row->{router_loopback} );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# check_domain:  check whether router is on the local network
-#                
-# In:  interface primary key
-# Out: whether in the local domain, and the domain's name (used to
-#      look up uri and proxy by the AAAS)
+# get_interface:
+#   Gets the interface id associated with an IP address.  Any address in the
+#   local domain's topology database will have one.
+# In:  interface ip address
+# Out: interface id, if any
 #
-sub check_domain {
-    my( $self, $interface_id ) = @_;
+sub get_interface {
+    my ($self, $ipaddr) = @_;
 
-    my $statement = 'SELECT domain_name, local_domain FROM BSS.domains d ' .
-        'INNER JOIN BSS.routers r ON d.domain_id = r.domain_id ' .
-        'INNER JOIN BSS.interfaces i ON r.router_id = i.router_id ' .
-        'WHERE i.interface_id = ?';
-    my $row = $self->{user}->get_row($statement, $interface_id);
-    if ( !$row ) {
-        throw Error::Simple("No domain associated with interface key $interface_id");
-    }    
-    return ($row->{local_domain}, $row->{domain_name});
+    my $statement = 'SELECT interface_id FROM BSS.ipaddrs WHERE ipaddr_ip = ?';
+    my $row = $self->{user}->get_row($statement, $ipaddr);
+    return( $row->{interface_id} );
+} #____________________________________________________________________________
+
+
+###############################################################################
+# get_domain:  gets the domain associated with an IP address
+#                
+# In:  IP address
+# Out: domain_name (used by the AAAS to look up uri and proxy)
+#
+sub get_domain {
+    my( $self, $ipaddr ) = @_;
+
+    my $domain_name;
+
+    return ( 'local' );
 } #____________________________________________________________________________ 
+
 
 ######
 1;
