@@ -129,10 +129,10 @@ sub dispatch {
 		$som = $resource_manager->forward($results->{next_domain},
                                                   $params);
 		$results = $som->result;
+	        # call method again with results
+                $handler = $factory->instantiate( $user, $results );
+                $results = $handler->soap_method();
             }	
-	    # call method again with results
-            $handler = $factory->instantiate( $user, $results );
-            $results = $handler->soap_method();
         }
     }
     catch Error::Simple with { $ex = shift; }
