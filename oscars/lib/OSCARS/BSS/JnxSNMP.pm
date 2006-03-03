@@ -20,13 +20,13 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-Febraury 13, 2006
+March 3, 2006
 
 =cut
 
 
 use Data::Dumper;
-use SNMP;
+use Net::SNMP;
 
 use strict;
 
@@ -44,19 +44,20 @@ sub initialize {
     my( $self ) = @_;
 
     # TODO:  fix hard-coded file path
-    &SNMP::addMibFiles(
-        "/home/oscars/mibs/mib-jnx-smi.txt",
-        "/home/oscars/mibs/mib-jnx-mpls.txt"
-    );
+    #&Net::SNMP::addMibFiles(
+    #"/home/oscars/mibs/mib-jnx-smi.txt",
+    #"/home/oscars/mibs/mib-jnx-mpls.txt"
+    #);
 } #___________________________________________________________________________
 
 
 ##############################################################################
-# query_lsp_snmpdata:  query LSP SNMP data from a Juniper router.
-# Input:  destination
+# initialize_session:  initialize SNMP session, given configs from database and
+#                      router.
+# Input:  configs, destination
 # Output: <none>
 #
-sub query_lsp_snmpdata {
+sub initialize_session {
     my( $self, $configs, $dst ) = @_;
 
     # Clear error message.
@@ -68,61 +69,109 @@ sub query_lsp_snmpdata {
         $self->{errMsg} = "ERROR: SNMP destination not defined\n";
         return;
     }
-
-    # Initialize SNMP session.
-    my $session = new SNMP::Session (
-                     'DestHost'       => $dst,
-                     'Community'      => $configs->{pss_conf_passwd},
-                     'RemotePort'     => 161,
-                     'Timeout'        => 300000,  # 300ms
-                     'Retries'        => 3,
-                     'Version'        => '2c',
-                     'UseLongNames'   => 1,       # Return full OID tags
-                     'UseNumeric'     => 0,       # Return dotted decimal OID
-                     'UseEnums'       => 0,       # Don't use enumerated vals
-                     'UseSprintValue' => 1,       # Don't pretty-print values
+    # Initialize Net::SNMP session.
+    my $error;
+    ( $self->{session}, $error ) = Net::SNMP->session (
+                     -hostname		=> $dst,
+                     -port		=> $configs->{snmp_conf_port},
+		     -community		=> $configs->{snmp_conf_community},
+                     -version		=> $configs->{snmp_conf_version},
+                     -timeout		=> $configs->{snmp_conf_timeout},
+                     -retries		=> $configs->{snmp_conf_retries},
                    );
-
-    # Set MIB to query.
-    my $vars = new SNMP::VarList (['mplsLspList']);  # Repeated variable.
-
-    # Do the bulkwalk of the 0 non-repeaters, and the repeaters.  Ask for no
-    # more than 8 values per response packet.  If the caller already knows how
-    # many instances will be returned for the repeaters, it can ask only for
-    # that many repeaters.
-    my @response = $session->bulkwalk(0, 5, $vars);
-
-    if ($session->{ErrorNum})  {
-        $self->{errMsg} = "ERROR: Cannot do bulkwalk: $session->{ErrorStr} ($session->{ErrorNum})\n";
+    if (!defined($self->{session})) {
+        $self->{errMsg} = "ERROR:  Cannot create session: $error\n";
         return;
     }
-    $self->{lsp} = {};
-    my( $iid, $tag );
+} #___________________________________________________________________________
 
-    # Process the results.
-    for my $varBinds (@response)  {
 
-        # Process the returned list of varbinds using the SNMP::Varbind methods.
-        for my $varBindEntry (@$varBinds)  {
+##############################################################################
+# close_session:  close instance's SNMP session
+#
+# Input:  <none>
+# Output: <none>
+#
+sub close_session {
+    my( $self ) = @_;
 
-            # Place results into lspInfo.
-            # Example of results:
-            #   tag: mplsLspName
-            #   iid: 111.115.99.97.114.115.95.53.49.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
-            #   val:oscars_51
-            #   type:OCTETSTR
-            #   name:mplsLspName
-            $iid = $varBindEntry->{iid};
-            $tag = $varBindEntry->{tag};
-            $self->{lspInfo}->{$iid}->{$tag} = $varBindEntry->{val};
+    if ($self->{session}) {
+        $self->{session}->close();
+    }
+    return;
+} #___________________________________________________________________________
 
-            # If the tag is 'mplsLspName', we will create a reference for it in self->{lsp}.
-            # e.g.
-            #   $self->{lsp}{oscars_51} = 111.115.99.97.114.115.95.53.49.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
-            if ($tag eq 'mplsLspName')  {
-                $self->{lsp}->{$varBindEntry->{val}} = $iid;
-            }
-        }
+
+##############################################################################
+# query_as_number:  query Juniper router for autonomous service number
+#     associated with IP address.
+# Input:  IP address
+# Output: <none>
+#
+sub query_as_number {
+    my( $self, $ipaddr ) = @_;
+
+    if (!$self->{session}) {
+        $self->{errMsg} = "ERROR: Session not initialized\n";
+        return;
+    }
+    # OID is for bgpPeerRemoteAs, concatenated with $ipaddr
+    my $results = $self->{session}->get_request(
+		     -varbindlist => ["1.3.6.1.2.1.15.3.1.9.$ipaddr"]
+    );
+    print STDERR Dumper($results);
+
+    if (!defined($results))  {
+        $self->{errMsg} = "ERROR: Cannot do get_request: $self->{session}->{error}\n";
+        return;
+    }
+    if (!defined($self->{session}->var_bind_list)) {
+        $self->{errMsg} = "ERROR: No varbindlist: $self->{session}->{error}\n";
+        return;
+    }
+    return;
+} #___________________________________________________________________________
+
+
+##############################################################################
+# query_lsp_snmpdata:  query LSP SNMP data from a Juniper router.
+# Input:  <none>
+# Output: <none>
+#
+sub query_lsp_snmpdata {
+    my( $self ) = @_;
+
+    if (!$self->{session}) {
+        $self->{errMsg} = "ERROR: Session not initialized\n";
+        return;
+    }
+    # Do the bulkwalk of the 0 (default) non-repeaters, and the repeaters.  
+    # Ask for no more than 8 values per response packet.  If the caller already
+    # knows how many instances will be returned for the repeaters, it can ask 
+    # only for that many repeaters.
+    # TODO:  figure out mpls mib, this oid is for bgpPeerRemoteAs
+    my $results = $self->{session}->get_bulk_request(
+	             -maxrepetitions => 8,
+		     -varbindlist => ["1.3.6.1.2.1.15.3.1.9"]
+    );
+    print STDERR Dumper($results);
+
+    if (!defined($results))  {
+        $self->{errMsg} = "ERROR: Cannot do bulkwalk: $self->{session}->{error}\n";
+        return;
+    }
+    if (!defined($self->{session}->var_bind_list)) {
+        $self->{errMsg} = "ERROR: No varbindlist: $self->{session}->{error}\n";
+        return;
+    }
+    $self->{lspInfo} = {};
+
+    # Place results into $self->{lspInfo}.
+    # Example of results:
+    #   oid: 111.115.99.97.114.115.95.53.49.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+    #   val:oscars_51
+    for my $oid (keys(%{$self->{session}->var_bind_list}))  {
+            $self->{lspInfo}->{$oid} = $oid;
     }
     return;
 } #___________________________________________________________________________
