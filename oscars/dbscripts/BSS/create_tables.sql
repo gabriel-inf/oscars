@@ -4,6 +4,7 @@ USE BSS;
 -- table for administrative domain, e.g. ESnet
 CREATE TABLE IF NOT EXISTS domains (
     domain_id			INT NOT NULL AUTO_INCREMENT,
+    domain_as_num               INT NOT NULL,
     domain_name			TEXT NOT NULL,
         -- whether OSCARS server handles this domain
     local_domain		BOOLEAN NOT NULL,
@@ -133,6 +134,18 @@ CREATE TABLE IF NOT EXISTS trace_confs (
         -- (requires ssh keys setup)
     trace_conf_run_trace	BOOLEAN NOT NULL,
     PRIMARY KEY (trace_conf_id)
+) type=MyISAM;
+
+-- Configuration for SNMP queries
+CREATE TABLE IF NOT EXISTS snmp_confs (
+    snmp_conf_id		INT NOT NULL AUTO_INCREMENT,
+        -- community string (TODO:  secure enough here?
+    snmp_conf_community		TEXT NOT NULL,
+    snmp_conf_version		TEXT NOT NULL,
+    snmp_conf_port		INT NOT NULL,
+    snmp_conf_timeout		INT NOT NULL,
+    snmp_conf_retries		INT NOT NULL,
+    PRIMARY KEY (snmp_conf_id)
 ) type=MyISAM;
 
 -- Configuration for LSP setup and teardown
