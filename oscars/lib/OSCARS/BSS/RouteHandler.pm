@@ -49,6 +49,7 @@ sub initialize {
     my ($self) = @_;
 
     $self->{trace_configs} = $self->get_trace_configs();
+    $self->{snmp_configs} = $self->get_snmp_configs();
 } #____________________________________________________________________________
 
 
@@ -200,6 +201,18 @@ sub get_trace_configs {
 
         # use default for now
     my $statement = "SELECT * FROM BSS.trace_confs where trace_conf_id = 1";
+    my $configs = $self->{user}->get_row($statement);
+    return $configs;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub get_snmp_configs {
+    my( $self ) = @_;
+
+        # use default for now
+    my $statement = "SELECT * FROM BSS.snmp_confs where snmp_conf_id = 1";
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
