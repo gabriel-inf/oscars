@@ -66,6 +66,11 @@ sub soap_method {
     if ($self->{params}->{op}) {
         if ($self->{params}->{op} eq 'createReservation') {
             $self->create_reservation( $self->{user}, $self->{params} );
+            # in this case, want to pass back current status of parameters, not
+            # list of reservations
+            if ( $self->{params}->{next_domain} ) {
+                return $self->{params};
+            }
         }
         elsif ($self->{params}->{op} eq 'cancelReservation') {
             $self->cancel_reservation( $self->{user}, $self->{params} );
