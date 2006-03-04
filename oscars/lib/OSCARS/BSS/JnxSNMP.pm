@@ -116,20 +116,15 @@ sub query_as_number {
         return;
     }
     # OID is for bgpPeerRemoteAs, concatenated with $ipaddr
+    my $oid = '1.3.6.1.2.1.15.3.1.9';
     my $results = $self->{session}->get_request(
-		     -varbindlist => ["1.3.6.1.2.1.15.3.1.9.$ipaddr"]
+		     -varbindlist => ["$oid.$ipaddr"]
     );
-    print STDERR Dumper($results);
-
     if (!defined($results))  {
-        $self->{errMsg} = "ERROR: Cannot do get_request: $self->{session}->{error}\n";
+        $self->{errMsg} = "ERROR: Cannot make as number query: $self->{session}->{error}\n";
         return;
     }
-    if (!defined($self->{session}->var_bind_list)) {
-        $self->{errMsg} = "ERROR: No varbindlist: $self->{session}->{error}\n";
-        return;
-    }
-    return;
+    return $results->{"$oid.$ipaddr"};
 } #___________________________________________________________________________
 
 
@@ -154,7 +149,6 @@ sub query_lsp_snmpdata {
 	             -maxrepetitions => 8,
 		     -varbindlist => ["1.3.6.1.2.1.15.3.1.9"]
     );
-    print STDERR Dumper($results);
 
     if (!defined($results))  {
         $self->{errMsg} = "ERROR: Cannot do bulkwalk: $self->{session}->{error}\n";
