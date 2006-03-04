@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-February 28, 2006
+March 3, 2006
 
 =cut
 
@@ -34,6 +34,7 @@ use Error qw(:try);
 
 use OSCARS::User;
 use OSCARS::BSS::JnxTraceroute;
+use OSCARS::BSS::JnxSNMP;
 
 
 sub new {
@@ -50,6 +51,7 @@ sub initialize {
 
     $self->{trace_configs} = $self->get_trace_configs();
     $self->{snmp_configs} = $self->get_snmp_configs();
+    $self->{jnx_snmp} = OSCARS::BSS::JnxSNMP->new();
 } #____________________________________________________________________________
 
 
@@ -66,9 +68,9 @@ sub initialize {
 sub find_interface_ids {
     my( $self, $logger, $params) = @_;
 
-    my( $path, $src, $dst, $next_domain );
+    my( $path, $src, $dst, $next_as_number );
 
-    # converts to IP address if it is a host name
+    # converts source to IP address if it is a host name
     $params->{source_ip} = $self->name_to_ip($params->{source_host});
     if( !$params->{source_ip} ) {
         throw Error::Simple("Unable to look up IP address of source");
@@ -77,25 +79,36 @@ sub find_interface_ids {
     if( !$params->{destination_ip} ) {
         throw Error::Simple("Unable to look up IP address of destination");
     }
-    #  If the egress router is given, use it as the source of the traceroute.
-    #  Otherwise use the default router as the source.  The destination
+
+    #  If the ingress router is given, just get its loopback and interface id.
+    #  Otherwise, if tthe egress router is given, use it as the source of the 
+    #  traceroute.  Otherwise the default router is the source.  The destination
     #  of the traceroute is the source given for the reservation.  The ingress 
     #  router chosen will be the router closest to the source that has
     #  a loopback.
-    if ( $params->{egress_router} ) {
-        # A straight copy if it is already an IP address.
-        $src = $self->name_to_loopback( $params->{egress_router} );
+    if ( $params->{ingress_router} ) {
+        $params->{ingress_ip} =
+            $self->name_to_loopback($params->{ingress_router});
+        $params->{ingress_interface_id} = $self->get_interface(
+            $self->name_to_ip($params->{ingress_router}));
     }
     else {
-        $src =
-           $self->name_to_ip( $self->{trace_configs}->{trace_conf_jnx_source} );
+        if ( $params->{egress_router} ) {
+            # A straight copy if it is already an IP address.
+            $src = $self->name_to_loopback( $params->{egress_router} );
+        }
+        else {
+            $src =
+               $self->name_to_ip( $self->{trace_configs}->{trace_conf_jnx_source} );
+        }
+        $dst = $params->{source_ip};
+        $logger->add_string("--traceroute (reverse):  Source $src to destination $dst");
+        # Run a traceroute and find the loopback IP, the associated interface,
+        # and whether the next hop is an OSCARS/BRUW router.
+        ( $path, $params->{ingress_ip}, $params->{ingress_interface_id}, $next_as_number ) =
+            $self->do_traceroute( 'ingress', $src, $params->{source_ip}, $logger );
     }
-    $dst = $params->{source_ip};
-    $logger->add_string("--traceroute (reverse):  Source $src to destination $dst");
-    # Run a traceroute and find the loopback IP, the associated interface,
-    # and whether the next hop is an OSCARS/BRUW router.
-    ( $path, $params->{ingress_ip}, $params->{ingress_interface_id}, $next_domain ) =
-        $self->do_traceroute( $src, $params->{source_ip}, $logger );
+
     if( !$params->{ingress_interface_id} ) {
         throw Error::Simple("Ingress router $params->{ingress_router} has no loopback");
     }
@@ -103,27 +116,27 @@ sub find_interface_ids {
     # Run a traceroute from the ingress_ip arrived at in the last step to the 
     # destination given in the reservation.
     $logger->add_string("--traceroute:  Source $src to destination $dst");
-    ( $path, $params->{egress_ip}, $params->{egress_interface_id}, $next_domain ) =
-        $self->do_traceroute(
+    ( $path, $params->{egress_ip}, $params->{egress_interface_id}, $next_as_number ) =
+        $self->do_traceroute('egress',
             $params->{ingress_ip}, $params->{destination_ip}, $logger );
     if( !$params->{egress_interface_id} ) {
         throw Error::Simple("Egress router $params->{egress_router} has no loopback");
     }
     my $unused = pop(@$path);
-    #$params->{next_domain} = $next_domain;
+    $params->{next_domain} = $next_as_number;
     $params->{reservation_path} = $path;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 # do_traceroute:  Run traceroute from src to dst, find the last hop with a
-#      loopback address, and find the domain name of the first hop outside
-#      of the local domain.
+#      loopback address, and find the autonomous service number of the first
+#      hop outside of the local domain.
 # In:   source, destination IP addresses, OSCARS::Logger instance.
 # Out:  IP of last hop within domain 
 #
 sub do_traceroute {
-    my( $self, $src, $dst, $logger )  = @_;
+    my( $self, $action, $src, $dst, $logger )  = @_;
 
     my $jnxTraceroute = new OSCARS::BSS::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst, $logger);
@@ -136,12 +149,12 @@ sub do_traceroute {
     if ( $#hops == 0) { return( $self->get_loopback( $src ), 'local' ); }
 
     # Loop through hops, identifying last local hop with a loopback, and
-    # first hop outside local domain, if any, and its domain.
+    # first hop outside local domain, if any, and its autonomous service #.
     my $interface_test = 1;
     my $interface_id = 0;
     my $loopback_test = 'l';
     my $loopback_ip = '';
-    my $next_domain;
+    my $next_as_number;
     for my $hop ( @hops )  {
         $logger->add_string("hop:  $hop");
         # following two are for edge router IP and interface id
@@ -155,11 +168,13 @@ sub do_traceroute {
             push( @path, $interface_test );
         }
         else {
-            #$next_domain = $self->get_domain($hop);
+            if ($action eq 'egress') {
+                $next_as_number = $self->get_as_number($interface_id, $hop);
+            }
             last;
         }
     }
-    return( \@path, $loopback_ip, $interface_id, $next_domain );
+    return( \@path, $loopback_ip, $interface_id, $next_as_number );
 } #____________________________________________________________________________
 
 
@@ -237,9 +252,8 @@ sub get_loopback {
 
 
 ###############################################################################
-# get_interface:
-#   Gets the interface id associated with an IP address.  Any address in the
-#   local domain's topology database will have one.
+# get_interface: Gets the interface id associated with an IP address.  Any 
+#     address in the local domain's topology database will have one.
 # In:  interface ip address
 # Out: interface id, if any
 #
@@ -253,17 +267,26 @@ sub get_interface {
 
 
 ###############################################################################
-# get_domain:  gets the domain associated with an IP address
+# get_as_number:  Gets the autonomous service number associated with an IP 
+#     address by performing an SNMP query against the egress router
 #                
-# In:  IP address
-# Out: domain_name (used by the AAAS to look up uri and proxy)
+# In:  Interface id on egress router, IP address of next hop
+# Out: autonomous service number (used by the AAAS to look up uri and proxy)
 #
-sub get_domain {
-    my( $self, $ipaddr ) = @_;
+sub get_as_number {
+    my( $self, $interface_id, $ipaddr ) = @_;
 
-    my $domain_name = 'local';
+    my $as_number;
 
-    return $domain_name;
+    my $statement = 'SELECT router_name FROM BSS.routers r ' .
+        'INNER JOIN BSS.interfaces i ON r.router_id = i.router_id ' .
+        'WHERE i.interface_id = ?';
+    my $row = $self->{user}->get_row($statement, $interface_id);
+    my $router_name = $row->{router_name} . ".es.net";
+    $self->{jnx_snmp}->initialize_session($self->{snmp_configs}, $router_name);
+    $as_number = $self->{jnx_snmp}->query_as_number($ipaddr);
+    $self->{jnx_snmp}->close_session();
+    return $as_number;
 } #____________________________________________________________________________
 
 
