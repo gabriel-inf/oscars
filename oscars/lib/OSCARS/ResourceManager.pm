@@ -83,11 +83,10 @@ sub get_daemon_info {
 # component name.
 #
 sub add_client {
-    my( $self, $component_name, $no_local ) = @_;
+    my( $self, $component_name ) = @_;
 
-    my( $protocol, $hostname, $port );
-
-    my $statement = 'SELECT * FROM daemons WHERE daemon_component_name = ?';
+    my $statement =
+            'SELECT daemon_id FROM daemons WHERE daemon_component_name = ?';
     my $dbconn = OSCARS::Database->new();
     $dbconn->connect($self->{database});
     my $server = $dbconn->get_row($statement, $component_name);
@@ -96,39 +95,9 @@ sub add_client {
     $dbconn->disconnect();
     if (!$server) { return undef; }
     if (!$client) { return undef; }
-    if ( ($server->{daemon_host_name} eq 'localhost' ) && $no_local ) {
-        return undef;
-    }
-    if ( $client->{client_host_name} ) {
-        if ( $client->{client_host_name} eq 'localhost' ) {
-	    $protocol = 'http';
-	}
-        else { $protocol = 'https'; }
-	$hostname = $client->{client_host_name};
-	if ( $client->{client_port} ) {
-            $port = $client->{client_port};
-        }
-    }
-    else {
-        if ( $server->{daemon_host_name} eq 'localhost' ) {
-	    $protocol = 'http';
-        }
-        else { $protocol = 'https'; }
-        $hostname = $server->{daemon_host_name};
-        if ( $server->{server_port} ) {
-            $port = $server->{daemon_port};
-        };
-    }
-    my $uri = $protocol . '://' . $hostname;
-    if ($port) {
-      $uri .=	':' . $port;
-    }
-    $uri .= '/OSCARS/';
-    my $proxy = $uri . $server->{daemon_server_class};
-    $uri .= $server->{daemon_dispatcher_class};
     $self->{clients}->{component_name} = SOAP::Lite
-                                        -> uri($uri)
-                                        -> proxy($proxy);
+                                        -> uri($client->{client_uri})
+                                        -> proxy($client->{client_proxy});
     return $self->{clients}->{component_name};
 } #____________________________________________________________________________
 
