@@ -29,7 +29,7 @@ sub ModifyProfile {
     $params{method} = 'UserProfile';
     $params{op} = 'modifyProfile';
 
-    my $som = $rm->add_client($component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Modify user profile\n";

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::Simple tests => 3;
+use Test::Simple tests => 2;
 
 use SOAP::Lite;
 
@@ -12,8 +12,5 @@ my $component_name = 'AAAS';
 my $rm = OSCARS::ResourceManager->new('database' => $db_name);
 ok($rm);
 
-my $portnum = $rm->get_daemon_info($component_name);
-ok($portnum);
-
-my $client = $rm->add_client($component_name);
+my $client = $rm->add_client();
 ok($client);

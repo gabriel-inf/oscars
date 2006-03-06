@@ -28,7 +28,7 @@ sub ManageUsers {
     $params{server} = $component_name;
     $params{method} = 'ManageUsers';
 
-    my $som = $rm->add_client($component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;

@@ -38,7 +38,7 @@ sub AddUser {
     $params{user_phone_primary} = '510-495-2399';
     $params{user_description} = 'test user';
 
-    my $som = $rm->add_client($component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;

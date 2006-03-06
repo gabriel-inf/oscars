@@ -26,7 +26,7 @@ sub ManageResources {
     $params{server} = $component_name;
     $params{method} = 'ManageResources';
 
-    my $som = $rm->add_client($component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Retrieved resources successfully\n";

@@ -27,7 +27,7 @@ sub ManagePermissions {
     $params{server} = $component_name;
     $params{method} = 'ManagePermissions';
 
-    my $som = $rm->add_client($component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
     my $msg = "\nStatus:  Retrieved list of permissions\n";

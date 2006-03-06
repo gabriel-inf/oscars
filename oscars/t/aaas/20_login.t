@@ -27,7 +27,7 @@ sub Login {
     $params{server} = $component_name;
     $params{method} = 'Login';
 
-    my $som = $rm->add_client($component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     return( 1, "\nUser $params{user_dn} successfully logged in.\n" );
 } #___________________________________________________________________________

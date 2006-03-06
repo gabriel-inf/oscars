@@ -32,7 +32,7 @@ sub DeleteUser {
     # User with user_dn = id will be deleted
     $params{selected_user} = $delete_user_dn;
 
-    my $som = $rm->add_client($component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
