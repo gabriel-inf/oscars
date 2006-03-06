@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 1;
 
 use SOAP::Lite;
 use Data::Dumper;
@@ -16,7 +15,6 @@ my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
 my( $login, $password ) = $rm->get_test_account('engr');
 
 my( $status, $msg ) = UpdateRouterTables($login, $password);
-ok( $status, $msg );
 print STDERR $msg;
 
 
