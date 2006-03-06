@@ -70,18 +70,11 @@ CREATE TABLE IF NOT EXISTS authorizations (
 -- and for clients to access it.
 CREATE TABLE IF NOT EXISTS daemons (
     daemon_id			INT NOT NULL AUTO_INCREMENT,
-      --  currently only AAAS and BSS
-    daemon_component_type	TEXT NOT NULL,
       --  defaults are AAAS and BSS, can be other ones set up for testing
+    daemon_component_type	TEXT NOT NULL,
     daemon_component_name	TEXT NOT NULL,
-      -- used to start SOAP::Lite daemon
-    daemon_host_name		TEXT NOT NULL,
     daemon_port			INT NOT NULL,
-      -- information necessary for client of this server. Built up from
-      -- host name, port, and class name.
-    daemon_dispatcher_class	TEXT NOT NULL,
-    daemon_server_class		TEXT NOT NULL,
-      -- not currently used
+      -- mail settings not currently used
     daemon_mail_list		TEXT NOT NULL,
     daemon_send_mail		BOOLEAN NOT NULL,
     PRIMARY KEY (daemon_id)
@@ -95,9 +88,8 @@ CREATE TABLE IF NOT EXISTS daemons (
 -- and port to the daemon host and port.
 CREATE TABLE IF NOT EXISTS clients (
     client_id			INT NOT NULL AUTO_INCREMENT,
-      -- only usable when a rewrite rule has been set up
-    client_host_name		TEXT,
-    client_port			INT,
+    client_uri			TEXT,
+    client_proxy		TEXT,
     daemon_id                   INT NOT NULL,   -- foreign key
     PRIMARY KEY (client_id)
-) type=MyISAM;
+    ) type=MyISAM;
