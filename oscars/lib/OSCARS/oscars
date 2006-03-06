@@ -10,27 +10,27 @@ use Data::Dumper;
 
 use OSCARS::ResourceManager;
 
-my ( $database, $aaa_component, $bss_component );
+my ( $component, $database, $resource_manager );
 
+# TODO:  Essentially going back to earlier version.  Need better UI.
+# port number needs to be option again.
 my $len = scalar(@ARGV);
 if ($len == 1) {
     my $first_arg = $ARGV[0];
     if ($first_arg eq '-h') {
-        print STDERR "Usage:\t\toscars database_name\n";
+        print STDERR "Usage:\t\toscars component_name\n";
         print STDERR "Examples:\toscars\n";
         print STDERR "\t\toscars AAAS\n";
         exit;
     }
-    else { $database = $ARGV[0]; }
+    else { $component = $ARGV[0]; }
 }
-if ( !$database ) { $database = 'AAAS'; }
-if ( !$aaa_component ) { $aaa_component = 'AAAS'; }
-if ( !$bss_component ) { $bss_component = 'BSS'; }
+else { $component = 'AAAS'; }
 
+# TODO:  shouldn't have to be same name
+$database = $component;
 
-my $resource_manager;
-
-if ($database) {
+if ($component) {
     start_daemon();
 }
 
@@ -40,16 +40,11 @@ sub start_daemon {
 
     $resource_manager = OSCARS::ResourceManager->new(
                                               'database' => $database);
-    $resource_manager->add_client($bss_component, 1);
-
-    my $portnum = $resource_manager->get_daemon_info($aaa_component);
-    if ($portnum) {
-        $SOAP::Constants::MAX_CONTENT_SIZE = 10000;
-        my $daemon = SOAP::Transport::HTTP::Daemon
-            -> new (LocalPort => $portnum, Listen => 5, Reuse => 1)
-            -> dispatch_to('OSCARS::Dispatcher');
-        $daemon->handle;
-    }
+    $SOAP::Constants::MAX_CONTENT_SIZE = 10000;
+    my $daemon = SOAP::Transport::HTTP::Daemon
+        -> new (LocalPort => 2000, Listen => 5, Reuse => 1)
+        -> dispatch_to('OSCARS::Dispatcher');
+    $daemon->handle;
 } #____________________________________________________________________________
 
 
@@ -74,7 +69,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 6, 2006
 
 =cut
 
