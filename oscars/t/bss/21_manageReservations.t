@@ -32,7 +32,7 @@ sub ManageReservations {
     $params{server} = $bss_component_name;
     $params{method} = 'ManageReservations';
 
-    my $som = $rm->add_client($aaa_component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;

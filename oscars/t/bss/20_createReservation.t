@@ -47,7 +47,7 @@ sub CreateReservation {
 
     $params{reservation_description} =    'This is a test.';
 
-    my $som = $rm->add_client($aaa_component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;

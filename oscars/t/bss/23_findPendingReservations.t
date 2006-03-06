@@ -32,7 +32,7 @@ sub FindPendingReservations {
     $params{method} = 'FindPendingReservations';
     $params{time_interval} = 20;
 
-    my $som = $rm->add_client($aaa_component_name)->dispatch(\%params);
+    my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
