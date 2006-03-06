@@ -62,38 +62,27 @@ sub initialize {
 
 
 ###############################################################################
-# Gets information necessary to start SOAP::Lite daemon.
-#
-sub get_daemon_info {
-    my( $self, $component_name ) = @_;
-
-    my $statement = 'SELECT daemon_port FROM daemons WHERE daemon_component_name = ?';
-    my $dbconn = OSCARS::Database->new();
-    $dbconn->connect($self->{database});
-    my $results = $dbconn->get_row($statement, $component_name);
-    $dbconn->disconnect();
-    if (!$results) { return undef; }
-    my $server_port = $results->{daemon_port};
-    return $server_port;
-} #____________________________________________________________________________
-
-
-###############################################################################
 # Adds SOAP::Lite client for given component to clients hash, indexed by
 # component name.
 #
 sub add_client {
-    my( $self, $component_name ) = @_;
+    my( $self, $as_num ) = @_;
 
-    my $statement =
-            'SELECT daemon_id FROM daemons WHERE daemon_component_name = ?';
+    my( $statement, $client );
+
     my $dbconn = OSCARS::Database->new();
     $dbconn->connect($self->{database});
-    my $server = $dbconn->get_row($statement, $component_name);
-    $statement = 'SELECT * FROM clients WHERE daemon_id = ?';
-    my $client = $dbconn->get_row($statement, $server->{daemon_id});
+    # currently only handles one OSCARS server per domain
+    if ($as_num) {
+        $statement = 'SELECT * FROM clients WHERE as_num = ?';
+        $client = $dbconn->get_row($statement, $as_num);
+    }
+    else {
+	# local domain not given an AS number in the clients table
+        $statement = 'SELECT * FROM clients WHERE as_num IS NULL';
+        $client = $dbconn->get_row($statement);
+    }
     $dbconn->disconnect();
-    if (!$server) { return undef; }
     if (!$client) { return undef; }
     $self->{clients}->{component_name} = SOAP::Lite
                                         -> uri($client->{client_uri})
