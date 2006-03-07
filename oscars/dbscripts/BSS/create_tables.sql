@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS domains (
     domain_id			INT NOT NULL AUTO_INCREMENT,
     domain_as_num               INT NOT NULL,
     domain_name			TEXT NOT NULL,
+        -- for example, .es.net
+    domain_suffix		TEXT NOT NULL,
         -- whether OSCARS server handles this domain
     local_domain		BOOLEAN NOT NULL,
     PRIMARY KEY (domain_id)
