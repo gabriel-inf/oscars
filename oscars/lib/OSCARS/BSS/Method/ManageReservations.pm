@@ -140,9 +140,6 @@ sub create_reservation {
 
     # params fields having to do with traceroute modified in find_interface_ids
     $self->{route_setup}->find_interface_ids($self->{logger}, $params);
-    # NOTE:  cross-domain not working yet, this allows single domain to
-    # still work.
-    $params->{next_domain} = undef;
     # if next_domain is set, forward to OSCARS/BRUW server in next domain
     if ($params->{next_domain} ) {
         return $params;
