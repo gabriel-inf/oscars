@@ -7,6 +7,8 @@ use SOAP::Lite;
 use Data::Dumper;
 
 use OSCARS::ResourceManager;
+use OSCARS::Database;
+use OSCARS::BSS::RouteHandler;
 
 my $db_name = 'AAAS';
 my $aaa_component_name = 'AAAS';
@@ -15,9 +17,15 @@ my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
 
 my( $login, $password ) = $rm->get_test_account('user');
 
+my $testdb = OSCARS::Database->new();
+$testdb->connect('BSS');
+my $rh = OSCARS::BSS::RouteHandler->new('user' => $testdb);
+my $test_configs = $rh->get_test_configs('manageReservations');
+
 my( $status, $msg, $reservation_id ) = CreateReservation(
                           $login, $password,
-                          'nettrash3.es.net', 'dc-cr1.es.net');
+                          $test_configs->{reservation_source},
+                          $test_configs->{reservation_destination});
 ok( $status, $msg );
 print STDERR $msg;
 

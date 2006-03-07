@@ -1,71 +1,50 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::Simple tests => 3;
+use Test::Simple tests => 4;
+use Data::Dumper;
 
 use OSCARS::Logger;
 use OSCARS::Database;
 use OSCARS::BSS::JnxTraceroute;
+use OSCARS::BSS::RouteHandler;
 
 my $logger = OSCARS::Logger->new();
 
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect('BSS');
 
+my $rh = OSCARS::BSS::RouteHandler->new('user' => $dbconn);
+my $configs = $rh->get_trace_configs();
+ok( $configs );
+print STDERR Dumper($configs);
+
+my $test_configs = $rh->get_test_configs('jnxTraceroute');
+
 # Create a traceroute object.
 my $jnxTraceroute = OSCARS::BSS::JnxTraceroute->new();
-ok($jnxTraceroute);
+ok( $jnxTraceroute );
 
-my $configs = get_trace_configs($dbconn);
-ok($configs);
-my $src = 'nettrash3.es.net';
-my $dst = 'atl-pt1.es.net';
-my( $status, $msg ) = 
-        test_traceroute( $jnxTraceroute, $configs, $src, $dst, $logger );
-ok( $status, $msg );
-print STDERR $msg;
-$logger->end_log('test', '');
+my $src = $test_configs->{ingress_loopback};
+my $dst = $test_configs->{egress_loopback};
+print STDERR "\nTraceroute: $src to $dst\n";
+$jnxTraceroute->traceroute( $configs, $src, $dst, $logger );
+print STDERR "Raw results:\n";
+my @rawTracerouteData = $jnxTraceroute->get_raw_hop_data();
+ok( @rawTracerouteData );
 
-##############################################################################
-#
-sub test_traceroute {
-    my( $jnxTraceroute, $configs, $src, $dst, $logger ) = @_;
+while(defined($rawTracerouteData[0]))  {
+    print STDERR '  ' . $rawTracerouteData[0];
+    shift(@rawTracerouteData);
+}
 
-    my $msg = "\nTraceroute: nettrash3.es.net to dc-cr1.es.net\n";
-    # Run traceroute.
-    $jnxTraceroute->traceroute($configs, $src, $dst, $logger);
+print STDERR "Hops:\n";
+my @hops = $jnxTraceroute->get_hops();
+ok( @hops );
 
-    $msg .= "Raw results:\n";
-    my @rawTracerouteData = $jnxTraceroute->get_raw_hop_data();
-    while(defined($rawTracerouteData[0]))  {
-        $msg .= '  ' . $rawTracerouteData[0];
-        shift(@rawTracerouteData);
-    }
+while(defined($hops[0]))  {
+    print STDERR "  $hops[0]\n";
+    shift(@hops);
+}
 
-    $msg .= "Hops:\n";
-    my @hops = $jnxTraceroute->get_hops();
-    while(defined($hops[0]))  {
-        $msg .= "  $hops[0]\n";
-        shift(@hops);
-    }
-    $msg .= "\n";
-    return( 1, $msg );
-} #____________________________________________________________________________
-
-
-###############################################################################
-# Adapted from method in OSCARS::BSS::RouteHandler
-#
-sub get_trace_configs {
-    my( $dbconn ) = @_;
-
-        # use default for now
-    my $statement = "SELECT " .
-            "trace_conf_jnx_source, trace_conf_jnx_user, trace_conf_jnx_key, " .
-            "trace_conf_ttl, trace_conf_timeout, " .
-            "trace_conf_run_trace, trace_conf_use_system, " .
-            "trace_conf_use_ping "  .
-            "FROM trace_confs where trace_conf_id = 1";
-    my $configs = $dbconn->get_row($statement);
-    return $configs;
-} #____________________________________________________________________________
+print STDERR "\n";

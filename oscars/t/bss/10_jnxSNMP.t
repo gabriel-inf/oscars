@@ -2,6 +2,7 @@
 
 use strict;
 use Test::Simple tests => 3;
+use Data::Dumper;
 
 use OSCARS::Database;
 use OSCARS::BSS::JnxSNMP;
@@ -14,15 +15,20 @@ my $rh = OSCARS::BSS::RouteHandler->new('user' => $dbconn);
 my $configs = $rh->get_snmp_configs();
 ok( $configs );
 
-my $dst = 'lbl-rt3';
+my $test_configs = $rh->get_test_configs('jnxSNMP');
+
+# name of edge router to perform query on
+my $router_name = $test_configs->{router_name};
 
 # Create a query object instance
 my $jnxSNMP = OSCARS::BSS::JnxSNMP->new();
 ok($jnxSNMP);
 
-$jnxSNMP->initialize_session($configs, $dst);
+print STDERR "router_name: $router_name\n";
+$jnxSNMP->initialize_session($configs, $router_name);
 
-my $ipaddr = '134.55.210.194';
+my $ipaddr = $test_configs->{next_hop};
+print STDERR "next hop: $ipaddr\n";
 # Get AS number from IP address.
 my $as_number = $jnxSNMP->query_as_number($ipaddr);
 my $error = $jnxSNMP->get_error();
@@ -37,10 +43,10 @@ exit;
 # TODO:  tests to be added later
 
 my( $val, $lspName, $lspVar );
-print STDERR "Device: $dst  LSPName: $lspName  LSPVar: $lspVar\n";
+print STDERR "Device: $router_name  LSPName: $lspName  LSPVar: $lspVar\n";
 
 # Get LSP SNMP data.
-$jnxSNMP->query_lsp_snmpdata($configs, $dst);
+$jnxSNMP->query_lsp_snmpdata($configs, $router_name);
 $error = $jnxSNMP->get_error();
 if ($error) { print STDERR $error; }
 ok(!$error);
@@ -108,5 +114,4 @@ sub print_vars  {
     print STDERR "$lspVar = $val\n";
   }
 } #___________________________________________________________________________
-
 
