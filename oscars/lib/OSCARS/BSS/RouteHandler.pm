@@ -236,6 +236,24 @@ sub get_snmp_configs {
 
 
 ###############################################################################
+# Only used by tests.
+#
+sub get_test_configs {
+    my( $self, $test_name ) = @_;
+
+    my $statement = 'SELECT * FROM BSS.test_addresses a ' .
+        'INNER JOIN BSS.test_confs t ON a.test_conf_id = t.test_conf_id ' .
+        'WHERE t.test_name = ?';
+    my $rows = $self->{user}->do_query($statement, $test_name);
+    my $configs = {};
+    for my $row (@$rows) {
+        $configs->{$row->{test_address_description}} = $row->{test_address};
+    }
+    return $configs;
+} #____________________________________________________________________________
+
+
+###############################################################################
 # get_loopback:  Gets loopback address, if any, of router. 
 # In:  interface ip address
 # Out: loopback IP address, if any
