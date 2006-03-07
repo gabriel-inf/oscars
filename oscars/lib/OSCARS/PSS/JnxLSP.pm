@@ -3,7 +3,7 @@ package OSCARS::PSS::JnxLSP;
 
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Class and methods to setup/teardown LSPs on Juniper routers.
-# Last Modified:  October 18, 2005
+# Last Modified:  March 6, 2006
 
 
 use strict;
@@ -65,7 +65,7 @@ sub initialize {
 # Out: <none>
 #
 sub configure_lsp {
-    my ($self, $lsp_op, $resv, $logger) = @_;
+    my ($self, $lsp_op, $logger) = @_;
 
     my $xmlFile;
 
@@ -88,7 +88,7 @@ sub configure_lsp {
     if (!($self->get_error()))  {
         $self->execute_configuration_change($xmlString);
     }
-    $self->update_log($resv, $xmlString);
+    $self->update_log( $xmlString );
     return;
 } #____________________________________________________________________________
 
@@ -379,14 +379,10 @@ sub execute_operational_command {
 ##############################################################################
 #
 sub update_log {
-    my( $self, $r, $xmlString) = @_;
+    my( $self, $xmlString) = @_;
 
     my $errmsg = $self->get_error();
-    if ($errmsg)  {
-        $xmlString .= "\n\n$errmsg\n";
-        $self->{logger}->add_string($xmlString);
-    }
-    $r->{reservation_tag} =~ s/@/../;
+    if ($errmsg)  { $xmlString .= "\n\n$errmsg\n"; }
     $self->{logger}->add_string($xmlString);
 } #____________________________________________________________________________
 
