@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::Simple tests => 3;
+use Test::Simple tests => 2;
 
 use OSCARS::Database;
 use OSCARS::BSS::JnxSNMP;
@@ -28,10 +28,83 @@ if ($error) { print STDERR $error; }
 else { print STDERR "\nAS number: $as_number\n"; }
 ok(!$error);
 
+$jnxSNMP->close_session();
+exit;
+
+
+# TODO:  tests to be added later
+
+my( $val, $lspName, $lspVar );
+print STDERR "Device: $dst  LSPName: $lspName  LSPVar: $lspVar\n";
+
 # Get LSP SNMP data.
 $jnxSNMP->query_lsp_snmpdata($configs, $dst);
 $error = $jnxSNMP->get_error();
 if ($error) { print STDERR $error; }
 ok(!$error);
 
-$jnxSNMP->close_session();
+# Print LSP SNMP data.
+my @lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
+
+print STDERR "\n";
+print STDERR "Exe: get_lsp_info(undef, undef)\n";
+print_vars();
+
+
+# Get all oscars_ga-nersc_test-be-lsp info.
+$lspName = "oscars_ga-nersc_test-be-lsp";
+undef($lspVar);
+
+# Print LSP SNMP data.
+@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
+
+print STDERR "\nExe: get_lsp_info(oscars_ga-nersc_test-be-lsp, undef)\n";
+print_vars();
+
+
+# Get all mplsLspStatesinfo.
+undef($lspName);
+$lspVar = 'mplsLspState';
+
+# Print LSP SNMP data.
+@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
+
+print STDERR "\nExe: get_lsp_info(undef, mplsLspState)\n";
+print_vars();
+
+# Get all mplsPathRecordRoute for oscars_ga-nersc_test-be-lsp.
+$lspName = 'oscars_ga-nersc_test-be-lsp';
+$lspVar = 'mplsPathRecordRoute';
+
+# Print LSP SNMP data.
+@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
+$error = $jnxSNMP->get_error();
+if ($error) { print STDERR $error; }
+ok(!$error);
+
+print STDERR "\nExe: get_lsp_info(oscars_ga-nersc_test-be-lsp, mplsLspState)\n";
+print_vars();
+
+
+###############################################################################
+#
+sub print_vars  {
+
+  print STDERR "Results:\n";
+  while (scalar(@lspInfo))  {
+    $lspVar = shift(@lspInfo);
+    $val = shift(@lspInfo);
+    print STDERR "$lspVar = $val\n";
+  }
+} #___________________________________________________________________________
+
+
