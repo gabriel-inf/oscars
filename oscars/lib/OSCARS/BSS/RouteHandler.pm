@@ -298,11 +298,14 @@ sub get_as_number {
 
     my $as_number;
 
-    my $statement = 'SELECT router_name FROM BSS.routers r ' .
+    my $statement = 'SELECT router_name, domain_id FROM BSS.routers r ' .
         'INNER JOIN BSS.interfaces i ON r.router_id = i.router_id ' .
         'WHERE i.interface_id = ?';
     my $row = $self->{user}->get_row($statement, $interface_id);
-    my $router_name = $row->{router_name} . ".es.net";
+    $statement = 'SELECT domain_suffix FROM BSS.domains ' .
+                 'WHERE domain_id = ?';
+    my $drow = $self->{user}->get_row($statement, $row->{domain_id});
+    my $router_name = $row->{router_name} . $drow->{domain_suffix};
     $self->{jnx_snmp}->initialize_session($self->{snmp_configs}, $router_name);
     $as_number = $self->{jnx_snmp}->query_as_number($ipaddr);
     $self->{jnx_snmp}->close_session();
