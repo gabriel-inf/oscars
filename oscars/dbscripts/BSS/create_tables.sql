@@ -215,3 +215,21 @@ CREATE TABLE IF NOT EXISTS archived_reservations (
 ) type = MyISAM;
 
 
+-- Test configuration.
+CREATE TABLE IF NOT EXISTS test_confs (
+    test_conf_id		INT NOT NULL AUTO_INCREMENT,
+    test_name			TEXT NOT NULL,
+    PRIMARY KEY (test_conf_id)
+) type=MyISAM;
+
+
+-- Test address.
+CREATE TABLE IF NOT EXISTS test_addresses (
+    test_address_id		INT NOT NULL AUTO_INCREMENT,
+    test_address		TEXT NOT NULL,
+    test_address_description	TEXT,
+    test_conf_id		INT,	-- foreign key
+    PRIMARY KEY (test_address_id)
+) type=MyISAM;
+
+
