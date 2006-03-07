@@ -147,7 +147,7 @@ sub teardown_pss {
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
     $self->{logger}->add_string("Tearing down LSP...");
-    $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $resv_info, $self->{logger}); 
+    $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $self->{logger}); 
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }

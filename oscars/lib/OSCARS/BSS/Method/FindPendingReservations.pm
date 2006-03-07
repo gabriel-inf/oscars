@@ -147,7 +147,7 @@ sub setup_pss {
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
     $self->{logger}->add_string("Setting up LSP...");
-    $jnxLsp->configure_lsp($self->{LSP_SETUP}, $resv_info, $self->{logger});
+    $jnxLsp->configure_lsp($self->{LSP_SETUP}, $self->{logger});
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
