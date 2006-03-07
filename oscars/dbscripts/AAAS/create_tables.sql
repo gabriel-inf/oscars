@@ -66,30 +66,11 @@ CREATE TABLE IF NOT EXISTS authorizations (
 ) type=MyISAM;
 
 
--- Table containing information necessary to start up a SOAP::Lite daemon
--- and for clients to access it.
-CREATE TABLE IF NOT EXISTS daemons (
-    daemon_id			INT NOT NULL AUTO_INCREMENT,
-      --  defaults are AAAS and BSS, can be other ones set up for testing
-    daemon_component_type	TEXT NOT NULL,
-    daemon_component_name	TEXT NOT NULL,
-    daemon_port			INT NOT NULL,
-      -- mail settings not currently used
-    daemon_mail_list		TEXT NOT NULL,
-    daemon_send_mail		BOOLEAN NOT NULL,
-    PRIMARY KEY (daemon_id)
-) type=MyISAM;
-
-
--- Table  for clients.  If host name and port are not NULL, and are not the 
--- same as in the corresponding daemon's, they are used help to build up the
--- server and proxy strings.  This depends on the proper rewrite
--- rule being set up in the Apache configuration file to map from host
--- and port to the daemon host and port.
+-- Table for default clients.
 CREATE TABLE IF NOT EXISTS clients (
     client_id			INT NOT NULL AUTO_INCREMENT,
-    client_uri			TEXT,
-    client_proxy		TEXT,
-    daemon_id                   INT NOT NULL,   -- foreign key
+    client_uri			TEXT NOT NULL,
+    client_proxy		TEXT NOT NULL,
+    as_num			TEXT,   -- autonomous system number
     PRIMARY KEY (client_id)
     ) type=MyISAM;
