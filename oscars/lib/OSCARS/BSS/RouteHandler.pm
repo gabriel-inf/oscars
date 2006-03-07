@@ -123,7 +123,9 @@ sub find_interface_ids {
         throw Error::Simple("Egress router $params->{egress_router} has no loopback");
     }
     my $unused = pop(@$path);
-    $params->{next_domain} = $next_as_number;
+    if ($next_as_number ne 'noSuchInstance') {
+        $params->{next_domain} = $next_as_number;
+    }
     $params->{reservation_path} = $path;
 } #____________________________________________________________________________
 
