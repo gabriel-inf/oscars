@@ -131,7 +131,6 @@ sub modify_profile {
 
     my( $statement, $msg, $results );
 
-    print STDERR "to modify_profile\n";
     # only happens if coming in from ManageProfile form, which requires
     # additional authorization
     if ( $params->{selected_user} ) {
@@ -163,11 +162,9 @@ sub modify_profile {
     # TODO:  allow admin to set all fields
     my @fields = split(', ', $self->{user_profile_fields});
     $statement = 'UPDATE users SET ';
-    print STDERR Dumper($params);
     for $_ (@fields) {
         # TODO:  allow setting field to NULL where legal
         if ( $params->{$_} ) {
-	    print STDERR "$_: $params->{$_}\n";
             $statement .= "$_ = '$params->{$_}', ";
             # TODO:  check that query preparation correct
             $results->{$_} = $params->{$_};
