@@ -45,10 +45,10 @@ print STDERR $msg;
 #############################################################################
 #
 sub CreateReservation {
-    my( $user_dn, $password, $src, $dst ) = @_;
+    my( $user_login, $user_password, $src, $dst ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
     $params{method} = 'ManageReservations'; 
@@ -80,10 +80,10 @@ sub CreateReservation {
 ###############################################################################
 #
 sub ManageReservations {
-    my ( $user_dn, $password ) = @_;
+    my ( $user_login, $user_password ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
     $params{method} = 'ManageReservations';
@@ -103,10 +103,10 @@ sub ManageReservations {
 #############################################################################
 #
 sub Reservation {
-    my ( $user_dn, $password, $reservation_id ) = @_;
+    my ( $user_login, $user_password, $reservation_id ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
     $params{method} = 'Reservation';
@@ -126,15 +126,15 @@ sub Reservation {
 #############################################################################
 #
 sub CancelReservation {
-    my( $user_dn, $password, $reservation_id ) = @_;
+    my( $user_login, $user_password, $reservation_id ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     # Delete the reservation with the given id (set its status
     # to cancelled).
     $params{server} = $bss_component_name;
-    $params{user_dn} = $user_dn;
+    $params{user_login} = $user_login;
     $params{method} = 'ManageReservations';
     $params{op} = 'cancelReservation';
     $params{reservation_id} = $reservation_id;

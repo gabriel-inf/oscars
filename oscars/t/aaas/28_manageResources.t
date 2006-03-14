@@ -19,9 +19,9 @@ print STDERR $msg;
 ##############################################################################
 #
 sub ManageResources {
-    my( $user_dn, $password ) = @_;
+    my( $user_login, $user_password ) = @_;
 
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $component_name;
     $params{method} = 'ManageResources';

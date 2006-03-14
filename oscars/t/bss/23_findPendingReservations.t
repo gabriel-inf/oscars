@@ -23,10 +23,10 @@ print STDERR $msg;
 #############################################################################
 #
 sub FindPendingReservations {
-    my ( $user_dn, $password ) = @_;
+    my ( $user_login, $user_password ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
     $params{method} = 'FindPendingReservations';

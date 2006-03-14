@@ -21,13 +21,13 @@ print STDERR $msg;
 ##############################################################################
 #
 sub Login {
-    my( $user_dn, $user_password ) = @_;
+    my( $user_login, $user_password ) = @_;
 
-    my %params = ('user_dn' => $user_dn, 'user_password' => $user_password);
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password);
     $params{server} = $component_name;
     $params{method} = 'Login';
 
     my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
-    return( 1, "\nUser $params{user_dn} successfully logged in.\n" );
+    return( 1, "\nUser $params{user_login} successfully logged in.\n" );
 } #___________________________________________________________________________

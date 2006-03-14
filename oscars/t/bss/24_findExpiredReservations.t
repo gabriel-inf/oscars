@@ -24,14 +24,13 @@ print STDERR $msg;
 #############################################################################
 #
 sub FindExpiredReservations {
-    my ( $user_dn, $password ) = @_;
+    my ( $user_login, $user_password ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
     $params{method} = 'FindExpiredReservations';
-    $params{user_dn} = $user_dn;
     $params{time_interval} = 20;
 
     my $som = $rm->add_client()->dispatch(\%params);

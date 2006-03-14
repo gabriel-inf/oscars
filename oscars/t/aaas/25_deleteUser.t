@@ -21,22 +21,22 @@ print STDERR $msg;
 ##############################################################################
 #
 sub DeleteUser {
-    my( $user_dn, $password, $delete_user_dn ) = @_;
+    my( $user_login, $user_password, $delete_user_login ) = @_;
 
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $component_name;
     $params{method} = 'ManageUsers';
     $params{op} = 'deleteUser';
 
-    # User with user_dn = id will be deleted
-    $params{selected_user} = $delete_user_dn;
+    # User with user_login = id will be deleted
+    $params{selected_user} = $delete_user_login;
 
     my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
-    my $msg = "\nStatus:  Deleted user $delete_user_dn\n";
+    my $msg = "\nStatus:  Deleted user $delete_user_login\n";
     $msg .= Dumper($results);
     $msg .= "\n";
     return( 1, $msg );

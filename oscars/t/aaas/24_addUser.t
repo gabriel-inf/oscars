@@ -21,15 +21,15 @@ print STDERR $msg;
 ##############################################################################
 #
 sub AddUser {
-    my( $user_dn, $password, $new_user_dn ) = @_;
+    my( $user_login, $user_password, $new_user_login ) = @_;
 
-    my %params = ('user_dn' => $user_dn, 'user_password' => $password );
+    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $component_name;
     $params{method} = 'ManageUsers';
     $params{op} = 'addUser';
 
-    $params{selected_user} = $new_user_dn;
+    $params{selected_user} = $new_user_login;
     $params{password_new_once} = 'ac@demy';
     $params{user_last_name} = 'User';
     $params{user_first_name} = 'Temp';
@@ -42,7 +42,7 @@ sub AddUser {
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
-    my $msg = "\nStatus:  Successfully add user $new_user_dn\n";
+    my $msg = "\nStatus:  Successfully add user $new_user_login\n";
     $msg .= Dumper($results);
     $msg .= "\n";
     return( 1, $msg );
