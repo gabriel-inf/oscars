@@ -59,7 +59,7 @@ function submit_form( form, params, check_function ) {
 
     // adapted from http://www.devx.com/DevX/Tip/17500
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('POST', '/OSCARS/adapt.pl', false);
+    xmlhttp.open('POST', '/perl/adapt.pl', false);
     xmlhttp.setRequestHeader('Content-Type',
                              'application/x-www-form-urlencoded');
     if (form.elements) {
@@ -82,7 +82,7 @@ function submit_form( form, params, check_function ) {
 function new_section( params ) {
     var empty_str = "";
     var xmlhttp = new XMLHttpRequest();
-    var url = '/OSCARS/adapt.pl?' + params;
+    var url = '/perl/adapt.pl?' + params;
     xmlhttp.open('GET', url, false);
     xmlhttp.send(empty_str);
     get_response(xmlhttp);
