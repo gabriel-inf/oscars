@@ -158,7 +158,7 @@ sub output {
     print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Log out on click"
-             href="/OSCARS/adapt.pl?server=$server;method=Logout">Log out</a>
+             href="/perl/adapt.pl?server=$server;method=Logout">Log out</a>
         </li>
       </ul>
       </navigation_bar>
