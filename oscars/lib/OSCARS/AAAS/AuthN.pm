@@ -43,8 +43,8 @@ sub new {
 ###############################################################################
 # authenticate:  authenticates user
 #
-# In:  user DN, hash of paraeters
-# Out: reference to hash of results containing user dn and user level.
+# In:  OSCARS::User instance, hash of paraeters
+# Out: None
 #
 sub authenticate {
     my( $self, $user, $params ) = @_;
@@ -54,8 +54,8 @@ sub authenticate {
         throw Error::Simple('Attempting to access a SOAP method before authenticating.');
     }
     # Get the password and privilege level from the database.
-    my $statement = 'SELECT user_password FROM users WHERE user_dn = ?';
-    my $results = $user->get_row($statement, $user->{dn});
+    my $statement = 'SELECT user_password FROM users WHERE user_login = ?';
+    my $results = $user->get_row($statement, $user->{login});
     # Make sure user exists.
     if ( !$results ) {
         throw Error::Simple('Please check your login name and try again.');

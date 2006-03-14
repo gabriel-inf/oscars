@@ -45,7 +45,7 @@ sub soap_method {
     my $results =
         $self->get_inter_domain($self->{user}, $self->{params});
     $self->{logger}->add_string("Inter-domain setup page");
-    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
+    $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 

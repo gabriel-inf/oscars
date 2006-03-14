@@ -97,11 +97,11 @@ sub soap_method {
     if ($self->{params}->{op}) {
         if ($self->{params}->{op} eq 'addUser') {
             $self->add_user( $self->{user}, $self->{params} );
-	    $msg = "$self->{user}->{dn} added user $self->{params}->{selected_user}";
+	    $msg = "$self->{user}->{login} added user $self->{params}->{selected_user}";
         }
         elsif ($self->{params}->{op} eq 'deleteUser') {
             $self->delete_user( $self->{user}, $self->{params} );
-	    $msg = "$self->{user}->{dn} deleted user $self->{params}->{selected_user}";
+	    $msg = "$self->{user}->{login} deleted user $self->{params}->{selected_user}";
         }
         elsif ($self->{params}->{op} eq 'addUserForm') {
 	    $results->{institution_list} =
@@ -114,7 +114,7 @@ sub soap_method {
         $results->{list} = $self->get_users($self->{user}, $self->{params});
         $self->{logger}->add_string($msg);
         $self->{logger}->write_file(
-                               $self->{user}->{dn}, $self->{params}->{method});
+                               $self->{user}->{login}, $self->{params}->{method});
     }
     return $results;
 } #____________________________________________________________________________
@@ -140,7 +140,7 @@ sub get_users {
 	$oscars_user->{user_id} = 'hidden';
     }
     my $msg = "User list";
-    $self->{logger}->write_file($user->{dn}, $params->{method});
+    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 
@@ -155,13 +155,13 @@ sub add_user {
     my ( $self, $user, $params ) = @_;
 
     my $results = {};
-    $params->{user_dn} = $params->{selected_user};
+    $params->{user_login} = $params->{selected_user};
 
     # login name overlap check
-    my $statement = 'SELECT user_dn FROM users WHERE user_dn = ?';
-    my $row = $user->get_row($statement, $params->{user_dn});
+    my $statement = 'SELECT user_login FROM users WHERE user_login = ?';
+    my $row = $user->get_row($statement, $params->{user_login});
     if ( $row ) {
-        throw Error::Simple("The login, $params->{user_dn}, is already " .
+        throw Error::Simple("The login, $params->{user_login}, is already " .
 	       	"taken by someone else; please choose a different login name.");
     }
     # Set the institution id to the primary key in the institutions
@@ -200,13 +200,13 @@ sub delete_user {
     my( $self, $user, $params ) = @_;
 
     # check to make sure user exists
-    my $statement = 'SELECT user_dn FROM users WHERE user_dn = ?';
+    my $statement = 'SELECT user_login FROM users WHERE user_login = ?';
     my $row = $user->get_row($statement, $params->{selected_user});
     if ( !$row ) {
         throw Error::Simple("Cannot delete user $params->{selected_user}. " .
 	       	"The user does not exist.");
     }
-    my $statement = 'DELETE from users where user_dn = ?';
+    my $statement = 'DELETE from users where user_login = ?';
     my $unused = $user->do_query($statement, $params->{selected_user});
     return;
 } #____________________________________________________________________________
@@ -228,11 +228,11 @@ sub activate_account {
 
     my ( $results) ;
 
-    my $user_dn = $user->{dn};
+    my $user_login = $user->{login};
     # get the password from the database
     my $statement = 'SELECT user_password, user_activation_key
-                 FROM users WHERE user_dn = ?';
-    my $row = $user->get_row($statement, $user_dn);
+                 FROM users WHERE user_login = ?';
+    my $row = $user->get_row($statement, $user_login);
 
     # check whether this person is a registered user
     if ( !$row ) {
@@ -265,14 +265,14 @@ sub activate_account {
         # Change the level to the pending level value and the pending level
         # to 0; empty the activation key field
         $statement = "UPDATE users
-                  user_activation_key = '' WHERE user_dn = ?";
-        my $unused = $user->do_query($statement, $user_dn);
+                  user_activation_key = '' WHERE user_login = ?";
+        my $unused = $user->do_query($statement, $user_login);
     }
     else {
         throw Error::Simple($non_match_error);
     }
     $results->{status_msg} = 'The user account <strong>' .
-       "$user_dn</strong> has been successfully activated. You " .
+       "$user_login</strong> has been successfully activated. You " .
        'will be redirected to the main service login page in 10 seconds. ' .
        '<br>Please change the password to your own once you sign in.';
     my $msg = $results->{status_msg};
@@ -290,15 +290,15 @@ sub process_registration {
     my( $self, $user, $params, @insertions ) = @_;
 
     my $results = {};
-    my $user_dn = $user->{dn};
+    my $user_login = $user->{login};
 
     my $encrypted_password = $params->{password_new_once};
 
     # get current date/time string in GMT
     my $current_date_time = $params->{utc_seconds};
     # login name overlap check
-    my $statement = 'SELECT user_dn FROM users WHERE user_dn = ?';
-    my $row = $user->get_row($statement, $user_dn);
+    my $statement = 'SELECT user_login FROM users WHERE user_login = ?';
+    my $row = $user->get_row($statement, $user_login);
     if ( $row ) {
         throw Error::Simple('The selected login name is already taken ' .
                    'by someone else; please choose a different login name.');
@@ -308,7 +308,7 @@ sub process_registration {
     my $unused = $user->do_query($statement, @insertions);
 
     $results->{status_msg} = 'Your user registration has been recorded ' .
-        "successfully. Your login name is <strong>$user_dn</strong>. Once " .
+        "successfully. Your login name is <strong>$user_login</strong>. Once " .
         'your registration is accepted, information on ' .
         'activating your account will be sent to your primary email address.';
     my $msg = $results->{status_msg};

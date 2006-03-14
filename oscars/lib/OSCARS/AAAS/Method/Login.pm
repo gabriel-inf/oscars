@@ -38,7 +38,7 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{param_tests} = {
         # must be valid email address
-        'user_dn' => (
+        'user_login' => (
             {'regexp' => '.+',
              'error' => "Please enter your login name."
             }
@@ -57,16 +57,16 @@ sub initialize {
 #               already been performed by the resource manager
 #               querying OSCARS::AAAS::AuthN
 # In:  reference to hash of parameters
-# Out: reference to hash of results containing user dn and user level.
+# Out: reference to hash of results containing user login.
 #
 sub soap_method {
     my( $self ) = @_;
 
-    my $user_dn = $self->{user}->{dn};
-    $self->{logger}->add_string("User $user_dn successfully logged in");
-    $self->{logger}->write_file($user_dn, $self->{params}->{method});
+    my $user_login = $self->{user}->{login};
+    $self->{logger}->add_string("User $user_login successfully logged in");
+    $self->{logger}->write_file($user_login, $self->{params}->{method});
     my $results = {};
-    $results->{user_dn} = $user_dn;
+    $results->{user_login} = $user_login;
     $results->{user_password} = 'hidden';
     return $results;
 } #____________________________________________________________________________

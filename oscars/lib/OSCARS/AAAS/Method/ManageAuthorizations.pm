@@ -54,7 +54,7 @@ sub initialize {
             'error' => "Please enter the resource name."
             }
         ),
-        'user_dn' => (
+        'user_login' => (
             {'regexp' => '.+',
             'error' => "Please enter the user's distinguished name."
             }
@@ -89,7 +89,7 @@ sub soap_method {
     my $results =
             $self->get_authorizations($self->{user}, $self->{params});
     $self->{logger}->add_string("Authorizations page");
-    $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
+    $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 
@@ -106,20 +106,20 @@ sub get_authorizations {
 
     my $results = {};
 
-    my $statement = "SELECT user_dn FROM users WHERE user_status = 'role'";
+    my $statement = "SELECT user_login FROM users WHERE user_status = 'role'";
     $results->{roles} = {};
     my $aux_results = $user->do_query($statement);
-    for my $row (@$aux_results) { $results->{roles}->{$row->{user_dn}} = 1; }
+    for my $row (@$aux_results) { $results->{roles}->{$row->{user_login}} = 1; }
 
-    $statement =    "SELECT user_dn FROM users WHERE user_status != 'role'";
+    $statement =    "SELECT user_login FROM users WHERE user_status != 'role'";
     $results->{users} = {};
     $aux_results =   $user->do_query($statement);
-    for my $row (@$aux_results) { $results->{users}->{$row->{user_dn}} = 1; }
+    for my $row (@$aux_results) { $results->{users}->{$row->{user_login}} = 1; }
 
     $results->{resource_permissions} = $self->{lib}->get_resource_permissions(
 	                                       $self->{user}, $self->{params});
     $self->{logger}->add_string("Authorizations page");
-    $self->{logger}->write_file($user->{dn}, $params->{method});
+    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 
@@ -133,8 +133,8 @@ sub get_authorizations {
 sub delete_authorization {
     my( $self, $user, $params ) = @_;
 
-    my $statement = 'SELECT user_id FROM users WHERE user_dn = ?';
-    my $row = $user->get_row($statement, $params->{user_dn});
+    my $statement = 'SELECT user_id FROM users WHERE user_login = ?';
+    my $row = $user->get_row($statement, $params->{user_login});
     my $user_id = $row->{user_id};
     $statement = 'SELECT resource_id FROM resources WHERE resource_name = ?';
     $row = $user->get_row($statement, $params->{resource_name});
@@ -147,7 +147,7 @@ sub delete_authorization {
                  'resource_id = ? AND permission_id = ?';
     my $unused = $user->do_query($statement, $user_id, $resource_id,
                                  $permission_id);
-    my $msg = "Deleted authorization for $params->{user_dn} involving " .
+    my $msg = "Deleted authorization for $params->{user_login} involving " .
               " resource $params->{resource_name} and " .
               "permission $params->{permission_name}";
     return $msg;

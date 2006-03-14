@@ -79,7 +79,7 @@ sub soap_method {
     my $results = $self->get_permissions($self->{user}, $self->{params});
     $self->{logger}->add_string("Permissions page");
     $self->{logger}->write_file(
-                               $self->{user}->{dn}, $self->{params}->{method});
+                               $self->{user}->{login}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 

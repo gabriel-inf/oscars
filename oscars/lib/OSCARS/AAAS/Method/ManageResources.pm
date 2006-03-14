@@ -88,7 +88,7 @@ sub soap_method {
         $self->get_resource_tables($self->{user}, $self->{params});
     $self->{logger}->add_string("Resources page");
     $self->{logger}->write_file(
-                               $self->{user}->{dn}, $self->{params}->{method});
+                               $self->{user}->{login}, $self->{params}->{method});
     return $results;
 } #____________________________________________________________________________
 

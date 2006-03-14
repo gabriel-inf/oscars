@@ -42,7 +42,7 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{institutions} = OSCARS::AAAS::Method::ManageInstitutions->new();
     $self->{user_profile_fields} =
-         'user_last_name, user_first_name, user_dn, user_password, ' .
+         'user_last_name, user_first_name, user_login, user_password, ' .
          'user_email_primary, user_email_secondary, ' .
          'user_phone_primary, user_phone_secondary, user_description, ' .
 #    'user_register_time, user_activation_key, ' .
@@ -90,7 +90,7 @@ sub get_profile {
     # only happens if coming in from ManageProfile form, which requires
     # additional authorization
     if ( $params->{selected_user} ) {
-        $statement = 'SELECT * FROM users WHERE user_dn = ?';
+        $statement = 'SELECT * FROM users WHERE user_login = ?';
         $results = $user->get_row($statement, $params->{selected_user});
         # check whether this person is in the database
         if ( !$results ) {
@@ -101,20 +101,20 @@ sub get_profile {
     }
     else {
         $statement = "SELECT $self->{user_profile_fields} FROM users " .
-                     'WHERE user_dn = ?';
-        $results = $user->get_row($statement, $user->{dn});
-        $msg = "User profile for $user->{dn}";
+                     'WHERE user_login = ?';
+        $results = $user->get_row($statement, $user->{login});
+        $msg = "User profile for $user->{login}";
     }
     $results->{institution_name} = $self->{institutions}->get_name(
                                            $user, $results->{institution_id});
     $results->{institution_id} = 'hidden';
-    $results->{user_dn} = $user->{dn};
+    $results->{user_login} = $user->{login};
     $results->{selected_user} = $params->{selected_user};
     # X out password
     $results->{user_password} = 'hidden';
     $self->{logger}->add_string($msg);
     $self->{logger}->add_hash($results);
-    $self->{logger}->write_file( $user->{dn}, $params->{method} );
+    $self->{logger}->write_file( $user->{login}, $params->{method} );
     return $results;
 } #____________________________________________________________________________
 
@@ -135,15 +135,15 @@ sub modify_profile {
     # additional authorization
     if ( $params->{selected_user} ) {
         # check whether this person is in the database
-        $statement = 'SELECT user_dn FROM users WHERE user_dn = ?';
+        $statement = 'SELECT user_login FROM users WHERE user_login = ?';
         $results = $user->get_row($statement, $params->{selected_user});
         if ( !$results ) {
             throw Error::Simple("No such user $params->{selected_user}.");
         }
         $msg = "Modified profile for $params->{selected_user}";
     }
-    else { $msg = "Modified profile for $user->{dn}"; }
-    $params->{user_dn} = $user->{dn};
+    else { $msg = "Modified profile for $user->{login}"; }
+    $params->{user_login} = $user->{login};
 
     # If the password needs to be updated, set the input password field to
     # the new one.
@@ -171,16 +171,16 @@ sub modify_profile {
 	}
     }
     $statement =~ s/,\s$//;
-    $statement .= ' WHERE user_dn = ?';
-    my $unused = $user->do_query($statement, $params->{user_dn});
+    $statement .= ' WHERE user_login = ?';
+    my $unused = $user->do_query($statement, $params->{user_login});
 
     $results->{selected_user} = $params->{selected_user};
-    $results->{user_dn} = $user->{dn};
+    $results->{user_login} = $user->{login};
     $results->{institution_name} = $params->{institution_name};
     $results->{user_password} = 'hidden';
     $self->{logger}->add_string($msg);
     $self->{logger}->add_hash($results);
-    $self->{logger}->write_file( $user->{dn}, $params->{method} );
+    $self->{logger}->write_file( $user->{login}, $params->{method} );
     return $results;
 } #____________________________________________________________________________
 
