@@ -157,13 +157,13 @@ sub authorized {
 sub get_test_account {
     my( $self, $role ) = @_;
 
-    my $statement = 'SELECT user_dn, user_password FROM users ' .
-                    'WHERE user_dn = ?';
+    my $statement = 'SELECT user_login, user_password FROM users ' .
+                    'WHERE user_login = ?';
     my $dbconn = OSCARS::Database->new();
     $dbconn->connect($self->{database});
     my $results = $dbconn->get_row($statement, $role);
     $dbconn->disconnect();
-    return( $results->{user_dn}, $results->{user_password} );
+    return( $results->{user_login}, $results->{user_password} );
 } #____________________________________________________________________________
 
 

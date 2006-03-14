@@ -94,13 +94,13 @@ sub dispatch {
 
     my $results = {};
     if ($params->{method} eq 'Logout') {
-        remove_user($params->{user_dn});
-	$results->{user_dn} = $params->{user_dn};
+        remove_user($params->{user_login});
+	$results->{user_login} = $params->{user_login};
 	$results->{authorizations} = $params->{authorizations};
 	return $results;
     }
     try {
-        $user = get_user($params->{user_dn});
+        $user = get_user($params->{user_login});
         $resource_manager->authenticate($user, $params);
         $authorizations =
             $resource_manager->authorized($user, $params, 'Method');
@@ -162,14 +162,14 @@ sub dispatch {
 # associated with the component and distinguished name given.
 #
 sub get_user {
-    my( $user_dn ) = @_;
+    my( $login ) = @_;
 
-    if (!$users->{$user_dn}) {
-        $users->{$user_dn} = OSCARS::User->new(
-                                   'dn' => $user_dn,
+    if (!$users->{$login}) {
+        $users->{$login} = OSCARS::User->new(
+                                   'login' => $login,
                                    'database' => $database);
     }
-    return $users->{$user_dn};
+    return $users->{$login};
 } #____________________________________________________________________________
 
 
@@ -177,10 +177,10 @@ sub get_user {
 # Removes given user from the user list.
 #
 sub remove_user {
-    my( $user_dn ) = @_;
+    my( $login ) = @_;
 
-    if ( $users->{$user_dn} ) { $users->{$user_dn}->disconnect(); }
-    $users->{$user_dn} = undef;
+    if ( $users->{$login} ) { $users->{$login}->disconnect(); }
+    $users->{$login} = undef;
 } #____________________________________________________________________________
 
 
