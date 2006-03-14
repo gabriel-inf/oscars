@@ -20,7 +20,7 @@ is_blank(str)
 
 // TODO:  objects
 var login_required = {
-    'user_dn': "Please enter your user name.",
+    'user_login': "Please enter your user name.",
     'user_password': "Please enter your password."
 }
 
@@ -59,7 +59,7 @@ function submit_form( form, params, check_function ) {
 
     // adapted from http://www.devx.com/DevX/Tip/17500
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('POST', '/perl/adapt.pl', false);
+    xmlhttp.open('POST', '/OSCARS/adapt.pl', false);
     xmlhttp.setRequestHeader('Content-Type',
                              'application/x-www-form-urlencoded');
     if (form.elements) {
@@ -82,7 +82,7 @@ function submit_form( form, params, check_function ) {
 function new_section( params ) {
     var empty_str = "";
     var xmlhttp = new XMLHttpRequest();
-    var url = '/perl/adapt.pl?' + params;
+    var url = '/OSCARS/adapt.pl?' + params;
     xmlhttp.open('GET', url, false);
     xmlhttp.send(empty_str);
     get_response(xmlhttp);
@@ -174,8 +174,8 @@ function check_reservation( form )
     if (!valid) { return false; }
 
     // Temporary hack: (TODO:  FIX)
-    if ( (form.user_dn.value == 'dtyu@bnl.gov') ||
-         (form.user_dn.value == 'wenji@fnal.gov'))
+    if ( (form.user_login.value == 'dtyu@bnl.gov') ||
+         (form.user_login.value == 'wenji@fnal.gov'))
     {
         if (form.ingress_router.value && (form.ingress_router.value != 'chi-sl-sdn1'))
         {
