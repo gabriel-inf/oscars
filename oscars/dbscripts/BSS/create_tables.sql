@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS reservations (
         -- in Mbps
     reservation_burst_limit	BIGINT UNSIGNED NOT NULL,
         -- user making the reservation
-    user_dn			TEXT NOT NULL,
+    user_login			TEXT NOT NULL,
         -- pending, active, failed, precancel, or cancelled
     reservation_status		TEXT NOT NULL,
     reservation_class		TEXT NOT NULL,

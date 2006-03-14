@@ -6,7 +6,8 @@ USE AAAS;
 
 CREATE TABLE IF NOT EXISTS users (
     user_id			INT NOT NULL AUTO_INCREMENT,
-    user_dn			TEXT NOT NULL,
+    user_login			TEXT NOT NULL,
+    user_certificate		TEXT,
     user_last_name	 	TEXT NOT NULL,
     user_first_name		TEXT NOT NULL,
     user_email_primary		TEXT NOT NULL,
