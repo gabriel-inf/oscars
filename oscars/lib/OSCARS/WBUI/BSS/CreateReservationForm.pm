@@ -56,7 +56,7 @@ sub output {
 
     my $params_str;
 
-    my $user_dn = $self->{user_dn};
+    my $user_login = $self->{user_login};
     print $self->{cgi}->header( -type=>'text/xml' );
     print "<xml>\n";
     print qq{ <msg>Reservation creation form</msg> };
@@ -68,7 +68,7 @@ sub output {
 	       check_reservation);">
       <input type='hidden' name='reservation_start_time'></input>
       <input type='hidden' name='reservation_end_time'></input>
-      <input type='hidden' name='user_dn' value='$user_dn'></input>
+      <input type='hidden' name='user_login' value='$user_login'></input>
       <input type='submit' value='Reserve bandwidth'></input>
       <input type='reset' value='Reset form fields'></input>
 

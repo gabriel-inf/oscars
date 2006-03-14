@@ -76,7 +76,7 @@ sub output_users {
           value='Add User'></input></p>
       <table id='Users.Users' cellspacing='0' width='90%' class='sortable'>
         <thead><tr>
-          <td>Last Name</td><td>First Name</td><td>Distinguished Name</td>
+          <td>Last Name</td><td>First Name</td><td>Login Name</td>
           <td>Organization</td><td>Phone</td><td>Action</td></tr>
         </thead>
       <tbody>
@@ -93,16 +93,16 @@ sub print_user {
     my( $self, $row ) = @_;
 
     my $profile_href_str = "return new_section(
-                    'server=AAAS;method=UserProfile;selected_user=$row->{user_dn};');";
+                    'server=AAAS;method=UserProfile;selected_user=$row->{user_login};');";
     my $delete_href_str = "return new_section(
-                    'server=AAAS;method=ManageUsers;op=deleteUser;selected_user=$row->{user_dn};');";
+                    'server=AAAS;method=ManageUsers;op=deleteUser;selected_user=$row->{user_login};');";
     print qq{
     <tr>
       <td><a href='#' style='/styleSheets/layout.css'
         onclick="$profile_href_str">
 	$row->{user_last_name}</a></td>
 
-      <td>$row->{user_first_name}</td> <td>$row->{user_dn}</td>
+      <td>$row->{user_first_name}</td> <td>$row->{user_login}</td>
       <td>$row->{institution_name}</td>
       <td>$row->{user_phone_primary}</td>
       <td><a href='#' style='/styleSheets/layout.css'

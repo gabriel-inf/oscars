@@ -104,7 +104,7 @@ sub output_details {
       <thead><tr><td>Attribute</td><td>Value</td></tr></thead>
       <tbody>
       <tr><td>Tag</td><td>$results->{reservation_tag}</td></tr>
-      <tr><td>User</td><td>$results->{user_dn}</td></tr> 
+      <tr><td>User</td><td>$results->{user_login}</td></tr> 
       <tr><td>Description</td><td>$results->{reservation_description}</td></tr>
       <tr><td>Start time</td><td>$results->{reservation_start_time}</td></tr>
       <tr><td>End time</td><td>$end_time</td></tr>

@@ -70,8 +70,8 @@ sub output_results {
     <table width='90%' class='auth-ui'>
     <tr>
     };
-    $self->grantee_table('Users', $results->{users}, 'user_dn');
-    $self->grantee_table('Roles', $results->{roles}, 'user_dn');
+    $self->grantee_table('Users', $results->{users}, 'user_login');
+    $self->grantee_table('Roles', $results->{roles}, 'user_login');
     $self->ops_table();
     $self->authorizations_table($results);
     print qq{ </tr></table></form></div> };

@@ -68,7 +68,7 @@ sub output {
     <table>
     <tbody>
     <tr>
-      <td>Distinguished Name</td>
+      <td>Login Name</td>
       <td><input class='required' type='text' name='selected_user' size='40'></input></td>
     </tr>
     <tr>

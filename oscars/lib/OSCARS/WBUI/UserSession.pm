@@ -55,7 +55,7 @@ sub start_session
     my $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
     my $sid = $session->id();
     my $cookie = $cgi->cookie(CGISESSID => $sid);
-    $session->param('user_dn', $results->{user_dn});
+    $session->param('user_login', $results->{user_login});
     $session->param('last_page', $results->{GetInfo});
     return( $sid );
 } #____________________________________________________________________________
@@ -75,15 +75,15 @@ sub verify_session
     my $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
 
     # Unauthorized user may know to set CGISESSID cookie. However,
-    # an entirely new session (without the dn param) will be 
+    # an entirely new session (without the user_login param) will be 
     # created if there is no valid session with that id.
-    my $user_dn = $session->param("user_dn");
-    if (!$user_dn)  {
+    my $user_login = $session->param("user_login");
+    if (!$user_login)  {
         return( undef );
     }
     else {
-       $cgi->param(-name=>'user_dn',-value=>$user_dn);
-       return( $user_dn );
+       $cgi->param(-name=>'user_login',-value=>$user_login);
+       return( $user_login );
     }
 } #____________________________________________________________________________
 
@@ -94,7 +94,7 @@ sub end_session
     my( $self, $cgi ) = @_;
   
     my $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
-    $session->clear(["user_dn"]);
+    $session->clear(["user_login"]);
     $session->clear(["last_page"]);
 } #____________________________________________________________________________
 

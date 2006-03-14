@@ -98,8 +98,8 @@ sub handle_request {
 
     my( %soap_params );
 
-    my $user_dn = $self->authenticate();
-    if (!$user_dn) { return; }
+    my $user_login = $self->authenticate();
+    if (!$user_login) { return; }
     $self->modify_params(\%soap_params);  # adapts from CGI params
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
     my $results = $self->make_call($soap_server, \%soap_params);
@@ -117,8 +117,8 @@ sub handle_request {
 sub authenticate {
     my( $self ) = @_;
 
-    $self->{user_dn} = $self->{session}->verify_session($self->{cgi});
-    return $self->{user_dn};
+    $self->{user_login} = $self->{session}->verify_session($self->{cgi});
+    return $self->{user_login};
 } #___________________________________________________________________________ 
 
 

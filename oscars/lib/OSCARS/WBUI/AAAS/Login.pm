@@ -55,7 +55,7 @@ sub authenticate {
 sub post_process {
     my( $self, $results ) = @_;
 
-    $self->{user_dn} = $results->{user_dn};
+    $self->{user_login} = $results->{user_login};
     my $sid = $self->{session}->start_session($self->{cgi}, $results);
     print $self->{cgi}->header(
          -type=>'text/xml',
@@ -69,7 +69,7 @@ sub output {
 
     my $info = OSCARS::WBUI::Info->new();
     print "<xml>\n";
-    print "<msg>User $self->{user_dn} signed in.</msg>\n";
+    print "<msg>User $self->{user_login} signed in.</msg>\n";
     $self->{tabs}->output('Info', $results->{authorizations});
     $info->output($results);
     print "</xml>\n";

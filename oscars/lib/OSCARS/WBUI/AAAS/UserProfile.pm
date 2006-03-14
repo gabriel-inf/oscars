@@ -42,7 +42,7 @@ sub output {
     my( $self, $results ) = @_;
 
     # may be accessing another user's profile if an administrator
-    my $dn = $results->{selected_user} ? $results->{selected_user} : $self->{user_dn};
+    my $login = $results->{selected_user} ? $results->{selected_user} : $self->{user_login};
     my $modify_submit_str = "return submit_form(this,
                     'server=AAAS;method=UserProfile;op=modifyProfile;',
 		    check_profile_modification);";
@@ -52,13 +52,13 @@ sub output {
     $self->{tabs}->output('UserProfile', $results->{authorizations});
     print qq{
     <div>
-    <h3>Editing profile for user: $dn</h3>
+    <h3>Editing profile for user: $login</h3>
     <p>Required fields are outlined in green.</p>
     <form method='post' action='' onsubmit="$modify_submit_str">
     <p><input type='submit' value='Modify Profile'></input></p>
     <table>
       <tbody>
-      <tr><td>Distinguished Name</td><td>$dn</td></tr>
+      <tr><td>Login Name</td><td>$login</td></tr>
     };
     $self->output_password_fields($results);
     $self->output_profile_fields($results);
