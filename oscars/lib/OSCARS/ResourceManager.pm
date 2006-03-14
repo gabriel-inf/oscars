@@ -84,10 +84,10 @@ sub add_client {
     }
     $dbconn->disconnect();
     if (!$client) { return undef; }
-    $self->{clients}->{component_name} = SOAP::Lite
+    $self->{clients}->{$as_num} = SOAP::Lite
                                         -> uri($client->{client_uri})
                                         -> proxy($client->{client_proxy});
-    return $self->{clients}->{component_name};
+    return $self->{clients}->{as_num};
 } #____________________________________________________________________________
 
 
@@ -95,9 +95,9 @@ sub add_client {
 # See if need to use client to forward to another machine
 #
 sub has_client {
-    my( $self, $component_name ) = @_;
+    my( $self, $as_num ) = @_;
 
-    if ($self->{clients}->{$component_name}) { return 1; }
+    if ($self->{clients}->{$as_num}) { return 1; }
     else { return 0; }
 } #____________________________________________________________________________
 
@@ -105,11 +105,11 @@ sub has_client {
 # Dispatch to server on another machine.
 #
 sub forward {
-    my( $self, $component_name, $params ) = @_;
+    my( $self, $as_num, $params ) = @_;
 
     my $som;
-    if ( $self->{clients}->{$component_name} ) {
-        $som = $self->{clients}->{$component_name}->dispatch($params);
+    if ( $self->{clients}->{$as_num} ) {
+        $som = $self->{clients}->{$as_num}->dispatch($params);
     }
     else {
         $self->{logger}->add_string('Unable to forward; no such server');
