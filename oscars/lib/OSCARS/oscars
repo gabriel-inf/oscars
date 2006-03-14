@@ -120,13 +120,14 @@ sub dispatch {
             # call SOAP method
             $results = $handler->soap_method();
 	    if ( $results->{next_domain} ) {
-                $resource_manager->add_client($results->{next_domain}, 1);
+                $resource_manager->add_client($results->{next_domain});
 		$som = $resource_manager->forward($results->{next_domain},
                                                   $params);
-		$results = $som->result;
+		my $tmpresults = $som->result;
+		print STDERR $tmpresults;
 	        # call method again with results
-                $handler = $factory->instantiate( $user, $results );
-                $results = $handler->soap_method();
+		#$handler = $factory->instantiate( $user, $results );
+		#$results = $handler->soap_method();
             }	
         }
     }
