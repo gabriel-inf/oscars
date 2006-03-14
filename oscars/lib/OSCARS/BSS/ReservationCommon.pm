@@ -57,7 +57,7 @@ sub view_details {
 
     my( $statement, $row );
 
-    my $user_dn = $self->{user}->{dn};
+    my $user_login = $self->{user}->{login};
     if ( $params->{authorizations}->{ChangeDefaultRouting} ) {
         $statement = 'SELECT * FROM BSS.reservations';
         $statement .= ' WHERE reservation_id = ?';
@@ -65,10 +65,14 @@ sub view_details {
         $self->get_engr_fields($row); 
     }
     else {
-        $statement = "SELECT * FROM BSS.reservations" .
-                     ' WHERE user_dn = ?' .
-                     ' AND reservation_id = ?';
-        $row = $self->{user}->get_row($statement, $user_dn,
+        $statement = 'SELECT reservation_start_time, reservation_end_time, ' .
+            'reservation_created_time, reservation_bandwidth, ' .
+            'reservation_burst_limit, reservation_status, reservation_class, ' .
+            'reservation_src_port, reservation_dst_port, reservation_dscp, ' .
+            'reservation_protocol, reservation_tag, reservation_description, ' .
+            'src_host_id, dst_host_id, reservation_time_zone ' .
+            'FROM BSS.reservations WHERE user_login = ? AND reservation_id = ?';
+        $row = $self->{user}->get_row($statement, $user_login,
                                       $params->{reservation_id});
     }
     if (!$row) { return $row; }

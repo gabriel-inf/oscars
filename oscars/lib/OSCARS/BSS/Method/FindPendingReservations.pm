@@ -78,7 +78,7 @@ sub soap_method {
         $self->{logger}->add_hash($resv);
     }
     if (@$reservations) {
-        $self->{logger}->write_file($self->{user}->{dn}, $self->{params}->{method});
+        $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
     }
     my $results = {};
     $results->{list} = $reservations;
@@ -101,12 +101,12 @@ sub generate_messages {
 
     for my $resv ( @$reservations ) {
         $self->{time_methods}->convert_lsp_times($resv);
-        $subject_line = "Circuit set up status for $resv->{user_dn}.";
+        $subject_line = "Circuit set up status for $resv->{user_login}.";
         $msg =
-          "Circuit set up for $resv->{user_dn}, for reservation(s) with parameters:\n";
+          "Circuit set up for $resv->{user_login}, for reservation(s) with parameters:\n";
             # TODO:  if more than one reservation, fix duplicated effort
         $msg .= $self->{sched_methods}->reservation_lsp_stats( $resv );
-        push( @messages, {'msg' => $msg, 'subject_line' => $subject_line, 'user' => $resv->{user_dn} } );
+        push( @messages, {'msg' => $msg, 'subject_line' => $subject_line, 'user' => $resv->{user_login} } );
     }
     return( \@messages );
 } #____________________________________________________________________________

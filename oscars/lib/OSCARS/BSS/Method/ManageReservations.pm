@@ -85,7 +85,7 @@ sub soap_method {
             $self->get_reservations($self->{user}, $self->{params});
         $self->{logger}->add_string("Successfully retrieved reservations.");
         $self->{logger}->write_file(
-                               $self->{user}->{dn}, $self->{params}->{method});
+                               $self->{user}->{login}, $self->{params}->{method});
     }
     return $results;
 } #____________________________________________________________________________
@@ -112,16 +112,16 @@ sub get_reservations {
     }
     else {
         $statement = 'SELECT * FROM BSS.reservations' .
-                     ' WHERE user_dn = ?' .
+                     ' WHERE user_login = ?' .
                      ' ORDER BY reservation_start_time';
-        $rows = $user->do_query($statement, $user->{dn});
+        $rows = $user->do_query($statement, $user->{login});
     }
     for my $resv ( @$rows ) {
         $self->{time_lib}->convert_times($resv);
         $self->{resv_lib}->get_host_info($resv);
     }
     $self->{logger}->add_string("Reservations list");
-    $self->{logger}->write_file($user->{dn}, $params->{method});
+    $self->{logger}->write_file($user->{login}, $params->{method});
     return $rows;
 } #____________________________________________________________________________
 
@@ -166,7 +166,7 @@ sub create_reservation {
 
     my $results = $self->build_results($user, $params);
     $self->{logger}->add_hash($results);
-    $self->{logger}->write_file($user->{dn}, $params->{method});
+    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 
@@ -185,7 +185,7 @@ sub cancel_reservation {
     my $results = $self->{resv_lib}->view_details($params);
     $self->{time_lib}->convert_times($results);
     $self->{logger}->add_hash($results);
-    $self->{logger}->write_file($user->{dn}, $params->{method});
+    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 
@@ -212,7 +212,7 @@ sub archive_reservations {
         $self->{resv_methods}->check_nulls($resv);
         $self->{logger}->add_hash($resv);
     }
-    $self->{logger}->write_file($user->{dn}, $params->{method});
+    $self->{logger}->write_file($user->{login}, $params->{method});
     return $rows;
 } #____________________________________________________________________________
 
@@ -228,11 +228,11 @@ sub reservation_created_messages {
     my( $self, $resv ) = @_;
 
     my( @messages );
-    my $user_dn = $self->{user}->{dn};
-    my $msg = "Reservation scheduled by $user_dn with parameters:\n";
+    my $user_login = $self->{user}->{login};
+    my $msg = "Reservation scheduled by $user_login with parameters:\n";
     $msg .= $self->{resv_lib}->reservation_stats($resv);
-    my $subject_line = "Reservation scheduled by $user_dn.";
-    push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_dn } ); 
+    my $subject_line = "Reservation scheduled by $user_login.";
+    push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_login } ); 
     return( \@messages );
 } #____________________________________________________________________________
 
@@ -265,11 +265,11 @@ sub reservation_cancelled_messages {
     my( $self, $resv ) = @_;
 
     my( @messages );
-    my $user_dn = $self->{user}->{dn};
-    my $msg = "Reservation cancelled by $user_dn with parameters:\n";
+    my $user_login = $self->{user}->{login};
+    my $msg = "Reservation cancelled by $user_login with parameters:\n";
     $msg .= $self->{resv_lib}->reservation_stats($resv);
-    my $subject_line = "Reservation cancelled by $user_dn.";
-    push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_dn } ); 
+    my $subject_line = "Reservation cancelled by $user_login.";
+    push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_login } ); 
     return( \@messages );
 } #____________________________________________________________________________
 
@@ -398,7 +398,7 @@ sub build_results  {
     $self->{time_lib}->convert_times($results);
 
     # set user-semi-readable tag
-    $results->{reservation_tag} = $user->{dn} . '.' .
+    $results->{reservation_tag} = $user->{login} . '.' .
         $self->{time_lib}->get_time_str(
               $params->{reservation_start_time}) .  "-" .
               $results->{reservation_id};
