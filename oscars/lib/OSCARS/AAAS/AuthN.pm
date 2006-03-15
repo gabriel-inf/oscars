@@ -50,6 +50,7 @@ sub authenticate {
     my( $self, $user, $params ) = @_;
 
     if ($user->authenticated()) { return 1; }
+    if ($params->{next_domain}) { return 1; }
     if (!$params->{user_password}) {
         throw Error::Simple('Attempting to access a SOAP method before authenticating.');
     }
