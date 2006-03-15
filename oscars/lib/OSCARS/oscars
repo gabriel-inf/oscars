@@ -120,14 +120,15 @@ sub dispatch {
             # call SOAP method
             $results = $handler->soap_method();
 	    if ( $results->{next_domain} ) {
+                print STDERR "next domain: $results->{next_domain}\n";
                 $resource_manager->add_client($results->{next_domain});
 		$som = $resource_manager->forward($results->{next_domain},
                                                   $params);
-		my $tmpresults = $som->result;
-		print STDERR $tmpresults;
-	        # call method again with results
-		#$handler = $factory->instantiate( $user, $results );
-		#$results = $handler->soap_method();
+                if (!$som->faultstring) {
+	            # call method again with previous results to make reservation
+		    $handler = $factory->instantiate( $user, $results );
+		    $results = $handler->soap_method();
+                }
             }	
         }
     }
