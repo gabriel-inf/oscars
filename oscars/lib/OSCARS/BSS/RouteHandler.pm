@@ -68,8 +68,11 @@ sub initialize {
 sub find_interface_ids {
     my( $self, $logger, $params) = @_;
 
-    my( $path, $src, $dst, $next_as_number );
+    my( $path, $src, $dst, $last_domain, $next_as_number );
 
+    if ($params->{next_domain}) {
+        $last_domain = $params->{next_domain};
+    }
     # converts source to IP address if it is a host name
     $params->{source_ip} = $self->name_to_ip($params->{source_host});
     if( !$params->{source_ip} ) {
@@ -124,7 +127,10 @@ sub find_interface_ids {
     }
     my $unused = pop(@$path);
     if ($next_as_number ne 'noSuchInstance') {
-        $params->{next_domain} = $next_as_number;
+        if ($last_domain != $next_as_number) {
+            $params->{next_domain} = $next_as_number;
+        }
+        else { $params->{next_domain} = undef; }
     }
     $params->{reservation_path} = $path;
 } #____________________________________________________________________________
