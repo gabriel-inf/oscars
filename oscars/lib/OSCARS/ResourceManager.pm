@@ -80,6 +80,7 @@ sub add_client {
     else {
 	# local domain not given an AS number in the clients table
         $statement = 'SELECT * FROM clients WHERE as_num IS NULL';
+	$as_num = 'local';
         $client = $dbconn->get_row($statement);
     }
     $dbconn->disconnect();
@@ -87,7 +88,7 @@ sub add_client {
     $self->{clients}->{$as_num} = SOAP::Lite
                                         -> uri($client->{client_uri})
                                         -> proxy($client->{client_proxy});
-    return $self->{clients}->{as_num};
+    return $self->{clients}->{$as_num};
 } #____________________________________________________________________________
 
 
