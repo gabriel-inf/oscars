@@ -1,12 +1,12 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  February 13, 2005
+Last modified:  March 19, 2006
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
 
 /* List of functions:
-submit_form(form, params)
+submit_form(form, params, check_function)
 new_section(params)
 get_response(xmlhttp)
 check_for_required(form, required)
@@ -52,10 +52,12 @@ var add_user_required = {
 // Checks validity of form settings, and uses Sarissa to post request
 // and get back result.
 function submit_form( form, params, check_function ) {
-    if ( check_function ) {
-        var valid = check_function( form );
+    var valid;
+
+    if (check_function) {
+        valid = check_function( form );
         if (!valid) { return false; }
-    }
+    } 
 
     // adapted from http://www.devx.com/DevX/Tip/17500
     var xmlhttp = new XMLHttpRequest();
@@ -92,22 +94,19 @@ function new_section( params ) {
 // Gets back response from XMLHttpRequest.
 function get_response(xmlhttp) {
     var response_dom = xmlhttp.responseXML;
+    //alert(xmlhttp.responseText);
+    //alert(Sarissa.serialize(response_dom));
     if (!response_dom) {
         var status_node = document.getElementById('status-div');
         status_node.innerHTML = date_str() + ' Please contact dwrobertson@lbl.gov to make sure that the OSCARS server is running.';
         return;
     }
-
-    //alert(Sarissa.serialize(response_dom));
-    //alert(xmlhttp.responseText);
-
     // Get div element within response, if any.  If none, an error has
     // occurred.
     var returned_divs = response_dom.getElementsByTagName('div');
 
     // Rewrite navigation bar
-    var returned_nav_nodes =
-                           response_dom.getElementsByTagName('navigation_bar');
+    var returned_nav_nodes = response_dom.getElementsByTagName('navigation-bar');
     var nav_bar_str = '';
     var nav_node = document.getElementById('nav-div');
     if (returned_nav_nodes.length) {
