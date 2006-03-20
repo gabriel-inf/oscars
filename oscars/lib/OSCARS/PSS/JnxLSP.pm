@@ -88,7 +88,7 @@ sub configure_lsp {
     if (!($self->get_error()))  {
         $self->execute_configuration_change($xmlString);
     }
-    $self->update_log( $xmlString );
+    if ($self->{logger}) { $self->update_log( $xmlString ); }
     return;
 } #____________________________________________________________________________
 
@@ -263,7 +263,9 @@ sub execute_configuration_change {
         }
     };
     if ($@) {
-        $self->{logger}->add_string("ignoring exception $@\n");
+	if ($self->{logger}) {
+            $self->{logger}->add_string("ignoring exception $@\n");
+	}
         return;
     }
 
