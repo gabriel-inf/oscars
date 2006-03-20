@@ -48,7 +48,7 @@ sub output {
     my( $class, $tab, $active_status );
 
     print qq{
-      <navigation_bar>
+      <navigation-bar>
       <ul id="tabnav">
     };
     my $server = 'BSS';
@@ -161,7 +161,7 @@ sub output {
              href="/perl/adapt.pl?server=$server;method=Logout">Log out</a>
         </li>
       </ul>
-      </navigation_bar>
+      </navigation-bar>
     };
 } #____________________________________________________________________________ 
 

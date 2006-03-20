@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 13, 2006
+March 19, 2006
 
 =cut
 
@@ -28,26 +28,21 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::NavigationBar;
-
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output:  Print list of all reservations if the caller has engr privileges, 
+# output_div:  Print list of all reservations if the caller has engr privileges, 
 #          otherwise just print that user's reservations
 # In:   results of SOAP call
 # Out:  None
 #
-sub output {
+sub output_div {
     my ( $self, $results ) = @_;
 
-    print $self->{cgi}->header( -type=>'text/xml' );
-    print "<xml>\n";
-    print qq{ <msg>Successfully retrieved reservations.</msg> };
-    $self->{tabs}->output('ManageReservations', $results->{authorizations});
-    print qq{
+    my $msg = "Successfully retrieved reservations.";
+    print( qq{
     <div>
     <p>Click on a column header to sort by that column. Times given are in the
     time zone of the browser.  Click on the Reservation Tag link to view
@@ -65,11 +60,11 @@ sub output {
       </tr>
     </thead>
     <tbody>
-    };
+    } );
     my $reservations = $results->{list};
     for my $row (@$reservations) { $self->print_row( $row ); }
-    print qq{ </tbody></table></div> };
-    print "</xml>\n";
+    print("</tbody></table></div>\n");
+    return $msg;
 } #____________________________________________________________________________
 
 
@@ -88,7 +83,7 @@ sub print_row {
         $end_time = $row->{reservation_end_time};
     }
     else { $end_time = 'PERSISTENT'; }
-    print qq{
+    print( qq{
     <tr>
       <td>
       <a href='#' style='/styleSheets/layout.css'
@@ -102,7 +97,7 @@ sub print_row {
       <td>$row->{source_host}</td>
       <td>$row->{destination_host}</td>
     </tr>
-    };
+    } );
 } #____________________________________________________________________________
 
 

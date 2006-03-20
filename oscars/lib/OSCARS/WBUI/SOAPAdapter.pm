@@ -1,8 +1,8 @@
 #==============================================================================
 package OSCARS::WBUI::SOAPAdapterFactory;
 
-
 use strict;
+
 use Data::Dumper;
 
 
@@ -58,10 +58,9 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 28, 2006
+March 19, 2006
 
 =cut
-
 
 use strict;
 
@@ -78,15 +77,8 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
-}
-
-sub initialize {
-    my ($self) = @_;
-
-    $self->{session} = OSCARS::WBUI::UserSession->new();
-} #____________________________________________________________________________
+} #___________________________________________________________________________ 
 
 
 ###############################################################################
@@ -96,18 +88,13 @@ sub initialize {
 sub handle_request {
     my( $self, $soap_server ) = @_;
 
-    my( %soap_params );
-
     my $user_login = $self->authenticate();
-    if (!$user_login) { return; }
-    $self->modify_params(\%soap_params);  # adapts from CGI params
+    if ( !$user_login ) { return; }
+    my $soap_params = $self->modify_params();  # adapts from form params
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
-    my $results = $self->make_call($soap_server, \%soap_params);
-    if (!$results) {
-        return;
-    }
-    $self->post_process($results);
-    $self->output($results);
+    my $som = $self->make_call($soap_server, $soap_params);
+    if ($som && !$som->faultstring) { $self->post_process($som); }
+    $self->output($som, $soap_params);
 } #___________________________________________________________________________ 
 
 
@@ -117,8 +104,8 @@ sub handle_request {
 sub authenticate {
     my( $self ) = @_;
 
-    $self->{user_login} = $self->{session}->verify_session($self->{cgi});
-    return $self->{user_login};
+    my $session = OSCARS::WBUI::UserSession->new();
+    return $session->verify($self->{cgi});
 } #___________________________________________________________________________ 
 
 
@@ -127,11 +114,11 @@ sub authenticate {
 #                 into the arguments that the SOAP call expects.
 #
 sub modify_params {
-    my( $self, $params ) = @_;
+    my( $self ) = @_;
 
+    my $params = {};
     for $_ ($self->{cgi}->param) {
-        # NOTE that param is a method call 
-        # kludge for now
+	# TODO:  Fix when figure out Apache2::Request
         if ($_ ne 'permissions') {
             $params->{$_} = $self->{cgi}->param($_);
         }
@@ -139,6 +126,7 @@ sub modify_params {
             @{$params->{$_}} = $self->{cgi}->param($_);
         }
     }
+    return $params;
 } #___________________________________________________________________________ 
 
 
@@ -149,20 +137,18 @@ sub make_call {
     my( $self, $soap_server, $soap_params ) = @_;
 
     my $som = $soap_server->dispatch($soap_params);
-    if ($som->faultstring) {
-        $self->update_status_msg($som->faultstring);
-        return undef;
-    }
-    return $som->result;
+    return $som;
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# post_process:  Perform any operations necessary after making SOAP call
+# post_process:  Perform any operations necessary after making SOAP call.  Take
+#                care that any overriding method calls SUPER.
 #
 sub post_process {
-    my( $self, $results ) = @_;
+    my( $self, $som ) = @_;
 
+    print $self->{cgi}->header( -type => 'text/xml');
 } #___________________________________________________________________________ 
 
 
@@ -170,23 +156,18 @@ sub post_process {
 # output:  formats and prints results to send back to browser
 #
 sub output {
-    my( $self, $results ) = @_;
+    my( $self, $som, $params ) = @_;
 
-} #___________________________________________________________________________ 
+    my $msg;
 
-
-###############################################################################
-# update_status_msg:  Currently called on if there has been a SOAP fault
-#
-sub update_status_msg {
-    my( $self, $msg ) = @_;
-
-    print $self->{cgi}->header(
-        -type=>'text/xml');
     print "<xml>\n";
-    print qq{
-    <msg>$msg</msg>
-    };
+    if (!$som || $som->faultstring) { $msg = $som->faultstring; }
+    else {
+	my $results = $som->result;
+	$self->{tabs}->output( $params->{method}, $results->{authorizations} );
+        $msg = $self->output_div($results);
+    }
+    print "<msg>$msg</msg>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
 

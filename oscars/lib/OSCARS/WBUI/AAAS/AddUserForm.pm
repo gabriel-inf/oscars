@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 13, 2006
+March 20, 2006
 
 =cut
 
@@ -28,39 +28,34 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::NavigationBar;
-
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output:  resets method name and adds op name
+# modify_params:  resets method name and adds op name
 #
 sub modify_params {
-    my( $self, $params ) = @_;
+    my( $self ) = @_;
 
-    $self->SUPER::modify_params($params);
+    my $params = $self->SUPER::modify_params();
     $params->{method} = 'ManageUsers';
     $params->{op} = 'addUserForm';
+    return $params;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# output: print add user form.  Note that the space is important between the 
-# starting and ending textarea tags.
+# output_div: print add user form.
 #
-sub output {
+sub output_div {
     my( $self, $results ) = @_;
 
     my $submit_str = "return submit_form(this,
                                'server=AAAS;method=ManageUsers;op=addUser;',
 			       check_add_user);";
-    print $self->{cgi}->header( -type=>'text/xml' );
-    print "<xml>\n";
-    print qq{ <msg>Add User Form</msg> };
-    $self->{tabs}->output('ManageUsers', $results->{authorizations});
-    print qq{
+    my $msg = "Add User Form";
+    print( qq{
     <div>
     <h3>Add a new user</h3>
     <p>Required fields are outlined in green.</p>
@@ -86,8 +81,8 @@ sub output {
  
     <tr>
       <td>First Name</td>
-      <td><input class='required' type='text' name='user_first_name' size='40'
-           value=''></input>
+      <td><input class='required' type='text' name='user_first_name'
+           size='40' value=''></input>
       </td>
     </tr>
     <tr>
@@ -99,19 +94,19 @@ sub output {
     <tr>
       <td>Organization</td>
       <td><select class='requiredMenu' name='institution_name'>
-    };
+    } );
     my $institution_list = $results->{institution_list};
     for my $row (@$institution_list) {
-        print "<option value='$row->{institution_name}'>" .
-              "$row->{institution_name}</option>";
+        print( "<option value='$row->{institution_name}'>" .
+              "$row->{institution_name}</option>" );
     }
-    print qq{
+    print( qq{
         </select>
       </td>
     </tr>
     <tr>
       <td>Personal Description</td>
-      <td><textarea name='user_description' rows='3' cols='50'> </textarea>
+      <td><input type='text' name='user_description' size='40'></input>
       </td>
     </tr>
     <tr>
@@ -140,10 +135,9 @@ sub output {
     </table>
 
     <p><input type='submit' value='Add User'></input></p>
-    </form>
-    </div>
-    };
-    print "</xml>\n";
+    </form></div>
+    } );
+    return $msg;
 } #____________________________________________________________________________
 
 

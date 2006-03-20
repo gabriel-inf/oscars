@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 28, 2006
+March 19, 2006
 
 =cut
 
@@ -28,10 +28,8 @@ January 28, 2006
 use strict;
 
 use Data::Dumper;
-use CGI qw{:cgi};
 
 use OSCARS::WBUI::UserSession;
-use OSCARS::WBUI::NavigationBar;
 use OSCARS::WBUI::Info;
 
 use OSCARS::WBUI::SOAPAdapter;
@@ -49,30 +47,31 @@ sub authenticate {
 } #____________________________________________________________________________
 
 
-###############################################################################
-# overrides super-class call
+##############################################################################
+# Overrides super-class call.  This method is only called if login has been 
+# successful.
 #
 sub post_process {
-    my( $self, $results ) = @_;
+    my( $self, $som ) = @_;
 
-    $self->{user_login} = $results->{user_login};
-    my $sid = $self->{session}->start_session($self->{cgi}, $results);
+    my $session = OSCARS::WBUI::UserSession->new();
+    my $sid = $session->start($self->{cgi}, $som->result);
+    # for some reason the CGI::Session variant doesn't work
     print $self->{cgi}->header(
-         -type=>'text/xml',
-         -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
+	    -type=>'text/xml',
+	    -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
 } #____________________________________________________________________________
 
 
 ###############################################################################
-sub output {
+sub output_div {
     my( $self, $results ) = @_;
 
     my $info = OSCARS::WBUI::Info->new();
-    print "<xml>\n";
-    print "<msg>User $self->{user_login} signed in.</msg>\n";
-    $self->{tabs}->output('Info', $results->{authorizations});
-    $info->output($results);
-    print "</xml>\n";
+    my $msg = $info->output_div($results);
+    # override in this case
+    $msg = "User $results->{user_login} signed in.\n";
+    return $msg;
 } #____________________________________________________________________________
 
 

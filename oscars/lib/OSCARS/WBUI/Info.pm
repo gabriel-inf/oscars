@@ -38,32 +38,32 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub make_call {
     my( $self, $soap_server, $soap_params ) = @_;
 
-    return {};
+    return undef;
 } #____________________________________________________________________________ 
 
 
 ###############################################################################
-# post_process:  Perform any operations necessary after making SOAP call
+# output:  overrides superclass; formats and prints information page
 #
-sub post_process {
-    my( $self, $results ) = @_;
+sub output {
+    my( $self, $som, $params ) = @_;
 
-    $results->{use_xml_tag} = 1;
-} #____________________________________________________________________________ 
+    print $self->{cgi}->header( -type => 'text/xml');
+    print "<xml>\n";
+    my $msg = $self->output_div(undef);
+    print "<msg>$msg</msg>\n";
+    print "</xml>\n";
+} #___________________________________________________________________________ 
 
 
 ###############################################################################
 # Outputs information section.
-sub output {
+sub output_div {
     my( $self, $results ) = @_;
 
-    if ($results->{use_xml_tag}) {
-        print $self->{cgi}->header(
-             -type=>'text/xml');
-        print "<xml><msg>Information page</msg>\n";
-    }
+    my $msg = "Information page";
     print qq{
-      <div id="get-info">
+    <div id="get-info">
       <p>
       With the advent of service sensitive applications (such as remote-
       controlled experiments, time constrained massive data transfers,
@@ -88,9 +88,7 @@ sub output {
       <p>To begin using OSCARS, click on one of the notebook tabs.</p>
       </div>
     };
-    if ($results->{use_xml_tag}) {
-        print "</xml>\n";
-    }
+    return $msg;
 } #____________________________________________________________________________ 
 
 

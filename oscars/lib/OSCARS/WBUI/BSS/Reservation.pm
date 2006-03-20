@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 13, 2006
+March 19, 2006
 
 =cut
 
@@ -28,32 +28,17 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::NavigationBar;
-
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output:  output details of reservation returned by SOAP call
+# output_div:  print details of reservation returned by SOAP call
 # In:   results of SOAP call
 # Out:  None
 #
-sub output {
+sub output_div {
     my( $self, $results ) = @_;
-
-    print $self->{cgi}->header( -type=>'text/xml' );
-    $self->output_details( $results, $self->{session} );
-} #____________________________________________________________________________
-
-
-###############################################################################
-# output_details:  print details of reservation returned by SOAP call
-# In:   results of SOAP call
-# Out:  None
-#
-sub output_details {
-    my( $self, $results, $session ) = @_;
 
     my $end_time;
 
@@ -66,33 +51,31 @@ sub output_details {
     my $protocol = $results->{reservation_protocol} || 'DEFAULT';
     my $dscp = $results->{reservation_dscp} || 'DEFAULT';
 
-    print "<xml>\n";
-    print qq{ <msg>Successfully got reservation details.</msg> };
-    $self->{tabs}->output('ManageReservations', $results->{authorizations});
-    print qq{
+    my $msg = "Successfully got reservation details.";
+    print( qq{
     <div>
     <p><strong>Reservation Details</strong></p>
     <p>To return to the reservations list, click on the Reservations tab.</p>
     <p>
-    };
+    } );
 
     if (($results->{reservation_status} eq 'pending') ||
         ($results->{reservation_status} eq 'active')) {
         my $cancel_submit_str = "return submit_form(this,
              'server=BSS;method=ManageReservations;op=cancelReservation;');";
-        print qq{
+        print( qq{
         <form method="post" action="" onsubmit="$cancel_submit_str">
         <input type='hidden' name='reservation_id'
            value="$results->{reservation_id}"></input>
         <input type='submit' value='CANCEL'>
 	</input>
         </form>
-        };
+        } );
     }
 
     my $refresh_submit_str = "return submit_form(this,
              'server=BSS;method=Reservation;');";
-    print qq{
+    print( qq{
     <form method="post" action="" onsubmit="$refresh_submit_str">
     <input type='hidden' name='reservation_id'
            value="$results->{reservation_id}"></input>
@@ -118,9 +101,9 @@ sub output_details {
       <tr><td>Destination port</td><td>$dst_port</td></tr>
       <tr><td>Protocol</td><td>$protocol</td></tr>
       <tr><td>DSCP</td><td>$dscp</td></tr>
-    };
+    } );
     if ( $results->{authorizations}->{ChangeDefaultRouting} ) {
-        print qq{
+        print( qq{
         <tr><td>Class</td><td>$results->{reservation_class}</td></tr>
         <tr><td>Ingress router</td><td>$results->{ingress_router}</td></tr>
         <tr><td>Ingress loopback</td><td>$results->{ingress_ip}</td></tr>
@@ -128,25 +111,20 @@ sub output_details {
         <tr><td>Egress loopback</td><td>$results->{egress_ip}</td></tr>
         <tr><td>Routers in path</td>
         <td>
-        };
+        } );
         my $path_str = '';
         for $_ (@{$results->{reservation_path}}) {
             $path_str .= $_ . ' - ';
         }
         # remove last '-'
         substr($path_str, -3, 3) = '';
-        print qq{
-        $path_str
-        </td>
-        </tr>
-        };
+        print("$path_str </td> </tr>");
     }
-    print qq{
+    print( qq{
       </tbody>
-    </table>
-    </div>
-    };
-    print  "</xml>\n";
+    </table></div>
+    } );
+    return $msg;
 } #____________________________________________________________________________
 
 

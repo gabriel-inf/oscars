@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 16, 2006
+March 19, 2006
 
 =cut
 
@@ -41,7 +41,8 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub post_process {
     my( $self, $results ) = @_;
 
-    $self->{session}->end_session($self->{cgi});
+    my $session = OSCARS::WBUI::UserSession->new();
+    $session->end($self->{cgi});
     return {};
 } #___________________________________________________________________________ 
 
@@ -51,7 +52,7 @@ sub post_process {
 sub output {
     my( $self, $results ) = @_;
 
-    print $self->{cgi}->redirect('/');
+    $self->{cgi}->redirect('/');
 } #____________________________________________________________________________
 
 

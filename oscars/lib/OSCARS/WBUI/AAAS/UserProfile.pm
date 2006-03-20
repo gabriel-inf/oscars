@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 13, 2006
+March 20, 2006
 
 =cut
 
@@ -28,29 +28,24 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::NavigationBar;
-
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output:  print user profile form, and results retrieved via
+# output_div:  print user profile form, and results retrieved via
 # a SOAP call, if any
 #
-sub output {
+sub output_div {
     my( $self, $results ) = @_;
 
     # may be accessing another user's profile if an administrator
-    my $login = $results->{selected_user} ? $results->{selected_user} : $self->{user_login};
+    my $login = $results->{selected_user} ? $results->{selected_user} : $results->{user_login};
     my $modify_submit_str = "return submit_form(this,
                     'server=AAAS;method=UserProfile;op=modifyProfile;',
 		    check_profile_modification);";
-    print $self->{cgi}->header( -type=>'text/xml' );
-    print "<xml>\n";
-    print qq{ <msg>User profile</msg> };
-    $self->{tabs}->output('UserProfile', $results->{authorizations});
-    print qq{
+    my $msg = "User profile";
+    print( qq{
     <div>
     <h3>Editing profile for user: $login</h3>
     <p>Required fields are outlined in green.</p>
@@ -59,11 +54,11 @@ sub output {
     <table>
       <tbody>
       <tr><td>Login Name</td><td>$login</td></tr>
-    };
+    } );
     $self->output_password_fields($results);
     $self->output_profile_fields($results);
-    print qq{ </tbody></table></form></div> };
-    print "</xml>\n";
+    print("</tbody></table></form></div>\n");
+    return $msg;
 } #____________________________________________________________________________
 
 
@@ -86,7 +81,7 @@ sub output_profile_fields {
     my $institution = $results->{institution_name};
     my $user_email_primary = $results->{user_email_primary};
     my $user_phone_primary = $results->{user_phone_primary};
-    print qq{
+    print( qq{
       <tr>
         <td>First Name</td>
         <td><input class='required' type='text' name='user_first_name'
@@ -102,24 +97,23 @@ sub output_profile_fields {
       <tr>
         <td>Organization</td>
         <td><select class='requiredMenu' name='institution_name'>
-      };
+      } );
       my $institution_list = $results->{institution_list};
       for my $row (@$institution_list) {
-          print "<option value='$row->{institution_name}' ";
+          print("<option value='$row->{institution_name}' ");
 	  if ( $row->{institution_name} eq $institution ) {
-              print "selected='selected'";
+              print( "selected='selected'" );
 	  }
-	  print ">$row->{institution_name}</option>";
+	  print( ">$row->{institution_name}</option>" );
       }
-      print qq{
+      print( qq{
           </select>
         </td>
       </tr>
       <tr>
         <td valign='top'>Personal Description</td>
-        <td><textarea name='user_description' rows='3' cols='50'>
-             $user_description
-            </textarea>
+          <td><input type='text' name='user_description' size='40'
+	     value='$user_description'></input>
         </td>
       </tr>
       <tr>
@@ -146,7 +140,7 @@ sub output_profile_fields {
              value='$user_phone_secondary'></input>
         </td>
       </tr>
-    };
+    } );
 } #____________________________________________________________________________
 
 
@@ -156,7 +150,7 @@ sub output_profile_fields {
 sub output_password_fields {
     my( $self, $params ) = @_;
 
-    print qq{
+    print( qq{
       <tr>
         <td>New Password (Enter twice )</td>
         <td><input type='password' name='password_new_once' size='40'></input>
@@ -167,7 +161,7 @@ sub output_password_fields {
         <td><input type='password' name='password_new_twice' size='40'></input>
         </td>
       </tr>
-    };
+    } );
 } #____________________________________________________________________________
  
 

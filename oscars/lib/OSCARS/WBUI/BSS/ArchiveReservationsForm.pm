@@ -19,15 +19,13 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 28, 2006
+March 19, 2006
 
 =cut
 
 use strict;
 
 use Data::Dumper;
-
-use OSCARS::WBUI::NavigationBar;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
@@ -44,21 +42,18 @@ sub make_call {
 
 
 ###############################################################################
-# output:  Prints out the archive reservations form.  Accessed via a button on 
+# output_div:  Prints out the archive reservations form.  Accessed via a button on 
 #          the "View/Edit Reservations" page
 # In:   results of SOAP call
 # Out:  None
 #
-sub output {
+sub output_div {
     my( $self, $results ) = @_;
 
     my $params_str;
 
-    print $self->{cgi}->header( -type=>'text/xml' );
-    print "<xml>\n";
-    print qq{ <msg>Reservation archiving form</msg> };
-    $self->{tabs}->output('ManageReservations', $results->{authorizations});
-    print qq{
+    my $msg = "Reservation archiving form";
+    print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
 	     'server=BSS;method=ManageReservations;op=archiveReservations;');">
@@ -67,8 +62,8 @@ sub output {
      entries are given in parentheses below the input fields.</p>
     </form>
     </div>
-    };
-    print "</xml>\n";
+    } );
+    return $msg;
 } #____________________________________________________________________________
 
 

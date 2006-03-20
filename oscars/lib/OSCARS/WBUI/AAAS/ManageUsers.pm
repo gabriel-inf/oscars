@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 13, 2006
+March 19, 2006
 
 =cut
 
@@ -30,46 +30,26 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::UserSession;
-use OSCARS::WBUI::NavigationBar;
-
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output:  Print the list of all users returned by the SOAP call.
-#
-# In:  results of SOAP call
-# Out: None
-#
-sub output {
-    my ( $self, $results ) = @_;
-
-    print $self->{cgi}->header( -type=>'text/xml' );
-    print "<xml>\n";
-    print qq{ <msg>Successfully read user list.</msg> };
-    $self->{tabs}->output('ManageUsers', $results->{authorizations});
-    $self->output_users( $results);
-    print "</xml>\n";
-} #___________________________________________________________________________
-
-
-###############################################################################
-# output_users:  If the caller has admin privileges print a list of 
+# output_div:  If the caller has admin privileges print a list of 
 #          all users returned by the SOAP call
 #
 # In:  results of SOAP call
 # Out: None
 #
-sub output_users {
+sub output_div {
     my ( $self, $results ) = @_;
 
+    my $msg = "Successfully read user list.";
     my $users = $results->{list};
     my $add_submit_str = "return submit_form(this,
                     'server=AAAS;method=AddUserForm;');";
-    print qq{
-    <div>
+    print( qq{
+      <div>
       <p>Click on the user's last name to view detailed user information.</p>
       <p><input type='button' 
           onclick="$add_submit_str" 
@@ -80,9 +60,10 @@ sub output_users {
           <td>Organization</td><td>Phone</td><td>Action</td></tr>
         </thead>
       <tbody>
-    };
+    } );
     for my $row (@$users) { $self->print_user( $row ); }
-    print qq{ </tbody></table></div>; };
+    print( qq{ </tbody></table></div> } );
+    return $msg;
 } #____________________________________________________________________________
 
 
