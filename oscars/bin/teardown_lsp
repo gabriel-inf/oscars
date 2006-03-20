@@ -1,0 +1,82 @@
+#!/usr/bin/perl
+
+use strict;
+use Data::Dumper;
+
+use OSCARS::Logger;
+use OSCARS::Database;
+use OSCARS::BSS::RouteHandler;
+use OSCARS::PSS::JnxLSP;
+
+#####
+#
+# Constant definitions.
+#
+#####
+use constant LSP_SETUP => 1;
+use constant LSP_TEARDOWN => 0;
+
+
+#####
+#
+# Global variables.
+#
+#####
+my ($error);
+my ($lspState);
+
+my $len = scalar(@ARGV);
+if ($len != 1) {
+    print STDERR "Usage:\t\tteardown_lsp reservation_number\n";
+    print STDERR "Example:\tteardown_lsp 518\n";
+    exit;
+}
+my $reservation_number = $ARGV[0];
+
+my $dbconn = OSCARS::Database->new();
+$dbconn->connect('BSS');
+
+my $pss_configs = get_pss_configs($dbconn);
+
+my $rh = OSCARS::BSS::RouteHandler->new('user' => $dbconn);
+my $test_configs = $rh->get_test_configs('jnxLSP');
+
+# Initialize LSP information.
+my %lspInfo = (
+  'name' => 'oscars_' . $reservation_number,
+  'lsp_from' => $test_configs->{ingress_loopback},
+  'lsp_to' => $test_configs->{egress_loopback},
+  'bandwidth' => '1000000',
+  'lsp_class-of-service' => $pss_configs->{pss_conf_CoS},
+  'policer_burst-size-limit' => $pss_configs->{pss_conf_burst_limit},
+  'source-address' => $test_configs->{reservation_source},
+  'destination-address' => $test_configs->{reservation_destination},
+);
+
+$lspInfo{configs} = $pss_configs;
+
+# Create an LSP object.
+my $jnxLsp = new OSCARS::PSS::JnxLSP(\%lspInfo);
+
+# Tear down an LSP.
+print("Tearing down LSP...\n");
+$jnxLsp->configure_lsp(LSP_TEARDOWN, undef);
+$error = $jnxLsp->get_error();
+if ($error) { print STDERR $error; }
+
+print("LSP teardown complete\n");
+print("\n");
+
+
+###############################################################################
+#
+sub get_pss_configs {
+    my( $dbconn ) = @_;
+
+        # use defaults for now
+    my $statement = 'SELECT * FROM BSS.pss_confs where pss_conf_id = 1';
+    my $configs = $dbconn->get_row($statement);
+    return $configs;
+} #____________________________________________________________________________
+
+
