@@ -88,12 +88,15 @@ sub new {
 sub handle_request {
     my( $self, $soap_server ) = @_;
 
+    my $results;
     my $user_login = $self->authenticate();
     if ( !$user_login ) { return; }
     my $soap_params = $self->modify_params();  # adapts from form params
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
     my $som = $self->make_call($soap_server, $soap_params);
-    if ($som && !$som->faultstring) { $self->post_process($som); }
+    if (!$som) { my $results = undef ; }
+    else { $results = $som->result; }
+    $self->post_process($results);
     $self->output($som, $soap_params);
 } #___________________________________________________________________________ 
 
@@ -143,10 +146,10 @@ sub make_call {
 
 ###############################################################################
 # post_process:  Perform any operations necessary after making SOAP call.  Take
-#                care that any overriding method calls SUPER.
+#   care that any overriding method calls SUPER or prints the header itself.
 #
 sub post_process {
-    my( $self, $som ) = @_;
+    my( $self, $results ) = @_;
 
     print $self->{cgi}->header( -type => 'text/xml');
 } #___________________________________________________________________________ 
@@ -161,7 +164,8 @@ sub output {
     my $msg;
 
     print "<xml>\n";
-    if (!$som || $som->faultstring) { $msg = $som->faultstring; }
+    if (!$som) { $msg = "SOAP call $params->{method} failed"; }
+    elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
 	my $results = $som->result;
 	$self->{tabs}->output( $params->{method}, $results->{authorizations} );
