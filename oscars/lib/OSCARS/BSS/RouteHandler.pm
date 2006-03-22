@@ -74,11 +74,12 @@ sub find_interface_ids {
         $last_domain = $params->{next_domain};
     }
     # converts source to IP address if it is a host name
-    $params->{source_ip} = $self->name_to_ip($params->{source_host});
+    $params->{source_ip} = $self->name_to_ip($params->{source_host}, 1);
     if( !$params->{source_ip} ) {
         throw Error::Simple("Unable to look up IP address of source");
     }
-    $params->{destination_ip} = $self->name_to_ip($params->{destination_host});
+    $params->{destination_ip} =
+            $self->name_to_ip($params->{destination_host}, 1);
     if( !$params->{destination_ip} ) {
         throw Error::Simple("Unable to look up IP address of destination");
     }
@@ -93,7 +94,7 @@ sub find_interface_ids {
         $params->{ingress_ip} =
             $self->name_to_loopback($params->{ingress_router});
         $params->{ingress_interface_id} = $self->get_interface(
-            $self->name_to_ip($params->{ingress_router}));
+            $self->name_to_ip($params->{ingress_router}, 0));
     }
     else {
         if ( $params->{egress_router} ) {
@@ -101,8 +102,8 @@ sub find_interface_ids {
             $src = $self->name_to_loopback( $params->{egress_router} );
         }
         else {
-            $src =
-               $self->name_to_ip( $self->{trace_configs}->{trace_conf_jnx_source} );
+            $src = $self->name_to_ip(
+                        $self->{trace_configs}->{trace_conf_jnx_source}, 0 );
         }
         $dst = $params->{source_ip};
         $logger->add_string("--traceroute (reverse):  Source $src to destination $dst");
@@ -183,16 +184,17 @@ sub do_traceroute {
 
 ###############################################################################
 # name_to_ip:  convert host name to IP address if it isn't already one
-# In:   host name or IP
+# In:   host name or IP, and whether to keep CIDR portion if IP address
 # Out:  host IP address
 #
 sub name_to_ip{
-    my( $self, $host ) = @_;
+    my( $self, $host, $keep_cidr ) = @_;
 
     # first group tests for IP address, second handles CIDR blocks
     my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)*';
     # if doesn't match IP format, attempt to convert host name to IP address
     if ($host !~ $regexp) { return( inet_ntoa(inet_aton($host)) ); }
+    elsif ($keep_cidr) { return $host; }
     else { return $1; }   # return IP address without CIDR suffix
 } #____________________________________________________________________________
 
@@ -211,7 +213,7 @@ sub name_to_loopback{
     # if an IP address, get non-CIDR portion
     if ($host =~ $regexp) { $host = $1; }
     # else convert host name to IP address
-    else { $host = $self->name_to_ip($host); }
+    else { $host = $self->name_to_ip($host, 0); }
     return $self->get_loopback($host);
 } #____________________________________________________________________________
 
