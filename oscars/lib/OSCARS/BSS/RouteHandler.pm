@@ -105,6 +105,7 @@ sub find_interface_ids {
                $self->name_to_ip( $self->{trace_configs}->{trace_conf_jnx_source} );
         }
         $dst = $params->{source_ip};
+        print STDERR  "--traceroute (reverse):  Source $src to destination $dst";
         $logger->add_string("--traceroute (reverse):  Source $src to destination $dst");
         # Run a traceroute and find the loopback IP, the associated interface,
         # and whether the next hop is an OSCARS/BRUW router.
@@ -118,6 +119,7 @@ sub find_interface_ids {
   
     # Run a traceroute from the ingress_ip arrived at in the last step to the 
     # destination given in the reservation.
+    print STDERR "--traceroute:  Source $src to destination $dst" ;
     $logger->add_string("--traceroute:  Source $src to destination $dst");
     ( $path, $params->{egress_ip}, $params->{egress_interface_id}, $next_as_number ) =
         $self->do_traceroute('egress',
@@ -157,28 +159,25 @@ sub do_traceroute {
     if ( $#hops == 0) { return( $self->get_loopback( $src ), 'local' ); }
 
     # Loop through hops, identifying last local hop with a loopback, and
-    # first hop outside local domain, if any, and its autonomous service #.
-    my $interface_test = 1;
-    my $interface_id = 0;
-    my $loopback_test = 'l';
-    my $loopback_ip = '';
+    # first hop outside local domain, if any, and its autonomous service
+    # number.  Note that an interface may be associated with an IP
+    # address without there also being a loopback.
+    my( $interface_found, $loopback_found, $interface_id, $loopback_ip );
     my $next_as_number;
     for my $hop ( @hops )  {
+        print STDERR "hop: $hop\n";
         $logger->add_string("hop:  $hop");
         # following two are for edge router IP and interface id
-        $loopback_test = $self->get_loopback( $hop );
-        $interface_test = $self->get_interface( $hop );
-        if ( $loopback_test ) {
-            $loopback_ip = $loopback_test;
-            $interface_id = $interface_test;
+        $loopback_found = $self->get_loopback( $hop );
+        $interface_found = $self->get_interface( $hop );
+        print STDERR "loopback_found $loopback_found, interface_found $interface_found\n";
+        if ( $loopback_found ) {
+            $loopback_ip = $loopback_found;
+            $interface_id = $interface_found;
         }
-        if ( $interface_test ) {
-            push( @path, $interface_test );
-        }
-        else {
-            if ($action eq 'egress') {
-                $next_as_number = $self->get_as_number($interface_id, $hop);
-            }
+        if ( $interface_found ) { push( @path, $interface_found ); }
+        elsif ($action eq 'egress') {
+            $next_as_number = $self->get_as_number($interface_id, $hop);
             last;
         }
     }
@@ -194,10 +193,11 @@ sub do_traceroute {
 sub name_to_ip{
     my( $self, $host ) = @_;
 
-    # last group is to handle CIDR blocks
-    my $regexp = '\d+\.\d+\.\d+\.\d+(/\d+)*';
+    # first group tests for IP address, second handles CIDR blocks
+    my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)*';
+    # if doesn't match IP format, attempt to convert host name to IP address
     if ($host !~ $regexp) { return( inet_ntoa(inet_aton($host)) ); }
-    else { return $host; }
+    else { return $1; }   # return IP address without CIDR suffix
 } #____________________________________________________________________________
 
 
@@ -208,12 +208,12 @@ sub name_to_ip{
 # Out:  loopback address
 #
 sub name_to_loopback{
-    my( $self, $name ) = @_;
+    my( $self, $host ) = @_;
 
-    # last group is to handle CIDR blocks
-    my $regexp = '\d+\.\d+\.\d+\.\d+(/\d+)*';
-    if ($name !~ $regexp) { return( $self->get_loopback($name) ); }
-    else { return $name; }
+    # first group tests for IP address, second handles CIDR blocks
+    my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)*';
+    if ($host !~ $regexp) { return( $self->get_loopback($host) ); }
+    else { return $1; }   # return IP address without CIDR suffix
 } #____________________________________________________________________________
 
 
