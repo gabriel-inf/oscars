@@ -52,10 +52,10 @@ sub authenticate {
 # successful.
 #
 sub post_process {
-    my( $self, $som ) = @_;
+    my( $self, $results ) = @_;
 
     my $session = OSCARS::WBUI::UserSession->new();
-    my $sid = $session->start($self->{cgi}, $som->result);
+    my $sid = $session->start($self->{cgi}, $results);
     # for some reason the CGI::Session variant doesn't work
     print $self->{cgi}->header(
 	    -type=>'text/xml',
