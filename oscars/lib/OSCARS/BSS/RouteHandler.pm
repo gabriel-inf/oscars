@@ -105,7 +105,6 @@ sub find_interface_ids {
                $self->name_to_ip( $self->{trace_configs}->{trace_conf_jnx_source} );
         }
         $dst = $params->{source_ip};
-        print STDERR  "--traceroute (reverse):  Source $src to destination $dst";
         $logger->add_string("--traceroute (reverse):  Source $src to destination $dst");
         # Run a traceroute and find the loopback IP, the associated interface,
         # and whether the next hop is an OSCARS/BRUW router.
@@ -119,7 +118,6 @@ sub find_interface_ids {
   
     # Run a traceroute from the ingress_ip arrived at in the last step to the 
     # destination given in the reservation.
-    print STDERR "--traceroute:  Source $src to destination $dst" ;
     $logger->add_string("--traceroute:  Source $src to destination $dst");
     ( $path, $params->{egress_ip}, $params->{egress_interface_id}, $next_as_number ) =
         $self->do_traceroute('egress',
@@ -165,12 +163,10 @@ sub do_traceroute {
     my( $interface_found, $loopback_found, $interface_id, $loopback_ip );
     my $next_as_number;
     for my $hop ( @hops )  {
-        print STDERR "hop: $hop\n";
         $logger->add_string("hop:  $hop");
         # following two are for edge router IP and interface id
         $loopback_found = $self->get_loopback( $hop );
         $interface_found = $self->get_interface( $hop );
-        print STDERR "loopback_found $loopback_found, interface_found $interface_found\n";
         if ( $loopback_found ) {
             $loopback_ip = $loopback_found;
             $interface_id = $interface_found;
@@ -212,8 +208,11 @@ sub name_to_loopback{
 
     # first group tests for IP address, second handles CIDR blocks
     my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)*';
-    if ($host !~ $regexp) { return( $self->get_loopback($host) ); }
-    else { return $1; }   # return IP address without CIDR suffix
+    # if an IP address, get non-CIDR portion
+    if ($host =~ $regexp) { $host = $1; }
+    # else convert host name to IP address
+    else { $host = $self->name_to_ip($host); }
+    return $self->get_loopback($host);
 } #____________________________________________________________________________
 
 
@@ -261,7 +260,8 @@ sub get_test_configs {
 
 ###############################################################################
 # get_loopback:  Gets loopback address, if any, of router. 
-# In:  interface ip address
+# In:  IP address (can't depend on being given host name, which would enable
+#      a straight lookup out of the routers table)
 # Out: loopback IP address, if any
 #
 sub get_loopback {
