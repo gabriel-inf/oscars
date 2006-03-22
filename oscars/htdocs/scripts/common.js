@@ -93,8 +93,8 @@ function new_section( params ) {
 
 // Gets back response from XMLHttpRequest.
 function get_response(xmlhttp) {
-    var response_dom = xmlhttp.responseXML;
     //alert(xmlhttp.responseText);
+    var response_dom = xmlhttp.responseXML;
     //alert(Sarissa.serialize(response_dom));
     if (!response_dom) {
         var status_node = document.getElementById('status-div');
