@@ -148,21 +148,26 @@ sub get_host_info {
  
     my $statement = 'SELECT host_ip FROM BSS.hosts WHERE host_id = ?';
     my $hrow = $self->{user}->get_row($statement, $resv->{src_host_id});
-    $resv->{source_ip} = $hrow->{host_ip};
-    my $ipaddr = inet_aton($resv->{source_ip});
+    my $ip = $hrow->{host_ip};
+    my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)+';
+    if ($ip =~ $regexp) { $ip = $1; }
+    my $ipaddr = inet_aton($ip);
     $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
     if (!$resv->{source_host}) {
-        $resv->{source_host} = $resv->{source_ip};
+        $resv->{source_host} = $hrow->{host_ip};
     }
+    $resv->{source_ip} = $hrow->{host_ip};
 
     $hrow = $self->{user}->get_row($statement, $resv->{dst_host_id});
     # TODO:  FIX, hrow might be empty
-    $resv->{destination_ip} = $hrow->{host_ip};
-    $ipaddr = inet_aton($resv->{destination_ip});
+    $ip = $hrow->{host_ip};
+    if ($ip =~ $regexp) { $ip = $1; }
+    $ipaddr = inet_aton($ip);
     $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
     if (!$resv->{destination_host}) {
-        $resv->{destination_host} = $resv->{destination_ip};
+        $resv->{destination_host} = $hrow->{host_ip};
     }
+    $resv->{destination_ip} = $hrow->{host_ip};
 } #____________________________________________________________________________
 
 
