@@ -11,15 +11,16 @@ OSCARS::ResourceManager - resource manager for OSCARS.
 
 =head1 DESCRIPTION
 
-Handles resources and authorizations associated with OSCARS.
+Handles resources and authentication styles associated with OSCARS.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov)
+Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 15, 2006
+March 24, 2006
 
 =cut
 
@@ -34,36 +35,29 @@ use strict;
 
 use SOAP::Lite;
 
+use OSCARS::Database;
 use OSCARS::Logger;
-use OSCARS::User;
 
 sub new {
-	my( $class, %args ) = @_;
-	my( $self ) = { %args };
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
 
-	bless( $self, $class );
-	$self->initialize();
-	return( $self );
+    bless( $self, $class );
+    $self->initialize();
+    return( $self );
 }
 
 sub initialize {
-	my( $self ) = @_;
+    my( $self ) = @_;
 
-	$self->{clients} = {};
-	my $authZ_factory = OSCARS::AuthZFactory->new();
-	# currently only exists for AAAS; BSS depends on AAAS first doing AAA
-	$self->{authZ} = $authZ_factory->instantiate($self->{database});
-
-	my $authN_factory = OSCARS::AuthNFactory->new();
-	# currently only exists for AAAS; BSS depends on AAAS first doing AAA
-	$self->{authN} = $authN_factory->instantiate($self->{database});
-	$self->{logger} = OSCARS::Logger->new();
+    $self->{clients} = {};
+    $self->{logger} = OSCARS::Logger->new();
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# Adds SOAP::Lite client for given component to clients hash, indexed by
-# component name.
+# add_client:  Adds SOAP::Lite client for given OSCARS/BRUW domain to clients 
+#              hash, indexed by autonomous system number.
 #
 sub add_client {
     my( $self, $as_num ) = @_;
@@ -93,7 +87,7 @@ sub add_client {
 
 
 ###############################################################################
-# See if need to use client to forward to another machine
+# has_client:  See if there exists a client to forward to another machine.
 #
 sub has_client {
     my( $self, $as_num ) = @_;
@@ -102,8 +96,9 @@ sub has_client {
     else { return 0; }
 } #____________________________________________________________________________
 
+
 ###############################################################################
-# Dispatch to server on another machine.
+# forward:  Dispatch to server on another machine.
 #
 sub forward {
     my( $self, $as_num, $params ) = @_;
@@ -121,34 +116,48 @@ sub forward {
 
 
 ###############################################################################
+# set_authentication_style:  Set current authentication style to given package.
+#
+sub set_authentication_style {
+    my( $self, $package_name, $database ) = @_;
+
+    my $location = $package_name . '.pm';
+    $location =~ s/(::)/\//g;
+    eval { require $location };
+    # overwrites any previous authentication style
+    if (!$@) {
+        $self->{authN} = $package_name->new('database' => $database);
+	return 1;
+    }
+    else { return 0; }
+} #____________________________________________________________________________
+
+
+###############################################################################
 # authenticate:  Attempts to authenticate user.  Currently will only succeed
 #    with Login method.
 #
 sub authenticate {
-    my( $self, $user, $params ) = @_;
+    my( $self, $daemon, $params ) = @_;
 
-    my( $status );
+    my $user;
+    $params->{database}= $self->{database};
 
     if ( $self->{authN} ) {
-        $status = $self->{authN}->authenticate($user, $params);
+        $user = $self->{authN}->authenticate($daemon, $params);
     }
-    else {
-        $status = 1;
-        $user->set_authenticated($status);
-    }
-    return $status;
+    return $user;
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# authorized:  See if user has authorization to use a given resource.
-sub authorized {
-    my( $self, $user, $resource_name ) = @_;
+# write_exception:  Write exception to log.
+#
+sub write_exception {
+    my( $self, $exception_text, $method_name ) = @_;
 
-    if ( $self->{authZ} ) {
-        return $self->{authZ}->authorized($user, $resource_name);
-    }
-    else { return 1; }
+    $self->{logger}->add_string($exception_text);
+    $self->{logger}->write_file('manager', $method_name, 1);
 } #___________________________________________________________________________ 
 
 
@@ -166,81 +175,6 @@ sub get_test_account {
     $dbconn->disconnect();
     return( $results->{user_login}, $results->{user_password} );
 } #____________________________________________________________________________
-
-
-###############################################################################
-# write_exception:  Write exception to log.
-#
-sub write_exception {
-    my( $self, $exception_text, $method_name ) = @_;
-
-    $self->{logger}->add_string($exception_text);
-    $self->{logger}->write_file('manager', $method_name, 1);
-} #___________________________________________________________________________ 
-
-
-#==============================================================================
-package OSCARS::AuthZFactory;
-
-use strict;
-use Data::Dumper;
-
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
-} #___________________________________________________________________________ 
-
-
-###############################################################################
-#
-sub instantiate {
-    my( $self, $database ) = @_;
-
-    my $authZ;
-
-    my $location = 'OSCARS/' . $database . '/AuthZ.pm';
-    my $class_name = 'OSCARS::' . $database . '::AuthZ';
-    eval { require $location };
-    if (!$@) { $authZ = $class_name->new('database' => $database); }
-    else { $authZ = undef; }
-    return $authZ;
-} #___________________________________________________________________________ 
-
-
-
-
-#==============================================================================
-package OSCARS::AuthNFactory;
-
-use strict;
-use Data::Dumper;
-
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
-} #___________________________________________________________________________ 
-
-
-###############################################################################
-#
-sub instantiate {
-    my( $self, $database ) = @_;
-
-    my $authN;
-
-    my $location = 'OSCARS/' . $database . '/AuthN.pm';
-    my $class_name = 'OSCARS::' . $database . '::AuthN';
-    eval { require $location };
-    if (!$@) { $authN = $class_name->new('database' => $database); }
-    else { $authN = undef; }
-    return $authN;
-} #___________________________________________________________________________ 
 
 
 ######

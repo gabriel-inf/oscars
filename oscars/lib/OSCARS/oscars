@@ -10,7 +10,9 @@ use Data::Dumper;
 
 use OSCARS::ResourceManager;
 
-my ( $component, $database, $resource_manager );
+my ( $database, $daemon, $component, $resource_manager );
+my $authN_package = 'OSCARS::AAAS::AuthN';
+my $authZ_package = 'OSCARS::AAAS::AuthZ';
 
 # TODO:  Essentially going back to earlier version.  Need better UI.
 # port number needs to be option again.
@@ -37,11 +39,12 @@ if ($component) {
 ###############################################################################
 #
 sub start_daemon {
-
     $resource_manager = OSCARS::ResourceManager->new(
-                                              'database' => $database);
-    $SOAP::Constants::MAX_CONTENT_SIZE = 10000;
-    my $daemon = SOAP::Transport::HTTP::Daemon
+                                              'database' => $database );
+    if ( !$resource_manager->set_authentication_style($authN_package, 'AAAS') ) {
+        die( "Unable to find authentication package $authN_package");
+    }
+    $daemon = SOAP::Transport::HTTP::Daemon
         -> new (LocalPort => 2000, Listen => 5, Reuse => 1)
         -> dispatch_to('OSCARS::Dispatcher');
     $daemon->handle;
@@ -63,13 +66,14 @@ OSCARS::Dispatcher - SOAP::Lite dispatcher for OSCARS.
 
 Dispatcher for SOAP::Lite.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov)
+Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 6, 2006
+March 24, 2006
 
 =cut
 
@@ -82,7 +86,6 @@ use strict;
 use OSCARS::ResourceManager;
 use OSCARS::Method;
 
-my $users = {};
 
 ###############################################################################
 #
@@ -90,26 +93,22 @@ sub dispatch {
     my ( $class_name, $params ) = @_;
 
     my( $ex );
-    my( $user, $authorizations, $handler, $som );
+    my( $user, $handler, $som );
 
     my $results = {};
     if ($params->{method} eq 'Logout') {
         remove_user($params->{user_login});
 	$results->{user_login} = $params->{user_login};
-	$results->{authorizations} = $params->{authorizations};
 	return $results;
     }
     try {
-        $user = get_user($params->{user_login});
-        $resource_manager->authenticate($user, $params);
-        $authorizations =
-            $resource_manager->authorized($user, $params, 'Method');
+        $user = $resource_manager->authenticate($daemon, $params);
+        if ( !$user->set_authorization_style($authZ_package, 'AAAS') ) {
+            throw Error::Simple( "Unable to use authorization package $authZ_package");
+        }
 
-	# if equal to one, already set by other component
-	if ($params->{authorizations} != 1) {
-            $params->{authorizations} = $authorizations;
-	}
         # if BSS component is not on this server
+	# NOTE:  not currently handled
 	if ($resource_manager->has_client($params->{server})) {
             $som = $resource_manager->forward('BSS', $params);
             $results = $som->result;
@@ -139,7 +138,7 @@ sub dispatch {
                     $handler = $factory->instantiate( $user, $results );
                     $results = $handler->soap_method();
 		}
-            }	
+            }
         }
     }
     catch Error::Simple with { $ex = shift; }
@@ -160,39 +159,9 @@ sub dispatch {
         }
         elsif ($handler) {
             $handler->post_process($results);
-	    if ($params->{authorizations} != 1) {
-                $results->{authorizations} = $authorizations;
-            }
 	}
     };
     return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# Gets user instance from user list if it exists; otherwise create an instance
-# associated with the component and distinguished name given.
-#
-sub get_user {
-    my( $login ) = @_;
-
-    if (!$users->{$login}) {
-        $users->{$login} = OSCARS::User->new(
-                                   'login' => $login,
-                                   'database' => $database);
-    }
-    return $users->{$login};
-} #____________________________________________________________________________
-
-
-###############################################################################
-# Removes given user from the user list.
-#
-sub remove_user {
-    my( $login ) = @_;
-
-    if ( $users->{$login} ) { $users->{$login}->disconnect(); }
-    $users->{$login} = undef;
 } #____________________________________________________________________________
 
 
