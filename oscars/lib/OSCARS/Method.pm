@@ -44,8 +44,7 @@ OSCARS::Method - Superclass for all SOAP methods.
 =head1 DESCRIPTION
 
 Superclass for all SOAP methods.  Contains methods for all phases of
-an OSCARS request.  Assumes that authentication and authorization have
-already been performed.
+an OSCARS request.  Assumes that authentication has already been performed.
 
 =head1 AUTHORS
 
@@ -53,7 +52,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -86,7 +85,19 @@ sub initialize {
 
 
 ###############################################################################
-# validate
+# authorized:  Check whether user calling this method has the proper 
+#     authorizations, including viewing and setting parameters.  If not 
+#     overriden, a noop.
+#
+sub authorized {
+    my( $self ) = @_;
+
+    return 1;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# validate:  validate incoming parameters
 #
 sub validate {
     my( $self ) = @_;
@@ -138,7 +149,7 @@ sub write_exception {
     my( $self, $exception_text, $method_name ) = @_;
 
     $self->{logger}->add_string($exception_text);
-    $self->{logger}->write_file($self->{user}, $method_name, 1);
+    $self->{logger}->write_file($self->{user}->{login}, $method_name, 1);
 } #___________________________________________________________________________ 
 
 
