@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 19, 2006
+March 24, 2006
 
 =cut
 
@@ -42,7 +42,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out: None
 #
 sub output_div {
-    my ( $self, $results ) = @_;
+    my ( $self, $results, $authorized ) = @_;
 
     my $msg = "Successfully read user list.";
     my $users = $results->{list};
@@ -74,7 +74,7 @@ sub print_user {
     my( $self, $row ) = @_;
 
     my $profile_href_str = "return new_section(
-                    'server=AAAS;method=UserProfile;selected_user=$row->{user_login};');";
+                    'server=AAAS;method=UserProfile;op=viewProfile;selected_user=$row->{user_login};');";
     my $delete_href_str = "return new_section(
                     'server=AAAS;method=ManageUsers;op=deleteUser;selected_user=$row->{user_login};');";
     print qq{

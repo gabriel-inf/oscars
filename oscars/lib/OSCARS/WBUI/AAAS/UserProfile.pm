@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 20, 2006
+March 24, 2006
 
 =cut
 
@@ -37,7 +37,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # a SOAP call, if any
 #
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     # may be accessing another user's profile if an administrator
     my $login = $results->{selected_user} ? $results->{selected_user} : $results->{user_login};

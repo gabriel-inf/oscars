@@ -23,7 +23,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 19, 2006
+March 24, 2006
 
 =cut
 
@@ -63,6 +63,7 @@ sub start
     my $sid = $session->id();
     $session->param('user_login', $results->{user_login});
     $session->param('last_page', $results->{GetInfo});
+    $session->param('authorized', $results->{authorized});
     $session->expire('+8h');  # expire after 8 hours
     return $sid;
 } #____________________________________________________________________________
@@ -82,11 +83,14 @@ sub verify
     my $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
     #if ( $session->is_expired ) { return 0; }
     my $user_login = $session->param("user_login");
+    my $authorized = $session->param("authorized");
+
     # If there is no user_login parameter, session is invalid
     if (!$user_login)  { return undef; }
     # CGI::Session doesn't quite work as advertised
     $cgi->param(-name=>'user_login',-value=>$user_login);
-    return $user_login;
+    $cgi->param(-name=>'authorized',-value=>$authorized);
+    return( $user_login, $authorized);
 } #____________________________________________________________________________
 
 

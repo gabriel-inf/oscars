@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 20, 2006
+March 26, 2006
 
 =cut
 
@@ -49,7 +49,7 @@ sub modify_params {
 # output_div: print add user form.
 #
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     my $submit_str = "return submit_form(this,
                                'server=AAAS;method=ManageUsers;op=addUser;',

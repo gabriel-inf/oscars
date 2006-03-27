@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 20, 2006
+March 24, 2006
 
 =cut
 
@@ -51,7 +51,7 @@ sub modify_params {
 # Out:  None
 #
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     my $params_str;
 
@@ -74,7 +74,7 @@ sub output_div {
       defaults.  The default time zone is your local time.</p>
     } );
 
-    if ($results->{authorizations}->{ChangeDefaultRouting}) {
+    if ($authorized->{ManageDomains}) {
         print( qq{
           <p><strong>WARNING</strong>:  Entering a value in a red-outlined field 
 	  may change default routing behavior for the selected flow.</p> } );
@@ -117,7 +117,7 @@ sub output_div {
 	    <input type='text' name='reservation_description' size='40'></input></td>
         <td>(For our records)</td></tr>
     } );
-    if ($results->{authorizations}->{ChangeDefaultRouting}) {
+    if ($authorized->{ManageDomains}) {
       print( qq{
       <tr>
         <td>Ingress loopback</td>
@@ -169,7 +169,7 @@ sub output_div {
        	</td>
 	<td>0.01 (0.01 to Indefinite)</td></tr>
     } );
-    if ($results->{authorizations}->{PersistentReservation}) {
+    if ($authorized->{ManageDomains}) {
         print( qq{
       <tr><td>Persistent reservation</td>
         <td><input type='checkbox' name='persistent' size='8' value='0'></input></td>

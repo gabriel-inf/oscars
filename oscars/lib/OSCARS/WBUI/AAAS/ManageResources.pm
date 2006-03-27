@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 19, 2006
+March 24, 2006
 
 =cut
 
@@ -37,7 +37,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # output_div:  print resources form, with results retrieved via SOAP call
 #
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     my $msg = "OSCARS resources";
     print( qq{

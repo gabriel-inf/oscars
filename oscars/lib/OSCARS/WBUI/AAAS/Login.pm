@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 19, 2006
+March 24, 2006
 
 =cut
 
@@ -65,10 +65,10 @@ sub post_process {
 
 ###############################################################################
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     my $info = OSCARS::WBUI::Info->new();
-    my $msg = $info->output_div($results);
+    my $msg = $info->output_div($results, $authorized);
     # override in this case
     $msg = "User $results->{user_login} signed in.\n";
     return $msg;

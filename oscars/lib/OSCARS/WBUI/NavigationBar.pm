@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -41,124 +41,106 @@ sub new {
 
 ###############################################################################
 # output: Outputs tabbed bar used for navigation within the OSCARS site. 
+#         Some tabs are enabled by default and do not require a specific
+#         authorization.
 #
 sub output {
-    my( $self, $active_tab, $authorizations ) = @_;
+    my( $self, $active_tab, $authorized ) = @_;
 
-    my( $class, $tab, $active_status );
+    my $active_status;
 
     print qq{
       <navigation-bar>
       <ul id="tabnav">
     };
     my $server = 'BSS';
-    if ( $authorizations->{ManageReservations} &&
-         $authorizations->{ManageReservations}->{exec} ) {
-      $tab = 'ManageReservations';
-      if ( $tab eq $active_tab ) { $active_status = 'active'; }
-      else { $active_status = 'inactive'; }
-      print qq{
-        <li>
-          <a style="/styleSheets/layout.css" title="View/edit reservations"
-             onclick="return new_section('server=$server;method=$tab;');"
-             class='$active_status' href="#">Reservations</a>
-        </li>
-      };
-    }
-    if ( $authorizations->{CreateReservationForm} &&
-         $authorizations->{CreateReservationForm}->{exec} ) {
-      $tab = 'CreateReservationForm';
-      if ( $tab eq $active_tab ) { $active_status = 'active'; }
-      else { $active_status = 'inactive'; }
-      print qq{
-        <li>
-          <a style="/styleSheets/layout.css" title="Create an OSCARS reservation"
-             onclick="return new_section('server=$server;method=$tab;');"
-             class='$active_status' href="#">Create Reservation</a>
-        </li>
-      };
-    }
+    my $method = 'ManageReservations';
+    if ( $method eq $active_tab ) { $active_status = 'active'; }
+    else { $active_status = 'inactive'; }
+    my $op = 'viewReservations';
+    print qq{
+      <li>
+        <a style="/styleSheets/layout.css" title="View/edit reservations"
+           onclick="return new_section('server=$server;method=$method;op=$op;');"
+           class='$active_status' href="#">Reservations</a>
+      </li>
+    };
+    my $method = 'CreateReservationForm';
+    if ( $method eq $active_tab ) { $active_status = 'active'; }
+    else { $active_status = 'inactive'; }
+    print qq{
+      <li>
+        <a style="/styleSheets/layout.css" title="Create an OSCARS reservation"
+           onclick="return new_section('server=$server;method=$method;');"
+           class='$active_status' href="#">Create Reservation</a>
+      </li>
+    };
     $server = 'AAAS';
-    if ( $authorizations->{ManageUsers} &&
-         $authorizations->{ManageUsers}->{exec} ) {
-	$tab = 'ManageUsers';
-        if ( $tab eq $active_tab ) { $active_status = 'active'; }
+    if ( $authorized->{ManageUsers} ) {
+	$method = 'ManageUsers';
+	$op = 'viewUsers';
+        if ( $method eq $active_tab ) { $active_status = 'active'; }
         else { $active_status = 'inactive'; }
         print qq{
           <li>
             <a style='/styleSheets/layout.css' title='Manage user accounts'
-               onclick="return new_section('server=$server;method=$tab;');"
+               onclick="return new_section('server=$server;method=$method;op=$op;');"
                class='$active_status' href="#">Users</a>
           </li>
         };
     }
-    elsif ( $authorizations->{UserProfile} &&
-            $authorizations->{UserProfile}->{exec} ) {
-	$tab = 'UserProfile';
-        if ( $tab eq $active_tab ) { $active_status = 'active'; }
+    else {
+	$method = 'UserProfile';
+	$op = 'viewProfile';
+        if ( $method eq $active_tab ) { $active_status = 'active'; }
         else { $active_status = 'inactive'; }
         print qq{
           <li>
             <a style="/styleSheets/layout.css" title="View/edit my profile"
-               onclick="return new_section('server=$server;method=$tab;');"
+               onclick="return new_section('server=$server;method=$method;op=$op;');"
                class='$active_status' href="#">User Profile</a>
           </li>
         };
     }
-    if ( $authorizations->{ManageResources} &&
-         $authorizations->{ManageResources}->{exec} ) {
-      $tab = 'ManageResources';
-      if ( $tab eq $active_tab ) { $active_status = 'active'; }
+    if ( $authorized->{ManageUsers} ) {
+      $method = 'ManageResources';
+      $op = 'viewResources';
+      if ( $method eq $active_tab ) { $active_status = 'active'; }
       else { $active_status = 'inactive'; }
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage resources"
-             onclick="return new_section('server=$server;method=$tab;');"
+             onclick="return new_section('server=$server;method=$method;op=$op;');"
              class='$active_status' href="#">Resources</a>
         </li>
       };
-    }
-    if ( $authorizations->{ManageAuthorizations} &&
-         $authorizations->{ManageAuthorizations}->{exec} ) {
-      $tab = 'ManageAuthorizations';
-      if ( $tab eq $active_tab ) { $active_status = 'active'; }
+
+      $method = 'ManageAuthorizations';
+      if ( $method eq $active_tab ) { $active_status = 'active'; }
       else { $active_status = 'inactive'; }
+      $op = 'viewAuthorizations';
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage authorizations"
-             onclick="return new_section('server=$server;method=$tab;');"
+             onclick="return new_section('server=$server;method=$method;op=$op;');"
              class='$active_status' href="#">Authorizations</a>
         </li>
       };
     }
-    if ( $authorizations->{ManageInterDomain} &&
-         $authorizations->{ManageInterDomain}->{exec} ) {
-      $tab = 'ManageInterDomain';
-      if ( $tab eq $active_tab ) { $active_status = 'active'; }
-      else { $active_status = 'inactive'; }
-      print qq{
-        <li>
-          <a style="/styleSheets/layout.css" 
-             title="Manage interdomain communications"
-             onclick="return new_section('server=$server;method=$tab;');"
-             class='$active_status' href="#">Interdomain</a>
-        </li>
-      };
-    }
-    $tab = 'Info';
-    if ( $tab eq $active_tab ) { $active_status = 'active'; }
+    $method = 'Info';
+    if ( $method eq $active_tab ) { $active_status = 'active'; }
     else { $active_status = 'inactive'; }
     print qq{
       <li>
         <a style='/styleSheets/layout.css' title='Information page'
-           onclick="return new_section('method=$tab;');"
+           onclick="return new_section('method=$method;');"
            class='$active_status' href="#">Information</a>
       </li>
     };
     print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Log out on click"
-             href="/perl/adapt.pl?server=$server;method=Logout">Log out</a>
+             href="/perl/adapt.pl?server=$server;method=Logout;">Log out</a>
         </li>
       </ul>
       </navigation-bar>

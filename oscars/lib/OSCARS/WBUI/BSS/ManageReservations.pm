@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 19, 2006
+March 24, 2006
 
 =cut
 
@@ -39,7 +39,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out:  None
 #
 sub output_div {
-    my ( $self, $results ) = @_;
+    my ( $self, $results, $authorized ) = @_;
 
     my $msg = "Successfully retrieved reservations.";
     print( qq{
@@ -49,7 +49,7 @@ sub output_div {
     detailed information about the reservation.</p>
 
     <p><form method="post" action="" onsubmit="return submit_form(this, 
-                                    'server=BSS;method=ManageReservations;');">
+        'server=BSS;method=ManageReservations;op=viewReservations');">
     <input type='submit' value='Refresh'></input>
     </form></p>
 
@@ -88,7 +88,7 @@ sub print_row {
       <td>
       <a href='#' style='/styleSheets/layout.css'
        onclick="return new_section(
-       'server=BSS;method=Reservation;reservation_id=$row->{reservation_id};');"
+       'server=BSS;method=ReservationDetails;reservation_id=$row->{reservation_id};');"
           >$row->{reservation_tag}</a>
       </td>
       <td>$row->{reservation_start_time}</td>

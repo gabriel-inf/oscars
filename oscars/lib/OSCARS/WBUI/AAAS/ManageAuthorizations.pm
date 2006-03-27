@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 19, 2006
+March 24, 2006
 
 =cut
 
@@ -39,23 +39,22 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # via SOAP call
 #
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     my $msg = "OSCARS authorizations";
     print( qq{
     <div>
-    <p>Select a user to view a list of the user's currently valid 
-       authorizations, and a list of authorizations that could be added.
-       Click on an ungranted resource and permission, and then 'Grant', to add 
-       an authorization for a user.  Click on a granted resource and
-       permission, and then 'Revoke' to revoke an authorization. </p>
+    <p>Select a user to view a list of all resource/permission pairs.  The
+       user's current authorizations are highlighted in green.  Click on an
+       unhighlighted resource/permission pair to grant an authorization to a 
+       user.  Click on a highlighted pair to revoke an authorization.</p>
     <form method='post' action=''>
     <table width='90%' class='auth-ui'>
     <tr>
     } );
     $self->grantee_table('Users', $results->{users}, 'user_login');
-    $self->grantee_table('Roles', $results->{roles}, 'user_login');
-    $self->ops_table();
+    # No roles at the moment.
+    #$self->grantee_table('Roles', $results->{roles}, 'user_login');
     $self->authorizations_table($results);
     print("</tr></table></form></div>\n");
     return $msg;
@@ -79,26 +78,6 @@ sub grantee_table {
         print("<tr><td>$name</td></tr>");
     }
     print("</tbody></table></td>\n");
-} #____________________________________________________________________________
-
-
-###############################################################################
-# ops_table:  output table listing operations to be performed on
-#     permissions (add, delete)
-#
-sub ops_table {
-    my( $self ) = @_;
-
-    print( qq{
-      <td class='auth-ui-td'>
-        <table class='auth-ui'>
-           <tr><td><input type='button'
-                  onclick='return tse_addAuthorization(this);' 
-                  value='Grant -&gt;'></input></td></tr>
-           <tr><td><input type='button' value='Revoke &lt;-'></input></td></tr>
-        </table>
-      </td>
-    } );
 } #____________________________________________________________________________
 
 

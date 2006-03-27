@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 24, 2006
+March 24, 2006
 
 =cut
 
@@ -46,11 +46,11 @@ sub make_call {
 # output:  overrides superclass; formats and prints information page
 #
 sub output {
-    my( $self, $som, $params ) = @_;
+    my( $self, $som, $params, $authorized ) = @_;
 
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
-    my $msg = $self->output_div(undef);
+    my $msg = $self->output_div(undef, $authorized);
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
@@ -59,7 +59,7 @@ sub output {
 ###############################################################################
 # Outputs information section.
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     my $msg = "Information page";
     print qq{
