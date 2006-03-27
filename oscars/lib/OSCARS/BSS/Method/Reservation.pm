@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::BSS::Method::Reservation;
+package OSCARS::BSS::Method::ReservationDetails;
 
 =head1 NAME
 
-OSCARS::BSS::Method::Reservation - SOAP method to view the details of a
+OSCARS::BSS::Method::ReservationDetails - SOAP method to view the details of a
 specific reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::Reservation;
+  use OSCARS::BSS::Method::ReservationDetails;
 
 =head1 DESCRIPTION
 
@@ -19,11 +19,10 @@ It inherits from OSCARS::Method.
 =head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov),
-Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -53,9 +52,10 @@ sub initialize {
 
 ###############################################################################
 # soap_method:  get reservation details from the database, given its
-#     reservation id.  If a user has engr privileges, they can view any 
-#     reservation's details.  Otherwise they can only view reservations that
-#     they have made, with less of the details.
+#     reservation id.  If a user has the 'manage' permission on the
+#     'Reservations' resource, they can view any reservation's details.
+#     Otherwise they can only view reservations that they have made, with less
+#     of the details.
 #
 # In:  reference to hash of parameters
 # Out: reservations if any, and status message
@@ -63,7 +63,8 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    my $results = $self->{resv_methods}->view_details($self->{params});
+    my $results =
+            $self->{resv_methods}->view_details($self->{params});
     $self->{time_methods}->convert_times($results);
     $self->{logger}->add_hash($results);
     $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
