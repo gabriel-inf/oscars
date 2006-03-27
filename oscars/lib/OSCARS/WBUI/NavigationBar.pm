@@ -45,7 +45,7 @@ sub new {
 #         authorization.
 #
 sub output {
-    my( $self, $active_tab, $authorized ) = @_;
+    my( $self, $active_tab, $authorizations ) = @_;
 
     my $active_status;
 
@@ -76,7 +76,7 @@ sub output {
       </li>
     };
     $server = 'AAAS';
-    if ( $authorized->{ManageUsers} ) {
+    if ( $authorizations && $authorizations->{ManageUsers} ) {
 	$method = 'ManageUsers';
 	$op = 'viewUsers';
         if ( $method eq $active_tab ) { $active_status = 'active'; }
@@ -102,7 +102,7 @@ sub output {
           </li>
         };
     }
-    if ( $authorized->{ManageUsers} ) {
+    if ( $authorizations && $authorizations->{ManageUsers} ) {
       $method = 'ManageResources';
       $op = 'viewResources';
       if ( $method eq $active_tab ) { $active_status = 'active'; }
