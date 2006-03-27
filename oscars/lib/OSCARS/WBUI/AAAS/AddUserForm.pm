@@ -49,7 +49,7 @@ sub modify_params {
 # output_div: print add user form.
 #
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $submit_str = "return submit_form(this,
                                'server=AAAS;method=ManageUsers;op=addUser;',

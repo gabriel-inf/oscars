@@ -47,28 +47,45 @@ sub authenticate {
 } #____________________________________________________________________________
 
 
-##############################################################################
-# Overrides super-class call.  This method is only called if login has been 
-# successful.
+###############################################################################
+# output:  overrides superclass; formats and prints information page
 #
-sub post_process {
-    my( $self, $results ) = @_;
+sub output {
+    my( $self, $som, $soap_params, $authorizations ) = @_;
 
+    my $msg;
+
+    if (!$som) { $msg = "SOAP call $soap_params->{method} failed"; }
+    elsif ($som->faultstring) { $msg = $som->faultstring; }
+    # if there was an error
+    if ($msg) {
+        print $self->{cgi}->header( -type=>'text/xml' );
+	print "<xml>\n";
+        print "<msg>$msg</msg>\n";
+        print "</xml>\n";
+	return;
+    }
+    my $results = $som->result;
     my $session = OSCARS::WBUI::UserSession->new();
     my $sid = $session->start($self->{cgi}, $results);
     # for some reason the CGI::Session variant doesn't work
     print $self->{cgi}->header(
-	    -type=>'text/xml',
-	    -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
-} #____________________________________________________________________________
+	        -type=>'text/xml',
+	        -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
+    print "<xml>\n";
+    $self->{tabs}->output( 'Info', $authorizations );
+    $msg = $self->output_div($results, $authorizations);
+    print "<msg>$msg</msg>\n";
+    print "</xml>\n";
+} #___________________________________________________________________________ 
 
 
 ###############################################################################
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $info = OSCARS::WBUI::Info->new();
-    my $msg = $info->output_div($results, $authorized);
+    my $msg = $info->output_div($results, $authorizations);
     # override in this case
     $msg = "User $results->{user_login} signed in.\n";
     return $msg;

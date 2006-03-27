@@ -38,7 +38,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out:  None
 #
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $end_time;
 
@@ -102,7 +102,7 @@ sub output_div {
       <tr><td>Protocol</td><td>$protocol</td></tr>
       <tr><td>DSCP</td><td>$dscp</td></tr>
     } );
-    if ( $authorized->{ManageDomains} ) {
+    if ( $authorizations->{ManageDomains} ) {
         print( qq{
         <tr><td>Class</td><td>$results->{reservation_class}</td></tr>
         <tr><td>Ingress router</td><td>$results->{ingress_router}</td></tr>

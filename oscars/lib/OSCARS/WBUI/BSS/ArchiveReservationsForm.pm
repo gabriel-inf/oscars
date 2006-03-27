@@ -48,7 +48,7 @@ sub make_call {
 # Out:  None
 #
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $params_str;
 

@@ -37,7 +37,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # a SOAP call, if any
 #
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     # may be accessing another user's profile if an administrator
     my $login = $results->{selected_user} ? $results->{selected_user} : $results->{user_login};

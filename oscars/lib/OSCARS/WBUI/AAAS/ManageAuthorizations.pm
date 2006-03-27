@@ -39,7 +39,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # via SOAP call
 #
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $user_tab_authorizations ) = @_;
 
     my $msg = "OSCARS authorizations";
     print( qq{

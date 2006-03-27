@@ -43,14 +43,17 @@ sub make_call {
 
 
 ###############################################################################
-# output:  overrides superclass; formats and prints information page
+# output:  formats and prints information page
 #
 sub output {
-    my( $self, $som, $params, $authorized ) = @_;
+    my( $self, $som, $soap_params, $authorizations ) = @_;
+
+    my $msg;
 
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
-    my $msg = $self->output_div(undef, $authorized);
+    $self->{tabs}->output( 'Info', $authorizations );
+    $msg = $self->output_div(undef, $authorizations);
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
@@ -59,7 +62,7 @@ sub output {
 ###############################################################################
 # Outputs information section.
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $msg = "Information page";
     print qq{

@@ -89,19 +89,16 @@ sub handle_request {
     my( $self, $soap_server ) = @_;
 
     my $results;
-    my( $user_login, $authorized ) = $self->authenticate();
+    my( $user_login, $authorizations ) = $self->authenticate();
     if ( !$user_login ) { return; }
     my $soap_params = $self->modify_params();  # adapts from form params
     my $som = $self->make_call($soap_server, $soap_params);
     if (!$som) { my $results = {} ; }
     else { $results = $som->result; }
-    $self->post_process($results);
-    if (!$authorized) { $authorized = $results->{authorized}; }
+    $self->post_process($soap_params, $results);
+    if (!$authorizations) { $authorizations = $results->{authorized}; }
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
-    print "<xml>\n";
-    $self->{tabs}->output( $soap_params->{method}, $authorized );
-    $self->output($som, $soap_params, $authorized);
-    print "</xml>\n";
+    $self->output($som, $soap_params, $authorizations);
 } #___________________________________________________________________________ 
 
 
@@ -149,13 +146,11 @@ sub make_call {
 
 
 ###############################################################################
-# post_process:  Perform any operations necessary after making SOAP call.  Take
-#   care that any overriding method calls SUPER or prints the header itself.
+# post_process:  Perform any operations necessary after making SOAP call.
 #
 sub post_process {
-    my( $self, $results ) = @_;
+    my( $self, $params, $results ) = @_;
 
-    print $self->{cgi}->header( -type => 'text/xml');
 } #___________________________________________________________________________ 
 
 
@@ -163,17 +158,21 @@ sub post_process {
 # output:  formats and prints results to send back to browser
 #
 sub output {
-    my( $self, $som, $params, $authorized ) = @_;
+    my( $self, $som, $soap_params, $authorizations ) = @_;
 
     my $msg;
 
-    if (!$som) { $msg = "SOAP call $params->{method} failed"; }
+    print $self->{cgi}->header( -type => 'text/xml');
+    print "<xml>\n";
+    $self->{tabs}->output( $soap_params->{method}, $authorizations );
+    if (!$som) { $msg = "SOAP call $soap_params->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
 	my $results = $som->result;
-        $msg = $self->output_div($results, $authorized);
+        $msg = $self->output_div($results, $authorizations);
     }
     print "<msg>$msg</msg>\n";
+    print "</xml>\n";
 } #___________________________________________________________________________ 
 
 

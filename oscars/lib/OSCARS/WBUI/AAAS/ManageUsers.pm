@@ -42,7 +42,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out: None
 #
 sub output_div {
-    my ( $self, $results, $authorized ) = @_;
+    my ( $self, $results, $authorizations ) = @_;
 
     my $msg = "Successfully read user list.";
     my $users = $results->{list};

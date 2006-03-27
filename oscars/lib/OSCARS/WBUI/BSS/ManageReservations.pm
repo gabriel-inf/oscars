@@ -39,7 +39,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out:  None
 #
 sub output_div {
-    my ( $self, $results, $authorized ) = @_;
+    my ( $self, $results, $authorizations ) = @_;
 
     my $msg = "Successfully retrieved reservations.";
     print( qq{

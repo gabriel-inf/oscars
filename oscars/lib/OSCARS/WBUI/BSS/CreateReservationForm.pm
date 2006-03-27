@@ -45,13 +45,23 @@ sub modify_params {
 
 
 ###############################################################################
+# post_process:  Reset the method name to the original.
+#
+sub post_process {
+    my( $self, $params, $results ) = @_;
+
+    $params->{method} = 'CreateReservationForm';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
 # output_div:  prints out the reservation creation form
 #          accessible from the "Reservations" notebook tab
 # In:   results of SOAP call
 # Out:  None
 #
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $params_str;
 
@@ -74,7 +84,7 @@ sub output_div {
       defaults.  The default time zone is your local time.</p>
     } );
 
-    if ($authorized->{ManageDomains}) {
+    if ($authorizations->{ManageDomains}) {
         print( qq{
           <p><strong>WARNING</strong>:  Entering a value in a red-outlined field 
 	  may change default routing behavior for the selected flow.</p> } );
@@ -117,7 +127,7 @@ sub output_div {
 	    <input type='text' name='reservation_description' size='40'></input></td>
         <td>(For our records)</td></tr>
     } );
-    if ($authorized->{ManageDomains}) {
+    if ($authorizations->{ManageDomains}) {
       print( qq{
       <tr>
         <td>Ingress loopback</td>
@@ -169,7 +179,7 @@ sub output_div {
        	</td>
 	<td>0.01 (0.01 to Indefinite)</td></tr>
     } );
-    if ($authorized->{ManageDomains}) {
+    if ($authorizations->{ManageDomains}) {
         print( qq{
       <tr><td>Persistent reservation</td>
         <td><input type='checkbox' name='persistent' size='8' value='0'></input></td>

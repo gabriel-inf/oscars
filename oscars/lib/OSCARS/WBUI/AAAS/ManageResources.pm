@@ -37,7 +37,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # output_div:  print resources form, with results retrieved via SOAP call
 #
 sub output_div {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $msg = "OSCARS resources";
     print( qq{

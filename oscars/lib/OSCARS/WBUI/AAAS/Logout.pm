@@ -39,7 +39,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # post_process:  In this case, closes CGI session.
 #
 sub post_process {
-    my( $self, $results ) = @_;
+    my( $self, $params, $results ) = @_;
 
     my $session = OSCARS::WBUI::UserSession->new();
     $session->end($self->{cgi});
@@ -50,7 +50,7 @@ sub post_process {
 ###############################################################################
 #
 sub output {
-    my( $self, $results, $authorized ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     $self->{cgi}->redirect('/');
 } #____________________________________________________________________________
