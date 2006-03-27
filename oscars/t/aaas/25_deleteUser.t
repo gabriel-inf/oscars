@@ -11,7 +11,9 @@ use OSCARS::ResourceManager;
 my $db_name = 'AAAS';
 my $component_name = 'AAAS';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my( $login, $password ) = $rm->get_test_account('admin');
+my $aaa_status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
+
+my( $login, $password ) = $rm->get_test_account('testaccount');
 
 my ($status, $msg) = DeleteUser($login, $password, 'temptest');
 ok($status, $msg);

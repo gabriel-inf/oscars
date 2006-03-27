@@ -11,7 +11,9 @@ use OSCARS::ResourceManager;
 my $db_name = 'AAAS';
 my $component_name = 'AAAS';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my( $login, $password ) = $rm->get_test_account('user');
+my $aaa_status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
+
+my( $login, $password ) = $rm->get_test_account('testaccount');
 
 my ($status, $msg) = UserProfile($login, $password);
 ok($status, $msg);
@@ -27,6 +29,7 @@ sub UserProfile {
 
     $params{server} = $component_name;
     $params{method} = 'UserProfile';
+    $params{op} = 'viewProfile';
 
     my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }

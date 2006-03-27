@@ -11,20 +11,23 @@ use OSCARS::ResourceManager;
 my $db_name = 'AAAS';
 my $component_name = 'AAAS';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my( $login, $password ) = $rm->get_test_account('admin');
-my ($status, $msg) = ManageResources($login, $password);
+my $aaa_status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
+
+my( $login, $password ) = $rm->get_test_account('testaccount');
+my ($status, $msg) = ViewResources($login, $password);
 ok($status, $msg);
 print STDERR $msg;
 
 ##############################################################################
 #
-sub ManageResources {
+sub ViewResources {
     my( $user_login, $user_password ) = @_;
 
     my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $component_name;
     $params{method} = 'ManageResources';
+    $params{op} = 'viewResources';
 
     my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }

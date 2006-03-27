@@ -3,17 +3,20 @@
 use Test::Simple tests => 2;
 
 use OSCARS::ResourceManager;
-use OSCARS::User;
 use OSCARS::Method;
+use OSCARS::AAAS::User;
 
 my $db_name = 'AAAS';
 my $component_name = 'AAAS';
 
 my $rm = OSCARS::ResourceManager->new('database' => $db_name);
-my( $login, $password ) = $rm->get_test_account('user');
-my $user = OSCARS::User->new(
+my $status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
+
+my( $login, $password ) = $rm->get_test_account('testaccount');
+my $user = OSCARS::AAAS::User->new(
                       'login' => $login,
-                      'database' => $db_name);
+		      'database' => $db_name);
+$status = $user->set_authorization_style('OSCARS::AAAS::AuthZ', 'AAAS');
 
 my $factory = OSCARS::MethodFactory->new();
 ok($factory);

@@ -13,8 +13,9 @@ my $db_name = 'AAAS';
 my $aaa_component_name = 'AAAS';
 my $bss_component_name = 'BSS';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
+my $aaa_status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
 
-my( $login, $password ) = $rm->get_test_account('engr');
+my( $login, $password ) = $rm->get_test_account('testaccount');
 
 ( $status, $msg ) = FindExpiredReservations( $login, $password );
 ok( $status, $msg );

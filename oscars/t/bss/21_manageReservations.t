@@ -14,8 +14,9 @@ my $db_name = 'AAAS';
 my $aaa_component_name = 'AAAS';
 my $bss_component_name = 'BSS';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
+my $aaa_status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
 
-my( $login, $password ) = $rm->get_test_account('user');
+my( $login, $password ) = $rm->get_test_account('testaccount');
 
 my $testdb = OSCARS::Database->new();
 $testdb->connect('BSS');
@@ -143,6 +144,7 @@ sub CancelReservation {
     if ($som->faultstring) { return( 0, $som->faultstring ); }
 
     my $results = $som->result;
+    print STDERR Dumper($results);
     my $msg = "\nSuccessfully cancelled reservation $results->{reservation_id}\n";
     return( 1, $msg );
 } #___________________________________________________________________________

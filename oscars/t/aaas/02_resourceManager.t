@@ -1,16 +1,20 @@
 #!/usr/bin/perl
 
-use Test::Simple tests => 2;
+use Test::Simple tests => 3;
 
 use SOAP::Lite;
 
 use OSCARS::ResourceManager;
+use OSCARS::Method;
 
 my $db_name = 'AAAS';
 my $component_name = 'AAAS';
 
 my $rm = OSCARS::ResourceManager->new('database' => $db_name);
 ok($rm);
+
+my $status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
+ok($status);
 
 my $client = $rm->add_client();
 ok($client);

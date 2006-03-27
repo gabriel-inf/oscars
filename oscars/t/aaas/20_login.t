@@ -11,8 +11,9 @@ use OSCARS::ResourceManager;
 my $db_name = 'AAAS';
 my $component_name = 'AAAS';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
+my $aaa_status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
 
-my( $login, $password ) = $rm->get_test_account('user');
+my( $login, $password ) = $rm->get_test_account('testaccount');
 my ($status, $msg) = Login($login, $password);
 ok($status, $msg);
 print STDERR $msg;
