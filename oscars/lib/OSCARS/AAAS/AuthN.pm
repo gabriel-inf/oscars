@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 27, 2006
 
 =cut
 
@@ -65,17 +65,22 @@ sub authenticate {
     my $envelope = $daemon->{_request}->{_content};
     my $de = WSRF::Deserializer->new();
     my $req_host = $daemon->{_request}->{_headers}{host};
-    if (0) {
-    #if ($req_host !~ /localhost/ ){
+    if ($req_host !~ /localhost/ ){
         my( $user_login, $error_msg ) = 
 	        $self->verify_signature($de, $envelope);
 	# throw type of exception that main try in oscars script understands
-	if ( $error_msg ) { throw Error::Simple($error_msg); }
-	$user = get_user($user_login, $self->{database}); 
+#	if ( $error_msg ) { throw Error::Simple($error_msg); }
+	if ( !$error_msg ) {
+	   $user = $self->get_user($user_login, $self->{database}); 
+	   return $user;
+	
+	} else { print STDERR "return from verify_signature is $error_msg \n";}
     }
     # otherwise, message came via web interface, use login name and password
     # in params for authentication
-    else { $user = $self->verify_login($params); }
+    #else { $user = $self->verify_login($params); }
+    # for now drop thru if message is not signed. Assume  message carries password.
+    $user = $self->verify_login($params);
     return $user;
 } #____________________________________________________________________________
 
@@ -89,35 +94,29 @@ sub authenticate {
 sub verify_signature {
     my( $self, $de, $envelope ) = @_;
 
-    my( $user_login, $ex );
-
-    try {
-        my $msg_som = $de->deserialize($envelope);
-        my %verify_results = WSRF::WSS::verify($msg_som);
-        print STDERR "received signed message\n";
-        # print "$verify_results(X509) \n";
-        my $x509_pem = $verify_results{X509};
-        my $X509 = Crypt::OpenSSL::X509->new_from_string($x509_pem);
-        my $subject = $X509->subject();
-        my $issuer =$X509->issuer();
-        # print STDERR "$issuer \n$subject\n";
-        my $query = "SELECT user_login FROM users " .
-                    "WHERE user_cert_subject = '$subject'";
-        my $dbconn = OSCARS::Database->new();
-        $dbconn->connect($self->{database});
-        my $row = $dbconn->do_query($query);
-        $user_login = $row->{user_login};
-        $dbconn->disconnect();
-        print $STDERR "user is $user_login\n";
+    my ( $user_login, $ex );
+    my %verify_results;
+    my $msg_som = $de->deserialize($envelope);
+    eval { %verify_results = WSRF::WSS::verify($msg_som); };
+    if ($@) {
+	$ex = $@;
+	return ($user_login,$ex);
     }
-    catch Error::Simple with {$ex = shift; }
-    otherwise { $ex = shift; }
-    finally {
-        if ($ex) {
-            print STDERR $ex->{-text}, "\n";
-            print STDERR "received unsigned message\n";
-        }
-    };
+    print STDERR "received signed message\n";
+    # print "$verify_results(X509) \n";
+    my $x509_pem = $verify_results{X509};
+    my $X509 = Crypt::OpenSSL::X509->new_from_string($x509_pem);
+    my $subject = $X509->subject();
+    my $issuer =$X509->issuer();
+    print STDERR "$issuer \n$subject\n";
+    my $query = "SELECT user_login FROM users " .
+                    "WHERE user_cert_subject = '$subject'";
+    my $dbconn = OSCARS::Database->new();
+    $dbconn->connect($self->{database});
+    my $row = $dbconn->get_row($query);
+    $user_login = $row->{user_login};
+    $dbconn->disconnect();
+    print STDERR "user is $user_login\n";
     return( $user_login, $ex );
 } #____________________________________________________________________________
 
