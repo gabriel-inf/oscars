@@ -34,9 +34,7 @@ CREATE TABLE IF NOT EXISTS institutions (
 
 CREATE TABLE IF NOT EXISTS resources (
     resource_id			INT NOT NULL AUTO_INCREMENT,
-    resource_hidden		BOOLEAN NOT NULL,
     resource_name		TEXT NOT NULL,
-    resource_type               TEXT NOT NULL,
     resource_description	TEXT,
     resource_update_time	DATETIME NOT NULL,
     PRIMARY KEY (resource_id)
