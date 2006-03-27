@@ -46,6 +46,16 @@ sub modify_params {
 
 
 ###############################################################################
+# post_process:  Reset the method name to the original.
+#
+sub post_process {
+    my( $self, $params, $results ) = @_;
+
+    $params->{method} = 'AddUserForm';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
 # output_div: print add user form.
 #
 sub output_div {
