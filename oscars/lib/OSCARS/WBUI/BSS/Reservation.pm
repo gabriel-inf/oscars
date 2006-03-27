@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::BSS::Reservation;
+package OSCARS::WBUI::BSS::ReservationDetails;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::Reservation - handles request to view a reservation's details
+OSCARS::WBUI::BSS::ReservationDetails - handles request to view a reservation's details
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::BSS::Reservation;
+  use OSCARS::WBUI::BSS::ReservationDetails;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 19, 2006
+March 24, 2006
 
 =cut
 
@@ -38,7 +38,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out:  None
 #
 sub output_div {
-    my( $self, $results ) = @_;
+    my( $self, $results, $authorized ) = @_;
 
     my $end_time;
 
@@ -74,7 +74,7 @@ sub output_div {
     }
 
     my $refresh_submit_str = "return submit_form(this,
-             'server=BSS;method=Reservation;');";
+             'server=BSS;method=ReservationDetails;');";
     print( qq{
     <form method="post" action="" onsubmit="$refresh_submit_str">
     <input type='hidden' name='reservation_id'
@@ -102,7 +102,7 @@ sub output_div {
       <tr><td>Protocol</td><td>$protocol</td></tr>
       <tr><td>DSCP</td><td>$dscp</td></tr>
     } );
-    if ( $results->{authorizations}->{ChangeDefaultRouting} ) {
+    if ( $authorized->{ManageDomains} ) {
         print( qq{
         <tr><td>Class</td><td>$results->{reservation_class}</td></tr>
         <tr><td>Ingress router</td><td>$results->{ingress_router}</td></tr>
