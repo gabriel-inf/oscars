@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS resources (
     resource_id			INT NOT NULL AUTO_INCREMENT,
     resource_name		TEXT NOT NULL,
     resource_description	TEXT,
-    resource_update_time	DATETIME NOT NULL,
+    resource_update_time	DATETIME,
     PRIMARY KEY (resource_id)
 ) type=MyISAM;
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS permissions (
     permission_id		INT NOT NULL AUTO_INCREMENT,
     permission_name		TEXT NOT NULL,
     permission_description	TEXT,
-    permission_update_time	DATETIME NOT NULL,
+    permission_update_time	DATETIME,
     PRIMARY KEY (permission_id)
 ) type=MyISAM;
 
@@ -57,8 +57,8 @@ CREATE TABLE IF NOT EXISTS resourcepermissions (
 
 CREATE TABLE IF NOT EXISTS authorizations (
     authorization_id		INT NOT NULL AUTO_INCREMENT,
-    authorization_context	TEXT NOT NULL,
-    authorization_update_time	DATETIME NOT NULL,
+    authorization_context	TEXT,
+    authorization_update_time	DATETIME,
     user_id			INT NOT NULL,	-- foreign key
     resource_id 		INT NOT NULL,	-- foreign key
     permission_id		INT NOT NULL,	-- foreign key
