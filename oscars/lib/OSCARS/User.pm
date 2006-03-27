@@ -1,13 +1,13 @@
-#==============================================================================
-package OSCARS::User;
+# =============================================================================
+package OSCARS::AAAS::User;
 
 =head1 NAME
 
-OSCARS::User - Handles user database connections, sessions, and history.
+OSCARS::AAAS::User - Handles user db connections, history, authorizations.
 
 =head1 SYNOPSIS
 
-  use OSCARS::User;
+  use OSCARS::AAAS::User;
 
 =head1 DESCRIPTION
 
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -70,6 +70,44 @@ sub set_authenticated {
     my( $self, $auth_status ) = @_;
 
     $self->{is_authenticated} = $auth_status;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# set_authorization_style:  Set current authorization style to a given package
+#                           for all SOAP methods (a class method).
+#
+sub set_authorization_style {
+    my( $self, $package_name, $database ) = @_;
+
+    my $location = $package_name . '.pm';
+    $location =~ s/(::)/\//g;
+    eval { require $location };
+    # overwrites any previous authorization style
+    if (!$@) {
+        $self->{authZ} = $package_name->new('database' => $database);
+        $self->{authorizations} = $self->{authZ}->get_authorizations($self);
+	return 1;
+    }
+    else { return 0; }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# authorized:  See if user has permission to use a given resource.
+sub authorized {
+    my( $self, $resource_name, $permission_name ) = @_;
+
+    return $self->{authZ}->authorized($self, $resource_name, $permission_name);
+} #____________________________________________________________________________
+
+
+###############################################################################
+# get_authorizations:  returns user's cached authorizations.
+sub get_authorizations {
+    my( $self ) = @_;
+
+    return $self->{authorizations};
 } #____________________________________________________________________________
 
 
