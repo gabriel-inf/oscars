@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 28, 2006
+March 24, 2006
 
 =cut
 
@@ -31,8 +31,6 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 use Socket;
-
-use OSCARS::User;
 
 sub new {
     my( $class, %args ) = @_;
@@ -58,7 +56,7 @@ sub view_details {
     my( $statement, $row );
 
     my $user_login = $self->{user}->{login};
-    if ( $params->{authorizations}->{ChangeDefaultRouting} ) {
+    if ( $self->{user}->authorized('Reservations', 'manage') ) {
         $statement = 'SELECT * FROM BSS.reservations';
         $statement .= ' WHERE reservation_id = ?';
         $row = $self->{user}->get_row($statement, $params->{reservation_id});

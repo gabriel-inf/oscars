@@ -25,7 +25,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -35,8 +35,6 @@ use strict;
 use File::Basename;
 use Data::Dumper;
 use Error qw(:try);
-
-use OSCARS::User;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -51,6 +49,10 @@ sub soap_method {
 
     my( @file_list, $router_info );
 
+    if ( !$self->{user}->authorized('Domains', 'manage') ) {
+        throw Error::Simple(
+            "User $self->{user}->{login} not authorized to update routers");
+    }
     chdir($self->{params}->{directory});
     opendir(DATADIR, ".") or die "Directory: $self->{params}->{directory}: $!";
     # For now, assumes all files are data files

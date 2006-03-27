@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-March 3, 2006
+March 24, 2006
 
 =cut
 
@@ -32,7 +32,6 @@ use Data::Dumper;
 use Socket;
 use Error qw(:try);
 
-use OSCARS::User;
 use OSCARS::BSS::JnxTraceroute;
 use OSCARS::BSS::JnxSNMP;
 

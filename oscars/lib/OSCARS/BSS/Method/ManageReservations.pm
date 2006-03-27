@@ -16,11 +16,12 @@ SOAP method to manage reservations.
 =head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov),
+Jason Lee (jrlee@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -62,39 +63,49 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
+    if (!$self->{params}->{op}) {
+        throw Error::Simple("SOAP method $self->{params}->{method} requires specifying an operation");
+    }
     my $results = {};
-    if ($self->{params}->{op}) {
-        if ($self->{params}->{op} eq 'createReservation') {
-            $self->create_reservation( $self->{user}, $self->{params} );
-            # in this case, want to pass back current status of parameters, not
-            # list of reservations
-            if ( $self->{params}->{next_domain} ) {
-                return $self->{params};
-            }
+    my $msg;
+    $results->{user_login} = $self->{user}->{login};
+    if ( $self->{params}->{op} eq 'createReservationForm' ) {
+        return $results;
+    }
+    elsif ($self->{params}->{op} eq 'viewReservations') {
+        ;
+    }
+    elsif ($self->{params}->{op} eq 'createReservation') {
+        $self->create_reservation( $self->{user}, $self->{params} );
+        # in this case, want to pass back current status of parameters, not
+        # list of reservations
+        if ( $self->{params}->{next_domain} ) {
+            return $self->{params};
         }
-        elsif ($self->{params}->{op} eq 'cancelReservation') {
-            $self->cancel_reservation( $self->{user}, $self->{params} );
-        }
-        elsif ($self->{params}->{op} eq 'archiveReservations') {
+        $msg = 'Created reservation';
+        $self->{logger}->add_string("Created reservation.");
+        $self->{logger}->write_file( $self->{user}->{login},
+                                     $self->{params}->{method});
+    }
+    elsif ($self->{params}->{op} eq 'cancelReservation') {
+        $self->cancel_reservation( $self->{user}, $self->{params} );
+        $self->{logger}->add_string("Cancelled reservation.");
+        $self->{logger}->write_file( $self->{user}->{login},
+                                     $self->{params}->{method});
+    }
+    elsif ( ($self->{params}->{op} eq 'archiveReservations' ) &&
+        ($self->{user}->authorized('Reservations', 'manage'))) {
             $self->archive_reservations( $self->{user}, $self->{params} );
-        }
     }
-    if ( !( ($self->{params}->{op} ) && 
-          ($self->{params}->{op} eq 'createReservationForm' ))) {
-        $results->{list} =
-            $self->get_reservations($self->{user}, $self->{params});
-        $self->{logger}->add_string("Successfully retrieved reservations.");
-        $self->{logger}->write_file(
-                               $self->{user}->{login}, $self->{params}->{method});
-    }
+    $results->{list} = $self->get_reservations($self->{user}, $self->{params});
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 # get_reservations:  get reservations from the database.  If the user has
-#     engr privileges, they can view all reservations.  Otherwise they can
-#     only view their own.
+#     the 'manage' permission on the 'Reservations' resource, they can view 
+#     all reservations.  Otherwise they can only view their own.
 #
 # In:  reference to hash of parameters
 # Out: reference to array of hashes
@@ -104,8 +115,7 @@ sub get_reservations {
 
     my( $rows, $statement );
 
-    # TODO:  don't use ChangeDefaultRouting as blanket engr authorization
-    if ( $params->{authorizations}->{ChangeDefaultRouting} ) {
+    if ( $self->{user}->authorized('Reservations', 'manage') ) {
         $statement = "SELECT * FROM BSS.reservations" .
                      ' ORDER BY reservation_start_time';
         $rows = $user->do_query($statement);
@@ -180,9 +190,11 @@ sub create_reservation {
 sub cancel_reservation {
     my( $self, $user, $params ) = @_;
 
+    # TODO:  ensure unprivileged user can't cancel another's reservation
     my $status =  $self->{resv_lib}->update_status( $params->{reservation_id},
                                                     'precancel' );
     my $results = $self->{resv_lib}->view_details($params);
+    $results->{reservation_id} = $params->{reservation_id};
     $self->{time_lib}->convert_times($results);
     $self->{logger}->add_hash($results);
     $self->{logger}->write_file($user->{login}, $params->{method});
@@ -407,9 +419,11 @@ sub build_results  {
                  WHERE reservation_id = ?";
     $unused = $user->do_query($statement,
                       $results->{reservation_tag}, $results->{reservation_id});
-    # get loopback fields if have engr privileges
-    # TODO:  need authorization for these fields
-    $self->{resv_lib}->get_engr_fields($results); 
+    # Get loopback fields if authorized.
+    if ( $self->{user}->authorized('Reservations', 'manage') ||
+         $self->{user}->authorized('Domains', 'set' ) ) {
+        $self->{resv_lib}->get_engr_fields($results); 
+    }
     $results->{reservation_tag} =~ s/@/../;
     $results->{reservation_status} = 'pending';
     return $results;

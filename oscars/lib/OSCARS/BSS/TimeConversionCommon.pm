@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 13, 2006
+March 24, 2006
 
 =cut
 
@@ -32,8 +32,6 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 use Socket;
-
-use OSCARS::User;
 
 sub new {
     my( $class, %args ) = @_;

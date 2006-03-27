@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -34,7 +34,6 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::User;
 use OSCARS::BSS::SchedulerCommon;
 use OSCARS::BSS::TimeConversionCommon;
 use OSCARS::BSS::ReservationCommon;
@@ -68,6 +67,10 @@ sub soap_method {
     my( $reservations, $status );
     my( $error_msg );
 
+    if ( !$self->{user}->authorized('Domains', 'manage') ) {
+        throw Error::Simple(
+            "User $self->{user}->{login} not authorized to manage circuits");
+    }
     # find reservations whose end time is before the current time and
     # thus expired
     $reservations = $self->find_expired_reservations($self->{params}->{time_interval});
