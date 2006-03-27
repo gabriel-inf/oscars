@@ -11,7 +11,7 @@ OSCARS::AAAS::Method::ManageInstitutions - handles operations on institutions ta
 
 =head1 DESCRIPTION
 
-Library for operations on users table (selecting, adding, deleting).
+Library for operations on institutions table (currently only retrieving).
 
 =head1 AUTHOR
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 

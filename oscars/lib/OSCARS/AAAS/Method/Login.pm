@@ -16,11 +16,10 @@ SOAP method for OSCARS login.  It inherits from OSCARS::Method.
 =head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov)
-Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
@@ -68,6 +67,15 @@ sub soap_method {
     my $results = {};
     $results->{user_login} = $user_login;
     $results->{user_password} = 'hidden';
+    # used to indicate which tabbed pages that require authorization can
+    # be displayed
+    $results->{authorized} = {};
+    if ( $self->{user}->authorized('Users', 'manage') ) {
+        $results->{authorized}->{ManageUsers} = 1;
+    }
+    if ( $self->{user}->authorized('Domains', 'manage') ) {
+        $results->{authorized}->{ManageDomains} = 1;
+    }
     return $results;
 } #____________________________________________________________________________
 

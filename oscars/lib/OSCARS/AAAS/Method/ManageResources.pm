@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 28, 2006
+March 24, 2006
 
 =cut
 
@@ -68,27 +68,46 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    if ($self->{params}->{op}) {
-        if ($self->{params}->{op} eq 'addResource') {
-            $self->{lib}->add_row( $self->{user}, $self->{params},
-	                           'Resources' );
-        }
-        elsif ($self->{params}->{op} eq 'addResourcePermission') {
-            $self->add_row( $self->{user}, $self->{params},
-	                    'ResourcePermissions' );
-        }
-        elsif ($self->{params}->{op} eq 'deleteResource') {
-            $self->delete_resource( $self->{user}, $self->{params} );
-        }
-        elsif ($self->{params}->{op} eq 'deleteResourcePermission') {
-            $self->delete_resource_permission($self->{user}, $self->{params} );
-        }
+    if ( !$self->{user}->authorized('Users', 'manage') ) {
+        throw Error::Simple(
+            "User $self->{user}->{login} not authorized to manage resources");
     }
-    my $results =
-        $self->get_resource_tables($self->{user}, $self->{params});
-    $self->{logger}->add_string("Resources page");
-    $self->{logger}->write_file(
-                               $self->{user}->{login}, $self->{params}->{method});
+    if ( !$self->{params}->{op} ) {
+        throw Error::Simple(
+            "Method $self->{params}->{method} requires specification of an operation");
+    }
+    my $results = {};
+    if ($self->{params}->{op} eq 'viewResources') {
+        $results = $self->get_resource_tables($self->{user}, $self->{params});
+    }
+    elsif ($self->{params}->{op} eq 'addResource') {
+        $self->{lib}->add_row( $self->{user}, $self->{params}, 'Resources' );
+        $results = $self->get_resource_tables($self->{user}, $self->{params});
+        $self->{logger}->add_string("Added resource.");
+        $self->{logger}->write_file($self->{user}->{login},
+                                    $self->{params}->{method});
+    }
+    elsif ($self->{params}->{op} eq 'addResourcePermission') {
+        $self->add_row($self->{user}, $self->{params}, 'ResourcePermissions');
+        $results = $self->get_resource_tables($self->{user}, $self->{params});
+        $self->{logger}->add_string("Added resourcepermission.");
+        $self->{logger}->write_file($self->{user}->{login},
+                                    $self->{params}->{method});
+    }
+    elsif ($self->{params}->{op} eq 'deleteResource') {
+        $self->delete_resource( $self->{user}, $self->{params} );
+        $results = $self->get_resource_tables($self->{user}, $self->{params});
+        $self->{logger}->add_string("Removed resource.");
+        $self->{logger}->write_file($self->{user}->{login},
+                                    $self->{params}->{method});
+    }
+    elsif ($self->{params}->{op} eq 'deleteResourcePermission') {
+        $self->delete_resource_permission($self->{user}, $self->{params} );
+        $results = $self->get_resource_tables($self->{user}, $self->{params});
+        $self->{logger}->add_string("Removed resourcepermission.");
+        $self->{logger}->write_file($self->{user}->{login},
+                                    $self->{params}->{method});
+    }
     return $results;
 } #____________________________________________________________________________
 

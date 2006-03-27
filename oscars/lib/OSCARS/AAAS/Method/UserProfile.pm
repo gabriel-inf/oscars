@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-February 13, 2006
+March 24, 2006
 
 =cut
 
@@ -31,7 +31,6 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::User;
 use OSCARS::AAAS::Method::ManageInstitutions;
 
 our @ISA = qw{OSCARS::Method};
@@ -61,13 +60,16 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    my $results;
-    if ($self->{params}->{op}) {
-        if ($self->{params}->{op} eq 'modifyProfile') {
-            $results = $self->modify_profile( $self->{user}, $self->{params} );
-        }
+    if ( !$self->{params}->{op} ) {
+        throw Error::Simple(
+            "Method $self->{params}->{method} requires specification of an operation");
     }
-    else { $results = $self->get_profile( $self->{user}, $self->{params} ); }
+    my $results = {};
+    if ($self->{params}->{op} eq 'viewProfile') {
+        $results = $self->get_profile( $self->{user}, $self->{params} ); }
+    elsif ($self->{params}->{op} eq 'modifyProfile') {
+        $results = $self->modify_profile( $self->{user}, $self->{params} );
+    }
     $results->{institution_list} =
                 $self->{institutions}->get_institutions( $self->{user} );
     return $results;
@@ -85,7 +87,7 @@ sub soap_method {
 sub get_profile {
     my( $self, $user, $params ) = @_;
 
-    my( $statement, $msg, $results );
+    my( $statement, $results );
 
     # only happens if coming in from ManageProfile form, which requires
     # additional authorization
@@ -96,14 +98,12 @@ sub get_profile {
         if ( !$results ) {
             throw Error::Simple("No such user $params->{selected_user}.");
         }
-        $msg = "User profile for $params->{selected_user}";
         $results->{user_id} = 'hidden';
     }
     else {
         $statement = "SELECT $self->{user_profile_fields} FROM users " .
                      'WHERE user_login = ?';
         $results = $user->get_row($statement, $user->{login});
-        $msg = "User profile for $user->{login}";
     }
     $results->{institution_name} = $self->{institutions}->get_name(
                                            $user, $results->{institution_id});
@@ -112,9 +112,6 @@ sub get_profile {
     $results->{selected_user} = $params->{selected_user};
     # X out password
     $results->{user_password} = 'hidden';
-    $self->{logger}->add_string($msg);
-    $self->{logger}->add_hash($results);
-    $self->{logger}->write_file( $user->{login}, $params->{method} );
     return $results;
 } #____________________________________________________________________________
 
@@ -129,7 +126,7 @@ sub get_profile {
 sub modify_profile {
     my( $self, $user, $params ) = @_;
 
-    my( $statement, $msg, $results );
+    my( $statement, $results );
 
     # only happens if coming in from ManageProfile form, which requires
     # additional authorization
@@ -140,9 +137,7 @@ sub modify_profile {
         if ( !$results ) {
             throw Error::Simple("No such user $params->{selected_user}.");
         }
-        $msg = "Modified profile for $params->{selected_user}";
     }
-    else { $msg = "Modified profile for $user->{login}"; }
     $params->{user_login} = $user->{login};
 
     # If the password needs to be updated, set the input password field to
@@ -178,9 +173,6 @@ sub modify_profile {
     $results->{user_login} = $user->{login};
     $results->{institution_name} = $params->{institution_name};
     $results->{user_password} = 'hidden';
-    $self->{logger}->add_string($msg);
-    $self->{logger}->add_hash($results);
-    $self->{logger}->write_file( $user->{login}, $params->{method} );
     return $results;
 } #____________________________________________________________________________
 

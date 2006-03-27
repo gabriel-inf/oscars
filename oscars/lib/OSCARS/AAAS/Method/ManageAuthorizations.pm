@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 29, 2006
+March 24, 2006
 
 =cut
 
@@ -74,22 +74,34 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    if ($self->{params}->{op}) {
-        if ($self->{params}->{op} eq 'addAuthorization') {
-            $self->{lib}->add_row( $self->{user}, $self->{params},
-	                           'Authorizations' );
-        }
-        elsif ($self->{params}->{op} eq 'deleteAuthorization') {
-            $self->delete_reservation( $self->{user}, $self->{params} );
-        }
-        elsif ($self->{params}->{op} eq 'SelectUser') {
-            $self->select_user( $self->{user}, $self->{params} );
-        }
+    if ( !$self->{user}->authorized('Users', 'manage') ) {
+        throw Error::Simple(
+            "User $self->{user}->{login} not authorized to manage authorizations");
     }
-    my $results =
-            $self->get_authorizations($self->{user}, $self->{params});
-    $self->{logger}->add_string("Authorizations page");
-    $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
+    if (!$self->{params}->{op}) {
+        throw Error::Simple(
+            "Method $self->{params}->{method} requires operation to be specified");
+    }
+    my $results = {};
+    if ($self->{params}->{op} eq 'viewAuthorizations') {
+        $results = $self->get_authorizations($self->{user}, $self->{params});
+    }
+    elsif ($self->{params}->{op} eq 'addAuthorization') {
+        $self->{lib}->add_row( $self->{user}, $self->{params},
+                               'Authorizations' );
+        $results = $self->get_authorizations($self->{user}, $self->{params});
+        $self->{logger}->add_string("Added authorization.");
+        $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
+    }
+    elsif ($self->{params}->{op} eq 'deleteAuthorization') {
+        $self->delete_reservation( $self->{user}, $self->{params} );
+        $results = $self->get_authorizations($self->{user}, $self->{params});
+        $self->{logger}->add_string("Removed authorization.");
+        $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
+    }
+    elsif ($self->{params}->{op} eq 'selectUser') {
+	;
+    }
     return $results;
 } #____________________________________________________________________________
 
@@ -105,21 +117,13 @@ sub get_authorizations {
     my( $self, $user, $params ) = @_;
 
     my $results = {};
-
-    my $statement = "SELECT user_login FROM users WHERE user_status = 'role'";
-    $results->{roles} = {};
-    my $aux_results = $user->do_query($statement);
-    for my $row (@$aux_results) { $results->{roles}->{$row->{user_login}} = 1; }
-
-    $statement =    "SELECT user_login FROM users WHERE user_status != 'role'";
+    my $statement = "SELECT user_login FROM users";
     $results->{users} = {};
-    $aux_results =   $user->do_query($statement);
+    my $aux_results = $user->do_query($statement);
     for my $row (@$aux_results) { $results->{users}->{$row->{user_login}} = 1; }
 
     $results->{resource_permissions} = $self->{lib}->get_resource_permissions(
 	                                       $self->{user}, $self->{params});
-    $self->{logger}->add_string("Authorizations page");
-    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 

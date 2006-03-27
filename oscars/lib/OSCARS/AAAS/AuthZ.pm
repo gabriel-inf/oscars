@@ -12,15 +12,17 @@ OSCARS::AAAS::AuthZ - handles authorization for OSCARS.
 =head1 DESCRIPTION
 
 This module handles OSCARS authorization.  It queries the database to
-see if a user is authorized to perform an action.
+see if a user is authorized to perform an action.  There is one instance of
+this per user.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov)
+Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 15, 2006
+March 24, 2006
 
 =cut
 
@@ -38,128 +40,90 @@ sub new {
     my ($self) = {%args};
   
     bless($self, $class);
-    $self->initialize();
     return($self);
-}
-
-sub initialize {
-    my( $self ) = @_;
-
-    my $dbconn = OSCARS::Database->new();
-    $dbconn->connect($self->{database});
-    $self->set_permissions($dbconn);
-    $self->set_authorizations($dbconn);
-    $dbconn->disconnect();
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# set_permissions:  Gets all permissions associated with all resources, and
-#                   caches them.
+# get_resource_permissions:  Gets all permissions associated with all 
+#     resources.
 #
-sub set_permissions {
-    my( $self, $dbconn ) = @_;
+sub get_resource_permissions {
+    my( $self, $user ) = @_;
 
     my( $row, $resource_name, $permission_name );
 
     my $statement = "SELECT resource_id, permission_id " .
                     "FROM resourcepermissions";
-    my $results = $dbconn->do_query($statement);
+    my $results = $user->do_query($statement);
     my $resource_permissions = {};
     $statement = "SELECT resource_name FROM resources " .
                  "WHERE resource_id = ?";
     my $pstatement = "SELECT permission_name FROM permissions " .
                  "WHERE permission_id = ?";
     for my $perm ( @$results ) {
-	$row = $dbconn->get_row($statement, $perm->{resource_id});
+	$row = $user->get_row($statement, $perm->{resource_id});
 	$resource_name = $row->{resource_name};
         if ( !$resource_permissions->{$resource_name} ) {
             $resource_permissions->{$resource_name} = {};
         }
-	$row = $dbconn->get_row($pstatement, $perm->{permission_id});
+	$row = $user->get_row($pstatement, $perm->{permission_id});
 	$permission_name = $row->{permission_name};
         $resource_permissions->{$resource_name}->{$permission_name} = 1;
     }
-    $self->{resource_permissions} = $resource_permissions;
+    return $resource_permissions;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# set_authorizations:  gets all authorizations from database, and caches them.
+# get_authorizations:  get all authorizations for the specified user.
 #
-sub set_authorizations {
-    my( $self, $dbconn ) = @_;
+sub get_authorizations {
+    my( $self, $user ) = @_;
 
-    my( $row, $login, $resource_name, $permission_name );
+    my( $row, $resource_name, $permission_name );
 
     my $auths = {};
-    my $statement = "SELECT user_id, resource_id, permission_id " .
-                    "FROM authorizations";
-    my $results = $dbconn->do_query($statement);
-    my $ustatement = "SELECT user_login from users where user_id = ?";
+    my $statement = "SELECT user_id from users where user_login = ?";
+    my $results = $user->get_row($statement, $user->{login});
+    my $user_id = $results->{user_id};
+
+    $statement = "SELECT resource_id, permission_id FROM authorizations " .
+                 "WHERE user_id = ?";
+    $results = $user->do_query($statement, $user_id);
     my $rstatement = "SELECT resource_name FROM resources " .
                      "WHERE resource_id = ?";
     my $pstatement = "SELECT permission_name FROM permissions " .
                      "WHERE permission_id = ?";
-    for my $auth ( @$results ) {
-	$row = $dbconn->get_row($ustatement, $auth->{user_id});
-	$login = $row->{user_login};
-        if ( !$auths->{$login} ) {
-            $auths->{$login} = {};
-        }
-	$row = $dbconn->get_row($rstatement, $auth->{resource_id});
+    for my $pair ( @$results ) {
+	$row = $user->get_row($rstatement, $pair->{resource_id});
 	$resource_name = $row->{resource_name};
-        if ( !$auths->{$login}->{$resource_name} ) {
-            $auths->{$login}->{$resource_name} = {};
+        if ( !$auths->{$resource_name} ) {
+            $auths->{$resource_name} = {};
 	}
-	$row = $dbconn->get_row($pstatement, $auth->{permission_id});
+	$row = $user->get_row($pstatement, $pair->{permission_id});
 	$permission_name = $row->{permission_name};
-        $auths->{$login}->{$resource_name}->{$permission_name} = 1;
+        $auths->{$resource_name}->{$permission_name} = 1;
     }
-    $self->{authorizations} = $auths;
+    return $auths;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# authorized:  See if user has authorization to use a given resource.
-sub authorized {
-    my( $self, $user, $params ) = @_;
-
-    my $resource_name = $params->{method};
-    my $login = $user->{login};
-    if ( !$self->{authorizations}->{$login}->{$resource_name} ||
-         !$self->{resource_permissions}->{$resource_name} ) {
-            throw Error::Simple(
-                "User $login not authorized to use $resource_name");
-    }
-    my $permissions_necessary =
-            $self->{resource_permissions}->{$resource_name};
-    my $permissions_obtained =
-            $self->{authorizations}->{$login}->{$resource_name};
-    # user must have all necessary permissions
-    for my $testperm (keys %{$permissions_necessary} ) {
-	if ( !$permissions_obtained->{$testperm} ) {
-            throw Error::Simple(
-                "User $login not authorized to use $resource_name");
-        }
-    } 
-    return $self->get_authorizations($login);
-} #____________________________________________________________________________
-
-
-###############################################################################
-# get_authorizations:  Get all authorizations, or just associations
-#    associated with a particular user.
+# authorized:  See if user has a specific permission on a given resource.
 #
-sub get_authorizations {
-    my( $self, $selected_user ) = @_;
+sub authorized {
+    my( $self, $user, $resource_name, $permission_name ) = @_;
 
-    if ( $selected_user ) {
-        return $self->{authorizations}->{$selected_user};
+    if ( !$user->{authorizations}->{$resource_name} ) {
+	return 0;
     }
-    return $self->{authorizations};
+    elsif ( !$user->{authorizations}->{$resource_name}->{$permission_name} ) {
+        return 0;
+    }
+    return 1;
 } #____________________________________________________________________________
-	   
+
 
 ######
 1;

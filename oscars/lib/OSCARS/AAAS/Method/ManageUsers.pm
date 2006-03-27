@@ -20,14 +20,13 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 10, 2006
+March 24, 2006
 
 =cut
 
 
 use strict;
 
-use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::AAAS::Method::ManageInstitutions;
@@ -93,28 +92,37 @@ sub soap_method {
 
     my( $msg );
 
-    my $results = {};
-    if ($self->{params}->{op}) {
-        if ($self->{params}->{op} eq 'addUser') {
-            $self->add_user( $self->{user}, $self->{params} );
-	    $msg = "$self->{user}->{login} added user $self->{params}->{selected_user}";
-        }
-        elsif ($self->{params}->{op} eq 'deleteUser') {
-            $self->delete_user( $self->{user}, $self->{params} );
-	    $msg = "$self->{user}->{login} deleted user $self->{params}->{selected_user}";
-        }
-        elsif ($self->{params}->{op} eq 'addUserForm') {
-	    $results->{institution_list} =
-                $self->{institutions}->get_institutions( $self->{user} );
-        }
+    if ( !$self->{user}->authorized('Users', 'manage') ) {
+        throw Error::Simple(
+            "User $self->{user}->{login} not authorized to manage users");
     }
-    else { $msg = 'User list'; }
-    if ( !( ($self->{params}->{op} ) && 
-          ($self->{params}->{op} eq 'addUserForm' ))) {
+    if ( !$self->{params}->{op} ) {
+        throw Error::Simple(
+            "Method $self->{params}->{method} requires specification of an operation");
+    }
+    my $results = {};
+    if ($self->{params}->{op} eq 'addUserForm') {
+        $results->{institution_list} =
+                $self->{institutions}->get_institutions( $self->{user} );
+    }
+    elsif ($self->{params}->{op} eq 'viewUsers') {
         $results->{list} = $self->get_users($self->{user}, $self->{params});
+    }
+    elsif ($self->{params}->{op} eq 'addUser') {
+        $self->add_user( $self->{user}, $self->{params} );
+        $results->{list} = $self->get_users($self->{user}, $self->{params});
+        $msg = "$self->{user}->{login} added user $self->{params}->{selected_user}";
         $self->{logger}->add_string($msg);
-        $self->{logger}->write_file(
-                               $self->{user}->{login}, $self->{params}->{method});
+        $self->{logger}->write_file( $self->{user}->{login},
+                                     $self->{params}->{method} );
+    }
+    elsif ($self->{params}->{op} eq 'deleteUser') {
+        $self->delete_user( $self->{user}, $self->{params} );
+        $results->{list} = $self->get_users($self->{user}, $self->{params});
+        $msg = "$self->{user}->{login} deleted user $self->{params}->{selected_user}";
+        $self->{logger}->add_string($msg);
+        $self->{logger}->write_file( $self->{user}->{login},
+                                     $self->{params}->{method} );
     }
     return $results;
 } #____________________________________________________________________________
