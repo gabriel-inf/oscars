@@ -30,11 +30,11 @@ my( $status, $msg, $reservation_id ) = CreateReservation(
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = ManageReservations($login, $password);
+( $status, $msg ) = ViewReservations($login, $password);
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = Reservation($login, $password, $reservation_id);
+( $status, $msg ) = ReservationDetails($login, $password, $reservation_id);
 ok( $status, $msg );
 print STDERR $msg;
 
@@ -80,7 +80,7 @@ sub CreateReservation {
 
 ###############################################################################
 #
-sub ManageReservations {
+sub ViewReservations {
     my ( $user_login, $user_password ) = @_;
 
     # password necessary for test to run, but not for this method in general
@@ -88,6 +88,7 @@ sub ManageReservations {
 
     $params{server} = $bss_component_name;
     $params{method} = 'ManageReservations';
+    $params{op} = 'viewReservations';
 
     my $som = $rm->add_client()->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -103,14 +104,14 @@ sub ManageReservations {
 
 #############################################################################
 #
-sub Reservation {
+sub ReservationDetails {
     my ( $user_login, $user_password, $reservation_id ) = @_;
 
     # password necessary for test to run, but not for this method in general
     my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
-    $params{method} = 'Reservation';
+    $params{method} = 'ReservationDetails';
     $params{reservation_id} = $reservation_id;
 
     my $som = $rm->add_client()->dispatch(\%params);
