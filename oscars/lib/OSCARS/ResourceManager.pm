@@ -11,7 +11,7 @@ OSCARS::ResourceManager - resource manager for OSCARS.
 
 =head1 DESCRIPTION
 
-Handles resources and authentication styles associated with OSCARS.
+Handles resources and authentication plugins associated with OSCARS.
 
 =head1 AUTHORS
 
@@ -20,7 +20,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 27, 2006
 
 =cut
 
@@ -116,15 +116,15 @@ sub forward {
 
 
 ###############################################################################
-# set_authentication_style:  Set current authentication style to given package.
+# use_authentication_plugin:  use given authentication package.
 #
-sub set_authentication_style {
+sub use_authentication_plugin {
     my( $self, $package_name, $database ) = @_;
 
     my $location = $package_name . '.pm';
     $location =~ s/(::)/\//g;
     eval { require $location };
-    # overwrites any previous authentication style
+    # replaces use of any previous authentication package
     if (!$@) {
         $self->{authN} = $package_name->new('database' => $database);
 	return 1;

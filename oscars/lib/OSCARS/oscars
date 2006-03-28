@@ -41,7 +41,7 @@ if ($component) {
 sub start_daemon {
     $resource_manager = OSCARS::ResourceManager->new(
                                               'database' => $database );
-    if ( !$resource_manager->set_authentication_style($authN_package, 'AAAS') ) {
+    if ( !$resource_manager->use_authentication_plugin($authN_package, 'AAAS') ) {
         die( "Unable to find authentication package $authN_package");
     }
     $daemon = SOAP::Transport::HTTP::Daemon
@@ -103,7 +103,7 @@ sub dispatch {
     }
     try {
         $user = $resource_manager->authenticate($daemon, $params);
-        if ( !$user->set_authorization_style($authZ_package, 'AAAS') ) {
+        if ( !$user->use_authorization_plugin($authZ_package, 'AAAS') ) {
             throw Error::Simple( "Unable to use authorization package $authZ_package");
         }
 

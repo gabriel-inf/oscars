@@ -74,16 +74,15 @@ sub set_authenticated {
 
 
 ###############################################################################
-# set_authorization_style:  Set current authorization style to a given package
-#                           for all SOAP methods (a class method).
+# use_authorization_plugin:  Use given package for authorization.
 #
-sub set_authorization_style {
+sub use_authorization_plugin {
     my( $self, $package_name, $database ) = @_;
 
     my $location = $package_name . '.pm';
     $location =~ s/(::)/\//g;
     eval { require $location };
-    # overwrites any previous authorization style
+    # replaces use of any previous authorization plugin
     if (!$@) {
         $self->{authZ} = $package_name->new('database' => $database);
         $self->{authorizations} = $self->{authZ}->get_authorizations($self);
