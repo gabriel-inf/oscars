@@ -13,7 +13,7 @@ my $component_name = 'AAAS';
 my $rm = OSCARS::ResourceManager->new('database' => $db_name);
 ok($rm);
 
-my $status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
+my $status = $rm->use_authentication_plugin('OSCARS::AAAS::AuthN', 'AAAS');
 ok($status);
 
 my $client = $rm->add_client();

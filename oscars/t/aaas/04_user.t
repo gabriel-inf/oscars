@@ -7,7 +7,7 @@ use OSCARS::AAAS::User;
 
 my $db_name = 'AAAS';
 my $rm = OSCARS::ResourceManager->new('database' => $db_name);
-my $status = $rm->set_authentication_style('OSCARS::AAAS::AuthN', 'AAAS');
+my $status = $rm->use_authentication_plugin('OSCARS::AAAS::AuthN', 'AAAS');
 
 my( $login, $password ) = $rm->get_test_account('testaccount');
 my $user = OSCARS::AAAS::User->new(
@@ -15,7 +15,7 @@ my $user = OSCARS::AAAS::User->new(
                       'database' => $db_name);
 ok($user);
 
-$status = $user->set_authorization_style('OSCARS::AAAS::AuthZ', 'AAAS');
+$status = $user->use_authorization_plugin('OSCARS::AAAS::AuthZ', 'AAAS');
 ok($status);
 
 
