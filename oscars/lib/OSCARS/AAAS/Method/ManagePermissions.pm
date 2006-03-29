@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -82,16 +82,10 @@ sub soap_method {
     elsif ($self->{params}->{op} eq 'addPermission') {
         $self->{lib}->add_row( $self->{user},$self->{params},'Permissions' );
         $results = $self->get_permissions($self->{user}, $self->{params});
-        $self->{logger}->add_string("Added permission");
-        $self->{logger}->write_file( $self->{user}->{login},
-                                     $self->{params}->{method} );
     }
     elsif ($self->{params}->{op} eq 'deletePermission') {
         $self->delete_permission( $self->{user}, $self->{params} );
         $results = $self->get_permissions($self->{user}, $self->{params});
-        $self->{logger}->add_string("Removed permission");
-        $self->{logger}->write_file( $self->{user}->{login},
-                                     $self->{params}->{method} );
     }
     return $results;
 } #____________________________________________________________________________

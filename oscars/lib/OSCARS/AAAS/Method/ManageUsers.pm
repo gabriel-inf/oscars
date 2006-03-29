@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -112,17 +112,11 @@ sub soap_method {
         $self->add_user( $self->{user}, $self->{params} );
         $results->{list} = $self->get_users($self->{user}, $self->{params});
         $msg = "$self->{user}->{login} added user $self->{params}->{selected_user}";
-        $self->{logger}->add_string($msg);
-        $self->{logger}->write_file( $self->{user}->{login},
-                                     $self->{params}->{method} );
     }
     elsif ($self->{params}->{op} eq 'deleteUser') {
         $self->delete_user( $self->{user}, $self->{params} );
         $results->{list} = $self->get_users($self->{user}, $self->{params});
         $msg = "$self->{user}->{login} deleted user $self->{params}->{selected_user}";
-        $self->{logger}->add_string($msg);
-        $self->{logger}->write_file( $self->{user}->{login},
-                                     $self->{params}->{method} );
     }
     return $results;
 } #____________________________________________________________________________
@@ -147,8 +141,6 @@ sub get_users {
         $oscars_user->{user_password} = 'hidden';
 	$oscars_user->{user_id} = 'hidden';
     }
-    my $msg = "User list";
-    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 

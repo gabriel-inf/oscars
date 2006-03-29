@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -62,8 +62,6 @@ sub soap_method {
     my( $self ) = @_;
 
     my $user_login = $self->{user}->{login};
-    $self->{logger}->add_string("User $user_login successfully logged in");
-    $self->{logger}->write_file($user_login, $self->{params}->{method});
     my $results = {};
     $results->{user_login} = $user_login;
     $results->{user_password} = 'hidden';

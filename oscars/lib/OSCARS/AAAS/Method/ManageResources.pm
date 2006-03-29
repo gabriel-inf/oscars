@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -83,30 +83,14 @@ sub soap_method {
     elsif ($self->{params}->{op} eq 'addResource') {
         $self->{lib}->add_row( $self->{user}, $self->{params}, 'Resources' );
         $results = $self->get_resource_tables($self->{user}, $self->{params});
-        $self->{logger}->add_string("Added resource.");
-        $self->{logger}->write_file($self->{user}->{login},
-                                    $self->{params}->{method});
     }
     elsif ($self->{params}->{op} eq 'addResourcePermission') {
         $self->add_row($self->{user}, $self->{params}, 'ResourcePermissions');
         $results = $self->get_resource_tables($self->{user}, $self->{params});
-        $self->{logger}->add_string("Added resourcepermission.");
-        $self->{logger}->write_file($self->{user}->{login},
-                                    $self->{params}->{method});
-    }
-    elsif ($self->{params}->{op} eq 'deleteResource') {
-        $self->delete_resource( $self->{user}, $self->{params} );
-        $results = $self->get_resource_tables($self->{user}, $self->{params});
-        $self->{logger}->add_string("Removed resource.");
-        $self->{logger}->write_file($self->{user}->{login},
-                                    $self->{params}->{method});
     }
     elsif ($self->{params}->{op} eq 'deleteResourcePermission') {
         $self->delete_resource_permission($self->{user}, $self->{params} );
         $results = $self->get_resource_tables($self->{user}, $self->{params});
-        $self->{logger}->add_string("Removed resourcepermission.");
-        $self->{logger}->write_file($self->{user}->{login},
-                                    $self->{params}->{method});
     }
     return $results;
 } #____________________________________________________________________________

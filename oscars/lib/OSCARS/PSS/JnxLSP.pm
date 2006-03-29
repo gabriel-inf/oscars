@@ -3,7 +3,7 @@ package OSCARS::PSS::JnxLSP;
 
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Class and methods to setup/teardown LSPs on Juniper routers.
-# Last Modified:  March 6, 2006
+# Last Modified:  March 28, 2006
 
 
 use strict;
@@ -31,16 +31,16 @@ my ($_loadAction) = 'merge';  # Default load action is 'merge'.
 
 
 sub new {
-    my ($class, $args) = @_;
+    my( $class, $args ) = @_;
 
-    my ($self) = {%$args};
+    my( $self ) = {%$args};
     bless($self, $class);
     $self->initialize();
     return($self);
 }
 
 sub initialize {
-    my ($self) = @_;
+    my( $self ) = @_;
 
     # Clear error message.
     $self->{errMsg} = 0;
@@ -65,11 +65,10 @@ sub initialize {
 # Out: <none>
 #
 sub configure_lsp {
-    my ($self, $lsp_op, $logger) = @_;
+    my( $self, $lsp_op ) = @_;
 
     my $xmlFile;
 
-    $self->{logger} = $logger;
     # For LSP setup, use setupXmlFile
     # for teardown, use teardownXmlFile.
     # TODO:  FIX hard-wired directory
@@ -88,7 +87,7 @@ sub configure_lsp {
     if (!($self->get_error()))  {
         $self->execute_configuration_change($xmlString);
     }
-    if ($self->{logger}) { $self->update_log( $xmlString ); }
+    $self->update_log( $xmlString );
     return;
 } #____________________________________________________________________________
 
@@ -100,9 +99,9 @@ sub configure_lsp {
 # Out: -1 => NA (e.g not found), 0 => down, 1 => up
 #
 sub get_lsp_status {
-    my ($self) = @_;
+    my( $self ) = @_;
 
-    my (@resultArray, $_result);
+    my( @resultArray, $_result );
     my $state = -1;
 
     $_result = $self->execute_operational_command("get_mpls_lsp_information");
@@ -140,7 +139,7 @@ sub get_lsp_status {
 # Out: Error message
 #
 sub get_error {
-    my ($self) = @_;
+    my( $self ) = @_;
 
     return($self->{errMsg});
 } #____________________________________________________________________________
@@ -159,10 +158,10 @@ sub get_error {
 # Out: xmlOutput => XML string to push to routers, 0 => failure
 #
 sub read_xml_file {
-    my ($self, $xmlFile) = @_;
+    my( $self, $xmlFile ) = @_;
 
     my $config_name;
-    my ($xmlInput, $xmlOutput);
+    my( $xmlInput, $xmlOutput );
 
     # Clear error message.
     $self->{errMsg} = 0;
@@ -204,7 +203,7 @@ sub read_xml_file {
 # Out: <none>
 #
 sub graceful_shutdown {
-    my ($jnx, $state) = @_;
+    my( $jnx, $state ) = @_;
 
     if ($state >= _STATE_CONFIG_LOADED) {
         eval {
@@ -234,9 +233,9 @@ sub graceful_shutdown {
 # Out: <none>
 #
 sub execute_configuration_change {
-    my ($self, $xmlString) = @_;
+    my( $self, $xmlString ) = @_;
 
-    my (%jnxInfo) = (
+    my %jnxInfo = (
         'access' => $self->{configs}->{pss_conf_access},
         'login'  => $self->{configs}->{pss_conf_login},
         'password' => $self->{configs}->{pss_conf_passwd},
@@ -263,9 +262,7 @@ sub execute_configuration_change {
         }
     };
     if ($@) {
-	if ($self->{logger}) {
-            $self->{logger}->add_string("ignoring exception $@\n");
-	}
+        $self->{logger}->info("exception.ignored: $@", $xmlString);
         return;
     }
 
@@ -337,7 +334,7 @@ sub execute_configuration_change {
 #      results of query
 #
 sub execute_operational_command {
-    my ($self, $command) = @_;
+    my( $self, $command ) = @_;
 
     my %jnxInfo = (
         'access' => $self->{configs}->{pss_conf_access},
@@ -385,7 +382,7 @@ sub update_log {
 
     my $errmsg = $self->get_error();
     if ($errmsg)  { $xmlString .= "\n\n$errmsg\n"; }
-    $self->{logger}->add_string($xmlString);
+    $self->{logger}->info('JnxLSP.configuration', {'XML' => $xmlString});
 } #____________________________________________________________________________
 
 

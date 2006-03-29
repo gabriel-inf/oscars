@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+March 28, 2006
 
 =cut
 
@@ -64,7 +64,8 @@ sub traceroute
            "$configs->{trace_conf_jnx_user} $src traceroute $dst wait " .
            "$configs->{trace_conf_timeout} ttl " .
            "$configs->{trace_conf_ttl}";
-    $logger->add_string($cmd);
+    $logger->info('traceroute.ssh',
+	    {'command' => $cmd, 'src' => $src, 'dst' => $dst});
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Error::Simple("Unable to ssh into router and perform traceroute.");
     }

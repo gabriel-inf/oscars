@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -59,7 +59,7 @@ sub initialize {
 #     already been specified, and gets the interface ids of the routers'
 #     associated loopbacks.  It also checks to see if the next hop past the
 #     egress router is in a domain running an OSCARS/BRUW server.
-# IN:  OSCARS::Logger instance, and hash containing source name or IP,
+# IN:  NetLogger instance, and hash containing source name or IP,
 #     destination name or IP, and ingress and egress router names or IP's,
 #     if the user had permission to specify them
 # OUT: ids of interfaces of the edge routers, path list (router indexes)
@@ -105,7 +105,8 @@ sub find_interface_ids {
                         $self->{trace_configs}->{trace_conf_jnx_source}, 0 );
         }
         $dst = $params->{source_ip};
-        $logger->add_string("--traceroute (reverse):  Source $src to destination $dst");
+        $logger->info('traceroute.reverse',
+            { 'source' => $src, 'destination' => $params->{source_ip} });
         # Run a traceroute and find the loopback IP, the associated interface,
         # and whether the next hop is an OSCARS/BRUW router.
         ( $path, $params->{ingress_ip}, $params->{ingress_interface_id}, $next_as_number ) =
@@ -118,7 +119,9 @@ sub find_interface_ids {
   
     # Run a traceroute from the ingress_ip arrived at in the last step to the 
     # destination given in the reservation.
-    $logger->add_string("--traceroute:  Source $src to destination $dst");
+    $logger->info('traceroute.forward',
+        { 'source' => $params->{ingress_ip},
+          'destination' => $params->{destination_ip} });
     ( $path, $params->{egress_ip}, $params->{egress_interface_id}, $next_as_number ) =
         $self->do_traceroute('egress',
             $params->{ingress_ip}, $params->{destination_ip}, $logger );
@@ -140,7 +143,7 @@ sub find_interface_ids {
 # do_traceroute:  Run traceroute from src to dst, find the last hop with a
 #      loopback address, and find the autonomous service number of the first
 #      hop outside of the local domain.
-# In:   source, destination IP addresses, OSCARS::Logger instance.
+# In:   source, destination IP addresses, NetLogger instance.
 # Out:  IP of last hop within domain 
 #
 sub do_traceroute {
@@ -163,7 +166,7 @@ sub do_traceroute {
     my( $interface_found, $loopback_found, $interface_id, $loopback_ip );
     my $next_as_number;
     for my $hop ( @hops )  {
-        $logger->add_string("hop:  $hop");
+        $logger->info('traceroute.hop', {'hop' => $hop });
         # following two are for edge router IP and interface id
         $loopback_found = $self->get_loopback( $hop );
         $interface_found = $self->get_interface( $hop );

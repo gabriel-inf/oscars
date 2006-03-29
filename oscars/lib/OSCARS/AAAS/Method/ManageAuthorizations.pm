@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -90,14 +90,10 @@ sub soap_method {
         $self->{lib}->add_row( $self->{user}, $self->{params},
                                'Authorizations' );
         $results = $self->get_authorizations($self->{user}, $self->{params});
-        $self->{logger}->add_string("Added authorization.");
-        $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
     }
     elsif ($self->{params}->{op} eq 'deleteAuthorization') {
         $self->delete_reservation( $self->{user}, $self->{params} );
         $results = $self->get_authorizations($self->{user}, $self->{params});
-        $self->{logger}->add_string("Removed authorization.");
-        $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
     }
     elsif ($self->{params}->{op} eq 'selectUser') {
 	;

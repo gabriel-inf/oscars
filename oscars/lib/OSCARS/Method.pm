@@ -16,7 +16,7 @@ sub new {
 ###############################################################################
 #
 sub instantiate {
-    my( $self, $user, $params ) = @_;
+    my( $self, $user, $params, $logger ) = @_;
 
     my( $location, $class_name );
 
@@ -26,7 +26,8 @@ sub instantiate {
                     $params->{method};
     require $location;
     return $class_name->new( 'user'   => $user,
-                             'params' => $params );
+                             'params' => $params,
+		             'logger' => $logger );
 } #___________________________________________________________________________ 
 
 
@@ -52,7 +53,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -64,7 +65,6 @@ use Error qw(:try);
 use SOAP::Lite;
 
 use OSCARS::Mail;
-use OSCARS::Logger;
 
 sub new {
     my( $class, %args ) = @_;
@@ -78,7 +78,6 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{logger} = OSCARS::Logger->new();
     $self->{mailer} = OSCARS::Mail->new();
     $self->{param_tests} = {};
 } #____________________________________________________________________________
@@ -133,23 +132,16 @@ sub numeric_compare {
 
 
 ###############################################################################
-# soap_method:  make SOAP call, and get results.  Always overriden.
+# soap_call:  make SOAP call, and bracket with log messages.
 #
-sub soap_method {
+sub soap_call{
     my( $self ) = @_;
 
-    return undef;
-} #___________________________________________________________________________ 
-
-
-###############################################################################
-# write_exception:  Write exception to log.
-#
-sub write_exception {
-    my( $self, $exception_text, $method_name ) = @_;
-
-    $self->{logger}->add_string($exception_text);
-    $self->{logger}->write_file($self->{user}->{login}, $method_name, 1);
+    $self->{logger}->info("start",
+	                   $self->{params});
+    my $results = $self->soap_method();
+    $self->{logger}->info("finish", $results);
+    return $results
 } #___________________________________________________________________________ 
 
 

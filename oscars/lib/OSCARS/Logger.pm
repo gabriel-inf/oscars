@@ -11,13 +11,9 @@ OSCARS::Logger - Logger for OSCARS.
 
 =head1 DESCRIPTION
 
-This package contains methods for writing log messages to a file
-(currently there is a log file for each SOAP method access).
-
-Log files are in HTML format.  There are cases where
-the file name won't be ready until results are returned (for example, file
-names depending on a reservation tag), so output is buffered until the
-instance is closed.
+This package is a subclass of NetLogger.  It exists primarily to sanitize
+default logging messages, to prepend a method name to each event name, and
+to make sure the user login name is included with each message.
 
 =head1 AUTHOR
 
@@ -25,11 +21,16 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 9, 2006
+March 28, 2006
 
 =cut
 
 use strict;
+
+use Data::Dumper;
+
+use NetLogger;
+our @ISA = qw{NetLogger};
 
 sub new {
     my( $class, %args ) = @_;
@@ -43,93 +44,97 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    @{$self->{buf_strings}} = ( );
+    $self->{user_login} = 'undetermined';
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub add_string {
-    my( $self, $buf ) = @_;
+sub set_user_login {
+    my( $self, $user_login ) = @_;
 
-    push(@{$self->{buf_strings}}, "$buf<br/>");
+    $self->{user_login} = $user_login;
 } #____________________________________________________________________________
-
-
-##############################################################################
-#
-sub add_hash {
-    my( $self, $hashref ) = @_;
-
-    my( $key, $value );
-
-    my $buf = '';
-    foreach $key(sort keys %{$hashref} ) {
-        if (($key ne 'status_msg') &&
-            defined($hashref->{$key})) {
-            $value = $hashref->{$key};
-            if ($value) {
-                if (ref($value) eq 'ARRAY') {
-                    $buf .= "$key -> ";
-                    for my $row (@$value) {
-                        $buf .= "$row ";
-                    }
-                    $buf .= "\n";
-                }
-                else { $buf .= "$key -> $value<br/>\n"; }
-            }
-            else {
-                $buf .= "$key -> <br/>\n";
-            }
-        }
-    }
-    push(@{$self->{buf_strings}}, "$buf<br/>");
-} #___________________________________________________________________________
-
 
 
 ###############################################################################
 #
-sub write_file {
-    my( $self, $user, $id, $exception_flag ) = @_;
+sub set_op {
+    my( $self, $op ) = @_;
 
-    if ( !$self->{dir} ) {
-        $self->{dir} = "$ENV{HOME}/logs";
+    $self->{op} = $op;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub debug {
+    my( $self, $evt_name, $hash ) = @_;
+
+    my $new_evt_name = $self->{method_name} . '.';
+    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
+    $new_evt_name .= $evt_name;
+    if (!$hash->{user_login}) {
+	$hash->{user_login} = $self->{user_login};
     }
-    my( $sec, $min, $hour, $monthday, $month, $year, $weekday, $yearday,
-        $isdaylight ) = localtime();
-    $year += 1900;
-    $month += 1;
-    if ($month < 10) { $month = '0' . $month; }
-    if ($monthday < 10) { $monthday = '0' . $monthday; }
-    $user =~ s/@/./;
-    # TODO:  non-portable
-    my $fname = "$self->{dir}/$user";
-    if (!(-d $fname)) {
-        mkdir($fname, 0755) || die "Cannot mkdir: $fname";
+    if ($hash->{user_password}) {
+	$hash->{user_password} = '';
     }
-    my $ctr = 1;
-    if (!$exception_flag) {
-        $fname = "$self->{dir}/$user/$id.$year.$month.$monthday.$ctr.html";
+    $self->SUPER::debug($new_evt_name, $hash);
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub info {
+    my( $self, $evt_name, $hash ) = @_;
+
+    my $new_evt_name = $self->{method_name} . '.';
+    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
+    $new_evt_name .= $evt_name;
+    if (!$hash->{user_login}) {
+	$hash->{user_login} = $self->{user_login};
     }
-    else {
-        $fname = "$self->{dir}/$user/EX.$id.$year.$month.$monthday.$ctr.html";
+    if ($hash->{user_password}) {
+	$hash->{user_password} = '';
     }
-    while (-e $fname) {
-        $ctr += 1;
-        $fname = "$self->{dir}/$user/$id.$year.$month.$monthday.$ctr.html";
+    $self->SUPER::info($new_evt_name, $hash);
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub warning {
+    my( $self, $evt_name, $hash ) = @_;
+
+    my $new_evt_name = $self->{method_name} . '.';
+    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
+    $new_evt_name .= $evt_name;
+    if (!$hash->{user_login}) {
+	$hash->{user_login} = $self->{user_login};
     }
-    open (LOGFILE, ">$fname") ||
-            die "Can't open log file $fname.\n";
-    print LOGFILE "<html><head><title>$id</title></head><body>\n";
-    print LOGFILE "<h2>$id</h2>\n";
-    print LOGFILE "<h2>Time:  $hour:$min:$sec</h2>\n";
-    print LOGFILE "<h3>Output</h3>\n";
-    print LOGFILE join("\n", @{$self->{buf_strings}});
-    print LOGFILE "</body></html>\n";
-    close(LOGFILE);
-    # clear string buffers
-    @{$self->{buf_strings}} = ( );
+    if ($hash->{user_password}) {
+	$hash->{user_password} = '';
+    }
+    $self->SUPER::warning($new_evt_name, $hash);
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub fatal {
+    my( $self, $evt_name, $hash ) = @_;
+
+    my $new_evt_name = $self->{method_name} . '.';
+    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
+    $new_evt_name .= $evt_name;
+    if (!$hash->{user_login}) {
+	$hash->{user_login} = $self->{user_login};
+    }
+    if ($hash->{user_password}) {
+	$hash->{user_password} = '';
+    }
+    $self->SUPER::fatal($new_evt_name, $hash);
 } #____________________________________________________________________________
 
 

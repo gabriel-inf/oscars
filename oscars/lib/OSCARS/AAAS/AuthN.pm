@@ -78,7 +78,6 @@ sub authenticate {
     }
     # otherwise, message came via web interface, use login name and password
     # in params for authentication
-    #else { $user = $self->verify_login($params); }
     # for now drop thru if message is not signed. Assume  message carries password.
     $user = $self->verify_login($params);
     return $user;

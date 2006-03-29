@@ -9,6 +9,7 @@ use strict;
 use Data::Dumper;
 
 use OSCARS::ResourceManager;
+use OSCARS::Logger;
 
 my ( $database, $daemon, $component, $resource_manager );
 my $authN_package = 'OSCARS::AAAS::AuthN';
@@ -73,7 +74,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -95,14 +96,21 @@ sub dispatch {
     my( $ex );
     my( $user, $handler, $som );
 
+    my $logger = OSCARS::Logger->new('method_name' => $params->{method});
+    $logger->set_level($NetLogger::INFO);
+    if ($params->{user_login}) { $logger->set_user_login($params->{user_login}); }
+    if ($params->{op}) { $logger->set_op($params->{op}); }
+    $logger->open('/home/oscars/logs/oscars.log');
     my $results = {};
     if ($params->{method} eq 'Logout') {
+	$logger->info('successful', $params);
         remove_user($params->{user_login});
 	$results->{user_login} = $params->{user_login};
 	return $results;
     }
     try {
         $user = $resource_manager->authenticate($daemon, $params);
+	$logger->set_user_login($user->{login});
         if ( !$user->use_authorization_plugin($authZ_package, 'AAAS') ) {
             throw Error::Simple( "Unable to use authorization package $authZ_package");
         }
@@ -115,9 +123,9 @@ sub dispatch {
 	}
         else {
             my $factory = OSCARS::MethodFactory->new();
-            $handler = $factory->instantiate( $user, $params );
+            $handler = $factory->instantiate( $user, $params, $logger );
             # call SOAP method
-            $results = $handler->soap_method();
+            $results = $handler->soap_call();
 	    if ( $results->{next_domain} ) {
                 print STDERR "next domain: $results->{next_domain}\n";
                 my $found =
@@ -125,10 +133,15 @@ sub dispatch {
 		if ($found) {
 		    $som = $resource_manager->forward($results->{next_domain},
                                                       $params);
+		    if (!$som) {
+			$logger->warning("exception",
+                            { 'description' => 'Unable to forward results',
+                              'domain' => $results->{next_domain} });
+		    }
                     if (!$som->faultstring) {
 	                # call method again with previous results to make reservation
 		        $handler = $factory->instantiate( $user, $results );
-		        $results = $handler->soap_method();
+		        $results = $handler->soap_call();
                     }
 		}
 		# the next domain is not OSCARS/BRUW
@@ -136,7 +149,7 @@ sub dispatch {
 		    # Not the most efficient way, but detects the loop and
 		    # finishes the reservation.
                     $handler = $factory->instantiate( $user, $results );
-                    $results = $handler->soap_method();
+                    $results = $handler->soap_call();
 		}
             }
         }
@@ -146,19 +159,16 @@ sub dispatch {
     finally {
         if ($ex) {
             print STDERR $ex->{-text}, "\n";
-            if ( !$handler ) {
-                $resource_manager->write_exception($ex->{-text},
-                                                   $params->{method}),
-            }
-            else {
-                $handler->write_exception($ex->{-text}, $params->{method});
-            }
+            $logger->warning("exception: $ex->{-text}",
+                              'params' => $params);
+	    $logger->close();
                 # caught by SOAP to indicate fault
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
         }
         elsif ($handler) {
             $handler->post_process($results);
+	    $logger->close();
 	}
     };
     return $results;

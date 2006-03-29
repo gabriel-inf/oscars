@@ -4,12 +4,15 @@ use strict;
 use Test::Simple tests => 4;
 use Data::Dumper;
 
-use OSCARS::Logger;
 use OSCARS::Database;
 use OSCARS::BSS::JnxTraceroute;
 use OSCARS::BSS::RouteHandler;
+use OSCARS::Logger;
 
-my $logger = OSCARS::Logger->new();
+my $logger = OSCARS::Logger->new('method_name' => '11_jnxTraceroute.t');
+$logger->set_level($NetLogger::INFO);
+$logger->set_user_login('testaccount');
+$logger->open('/home/oscars/logs/test.log');
 
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect('BSS');
@@ -17,6 +20,7 @@ $dbconn->connect('BSS');
 my $rh = OSCARS::BSS::RouteHandler->new('user' => $dbconn);
 my $configs = $rh->get_trace_configs();
 ok( $configs );
+print STDERR "\n";
 print STDERR Dumper($configs);
 
 my $test_configs = $rh->get_test_configs('jnxTraceroute');
@@ -48,3 +52,4 @@ while(defined($hops[0]))  {
 }
 
 print STDERR "\n";
+$logger->close();

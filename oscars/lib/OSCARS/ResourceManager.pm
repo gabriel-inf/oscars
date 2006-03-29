@@ -20,7 +20,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 27, 2006
+March 28, 2006
 
 =cut
 
@@ -36,7 +36,6 @@ use strict;
 use SOAP::Lite;
 
 use OSCARS::Database;
-use OSCARS::Logger;
 
 sub new {
     my( $class, %args ) = @_;
@@ -51,7 +50,6 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{clients} = {};
-    $self->{logger} = OSCARS::Logger->new();
 } #____________________________________________________________________________
 
 
@@ -107,10 +105,6 @@ sub forward {
     if ( $self->{clients}->{$as_num} ) {
         $som = $self->{clients}->{$as_num}->dispatch($params);
     }
-    else {
-        $self->{logger}->add_string('Unable to forward; no such server');
-        $self->{logger}->write_file('manager', $params->{method}, 1);
-    }
     return $som;
 } #____________________________________________________________________________
 
@@ -147,17 +141,6 @@ sub authenticate {
         $user = $self->{authN}->authenticate($daemon, $params);
     }
     return $user;
-} #___________________________________________________________________________ 
-
-
-###############################################################################
-# write_exception:  Write exception to log.
-#
-sub write_exception {
-    my( $self, $exception_text, $method_name ) = @_;
-
-    $self->{logger}->add_string($exception_text);
-    $self->{logger}->write_file('manager', $method_name, 1);
 } #___________________________________________________________________________ 
 
 

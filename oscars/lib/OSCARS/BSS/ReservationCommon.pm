@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -88,14 +88,14 @@ sub view_details {
 sub update_reservation {
     my ($self, $resv, $status, $logger) = @_;
 
-    $logger->add_string("Updating status of reservation $resv->{reservation_id} to ");
     if ( !$resv->{lsp_status} ) {
         $resv->{lsp_status} = "Successful configuration";
         $status = $self->update_status($resv->{reservation_id}, $status);
     } else {
         $status = $self->update_status($resv->{reservation_id}, 'failed');
     }
-    $logger->add_string("$status");
+    $logger->info('update_reservation',
+        { 'status' => $status, 'reservation_id' => $resv->{reservation_id} });
 } #____________________________________________________________________________
 
 

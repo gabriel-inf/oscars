@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -67,7 +67,6 @@ sub soap_method {
         throw Error::Simple("SOAP method $self->{params}->{method} requires specifying an operation");
     }
     my $results = {};
-    my $msg;
     $results->{user_login} = $self->{user}->{login};
     if ( $self->{params}->{op} eq 'createReservationForm' ) {
         return $results;
@@ -82,16 +81,9 @@ sub soap_method {
         if ( $self->{params}->{next_domain} ) {
             return $self->{params};
         }
-        $msg = 'Created reservation';
-        $self->{logger}->add_string("Created reservation.");
-        $self->{logger}->write_file( $self->{user}->{login},
-                                     $self->{params}->{method});
     }
     elsif ($self->{params}->{op} eq 'cancelReservation') {
         $self->cancel_reservation( $self->{user}, $self->{params} );
-        $self->{logger}->add_string("Cancelled reservation.");
-        $self->{logger}->write_file( $self->{user}->{login},
-                                     $self->{params}->{method});
     }
     elsif ( ($self->{params}->{op} eq 'archiveReservations' ) &&
         ($self->{user}->authorized('Reservations', 'manage'))) {
@@ -130,8 +122,6 @@ sub get_reservations {
         $self->{time_lib}->convert_times($resv);
         $self->{resv_lib}->get_host_info($resv);
     }
-    $self->{logger}->add_string("Reservations list");
-    $self->{logger}->write_file($user->{login}, $params->{method});
     return $rows;
 } #____________________________________________________________________________
 
@@ -175,8 +165,6 @@ sub create_reservation {
         $self->{resv_lib}->host_ip_to_id($params->{destination_ip}); 
 
     my $results = $self->build_results($user, $params);
-    $self->{logger}->add_hash($results);
-    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 
@@ -196,8 +184,6 @@ sub cancel_reservation {
     my $results = $self->{resv_lib}->view_details($params);
     $results->{reservation_id} = $params->{reservation_id};
     $self->{time_lib}->convert_times($results);
-    $self->{logger}->add_hash($results);
-    $self->{logger}->write_file($user->{login}, $params->{method});
     return $results;
 } #____________________________________________________________________________
 
@@ -222,9 +208,7 @@ sub archive_reservations {
     for my $resv ( @$rows ) {
         $self->{resv_methods}->get_host_info($resv);
         $self->{resv_methods}->check_nulls($resv);
-        $self->{logger}->add_hash($resv);
     }
-    $self->{logger}->write_file($user->{login}, $params->{method});
     return $rows;
 } #____________________________________________________________________________
 

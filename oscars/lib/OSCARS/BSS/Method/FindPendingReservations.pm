@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+March 28, 2006
 
 =cut
 
@@ -63,25 +63,19 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    my( $reservations, $status );
-    my( $error_msg );
-
     if ( !$self->{user}->authorized('Domains', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage circuits");
     }
     # find reservations that need to be scheduled
-    $reservations = $self->find_pending_reservations($self->{params}->{time_interval});
+    my $reservations =
+        $self->find_pending_reservations($self->{params}->{time_interval});
     for my $resv (@$reservations) {
         $self->{sched_methods}->map_to_ips($resv);
         # call PSS to schedule LSP
         $resv->{lsp_status} = $self->setup_pss($resv);
         $self->{resv_methods}->update_reservation( $resv, 'active', 
                                                     $self->{logger} );
-        $self->{logger}->add_hash($resv);
-    }
-    if (@$reservations) {
-        $self->{logger}->write_file($self->{user}->{login}, $self->{params}->{method});
     }
     my $results = {};
     $results->{list} = $reservations;
@@ -142,19 +136,20 @@ sub setup_pss {
 
     my( $error );
 
-    $self->{logger}->add_string("Creating lsp_info...");
-
-        # Create an LSP object.
+    $self->{logger}->info('LSP.configure',
+            { 'reservation_id' => $resv_info->{reservation_id} });
+    # Create an LSP object.
     my $lsp_info = $self->{sched_methods}->map_fields($resv_info);
     $lsp_info->{configs} = $self->{resv_methods}->get_pss_configs();
+    $lsp_info->{logger} = $self->{logger};
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
-    $self->{logger}->add_string("Setting up LSP...");
     $jnxLsp->configure_lsp($self->{LSP_SETUP}, $self->{logger});
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
-    $self->{logger}->add_string("LSP setup complete");
+    $self->{logger}->info('LSP.setup_complete',
+            { 'reservation_id' => $resv_info->{reservation_id} });
     return "";
 } #____________________________________________________________________________
 
