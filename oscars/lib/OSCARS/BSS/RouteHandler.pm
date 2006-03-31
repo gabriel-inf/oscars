@@ -130,6 +130,11 @@ sub find_interface_ids {
             $self->name_to_loopback($params->{egress_router});
         $results->{egress_interface_id} = $self->get_interface(
             $self->name_to_ip($params->{egress_router}, 0));
+        if ($results->{egress_interface_id}) {
+            $next_as_number = $self->get_as_number(
+                                              $results->{egress_interface_id},
+                                              $results->{egress_ip});
+        }
     }
     else {
         $logger->info('traceroute.forward',
