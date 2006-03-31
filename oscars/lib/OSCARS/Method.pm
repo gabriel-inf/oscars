@@ -139,8 +139,9 @@ sub soap_call{
 
     $self->{logger}->info("start",
 	                   $self->{params});
-    my $results = $self->soap_method();
-    $self->{logger}->info("finish", $results);
+    my( $results, $log_info ) = $self->soap_method();
+    if ( $log_info ) { $self->{logger}->info("finish", $log_info); }
+    else { $self->{logger}->info("finish", {'description' => 'no error'}); }
     return $results
 } #___________________________________________________________________________ 
 
