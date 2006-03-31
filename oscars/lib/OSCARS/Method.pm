@@ -108,7 +108,6 @@ sub validate {
 
     # for all tests 
     for my $test_name (keys(%{$self->{param_tests}->{$op}})) {
-        #print STDERR "$test_name\n";
         $test = $self->{param_tests}->{op}->{$test_name};
         if (!$self->{params}->{$test_name}) {
             throw Error::Simple(
@@ -142,7 +141,7 @@ sub soap_call{
     my( $results, $log_info ) = $self->soap_method();
     if ( $log_info ) { $self->{logger}->info("finish", $log_info); }
     else { $self->{logger}->info("finish", {'description' => 'no error'}); }
-    return $results
+    return $results;
 } #___________________________________________________________________________ 
 
 
