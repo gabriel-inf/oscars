@@ -76,7 +76,7 @@ sub soap_method {
         ;
     }
     elsif ($self->{params}->{op} eq 'createReservation') {
-        $results = $self->create_reservation( $self->{user}, $self->{params} );
+        ( $results, $log_info ) = $self->create_reservation( $self->{user}, $self->{params} );
         $results->{user_login} = $self->{user}->{login};
         if ( $results->{next_domain} ) {
             $log_info->{description} = 'Forwarding to next domain';
@@ -174,7 +174,7 @@ sub create_reservation {
         $self->{resv_lib}->host_ip_to_id($results->{destination_ip}); 
 
     $results = $self->build_results($user, $params);
-    return $results;
+    return( $results, { 'domain' => 'local'} );
 } #____________________________________________________________________________
 
 
