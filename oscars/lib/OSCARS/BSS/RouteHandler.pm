@@ -67,7 +67,7 @@ sub initialize {
 sub find_interface_ids {
     my( $self, $logger, $params) = @_;
 
-    my( $path, $src, $dst, $last_domain, $next_as_number );
+    my( $unused_path, $src, $dst, $last_domain, $next_as_number );
 
     my $results = {};
     if ($params->{next_domain}) {
@@ -110,12 +110,16 @@ sub find_interface_ids {
             { 'source' => $src, 'destination' => $results->{source_ip} });
         # Run a traceroute and find the loopback IP, the associated interface,
         # and whether the next hop is an OSCARS/BRUW router.
-        ( $path, $results->{ingress_ip}, $results->{ingress_interface_id}, $next_as_number ) =
-            $self->do_traceroute( 'ingress', $src, $results->{source_ip}, $logger );
+        ( $unused_path,
+          $results->{ingress_ip},
+          $results->{ingress_interface_id},
+          $next_as_number ) = $self->do_traceroute( 'ingress',
+                                       $src, $results->{source_ip}, $logger );
     }
 
     if( !$results->{ingress_interface_id} ) {
-        throw Error::Simple("Ingress router $params->{ingress_router} has no loopback");
+        throw Error::Simple(
+            "Ingress router $params->{ingress_router} has no loopback");
     }
   
     #  If the egress router is given, just get its loopback and interface id.
@@ -131,21 +135,23 @@ sub find_interface_ids {
         $logger->info('traceroute.forward',
             { 'source' => $results->{ingress_ip},
               'destination' => $results->{destination_ip} });
-        ( $path, $results->{egress_ip}, $results->{egress_interface_id}, $next_as_number ) =
-            $self->do_traceroute('egress',
+        ( $results->{reservation_path},
+          $results->{egress_ip},
+          $results->{egress_interface_id},
+          $next_as_number ) = $self->do_traceroute('egress',
                 $results->{ingress_ip}, $results->{destination_ip}, $logger );
+          my $unused = pop(@{$results->{reservation_path}});
     }
     if( !$results->{egress_interface_id} ) {
-        throw Error::Simple("Egress router $params->{egress_router} has no loopback");
+        throw Error::Simple(
+            "Egress router $params->{egress_router} has no loopback");
     }
-    my $unused = pop(@$path);
     if ($next_as_number ne 'noSuchInstance') {
         if ($last_domain != $next_as_number) {
             $results->{next_domain} = $next_as_number;
         }
         else { $results->{next_domain} = undef; }
     }
-    $results->{reservation_path} = $path;
     return $results;
 } #____________________________________________________________________________
 
