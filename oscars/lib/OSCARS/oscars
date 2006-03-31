@@ -128,12 +128,12 @@ sub dispatch {
             $results = $handler->soap_call();
 	    if ( $results->{next_domain} ) {
                 print STDERR "next domain: $results->{next_domain}\n";
-                $params->{user_password} = 'crosstest';
+                $results->{user_password} = 'crosstest';
                 my $found =
 	                $resource_manager->add_client($results->{next_domain});
 		if ($found) {
 		    $som = $resource_manager->forward($results->{next_domain},
-                                                      $params);
+                                                      $results);
 		    if (!$som) {
 			$logger->warning("exception",
                             { 'description' => 'Unable to forward results',
@@ -141,7 +141,8 @@ sub dispatch {
 		    }
                     if (!$som->faultstring) {
 	                # call method again with previous results to make reservation
-		        $handler = $factory->instantiate( $user, $results, $logger );
+			$params->{next_domain} = $results->{next_domain};
+		        $handler = $factory->instantiate( $user, $params, $logger );
 		        $results = $handler->soap_call();
                     }
 		}
