@@ -191,6 +191,16 @@ sub do_traceroute {
     # address without there also being a loopback.
     my( $interface_found, $loopback_found, $interface_id, $loopback_ip );
     my $next_as_number;
+
+    # Get starting interface id, if any, in case next hop is outside of
+    # domain.
+    $loopback_found = $self->get_loopback( $src );
+    $interface_found = $self->get_interface( $src );
+    if ( $loopback_found ) {
+        $loopback_ip = $loopback_found;
+        $interface_id = $interface_found;
+    }
+    # Check starting point in case first hop is outside of domain
     for my $hop ( @hops )  {
         $logger->info('traceroute.hop', {'hop' => $hop });
         # following two are for edge router IP and interface id
