@@ -76,12 +76,11 @@ sub soap_method {
         ;
     }
     elsif ($self->{params}->{op} eq 'createReservation') {
-        $self->create_reservation( $self->{user}, $self->{params} );
-        # in this case, want to pass back current status of parameters, not
-        # list of reservations
-        if ( $self->{params}->{next_domain} ) {
+        $results = $self->create_reservation( $self->{user}, $self->{params} );
+        $results->{user_login} = $self->{user}->{login};
+        if ( $results->{next_domain} ) {
             $log_info->{description} = 'Forwarding to next domain';
-            return( $self->{params}, $log_info );
+            return( $results, $log_info );
         }
         $log_info->{description} = 'Successful reservation creation';
     }
@@ -143,11 +142,17 @@ sub create_reservation {
     my( $duration_seconds );
 
     # params fields having to do with traceroute modified in find_interface_ids
-    $self->{route_setup}->find_interface_ids($self->{logger}, $params);
+    my $results =
+        $self->{route_setup}->find_interface_ids($self->{logger}, $params);
     # if next_domain is set, forward to OSCARS/BRUW server in next domain
-    if ($params->{next_domain} ) {
-        return $params;
+    if ($results->{next_domain} ) {
+        return $self->next_domain_parameters($params, $results->{next_domain});
     }
+    $params->{ingress_interface_id} = $results->{ingress_interface_id};
+    $params->{ingress_ip} = $results->{ingress_ip};
+    $params->{egress_interface_id} = $results->{egress_interface_id};
+    $params->{egress_ip} = $results->{egress_ip};
+    $params->{reservation_path} = $results->{reservation_path};
     ( $params->{reservation_start_time}, $params->{reservation_end_time},
       $params->{reservation_created_time} ) =
           $self->{time_lib}->setup_times( $params->{reservation_start_time},
@@ -164,11 +169,11 @@ sub create_reservation {
     # Get hosts table id from source's and destination's host name or ip
     # address.
     $params->{src_host_id} =
-        $self->{resv_lib}->host_ip_to_id($params->{source_ip}); 
+        $self->{resv_lib}->host_ip_to_id($results->{source_ip}); 
     $params->{dst_host_id} =
-        $self->{resv_lib}->host_ip_to_id($params->{destination_ip}); 
+        $self->{resv_lib}->host_ip_to_id($results->{destination_ip}); 
 
-    my $results = $self->build_results($user, $params);
+    $results = $self->build_results($user, $params);
     return $results;
 } #____________________________________________________________________________
 
@@ -208,10 +213,10 @@ sub archive_reservations {
                  "OR reservation_status = 'failed' " .
                  'AND reservation_start_time < ? ';
     my $rows = $user->do_query($statement, $params->{archive_time});
-    $self->{resv_methods}->get_engr_fields($rows->[0]); 
+    $self->{resv_lib}->get_engr_fields($rows->[0]); 
     for my $resv ( @$rows ) {
-        $self->{resv_methods}->get_host_info($resv);
-        $self->{resv_methods}->check_nulls($resv);
+        $self->{resv_lib}->get_host_info($resv);
+        $self->{resv_lib}->check_nulls($resv);
     }
     return $rows;
 } #____________________________________________________________________________
@@ -362,6 +367,23 @@ sub get_interface_fields {
     my $statement = 'SELECT * FROM BSS.interfaces WHERE interface_id = ?';
     my $row = $self->{user}->get_row($statement, $iface_id);
     return $row;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# next_domain_parameters:  modify parameters before sending to next domain
+#
+sub next_domain_parameters {
+    my( $self, $params, $next_domain ) = @_;
+
+    my $results = {};
+    for my $idx (keys %{$params}) {
+        $results->{$idx} = $params->{$idx};
+    }
+    $results->{next_domain} = $next_domain;
+    $results->{ingress_router} = undef;
+    $results->{egress_router} = undef;
+    print STDERR Dumper($results);
 } #____________________________________________________________________________
 
 
