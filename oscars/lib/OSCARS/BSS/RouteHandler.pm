@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+March 31, 2006
 
 =cut
 
@@ -132,9 +132,9 @@ sub find_interface_ids {
     my $unused = pop(@$path);
     if ($next_as_number ne 'noSuchInstance') {
         if ($last_domain != $next_as_number) {
-            $params->{next_domain} = $next_as_number;
+            $results->{next_domain} = $next_as_number;
         }
-        else { $params->{next_domain} = undef; }
+        else { $results->{next_domain} = undef; }
     }
     $results->{reservation_path} = $path;
     return $results;
