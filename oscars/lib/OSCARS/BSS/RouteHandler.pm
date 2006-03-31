@@ -130,10 +130,14 @@ sub find_interface_ids {
             $self->name_to_loopback($params->{egress_router});
         $results->{egress_interface_id} = $self->get_interface(
             $self->name_to_ip($params->{egress_router}, 0));
+        # still have to do traceroute to get next hop and next domain
+        my( $unused_ip, $unused_id );
         if ($results->{egress_interface_id}) {
-            $next_as_number = $self->get_as_number(
-                                              $results->{egress_interface_id},
-                                              $results->{egress_ip});
+            ( $unused_path,
+              $unused_ip,
+              $unused_id,
+              $next_as_number ) = $self->do_traceroute('egress',
+                $results->{egress_ip}, $results->{destination_ip}, $logger );
         }
     }
     else {
