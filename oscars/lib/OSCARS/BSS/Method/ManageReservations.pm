@@ -383,7 +383,7 @@ sub next_domain_parameters {
     $results->{next_domain} = $next_domain;
     $results->{ingress_router} = undef;
     $results->{egress_router} = undef;
-    return $results;
+    return( $results, { 'next_domain' => $next_domain } );
 } #____________________________________________________________________________
 
 
