@@ -262,7 +262,7 @@ sub execute_configuration_change {
         }
     };
     if ($@) {
-        $self->{logger}->info("exception.ignored: $@", $xmlString);
+        $self->{logger}->info("exception.ignored: $@", { 'XML' => $xmlString});
         return;
     }
 
