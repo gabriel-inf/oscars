@@ -128,6 +128,7 @@ sub dispatch {
             $results = $handler->soap_call();
 	    if ( $results->{next_domain} ) {
                 print STDERR "next domain: $results->{next_domain}\n";
+                $params->{user_password} = 'crosstest';
                 my $found =
 	                $resource_manager->add_client($results->{next_domain});
 		if ($found) {
@@ -140,7 +141,7 @@ sub dispatch {
 		    }
                     if (!$som->faultstring) {
 	                # call method again with previous results to make reservation
-		        $handler = $factory->instantiate( $user, $results );
+		        $handler = $factory->instantiate( $user, $results, $logger );
 		        $results = $handler->soap_call();
                     }
 		}
@@ -148,7 +149,7 @@ sub dispatch {
 		else {
 		    # Not the most efficient way, but detects the loop and
 		    # finishes the reservation.
-                    $handler = $factory->instantiate( $user, $results );
+                    $handler = $factory->instantiate( $user, $results, $logger );
                     $results = $handler->soap_call();
 		}
             }
@@ -159,8 +160,7 @@ sub dispatch {
     finally {
         if ($ex) {
             print STDERR $ex->{-text}, "\n";
-            $logger->warning("exception: $ex->{-text}",
-                              'params' => $params);
+            $logger->warning("exception: $ex->{-text}", $params);
 	    $logger->close();
                 # caught by SOAP to indicate fault
             die SOAP::Fault->faultcode('Server')
