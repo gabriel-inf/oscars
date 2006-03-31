@@ -104,6 +104,8 @@ sub forward {
     my $som;
     if ( $self->{clients}->{$as_num} ) {
         $som = $self->{clients}->{$as_num}->dispatch($params);
+        if (!$som) { print STDERR "call failed\n"; }
+        elsif ($som->faultstring) { print STDERR "$som->faultstring\n";}
     }
     return $som;
 } #____________________________________________________________________________
