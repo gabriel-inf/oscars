@@ -67,6 +67,7 @@ sub soap_method {
         throw Error::Simple("SOAP method $self->{params}->{method} requires specifying an operation");
     }
     my $results = {};
+    my $log_info = {};
     $results->{user_login} = $self->{user}->{login};
     if ( $self->{params}->{op} eq 'createReservationForm' ) {
         return $results;
@@ -79,18 +80,21 @@ sub soap_method {
         # in this case, want to pass back current status of parameters, not
         # list of reservations
         if ( $self->{params}->{next_domain} ) {
-            return $self->{params};
+            $log_info->{description} = 'Forwarding to next domain';
+            return( $self->{params}, $log_info );
         }
+        $log_info->{description} = 'Successful reservation creation';
     }
     elsif ($self->{params}->{op} eq 'cancelReservation') {
         $self->cancel_reservation( $self->{user}, $self->{params} );
+        $log_info->{description} = 'Successful reservation cancellation';
     }
     elsif ( ($self->{params}->{op} eq 'archiveReservations' ) &&
         ($self->{user}->authorized('Reservations', 'manage'))) {
             $self->archive_reservations( $self->{user}, $self->{params} );
     }
     $results->{list} = $self->get_reservations($self->{user}, $self->{params});
-    return $results;
+    return( $results, $log_info );
 } #____________________________________________________________________________
 
 

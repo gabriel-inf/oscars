@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+March 30, 2006
 
 =cut
 
@@ -78,8 +78,13 @@ sub soap_method {
                                                     $self->{logger} );
     }
     my $results = {};
+    my $log_info = {};
     $results->{list} = $reservations;
-    return $results;
+    if ( $reservations ) {
+        $log_info->{'description'} = 'Found pending reservations'; 
+    }
+    $results->{list} = $reservations;
+    return( $results, $log_info );
 } #____________________________________________________________________________
 
 

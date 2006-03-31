@@ -80,8 +80,12 @@ sub soap_method {
                                                    $self->{logger} );
     }
     my $results = {};
+    my $log_info = {};
     $results->{list} = $reservations;
-    return $results;
+    if ( $reservations ) {
+        $log_info->{'description'} = 'Found expired reservations'; 
+    }
+    return( $results, $log_info );
 } #____________________________________________________________________________
 
 
