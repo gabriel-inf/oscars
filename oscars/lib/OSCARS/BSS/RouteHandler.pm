@@ -69,17 +69,18 @@ sub find_interface_ids {
 
     my( $path, $src, $dst, $last_domain, $next_as_number );
 
+    my $results = {};
     if ($params->{next_domain}) {
         $last_domain = $params->{next_domain};
     }
     # converts source to IP address if it is a host name
-    $params->{source_ip} = $self->name_to_ip($params->{source_host}, 1);
-    if( !$params->{source_ip} ) {
+    $results->{source_ip} = $self->name_to_ip($params->{source_host}, 1);
+    if( !$results->{source_ip} ) {
         throw Error::Simple("Unable to look up IP address of source");
     }
-    $params->{destination_ip} =
+    $results->{destination_ip} =
             $self->name_to_ip($params->{destination_host}, 1);
-    if( !$params->{destination_ip} ) {
+    if( !$results->{destination_ip} ) {
         throw Error::Simple("Unable to look up IP address of destination");
     }
 
@@ -90,9 +91,9 @@ sub find_interface_ids {
     #  router chosen will be the router closest to the source that has
     #  a loopback.
     if ( $params->{ingress_router} ) {
-        $params->{ingress_ip} =
+        $results->{ingress_ip} =
             $self->name_to_loopback($params->{ingress_router});
-        $params->{ingress_interface_id} = $self->get_interface(
+        $results->{ingress_interface_id} = $self->get_interface(
             $self->name_to_ip($params->{ingress_router}, 0));
     }
     else {
@@ -104,28 +105,28 @@ sub find_interface_ids {
             $src = $self->name_to_ip(
                         $self->{trace_configs}->{trace_conf_jnx_source}, 0 );
         }
-        $dst = $params->{source_ip};
+        $dst = $results->{source_ip};
         $logger->info('traceroute.reverse',
-            { 'source' => $src, 'destination' => $params->{source_ip} });
+            { 'source' => $src, 'destination' => $results->{source_ip} });
         # Run a traceroute and find the loopback IP, the associated interface,
         # and whether the next hop is an OSCARS/BRUW router.
-        ( $path, $params->{ingress_ip}, $params->{ingress_interface_id}, $next_as_number ) =
-            $self->do_traceroute( 'ingress', $src, $params->{source_ip}, $logger );
+        ( $path, $results->{ingress_ip}, $results->{ingress_interface_id}, $next_as_number ) =
+            $self->do_traceroute( 'ingress', $src, $results->{source_ip}, $logger );
     }
 
-    if( !$params->{ingress_interface_id} ) {
+    if( !$results->{ingress_interface_id} ) {
         throw Error::Simple("Ingress router $params->{ingress_router} has no loopback");
     }
   
     # Run a traceroute from the ingress_ip arrived at in the last step to the 
     # destination given in the reservation.
     $logger->info('traceroute.forward',
-        { 'source' => $params->{ingress_ip},
-          'destination' => $params->{destination_ip} });
-    ( $path, $params->{egress_ip}, $params->{egress_interface_id}, $next_as_number ) =
+        { 'source' => $results->{ingress_ip},
+          'destination' => $results->{destination_ip} });
+    ( $path, $results->{egress_ip}, $results->{egress_interface_id}, $next_as_number ) =
         $self->do_traceroute('egress',
-            $params->{ingress_ip}, $params->{destination_ip}, $logger );
-    if( !$params->{egress_interface_id} ) {
+            $results->{ingress_ip}, $results->{destination_ip}, $logger );
+    if( !$results->{egress_interface_id} ) {
         throw Error::Simple("Egress router $params->{egress_router} has no loopback");
     }
     my $unused = pop(@$path);
@@ -135,7 +136,8 @@ sub find_interface_ids {
         }
         else { $params->{next_domain} = undef; }
     }
-    $params->{reservation_path} = $path;
+    $results->{reservation_path} = $path;
+    return $results;
 } #____________________________________________________________________________
 
 
