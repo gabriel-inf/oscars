@@ -107,6 +107,7 @@ sub info {
 sub warning {
     my( $self, $evt_name, $hash ) = @_;
 
+    if (!$hash) { return; }
     my $new_evt_name = $self->{method_name} . '.';
     if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
     $new_evt_name .= $evt_name;
