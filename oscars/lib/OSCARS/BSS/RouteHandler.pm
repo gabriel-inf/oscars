@@ -118,14 +118,23 @@ sub find_interface_ids {
         throw Error::Simple("Ingress router $params->{ingress_router} has no loopback");
     }
   
-    # Run a traceroute from the ingress_ip arrived at in the last step to the 
-    # destination given in the reservation.
-    $logger->info('traceroute.forward',
-        { 'source' => $results->{ingress_ip},
-          'destination' => $results->{destination_ip} });
-    ( $path, $results->{egress_ip}, $results->{egress_interface_id}, $next_as_number ) =
-        $self->do_traceroute('egress',
-            $results->{ingress_ip}, $results->{destination_ip}, $logger );
+    #  If the egress router is given, just get its loopback and interface id.
+    #  Otherwise, run a traceroute from the ingress_ip arrived at in the last 
+    #  step to the destination given in the reservation.
+    if ( $params->{egress_router} ) {
+        $results->{egress_ip} =
+            $self->name_to_loopback($params->{egress_router});
+        $results->{egress_interface_id} = $self->get_interface(
+            $self->name_to_ip($params->{egress_router}, 0));
+    }
+    else {
+        $logger->info('traceroute.forward',
+            { 'source' => $results->{ingress_ip},
+              'destination' => $results->{destination_ip} });
+        ( $path, $results->{egress_ip}, $results->{egress_interface_id}, $next_as_number ) =
+            $self->do_traceroute('egress',
+                $results->{ingress_ip}, $results->{destination_ip}, $logger );
+    }
     if( !$results->{egress_interface_id} ) {
         throw Error::Simple("Egress router $params->{egress_router} has no loopback");
     }
