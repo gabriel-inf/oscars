@@ -121,7 +121,8 @@ sub query_as_number {
 		     -varbindlist => ["$oid.$ipaddr"]
     );
     if (!defined($results))  {
-        $self->{errMsg} = "ERROR: Cannot make as number query: $self->{session}->error\n";
+	my $err = $self->{session}->error;
+        $self->{errMsg} = "ERROR: Cannot make as number query: $err\n";
         return;
     }
     return $results->{"$oid.$ipaddr"};
