@@ -353,7 +353,15 @@ sub get_as_number {
     my $drow = $self->{user}->get_row($statement, $row->{domain_id});
     my $router_name = $row->{router_name} . $drow->{domain_suffix};
     $self->{jnx_snmp}->initialize_session($self->{snmp_configs}, $router_name);
+    my $error_msg = $self->{jnx_snmp}->get_error();
+    if ( $error_msg ) {
+        throw Error::Simple("Unable to initialize SNMP session: $error_msg");
+    }
     $as_number = $self->{jnx_snmp}->query_as_number($ipaddr);
+    $error_msg = $self->{jnx_snmp}->get_error();
+    if ( $error_msg ) {
+        throw Error::Simple("Unable to query AS number: $error_msg");
+    }
     $self->{jnx_snmp}->close_session();
     return $as_number;
 } #____________________________________________________________________________
