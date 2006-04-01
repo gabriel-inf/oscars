@@ -121,7 +121,7 @@ sub query_as_number {
 		     -varbindlist => ["$oid.$ipaddr"]
     );
     if (!defined($results))  {
-        $self->{errMsg} = "ERROR: Cannot make as number query: $self->{session}->{error}\n";
+        $self->{errMsg} = "ERROR: Cannot make as number query: $self->{session}->error()\n";
         return;
     }
     return $results->{"$oid.$ipaddr"};
@@ -151,11 +151,11 @@ sub query_lsp_snmpdata {
     );
 
     if (!defined($results))  {
-        $self->{errMsg} = "ERROR: Cannot do bulkwalk: $self->{session}->{error}\n";
+        $self->{errMsg} = "ERROR: Cannot do bulkwalk: $self->{session}->error()\n";
         return;
     }
     if (!defined($self->{session}->var_bind_list)) {
-        $self->{errMsg} = "ERROR: No varbindlist: $self->{session}->{error}\n";
+        $self->{errMsg} = "ERROR: No varbindlist: $self->{session}->error()\n";
         return;
     }
     $self->{lspInfo} = {};
