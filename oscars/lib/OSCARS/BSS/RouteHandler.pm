@@ -360,7 +360,7 @@ sub get_as_number {
     $as_number = $self->{jnx_snmp}->query_as_number($ipaddr);
     $error_msg = $self->{jnx_snmp}->get_error();
     if ( $error_msg ) {
-        throw Error::Simple("Unable to query AS number: $error_msg");
+        throw Error::Simple("Unable to query $ipaddr for AS number: $error_msg");
     }
     $self->{jnx_snmp}->close_session();
     return $as_number;
