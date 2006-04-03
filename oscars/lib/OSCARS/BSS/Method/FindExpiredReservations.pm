@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 3, 2006
 
 =cut
 
@@ -78,14 +78,12 @@ sub soap_method {
         $resv->{lsp_status} = $self->teardown_pss($resv);
         $self->{resv_methods}->update_reservation( $resv, 'finished',
                                                    $self->{logger} );
+        $self->{logger}->info("expired",
+                      { 'reservation' =>  $resv->{reservation_id} });
     }
     my $results = {};
-    my $log_info = {};
     $results->{list} = $reservations;
-    if ( $reservations ) {
-        $log_info->{'description'} = 'Found expired reservations'; 
-    }
-    return( $results, $log_info );
+    return $results;
 } #____________________________________________________________________________
 
 

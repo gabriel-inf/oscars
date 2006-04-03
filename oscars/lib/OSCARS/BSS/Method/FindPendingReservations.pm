@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 30, 2006
+April 3, 2006
 
 =cut
 
@@ -76,15 +76,12 @@ sub soap_method {
         $resv->{lsp_status} = $self->setup_pss($resv);
         $self->{resv_methods}->update_reservation( $resv, 'active', 
                                                     $self->{logger} );
+        $self->{logger}->info('scheduling',
+                      { 'reservation' =>  $resv->{reservation_id} });
     }
     my $results = {};
-    my $log_info = {};
     $results->{list} = $reservations;
-    if ( $reservations ) {
-        $log_info->{'description'} = 'Found pending reservations'; 
-    }
-    $results->{list} = $reservations;
-    return( $results, $log_info );
+    return $results;
 } #____________________________________________________________________________
 
 

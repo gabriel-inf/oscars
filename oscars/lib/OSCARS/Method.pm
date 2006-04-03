@@ -53,7 +53,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 3, 2006
 
 =cut
 
@@ -128,21 +128,6 @@ sub numeric_compare {
     if ($greater_val < $val) { return 0; }
     return 1;
 } #____________________________________________________________________________
-
-
-###############################################################################
-# soap_call:  make SOAP call, and bracket with log messages.
-#
-sub soap_call{
-    my( $self ) = @_;
-
-    $self->{logger}->info("start",
-	                   $self->{params});
-    my( $results, $log_info ) = $self->soap_method();
-    if ( $log_info ) { $self->{logger}->info("finish", $log_info); }
-    else { $self->{logger}->info("finish", {'description' => 'no error'}); }
-    return $results;
-} #___________________________________________________________________________ 
 
 
 ###############################################################################

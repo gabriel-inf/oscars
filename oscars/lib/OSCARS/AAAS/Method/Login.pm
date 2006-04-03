@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 3, 2006
 
 =cut
 
@@ -61,6 +61,7 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
+    $self->{logger}->info("start", $self->{params});
     my $user_login = $self->{user}->{login};
     my $results = {};
     $results->{user_login} = $user_login;
@@ -74,6 +75,7 @@ sub soap_method {
     if ( $self->{user}->authorized('Domains', 'manage') ) {
         $results->{authorized}->{ManageDomains} = 1;
     }
+    $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________
 

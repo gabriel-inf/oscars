@@ -74,7 +74,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 3, 2006
 
 =cut
 
@@ -125,7 +125,7 @@ sub dispatch {
             my $factory = OSCARS::MethodFactory->new();
             $handler = $factory->instantiate( $user, $params, $logger );
             # call SOAP method
-            $results = $handler->soap_call();
+            $results = $handler->soap_method();
 	    if ( $results->{next_domain} ) {
                 print STDERR "next domain: $results->{next_domain}\n";
                 $results->{user_password} = 'crosstest';

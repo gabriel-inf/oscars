@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 3, 2006
 
 =cut
 
@@ -67,7 +67,6 @@ sub soap_method {
         throw Error::Simple("SOAP method $self->{params}->{method} requires specifying an operation");
     }
     my $results = {};
-    my $log_info = {};
     $results->{user_login} = $self->{user}->{login};
     if ( $self->{params}->{op} eq 'createReservationForm' ) {
         return $results;
@@ -76,24 +75,23 @@ sub soap_method {
         ;
     }
     elsif ($self->{params}->{op} eq 'createReservation') {
-        ( $results, $log_info ) = $self->create_reservation( $self->{user}, $self->{params} );
+        $results = $self->create_reservation( $self->{user}, $self->{params} );
         $results->{user_login} = $self->{user}->{login};
         if ( $results->{next_domain} ) {
-            $log_info->{description} = 'Forwarding to next domain';
-            return( $results, $log_info );
+            $self->{logger}->info("forwarding",
+                             { 'next_domain' => $results->{next_domain} });
+            return $results;
         }
-        $log_info->{description} = 'Successful reservation creation';
     }
     elsif ($self->{params}->{op} eq 'cancelReservation') {
         $self->cancel_reservation( $self->{user}, $self->{params} );
-        $log_info->{description} = 'Successful reservation cancellation';
     }
     elsif ( ($self->{params}->{op} eq 'archiveReservations' ) &&
         ($self->{user}->authorized('Reservations', 'manage'))) {
             $self->archive_reservations( $self->{user}, $self->{params} );
     }
     $results->{list} = $self->get_reservations($self->{user}, $self->{params});
-    return( $results, $log_info );
+    return $results;
 } #____________________________________________________________________________
 
 
@@ -141,6 +139,7 @@ sub create_reservation {
     my( $self, $user, $params ) = @_;
     my( $duration_seconds );
 
+    $self->{logger}->info("start", $self->{params});
     # params fields having to do with traceroute modified in find_interface_ids
     my $results =
         $self->{route_setup}->find_interface_ids($self->{logger}, $params);
@@ -174,6 +173,7 @@ sub create_reservation {
         $self->{resv_lib}->host_ip_to_id($results->{destination_ip}); 
 
     $results = $self->build_results($user, $params);
+    $self->{logger}->info("finish", $results);
     return( $results, { 'domain' => 'local'} );
 } #____________________________________________________________________________
 
@@ -187,12 +187,14 @@ sub create_reservation {
 sub cancel_reservation {
     my( $self, $user, $params ) = @_;
 
+    $self->{logger}->info("start", $self->{params});
     # TODO:  ensure unprivileged user can't cancel another's reservation
     my $status =  $self->{resv_lib}->update_status( $params->{reservation_id},
                                                     'precancel' );
     my $results = $self->{resv_lib}->view_details($params);
     $results->{reservation_id} = $params->{reservation_id};
     $self->{time_lib}->convert_times($results);
+    $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________
 
