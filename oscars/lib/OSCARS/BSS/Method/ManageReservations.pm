@@ -385,14 +385,14 @@ sub next_domain_parameters {
     $results->{next_domain} = $next_domain;
     $results->{ingress_router} = undef;
     $results->{egress_router} = undef;
-    return( $results, { 'next_domain' => $next_domain } );
+    return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 # build_results:  build fields to insert in reservations row
 #
-sub build_results  {
+sub build_results {
     my( $self, $user, $params ) = @_;
 
     my $statement = 'SHOW COLUMNS from BSS.reservations';

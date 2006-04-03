@@ -143,7 +143,7 @@ sub dispatch {
 	                # call method again with previous results to make reservation
 			$params->{next_domain} = $results->{next_domain};
 		        $handler = $factory->instantiate( $user, $params, $logger );
-		        $results = $handler->soap_call();
+		        $results = $handler->soap_method();
                     }
 		}
 		# the next domain is not OSCARS/BRUW
@@ -151,7 +151,7 @@ sub dispatch {
 		    # Not the most efficient way, but detects the loop and
 		    # finishes the reservation.
                     $handler = $factory->instantiate( $user, $results, $logger );
-                    $results = $handler->soap_call();
+                    $results = $handler->soap_method();
 		}
             }
         }
