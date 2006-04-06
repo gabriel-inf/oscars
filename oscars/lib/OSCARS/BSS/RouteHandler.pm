@@ -212,7 +212,7 @@ sub do_traceroute {
         }
         if ( $interface_found ) { push( @path, $interface_found ); }
         elsif ($action eq 'egress') {
-            $next_as_number = $self->get_as_number($interface_id, $hop);
+            $next_as_number = $self->get_as_number($interface_id, $hop, $logger);
             last;
         }
     }
@@ -340,7 +340,7 @@ sub get_interface {
 # Out: autonomous service number (used by the AAAS to look up uri and proxy)
 #
 sub get_as_number {
-    my( $self, $interface_id, $ipaddr ) = @_;
+    my( $self, $interface_id, $ipaddr, $logger ) = @_;
 
     my $as_number;
 
@@ -360,9 +360,15 @@ sub get_as_number {
     $as_number = $self->{jnx_snmp}->query_as_number($ipaddr);
     $error_msg = $self->{jnx_snmp}->get_error();
     if ( $error_msg ) {
-        throw Error::Simple("Unable to query $ipaddr for AS number: $error_msg");
+        #throw Error::Simple("Unable to query $ipaddr for AS number: $error_msg");
+        
+        #Log SNMP failure but build reservation up to this point
+        $logger->info('RouteHandler.get_as_number',
+            { 'ip' => $ipaddr , 'error_message' => $error_msg});
+        $as_number = 'noSuchInstance';
     }
     $self->{jnx_snmp}->close_session();
+    
     return $as_number;
 } #____________________________________________________________________________
 
