@@ -262,7 +262,8 @@ sub execute_configuration_change {
         }
     };
     if ($@) {
-        $self->{logger}->info("exception.ignored: $@", { 'XML' => $xmlString});
+        $self->{logger}->info("exception.ignored: $@",
+	        {'XML' => substr($xmlString, 0, length($xmlString)-1) });
         return;
     }
 
@@ -278,7 +279,8 @@ sub execute_configuration_change {
     # Load the Junoscript configuration.
     my $xmlDoc = $_xmlParser->parsestring($xmlString);
     unless (ref($xmlDoc)) {
-        $self->{errMsg} = "ERROR: Cannot parse $xmlString, check to make sure the XML data is well-formed\n";
+        $self->{errMsg} = "ERROR: Cannot parse XML, check to make sure the XML data is well-formed\n";
+	$self->update_log( $xmlString );
         graceful_shutdown($jnx, _STATE_LOCKED);
         return();
     }
@@ -381,8 +383,9 @@ sub update_log {
     my( $self, $xmlString) = @_;
 
     my $errmsg = $self->get_error();
-    if ($errmsg)  { $xmlString .= "\n\n$errmsg\n"; }
-    $self->{logger}->info('JnxLSP.configuration', {'XML' => $xmlString});
+    if ($errmsg)  { $xmlString .= "*** $errmsg"; }
+    $self->{logger}->info('JnxLSP.configuration',
+	    {'XML' => substr($xmlString, 0, length($xmlString)-1) });
 } #____________________________________________________________________________
 
 
