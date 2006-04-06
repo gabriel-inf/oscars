@@ -77,7 +77,7 @@ sub soap_method {
         $self->{resv_methods}->update_reservation( $resv, 'active', 
                                                     $self->{logger} );
         $self->{logger}->info('scheduling',
-                      { 'reservation' =>  $resv->{reservation_id} });
+                      { 'reservation_id' =>  $resv->{reservation_id} });
     }
     my $results = {};
     $results->{list} = $reservations;
