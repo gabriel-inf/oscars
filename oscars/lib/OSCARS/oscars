@@ -12,8 +12,8 @@ use OSCARS::ResourceManager;
 use OSCARS::Logger;
 
 my ( $database, $daemon, $component, $resource_manager );
-my $authN_package = 'OSCARS::AAAS::AuthN';
-my $authZ_package = 'OSCARS::AAAS::AuthZ';
+my $authN_package = 'OSCARS::AAA::AuthN';
+my $authZ_package = 'OSCARS::AAA::AuthZ';
 
 # TODO:  Essentially going back to earlier version.  Need better UI.
 # port number needs to be option again.
@@ -23,12 +23,12 @@ if ($len == 1) {
     if ($first_arg eq '-h') {
         print STDERR "Usage:\t\toscars component_name\n";
         print STDERR "Examples:\toscars\n";
-        print STDERR "\t\toscars AAAS\n";
+        print STDERR "\t\toscars AAA\n";
         exit;
     }
     else { $component = $ARGV[0]; }
 }
-else { $component = 'AAAS'; }
+else { $component = 'AAA'; }
 
 # TODO:  shouldn't have to be same name
 $database = $component;
@@ -42,7 +42,7 @@ if ($component) {
 sub start_daemon {
     $resource_manager = OSCARS::ResourceManager->new(
                                               'database' => $database );
-    if ( !$resource_manager->use_authentication_plugin($authN_package, 'AAAS') ) {
+    if ( !$resource_manager->use_authentication_plugin($authN_package, 'AAA') ) {
         die( "Unable to find authentication package $authN_package");
     }
     $daemon = SOAP::Transport::HTTP::Daemon
@@ -111,14 +111,14 @@ sub dispatch {
     try {
         $user = $resource_manager->authenticate($daemon, $params);
 	$logger->set_user_login($user->{login});
-        if ( !$user->use_authorization_plugin($authZ_package, 'AAAS') ) {
+        if ( !$user->use_authorization_plugin($authZ_package, 'AAA') ) {
             throw Error::Simple( "Unable to use authorization package $authZ_package");
         }
 
-        # if BSS component is not on this server
+        # if Intradomain component is not on this server
 	# NOTE:  not currently handled
 	if ($resource_manager->has_client($params->{server})) {
-            $som = $resource_manager->forward('BSS', $params);
+            $som = $resource_manager->forward('Intradomain', $params);
             $results = $som->result;
 	}
         else {

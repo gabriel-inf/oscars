@@ -81,7 +81,8 @@ sub send_mailings {
 
 
 ###############################################################################
-# send_mail:  Mails message.  Used by both AAAS and BSS for notifications
+# send_mail:  Mails message.  Used by AAA, Intradomain, and Interdomain
+#     components for notifications
 #
 sub send_mail {
     my( $self, $sender, $recipient, $subject, $msg ) = @_;

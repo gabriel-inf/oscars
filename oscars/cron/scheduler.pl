@@ -7,10 +7,10 @@ use SOAP::Lite;
 use OSCARS::ResourceManager;
 use Data::Dumper;
 
-my $db_name = 'AAAS';
-my $bss_component_name = 'BSS';
+my $db_name = 'AAA';
+my $bss_component_name = 'Intradomain';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAAS::AuthN', $db_name);
+my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAA::AuthN', $db_name);
 
 my( $user_login, $user_password ) = $rm->get_test_account('testaccount');
 
