@@ -11,7 +11,7 @@ OSCARS::BSS::Method::UpdateRouterTables - SOAP method to update router-associate
 
 =head1 DESCRIPTION
 
-SOAP method to update the OSCARS routers, interfaces, and ipaddrs BSS
+SOAP method to update the routers, interfaces, and ipaddrs BSS
 database tables given the current network configuration in ifrefpoll files.
 It inherits from OSCARS::Method.
 This method is inefficient and uses ESnet-specific ifrefpoll files.
