@@ -5,13 +5,13 @@ use Test::Simple tests => 3;
 use Data::Dumper;
 
 use OSCARS::Database;
-use OSCARS::BSS::JnxSNMP;
-use OSCARS::BSS::RouteHandler;
+use OSCARS::Intradomain::JnxSNMP;
+use OSCARS::Intradomain::RouteHandler;
 
 my $dbconn = OSCARS::Database->new();
-$dbconn->connect('BSS');
+$dbconn->connect('Intradomain');
 
-my $rh = OSCARS::BSS::RouteHandler->new('user' => $dbconn);
+my $rh = OSCARS::Intradomain::RouteHandler->new('user' => $dbconn);
 my $configs = $rh->get_snmp_configs();
 ok( $configs );
 
@@ -21,7 +21,7 @@ my $test_configs = $rh->get_test_configs('jnxSNMP');
 my $router_name = $test_configs->{router_name};
 
 # Create a query object instance
-my $jnxSNMP = OSCARS::BSS::JnxSNMP->new();
+my $jnxSNMP = OSCARS::Intradomain::JnxSNMP->new();
 ok($jnxSNMP);
 
 print STDERR "router_name: $router_name\n";

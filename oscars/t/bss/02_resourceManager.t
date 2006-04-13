@@ -6,8 +6,8 @@ use SOAP::Lite;
 
 use OSCARS::ResourceManager;
 
-my $db_name = 'AAAS';
-my $component_name = 'BSS';
+my $db_name = 'AAA';
+my $component_name = 'Intradomain';
 
 my $rm = OSCARS::ResourceManager->new('database' => $db_name);
 ok($rm);

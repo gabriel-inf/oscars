@@ -4,10 +4,10 @@ use strict;
 use Test::Simple tests => 1;
 
 use OSCARS::Database;
-use OSCARS::BSS::RouteHandler;
+use OSCARS::Intradomain::RouteHandler;
 
 my $dbconn = OSCARS::Database->new();
-$dbconn->connect('BSS');
+$dbconn->connect('Intradomain');
 
-my $rh = OSCARS::BSS::RouteHandler->new('user' => $dbconn);
+my $rh = OSCARS::Intradomain::RouteHandler->new('user' => $dbconn);
 ok($rh);

@@ -8,19 +8,19 @@ use Data::Dumper;
 
 use OSCARS::ResourceManager;
 use OSCARS::Database;
-use OSCARS::BSS::RouteHandler;
+use OSCARS::Intradomain::RouteHandler;
 
-my $db_name = 'AAAS';
-my $aaa_component_name = 'AAAS';
-my $bss_component_name = 'BSS';
+my $db_name = 'AAA';
+my $aaa_component_name = 'AAA';
+my $bss_component_name = 'Intradomain';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAAS::AuthN', 'AAAS');
+my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAA::AuthN', 'AAA');
 
 my( $login, $password ) = $rm->get_test_account('testaccount');
 
 my $testdb = OSCARS::Database->new();
-$testdb->connect('BSS');
-my $rh = OSCARS::BSS::RouteHandler->new('user' => $testdb);
+$testdb->connect('Intradomain');
+my $rh = OSCARS::Intradomain::RouteHandler->new('user' => $testdb);
 my $test_configs = $rh->get_test_configs('manageReservations');
 
 my( $status, $msg, $reservation_id ) = createNSI(

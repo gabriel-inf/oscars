@@ -13,7 +13,7 @@ my $dbconn = OSCARS::Database->new();
 ok($dbconn);
 
 try {
-    $dbconn->connect('BSS');
+    $dbconn->connect('Intradomain');
 }
 catch Error::Simple with { $ex = shift; }
 otherwise { $ex = shift; }

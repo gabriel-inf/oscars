@@ -9,11 +9,11 @@ use Data::Dumper;
 use OSCARS::ResourceManager;
 
 my( $status, $msg, $reservation_id );
-my $db_name = 'AAAS';
-my $aaa_component_name = 'AAAS';
-my $bss_component_name = 'BSS';
+my $db_name = 'AAA';
+my $aaa_component_name = 'AAA';
+my $bss_component_name = 'Intradomain';
 my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAAS::AuthN', 'AAAS');
+my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAA::AuthN', 'AAA');
 
 my( $login, $password ) = $rm->get_test_account('testaccount');
 
