@@ -56,7 +56,7 @@ sub output_div {
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-	     'server=BSS;method=ManageReservations;op=archiveReservations;');">
+	     'server=BSS;method=ArchiveReservations;');">
 
      <p>Required inputs are bordered in green.  Ranges or types of valid 
      entries are given in parentheses below the input fields.</p>

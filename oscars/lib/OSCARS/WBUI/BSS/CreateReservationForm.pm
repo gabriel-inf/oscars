@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -32,45 +32,39 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# modify_params:  resets method name and adds op name
+# handle_request:  overrides superclass to just handle portions necessary
 #
-sub modify_params {
-    my( $self ) = @_;
+sub handle_request {
+    my( $self, $soap_server ) = @_;
 
-    my $params = $self->SUPER::modify_params();
-    $params->{method} = 'ManageReservations';
-    $params->{op} = 'createReservationForm';
-    return $params;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# post_process:  Reset the method name to the original.
-#
-sub post_process {
-    my( $self, $params, $results ) = @_;
-
-    $params->{method} = 'CreateReservationForm';
+    my( $user_login, $authorizations ) = $self->authenticate();
+    if ( !$user_login ) { return; }
+    $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
+    print $self->{cgi}->header( -type => 'text/xml');
+    print "<xml>\n";
+    $self->{tabs}->output( 'CreateReservationForm', $authorizations );
+    my $msg = $self->output_div($user_login, $authorizations);
+    print "<msg>$msg</msg>\n";
+    print "</xml>\n";
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
 # output_div:  prints out the reservation creation form
-#          accessible from the "Reservations" notebook tab
-# In:   results of SOAP call
-# Out:  None
+#              accessible from the "Create Reservation" notebook tab
+# In:   user login name, and authorizations
+# Out:  message string
 #
 sub output_div {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $user_login, $authorizations ) = @_;
 
     my $params_str;
 
-    my $user_login = $results->{user_login};
     my $msg = "Reservation creation form";
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-               'server=BSS;method=ManageReservations;op=createReservation;',
+               'server=BSS;method=CreateNSI;',
 	       check_reservation);">
       <input type='hidden' name='reservation_start_time'></input>
       <input type='hidden' name='reservation_end_time'></input>

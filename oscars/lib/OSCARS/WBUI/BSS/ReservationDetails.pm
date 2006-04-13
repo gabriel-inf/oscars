@@ -3,7 +3,7 @@ package OSCARS::WBUI::BSS::ReservationDetails;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::ReservationDetails - handles request to view a reservation's details
+OSCARS::WBUI::BSS::ReservationDetails - outputs reservation details
 
 =head1 SYNOPSIS
 
@@ -11,7 +11,7 @@ OSCARS::WBUI::BSS::ReservationDetails - handles request to view a reservation's 
 
 =head1 DESCRIPTION
 
-Makes a SOAP request to view a particular reservation's details.
+Library method for CancelNSI, CreateNSI, QueryNSI, and ModifyNSI output.
 
 =head1 AUTHOR
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -28,16 +28,21 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::SOAPAdapter;
-our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+sub new {
+    my( $class, %args ) = @_;
+    my( $self ) = { %args };
+  
+    bless( $self, $class );
+    return( $self );
+} #____________________________________________________________________________
 
 
 ###############################################################################
-# output_div:  print details of reservation returned by SOAP call
+# output:  print details of reservation returned by SOAP call
 # In:   results of SOAP call
 # Out:  None
 #
-sub output_div {
+sub output {
     my( $self, $results, $authorizations ) = @_;
 
     my $end_time;
@@ -62,7 +67,7 @@ sub output_div {
     if (($results->{reservation_status} eq 'pending') ||
         ($results->{reservation_status} eq 'active')) {
         my $cancel_submit_str = "return submit_form(this,
-             'server=BSS;method=ManageReservations;op=cancelReservation;');";
+             'server=BSS;method=CancelNSI;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancel_submit_str">
         <input type='hidden' name='reservation_id'
@@ -74,7 +79,7 @@ sub output_div {
     }
 
     my $refresh_submit_str = "return submit_form(this,
-             'server=BSS;method=ReservationDetails;');";
+             'server=BSS;method=QueryNSI;');";
     print( qq{
     <form method="post" action="" onsubmit="$refresh_submit_str">
     <input type='hidden' name='reservation_id'

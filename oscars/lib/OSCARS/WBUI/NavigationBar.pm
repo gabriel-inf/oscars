@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -47,21 +47,20 @@ sub new {
 sub output {
     my( $self, $active_tab, $authorizations ) = @_;
 
-    my $active_status;
+    my( $active_status, $op );
 
     print qq{
       <navigation-bar>
       <ul id="tabnav">
     };
     my $server = 'BSS';
-    my $method = 'ManageReservations';
+    my $method = 'ViewReservations';
     if ( $method eq $active_tab ) { $active_status = 'active'; }
     else { $active_status = 'inactive'; }
-    my $op = 'viewReservations';
     print qq{
       <li>
         <a style="/styleSheets/layout.css" title="View/edit reservations"
-           onclick="return new_section('server=$server;method=$method;op=$op;');"
+           onclick="return new_section('server=$server;method=$method;');"
            class='$active_status' href="#">Reservations</a>
       </li>
     };
