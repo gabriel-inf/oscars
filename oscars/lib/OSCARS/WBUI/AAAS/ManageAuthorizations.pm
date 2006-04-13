@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::AAAS::ManageAuthorizations;
+package OSCARS::WBUI::AAA::ManageAuthorizations;
 
 =head1 NAME
 
-OSCARS::WBUI::AAAS::ManageAuthorizations - Manage all authorizations.
+OSCARS::WBUI::AAA::ManageAuthorizations - Manage all authorizations.
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::AAAS::ManageAuthorizations;
+  use OSCARS::WBUI::AAA::ManageAuthorizations;
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 

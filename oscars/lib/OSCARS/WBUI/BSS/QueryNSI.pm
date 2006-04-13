@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::BSS::QueryNSI;
+package OSCARS::WBUI::Intradomain::QueryNSI;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::QueryNSI - handles request to view a reservation's details
+OSCARS::WBUI::Intradomain::QueryNSI - handles request to view a reservation's details
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::BSS::QueryNSI;
+  use OSCARS::WBUI::Intradomain::QueryNSI;
 
 =head1 DESCRIPTION
 
@@ -28,7 +28,7 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::BSS::ReservationDetails;
+use OSCARS::WBUI::Intradomain::ReservationDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
@@ -42,7 +42,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub output_div {
     my( $self, $results, $authorizations ) = @_;
 
-    my $details = OSCARS::WBUI::BSS::ReservationDetails->new();
+    my $details = OSCARS::WBUI::Intradomain::ReservationDetails->new();
     return $details->output( $results, $authorizations );
 } #____________________________________________________________________________
 

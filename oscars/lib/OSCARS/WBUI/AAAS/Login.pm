@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::AAAS::Login;
+package OSCARS::WBUI::AAA::Login;
 
 =head1 NAME
 
-OSCARS::WBUI::AAAS::Login - Handles user login.
+OSCARS::WBUI::AAA::Login - Handles user login.
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::AAAS::Login;
+  use OSCARS::WBUI::AAA::Login;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 

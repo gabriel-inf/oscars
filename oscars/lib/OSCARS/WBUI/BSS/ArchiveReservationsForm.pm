@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::BSS::ArchiveReservationsForm;
+package OSCARS::WBUI::Intradomain::ArchiveReservationsForm;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::ArchiveReservationsForm - outputs archive reservations form
+OSCARS::WBUI::Intradomain::ArchiveReservationsForm - outputs archive reservations form
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::BSS::ArchiveReservationsForm;
+  use OSCARS::WBUI::Intradomain::ArchiveReservationsForm;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -56,7 +56,7 @@ sub output_div {
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-	     'server=BSS;method=ArchiveReservations;');">
+	     'server=Intradomain;method=ArchiveReservations;');">
 
      <p>Required inputs are bordered in green.  Ranges or types of valid 
      entries are given in parentheses below the input fields.</p>

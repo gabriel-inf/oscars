@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::BSS::ModifyNSI;
+package OSCARS::WBUI::Intradomain::ModifyNSI;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::ModifyNSI - handles request to modify an existing reservation
+OSCARS::WBUI::Intradomain::ModifyNSI - handles request to modify an existing reservation
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::BSS::ModifyNSI;
+  use OSCARS::WBUI::Intradomain::ModifyNSI;
 
 =head1 DESCRIPTION
 
@@ -28,7 +28,7 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::BSS::ReservationDetails;
+use OSCARS::WBUI::Intradomain::ReservationDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
@@ -42,7 +42,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub output_div {
     my( $self, $results, $authorizations ) = @_;
 
-    my $details = OSCARS::WBUI::BSS::ReservationDetails->new();
+    my $details = OSCARS::WBUI::Intradomain::ReservationDetails->new();
     return $details->output( $results, $authorizations );
 } #____________________________________________________________________________
 

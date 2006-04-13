@@ -49,7 +49,7 @@ sub new {
 # start: Sets session parameters.  Used by verify to make sure that browser
 #   request has same session id, and has a user_login parameter set.
 #   Note that this does not handle checking whether the user is in 
-#   the database; that is handled by a method in the AAAS prior to calling
+#   the database; that is handled by a method in the AAA prior to calling
 #   this method.
 #
 # In:   ref to CGI instance, results of database user/password check

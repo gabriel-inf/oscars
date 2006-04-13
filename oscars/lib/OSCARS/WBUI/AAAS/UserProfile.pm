@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::AAAS::UserProfile;
+package OSCARS::WBUI::AAA::UserProfile;
 
 =head1 NAME
 
-OSCARS::WBUI::AAAS::UserProfile - Gets the profile for the given OSCARS user.
+OSCARS::WBUI::AAA::UserProfile - Gets the profile for the given OSCARS user.
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::AAAS::UserProfile;
+  use OSCARS::WBUI::AAA::UserProfile;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 27, 2006
+April 12, 2006
 
 =cut
 
@@ -52,7 +52,7 @@ sub output_div {
     # may be accessing another user's profile if an administrator
     my $login = $results->{selected_user} ? $results->{selected_user} : $results->{user_login};
     my $modify_submit_str = "return submit_form(this,
-                    'server=AAAS;method=UserProfile;op=modifyProfile;',
+                    'server=AAA;method=UserProfile;op=modifyProfile;',
 		    check_profile_modification);";
     my $msg = "User profile";
     print( qq{

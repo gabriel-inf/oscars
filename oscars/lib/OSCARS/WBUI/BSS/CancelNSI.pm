@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::BSS::CancelNSI;
+package OSCARS::WBUI::Intradomain::CancelNSI;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::CancelNSI - handles request to cancel an existing reservation
+OSCARS::WBUI::Intradomain::CancelNSI - handles request to cancel an existing reservation
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::BSS::CancelNSI;
+  use OSCARS::WBUI::Intradomain::CancelNSI;
 
 =head1 DESCRIPTION
 
@@ -28,7 +28,7 @@ use strict;
 
 use Data::Dumper;
 
-use OSCARS::WBUI::BSS::ReservationDetails;
+use OSCARS::WBUI::Intradomain::ReservationDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
@@ -42,7 +42,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub output_div {
     my( $self, $results, $authorizations ) = @_;
 
-    my $details = OSCARS::WBUI::BSS::ReservationDetails->new();
+    my $details = OSCARS::WBUI::Intradomain::ReservationDetails->new();
     return $details->output( $results, $authorizations );
 } #____________________________________________________________________________
 

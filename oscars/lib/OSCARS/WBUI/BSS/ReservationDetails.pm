@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::BSS::ReservationDetails;
+package OSCARS::WBUI::Intradomain::ReservationDetails;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::ReservationDetails - outputs reservation details
+OSCARS::WBUI::Intradomain::ReservationDetails - outputs reservation details
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::BSS::ReservationDetails;
+  use OSCARS::WBUI::Intradomain::ReservationDetails;
 
 =head1 DESCRIPTION
 
@@ -67,7 +67,7 @@ sub output {
     if (($results->{reservation_status} eq 'pending') ||
         ($results->{reservation_status} eq 'active')) {
         my $cancel_submit_str = "return submit_form(this,
-             'server=BSS;method=CancelNSI;');";
+             'server=Intradomain;method=CancelNSI;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancel_submit_str">
         <input type='hidden' name='reservation_id'
@@ -79,7 +79,7 @@ sub output {
     }
 
     my $refresh_submit_str = "return submit_form(this,
-             'server=BSS;method=QueryNSI;');";
+             'server=Intradomain;method=QueryNSI;');";
     print( qq{
     <form method="post" action="" onsubmit="$refresh_submit_str">
     <input type='hidden' name='reservation_id'

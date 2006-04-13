@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::AAAS::AddUserForm;
+package OSCARS::WBUI::AAA::AddUserForm;
 
 =head1 NAME
 
-OSCARS::WBUI::AAAS::AddUserForm - Outputs HTML form for adding a user.
+OSCARS::WBUI::AAA::AddUserForm - Outputs HTML form for adding a user.
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::AAAS::AddUserForm;
+  use OSCARS::WBUI::AAA::AddUserForm;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 26, 2006
+April 12, 2006
 
 =cut
 
@@ -52,7 +52,7 @@ sub output_div {
     my( $self, $results, $authorizations ) = @_;
 
     my $submit_str = "return submit_form(this,
-                               'server=AAAS;method=ManageUsers;op=addUser;',
+                               'server=AAA;method=ManageUsers;op=addUser;',
 			       check_add_user);";
     my $msg = "Add User Form";
     print( qq{

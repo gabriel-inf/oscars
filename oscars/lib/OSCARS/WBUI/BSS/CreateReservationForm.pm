@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::BSS::CreateReservationForm;
+package OSCARS::WBUI::Intradomain::CreateReservationForm;
 
 =head1 NAME
 
-OSCARS::WBUI::BSS::CreateReservationForm - outputs reservation request form
+OSCARS::WBUI::Intradomain::CreateReservationForm - outputs reservation request form
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::BSS::CreateReservationForm;
+  use OSCARS::WBUI::Intradomain::CreateReservationForm;
 
 =head1 DESCRIPTION
 
@@ -64,7 +64,7 @@ sub output_div {
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-               'server=BSS;method=CreateNSI;',
+               'server=Intradomain;method=CreateNSI;',
 	       check_reservation);">
       <input type='hidden' name='reservation_start_time'></input>
       <input type='hidden' name='reservation_end_time'></input>

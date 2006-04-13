@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::AAAS::ManageResources;
+package OSCARS::WBUI::AAA::ManageResources;
 
 =head1 NAME
 
-OSCARS::WBUI::AAAS::ManageResources - Manage all resources.
+OSCARS::WBUI::AAA::ManageResources - Manage all resources.
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::AAAS::ManageResources;
+  use OSCARS::WBUI::AAA::ManageResources;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -89,9 +89,9 @@ sub resource_entry_fields {
     my( $self ) = @_;
 
     my $add_submit_str = "return submit_form(this,
-                    'server=AAAS;method=ManageResources;op=addResource;');";
+                    'server=AAA;method=ManageResources;op=addResource;');";
     my $delete_submit_str = "return submit_form(this,
-                    'server=AAAS;method=ManageResources;op=deleteResource;');";
+                    'server=AAA;method=ManageResources;op=deleteResource;');";
     print( qq{
     <td class='auth-ui-td'>
     <table>
@@ -127,9 +127,9 @@ sub permission_entry_fields {
     my( $self ) = @_;
 
     my $add_submit_str = "return submit_form(this,
-                    'server=AAAS;method=ManagePermissions;op=addPermission;');";
+                    'server=AAA;method=ManagePermissions;op=addPermission;');";
     my $delete_submit_str = "return submit_form(this,
-                    'server=AAAS;method=ManagePermissions;op=deletePermission;');";
+                    'server=AAA;method=ManagePermissions;op=deletePermission;');";
     print( qq{
     <td class='auth-ui-td'>
     <table>

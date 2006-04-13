@@ -53,7 +53,7 @@ sub output {
       <navigation-bar>
       <ul id="tabnav">
     };
-    my $server = 'BSS';
+    my $server = 'Intradomain';
     my $method = 'ViewReservations';
     if ( $method eq $active_tab ) { $active_status = 'active'; }
     else { $active_status = 'inactive'; }
@@ -74,7 +74,7 @@ sub output {
            class='$active_status' href="#">Create Reservation</a>
       </li>
     };
-    $server = 'AAAS';
+    $server = 'AAA';
     if ( $authorizations && $authorizations->{ManageUsers} ) {
 	$method = 'ManageUsers';
 	$op = 'viewUsers';

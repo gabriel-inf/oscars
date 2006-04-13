@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::AAAS::Logout;
+package OSCARS::WBUI::AAA::Logout;
 
 =head1 NAME
 
-OSCARS::WBUI::AAAS::Logout - Handles user logout.
+OSCARS::WBUI::AAA::Logout - Handles user logout.
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::AAAS::Logout;
+  use OSCARS::WBUI::AAA::Logout;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
