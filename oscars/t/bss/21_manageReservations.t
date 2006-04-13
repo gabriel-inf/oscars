@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 4;
+use Test::Simple tests => 3;
 
 use SOAP::Lite;
 use Data::Dumper;
@@ -23,37 +23,32 @@ $testdb->connect('BSS');
 my $rh = OSCARS::BSS::RouteHandler->new('user' => $testdb);
 my $test_configs = $rh->get_test_configs('manageReservations');
 
-my( $status, $msg, $reservation_id ) = CreateReservation(
+my( $status, $msg, $reservation_id ) = createNSI(
                           $login, $password,
                           $test_configs->{reservation_source},
                           $test_configs->{reservation_destination});
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = ViewReservations($login, $password);
+( $status, $msg ) = queryNSI($login, $password, $reservation_id);
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = ReservationDetails($login, $password, $reservation_id);
-ok( $status, $msg );
-print STDERR $msg;
-
-( $status, $msg ) = CancelReservation($login, $password, $reservation_id);
+( $status, $msg ) = cancelNSI($login, $password, $reservation_id);
 ok( $status, $msg );
 print STDERR $msg;
 
 
 #############################################################################
 #
-sub CreateReservation {
+sub createNSI {
     my( $user_login, $user_password, $src, $dst ) = @_;
 
     # password necessary for test to run, but not for this method in general
     my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
-    $params{method} = 'ManageReservations'; 
-    $params{op} = 'createReservation'; 
+    $params{method} = 'CreateNSI'; 
 
     $params{source_host} = $src;
     $params{destination_host} = $dst;
@@ -78,40 +73,16 @@ sub CreateReservation {
 } #___________________________________________________________________________
 
 
-###############################################################################
-#
-sub ViewReservations {
-    my ( $user_login, $user_password ) = @_;
-
-    # password necessary for test to run, but not for this method in general
-    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
-
-    $params{server} = $bss_component_name;
-    $params{method} = 'ManageReservations';
-    $params{op} = 'viewReservations';
-
-    my $som = $rm->add_client()->dispatch(\%params);
-    if ($som->faultstring) { return( 0, $som->faultstring ); }
-
-    my $results = $som->result;
-    my $msg = "\nReservations:\n";
-    $msg .= Dumper($results);
-    $msg .= "\n";
-    return( 1, $msg );
-} #___________________________________________________________________________
-
-
-
 #############################################################################
 #
-sub ReservationDetails {
+sub queryNSI {
     my ( $user_login, $user_password, $reservation_id ) = @_;
 
     # password necessary for test to run, but not for this method in general
     my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
     $params{server} = $bss_component_name;
-    $params{method} = 'ReservationDetails';
+    $params{method} = 'QueryNSI';
     $params{reservation_id} = $reservation_id;
 
     my $som = $rm->add_client()->dispatch(\%params);
@@ -127,7 +98,7 @@ sub ReservationDetails {
 
 #############################################################################
 #
-sub CancelReservation {
+sub cancelNSI {
     my( $user_login, $user_password, $reservation_id ) = @_;
 
     # password necessary for test to run, but not for this method in general
@@ -137,8 +108,7 @@ sub CancelReservation {
     # to cancelled).
     $params{server} = $bss_component_name;
     $params{user_login} = $user_login;
-    $params{method} = 'ManageReservations';
-    $params{op} = 'cancelReservation';
+    $params{method} = 'CancelNSI';
     $params{reservation_id} = $reservation_id;
 
     my $som = $rm->add_client()->dispatch(\%params);
