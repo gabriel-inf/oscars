@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::BSS::RouteHandler; 
+package OSCARS::Intradomain::RouteHandler; 
 
 =head1 NAME
 
-OSCARS::BSS::RouteHandler - Finds ingress and egress routers.
+OSCARS::Intradomain::RouteHandler - Finds ingress and egress routers.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::RouteHandler;
+  use OSCARS::Intradomain::RouteHandler;
 
 =head1 DESCRIPTION
 
@@ -32,8 +32,8 @@ use Data::Dumper;
 use Socket;
 use Error qw(:try);
 
-use OSCARS::BSS::JnxTraceroute;
-use OSCARS::BSS::JnxSNMP;
+use OSCARS::Intradomain::JnxTraceroute;
+use OSCARS::Intradomain::JnxSNMP;
 
 
 sub new {
@@ -50,7 +50,7 @@ sub initialize {
 
     $self->{trace_configs} = $self->get_trace_configs();
     $self->{snmp_configs} = $self->get_snmp_configs();
-    $self->{jnx_snmp} = OSCARS::BSS::JnxSNMP->new();
+    $self->{jnx_snmp} = OSCARS::Intradomain::JnxSNMP->new();
 } #____________________________________________________________________________
 
 
@@ -175,7 +175,7 @@ sub find_interface_ids {
 sub do_traceroute {
     my( $self, $action, $src, $dst, $logger )  = @_;
 
-    my $jnxTraceroute = new OSCARS::BSS::JnxTraceroute();
+    my $jnxTraceroute = new OSCARS::Intradomain::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{trace_configs}, $src, $dst, $logger);
     my @hops = $jnxTraceroute->get_hops();
     my @path = ();
@@ -262,7 +262,7 @@ sub get_trace_configs {
     my( $self ) = @_;
 
         # use default for now
-    my $statement = "SELECT * FROM BSS.trace_confs where trace_conf_id = 1";
+    my $statement = "SELECT * FROM Intradomain.trace_confs where trace_conf_id = 1";
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -274,7 +274,7 @@ sub get_snmp_configs {
     my( $self ) = @_;
 
         # use default for now
-    my $statement = "SELECT * FROM BSS.snmp_confs where snmp_conf_id = 1";
+    my $statement = "SELECT * FROM Intradomain.snmp_confs where snmp_conf_id = 1";
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -286,8 +286,8 @@ sub get_snmp_configs {
 sub get_test_configs {
     my( $self, $test_name ) = @_;
 
-    my $statement = 'SELECT * FROM BSS.test_addresses a ' .
-        'INNER JOIN BSS.test_confs t ON a.test_conf_id = t.test_conf_id ' .
+    my $statement = 'SELECT * FROM Intradomain.test_addresses a ' .
+        'INNER JOIN Intradomain.test_confs t ON a.test_conf_id = t.test_conf_id ' .
         'WHERE t.test_name = ?';
     my $rows = $self->{user}->do_query($statement, $test_name);
     my $configs = {};
@@ -308,9 +308,9 @@ sub get_loopback {
     my ($self, $ipaddr) = @_;
 
     my $statement = 'SELECT router_loopback ' .
-        'FROM BSS.routers b ' .
-        'INNER JOIN BSS.interfaces i ON b.router_id = i.router_id ' .
-        'INNER JOIN BSS.ipaddrs ip ON i.interface_id = ip.interface_id ' .
+        'FROM Intradomain.routers b ' .
+        'INNER JOIN Intradomain.interfaces i ON b.router_id = i.router_id ' .
+        'INNER JOIN Intradomain.ipaddrs ip ON i.interface_id = ip.interface_id ' .
         'WHERE ip.ipaddr_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
     return( $row->{router_loopback} );
@@ -326,7 +326,7 @@ sub get_loopback {
 sub get_interface {
     my ($self, $ipaddr) = @_;
 
-    my $statement = 'SELECT interface_id FROM BSS.ipaddrs WHERE ipaddr_ip = ?';
+    my $statement = 'SELECT interface_id FROM Intradomain.ipaddrs WHERE ipaddr_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
     return( $row->{interface_id} );
 } #____________________________________________________________________________
@@ -344,11 +344,11 @@ sub get_as_number {
 
     my $as_number;
 
-    my $statement = 'SELECT router_name, domain_id FROM BSS.routers r ' .
-        'INNER JOIN BSS.interfaces i ON r.router_id = i.router_id ' .
+    my $statement = 'SELECT router_name, domain_id FROM Intradomain.routers r ' .
+        'INNER JOIN Intradomain.interfaces i ON r.router_id = i.router_id ' .
         'WHERE i.interface_id = ?';
     my $row = $self->{user}->get_row($statement, $interface_id);
-    $statement = 'SELECT domain_suffix FROM BSS.domains ' .
+    $statement = 'SELECT domain_suffix FROM Intradomain.domains ' .
                  'WHERE domain_id = ?';
     my $drow = $self->{user}->get_row($statement, $row->{domain_id});
     my $router_name = $row->{router_name} . $drow->{domain_suffix};

@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::BSS::Method::ModifyNSI;
+package OSCARS::Intradomain::Method::ModifyNSI;
 
 =head1 NAME
 
-OSCARS::BSS::Method::ModifyNSI - Handles modification of existing reservation. 
+OSCARS::Intradomain::Method::ModifyNSI - Handles modification of existing reservation. 
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::ManageReservations;
+  use OSCARS::Intradomain::Method::ManageReservations;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 11, 2006
+April 12, 2006
 
 =cut
 
@@ -30,9 +30,9 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::BSS::RouteHandler;
-use OSCARS::BSS::ReservationCommon;
-use OSCARS::BSS::TimeConversionCommon;
+use OSCARS::Intradomain::RouteHandler;
+use OSCARS::Intradomain::ReservationCommon;
+use OSCARS::Intradomain::TimeConversionCommon;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -41,9 +41,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resv_lib} = OSCARS::BSS::ReservationCommon->new(
+    $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
                                                  'user' => $self->{user});
-    $self->{time_lib} = OSCARS::BSS::TimeConversionCommon->new(
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________

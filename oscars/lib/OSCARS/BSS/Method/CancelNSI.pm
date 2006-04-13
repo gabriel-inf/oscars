@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::BSS::Method::CancelNSI;
+package OSCARS::Intradomain::Method::CancelNSI;
 
 =head1 NAME
 
-OSCARS::BSS::Method::CancelNSI - Handles cancelling reservation.
+OSCARS::Intradomain::Method::CancelNSI - Handles cancelling reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::CancelNSI;
+  use OSCARS::Intradomain::Method::CancelNSI;
 
 =head1 DESCRIPTION
 
@@ -31,8 +31,8 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::BSS::ReservationCommon;
-use OSCARS::BSS::TimeConversionCommon;
+use OSCARS::Intradomain::ReservationCommon;
+use OSCARS::Intradomain::TimeConversionCommon;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -41,9 +41,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resv_lib} = OSCARS::BSS::ReservationCommon->new(
+    $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
                                                  'user' => $self->{user});
-    $self->{time_lib} = OSCARS::BSS::TimeConversionCommon->new(
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________

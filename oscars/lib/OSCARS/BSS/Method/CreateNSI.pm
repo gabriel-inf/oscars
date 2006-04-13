@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::BSS::Method::CreateNSI;
+package OSCARS::Intradomain::Method::CreateNSI;
 
 =head1 NAME
 
-OSCARS::BSS::Method::CreateNSI - Handles creation of circuit reservation. 
+OSCARS::Intradomain::Method::CreateNSI - Handles creation of circuit reservation. 
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::CreateNSI;
+  use OSCARS::Intradomain::Method::CreateNSI;
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 11, 2006
+April 12, 2006
 
 =cut
 
@@ -32,9 +32,9 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::BSS::RouteHandler;
-use OSCARS::BSS::ReservationCommon;
-use OSCARS::BSS::TimeConversionCommon;
+use OSCARS::Intradomain::RouteHandler;
+use OSCARS::Intradomain::ReservationCommon;
+use OSCARS::Intradomain::TimeConversionCommon;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -43,11 +43,11 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{route_setup} = OSCARS::BSS::RouteHandler->new(
+    $self->{route_setup} = OSCARS::Intradomain::RouteHandler->new(
                                                  'user' => $self->{user});
-    $self->{resv_lib} = OSCARS::BSS::ReservationCommon->new(
+    $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
                                                  'user' => $self->{user});
-    $self->{time_lib} = OSCARS::BSS::TimeConversionCommon->new(
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________
@@ -74,7 +74,7 @@ sub soap_method {
 
 ###############################################################################
 # create_reservation:  inserts a row into the reservations table. 
-#     OSCARS::BSS::RouteHandler is called to set up the route before
+#     OSCARS::Intradomain::RouteHandler is called to set up the route before
 #     inserting a reservation in the database
 # In:  reference to hash.  Hash's keys are all the fields of the reservations
 #      table except for the primary key.
@@ -148,8 +148,8 @@ sub generate_message {
 sub id_to_router_name {
     my( $self, $interface_id ) = @_;
 
-    my $statement = 'SELECT router_name FROM BSS.routers
-                 WHERE router_id = (SELECT router_id from BSS.interfaces
+    my $statement = 'SELECT router_name FROM Intradomain.routers
+                 WHERE router_id = (SELECT router_id from Intradomain.interfaces
                                     WHERE interface_id = ?)';
     my $row = $self->{user}->get_row($statement, $interface_id);
     # no match
@@ -183,7 +183,7 @@ sub check_oversubscribe {
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
     my $statement = 'SELECT reservation_bandwidth, reservation_start_time,
-              reservation_end_time, reservation_path FROM BSS.reservations
+              reservation_end_time, reservation_path FROM Intradomain.reservations
               WHERE reservation_end_time >= ? AND
                   reservation_start_time <= ? AND ' .
                   " (reservation_status = 'pending' OR
@@ -246,7 +246,7 @@ sub check_oversubscribe {
 sub get_interface_fields {
     my( $self, $iface_id) = @_;
 
-    my $statement = 'SELECT * FROM BSS.interfaces WHERE interface_id = ?';
+    my $statement = 'SELECT * FROM Intradomain.interfaces WHERE interface_id = ?';
     my $row = $self->{user}->get_row($statement, $iface_id);
     return $row;
 } #____________________________________________________________________________
@@ -275,7 +275,7 @@ sub next_domain_parameters {
 sub build_results {
     my( $self, $user, $params ) = @_;
 
-    my $statement = 'SHOW COLUMNS from BSS.reservations';
+    my $statement = 'SHOW COLUMNS from Intradomain.reservations';
     my $rows = $user->do_query( $statement );
     my @insertions;
     my $results = {}; 
@@ -289,7 +289,7 @@ sub build_results {
     }
 
     # insert all fields for reservation into database
-    $statement = "INSERT INTO BSS.reservations VALUES (
+    $statement = "INSERT INTO Intradomain.reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
     my $unused = $user->do_query($statement, @insertions);
     $results->{reservation_id} = $user->get_primary_id();
@@ -306,7 +306,7 @@ sub build_results {
     # FIX:  more domain independence
     $results->{reservation_tag} = 'ESNet' . '-' . $user->{login} . '.' .
           $ymd[0] .  "-" .  $results->{reservation_id};
-    $statement = "UPDATE BSS.reservations SET reservation_tag = ?,
+    $statement = "UPDATE Intradomain.reservations SET reservation_tag = ?,
                  reservation_status = 'pending'
                  WHERE reservation_id = ?";
     $unused = $user->do_query($statement,

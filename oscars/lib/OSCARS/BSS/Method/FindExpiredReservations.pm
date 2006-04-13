@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::BSS::Method::FindExpiredReservations;
+package OSCARS::Intradomain::Method::FindExpiredReservations;
 
 =head1 NAME
 
-OSCARS::BSS::Method::FindExpiredReservations - SOAP method to find expired 
+OSCARS::Intradomain::Method::FindExpiredReservations - SOAP method to find expired 
 OSCARS reservations.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::FindExpiredReservations;
+  use OSCARS::Intradomain::Method::FindExpiredReservations;
 
 =head1 DESCRIPTION
 
@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 3, 2006
+April 12, 2006
 
 =cut
 
@@ -34,9 +34,9 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::BSS::SchedulerCommon;
-use OSCARS::BSS::TimeConversionCommon;
-use OSCARS::BSS::ReservationCommon;
+use OSCARS::Intradomain::SchedulerCommon;
+use OSCARS::Intradomain::TimeConversionCommon;
+use OSCARS::Intradomain::ReservationCommon;
 use OSCARS::PSS::JnxLSP;
 
 use OSCARS::Method;
@@ -48,11 +48,11 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
-    $self->{sched_methods} = OSCARS::BSS::SchedulerCommon->new(
+    $self->{sched_methods} = OSCARS::Intradomain::SchedulerCommon->new(
                                                  'user' => $self->{user});
-    $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
+    $self->{time_methods} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user});
-    $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
+    $self->{resv_methods} = OSCARS::Intradomain::ReservationCommon->new(
                                                 'user' => $self->{user});
 } #____________________________________________________________________________
 
@@ -125,7 +125,7 @@ sub find_expired_reservations {
     my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
     my $row = $self->{user}->get_row( $statement, $time_interval );
     my $timeslot = $row->{new_time};
-    $statement = qq{ SELECT * FROM BSS.reservations WHERE (reservation_status = ? and
+    $statement = qq{ SELECT * FROM Intradomain.reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
     return $self->{user}->do_query($statement, $status, $timeslot,
                                         'precancel' );

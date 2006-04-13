@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::BSS::TimeConversionCommon;
+package OSCARS::Intradomain::TimeConversionCommon;
 
 =head1 NAME
 
-OSCARS::BSS::TimeConversionCommon - Common functionality for timezone 
+OSCARS::Intradomain::TimeConversionCommon - Common functionality for timezone 
 conversions.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::TimeConversionCommon;
+  use OSCARS::Intradomain::TimeConversionCommon;
 
 =head1 DESCRIPTION
 
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 

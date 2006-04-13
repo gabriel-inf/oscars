@@ -1,17 +1,17 @@
 ###############################################################################
-package OSCARS::BSS::Method::UpdateRouterTables;
+package OSCARS::Intradomain::Method::UpdateRouterTables;
 
 =head1 NAME
 
-OSCARS::BSS::Method::UpdateRouterTables - SOAP method to update router-associated tables.
+OSCARS::Intradomain::Method::UpdateRouterTables - SOAP method to update router-associated tables.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::UpdateRouterTables;
+  use OSCARS::Intradomain::Method::UpdateRouterTables;
 
 =head1 DESCRIPTION
 
-SOAP method to update the routers, interfaces, and ipaddrs BSS
+SOAP method to update the routers, interfaces, and ipaddrs Intradomain
 database tables given the current network configuration in ifrefpoll files.
 It inherits from OSCARS::Method.
 This method is inefficient and uses ESnet-specific ifrefpoll files.
@@ -25,7 +25,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -204,11 +204,11 @@ sub update_routers_table {
     my( $router_id, $unused );
 
     my $statement = "SELECT router_id, router_name, router_loopback
-                     FROM BSS.routers WHERE router_name = ?";
+                     FROM Intradomain.routers WHERE router_name = ?";
     my $row = $self->{user}->get_row($statement, $router_name);
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into BSS.routers VALUES ( NULL, True,
+        $statement = "INSERT into Intradomain.routers VALUES ( NULL, True,
                      '$router_name', '$mpls_loopback', $network_id)";
         $unused = $self->{user}->do_query($statement);
         $router_id = $self->{user}->{dbh}->{mysql_insertid};
@@ -217,7 +217,7 @@ sub update_routers_table {
     $router_id = $row->{router_id};
     if (!$row->{router_loopback}) { $row->router_loopback = 'NULL'; }
     if ($row->{router_loopback} ne $mpls_loopback) {
-        $statement = "UPDATE BSS.routers SET router_loopback = ?
+        $statement = "UPDATE Intradomain.routers SET router_loopback = ?
                       WHERE router_id = ?";
         $unused = $self->{user}->do_query($statement, $mpls_loopback, $router_id);
     }
@@ -238,7 +238,7 @@ sub update_xfaces_table {
     my( $interface_id, $unused );
 
     my $statement = "SELECT interface_id, interface_snmp_id, interface_speed,
-                     interface_descr, interface_alias from BSS.interfaces
+                     interface_descr, interface_alias from Intradomain.interfaces
                      WHERE router_id = ? AND interface_snmp_id = ?";
     my $row = $self->{user}->get_row($statement, $router_id,
                                        $xface->{index});
@@ -261,7 +261,7 @@ sub update_xfaces_table {
     }
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into BSS.interfaces VALUES ( NULL, True, 
+        $statement = "INSERT into Intradomain.interfaces VALUES ( NULL, True, 
                   $xface->{index}, $new_speed, '$xface->{ifDescr}',
                   '$xface->{ifAlias}', $router_id)";
         $unused = $self->{user}->do_query($statement);
@@ -269,7 +269,7 @@ sub update_xfaces_table {
         return $interface_id;
     }
     $interface_id = $row->{interface_id};
-    $statement = "UPDATE BSS.interfaces SET interface_speed = ?,
+    $statement = "UPDATE Intradomain.interfaces SET interface_speed = ?,
                   interface_descr = ?, interface_alias = ?
                   WHERE interface_id = ?";
     $unused = $self->{user}->do_query($statement, $new_speed,
@@ -291,12 +291,12 @@ sub update_ipaddrs_table {
     my( $ipaddrs_id, $unused );
 
     # TODO:  handling case where interface_id is different?
-    my $statement = "SELECT ipaddr_id, ipaddr_ip, interface_id FROM BSS.ipaddrs
+    my $statement = "SELECT ipaddr_id, ipaddr_ip, interface_id FROM Intradomain.ipaddrs
                      WHERE ipaddr_ip = ?";
     my $row = $self->{user}->get_row($statement, $interface_ip);
     # no match; need to do an insert
     if ( !$row ) {
-        $statement = "INSERT into BSS.ipaddrs VALUES ( NULL, '$interface_ip',
+        $statement = "INSERT into Intradomain.ipaddrs VALUES ( NULL, '$interface_ip',
                   $interface_id)";
         $unused = $self->{user}->do_query($statement);
         $ipaddrs_id = $self->{user}->get_primary_id();

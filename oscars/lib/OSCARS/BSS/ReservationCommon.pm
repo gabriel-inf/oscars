@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::BSS::ReservationCommon;
+package OSCARS::Intradomain::ReservationCommon;
 
 =head1 NAME
 
-OSCARS::BSS::ReservationCommon - Common functionality for OSCARS reservation 
+OSCARS::Intradomain::ReservationCommon - Common functionality for OSCARS reservation 
 methods.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::ReservationCommon;
+  use OSCARS::Intradomain::ReservationCommon;
 
 =head1 DESCRIPTION
 
@@ -57,7 +57,7 @@ sub view_details {
 
     my $user_login = $self->{user}->{login};
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = 'SELECT * FROM BSS.reservations';
+        $statement = 'SELECT * FROM Intradomain.reservations';
         $statement .= ' WHERE reservation_id = ?';
         $row = $self->{user}->get_row($statement, $params->{reservation_id});
         $self->get_engr_fields($row); 
@@ -69,7 +69,7 @@ sub view_details {
             'reservation_src_port, reservation_dst_port, reservation_dscp, ' .
             'reservation_protocol, reservation_tag, reservation_description, ' .
             'src_host_id, dst_host_id, reservation_time_zone ' .
-            'FROM BSS.reservations WHERE user_login = ? AND reservation_id = ?';
+            'FROM Intradomain.reservations WHERE user_login = ? AND reservation_id = ?';
         $row = $self->{user}->get_row($statement, $user_login,
                                       $params->{reservation_id});
     }
@@ -106,7 +106,7 @@ sub update_reservation {
 sub update_status {
     my ( $self, $reservation_id, $status ) = @_;
 
-    my $statement = qq{ SELECT reservation_status from BSS.reservations
+    my $statement = qq{ SELECT reservation_status from Intradomain.reservations
                  WHERE reservation_id = ?};
     my $row = $self->{user}->get_row($statement, $reservation_id);
 
@@ -120,7 +120,7 @@ sub update_status {
             ($status eq 'precancel'))) { 
         $status = 'cancelled';
     }
-    $statement = qq{ UPDATE BSS.reservations SET reservation_status = ?
+    $statement = qq{ UPDATE Intradomain.reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
     my $unused = $self->{user}->do_query($statement, $status, $reservation_id);
     return $status;
@@ -133,7 +133,7 @@ sub get_pss_configs {
     my( $self ) = @_;
 
         # use defaults for now
-    my $statement = 'SELECT * FROM BSS.pss_confs where pss_conf_id = 1';
+    my $statement = 'SELECT * FROM Intradomain.pss_confs where pss_conf_id = 1';
     my $configs = $self->{user}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -144,7 +144,7 @@ sub get_pss_configs {
 sub get_host_info {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT host_ip FROM BSS.hosts WHERE host_id = ?';
+    my $statement = 'SELECT host_ip FROM Intradomain.hosts WHERE host_id = ?';
     my $hrow = $self->{user}->get_row($statement, $resv->{src_host_id});
     my $ip = $hrow->{host_ip};
     my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)+';
@@ -174,9 +174,9 @@ sub get_host_info {
 sub get_engr_fields {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT router_name, router_loopback FROM BSS.routers' .
+    my $statement = 'SELECT router_name, router_loopback FROM Intradomain.routers' .
                 ' WHERE router_id =' .
-                  ' (SELECT router_id FROM BSS.interfaces' .
+                  ' (SELECT router_id FROM Intradomain.interfaces' .
                   '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty
@@ -206,11 +206,11 @@ sub host_ip_to_id {
     my( $self, $ipaddr ) = @_;
 
     # TODO:  fix schema, possible host_ip would not be unique
-    my $statement = 'SELECT host_id FROM BSS.hosts WHERE host_ip = ?';
+    my $statement = 'SELECT host_id FROM Intradomain.hosts WHERE host_ip = ?';
     my $row = $self->{user}->get_row($statement, $ipaddr);
     # if no matches, insert a row in hosts
     if ( !$row ) {
-        $statement = "INSERT INTO BSS.hosts VALUES ( NULL, '$ipaddr'  )";
+        $statement = "INSERT INTO Intradomain.hosts VALUES ( NULL, '$ipaddr'  )";
         my $unused = $self->{user}->do_query($statement);
         return $self->{user}->{dbh}->{mysql_insertid};
     }

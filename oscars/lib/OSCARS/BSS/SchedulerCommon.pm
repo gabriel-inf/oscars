@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::BSS::SchedulerCommon;
+package OSCARS::Intradomain::SchedulerCommon;
 
 =head1 NAME
 
-OSCARS::BSS::SchedulerCommon - Common functionality for reservation scheduling.
+OSCARS::Intradomain::SchedulerCommon - Common functionality for reservation scheduling.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::SchedulerCommon;
+  use OSCARS::Intradomain::SchedulerCommon;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -45,7 +45,7 @@ sub get_time_intervals {
 
         # just use defaults for now
     my $statement = "SELECT scheduler_db_poll_time, scheduler_time_interval" .
-             " FROM BSS.scheduler_confs WHERE scheduler_conf_id = 1";
+             " FROM Intradomain.scheduler_confs WHERE scheduler_conf_id = 1";
     my $row = $self->{user}->get_row( $statement );
     return( $row->{scheduler_db_poll_time}, $row->{scheduler_time_interval} );
 } #____________________________________________________________________________
@@ -56,15 +56,15 @@ sub get_time_intervals {
 sub map_to_ips {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT host_ip FROM BSS.hosts WHERE host_id = ?';
+    my $statement = 'SELECT host_ip FROM Intradomain.hosts WHERE host_id = ?';
     my $row = $self->{user}->get_row($statement, $resv->{src_host_id});
     $resv->{source_ip} = $row->{host_ip};
     $row = $self->{user}->get_row($statement, $resv->{dst_host_id});
     $resv->{destination_ip} = $row->{host_ip};
 
-    $statement = 'SELECT router_loopback FROM BSS.routers' .
+    $statement = 'SELECT router_loopback FROM Intradomain.routers' .
                 ' WHERE router_id =' .
-                ' (SELECT router_id FROM BSS.interfaces' .
+                ' (SELECT router_id FROM Intradomain.interfaces' .
                 '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty

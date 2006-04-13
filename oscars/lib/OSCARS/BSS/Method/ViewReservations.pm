@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::BSS::Method::ViewReservations;
+package OSCARS::Intradomain::Method::ViewReservations;
 
 =head1 NAME
 
-OSCARS::BSS::Method::ViewReservations - Returns list of reservations. 
+OSCARS::Intradomain::Method::ViewReservations - Returns list of reservations. 
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::ViewReservations;
+  use OSCARS::Intradomain::Method::ViewReservations;
 
 =head1 DESCRIPTION
 
@@ -31,9 +31,9 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::BSS::RouteHandler;
-use OSCARS::BSS::ReservationCommon;
-use OSCARS::BSS::TimeConversionCommon;
+use OSCARS::Intradomain::RouteHandler;
+use OSCARS::Intradomain::ReservationCommon;
+use OSCARS::Intradomain::TimeConversionCommon;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -42,9 +42,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resv_lib} = OSCARS::BSS::ReservationCommon->new(
+    $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
                                                  'user' => $self->{user});
-    $self->{time_lib} = OSCARS::BSS::TimeConversionCommon->new(
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________
@@ -80,12 +80,12 @@ sub get_reservations {
     my( $rows, $statement );
 
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = "SELECT * FROM BSS.reservations" .
+        $statement = "SELECT * FROM Intradomain.reservations" .
                      ' ORDER BY reservation_start_time';
         $rows = $user->do_query($statement);
     }
     else {
-        $statement = 'SELECT * FROM BSS.reservations' .
+        $statement = 'SELECT * FROM Intradomain.reservations' .
                      ' WHERE user_login = ?' .
                      ' ORDER BY reservation_start_time';
         $rows = $user->do_query($statement, $user->{login});

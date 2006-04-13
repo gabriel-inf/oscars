@@ -1,19 +1,19 @@
 #==============================================================================
-package OSCARS::BSS::Method::QueryNSI;
+package OSCARS::Intradomain::Method::QueryNSI;
 
 =head1 NAME
 
-OSCARS::BSS::Method::QueryNSI - SOAP method to view the details of a
+OSCARS::Intradomain::Method::QueryNSI - SOAP method to view the details of a
 specific reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::BSS::Method::QueryNSI;
+  use OSCARS::Intradomain::Method::QueryNSI;
 
 =head1 DESCRIPTION
 
 SOAP method that returns the details of an OSCARS reservation, given its
-database id, from the reservations table in the BSS database.
+database id, from the reservations table in the Intradomain database.
 It inherits from OSCARS::Method.
 
 =head1 AUTHORS
@@ -33,8 +33,8 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::BSS::ReservationCommon;
-use OSCARS::BSS::TimeConversionCommon;
+use OSCARS::Intradomain::ReservationCommon;
+use OSCARS::Intradomain::TimeConversionCommon;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -43,9 +43,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{time_methods} = OSCARS::BSS::TimeConversionCommon->new(
+    $self->{time_methods} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                      'user' => $self->{user});
-    $self->{resv_methods} = OSCARS::BSS::ReservationCommon->new(
+    $self->{resv_methods} = OSCARS::Intradomain::ReservationCommon->new(
                                                      'user' => $self->{user});
 } #____________________________________________________________________________
 
