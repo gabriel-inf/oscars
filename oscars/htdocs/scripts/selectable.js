@@ -86,7 +86,7 @@ function tse_processCell(cell) {
 function tse_addAuthorization(doc) {
     if (!selected_user) { return false; }
 
-    var params = 'server=AAAS;method=ManageAuthorizations;' +
+    var params = 'server=AAA;method=ManageAuthorizations;' +
             'op=addAuthorization;' +
             'user_login=' selected_user + ';resource_name=' + selected_resource +
             ';permission_name=' + selected_permission + ';';
@@ -99,7 +99,7 @@ function tse_addAuthorization(doc) {
 
 function tse_selectUser(cell) {
     selected_user = ts_getInnerText(cell);
-    var params = 'server=AAAS;method=ManageAuthorizations;' +
+    var params = 'server=AAA;method=ManageAuthorizations;' +
            'op=selectUser;user_login=' + selected_user + ';';
     return new_section(params);
 }

@@ -5,7 +5,7 @@ use Data::Dumper;
 
 use OSCARS::Logger;
 use OSCARS::Database;
-use OSCARS::BSS::RouteHandler;
+use OSCARS::Intradomain::RouteHandler;
 use OSCARS::PSS::JnxLSP;
 
 #####
@@ -34,11 +34,11 @@ if ($len != 1) {
 my $reservation_number = $ARGV[0];
 
 my $dbconn = OSCARS::Database->new();
-$dbconn->connect('BSS');
+$dbconn->connect('Intradomain');
 
 my $pss_configs = get_pss_configs($dbconn);
 
-my $rh = OSCARS::BSS::RouteHandler->new('user' => $dbconn);
+my $rh = OSCARS::Intradomain::RouteHandler->new('user' => $dbconn);
 my $test_configs = $rh->get_test_configs('jnxLSP');
 
 # Initialize LSP information.
@@ -74,7 +74,7 @@ sub get_pss_configs {
     my( $dbconn ) = @_;
 
         # use defaults for now
-    my $statement = 'SELECT * FROM BSS.pss_confs where pss_conf_id = 1';
+    my $statement = 'SELECT * FROM Intradomain.pss_confs where pss_conf_id = 1';
     my $configs = $dbconn->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
