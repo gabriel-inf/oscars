@@ -1,8 +1,8 @@
--- Database and tables associated with AAAS, associated with users
+-- Database and tables associated with AAA, associated with users
 -- and authentication.
 
-CREATE DATABASE IF NOT EXISTS AAAS;
-USE AAAS;
+CREATE DATABASE IF NOT EXISTS AAA;
+USE AAA;
 
 CREATE TABLE IF NOT EXISTS users (
     user_id			INT NOT NULL AUTO_INCREMENT,
