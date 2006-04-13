@@ -1,17 +1,17 @@
 #==============================================================================
-package OSCARS::AAAS::Method::ManageResources;
+package OSCARS::AAA::Method::ManageResources;
 
 =head1 NAME
 
-OSCARS::AAAS::Method::ManageResources - SOAP method to manage resources
+OSCARS::AAA::Method::ManageResources - SOAP method to manage resources
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::Method::ManageResources;
+  use OSCARS::AAA::Method::ManageResources;
 
 =head1 DESCRIPTION
 
-This is an AAAS SOAP method.  It manages the retrieval of information from
+This is an AAA SOAP method.  It manages the retrieval of information from
 the permissions, resources, and resourcepermissions tables, as well
 as additions and deletions upon the latter two tables.  The specific 
 operation to perform is given by the 'op' parameter. 
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 12, 2006
 
 =cut
 
@@ -32,7 +32,7 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::AAAS::ResourceLibrary;
+use OSCARS::AAA::ResourceLibrary;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -41,7 +41,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{lib} = OSCARS::AAAS::ResourceLibrary->new();
+    $self->{lib} = OSCARS::AAA::ResourceLibrary->new();
     $self->{param_tests} = {};
     $self->{param_tests}->{add_resource} = {
         'resource_name' => (

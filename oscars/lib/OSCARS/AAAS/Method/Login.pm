@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAAS::Method::Login;
+package OSCARS::AAA::Method::Login;
 
 =head1 NAME
 
-OSCARS::AAAS::Method::Login - SOAP method for OSCARS login.
+OSCARS::AAA::Method::Login - SOAP method for OSCARS login.
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::Method::Login;
+  use OSCARS::AAA::Method::Login;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 3, 2006
+April 12, 2006
 
 =cut
 
@@ -54,7 +54,7 @@ sub initialize {
 ###############################################################################
 # soap_method:  Log in to OSCARS.  Authentication, if it was necessary, has
 #               already been performed by the resource manager
-#               querying OSCARS::AAAS::AuthN
+#               querying OSCARS::AAA::AuthN
 # In:  reference to hash of parameters
 # Out: reference to hash of results containing user login.
 #

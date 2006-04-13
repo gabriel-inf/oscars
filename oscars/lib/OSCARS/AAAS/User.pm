@@ -1,13 +1,13 @@
 # =============================================================================
-package OSCARS::AAAS::User;
+package OSCARS::AAA::User;
 
 =head1 NAME
 
-OSCARS::AAAS::User - Handles user db connections, history, authorizations.
+OSCARS::AAA::User - Handles user db connections, history, authorizations.
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::User;
+  use OSCARS::AAA::User;
 
 =head1 DESCRIPTION
 
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 

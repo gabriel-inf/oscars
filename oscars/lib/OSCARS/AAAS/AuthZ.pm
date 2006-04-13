@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAAS::AuthZ;
+package OSCARS::AAA::AuthZ;
 
 =head1 NAME
 
-OSCARS::AAAS::AuthZ - handles authorization for OSCARS.
+OSCARS::AAA::AuthZ - handles authorization for OSCARS.
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::AuthZ;
+  use OSCARS::AAA::AuthZ;
 
 =head1 DESCRIPTION
 
@@ -22,7 +22,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 

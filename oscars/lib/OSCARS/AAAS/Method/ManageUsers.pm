@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAAS::Method::ManageUsers;
+package OSCARS::AAA::Method::ManageUsers;
 
 =head1 NAME
 
-OSCARS::AAAS::Method::ManageUsers - Handles OSCARS users.
+OSCARS::AAA::Method::ManageUsers - Handles OSCARS users.
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::Method::ManageUsers;
+  use OSCARS::AAA::Method::ManageUsers;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 12, 2006
 
 =cut
 
@@ -29,7 +29,7 @@ use strict;
 
 use Error qw(:try);
 
-use OSCARS::AAAS::Method::ManageInstitutions;
+use OSCARS::AAA::Method::ManageInstitutions;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -38,7 +38,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{institutions} = OSCARS::AAAS::Method::ManageInstitutions->new();
+    $self->{institutions} = OSCARS::AAA::Method::ManageInstitutions->new();
     $self->{param_tests} = {};
     $self->{param_tests}->{addUser} = {
         'selected_user' => (

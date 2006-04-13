@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAAS::AuthN;
+package OSCARS::AAA::AuthN;
 
 =head1 NAME
 
-OSCARS::AAAS::AuthN - performs authenticatication for OSCARS
+OSCARS::AAA::AuthN - performs authenticatication for OSCARS
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::AuthN;
+  use OSCARS::AAA::AuthN;
 
 =head1 DESCRIPTION
 
@@ -20,14 +20,14 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 27, 2006
+April 12, 2006
 
 =cut
 
 use WSRF::Lite;
 use Crypt::OpenSSL::X509;
 use OSCARS::Database;
-use OSCARS::AAAS::User;
+use OSCARS::AAA::User;
 
 use strict;
 
@@ -53,7 +53,7 @@ sub initialize {
 ###############################################################################
 # authenticate:  authenticates user
 #
-# In:  OSCARS::AAAS::User instance, hash of parameters
+# In:  OSCARS::AAA::User instance, hash of parameters
 # Out: None
 #
 sub authenticate {
@@ -65,7 +65,8 @@ sub authenticate {
     my $envelope = $daemon->{_request}->{_content};
     my $de = WSRF::Deserializer->new();
     my $req_host = $daemon->{_request}->{_headers}{host};
-    if ($req_host !~ /localhost/ ){
+    if (0) {
+	    #if ($req_host !~ /localhost/ ){
         my( $user_login, $error_msg ) = 
 	        $self->verify_signature($de, $envelope);
 	# throw type of exception that main try in oscars script understands
@@ -162,7 +163,7 @@ sub get_user {
     my( $self, $login, $database ) = @_;
 
     if (!$self->{users}->{$login}) {
-        $self->{users}->{$login} = OSCARS::AAAS::User->new(
+        $self->{users}->{$login} = OSCARS::AAA::User->new(
                                    'login' => $login,
                                    'database' => $database);
     }

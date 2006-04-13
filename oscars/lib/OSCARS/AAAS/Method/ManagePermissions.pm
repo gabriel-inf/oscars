@@ -1,17 +1,17 @@
 #==============================================================================
-package OSCARS::AAAS::Method::ManagePermissions;
+package OSCARS::AAA::Method::ManagePermissions;
 
 =head1 NAME
 
-OSCARS::AAAS::Method::ManagePermissions - SOAP method to manage permissios
+OSCARS::AAA::Method::ManagePermissions - SOAP method to manage permissios
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::Method::ManagePermissions;
+  use OSCARS::AAA::Method::ManagePermissions;
 
 =head1 DESCRIPTION
 
-This is an AAAS SOAP method.  It manages the retrieval, addition, and
+This is an AAA SOAP method.  It manages the retrieval, addition, and
 delete of information from the permissions table.  The specific operation to
 perform is given by the 'op' parameter. 
 
@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 12, 2006
 
 =cut
 
@@ -31,7 +31,7 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::AAAS::ResourceLibrary;
+use OSCARS::AAA::ResourceLibrary;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -40,7 +40,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{lib} = OSCARS::AAAS::ResourceLibrary->new();
+    $self->{lib} = OSCARS::AAA::ResourceLibrary->new();
     $self->{param_tests} = {};
     $self->{param_tests}->{add_permission} = {
         'permission_name' => (

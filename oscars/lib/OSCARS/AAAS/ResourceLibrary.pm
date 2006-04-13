@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAAS::ResourceLibrary;
+package OSCARS::AAA::ResourceLibrary;
 
 =head1 NAME
 
-OSCARS::AAAS::ResourceLibrary - library for permissions, resources, auths
+OSCARS::AAA::ResourceLibrary - library for permissions, resources, auths
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::ResourceLibrary;
+  use OSCARS::AAA::ResourceLibrary;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 29, 2006
+April 12, 2006
 
 =cut
 

@@ -1,17 +1,17 @@
 #==============================================================================
-package OSCARS::AAAS::Method::UserProfile;
+package OSCARS::AAA::Method::UserProfile;
 
 =head1 NAME
 
-OSCARS::AAAS::Method::UserProfile - Handles unprivileged user's profile.
+OSCARS::AAA::Method::UserProfile - Handles unprivileged user's profile.
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::Method::UserProfile;
+  use OSCARS::AAA::Method::UserProfile;
 
 =head1 DESCRIPTION
 
-This is an AAAS SOAP method.  It gets user profile information from
+This is an AAA SOAP method.  It gets user profile information from
 the users table.  It inherits from OSCARS::Method.
 
 =head1 AUTHORS
@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -31,7 +31,7 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::AAAS::Method::ManageInstitutions;
+use OSCARS::AAA::Method::ManageInstitutions;
 
 our @ISA = qw{OSCARS::Method};
 
@@ -39,7 +39,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{institutions} = OSCARS::AAAS::Method::ManageInstitutions->new();
+    $self->{institutions} = OSCARS::AAA::Method::ManageInstitutions->new();
     $self->{user_profile_fields} =
          'user_last_name, user_first_name, user_login, user_password, ' .
          'user_email_primary, user_email_secondary, ' .

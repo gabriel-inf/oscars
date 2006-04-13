@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAAS::Method::ManageInstitutions;
+package OSCARS::AAA::Method::ManageInstitutions;
 
 =head1 NAME
 
-OSCARS::AAAS::Method::ManageInstitutions - handles operations on institutions table.
+OSCARS::AAA::Method::ManageInstitutions - handles operations on institutions table.
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAAS::Method::ManageInstitutions;
+  use OSCARS::AAA::Method::ManageInstitutions;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 12, 2006
 
 =cut
 
@@ -41,7 +41,7 @@ sub new {
 
 ###############################################################################
 # get_institutions:  Get names of all institutions associated with OSCARS users
-#                    Used by other AAAS SOAP methods.
+#                    Used by other AAA SOAP methods.
 #
 sub get_institutions {
     my( $self, $user ) = @_;
