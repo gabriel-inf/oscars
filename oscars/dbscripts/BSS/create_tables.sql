@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS BSS;
-USE BSS;
+CREATE DATABASE IF NOT EXISTS Intradomain;
+USE Intradomain;
 
 -- table for administrative domain, e.g. ESnet
 CREATE TABLE IF NOT EXISTS domains (
