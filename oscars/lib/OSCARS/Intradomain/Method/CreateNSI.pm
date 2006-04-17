@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -32,7 +32,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Intradomain::RouteHandler;
+use OSCARS::Intradomain::Pathfinder;
 use OSCARS::Intradomain::ReservationCommon;
 use OSCARS::Intradomain::TimeConversionCommon;
 
@@ -43,12 +43,13 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{route_setup} = OSCARS::Intradomain::RouteHandler->new(
-                                                 'user' => $self->{user});
+    $self->{pathfinder} = OSCARS::Intradomain::Pathfinder->new(
+                                                 'db' => $self->{db});
     $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
-                                                 'user' => $self->{user});
-    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
+                                                 'db' => $self->{db});
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                                                 'db' => $self->{db},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________
 
@@ -62,41 +63,50 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
-    my $results = $self->create_reservation( $self->{user}, $self->{params} );
-    $results->{user_login} = $self->{user}->{login};
-    if ( $results->{next_domain} ) {
-        $self->{logger}->info("forwarding",
-                         { 'next_domain' => $results->{next_domain} });
+    $self->{logger}->info("start", $self->{params});
+    # find path, and see if the next domain needs to be contacted
+    my $path_info = $self->{pathfinder}->find_path(
+                                            $self->{logger}, $self->{params} );
+    # if next_domain is set, forward to corresponding method in next domain
+    if ($path_info->{next_domain} ) {
+        $self->{params}->{path_info} = $path_info;
+        # TODO:  better way of utilizing path_info in next domain
+        # better handling of exit router, passing back next domain's tag
+        $self->{params}->{next_domain} = $path_info->{next_domain};
+        if ( $path_info->{egress_router} ) {
+            $self->{params}->{egress_router} = $path_info->{egress_router};
+        }
+        $self->{logger}->info("forwarding.start", $self->{params} );
+        # "database" parameter is database name
+        my( $err_msg, $next_path_info ) =
+               $self->{forwarder}->forward($self->{params}, $self->{database});
+        $self->{logger}->info("forwarding.finish", $next_path_info );
+        # TODO: process any differences
     }
+    # having found path, attempt to enter reservation in db
+    my $results = $self->create_reservation( $self->{params}, $path_info );
+    $results->{user_login} = $self->{user}->{login};
+    $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# create_reservation:  inserts a row into the reservations table. 
-#     OSCARS::Intradomain::RouteHandler is called to set up the route before
-#     inserting a reservation in the database
+# create_reservation:  inserts a row into the reservations table, possibly
+#      after several domains have been contacted. 
 # In:  reference to hash.  Hash's keys are all the fields of the reservations
 #      table except for the primary key.
 # Out: ref to results hash.
 #
 sub create_reservation {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params, $path_info ) = @_;
     my( $duration_seconds );
 
-    $self->{logger}->info("start", $self->{params});
-    # params fields having to do with traceroute modified in find_interface_ids
-    my $results =
-        $self->{route_setup}->find_interface_ids($self->{logger}, $params);
-    # if next_domain is set, forward to OSCARS/BRUW server in next domain
-    if ($results->{next_domain} ) {
-        return $self->next_domain_parameters($params, $results->{next_domain});
-    }
-    $params->{ingress_interface_id} = $results->{ingress_interface_id};
-    $params->{ingress_ip} = $results->{ingress_ip};
-    $params->{egress_interface_id} = $results->{egress_interface_id};
-    $params->{egress_ip} = $results->{egress_ip};
-    $params->{reservation_path} = $results->{reservation_path};
+    $params->{ingress_interface_id} = $path_info->{ingress_interface_id};
+    $params->{ingress_ip} = $path_info->{ingress_ip};
+    $params->{egress_interface_id} = $path_info->{egress_interface_id};
+    $params->{egress_ip} = $path_info->{egress_ip};
+    $params->{reservation_path} = $path_info->{reservation_path};
 
     ( $params->{reservation_start_time}, $params->{reservation_end_time},
       $params->{reservation_created_time} ) =
@@ -109,18 +119,16 @@ sub create_reservation {
 
     # convert requested bandwidth to bps
     $params->{reservation_bandwidth} *= 1000000;
-    $self->check_oversubscribe($user, $params);
+    $self->check_oversubscribe($params);
 
     # Get hosts table id from source's and destination's host name or ip
     # address.
     $params->{src_host_id} =
-        $self->{resv_lib}->host_ip_to_id($results->{source_ip}); 
+        $self->{resv_lib}->host_ip_to_id($path_info->{source_ip}); 
     $params->{dst_host_id} =
-        $self->{resv_lib}->host_ip_to_id($results->{destination_ip}); 
+        $self->{resv_lib}->host_ip_to_id($path_info->{destination_ip}); 
 
-    $results = $self->build_results($user, $params);
-    $self->{logger}->info("finish", $results);
-    return $results;
+    return $self->build_results($params);
 } #____________________________________________________________________________
 
 
@@ -151,7 +159,7 @@ sub id_to_router_name {
     my $statement = 'SELECT router_name FROM Intradomain.routers
                  WHERE router_id = (SELECT router_id from Intradomain.interfaces
                                     WHERE interface_id = ?)';
-    my $row = $self->{user}->get_row($statement, $interface_id);
+    my $row = $self->{db}->get_row($statement, $interface_id);
     # no match
     if ( !$row ) {
         # not considered an error
@@ -170,7 +178,7 @@ sub id_to_router_name {
 # OUT: valid (0 or 1), and error message
 #
 sub check_oversubscribe {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my( %iface_idxs, $row, $reservation_path, $link, $res, $idx );
     my( $router_name );
@@ -190,7 +198,7 @@ sub check_oversubscribe {
                    reservation_status = 'active')";
 
     # handled query with the comparison start & end datetime strings
-    my $reservations = $user->do_query( $statement,
+    my $reservations = $self->{db}->do_query( $statement,
            $params->{reservation_start_time}, $params->{reservation_end_time});
 
     # assign the new path bandwidths 
@@ -247,25 +255,8 @@ sub get_interface_fields {
     my( $self, $iface_id) = @_;
 
     my $statement = 'SELECT * FROM Intradomain.interfaces WHERE interface_id = ?';
-    my $row = $self->{user}->get_row($statement, $iface_id);
+    my $row = $self->{db}->get_row($statement, $iface_id);
     return $row;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# next_domain_parameters:  modify parameters before sending to next domain
-#
-sub next_domain_parameters {
-    my( $self, $params, $next_domain ) = @_;
-
-    my $results = {};
-    for my $idx (keys %{$params}) {
-        $results->{$idx} = $params->{$idx};
-    }
-    $results->{next_domain} = $next_domain;
-    $results->{ingress_router} = undef;
-    $results->{egress_router} = undef;
-    return $results;
 } #____________________________________________________________________________
 
 
@@ -273,10 +264,10 @@ sub next_domain_parameters {
 # build_results:  build fields to insert in reservations row
 #
 sub build_results {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my $statement = 'SHOW COLUMNS from Intradomain.reservations';
-    my $rows = $user->do_query( $statement );
+    my $rows = $self->{db}->do_query( $statement );
     my @insertions;
     my $results = {}; 
     # TODO:  necessary to do insertions this way?
@@ -291,8 +282,8 @@ sub build_results {
     # insert all fields for reservation into database
     $statement = "INSERT INTO Intradomain.reservations VALUES (
              " . join( ', ', ('?') x @insertions ) . " )";
-    my $unused = $user->do_query($statement, @insertions);
-    $results->{reservation_id} = $user->get_primary_id();
+    my $unused = $self->{db}->do_query($statement, @insertions);
+    $results->{reservation_id} = $self->{db}->get_primary_id();
     # copy over non-db fields
     $results->{source_host} = $params->{source_host};
     $results->{destination_host} = $params->{destination_host};
@@ -304,12 +295,12 @@ sub build_results {
     my @ymd = split(' ', $params->{reservation_start_time});
     # set user-semi-readable tag
     # FIX:  more domain independence
-    $results->{reservation_tag} = 'ESNet' . '-' . $user->{login} . '.' .
+    $results->{reservation_tag} = 'ESNet' . '-' . $self->{user}->{login} . '.' .
           $ymd[0] .  "-" .  $results->{reservation_id};
     $statement = "UPDATE Intradomain.reservations SET reservation_tag = ?,
                  reservation_status = 'pending'
                  WHERE reservation_id = ?";
-    $unused = $user->do_query($statement,
+    $unused = $self->{db}->do_query($statement,
                       $results->{reservation_tag}, $results->{reservation_id});
     # Get loopback fields if authorized.
     if ( $self->{user}->authorized('Reservations', 'manage') ||
