@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- Handles configuration of plugins to use, and which databases to connect to.
+    All other configuration is in the given databases. -->
+<configuration>
+    <!-- The following two elements are for packages that are used by
+         all SOAP methods. -->
+    <plugin name='authentication' package='OSCARS::AAA::AuthN' database='AAA'/>
+    <plugin name='authorization' package='OSCARS::AAA::AuthZ' database='AAA'/>
+    <!-- Location of SOAP methods for handling AAA -->
+    <plugin name='AAA' package='OSCARS::AAA::Method' database='AAA'/>
+    <!-- Intradomain reservation handling -->
+    <plugin name='Intradomain' package='OSCARS::Intradomain::Method' 
+            database='Intradomain'/>
+    <!-- Interdomain reservation handling -->
+    <plugin name='Interdomain' package='OSCARS::Interdomain::Method' 
+            database='Interdomain'/>
+</configuration>
