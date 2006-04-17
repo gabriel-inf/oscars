@@ -2,39 +2,24 @@
 
 use strict;
 use Test::Simple tests => 1;
-
-use SOAP::Lite;
 use Data::Dumper;
 
-use OSCARS::ResourceManager;
+use TestManager;
 
-my( $status, $msg, $reservation_id );
-my $db_name = 'AAA';
-my $aaa_component_name = 'AAA';
-my $bss_component_name = 'Intradomain';
-my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAA::AuthN', 'AAA');
-
-my( $login, $password ) = $rm->get_test_account('testaccount');
-
-( $status, $msg ) = FindExpiredReservations( $login, $password );
-ok( $status, $msg );
+my $test_mgr = TestManager->new();
+my $params =
+    $test_mgr->get_params('intradomain/24_findExpiredReservations.xml');
+my ($status, $msg) = FindExpiredReservations($test_mgr, $params);
+ok($status, $msg);
 print STDERR $msg;
 
 
 #############################################################################
 #
 sub FindExpiredReservations {
-    my ( $user_login, $user_password ) = @_;
+    my ( $test_mgr, $params ) = @_;
 
-    # password necessary for test to run, but not for this method in general
-    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
-
-    $params{server} = $bss_component_name;
-    $params{method} = 'FindExpiredReservations';
-    $params{time_interval} = 20;
-
-    my $som = $rm->add_client()->dispatch(\%params);
+    my $som = $test_mgr->dispatch($params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 

@@ -4,18 +4,24 @@ use strict;
 use Test::Simple tests => 3;
 use Data::Dumper;
 
+use TestManager;
+use OSCARS::PluginManager;
 use OSCARS::Database;
 use OSCARS::Intradomain::JnxSNMP;
-use OSCARS::Intradomain::RouteHandler;
+use OSCARS::Intradomain::Pathfinder;
 
+my $plugin_mgr = OSCARS::PluginManager->new();
+my $database = $plugin_mgr->get_database('Intradomain');
 my $dbconn = OSCARS::Database->new();
-$dbconn->connect('Intradomain');
+$dbconn->connect($database);
 
-my $rh = OSCARS::Intradomain::RouteHandler->new('user' => $dbconn);
+my $rh = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
 my $configs = $rh->get_snmp_configs();
 ok( $configs );
 
-my $test_configs = $rh->get_test_configs('jnxSNMP');
+my $test_mgr = TestManager->new('db' => $dbconn,
+                                'database' => $database);
+my $test_configs = $test_mgr->get_intradomain_configs('jnxSNMP');
 
 # name of edge router to perform query on
 my $router_name = $test_configs->{router_name};

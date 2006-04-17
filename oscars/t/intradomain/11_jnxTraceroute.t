@@ -4,9 +4,11 @@ use strict;
 use Test::Simple tests => 4;
 use Data::Dumper;
 
+use TestManager;
+use OSCARS::PluginManager;
 use OSCARS::Database;
 use OSCARS::Intradomain::JnxTraceroute;
-use OSCARS::Intradomain::RouteHandler;
+use OSCARS::Intradomain::Pathfinder;
 use OSCARS::Logger;
 
 my $logger = OSCARS::Logger->new('method_name' => '11_jnxTraceroute.t');
@@ -14,16 +16,20 @@ $logger->set_level($NetLogger::INFO);
 $logger->set_user_login('testaccount');
 $logger->open('/home/oscars/logs/test.log');
 
+my $plugin_mgr = OSCARS::PluginManager->new();
+my $database = $plugin_mgr->get_database('Intradomain');
 my $dbconn = OSCARS::Database->new();
-$dbconn->connect('Intradomain');
+$dbconn->connect($database);
 
-my $rh = OSCARS::Intradomain::RouteHandler->new('user' => $dbconn);
+my $rh = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
 my $configs = $rh->get_trace_configs();
 ok( $configs );
 print STDERR "\n";
 print STDERR Dumper($configs);
 
-my $test_configs = $rh->get_test_configs('jnxTraceroute');
+my $test_mgr = TestManager->new('db' => $dbconn,
+                                        'database' => $database);
+my $test_configs = $test_mgr->get_intradomain_configs('jnxTraceroute');
 
 # Create a traceroute object.
 my $jnxTraceroute = OSCARS::Intradomain::JnxTraceroute->new();
