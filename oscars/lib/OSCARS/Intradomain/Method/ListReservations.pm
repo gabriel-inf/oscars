@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Intradomain::Method::ViewReservations;
+package OSCARS::Intradomain::Method::ListReservations;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::ViewReservations - Returns list of reservations. 
+OSCARS::Intradomain::Method::ListReservations - Returns list of reservations. 
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::ViewReservations;
+  use OSCARS::Intradomain::Method::ListReservations;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -31,7 +31,6 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Intradomain::RouteHandler;
 use OSCARS::Intradomain::ReservationCommon;
 use OSCARS::Intradomain::TimeConversionCommon;
 
@@ -43,9 +42,10 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
-                                                 'user' => $self->{user});
-    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
+                                                 'db' => $self->{db});
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                                                 'db' => $self->{db},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________
 
@@ -61,7 +61,7 @@ sub soap_method {
     my( $self ) = @_;
 
     my $results = {};
-    $results->{list} = $self->get_reservations($self->{user}, $self->{params});
+    $results->{list} = $self->get_reservations($self->{params});
     return $results;
 } #____________________________________________________________________________
 
@@ -75,20 +75,20 @@ sub soap_method {
 # Out: reference to array of hashes
 #
 sub get_reservations {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my( $rows, $statement );
 
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
         $statement = "SELECT * FROM Intradomain.reservations" .
                      ' ORDER BY reservation_start_time';
-        $rows = $user->do_query($statement);
+        $rows = $self->{db}->do_query($statement);
     }
     else {
         $statement = 'SELECT * FROM Intradomain.reservations' .
                      ' WHERE user_login = ?' .
                      ' ORDER BY reservation_start_time';
-        $rows = $user->do_query($statement, $user->{login});
+        $rows = $self->{db}->do_query($statement, $self->{user}->{login});
     }
     for my $resv ( @$rows ) {
         $self->{time_lib}->convert_times($resv);
