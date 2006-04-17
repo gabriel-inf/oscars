@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -67,7 +67,7 @@ sub output {
     if (($results->{reservation_status} eq 'pending') ||
         ($results->{reservation_status} eq 'active')) {
         my $cancel_submit_str = "return submit_form(this,
-             'server=Intradomain;method=CancelNSI;');";
+             'component=Intradomain;method=CancelNSI;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancel_submit_str">
         <input type='hidden' name='reservation_id'
@@ -79,7 +79,7 @@ sub output {
     }
 
     my $refresh_submit_str = "return submit_form(this,
-             'server=Intradomain;method=QueryNSI;');";
+             'component=Intradomain;method=QueryNSI;');";
     print( qq{
     <form method="post" action="" onsubmit="$refresh_submit_str">
     <input type='hidden' name='reservation_id'

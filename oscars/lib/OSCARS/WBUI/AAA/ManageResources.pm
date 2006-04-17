@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -89,9 +89,9 @@ sub resource_entry_fields {
     my( $self ) = @_;
 
     my $add_submit_str = "return submit_form(this,
-                    'server=AAA;method=ManageResources;op=addResource;');";
+                    'component=AAA;method=ManageResources;op=addResource;');";
     my $delete_submit_str = "return submit_form(this,
-                    'server=AAA;method=ManageResources;op=deleteResource;');";
+                    'component=AAA;method=ManageResources;op=deleteResource;');";
     print( qq{
     <td class='auth-ui-td'>
     <table>
@@ -127,9 +127,9 @@ sub permission_entry_fields {
     my( $self ) = @_;
 
     my $add_submit_str = "return submit_form(this,
-                    'server=AAA;method=ManagePermissions;op=addPermission;');";
+                    'component=AAA;method=ManagePermissions;op=addPermission;');";
     my $delete_submit_str = "return submit_form(this,
-                    'server=AAA;method=ManagePermissions;op=deletePermission;');";
+                    'component=AAA;method=ManagePermissions;op=deletePermission;');";
     print( qq{
     <td class='auth-ui-td'>
     <table>

@@ -22,10 +22,10 @@ sub instantiate {
     my( $location, $class_name );
 
     my $method_name = $cgi->param('method'); 
-    my $server = $cgi->param('server');
-    if ($server) {
-        $location = 'OSCARS/WBUI/' . $server . '/' . $method_name . '.pm';
-        $class_name = 'OSCARS::WBUI::' . $server . '::' . $method_name;
+    my $component = $cgi->param('component');
+    if ($component) {
+        $location = 'OSCARS/WBUI/' . $component . '/' . $method_name . '.pm';
+        $class_name = 'OSCARS::WBUI::' . $component . '::' . $method_name;
     }
     else {
         $location = 'OSCARS/WBUI/' . $method_name . '.pm';
@@ -58,7 +58,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 17, 2006
 
 =cut
 

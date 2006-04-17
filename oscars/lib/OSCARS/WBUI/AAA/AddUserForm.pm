@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -52,7 +52,7 @@ sub output_div {
     my( $self, $results, $authorizations ) = @_;
 
     my $submit_str = "return submit_form(this,
-                               'server=AAA;method=ManageUsers;op=addUser;',
+                               'component=AAA;method=ManageUsers;op=addUser;',
 			       check_add_user);";
     my $msg = "Add User Form";
     print( qq{

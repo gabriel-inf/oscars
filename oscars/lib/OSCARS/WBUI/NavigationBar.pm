@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -53,14 +53,14 @@ sub output {
       <navigation-bar>
       <ul id="tabnav">
     };
-    my $server = 'Intradomain';
-    my $method = 'ViewReservations';
+    my $component = 'Intradomain';
+    my $method = 'ListReservations';
     if ( $method eq $active_tab ) { $active_status = 'active'; }
     else { $active_status = 'inactive'; }
     print qq{
       <li>
         <a style="/styleSheets/layout.css" title="View/edit reservations"
-           onclick="return new_section('server=$server;method=$method;');"
+           onclick="return new_section('component=$component;method=$method;');"
            class='$active_status' href="#">Reservations</a>
       </li>
     };
@@ -70,11 +70,11 @@ sub output {
     print qq{
       <li>
         <a style="/styleSheets/layout.css" title="Create an OSCARS reservation"
-           onclick="return new_section('server=$server;method=$method;');"
+           onclick="return new_section('component=$component;method=$method;');"
            class='$active_status' href="#">Create Reservation</a>
       </li>
     };
-    $server = 'AAA';
+    $component = 'AAA';
     if ( $authorizations && $authorizations->{ManageUsers} ) {
 	$method = 'ManageUsers';
 	$op = 'viewUsers';
@@ -83,7 +83,7 @@ sub output {
         print qq{
           <li>
             <a style='/styleSheets/layout.css' title='Manage user accounts'
-               onclick="return new_section('server=$server;method=$method;op=$op;');"
+               onclick="return new_section('component=$component;method=$method;op=$op;');"
                class='$active_status' href="#">Users</a>
           </li>
         };
@@ -96,7 +96,7 @@ sub output {
         print qq{
           <li>
             <a style="/styleSheets/layout.css" title="View/edit my profile"
-               onclick="return new_section('server=$server;method=$method;op=$op;');"
+               onclick="return new_section('component=$component;method=$method;op=$op;');"
                class='$active_status' href="#">User Profile</a>
           </li>
         };
@@ -109,7 +109,7 @@ sub output {
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage resources"
-             onclick="return new_section('server=$server;method=$method;op=$op;');"
+             onclick="return new_section('component=$component;method=$method;op=$op;');"
              class='$active_status' href="#">Resources</a>
         </li>
       };
@@ -121,7 +121,7 @@ sub output {
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage authorizations"
-             onclick="return new_section('server=$server;method=$method;op=$op;');"
+             onclick="return new_section('component=$component;method=$method;op=$op;');"
              class='$active_status' href="#">Authorizations</a>
         </li>
       };
@@ -139,7 +139,7 @@ sub output {
     print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Log out on click"
-             href="/perl/adapt.pl?server=$server;method=Logout;">Log out</a>
+             href="/perl/adapt.pl?component=$component;method=Logout;">Log out</a>
         </li>
       </ul>
       </navigation-bar>

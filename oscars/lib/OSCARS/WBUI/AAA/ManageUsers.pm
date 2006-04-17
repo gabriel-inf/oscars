@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -47,7 +47,7 @@ sub output_div {
     my $msg = "Successfully read user list.";
     my $users = $results->{list};
     my $add_submit_str = "return submit_form(this,
-                    'server=AAA;method=AddUserForm;');";
+                    'component=AAA;method=AddUserForm;');";
     print( qq{
       <div>
       <p>Click on the user's last name to view detailed user information.</p>
@@ -74,9 +74,9 @@ sub print_user {
     my( $self, $row ) = @_;
 
     my $profile_href_str = "return new_section(
-                    'server=AAA;method=UserProfile;op=viewProfile;selected_user=$row->{user_login};');";
+                    'component=AAA;method=UserProfile;op=viewProfile;selected_user=$row->{user_login};');";
     my $delete_href_str = "return new_section(
-                    'server=AAA;method=ManageUsers;op=deleteUser;selected_user=$row->{user_login};');";
+                    'component=AAA;method=ManageUsers;op=deleteUser;selected_user=$row->{user_login};');";
     print qq{
     <tr>
       <td><a href='#' style='/styleSheets/layout.css'

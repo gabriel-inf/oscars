@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -52,7 +52,7 @@ sub output_div {
     # may be accessing another user's profile if an administrator
     my $login = $results->{selected_user} ? $results->{selected_user} : $results->{user_login};
     my $modify_submit_str = "return submit_form(this,
-                    'server=AAA;method=UserProfile;op=modifyProfile;',
+                    'component=AAA;method=UserProfile;op=modifyProfile;',
 		    check_profile_modification);";
     my $msg = "User profile";
     print( qq{
