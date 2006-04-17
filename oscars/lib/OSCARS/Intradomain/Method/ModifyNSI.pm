@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -30,7 +30,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Intradomain::RouteHandler;
+use OSCARS::Intradomain::Pathfinder;
 use OSCARS::Intradomain::ReservationCommon;
 use OSCARS::Intradomain::TimeConversionCommon;
 
@@ -42,9 +42,10 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
-                                                 'user' => $self->{user});
-    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
+                                                 'db' => $self->{db});
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                                                 'db' => $self->{db},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________
 

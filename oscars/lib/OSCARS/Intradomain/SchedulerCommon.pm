@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -46,7 +46,7 @@ sub get_time_intervals {
         # just use defaults for now
     my $statement = "SELECT scheduler_db_poll_time, scheduler_time_interval" .
              " FROM Intradomain.scheduler_confs WHERE scheduler_conf_id = 1";
-    my $row = $self->{user}->get_row( $statement );
+    my $row = $self->{db}->get_row( $statement );
     return( $row->{scheduler_db_poll_time}, $row->{scheduler_time_interval} );
 } #____________________________________________________________________________
 
@@ -57,9 +57,9 @@ sub map_to_ips {
     my( $self, $resv ) = @_;
  
     my $statement = 'SELECT host_ip FROM Intradomain.hosts WHERE host_id = ?';
-    my $row = $self->{user}->get_row($statement, $resv->{src_host_id});
+    my $row = $self->{db}->get_row($statement, $resv->{src_host_id});
     $resv->{source_ip} = $row->{host_ip};
-    $row = $self->{user}->get_row($statement, $resv->{dst_host_id});
+    $row = $self->{db}->get_row($statement, $resv->{dst_host_id});
     $resv->{destination_ip} = $row->{host_ip};
 
     $statement = 'SELECT router_loopback FROM Intradomain.routers' .
@@ -68,10 +68,10 @@ sub map_to_ips {
                 '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty
-    $row = $self->{user}->get_row($statement, $resv->{ingress_interface_id});
+    $row = $self->{db}->get_row($statement, $resv->{ingress_interface_id});
     $resv->{ingress_ip} = $row->{router_loopback}; 
 
-    $row = $self->{user}->get_row($statement, $resv->{egress_interface_id});
+    $row = $self->{db}->get_row($statement, $resv->{egress_interface_id});
     $resv->{egress_ip} = $row->{router_loopback}; 
 } #____________________________________________________________________________
 

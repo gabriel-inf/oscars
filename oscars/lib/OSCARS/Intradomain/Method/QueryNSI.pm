@@ -12,7 +12,7 @@ specific reservation.
 
 =head1 DESCRIPTION
 
-SOAP method that returns the details of an OSCARS reservation, given its
+SOAP method that returns the details of a reservation, given its
 database id, from the reservations table in the Intradomain database.
 It inherits from OSCARS::Method.
 
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -44,9 +44,10 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{time_methods} = OSCARS::Intradomain::TimeConversionCommon->new(
-                                                     'user' => $self->{user});
+                                                     'db' => $self->{db});
     $self->{resv_methods} = OSCARS::Intradomain::ReservationCommon->new(
-                                                     'user' => $self->{user});
+                                                     'user' => $self->{user},
+                                                     'db' => $self->{db});
 } #____________________________________________________________________________
 
 

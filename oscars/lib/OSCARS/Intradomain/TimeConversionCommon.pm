@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -48,13 +48,13 @@ sub convert_times {
  
     # convert to time zone reservation was created in
     my $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS newtime";
-    my $row = $self->{user}->get_row( $statement, $resv->{reservation_start_time},
+    my $row = $self->{db}->get_row( $statement, $resv->{reservation_start_time},
                              $resv->{reservation_time_zone} );
     $resv->{reservation_start_time} = $row->{newtime};
-    $row = $self->{user}->get_row( $statement, $resv->{reservation_end_time},
+    $row = $self->{db}->get_row( $statement, $resv->{reservation_end_time},
                              $resv->{reservation_time_zone} );
     $resv->{reservation_end_time} = $row->{newtime};
-    $row = $self->{user}->get_row( $statement, $resv->{reservation_created_time},
+    $row = $self->{db}->get_row( $statement, $resv->{reservation_created_time},
                              $resv->{reservation_time_zone} );
     $resv->{reservation_created_time} = $row->{newtime};
 } #____________________________________________________________________________
@@ -66,11 +66,11 @@ sub convert_lsp_times {
     my( $self, $resv ) = @_;
 
     my $statement = "SELECT now() AS nowtime";
-    my $row = $self->{user}->get_row( $statement );
+    my $row = $self->{db}->get_row( $statement );
     my $nowtime = $row->{nowtime};
 
     $statement = "SELECT CONVERT_TZ(?, '+00:00', ?) AS nowtime";
-    $row = $self->{user}->get_row( $statement, $nowtime,
+    $row = $self->{db}->get_row( $statement, $nowtime,
                                         $resv->{reservation_time_zone});
     $resv->{lsp_config_time} = $row->{nowtime};
     $self->convert_times($resv);
@@ -88,12 +88,12 @@ sub setup_times {
     my $infinite_time = $self->get_infinite_time();
     # Expects strings in second since epoch; converts to date in UTC time
     my $statement = 'SELECT from_unixtime(?) AS start_time';
-    my $row = $self->{user}->get_row( $statement, $start_time);
+    my $row = $self->{db}->get_row( $statement, $start_time);
     $start_time = $row->{start_time};
     if ($duration_hour < (2**31 - 1)) {
         $duration_seconds = $duration_hour * 3600;
         $statement = 'SELECT DATE_ADD(?, INTERVAL ? SECOND) AS end_time';
-        $row = $self->{user}->get_row( $statement, $start_time,
+        $row = $self->{db}->get_row( $statement, $start_time,
                                        $duration_seconds );
         $end_time = $row->{end_time};
     }
@@ -101,7 +101,7 @@ sub setup_times {
         $end_time = $infinite_time;
     }
     $statement = 'SELECT now() AS created_time';
-    $row = $self->{user}->get_row( $statement );
+    $row = $self->{db}->get_row( $statement );
     $current_time = $row->{created_time};
     return( $start_time, $end_time, $current_time );
 } #____________________________________________________________________________

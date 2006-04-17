@@ -25,7 +25,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -205,13 +205,13 @@ sub update_routers_table {
 
     my $statement = "SELECT router_id, router_name, router_loopback
                      FROM Intradomain.routers WHERE router_name = ?";
-    my $row = $self->{user}->get_row($statement, $router_name);
+    my $row = $self->{db}->get_row($statement, $router_name);
     # no match; need to do an insert
     if ( !$row ) {
         $statement = "INSERT into Intradomain.routers VALUES ( NULL, True,
                      '$router_name', '$mpls_loopback', $network_id)";
-        $unused = $self->{user}->do_query($statement);
-        $router_id = $self->{user}->{dbh}->{mysql_insertid};
+        $unused = $self->{db}->do_query($statement);
+        $router_id = $self->{db}->{dbh}->{mysql_insertid};
         return $router_id;
     }
     $router_id = $row->{router_id};
@@ -219,7 +219,7 @@ sub update_routers_table {
     if ($row->{router_loopback} ne $mpls_loopback) {
         $statement = "UPDATE Intradomain.routers SET router_loopback = ?
                       WHERE router_id = ?";
-        $unused = $self->{user}->do_query($statement, $mpls_loopback, $router_id);
+        $unused = $self->{db}->do_query($statement, $mpls_loopback, $router_id);
     }
     return $router_id;
 } #___________________________________________________________________________
@@ -240,7 +240,7 @@ sub update_xfaces_table {
     my $statement = "SELECT interface_id, interface_snmp_id, interface_speed,
                      interface_descr, interface_alias from Intradomain.interfaces
                      WHERE router_id = ? AND interface_snmp_id = ?";
-    my $row = $self->{user}->get_row($statement, $router_id,
+    my $row = $self->{db}->get_row($statement, $router_id,
                                        $xface->{index});
 
     # defaults if non-required fields not set
@@ -264,15 +264,15 @@ sub update_xfaces_table {
         $statement = "INSERT into Intradomain.interfaces VALUES ( NULL, True, 
                   $xface->{index}, $new_speed, '$xface->{ifDescr}',
                   '$xface->{ifAlias}', $router_id)";
-        $unused = $self->{user}->do_query($statement);
-        $interface_id = $self->{user}->{dbh}->{mysql_insertid};
+        $unused = $self->{db}->do_query($statement);
+        $interface_id = $self->{db}->{dbh}->{mysql_insertid};
         return $interface_id;
     }
     $interface_id = $row->{interface_id};
     $statement = "UPDATE Intradomain.interfaces SET interface_speed = ?,
                   interface_descr = ?, interface_alias = ?
                   WHERE interface_id = ?";
-    $unused = $self->{user}->do_query($statement, $new_speed,
+    $unused = $self->{db}->do_query($statement, $new_speed,
                   $xface->{ifDescr}, $xface->{ifAlias}, $interface_id);
     return $interface_id;
 } #___________________________________________________________________________
@@ -293,13 +293,13 @@ sub update_ipaddrs_table {
     # TODO:  handling case where interface_id is different?
     my $statement = "SELECT ipaddr_id, ipaddr_ip, interface_id FROM Intradomain.ipaddrs
                      WHERE ipaddr_ip = ?";
-    my $row = $self->{user}->get_row($statement, $interface_ip);
+    my $row = $self->{db}->get_row($statement, $interface_ip);
     # no match; need to do an insert
     if ( !$row ) {
         $statement = "INSERT into Intradomain.ipaddrs VALUES ( NULL, '$interface_ip',
                   $interface_id)";
-        $unused = $self->{user}->do_query($statement);
-        $ipaddrs_id = $self->{user}->get_primary_id();
+        $unused = $self->{db}->do_query($statement);
+        $ipaddrs_id = $self->{db}->get_primary_id();
         return $ipaddrs_id;
     }
     $ipaddrs_id = $row->{ipaddrs_id};

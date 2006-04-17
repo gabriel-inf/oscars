@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -49,11 +49,12 @@ sub initialize {
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
     $self->{sched_methods} = OSCARS::Intradomain::SchedulerCommon->new(
-                                                 'user' => $self->{user});
+                                                 'db' => $self->{db});
     $self->{time_methods} = OSCARS::Intradomain::TimeConversionCommon->new(
-                                                 'user' => $self->{user});
+                                                 'db' => $self->{db});
     $self->{resv_methods} = OSCARS::Intradomain::ReservationCommon->new(
-                                                'user' => $self->{user});
+                                                'user' => $self->{user},
+                                                'db' => $self->{db});
 } #____________________________________________________________________________
 
 
@@ -123,11 +124,11 @@ sub find_expired_reservations {
 
     my $status = 'active';
     my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
-    my $row = $self->{user}->get_row( $statement, $time_interval );
+    my $row = $self->{db}->get_row( $statement, $time_interval );
     my $timeslot = $row->{new_time};
     $statement = qq{ SELECT * FROM Intradomain.reservations WHERE (reservation_status = ? and
                  reservation_end_time < ?) or (reservation_status = ?)};
-    return $self->{user}->do_query($statement, $status, $timeslot,
+    return $self->{db}->do_query($statement, $status, $timeslot,
                                         'precancel' );
 } #____________________________________________________________________________
 

@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 11, 2006
+April 17, 2006
 
 =cut
 
@@ -42,9 +42,10 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
-                                                 'user' => $self->{user});
-    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
                                                  'user' => $self->{user},
+                                                 'db' => $self->{db});
+    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                                                 'db' => $self->{db},
                                                  'logger' => $self->{logger});
 } #____________________________________________________________________________
 

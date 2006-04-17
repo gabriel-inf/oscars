@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 17, 2006
 
 =cut
 
@@ -55,11 +55,10 @@ sub view_details {
 
     my( $statement, $row );
 
-    my $user_login = $self->{user}->{login};
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
         $statement = 'SELECT * FROM Intradomain.reservations';
         $statement .= ' WHERE reservation_id = ?';
-        $row = $self->{user}->get_row($statement, $params->{reservation_id});
+        $row = $self->{db}->get_row($statement, $params->{reservation_id});
         $self->get_engr_fields($row); 
     }
     else {
@@ -70,7 +69,7 @@ sub view_details {
             'reservation_protocol, reservation_tag, reservation_description, ' .
             'src_host_id, dst_host_id, reservation_time_zone ' .
             'FROM Intradomain.reservations WHERE user_login = ? AND reservation_id = ?';
-        $row = $self->{user}->get_row($statement, $user_login,
+        $row = $self->{db}->get_row($statement, $self->{user}->{login},
                                       $params->{reservation_id});
     }
     if (!$row) { return $row; }
@@ -108,7 +107,7 @@ sub update_status {
 
     my $statement = qq{ SELECT reservation_status from Intradomain.reservations
                  WHERE reservation_id = ?};
-    my $row = $self->{user}->get_row($statement, $reservation_id);
+    my $row = $self->{db}->get_row($statement, $reservation_id);
 
     # If the previous state was pending_cancel, mark it now as cancelled.
     # If the previous state was pending, and it is to be deleted, mark it
@@ -122,7 +121,7 @@ sub update_status {
     }
     $statement = qq{ UPDATE Intradomain.reservations SET reservation_status = ?
                  WHERE reservation_id = ?};
-    my $unused = $self->{user}->do_query($statement, $status, $reservation_id);
+    my $unused = $self->{db}->do_query($statement, $status, $reservation_id);
     return $status;
 } #____________________________________________________________________________
 
@@ -134,7 +133,7 @@ sub get_pss_configs {
 
         # use defaults for now
     my $statement = 'SELECT * FROM Intradomain.pss_confs where pss_conf_id = 1';
-    my $configs = $self->{user}->get_row($statement);
+    my $configs = $self->{db}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
 
@@ -145,7 +144,7 @@ sub get_host_info {
     my( $self, $resv ) = @_;
  
     my $statement = 'SELECT host_ip FROM Intradomain.hosts WHERE host_id = ?';
-    my $hrow = $self->{user}->get_row($statement, $resv->{src_host_id});
+    my $hrow = $self->{db}->get_row($statement, $resv->{src_host_id});
     my $ip = $hrow->{host_ip};
     my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)+';
     if ($ip =~ $regexp) { $ip = $1; }
@@ -156,7 +155,7 @@ sub get_host_info {
     }
     $resv->{source_ip} = $hrow->{host_ip};
 
-    $hrow = $self->{user}->get_row($statement, $resv->{dst_host_id});
+    $hrow = $self->{db}->get_row($statement, $resv->{dst_host_id});
     # TODO:  FIX, hrow might be empty
     $ip = $hrow->{host_ip};
     if ($ip =~ $regexp) { $ip = $1; }
@@ -180,17 +179,17 @@ sub get_engr_fields {
                   '  WHERE interface_id = ?)';
 
     # TODO:  FIX row might be empty
-    my $row = $self->{user}->get_row($statement, $resv->{ingress_interface_id});
+    my $row = $self->{db}->get_row($statement, $resv->{ingress_interface_id});
     $resv->{ingress_router} = $row->{router_name}; 
     $resv->{ingress_ip} = $row->{router_loopback}; 
 
-    $row = $self->{user}->get_row($statement, $resv->{egress_interface_id});
+    $row = $self->{db}->get_row($statement, $resv->{egress_interface_id});
     $resv->{egress_router} = $row->{router_name}; 
     $resv->{egress_ip} = $row->{router_loopback}; 
     my @path_routers = split(' ', $resv->{reservation_path});
     $resv->{reservation_path} = ();
     for $_ (@path_routers) {
-        $row = $self->{user}->get_row($statement, $_);
+        $row = $self->{db}->get_row($statement, $_);
         push(@{$resv->{reservation_path}}, $row->{router_name}); 
     }
 } #____________________________________________________________________________
@@ -207,12 +206,12 @@ sub host_ip_to_id {
 
     # TODO:  fix schema, possible host_ip would not be unique
     my $statement = 'SELECT host_id FROM Intradomain.hosts WHERE host_ip = ?';
-    my $row = $self->{user}->get_row($statement, $ipaddr);
+    my $row = $self->{db}->get_row($statement, $ipaddr);
     # if no matches, insert a row in hosts
     if ( !$row ) {
         $statement = "INSERT INTO Intradomain.hosts VALUES ( NULL, '$ipaddr'  )";
-        my $unused = $self->{user}->do_query($statement);
-        return $self->{user}->{dbh}->{mysql_insertid};
+        my $unused = $self->{db}->do_query($statement);
+        return $self->{db}->{dbh}->{mysql_insertid};
     }
     else { return $row->{host_id}; }
 } #____________________________________________________________________________
