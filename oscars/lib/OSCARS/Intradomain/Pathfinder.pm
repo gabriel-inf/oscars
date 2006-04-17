@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Intradomain::RouteHandler; 
+package OSCARS::Intradomain::Pathfinder; 
 
 =head1 NAME
 
-OSCARS::Intradomain::RouteHandler - Finds ingress and egress routers.
+OSCARS::Intradomain::Pathfinder - Finds ingress and egress routers.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::RouteHandler;
+  use OSCARS::Intradomain::Pathfinder;
 
 =head1 DESCRIPTION
 
@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-March 31, 2006
+April 17, 2006
 
 =cut
 
@@ -55,7 +55,7 @@ sub initialize {
 
 
 ###############################################################################
-# find_interface_ids:  Finds ingress and egress routers if they have not
+# find_path:  Finds ingress and egress routers if they have not
 #     already been specified, and gets the interface ids of the routers'
 #     associated loopbacks.  It also checks to see if the next hop past the
 #     egress router is in a domain running an OSCARS/BRUW server.
@@ -64,7 +64,7 @@ sub initialize {
 #     if the user had permission to specify them
 # OUT: ids of interfaces of the edge routers, path list (router indexes)
 #
-sub find_interface_ids {
+sub find_path {
     my( $self, $logger, $params) = @_;
 
     my( $unused_path, $src, $dst, $last_domain, $next_as_number );
@@ -263,7 +263,7 @@ sub get_trace_configs {
 
         # use default for now
     my $statement = "SELECT * FROM Intradomain.trace_confs where trace_conf_id = 1";
-    my $configs = $self->{user}->get_row($statement);
+    my $configs = $self->{db}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
 
@@ -275,25 +275,7 @@ sub get_snmp_configs {
 
         # use default for now
     my $statement = "SELECT * FROM Intradomain.snmp_confs where snmp_conf_id = 1";
-    my $configs = $self->{user}->get_row($statement);
-    return $configs;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# Only used by tests.
-#
-sub get_test_configs {
-    my( $self, $test_name ) = @_;
-
-    my $statement = 'SELECT * FROM Intradomain.test_addresses a ' .
-        'INNER JOIN Intradomain.test_confs t ON a.test_conf_id = t.test_conf_id ' .
-        'WHERE t.test_name = ?';
-    my $rows = $self->{user}->do_query($statement, $test_name);
-    my $configs = {};
-    for my $row (@$rows) {
-        $configs->{$row->{test_address_description}} = $row->{test_address};
-    }
+    my $configs = $self->{db}->get_row($statement);
     return $configs;
 } #____________________________________________________________________________
 
@@ -312,7 +294,7 @@ sub get_loopback {
         'INNER JOIN Intradomain.interfaces i ON b.router_id = i.router_id ' .
         'INNER JOIN Intradomain.ipaddrs ip ON i.interface_id = ip.interface_id ' .
         'WHERE ip.ipaddr_ip = ?';
-    my $row = $self->{user}->get_row($statement, $ipaddr);
+    my $row = $self->{db}->get_row($statement, $ipaddr);
     return( $row->{router_loopback} );
 } #____________________________________________________________________________
 
@@ -327,7 +309,7 @@ sub get_interface {
     my ($self, $ipaddr) = @_;
 
     my $statement = 'SELECT interface_id FROM Intradomain.ipaddrs WHERE ipaddr_ip = ?';
-    my $row = $self->{user}->get_row($statement, $ipaddr);
+    my $row = $self->{db}->get_row($statement, $ipaddr);
     return( $row->{interface_id} );
 } #____________________________________________________________________________
 
@@ -347,10 +329,10 @@ sub get_as_number {
     my $statement = 'SELECT router_name, domain_id FROM Intradomain.routers r ' .
         'INNER JOIN Intradomain.interfaces i ON r.router_id = i.router_id ' .
         'WHERE i.interface_id = ?';
-    my $row = $self->{user}->get_row($statement, $interface_id);
+    my $row = $self->{db}->get_row($statement, $interface_id);
     $statement = 'SELECT domain_suffix FROM Intradomain.domains ' .
                  'WHERE domain_id = ?';
-    my $drow = $self->{user}->get_row($statement, $row->{domain_id});
+    my $drow = $self->{db}->get_row($statement, $row->{domain_id});
     my $router_name = $row->{router_name} . $drow->{domain_suffix};
     $self->{jnx_snmp}->initialize_session($self->{snmp_configs}, $router_name);
     my $error_msg = $self->{jnx_snmp}->get_error();
@@ -363,7 +345,7 @@ sub get_as_number {
         #throw Error::Simple("Unable to query $ipaddr for AS number: $error_msg");
         
         #Log SNMP failure but build reservation up to this point
-        $logger->info('RouteHandler.get_as_number',
+        $logger->info('Pathfinder.get_as_number',
             { 'ip' => $ipaddr , 'error_message' => $error_msg});
         $as_number = 'noSuchInstance';
     }
