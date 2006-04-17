@@ -8,45 +8,36 @@ use SOAP::Transport::HTTP;
 use strict;
 use Data::Dumper;
 
-use OSCARS::ResourceManager;
-use OSCARS::Logger;
+use OSCARS::PluginManager;
 
-my ( $database, $daemon, $component, $resource_manager );
-my $authN_package = 'OSCARS::AAA::AuthN';
-my $authZ_package = 'OSCARS::AAA::AuthZ';
+my ( $daemon, $portnum, $authN );
 
 # TODO:  Essentially going back to earlier version.  Need better UI.
-# port number needs to be option again.
+# port number needs to be option again, config file location (or default) needs
+# to be set.
 my $len = scalar(@ARGV);
 if ($len == 1) {
     my $first_arg = $ARGV[0];
     if ($first_arg eq '-h') {
-        print STDERR "Usage:\t\toscars component_name\n";
-        print STDERR "Examples:\toscars\n";
-        print STDERR "\t\toscars AAA\n";
+        print STDERR "Usage:\t\toscars [portnum]\n";
         exit;
     }
-    else { $component = $ARGV[0]; }
+    else { $portnum = $ARGV[0]; }
 }
-else { $component = 'AAA'; }
+else { $portnum = 2000; }
 
-# TODO:  shouldn't have to be same name
-$database = $component;
-
-if ($component) {
-    start_daemon();
-}
+start_daemon();
 
 ###############################################################################
 #
 sub start_daemon {
-    $resource_manager = OSCARS::ResourceManager->new(
-                                              'database' => $database );
-    if ( !$resource_manager->use_authentication_plugin($authN_package, 'AAA') ) {
-        die( "Unable to find authentication package $authN_package");
+    my $plugin_manager = OSCARS::PluginManager->new();
+    $authN = $plugin_manager->use_plugin('authentication');
+    if ( !$authN ) {
+        die( "Unable to find authentication plugin; does config file exist?");
     }
     $daemon = SOAP::Transport::HTTP::Daemon
-        -> new (LocalPort => 2000, Listen => 5, Reuse => 1)
+        -> new (LocalPort => $portnum, Listen => 5, Reuse => 1)
         -> dispatch_to('OSCARS::Dispatcher');
     $daemon->handle;
 } #____________________________________________________________________________
@@ -74,7 +65,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 3, 2006
+April 17, 2006
 
 =cut
 
@@ -84,7 +75,7 @@ use SOAP::Lite;
 
 use strict;
 
-use OSCARS::ResourceManager;
+use OSCARS::Logger;
 use OSCARS::Method;
 
 
@@ -96,65 +87,27 @@ sub dispatch {
     my( $ex );
     my( $user, $handler, $som );
 
+    # make sure first letter of method capitalized (for Perl convention for 
+    # classes, since each SOAP method is handled by a class)
+    $params->{method} =~ s/(\w)/\U$1/;
+
     my $logger = OSCARS::Logger->new('method_name' => $params->{method});
     $logger->set_level($NetLogger::INFO);
-    if ($params->{user_login}) { $logger->set_user_login($params->{user_login}); }
+    if ( $params->{user_login} ) {
+        $logger->set_user_login($params->{user_login});
+    }
     if ($params->{op}) { $logger->set_op($params->{op}); }
+
     $logger->open('/home/oscars/logs/oscars.log');
     my $results = {};
-    if ($params->{method} eq 'Logout') {
-	$logger->info('successful', $params);
-        remove_user($params->{user_login});
-	$results->{user_login} = $params->{user_login};
-	return $results;
-    }
     try {
-        $user = $resource_manager->authenticate($daemon, $params);
+        $user = $authN->authenticate($daemon, $params);
 	$logger->set_user_login($user->{login});
-        if ( !$user->use_authorization_plugin($authZ_package, 'AAA') ) {
-            throw Error::Simple( "Unable to use authorization package $authZ_package");
-        }
-
-        # if Intradomain component is not on this server
-	# NOTE:  not currently handled
-	if ($resource_manager->has_client($params->{server})) {
-            $som = $resource_manager->forward('Intradomain', $params);
-            $results = $som->result;
-	}
-        else {
-            my $factory = OSCARS::MethodFactory->new();
-            $handler = $factory->instantiate( $user, $params, $logger );
-            # call SOAP method
-            $results = $handler->soap_method();
-	    if ( $results->{next_domain} ) {
-                print STDERR "next domain: $results->{next_domain}\n";
-                $results->{user_password} = 'crosstest';
-                my $found =
-	                $resource_manager->add_client($results->{next_domain});
-		if ($found) {
-		    $som = $resource_manager->forward($results->{next_domain},
-                                                      $results);
-		    if (!$som) {
-			$logger->warning("exception",
-                            { 'description' => 'Unable to forward results',
-                              'domain' => $results->{next_domain} });
-		    }
-                    if (!$som->faultstring) {
-	                # call method again with previous results to make reservation
-			$params->{next_domain} = $results->{next_domain};
-		        $handler = $factory->instantiate( $user, $params, $logger );
-		        $results = $handler->soap_method();
-                    }
-		}
-		# the next domain is not OSCARS/BRUW
-		else {
-		    # Not the most efficient way, but detects the loop and
-		    # finishes the reservation.
-                    $handler = $factory->instantiate( $user, $results, $logger );
-                    $results = $handler->soap_method();
-		}
-            }
-        }
+        my $factory = OSCARS::MethodFactory->new();
+        $handler = $factory->instantiate( $user, $params, $logger );
+        # Handles SOAP method.  Handler may make other SOAP calls to
+	# accomplish its task.
+        $results = $handler->soap_method();
     }
     catch Error::Simple with { $ex = shift; }
     otherwise { $ex = shift; }
@@ -167,10 +120,11 @@ sub dispatch {
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
         }
-        elsif ($handler) {
-            $handler->post_process($results);
-	    $logger->close();
-	}
+        elsif ($handler) { $handler->post_process($results); }
+        if ($params->{method} eq 'Logout') {
+            $authN->remove_user($params->{user_login});
+        }
+        $logger->close();
     };
     return $results;
 } #____________________________________________________________________________
