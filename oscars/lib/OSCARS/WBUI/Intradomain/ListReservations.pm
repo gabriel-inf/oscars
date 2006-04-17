@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::Intradomain::ViewReservations;
+package OSCARS::WBUI::Intradomain::ListReservations;
 
 =head1 NAME
 
-OSCARS::WBUI::Intradomain::ViewReservations - handles request to view reservations.
+OSCARS::WBUI::Intradomain::ListReservations - handles request to view reservations.
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::Intradomain::ViewReservations;
+  use OSCARS::WBUI::Intradomain::ListReservations;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -49,7 +49,7 @@ sub output_div {
     detailed information about the reservation.</p>
 
     <p><form method="post" action="" onsubmit="return submit_form(this, 
-        'server=Intradomain;method=ViewReservations;');">
+        'component=Intradomain;method=ListReservations;');">
     <input type='submit' value='Refresh'></input>
     </form></p>
 
@@ -88,7 +88,7 @@ sub print_row {
       <td>
       <a href='#' style='/styleSheets/layout.css'
        onclick="return new_section(
-       'server=Intradomain;method=QueryNSI;reservation_id=$row->{reservation_id};');"
+       'component=Intradomain;method=QueryNSI;reservation_id=$row->{reservation_id};');"
           >$row->{reservation_tag}</a>
       </td>
       <td>$row->{reservation_start_time}</td>
