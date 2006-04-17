@@ -3,18 +3,13 @@
 use strict;
 use Test::Simple tests => 1;
 
-use SOAP::Lite;
 use Data::Dumper;
 
-use OSCARS::ResourceManager;
+use TestManager;
 
-my $db_name = 'AAA';
-my $component_name = 'AAA';
-my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAA::AuthN', 'AAA');
-
-my( $login, $password ) = $rm->get_test_account('testaccount');
-my ($status, $msg) = Login($login, $password);
+my $test_mgr = TestManager->new();
+my $params = $test_mgr->get_params('aaa/20_login.xml');
+my ($status, $msg) = Login($test_mgr, $params);
 ok($status, $msg);
 print STDERR $msg;
 
@@ -22,13 +17,9 @@ print STDERR $msg;
 ##############################################################################
 #
 sub Login {
-    my( $user_login, $user_password ) = @_;
+    my( $test_mgr, $params ) = @_;
 
-    my %params = ('user_login' => $user_login, 'user_password' => $user_password);
-    $params{server} = $component_name;
-    $params{method} = 'Login';
-
-    my $som = $rm->add_client()->dispatch(\%params);
+    my $som = $test_mgr->dispatch($params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
-    return( 1, "\nUser $params{user_login} successfully logged in.\n" );
+    return( 1, "\nUser $params->{user_login} successfully logged in.\n" );
 } #___________________________________________________________________________

@@ -1,21 +1,13 @@
 #!/usr/bin/perl
 
-use Test::Simple tests => 2;
+use Test::Simple tests => 1;
 
-use OSCARS::ResourceManager;
-use OSCARS::AAA::User;
+use OSCARS::PluginManager;
 
-my $db_name = 'AAA';
-my $rm = OSCARS::ResourceManager->new('database' => $db_name);
-my $status = $rm->use_authentication_plugin('OSCARS::AAA::AuthN', 'AAA');
+my $user_login = 'testaccount';
+my $mgr = OSCARS::PluginManager->new();
+my $authN = $mgr->use_plugin('authentication');
 
-my( $login, $password ) = $rm->get_test_account('testaccount');
-my $user = OSCARS::AAA::User->new(
-                      'login' => $login,
-                      'database' => $db_name);
+my $credentials = $authN->get_credentials($user_login, 'password');
+my $user = $authN->get_user($user_login);
 ok($user);
-
-$status = $user->use_authorization_plugin('OSCARS::AAA::AuthZ', 'AAA');
-ok($status);
-
-
