@@ -4,13 +4,23 @@ package OSCARS::MethodFactory;
 use strict;
 use Data::Dumper;
 
+use OSCARS::PluginManager;
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
+    $self->initialize();
     return( $self );
-} #___________________________________________________________________________ 
+}
+
+
+sub initialize {
+    my( $self ) = @_;
+
+    $self->{plugin_mgr} = OSCARS::PluginManager->new();
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -18,14 +28,19 @@ sub new {
 sub instantiate {
     my( $self, $user, $params, $logger ) = @_;
 
-    my( $location, $class_name );
-
-    $location = 'OSCARS/' . $params->{server} . '/Method/' .
-                    $params->{method} . '.pm';
-    $class_name = 'OSCARS::' . $params->{server} . '::Method::' .
-                    $params->{method};
+    my $package_prefix =
+            $self->{plugin_mgr}->get_package($params->{component});
+    my $dbname = $self->{plugin_mgr}->get_database($params->{component});
+    my $db = $user->get_db_handle($dbname);
+    my $location_prefix = $package_prefix;
+    $location_prefix =~ s/(::)/\//g;
+    my $location = $location_prefix . '/' . $params->{method} . '.pm';
+    my $class_name = $package_prefix . '::' .  $params->{method};
     require $location;
-    return $class_name->new( 'user'   => $user,
+    # TODO:  shouldn't need so many parameters
+    return $class_name->new( 'user' => $user,
+	                     'db' => $db,
+			     'database' => $dbname,
                              'params' => $params,
 		             'logger' => $logger );
 } #___________________________________________________________________________ 
@@ -45,7 +60,7 @@ OSCARS::Method - Superclass for all SOAP methods.
 =head1 DESCRIPTION
 
 Superclass for all SOAP methods.  Contains methods for all phases of
-an OSCARS request.  Assumes that authentication has already been performed.
+a SOAP request.  Assumes that authentication has already been performed.
 
 =head1 AUTHORS
 
@@ -53,7 +68,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 3, 2006
+April 17, 2006
 
 =cut
 
@@ -62,9 +77,8 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use SOAP::Lite;
-
 use OSCARS::Mail;
+use OSCARS::Interdomain::Request;
 
 sub new {
     my( $class, %args ) = @_;
@@ -78,6 +92,7 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
+    $self->{forwarder} = OSCARS::Interdomain::Request->new();
     $self->{mailer} = OSCARS::Mail->new();
     $self->{param_tests} = {};
 } #____________________________________________________________________________
