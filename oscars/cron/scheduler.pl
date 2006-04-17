@@ -3,19 +3,23 @@
 use strict;
 
 use SOAP::Lite;
-
-use OSCARS::ResourceManager;
 use Data::Dumper;
 
-my $db_name = 'AAA';
-my $bss_component_name = 'Intradomain';
-my $rm = OSCARS::ResourceManager->new( 'database' => $db_name);
-my $aaa_status = $rm->use_authentication_plugin('OSCARS::AAA::AuthN', $db_name);
+use OSCARS::PluginManager;
+use OSCARS::ClientManager;
 
-my( $user_login, $user_password ) = $rm->get_test_account('testaccount');
+my $plugin_mgr = OSCARS::PluginManager->new();
+my $authN = $plugin_mgr->use_plugin('authentication');
+my $user_login = 'testaccount';
+my $credentials  = $authN->get_credentials($user_login, 'password');
 
-my( $status, $msg ) = FindPendingReservations( $user_login, $user_password );
-( $status, $msg ) = FindExpiredReservations( $user_login, $user_password );
+my $database = $plugin_mgr->get_database('Intradomain');
+my $client_mgr = OSCARS::ClientManager->new('database' => $database);
+my $client = $client_mgr->get_client();
+
+
+my( $status, $msg ) = FindPendingReservations( $user_login, $credentials );
+( $status, $msg ) = FindExpiredReservations( $user_login, $credentials );
 
 
 #############################################################################
@@ -25,12 +29,11 @@ sub FindPendingReservations {
 
     # password necessary for test to run, but not for this method in general
     my %params = ('user_login' => $user_login, 'user_password' => $user_password );
-
-    $params{server} = $bss_component_name;
+    $params{component} = 'Intradomain';
     $params{method} = 'FindPendingReservations';
     $params{time_interval} = 20;
 
-    my $som = $rm->add_client()->dispatch(\%params);
+    my $som = $client->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
@@ -49,11 +52,11 @@ sub FindExpiredReservations {
     # password necessary for test to run, but not for this method in general
     my %params = ('user_login' => $user_login, 'user_password' => $user_password );
 
-    $params{server} = $bss_component_name;
+    $params{component} = 'Intradomain';
     $params{method} = 'FindExpiredReservations';
     $params{time_interval} = 20;
 
-    my $som = $rm->add_client()->dispatch(\%params);
+    my $som = $client->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
