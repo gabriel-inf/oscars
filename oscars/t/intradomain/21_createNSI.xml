@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<configuration>
+    <param name="component" value="Intradomain" />
+    <param name="method" value="CreateNSI" />
+    <param name="user_login" value="testaccount" />
+    <param name="duration_hour" value="0.04" />
+    <param name="reservation_time_zone" value="-08:00" />
+    <param name="reservation_bandwidth" value="10" />
+    <param name="reservation_protocol" value="udp" />
+    <param name="reservation_description" value="This is a test." />
+</configuration>

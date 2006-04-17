@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<configuration>
+    <param name="component" value="Intradomain" />
+    <param name="method" value="FindPendingReservations" />
+    <param name="user_login" value="testaccount" />
+    <param name="time_interval" value="20" />
+</configuration>
