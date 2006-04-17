@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -66,12 +66,12 @@ sub soap_method {
     }
     my $results = {};
     if ($self->{params}->{op} eq 'viewProfile') {
-        $results = $self->get_profile( $self->{user}, $self->{params} ); }
+        $results = $self->get_profile( $self->{params} ); }
     elsif ($self->{params}->{op} eq 'modifyProfile') {
-        $results = $self->modify_profile( $self->{user}, $self->{params} );
+        $results = $self->modify_profile( $self->{params} );
     }
     $results->{institution_list} =
-                $self->{institutions}->get_institutions( $self->{user} );
+                $self->{institutions}->get_institutions( $self->{db} );
     return $results;
 } #____________________________________________________________________________
 
@@ -85,7 +85,7 @@ sub soap_method {
 # Out: reference to hash of results
 #
 sub get_profile {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my( $statement, $results );
 
@@ -93,7 +93,7 @@ sub get_profile {
     # additional authorization
     if ( $params->{selected_user} ) {
         $statement = 'SELECT * FROM users WHERE user_login = ?';
-        $results = $user->get_row($statement, $params->{selected_user});
+        $results = $self->{db}->get_row($statement, $params->{selected_user});
         # check whether this person is in the database
         if ( !$results ) {
             throw Error::Simple("No such user $params->{selected_user}.");
@@ -103,12 +103,12 @@ sub get_profile {
     else {
         $statement = "SELECT $self->{user_profile_fields} FROM users " .
                      'WHERE user_login = ?';
-        $results = $user->get_row($statement, $user->{login});
+        $results = $self->{db}->get_row($statement, $self->{user}->{login});
     }
     $results->{institution_name} = $self->{institutions}->get_name(
-                                           $user, $results->{institution_id});
+                                   $self->{db}, $results->{institution_id});
     $results->{institution_id} = 'hidden';
-    $results->{user_login} = $user->{login};
+    $results->{user_login} = $self->{user}->{login};
     $results->{selected_user} = $params->{selected_user};
     # X out password
     $results->{user_password} = 'hidden';
@@ -124,7 +124,7 @@ sub get_profile {
 # Out: reference to hash of results
 #
 sub modify_profile {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my( $statement, $results );
 
@@ -133,12 +133,12 @@ sub modify_profile {
     if ( $params->{selected_user} ) {
         # check whether this person is in the database
         $statement = 'SELECT user_login FROM users WHERE user_login = ?';
-        $results = $user->get_row($statement, $params->{selected_user});
+        $results = $self->{db}->get_row($statement, $params->{selected_user});
         if ( !$results ) {
             throw Error::Simple("No such user $params->{selected_user}.");
         }
     }
-    $params->{user_login} = $user->{login};
+    $params->{user_login} = $self->{user}->{login};
 
     # If the password needs to be updated, set the input password field to
     # the new one.
@@ -151,7 +151,7 @@ sub modify_profile {
     # table (user only can select from menu of existing instituions.
     if ( $params->{institution_name} ) {
         $params->{institution_id} = $self->{institutions}->get_id( 
-                                          $user, $params->{institution_name} );
+                                    $self->{db}, $params->{institution_name} );
     }
     $results = {};    # clear any previous results
     # TODO:  allow admin to set all fields
@@ -167,10 +167,10 @@ sub modify_profile {
     }
     $statement =~ s/,\s$//;
     $statement .= ' WHERE user_login = ?';
-    my $unused = $user->do_query($statement, $params->{user_login});
+    my $unused = $self->{db}->do_query($statement, $params->{user_login});
 
     $results->{selected_user} = $params->{selected_user};
-    $results->{user_login} = $user->{login};
+    $results->{user_login} = $self->{user}->{login};
     $results->{institution_name} = $params->{institution_name};
     $results->{user_password} = 'hidden';
     return $results;

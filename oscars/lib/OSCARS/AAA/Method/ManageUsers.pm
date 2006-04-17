@@ -3,7 +3,7 @@ package OSCARS::AAA::Method::ManageUsers;
 
 =head1 NAME
 
-OSCARS::AAA::Method::ManageUsers - Handles OSCARS users.
+OSCARS::AAA::Method::ManageUsers - Handles reservation system users.
 
 =head1 SYNOPSIS
 
@@ -11,7 +11,7 @@ OSCARS::AAA::Method::ManageUsers - Handles OSCARS users.
 
 =head1 DESCRIPTION
 
-SOAP method to view information about all OSCARS users.  It inherits from 
+SOAP method to view information about all users.  It inherits from 
 OSCARS::Method.
 
 =head1 AUTHORS
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -103,19 +103,19 @@ sub soap_method {
     my $results = {};
     if ($self->{params}->{op} eq 'addUserForm') {
         $results->{institution_list} =
-                $self->{institutions}->get_institutions( $self->{user} );
+                $self->{institutions}->get_institutions( $self->{db} );
     }
     elsif ($self->{params}->{op} eq 'viewUsers') {
-        $results->{list} = $self->get_users($self->{user}, $self->{params});
+        $results->{list} = $self->get_users($self->{params});
     }
     elsif ($self->{params}->{op} eq 'addUser') {
-        $self->add_user( $self->{user}, $self->{params} );
-        $results->{list} = $self->get_users($self->{user}, $self->{params});
+        $self->add_user( $self->{params} );
+        $results->{list} = $self->get_users($self->{params});
         $msg = "$self->{user}->{login} added user $self->{params}->{selected_user}";
     }
     elsif ($self->{params}->{op} eq 'deleteUser') {
-        $self->delete_user( $self->{user}, $self->{params} );
-        $results->{list} = $self->get_users($self->{user}, $self->{params});
+        $self->delete_user( $self->{params} );
+        $results->{list} = $self->get_users($self->{params});
         $msg = "$self->{user}->{login} deleted user $self->{params}->{selected_user}";
     }
     return $results;
@@ -129,14 +129,14 @@ sub soap_method {
 # Out: reference to hash of results
 #
 sub get_users {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my $statement = "SELECT * FROM users WHERE user_status != 'role' " .
                     "ORDER BY user_last_name";
-    my $results = $user->do_query($statement);
+    my $results = $self->{db}->do_query($statement);
     for my $oscars_user (@$results) {
         $oscars_user->{institution_name} = $self->{institutions}->get_name(
-		                        $user, $oscars_user->{institution_id});
+                        $self->{db}, $oscars_user->{institution_id});
 	$oscars_user->{institution_id} = 'hidden';
         $oscars_user->{user_password} = 'hidden';
 	$oscars_user->{user_id} = 'hidden';
@@ -146,20 +146,20 @@ sub get_users {
 
 
 ###############################################################################
-# add_user:  Add a user to the OSCARS database.
+# add_user:  Add a user to the AAA database.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
 sub add_user {
-    my ( $self, $user, $params ) = @_;
+    my ( $self, $params ) = @_;
 
     my $results = {};
     $params->{user_login} = $params->{selected_user};
 
     # login name overlap check
     my $statement = 'SELECT user_login FROM users WHERE user_login = ?';
-    my $row = $user->get_row($statement, $params->{user_login});
+    my $row = $self->{db}->get_row($statement, $params->{user_login});
     if ( $row ) {
         throw Error::Simple("The login, $params->{user_login}, is already " .
 	       	"taken by someone else; please choose a different login name.");
@@ -167,12 +167,12 @@ sub add_user {
     # Set the institution id to the primary key in the institutions
     # table (user only can select from menu of existing instituions).
     if ( $params->{institution_name} ) {
-        $params->{institution_id} = $self->{institutions}->get_id($user,
+        $params->{institution_id} = $self->{institutions}->get_id($self->{db},
                                                   $params->{institution_name});
     }
     $params->{user_password} = crypt($params->{password_new_once}, 'oscars');
     $statement = 'SHOW COLUMNS from users';
-    my $rows = $user->do_query( $statement );
+    my $rows = $self->{db}->do_query( $statement );
 
     my @insertions;
     # TODO:  FIX way to get insertions fields
@@ -185,7 +185,7 @@ sub add_user {
     }
     $statement = "INSERT INTO users VALUES ( " .
              join( ', ', ('?') x @insertions ) . " )";
-    my $unused = $user->do_query($statement, @insertions);
+    my $unused = $self->{db}->do_query($statement, @insertions);
     return;
 } #____________________________________________________________________________
 
@@ -197,17 +197,17 @@ sub add_user {
 # Out: reference to hash of results
 #
 sub delete_user {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     # check to make sure user exists
     my $statement = 'SELECT user_login FROM users WHERE user_login = ?';
-    my $row = $user->get_row($statement, $params->{selected_user});
+    my $row = $self->{db}->get_row($statement, $params->{selected_user});
     if ( !$row ) {
         throw Error::Simple("Cannot delete user $params->{selected_user}. " .
 	       	"The user does not exist.");
     }
     my $statement = 'DELETE from users where user_login = ?';
-    my $unused = $user->do_query($statement, $params->{selected_user});
+    my $unused = $self->{db}->do_query($statement, $params->{selected_user});
     return;
 } #____________________________________________________________________________
 
@@ -224,15 +224,15 @@ sub delete_user {
 # Out: reference to hash of results
 #
 sub activate_account {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my ( $results) ;
 
-    my $user_login = $user->{login};
+    my $user_login = $self->{user}->{login};
     # get the password from the database
     my $statement = 'SELECT user_password, user_activation_key
                  FROM users WHERE user_login = ?';
-    my $row = $user->get_row($statement, $user_login);
+    my $row = $self->{db}->get_row($statement, $user_login);
 
     # check whether this person is a registered user
     if ( !$row ) {
@@ -266,7 +266,7 @@ sub activate_account {
         # to 0; empty the activation key field
         $statement = "UPDATE users
                   user_activation_key = '' WHERE user_login = ?";
-        my $unused = $user->do_query($statement, $user_login);
+        my $unused = $self->{db}->do_query($statement, $user_login);
     }
     else {
         throw Error::Simple($non_match_error);
@@ -287,10 +287,10 @@ sub activate_account {
 # Out: reference to hash of results
 #
 sub process_registration {
-    my( $self, $user, $params, @insertions ) = @_;
+    my( $self, $params, @insertions ) = @_;
 
     my $results = {};
-    my $user_login = $user->{login};
+    my $user_login = $self->{user}->{login};
 
     my $encrypted_password = $params->{password_new_once};
 
@@ -298,14 +298,14 @@ sub process_registration {
     my $current_date_time = $params->{utc_seconds};
     # login name overlap check
     my $statement = 'SELECT user_login FROM users WHERE user_login = ?';
-    my $row = $user->get_row($statement, $user_login);
+    my $row = $self->{db}->get_row($statement, $user_login);
     if ( $row ) {
         throw Error::Simple('The selected login name is already taken ' .
                    'by someone else; please choose a different login name.');
     }
     $statement = 'INSERT INTO users VALUES ( ' .
                               '?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )';
-    my $unused = $user->do_query($statement, @insertions);
+    my $unused = $self->{db}->do_query($statement, @insertions);
 
     $results->{status_msg} = 'Your user registration has been recorded ' .
         "successfully. Your login name is <strong>$user_login</strong>. Once " .

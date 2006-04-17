@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -44,10 +44,10 @@ sub new {
 #                    Used by other AAA SOAP methods.
 #
 sub get_institutions {
-    my( $self, $user ) = @_;
+    my( $self, $db ) = @_;
 
     my $statement = "SELECT institution_name FROM institutions";
-    my $results = $user->do_query($statement);
+    my $results = $db->do_query($statement);
     return $results;
 } #____________________________________________________________________________
 
@@ -56,11 +56,11 @@ sub get_institutions {
 # get_id:  Get institution id given the institution name
 #
 sub get_id {
-    my( $self, $user, $institution_name ) = @_;
+    my( $self, $db, $institution_name ) = @_;
 
     my $statement = "SELECT institution_id FROM institutions " .
                     "WHERE institution_name = ?";
-    my $row = $user->get_row($statement, $institution_name);
+    my $row = $db->get_row($statement, $institution_name);
     if ( !$row ) {
         throw Error::Simple("The organization " .
                    "$institution_name is not in the database.");
@@ -73,11 +73,11 @@ sub get_id {
 # get_name:  Get institution name given the institution id
 #
 sub get_name {
-    my( $self, $user, $institution_id ) = @_;
+    my( $self, $db, $institution_id ) = @_;
 
     my $statement = "SELECT institution_name FROM institutions " .
                     "WHERE institution_id = ?";
-    my $row = $user->get_row($statement, $institution_id);
+    my $row = $db->get_row($statement, $institution_id);
     if ( !$row ) {
         throw Error::Simple("The organization identified by " .
                    "$institution_id is not in the database.");

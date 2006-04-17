@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -41,7 +41,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{lib} = OSCARS::AAA::ResourceLibrary->new();
+    $self->{lib} = OSCARS::AAA::ResourceLibrary->new('db' => $self->{db});
     $self->{param_tests} = {};
     $self->{param_tests}->{addAuthorization} = {
         'permission_name' => (
@@ -84,16 +84,15 @@ sub soap_method {
     }
     my $results = {};
     if ($self->{params}->{op} eq 'viewAuthorizations') {
-        $results = $self->get_authorizations($self->{user}, $self->{params});
+        $results = $self->get_authorizations($self->{params});
     }
     elsif ($self->{params}->{op} eq 'addAuthorization') {
-        $self->{lib}->add_row( $self->{user}, $self->{params},
-                               'Authorizations' );
-        $results = $self->get_authorizations($self->{user}, $self->{params});
+        $self->{lib}->add_row( $self->{params}, 'Authorizations' );
+        $results = $self->get_authorizations($self->{params});
     }
     elsif ($self->{params}->{op} eq 'deleteAuthorization') {
-        $self->delete_reservation( $self->{user}, $self->{params} );
-        $results = $self->get_authorizations($self->{user}, $self->{params});
+        $self->delete_reservation( $self->{params} );
+        $results = $self->get_authorizations($self->{params});
     }
     elsif ($self->{params}->{op} eq 'selectUser') {
 	;
@@ -110,16 +109,16 @@ sub soap_method {
 # Out: reference to hash of results
 #
 sub get_authorizations {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my $results = {};
     my $statement = "SELECT user_login FROM users";
     $results->{users} = {};
-    my $aux_results = $user->do_query($statement);
+    my $aux_results = $self->{db}->do_query($statement);
     for my $row (@$aux_results) { $results->{users}->{$row->{user_login}} = 1; }
 
     $results->{resource_permissions} = $self->{lib}->get_resource_permissions(
-	                                       $self->{user}, $self->{params});
+	                                       $self->{params});
     return $results;
 } #____________________________________________________________________________
 
@@ -131,21 +130,21 @@ sub get_authorizations {
 # Out: reference to hash of results
 #
 sub delete_authorization {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my $statement = 'SELECT user_id FROM users WHERE user_login = ?';
-    my $row = $user->get_row($statement, $params->{user_login});
+    my $row = $self->{db}->get_row($statement, $params->{user_login});
     my $user_id = $row->{user_id};
     $statement = 'SELECT resource_id FROM resources WHERE resource_name = ?';
-    $row = $user->get_row($statement, $params->{resource_name});
+    $row = $self->{db}->get_row($statement, $params->{resource_name});
     my $resource_id = $row->{resource_id};
     $statement = 'SELECT permission_id FROM permissions ' .
                  'WHERE permission_name = ?';
-    $row = $user->get_row($statement, $params->{permission_name});
+    $row = $self->{db}->get_row($statement, $params->{permission_name});
     my $permission_id = $row->{permission_id};
     $statement = 'DELETE FROM authorizations WHERE user_id = ? AND ' .
                  'resource_id = ? AND permission_id = ?';
-    my $unused = $user->do_query($statement, $user_id, $resource_id,
+    my $unused = $self->{db}->do_query($statement, $user_id, $resource_id,
                                  $permission_id);
     my $msg = "Deleted authorization for $params->{user_login} involving " .
               " resource $params->{resource_name} and " .

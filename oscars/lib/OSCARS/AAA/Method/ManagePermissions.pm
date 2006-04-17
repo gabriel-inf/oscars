@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -40,7 +40,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{lib} = OSCARS::AAA::ResourceLibrary->new();
+    $self->{lib} = OSCARS::AAA::ResourceLibrary->new('db' => $self->{db});
     $self->{param_tests} = {};
     $self->{param_tests}->{add_permission} = {
         'permission_name' => (
@@ -77,15 +77,15 @@ sub soap_method {
     }
     my $results = {};
     if ($self->{params}->{op} eq 'viewPermissions') {
-        $results = $self->get_permissions($self->{user}, $self->{params});
+        $results = $self->get_permissions($self->{params});
     }
     elsif ($self->{params}->{op} eq 'addPermission') {
-        $self->{lib}->add_row( $self->{user},$self->{params},'Permissions' );
-        $results = $self->get_permissions($self->{user}, $self->{params});
+        $self->{lib}->add_row( $self->{params},'Permissions' );
+        $results = $self->get_permissions($self->{params});
     }
     elsif ($self->{params}->{op} eq 'deletePermission') {
-        $self->delete_permission( $self->{user}, $self->{params} );
-        $results = $self->get_permissions($self->{user}, $self->{params});
+        $self->delete_permission( $self->{params} );
+        $results = $self->get_permissions($self->{params});
     }
     return $results;
 } #____________________________________________________________________________
@@ -99,12 +99,12 @@ sub soap_method {
 # Out: reference to hash of results
 #
 sub get_permissions {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my $statement = "SELECT permission_name FROM permissions";
     my $results = {};
     $results->{permissions} = {};
-    my $p_results = $user->do_query($statement);
+    my $p_results = $self->{db}->do_query($statement);
     for my $row (@$p_results) {
         $results->{permissions}->{$row->{permission_name}} = 1;
     }
@@ -119,12 +119,12 @@ sub get_permissions {
 # Out: reference to hash of results
 #
 sub delete_permission {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my $permission_id =
         $self->{lib}->id_from_name('permission', $params->{permission_name});
     my $statement = 'DELETE FROM permissions WHERE permission_id = ?';
-    my $unused = $user->do_query($statement, $permission_id);
+    my $unused = $self->{db}->do_query($statement, $permission_id);
     my $msg = "Deleted permission named $params->{permission_name}";
     return $msg;
 } #____________________________________________________________________________

@@ -3,7 +3,7 @@ package OSCARS::AAA::Method::Login;
 
 =head1 NAME
 
-OSCARS::AAA::Method::Login - SOAP method for OSCARS login.
+OSCARS::AAA::Method::Login - SOAP method for login.
 
 =head1 SYNOPSIS
 
@@ -11,7 +11,7 @@ OSCARS::AAA::Method::Login - SOAP method for OSCARS login.
 
 =head1 DESCRIPTION
 
-SOAP method for OSCARS login.  It inherits from OSCARS::Method.
+SOAP method for login.  It inherits from OSCARS::Method.
 
 =head1 AUTHORS
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -52,7 +52,7 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Log in to OSCARS.  Authentication, if it was necessary, has
+# soap_method:  Log in.  Authentication, if it was necessary, has
 #               already been performed by the resource manager
 #               querying OSCARS::AAA::AuthN
 # In:  reference to hash of parameters
