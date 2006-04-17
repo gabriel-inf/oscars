@@ -1,20 +1,20 @@
 # =============================================================================
-package OSCARS::AAA::User;
+package OSCARS::User;
 
 =head1 NAME
 
-OSCARS::AAA::User - Handles user db connections, history, authorizations.
+OSCARS::User - Handles user db connections, history, authorizations.
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAA::User;
+  use OSCARS::User;
 
 =head1 DESCRIPTION
 
 This module contains information about one user currently logged in.
-It caches information about that user, retrieved from the OSCARS 
-database.   All operations performed against the database go through
-this class, which maintains the user's database handle via the superclass.
+It caches authorization information about that user, retrieved from the 
+database used by the authorization plugin.  It also caches connection handles
+to any other database used.
 
 =head1 AUTHOR
 
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -32,8 +32,8 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
+use OSCARS::PluginManager;
 use OSCARS::Database;
-our @ISA = qw(OSCARS::Database);
 
 sub new {
     my( $class, %args ) = @_;
@@ -49,7 +49,40 @@ sub initialize {
 
     # initially not authenticated
     $self->{is_authenticated} = 0;
-    $self->connect( $self->{database} );
+    $self->{handles} = {};
+    my $plugin_manager = OSCARS::PluginManager->new();
+    $self->{authZ} = $plugin_manager->use_plugin('authorization');
+    if ( !$self->{authZ} ) {
+        die( "Unable to find authorization plugin; does config file exist?");
+    }
+    $self->{authorizations} = $self->{authZ}->get_authorizations($self);
+} #____________________________________________________________________________
+
+
+###############################################################################
+# get_db_handle:  retrieves DB handle from cache for database selected, sets up 
+#                 connection if none exists
+#
+sub get_db_handle {
+    my( $self, $dbname ) = @_;
+
+    if ( !$self->{handles}->{$dbname} ) {
+	$self->{handles}->{$dbname} = OSCARS::Database->new();
+	$self->{handles}->{$dbname}->connect($dbname);
+    }
+    return $self->{handles}->{$dbname};
+} #____________________________________________________________________________
+
+
+###############################################################################
+# close_handles:  close all cached connections to databases
+#
+sub close_handles {
+    my( $self ) = @_;
+
+    for my $db (keys(%{$self->{handles}})) {
+        $self->{handles}->{$db}->disconnect();
+    }
 } #____________________________________________________________________________
 
 
@@ -70,25 +103,6 @@ sub set_authenticated {
     my( $self, $auth_status ) = @_;
 
     $self->{is_authenticated} = $auth_status;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# use_authorization_plugin:  Use given package for authorization.
-#
-sub use_authorization_plugin {
-    my( $self, $package_name, $database ) = @_;
-
-    my $location = $package_name . '.pm';
-    $location =~ s/(::)/\//g;
-    eval { require $location };
-    # replaces use of any previous authorization plugin
-    if (!$@) {
-        $self->{authZ} = $package_name->new('database' => $database);
-        $self->{authorizations} = $self->{authZ}->get_authorizations($self);
-	return 1;
-    }
-    else { return 0; }
 } #____________________________________________________________________________
 
 
