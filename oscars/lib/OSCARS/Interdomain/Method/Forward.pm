@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 11, 2006
+April 17, 2006
 
 =cut
 
@@ -41,7 +41,8 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Handles forwarding a request.  In process of implementing.
+# soap_method:  Handles forwarding a request.  Makes call to forwarded method,
+#               extracting that method's parameters from the payload.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
@@ -49,12 +50,15 @@ sub initialize {
 sub soap_method {
     my( $self ) = @_;
 
+    my $payload = $self->{params};
+    my $params = $payload->{params};
     $self->{logger}->info("start", $self->{params});
-    my $som = $self->{params}->{client}->dispatch($self->{params});
-    if (!$som) { print STDERR "call failed\n"; }
-    elsif ($som->faultstring) { print STDERR "$som->faultstring\n";}
+    my $factory = OSCARS::MethodFactory->new();
+    my $handler =
+        $factory->instantiate( $self->{user}, $params, $self->{logger} );
+    my $results = $handler->soap_method();
     $self->{logger}->info("finish", $self->{params});
-    return $som->result;
+    return $results;
 } #____________________________________________________________________________
 
 
