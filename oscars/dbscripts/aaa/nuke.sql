@@ -1,6 +1,6 @@
-DROP TABLE  users ;
-DROP TABLE  institutions ;
-DROP TABLE  user_levels ;
-DROP TABLE  auth_types ;
-DROP TABLE  allocations ;
-DROP TABLE  servers;
+DROP TABLE  users;
+DROP TABLE  institutions;
+DROP TABLE  resources;
+DROP TABLE  permissions;
+DROP TABLE  resourcepermissions;
+DROP TABLE  authorizations;

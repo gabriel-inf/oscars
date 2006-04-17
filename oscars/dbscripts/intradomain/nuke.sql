@@ -1,9 +1,14 @@
+DROP TABLE clients;
 DROP TABLE domains;
 DROP TABLE routers;
 DROP TABLE interfaces;
 DROP TABLE ipaddrs;
-DROP TABLE hostaddrs;
+DROP TABLE hosts;
 DROP TABLE reservations;
+DROP TABLE scheduler_confs;
 DROP TABLE trace_confs;
+DROP TABLE snmp_confs;
 DROP TABLE pss_confs;
-DROP TABLE daemons;
+DROP TABLE archived_reservations;
+DROP TABLE test_confs;
+DROP TABLE test_addresses;
