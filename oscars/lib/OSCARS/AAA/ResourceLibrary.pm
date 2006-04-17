@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -42,18 +42,18 @@ sub new {
 
 
 ###############################################################################
-# add_row:  Add a row to the OSCARS resources, permissions, or
+# add_row:  Add a row to the AAA resources, permissions, or
 #           resourcepermissions tables.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
 sub add_row {
-    my( $self, $user, $params, $table_name ) = @_;
+    my( $self, $params, $table_name ) = @_;
 
     my $results = {};
     my $statement = "SHOW COLUMNS from $table_name";
-    my $rows = $user->do_query( $statement );
+    my $rows = $self->{db}->do_query( $statement );
 
     my @insertions;
     # TODO:  FIX way to get insertions fields
@@ -68,29 +68,29 @@ sub add_row {
     $statement = "INSERT INTO $table_name VALUES ( " .
              join( ', ', ('?') x @insertions ) . " )";
              
-    my $unused = $user->do_query($statement, @insertions);
+    my $unused = $self->{db}->do_query($statement, @insertions);
     return;
 } #____________________________________________________________________________
 
 
 sub get_resource_permissions {
-    my( $self, $user, $params ) = @_;
+    my( $self, $params ) = @_;
 
     my( $resource_name, $permission_name, $aux_result );
     my $statement = "SELECT resource_id, permission_id " .
                     "FROM resourcepermissions";
     my $resource_permissions = {};
-    my $rp_results = $user->do_query($statement);
+    my $rp_results = $self->{db}->do_query($statement);
     $statement = "SELECT resource_name FROM resources WHERE resource_id = ?";
     my $pstatement = "SELECT permission_name FROM permissions " .
                      "WHERE permission_id = ?";
     for my $row (@$rp_results) {
-        $aux_result = $user->get_row($statement, $row->{resource_id});
+        $aux_result = $self->{db}->get_row($statement, $row->{resource_id});
         $resource_name = $aux_result->{resource_name};
         if ( !$resource_permissions->{$resource_name} ) {
             $resource_permissions->{$resource_name} = {};
         }
-        $aux_result = $user->get_row($pstatement, $row->{permission_id});
+        $aux_result = $self->{db}->get_row($pstatement, $row->{permission_id});
         $permission_name = $aux_result->{permission_name};
         $resource_permissions->{$resource_name}->{$permission_name} = 1;
     }
@@ -110,7 +110,7 @@ sub id_from_name {
     my $id_str = $selector . '_id';
     my $field_str = $selector . '_name';
     my $statement = "SELECT $id_str FROM $selector" . "s WHERE $field_str = ?";
-    my $row = $self->{user}->get_row($statement, $field_value);
+    my $row = $self->{db}->get_row($statement, $field_value);
     return $row->{$id_str};
 } #____________________________________________________________________________
 

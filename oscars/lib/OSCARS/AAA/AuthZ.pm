@@ -3,7 +3,7 @@ package OSCARS::AAA::AuthZ;
 
 =head1 NAME
 
-OSCARS::AAA::AuthZ - handles authorization for OSCARS.
+OSCARS::AAA::AuthZ - handles authorization.
 
 =head1 SYNOPSIS
 
@@ -11,9 +11,8 @@ OSCARS::AAA::AuthZ - handles authorization for OSCARS.
 
 =head1 DESCRIPTION
 
-This module handles OSCARS authorization.  It queries the database to
-see if a user is authorized to perform an action.  There is one instance of
-this per user.
+This module handles authorization.  It queries the database to see if a user 
+is authorized to perform an action.  There is one instance of this per user.
 
 =head1 AUTHORS
 
@@ -22,7 +21,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -40,7 +39,16 @@ sub new {
     my ($self) = {%args};
   
     bless($self, $class);
+    $self->initialize();
     return($self);
+} #____________________________________________________________________________
+
+
+sub initialize {
+    my( $self ) = @_;
+
+    $self->{db} = OSCARS::Database->new();
+    $self->{db}->connect($self->{database});
 } #____________________________________________________________________________
 
 
@@ -55,19 +63,19 @@ sub get_resource_permissions {
 
     my $statement = "SELECT resource_id, permission_id " .
                     "FROM resourcepermissions";
-    my $results = $user->do_query($statement);
+    my $results = $self->{db}->do_query($statement);
     my $resource_permissions = {};
     $statement = "SELECT resource_name FROM resources " .
                  "WHERE resource_id = ?";
     my $pstatement = "SELECT permission_name FROM permissions " .
                  "WHERE permission_id = ?";
     for my $perm ( @$results ) {
-	$row = $user->get_row($statement, $perm->{resource_id});
+	$row = $self->{db}->get_row($statement, $perm->{resource_id});
 	$resource_name = $row->{resource_name};
         if ( !$resource_permissions->{$resource_name} ) {
             $resource_permissions->{$resource_name} = {};
         }
-	$row = $user->get_row($pstatement, $perm->{permission_id});
+	$row = $self->{db}->get_row($pstatement, $perm->{permission_id});
 	$permission_name = $row->{permission_name};
         $resource_permissions->{$resource_name}->{$permission_name} = 1;
     }
@@ -85,23 +93,23 @@ sub get_authorizations {
 
     my $auths = {};
     my $statement = "SELECT user_id from users where user_login = ?";
-    my $results = $user->get_row($statement, $user->{login});
+    my $results = $self->{db}->get_row($statement, $user->{login});
     my $user_id = $results->{user_id};
 
     $statement = "SELECT resource_id, permission_id FROM authorizations " .
                  "WHERE user_id = ?";
-    $results = $user->do_query($statement, $user_id);
+    $results = $self->{db}->do_query($statement, $user_id);
     my $rstatement = "SELECT resource_name FROM resources " .
                      "WHERE resource_id = ?";
     my $pstatement = "SELECT permission_name FROM permissions " .
                      "WHERE permission_id = ?";
     for my $pair ( @$results ) {
-	$row = $user->get_row($rstatement, $pair->{resource_id});
+	$row = $self->{db}->get_row($rstatement, $pair->{resource_id});
 	$resource_name = $row->{resource_name};
         if ( !$auths->{$resource_name} ) {
             $auths->{$resource_name} = {};
 	}
-	$row = $user->get_row($pstatement, $pair->{permission_id});
+	$row = $self->{db}->get_row($pstatement, $pair->{permission_id});
 	$permission_name = $row->{permission_name};
         $auths->{$resource_name}->{$permission_name} = 1;
     }

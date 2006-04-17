@@ -3,7 +3,7 @@ package OSCARS::AAA::AuthN;
 
 =head1 NAME
 
-OSCARS::AAA::AuthN - performs authenticatication for OSCARS
+OSCARS::AAA::AuthN - performs authenticatication
 
 =head1 SYNOPSIS
 
@@ -11,7 +11,7 @@ OSCARS::AAA::AuthN - performs authenticatication for OSCARS
 
 =head1 DESCRIPTION
 
-Performs authentication required to access OSCARS.
+Performs authentication required for access.
 
 =head1 AUTHORS
 
@@ -20,14 +20,14 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
 use WSRF::Lite;
 use Crypt::OpenSSL::X509;
 use OSCARS::Database;
-use OSCARS::AAA::User;
+use OSCARS::User;
 
 use strict;
 
@@ -44,16 +44,18 @@ sub new {
 }
 
 sub initialize {
-    my( $self );
+    my( $self ) = @_;
 
     $self->{users} = {};
+    $self->{db} = OSCARS::Database->new();
+    $self->{db}->connect($self->{database});
 } #____________________________________________________________________________
 
 
 ###############################################################################
 # authenticate:  authenticates user
 #
-# In:  OSCARS::AAA::User instance, hash of parameters
+# In:  OSCARS::User instance, hash of parameters
 # Out: None
 #
 sub authenticate {
@@ -72,7 +74,7 @@ sub authenticate {
 	# throw type of exception that main try in oscars script understands
 #	if ( $error_msg ) { throw Error::Simple($error_msg); }
 	if ( !$error_msg ) {
-	   $user = $self->get_user($user_login, $self->{database}); 
+	   $user = $self->get_user($user_login); 
 	   return $user;
 	
 	} else { print STDERR "return from verify_signature is $error_msg \n";}
@@ -111,11 +113,8 @@ sub verify_signature {
     print STDERR "$issuer \n$subject\n";
     my $query = "SELECT user_login FROM users " .
                     "WHERE user_cert_subject = '$subject'";
-    my $dbconn = OSCARS::Database->new();
-    $dbconn->connect($self->{database});
-    my $row = $dbconn->get_row($query);
+    my $row = $self->{db}->get_row($query);
     $user_login = $row->{user_login};
-    $dbconn->disconnect();
     print STDERR "user is $user_login\n";
     return( $user_login, $ex );
 } #____________________________________________________________________________
@@ -130,14 +129,14 @@ sub verify_signature {
 sub verify_login {
     my( $self, $params ) = @_;
 
-    my $user = $self->get_user($params->{user_login}, $params->{database});
+    my $user = $self->get_user($params->{user_login});
     if ($user->authenticated()) { return $user; }
     if (!$params->{user_password}) {
 	throw Error::Simple('Attempting to access a SOAP method before authenticating.');
     }
     # Get the password and privilege level from the database.
     my $statement = 'SELECT user_password FROM users WHERE user_login = ?';
-    my $results = $user->get_row($statement, $user->{login});
+    my $results = $self->{db}->get_row($statement, $user->{login});
     # Make sure user exists.
     if ( !$results ) {
         throw Error::Simple('Please check your login name and try again.');
@@ -160,12 +159,10 @@ sub verify_login {
 # associated with the component and distinguished name given. 
 #
 sub get_user {
-    my( $self, $login, $database ) = @_;
+    my( $self, $login ) = @_;
 
     if (!$self->{users}->{$login}) {
-        $self->{users}->{$login} = OSCARS::AAA::User->new(
-                                   'login' => $login,
-                                   'database' => $database);
+        $self->{users}->{$login} = OSCARS::User->new('login' => $login);
     }
     return $self->{users}->{$login};
 } #____________________________________________________________________________
@@ -177,10 +174,27 @@ sub get_user {
 sub remove_user {
     my( $self, $login ) = @_;
 
-    if ( $self->{users}->{$login} ) { $self->{users}->{$login}->disconnect(); }
+    # close all cached db connection handles
+    if ( $self->{users}->{$login} ) {
+        $self->{users}->{$login}->close_handles();
+    }
     $self->{users}->{$login} = undef;
 } #____________________________________________________________________________
 
+
+###############################################################################
+# Currently only used by installation tests.
+#
+sub get_credentials {
+    my( $self, $user_login, $credential_type ) = @_;
+
+    if ($credential_type eq 'password') {
+        my $statement = 'SELECT user_password FROM users WHERE user_login = ?';
+        my $results = $self->{db}->get_row($statement, $user_login);
+        return $results->{user_password};
+    }
+    return undef;
+} #____________________________________________________________________________
 
 ######
 1;
