@@ -65,12 +65,3 @@ CREATE TABLE IF NOT EXISTS authorizations (
     PRIMARY KEY (authorization_id)
 ) type=MyISAM;
 
-
--- Table for default clients.
-CREATE TABLE IF NOT EXISTS clients (
-    client_id			INT NOT NULL AUTO_INCREMENT,
-    client_uri			TEXT NOT NULL,
-    client_proxy		TEXT NOT NULL,
-    as_num			TEXT,   -- autonomous system number
-    PRIMARY KEY (client_id)
-    ) type=MyISAM;
