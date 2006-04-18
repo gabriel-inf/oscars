@@ -1,5 +1,4 @@
 DROP TABLE clients;
-DROP TABLE domains;
 DROP TABLE routers;
 DROP TABLE interfaces;
 DROP TABLE ipaddrs;
