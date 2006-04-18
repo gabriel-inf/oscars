@@ -326,14 +326,12 @@ sub get_as_number {
 
     my $as_number;
 
-    my $statement = 'SELECT router_name, domain_id FROM Intradomain.routers r ' .
+    my $statement = 'SELECT router_name FROM Intradomain.routers r ' .
         'INNER JOIN Intradomain.interfaces i ON r.router_id = i.router_id ' .
         'WHERE i.interface_id = ?';
     my $row = $self->{db}->get_row($statement, $interface_id);
-    $statement = 'SELECT domain_suffix FROM Intradomain.domains ' .
-                 'WHERE domain_id = ?';
-    my $drow = $self->{db}->get_row($statement, $row->{domain_id});
-    my $router_name = $row->{router_name} . $drow->{domain_suffix};
+    my $router_name = $row->{router_name} .
+                      $self->{snmp_configs}->{snmp_conf_domain};
     $self->{jnx_snmp}->initialize_session($self->{snmp_configs}, $router_name);
     my $error_msg = $self->{jnx_snmp}->get_error();
     if ( $error_msg ) {
