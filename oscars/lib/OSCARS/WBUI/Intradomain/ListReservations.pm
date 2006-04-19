@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -33,8 +33,8 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# outputDiv:  Print list of all reservations if the caller has engr privileges, 
-#          otherwise just print that user's reservations
+# outputDiv:  Print list of all reservations if the caller is authorized, 
+#             otherwise just print that user's reservations
 # In:   results of SOAP call
 # Out:  None
 #
@@ -49,7 +49,7 @@ sub outputDiv {
     detailed information about the reservation.</p>
 
     <p><form method="post" action="" onsubmit="return submit_form(this, 
-        'component=Intradomain;method=listReservations;');">
+        'component=Intradomain;method=ListReservations;');">
     <input type='submit' value='Refresh'></input>
     </form></p>
 
@@ -88,7 +88,7 @@ sub printRow {
       <td>
       <a href='#' style='/styleSheets/layout.css'
        onclick="return new_section(
-       'component=Intradomain;method=queryNSI;id=$row->{id};');"
+       'component=Intradomain;method=QueryNSI;id=$row->{id};');"
           >$row->{tag}</a>
       </td>
       <td>$row->{startTime}</td>

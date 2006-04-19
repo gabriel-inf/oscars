@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -67,23 +67,20 @@ sub output {
     if (($results->{status} eq 'pending') ||
         ($results->{status} eq 'active')) {
         my $cancelSubmitStr = "return submit_form(this,
-             'component=Intradomain;method=cancelNSI;');";
+             'component=Intradomain;method=CancelNSI;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancelSubmitStr">
-        <input type='hidden' name='id'
-           value="$results->{id}"></input>
-        <input type='submit' value='CANCEL'>
-	</input>
+        <input type='hidden' name='id' value="$results->{id}"></input>
+        <input type='submit' value='CANCEL'></input>
         </form>
         } );
     }
 
     my $refreshSubmitStr = "return submit_form(this,
-             'component=Intradomain;method=queryNSI;');";
+             'component=Intradomain;method=QueryNSI;');";
     print( qq{
     <form method="post" action="" onsubmit="$refreshSubmitStr">
-    <input type='hidden' name='id'
-           value="$results->{id}"></input>
+    <input type='hidden' name='id' value="$results->{id}"></input>
     <input type='submit' value='Refresh'>
     </input>
     </form>

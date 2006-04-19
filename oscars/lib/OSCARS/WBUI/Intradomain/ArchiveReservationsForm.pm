@@ -54,7 +54,7 @@ sub outputDiv {
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-	     'component=Intradomain;method=archiveReservations;');">
+	     'component=Intradomain;method=ArchiveReservations;');">
 
      <p>Required inputs are bordered in green.  Ranges or types of valid 
      entries are given in parentheses below the input fields.</p>
