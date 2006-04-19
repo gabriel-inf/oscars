@@ -9,9 +9,9 @@ use OSCARS::PluginManager;
 my $mgr = OSCARS::PluginManager->new();
 ok($mgr);
 
-my $authN = $mgr->use_plugin('authentication');
+my $authN = $mgr->usePlugin('authentication');
 ok($authN);
 
-my $authZ = $mgr->use_plugin('authorization');
+my $authZ = $mgr->usePlugin('authorization');
 ok($authZ);
 

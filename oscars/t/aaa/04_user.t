@@ -4,10 +4,10 @@ use Test::Simple tests => 1;
 
 use OSCARS::PluginManager;
 
-my $user_login = 'testaccount';
+my $login = 'testaccount';
 my $mgr = OSCARS::PluginManager->new();
-my $authN = $mgr->use_plugin('authentication');
+my $authN = $mgr->usePlugin('authentication');
 
-my $credentials = $authN->get_credentials($user_login, 'password');
-my $user = $authN->get_user($user_login);
+my $credentials = $authN->getCredentials($login, 'password');
+my $user = $authN->getUser($login);
 ok($user);

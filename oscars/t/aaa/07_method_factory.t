@@ -5,21 +5,21 @@ use Test::Simple tests => 2;
 use OSCARS::PluginManager;
 use OSCARS::Method;
 
-my $user_login = 'testaccount';
-my $component_name = 'AAA';
+my $login = 'testaccount';
+my $component = 'AAA';
 my $mgr = OSCARS::PluginManager->new();
-my $authN = $mgr->use_plugin('authentication');
+my $authN = $mgr->usePlugin('authentication');
 
-my $credentials = $authN->get_credentials($user_login, 'password');
-my $user = $authN->get_user($user_login);
+my $credentials = $authN->getCredentials($login, 'password');
+my $user = $authN->getUser($login);
 
 my $factory = OSCARS::MethodFactory->new();
 ok($factory);
 
 my $params = {};
-$params->{component} = $component_name;
+$params->{component} = $component;
 $params->{method} = 'Login';
-$params->{user_login} = $user_login;
+$params->{login} = $login;
 $params->{user_password} = $credentials;
 
 my $handler = $factory->instantiate( $user, $params );
