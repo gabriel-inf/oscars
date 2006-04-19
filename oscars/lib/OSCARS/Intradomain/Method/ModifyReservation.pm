@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Intradomain::Method::ModifyNSI;
+package OSCARS::Intradomain::Method::ModifyReservation;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::ModifyNSI - Handles modification of existing reservation. 
+OSCARS::Intradomain::Method::ModifyReservation - Handles modification of existing reservation. 
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::ManageReservations;
+  use OSCARS::Intradomain::Method::ModifyReservation;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 19, 2006
 
 =cut
 

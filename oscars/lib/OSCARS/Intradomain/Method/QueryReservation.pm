@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::Intradomain::Method::QueryNSI;
+package OSCARS::Intradomain::Method::QueryReservation;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::QueryNSI - SOAP method to list the details of a
+OSCARS::Intradomain::Method::QueryReservation - SOAP method to list the details of a
 specific reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::QueryNSI;
+  use OSCARS::Intradomain::Method::QueryReservation;
 
 =head1 DESCRIPTION
 
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 19, 2006
 
 =cut
 

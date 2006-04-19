@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Intradomain::Method::CancelNSI;
+package OSCARS::Intradomain::Method::CancelReservation;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::CancelNSI - Handles cancelling reservation.
+OSCARS::Intradomain::Method::CancelReservation - Handles cancelling reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::CancelNSI;
+  use OSCARS::Intradomain::Method::CancelReservation;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 19, 2006
 
 =cut
 

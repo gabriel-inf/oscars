@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Intradomain::Method::CreateNSI;
+package OSCARS::Intradomain::Method::CreateReservation;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::CreateNSI - Handles creation of circuit reservation. 
+OSCARS::Intradomain::Method::CreateReservation - Handles creation of circuit reservation. 
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::CreateNSI;
+  use OSCARS::Intradomain::Method::CreateReservation;
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 19, 2006
 
 =cut
 
