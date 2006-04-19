@@ -20,33 +20,33 @@ is_blank(str)
 
 // TODO:  objects
 var login_required = {
-    'user_login': "Please enter your user name.",
-    'user_password': "Please enter your password."
+    'login': "Please enter your user name.",
+    'password': "Please enter your password."
 }
 
 var reservation_required = {
-    'source_host': "Please enter starting host name, or its IP address, in the 'Source' field.",
-    'destination_host':  "Please enter destination host name, or its IP address, in the 'Destination' field.",
-    'reservation_bandwidth': "Please enter the amount of bandwidth you require in the 'Bandwidth' field.",
-    'reservation_description': "Please describe the purpose of this reservation request."
+    'srcHost': "Please enter starting host name, or its IP address, in the 'Source' field.",
+    'destHost':  "Please enter destination host name, or its IP address, in the 'Destination' field.",
+    'bandwidth': "Please enter the amount of bandwidth you require in the 'Bandwidth' field.",
+    'description': "Please describe the purpose of this reservation request."
 }
 
 var profile_modification_required = {
-    'user_last_name': "Please enter the user's last name.",
-    'user_first_name': "Please enter the user's first name.",
-    'institution':  "Please enter the user's organization.",
-    'user_email_primary': "Please enter the user's primary email address.",
-    'user_phone_primary': "Please enter the user's primary phone number."
+    'lastName': "Please enter the user's last name.",
+    'firstName': "Please enter the user's first name.",
+    'institutionName':  "Please enter the user's organization.",
+    'emailPrimary': "Please enter the user's primary email address.",
+    'phonePrimary': "Please enter the user's primary phone number."
 }
 
 var add_user_required = {
-    'selected_user': "Please enter the new user's distinguished name.",
-    'password_new_once': "Please enter the new user's password.",
-    'user_last_name': "Please enter the new user's last name.",
-    'user_first_name': "Please enter the new user's first name.",
-    'institution':  "Please enter the new user's organization.",
-    'user_email_primary': "Please enter the new user's primary email address.",
-    'user_phone_primary': "Please enter the new user's primary phone number."
+    'selectedUser': "Please enter the new user's distinguished name.",
+    'passwordNewOnce': "Please enter the new user's password.",
+    'lastName': "Please enter the new user's last name.",
+    'firstName': "Please enter the new user's first name.",
+    'institutionName':  "Please enter the new user's organization.",
+    'emailPrimary': "Please enter the new user's primary email address.",
+    'phonePrimary': "Please enter the new user's primary phone number."
 }
 
 // Checks validity of form settings, and uses Sarissa to post request
@@ -173,90 +173,88 @@ function check_reservation( form )
     if (!valid) { return false; }
 
     // Temporary hack: (TODO:  FIX)
-    if ( (form.user_login.value == 'dtyu@bnl.gov') ||
-         (form.user_login.value == 'wenji@fnal.gov'))
+    if ( (form.login.value == 'dtyu@bnl.gov') ||
+         (form.login.value == 'wenji@fnal.gov'))
     {
-        if (form.ingress_router.value && (form.ingress_router.value != 'chi-sl-sdn1'))
+        if (form.ingressRouter.value && (form.ingressRouter.value != 'chi-sl-sdn1'))
         {
              alert( "Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Ingress loopback' field." );
-             form.ingress_router.focus();
+             form.ingressRouter.focus();
              return false;
         }
-        if (form.egress_router.value && (form.egress_router.value != 'chi-sl-sdn1'))
+        if (form.egressRouter.value && (form.egressRouter.value != 'chi-sl-sdn1'))
         {
              alert( "Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Egress loopback' field." );
-             form.egress_router.focus();
+             form.egressRouter.focus();
              return false;
         }
     }
-    if (!(is_numeric(form.reservation_bandwidth.value))) {
+    if (!(is_numeric(form.bandwidth.value))) {
         alert( "The bandwidth must be a positive integer." );
-        form.reservation_bandwidth.focus();
+        form.bandwidth.focus();
         return false;
     }
-    else if ( (form.reservation_bandwidth.value < 1 ) ||
-            (form.reservation_bandwidth.value > 10000)) {
+    else if ( (form.bandwidth.value < 1 ) || (form.bandwidth.value > 10000)) {
         alert( "The amount of bandwidth must be in the range 1-10000 Mbps." );
-        form.reservation_bandwidth.focus();
+        form.bandwidth.focus();
         return false;
     }
 
-    if ( form.source_host.value == form.destination_host.value ) {
+    if ( form.srcHost.value == form.destHost.value ) {
         alert( "Please provide different host names or IP addresses for the source and destination." );
-        form.source_host.focus();
+        form.srcHost.focus();
         return false;
     }
     // TODO:  needs more work
-    var sections = form.source_host.value.split('/');
+    var sections = form.srcHost.value.split('/');
     if ((sections.length > 1) && (sections[1] < 24)) {
         alert( "Only CIDR blocks >= 24 (class C) are accepted." );
-        form.source_host.focus();
+        form.srcHost.focus();
         return false;
     }
-    var sections = form.destination_host.value.split('/');
+    var sections = form.destHost.value.split('/');
     if ((sections.length > 1) && (sections[1] < 24)) {
         alert( "Only CIDR blocks >= 24 (class C) are accepted." );
-        form.destination_host.focus();
+        form.destHost.focus();
         return false;
     }
 
     // check non-required fields if a value has been entered
-    if ( !is_blank(form.reservation_src_port.value) ) {
-        if (!(is_numeric(form.reservation_src_port.value))) {
+    if ( !is_blank(form.srcPort.value) ) {
+        if (!(is_numeric(form.srcPort.value))) {
             alert( "The source port must be a positive integer." );
-            form.reservation_src_port.focus();
+            form.srcPort.focus();
             return false;
         }
-        else if ( (form.reservation_src_port.value < 1024) ||
-                (form.reservation_src_port.value > 65535) ) {
+        else if ( (form.srcPort.value < 1024) ||
+                (form.srcPort.value > 65535) ) {
             alert( "The source port, if given, must be in the range 1024-65535." );
-            form.reservation_src_port.focus();
+            form.srcPort.focus();
             return false;
         }
     }
-    if ( !is_blank(form.reservation_dst_port.value) ) {
-        if (!(is_numeric(form.reservation_dst_port.value))) {
+    if ( !is_blank(form.destPort.value) ) {
+        if (!(is_numeric(form.destPort.value))) {
             alert( "The destination port must be a positive integer." );
-            form.reservation_dst_port.focus();
+            form.destPort.focus();
             return false;
         }
-        else if ( (form.reservation_dst_port.value < 1024) ||
-                (form.reservation_dst_port.value > 65535) ) {
+        else if ( (form.destPort.value < 1024) ||
+                (form.destPort.value > 65535) ) {
             alert( "The destination port, if given, must be in the range 1024-65535." );
-            form.reservation_dst_port.focus();
+            form.destPort.focus();
             return false;
         }
     }
-    if ( !is_blank(form.reservation_dscp.value) ) {
-        if (!(is_numeric(form.reservation_dscp.value))) {
+    if ( !is_blank(form.dscp.value) ) {
+        if (!(is_numeric(form.dscp.value))) {
             alert( "The DSCP must be a positive integer." );
-            form.reservation_dscp.focus();
+            form.dscp.focus();
             return false;
         }
-        else if ( (form.reservation_dscp.value < 0) ||
-                (form.reservation_dscp.value > 63) ) {
+        else if ( (form.dscp.value < 0) || (form.dscp.value > 63) ) {
             alert( "The DSCP, if given, must be in the range 0-63." );
-            form.reservation_dscp.focus();
+            form.dscp.focus();
             return false;
         }
     }
@@ -278,10 +276,10 @@ function check_add_user( form )
     var valid = check_for_required( form, add_user_required );
     if (!valid) { return false; }
 
-    if ( !(is_blank(form.password_new_once.value)) ) {
-        if ( form.password_new_once.value != form.password_new_twice.value ) {
+    if ( !(is_blank(form.passwordNewOnce.value)) ) {
+        if ( form.passwordNewOnce.value != form.passwordNewTwice.value ) {
             alert( "Please enter the same new password twice for verification." );
-            form.password_new_once.focus();
+            form.passwordNewOnce.focus();
             return false;
         }
     }

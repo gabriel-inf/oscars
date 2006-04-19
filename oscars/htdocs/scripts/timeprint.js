@@ -67,144 +67,145 @@ function check_date_fields( form ) {
     var default_minute = 0;
 
     var local_date = new Date();
-    if ( is_blank(form.start_year.value) ) {
-        form.start_year.value = local_date.getFullYear();
+    if ( is_blank(form.startYear.value) ) {
+        form.startYear.value = local_date.getFullYear();
         default_year = 1;
     }
     else {
-        if (!(is_numeric(form.start_year.value))) {
+        if (!(is_numeric(form.startYear.value))) {
             alert( "The reservation start year is not a number. Please check again." );
-            form.start_year.focus();
+            form.startYear.focus();
             return false;
         }
-        if ( form.start_year.value.length != 4 ) {
+        if ( form.startYear.value.length != 4 ) {
             alert( "The reservation start year must be in four digits." );
-            form.start_year.focus();
+            form.startYear.focus();
             return false;
         }
     }
 
-    if ( is_blank(form.start_month.value) ) {
-        form.start_month.value = local_date.getMonth();
+    if ( is_blank(form.startMonth.value) ) {
+        form.startMonth.value = local_date.getMonth();
         default_month = 0;
     }
     else {
-        if ( !(is_numeric(form.start_month.value))) {
+        if ( !(is_numeric(form.startMonth.value))) {
             alert( "The reservation start month is not a number. Please check again." );
-            form.start_month.focus();
+            form.startMonth.focus();
             return false;
         }
-        form.start_month.value = parseInt(form.start_month.value) - 1;
-        if ( form.start_month.value < 0 || form.start_month.value > 11 ) {
+        form.startMonth.value = parseInt(form.startMonth.value) - 1;
+        if ( form.startMonth.value < 0 || form.startMonth.value > 11 ) {
             alert( "The reservation start month is out of proper range. Please check again." );
-            form.start_month.focus();
+            form.startMonth.focus();
             return false;
         }
     }
 
-    if ( is_blank(form.start_date.value) ) {
-        form.start_date.value = local_date.getDate();
+    if ( is_blank(form.startDate.value) ) {
+        form.startDate.value = local_date.getDate();
         default_date = 1;
     }
     else {
-        if (!(is_numeric(form.start_date.value))) {
+        if (!(is_numeric(form.startDate.value))) {
             alert( "The reservation start date is not a number. Please check again." );
-            form.start_date.focus();
+            form.startDate.focus();
             return false;
         }
     }
 
-    if ( is_blank(form.start_hour.value) ) {
-        form.start_hour.value = local_date.getHours();
+    if ( is_blank(form.startHour.value) ) {
+        form.startHour.value = local_date.getHours();
         default_hour = 1;
     }
     else {
-        if (!(is_numeric(form.start_hour.value))) {
+        if (!(is_numeric(form.startHour.value))) {
             alert( "The reservation start hour is not a number. Please check again." );
-            form.start_hour.focus();
+            form.startHour.focus();
             return false;
         }
-        if ( form.start_hour.value < 0 || form.start_hour.value > 23 ) {
+        if ( form.startHour.value < 0 || form.startHour.value > 23 ) {
             alert( "The reservation start hour is out of proper range. Please check again." );
-            form.start_hour.focus();
+            form.startHour.focus();
             return false;
         }
     }
 
-    if ( is_blank(form.start_minute.value) ) {
-        form.start_minute.value = local_date.getMinutes();
+    if ( is_blank(form.startMinute.value) ) {
+        form.startMinute.value = local_date.getMinutes();
         default_minute = 1;
     }
 
-    if ( is_blank(form.duration_hour.value) ) {
-        form.duration_hour.value = 0.05;
+    if ( is_blank(form.durationHour.value) ) {
+        form.durationHour.value = 0.05;
     }
     else {
-        if (!(is_numeric(form.duration_hour.value))) {
+        if (!(is_numeric(form.durationHour.value))) {
             alert( "The reservation duration hour is not a number. Please check again." );
-            form.duration_hour.focus();
+            form.durationHour.focus();
             return false;
         }
     }
 
     if (!default_month || !default_date) {
-        if ( ( form.start_month.value == 1 || form.start_month.value == 3 || 
-              form.start_month.value == 5 || form.start_month.value == 7 || 
-              form.start_month.value == 8 || form.start_month.value == 10 || 
-              form.start_month.value == 12 ) && ( form.start_date.value > 31 || 
-               form.start_date.value < 1 ) )
+        if ( ( form.startMonth.value == 1 || form.startMonth.value == 3 || 
+              form.startMonth.value == 5 || form.startMonth.value == 7 || 
+              form.startMonth.value == 8 || form.startMonth.value == 10 || 
+              form.startMonth.value == 12 ) && ( form.startDate.value > 31 || 
+               form.startDate.value < 1 ) )
         {
             alert( "The reservation start date is out of proper range. Please check again." );
-            form.start_date.focus();
+            form.startDate.focus();
             return false;
         }
 
-        if ( ( form.start_month.value == 4 || form.start_month.value == 6 || 
-               form.start_month.value == 9 || form.start_month.value == 11 ) && 
-             ( form.start_date.value > 30 || form.start_date.value < 1 ) )
+        if ( ( form.startMonth.value == 4 || form.startMonth.value == 6 || 
+               form.startMonth.value == 9 || form.startMonth.value == 11 ) && 
+             ( form.startDate.value > 30 || form.startDate.value < 1 ) )
         {
             alert( "The reservation start date is out of proper range. Please check again." );
-            form.start_date.focus();
+            form.startDate.focus();
             return false;
         }
 
-        if ( form.start_month.value == 2 ) {
-            if ( form.start_date.value < 1 ) {
+        if ( form.startMonth.value == 2 ) {
+            if ( form.startDate.value < 1 ) {
                 alert( "The reservation start date is out of proper range. Please check again." );
-                form.start_date.focus();
+                form.startDate.focus();
                 return false;
             }
         }
     }
     if (!default_year || !default_date) {
-        if ( is_leap_year(form.start_year.value) ) {
-            if ( form.start_date.value > 29 ) {
+        if ( is_leap_year(form.startYear.value) ) {
+            if ( form.startDate.value > 29 ) {
                 alert( "The reservation start date is out of proper range. Please check again." );
-                form.start_date.focus();
+                form.startDate.focus();
                 return false;
             }
         }
         else {
-            if ( form.start_date.value > 28 ) {
+            if ( form.startDate.value > 28 ) {
                 alert( "The reservation start date is out of proper range. Please check again." );
-                form.start_date.focus();
+                form.startDate.focus();
                 return false;
             }
         }
     }
-   reservation_date = new Date(form.start_year.value,
-                                form.start_month.value,
-                                form.start_date.value,
-                                form.start_hour.value,
-                                form.start_minute.value,
+   reservation_date = new Date(form.startYear.value,
+                                form.startMonth.value,
+                                form.startDate.value,
+                                form.startHour.value,
+                                form.startMinute.value,
                                 0, 0);
-    form.start_month.value = parseInt(form.start_month.value) + 1;
+    form.startMonth.value = parseInt(form.startMonth.value) + 1;
     // convert local time to seconds since epoch
-    form.reservation_start_time.value = reservation_date.getTime() / 1000;
+    form.startTime.value = reservation_date.getTime() / 1000;
 
     if (form.persistent && form.persistent.checked) {
-        form.duration_hour.value = Math.pow(2, 31) - 1;
+        form.durationHour.value = Math.pow(2, 31) - 1;
     }
+    form.endTime.value = form.startTime.value + form.durationHour.value;
     return true;
 }
 
