@@ -33,56 +33,54 @@ sub new {
     my ($class, %args) = @_;
     my ($self) = {%args};
   
-    # Bless $_self into designated class.
+    # Bless $self into designated class.
     bless($self, $class);
     return($self);
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_institutions:  Get names of all institutions associated with OSCARS users
-#                    Used by other AAA SOAP methods.
+# queryInstitutions:  Get names of all institutions associated with OSCARS users
+#                   Used by other AAA SOAP methods.
 #
-sub get_institutions {
+sub queryInstitutions {
     my( $self, $db ) = @_;
 
-    my $statement = "SELECT institution_name FROM institutions";
-    my $results = $db->do_query($statement);
+    my $statement = "SELECT name FROM institutions";
+    my $results = $db->doQuery($statement);
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_id:  Get institution id given the institution name
+# getId:  Get institution id given the institution name
 #
-sub get_id {
-    my( $self, $db, $institution_name ) = @_;
+sub getId {
+    my( $self, $db, $institutionName ) = @_;
 
-    my $statement = "SELECT institution_id FROM institutions " .
-                    "WHERE institution_name = ?";
-    my $row = $db->get_row($statement, $institution_name);
+    my $statement = "SELECT id FROM institutions WHERE name = ?";
+    my $row = $db->getRow($statement, $institutionName);
     if ( !$row ) {
         throw Error::Simple("The organization " .
-                   "$institution_name is not in the database.");
+                   "$institutionName is not in the database.");
     }
-    return $row->{institution_id};
+    return $row->{id};
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_name:  Get institution name given the institution id
+# getName:  Get institution name given the institution id
 #
-sub get_name {
-    my( $self, $db, $institution_id ) = @_;
+sub getName {
+    my( $self, $db, $institutionId ) = @_;
 
-    my $statement = "SELECT institution_name FROM institutions " .
-                    "WHERE institution_id = ?";
-    my $row = $db->get_row($statement, $institution_id);
+    my $statement = "SELECT name FROM institutions WHERE id = ?";
+    my $row = $db->getRow($statement, $institutionId);
     if ( !$row ) {
         throw Error::Simple("The organization identified by " .
-                   "$institution_id is not in the database.");
+                   "$institutionId is not in the database.");
     }
-    return $row->{institution_name};
+    return $row->{name};
 } #____________________________________________________________________________
 
 

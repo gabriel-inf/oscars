@@ -54,34 +54,34 @@ sub initialize {
 
 
 ###############################################################################
-# get_client:  Adds SOAP::Lite client for given domain to clients 
+# getClient:  Adds SOAP::Lite client for given domain to clients 
 #              hash, indexed by autonomous system number.
 #
-sub get_client {
-    my( $self, $as_num ) = @_;
+sub getClient {
+    my( $self, $asNum ) = @_;
 
     my( $statement, $client );
 
-    if (!$as_num) { $as_num = 'local'; }
-    if ($self->{clients}->{$as_num}) { return $self->{clients}->{$as_num}; }
+    if (!$asNum) { $asNum = 'local'; }
+    if ($self->{clients}->{$asNum}) { return $self->{clients}->{$asNum}; }
     my $dbconn = OSCARS::Database->new();
     $dbconn->connect($self->{database});
     # currently only handles one server per domain
-    if ($as_num ne 'local') {
-        $statement = 'SELECT * FROM clients WHERE as_num = ?';
-        $client = $dbconn->get_row($statement, $as_num);
+    if ($asNum ne 'local') {
+        $statement = 'SELECT * FROM clients WHERE asNum = ?';
+        $client = $dbconn->getRow($statement, $asNum);
     }
     else {
 	# local domain not given an AS number in the clients table
-        $statement = 'SELECT * FROM clients WHERE as_num IS NULL';
-        $client = $dbconn->get_row($statement);
+        $statement = 'SELECT * FROM clients WHERE asNum IS NULL';
+        $client = $dbconn->getRow($statement);
     }
     $dbconn->disconnect();
     if (!$client) { return undef; }
-    $self->{clients}->{$as_num} = SOAP::Lite
-                                        -> uri($client->{client_uri})
-                                        -> proxy($client->{client_proxy});
-    return $self->{clients}->{$as_num};
+    $self->{clients}->{$asNum} = SOAP::Lite
+                                        -> uri($client->{uri})
+                                        -> proxy($client->{proxy});
+    return $self->{clients}->{$asNum};
 } #____________________________________________________________________________
 
 

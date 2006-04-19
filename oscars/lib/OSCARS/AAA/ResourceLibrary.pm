@@ -11,7 +11,7 @@ OSCARS::AAA::ResourceLibrary - library for permissions, resources, auths
 
 =head1 DESCRIPTION
 
-Common library for operations on permissions, resources, resourcepermissions,
+Common library for operations on permissions, resources, resourcePermissions,
 and authorizations tables.
 
 =head1 AUTHORS
@@ -35,25 +35,25 @@ sub new {
     my ($class, %args) = @_;
     my ($self) = {%args};
   
-    # Bless $_self into designated class.
+    # Bless $self into designated class.
     bless($self, $class);
     return($self);
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# add_row:  Add a row to the AAA resources, permissions, or
-#           resourcepermissions tables.
+# addRow:  Add a row to the AAA resources, permissions, or
+#           resourcePermissions tables.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub add_row {
-    my( $self, $params, $table_name ) = @_;
+sub addRow {
+    my( $self, $params, $tableName ) = @_;
 
     my $results = {};
-    my $statement = "SHOW COLUMNS from $table_name";
-    my $rows = $self->{db}->do_query( $statement );
+    my $statement = "SHOW COLUMNS from $tableName";
+    my $rows = $self->{db}->doQuery( $statement );
 
     my @insertions;
     # TODO:  FIX way to get insertions fields
@@ -65,53 +65,35 @@ sub add_row {
        else{ push(@insertions, 'NULL'); }
     }
 
-    $statement = "INSERT INTO $table_name VALUES ( " .
+    $statement = "INSERT INTO $tableName VALUES ( " .
              join( ', ', ('?') x @insertions ) . " )";
              
-    my $unused = $self->{db}->do_query($statement, @insertions);
+    my $unused = $self->{db}->doQuery($statement, @insertions);
     return;
 } #____________________________________________________________________________
 
 
-sub get_resource_permissions {
+sub getResourcePermissions {
     my( $self, $params ) = @_;
 
-    my( $resource_name, $permission_name, $aux_result );
-    my $statement = "SELECT resource_id, permission_id " .
-                    "FROM resourcepermissions";
-    my $resource_permissions = {};
-    my $rp_results = $self->{db}->do_query($statement);
-    $statement = "SELECT resource_name FROM resources WHERE resource_id = ?";
-    my $pstatement = "SELECT permission_name FROM permissions " .
-                     "WHERE permission_id = ?";
-    for my $row (@$rp_results) {
-        $aux_result = $self->{db}->get_row($statement, $row->{resource_id});
-        $resource_name = $aux_result->{resource_name};
-        if ( !$resource_permissions->{$resource_name} ) {
-            $resource_permissions->{$resource_name} = {};
+    my( $resourceName, $permissionName, $auxResult );
+    my $statement = "SELECT resourceId, permissionId " .
+                    "FROM resourcePermissions";
+    my $resourcePermissions = {};
+    my $rpResults = $self->{db}->doQuery($statement);
+    $statement = "SELECT name FROM resources WHERE id = ?";
+    my $pstatement = "SELECT name FROM permissions WHERE id = ?";
+    for my $row (@$rpResults) {
+        $auxResult = $self->{db}->getRow($statement, $row->{resourceId});
+        $resourceName = $auxResult->{name};
+        if ( !$resourcePermissions->{$resourceName} ) {
+            $resourcePermissions->{$resourceName} = {};
         }
-        $aux_result = $self->{db}->get_row($pstatement, $row->{permission_id});
-        $permission_name = $aux_result->{permission_name};
-        $resource_permissions->{$resource_name}->{$permission_name} = 1;
+        $auxResult = $self->{db}->getRow($pstatement, $row->{permissionId});
+        $permissionName = $auxResult->{name};
+        $resourcePermissions->{$resourceName}->{$permissionName} = 1;
     }
-    return $resource_permissions;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# id_from_name:  Gets the id associated with a name.
-#
-# In:  string (resource, permission, or resourcepermission), and name value
-# Out: integer id
-#
-sub id_from_name {
-    my( $self, $selector, $field_value ) = @_;
-
-    my $id_str = $selector . '_id';
-    my $field_str = $selector . '_name';
-    my $statement = "SELECT $id_str FROM $selector" . "s WHERE $field_str = ?";
-    my $row = $self->{db}->get_row($statement, $field_value);
-    return $row->{$id_str};
+    return $resourcePermissions;
 } #____________________________________________________________________________
 
 

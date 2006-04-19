@@ -48,14 +48,14 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{config} = $self->read_configuration_file();
+    $self->{config} = $self->readConfiguration();
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# read_configuration_file:  read and parse XML configuration file.
+# readConfiguration:  read and parse XML configuration file.
 #
-sub read_configuration_file {
+sub readConfiguration {
     my( $self ) = @_;
 
     my $conf = {};
@@ -82,42 +82,42 @@ sub read_configuration_file {
 
 
 ###############################################################################
-# use_plugin:  use given package, given a plugin name.
+# usePlugin:  use given package, given a plugin name.
 #
-sub use_plugin {
-    my( $self, $plugin_name ) = @_;
+sub usePlugin {
+    my( $self, $pluginName ) = @_;
 
-    my $package_name = $self->{config}->{$plugin_name}->{package};
-    my $database = $self->{config}->{$plugin_name}->{database};
-    my $location = $package_name . '.pm';
+    my $packageName = $self->{config}->{$pluginName}->{package};
+    my $database = $self->{config}->{$pluginName}->{database};
+    my $location = $packageName . '.pm';
 
     $location =~ s/(::)/\//g;
     eval { require $location };
     if (!$@) {
-        my $new_instance = $package_name->new('database' => $database);
-	return $new_instance;
+        my $newInstance = $packageName->new('database' => $database);
+	return $newInstance;
     }
     else { return undef; }
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_database:  get associated database name, given a plugin name.
+# getDatabase:  get associated database name, given a plugin name.
 #
-sub get_database {
-    my( $self, $plugin_name ) = @_;
+sub getDatabase {
+    my( $self, $pluginName ) = @_;
 
-    return $self->{config}->{$plugin_name}->{database};
+    return $self->{config}->{$pluginName}->{database};
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_package:  get package name (or prefix), given a plugin name.
+# getPackage:  get package name (or prefix), given a plugin name.
 #
-sub get_package {
-    my( $self, $plugin_name ) = @_;
+sub getPackage {
+    my( $self, $pluginName ) = @_;
 
-    return $self->{config}->{$plugin_name}->{package};
+    return $self->{config}->{$pluginName}->{package};
 } #____________________________________________________________________________
 
 

@@ -41,14 +41,14 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{lib} = OSCARS::AAA::ResourceLibrary->new('db' => $self->{db});
-    $self->{param_tests} = {};
-    $self->{param_tests}->{add_permission} = {
-        'permission_name' => (
+    $self->{paramTests} = {};
+    $self->{paramTests}->{addPermission} = {
+        'name' => (
             {'regexp' => '.+',
             'error' => "Please enter the permission's name."
             }
         ),
-        'permission_description' => (
+        'description' => (
             {'regexp' => '.+',
             'error' => "Please enter the permission's description."
             }
@@ -58,13 +58,13 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Gets all information necessary for the Manage Permissions page.
+# soapMethod:  Gets all information necessary for the Manage Permissions page.
 #     It returns information from the permissions table.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
@@ -76,56 +76,56 @@ sub soap_method {
             "Method $self->{params}->{method} requires operation specification.");
     }
     my $results = {};
-    if ($self->{params}->{op} eq 'viewPermissions') {
-        $results = $self->get_permissions($self->{params});
+    if ($self->{params}->{op} eq 'listPermissions') {
+        $results = $self->getPermissions($self->{params});
     }
     elsif ($self->{params}->{op} eq 'addPermission') {
-        $self->{lib}->add_row( $self->{params},'Permissions' );
-        $results = $self->get_permissions($self->{params});
+        $self->{lib}->addRow( $self->{params},'Permissions' );
+        $results = $self->getPermissions($self->{params});
     }
     elsif ($self->{params}->{op} eq 'deletePermission') {
-        $self->delete_permission( $self->{params} );
-        $results = $self->get_permissions($self->{params});
+        $self->deletePermission( $self->{params} );
+        $results = $self->getPermissions($self->{params});
     }
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_permissions:  Gets all information necessary to display the 
+# getPermissions:  Gets all information necessary to display the 
 # Manage Permissions page.
 #
 # In:  reference to User instance, reference to hash of parameters
 # Out: reference to hash of results
 #
-sub get_permissions {
+sub getPermissions {
     my( $self, $params ) = @_;
 
-    my $statement = "SELECT permission_name FROM permissions";
+    my $statement = "SELECT name FROM permissions";
     my $results = {};
     $results->{permissions} = {};
-    my $p_results = $self->{db}->do_query($statement);
-    for my $row (@$p_results) {
-        $results->{permissions}->{$row->{permission_name}} = 1;
+    my $presults = $self->{db}->doQuery($statement);
+    for my $row (@$presults) {
+        $results->{permissions}->{$row->{name}} = 1;
     }
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# delete_permission:  Deletes the permission with the given name.
+# deletePermission:  Deletes the permission with the given name.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub delete_permission {
+sub deletePermission {
     my( $self, $params ) = @_;
 
-    my $permission_id =
-        $self->{lib}->id_from_name('permission', $params->{permission_name});
-    my $statement = 'DELETE FROM permissions WHERE permission_id = ?';
-    my $unused = $self->{db}->do_query($statement, $permission_id);
-    my $msg = "Deleted permission named $params->{permission_name}";
+    my $permissionId =
+        $self->{lib}->idFromName('permission', $params->{permissionName});
+    my $statement = 'DELETE FROM permissions WHERE id = ?';
+    my $unused = $self->{db}->doQuery($statement, $permissionId);
+    my $msg = "Deleted permission named $params->{permissionName}";
     return $msg;
 } #____________________________________________________________________________
 

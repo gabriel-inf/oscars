@@ -66,90 +66,88 @@ sub authenticate {
     # check to see if message should be signed
     my $envelope = $daemon->{_request}->{_content};
     my $de = WSRF::Deserializer->new();
-    my $req_host = $daemon->{_request}->{_headers}{host};
+    my $reqHost = $daemon->{_request}->{_headers}{host};
     if (0) {
-	    #if ($req_host !~ /localhost/ ){
-        my( $user_login, $error_msg ) = 
-	        $self->verify_signature($de, $envelope);
+	    #if ($reqHost !~ /localhost/ ){
+        my( $login, $errorMsg ) = $self->verifySignature($de, $envelope);
 	# throw type of exception that main try in oscars script understands
-#	if ( $error_msg ) { throw Error::Simple($error_msg); }
-	if ( !$error_msg ) {
-	   $user = $self->get_user($user_login); 
+#	if ( $errorMsg ) { throw Error::Simple($errorMsg); }
+	if ( !$errorMsg ) {
+	   $user = $self->getUser($login); 
 	   return $user;
 	
-	} else { print STDERR "return from verify_signature is $error_msg \n";}
+	} else { print STDERR "return from verifySignature is $errorMsg \n";}
     }
     # otherwise, message came via web interface, use login name and password
     # in params for authentication
     # for now drop thru if message is not signed. Assume  message carries password.
-    $user = $self->verify_login($params);
+    $user = $self->verifyLogin($params);
     return $user;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# verify_signature:  authenticates user via their XML signature
+# verifySignature:  authenticates user via their XML signature
 #
 # In:  WSRF::Deserializer instance, SOAP envelope
 # Out: error message, if any
 #
-sub verify_signature {
+sub verifySignature {
     my( $self, $de, $envelope ) = @_;
 
-    my ( $user_login, $ex );
-    my %verify_results;
-    my $msg_som = $de->deserialize($envelope);
-    eval { %verify_results = WSRF::WSS::verify($msg_som); };
+    my ( $login, $ex );
+    my %verifyResults;
+    my $msgSom = $de->deserialize($envelope);
+    eval { %verifyResults = WSRF::WSS::verify($msgSom); };
     if ($@) {
 	$ex = $@;
-	return ($user_login,$ex);
+	return ($login,$ex);
     }
     print STDERR "received signed message\n";
-    # print "$verify_results(X509) \n";
-    my $x509_pem = $verify_results{X509};
+    # print "$verifyResults(X509) \n";
+    my $x509_pem = $verifyResults{X509};
     my $X509 = Crypt::OpenSSL::X509->new_from_string($x509_pem);
     my $subject = $X509->subject();
     my $issuer =$X509->issuer();
     print STDERR "$issuer \n$subject\n";
-    my $query = "SELECT user_login FROM users " .
-                    "WHERE user_cert_subject = '$subject'";
-    my $row = $self->{db}->get_row($query);
-    $user_login = $row->{user_login};
-    print STDERR "user is $user_login\n";
-    return( $user_login, $ex );
+    my $query = "SELECT login FROM users WHERE certSubject = '$subject'";
+    my $row = $self->{db}->getRow($query);
+    $login = $row->{login};
+    print STDERR "user is $login\n";
+    return( $login, $ex );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# verify_login:  authenticates user via login name and password
+# verifyLogin:  authenticates user via login name and password
 #
 # In:  SOAP parameters
 # Out: OSCARS::User instance
 #
-sub verify_login {
+sub verifyLogin {
     my( $self, $params ) = @_;
 
-    my $user = $self->get_user($params->{user_login});
+    my $user = $self->getUser($params->{login});
     if ($user->authenticated()) { return $user; }
-    if (!$params->{user_password}) {
+    if (!$params->{password}) {
 	throw Error::Simple('Attempting to access a SOAP method before authenticating.');
     }
     # Get the password and privilege level from the database.
-    my $statement = 'SELECT user_password FROM users WHERE user_login = ?';
-    my $results = $self->{db}->get_row($statement, $user->{login});
+    my $statement = 'SELECT password FROM users WHERE login = ?';
+    my $results = $self->{db}->getRow($statement, $user->{login});
     # Make sure user exists.
     if ( !$results ) {
         throw Error::Simple('Please check your login name and try again.');
     }
     # compare passwords
-    my $encoded_password = crypt($params->{user_password}, 'oscars');
-    if ( $results->{user_password} ne $encoded_password ) {
+    my $encodedPassword = crypt($params->{password}, 'oscars');
+    if ( $results->{password} ne $encodedPassword ) {
         # see if password already encrypted
-        if ( $results->{user_password} ne $params->{user_password} ) {
+        if ( $results->{password} ne $params->{password} ) {
             throw Error::Simple('Please check your password and try again.');
         }
     }
-    $user->set_authenticated(1);
+    $user->setAuthenticated(1);
     return $user;
 } #____________________________________________________________________________
 
@@ -158,7 +156,7 @@ sub verify_login {
 # Gets user instance from user list if it exists; otherwise create an instance
 # associated with the component and distinguished name given. 
 #
-sub get_user {
+sub getUser {
     my( $self, $login ) = @_;
 
     if (!$self->{users}->{$login}) {
@@ -171,12 +169,12 @@ sub get_user {
 ###############################################################################
 # Removes given user from the user list.
 #
-sub remove_user {
+sub removeUser {
     my( $self, $login ) = @_;
 
     # close all cached db connection handles
     if ( $self->{users}->{$login} ) {
-        $self->{users}->{$login}->close_handles();
+        $self->{users}->{$login}->closeHandles();
     }
     $self->{users}->{$login} = undef;
 } #____________________________________________________________________________
@@ -185,16 +183,17 @@ sub remove_user {
 ###############################################################################
 # Currently only used by installation tests.
 #
-sub get_credentials {
-    my( $self, $user_login, $credential_type ) = @_;
+sub getCredentials {
+    my( $self, $login, $credentialType ) = @_;
 
-    if ($credential_type eq 'password') {
-        my $statement = 'SELECT user_password FROM users WHERE user_login = ?';
-        my $results = $self->{db}->get_row($statement, $user_login);
-        return $results->{user_password};
+    if ($credentialType eq 'password') {
+        my $statement = 'SELECT password FROM users WHERE login = ?';
+        my $results = $self->{db}->getRow($statement, $login);
+        return $results->{password};
     }
     return undef;
 } #____________________________________________________________________________
+
 
 ######
 1;

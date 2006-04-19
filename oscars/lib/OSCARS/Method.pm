@@ -19,7 +19,7 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{plugin_mgr} = OSCARS::PluginManager->new();
+    $self->{pluginMgr} = OSCARS::PluginManager->new();
 } #____________________________________________________________________________
 
 
@@ -28,17 +28,17 @@ sub initialize {
 sub instantiate {
     my( $self, $user, $params, $logger ) = @_;
 
-    my $package_prefix =
-            $self->{plugin_mgr}->get_package($params->{component});
-    my $dbname = $self->{plugin_mgr}->get_database($params->{component});
-    my $db = $user->get_db_handle($dbname);
-    my $location_prefix = $package_prefix;
-    $location_prefix =~ s/(::)/\//g;
-    my $location = $location_prefix . '/' . $params->{method} . '.pm';
-    my $class_name = $package_prefix . '::' .  $params->{method};
+    my $packagePrefix =
+            $self->{pluginMgr}->getPackage($params->{component});
+    my $dbname = $self->{pluginMgr}->getDatabase($params->{component});
+    my $db = $user->getDbHandle($dbname);
+    my $locationPrefix = $packagePrefix;
+    $locationPrefix =~ s/(::)/\//g;
+    my $location = $locationPrefix . '/' . $params->{method} . '.pm';
+    my $className = $packagePrefix . '::' .  $params->{method};
     require $location;
     # TODO:  shouldn't need so many parameters
-    return $class_name->new( 'user' => $user,
+    return $className->new( 'user' => $user,
 	                     'db' => $db,
 			     'database' => $dbname,
                              'params' => $params,
@@ -94,7 +94,7 @@ sub initialize {
 
     $self->{forwarder} = OSCARS::Interdomain::Request->new();
     $self->{mailer} = OSCARS::Mail->new();
-    $self->{param_tests} = {};
+    $self->{paramTests} = {};
 } #____________________________________________________________________________
 
 
@@ -122,13 +122,13 @@ sub validate {
     if ( !$op ) { return; }
 
     # for all tests 
-    for my $test_name (keys(%{$self->{param_tests}->{$op}})) {
-        $test = $self->{param_tests}->{op}->{$test_name};
-        if (!$self->{params}->{$test_name}) {
+    for my $testName (keys(%{$self->{paramTests}->{$op}})) {
+        $test = $self->{paramTests}->{op}->{$testName};
+        if (!$self->{params}->{$testName}) {
             throw Error::Simple(
-                "Cannot validate $self->{params}->{method}, test $test_name failed");
+                "Cannot validate $self->{params}->{method}, test $testName failed");
         }
-        if ($self->{params}->{$test_name} !~ $test->{regexp}) {
+        if ($self->{params}->{$testName} !~ $test->{regexp}) {
             throw Error::Simple( $test->{error} );
         }
     }
@@ -136,11 +136,11 @@ sub validate {
 
 
 ###############################################################################
-sub numeric_compare {
-    my( $self, $val, $lesser_val, $greater_val ) = @_;
+sub numericCompare {
+    my( $self, $val, $lesser, $greater ) = @_;
 
-    if ($lesser_val > $val) { return 0; }
-    if ($greater_val < $val) { return 0; }
+    if ($lesser > $val) { return 0; }
+    if ($greater < $val) { return 0; }
     return 1;
 } #____________________________________________________________________________
 
@@ -156,22 +156,22 @@ sub dispatch {
 
 
 ###############################################################################
-# post_process:  Perform any operations necessary after making SOAP call
+# postProcess:  Perform any operations necessary after making SOAP call
 #
-sub post_process {
+sub postProcess {
     my( $self, $results ) = @_;
 
-    my $messages = $self->generate_messages($results);
+    my $messages = $self->generateMessages($results);
     if ($messages) {
-        $self->{mailer}->send_message($messages);
+        $self->{mailer}->sendMessage($messages);
     }
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# generate_messages:  overriden if anything to mail
+# generateMessages:  overriden if anything to mail
 #
-sub generate_messages {
+sub generateMessages {
     my( $self, $results ) = @_;
 
     return undef;

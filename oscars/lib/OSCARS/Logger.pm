@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 28, 2006
+April 17, 2006
 
 =cut
 
@@ -44,22 +44,22 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{user_login} = 'undetermined';
+    $self->{login} = 'undetermined';
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub set_user_login {
-    my( $self, $user_login ) = @_;
+sub setUserLogin {
+    my( $self, $login ) = @_;
 
-    $self->{user_login} = $user_login;
+    $self->{login} = $login;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub set_op {
+sub setOp {
     my( $self, $op ) = @_;
 
     $self->{op} = $op;
@@ -69,73 +69,73 @@ sub set_op {
 ###############################################################################
 #
 sub debug {
-    my( $self, $evt_name, $hash ) = @_;
+    my( $self, $evtName, $hash ) = @_;
 
-    my $new_evt_name = $self->{method_name} . '.';
-    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
-    $new_evt_name .= $evt_name;
-    if (!$hash->{user_login}) {
-	$hash->{user_login} = $self->{user_login};
+    my $newEvtName = $self->{method} . '.';
+    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
+    $newEvtName .= $evtName;
+    if (!$hash->{login}) {
+	$hash->{login} = $self->{login};
     }
-    if ($hash->{user_password}) {
-	$hash->{user_password} = '';
+    if ($hash->{password}) {
+	$hash->{password} = '';
     }
-    $self->SUPER::debug($new_evt_name, $hash);
+    $self->SUPER::debug($newEvtName, $hash);
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
 sub info {
-    my( $self, $evt_name, $hash ) = @_;
+    my( $self, $evtName, $hash ) = @_;
 
-    my $new_evt_name = $self->{method_name} . '.';
-    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
-    $new_evt_name .= $evt_name;
-    if (!$hash->{user_login}) {
-	$hash->{user_login} = $self->{user_login};
+    my $newEvtName = $self->{method} . '.';
+    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
+    $newEvtName .= $evtName;
+    if (!$hash->{login}) {
+	$hash->{login} = $self->{login};
     }
-    if ($hash->{user_password}) {
-	$hash->{user_password} = '';
+    if ($hash->{password}) {
+	$hash->{password} = '';
     }
-    $self->SUPER::info($new_evt_name, $hash);
+    $self->SUPER::info($newEvtName, $hash);
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
 sub warning {
-    my( $self, $evt_name, $hash ) = @_;
+    my( $self, $evtName, $hash ) = @_;
 
     if (!$hash) { return; }
-    my $new_evt_name = $self->{method_name} . '.';
-    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
-    $new_evt_name .= $evt_name;
-    if (!$hash->{user_login}) {
-	$hash->{user_login} = $self->{user_login};
+    my $newEvtName = $self->{method} . '.';
+    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
+    $newEvtName .= $evtName;
+    if (!$hash->{login}) {
+	$hash->{login} = $self->{login};
     }
-    if ($hash->{user_password}) {
-	$hash->{user_password} = '';
+    if ($hash->{password}) {
+	$hash->{password} = '';
     }
-    $self->SUPER::warning($new_evt_name, $hash);
+    $self->SUPER::warning($newEvtName, $hash);
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
 sub fatal {
-    my( $self, $evt_name, $hash ) = @_;
+    my( $self, $evtName, $hash ) = @_;
 
-    my $new_evt_name = $self->{method_name} . '.';
-    if ($self->{op}) { $new_evt_name .= $self->{op} . '.'; }
-    $new_evt_name .= $evt_name;
-    if (!$hash->{user_login}) {
-	$hash->{user_login} = $self->{user_login};
+    my $newEvtName = $self->{method} . '.';
+    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
+    $newEvtName .= $evtName;
+    if (!$hash->{login}) {
+	$hash->{login} = $self->{login};
     }
-    if ($hash->{user_password}) {
-	$hash->{user_password} = '';
+    if ($hash->{password}) {
+	$hash->{password} = '';
     }
-    $self->SUPER::fatal($new_evt_name, $hash);
+    $self->SUPER::fatal($newEvtName, $hash);
 } #____________________________________________________________________________
 
 

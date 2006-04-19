@@ -49,9 +49,9 @@ sub initialize {
 sub forward {
     my( $self, $params, $database ) = @_;
 
-    print STDERR "next domain: $params->{next_domain}\n";
-    my $client_mgr = OSCARS::ClientManager->new('database' => $database);
-    my $client = $client_mgr->get_client($params->{next_domain});
+    print STDERR "next domain: $params->{nextDomain}\n";
+    my $clientMgr = OSCARS::ClientManager->new('database' => $database);
+    my $client = $clientMgr->getClient($params->{nextDomain});
     if ( !$client ) {
         return( 'Unable to get client for next domain', undef );
     }
@@ -60,8 +60,8 @@ sub forward {
     $payload->{method} = 'Forward';
     $payload->{params} = $params;
     # TODO:  FIX hard wiring
-    $payload->{user_login} = 'xdomain';
-    $payload->{user_password} = 'crosstest';
+    $payload->{login} = 'xdomain';
+    $payload->{password} = 'crosstest';
     my $som = $client->dispatch($payload);
     if ( !$som ) { return( 'Unable to make forwarding SOAP call', undef ); }
     if ($som->faultstring) { return( $som->faultstring, undef ); }

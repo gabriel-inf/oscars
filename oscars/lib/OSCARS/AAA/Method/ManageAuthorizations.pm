@@ -42,19 +42,19 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{lib} = OSCARS::AAA::ResourceLibrary->new('db' => $self->{db});
-    $self->{param_tests} = {};
-    $self->{param_tests}->{addAuthorization} = {
-        'permission_name' => (
+    $self->{paramTests} = {};
+    $self->{paramTests}->{addAuthorization} = {
+        'permissionName' => (
             {'regexp' => '.+',
             'error' => "Please enter the permission name."
             }
         ),
-        'resource_name' => (
+        'resourceName' => (
             {'regexp' => '.+',
             'error' => "Please enter the resource name."
             }
         ),
-        'user_login' => (
+        'login' => (
             {'regexp' => '.+',
             'error' => "Please enter the user's distinguished name."
             }
@@ -64,14 +64,14 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Gets all information for the Manage Authorizations page. 
+# soapMethod:  Gets all information for the Manage Authorizations page. 
 #     It returns information from the resources, permissions, and
 #     authorizations tables.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
@@ -83,16 +83,16 @@ sub soap_method {
             "Method $self->{params}->{method} requires operation to be specified");
     }
     my $results = {};
-    if ($self->{params}->{op} eq 'viewAuthorizations') {
-        $results = $self->get_authorizations($self->{params});
+    if ($self->{params}->{op} eq 'listAuthorizations') {
+        $results = $self->getAuthorizations($self->{params});
     }
     elsif ($self->{params}->{op} eq 'addAuthorization') {
-        $self->{lib}->add_row( $self->{params}, 'Authorizations' );
-        $results = $self->get_authorizations($self->{params});
+        $self->{lib}->addRow( $self->{params}, 'Authorizations' );
+        $results = $self->getAuthorizations($self->{params});
     }
     elsif ($self->{params}->{op} eq 'deleteAuthorization') {
-        $self->delete_reservation( $self->{params} );
-        $results = $self->get_authorizations($self->{params});
+        $self->deleteReservation( $self->{params} );
+        $results = $self->getAuthorizations($self->{params});
     }
     elsif ($self->{params}->{op} eq 'selectUser') {
 	;
@@ -102,53 +102,52 @@ sub soap_method {
 
 
 ###############################################################################
-# get_authorizations:   Returns all information from the resourcepermissions
+# getAuthorizations:   Returns all information from the resourcepermissions
 #     and authorizations tables.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub get_authorizations {
+sub getAuthorizations {
     my( $self, $params ) = @_;
 
     my $results = {};
-    my $statement = "SELECT user_login FROM users";
+    my $statement = "SELECT login FROM users";
     $results->{users} = {};
-    my $aux_results = $self->{db}->do_query($statement);
-    for my $row (@$aux_results) { $results->{users}->{$row->{user_login}} = 1; }
+    my $auxResults = $self->{db}->doQuery($statement);
+    for my $row (@$auxResults) { $results->{users}->{$row->{login}} = 1; }
 
-    $results->{resource_permissions} = $self->{lib}->get_resource_permissions(
-	                                       $self->{params});
+    $results->{resourcePermissions} =
+        $self->{lib}->getResourcePermissions( $self->{params} );
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# delete_authorization:  Deletes authorization given the input parameters.
+# deleteAuthorization:  Deletes authorization given the input parameters.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub delete_authorization {
+sub deleteAuthorization {
     my( $self, $params ) = @_;
 
-    my $statement = 'SELECT user_id FROM users WHERE user_login = ?';
-    my $row = $self->{db}->get_row($statement, $params->{user_login});
-    my $user_id = $row->{user_id};
-    $statement = 'SELECT resource_id FROM resources WHERE resource_name = ?';
-    $row = $self->{db}->get_row($statement, $params->{resource_name});
-    my $resource_id = $row->{resource_id};
-    $statement = 'SELECT permission_id FROM permissions ' .
-                 'WHERE permission_name = ?';
-    $row = $self->{db}->get_row($statement, $params->{permission_name});
-    my $permission_id = $row->{permission_id};
-    $statement = 'DELETE FROM authorizations WHERE user_id = ? AND ' .
-                 'resource_id = ? AND permission_id = ?';
-    my $unused = $self->{db}->do_query($statement, $user_id, $resource_id,
-                                 $permission_id);
-    my $msg = "Deleted authorization for $params->{user_login} involving " .
-              " resource $params->{resource_name} and " .
-              "permission $params->{permission_name}";
+    my $statement = 'SELECT id FROM users WHERE login = ?';
+    my $row = $self->{db}->getRow($statement, $params->{login});
+    my $userId = $row->{id};
+    $statement = 'SELECT id FROM resources WHERE name = ?';
+    $row = $self->{db}->getRow($statement, $params->{resourceName});
+    my $resourceId = $row->{id};
+    $statement = 'SELECT id FROM permissions WHERE name = ?';
+    $row = $self->{db}->getRow($statement, $params->{permissionName});
+    my $permissionId = $row->{id};
+    $statement = 'DELETE FROM authorizations WHERE userId = ? AND ' .
+                 'resourceId = ? AND permissionId = ?';
+    my $unused =
+        $self->{db}->doQuery($statement, $userId, $resourceId, $permissionId);
+    my $msg = "Deleted authorization for $params->{login} involving " .
+              "resource $params->{resourceName} and " .
+              "permission $params->{permissionName}";
     return $msg;
 } #____________________________________________________________________________
 

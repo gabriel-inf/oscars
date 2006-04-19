@@ -32,15 +32,15 @@ our @ISA = qw{OSCARS::Method};
 
 
 ###############################################################################
-# soap_method:  Logout.
+# soapMethod:  Logout.
 # In:  reference to hash of parameters
 # Out: reference to hash of results of user logout.
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     my $results = {};
-    $results->{user_login} = $self->{user}->{login};
+    $results->{login} = $self->{user}->{login};
     $self->{logger}->info("successful", $results);
     return $results;
 } #____________________________________________________________________________

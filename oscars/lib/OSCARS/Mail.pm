@@ -43,58 +43,58 @@ sub new {
 sub initialize {
     my ( $self ) = @_;
     # email text encoding
-    $self->{notification_email_encoding} = 'ISO-8859-1';
-    $self->{sendmail_cmd} = '/usr/sbin/sendmail -oi';
+    $self->{emailEncoding} = 'ISO-8859-1';
+    $self->{sendmailCmd} = '/usr/sbin/sendmail -oi';
 } #____________________________________________________________________________ 
 
 
 ###############################################################################
-# send message:  send mail message, if appropriate, from method results
+# sendMessage:  send mail message, if appropriate, from method results
 #
-sub send_message {
+sub sendMessage {
     my( $self, $messages ) = @_;
 
-    my( $err_msg );
+    my( $errMsg );
 
     for my $msg (@$messages) {
-         $err_msg = $self->send_mailings($msg);
-         if ($err_msg) { return $err_msg; }
+         $errMsg = $self->sendMailings($msg);
+         if ($errMsg) { return $errMsg; }
     }
     return '';
 } #____________________________________________________________________________ 
 
 
 ###############################################################################
-# send_mailings:  Send mail to user and administrator(s).
+# sendMailings:  Send mail to user and administrator(s).
 #
-sub send_mailings {
+sub sendMailings {
     my( $self, $msg ) = @_;
 
-    my $err_msg = $self->send_mail($self->get_webmaster(), $msg->{user},
-                     'OSCARS:  ' . $msg->{subject_line}, $msg->{msg});
-    if ($err_msg) { return $err_msg; }
-    $err_msg = $self->send_mail($self->get_webmaster(), $self->get_admins(),
-                     'OSCARS:  Admin notice.  ' . $msg->{subject_line}, $msg->{msg});
-    if ($err_msg) { return $err_msg; }
+    my $errMsg = $self->sendMail($self->getWebmaster(), $msg->{user},
+                     'OSCARS:  ' . $msg->{subject}, $msg->{msg});
+    if ($errMsg) { return $errMsg; }
+    $errMsg = $self->sendMail($self->getWebmaster(), $self->getAdmins(),
+                     'OSCARS:  Admin notice.  ' . $msg->{subject}, $msg->{msg});
+    if ($errMsg) { return $errMsg; }
     return '';
 } #____________________________________________________________________________ 
 
 
 ###############################################################################
-# send_mail:  Mails message.  Used by AAA, Intradomain, and Interdomain
+# sendMail:  Mails message.  Used by AAA, Intradomain, and Interdomain
 #     components for notifications
 #
-sub send_mail {
+sub sendMail {
     my( $self, $sender, $recipient, $subject, $msg ) = @_;
 
-    if (!open(MAIL, "|$self->{sendmail_cmd} $recipient")) {
+    if (!open(MAIL, "|$self->{sendmailCmd} $recipient")) {
         return $!;           
     }
     print MAIL "From: $sender\n";
     print MAIL "To:   $recipient\n";
     print MAIL "Subject:  $subject\n";
     print MAIL 'Content-Type: text/plain; charset="' .
-                   $self->{notification_email_encoding} . '"' . "\n\n";
+                   $self->{emailEncoding} . '"' . "\n\n";
 			
     print MAIL $msg;
     print MAIL "\n";
@@ -108,7 +108,7 @@ sub send_mail {
 
 ###############################################################################
 #
-sub get_webmaster {
+sub getWebmaster {
     my( $self ) = @_;
 
     return 'dwrobertson@lbl.gov';
@@ -117,7 +117,7 @@ sub get_webmaster {
 
 ###############################################################################
 #
-sub get_admins {
+sub getAdmins {
     my( $self ) = @_;
 
     #return 'oscars-admin@es.net';

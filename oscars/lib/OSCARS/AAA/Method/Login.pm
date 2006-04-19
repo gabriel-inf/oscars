@@ -35,14 +35,14 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{param_tests} = {
+    $self->{paramTests} = {
         # must be valid email address
-        'user_login' => (
+        'login' => (
             {'regexp' => '.+',
              'error' => "Please enter your login name."
             }
         ),
-        'user_password' => (
+        'password' => (
             {'regexp' => '.+',
              'error' => "Please enter your password."
             }
@@ -52,20 +52,20 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Log in.  Authentication, if it was necessary, has
+# soapMethod:  Log in.  Authentication, if it was necessary, has
 #               already been performed by the resource manager
 #               querying OSCARS::AAA::AuthN
 # In:  reference to hash of parameters
 # Out: reference to hash of results containing user login.
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     $self->{logger}->info("start", $self->{params});
-    my $user_login = $self->{user}->{login};
+    my $login = $self->{user}->{login};
     my $results = {};
-    $results->{user_login} = $user_login;
-    $results->{user_password} = 'hidden';
+    $results->{login} = $login;
+    $results->{password} = 'hidden';
     # used to indicate which tabbed pages that require authorization can
     # be displayed
     $results->{authorized} = {};

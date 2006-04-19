@@ -17,8 +17,8 @@ my ( $daemon, $portnum, $authN );
 # to be set.
 my $len = scalar(@ARGV);
 if ($len == 1) {
-    my $first_arg = $ARGV[0];
-    if ($first_arg eq '-h') {
+    my $firstArg = $ARGV[0];
+    if ($firstArg eq '-h') {
         print STDERR "Usage:\t\toscars [portnum]\n";
         exit;
     }
@@ -26,13 +26,13 @@ if ($len == 1) {
 }
 else { $portnum = 2000; }
 
-start_daemon();
+startDaemon();
 
 ###############################################################################
 #
-sub start_daemon {
-    my $plugin_manager = OSCARS::PluginManager->new();
-    $authN = $plugin_manager->use_plugin('authentication');
+sub startDaemon {
+    my $pluginMgr = OSCARS::PluginManager->new();
+    $authN = $pluginMgr->usePlugin('authentication');
     if ( !$authN ) {
         die( "Unable to find authentication plugin; does config file exist?");
     }
@@ -82,7 +82,7 @@ use OSCARS::Method;
 ###############################################################################
 #
 sub dispatch {
-    my ( $class_name, $params ) = @_;
+    my ( $className, $params ) = @_;
 
     my( $ex );
     my( $user, $handler, $som );
@@ -91,23 +91,23 @@ sub dispatch {
     # classes, since each SOAP method is handled by a class)
     $params->{method} =~ s/(\w)/\U$1/;
 
-    my $logger = OSCARS::Logger->new('method_name' => $params->{method});
+    my $logger = OSCARS::Logger->new('method' => $params->{method});
     $logger->set_level($NetLogger::INFO);
-    if ( $params->{user_login} ) {
-        $logger->set_user_login($params->{user_login});
+    if ( $params->{login} ) {
+        $logger->setUserLogin($params->{login});
     }
-    if ($params->{op}) { $logger->set_op($params->{op}); }
+    if ($params->{op}) { $logger->setOp($params->{op}); }
 
     $logger->open('/home/oscars/logs/oscars.log');
     my $results = {};
     try {
         $user = $authN->authenticate($daemon, $params);
-	$logger->set_user_login($user->{login});
+	$logger->setUserLogin($user->{login});
         my $factory = OSCARS::MethodFactory->new();
         $handler = $factory->instantiate( $user, $params, $logger );
         # Handles SOAP method.  Handler may make other SOAP calls to
 	# accomplish its task.
-        $results = $handler->soap_method();
+        $results = $handler->soapMethod();
     }
     catch Error::Simple with { $ex = shift; }
     otherwise { $ex = shift; }
@@ -120,9 +120,9 @@ sub dispatch {
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
         }
-        elsif ($handler) { $handler->post_process($results); }
+        elsif ($handler) { $handler->postProcess($results); }
         if ($params->{method} eq 'Logout') {
-            $authN->remove_user($params->{user_login});
+            $authN->removeUser($params->{login});
         }
         $logger->close();
     };

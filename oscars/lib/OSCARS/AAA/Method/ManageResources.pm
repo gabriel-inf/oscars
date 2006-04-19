@@ -42,14 +42,14 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{lib} = OSCARS::AAA::ResourceLibrary->new('db' => $self->{db});
-    $self->{param_tests} = {};
-    $self->{param_tests}->{add_resource} = {
-        'resource_name' => (
+    $self->{paramTests} = {};
+    $self->{paramTests}->{addResource} = {
+        'name' => (
             {'regexp' => '.+',
             'error' => "Please enter the resource's name."
             }
         ),
-        'resource_description' => (
+        'description' => (
             {'regexp' => '.+',
             'error' => "Please enter the resource's description."
             }
@@ -59,13 +59,13 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Gets all information necessary for the Manage Resources page. 
+# soapMethod:  Gets all information necessary for the Manage Resources page. 
 #     It returns information from the resources and permissions tables.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
@@ -77,92 +77,92 @@ sub soap_method {
             "Method $self->{params}->{method} requires specification of an operation");
     }
     my $results = {};
-    if ($self->{params}->{op} eq 'viewResources') {
-        $results = $self->get_resource_tables($self->{params});
+    if ($self->{params}->{op} eq 'listResources') {
+        $results = $self->getResourceTables($self->{params});
     }
     elsif ($self->{params}->{op} eq 'addResource') {
-        $self->{lib}->add_row( $self->{params}, 'Resources' );
-        $results = $self->get_resource_tables($self->{params});
+        $self->{lib}->addRow( $self->{params}, 'Resources' );
+        $results = $self->getResourceTables($self->{params});
     }
     elsif ($self->{params}->{op} eq 'addResourcePermission') {
-        $self->add_row($self->{params}, 'ResourcePermissions');
-        $results = $self->get_resource_tables($self->{params});
+        $self->addRow($self->{params}, 'ResourcePermissions');
+        $results = $self->getResourceTables($self->{params});
     }
     elsif ($self->{params}->{op} eq 'deleteResourcePermission') {
-        $self->delete_resource_permission($self->{params} );
-        $results = $self->get_resource_tables($self->{params});
+        $self->deleteResourcePermission($self->{params} );
+        $results = $self->getResourceTables($self->{params});
     }
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_resource_tables:   Returns information from the resources, permissions, 
+# getResourceTables:   Returns information from the resources, permissions, 
 # and resourcepermissions tables.
 #
 # In:  reference to User instance, reference to hash of parameters
 # Out: reference to hash of results
 #
-sub get_resource_tables {
+sub getResourceTables {
     my( $self, $params ) = @_;
 
-    my( $resource_name, $permission_name );
+    my( $resourceName, $permissionName );
 
     my $results = {};
-    my $statement = "SELECT resource_name FROM resources";
+    my $statement = "SELECT name FROM resources";
     $results->{resources} = {};
-    my $r_results = $self->{db}->do_query($statement);
-    for my $row (@$r_results) {
-        $results->{resources}->{$row->{resource_name}} = 1;
+    my $rresults = $self->{db}->doQuery($statement);
+    for my $row (@$rresults) {
+        $results->{resources}->{$row->{name}} = 1;
     }
 
-    my $statement = "SELECT permission_name FROM permissions";
+    my $statement = "SELECT name FROM permissions";
     $results->{permissions} = {};
-    my $p_results = $self->{db}->do_query($statement);
-    for my $row (@$p_results) {
-        $results->{permissions}->{$row->{permission_name}} = 1;
+    my $presults = $self->{db}->doQuery($statement);
+    for my $row (@$presults) {
+        $results->{permissions}->{$row->{name}} = 1;
     }
 
-    $results->{resource_permissions} =
-                       $self->{lib}->get_resource_permissions($params);
+    $results->{resourcePermissions} =
+                       $self->{lib}->getResourcePermissions($params);
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# delete_resource:  Deletes resource with the given name.
+# deleteResource:  Deletes resource with the given name.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub delete_resource {
+sub deleteResource {
     my( $self, $params ) = @_;
 
-    my $resource_id = $self->{lib}->id_from_name('resource',
-                                                 $params->{resource_name});
-    my $statement = 'DELETE FROM resources WHERE resource_id = ?';
-    my $unused = $self->{db}->do_query($statement, $resource_id);
-    my $msg = "Deleted resource with name $params->{resource_name}";
+    my $resourceId = $self->{lib}->idFromName('resource',
+                                             $params->{resourceName});
+    my $statement = 'DELETE FROM resources WHERE id = ?';
+    my $unused = $self->{db}->doQuery($statement, $resourceId);
+    my $msg = "Deleted resource with name $params->{resourceName}";
     return $msg;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# delete_resource_permission:  Deletes a resource/permission pair.
+# deleteResourcePermission:  Deletes a resource/permission pair.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub delete_resource_permission {
+sub deleteResourcePermission {
     my( $self, $params ) = @_;
 
-    my $resource_id = $self->{lib}->id_from_name('resource',
-                                                 $params->{resource_name});
-    my $permission_id =
-        $self->{lib}->id_from_name('permission', $params->{permission_name});
-    my $statement = 'DELETE FROM resourcepermissions WHERE resource_id = ?' .
-                    ' AND permission_id = ?';
-    my $unused = $self->{db}->do_query($statement, $resource_id, $permission_id);
+    my $resourceId = $self->{lib}->idFromName('resource',
+                                             $params->{resourceName});
+    my $permissionId =
+        $self->{lib}->idFromName('permission', $params->{permissionName});
+    my $statement = 'DELETE FROM resourcePermissions WHERE resourceId = ? ' .
+                    'AND permissionId = ?';
+    my $unused = $self->{db}->doQuery($statement, $resourceId, $permissionId);
     my $msg = "Deleted resource permission pair";
     return $msg;
 } #____________________________________________________________________________

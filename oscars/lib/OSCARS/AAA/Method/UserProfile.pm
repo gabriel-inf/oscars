@@ -40,24 +40,24 @@ sub initialize {
 
     $self->SUPER::initialize();
     $self->{institutions} = OSCARS::AAA::Method::ManageInstitutions->new();
-    $self->{user_profile_fields} =
-         'user_last_name, user_first_name, user_login, user_password, ' .
-         'user_email_primary, user_email_secondary, ' .
-         'user_phone_primary, user_phone_secondary, user_description, ' .
-#    'user_register_time, user_activation_key, ' .
-         'institution_id';
+    $self->{profileFields} =
+         'lastName, firstName, login, password, ' .
+         'emailPrimary, emailSecondary, ' .
+         'phonePrimary, phoneSecondary, description, ' .
+#    'registerTime, activationKey, ' .
+         'institutionId';
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soap_method:  SOAP method performing requested operation on a user's profile.
+# soapMethod:  SOAP method performing requested operation on a user's profile.
 #     The default operation is to get the user's profile.  This method accesses
 #     the users and institutions tables.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     if ( !$self->{params}->{op} ) {
@@ -65,97 +65,96 @@ sub soap_method {
             "Method $self->{params}->{method} requires specification of an operation");
     }
     my $results = {};
-    if ($self->{params}->{op} eq 'viewProfile') {
-        $results = $self->get_profile( $self->{params} ); }
+    if ($self->{params}->{op} eq 'queryProfile') {
+        $results = $self->queryProfile( $self->{params} ); }
     elsif ($self->{params}->{op} eq 'modifyProfile') {
-        $results = $self->modify_profile( $self->{params} );
+        $results = $self->modifyProfile( $self->{params} );
     }
-    $results->{institution_list} =
-                $self->{institutions}->get_institutions( $self->{db} );
+    $results->{institutionList} =
+                $self->{institutions}->queryInstitutions( $self->{db} );
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_profile:  Gets the user profile for a particular user.  If the
+# queryProfile:  Gets the user profile for a particular user.  If the
 #     user is coming in from the ManageProfile form, she can get more detailed 
 #     information for herself or another user.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub get_profile {
+sub queryProfile {
     my( $self, $params ) = @_;
 
     my( $statement, $results );
 
     # only happens if coming in from ManageProfile form, which requires
     # additional authorization
-    if ( $params->{selected_user} ) {
-        $statement = 'SELECT * FROM users WHERE user_login = ?';
-        $results = $self->{db}->get_row($statement, $params->{selected_user});
+    if ( $params->{selectedUser} ) {
+        $statement = 'SELECT * FROM users WHERE login = ?';
+        $results = $self->{db}->getRow($statement, $params->{selectedUser});
         # check whether this person is in the database
         if ( !$results ) {
-            throw Error::Simple("No such user $params->{selected_user}.");
+            throw Error::Simple("No such user $params->{selectedUser}.");
         }
-        $results->{user_id} = 'hidden';
+        $results->{id} = 'hidden';
     }
     else {
-        $statement = "SELECT $self->{user_profile_fields} FROM users " .
-                     'WHERE user_login = ?';
-        $results = $self->{db}->get_row($statement, $self->{user}->{login});
+        $statement = "SELECT $self->{profileFields} FROM users " .
+                     'WHERE login = ?';
+        $results = $self->{db}->getRow($statement, $self->{user}->{login});
     }
-    $results->{institution_name} = $self->{institutions}->get_name(
-                                   $self->{db}, $results->{institution_id});
-    $results->{institution_id} = 'hidden';
-    $results->{user_login} = $self->{user}->{login};
-    $results->{selected_user} = $params->{selected_user};
+    $results->{institutionName} = $self->{institutions}->getName(
+                                   $self->{db}, $results->{institutionId});
+    $results->{institutionId} = 'hidden';
+    $results->{login} = $self->{user}->{login};
+    $results->{selectedUser} = $params->{selectedUser};
     # X out password
-    $results->{user_password} = 'hidden';
+    $results->{password} = 'hidden';
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# modify_profile:  Modifies the user profile for a particular user.  If the
+# modifyProfile:  Modifies the user profile for a particular user.  If the
 #     user is coming in via the ManageProfile form, she can set the 
 #     information for another user.
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub modify_profile {
+sub modifyProfile {
     my( $self, $params ) = @_;
 
     my( $statement, $results );
 
     # only happens if coming in from ManageProfile form, which requires
     # additional authorization
-    if ( $params->{selected_user} ) {
+    if ( $params->{selectedUser} ) {
         # check whether this person is in the database
-        $statement = 'SELECT user_login FROM users WHERE user_login = ?';
-        $results = $self->{db}->get_row($statement, $params->{selected_user});
+        $statement = 'SELECT login FROM users WHERE login = ?';
+        $results = $self->{db}->getRow($statement, $params->{selectedUser});
         if ( !$results ) {
-            throw Error::Simple("No such user $params->{selected_user}.");
+            throw Error::Simple("No such user $params->{selectedUser}.");
         }
     }
-    $params->{user_login} = $self->{user}->{login};
+    $params->{login} = $self->{user}->{login};
 
     # If the password needs to be updated, set the input password field to
     # the new one.
-    if ( $params->{password_new_once} ) {
-        $params->{user_password} = crypt( $params->{password_new_once},
-                                         'oscars');
+    if ( $params->{passwordNewOnce} ) {
+        $params->{password} = crypt( $params->{passwordNewOnce}, 'oscars');
     }
 
     # Set the institution id to the primary key in the institutions
     # table (user only can select from menu of existing instituions.
-    if ( $params->{institution_name} ) {
-        $params->{institution_id} = $self->{institutions}->get_id( 
-                                    $self->{db}, $params->{institution_name} );
+    if ( $params->{institutionName} ) {
+        $params->{institutionId} = $self->{institutions}->getId( 
+                                    $self->{db}, $params->{institutionName} );
     }
     $results = {};    # clear any previous results
     # TODO:  allow admin to set all fields
-    my @fields = split(', ', $self->{user_profile_fields});
+    my @fields = split(', ', $self->{profileFields});
     $statement = 'UPDATE users SET ';
     for $_ (@fields) {
         # TODO:  allow setting field to NULL where legal
@@ -166,13 +165,13 @@ sub modify_profile {
 	}
     }
     $statement =~ s/,\s$//;
-    $statement .= ' WHERE user_login = ?';
-    my $unused = $self->{db}->do_query($statement, $params->{user_login});
+    $statement .= ' WHERE login = ?';
+    my $unused = $self->{db}->doQuery($statement, $params->{login});
 
-    $results->{selected_user} = $params->{selected_user};
-    $results->{user_login} = $self->{user}->{login};
-    $results->{institution_name} = $params->{institution_name};
-    $results->{user_password} = 'hidden';
+    $results->{selectedUser} = $params->{selectedUser};
+    $results->{login} = $self->{user}->{login};
+    $results->{institutionName} = $params->{institutionName};
+    $results->{password} = 'hidden';
     return $results;
 } #____________________________________________________________________________
 

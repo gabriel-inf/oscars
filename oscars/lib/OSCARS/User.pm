@@ -48,22 +48,22 @@ sub initialize {
     my( $self ) = @_;
 
     # initially not authenticated
-    $self->{is_authenticated} = 0;
+    $self->{isAuthenticated} = 0;
     $self->{handles} = {};
-    my $plugin_manager = OSCARS::PluginManager->new();
-    $self->{authZ} = $plugin_manager->use_plugin('authorization');
+    my $pluginMgr = OSCARS::PluginManager->new();
+    $self->{authZ} = $pluginMgr->usePlugin('authorization');
     if ( !$self->{authZ} ) {
         die( "Unable to find authorization plugin; does config file exist?");
     }
-    $self->{authorizations} = $self->{authZ}->get_authorizations($self);
+    $self->{authorizations} = $self->{authZ}->getAuthorizations($self);
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_db_handle:  retrieves DB handle from cache for database selected, sets up 
-#                 connection if none exists
+# getDbHandle:  retrieves DB handle from cache for database selected, sets up 
+#               connection if none exists
 #
-sub get_db_handle {
+sub getDbHandle {
     my( $self, $dbname ) = @_;
 
     if ( !$self->{handles}->{$dbname} ) {
@@ -75,9 +75,9 @@ sub get_db_handle {
 
 
 ###############################################################################
-# close_handles:  close all cached connections to databases
+# closeHandles:  close all cached connections to databases
 #
-sub close_handles {
+sub closeHandles {
     my( $self ) = @_;
 
     for my $db (keys(%{$self->{handles}})) {
@@ -92,32 +92,32 @@ sub close_handles {
 sub authenticated {
     my( $self ) = @_;
 
-    return $self->{is_authenticated};
+    return $self->{isAuthenticated};
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# set_authenticated:  set's user authentication status
+# setAuthenticated:  set's user authentication status
 #
-sub set_authenticated {
-    my( $self, $auth_status ) = @_;
+sub setAuthenticated {
+    my( $self, $authStatus ) = @_;
 
-    $self->{is_authenticated} = $auth_status;
+    $self->{isAuthenticated} = $authStatus;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 # authorized:  See if user has permission to use a given resource.
 sub authorized {
-    my( $self, $resource_name, $permission_name ) = @_;
+    my( $self, $resourceName, $permissionName ) = @_;
 
-    return $self->{authZ}->authorized($self, $resource_name, $permission_name);
+    return $self->{authZ}->authorized($self, $resourceName, $permissionName);
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_authorizations:  returns user's cached authorizations.
-sub get_authorizations {
+# getAuthorizations:  returns user's cached authorizations.
+sub getAuthorizations {
     my( $self ) = @_;
 
     return $self->{authorizations};

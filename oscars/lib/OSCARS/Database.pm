@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-February 15, 2006
+April 17, 2006
 
 =cut
 
@@ -43,13 +43,13 @@ sub new {
 ###############################################################################
 #
 sub connect {
-    my( $self, $database_name ) = @_;
+    my( $self, $databaseName ) = @_;
 
     my ( %attr ) = (
         RaiseError => 0,
         PrintError => 0,
     );
-    $self->{dsn} = "DBI:mysql:" . $database_name .
+    $self->{dsn} = "DBI:mysql:" . $databaseName .
                    ";mysql_read_default_file=$ENV{HOME}/.my.cnf";
     $self->{dbh} = DBI->connect( $self->{dsn}, undef, undef, \%attr );
     if (!$self->{dbh}) {
@@ -70,7 +70,7 @@ sub disconnect {
 
 ###############################################################################
 #
-sub do_query {
+sub doQuery {
     my( $self, $statement, @args ) = @_;
 
     # TODO, FIX:  selectall_arrayref probably better
@@ -92,7 +92,7 @@ sub do_query {
 
 ###############################################################################
 #
-sub get_row {
+sub getRow {
     my( $self, $statement, @args ) = @_;
 
     my $sth = $self->{dbh}->prepare( $statement );
@@ -112,7 +112,7 @@ sub get_row {
 
 ###############################################################################
 #
-sub get_primary_id {
+sub getPrimaryId {
     my( $self ) = @_;
 
     return $self->{dbh}->{mysql_insertid};

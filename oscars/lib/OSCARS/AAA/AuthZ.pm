@@ -53,65 +53,59 @@ sub initialize {
 
 
 ###############################################################################
-# get_resource_permissions:  Gets all permissions associated with all 
-#     resources.
+# getResourcePermissions:  Gets all permissions associated with all resources.
 #
-sub get_resource_permissions {
-    my( $self, $user ) = @_;
+sub getResourcePermissions {
+    my( $self ) = @_;
 
-    my( $row, $resource_name, $permission_name );
+    my( $row, $resourceName, $permissionName );
 
-    my $statement = "SELECT resource_id, permission_id " .
-                    "FROM resourcepermissions";
-    my $results = $self->{db}->do_query($statement);
-    my $resource_permissions = {};
-    $statement = "SELECT resource_name FROM resources " .
-                 "WHERE resource_id = ?";
-    my $pstatement = "SELECT permission_name FROM permissions " .
-                 "WHERE permission_id = ?";
+    my $statement = "SELECT resourceId, permissionId FROM resourcePermissions";
+    my $results = $self->{db}->doQuery($statement);
+    my $resourcePermissions = {};
+    $statement = "SELECT name FROM resources WHERE id = ?";
+    my $pstatement = "SELECT name FROM permissions WHERE id = ?";
     for my $perm ( @$results ) {
-	$row = $self->{db}->get_row($statement, $perm->{resource_id});
-	$resource_name = $row->{resource_name};
-        if ( !$resource_permissions->{$resource_name} ) {
-            $resource_permissions->{$resource_name} = {};
+	$row = $self->{db}->getRow($statement, $perm->{resourceId});
+	$resourceName = $row->{name};
+        if ( !$resourcePermissions->{$resourceName} ) {
+            $resourcePermissions->{$resourceName} = {};
         }
-	$row = $self->{db}->get_row($pstatement, $perm->{permission_id});
-	$permission_name = $row->{permission_name};
-        $resource_permissions->{$resource_name}->{$permission_name} = 1;
+	$row = $self->{db}->getRow($pstatement, $perm->{permissionId});
+	$permissionName = $row->{name};
+        $resourcePermissions->{$resourceName}->{$permissionName} = 1;
     }
-    return $resource_permissions;
+    return $resourcePermissions;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_authorizations:  get all authorizations for the specified user.
+# getAuthorizations:  get all authorizations for the specified user.
 #
-sub get_authorizations {
+sub getAuthorizations {
     my( $self, $user ) = @_;
 
-    my( $row, $resource_name, $permission_name );
+    my( $row, $resourceName, $permissionName );
 
     my $auths = {};
-    my $statement = "SELECT user_id from users where user_login = ?";
-    my $results = $self->{db}->get_row($statement, $user->{login});
-    my $user_id = $results->{user_id};
+    my $statement = "SELECT id from users where login = ?";
+    my $results = $self->{db}->getRow($statement, $user->{login});
+    my $userId = $results->{id};
 
-    $statement = "SELECT resource_id, permission_id FROM authorizations " .
-                 "WHERE user_id = ?";
-    $results = $self->{db}->do_query($statement, $user_id);
-    my $rstatement = "SELECT resource_name FROM resources " .
-                     "WHERE resource_id = ?";
-    my $pstatement = "SELECT permission_name FROM permissions " .
-                     "WHERE permission_id = ?";
+    $statement = "SELECT resourceId, permissionId FROM authorizations " .
+                 "WHERE userId = ?";
+    $results = $self->{db}->doQuery($statement, $userId);
+    my $rstatement = "SELECT name FROM resources WHERE id = ?";
+    my $pstatement = "SELECT name FROM permissions WHERE id = ?";
     for my $pair ( @$results ) {
-	$row = $self->{db}->get_row($rstatement, $pair->{resource_id});
-	$resource_name = $row->{resource_name};
-        if ( !$auths->{$resource_name} ) {
-            $auths->{$resource_name} = {};
+	$row = $self->{db}->getRow($rstatement, $pair->{resourceId});
+	$resourceName = $row->{name};
+        if ( !$auths->{$resourceName} ) {
+            $auths->{$resourceName} = {};
 	}
-	$row = $self->{db}->get_row($pstatement, $pair->{permission_id});
-	$permission_name = $row->{permission_name};
-        $auths->{$resource_name}->{$permission_name} = 1;
+	$row = $self->{db}->getRow($pstatement, $pair->{permissionId});
+	$permissionName = $row->{name};
+        $auths->{$resourceName}->{$permissionName} = 1;
     }
     return $auths;
 } #____________________________________________________________________________
@@ -121,12 +115,12 @@ sub get_authorizations {
 # authorized:  See if user has a specific permission on a given resource.
 #
 sub authorized {
-    my( $self, $user, $resource_name, $permission_name ) = @_;
+    my( $self, $user, $resourceName, $permissionName ) = @_;
 
-    if ( !$user->{authorizations}->{$resource_name} ) {
+    if ( !$user->{authorizations}->{$resourceName} ) {
 	return 0;
     }
-    elsif ( !$user->{authorizations}->{$resource_name}->{$permission_name} ) {
+    elsif ( !$user->{authorizations}->{$resourceName}->{$permissionName} ) {
         return 0;
     }
     return 1;

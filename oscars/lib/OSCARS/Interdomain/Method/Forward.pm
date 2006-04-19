@@ -41,13 +41,13 @@ sub initialize {
 
 
 ###############################################################################
-# soap_method:  Handles forwarding a request.  Makes call to forwarded method,
-#               extracting that method's parameters from the payload.
+# soapMethod:  Handles forwarding a request.  Makes call to forwarded method,
+#              extracting that method's parameters from the payload.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     my $payload = $self->{params};
@@ -56,7 +56,7 @@ sub soap_method {
     my $factory = OSCARS::MethodFactory->new();
     my $handler =
         $factory->instantiate( $self->{user}, $params, $self->{logger} );
-    my $results = $handler->soap_method();
+    my $results = $handler->soapMethod();
     $self->{logger}->info("finish", $self->{params});
     return $results;
 } #____________________________________________________________________________
