@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -42,7 +42,7 @@ sub new {
 
 
 ###############################################################################
-# view_details:  get reservation details from the database, given its
+# listDetails:  get reservation details from the database, given its
 #     reservation id.  If a user has the proper authorization, he can view any 
 #     reservation's details.  Otherwise he can only view reservations that
 #     he has made, with less of the details.
@@ -50,237 +50,223 @@ sub new {
 # In:  reference to hash of parameters
 # Out: reservations if any, and status message
 #
-sub view_details {
+sub listDetails {
     my( $self, $params ) = @_;
 
     my( $statement, $row );
 
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = 'SELECT * FROM Intradomain.reservations';
-        $statement .= ' WHERE reservation_id = ?';
-        $row = $self->{db}->get_row($statement, $params->{reservation_id});
-        $self->get_engr_fields($row); 
+        $statement = 'SELECT * FROM reservations WHERE id = ?';
+        $row = $self->{db}->getRow($statement, $params->{id});
+        $self->getEngrFields($row); 
     }
     else {
-        $statement = 'SELECT reservation_start_time, reservation_end_time, ' .
-            'reservation_created_time, reservation_bandwidth, ' .
-            'reservation_burst_limit, reservation_status, reservation_class, ' .
-            'reservation_src_port, reservation_dst_port, reservation_dscp, ' .
-            'reservation_protocol, reservation_tag, reservation_description, ' .
-            'src_host_id, dst_host_id, reservation_time_zone ' .
-            'FROM Intradomain.reservations WHERE user_login = ? AND reservation_id = ?';
-        $row = $self->{db}->get_row($statement, $self->{user}->{login},
-                                      $params->{reservation_id});
+        $statement = 'SELECT startTime, endTime, createdTime, ' .
+            'bandwidth, burstLimit, status, class, srcPort, destPort, dscp, ' .
+            'protocol, tag, description, srcHostId, destHostId, origTimeZone ' .
+            'FROM reservations WHERE login = ? AND id = ?';
+        $row = $self->{db}->getRow($statement, $self->{user}->{login},
+                                      $params->{id});
     }
     if (!$row) { return $row; }
     
-    $self->get_host_info($row);
-    $self->check_nulls($row);
+    $self->getHostInfo($row);
+    $self->checkNulls($row);
     return $row;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# update_reservation: change the status of the reservervation from pending to
+# updateReservation: change the status of the reservervation from pending to
 #                     active
 #
-sub update_reservation {
+sub updateReservation {
     my ($self, $resv, $status, $logger) = @_;
 
-    if ( !$resv->{lsp_status} ) {
-        $resv->{lsp_status} = "Successful configuration";
-        $status = $self->update_status($resv->{reservation_id}, $status);
-    } else {
-        $status = $self->update_status($resv->{reservation_id}, 'failed');
-    }
-    $logger->info('update_reservation',
-        { 'status' => $status, 'reservation_id' => $resv->{reservation_id} });
+    if ( !$resv->{lspStatus} ) {
+        $resv->{lspStatus} = "Successful configuration";
+        $status = $self->updateStatus($resv->{id}, $status);
+    } else { $status = $self->updateStatus($resv->{id}, 'failed'); }
+    $logger->info('updateReservation',
+        { 'status' => $status, 'id' => $resv->{id} });
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# update_status: Updates reservation status.  Used to mark as active,
+# updateStatus: Updates reservation status.  Used to mark as active,
 # finished, or cancelled.
 #
-sub update_status {
-    my ( $self, $reservation_id, $status ) = @_;
+sub updateStatus {
+    my ( $self, $id, $status ) = @_;
 
-    my $statement = qq{ SELECT reservation_status from Intradomain.reservations
-                 WHERE reservation_id = ?};
-    my $row = $self->{db}->get_row($statement, $reservation_id);
+    my $statement = qq{ SELECT status from reservations WHERE id = ?};
+    my $row = $self->{db}->getRow($statement, $id);
 
-    # If the previous state was pending_cancel, mark it now as cancelled.
+    # If the previous state was pendingCancel, mark it now as cancelled.
     # If the previous state was pending, and it is to be deleted, mark it
-    # as cancelled instead of pending_cancel.  The latter is used by 
-    # find_expired_reservations as one of the conditions to attempt to
+    # as cancelled instead of pendingCancel.  The latter is used by 
+    # FindExpiredReservations as one of the conditions to attempt to
     # tear down a circuit.
-    my $prev_status = $row->{reservation_status};
-    if ( ($prev_status eq 'precancel') || ( ($prev_status eq 'pending') &&
+    my $prevStatus = $row->{status};
+    if ( ($prevStatus eq 'precancel') || ( ($prevStatus eq 'pending') &&
             ($status eq 'precancel'))) { 
         $status = 'cancelled';
     }
-    $statement = qq{ UPDATE Intradomain.reservations SET reservation_status = ?
-                 WHERE reservation_id = ?};
-    my $unused = $self->{db}->do_query($statement, $status, $reservation_id);
+    $statement = qq{ UPDATE reservations SET status = ? WHERE id = ?};
+    my $unused = $self->{db}->doQuery($statement, $status, $id);
     return $status;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub get_pss_configs {
+sub getPssConfigs {
     my( $self ) = @_;
 
         # use defaults for now
-    my $statement = 'SELECT * FROM Intradomain.pss_confs where pss_conf_id = 1';
-    my $configs = $self->{db}->get_row($statement);
+    my $statement = 'SELECT * FROM pssConfs where id = 1';
+    my $configs = $self->{db}->getRow($statement);
     return $configs;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub get_host_info {
+sub getHostInfo {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT host_ip FROM Intradomain.hosts WHERE host_id = ?';
-    my $hrow = $self->{db}->get_row($statement, $resv->{src_host_id});
-    my $ip = $hrow->{host_ip};
+    my $statement = 'SELECT IP FROM hosts WHERE id = ?';
+    my $hrow = $self->{db}->getRow($statement, $resv->{srcHostId});
+    my $ip = $hrow->{IP};
     my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)+';
     if ($ip =~ $regexp) { $ip = $1; }
     my $ipaddr = inet_aton($ip);
-    $resv->{source_host} = gethostbyaddr($ipaddr, AF_INET);
-    if (!$resv->{source_host}) {
-        $resv->{source_host} = $hrow->{host_ip};
+    $resv->{srcHost} = gethostbyaddr($ipaddr, AF_INET);
+    if (!$resv->{srcHost}) {
+        $resv->{srcHost} = $hrow->{IP};
     }
-    $resv->{source_ip} = $hrow->{host_ip};
+    $resv->{srcIP} = $hrow->{IP};
 
-    $hrow = $self->{db}->get_row($statement, $resv->{dst_host_id});
+    $hrow = $self->{db}->getRow($statement, $resv->{destHostId});
     # TODO:  FIX, hrow might be empty
-    $ip = $hrow->{host_ip};
+    $ip = $hrow->{IP};
     if ($ip =~ $regexp) { $ip = $1; }
     $ipaddr = inet_aton($ip);
-    $resv->{destination_host} = gethostbyaddr($ipaddr, AF_INET);
-    if (!$resv->{destination_host}) {
-        $resv->{destination_host} = $hrow->{host_ip};
+    $resv->{destHost} = gethostbyaddr($ipaddr, AF_INET);
+    if (!$resv->{destHost}) {
+        $resv->{destHost} = $hrow->{IP};
     }
-    $resv->{destination_ip} = $hrow->{host_ip};
+    $resv->{destIP} = $hrow->{IP};
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub get_engr_fields {
+sub getEngrFields {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT router_name, router_loopback FROM Intradomain.routers' .
-                ' WHERE router_id =' .
-                  ' (SELECT router_id FROM Intradomain.interfaces' .
-                  '  WHERE interface_id = ?)';
+    my $statement =
+        qq{SELECT name, loopback FROM routers WHERE id =
+           (SELECT routerId FROM interfaces WHERE interfaces.id = ?)};
 
     # TODO:  FIX row might be empty
-    my $row = $self->{db}->get_row($statement, $resv->{ingress_interface_id});
-    $resv->{ingress_router} = $row->{router_name}; 
-    $resv->{ingress_ip} = $row->{router_loopback}; 
+    my $row = $self->{db}->getRow($statement, $resv->{ingressInterfaceId});
+    $resv->{ingressRouter} = $row->{name}; 
+    $resv->{ingressIP} = $row->{loopback}; 
 
-    $row = $self->{db}->get_row($statement, $resv->{egress_interface_id});
-    $resv->{egress_router} = $row->{router_name}; 
-    $resv->{egress_ip} = $row->{router_loopback}; 
-    my @path_routers = split(' ', $resv->{reservation_path});
-    $resv->{reservation_path} = ();
-    for $_ (@path_routers) {
-        $row = $self->{db}->get_row($statement, $_);
-        push(@{$resv->{reservation_path}}, $row->{router_name}); 
+    $row = $self->{db}->getRow($statement, $resv->{egressInterfaceId});
+    $resv->{egressRouter} = $row->{name}; 
+    $resv->{egressIP} = $row->{loopback}; 
+    my @pathRouters = split(' ', $resv->{path});
+    $resv->{path} = ();
+    for $_ (@pathRouters) {
+        $row = $self->{db}->getRow($statement, $_);
+        push(@{$resv->{path}}, $row->{name}); 
     }
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# host_ip_to_id:  get the primary key in the hosts table, given an
+# hostIPToId:  get the primary key in the hosts table, given an
 #     IP address.  A row is created if that address is not present.
-# In:  host_ip
-# Out: host_id
+# In:  hostIP
+# Out: hostID
 #
-sub host_ip_to_id {
+sub hostIPToId {
     my( $self, $ipaddr ) = @_;
 
-    # TODO:  fix schema, possible host_ip would not be unique
-    my $statement = 'SELECT host_id FROM Intradomain.hosts WHERE host_ip = ?';
-    my $row = $self->{db}->get_row($statement, $ipaddr);
+    # TODO:  fix schema, possible hostIP would not be unique
+    my $statement = 'SELECT id FROM hosts WHERE IP = ?';
+    my $row = $self->{db}->getRow($statement, $ipaddr);
     # if no matches, insert a row in hosts
     if ( !$row ) {
-        $statement = "INSERT INTO Intradomain.hosts VALUES ( NULL, '$ipaddr'  )";
-        my $unused = $self->{db}->do_query($statement);
+        $statement = "INSERT INTO hosts VALUES ( NULL, '$ipaddr'  )";
+        my $unused = $self->{db}->doQuery($statement);
         return $self->{db}->{dbh}->{mysql_insertid};
     }
-    else { return $row->{host_id}; }
+    else { return $row->{id}; }
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# check_nulls:  
+# checkNulls:  
 #
-sub check_nulls {
+sub checkNulls {
     my( $self, $resv ) = @_ ;
 
     # clean up NULL values
-    if (!$resv->{reservation_protocol} ||
-        ($resv->{reservation_protocol} eq 'NULL')) {
-        $resv->{reservation_protocol} = 'DEFAULT';
+    if (!$resv->{protocol} || ($resv->{protocol} eq 'NULL')) {
+        $resv->{protocol} = 'DEFAULT';
     }
-    if (!$resv->{reservation_dscp} ||
-        ($resv->{reservation_dscp} eq 'NU')) {
-        $resv->{reservation_dscp} = 'DEFAULT';
+    if (!$resv->{dscp} || ($resv->{dscp} eq 'NU')) {
+        $resv->{dscp} = 'DEFAULT';
     }
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# reservation_stats
+# reservationStats
 #
-sub reservation_stats {
+sub reservationStats {
     my( $self, $resv) = @_;
 
-    # TODO:  FIX! infinite_time
-    my $infinite_time = 'foo';
+    # TODO:  FIX! infiniteTime
+    my $infiniteTime = 'foo';
     # only optional fields need to be checked for existence
-    my $msg = "Description:        $resv->{reservation_description}\n";
-    if ($resv->{reservation_id}) {
-        $msg .= "Reservation id:     $resv->{reservation_id}\n";
-    }
-    $msg .= "Start time:         $resv->{reservation_start_time}\n";
-    if ($resv->{reservation_end_time} ne $infinite_time) {
-        $msg .= "End time:           $resv->{reservation_end_time}\n";
-    }
-    else {
-        $msg .= "End time:           persistent circuit\n";
-    }
+    my $msg = "Description:        $resv->{description}\n";
+    if ($resv->{id}) { $msg .= "Reservation id:     $resv->{id}\n"; }
 
-    if ($resv->{reservation_created_time}) {
-        $msg .= "Created time:       $resv->{reservation_created_time}\n";
+    $msg .= "Start time:         $resv->{startTime}\n";
+    if ($resv->{endTime} ne $infiniteTime) {
+        $msg .= "End time:           $resv->{endTime}\n";
     }
-    $msg .= "(Times are in UTC $resv->{reservation_time_zone})\n";
-    $msg .= "Bandwidth:          $resv->{reservation_bandwidth}\n";
-    if ($resv->{reservation_burst_limit}) {
-        $msg .= "Burst limit:         $resv->{reservation_burst_limit}\n";
+    else { $msg .= "End time:           persistent circuit\n"; }
+
+    if ($resv->{createdTime}) {
+        $msg .= "Created time:       $resv->{createdTime}\n";
     }
-    $msg .= "Source:             $resv->{source_host}\n" .
-        "Destination:        $resv->{destination_host}\n";
-    if ($resv->{reservation_src_port}) {
-        $msg .= "Source port:        $resv->{reservation_src_port}\n";
+    $msg .= "(Times are in UTC $resv->{origTimeZone})\n";
+    $msg .= "Bandwidth:          $resv->{bandwidth}\n";
+    if ($resv->{burstLimit}) {
+        $msg .= "Burst limit:         $resv->{burstLimit}\n";
+    }
+    $msg .= "Source:             $resv->{srcHost}\n" .
+        "Destination:        $resv->{destHost}\n";
+    if ($resv->{srcPort}) {
+        $msg .= "Source port:        $resv->{srcPort}\n";
     }
     else { $msg .= "Source port:        DEFAULT\n"; }
 
-    if ($resv->{reservation_dst_port}) {
-        $msg .= "Destination port:   $resv->{reservation_dst_port}\n";
+    if ($resv->{destPort}) {
+        $msg .= "Destination port:   $resv->{destPort}\n";
     }
     else { $msg .= "Destination port:   DEFAULT\n"; }
 
-    $msg .= "Protocol:           $resv->{reservation_protocol}\n";
-    $msg .= "DSCP:               $resv->{reservation_dscp}\n";
+    $msg .= "Protocol:           $resv->{protocol}\n";
+    $msg .= "DSCP:               $resv->{dscp}\n";
 
-    if ($resv->{reservation_class}) {
-        $msg .= "Class:              $resv->{reservation_class}\n\n";
+    if ($resv->{class}) {
+        $msg .= "Class:              $resv->{class}\n\n";
     }
     else { $msg .= "Class:              DEFAULT\n\n"; }
 

@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -41,66 +41,47 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
-                                                 'user' => $self->{user},
-                                                 'db' => $self->{db});
-    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
-                                                 'db' => $self->{db},
-                                                 'logger' => $self->{logger});
+    $self->{resvLib} = OSCARS::Intradomain::ReservationCommon->new(
+                           'user' => $self->{user}, 'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                           'db' => $self->{db}, 'logger' => $self->{logger});
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soap_method:  Handles cancellation of reservation.
+# soapMethod:  Handles cancellation of reservation.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     $self->{logger}->info("start", $self->{params});
     # TODO:  ensure unprivileged user can't cancel another's reservation
-    my $status =  $self->{resv_lib}->update_status(
-                          $self->{params}->{reservation_id}, 'precancel' );
-    my $results = $self->{resv_lib}->view_details($self->{params});
-    $results->{reservation_id} = $self->{params}->{reservation_id};
-    $self->{time_lib}->convert_times($results);
+    my $status =  $self->{resvLib}->updateStatus(
+                          $self->{params}->{id}, 'precancel' );
+    my $results = $self->{resvLib}->listDetails($self->{params});
+    $results->{id} = $self->{params}->{id};
+    $self->{timeLib}->convertTimes($results);
     $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# generate_message:  generate cancelled email message
+# generateMessage:  generate cancelled email message
 #
-sub generate_message {
+sub generateMessage {
     my( $self, $resv ) = @_;
 
     my( @messages );
-    my $user_login = $self->{user}->{login};
-    my $msg = "Reservation cancelled by $user_login with parameters:\n";
-    $msg .= $self->{resv_lib}->reservation_stats($resv);
-    my $subject_line = "Reservation cancelled by $user_login.";
-    push(@messages, { 'msg' => $msg, 'subject_line' => $subject_line, 'user' => $user_login } ); 
+    my $login = $self->{user}->{login};
+    my $msg = "Reservation cancelled by $login with parameters:\n";
+    $msg .= $self->{resvLib}->reservationStats($resv);
+    my $subject = "Reservation cancelled by $login.";
+    push(@messages, { 'msg' => $msg, 'subject' => $subject, 'user' => $login } ); 
     return( \@messages );
-} #____________________________________________________________________________
-
-
-###############################################################################
-# next_domain_parameters:  modify parameters before sending to next domain
-#
-sub next_domain_parameters {
-    my( $self, $params, $next_domain ) = @_;
-
-    my $results = {};
-    for my $idx (keys %{$params}) {
-        $results->{$idx} = $params->{$idx};
-    }
-    $results->{next_domain} = $next_domain;
-    $results->{ingress_router} = undef;
-    $results->{egress_router} = undef;
-    return $results;
 } #____________________________________________________________________________
 
 

@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -48,21 +48,20 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
-    $self->{sched_methods} = OSCARS::Intradomain::SchedulerCommon->new(
-                                                 'db' => $self->{db});
-    $self->{time_methods} = OSCARS::Intradomain::TimeConversionCommon->new(
-                                                 'db' => $self->{db});
-    $self->{resv_methods} = OSCARS::Intradomain::ReservationCommon->new(
-                                                'user' => $self->{user},
-                                                'db' => $self->{db});
+    $self->{schedLib} = OSCARS::Intradomain::SchedulerCommon->new(
+                             'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                             'db' => $self->{db});
+    $self->{resvLib} = OSCARS::Intradomain::ReservationCommon->new(
+                             'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soap_method:  find reservations that have expired, and tear
+# soapMethod:  find reservations that have expired, and tear
 #               them down
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     if ( !$self->{user}->authorized('Domains', 'manage') ) {
@@ -72,15 +71,14 @@ sub soap_method {
     # find reservations whose end time is before the current time and
     # thus expired
     my $reservations = 
-        $self->find_expired_reservations($self->{params}->{time_interval});
+        $self->findExpiredReservations($self->{params}->{timeInterval});
 
     for my $resv (@$reservations) {
-        $self->{sched_methods}->map_to_ips($resv);
-        $resv->{lsp_status} = $self->teardown_pss($resv);
-        $self->{resv_methods}->update_reservation( $resv, 'finished',
+        $self->{schedLib}->mapToIPs($resv);
+        $resv->{lspStatus} = $self->teardownPSS($resv);
+        $self->{resvLib}->updateReservation( $resv, 'finished',
                                                    $self->{logger} );
-        $self->{logger}->info("expired",
-                      { 'reservation_id' =>  $resv->{reservation_id} });
+        $self->{logger}->info("expired", { 'id' =>  $resv->{id} });
     }
     my $results = {};
     $results->{list} = $reservations;
@@ -89,9 +87,9 @@ sub soap_method {
 
 
 ###############################################################################
-# generate_messages:  generate email message
+# generateMessages:  generate email message
 #
-sub generate_messages {
+sub generateMessages {
     my( $self, $results ) = @_;
 
     my $reservations = $results->{list};
@@ -99,15 +97,14 @@ sub generate_messages {
         return( undef, undef );
     }
     my( @messages );
-    my( $subject_line, $msg );
 
     for my $resv ( @$reservations ) {
-        $self->{time_methods}->convert_lsp_times($resv);
-        $subject_line = "Circuit tear down status for $resv->{user_login}.";
-        $msg =
-            "Circuit tear down for $resv->{user_login}, for reservation(s) with parameters:\n";
-        $msg .= $self->{sched_methods}->reservation_lsp_stats( $resv );
-        push( @messages, {'msg' => $msg, 'subject_line' => $subject_line, 'user' => $resv->{user_login} } );
+        $self->{timeLib}->convertLspTimes($resv);
+        my $subject = "Circuit tear down status for $resv->{login}.";
+        my $msg =
+            "Circuit tear down for $resv->{login}, for reservation(s) with parameters:\n";
+        $msg .= $self->{schedLib}->reservationLspStats( $resv );
+        push( @messages, {'msg' => $msg, 'subject' => $subject, 'user' => $resv->{login} } );
     }
     return( \@messages );
 } #____________________________________________________________________________
@@ -119,42 +116,39 @@ sub generate_messages {
 
 ###############################################################################
 #
-sub find_expired_reservations {
-    my ( $self, $time_interval ) = @_;
+sub findExpiredReservations {
+    my ( $self, $timeInterval ) = @_;
 
     my $status = 'active';
-    my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
-    my $row = $self->{db}->get_row( $statement, $time_interval );
-    my $timeslot = $row->{new_time};
-    $statement = qq{ SELECT * FROM Intradomain.reservations WHERE (reservation_status = ? and
-                 reservation_end_time < ?) or (reservation_status = ?)};
-    return $self->{db}->do_query($statement, $status, $timeslot,
-                                        'precancel' );
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS newTime";
+    my $row = $self->{db}->getRow( $statement, $timeInterval );
+    my $timeslot = $row->{newTime};
+    $statement = qq{ SELECT * FROM reservations WHERE (status = ? and
+                 endTime < ?) or (status = ?)};
+    return $self->{db}->doQuery($statement, $status, $timeslot, 'precancel' );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# teardown_pss:  format the args and call pss to teardown the configuraion 
+# teardownPSS:  format the args and call pss to teardown the configuraion 
 #
-sub teardown_pss {
-    my ( $self, $resv_info ) = @_;
+sub teardownPSS {
+    my ( $self, $resv ) = @_;
 
-    my ( $error );
+    my $error;
 
         # Create an LSP object.
-    my $lsp_info = $self->{sched_methods}->map_fields($resv_info);
-    $lsp_info->{configs} = $self->{resv_methods}->get_pss_configs();
+    my $lsp_info = $self->{schedLib}->mapFields($resv);
+    $lsp_info->{configs} = $self->{resvLib}->getPssConfigs();
     $lsp_info->{logger} = $self->{logger};
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
 
-    $self->{logger}->info('LSP.configure',
-            { 'reservation_id' => $resv_info->{reservation_id} });
+    $self->{logger}->info('LSP.configure', { 'id' => $resv->{id} });
     $jnxLsp->configure_lsp($self->{LSP_TEARDOWN}, $self->{logger}); 
     if ($error = $jnxLsp->get_error())  {
         return $error;
     }
-    $self->{logger}->info('LSP.teardown_complete',
-            { 'reservation_id' => $resv_info->{reservation_id} });
+    $self->{logger}->info('LSP.teardownComplete', { 'id' => $resv->{id} });
     return "";
 } #____________________________________________________________________________
 

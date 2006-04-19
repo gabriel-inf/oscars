@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -47,21 +47,20 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
-    $self->{sched_methods} = OSCARS::Intradomain::SchedulerCommon->new(
-                                                 'db' => $self->{db});
-    $self->{time_methods} = OSCARS::Intradomain::TimeConversionCommon->new(
-                                                 'db' => $self->{db});
-    $self->{resv_methods} = OSCARS::Intradomain::ReservationCommon->new(
-                                                'user' => $self->{user},
-                                                'db' => $self->{db});
+    $self->{schedLib} = OSCARS::Intradomain::SchedulerCommon->new(
+                            'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                            'db' => $self->{db});
+    $self->{resvLib} = OSCARS::Intradomain::ReservationCommon->new(
+                            'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soap_method:  find reservations to run.  Find all the
+# soapMethod:  find reservations to run.  Find all the
 #    reservations in db that need to be setup and run in the next N minutes.
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     if ( !$self->{user}->authorized('Domains', 'manage') ) {
@@ -70,15 +69,14 @@ sub soap_method {
     }
     # find reservations that need to be scheduled
     my $reservations =
-        $self->find_pending_reservations($self->{params}->{time_interval});
+        $self->findPendingReservations($self->{params}->{pollTime});
     for my $resv (@$reservations) {
-        $self->{sched_methods}->map_to_ips($resv);
+        $self->{schedLib}->mapToIPS($resv);
         # call PSS to schedule LSP
-        $resv->{lsp_status} = $self->setup_pss($resv);
-        $self->{resv_methods}->update_reservation( $resv, 'active', 
+        $resv->{lspStatus} = $self->setupPSS($resv);
+        $self->{resvLib}->updateReservation( $resv, 'active', 
                                                     $self->{logger} );
-        $self->{logger}->info('scheduling',
-                      { 'reservation_id' =>  $resv->{reservation_id} });
+        $self->{logger}->info('scheduling', { 'id' =>  $resv->{id} });
     }
     my $results = {};
     $results->{list} = $reservations;
@@ -87,9 +85,9 @@ sub soap_method {
 
 
 ###############################################################################
-# generate_messages:  generate email message
+# generateMessages:  generate email message
 #
-sub generate_messages {
+sub generateMessages {
     my( $self, $results ) = @_;
 
     my $reservations = $results->{list};
@@ -97,16 +95,16 @@ sub generate_messages {
         return( undef, undef );
     }
     my( @messages );
-    my( $subject_line, $msg );
+    my( $subject, $msg );
 
     for my $resv ( @$reservations ) {
-        $self->{time_methods}->convert_lsp_times($resv);
-        $subject_line = "Circuit set up status for $resv->{user_login}.";
+        $self->{timeLib}->convertLspTimes($resv);
+        $subject = "Circuit set up status for $resv->{login}.";
         $msg =
-          "Circuit set up for $resv->{user_login}, for reservation(s) with parameters:\n";
+          "Circuit set up for $resv->{login}, for reservation(s) with parameters:\n";
             # TODO:  if more than one reservation, fix duplicated effort
-        $msg .= $self->{sched_methods}->reservation_lsp_stats( $resv );
-        push( @messages, {'msg' => $msg, 'subject_line' => $subject_line, 'user' => $resv->{user_login} } );
+        $msg .= $self->{schedLib}->reservationLspStats( $resv );
+        push( @messages, {'msg' => $msg, 'subject' => $subject, 'user' => $resv->{login} } );
     }
     return( \@messages );
 } #____________________________________________________________________________
@@ -118,41 +116,37 @@ sub generate_messages {
 
 ###############################################################################
 #
-sub find_pending_reservations  { 
-    my ( $self, $time_interval ) = @_;
+sub findPendingReservations  { 
+    my ( $self, $timeInterval ) = @_;
 
     my $status = 'pending';
-    my $statement = "SELECT now() + INTERVAL ? SECOND AS new_time";
-    my $row = $self->{db}->get_row( $statement, $time_interval );
-    my $timeslot = $row->{new_time};
-    $statement = qq{ SELECT * FROM Intradomain.reservations WHERE reservation_status = ? and
-                 reservation_start_time < ?};
-    return $self->{db}->do_query($statement, $status, $timeslot);
+    my $statement = "SELECT now() + INTERVAL ? SECOND AS newTime";
+    my $row = $self->{db}->getRow( $statement, $timeInterval );
+    my $timeslot = $row->{newTime};
+    $statement = qq{ SELECT * FROM reservations WHERE status = ? and
+                 startTime < ?};
+    return $self->{db}->doQuery($statement, $status, $timeslot);
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# setup_pss:  format the args and call pss to do the configuration change
+# setupPSS:  format the args and call pss to do the configuration change
 #
-sub setup_pss {
-    my( $self, $resv_info ) = @_;   
+sub setupPSS {
+    my( $self, $resv ) = @_;   
 
     my( $error );
 
-    $self->{logger}->info('LSP.configure',
-            { 'reservation_id' => $resv_info->{reservation_id} });
+    $self->{logger}->info('LSP.configure', { 'id' => $resv->{id} });
     # Create an LSP object.
-    my $lsp_info = $self->{sched_methods}->map_fields($resv_info);
-    $lsp_info->{configs} = $self->{resv_methods}->get_pss_configs();
+    my $lsp_info = $self->{schedLib}->mapFields($resv);
+    $lsp_info->{configs} = $self->{resvLib}->getPssConfigs();
     $lsp_info->{logger} = $self->{logger};
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
-
     $jnxLsp->configure_lsp($self->{LSP_SETUP}, $self->{logger});
-    if ($error = $jnxLsp->get_error())  {
-        return $error;
-    }
-    $self->{logger}->info('LSP.setup_complete',
-            { 'reservation_id' => $resv_info->{reservation_id} });
+
+    if ($error = $jnxLsp->get_error())  { return $error; }
+    $self->{logger}->info('LSP.setupComplete', { 'id' => $resv->{id} });
     return "";
 } #____________________________________________________________________________
 

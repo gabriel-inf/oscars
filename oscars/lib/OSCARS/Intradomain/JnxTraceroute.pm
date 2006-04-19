@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 18, 2006
 
 =cut
 
@@ -37,7 +37,7 @@ sub new {
   
     bless( $self, $class );
     return( $self );
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -60,10 +60,10 @@ sub traceroute
     $dst =~ s/\/\d*$//;
 
     # Perform the traceroute.
-    $cmd = "ssh -x -a -i $configs->{trace_conf_jnx_key} -l " .
-           "$configs->{trace_conf_jnx_user} $src traceroute $dst wait " .
-           "$configs->{trace_conf_timeout} ttl " .
-           "$configs->{trace_conf_ttl}";
+    $cmd = "ssh -x -a -i $configs->{jnxKey} -l " .
+           "$configs->{jnxUser} $src traceroute $dst wait " .
+           "$configs->{timeout} ttl " .
+           "$configs->{ttl}";
     $logger->info('traceroute.ssh',
 	    {'command' => $cmd, 'src' => $src, 'dst' => $dst});
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
@@ -87,34 +87,34 @@ sub traceroute
     }
     close(_TRACEROUTE_);
     return 1;
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
-# get_raw_hop_data:  returns the raw traceroute data in an array.
+# getRawHopData:  returns the raw traceroute data in an array.
 # Input: <none>
 # Output: Array of raw traceroute data, e.g.
 #         1  esnet3-lbl3.es.net (198.129.76.26)  0.628 ms  0.569 ms  0.522 ms
 #
-sub get_raw_hop_data
+sub getRawHopData
 {
     my ($self) = @_;
 
     return @{$self->{rawHopData}};
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ##############################################################################
-# get_hops:  returns the IP addresses of the hops in an array.
+# getHops:  returns the IP addresses of the hops in an array.
 # Input:  <none>
 # Output: array of IP addresses
 #
-sub get_hops
+sub getHops
 {
     my ($self) = @_;
 
     return @{$self->{hops}};
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ######

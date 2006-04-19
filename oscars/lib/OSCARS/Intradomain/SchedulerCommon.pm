@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -40,134 +40,126 @@ sub new {
 
 ###############################################################################
 #
-sub get_time_intervals {
+sub getTimeIntervals {
     my( $self ) = @_;
 
         # just use defaults for now
-    my $statement = "SELECT scheduler_db_poll_time, scheduler_time_interval" .
-             " FROM Intradomain.scheduler_confs WHERE scheduler_conf_id = 1";
-    my $row = $self->{db}->get_row( $statement );
-    return( $row->{scheduler_db_poll_time}, $row->{scheduler_time_interval} );
+    my $statement = "SELECT pollTime FROM schedulerConfs WHERE id = 1";
+    my $row = $self->{db}->getRow( $statement );
+    return( $row->{pollTime} );
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub map_to_ips {
+sub mapToIPs {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT host_ip FROM Intradomain.hosts WHERE host_id = ?';
-    my $row = $self->{db}->get_row($statement, $resv->{src_host_id});
-    $resv->{source_ip} = $row->{host_ip};
-    $row = $self->{db}->get_row($statement, $resv->{dst_host_id});
-    $resv->{destination_ip} = $row->{host_ip};
+    my $statement = 'SELECT IP FROM hosts WHERE id = ?';
+    my $row = $self->{db}->getRow($statement, $resv->{srcHostId});
+    $resv->{srcIP} = $row->{IP};
+    $row = $self->{db}->getRow($statement, $resv->{destHostId});
+    $resv->{destIP} = $row->{IP};
 
-    $statement = 'SELECT router_loopback FROM Intradomain.routers' .
-                ' WHERE router_id =' .
-                ' (SELECT router_id FROM Intradomain.interfaces' .
-                '  WHERE interface_id = ?)';
+    $statement = 'SELECT loopback FROM routers WHERE id =' .
+        ' (SELECT routerId FROM interfaces WHERE interfaces.id = ?)';
 
     # TODO:  FIX row might be empty
-    $row = $self->{db}->get_row($statement, $resv->{ingress_interface_id});
-    $resv->{ingress_ip} = $row->{router_loopback}; 
+    $row = $self->{db}->getRow($statement, $resv->{ingressInterfaceId});
+    $resv->{ingressIP} = $row->{loopback}; 
 
-    $row = $self->{db}->get_row($statement, $resv->{egress_interface_id});
-    $resv->{egress_ip} = $row->{router_loopback}; 
+    $row = $self->{db}->getRow($statement, $resv->{egressInterfaceId});
+    $resv->{egressIP} = $row->{loopback}; 
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub map_fields {
+sub mapFields {
     my ( $self, $resv ) = @_;
 
     my ( %lsp_info );
 
     %lsp_info = (
-      'name' => "oscars_$resv->{reservation_id}",
-      'lsp_from' => $resv->{ingress_ip},
-      'lsp_to' => $resv->{egress_ip},
-      'bandwidth' => $resv->{reservation_bandwidth},
-      'lsp_class-of-service' => $resv->{reservation_class},
-      'policer_burst-size-limit' =>  $resv->{reservation_burst_limit},
-      'source-address' => $resv->{source_ip},
-      'destination-address' => $resv->{destination_ip},
+      'name' => "oscars_$resv->{id}",
+      'lsp_from' => $resv->{ingressIP},
+      'lsp_to' => $resv->{egressIP},
+      'bandwidth' => $resv->{bandwidth},
+      'lsp_class-of-service' => $resv->{class},
+      'policer_burst-size-limit' =>  $resv->{burstLimit},
+      'source-address' => $resv->{srcIP},
+      'destination-address' => $resv->{destIP},
     );
-    if ($resv->{reservation_src_port} &&
-        ($resv->{reservation_src_port} != 'NULL')) {
-        $lsp_info{'source-port'} = $resv->{reservation_src_port};
+    if ($resv->{srcPort} && ($resv->{srcPort} != 'NULL')) {
+        $lsp_info{'source-port'} = $resv->{srcPort};
     }
-    if ($resv->{reservation_dst_port} &&
-      ($resv->{reservation_dst_port} != 'NULL')) {
-        $lsp_info{'destination-port'} = $resv->{reservation_dst_port};
+    if ($resv->{destPort} && ($resv->{destPort} != 'NULL')) {
+        $lsp_info{'destination-port'} = $resv->{destPort};
     }
-    if ($resv->{reservation_dscp} &&
-      ($resv->{reservation_dscp} != 'NULL')) {
-        $lsp_info{dscp} = $resv->{reservation_dscp};
+    if ($resv->{dscp} && ($resv->{dscp} != 'NULL')) {
+        $lsp_info{dscp} = $resv->{dscp};
     }
-    if ($resv->{reservation_protocol} &&
-      ($resv->{reservation_protocol} != 'NULL')) {
-        $lsp_info{protocol} = $resv->{reservation_protocol};
+    if ($resv->{protocol} && ($resv->{protocol} != 'NULL')) {
+        $lsp_info{protocol} = $resv->{protocol};
     }
     return \%lsp_info;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# reservation_lsp_stats
+# reservationLspStats
 #
-sub reservation_lsp_stats {
+sub reservationLspStats {
     my( $self, $resv ) = @_;
 
     my $msg = 
-        "Config time:        $resv->{lsp_config_time}\n" .
-        "Description:        $resv->{reservation_description}\n" .
-        "Reservation id:     $resv->{reservation_id}\n" .
-        "Start time:         $resv->{reservation_start_time}\n" .
-        "End time:           $resv->{reservation_end_time}\n" .
-        "Created time:       $resv->{reservation_created_time}\n" .
-        "(Times are in UTC $resv->{reservation_time_zone})\n" .
-        "Bandwidth:          $resv->{reservation_bandwidth}\n" .
-        "Burst limit:        $resv->{reservation_burst_limit}\n" .
-        "Source:             $resv->{source_ip}\n" .
-        "Destination:        $resv->{destination_ip}\n";
-    if ($resv->{reservation_src_port}) {
-        $msg .= "Source port:        $resv->{reservation_src_port}\n";
+        "Config time:        $resv->{lspConfigTime}\n" .
+        "Description:        $resv->{description}\n" .
+        "Reservation id:     $resv->{id}\n" .
+        "Start time:         $resv->{startTime}\n" .
+        "End time:           $resv->{endTime}\n" .
+        "Created time:       $resv->{createdTime}\n" .
+        "(Times are in UTC $resv->{origTimeZone})\n" .
+        "Bandwidth:          $resv->{bandwidth}\n" .
+        "Burst limit:        $resv->{burstLimit}\n" .
+        "Source:             $resv->{srcIP}\n" .
+        "Destination:        $resv->{destIP}\n";
+    if ($resv->{srcPort}) {
+        $msg .= "Source port:        $resv->{srcPort}\n";
     }
     else { $msg .= "Source port:        DEFAULT\n"; }
 
-    if ($resv->{reservation_dst_port}) {
-        $msg .= "Destination port:   $resv->{reservation_dst_port}\n";
+    if ($resv->{destPort}) {
+        $msg .= "Destination port:   $resv->{destPort}\n";
     }
     else { $msg .= "Destination port:   DEFAULT\n"; }
 
-    if ($resv->{reservation_protocol} &&
-        ($resv->{reservation_protocol} ne 'NULL')) {
-        $msg .= "Protocol:           $resv->{reservation_protocol}\n";
+    if ($resv->{protocol} && ($resv->{protocol} ne 'NULL')) {
+        $msg .= "Protocol:           $resv->{protocol}\n";
     }
     else { $msg .= "Protocol:           DEFAULT\n"; }
 
-    if ($resv->{reservation_dscp} && ($resv->{reservation_dscp} ne 'NU')) {
-        $msg .= "DSCP:               $resv->{reservation_dscp}\n";
+    if ($resv->{dscp} && ($resv->{dscp} ne 'NU')) {
+        $msg .= "DSCP:               $resv->{dscp}\n";
     }
     else { $msg .= "DSCP:               DEFAULT\n"; }
 
-    if ($resv->{reservation_class}) {
-        $msg .= "Class:              $resv->{reservation_class}\n";
+    if ($resv->{class}) {
+        $msg .= "Class:              $resv->{class}\n";
     }
     else { $msg .= "Class:   DEFAULT\n"; }
 
-    if ($resv->{ingress_router}) {
-        $msg .= "Ingress loopback:   $resv->{ingress_router}\n";
+    if ($resv->{ingressRouter}) {
+        $msg .= "Ingress loopback:   $resv->{ingressRouter}\n";
     }
-    else { $msg .= "Ingress loopback:   $resv->{ingress_ip}\n"; }
+    else { $msg .= "Ingress loopback:   $resv->{ingressIP}\n"; }
 
-    if ($resv->{egress_router}) {
-        $msg .= "Egress loopback:    $resv->{egress_router}\n";
+    if ($resv->{egressRouter}) {
+        $msg .= "Egress loopback:    $resv->{egressRouter}\n";
     }
-    else { $msg .= "Egress loopback:    $resv->{egress_ip}\n"; }
+    else { $msg .= "Egress loopback:    $resv->{egressIP}\n"; }
     
-    $msg .= "$resv->{lsp_status}\n";
+    $msg .= "$resv->{lspStatus}\n";
     return $msg;
 } #____________________________________________________________________________
 

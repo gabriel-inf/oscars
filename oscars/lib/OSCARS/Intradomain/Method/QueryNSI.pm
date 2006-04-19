@@ -3,7 +3,7 @@ package OSCARS::Intradomain::Method::QueryNSI;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::QueryNSI - SOAP method to view the details of a
+OSCARS::Intradomain::Method::QueryNSI - SOAP method to list the details of a
 specific reservation.
 
 =head1 SYNOPSIS
@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 18, 2006
 
 =cut
 
@@ -43,30 +43,28 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{time_methods} = OSCARS::Intradomain::TimeConversionCommon->new(
-                                                     'db' => $self->{db});
-    $self->{resv_methods} = OSCARS::Intradomain::ReservationCommon->new(
-                                                     'user' => $self->{user},
-                                                     'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                                 'db' => $self->{db});
+    $self->{resvLib} = OSCARS::Intradomain::ReservationCommon->new(
+                                 'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soap_method:  get reservation details from the database, given its
+# soapMethod:  get reservation details from the database, given its
 #     reservation id.  If a user has the 'manage' permission on the
-#     'Reservations' resource, they can view any reservation's details.
-#     Otherwise they can only view reservations that they have made, with less
+#     'Reservations' resource, they can list any reservation's details.
+#     Otherwise they can only list reservations that they have made, with less
 #     of the details.
 #
 # In:  reference to hash of parameters
 # Out: reservations if any, and status message
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
-    my $results =
-            $self->{resv_methods}->view_details($self->{params});
-    $self->{time_methods}->convert_times($results);
+    my $results = $self->{resvLib}->listDetails($self->{params});
+    $self->{timeLib}->convertTimes($results);
     return $results;
 } #____________________________________________________________________________
 

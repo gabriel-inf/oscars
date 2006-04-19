@@ -41,58 +41,54 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resv_lib} = OSCARS::Intradomain::ReservationCommon->new(
-                                                 'user' => $self->{user},
-                                                 'db' => $self->{db});
-    $self->{time_lib} = OSCARS::Intradomain::TimeConversionCommon->new(
-                                                 'db' => $self->{db},
-                                                 'logger' => $self->{logger});
+    $self->{resvLib} = OSCARS::Intradomain::ReservationCommon->new(
+                          'user' => $self->{user}, 'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Intradomain::TimeConversionCommon->new(
+                          'db' => $self->{db}, 'logger' => $self->{logger});
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soap_method:  Handles all operations for the Manage Reservations page. 
+# soapMethod:  Handles all operations for the Manage Reservations page. 
 #     It uses information from the users and institutions tables.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
 #
-sub soap_method {
+sub soapMethod {
     my( $self ) = @_;
 
     my $results = {};
-    $results->{list} = $self->get_reservations($self->{params});
+    $results->{list} = $self->getReservations($self->{params});
     return $results;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# get_reservations:  get reservations from the database.  If the user has
+# getReservations:  get reservations from the database.  If the user has
 #     the 'manage' permission on the 'Reservations' resource, they can view 
 #     all reservations.  Otherwise they can only view their own.
 #
 # In:  reference to hash of parameters
 # Out: reference to array of hashes
 #
-sub get_reservations {
+sub getReservations {
     my( $self, $params ) = @_;
 
     my( $rows, $statement );
 
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = "SELECT * FROM Intradomain.reservations" .
-                     ' ORDER BY reservation_start_time';
-        $rows = $self->{db}->do_query($statement);
+        $statement = 'SELECT * FROM reservations ORDER BY startTime';
+        $rows = $self->{db}->doQuery($statement);
     }
     else {
-        $statement = 'SELECT * FROM Intradomain.reservations' .
-                     ' WHERE user_login = ?' .
-                     ' ORDER BY reservation_start_time';
-        $rows = $self->{db}->do_query($statement, $self->{user}->{login});
+        $statement = 'SELECT * FROM reservations WHERE login = ? ' .
+                     'ORDER BY startTime';
+        $rows = $self->{db}->doQuery($statement, $self->{user}->{login});
     }
     for my $resv ( @$rows ) {
-        $self->{time_lib}->convert_times($resv);
-        $self->{resv_lib}->get_host_info($resv);
+        $self->{timeLib}->convertTimes($resv);
+        $self->{resvLib}->getHostInfo($resv);
     }
     return $rows;
 } #____________________________________________________________________________

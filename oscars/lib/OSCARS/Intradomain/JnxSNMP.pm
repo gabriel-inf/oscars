@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 18, 2006
 
 =cut
 
@@ -52,12 +52,12 @@ sub initialize {
 
 
 ##############################################################################
-# initialize_session:  initialize SNMP session, given configs from database and
+# initializeSession:  initialize SNMP session, given configs from database and
 #                      router.
 # Input:  configs, destination
 # Output: <none>
 #
-sub initialize_session {
+sub initializeSession {
     my( $self, $configs, $dst ) = @_;
 
     # Clear error message.
@@ -73,11 +73,11 @@ sub initialize_session {
     my $error;
     ( $self->{session}, $error ) = Net::SNMP->session (
                      -hostname		=> $dst,
-                     -port		=> $configs->{snmp_conf_port},
-		     -community		=> $configs->{snmp_conf_community},
-                     -version		=> $configs->{snmp_conf_version},
-                     -timeout		=> $configs->{snmp_conf_timeout},
-                     -retries		=> $configs->{snmp_conf_retries},
+                     -port		=> $configs->{port},
+		     -community		=> $configs->{community},
+                     -version		=> $configs->{version},
+                     -timeout		=> $configs->{timeout},
+                     -retries		=> $configs->{retries},
                    );
     if (!defined($self->{session})) {
         $self->{errMsg} = "ERROR:  Cannot create session: $error\n";
@@ -87,12 +87,12 @@ sub initialize_session {
 
 
 ##############################################################################
-# close_session:  close instance's SNMP session
+# closeSession:  close instance's SNMP session
 #
 # Input:  <none>
 # Output: <none>
 #
-sub close_session {
+sub closeSession {
     my( $self ) = @_;
 
     if ($self->{session}) {
@@ -103,12 +103,12 @@ sub close_session {
 
 
 ##############################################################################
-# query_as_number:  query Juniper router for autonomous service number
+# queryAsNumber:  query Juniper router for autonomous service number
 #     associated with IP address.
 # Input:  IP address
 # Output: <none>
 #
-sub query_as_number {
+sub queryAsNumber {
     my( $self, $ipaddr ) = @_;
 
     if (!$self->{session}) {
@@ -130,11 +130,11 @@ sub query_as_number {
 
 
 ##############################################################################
-# query_lsp_snmpdata:  query LSP SNMP data from a Juniper router.
+# queryLspSnmp:  query LSP SNMP data from a Juniper router.
 # Input:  <none>
 # Output: <none>
 #
-sub query_lsp_snmpdata {
+sub queryLspSnmp {
     my( $self ) = @_;
 
     if (!$self->{session}) {
@@ -173,12 +173,12 @@ sub query_lsp_snmpdata {
 
 
 ##############################################################################
-# get_lsp_info:  returns LSP information retrieved from SNMP query.
+# queryLspInfo:  returns LSP information retrieved from SNMP query.
 # Input: lspName => name of LSP (optional)
 #        lspVar => which OID value to return (e.g. "mplsLspState") (optional)
 # Output: an array containing the lspName.lspVar and value
 #
-sub get_lsp_info {
+sub queryLspInfo {
     my( $self, $lspName, $lspVar ) = @_;
 
     my @lspNameArray = ();
@@ -225,11 +225,11 @@ sub get_lsp_info {
 
 
 ##############################################################################
-# get_error:  Return the error message (0 if none).
+# getError:  Return the error message (0 if none).
 # In:  <none>
 # Out: Error message
 #
-sub get_error {
+sub getError {
     my( $self ) = @_;
 
     return $self->{errMsg};
