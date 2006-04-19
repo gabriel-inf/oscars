@@ -88,8 +88,8 @@ function tse_addAuthorization(doc) {
 
     var params = 'component=AAA;method=ManageAuthorizations;' +
             'op=addAuthorization;' +
-            'user_login=' selected_user + ';resource_name=' + selected_resource +
-            ';permission_name=' + selected_permission + ';';
+            'login=' + selected_user + ';resourceName=' + selected_resource +
+            ';permissionName=' + selected_permission + ';';
     new_section(params);
     selected_resource = '';
     selected_permission = '';
@@ -100,6 +100,6 @@ function tse_addAuthorization(doc) {
 function tse_selectUser(cell) {
     selected_user = ts_getInnerText(cell);
     var params = 'component=AAA;method=ManageAuthorizations;' +
-           'op=selectUser;user_login=' + selected_user + ';';
+           'op=selectUser;login=' + selected_user + ';';
     return new_section(params);
 }
