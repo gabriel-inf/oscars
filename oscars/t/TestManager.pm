@@ -49,32 +49,31 @@ sub new {
 
 ###############################################################################
 #
-sub get_params {
+sub getParams {
     my( $self, $fname ) = @_;
 
-    $self->{plugin_mgr} = OSCARS::PluginManager->new();
+    $self->{pluginMgr} = OSCARS::PluginManager->new();
     $self->{db} = OSCARS::Database->new();
     my $params = {};
     my $parser = new XML::DOM::Parser;
     my $doc = $parser->parsefile( $fname );
-    my $nodes = $doc->getElementsByTagName( "param" );
-    my $n = $nodes->getLength;
+    my $testNodes = $doc->getElementsByTagName( "test" );
+    my $n = $testNodes->getLength;
     for (my $i = 0; $i < $n; $i++) {
-        my $node = $nodes->item ($i);
-        my $attr = $node->getAttributeNode( "name" );
+        my $testNode = $testNodes->item ($i);
+        my $attr = $testNode->getAttributeNode( "name" );
+	my $testName = $attr->getValue;
 	# TODO:  error checking
-        if ($attr) {
-	    my $name = $attr->getValue;
-            $attr = $node->getAttributeNode( "value" );
-	    $params->{$name} = $attr->getValue;
+        $params->{$testName} = {};
+     	# iterate over the children of the test node (params)
+        for my $paramNode ($testNode->getChildNodes) {
+	    if ($paramNode->getNodeType() ne ELEMENT_NODE) { next; }
+            $attr = $paramNode->getAttributeNode( "name" );
+	    my $paramName = $attr->getValue;
+            $attr = $paramNode->getAttributeNode( "value" );
+	    $params->{$testName}->{$paramName} = $attr->getValue;
 	}
     }
-    $self->{database} = $self->{plugin_mgr}->get_database($params->{component});
-    $self->{db}->connect($self->{database});
-    my $authN = $self->{plugin_mgr}->use_plugin('authentication');
-    my $credentials = $authN->get_credentials($params->{user_login},
-                                              'password');
-    $params->{user_password} = $credentials;
     return $params;
 } #____________________________________________________________________________
 
@@ -84,29 +83,34 @@ sub get_params {
 sub dispatch {
     my( $self, $params ) = @_;
 
-    if ( !$self->{client_mgr} ) {
-	my $database = $self->{plugin_mgr}->get_database('Intradomain');
-        $self->{client_mgr} = OSCARS::ClientManager->new(
+    $self->{database} = $self->{pluginMgr}->getDatabase($params->{component});
+    $self->{db}->connect($self->{database});
+    my $authN = $self->{pluginMgr}->usePlugin('authentication');
+    my $credentials = $authN->getCredentials($params->{login}, 'password');
+    $params->{password} = $credentials;
+    if ( !$self->{clientMgr} ) {
+	my $database = $self->{pluginMgr}->getDatabase('Intradomain');
+        $self->{clientMgr} = OSCARS::ClientManager->new(
 	                                       'database' => $database);
     }
-    my $som = $self->{client_mgr}->get_client()->dispatch($params);
-    return $som;
+    my $som = $self->{clientMgr}->getClient()->dispatch($params);
+    if ($som->faultstring) { return( $som->faultstring, undef ); }
+    return( undef, $som->result );
 } #____________________________________________________________________________
 
 
 ###############################################################################
 # Only used by intradomain tests.
 #
-sub get_intradomain_configs {
-    my( $self, $test_name ) = @_;
+sub getIntradomainConfigs {
+    my( $self, $testName ) = @_;
 
-    my $statement = "SELECT * FROM $self->{database}.test_addresses a " .
-        "INNER JOIN $self->{database}.test_confs t ON a.test_conf_id = t.test_conf_id " .
-        'WHERE t.test_name = ?';
-    my $rows = $self->{db}->do_query($statement, $test_name);
+    my $statement = "SELECT * FROM testAddresses a " .
+        "INNER JOIN testConfs t ON a.testConfId = t.id WHERE t.name = ?";
+    my $rows = $self->{db}->doQuery($statement, $testName);
     my $configs = {};
     for my $row (@$rows) {
-        $configs->{$row->{test_address_description}} = $row->{test_address};
+        $configs->{$row->{description}} = $row->{address};
     }
     return $configs;
 } #____________________________________________________________________________
