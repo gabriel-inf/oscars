@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -36,9 +36,9 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# post_process:  In this case, closes CGI session.
+# postProcess:  In this case, closes CGI session.
 #
-sub post_process {
+sub postProcess {
     my( $self, $params, $results ) = @_;
 
     my $session = OSCARS::WBUI::UserSession->new();

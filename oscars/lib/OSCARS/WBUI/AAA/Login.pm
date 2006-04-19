@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -51,11 +51,11 @@ sub authenticate {
 # output:  overrides superclass; formats and prints information page
 #
 sub output {
-    my( $self, $som, $soap_params, $authorizations ) = @_;
+    my( $self, $som, $soapParams, $authorizations ) = @_;
 
     my $msg;
 
-    if (!$som) { $msg = "SOAP call $soap_params->{method} failed"; }
+    if (!$som) { $msg = "SOAP call $soapParams->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     # if there was an error
     if ($msg) {
@@ -74,20 +74,20 @@ sub output {
 	        -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
     print "<xml>\n";
     $self->{tabs}->output( 'Info', $authorizations );
-    $msg = $self->output_div($results, $authorizations);
+    $msg = $self->outputDiv($results, $authorizations);
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-sub output_div {
+sub outputDiv {
     my( $self, $results, $authorizations ) = @_;
 
     my $info = OSCARS::WBUI::Info->new();
-    my $msg = $info->output_div($results, $authorizations);
+    my $msg = $info->outputDiv($results, $authorizations);
     # override in this case
-    $msg = "User $results->{user_login} signed in.\n";
+    $msg = "User $results->{login} signed in.\n";
     return $msg;
 } #____________________________________________________________________________
 

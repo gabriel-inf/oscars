@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 17, 2006
 
 =cut
 
@@ -36,7 +36,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Currently a noop.
 #
 sub make_call {
-    my( $self, $soap_server, $soap_params ) = @_;
+    my( $self, $soapServer, $soapParams ) = @_;
 
     return undef;
 } #____________________________________________________________________________ 
@@ -46,14 +46,14 @@ sub make_call {
 # output:  formats and prints information page
 #
 sub output {
-    my( $self, $som, $soap_params, $authorizations ) = @_;
+    my( $self, $som, $soapParams, $authorizations ) = @_;
 
     my $msg;
 
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
     $self->{tabs}->output( 'Info', $authorizations );
-    $msg = $self->output_div(undef, $authorizations);
+    $msg = $self->outputDiv(undef, $authorizations);
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
@@ -61,7 +61,7 @@ sub output {
 
 ###############################################################################
 # Outputs information section.
-sub output_div {
+sub outputDiv {
     my( $self, $results, $authorizations ) = @_;
 
     my $msg = "Information page";
@@ -92,7 +92,7 @@ sub output_div {
       </div>
     };
     return $msg;
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ######

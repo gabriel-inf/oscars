@@ -33,12 +33,12 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# modify_params:  resets method name and adds op name
+# modifyParams:  resets method name and adds op name
 #
-sub modify_params {
+sub modifyParams {
     my( $self ) = @_;
 
-    my $params = $self->SUPER::modify_params();
+    my $params = $self->SUPER::modifyParams();
     $params->{method} = 'ManageUsers';
     $params->{op} = 'addUserForm';
     return $params;
@@ -46,12 +46,12 @@ sub modify_params {
 
 
 ###############################################################################
-# output_div: print add user form.
+# outputDiv: print add user form.
 #
-sub output_div {
+sub outputDiv {
     my( $self, $results, $authorizations ) = @_;
 
-    my $submit_str = "return submit_form(this,
+    my $submitStr = "return submit_form(this,
                                'component=AAA;method=ManageUsers;op=addUser;',
 			       check_add_user);";
     my $msg = "Add User Form";
@@ -59,46 +59,46 @@ sub output_div {
     <div>
     <h3>Add a new user</h3>
     <p>Required fields are outlined in green.</p>
-    <form method='post' action='' onsubmit="$submit_str">
+    <form method='post' action='' onsubmit="$submitStr">
     <table>
     <tbody>
     <tr>
       <td>Login Name</td>
-      <td><input class='required' type='text' name='selected_user' size='40'></input></td>
+      <td><input class='required' type='text' name='selectedUser' size='40'></input></td>
     </tr>
     <tr>
       <td>Password (Enter twice)</td>
-      <td><input class='required' type='password' name='password_new_once' 
+      <td><input class='required' type='password' name='passwordNewOnce' 
            size='40'></input>
       </td>
     </tr>
     <tr>
       <td>Password Confirmation</td>
-      <td><input class='required' type='password' name='password_new_twice' 
+      <td><input class='required' type='password' name='passwordNewTwice' 
            size='40'></input>
       </td>
     </tr>
  
     <tr>
       <td>First Name</td>
-      <td><input class='required' type='text' name='user_first_name'
+      <td><input class='required' type='text' name='firstName'
            size='40' value=''></input>
       </td>
     </tr>
     <tr>
       <td>Last Name</td>
-      <td><input class='required' type='text' name='user_last_name' size='40'>
+      <td><input class='required' type='text' name='lastName' size='40'>
           </input>
       </td>
     </tr>
     <tr>
       <td>Organization</td>
-      <td><select class='requiredMenu' name='institution_name'>
+      <td><select class='requiredMenu' name='institutionName'>
     } );
-    my $institution_list = $results->{institution_list};
-    for my $row (@$institution_list) {
-        print( "<option value='$row->{institution_name}'>" .
-              "$row->{institution_name}</option>" );
+    my $institutionList = $results->{institutionList};
+    for my $row (@$institutionList) {
+        print( "<option value='$row->{institutionName}'>" .
+              "$row->{institutionName}</option>" );
     }
     print( qq{
         </select>
@@ -106,29 +106,29 @@ sub output_div {
     </tr>
     <tr>
       <td>Personal Description</td>
-      <td><input type='text' name='user_description' size='40'></input>
+      <td><input type='text' name='description' size='40'></input>
       </td>
     </tr>
     <tr>
       <td>E-mail (Primary)</td>
-      <td><input class='required' type='text' name='user_email_primary'
+      <td><input class='required' type='text' name='emailPrimary'
            size='40'></input>
       </td>
     </tr>
     <tr>
       <td>E-mail (Secondary)</td>
-      <td><input type='text' name='user_email_secondary' size='40'></input>
+      <td><input type='text' name='emailSecondary' size='40'></input>
       </td>
     </tr>
     <tr>
       <td>Phone Number (Primary)</td>
-      <td><input class='required' type='text' name='user_phone_primary'
+      <td><input class='required' type='text' name='phonePrimary'
            size='40'></input>
       </td>
     </tr>
     <tr>
       <td>Phone Number (Secondary)</td>
-      <td><input type='text' name='user_phone_secondary' size='40'></input>
+      <td><input type='text' name='phoneSecondary' size='40'></input>
       </td>
     </tr>
     </tbody>

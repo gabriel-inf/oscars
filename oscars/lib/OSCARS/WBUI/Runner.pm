@@ -21,7 +21,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-February 22, 2006
+April 17, 2006
 
 =cut
 
@@ -40,15 +40,15 @@ use OSCARS::WBUI::SOAPAdapter;
 ###############################################################################
 #
 sub run {
-    my $soap_uri = 'http://localhost:2000/OSCARS/Dispatcher';
-    my $soap_proxy = 'http://localhost:2000/Server';
+    my $soapURI = 'http://localhost:2000/OSCARS/Dispatcher';
+    my $soapProxy = 'http://localhost:2000/Server';
     my $cgi = CGI->new();
-    my $soap_server = SOAP::Lite
-                          -> uri( $soap_uri )
-                          -> proxy( $soap_proxy );
+    my $soapServer = SOAP::Lite
+                          -> uri( $soapURI )
+                          -> proxy( $soapProxy );
     my $factory = OSCARS::WBUI::SOAPAdapterFactory->new();
     my $adapter = $factory->instantiate($cgi);
-    $adapter->handle_request($soap_server);
+    $adapter->handleRequest($soapServer);
 } #____________________________________________________________________________
 
 

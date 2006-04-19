@@ -45,9 +45,9 @@ sub new {
 #         authorization.
 #
 sub output {
-    my( $self, $active_tab, $authorizations ) = @_;
+    my( $self, $activeTab, $authorizations ) = @_;
 
-    my( $active_status, $op );
+    my( $activeStatus, $op );
 
     print qq{
       <navigation-bar>
@@ -55,85 +55,85 @@ sub output {
     };
     my $component = 'Intradomain';
     my $method = 'ListReservations';
-    if ( $method eq $active_tab ) { $active_status = 'active'; }
-    else { $active_status = 'inactive'; }
+    if ( $method eq $activeTab ) { $activeStatus = 'active'; }
+    else { $activeStatus = 'inactive'; }
     print qq{
       <li>
         <a style="/styleSheets/layout.css" title="View/edit reservations"
            onclick="return new_section('component=$component;method=$method;');"
-           class='$active_status' href="#">Reservations</a>
+           class='$activeStatus' href="#">Reservations</a>
       </li>
     };
     my $method = 'CreateReservationForm';
-    if ( $method eq $active_tab ) { $active_status = 'active'; }
-    else { $active_status = 'inactive'; }
+    if ( $method eq $activeTab ) { $activeStatus = 'active'; }
+    else { $activeStatus = 'inactive'; }
     print qq{
       <li>
         <a style="/styleSheets/layout.css" title="Create an OSCARS reservation"
            onclick="return new_section('component=$component;method=$method;');"
-           class='$active_status' href="#">Create Reservation</a>
+           class='$activeStatus' href="#">Create Reservation</a>
       </li>
     };
     $component = 'AAA';
     if ( $authorizations && $authorizations->{ManageUsers} ) {
 	$method = 'ManageUsers';
-	$op = 'viewUsers';
-        if ( $method eq $active_tab ) { $active_status = 'active'; }
-        else { $active_status = 'inactive'; }
+	$op = 'listUsers';
+        if ( $method eq $activeTab ) { $activeStatus = 'active'; }
+        else { $activeStatus = 'inactive'; }
         print qq{
           <li>
             <a style='/styleSheets/layout.css' title='Manage user accounts'
                onclick="return new_section('component=$component;method=$method;op=$op;');"
-               class='$active_status' href="#">Users</a>
+               class='$activeStatus' href="#">Users</a>
           </li>
         };
     }
     else {
 	$method = 'UserProfile';
-	$op = 'viewProfile';
-        if ( $method eq $active_tab ) { $active_status = 'active'; }
-        else { $active_status = 'inactive'; }
+	$op = 'queryProfile';
+        if ( $method eq $activeTab ) { $activeStatus = 'active'; }
+        else { $activeStatus = 'inactive'; }
         print qq{
           <li>
             <a style="/styleSheets/layout.css" title="View/edit my profile"
                onclick="return new_section('component=$component;method=$method;op=$op;');"
-               class='$active_status' href="#">User Profile</a>
+               class='$activeStatus' href="#">User Profile</a>
           </li>
         };
     }
     if ( $authorizations && $authorizations->{ManageUsers} ) {
       $method = 'ManageResources';
-      $op = 'viewResources';
-      if ( $method eq $active_tab ) { $active_status = 'active'; }
-      else { $active_status = 'inactive'; }
+      $op = 'listResources';
+      if ( $method eq $activeTab ) { $activeStatus = 'active'; }
+      else { $activeStatus = 'inactive'; }
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage resources"
              onclick="return new_section('component=$component;method=$method;op=$op;');"
-             class='$active_status' href="#">Resources</a>
+             class='$activeStatus' href="#">Resources</a>
         </li>
       };
 
       $method = 'ManageAuthorizations';
-      if ( $method eq $active_tab ) { $active_status = 'active'; }
-      else { $active_status = 'inactive'; }
-      $op = 'viewAuthorizations';
+      if ( $method eq $activeTab ) { $activeStatus = 'active'; }
+      else { $activeStatus = 'inactive'; }
+      $op = 'listAuthorizations';
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage authorizations"
              onclick="return new_section('component=$component;method=$method;op=$op;');"
-             class='$active_status' href="#">Authorizations</a>
+             class='$activeStatus' href="#">Authorizations</a>
         </li>
       };
     }
     $method = 'Info';
-    if ( $method eq $active_tab ) { $active_status = 'active'; }
-    else { $active_status = 'inactive'; }
+    if ( $method eq $activeTab ) { $activeStatus = 'active'; }
+    else { $activeStatus = 'inactive'; }
     print qq{
       <li>
         <a style='/styleSheets/layout.css' title='Information page'
            onclick="return new_section('method=$method;');"
-           class='$active_status' href="#">Information</a>
+           class='$activeStatus' href="#">Information</a>
       </li>
     };
     print qq{
@@ -144,7 +144,8 @@ sub output {
       </ul>
       </navigation-bar>
     };
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
+
 
 ######
 1;

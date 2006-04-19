@@ -32,43 +32,41 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# handle_request:  overrides superclass to just handle portions necessary
+# handleRequest:  overrides superclass to just handle portions necessary
 #
-sub handle_request {
-    my( $self, $soap_server ) = @_;
+sub handleRequest {
+    my( $self, $soapServer ) = @_;
 
-    my( $user_login, $authorizations ) = $self->authenticate();
-    if ( !$user_login ) { return; }
+    my( $login, $authorizations ) = $self->authenticate();
+    if ( !$login ) { return; }
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
     $self->{tabs}->output( 'CreateReservationForm', $authorizations );
-    my $msg = $self->output_div($user_login, $authorizations);
+    my $msg = $self->outputDiv($login, $authorizations);
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# output_div:  prints out the reservation creation form
+# outputDiv:  prints out the reservation creation form
 #              accessible from the "Create Reservation" notebook tab
 # In:   user login name, and authorizations
 # Out:  message string
 #
-sub output_div {
-    my( $self, $user_login, $authorizations ) = @_;
-
-    my $params_str;
+sub outputDiv {
+    my( $self, $login, $authorizations ) = @_;
 
     my $msg = "Reservation creation form";
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-               'component=Intradomain;method=CreateNSI;',
+               'component=Intradomain;method=createNSI;',
 	       check_reservation);">
-      <input type='hidden' name='reservation_start_time'></input>
-      <input type='hidden' name='reservation_end_time'></input>
-      <input type='hidden' name='user_login' value='$user_login'></input>
+      <input type='hidden' name='startTime'></input>
+      <input type='hidden' name='endTime'></input>
+      <input type='hidden' name='login' value='$login'></input>
       <input type='submit' value='Reserve bandwidth'></input>
       <input type='reset' value='Reset form fields'></input>
 
@@ -88,37 +86,37 @@ sub output_div {
       <tbody>
       <tr><td>Source</td>
         <td class='required'>
-          <input type='text' name='source_host' size='40'></input></td>
+          <input type='text' name='srcHost' size='40'></input></td>
         <td>(Host name or IP address)</td></tr>
       <tr><td>Source port</td>
-        <td><input type='text' name='reservation_src_port' maxlength='5' size='40'> 
+        <td><input type='text' name='srcPort' maxlength='5' size='40'> 
              </input>
         </td>
 	<td>(1024-65535)</td></tr>
       <tr><td>Destination</td>
         <td class='required'>
-          <input type='text' name='destination_host' size='40'></input></td>
+          <input type='text' name='destHost' size='40'></input></td>
         <td>(Host name or IP address)</td></tr>
       <tr><td>Destination port</td>
-        <td><input type='text' name='reservation_dst_port' maxlength='5' size='40'>
+        <td><input type='text' name='destPort' maxlength='5' size='40'>
 	    </input></td>
 	<td>(1024-65535)</td></tr>
       <tr><td>Bandwidth (Mbps)</td>
         <td class='required'>
-          <input type='text' name='reservation_bandwidth' maxlength='7' size='40'>
+          <input type='text' name='bandwidth' maxlength='7' size='40'>
           </input>
 	</td>
         <td>(10-10000)</td></tr>
       <tr><td>Protocol</td>
-        <td><input type='text' name='reservation_protocol' size='40'></input></td>
+        <td><input type='text' name='protocol' size='40'></input></td>
 	<td>(0-255, or string)</td></tr>
       <tr><td>Differentiated service code point</td>
-        <td><input type='text' name='reservation_dscp' maxlength='2' size='40'>
+        <td><input type='text' name='dscp' maxlength='2' size='40'>
 	    </input></td>
 	<td>(0-63)</td></tr>
       <tr><td>Purpose of reservation</td>
         <td class='required'>
-	    <input type='text' name='reservation_description' size='40'></input></td>
+	    <input type='text' name='description' size='40'></input></td>
         <td>(For our records)</td></tr>
     } );
     if ($authorizations->{ManageDomains}) {
@@ -126,35 +124,35 @@ sub output_div {
       <tr>
         <td>Ingress loopback</td>
         <td class='warning'>
-	    <input type='text' name='ingress_router' size='40'></input>
+	    <input type='text' name='ingressRouter' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
 	</tr>
       <tr>
         <td>Egress loopback</td>
         <td class='warning'>
-	    <input type='text' name='egress_router' size='40'></input>
+	    <input type='text' name='egressRouter' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
       </tr>
       } );
     }
-    my @local_settings = localtime();
-    my $year = $local_settings[5] + 1900;
-    my $month = $local_settings[4] + 1;
+    my @localSettings = localtime();
+    my $year = $localSettings[5] + 1900;
+    my $month = $localSettings[4] + 1;
 
-    my $date = $local_settings[3];
-    my $hour = $local_settings[2];
-    my $minute = $local_settings[1];
+    my $date = $localSettings[3];
+    my $hour = $localSettings[2];
+    my $minute = $localSettings[1];
     print( qq{
       <tr><td>Year</td>
-        <td><input type='text' name='start_year' maxlength='4' size='40'></input></td>
+        <td><input type='text' name='startYear' maxlength='4' size='40'></input></td>
         <td>$year</td></tr>
       <tr><td>Month</td>
-        <td><input type='text' name='start_month' maxlength='2' size='40'></input></td>
+        <td><input type='text' name='startMonth' maxlength='2' size='40'></input></td>
 	<td>$month (1-12)</td></tr>
 	<tr><td>Date</td>
-        <td><input type='text' name='start_date' maxlength='2' size='40'></input></td>
+        <td><input type='text' name='startDate' maxlength='2' size='40'></input></td>
 	<td>$date (1-31)</td></tr>
 
       <tr><td>UTC offset</td>
@@ -163,13 +161,13 @@ sub output_div {
       </tr>
 
       <tr><td>Hour</td>
-        <td><input type='text' name='start_hour' maxlength='2' size='40'></input></td>
+        <td><input type='text' name='startHour' maxlength='2' size='40'></input></td>
 	<td>$hour (0-23)</td></tr>
       <tr><td>Minute</td>
-        <td><input type='text' name='start_minute' maxlength='2' size='40'></input></td>
+        <td><input type='text' name='startMinute' maxlength='2' size='40'></input></td>
 	<td>$minute (0-59)</td></tr>
       <tr><td>Duration (Hours)</td>
-        <td><input type='text' name='duration_hour' maxlength='16' size='40'></input>
+        <td><input type='text' name='durationHour' maxlength='16' size='40'></input>
        	</td>
 	<td>0.01 (0.01 to Indefinite)</td></tr>
     } );

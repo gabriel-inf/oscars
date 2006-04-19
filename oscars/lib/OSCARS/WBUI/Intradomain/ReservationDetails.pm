@@ -45,16 +45,16 @@ sub new {
 sub output {
     my( $self, $results, $authorizations ) = @_;
 
-    my $end_time;
+    my $endTime;
 
-    if ($results->{reservation_end_time} ne '2039-01-01 00:00:00') {
-        $end_time = $results->{reservation_end_time};
+    if ($results->{endTime} ne '2039-01-01 00:00:00') {
+        $endTime = $results->{endTime};
     }
-    else { $end_time = 'PERSISTENT'; }
-    my $src_port = $results->{reservation_src_port} || 'DEFAULT';
-    my $dst_port = $results->{reservation_dst_port} || 'DEFAULT';
-    my $protocol = $results->{reservation_protocol} || 'DEFAULT';
-    my $dscp = $results->{reservation_dscp} || 'DEFAULT';
+    else { $endTime = 'PERSISTENT'; }
+    my $srcPort = $results->{srcPort} || 'DEFAULT';
+    my $destPort = $results->{destPort} || 'DEFAULT';
+    my $protocol = $results->{protocol} || 'DEFAULT';
+    my $dscp = $results->{dscp} || 'DEFAULT';
 
     my $msg = "Successfully got reservation details.";
     print( qq{
@@ -64,26 +64,26 @@ sub output {
     <p>
     } );
 
-    if (($results->{reservation_status} eq 'pending') ||
-        ($results->{reservation_status} eq 'active')) {
-        my $cancel_submit_str = "return submit_form(this,
-             'component=Intradomain;method=CancelNSI;');";
+    if (($results->{status} eq 'pending') ||
+        ($results->{status} eq 'active')) {
+        my $cancelSubmitStr = "return submit_form(this,
+             'component=Intradomain;method=cancelNSI;');";
         print( qq{
-        <form method="post" action="" onsubmit="$cancel_submit_str">
-        <input type='hidden' name='reservation_id'
-           value="$results->{reservation_id}"></input>
+        <form method="post" action="" onsubmit="$cancelSubmitStr">
+        <input type='hidden' name='id'
+           value="$results->{id}"></input>
         <input type='submit' value='CANCEL'>
 	</input>
         </form>
         } );
     }
 
-    my $refresh_submit_str = "return submit_form(this,
-             'component=Intradomain;method=QueryNSI;');";
+    my $refreshSubmitStr = "return submit_form(this,
+             'component=Intradomain;method=queryNSI;');";
     print( qq{
-    <form method="post" action="" onsubmit="$refresh_submit_str">
-    <input type='hidden' name='reservation_id'
-           value="$results->{reservation_id}"></input>
+    <form method="post" action="" onsubmit="$refreshSubmitStr">
+    <input type='hidden' name='id'
+           value="$results->{id}"></input>
     <input type='submit' value='Refresh'>
     </input>
     </form>
@@ -91,39 +91,39 @@ sub output {
     <table width='90%' class='sortable'>
       <thead><tr><td>Attribute</td><td>Value</td></tr></thead>
       <tbody>
-      <tr><td>Tag</td><td>$results->{reservation_tag}</td></tr>
-      <tr><td>User</td><td>$results->{user_login}</td></tr> 
-      <tr><td>Description</td><td>$results->{reservation_description}</td></tr>
-      <tr><td>Start time</td><td>$results->{reservation_start_time}</td></tr>
-      <tr><td>End time</td><td>$end_time</td></tr>
-      <tr><td>Created time</td><td>$results->{reservation_created_time}</td></tr>
-      <tr><td>Bandwidth</td><td>$results->{reservation_bandwidth}</td></tr>
-      <tr><td>Burst limit</td><td>$results->{reservation_burst_limit}</td></tr>
-      <tr><td>Status</td><td>$results->{reservation_status}</td></tr>
-      <tr><td>Source</td><td>$results->{source_host}</td></tr>
-      <tr><td>Destination</td><td>$results->{destination_host}</td></tr>
-      <tr><td>Source port</td><td>$src_port</td></tr>
-      <tr><td>Destination port</td><td>$dst_port</td></tr>
+      <tr><td>Tag</td><td>$results->{tag}</td></tr>
+      <tr><td>User</td><td>$results->{login}</td></tr> 
+      <tr><td>Description</td><td>$results->{description}</td></tr>
+      <tr><td>Start time</td><td>$results->{startTime}</td></tr>
+      <tr><td>End time</td><td>$endTime</td></tr>
+      <tr><td>Created time</td><td>$results->{createdTime}</td></tr>
+      <tr><td>Bandwidth</td><td>$results->{bandwidth}</td></tr>
+      <tr><td>Burst limit</td><td>$results->{burstLimit}</td></tr>
+      <tr><td>Status</td><td>$results->{status}</td></tr>
+      <tr><td>Source</td><td>$results->{srcHost}</td></tr>
+      <tr><td>Destination</td><td>$results->{destHost}</td></tr>
+      <tr><td>Source port</td><td>$srcPort</td></tr>
+      <tr><td>Destination port</td><td>$destPort</td></tr>
       <tr><td>Protocol</td><td>$protocol</td></tr>
       <tr><td>DSCP</td><td>$dscp</td></tr>
     } );
     if ( $authorizations->{ManageDomains} ) {
         print( qq{
-        <tr><td>Class</td><td>$results->{reservation_class}</td></tr>
-        <tr><td>Ingress router</td><td>$results->{ingress_router}</td></tr>
-        <tr><td>Ingress loopback</td><td>$results->{ingress_ip}</td></tr>
-        <tr><td>Egress router</td><td>$results->{egress_router}</td></tr>
-        <tr><td>Egress loopback</td><td>$results->{egress_ip}</td></tr>
+        <tr><td>Class</td><td>$results->{class}</td></tr>
+        <tr><td>Ingress router</td><td>$results->{ingressRouter}</td></tr>
+        <tr><td>Ingress loopback</td><td>$results->{ingressIP}</td></tr>
+        <tr><td>Egress router</td><td>$results->{egressRouter}</td></tr>
+        <tr><td>Egress loopback</td><td>$results->{egressIP}</td></tr>
         <tr><td>Routers in path</td>
         <td>
         } );
-        my $path_str = '';
-        for $_ (@{$results->{reservation_path}}) {
-            $path_str .= $_ . ' - ';
+        my $pathStr = '';
+        for $_ (@{$results->{path}}) {
+            $pathStr .= $_ . ' - ';
         }
         # remove last '-'
-        substr($path_str, -3, 3) = '';
-        print("$path_str </td> </tr>");
+        substr($pathStr, -3, 3) = '';
+        print("$pathStr </td> </tr>");
     }
     print( qq{
       </tbody>

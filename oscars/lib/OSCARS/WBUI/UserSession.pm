@@ -23,7 +23,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-March 24, 2006
+April 17, 2006
 
 =cut
 
@@ -47,7 +47,7 @@ sub new {
 
 ###############################################################################
 # start: Sets session parameters.  Used by verify to make sure that browser
-#   request has same session id, and has a user_login parameter set.
+#   request has same session id, and has a login parameter set.
 #   Note that this does not handle checking whether the user is in 
 #   the database; that is handled by a method in the AAA prior to calling
 #   this method.
@@ -61,8 +61,8 @@ sub start
 
     my $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
     my $sid = $session->id();
-    $session->param('user_login', $results->{user_login});
-    $session->param('last_page', $results->{GetInfo});
+    $session->param('login', $results->{login});
+    $session->param('lastPage', $results->{GetInfo});
     $session->param('authorized', $results->{authorized});
     $session->expire('+8h');  # expire after 8 hours
     return $sid;
@@ -82,15 +82,15 @@ sub verify
 
     my $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
     #if ( $session->is_expired ) { return 0; }
-    my $user_login = $session->param("user_login");
+    my $login = $session->param("login");
     my $authorized = $session->param("authorized");
 
-    # If there is no user_login parameter, session is invalid
-    if (!$user_login)  { return undef; }
+    # If there is no login parameter, session is invalid
+    if (!$login)  { return undef; }
     # CGI::Session doesn't quite work as advertised
-    $cgi->param(-name=>'user_login',-value=>$user_login);
+    $cgi->param(-name=>'login',-value=>$login);
     $cgi->param(-name=>'authorized',-value=>$authorized);
-    return( $user_login, $authorized);
+    return( $login, $authorized);
 } #____________________________________________________________________________
 
 
@@ -100,8 +100,8 @@ sub end
     my( $self, $cgi ) = @_;
   
     my $session = CGI::Session->new(undef, $cgi, {Directory => "/tmp"});
-    #$session->clear(["user_login"]);
-    #$session->clear(["last_page"]);
+    #$session->clear(["login"]);
+    #$session->clear(["lastPage"]);
     $session->delete();
 } #____________________________________________________________________________
 

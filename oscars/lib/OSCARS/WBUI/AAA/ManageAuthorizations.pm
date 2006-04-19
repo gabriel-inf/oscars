@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 12, 2006
+April 17, 2006
 
 =cut
 
@@ -35,11 +35,11 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output_div:  print authorizations form, with results retrieved 
+# outputDiv:  print authorizations form, with results retrieved 
 # via SOAP call
 #
-sub output_div {
-    my( $self, $results, $user_tab_authorizations ) = @_;
+sub outputDiv {
+    my( $self, $results, $userTabAuths ) = @_;
 
     my $msg = "OSCARS authorizations";
     print( qq{
@@ -52,26 +52,26 @@ sub output_div {
     <table width='90%' class='auth-ui'>
     <tr>
     } );
-    $self->grantee_table('Users', $results->{users}, 'user_login');
+    $self->granteeTable('Users', $results->{users}, 'login');
     # No roles at the moment.
-    #$self->grantee_table('Roles', $results->{roles}, 'user_login');
-    $self->authorizations_table($results);
+    #$self->granteeTable('Roles', $results->{roles}, 'login');
+    $self->authorizationsTable($results);
     print("</tr></table></form></div>\n");
     return $msg;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# grantee_table:  output table listing users or roles that can be
+# granteeTable:  output table listing users or roles that can be
 #     assigned authorizations
 #
-sub grantee_table {
-    my( $self, $header_name, $results, $key ) = @_;
+sub granteeTable {
+    my( $self, $headerName, $results, $key ) = @_;
 
     print( qq{
       <td class='auth-ui-td'>
-      <table id='Authorizations.$header_name' class='sortable'>
-        <thead><tr><td>$header_name</td></tr></thead>
+      <table id='Authorizations.$headerName' class='sortable'>
+        <thead><tr><td>$headerName</td></tr></thead>
         <tbody>
     } );
     for my $name (sort keys %{$results}) {
@@ -82,9 +82,9 @@ sub grantee_table {
 
 
 ###############################################################################
-# authorizations_table:  output authorizations table
+# authorizationsTable:  output authorizations table
 #
-sub authorizations_table {
+sub authorizationsTable {
     my( $self, $results ) = @_;
 
     print( qq{

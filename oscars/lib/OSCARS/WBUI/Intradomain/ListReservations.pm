@@ -33,12 +33,12 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output_div:  Print list of all reservations if the caller has engr privileges, 
+# outputDiv:  Print list of all reservations if the caller has engr privileges, 
 #          otherwise just print that user's reservations
 # In:   results of SOAP call
 # Out:  None
 #
-sub output_div {
+sub outputDiv {
     my ( $self, $results, $authorizations ) = @_;
 
     my $msg = "Successfully retrieved reservations.";
@@ -49,7 +49,7 @@ sub output_div {
     detailed information about the reservation.</p>
 
     <p><form method="post" action="" onsubmit="return submit_form(this, 
-        'component=Intradomain;method=ListReservations;');">
+        'component=Intradomain;method=listReservations;');">
     <input type='submit' value='Refresh'></input>
     </form></p>
 
@@ -62,40 +62,40 @@ sub output_div {
     <tbody>
     } );
     my $reservations = $results->{list};
-    for my $row (@$reservations) { $self->print_row( $row ); }
+    for my $row (@$reservations) { $self->printRow( $row ); }
     print("</tbody></table></div>\n");
     return $msg;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# print_row:  print the table row corresponding to one reservation
+# printRow:  print the table row corresponding to one reservation
 #
 # In:   one row of results from SOAP call
 # Out:  None
 #
-sub print_row {
+sub printRow {
     my( $self, $row ) = @_;
 
-    my( $end_time );
+    my( $endTime );
 
-    if ($row->{reservation_end_time} ne '2039-01-01 00:00:00') {
-        $end_time = $row->{reservation_end_time};
+    if ($row->{endTime} ne '2039-01-01 00:00:00') {
+        $endTime = $row->{endTime};
     }
-    else { $end_time = 'PERSISTENT'; }
+    else { $endTime = 'PERSISTENT'; }
     print( qq{
     <tr>
       <td>
       <a href='#' style='/styleSheets/layout.css'
        onclick="return new_section(
-       'component=Intradomain;method=QueryNSI;reservation_id=$row->{reservation_id};');"
-          >$row->{reservation_tag}</a>
+       'component=Intradomain;method=queryNSI;id=$row->{id};');"
+          >$row->{tag}</a>
       </td>
-      <td>$row->{reservation_start_time}</td>
-      <td>$end_time</td>
-      <td>$row->{reservation_status}</td>
-      <td>$row->{source_host}</td>
-      <td>$row->{destination_host}</td>
+      <td>$row->{startTime}</td>
+      <td>$endTime</td>
+      <td>$row->{status}</td>
+      <td>$row->{srcHost}</td>
+      <td>$row->{destHost}</td>
     </tr>
     } );
 } #____________________________________________________________________________

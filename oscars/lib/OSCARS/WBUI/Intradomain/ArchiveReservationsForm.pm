@@ -34,29 +34,27 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 ###############################################################################
 # Currently a noop.
 #
-sub make_call {
-    my( $self, $soap_server, $soap_params ) = @_;
+sub makeCall {
+    my( $self, $soapServer, $soapParams ) = @_;
 
     return {};
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# output_div:  Prints out the archive reservations form.  Accessed via a button on 
-#          the "View/Edit Reservations" page
+# outputDiv:  Prints out the archive reservations form.  Not functional yet. 
+#
 # In:   results of SOAP call
 # Out:  None
 #
-sub output_div {
+sub outputDiv {
     my( $self, $results, $authorizations ) = @_;
-
-    my $params_str;
 
     my $msg = "Reservation archiving form";
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-	     'component=Intradomain;method=ArchiveReservations;');">
+	     'component=Intradomain;method=archiveReservations;');">
 
      <p>Required inputs are bordered in green.  Ranges or types of valid 
      entries are given in parentheses below the input fields.</p>

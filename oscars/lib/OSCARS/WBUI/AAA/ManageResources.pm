@@ -34,9 +34,9 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# output_div:  print resources form, with results retrieved via SOAP call
+# outputDiv:  print resources form, with results retrieved via SOAP call
 #
-sub output_div {
+sub outputDiv {
     my( $self, $results, $authorizations ) = @_;
 
     my $msg = "OSCARS resources";
@@ -51,22 +51,22 @@ sub output_div {
     <table width='90%' class='auth-ui'>
     <tr>
     } );
-    $self->entry_fields();
-    $self->component_table('Resources', $results->{resources}, 'resource_name');
-    $self->component_table('Permissions', $results->{permissions},
-                        'permission_name');
-    $self->ops_table();
-    $self->resource_permissions_table($results->{resource_permissions});
+    $self->entryFields();
+    $self->componentTable('Resources', $results->{resources}, 'resourceName');
+    $self->componentTable('Permissions', $results->{permissions},
+                        'permissionName');
+    $self->opsTable();
+    $self->resourcePermissionsTable($results->{resourcePermissions});
     print("</tr></table></form></div>\n");
     return $msg;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# entry_fields:  print nested tables for entering resource and permissions
+# entryFields:  print nested tables for entering resource and permissions
 #     information.
 #
-sub entry_fields {
+sub entryFields {
     my( $self ) = @_;
 
     print( qq{
@@ -75,22 +75,22 @@ sub entry_fields {
     <tbody>
     <tr>
     } );
-    $self->resource_entry_fields();
+    $self->resourceEntryFields();
     print("</tr><tr>");
-    $self->permission_entry_fields();
+    $self->permissionEntryFields();
     print("</tr></tbody></table></td>\n");
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# resource_entry_fields:  print fields for adding new resource information.
+# resourceEntryFields:  print fields for adding new resource information.
 #
-sub resource_entry_fields {
+sub resourceEntryFields {
     my( $self ) = @_;
 
-    my $add_submit_str = "return submit_form(this,
+    my $addSubmitStr = "return submit_form(this,
                     'component=AAA;method=ManageResources;op=addResource;');";
-    my $delete_submit_str = "return submit_form(this,
+    my $deleteSubmitStr = "return submit_form(this,
                     'component=AAA;method=ManageResources;op=deleteResource;');";
     print( qq{
     <td class='auth-ui-td'>
@@ -98,7 +98,7 @@ sub resource_entry_fields {
     <tbody>
     <tr>
       <td>Resource Name</td>
-      <td><input class='required' type='text' name='resource_name'
+      <td><input class='required' type='text' name='name'
            value=''></input>
       </td>
       <td><input type='button' onclick='return tse_addResource(this);' 
@@ -107,7 +107,7 @@ sub resource_entry_fields {
     </tr>
     <tr>
       <td>Resource Description</td>
-      <td><input type='text' name='resource_description'></input>
+      <td><input type='text' name='description'></input>
       </td>
       <td><input type='button' onclick='return tse_deleteResource(this);' 
            value='Delete'></input>
@@ -121,14 +121,14 @@ sub resource_entry_fields {
 
 
 ###############################################################################
-# permission_entry_fields:  print fields for adding new permission information.
+# permissionEntryFields:  print fields for adding new permission information.
 #
-sub permission_entry_fields {
+sub permissionEntryFields {
     my( $self ) = @_;
 
-    my $add_submit_str = "return submit_form(this,
+    my $addSubmitStr = "return submit_form(this,
                     'component=AAA;method=ManagePermissions;op=addPermission;');";
-    my $delete_submit_str = "return submit_form(this,
+    my $deleteSubmitStr = "return submit_form(this,
                     'component=AAA;method=ManagePermissions;op=deletePermission;');";
     print( qq{
     <td class='auth-ui-td'>
@@ -136,7 +136,7 @@ sub permission_entry_fields {
     <tbody>
     <tr>
       <td>Permission Name</td>
-      <td><input class='required' type='text' name='permission_name'
+      <td><input class='required' type='text' name='name'
            value=''></input>
       </td>
       <td><input type='button' onclick='return tse_addPermission(this);' 
@@ -145,7 +145,7 @@ sub permission_entry_fields {
     </tr>
     <tr>
       <td>Permission Description</td>
-      <td><input type='text' name='permission_description'></input>
+      <td><input type='text' name='description'></input>
       </td>
       <td><input type='button' onclick='return tse_deletePermission(this);' 
            value='Delete'></input>
@@ -159,15 +159,15 @@ sub permission_entry_fields {
 
 
 ###############################################################################
-# component_table:  output table for one component of resources (deletion)
+# componentTable:  output table for one component of resources (deletion)
 #
-sub component_table {
-    my( $self, $header_name, $results, $key ) = @_;
+sub componentTable {
+    my( $self, $headerName, $results, $key ) = @_;
 
     print( qq{
       <td class='auth-ui-td'>
-      <table id='ManageResources.$header_name' class='sortable'>
-        <thead><tr><td>$header_name</td></tr></thead>
+      <table id='ManageResources.$headerName' class='sortable'>
+        <thead><tr><td>$headerName</td></tr></thead>
         <tbody>
     } );
     for my $name (sort keys %{$results}) {
@@ -178,10 +178,10 @@ sub component_table {
 
 
 ###############################################################################
-# ops_table:  output table listing operations to be performed on
+# opsTable:  output table listing operations to be performed on
 #     resources (add, delete)
 #
-sub ops_table {
+sub opsTable {
     my( $self ) = @_;
 
     print( qq{
@@ -198,9 +198,9 @@ sub ops_table {
 
 
 ###############################################################################
-# resource_permissions_table:  output resource permissions table
+# resourcePermissionsTable:  output resource permissions table
 #
-sub resource_permissions_table {
+sub resourcePermissionsTable {
     my( $self, $results ) = @_;
 
     print( qq{

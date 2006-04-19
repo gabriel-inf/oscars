@@ -19,20 +19,20 @@ sub new {
 sub instantiate {
     my( $self, $cgi ) = @_;
 
-    my( $location, $class_name );
+    my( $location, $className );
 
-    my $method_name = $cgi->param('method'); 
+    my $method = $cgi->param('method'); 
     my $component = $cgi->param('component');
     if ($component) {
-        $location = 'OSCARS/WBUI/' . $component . '/' . $method_name . '.pm';
-        $class_name = 'OSCARS::WBUI::' . $component . '::' . $method_name;
+        $location = 'OSCARS/WBUI/' . $component . '/' . $method . '.pm';
+        $className = 'OSCARS::WBUI::' . $component . '::' . $method;
     }
     else {
-        $location = 'OSCARS/WBUI/' . $method_name . '.pm';
-        $class_name = 'OSCARS::WBUI::' . $method_name;
+        $location = 'OSCARS/WBUI/' . $method . '.pm';
+        $className = 'OSCARS::WBUI::' . $method;
     }
     require $location;
-    return $class_name->new('cgi' => $cgi);
+    return $className->new('cgi' => $cgi);
 } #___________________________________________________________________________                                         
 
 
@@ -82,23 +82,23 @@ sub new {
 
 
 ###############################################################################
-# handle_request:  handles all phases of the request; may be nested to
+# handleRequest:  handles all phases of the request; may be nested to
 #     handle multiple requests
 #
-sub handle_request {
-    my( $self, $soap_server ) = @_;
+sub handleRequest {
+    my( $self, $soapServer ) = @_;
 
     my $results;
-    my( $user_login, $authorizations ) = $self->authenticate();
-    if ( !$user_login ) { return; }
-    my $soap_params = $self->modify_params();  # adapts from form params
-    my $som = $self->make_call($soap_server, $soap_params);
+    my( $login, $authorizations ) = $self->authenticate();
+    if ( !$login ) { return; }
+    my $soapParams = $self->modifyParams();  # adapts from form params
+    my $som = $self->makeCall($soapServer, $soapParams);
     if (!$som) { my $results = {} ; }
     else { $results = $som->result; }
-    $self->post_process($soap_params, $results);
+    $self->postProcess($soapParams, $results);
     if (!$authorizations) { $authorizations = $results->{authorized}; }
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
-    $self->output($som, $soap_params, $authorizations);
+    $self->output($som, $soapParams, $authorizations);
 } #___________________________________________________________________________ 
 
 
@@ -114,10 +114,10 @@ sub authenticate {
 
 
 ###############################################################################
-# modify_params:  Do any modification of CGI params to transform them
+# modifyParams:  Do any modification of CGI params to transform them
 #                 into the arguments that the SOAP call expects.
 #
-sub modify_params {
+sub modifyParams {
     my( $self ) = @_;
 
     my $params = {};
@@ -135,20 +135,20 @@ sub modify_params {
 
 
 ###############################################################################
-# make_call:  make SOAP call, and get results
+# makeCall:  make SOAP call, and get results
 #
-sub make_call {
-    my( $self, $soap_server, $soap_params ) = @_;
+sub makeCall {
+    my( $self, $soapServer, $soapParams ) = @_;
 
-    my $som = $soap_server->dispatch($soap_params);
+    my $som = $soapServer->dispatch($soapParams);
     return $som;
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# post_process:  Perform any operations necessary after making SOAP call.
+# postProcess:  Perform any operations necessary after making SOAP call.
 #
-sub post_process {
+sub postProcess {
     my( $self, $params, $results ) = @_;
 
 } #___________________________________________________________________________ 
@@ -158,18 +158,18 @@ sub post_process {
 # output:  formats and prints results to send back to browser
 #
 sub output {
-    my( $self, $som, $soap_params, $authorizations ) = @_;
+    my( $self, $som, $soapParams, $authorizations ) = @_;
 
     my $msg;
 
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
-    $self->{tabs}->output( $soap_params->{method}, $authorizations );
-    if (!$som) { $msg = "SOAP call $soap_params->{method} failed"; }
+    $self->{tabs}->output( $soapParams->{method}, $authorizations );
+    if (!$som) { $msg = "SOAP call $soapParams->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
 	my $results = $som->result;
-        $msg = $self->output_div($results, $authorizations);
+        $msg = $self->outputDiv($results, $authorizations);
     }
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
