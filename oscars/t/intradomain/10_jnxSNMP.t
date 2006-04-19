@@ -10,62 +10,62 @@ use OSCARS::Database;
 use OSCARS::Intradomain::JnxSNMP;
 use OSCARS::Intradomain::Pathfinder;
 
-my $plugin_mgr = OSCARS::PluginManager->new();
-my $database = $plugin_mgr->get_database('Intradomain');
+my $pluginMgr = OSCARS::PluginManager->new();
+my $database = $pluginMgr->getDatabase('Intradomain');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
-my $rh = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
-my $configs = $rh->get_snmp_configs();
+my $pf = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
+my $configs = $pf->getSnmpConfigs();
 ok( $configs );
 
-my $test_mgr = TestManager->new('db' => $dbconn,
+my $testMgr = TestManager->new('db' => $dbconn,
                                 'database' => $database);
-my $test_configs = $test_mgr->get_intradomain_configs('jnxSNMP');
+my $testConfigs = $testMgr->getIntradomainConfigs('jnxSNMP');
 
 # name of edge router to perform query on
-my $router_name = $test_configs->{router_name};
+my $routerName = $testConfigs->{router_name};
 
 # Create a query object instance
-my $jnxSNMP = OSCARS::Intradomain::JnxSNMP->new();
-ok($jnxSNMP);
+my $jnxSnmp = OSCARS::Intradomain::JnxSNMP->new();
+ok($jnxSnmp);
 
-print STDERR "router_name: $router_name\n";
-$jnxSNMP->initialize_session($configs, $router_name);
+print STDERR "routerName: $routerName\n";
+$jnxSnmp->initializeSession($configs, $routerName);
 
-my $ipaddr = $test_configs->{next_hop};
+my $ipaddr = $testConfigs->{next_hop};
 print STDERR "next hop: $ipaddr\n";
 # Get AS number from IP address.
-my $as_number = $jnxSNMP->query_as_number($ipaddr);
-my $error = $jnxSNMP->get_error();
+my $asNumber = $jnxSnmp->queryAsNumber($ipaddr);
+my $error = $jnxSnmp->getError();
 if ($error) { print STDERR $error; }
-else { print STDERR "\nAS number: $as_number\n"; }
+else { print STDERR "\nAS number: $asNumber\n"; }
 ok(!$error);
 
-$jnxSNMP->close_session();
+$jnxSnmp->closeSession();
 exit;
 
 
 # TODO:  tests to be added later
 
 my( $val, $lspName, $lspVar );
-print STDERR "Device: $router_name  LSPName: $lspName  LSPVar: $lspVar\n";
+print STDERR "Device: $routerName  LSPName: $lspName  LSPVar: $lspVar\n";
 
 # Get LSP SNMP data.
-$jnxSNMP->query_lsp_snmpdata($configs, $router_name);
-$error = $jnxSNMP->get_error();
+$jnxSnmp->queryLspSnmp($configs, $routerName);
+$error = $jnxSnmp->getError();
 if ($error) { print STDERR $error; }
 ok(!$error);
 
 # Print LSP SNMP data.
-my @lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
-$error = $jnxSNMP->get_error();
+my @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
+$error = $jnxSnmp->getError();
 if ($error) { print STDERR $error; }
 ok(!$error);
 
 print STDERR "\n";
-print STDERR "Exe: get_lsp_info(undef, undef)\n";
-print_vars();
+print STDERR "Exe: queryLspInfo(undef, undef)\n";
+printVars();
 
 
 # Get all oscars_ga-nersc_test-be-lsp info.
@@ -73,13 +73,13 @@ $lspName = "oscars_ga-nersc_test-be-lsp";
 undef($lspVar);
 
 # Print LSP SNMP data.
-@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
-$error = $jnxSNMP->get_error();
+@lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
+$error = $jnxSnmp->getError();
 if ($error) { print STDERR $error; }
 ok(!$error);
 
-print STDERR "\nExe: get_lsp_info(oscars_ga-nersc_test-be-lsp, undef)\n";
-print_vars();
+print STDERR "\nExe: queryLspInfo(oscars_ga-nersc_test-be-lsp, undef)\n";
+printVars();
 
 
 # Get all mplsLspStatesinfo.
@@ -87,31 +87,31 @@ undef($lspName);
 $lspVar = 'mplsLspState';
 
 # Print LSP SNMP data.
-@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
-$error = $jnxSNMP->get_error();
+@lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
+$error = $jnxSnmp->getError();
 if ($error) { print STDERR $error; }
 ok(!$error);
 
-print STDERR "\nExe: get_lsp_info(undef, mplsLspState)\n";
-print_vars();
+print STDERR "\nExe: queryLspInfo(undef, mplsLspState)\n";
+printVars();
 
 # Get all mplsPathRecordRoute for oscars_ga-nersc_test-be-lsp.
 $lspName = 'oscars_ga-nersc_test-be-lsp';
 $lspVar = 'mplsPathRecordRoute';
 
 # Print LSP SNMP data.
-@lspInfo = $jnxSNMP->get_lsp_info($lspName, $lspVar);
-$error = $jnxSNMP->get_error();
+@lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
+$error = $jnxSnmp->getError();
 if ($error) { print STDERR $error; }
 ok(!$error);
 
-print STDERR "\nExe: get_lsp_info(oscars_ga-nersc_test-be-lsp, mplsLspState)\n";
-print_vars();
+print STDERR "\nExe: queryLspInfo(oscars_ga-nersc_test-be-lsp, mplsLspState)\n";
+printVars();
 
 
 ###############################################################################
 #
-sub print_vars  {
+sub printVars  {
 
   print STDERR "Results:\n";
   while (scalar(@lspInfo))  {

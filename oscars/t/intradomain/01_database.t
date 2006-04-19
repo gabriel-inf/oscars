@@ -10,8 +10,8 @@ use Error qw{:try};
 my $msg = "\n";
 my $ex;
  
-my $plugin_mgr = OSCARS::PluginManager->new();
-my $database = $plugin_mgr->get_database('Intradomain');
+my $pluginMgr = OSCARS::PluginManager->new();
+my $database = $pluginMgr->getDatabase('Intradomain');
 my $dbconn = OSCARS::Database->new();
 ok($dbconn);
 

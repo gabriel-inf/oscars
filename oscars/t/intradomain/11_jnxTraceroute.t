@@ -11,36 +11,36 @@ use OSCARS::Intradomain::JnxTraceroute;
 use OSCARS::Intradomain::Pathfinder;
 use OSCARS::Logger;
 
-my $logger = OSCARS::Logger->new('method_name' => '11_jnxTraceroute.t');
+my $logger = OSCARS::Logger->new('method' => '11_jnxTraceroute.t');
 $logger->set_level($NetLogger::INFO);
-$logger->set_user_login('testaccount');
+$logger->setUserLogin('testaccount');
 $logger->open('/home/oscars/logs/test.log');
 
-my $plugin_mgr = OSCARS::PluginManager->new();
-my $database = $plugin_mgr->get_database('Intradomain');
+my $pluginMgr = OSCARS::PluginManager->new();
+my $database = $pluginMgr->getDatabase('Intradomain');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
-my $rh = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
-my $configs = $rh->get_trace_configs();
+my $pf = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
+my $configs = $pf->getTraceConfigs();
 ok( $configs );
 print STDERR "\n";
 print STDERR Dumper($configs);
 
-my $test_mgr = TestManager->new('db' => $dbconn,
+my $testMgr = TestManager->new('db' => $dbconn,
                                         'database' => $database);
-my $test_configs = $test_mgr->get_intradomain_configs('jnxTraceroute');
+my $testConfigs = $testMgr->getIntradomainConfigs('jnxTraceroute');
 
 # Create a traceroute object.
 my $jnxTraceroute = OSCARS::Intradomain::JnxTraceroute->new();
 ok( $jnxTraceroute );
 
-my $src = $test_configs->{ingress_loopback};
-my $dst = $test_configs->{egress_loopback};
+my $src = $testConfigs->{ingress_loopback};
+my $dst = $testConfigs->{egress_loopback};
 print STDERR "\nTraceroute: $src to $dst\n";
 $jnxTraceroute->traceroute( $configs, $src, $dst, $logger );
 print STDERR "Raw results:\n";
-my @rawTracerouteData = $jnxTraceroute->get_raw_hop_data();
+my @rawTracerouteData = $jnxTraceroute->getRawHopData();
 ok( @rawTracerouteData );
 
 while(defined($rawTracerouteData[0]))  {
@@ -49,7 +49,7 @@ while(defined($rawTracerouteData[0]))  {
 }
 
 print STDERR "Hops:\n";
-my @hops = $jnxTraceroute->get_hops();
+my @hops = $jnxTraceroute->getHops();
 ok( @hops );
 
 while(defined($hops[0]))  {

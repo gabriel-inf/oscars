@@ -7,8 +7,8 @@ use OSCARS::PluginManager;
 use OSCARS::Database;
 use OSCARS::Intradomain::Pathfinder;
 
-my $plugin_mgr = OSCARS::PluginManager->new();
-my $database = $plugin_mgr->get_database('Intradomain');
+my $pluginMgr = OSCARS::PluginManager->new();
+my $database = $pluginMgr->getDatabase('Intradomain');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
