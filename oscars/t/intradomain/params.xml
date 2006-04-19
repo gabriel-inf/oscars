@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<configuration>
+    <test name="listReservations">
+        <param name="component" value="Intradomain" />
+        <param name="method" value="listReservations" />
+        <param name="login" value="testaccount" />
+    </test>
+    <test name="queryNSI">
+        <param name="component" value="Intradomain" />
+        <param name="method" value="queryNSI" />
+        <param name="login" value="testaccount" />
+    </test>
+    <test name="createNSI">
+        <param name="component" value="Intradomain" />
+        <param name="method" value="createNSI" />
+        <param name="login" value="testaccount" />
+        <param name="origTimeZone" value="-08:00" />
+        <param name="bandwidth" value="10" />
+        <param name="protocol" value="udp" />
+        <param name="description" value="This is a test." />
+    </test>
+    <test name="cancelNSI">
+        <param name="component" value="Intradomain" />
+        <param name="method" value="cancelNSI" />
+        <param name="login" value="testaccount" />
+    </test>
+    <test name="findPendingReservations">
+        <param name="component" value="Intradomain" />
+        <param name="method" value="findPendingReservations" />
+        <param name="login" value="testaccount" />
+        <param name="pollTime" value="20" />
+    </test>
+    <test name="findExpiredReservations">
+        <param name="component" value="Intradomain" />
+        <param name="method" value="findExpiredReservations" />
+        <param name="login" value="testaccount" />
+        <param name="pollTime" value="20" />
+    </test>
+</configuration>
