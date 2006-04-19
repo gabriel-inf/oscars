@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<configuration>
-    <param name="component" value="AAA" />
-    <param name="method" value="ManageUsers" />
-    <param name="op" value="viewUsers" />
-    <param name="user_login" value="testaccount" />
-</configuration>

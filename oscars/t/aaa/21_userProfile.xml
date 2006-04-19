@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<configuration>
-    <param name="user_login" value="testaccount" />
-    <param name="component" value="AAA" />
-    <param name="method" value="UserProfile" />
-    <param name="op" value="viewProfile" />
-</configuration>

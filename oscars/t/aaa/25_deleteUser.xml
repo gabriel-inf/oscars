@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<configuration>
-    <param name="component" value="AAA" />
-    <param name="method" value="ManageUsers" />
-    <param name="op" value="deleteUser" />
-    <param name="user_login" value="testaccount" />
-    <param name="selected_user" value="temptest" />
-</configuration>
