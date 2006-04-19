@@ -5,63 +5,63 @@ CREATE DATABASE IF NOT EXISTS AAA;
 USE AAA;
 
 CREATE TABLE IF NOT EXISTS users (
-    user_id			INT NOT NULL AUTO_INCREMENT,
-    user_login			TEXT NOT NULL,
-    user_certificate		TEXT,
-    user_cert_subject           TEXT,
-    user_last_name	 	TEXT NOT NULL,
-    user_first_name		TEXT NOT NULL,
-    user_email_primary		TEXT NOT NULL,
-    user_phone_primary		TEXT NOT NULL,
-    user_password		TEXT,
-    user_description		TEXT,
-    user_email_secondary	TEXT,
-    user_phone_secondary	TEXT,
-    user_status			TEXT,
-    user_activation_key		TEXT,
-    user_last_active_time	DATETIME,
-    user_register_time		DATETIME,
-    institution_id		INT NOT NULL,	-- foreign key
-    PRIMARY KEY (user_id)
+    id			INT NOT NULL AUTO_INCREMENT,
+    login		TEXT NOT NULL,
+    certificate		TEXT,
+    certSubject		TEXT,
+    lastName	 	TEXT NOT NULL,
+    firstName		TEXT NOT NULL,
+    emailPrimary	TEXT NOT NULL,
+    phonePrimary	TEXT NOT NULL,
+    password		TEXT,
+    description		TEXT,
+    emailSecondary	TEXT,
+    phoneSecondary	TEXT,
+    status		TEXT,
+    activationKey	TEXT,
+    lastActiveTime	DATETIME,
+    registerTime	DATETIME,
+    institutionId	INT NOT NULL,	-- foreign key
+    PRIMARY KEY (id)
 
 ) type=MyISAM;
 
 CREATE TABLE IF NOT EXISTS institutions (
-    institution_id		INT NOT NULL AUTO_INCREMENT,
-    institution_name		TEXT NOT NULL,
-    PRIMARY KEY (institution_id)
+    id			INT NOT NULL AUTO_INCREMENT,
+    name		TEXT NOT NULL,
+    PRIMARY KEY (id)
 ) type=MyISAM;
 
 CREATE TABLE IF NOT EXISTS resources (
-    resource_id			INT NOT NULL AUTO_INCREMENT,
-    resource_name		TEXT NOT NULL,
-    resource_description	TEXT,
-    resource_update_time	DATETIME,
-    PRIMARY KEY (resource_id)
+    id			INT NOT NULL AUTO_INCREMENT,
+    name		TEXT NOT NULL,
+    description		TEXT,
+    updateTime		DATETIME,
+    PRIMARY KEY (id)
 ) type=MyISAM;
 
 CREATE TABLE IF NOT EXISTS permissions (
-    permission_id		INT NOT NULL AUTO_INCREMENT,
-    permission_name		TEXT NOT NULL,
-    permission_description	TEXT,
-    permission_update_time	DATETIME,
-    PRIMARY KEY (permission_id)
+    id			INT NOT NULL AUTO_INCREMENT,
+    name		TEXT NOT NULL,
+    description		TEXT,
+    updateTime		DATETIME,
+    PRIMARY KEY (id)
 ) type=MyISAM;
 
 -- cross reference table
-CREATE TABLE IF NOT EXISTS resourcepermissions (
-    resource_id			INT NOT NULL,	-- foreign key
-    permission_id		INT NOT NULL,	-- foreign key
-    PRIMARY KEY (resource_id, permission_id)
+CREATE TABLE IF NOT EXISTS resourcePermissions (
+    resourceId		INT NOT NULL,	-- foreign key
+    permissionId	INT NOT NULL,	-- foreign key
+    PRIMARY KEY (resourceId, permissionId)
 ) type=MyISAM;
 
 CREATE TABLE IF NOT EXISTS authorizations (
-    authorization_id		INT NOT NULL AUTO_INCREMENT,
-    authorization_context	TEXT,
-    authorization_update_time	DATETIME,
-    user_id			INT NOT NULL,	-- foreign key
-    resource_id 		INT NOT NULL,	-- foreign key
-    permission_id		INT NOT NULL,	-- foreign key
-    PRIMARY KEY (authorization_id)
+    id			INT NOT NULL AUTO_INCREMENT,
+    context		TEXT,
+    updateTime		DATETIME,
+    userId		INT NOT NULL,	-- foreign key
+    resourceId 		INT NOT NULL,	-- foreign key
+    permissionId	INT NOT NULL,	-- foreign key
+    PRIMARY KEY (id)
 ) type=MyISAM;
 
