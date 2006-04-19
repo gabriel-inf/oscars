@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::Intradomain::ModifyNSI;
+package OSCARS::WBUI::Intradomain::ModifyReservation;
 
 =head1 NAME
 
-OSCARS::WBUI::Intradomain::ModifyNSI - handles request to modify an existing reservation
+OSCARS::WBUI::Intradomain::ModifyReservation - handles request to modify an existing reservation
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::Intradomain::ModifyNSI;
+  use OSCARS::WBUI::Intradomain::ModifyReservation;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 19, 2006
 
 =cut
 

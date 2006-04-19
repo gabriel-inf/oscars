@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::Intradomain::QueryNSI;
+package OSCARS::WBUI::Intradomain::QueryReservation;
 
 =head1 NAME
 
-OSCARS::WBUI::Intradomain::QueryNSI - handles request to view a reservation's details
+OSCARS::WBUI::Intradomain::QueryReservation - handles request to view a reservation's details
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::Intradomain::QueryNSI;
+  use OSCARS::WBUI::Intradomain::QueryReservation;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 19, 2006
 
 =cut
 

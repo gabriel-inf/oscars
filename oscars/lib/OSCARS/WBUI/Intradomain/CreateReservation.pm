@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::WBUI::Intradomain::CreateNSI;
+package OSCARS::WBUI::Intradomain::CreateReservation;
 
 =head1 NAME
 
-OSCARS::WBUI::Intradomain::CreateNSI - handles request to create a reservation
+OSCARS::WBUI::Intradomain::CreateReservation - handles request to create a reservation
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::Intradomain::CreateNSI;
+  use OSCARS::WBUI::Intradomain::CreateReservation;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 19, 2006
 
 =cut
 

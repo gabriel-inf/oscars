@@ -1,13 +1,12 @@
-#==============================================================================
-package OSCARS::WBUI::Intradomain::CancelNSI;
+package OSCARS::WBUI::Intradomain::CancelReservation;
 
 =head1 NAME
 
-OSCARS::WBUI::Intradomain::CancelNSI - handles request to cancel an existing reservation
+OSCARS::WBUI::Intradomain::CancelReservation - handles request to cancel an existing reservation
 
 =head1 SYNOPSIS
 
-  use OSCARS::WBUI::Intradomain::CancelNSI;
+  use OSCARS::WBUI::Intradomain::CancelReservation;
 
 =head1 DESCRIPTION
 
@@ -19,7 +18,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 19, 2006
 
 =cut
 

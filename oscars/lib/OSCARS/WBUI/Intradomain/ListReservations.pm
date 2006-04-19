@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 19, 2006
 
 =cut
 
@@ -88,7 +88,7 @@ sub printRow {
       <td>
       <a href='#' style='/styleSheets/layout.css'
        onclick="return new_section(
-       'component=Intradomain;method=QueryNSI;id=$row->{id};');"
+       'component=Intradomain;method=QueryReservation;id=$row->{id};');"
           >$row->{tag}</a>
       </td>
       <td>$row->{startTime}</td>

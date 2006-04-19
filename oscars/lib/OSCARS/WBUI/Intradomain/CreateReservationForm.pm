@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 19, 2006
 
 =cut
 
@@ -62,7 +62,7 @@ sub outputDiv {
     print( qq{
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
-               'component=Intradomain;method=CreateNSI;',
+               'component=Intradomain;method=CreateReservation;',
 	       check_reservation);">
       <input type='hidden' name='startTime'></input>
       <input type='hidden' name='endTime'></input>

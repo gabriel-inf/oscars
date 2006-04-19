@@ -11,7 +11,7 @@ OSCARS::WBUI::Intradomain::ReservationDetails - outputs reservation details
 
 =head1 DESCRIPTION
 
-Library method for CancelNSI, CreateNSI, QueryNSI, and ModifyNSI output.
+Library method for CancelReservation, CreateReservation, QueryReservation, and ModifyReservation output.
 
 =head1 AUTHOR
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 19, 2006
 
 =cut
 
@@ -67,7 +67,7 @@ sub output {
     if (($results->{status} eq 'pending') ||
         ($results->{status} eq 'active')) {
         my $cancelSubmitStr = "return submit_form(this,
-             'component=Intradomain;method=CancelNSI;');";
+             'component=Intradomain;method=CancelReservation;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancelSubmitStr">
         <input type='hidden' name='id' value="$results->{id}"></input>
@@ -77,7 +77,7 @@ sub output {
     }
 
     my $refreshSubmitStr = "return submit_form(this,
-             'component=Intradomain;method=QueryNSI;');";
+             'component=Intradomain;method=QueryReservation;');";
     print( qq{
     <form method="post" action="" onsubmit="$refreshSubmitStr">
     <input type='hidden' name='id' value="$results->{id}"></input>
