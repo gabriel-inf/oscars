@@ -83,8 +83,10 @@ sub getParams {
 sub dispatch {
     my( $self, $params ) = @_;
 
-    $self->{database} = $self->{pluginMgr}->getDatabase($params->{component});
-    $self->{db}->connect($self->{database});
+    if (!$self->{database}) {
+        $self->{database} = $self->{pluginMgr}->getDatabase($params->{component});
+        $self->{db}->connect($self->{database});
+    }
     my $authN = $self->{pluginMgr}->usePlugin('authentication');
     my $credentials = $authN->getCredentials($params->{login}, 'password');
     $params->{password} = $credentials;
@@ -93,18 +95,23 @@ sub dispatch {
         $self->{clientMgr} = OSCARS::ClientManager->new(
 	                                       'database' => $database);
     }
-    my $som = $self->{clientMgr}->getClient()->dispatch($params);
+    my $client = $self->{clientMgr}->getClient();
+    my $method = $params->{method};
+    my $som = $client->$method($params);
     if ($som->faultstring) { return( $som->faultstring, undef ); }
     return( undef, $som->result );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# Only used by intradomain tests.
 #
 sub getIntradomainConfigs {
     my( $self, $testName ) = @_;
 
+    if (!$self->{database}) {
+        $self->{database} = $self->{pluginMgr}->getDatabase('Intradomain');
+        $self->{db}->connect($self->{database});
+    }
     my $statement = "SELECT * FROM testAddresses a " .
         "INNER JOIN testConfs t ON a.testConfId = t.id WHERE t.name = ?";
     my $rows = $self->{db}->doQuery($statement, $testName);

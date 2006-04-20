@@ -140,7 +140,9 @@ sub modifyParams {
 sub makeCall {
     my( $self, $soapServer, $soapParams ) = @_;
 
-    my $som = $soapServer->dispatch($soapParams);
+    my $method = $soapParams->{method};
+    $method =~ s/(\w)/\l$1/;
+    my $som = $soapServer->$method($soapParams);
     return $som;
 } #___________________________________________________________________________ 
 

@@ -5,23 +5,23 @@
         <param name="method" value="listReservations" />
         <param name="login" value="testaccount" />
     </test>
-    <test name="queryNSI">
+    <test name="queryReservation">
         <param name="component" value="Intradomain" />
-        <param name="method" value="queryNSI" />
+        <param name="method" value="queryReservation" />
         <param name="login" value="testaccount" />
     </test>
-    <test name="createNSI">
+    <test name="createReservation">
         <param name="component" value="Intradomain" />
-        <param name="method" value="createNSI" />
+        <param name="method" value="createReservation" />
         <param name="login" value="testaccount" />
         <param name="origTimeZone" value="-08:00" />
         <param name="bandwidth" value="10" />
         <param name="protocol" value="udp" />
         <param name="description" value="This is a test." />
     </test>
-    <test name="cancelNSI">
+    <test name="cancelReservation">
         <param name="component" value="Intradomain" />
-        <param name="method" value="cancelNSI" />
+        <param name="method" value="cancelReservation" />
         <param name="login" value="testaccount" />
     </test>
     <test name="findPendingReservations">

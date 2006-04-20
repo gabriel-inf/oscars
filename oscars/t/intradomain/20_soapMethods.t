@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 6;
+use Test::Simple tests => 5;
 
 use DateTime;
 use DateTime::Format::W3CDTF;
@@ -14,20 +14,20 @@ my $testMgr = TestManager->new();
 my $params = $testMgr->getParams('intradomain/params.xml');
 my( $status, $msg, $reservationId );
 
-($status, $msg) = listReservations($testMgr, $params->{listReservations});
-ok($status, $msg);
-print STDERR $msg;
+#($status, $msg) = listReservations($testMgr, $params->{listReservations});
+#ok($status, $msg);
+#print STDERR $msg;
 
-( $status, $msg, $reservationId ) = createNSI( $testMgr, $params->{createNSI} );
+( $status, $msg, $reservationId ) = createReservation( $testMgr, $params->{createReservation} );
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = queryNSI( $testMgr, $params->{queryNSI}, $reservationId );
+( $status, $msg ) = queryReservation( $testMgr, $params->{queryReservation}, $reservationId );
 ok( $status, $msg );
 print STDERR $msg;
 
 ( $status, $msg ) =
-    cancelNSI( $testMgr, $params->{cancelNSI}, $reservationId );
+    cancelReservation( $testMgr, $params->{cancelReservation}, $reservationId );
 ok( $status, $msg );
 print STDERR $msg;
 
@@ -56,11 +56,11 @@ sub listReservations {
 
 #############################################################################
 #
-sub createNSI {
+sub createReservation {
     my( $testMgr, $params ) = @_;
 
     my $testConfigs =
-        $testMgr->getIntradomainConfigs('createNSI');
+        $testMgr->getIntradomainConfigs('createReservation');
     $params->{srcHost} = $testConfigs->{reservation_source};
     $params->{destHost} = $testConfigs->{reservation_destination};
 
@@ -87,7 +87,7 @@ sub createNSI {
 
 #############################################################################
 #
-sub queryNSI {
+sub queryReservation {
     my ( $testMgr, $params, $reservationId ) = @_;
 
     $params->{id} = $reservationId;
@@ -102,7 +102,7 @@ sub queryNSI {
 #############################################################################
 # Delete the reservation with the given id (set its status
 # to cancelled).
-sub cancelNSI {
+sub cancelReservation {
     my( $testMgr, $params, $reservationId ) = @_;
 
     $params->{id} = $reservationId;

@@ -65,7 +65,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 19, 2006
 
 =cut
 
@@ -78,13 +78,157 @@ use strict;
 use OSCARS::Logger;
 use OSCARS::Method;
 
+# intermediate step to different style of dispatching; this is not the final 
+# version
+
+### AAA
 
 ###############################################################################
 #
-sub dispatch {
-    my ( $className, $params ) = @_;
+sub login {
+    my( $className, $params ) = @_;
 
-    my( $ex );
+    return handle($params);
+}
+
+###############################################################################
+#
+sub logout {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub manageAuthorizations {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub manageInstitutions {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub managePermissions {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub manageResources {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub manageUsers {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub userProfile {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+### Intradomain
+
+###############################################################################
+#
+sub queryReservation {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub createReservation {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub modifyReservation {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub cancelReservation {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub listReservations {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub findPendingReservations {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub findExpiredReservations {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub updateRouterTables {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+# Interdomain
+
+###############################################################################
+#
+sub forward {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub handle {
+    my( $params ) = @_;
+
+    my $ex;
     my( $user, $handler, $som );
 
     # make sure first letter of method capitalized (for Perl convention for 
