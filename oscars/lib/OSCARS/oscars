@@ -85,65 +85,100 @@ use OSCARS::Method;
 
 ###############################################################################
 #
-sub login {
+sub userLogin {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'userLogin';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub logout {
+sub userLogout {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'userLogout';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub manageAuthorizations {
+sub authorizationList {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'authorizationList';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub manageInstitutions {
+sub institutionList {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'institutionList';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub managePermissions {
+sub permissionList {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'permissionList';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub manageResources {
+sub resourceList {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'resourceList';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub manageUsers {
+sub userAdd {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'userAdd';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub userProfile {
+sub userRemove {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'userRemove';
+    return handle($params);
+}
+
+###############################################################################
+#
+sub userModify {
+    my( $className, $params ) = @_;
+
+    $params->{method} = 'userModify';
+    return handle($params);
+}
+
+###############################################################################
+#
+sub userQuery {
+    my( $className, $params ) = @_;
+
+    $params->{method} = 'userModify';
+    return handle($params);
+}
+
+###############################################################################
+#
+sub userList {
+    my( $className, $params ) = @_;
+
+    $params->{method} = 'userList';
     return handle($params);
 }
 
@@ -154,6 +189,7 @@ sub userProfile {
 sub queryReservation {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'queryReservation';
     return handle($params);
 }
 
@@ -162,6 +198,7 @@ sub queryReservation {
 sub createReservation {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'createReservation';
     return handle($params);
 }
 
@@ -170,6 +207,7 @@ sub createReservation {
 sub modifyReservation {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'modifyReservation';
     return handle($params);
 }
 
@@ -178,6 +216,7 @@ sub modifyReservation {
 sub cancelReservation {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'cancelReservation';
     return handle($params);
 }
 
@@ -186,6 +225,7 @@ sub cancelReservation {
 sub listReservations {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'listReservations';
     return handle($params);
 }
 
@@ -194,6 +234,7 @@ sub listReservations {
 sub findPendingReservations {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'findPendingReservations';
     return handle($params);
 }
 
@@ -202,6 +243,7 @@ sub findPendingReservations {
 sub findExpiredReservations {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'findExpiredReservations';
     return handle($params);
 }
 
@@ -210,6 +252,7 @@ sub findExpiredReservations {
 sub updateRouterTables {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'updateRouterTables';
     return handle($params);
 }
 
@@ -220,6 +263,7 @@ sub updateRouterTables {
 sub forward {
     my( $className, $params ) = @_;
 
+    $params->{method} = 'forward';
     return handle($params);
 }
 

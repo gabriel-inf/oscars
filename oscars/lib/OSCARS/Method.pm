@@ -28,14 +28,25 @@ sub initialize {
 sub instantiate {
     my( $self, $user, $params, $logger ) = @_;
 
+    my( $location, $className );
     my $packagePrefix =
             $self->{pluginMgr}->getPackage($params->{component});
     my $dbname = $self->{pluginMgr}->getDatabase($params->{component});
     my $db = $user->getDbHandle($dbname);
     my $locationPrefix = $packagePrefix;
     $locationPrefix =~ s/(::)/\//g;
-    my $location = $locationPrefix . '/' . $params->{method} . '.pm';
-    my $className = $packagePrefix . '::' .  $params->{method};
+    # kludge for now
+    if ($params->{component} ne 'AAA') {
+        $location = $locationPrefix . '/' . $params->{method} . '.pm';
+        $className = $packagePrefix . '::' .  $params->{method};
+    }
+    else {
+	my $str = $params->{method};
+        $str =~ s/([A-Z].[a-z]*)([A-Z].)(\w*)/$1 $2$3/;
+        my( $group, $method ) = split(' ', $str);
+        $location = $locationPrefix . '/' . $group . '/' . $method . '.pm';
+        $className = $packagePrefix . '::' .  $group . '::' . $method;
+    }
     require $location;
     # TODO:  shouldn't need so many parameters
     return $className->new( 'user' => $user,
@@ -68,7 +79,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 19, 2006
 
 =cut
 
@@ -118,12 +129,12 @@ sub validate {
 
     my( $test );
 
-    my $op = $self->{params}->{op};
-    if ( !$op ) { return; }
+    my $method = $self->{params}->{method};
+    if ( !$method ) { return; }
 
     # for all tests 
-    for my $testName (keys(%{$self->{paramTests}->{$op}})) {
-        $test = $self->{paramTests}->{op}->{$testName};
+    for my $testName (keys(%{$self->{paramTests}->{$method}})) {
+        $test = $self->{paramTests}->{method}->{$testName};
         if (!$self->{params}->{$testName}) {
             throw Error::Simple(
                 "Cannot validate $self->{params}->{method}, test $testName failed");
