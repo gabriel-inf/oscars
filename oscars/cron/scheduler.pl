@@ -8,30 +8,30 @@ use Data::Dumper;
 use OSCARS::PluginManager;
 use OSCARS::ClientManager;
 
-my $plugin_mgr = OSCARS::PluginManager->new();
-my $authN = $plugin_mgr->use_plugin('authentication');
-my $user_login = 'testaccount';
-my $credentials  = $authN->get_credentials($user_login, 'password');
+my $pluginMgr = OSCARS::PluginManager->new();
+my $authN = $pluginMgr->usePlugin('authentication');
+my $login = 'testaccount';
+my $credentials  = $authN->getCredentials($login, 'password');
 
-my $database = $plugin_mgr->get_database('Intradomain');
-my $client_mgr = OSCARS::ClientManager->new('database' => $database);
-my $client = $client_mgr->get_client();
+my $database = $pluginMgr->getDatabase('Intradomain');
+my $clientMgr = OSCARS::ClientManager->new('database' => $database);
+my $client = $clientMgr->getClient();
 
 
-my( $status, $msg ) = FindPendingReservations( $user_login, $credentials );
-( $status, $msg ) = FindExpiredReservations( $user_login, $credentials );
+my( $status, $msg ) = FindPendingReservations( $login, $credentials );
+( $status, $msg ) = FindExpiredReservations( $login, $credentials );
 
 
 #############################################################################
 #
 sub FindPendingReservations {
-    my ( $user_login, $user_password ) = @_;
+    my ( $login, $password ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
+    my %params = ('login' => $login, 'password' => $password );
     $params{component} = 'Intradomain';
     $params{method} = 'FindPendingReservations';
-    $params{time_interval} = 20;
+    $params{timeInterval} = 20;
 
     my $som = $client->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -47,14 +47,14 @@ sub FindPendingReservations {
 #############################################################################
 #
 sub FindExpiredReservations {
-    my ( $user_login, $user_password ) = @_;
+    my ( $login, $password ) = @_;
 
     # password necessary for test to run, but not for this method in general
-    my %params = ('user_login' => $user_login, 'user_password' => $user_password );
+    my %params = ('login' => $login, 'password' => $password );
 
     $params{component} = 'Intradomain';
     $params{method} = 'FindExpiredReservations';
-    $params{time_interval} = 20;
+    $params{timeInterval} = 20;
 
     my $som = $client->dispatch(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -65,3 +65,4 @@ sub FindExpiredReservations {
     $msg .= "\n";
     return( 1, $msg );
 } #___________________________________________________________________________
+
