@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 19, 2006
 
 =cut
 
@@ -47,7 +47,7 @@ sub new {
 sub output {
     my( $self, $activeTab, $authorizations ) = @_;
 
-    my( $activeStatus, $op );
+    my $activeStatus;
 
     print qq{
       <navigation-bar>
@@ -76,52 +76,48 @@ sub output {
     };
     $component = 'AAA';
     if ( $authorizations && $authorizations->{ManageUsers} ) {
-	$method = 'ManageUsers';
-	$op = 'listUsers';
+	$method = 'UserList';
         if ( $method eq $activeTab ) { $activeStatus = 'active'; }
         else { $activeStatus = 'inactive'; }
         print qq{
           <li>
             <a style='/styleSheets/layout.css' title='Manage user accounts'
-               onclick="return new_section('component=$component;method=$method;op=$op;');"
+               onclick="return new_section('component=$component;method=$method;');"
                class='$activeStatus' href="#">Users</a>
           </li>
         };
     }
     else {
-	$method = 'UserProfile';
-	$op = 'queryProfile';
+	$method = 'UserQuery';
         if ( $method eq $activeTab ) { $activeStatus = 'active'; }
         else { $activeStatus = 'inactive'; }
         print qq{
           <li>
             <a style="/styleSheets/layout.css" title="View/edit my profile"
-               onclick="return new_section('component=$component;method=$method;op=$op;');"
+               onclick="return new_section('component=$component;method=$method;');"
                class='$activeStatus' href="#">User Profile</a>
           </li>
         };
     }
     if ( $authorizations && $authorizations->{ManageUsers} ) {
-      $method = 'ManageResources';
-      $op = 'listResources';
+      $method = 'ResourceList';
       if ( $method eq $activeTab ) { $activeStatus = 'active'; }
       else { $activeStatus = 'inactive'; }
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage resources"
-             onclick="return new_section('component=$component;method=$method;op=$op;');"
+             onclick="return new_section('component=$component;method=$method;');"
              class='$activeStatus' href="#">Resources</a>
         </li>
       };
 
-      $method = 'ManageAuthorizations';
+      $method = 'AuthorizationList';
       if ( $method eq $activeTab ) { $activeStatus = 'active'; }
       else { $activeStatus = 'inactive'; }
-      $op = 'listAuthorizations';
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage authorizations"
-             onclick="return new_section('component=$component;method=$method;op=$op;');"
+             onclick="return new_section('component=$component;method=$method;');"
              class='$activeStatus' href="#">Authorizations</a>
         </li>
       };
@@ -139,7 +135,7 @@ sub output {
     print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Log out on click"
-             href="/perl/adapt.pl?component=$component;method=Logout;">Log out</a>
+             href="/perl/adapt.pl?component=$component;method=UserLogout;">Log out</a>
         </li>
       </ul>
       </navigation-bar>
