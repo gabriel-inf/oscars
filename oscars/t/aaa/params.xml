@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <configuration>
-    <test name="login">
+    <test name="userLogin">
         <param name="component" value="AAA" />
         <param name="login" value="testaccount" />
-	<param name="method" value="login" />
     </test>
-    <test name="queryProfile">
+    <test name="userQuery">
         <param name="login" value="testaccount" />
         <param name="component" value="AAA" />
-	<param name="method" value="userProfile" />
-        <param name="op" value="queryProfile" />
     </test>
-    <test name="modifyProfile">
+    <test name="userModify">
         <param name="login" value="testaccount" />
         <param name="component" value="AAA" />
-        <param name="method" value="userProfile" />
-        <param name="op" value="modifyProfile" />
     </test>
-    <test name="addUser">
+    <test name="userAdd">
         <param name="component" value="AAA" />
-        <param name="method" value="manageUsers" />
-        <param name="op" value="addUser" />
         <param name="login" value="testaccount" />
         <param name="selectedUser" value="temptest" />
         <param name="passwordNewOnce" value="ac@demy" />
@@ -31,40 +24,29 @@
         <param name="phonePrimary" value="510-495-2399" />
         <param name="description" value="test user" />
     </test>
-    <test name="deleteUser">
+    <test name="userRemove">
         <param name="component" value="AAA" />
-        <param name="method" value="manageUsers" />
-        <param name="op" value="deleteUser" />
         <param name="login" value="testaccount" />
         <param name="selectedUser" value="temptest" />
     </test>
-    <test name="listUsers">
+    <test name="userList">
         <param name="component" value="AAA" />
-        <param name="method" value="manageUsers" />
-        <param name="op" value="listUsers" />
         <param name="login" value="testaccount" />
     </test>
-    <test name="listAuthorizations">
+    <test name="authorizationList">
         <param name="component" value="AAA" />
-        <param name="method" value="manageAuthorizations" />
-        <param name="op" value="listAuthorizations" />
         <param name="login" value="testaccount" />
     </test>
-    <test name="listResources">
+    <test name="resourceList">
         <param name="component" value="AAA" />
-        <param name="method" value="manageResources" />
-        <param name="op" value="listResources" />
         <param name="login" value="testaccount" />
     </test>
-    <test name="listPermissions">
+    <test name="permissionList">
         <param name="component" value="AAA" />
-        <param name="method" value="managePermissions" />
-        <param name="op" value="listPermissions" />
         <param name="login" value="testaccount" />
     </test>
-    <test name="logout">
+    <test name="userLogout">
         <param name="component" value="AAA" />
-        <param name="method" value="logout" />
         <param name="login" value="testaccount" />
     </test>
 </configuration>

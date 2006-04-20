@@ -18,7 +18,7 @@ ok($factory);
 
 my $params = {};
 $params->{component} = $component;
-$params->{method} = 'Login';
+$params->{method} = 'UserLogin';
 $params->{login} = $login;
 $params->{user_password} = $credentials;
 

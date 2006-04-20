@@ -81,7 +81,7 @@ sub getParams {
 ###############################################################################
 #
 sub dispatch {
-    my( $self, $params ) = @_;
+    my( $self, $params, $method ) = @_;
 
     if (!$self->{database}) {
         $self->{database} = $self->{pluginMgr}->getDatabase($params->{component});
@@ -96,7 +96,6 @@ sub dispatch {
 	                                       'database' => $database);
     }
     my $client = $self->{clientMgr}->getClient();
-    my $method = $params->{method};
     my $som = $client->$method($params);
     if ($som->faultstring) { return( $som->faultstring, undef ); }
     return( undef, $som->result );
