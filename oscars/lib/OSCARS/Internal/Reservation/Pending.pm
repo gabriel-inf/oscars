@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::Intradomain::Method::FindPendingReservations;
+package OSCARS::Internal::Reservation::Pending;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::FindPendingReservations - SOAP method to find pending 
+OSCARS::Internal::Reservation::Pending - SOAP method to find pending 
 OSCARS reservations.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::FindPendingReservations;
+  use OSCARS::Internal::Reservation::Pending;
 
 =head1 DESCRIPTION
 
@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 20, 2006
 
 =cut
 
@@ -33,9 +33,9 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::Intradomain::SchedulerCommon;
-use OSCARS::Intradomain::TimeConversionCommon;
-use OSCARS::Intradomain::ReservationCommon;
+use OSCARS::Library::Reservation::Scheduler;
+use OSCARS::Library::Reservation::TimeConversion;
+use OSCARS::Library::Reservation::Common;
 use OSCARS::PSS::JnxLSP;
 
 use OSCARS::Method;
@@ -47,11 +47,11 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
-    $self->{schedLib} = OSCARS::Intradomain::SchedulerCommon->new(
+    $self->{schedLib} = OSCARS::Library::Reservation::Scheduler->new(
                             'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Intradomain::TimeConversionCommon->new(
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
                             'db' => $self->{db});
-    $self->{resvLib} = OSCARS::Intradomain::ReservationCommon->new(
+    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                             'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 
