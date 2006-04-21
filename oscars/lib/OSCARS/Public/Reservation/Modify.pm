@@ -31,8 +31,8 @@ use Error qw(:try);
 
 use OSCARS::Database;
 use OSCARS::Library::Reservation::Pathfinder;
-use OSCARS::Library::Reservation::ReservationCommon;
-use OSCARS::Library::Reservation::TimeConversionCommon;
+use OSCARS::Library::Reservation::Common;
+use OSCARS::Library::Reservation::TimeConversion;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
