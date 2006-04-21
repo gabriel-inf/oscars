@@ -1,19 +1,19 @@
 ###############################################################################
-package OSCARS::Intradomain::Method::UpdateRouterTables;
+package OSCARS::Internal::Routing::Update;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::UpdateRouterTables - SOAP method to update router-associated tables.
+OSCARS::Internal::Routing::Update - SOAP method updating router-associated tables.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::UpdateRouterTables;
+  use OSCARS::Internal::Routing::Update;
 
 =head1 DESCRIPTION
 
-SOAP method to update the routers, interfaces, and ipaddrs Intradomain
-database tables given the current network configuration in ifrefpoll files.
-It inherits from OSCARS::Method.
+SOAP method to update the routers, interfaces, and ipaddrs tables given the 
+current network configuration in the ifrefpoll files.  It inherits from 
+OSCARS::Method.
 This method is inefficient and uses ESnet-specific ifrefpoll files.
 Everything in determining the network configuration, except for getting the 
 list of router names, will be replaced by SNMP queries.
@@ -25,7 +25,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 20, 2006
 
 =cut
 
