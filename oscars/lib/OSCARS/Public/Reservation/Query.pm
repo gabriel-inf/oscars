@@ -1,20 +1,19 @@
 #==============================================================================
-package OSCARS::Public::Intradomain::QueryReservation;
+package OSCARS::Public::Reservation::Query;
 
 =head1 NAME
 
-OSCARS::Public::Intradomain::QueryReservation - SOAP method to list the details of a
+OSCARS::Public::Reservation::Query- SOAP method to list the details of a
 specific reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Public::Intradomain::QueryReservation;
+  use OSCARS::Public::Reservation::Query;
 
 =head1 DESCRIPTION
 
-SOAP method that returns the details of a reservation, given its
-database id, from the reservations table in the Intradomain database.
-It inherits from OSCARS::Method.
+SOAP method that returns the details of a reservation
+from the reservations table.  It inherits from OSCARS::Method.
 
 =head1 AUTHORS
 
@@ -22,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 19, 2006
+April 20, 2006
 
 =cut
 
@@ -33,8 +32,8 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Intradomain::ReservationCommon;
-use OSCARS::Library::Intradomain::TimeConversionCommon;
+use OSCARS::Library::Reservation::Common;
+use OSCARS::Library::Reservation::TimeConversion;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -43,9 +42,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{timeLib} = OSCARS::Library::Intradomain::TimeConversionCommon->new(
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
                                  'db' => $self->{db});
-    $self->{resvLib} = OSCARS::Library::Intradomain::ReservationCommon->new(
+    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                                  'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 

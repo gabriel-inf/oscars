@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Public::Intradomain::ModifyReservation;
+package OSCARS::Public::Reservation::Modify;
 
 =head1 NAME
 
-OSCARS::Public::Intradomain::ModifyReservation - Handles modification of existing reservation. 
+OSCARS::Public::Reservation::Modify- Handles modification of existing reservation. 
 
 =head1 SYNOPSIS
 
-  use OSCARS::Public::Intradomain::ModifyReservation;
+  use OSCARS::Public::Reservation::Modify;
 
 =head1 DESCRIPTION
 
@@ -30,9 +30,9 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Intradomain::Pathfinder;
-use OSCARS::Library::Intradomain::ReservationCommon;
-use OSCARS::Library::Intradomain::TimeConversionCommon;
+use OSCARS::Library::Reservation::Pathfinder;
+use OSCARS::Library::Reservation::ReservationCommon;
+use OSCARS::Library::Reservation::TimeConversionCommon;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -41,9 +41,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resvLib} = OSCARS::Library::Intradomain::ReservationCommon->new(
+    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                             'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Intradomain::TimeConversionCommon->new(
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
                             'db' => $self->{db}, 'logger' => $self->{logger});
 } #____________________________________________________________________________
 

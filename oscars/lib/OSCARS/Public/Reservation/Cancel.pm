@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Public::Intradomain::CancelReservation;
+package OSCARS::Public::Reservation::Cancel;
 
 =head1 NAME
 
-OSCARS::Public::Intradomain::CancelReservation - Handles cancelling reservation.
+OSCARS::Public::Reservation::Cancel - Handles cancelling reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Public::Intradomain::CancelReservation;
+  use OSCARS::Public::Reservation::Cancel;
 
 =head1 DESCRIPTION
 
@@ -31,8 +31,8 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Intradomain::ReservationCommon;
-use OSCARS::Library::Intradomain::TimeConversionCommon;
+use OSCARS::Library::Reservation::TimeConversion;
+use OSCARS::Library::Reservation::Common;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -41,9 +41,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resvLib} = OSCARS::Library::Intradomain::ReservationCommon->new(
+    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                            'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Intradomain::TimeConversionCommon->new(
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
                            'db' => $self->{db}, 'logger' => $self->{logger});
 } #____________________________________________________________________________
 

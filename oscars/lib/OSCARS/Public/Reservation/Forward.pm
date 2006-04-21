@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Public::Intradomain::Forward;
+package OSCARS::Public::Reservation::Forward;
 
 =head1 NAME
 
-OSCARS::Public::Intradomain::Forward - Forward a request to another domain.
+OSCARS::Public::Reservation::Forward - Forward a request to another domain.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Public::Intradomain::Forward;
+  use OSCARS::Public::Reservation::Forward;
 
 =head1 DESCRIPTION
 
