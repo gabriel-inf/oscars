@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAA::ResourceLibrary;
+package OSCARS::Library::AAA::Common;
 
 =head1 NAME
 
-OSCARS::AAA::ResourceLibrary - library for permissions, resources, auths
+OSCARS::Library::AAA::Common - library for permissions, resources, auths
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAA::ResourceLibrary;
+  use OSCARS::Library::AAA::Common;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 20, 2006
 
 =cut
 

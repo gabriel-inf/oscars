@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::AAA::AuthN;
+package OSCARS::Library::AAA::AuthN;
 
 =head1 NAME
 
-OSCARS::AAA::AuthN - performs authenticatication
+OSCARS::Library::AAA::AuthN - performs authenticatication
 
 =head1 SYNOPSIS
 
-  use OSCARS::AAA::AuthN;
+  use OSCARS::Library::AAA::AuthN;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 20, 2006
 
 =cut
 
