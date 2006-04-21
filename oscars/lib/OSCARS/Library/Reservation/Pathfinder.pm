@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Library::Intradomain::Pathfinder; 
+package OSCARS::Library::Reservation::Pathfinder; 
 
 =head1 NAME
 
-OSCARS::Library::Intradomain::Pathfinder - Finds ingress and egress routers.
+OSCARS::Library::Reservation::Pathfinder - Finds ingress and egress routers.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Library::Intradomain::Pathfinder;
+  use OSCARS::Library::Reservation::Pathfinder;
 
 =head1 DESCRIPTION
 
@@ -32,8 +32,8 @@ use Data::Dumper;
 use Socket;
 use Error qw(:try);
 
-use OSCARS::Library::Intradomain::JnxTraceroute;
-use OSCARS::Library::Intradomain::JnxSNMP;
+use OSCARS::Library::Reservation::JnxTraceroute;
+use OSCARS::Library::Reservation::JnxSNMP;
 
 
 sub new {
@@ -50,7 +50,7 @@ sub initialize {
 
     $self->{traceConfigs} = $self->getTraceConfigs();
     $self->{snmpConfigs} = $self->getSnmpConfigs();
-    $self->{jnxSnmp} = OSCARS::Library::Intradomain::JnxSNMP->new();
+    $self->{jnxSnmp} = OSCARS::Library::Reservation::JnxSNMP->new();
 } #____________________________________________________________________________
 
 
@@ -169,7 +169,7 @@ sub findPath {
 sub doTraceroute {
     my( $self, $action, $src, $dst, $logger )  = @_;
 
-    my $jnxTraceroute = new OSCARS::Library::Intradomain::JnxTraceroute();
+    my $jnxTraceroute = new OSCARS::Library::Reservation::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{traceConfigs}, $src, $dst, $logger);
     my @hops = $jnxTraceroute->getHops();
     my @path = ();

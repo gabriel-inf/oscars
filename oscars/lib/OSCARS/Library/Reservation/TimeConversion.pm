@@ -1,14 +1,13 @@
 #==============================================================================
-package OSCARS::Library::Intradomain::TimeConversionCommon;
+package OSCARS::Library::Reservation::TimeConversion;
 
 =head1 NAME
 
-OSCARS::Library::Intradomain::TimeConversionCommon - Common functionality for timezone 
-conversions.
+OSCARS::Library::Reservation::TimeConversion- Functionality for timezone conversions.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Library::Intradomain::TimeConversionCommon;
+  use OSCARS::Library::Reservation::TimeConversion;
 
 =head1 DESCRIPTION
 

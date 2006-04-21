@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Library::Intradomain::JnxTraceroute;
+package OSCARS::Library::Reservation::JnxTraceroute;
 
 =head1 NAME
 
-OSCARS::Library::Intradomain::JnxTraceroute - Executes traceroute on Juniper routers.
+OSCARS::Library::Reservation::JnxTraceroute - Executes traceroute on Juniper routers.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Library::Intradomain::JnxTraceroute;
+  use OSCARS::Library::Reservation::JnxTraceroute;
 
 =head1 DESCRIPTION
 
