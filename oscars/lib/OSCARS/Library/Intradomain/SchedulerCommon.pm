@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Intradomain::SchedulerCommon;
+package OSCARS::Public::Intradomain::SchedulerCommon;
 
 =head1 NAME
 
-OSCARS::Intradomain::SchedulerCommon - Common functionality for reservation scheduling.
+OSCARS::Public::Intradomain::SchedulerCommon - Common functionality for reservation scheduling.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::SchedulerCommon;
+  use OSCARS::Public::Intradomain::SchedulerCommon;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 20, 2006
 
 =cut
 

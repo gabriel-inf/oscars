@@ -1,13 +1,13 @@
 #=============================================================================
-package OSCARS::Intradomain::JnxSNMP;
+package OSCARS::Library::Intradomain::JnxSNMP;
 
 =head1 NAME
 
-OSCARS::Intradomain::JnxSNMP - Queries MPLS SNMP MIB on Juniper routers.
+OSCARS::Library::Intradomain::JnxSNMP - Queries MPLS SNMP MIB on Juniper routers.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::JnxSNMP;
+  use OSCARS::Library::Intradomain::JnxSNMP;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 20, 2006
 
 =cut
 

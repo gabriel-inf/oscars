@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::Intradomain::ReservationCommon;
+package OSCARS::Library::Intradomain::ReservationCommon;
 
 =head1 NAME
 
-OSCARS::Intradomain::ReservationCommon - Common functionality for OSCARS reservation 
+OSCARS::Library::Intradomain::ReservationCommon - Common functionality for OSCARS reservation 
 methods.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::ReservationCommon;
+  use OSCARS::Library::Intradomain::ReservationCommon;
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 18, 2006
+April 20, 2006
 
 =cut
 

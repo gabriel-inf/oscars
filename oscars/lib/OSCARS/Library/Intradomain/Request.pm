@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Interdomain::Request;
+package OSCARS::Library::Intradomain::Request;
 
 =head1 NAME
 
-OSCARS::Interdomain::Request - Forward a request to another domain.
+OSCARS::Library::Intradomain::Request - Forward a request to another domain.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Interdomain::Request;
+  use OSCARS::Library::Intradomain::Request;
 
 =head1 DESCRIPTION
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 20, 2006
 
 =cut
 
@@ -56,7 +56,7 @@ sub forward {
         return( 'Unable to get client for next domain', undef );
     }
     my $payload = {};
-    $payload->{component} = 'Interdomain';
+    $payload->{component} = 'Intradomain';
     $payload->{method} = 'Forward';
     $payload->{params} = $params;
     # TODO:  FIX hard wiring
