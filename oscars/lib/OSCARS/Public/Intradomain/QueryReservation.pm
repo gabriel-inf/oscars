@@ -1,14 +1,14 @@
 #==============================================================================
-package OSCARS::Intradomain::Method::QueryReservation;
+package OSCARS::Public::Intradomain::QueryReservation;
 
 =head1 NAME
 
-OSCARS::Intradomain::Method::QueryReservation - SOAP method to list the details of a
+OSCARS::Public::Intradomain::QueryReservation - SOAP method to list the details of a
 specific reservation.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Intradomain::Method::QueryReservation;
+  use OSCARS::Public::Intradomain::QueryReservation;
 
 =head1 DESCRIPTION
 
@@ -33,8 +33,8 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Intradomain::ReservationCommon;
-use OSCARS::Intradomain::TimeConversionCommon;
+use OSCARS::Library::Intradomain::ReservationCommon;
+use OSCARS::Library::Intradomain::TimeConversionCommon;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -43,9 +43,9 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{timeLib} = OSCARS::Intradomain::TimeConversionCommon->new(
+    $self->{timeLib} = OSCARS::Library::Intradomain::TimeConversionCommon->new(
                                  'db' => $self->{db});
-    $self->{resvLib} = OSCARS::Intradomain::ReservationCommon->new(
+    $self->{resvLib} = OSCARS::Library::Intradomain::ReservationCommon->new(
                                  'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 

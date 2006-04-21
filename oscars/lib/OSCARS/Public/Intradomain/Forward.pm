@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Interdomain::Method::Forward;
+package OSCARS::Public::Intradomain::Forward;
 
 =head1 NAME
 
-OSCARS::Interdomain::Method::Forward - Forward a request to another domain.
+OSCARS::Public::Intradomain::Forward - Forward a request to another domain.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Interdomain::Method::Forward;
+  use OSCARS::Public::Intradomain::Forward;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 20, 2006
 
 =cut
 
