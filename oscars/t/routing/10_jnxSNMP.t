@@ -7,27 +7,27 @@ use Data::Dumper;
 use TestManager;
 use OSCARS::PluginManager;
 use OSCARS::Database;
-use OSCARS::Intradomain::JnxSNMP;
-use OSCARS::Intradomain::Pathfinder;
+use OSCARS::Library::Topology::JnxSNMP;
+use OSCARS::Library::Topology::Pathfinder;
 
 my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getDatabase('Intradomain');
+my $database = $pluginMgr->getDatabase('topology');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
-my $pf = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
+my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
 my $configs = $pf->getSnmpConfigs();
 ok( $configs );
 
 my $testMgr = TestManager->new('db' => $dbconn,
                                 'database' => $database);
-my $testConfigs = $testMgr->getIntradomainConfigs('jnxSNMP');
+my $testConfigs = $testMgr->getTopologyConfigs('jnxSNMP');
 
 # name of edge router to perform query on
 my $routerName = $testConfigs->{router_name};
 
 # Create a query object instance
-my $jnxSnmp = OSCARS::Intradomain::JnxSNMP->new();
+my $jnxSnmp = OSCARS::Library::Topology::JnxSNMP->new();
 ok($jnxSnmp);
 
 print STDERR "routerName: $routerName\n";

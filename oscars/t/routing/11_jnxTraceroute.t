@@ -7,8 +7,8 @@ use Data::Dumper;
 use TestManager;
 use OSCARS::PluginManager;
 use OSCARS::Database;
-use OSCARS::Intradomain::JnxTraceroute;
-use OSCARS::Intradomain::Pathfinder;
+use OSCARS::Library::Topology::JnxTraceroute;
+use OSCARS::Library::Topology::Pathfinder;
 use OSCARS::Logger;
 
 my $logger = OSCARS::Logger->new('method' => '11_jnxTraceroute.t');
@@ -17,11 +17,11 @@ $logger->setUserLogin('testaccount');
 $logger->open('/home/oscars/logs/test.log');
 
 my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getDatabase('Intradomain');
+my $database = $pluginMgr->getDatabase('topology');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
-my $pf = OSCARS::Intradomain::Pathfinder->new('db' => $dbconn);
+my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
 my $configs = $pf->getTraceConfigs();
 ok( $configs );
 print STDERR "\n";
@@ -29,10 +29,10 @@ print STDERR Dumper($configs);
 
 my $testMgr = TestManager->new('db' => $dbconn,
                                         'database' => $database);
-my $testConfigs = $testMgr->getIntradomainConfigs('jnxTraceroute');
+my $testConfigs = $testMgr->getTopologyConfigs('jnxTraceroute');
 
 # Create a traceroute object.
-my $jnxTraceroute = OSCARS::Intradomain::JnxTraceroute->new();
+my $jnxTraceroute = OSCARS::Library::Topology::JnxTraceroute->new();
 ok( $jnxTraceroute );
 
 my $src = $testConfigs->{ingress_loopback};
