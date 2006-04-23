@@ -1,39 +1,4 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <configuration>
-    <test name="listReservations">
-        <param name="component" value="Intradomain" />
-        <param name="method" value="listReservations" />
-        <param name="login" value="testaccount" />
-    </test>
-    <test name="queryReservation">
-        <param name="component" value="Intradomain" />
-        <param name="method" value="queryReservation" />
-        <param name="login" value="testaccount" />
-    </test>
-    <test name="createReservation">
-        <param name="component" value="Intradomain" />
-        <param name="method" value="createReservation" />
-        <param name="login" value="testaccount" />
-        <param name="origTimeZone" value="-08:00" />
-        <param name="bandwidth" value="10" />
-        <param name="protocol" value="udp" />
-        <param name="description" value="This is a test." />
-    </test>
-    <test name="cancelReservation">
-        <param name="component" value="Intradomain" />
-        <param name="method" value="cancelReservation" />
-        <param name="login" value="testaccount" />
-    </test>
-    <test name="findPendingReservations">
-        <param name="component" value="Intradomain" />
-        <param name="method" value="findPendingReservations" />
-        <param name="login" value="testaccount" />
-        <param name="pollTime" value="20" />
-    </test>
-    <test name="findExpiredReservations">
-        <param name="component" value="Intradomain" />
-        <param name="method" value="findExpiredReservations" />
-        <param name="login" value="testaccount" />
-        <param name="pollTime" value="20" />
-    </test>
+    <!-- No current SOAP methods in this directory -->
 </configuration>
