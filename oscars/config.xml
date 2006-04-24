@@ -1,17 +1,63 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- Handles configuration of plugins to use, and which databases to connect to.
-    All other configuration is in the given databases. -->
+<!-- Specifies AAA packages, databases, and SOAP method packages used.
+     In the future a url type may be supported (for a client call).
+     All other configuration is in the given database.  -->
 <configuration>
-    <!-- The following two elements are for packages that are used by
-         all SOAP methods. -->
-    <plugin name='authentication' package='OSCARS::AAA::AuthN' database='AAA'/>
-    <plugin name='authorization' package='OSCARS::AAA::AuthZ' database='AAA'/>
-    <!-- Location of SOAP methods for handling AAA -->
-    <plugin name='AAA' package='OSCARS::AAA::Method' database='AAA'/>
-    <!-- Intradomain reservation handling -->
-    <plugin name='Intradomain' package='OSCARS::Intradomain::Method' 
-            database='Intradomain'/>
-    <!-- Interdomain reservation handling -->
-    <plugin name='Interdomain' package='OSCARS::Interdomain::Method' 
-            database='Interdomain'/>
+    <!-- AAA configuration.  The database value is a reference to the plugin
+         (see below). -->
+    <plugin name='authentication' location='OSCARS::Library::AAA::AuthN' 
+            type='package' database='system' />
+    <plugin name='authorization' location='OSCARS::Library::AAA::AuthZ' 
+	    type='package' database='system' />
+
+    <!-- Names of system and topology databases -->
+    <plugin name='system' location='oscars' type='database' /> 
+    <plugin name='topology' location='topology' type='database' /> 
+
+    <!-- Configuration of publicly available SOAP methods -->
+    <plugin name='userLogin' location='OSCARS::Public::User::Login'
+	    type='package' />
+    <plugin name='userLogout' location='OSCARS::Public::User::Logout'
+	    type='package'/>
+    <plugin name='userQuery' location='OSCARS::Public::User::Query'
+	    type='package'/>
+    <plugin name='userModify' location='OSCARS::Public::User::Modify'
+	    type='package'/>
+    <plugin name='institutionList' 
+	    location='OSCARS::Public::Institution::List' type='package'/>
+
+    <plugin name='queryReservation' 
+	    location='OSCARS::Public::Reservation::Query' type='package'/>
+    <plugin name='createReservation' 
+	    location='OSCARS::Public::Reservation::Create' type='package'/>
+    <plugin name='modifyReservation' 
+	    location='OSCARS::Public::Reservation::Modify' type='package'/>
+    <plugin name='cancelReservation' 
+	    location='OSCARS::Public::Reservation::Cancel' type='package'/>
+    <plugin name='listReservations' 
+	    location='OSCARS::Public::Reservation::List' type='package'/>
+    <plugin name='forward' 
+	    location='OSCARS::Public::Reservation::Forward' type='package'/>
+
+    <!-- Configuration of internal SOAP methods -->
+    <plugin name='userAdd' location='OSCARS::Internal::User::Add'
+	    type='package'/>
+    <plugin name='userRemove' location='OSCARS::Internal::User::Remove'
+	    type='package'/>
+    <plugin name='userList' location='OSCARS::Internal::User::List'
+	    type='package'/>
+    <plugin name='permissionList' location='OSCARS::Internal::Permission::List'
+	    type='package'/>
+    <plugin name='resourceList' location='OSCARS::Internal::Resource::List'
+	    type='package'/>
+    <plugin name='authorizationList' location='OSCARS::Internal::Authorization::List'
+	    type='package'/>
+
+    <plugin name='reservationPending' 
+	    location='OSCARS::Internal::Reservation::Pending' type='package'/>
+    <plugin name='reservationExpired' 
+	    location='OSCARS::Internal::Reservation::Expired' type='package'/>
+    <plugin name='topologyUpdate' 
+	    location='OSCARS::Internal::Topology::Update' type='package'/>
+
 </configuration>
