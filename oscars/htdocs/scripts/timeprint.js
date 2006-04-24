@@ -65,6 +65,7 @@ function check_date_fields( form ) {
     var default_date = 0;
     var default_hour = 0;
     var default_minute = 0;
+    var duration_in_seconds = 240;
 
     var local_date = new Date();
     if ( is_blank(form.startYear.value) ) {
@@ -145,6 +146,7 @@ function check_date_fields( form ) {
             form.durationHour.focus();
             return false;
         }
+        duration_in_seconds = form.durationHour.value * 3600;
     }
 
     if (!default_month || !default_date) {
@@ -192,20 +194,20 @@ function check_date_fields( form ) {
             }
         }
     }
-   reservation_date = new Date(form.startYear.value,
-                                form.startMonth.value,
-                                form.startDate.value,
-                                form.startHour.value,
-                                form.startMinute.value,
-                                0, 0);
+   reservation_date = new Date(form.startYear.value, form.startMonth.value,
+                                form.startDate.value, form.startHour.value,
+                                form.startMinute.value, 0, 0);
     form.startMonth.value = parseInt(form.startMonth.value) + 1;
     // convert local time to seconds since epoch
-    form.startTime.value = reservation_date.getTime() / 1000;
+    var start_time = reservation_date.getTime() / 1000;
 
     if (form.persistent && form.persistent.checked) {
-        form.durationHour.value = Math.pow(2, 31) - 1;
+        // For now, persistent reservation lasts 4 years
+        duration_in_seconds = 86400 * 365 * 4;
     }
-    form.endTime.value = form.startTime.value + form.durationHour.value;
+    var end_time = start_time + duration_in_seconds;
+    form.startTime.value = start_time;
+    form.endTime.value = end_time;
     return true;
 }
 
@@ -213,7 +215,7 @@ function check_date_fields( form ) {
 // get string with timezone options
 function time_zone_options() {
     var is_standard = is_standard_time();
-    var options_str = '<select name="reservation_time_zone">';
+    var options_str = '<select class="SOAP" name="origTimeZone">';
     var local_offset = UTC_offset();
     // if standard (not daylight savings) time
     if (is_standard) {

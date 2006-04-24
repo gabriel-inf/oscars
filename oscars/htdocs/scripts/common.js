@@ -68,7 +68,7 @@ function submit_form( form, params, check_function ) {
         var form_elements = form.elements;
         var num_elements = form.elements.length;
         for (var e=0; e < num_elements; e++) {
-            if (form_elements[e].value && form_elements[e].name) {
+            if (form_elements[e].value && form_elements[e].name && (form_elements[e].className == 'SOAP' || form_elements[e].className == 'required')) {
                 params +=
                    form_elements[e].name + '=' + form_elements[e].value + ';';
             }
