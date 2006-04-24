@@ -32,7 +32,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Reservation::Pathfinder;
+use OSCARS::Library::Topology::Pathfinder;
 use OSCARS::Library::Reservation::Common;
 use OSCARS::Library::Reservation::TimeConversion;
 
@@ -43,7 +43,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{pathfinder} = OSCARS::Library::Reservation::Pathfinder->new(
+    $self->{pathfinder} = OSCARS::Library::Topology::Pathfinder->new(
                              'db' => $self->{db});
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                              'user' => $self->{user}, 'db' => $self->{db});
@@ -154,8 +154,8 @@ sub generateMessage {
 sub idToRouterName {
     my( $self, $interfaceId ) = @_;
 
-    my $statement = 'SELECT name FROM routers WHERE id = 
-        (SELECT routerId from interfaces WHERE interfaces.id = ?)';
+    my $statement = 'SELECT name FROM topology.routers WHERE id = 
+        (SELECT routerId from topology.interfaces WHERE topology.interfaces.id = ?)';
     my $row = $self->{db}->getRow($statement, $interfaceId);
     # no match
     if ( !$row ) {
@@ -247,7 +247,7 @@ sub checkOversubscribed {
 sub getInterfaceFields {
     my( $self, $interfaceId) = @_;
 
-    my $statement = 'SELECT * FROM interfaces WHERE id = ?';
+    my $statement = 'SELECT * FROM topology.interfaces WHERE id = ?';
     my $row = $self->{db}->getRow($statement, $interfaceId);
     return $row;
 } #____________________________________________________________________________
