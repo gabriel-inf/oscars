@@ -70,7 +70,7 @@ sub output {
              'method=CancelReservation;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancelSubmitStr">
-        <input type='hidden' name='id' value="$results->{id}"></input>
+        <input type='hidden' class='SOAP' name='id' value="$results->{id}"></input>
         <input type='submit' value='CANCEL'></input>
         </form>
         } );
@@ -80,7 +80,7 @@ sub output {
              'method=QueryReservation;');";
     print( qq{
     <form method="post" action="" onsubmit="$refreshSubmitStr">
-    <input type='hidden' name='id' value="$results->{id}"></input>
+    <input type='hidden' class='SOAP' name='id' value="$results->{id}"></input>
     <input type='submit' value='Refresh'>
     </input>
     </form>
