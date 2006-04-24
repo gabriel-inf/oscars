@@ -104,7 +104,7 @@ sub outputDiv {
     </tr>
     <tr>
       <td>Personal Description</td>
-      <td><input type='text' name='description' size='40'></input>
+      <td><input class='SOAP' type='text' name='description' size='40'></input>
       </td>
     </tr>
     <tr>
@@ -115,7 +115,7 @@ sub outputDiv {
     </tr>
     <tr>
       <td>E-mail (Secondary)</td>
-      <td><input type='text' name='emailSecondary' size='40'></input>
+      <td><input class='SOAP' type='text' name='emailSecondary' size='40'></input>
       </td>
     </tr>
     <tr>
@@ -126,7 +126,7 @@ sub outputDiv {
     </tr>
     <tr>
       <td>Phone Number (Secondary)</td>
-      <td><input type='text' name='phoneSecondary' size='40'></input>
+      <td><input class='SOAP' type='text' name='phoneSecondary' size='40'></input>
       </td>
     </tr>
     </tbody>

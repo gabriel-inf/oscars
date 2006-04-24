@@ -106,7 +106,7 @@ sub resourceEntryFields {
     </tr>
     <tr>
       <td>Resource Description</td>
-      <td><input type='text' name='description'></input>
+      <td><input class='SOAP' type='text' name='description'></input>
       </td>
       <td><input type='button' onclick='return tse_deleteResource(this);' 
            value='Delete'></input>
@@ -142,7 +142,7 @@ sub permissionEntryFields {
     </tr>
     <tr>
       <td>Permission Description</td>
-      <td><input type='text' name='description'></input>
+      <td><input class='SOAP' type='text' name='description'></input>
       </td>
       <td><input type='button' onclick='return tse_deletePermission(this);' 
            value='Delete'></input>

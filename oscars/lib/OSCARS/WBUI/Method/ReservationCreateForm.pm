@@ -63,9 +63,9 @@ sub outputDiv {
     <div id='reservation-ui'>
     <form method='post' action='' onsubmit="return submit_form(this, 
                'method=CreateReservation;', check_reservation);">
-      <input type='hidden' name='startTime'></input>
-      <input type='hidden' name='endTime'></input>
-      <input type='hidden' name='login' value='$login'></input>
+      <input type='hidden' class='SOAP' name='startTime'></input>
+      <input type='hidden' class='SOAP' name='endTime'></input>
+      <input type='hidden' class='SOAP' name='login' value='$login'></input>
       <input type='submit' value='Reserve bandwidth'></input>
       <input type='reset' value='Reset form fields'></input>
 
@@ -85,37 +85,37 @@ sub outputDiv {
       <tbody>
       <tr><td>Source</td>
         <td class='required'>
-          <input type='text' name='srcHost' size='40'></input></td>
+          <input type='text' class='SOAP' name='srcHost' size='40'></input></td>
         <td>(Host name or IP address)</td></tr>
       <tr><td>Source port</td>
-        <td><input type='text' name='srcPort' maxlength='5' size='40'> 
+        <td><input type='text' class='SOAP' name='srcPort' maxlength='5' size='40'> 
              </input>
         </td>
 	<td>(1024-65535)</td></tr>
       <tr><td>Destination</td>
         <td class='required'>
-          <input type='text' name='destHost' size='40'></input></td>
+          <input type='text' class='SOAP' name='destHost' size='40'></input></td>
         <td>(Host name or IP address)</td></tr>
       <tr><td>Destination port</td>
-        <td><input type='text' name='destPort' maxlength='5' size='40'>
+        <td><input type='text' class='SOAP' name='destPort' maxlength='5' size='40'>
 	    </input></td>
 	<td>(1024-65535)</td></tr>
       <tr><td>Bandwidth (Mbps)</td>
         <td class='required'>
-          <input type='text' name='bandwidth' maxlength='7' size='40'>
+          <input type='text' class='SOAP' name='bandwidth' maxlength='7' size='40'>
           </input>
 	</td>
         <td>(10-10000)</td></tr>
       <tr><td>Protocol</td>
-        <td><input type='text' name='protocol' size='40'></input></td>
+        <td><input type='text' class='SOAP' name='protocol' size='40'></input></td>
 	<td>(0-255, or string)</td></tr>
       <tr><td>Differentiated service code point</td>
-        <td><input type='text' name='dscp' maxlength='2' size='40'>
+        <td><input type='text' class='SOAP' name='dscp' maxlength='2' size='40'>
 	    </input></td>
 	<td>(0-63)</td></tr>
       <tr><td>Purpose of reservation</td>
         <td class='required'>
-	    <input type='text' name='description' size='40'></input></td>
+	    <input type='text' class='SOAP' name='description' size='40'></input></td>
         <td>(For our records)</td></tr>
     } );
     if ($authorizations->{ManageDomains}) {
@@ -123,14 +123,14 @@ sub outputDiv {
       <tr>
         <td>Ingress loopback</td>
         <td class='warning'>
-	    <input type='text' name='ingressRouter' size='40'></input>
+	    <input type='text' class='SOAP' name='ingressRouter' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
 	</tr>
       <tr>
         <td>Egress loopback</td>
         <td class='warning'>
-	    <input type='text' name='egressRouter' size='40'></input>
+	    <input type='text' class='SOAP' name='egressRouter' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
       </tr>
@@ -168,7 +168,7 @@ sub outputDiv {
       <tr><td>Duration (Hours)</td>
         <td><input type='text' name='durationHour' maxlength='16' size='40'></input>
        	</td>
-	<td>0.01 (0.01 to Indefinite)</td></tr>
+	<td>0.01 (0.01 to 4 years)</td></tr>
     } );
     if ($authorizations->{ManageDomains}) {
         print( qq{

@@ -121,7 +121,7 @@ sub outputProfileFields {
       </tr>
       <tr>
         <td valign='top'>Personal Description</td>
-          <td><input type='text' name='description' size='40'
+          <td><input class='SOAP' type='text' name='description' size='40'
 	     value='$description'></input>
         </td>
       </tr>
@@ -133,7 +133,7 @@ sub outputProfileFields {
       </tr>
       <tr>
         <td>E-mail (Secondary)</td>
-        <td><input type='text' name='emailSecondary' size='40'
+        <td><input class='SOAP' type='text' name='emailSecondary' size='40'
              value='$emailSecondary'></input>
         </td>
       </tr>
@@ -145,7 +145,7 @@ sub outputProfileFields {
       </tr>
       <tr>
         <td>Phone Number (Secondary)</td>
-        <td><input type='text' name='phoneSecondary' size='40'
+        <td><input class='SOAP' type='text' name='phoneSecondary' size='40'
              value='$phoneSecondary'></input>
         </td>
       </tr>
@@ -162,12 +162,12 @@ sub outputPasswordFields {
     print( qq{
       <tr>
         <td>New Password (Enter twice )</td>
-        <td><input type='password' name='passwordNewOnce' size='40'></input>
+        <td><input class='SOAP' type='password' name='passwordNewOnce' size='40'></input>
         </td>
       </tr>
       <tr>
         <td>New Password Confirmation</td>
-        <td><input type='password' name='passwordNewTwice' size='40'></input>
+        <td><input class='SOAP' type='password' name='passwordNewTwice' size='40'></input>
         </td>
       </tr>
     } );
