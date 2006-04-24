@@ -1,13 +1,13 @@
 #=============================================================================
-package OSCARS::Library::Reservation::JnxSNMP;
+package OSCARS::Library::Topology::JnxSNMP;
 
 =head1 NAME
 
-OSCARS::Library::Reservation::JnxSNMP - Queries MPLS SNMP MIB on Juniper routers.
+OSCARS::Library::Topology::JnxSNMP - Queries MPLS SNMP MIB on Juniper routers.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Library::Reservation::JnxSNMP;
+  use OSCARS::Library::Topology::JnxSNMP;
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 22, 2006
 
 =cut
 

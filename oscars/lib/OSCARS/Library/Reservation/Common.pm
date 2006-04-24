@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 23, 2006
 
 =cut
 
@@ -123,7 +123,7 @@ sub getPssConfigs {
     my( $self ) = @_;
 
         # use defaults for now
-    my $statement = 'SELECT * FROM pssConfs where id = 1';
+    my $statement = 'SELECT * FROM configPSS where id = 1';
     my $configs = $self->{db}->getRow($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -165,8 +165,8 @@ sub getEngrFields {
     my( $self, $resv ) = @_;
  
     my $statement =
-        qq{SELECT name, loopback FROM routers WHERE id =
-           (SELECT routerId FROM interfaces WHERE interfaces.id = ?)};
+        qq{SELECT name, loopback FROM topology.routers WHERE id =
+           (SELECT routerId FROM topology.interfaces WHERE topology.interfaces.id = ?)};
 
     # TODO:  FIX row might be empty
     my $row = $self->{db}->getRow($statement, $resv->{ingressInterfaceId});

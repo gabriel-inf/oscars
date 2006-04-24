@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Library::Reservation::Pathfinder; 
+package OSCARS::Library::Topology::Pathfinder; 
 
 =head1 NAME
 
-OSCARS::Library::Reservation::Pathfinder - Finds ingress and egress routers.
+OSCARS::Library::Topology::Pathfinder - Finds ingress and egress routers.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Library::Reservation::Pathfinder;
+  use OSCARS::Library::Topology::Pathfinder;
 
 =head1 DESCRIPTION
 
@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 23, 2006
 
 =cut
 
@@ -32,8 +32,8 @@ use Data::Dumper;
 use Socket;
 use Error qw(:try);
 
-use OSCARS::Library::Reservation::JnxTraceroute;
-use OSCARS::Library::Reservation::JnxSNMP;
+use OSCARS::Library::Topology::JnxTraceroute;
+use OSCARS::Library::Topology::JnxSNMP;
 
 
 sub new {
@@ -48,9 +48,9 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{traceConfigs} = $self->getTraceConfigs();
-    $self->{snmpConfigs} = $self->getSnmpConfigs();
-    $self->{jnxSnmp} = OSCARS::Library::Reservation::JnxSNMP->new();
+    $self->{traceConfigs} = $self->getTracerouteConfig();
+    $self->{snmpConfigs} = $self->getSNMPConfiguration();
+    $self->{jnxSnmp} = OSCARS::Library::Topology::JnxSNMP->new();
 } #____________________________________________________________________________
 
 
@@ -169,7 +169,7 @@ sub findPath {
 sub doTraceroute {
     my( $self, $action, $src, $dst, $logger )  = @_;
 
-    my $jnxTraceroute = new OSCARS::Library::Reservation::JnxTraceroute();
+    my $jnxTraceroute = new OSCARS::Library::Topology::JnxTraceroute();
     $jnxTraceroute->traceroute($self->{traceConfigs}, $src, $dst, $logger);
     my @hops = $jnxTraceroute->getHops();
     my @path = ();
@@ -252,11 +252,11 @@ sub nameToLoopback{
 
 ###############################################################################
 #
-sub getTraceConfigs {
+sub getTracerouteConfig {
     my( $self ) = @_;
 
         # use default for now
-    my $statement = "SELECT * FROM traceConfs where id = 1";
+    my $statement = "SELECT * FROM topology.configTrace where id = 1";
     my $configs = $self->{db}->getRow($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -264,11 +264,11 @@ sub getTraceConfigs {
 
 ###############################################################################
 #
-sub getSnmpConfigs {
+sub getSNMPConfiguration {
     my( $self ) = @_;
 
         # use default for now
-    my $statement = "SELECT * FROM snmpConfs where id = 1";
+    my $statement = "SELECT * FROM configSNMP where id = 1";
     my $configs = $self->{db}->getRow($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -283,9 +283,9 @@ sub getSnmpConfigs {
 sub getLoopback {
     my ($self, $ipaddr) = @_;
 
-    my $statement = 'SELECT loopback FROM routers r ' .
-        'INNER JOIN interfaces i ON r.id = i.routerId ' .
-        'INNER JOIN ipaddrs ip ON i.id = ip.interfaceId WHERE ip.IP = ?';
+    my $statement = 'SELECT loopback FROM topology.routers r ' .
+        'INNER JOIN topology.interfaces i ON r.id = i.routerId ' .
+        'INNER JOIN topology.ipaddrs ip ON i.id = ip.interfaceId WHERE ip.IP = ?';
     my $row = $self->{db}->getRow($statement, $ipaddr);
     return( $row->{loopback} );
 } #____________________________________________________________________________
@@ -300,7 +300,7 @@ sub getLoopback {
 sub getInterface {
     my ($self, $ipaddr) = @_;
 
-    my $statement = 'SELECT interfaceId FROM ipaddrs WHERE IP = ?';
+    my $statement = 'SELECT interfaceId FROM topology.ipaddrs WHERE IP = ?';
     my $row = $self->{db}->getRow($statement, $ipaddr);
     return( $row->{interfaceId} );
 } #____________________________________________________________________________
@@ -318,8 +318,8 @@ sub getAsNumber {
 
     my $asNumber;
 
-    my $statement = 'SELECT name FROM routers r ' .
-        'INNER JOIN interfaces i ON r.id = i.routerId WHERE i.id = ?';
+    my $statement = 'SELECT name FROM topology.routers r ' .
+        'INNER JOIN topology.interfaces i ON r.id = i.routerId WHERE i.id = ?';
     my $row = $self->{db}->getRow($statement, $interfaceId);
     my $routerName = $row->{name} .
                       $self->{snmpConfigs}->{domainSuffix};

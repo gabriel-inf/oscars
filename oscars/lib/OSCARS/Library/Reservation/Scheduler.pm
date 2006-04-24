@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 23, 2006
 
 =cut
 
@@ -44,7 +44,7 @@ sub getTimeIntervals {
     my( $self ) = @_;
 
         # just use defaults for now
-    my $statement = "SELECT pollTime FROM schedulerConfs WHERE id = 1";
+    my $statement = "SELECT pollTime FROM configScheduler WHERE id = 1";
     my $row = $self->{db}->getRow( $statement );
     return( $row->{pollTime} );
 } #____________________________________________________________________________
@@ -61,8 +61,8 @@ sub mapToIPs {
     $row = $self->{db}->getRow($statement, $resv->{destHostId});
     $resv->{destIP} = $row->{IP};
 
-    $statement = 'SELECT loopback FROM routers WHERE id =' .
-        ' (SELECT routerId FROM interfaces WHERE interfaces.id = ?)';
+    $statement = 'SELECT loopback FROM topology.routers WHERE id =' .
+        ' (SELECT routerId FROM topology.interfaces WHERE topology.interfaces.id = ?)';
 
     # TODO:  FIX row might be empty
     $row = $self->{db}->getRow($statement, $resv->{ingressInterfaceId});
