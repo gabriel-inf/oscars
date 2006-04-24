@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 22, 2006
 
 =cut
 
@@ -28,6 +28,7 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
+use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
 
 

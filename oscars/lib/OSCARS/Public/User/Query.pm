@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 22, 2006
 
 =cut
 
@@ -33,6 +33,7 @@ use Error qw(:try);
 
 use OSCARS::Public::Institution::List;
 
+use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
 
 sub initialize {
