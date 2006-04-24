@@ -13,24 +13,23 @@ my $authN = $pluginMgr->usePlugin('authentication');
 my $login = 'testaccount';
 my $credentials  = $authN->getCredentials($login, 'password');
 
-my $database = $pluginMgr->getDatabase('Intradomain');
+my $database = $pluginMgr->getLocation('system');
 my $clientMgr = OSCARS::ClientManager->new('database' => $database);
 my $client = $clientMgr->getClient();
 
 
-my( $status, $msg ) = FindPendingReservations( $login, $credentials );
-( $status, $msg ) = FindExpiredReservations( $login, $credentials );
+my( $status, $msg ) = reservationPending( $login, $credentials );
+( $status, $msg ) = reservationExpired( $login, $credentials );
 
 
 #############################################################################
 #
-sub FindPendingReservations {
+sub reservationPending {
     my ( $login, $password ) = @_;
 
     # password necessary for test to run, but not for this method in general
     my %params = ('login' => $login, 'password' => $password );
-    $params{component} = 'Intradomain';
-    $params{method} = 'FindPendingReservations';
+    $params{method} = 'reservationPending';
     $params{timeInterval} = 20;
 
     my $som = $client->dispatch(\%params);
@@ -46,14 +45,13 @@ sub FindPendingReservations {
 
 #############################################################################
 #
-sub FindExpiredReservations {
+sub reservationExpired {
     my ( $login, $password ) = @_;
 
     # password necessary for test to run, but not for this method in general
     my %params = ('login' => $login, 'password' => $password );
 
-    $params{component} = 'Intradomain';
-    $params{method} = 'FindExpiredReservations';
+    $params{method} = 'reservationExpired';
     $params{timeInterval} = 20;
 
     my $som = $client->dispatch(\%params);
