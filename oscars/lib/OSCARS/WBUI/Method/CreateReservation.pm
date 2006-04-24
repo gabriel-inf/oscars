@@ -19,19 +19,45 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+April 24, 2006
 
 =cut
 
 
 use strict;
 
+use DateTime;
+use DateTime::TimeZone;
+use DateTime::Format::W3CDTF;
 use Data::Dumper;
 
 use OSCARS::WBUI::Method::ReservationDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+
+
+###############################################################################
+# modifyParams:  convert times from epoch seconds to xsd:datetime
+#
+sub modifyParams {
+    my( $self ) = @_;
+
+    my $params = $self->SUPER::modifyParams();
+    my $f = DateTime::Format::W3CDTF->new();
+    my $dt = DateTime->from_epoch( epoch => $params->{startTime} );
+    my $offsetStr = $params->{origTimeZone};
+    # strip out semicolon
+    $offsetStr =~ s/://;
+    my $timezone = DateTime::TimeZone->new( name => $offsetStr );
+    $dt->set_time_zone($timezone);
+    $params->{startTime} = $f->format_datetime($dt);
+
+    $dt = DateTime->from_epoch( epoch => $params->{endTime} );
+    $dt->set_time_zone($timezone);
+    $params->{endTime} = $f->format_datetime($dt);
+    return $params;
+} #____________________________________________________________________________
 
 
 ###############################################################################

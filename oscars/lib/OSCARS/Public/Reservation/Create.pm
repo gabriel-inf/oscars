@@ -47,8 +47,7 @@ sub initialize {
                              'db' => $self->{db});
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                              'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
-                             'db' => $self->{db}, 'logger' => $self->{logger});
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
 } #____________________________________________________________________________
 
 
@@ -106,10 +105,11 @@ sub createReservation {
     $params->{egressIP} = $pathInfo->{egressIP};
     $params->{path} = $pathInfo->{path};
 
-    ( $params->{startTime}, $params->{endTime},
-      $params->{createdTime} ) =
-          $self->{timeLib}->setupTimes( $params->{startTime},
-                                        $params->{endTime});
+    $params->{startTime} = $self->{timeLib}->datetimeToSeconds(
+                                               $params->{startTime});
+    $params->{endTime} = $self->{timeLib}->datetimeToSeconds(
+                                               $params->{endTime});
+    $params->{createdTime} = time();
 
     my $pssConfigs = $self->{resvLib}->getPssConfigs();
     $params->{class} = $pssConfigs->{CoS};
@@ -282,14 +282,21 @@ sub buildResults {
     $results->{destHost} = $params->{destHost};
     # clean up NULL values
     $self->{resvLib}->checkNulls($results);
-    # convert times back to user's time zone for mail message
-    $self->{timeLib}->convertTimes($results);
+    # convert times back to xsd:datetime format in user's time zone for 
+    # email notification
+    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{startTime}, $results->{origTimeZone});
+    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{endTime}, $results->{origTimeZone});
+    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                             $results->{createdTime}, $results->{origTimeZone});
 
-    my @ymd = split(' ', $params->{startTime});
+    # gets YYYY-MM-DD string to insert into reservation tag 
+    my $ymd = $self->{timeLib}->getYMD($params->{startTime});
     # set user-semi-readable tag
     # FIX:  more domain independence
     $results->{tag} = 'ESNet' . '-' . $self->{user}->{login} . '.' .
-          $ymd[0] .  "-" .  $results->{id};
+          $ymd .  "-" .  $results->{id};
     $statement = 'UPDATE reservations SET tag = ?, ' .
                  "status = 'pending' WHERE id = ?";
     $unused = $self->{db}->doQuery($statement, $results->{tag},

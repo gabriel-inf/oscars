@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 24, 2006
 
 =cut
 
@@ -43,8 +43,7 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                            'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
-                           'db' => $self->{db}, 'logger' => $self->{logger});
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
 } #____________________________________________________________________________
 
 
@@ -63,7 +62,12 @@ sub soapMethod {
                           $self->{params}->{id}, 'precancel' );
     my $results = $self->{resvLib}->listDetails($self->{params});
     $results->{id} = $self->{params}->{id};
-    $self->{timeLib}->convertTimes($results);
+    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{startTime}, $results->{origTimeZone});
+    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{endTime}, $results->{origTimeZone});
+    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{createdTime}, $results->{origTimeZone});
     $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________

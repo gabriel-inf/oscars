@@ -43,8 +43,7 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                           'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
-                          'db' => $self->{db}, 'logger' => $self->{logger});
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
 } #____________________________________________________________________________
 
 
@@ -87,7 +86,12 @@ sub getReservations {
         $rows = $self->{db}->doQuery($statement, $self->{user}->{login});
     }
     for my $resv ( @$rows ) {
-        $self->{timeLib}->convertTimes($resv);
+        $resv->{startTime} = $self->{timeLib}->secondsToDatetime(
+                              $resv->{startTime}, $resv->{origTimeZone});
+        $resv->{endTime} = $self->{timeLib}->secondsToDatetime(
+                              $resv->{endTime}, $resv->{origTimeZone});
+        $resv->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                              $resv->{createdTime}, $resv->{origTimeZone});
         $self->{resvLib}->getHostInfo($resv);
     }
     return $rows;

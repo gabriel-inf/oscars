@@ -43,8 +43,7 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                             'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
-                            'db' => $self->{db}, 'logger' => $self->{logger});
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
 } #____________________________________________________________________________
 
 

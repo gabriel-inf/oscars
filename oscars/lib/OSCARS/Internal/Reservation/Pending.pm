@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 24, 2006
 
 =cut
 
@@ -49,8 +49,7 @@ sub initialize {
     $self->{LSP_TEARDOWN} = 0;
     $self->{schedLib} = OSCARS::Library::Reservation::Scheduler->new(
                             'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
-                            'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                             'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
@@ -98,7 +97,15 @@ sub generateMessages {
     my( $subject, $msg );
 
     for my $resv ( @$reservations ) {
-        $self->{timeLib}->convertLspTimes($resv);
+        $resv->{lspConfigTime} = time();
+        $resv->{startTime} = $self->{timeLib}->secondsToDatetime(
+                                               $resv->{startTime});
+        $resv->{endTime} = $self->{timeLib}->secondsToDatetime(
+                                               $resv->{endTime});
+        $resv->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                                               $resv->{createdTime});
+        $resv->{lspConfigTime} = $self->{timeLib}->secondsToDatetime(
+                                               $resv->{lspConfigTime});
         $subject = "Circuit set up status for $resv->{login}.";
         $msg =
           "Circuit set up for $resv->{login}, for reservation(s) with parameters:\n";

@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 24, 2006
 
 =cut
 
@@ -50,8 +50,7 @@ sub initialize {
     $self->{LSP_TEARDOWN} = 0;
     $self->{schedLib} = OSCARS::Library::Reservation::Scheduler->new(
                              'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
-                             'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                              'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
@@ -99,7 +98,15 @@ sub generateMessages {
     my( @messages );
 
     for my $resv ( @$reservations ) {
-        $self->{timeLib}->convertLspTimes($resv);
+        $resv->{lspConfigTime} = time();
+        $resv->{startTime} = $self->{timeLib}->secondsToDatetime( 
+                                 $resv->{startTime}, $resv->{origTimeZone});
+        $resv->{endTime} = $self->{timeLib}->secondsToDatetime(
+                                 $resv->{endTime}, $resv->{origTimeZone});
+        $resv->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                                 $resv->{createdTime}, $resv->{origTimeZone});
+        $resv->{lspConfigTime} = $self->{timeLib}->secondsToDatetime(
+                                 $resv->{lspConfigTime}, $resv->{origTimeZone});
         my $subject = "Circuit tear down status for $resv->{login}.";
         my $msg =
             "Circuit tear down for $resv->{login}, for reservation(s) with parameters:\n";

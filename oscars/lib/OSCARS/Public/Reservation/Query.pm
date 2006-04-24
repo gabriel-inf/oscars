@@ -42,8 +42,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new(
-                                 'db' => $self->{db});
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                                  'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
@@ -63,7 +62,12 @@ sub soapMethod {
     my( $self ) = @_;
 
     my $results = $self->{resvLib}->listDetails($self->{params});
-    $self->{timeLib}->convertTimes($results);
+    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{startTime}, $results->{origTimeZone});
+    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{endTime}, $results->{origTimeZone});
+    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{createdTime}, $results->{origTimeZone});
     return $results;
 } #____________________________________________________________________________
 
