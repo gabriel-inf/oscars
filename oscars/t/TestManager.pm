@@ -84,16 +84,16 @@ sub dispatch {
     my( $self, $params, $method ) = @_;
 
     if (!$self->{database}) {
-        $self->{database} = $self->{pluginMgr}->getDatabase($params->{component});
+        $self->{database} = $self->{pluginMgr}->getLocation('system');
         $self->{db}->connect($self->{database});
     }
     my $authN = $self->{pluginMgr}->usePlugin('authentication');
     my $credentials = $authN->getCredentials($params->{login}, 'password');
+    $params->{method} = $method;
     $params->{password} = $credentials;
     if ( !$self->{clientMgr} ) {
-	my $database = $self->{pluginMgr}->getDatabase('Intradomain');
         $self->{clientMgr} = OSCARS::ClientManager->new(
-	                                       'database' => $database);
+                                    'database' => $self->{database});
     }
     my $client = $self->{clientMgr}->getClient();
     my $som = $client->$method($params);
@@ -104,15 +104,15 @@ sub dispatch {
 
 ###############################################################################
 #
-sub getIntradomainConfigs {
+sub getReservationConfigs {
     my( $self, $testName ) = @_;
 
     if (!$self->{database}) {
-        $self->{database} = $self->{pluginMgr}->getDatabase('Intradomain');
+        $self->{database} = $self->{pluginMgr}->getLocation('system');
         $self->{db}->connect($self->{database});
     }
-    my $statement = "SELECT * FROM testAddresses a " .
-        "INNER JOIN testConfs t ON a.testConfId = t.id WHERE t.name = ?";
+    my $statement = "SELECT * FROM configTestAddresses a " .
+        "INNER JOIN configTests t ON a.testConfId = t.id WHERE t.name = ?";
     my $rows = $self->{db}->doQuery($statement, $testName);
     my $configs = {};
     for my $row (@$rows) {

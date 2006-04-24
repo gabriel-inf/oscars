@@ -8,7 +8,7 @@ use strict;
 # "t" directory.
 
 # First we check if we already are within the "t" directory
-unless (-d "aaa") {
+unless (-d "oscars") {
     # try to move into test directory
     chdir "t" or die "Can't chdir: $!";
 
@@ -38,7 +38,7 @@ if (@ARGV) {
 	}
     }
 } else {
-    @tests = (<aaa/*.t>, <intradomain/*.t>, <pss/*.t>);
+    @tests = (<oscars/*.t>, <topology/*.t>, <pss/*.t>);
 }
 
 runtests @tests;

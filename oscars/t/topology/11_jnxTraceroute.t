@@ -17,19 +17,19 @@ $logger->setUserLogin('testaccount');
 $logger->open('/home/oscars/logs/test.log');
 
 my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getDatabase('topology');
+my $database = $pluginMgr->getLocation('system');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
 my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
-my $configs = $pf->getTraceConfigs();
+my $configs = $pf->getTracerouteConfig();
 ok( $configs );
 print STDERR "\n";
 print STDERR Dumper($configs);
 
 my $testMgr = TestManager->new('db' => $dbconn,
                                         'database' => $database);
-my $testConfigs = $testMgr->getTopologyConfigs('jnxTraceroute');
+my $testConfigs = $testMgr->getReservationConfigs('jnxTraceroute');
 
 # Create a traceroute object.
 my $jnxTraceroute = OSCARS::Library::Topology::JnxTraceroute->new();

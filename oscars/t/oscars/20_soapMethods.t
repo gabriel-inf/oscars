@@ -8,7 +8,7 @@ use Data::Dumper;
 use TestManager;
 
 my $testMgr = TestManager->new();
-my $params = $testMgr->getParams('aaa/params.xml');
+my $params = $testMgr->getParams('oscars/params.xml');
 
 my ($status, $msg) = userLogin($testMgr, $params->{userLogin});
 ok($status, $msg);

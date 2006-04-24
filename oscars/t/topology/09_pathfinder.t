@@ -8,7 +8,7 @@ use OSCARS::Database;
 use OSCARS::Library::Topology::Pathfinder;
 
 my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getDatabase('topology');
+my $database = $pluginMgr->getLocation('system');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 

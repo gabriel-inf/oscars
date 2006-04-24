@@ -6,7 +6,6 @@ use OSCARS::PluginManager;
 use OSCARS::Method;
 
 my $login = 'testaccount';
-my $component = 'AAA';
 my $mgr = OSCARS::PluginManager->new();
 my $authN = $mgr->usePlugin('authentication');
 
@@ -17,8 +16,7 @@ my $factory = OSCARS::MethodFactory->new();
 ok($factory);
 
 my $params = {};
-$params->{component} = $component;
-$params->{method} = 'UserLogin';
+$params->{method} = 'userLogin';
 $params->{login} = $login;
 $params->{user_password} = $credentials;
 

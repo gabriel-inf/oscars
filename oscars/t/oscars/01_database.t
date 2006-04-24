@@ -3,17 +3,20 @@
 use strict;
 use Test::Simple tests => 2;
 
+use OSCARS::PluginManager;
 use OSCARS::Database;
 use Error qw{:try};
 
 my $msg = "\n";
 my $ex;
  
+my $pluginMgr = OSCARS::PluginManager->new();
 my $dbconn = OSCARS::Database->new();
 ok($dbconn);
 
 try {
-    $dbconn->connect('AAA');
+    my $dbName = $pluginMgr->getLocation('system');
+    $dbconn->connect($dbName);
 }
 catch Error::Simple with { $ex = shift; }
 otherwise { $ex = shift; }

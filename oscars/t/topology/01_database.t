@@ -11,7 +11,7 @@ my $msg = "\n";
 my $ex;
  
 my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getDatabase('topology');
+my $database = $pluginMgr->getLocation('topology');
 my $dbconn = OSCARS::Database->new();
 ok($dbconn);
 

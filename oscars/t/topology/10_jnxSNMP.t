@@ -11,17 +11,17 @@ use OSCARS::Library::Topology::JnxSNMP;
 use OSCARS::Library::Topology::Pathfinder;
 
 my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getDatabase('topology');
+my $database = $pluginMgr->getLocation('system');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
 my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
-my $configs = $pf->getSnmpConfigs();
+my $configs = $pf->getSNMPConfiguration();
 ok( $configs );
 
 my $testMgr = TestManager->new('db' => $dbconn,
                                 'database' => $database);
-my $testConfigs = $testMgr->getTopologyConfigs('jnxSNMP');
+my $testConfigs = $testMgr->getReservationConfigs('jnxSNMP');
 
 # name of edge router to perform query on
 my $routerName = $testConfigs->{router_name};
