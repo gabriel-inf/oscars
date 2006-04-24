@@ -65,7 +65,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 19, 2006
+April 20, 2006
 
 =cut
 
@@ -81,14 +81,13 @@ use OSCARS::Method;
 # intermediate step to different style of dispatching; this is not the final 
 # version
 
-### AAA
+### publicly available methods
 
 ###############################################################################
 #
 sub userLogin {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'userLogin';
     return handle($params);
 }
 
@@ -97,70 +96,6 @@ sub userLogin {
 sub userLogout {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'userLogout';
-    return handle($params);
-}
-
-###############################################################################
-#
-sub authorizationList {
-    my( $className, $params ) = @_;
-
-    $params->{method} = 'authorizationList';
-    return handle($params);
-}
-
-###############################################################################
-#
-sub institutionList {
-    my( $className, $params ) = @_;
-
-    $params->{method} = 'institutionList';
-    return handle($params);
-}
-
-###############################################################################
-#
-sub permissionList {
-    my( $className, $params ) = @_;
-
-    $params->{method} = 'permissionList';
-    return handle($params);
-}
-
-###############################################################################
-#
-sub resourceList {
-    my( $className, $params ) = @_;
-
-    $params->{method} = 'resourceList';
-    return handle($params);
-}
-
-###############################################################################
-#
-sub userAdd {
-    my( $className, $params ) = @_;
-
-    $params->{method} = 'userAdd';
-    return handle($params);
-}
-
-###############################################################################
-#
-sub userRemove {
-    my( $className, $params ) = @_;
-
-    $params->{method} = 'userRemove';
-    return handle($params);
-}
-
-###############################################################################
-#
-sub userModify {
-    my( $className, $params ) = @_;
-
-    $params->{method} = 'userModify';
     return handle($params);
 }
 
@@ -169,27 +104,30 @@ sub userModify {
 sub userQuery {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'userModify';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub userList {
+sub userModify {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'userList';
     return handle($params);
 }
 
-### Intradomain
+###############################################################################
+#
+sub institutionList {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
 
 ###############################################################################
 #
 sub queryReservation {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'queryReservation';
     return handle($params);
 }
 
@@ -198,7 +136,6 @@ sub queryReservation {
 sub createReservation {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'createReservation';
     return handle($params);
 }
 
@@ -207,7 +144,6 @@ sub createReservation {
 sub modifyReservation {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'modifyReservation';
     return handle($params);
 }
 
@@ -216,7 +152,6 @@ sub modifyReservation {
 sub cancelReservation {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'cancelReservation';
     return handle($params);
 }
 
@@ -225,45 +160,90 @@ sub cancelReservation {
 sub listReservations {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'listReservations';
+    return handle($params);
+}
+
+### internal methods
+
+###############################################################################
+#
+sub userAdd {
+    my( $className, $params ) = @_;
+
     return handle($params);
 }
 
 ###############################################################################
 #
-sub findPendingReservations {
+sub userRemove {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'findPendingReservations';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub findExpiredReservations {
+sub userList {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'findExpiredReservations';
     return handle($params);
 }
 
 ###############################################################################
 #
-sub updateRouterTables {
+sub permissionList {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'updateRouterTables';
     return handle($params);
 }
 
-# Interdomain
+###############################################################################
+#
+sub resourceList {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub authorizationList {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub reservationPending {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub reservationExpired {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+###############################################################################
+#
+sub topologyUpdate {
+    my( $className, $params ) = @_;
+
+    return handle($params);
+}
+
+# public Interdomain (currently in Intradomain)
 
 ###############################################################################
 #
 sub forward {
     my( $className, $params ) = @_;
 
-    $params->{method} = 'forward';
     return handle($params);
 }
 
@@ -274,10 +254,6 @@ sub handle {
 
     my $ex;
     my( $user, $handler, $som );
-
-    # make sure first letter of method capitalized (for Perl convention for 
-    # classes, since each SOAP method is handled by a class)
-    $params->{method} =~ s/(\w)/\U$1/;
 
     my $logger = OSCARS::Logger->new('method' => $params->{method});
     $logger->set_level($NetLogger::INFO);
