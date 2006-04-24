@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
     phoneSecondary	TEXT,
     status		TEXT,
     activationKey	TEXT,
-    lastActiveTime	DATETIME,
-    registerTime	DATETIME,
+    lastActiveTime	INT,
+    registerTime	INT,
     institutionId	INT NOT NULL,	-- foreign key
     PRIMARY KEY (id)
 
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS resources (
     id			INT NOT NULL AUTO_INCREMENT,
     name		TEXT NOT NULL,
     description		TEXT,
-    updateTime		DATETIME,
+    updateTime		INT,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS permissions (
     id			INT NOT NULL AUTO_INCREMENT,
     name		TEXT NOT NULL,
     description		TEXT,
-    updateTime		DATETIME,
+    updateTime		INT,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS resourcePermissions (
 CREATE TABLE IF NOT EXISTS authorizations (
     id			INT NOT NULL AUTO_INCREMENT,
     context		TEXT,
-    updateTime		DATETIME,
+    updateTime		INT,
     userId		INT NOT NULL,	-- foreign key
     resourceId 		INT NOT NULL,	-- foreign key
     permissionId	INT NOT NULL,	-- foreign key
@@ -100,10 +100,10 @@ CREATE TABLE IF NOT EXISTS hosts (
 CREATE TABLE IF NOT EXISTS reservations (
     id			INT NOT NULL AUTO_INCREMENT,
       -- times will be in seconds since epoch (UTC)
-    startTime		DATETIME NOT NULL,
-    endTime		DATETIME NOT NULL,
+    startTime		INT NOT NULL,
+    endTime		INT NOT NULL,
         -- time this entry was created
-    createdTime		DATETIME NOT NULL,
+    createdTime		INT NOT NULL,
         -- client's time zone
     origTimeZone	TEXT NOT NULL,
         -- bandwidth requested (Mbps)
@@ -147,10 +147,10 @@ CREATE TABLE IF NOT EXISTS archivedReservations (
     -- table.
     id			INT NOT NULL,
       -- times will be in seconds since epoch (UTC)
-    startTime		DATETIME NOT NULL,
-    endTime		DATETIME NOT NULL,
+    startTime		INT NOT NULL,
+    endTime		INT NOT NULL,
         -- time this entry was created
-    createdTime		DATETIME NOT NULL,
+    createdTime		INT NOT NULL,
         -- client's time zone
     origTimeZone	TEXT NOT NULL,
         -- bandwidth requested (Mbps)
