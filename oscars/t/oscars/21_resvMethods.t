@@ -4,6 +4,7 @@ use strict;
 use Test::Simple tests => 5;
 
 use DateTime;
+use DateTime::TimeZone;
 use DateTime::Format::W3CDTF;
 
 use Data::Dumper;
@@ -67,14 +68,18 @@ sub createReservation {
     my $epoch = time();
     my $f = DateTime::Format::W3CDTF->new;
     my $dt = DateTime->from_epoch( epoch => $epoch );
-    #$params->{startTime} = $f->format_datetime($dt);
-    $params->{startTime} = $epoch;
+    my $offsetStr = $params->{origTimeZone};
+    # strip out semicolon
+    $offsetStr =~ s/://;
+    my $timezone = DateTime::TimeZone->new( name => $offsetStr );
+    $dt->set_time_zone($timezone);
+    $params->{startTime} = $f->format_datetime($dt);
 
     # end time is 4 minutes later
     $epoch += 240;
     $dt = DateTime->from_epoch( epoch => $epoch );
-    #$params->{endTime} = $f->format_datetime($dt);
-    $params->{endTime} = $epoch;
+    $dt->set_time_zone($timezone);
+    $params->{endTime} = $f->format_datetime($dt);
 
     my( $errorMsg, $results ) = $testMgr->dispatch($params, 'createReservation');
     if ( $errorMsg ) { return( 0, $errorMsg ); }
