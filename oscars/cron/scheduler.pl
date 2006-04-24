@@ -32,7 +32,7 @@ sub reservationPending {
     $params{method} = 'reservationPending';
     $params{timeInterval} = 20;
 
-    my $som = $client->dispatch(\%params);
+    my $som = $client->reservationPending(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
@@ -54,7 +54,7 @@ sub reservationExpired {
     $params{method} = 'reservationExpired';
     $params{timeInterval} = 20;
 
-    my $som = $client->dispatch(\%params);
+    my $som = $client->reservationExpired(\%params);
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
