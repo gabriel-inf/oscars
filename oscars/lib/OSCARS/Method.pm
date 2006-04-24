@@ -28,25 +28,12 @@ sub initialize {
 sub instantiate {
     my( $self, $user, $params, $logger ) = @_;
 
-    my( $location, $className );
-    my $packagePrefix =
-            $self->{pluginMgr}->getPackage($params->{component});
-    my $dbname = $self->{pluginMgr}->getDatabase($params->{component});
+    my $className = $self->{pluginMgr}->getLocation($params->{method});
+    my $dbname = $self->{pluginMgr}->getLocation('system');
     my $db = $user->getDbHandle($dbname);
-    my $locationPrefix = $packagePrefix;
+    my $locationPrefix = $className;
     $locationPrefix =~ s/(::)/\//g;
-    # kludge for now
-    if ($params->{component} ne 'AAA') {
-        $location = $locationPrefix . '/' . $params->{method} . '.pm';
-        $className = $packagePrefix . '::' .  $params->{method};
-    }
-    else {
-	my $str = $params->{method};
-        $str =~ s/([A-Z].[a-z]*)([A-Z].)(\w*)/$1 $2$3/;
-        my( $group, $method ) = split(' ', $str);
-        $location = $locationPrefix . '/' . $group . '/' . $method . '.pm';
-        $className = $packagePrefix . '::' .  $group . '::' . $method;
-    }
+    my $location = $locationPrefix . '.pm';
     require $location;
     # TODO:  shouldn't need so many parameters
     return $className->new( 'user' => $user,
@@ -79,7 +66,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 19, 2006
+April 23, 2006
 
 =cut
 
@@ -89,7 +76,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Mail;
-use OSCARS::Interdomain::Request;
+use OSCARS::Library::Reservation::ClientForward;
 
 sub new {
     my( $class, %args ) = @_;
@@ -103,7 +90,7 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{forwarder} = OSCARS::Interdomain::Request->new();
+    $self->{forwarder} = OSCARS::Library::Reservation::ClientForward->new();
     $self->{mailer} = OSCARS::Mail->new();
     $self->{paramTests} = {};
 } #____________________________________________________________________________

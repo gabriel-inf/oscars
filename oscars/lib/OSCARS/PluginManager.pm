@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+April 23, 2006
 
 =cut
 
@@ -48,7 +48,7 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{config} = $self->readConfiguration();
+    $self->readConfiguration();
 } #____________________________________________________________________________
 
 
@@ -58,7 +58,7 @@ sub initialize {
 sub readConfiguration {
     my( $self ) = @_;
 
-    my $conf = {};
+    $self->{config} = {};
     my $parser = new XML::DOM::Parser;
     my $doc = $parser->parsefile( "$ENV{HOME}/.oscars.xml" );
     # print all attributes of all plugin elements
@@ -70,14 +70,21 @@ sub readConfiguration {
 	# TODO:  error checking
         if ($attr) {
 	    my $name = $attr->getValue;
-            $conf->{$name} = {};
-            $attr = $node->getAttributeNode( "package" );
-	    $conf->{$name}->{package} = $attr->getValue;
+            $self->{config}->{$name} = {};
+            $attr = $node->getAttributeNode( "location" );
+	    if ($attr) {
+                $self->{config}->{$name}->{location} = $attr->getValue;
+            }
             $attr = $node->getAttributeNode ( "database" );
-            $conf->{$name}->{database} = $attr->getValue;
+	    if ($attr) { 
+                $self->{config}->{$name}->{database} = $attr->getValue;
+            }
+            $attr = $node->getAttributeNode ( "type" );
+	    if ($attr) { 
+                $self->{config}->{$name}->{type} = $attr->getValue;
+            }
 	}
     }
-    return $conf;
 } #____________________________________________________________________________
 
 
@@ -87,8 +94,8 @@ sub readConfiguration {
 sub usePlugin {
     my( $self, $pluginName ) = @_;
 
-    my $packageName = $self->{config}->{$pluginName}->{package};
-    my $database = $self->{config}->{$pluginName}->{database};
+    my $packageName = $self->{config}->{$pluginName}->{location};
+    my $database = $self->getLocation($self->{config}->{$pluginName}->{database});
     my $location = $packageName . '.pm';
 
     $location =~ s/(::)/\//g;
@@ -102,22 +109,12 @@ sub usePlugin {
 
 
 ###############################################################################
-# getDatabase:  get associated database name, given a plugin name.
+# getLocation:  get location of associated plugin.
 #
-sub getDatabase {
+sub getLocation {
     my( $self, $pluginName ) = @_;
 
-    return $self->{config}->{$pluginName}->{database};
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getPackage:  get package name (or prefix), given a plugin name.
-#
-sub getPackage {
-    my( $self, $pluginName ) = @_;
-
-    return $self->{config}->{$pluginName}->{package};
+    return $self->{config}->{$pluginName}->{location};
 } #____________________________________________________________________________
 
 
