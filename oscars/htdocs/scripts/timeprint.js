@@ -1,6 +1,6 @@
 /*
 Javascript functions for getting dates and times in various formats
-Last modified: February 12, 2006
+Last modified:  April 24, 2006
 Soo-yeon Hwang (dapi@umich.edu)
 David Robertson (dwrobertson@lbl.gov)
 */
@@ -225,7 +225,7 @@ function time_zone_options() {
     }
     else {
         for (var tz_offset in daylight_tz_name)  {
-            options_str += time_zone_option(tz_offset, local_offset, standard_tz_name[tz_offset]) + "\n";
+            options_str += time_zone_option(tz_offset, local_offset, daylight_tz_name[tz_offset]) + "\n";
         }
     }
     options_str += "</select>\n";
