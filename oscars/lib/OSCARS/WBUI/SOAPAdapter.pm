@@ -22,15 +22,8 @@ sub instantiate {
     my( $location, $className );
 
     my $method = $cgi->param('method'); 
-    my $component = $cgi->param('component');
-    if ($component) {
-        $location = 'OSCARS/WBUI/' . $component . '/' . $method . '.pm';
-        $className = 'OSCARS::WBUI::' . $component . '::' . $method;
-    }
-    else {
-        $location = 'OSCARS/WBUI/' . $method . '.pm';
-        $className = 'OSCARS::WBUI::' . $method;
-    }
+    $location = 'OSCARS/WBUI/Method/' . $method . '.pm';
+    $className = 'OSCARS::WBUI::Method::' . $method;
     require $location;
     return $className->new('cgi' => $cgi);
 } #___________________________________________________________________________                                         
@@ -140,9 +133,10 @@ sub modifyParams {
 sub makeCall {
     my( $self, $soapServer, $soapParams ) = @_;
 
+    $soapParams->{method} =~ s/(\w)/\l$1/;
     my $method = $soapParams->{method};
-    $method =~ s/(\w)/\l$1/;
     my $som = $soapServer->$method($soapParams);
+    $soapParams->{method} =~ s/(\w)/\U$1/;
     return $som;
 } #___________________________________________________________________________ 
 

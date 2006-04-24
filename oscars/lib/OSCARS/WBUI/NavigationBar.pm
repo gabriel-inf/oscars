@@ -53,28 +53,26 @@ sub output {
       <navigation-bar>
       <ul id="tabnav">
     };
-    my $component = 'Intradomain';
     my $method = 'ListReservations';
     if ( $method eq $activeTab ) { $activeStatus = 'active'; }
     else { $activeStatus = 'inactive'; }
     print qq{
       <li>
         <a style="/styleSheets/layout.css" title="View/edit reservations"
-           onclick="return new_section('component=$component;method=$method;');"
+           onclick="return new_section('method=$method;');"
            class='$activeStatus' href="#">Reservations</a>
       </li>
     };
-    my $method = 'CreateReservationForm';
+    my $method = 'ReservationCreateForm';
     if ( $method eq $activeTab ) { $activeStatus = 'active'; }
     else { $activeStatus = 'inactive'; }
     print qq{
       <li>
         <a style="/styleSheets/layout.css" title="Create an OSCARS reservation"
-           onclick="return new_section('component=$component;method=$method;');"
+           onclick="return new_section('method=$method;');"
            class='$activeStatus' href="#">Create Reservation</a>
       </li>
     };
-    $component = 'AAA';
     if ( $authorizations && $authorizations->{ManageUsers} ) {
 	$method = 'UserList';
         if ( $method eq $activeTab ) { $activeStatus = 'active'; }
@@ -82,7 +80,7 @@ sub output {
         print qq{
           <li>
             <a style='/styleSheets/layout.css' title='Manage user accounts'
-               onclick="return new_section('component=$component;method=$method;');"
+               onclick="return new_section('method=$method;');"
                class='$activeStatus' href="#">Users</a>
           </li>
         };
@@ -94,7 +92,7 @@ sub output {
         print qq{
           <li>
             <a style="/styleSheets/layout.css" title="View/edit my profile"
-               onclick="return new_section('component=$component;method=$method;');"
+               onclick="return new_section('method=$method;');"
                class='$activeStatus' href="#">User Profile</a>
           </li>
         };
@@ -106,7 +104,7 @@ sub output {
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage resources"
-             onclick="return new_section('component=$component;method=$method;');"
+             onclick="return new_section('method=$method;');"
              class='$activeStatus' href="#">Resources</a>
         </li>
       };
@@ -117,7 +115,7 @@ sub output {
       print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Manage authorizations"
-             onclick="return new_section('component=$component;method=$method;');"
+             onclick="return new_section('method=$method;');"
              class='$activeStatus' href="#">Authorizations</a>
         </li>
       };
@@ -135,7 +133,7 @@ sub output {
     print qq{
         <li>
           <a style="/styleSheets/layout.css" title="Log out on click"
-             href="/perl/adapt.pl?component=$component;method=UserLogout;">Log out</a>
+             href="/perl/adapt.pl?method=UserLogout;">Log out</a>
         </li>
       </ul>
       </navigation-bar>
