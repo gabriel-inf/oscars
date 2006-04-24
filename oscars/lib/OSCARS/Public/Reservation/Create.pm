@@ -109,7 +109,7 @@ sub createReservation {
     ( $params->{startTime}, $params->{endTime},
       $params->{createdTime} ) =
           $self->{timeLib}->setupTimes( $params->{startTime},
-                                        $params->{durationHour});
+                                        $params->{endTime});
 
     my $pssConfigs = $self->{resvLib}->getPssConfigs();
     $params->{class} = $pssConfigs->{CoS};
