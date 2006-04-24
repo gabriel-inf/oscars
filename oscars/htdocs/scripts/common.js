@@ -134,7 +134,7 @@ function get_response(xmlhttp) {
     var main_node = document.getElementById('main-div');
     main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
 
-    // only used with time zones in CreateReservationForm:  TODO:  FIX
+    // only used with time zones in ReservationCreateForm:  TODO:  FIX
     var time_node = document.getElementById('time-zone-options');
     if (time_node) {
         time_node.innerHTML = time_zone_options();
