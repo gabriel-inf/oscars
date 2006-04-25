@@ -68,9 +68,9 @@ sub soapMethod {
     }
     # find reservations that need to be scheduled
     my $reservations =
-        $self->findPendingReservations($self->{params}->{pollTime});
+        $self->findPendingReservations($self->{params}->{timeInterval});
     for my $resv (@$reservations) {
-        $self->{schedLib}->mapToIPS($resv);
+        $self->{schedLib}->mapToIPs($resv);
         # call PSS to schedule LSP
         $resv->{lspStatus} = $self->setupPSS($resv);
         $self->{resvLib}->updateReservation( $resv, 'active', 
@@ -127,9 +127,9 @@ sub findPendingReservations  {
     my ( $self, $timeInterval ) = @_;
 
     my $status = 'pending';
-    my $statement = "SELECT now() + INTERVAL ? SECOND AS newTime";
-    my $row = $self->{db}->getRow( $statement, $timeInterval );
-    my $timeslot = $row->{newTime};
+    my $statement = "SELECT unix_timestamp() AS nowTime";
+    my $row = $self->{db}->getRow( $statement );
+    my $timeslot = $row->{nowTime} + $timeInterval;
     $statement = qq{ SELECT * FROM reservations WHERE status = ? and
                  startTime < ?};
     return $self->{db}->doQuery($statement, $status, $timeslot);

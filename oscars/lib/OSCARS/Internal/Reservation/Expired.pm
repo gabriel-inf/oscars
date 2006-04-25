@@ -127,9 +127,9 @@ sub findExpiredReservations {
     my ( $self, $timeInterval ) = @_;
 
     my $status = 'active';
-    my $statement = "SELECT now() + INTERVAL ? SECOND AS newTime";
-    my $row = $self->{db}->getRow( $statement, $timeInterval );
-    my $timeslot = $row->{newTime};
+    my $statement = "SELECT unix_timestamp() AS nowTime";
+    my $row = $self->{db}->getRow( $statement );
+    my $timeslot = $row->{nowTime} + $timeInterval;
     $statement = qq{ SELECT * FROM reservations WHERE (status = ? and
                  endTime < ?) or (status = ?)};
     return $self->{db}->doQuery($statement, $status, $timeslot, 'precancel' );
