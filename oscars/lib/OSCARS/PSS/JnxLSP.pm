@@ -47,14 +47,14 @@ sub initialize {
   
         # not currently on a per-reservation basis
     $self->{'lsp_setup-priority'} =
-                                 $self->{configs}->{pss_conf_setup_priority};
+                                 $self->{configs}->{setupPriority};
     $self->{'lsp_reservation-priority'} =
-                                 $self->{configs}->{pss_conf_resv_priority};
+                                 $self->{configs}->{resvPriority};
     $self->{external_interface_filter} =
-                                 $self->{configs}->{pss_conf_ext_if_filter};
+                                 $self->{configs}->{extIfFilter};
 
     $self->{firewall_filter_marker} =
-                                 $self->{configs}->{pss_conf_firewall_marker};
+                                 $self->{configs}->{firewallMarker};
     return();
 } #____________________________________________________________________________
 
@@ -74,11 +74,11 @@ sub configure_lsp {
     # TODO:  FIX hard-wired directory
     if ($lsp_op == 1)  {
         $xmlFile = '/home/oscars/PSS/xml/' .
-                    $self->{configs}->{pss_conf_setup_file};
+                    $self->{configs}->{setupFile};
     }
     else  {
         $xmlFile = '/home/oscars/PSS/xml/' .
-                    $self->{configs}->{pss_conf_teardown_file};
+                    $self->{configs}->{teardownFile};
     }
 
     my $xmlString = $self->read_xml_file($xmlFile);
@@ -236,9 +236,9 @@ sub execute_configuration_change {
     my( $self, $xmlString ) = @_;
 
     my %jnxInfo = (
-        'access' => $self->{configs}->{pss_conf_access},
-        'login'  => $self->{configs}->{pss_conf_login},
-        'password' => $self->{configs}->{pss_conf_passwd},
+        'access' => $self->{configs}->{access},
+        'login'  => $self->{configs}->{login},
+        'password' => $self->{configs}->{password},
         'hostname' => $self->{lsp_from}
     );
     my $jnx;
@@ -249,7 +249,7 @@ sub execute_configuration_change {
     # Initialize the XML Parser.
     my ($_xmlParser) = new XML::DOM::Parser;
 
-    if (!$self->{configs}->{pss_conf_allow_lsp}) {
+    if (!$self->{configs}->{allowLsp}) {
         return("Not configured to allow JUNOScript commands");
     }
 
@@ -339,9 +339,9 @@ sub execute_operational_command {
     my( $self, $command ) = @_;
 
     my %jnxInfo = (
-        'access' => $self->{configs}->{pss_conf_access},
-        'login'  => $self->{configs}->{pss_conf_login},
-        'password' => $self->{configs}->{pss_conf_password},
+        'access' => $self->{configs}->{access},
+        'login'  => $self->{configs}->{login},
+        'password' => $self->{configs}->{password},
         'hostname' => $self->{lsp_from}
     );
     my %queryArgs = ('detail' => 0);  # 1 => "extensive" or "detail" view.
@@ -349,7 +349,7 @@ sub execute_operational_command {
     # Clear error message.
     $self->{errMsg} = 0;
 
-    if (!$self->{configs}->{pss_conf_allow_lsp}) {
+    if (!$self->{configs}->{allowLsp}) {
         return("Not configured to allow JUNOScript commands");
     }
     # Connect to the JUNOScript server.
