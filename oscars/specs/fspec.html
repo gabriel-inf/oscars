@@ -9,12 +9,13 @@
 <em>David Robertson, Chin Guok</em><br/>
 <a href="http://www.es.net">ESnet</a><br/><br/>
 
-October 31, 2005<br/>
+April 25, 2006<br/>
 
 <h2>Objective</h2>
 
 <p>To develop and deploy a new service that can provide secure guaranteed
-bandwidth circuits within ESnet.</p>
+bandwidth circuits within ESnet, and interoperate with reservation
+servers in other domains.</p>
 
 <h2>Introduction</h2>
 
@@ -27,15 +28,15 @@ component of OSCARS, updated for year 2 of the project.  The requirements for
 the RM include setting up user accounts, setting up and tracking 
 reservations and circuits, handling security and monitoring, and accounting.
 (If a parenthesized indicator is given following a requirement's description,
- it indicates the year of the project during which it is scheduled or was
-completed.)</p>
+it indicates the year of the project during which it is scheduled or was
+completed.  Note that y3 requirements depend on additional funding.)</p>
 
 <a id="security">
 <p>Security is absolutely essential.  The impact of an abuse could be very
 large.  A DoS attack could prevent reservations from being processed.  If the
 service is compromised, and thus the routers it has access to, the WAN may be 
-disabled.  Discussion of the security
-implications of requirements are postponed until the 
+disabled.  Discussion of the security implications of requirements are 
+postponed until the 
 <a href="https://oscars.es.net/specs/fspec.html#security">section</a>
 on security.</p>
 
@@ -45,7 +46,7 @@ researchers at other DOE labs,
 <a href="http://www.internet2.edu">Internet2</a>, 
 and 
 <a href="http://www.geant2.net">G&Eacute;ANT2</a>, 
-and from lessons learned from the initial year one implementation.
+and from lessons learned thus far.
 If possible, there may be code sharing/reuse between these researchers
 and ESnet.  Additional security requirements have been arrived at through
 discussion with researchers from the
@@ -65,10 +66,10 @@ circuit using MPLS and RSVP, are listed in the OSCARS
 the OSCARS RM <a href="dspec.html">design specification.</a></p>
 
 <p>The RM must interoperate with other autonomous domains, to enable 
-reservations where the end-to-end path may traverse several such domains.  In
-particular it must interoperate with Internet2 and G&Eacute;ANT2.  
+reservations where the end-to-end path may traverse several such domains.
+Intradomain operation is discussed in this document.
 Interdomain operation and security issues are discussed in a 
-separate <a href="https://oscars.es.net/specs/id.html">document.</a></p>
+separate <a href="https://oscars.es.net/specs/interdomain.html">document.</a></p>
 
 <h3>Usability</h3>
 
@@ -93,22 +94,27 @@ licensing.</p>
 <p>The RM must have four subsystems:
 
 <ol>
-<li>An authentication, authorization, and accounting subsystem (AAAS),<br/>
-<li>A bandwidth scheduler subsystem (BSS),<br/>
+<li>An authentication, authorization, and accounting subsystem (AAA),<br/>
+<li>A bandwidth scheduler subsystem (Intradomain),<br/>
 <li>A path setup subsystem (PSS), and<br/>
-<li>A client interface (both an interactive interface and an API),
+<li>A client interface (both an interactive interface and an API).  The API
+is allowed only where noted.
 </ol>
 
 
 <a id="require">
-<h3>AAAS</h3>
+<h3>AAA</h3>
 
-<p>The AAAS must handle all external requests.
-Request arguments are listed in the user interface section (see below).</p>
+<p>The AAA must be used to authenticate and authorize all external requests,
+whether from the interactive interface, or the API.
+User account names must be globally unique.</p>
 
-<p>User account names must be globally unique.</p>
-
-<p>The AAAS must handle the following requests:</p>
+<p>In addition to the authentication
+and authorization process, which may be handled via library calls or client
+requests to other entities, the AAA handles a number of requests related to
+its management.  These requests must only be accessible via test methods on
+the machine where the OSCARS server is running, and via the interactive 
+interface.  Parameters to these requests are listed in a section below.</p>
 
 <ol>
 <li>Request an OSCARS account (y2).
@@ -117,8 +123,9 @@ Request arguments are listed in the user interface section (see below).</p>
 <li>Login to OSCARS (y1).
 </li><br/>
 
-<p>The AAAS must handle the following requests from clients that have 
-successfully logged in:</p>
+<p>The following requests must be handled from interactive clients that have 
+successfully authenticated themselves, but require no additional
+authorization:</p>
 
 <li>Request information about OSCARS (y1).
 </li><br/>
@@ -138,10 +145,8 @@ successfully logged in:</p>
 <li>Logout from OSCARS (y1).
 </li><br/>
 
-<p>In addition, there must be an OSCARS administrator permission that can
-be associated with a user.
-The following requests require that a user have the OSCARS administrator
-permission:</p>
+<p>
+The following requests require that a user have the proper authorization:
 
 <li>List all user accounts (y1).
 </li><br/>
@@ -154,19 +159,27 @@ permission:</p>
 
 <li>Delete a user account (y2).
 </li><br/>
+
+<li>List all OSCARS resources that may require authorizations to use (y2).
+</li><br/>
+
+<li>List all users' authorizations (y2).
+</li><br/>
+
 </ol>
 
 <p>Requests related to the reservation of bandwidth are 
-forwarded to the BSS, and are detailed in the next section.</p>
+handled by the Intradomain component (IC), and are detailed in the next 
+section.</p>
 
-<h3>BSS</h3>
+<h3>Intradomain</h3>
 
-<p>The BSS must accept reservations, keep track of reservations, and 
-maintain information necessary for future reservations:</p>
+<p>The IC must accept reservations, keep track of 
+reservations, and maintain information necessary for future reservations:</p>
 
 <ul>
 <li>It must maintain a calendaring system to avoid conflicts in
-reservations (y1/y2).<br/><br/>
+reservations (y1/y3).<br/><br/>
 
 <li>It must determine the path that will be taken, and reserve bandwidth
 on the links.  Just prior to the reservation time, it must invoke the
@@ -176,15 +189,14 @@ of the circuit when the reservation has expired (y1).<br/><br/>
 <li>It must estimate future availability of circuits based on current
 and archived network statistics (y3).<br/><br/>
 
-<li>It must take into account scheduled maintenance
-and track unplanned outages.
+<li>It must take into account scheduled maintenance and track unplanned outages.
 If there is a new scheduled outage that conflicts with a reservation already
 made, or if there is an unplanned outage on one of the interfaces in that path,
-the BSS must retrieve the current topology, and determine a possible new
+the IC must retrieve the current topology, and determine a possible new
 path(s). (y3)<br/><br/>
 </ul>
 
-<p>The BSS must maintain policies associated with the scheduling and actual
+<p>The IC must maintain policies associated with the scheduling and actual
 use of the network, detect any out-of-policy usage, and enforce the policies
 that are not handled by network management tools at the router level.
 Enforcement at the router level is not in the scope of this document, but
@@ -201,17 +213,16 @@ network outages (y3).
 
 <li>The bandwidth used by an application must be compared
 against that requested in the the application's reservation.  If the
-bandwidth used by the application is over any limit, the BSS must determine 
+bandwidth used by the application is over any limit, the IC must determine 
 whether to enforce the relevant policy (y3).
 </li><br/>
 
 <li>The total bandwidth consumed at any link involved in currently active 
-OSCARS reservations
-must be tracked, and if total bandwidth is over the limit, the BSS must
-handle policy enforcement (y1).
+OSCARS reservations must be tracked, and if total bandwidth is over the limit, 
+the IC must handle policy enforcement (y1).
 </li><br/>
 
-<li>If there is an outage, the BSS must determine the policy to use, which
+<li>If there is an outage, the IC must determine the policy to use, which
 may include limiting new reservations or revising existing reservations
 during that time period.  It may also involve
 making a request to the PSS to remove the previous circuit and set
@@ -219,8 +230,7 @@ the circuit to an alternative path (y3).<br/><br/>
 
 </ul>
 
-<p>The BSS must accept the following client requests, forwarded from the
-AAAS:</p>
+<p>The IC must handle the following client requests, whether via the API or the interactive interface, after authentication by the AAA:</p>
 
 <ol>
 <li>Schedule bandwidth reservation (y1).
@@ -238,10 +248,8 @@ AAAS:</p>
 <li>Modify a reservation the client has made (y2).
 </li><br/>
  
-<p>In addition, there must be an OSCARS BSS administrator permission that can
-be associated with a user.
-The following requests require that a user have the BSS administrator
-permission:</p>
+The following requests require that a user have additional authorization(s):
+</p>
 
 <li>List all clients' reservations (y1).
 </li><br/>
@@ -258,9 +266,8 @@ permission:</p>
 </ol>
 
 <a id="notifications">
-<p>The following notifications must be made to clients,
-and must include the status of a reservation,
-the bandwidth allocated, and the QoS value (y1):</p>
+<p>The following notifications must be made to clients, and must include the 
+status of a reservation, the bandwidth allocated, and the QoS value (y1):</p>
 
 <ul>
 <li>A reservation has been successfully placed (y1).
@@ -284,53 +291,51 @@ policy (y3).
 <h3>PSS</h3>
 
 <p>The PSS must set up and tear down the on-demand circuits on
-the appropriate routers, based on a request by the BSS.  To do so, it must
+the appropriate routers, based on a request by the IC.  To do so, it must
 change the router configuration on the start and end of the circuit (y1).</p>
 
 <p>Prior to circuit setup, the PSS must validate the route to use, and
 query routers along the path to check for "illegal" active circuits that could
-conflict with bandwidth reservation (y2).</p>
+conflict with bandwidth reservation (y3).</p>
 
 
 <h3>User interface</h3>
 
 <p>The user interface must provide means for making all requests listed in the 
-sections on the AAAS and BSS.  Client requests generated by either interactive 
+sections on the AAA and IC.  Client requests generated by either interactive 
 (y1) or automated (y2) means must use the same transport and message encoding 
-(for example, SOAP) to communicate with the AAAS.</p>
+(for example, SOAP) to communicate with the RM.</p>
 
 <p>The API for automated reservations by user applications should utilize
 well-known mechanisms.  A service description must be provided that will allow 
 automated use of the API (y2).</p>
 
 <p>The interactive interface must be simple and intuitive.  It must prompt a 
-user for a credential (username/password, y1) before allowing any 
+user for a credential (username/password) (y1) before allowing any 
 requests.  It must in general operate within the trusted domain of the 
 reservations manager.</p>
 
 <p>After login, the interactive interface must provide entry forms to gather 
 the information for requests, which may require an additional step of sending 
-the information gathered as a message to the AAAS.  Several requests may 
+the information gathered as a message to the RM.  Several requests may 
 be combined on a single entry form.</p>
 
-<p>For each mandatory and optional
-argument listed below, an entry form must have corresponding input fields 
-and/or interactive controls.  The entry form must not include input fields 
-corresponding to arguments requiring special permissions (OSCARS 
-administrator, BSS administrator, and network engineer), if the client does 
-not have those permissions.  There must be 
-an area on each entry form for status and error messages (y1), which must be 
-updated after each request.</p>
+<p>For each mandatory and optional argument listed below, an entry form must 
+have corresponding input fields and/or interactive controls.  The entry form 
+must not include input fields corresponding to arguments requiring special 
+authorizations, if the client does not have the proper authorization.  There 
+must be an area on each entry form for status and error messages (y1), which 
+must be updated after each request.</p>
 
 <p>All parameters must be validated on the client side before sending
-a request to the AAAS, to avoid unnecessary waiting time for the
+a request to the RM, to avoid unnecessary waiting time for the
 client if there is an error.</p>
 
 <p>The following sections list the mandatory and optional arguments for each 
 request, and the results returned, if any.</p>
 
 
-<h4>AAAS requests</h4>
+<h4>AAA requests</h4>
 
 <ol>
 <li>Request by a client for an OSCARS account (y2):</br/><br/>
@@ -341,7 +346,7 @@ profile, listed below, except for the absence of the current password.
 
 <li>Login to OSCARS (y1):<br/><br/>
 
-A login name and a password are mandatory arguments.  For the interactive 
+A login name and a credential are mandatory arguments.  For the interactive 
 interface, general OSCARS information should be readily available after login.
 </li><br/>
 
@@ -356,8 +361,7 @@ A listing must be returned from this request that includes the user's
 unique id, first name, last name, organizational membership, personal
 description, primary and secondary email addresses, and primary and
 secondary phone numbers.  The personal description, and secondary email and
-phone numbers are permitted to be empty.  If the request is from an 
-administrator, the listing includes the user's associated permissions.
+phone numbers are permitted to be empty.
 </li><br/>
 
 <li>Modify the client's user profile (y1):<br/><br/>
@@ -386,12 +390,12 @@ In the interactive interface, the returned page must be the initial login
 page.
 </li><br/>
 
-<p>The following requests require the OSCARS administrator permission:</p>
+<p>The following requests require additional authorization:</p>
 
 <li>List all user accounts (y1):<br/><br/>
 
 The listing returned from the request must include each user's last name,
-first name, unique identifier, permissions if any, organizational membership,
+first name, unique identifier,  organizational membership,
 and current login status.
 </li><br/>
 
@@ -409,13 +413,22 @@ profile, listed above, except for the absence of the current password.
 
 <li>Delete a user account (y2):<br/><br/>
 
-The user's unique id is a mandatory argument.
+The user's unique login is a mandatory argument.
+</li><br/>
 
+<li>Edit/list all resources requiring authorizations (y2):<br/><br/>
+
+No arguments are necessary for this method.
+</li><br/>
+
+<li>Edit/list all users' authorizations (y2):<br/><br/>
+
+No arguments are necessary for this method.
 </li>
 </ol>
 
 <a id="resv">
-<h4>BSS requests</h4>
+<h4>Intradomain requests</h4>
 
 <ol>
 <li>Schedule bandwidth reservation:<br/>
@@ -427,10 +440,8 @@ bit(s), the ingress and egress loopbacks, and the start time and duration are
 optional arguments.  Default values must be used for the start time and
 duration if these arguments are empty.  (y1)</p>
 
-<p>There must be a network engineer permission that can
-be associated with a user, which is required for use of the following
-arguments:
-a traceroute listing, and
+<p>There must be an authorization that can be associated with a user, which is 
+required for use of the following arguments: a traceroute listing, and
 flags for the setup of a persistent circuit and a bidirectional path.
 A disclaimer must be present on the interactive form 
 indicating that if the transit path across ESnet has more than 
@@ -454,8 +465,8 @@ provided to narrow the reservations listed, for example by a specific date (y2).
 
 A listing of that reservation's details must be returned as a result of the 
 request.  This information must include the reservation's tag, the unique user
-id of the client that made the reservation, and the reservation's description, 
-start time, end time,
+login of the client that made the reservation, and the reservation's 
+description, start time, end time,
 creation time, bandwidth, burst limit, status, source, destination,
 source port, destination port, protocol, DSCP bit(s), and class.  If the
 request was from an authorized engineer, the information must also include the
@@ -475,7 +486,7 @@ identified by its reservation tag.  Modifiable arguments must include the
 reservation start and end time, and start and destination of the path.
 </li><br/>
 
-<p>The following requests require the BSS administrator permission:</p>
+<p>The following requests require additional authorization:</p>
 
 <li>List of all reservations (y1):<br/><br/>
 
@@ -515,32 +526,30 @@ ESnet Security Plan. (y2/y3)</p>
 possible, as long as security is not compromised.  A difficult to use system
 will not be used.</p>
 
-<p>If the machine hosting the interactive interface is outside a protected
-network, it must run as few services as possible.  The machines running the 
-AAAS, BSS, and PSS must be inside a protected network  so that only the machine
-hosting the interactive interface, and the machines of ESnet personnel 
-have access.  (y2)</p>
+<p> The machine(s) running the AAA, IC, and PSS must be inside a protected 
+network (y1).  The interactive interface must access these components via
+an identifier (for example a URL) that does not give the location of the
+server machine(s). (y2)</p>
 
-<p>Access to OSCARS must require authentication (y1, y2) and authorization 
-(y2).  The AAAS must handle all OSCARS requests from outside the protected
-network, and enforce these restrictions.  It must generate usage records for 
-all accesses, for auditing and accounting (y2/y3).
+<p>Access to OSCARS must require authentication (y1, y2) and authorization (y2).
+The AAA must authorize and authenticate all OSCARS requests from outside the 
+protected network, and enforce these restrictions.  It must generate usage 
+records for all accesses, for auditing and accounting (y2/y3).
 
 <p>OSCARS accounts must be provided for administrators and the appropriate
-ESnet personnel, and only users with those accounts can have OSCARS
-administrator, BSS administrator, and
-network engineer permissions.  These permissions, allowing different 
-levels of access, must be maintained and enforced. (y1)</p>
+ESnet personnel, and only users with those accounts can have additional OSCARS
+authorizations.  These authorizations, allowing different 
+levels of access, must be maintained and enforced. (y1/y2)</p>
 
 <p>Automated messages to OSCARS must be signed and encrypted.  
 Automated access does not necessarily require an OSCARS account, if it does 
-not require the above-mentioned permissions.  A valid server certificate 
+not require the above-mentioned authorizations.  A valid server certificate 
 is sufficient if the request is coming from a reservations manager from
 another, trusted autonomous domain. (y1/y2)</p>
 
 <p>A secure means must be provided to store authentication information during
-login, to avoid the client having to authenticate for each subsequent access to
-OSCARS (y1/y2).</p>
+login through the interactive client, to avoid that client having to 
+authenticate for each subsequent access to OSCARS (y1/y2).</p>
 
 <p>Request parameters must be validated on the server side,
 whether the client is the API or the interactive interface. (y1)</p>
