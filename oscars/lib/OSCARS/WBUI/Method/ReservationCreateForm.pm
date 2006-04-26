@@ -75,7 +75,7 @@ sub outputDiv {
       defaults.  The default time zone is your local time.</p>
     } );
 
-    if ($authorizations->{ManageDomains}) {
+    if ($authorizations && $authorizations->{ManageDomains}) {
         print( qq{
           <p><strong>WARNING</strong>:  Entering a value in a red-outlined field 
 	  may change default routing behavior for the selected flow.</p> } );
@@ -118,7 +118,7 @@ sub outputDiv {
 	    <input type='text' class='SOAP' name='description' size='40'></input></td>
         <td>(For our records)</td></tr>
     } );
-    if ($authorizations->{ManageDomains}) {
+    if ($authorizations && $authorizations->{ManageDomains}) {
       print( qq{
       <tr>
         <td>Ingress loopback</td>
@@ -170,7 +170,7 @@ sub outputDiv {
        	</td>
 	<td>0.01 (0.01 to 4 years)</td></tr>
     } );
-    if ($authorizations->{ManageDomains}) {
+    if ($authorizations && $authorizations->{ManageDomains}) {
         print( qq{
       <tr><td>Persistent reservation</td>
         <td><input type='checkbox' name='persistent' size='8' value='0'></input></td>
