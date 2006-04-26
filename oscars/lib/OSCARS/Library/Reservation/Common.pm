@@ -60,10 +60,8 @@ sub listDetails {
         $self->getEngrFields($row); 
     }
     else {
-        $statement = 'SELECT startTime, endTime, createdTime, ' .
-            'bandwidth, burstLimit, status, class, srcPort, destPort, dscp, ' .
-            'protocol, tag, description, srcHostId, destHostId, origTimeZone ' .
-            'FROM reservations WHERE login = ? AND id = ?';
+        $statement = 'SELECT * FROM userReservations ' .
+                     'WHERE login = ? AND id = ?';
         $row = $self->{db}->getRow($statement, $self->{user}->{login},
                                       $params->{id});
     }
