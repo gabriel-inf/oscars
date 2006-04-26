@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+April 26, 2006
 
 =cut
 
@@ -31,23 +31,8 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::Public::Institution::List;
-
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
-
-sub initialize {
-    my( $self ) = @_;
-
-    $self->SUPER::initialize();
-    $self->{institutions} = OSCARS::Public::Institution::List->new();
-    $self->{profileFields} =
-         'lastName, firstName, login, password, ' .
-         'emailPrimary, emailSecondary, ' .
-         'phonePrimary, phoneSecondary, description, ' .
-#    'registerTime, activationKey, ' .
-         'institutionId';
-} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -82,34 +67,28 @@ sub soapMethod {
         $params->{password} = crypt( $params->{passwordNewOnce}, 'oscars');
     }
 
-    # Set the institution id to the primary key in the institutions
-    # table (user only can select from menu of existing instituions.
-    if ( $params->{institutionName} ) {
-        $params->{institutionId} = $self->{institutions}->getId( 
-                                    $self->{db}, $params->{institutionName} );
-    }
-    $results = {};    # clear any previous results
-    # TODO:  allow admin to set all fields
-    my @fields = split(', ', $self->{profileFields});
+    my $statement = 'SELECT id FROM institutions WHERE name = ?';
+    my $row = $self->{db}->getRow($statement, $params->{institutionName});
+    $params->{institutionId} = $row->{id};
+
+    # TODO:  FIX way to get update fields
+    $statement = 'SHOW COLUMNS from users';
+    my $rows = $self->{db}->doQuery( $statement );
+
     $statement = 'UPDATE users SET ';
-    for $_ (@fields) {
+    for $_ (@$rows) {
         # TODO:  allow setting field to NULL where legal
-        if ( $params->{$_} ) {
-            $statement .= "$_ = '$params->{$_}', ";
+        if ( $params->{$_->{Field}} ) {
+            $statement .= "$_->{Field} = '$params->{$_->{Field}}', ";
             # TODO:  check that query preparation correct
-            $results->{$_} = $params->{$_};
+            $results->{$_->{Field}} = $params->{$_->{Field}};
 	}
     }
     $statement =~ s/,\s$//;
     $statement .= ' WHERE login = ?';
-    my $unused = $self->{db}->doQuery($statement, $params->{login});
-
+    my $unused = $self->{db}->doQuery($statement, $params->{selectedUser});
     $results->{selectedUser} = $params->{selectedUser};
-    $results->{login} = $self->{user}->{login};
     $results->{institutionName} = $params->{institutionName};
-    $results->{password} = 'hidden';
-    $results->{institutionList} =
-                $self->{institutions}->listInstitutions( $self->{db} );
     return $results;
 } #____________________________________________________________________________
 
