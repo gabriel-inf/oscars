@@ -11,3 +11,12 @@ CREATE OR REPLACE VIEW userList AS
     FROM users u, institutions i
     WHERE i.id = u.institutionId
     ORDER BY u.lastName;
+
+CREATE OR REPLACE VIEW userInfo AS
+    SELECT u.login, u.lastName, u.firstName, u.emailPrimary, u.phonePrimary,
+           u.description, u.emailSecondary, u.phoneSecondary,
+           i.name AS institutionName
+    FROM users u, institutions i
+    WHERE i.id = u.institutionId
+    ORDER BY u.lastName;
+
