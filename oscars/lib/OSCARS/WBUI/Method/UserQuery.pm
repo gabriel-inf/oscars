@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 25, 2006
+April 26, 2006
 
 =cut
 
@@ -27,6 +27,8 @@ April 25, 2006
 use strict;
 
 use Data::Dumper;
+
+use OSCARS::WBUI::Method::UserDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
@@ -65,91 +67,10 @@ sub outputDiv {
       <tr><td>Login Name</td><td>$login</td></tr>
     } );
     $self->outputPasswordFields($results);
-    $self->outputProfileFields($results);
+    my $details = OSCARS::WBUI::Method::UserDetails->new();
+    $details->output( $results );
     print("</tbody></table></form></div>\n");
     return $msg;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# outputProfileFields:  print fields of user profile
-#
-sub outputProfileFields {
-    my( $self, $results ) = @_;
-
-    # take care of non_required fields
-    my $description =
-        $results->{description} ? $results->{description} : "";
-    my $emailSecondary =
-        $results->{emailSecondary} ne 'NULL' ? $results->{emailSecondary} : "";
-    my $phoneSecondary =
-        $results->{phoneSecondary} ne 'NULL' ? $results->{phoneSecondary} : "";
-
-    my $firstName = $results->{firstName};
-    my $lastName = $results->{lastName};
-    my $institution = $results->{institutionName};
-    my $emailPrimary = $results->{emailPrimary};
-    my $phonePrimary = $results->{phonePrimary};
-    print( qq{
-      <tr>
-        <td>First Name</td>
-        <td><input class='required' type='text' name='firstName'
-             size='40' value='$firstName'></input>
-        </td>
-      </tr>
-      <tr>
-        <td>Last Name</td>
-        <td><input class='required' type='text' name='lastName' 
-             size='40' value='$lastName'></input>
-        </td>
-      </tr>
-      <tr>
-        <td>Organization</td>
-        <td><select class='required' name='institutionName'>
-      } );
-      my $institutionList = $results->{institutionList};
-      for my $row (@$institutionList) {
-          print("<option value='$row->{name}' ");
-	  if ( $row->{name} eq $institution ) {
-              print( "selected='selected'" );
-	  }
-	  print( ">$row->{name}</option>" );
-      }
-      print( qq{
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td valign='top'>Personal Description</td>
-          <td><input class='SOAP' type='text' name='description' size='40'
-	     value='$description'></input>
-        </td>
-      </tr>
-      <tr>
-        <td>E-mail (Primary)</td>
-        <td><input class='required' type='text' name='emailPrimary'
-             size='40' value='$emailPrimary'></input>
-        </td>
-      </tr>
-      <tr>
-        <td>E-mail (Secondary)</td>
-        <td><input class='SOAP' type='text' name='emailSecondary' size='40'
-             value='$emailSecondary'></input>
-        </td>
-      </tr>
-      <tr>
-        <td>Phone Number (Primary)</td>
-        <td><input class='required' type='text' name='phonePrimary'
-             size='40' value='$phonePrimary'></input>
-        </td>
-      </tr>
-      <tr>
-        <td>Phone Number (Secondary)</td>
-        <td><input class='SOAP' type='text' name='phoneSecondary' size='40'
-             value='$phoneSecondary'></input>
-        </td>
-      </tr>
-    } );
 } #____________________________________________________________________________
 
 

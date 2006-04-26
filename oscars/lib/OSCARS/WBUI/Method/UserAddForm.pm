@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+April 26, 2006
 
 =cut
 
@@ -27,6 +27,8 @@ April 22, 2006
 use strict;
 
 use Data::Dumper;
+
+use OSCARS::WBUI::Method::UserDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
@@ -74,6 +76,23 @@ sub outputDiv {
       <td>Login Name</td>
       <td><input class='required' type='text' name='selectedUser' size='40'></input></td>
     </tr>
+    } );
+    $self->outputPasswordFields($results);
+    # default selection
+    $results->{institutionName} = 'Energy Sciences Network';
+    my $details = OSCARS::WBUI::Method::UserDetails->new();
+    $details->output( $results );
+    return $msg;
+} #___________________________________________________________________________ 
+ 
+
+###############################################################################
+# outputPasswordFields:  print rows having to do with passwords
+#
+sub outputPasswordFields {
+    my( $self, $params ) = @_;
+
+    print( qq{
     <tr>
       <td>Password (Enter twice)</td>
       <td><input class='required' type='password' name='passwordNewOnce' 
@@ -86,71 +105,9 @@ sub outputDiv {
            size='40'></input>
       </td>
     </tr>
- 
-    <tr>
-      <td>First Name</td>
-      <td><input class='required' type='text' name='firstName'
-           size='40' value=''></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Last Name</td>
-      <td><input class='required' type='text' name='lastName' size='40'>
-          </input>
-      </td>
-    </tr>
-    <tr>
-      <td>Organization</td>
-      <td><select class='required' name='institutionName'>
     } );
-    my $institutionList = $results->{institutionList};
-    for my $row (@$institutionList) {
-        print("<option value='$row->{name}' ");
-        if ( $row->{name} eq 'Energy Sciences Network' ) {
-            print( "selected='selected'" );
-        }
-        print( ">$row->{name}</option>" );
-    }
-    print( qq{
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>Personal Description</td>
-      <td><input class='SOAP' type='text' name='description' size='40'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>E-mail (Primary)</td>
-      <td><input class='required' type='text' name='emailPrimary'
-           size='40'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>E-mail (Secondary)</td>
-      <td><input class='SOAP' type='text' name='emailSecondary' size='40'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Phone Number (Primary)</td>
-      <td><input class='required' type='text' name='phonePrimary'
-           size='40'></input>
-      </td>
-    </tr>
-    <tr>
-      <td>Phone Number (Secondary)</td>
-      <td><input class='SOAP' type='text' name='phoneSecondary' size='40'></input>
-      </td>
-    </tr>
-    </tbody>
-    </table>
-
-    <p><input type='submit' value='Add User'></input></p>
-    </form></div>
-    } );
-    return $msg;
 } #____________________________________________________________________________
-
+ 
 
 ######
 1;
