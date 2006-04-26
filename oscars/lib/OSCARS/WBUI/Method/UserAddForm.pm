@@ -33,7 +33,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# modifyParams:  resets method name and adds op name
+# modifyParams:  resets method name
 #
 sub modifyParams {
     my( $self ) = @_;
@@ -42,6 +42,16 @@ sub modifyParams {
     $params->{method} = 'InstitutionList';
     return $params;
 } #____________________________________________________________________________
+
+
+###############################################################################
+# postProcess:  Reset the method name so the correct tab is highlighted.
+#
+sub postProcess {
+    my( $self, $params, $results ) = @_;
+
+    $params->{method} = 'UserList';
+} #___________________________________________________________________________ 
 
 
 ###############################################################################
@@ -95,8 +105,8 @@ sub outputDiv {
     } );
     my $institutionList = $results->{institutionList};
     for my $row (@$institutionList) {
-        print( "<option value='$row->{institutionName}'>" .
-              "$row->{institutionName}</option>" );
+        print( "<option value='$row->{name}'>" .
+              "$row->{name}</option>" );
     }
     print( qq{
         </select>

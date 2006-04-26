@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+April 25, 2006
 
 =cut
 
@@ -38,7 +38,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub postProcess {
     my( $self, $params, $results ) = @_;
 
-    $params->{method} = 'ManageUsers';
+    $params->{method} = 'UserList';
 } #___________________________________________________________________________ 
 
 
@@ -109,11 +109,11 @@ sub outputProfileFields {
       } );
       my $institutionList = $results->{institutionList};
       for my $row (@$institutionList) {
-          print("<option value='$row->{institutionName}' ");
-	  if ( $row->{institutionName} eq $institution ) {
+          print("<option value='$row->{name}' ");
+	  if ( $row->{name} eq $institution ) {
               print( "selected='selected'" );
 	  }
-	  print( ">$row->{institutionName}</option>" );
+	  print( ">$row->{name}</option>" );
       }
       print( qq{
           </select>

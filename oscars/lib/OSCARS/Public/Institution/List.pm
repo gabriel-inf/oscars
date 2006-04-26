@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 25, 2006
 
 =cut
 
@@ -28,6 +28,9 @@ use strict;
 
 use Data::Dumper;
 use Error qw(:try);
+
+use OSCARS::Method;
+our @ISA = qw{OSCARS::Method};
 
 sub new {
     my ($class, %args) = @_;
@@ -46,7 +49,9 @@ sub new {
 sub soapMethod {
     my( $self ) = @_;
 
-    return $self->listInstitutions($self->{db});
+    my $results = {};
+    $results->{institutionList} = $self->listInstitutions($self->{db});
+    return $results;
 } #____________________________________________________________________________
 
 
