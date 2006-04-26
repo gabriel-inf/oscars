@@ -105,7 +105,7 @@ sub outputProfileFields {
       </tr>
       <tr>
         <td>Organization</td>
-        <td><select class='requiredMenu' name='institutionName'>
+        <td><select class='required' name='institutionName'>
       } );
       my $institutionList = $results->{institutionList};
       for my $row (@$institutionList) {

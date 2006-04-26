@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+April 26, 2006
 
 =cut
 
@@ -32,6 +32,16 @@ use Data::Dumper;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+
+
+###############################################################################
+# postProcess:  Reset the method name so the correct tab is highlighted.
+#
+sub postProcess {
+    my( $self, $params, $results ) = @_;
+
+    $params->{method} = 'UserList';
+} #___________________________________________________________________________ 
 
 
 ###############################################################################

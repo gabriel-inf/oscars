@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 26, 2006
 
 =cut
 
@@ -29,8 +29,6 @@ use strict;
 
 use Error qw(:try);
 
-use OSCARS::Public::Institution::List;
-
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
 
@@ -38,7 +36,6 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{institutions} = OSCARS::Public::Institution::List->new();
     $self->{paramTests} = {};
 } #____________________________________________________________________________
 
@@ -59,30 +56,8 @@ sub soapMethod {
             "User $self->{user}->{login} not authorized to manage users");
     }
     my $results = {};
-    $results->{list} = $self->getUsers($self->{params});
-    return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getUsers:  Retrieves all information from users table.
-#
-# In:  reference to hash of parameters
-# Out: reference to hash of results
-#
-sub getUsers {
-    my( $self, $params ) = @_;
-
-    my $statement = "SELECT * FROM users WHERE status != 'role' " .
-                    "ORDER BY lastName";
-    my $results = $self->{db}->doQuery($statement);
-    for my $oscarsUser (@$results) {
-        $oscarsUser->{institutionName} = $self->{institutions}->getName(
-                        $self->{db}, $oscarsUser->{institutionId});
-	$oscarsUser->{institutionId} = 'hidden';
-        $oscarsUser->{password} = 'hidden';
-	$oscarsUser->{id} = 'hidden';
-    }
+    my $statement = "SELECT * FROM userList";
+    $results->{list} = $self->{db}->doQuery($statement);
     return $results;
 } #____________________________________________________________________________
 

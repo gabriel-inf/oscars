@@ -101,12 +101,15 @@ sub outputDiv {
     </tr>
     <tr>
       <td>Organization</td>
-      <td><select class='requiredMenu' name='institutionName'>
+      <td><select class='required' name='institutionName'>
     } );
     my $institutionList = $results->{institutionList};
     for my $row (@$institutionList) {
-        print( "<option value='$row->{name}'>" .
-              "$row->{name}</option>" );
+        print("<option value='$row->{name}' ");
+        if ( $row->{name} eq 'Energy Sciences Network' ) {
+            print( "selected='selected'" );
+        }
+        print( ">$row->{name}</option>" );
     }
     print( qq{
         </select>

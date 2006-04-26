@@ -20,7 +20,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 26, 2006
 
 =cut
 
@@ -29,8 +29,6 @@ use strict;
 
 use Error qw(:try);
 
-use OSCARS::Public::Institution::List;
-
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
 
@@ -38,7 +36,6 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{institutions} = OSCARS::Public::Institution::List->new();
     $self->{paramTests} = {};
 } #____________________________________________________________________________
 

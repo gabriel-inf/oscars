@@ -65,6 +65,8 @@ sub soapMethod {
     }
     my $statement = 'DELETE from users where login = ?';
     my $unused = $self->{db}->doQuery($statement, $params->{selectedUser});
+    $statement = "SELECT * FROM userList";
+    $results->{list} = $self->{db}->doQuery($statement);
     return $results;
 } #____________________________________________________________________________
 

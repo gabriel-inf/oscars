@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+April 26, 2006
 
 =cut
 
@@ -27,8 +27,7 @@ April 20, 2006
 use strict;
 
 use Error qw(:try);
-
-use OSCARS::Public::Institution::List;
+use Data::Dumper;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -37,7 +36,6 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{institutions} = OSCARS::Public::Institution::List->new();
     $self->{paramTests} = {};
     $self->{paramTests} = {
         'selectedUser' => (
@@ -94,7 +92,7 @@ sub soapMethod {
     my $params = $self->{params};
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
-            "User $self->{user}->{login} not authorized to manage users");
+            "User $self->{user}->{login} not authorized to add user");
     }
     my $results = {};
     $params->{login} = $params->{selectedUser};
@@ -106,13 +104,10 @@ sub soapMethod {
         throw Error::Simple("The login, $params->{login}, is already " .
 	       	"taken by someone else; please choose a different login name.");
     }
-    # Set the institution id to the primary key in the institutions
-    # table (user only can select from menu of existing instituions).
-    if ( $params->{institutionName} ) {
-        $params->{institutionId} = $self->{institutions}->getId($self->{db},
-                                                  $params->{institutionName});
-    }
     $params->{password} = crypt($params->{passwordNewOnce}, 'oscars');
+    $statement = 'SELECT id FROM institutions WHERE name = ?';
+    $row = $self->{db}->getRow($statement, $params->{institutionName});
+    $params->{institutionId} = $row->{id};
     $statement = 'SHOW COLUMNS from users';
     my $rows = $self->{db}->doQuery( $statement );
 
@@ -128,6 +123,8 @@ sub soapMethod {
     $statement = "INSERT INTO users VALUES ( " .
              join( ', ', ('?') x @insertions ) . " )";
     my $unused = $self->{db}->doQuery($statement, @insertions);
+    $statement = "SELECT * FROM userList";
+    $results->{list} = $self->{db}->doQuery($statement);
     $msg = "$self->{user}->{login} added user $self->{params}->{selectedUser}";
     return $results;
 } #____________________________________________________________________________
