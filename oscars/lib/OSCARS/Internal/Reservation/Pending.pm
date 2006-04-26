@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 24, 2006
+April 26, 2006
 
 =cut
 
@@ -33,97 +33,22 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::Library::Reservation::Scheduler;
-use OSCARS::Library::Reservation::TimeConversion;
-use OSCARS::Library::Reservation::Common;
-use OSCARS::PSS::JnxLSP;
+use OSCARS::Internal::Reservation::Scheduler;
+our @ISA = qw{OSCARS::Internal::Reservation::Scheduler};
 
-use OSCARS::Method;
-our @ISA = qw{OSCARS::Method};
 
 sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{LSP_SETUP} = 1;
-    $self->{LSP_TEARDOWN} = 0;
-    $self->{schedLib} = OSCARS::Library::Reservation::Scheduler->new(
-                            'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
-    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
-                            'user' => $self->{user}, 'db' => $self->{db});
+    $self->{opcode} = $self->{LSP_SETUP};
+    $self->{opstring} = 'setup';
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soapMethod:  find reservations to run.  Find all the
-#    reservations in db that need to be setup and run in the next N minutes.
 #
-sub soapMethod {
-    my( $self ) = @_;
-
-    if ( !$self->{user}->authorized('Domains', 'manage') ) {
-        throw Error::Simple(
-            "User $self->{user}->{login} not authorized to manage circuits");
-    }
-    # find reservations that need to be scheduled
-    my $reservations =
-        $self->findPendingReservations($self->{params}->{timeInterval});
-    for my $resv (@$reservations) {
-        $self->{schedLib}->mapToIPs($resv);
-        # call PSS to schedule LSP
-        $resv->{lspStatus} = $self->setupPSS($resv);
-        $self->{resvLib}->updateReservation( $resv, 'active', 
-                                                    $self->{logger} );
-        $self->{logger}->info('scheduling', { 'id' =>  $resv->{id} });
-    }
-    my $results = {};
-    $results->{list} = $reservations;
-    return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# generateMessages:  generate email message
-#
-sub generateMessages {
-    my( $self, $results ) = @_;
-
-    my $reservations = $results->{list};
-    if (!@$reservations) {
-        return( undef, undef );
-    }
-    my( @messages );
-    my( $subject, $msg );
-
-    for my $resv ( @$reservations ) {
-        $resv->{lspConfigTime} = time();
-        $resv->{startTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{startTime});
-        $resv->{endTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{endTime});
-        $resv->{createdTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{createdTime});
-        $resv->{lspConfigTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{lspConfigTime});
-        $subject = "Circuit set up status for $resv->{login}.";
-        $msg =
-          "Circuit set up for $resv->{login}, for reservation(s) with parameters:\n";
-            # TODO:  if more than one reservation, fix duplicated effort
-        $msg .= $self->{schedLib}->reservationLspStats( $resv );
-        push( @messages, {'msg' => $msg, 'subject' => $subject, 'user' => $resv->{login} } );
-    }
-    return( \@messages );
-} #____________________________________________________________________________
-
-
-#####################
-# Private methods.
-#####################
-
-###############################################################################
-#
-sub findPendingReservations  { 
+sub getReservations  { 
     my ( $self, $timeInterval ) = @_;
 
     my $status = 'pending';
@@ -133,28 +58,6 @@ sub findPendingReservations  {
     $statement = qq{ SELECT * FROM reservations WHERE status = ? and
                  startTime < ?};
     return $self->{db}->doQuery($statement, $status, $timeslot);
-} #____________________________________________________________________________
-
-
-###############################################################################
-# setupPSS:  format the args and call pss to do the configuration change
-#
-sub setupPSS {
-    my( $self, $resv ) = @_;   
-
-    my( $error );
-
-    $self->{logger}->info('LSP.configure', { 'id' => $resv->{id} });
-    # Create an LSP object.
-    my $lsp_info = $self->{schedLib}->mapFields($resv);
-    $lsp_info->{configs} = $self->{resvLib}->getPssConfigs();
-    $lsp_info->{logger} = $self->{logger};
-    my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
-    $jnxLsp->configure_lsp($self->{LSP_SETUP}, $self->{logger});
-
-    if ($error = $jnxLsp->get_error())  { return $error; }
-    $self->{logger}->info('LSP.setupComplete', { 'id' => $resv->{id} });
-    return "";
 } #____________________________________________________________________________
 
 
