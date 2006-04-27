@@ -285,7 +285,7 @@ sub handle {
                  ->faultstring($ex->{-text});
         }
         elsif ($handler) { $handler->postProcess($results); }
-        if ($params->{method} eq 'Logout') {
+        if ($params->{method} eq 'userLogout') {
             $authN->removeUser($params->{login});
         }
         $logger->close();
