@@ -45,17 +45,31 @@ sub initialize {
     # Clear error message.
     $self->{errMsg} = 0;
   
+    $self->{configs} = $self->getConfigs();
         # not currently on a per-reservation basis
     $self->{'lsp_setup-priority'} =
                                  $self->{configs}->{setupPriority};
     $self->{'lsp_reservation-priority'} =
-                                 $self->{configs}->{resvPriority};
+                                 $self->{configs}->{reservationPriority};
     $self->{external_interface_filter} =
-                                 $self->{configs}->{extIfFilter};
+                                 $self->{configs}->{externalInterfaceFilter};
 
     $self->{firewall_filter_marker} =
                                  $self->{configs}->{firewallMarker};
+    print STDERR Dumper($self);
     return();
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub getConfigs {
+    my( $self ) = @_;
+
+        # use defaults for now
+    my $statement = 'SELECT * FROM topology.configPSS where id = 1';
+    my $configs = $self->{db}->getRow($statement);
+    return $configs;
 } #____________________________________________________________________________
 
 
