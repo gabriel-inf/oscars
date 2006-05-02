@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 1, 2006
 
 =cut
 
@@ -31,7 +31,6 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Reservation::Common;
 use OSCARS::Library::Reservation::TimeConversion;
 
 use OSCARS::Method;
@@ -41,8 +40,6 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
-                          'user' => $self->{user}, 'db' => $self->{db});
     $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
 } #____________________________________________________________________________
 
@@ -77,24 +74,38 @@ sub getReservations {
     my( $rows, $statement );
 
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = 'SELECT * FROM reservations ORDER BY startTime';
-        $rows = $self->{db}->doQuery($statement);
+        $statement = 'SELECT * FROM ReservationList ORDER BY startTime DESC';
+        $rows = $self->{db}->doSelect($statement);
     }
     else {
-        $statement = 'SELECT * FROM reservations WHERE login = ? ' .
-                     'ORDER BY startTime';
-        $rows = $self->{db}->doQuery($statement, $self->{user}->{login});
+        $statement = 'SELECT * FROM ReservationList WHERE login = ? ' .
+                     'ORDER BY startTime DESC';
+        $rows = $self->{db}->doSelect($statement, $self->{user}->{login});
     }
-    for my $resv ( @$rows ) {
-        $resv->{startTime} = $self->{timeLib}->secondsToDatetime(
-                              $resv->{startTime}, $resv->{origTimeZone});
-        $resv->{endTime} = $self->{timeLib}->secondsToDatetime(
-                              $resv->{endTime}, $resv->{origTimeZone});
-        $resv->{createdTime} = $self->{timeLib}->secondsToDatetime(
-                              $resv->{createdTime}, $resv->{origTimeZone});
-        $self->{resvLib}->getHostInfo($resv);
+    # format results before returning
+    my $results = $self->buildResults($rows);
+    return $results;
+} #____________________________________________________________________________
+
+
+sub buildResults {
+    my( $self, $rows ) = @_;
+
+    my @results = ();
+    for my $row (@$rows) {
+        my $startTime = $self->{timeLib}->secondsToDatetime(
+                              $row->{startTime}, $row->{origTimeZone});
+        my $endTime = $self->{timeLib}->secondsToDatetime(
+                              $row->{endTime}, $row->{origTimeZone});
+        push(@results, { 'tag' => $row->{tag},
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'status' => $row->{status},
+            'srcHost' => $row->{srcHost},
+            'destHost' => $row->{destHost} }
+        );
     }
-    return $rows;
+    return \@results;
 } #____________________________________________________________________________
 
 

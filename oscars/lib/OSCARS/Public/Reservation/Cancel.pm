@@ -16,11 +16,10 @@ SOAP method to cancel reservation.
 =head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov),
-Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 24, 2006
+May 1, 2006
 
 =cut
 
@@ -31,7 +30,6 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Reservation::TimeConversion;
 use OSCARS::Library::Reservation::Common;
 
 use OSCARS::Method;
@@ -43,7 +41,6 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                            'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
 } #____________________________________________________________________________
 
 
@@ -61,13 +58,6 @@ sub soapMethod {
     my $status =  $self->{resvLib}->updateStatus(
                           $self->{params}->{id}, 'precancel' );
     my $results = $self->{resvLib}->listDetails($self->{params});
-    $results->{id} = $self->{params}->{id};
-    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{startTime}, $results->{origTimeZone});
-    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{endTime}, $results->{origTimeZone});
-    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{createdTime}, $results->{origTimeZone});
     $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________

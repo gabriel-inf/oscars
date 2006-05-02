@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 1, 2006
 
 =cut
 
@@ -60,10 +60,12 @@ sub initialize {
 sub soapMethod {
     my( $self ) = @_;
 
+    my $pathInfo;
+
     $self->{logger}->info("start", $self->{params});
     # find path, and see if the next domain needs to be contacted
-    my $pathInfo = $self->{pathfinder}->findPath(
-                                            $self->{logger}, $self->{params} );
+    ( $pathInfo, $self->{pssConfigs} ) = $self->{pathfinder}->findPath(
+                                             $self->{logger}, $self->{params} );
     # if nextDomain is set, forward to corresponding method in next domain
     if ($pathInfo->{nextDomain} ) {
         $self->{params}->{pathInfo} = $pathInfo;
@@ -81,52 +83,10 @@ sub soapMethod {
         # TODO: process any differences
     }
     # having found path, attempt to enter reservation in db
-    my $results = $self->createReservation( $self->{params}, $pathInfo );
+    my $results = $self->createReservation( $self->{params}, $pathInfo);
     $results->{login} = $self->{user}->{login};
     $self->{logger}->info("finish", $results);
     return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# createReservation:  inserts a row into the reservations table, possibly
-#      after several domains have been contacted. 
-# In:  reference to hash.  Hash's keys are all the fields of the reservations
-#      table except for the primary key.
-# Out: ref to results hash.
-#
-sub createReservation {
-    my( $self, $params, $pathInfo ) = @_;
-    my( $durationSeconds );
-
-    $params->{ingressInterfaceId} = $pathInfo->{ingressInterfaceId};
-    $params->{ingressIP} = $pathInfo->{ingressIP};
-    $params->{egressInterfaceId} = $pathInfo->{egressInterfaceId};
-    $params->{egressIP} = $pathInfo->{egressIP};
-    $params->{path} = $pathInfo->{path};
-
-    $params->{startTime} = $self->{timeLib}->datetimeToSeconds(
-                                               $params->{startTime});
-    $params->{endTime} = $self->{timeLib}->datetimeToSeconds(
-                                               $params->{endTime});
-    $params->{createdTime} = time();
-
-    my $pssConfigs = $self->{resvLib}->getPssConfigs();
-    $params->{class} = $pssConfigs->{CoS};
-    $params->{burstLimit} = $pssConfigs->{burstLimit};
-
-    # convert requested bandwidth to bps
-    $params->{bandwidth} *= 1000000;
-    $self->checkOversubscribed($params);
-
-    # Get hosts table id from source's and destination's host name or ip
-    # address.
-    $params->{srcHostId} =
-        $self->{resvLib}->hostIPToId($pathInfo->{srcIP}); 
-    $params->{destHostId} =
-        $self->{resvLib}->hostIPToId($pathInfo->{destIP}); 
-
-    return $self->buildResults($params);
 } #____________________________________________________________________________
 
 
@@ -143,6 +103,197 @@ sub generateMessage {
     my $subject = "Reservation scheduled by $login.";
     push(@messages, { 'msg' => $msg, 'subject' => $subject, 'user' => $login } ); 
     return( \@messages );
+} #____________________________________________________________________________
+
+
+### Private methods. ###
+ 
+###############################################################################
+# createReservation:  builds row to insert into the reservations table,
+#      checks for oversubscribed route, inserts the reservation, and
+#      builds up the results to return to the client.
+# In:  reference to hash.  Hash's keys are all the fields of the reservations
+#      table except for the primary key.
+# Out: ref to results hash.
+#
+sub createReservation {
+    my( $self, $params, $pathInfo ) = @_;
+    my( $durationSeconds );
+
+    $self->checkOversubscribed($params);
+    my( $fields, $startTime, $createdTime ) = 
+        $self->buildFields($params, $pathInfo);
+    my $statement = "INSERT INTO reservations VALUES(" .
+                     join(', ', @$fields) . ")";
+    $self->{db}->execStatement($statement);
+    my $id = $self->{db}->getPrimaryId();
+    return $self->buildResults($id, $params, $startTime, $createdTime,
+                               $pathInfo);
+} #____________________________________________________________________________
+
+
+###############################################################################
+# checkOverscribed:  gets the list of active reservations at the same time as
+#   this (proposed) reservation.  Also queries the db for the max speed of the
+#   router interfaces to see if we have exceeded it.
+#
+# In:  hash of SOAP parameters
+# Out: None
+#
+sub checkOversubscribed {
+    my( $self, $params ) = @_;
+
+    my( %ifaceIdxs, $row, $routerName, $maxUtilization );
+
+    # XXX: what is the MAX percent we can allocate? for now 50% ...
+    my $maxReservationUtilization = 0.50; 
+    my $bandwidth = $params->{bandwidth} * 1000000;
+
+    # Get bandwidth and times of reservations overlapping that of the
+    # reservation request.
+    my $statement = 'SELECT bandwidth, startTime, endTime, path ' .
+          'FROM reservations WHERE endTime >= ? AND ' .
+          "startTime <= ? AND (status = 'pending' OR status = 'active')";
+
+    # do query with the comparison start & end datetime strings
+    my $reservations = $self->{db}->doSelect( $statement,
+           $params->{startTime}, $params->{endTime});
+
+    # assign the new path bandwidths 
+    for my $link (@{$params->{path}}) {
+        $ifaceIdxs{$link} = $bandwidth;
+    }
+
+    # loop through all active reservations
+    for my $res (@$reservations) {
+        # get bandwidth allocated to each idx on that path
+        for my $path ( $res->{path} ) {
+            for my $link ( split(' ', $path) ) {
+                $ifaceIdxs{$link} += $res->{bandwidth};
+            }
+        }
+    }
+    # now for each of those interface idx
+    for my $idx (keys %ifaceIdxs) {
+        # get max bandwith speed for an idx
+        $row = $self->getInterfaceFields($idx);
+        if (!$row ) { next; }
+
+        if ( $row->{valid} eq 'False' ) {
+            throw Error::Simple("interface $idx not valid");
+        }
+ 
+        $maxUtilization = $row->{speed} * $maxReservationUtilization;
+        if ($ifaceIdxs{$idx} > $maxUtilization) {
+            my $errorMsg;
+            # only print router name if user is authorized
+            if ( $self->{user}->authorized('Reservations', 'manage') ||
+                 $self->{user}->authorized('Domains', 'set' ) ) {
+                $routerName = $self->idToRouterName( $idx );
+                $errorMsg = "$routerName oversubscribed: ";
+            }
+            else { $errorMsg = 'Route oversubscribed: '; }
+            throw Error::Simple("$errorMsg  $ifaceIdxs{$idx}" .
+                  " Mbps > $maxUtilization Mbps\n");
+        }
+    }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# buildFields:  convert parameters as necessary to build fields to insert
+#      into reservations table.
+# In:  reference to array of fields to insert
+# Out: ref to fields hash.
+#
+sub buildFields {
+    my( $self, $params, $pathInfo ) = @_;
+
+    my @fields = ();
+
+    push(@fields, 'NULL');   # id
+    my $startTime = $self->{timeLib}->datetimeToSeconds($params->{startTime} );
+    push(@fields, $startTime);
+    push(@fields, $self->{timeLib}->datetimeToSeconds( $params->{endTime} ) );
+    my $createdTime = time();
+    push(@fields, $createdTime );
+    push(@fields, "'$params->{origTimeZone}'" );
+    push(@fields, $params->{bandwidth} * 1000000 );
+    push(@fields, $params->{burstLimit} ? 
+                  $params->{burstLimit} : $self->{pssConfigs}->{burstLimit} );
+    push(@fields, "'$self->{user}->{login}'" );
+    push(@fields, "'pending'" );   # status
+    push(@fields, $params->{class} ?
+                  "'$params->{class}'" : "'$self->{pssConfigs}->{CoS}'" );
+    push(@fields, $params->{srcPort} ?  $params->{srcPort} : 'NULL' );
+    push(@fields, $params->{destPort} ? $params->{destPort} : 'NULL' );
+    push(@fields, $params->{dscp} ? "'$params->{dscp}'" : "'$self->{pssConfigs}->{dscp}'" );
+    push(@fields, $params->{protocol} ? "'$params->{protocol}'" : 'NULL' );
+    my $pathStr = join(' ', @{$pathInfo->{path}});
+    push(@fields, "'$pathStr'" );
+    push(@fields, "'$params->{description}'" );
+    push(@fields, $pathInfo->{ingressInterfaceId} );
+    push(@fields, $pathInfo->{egressInterfaceId} );
+    my $srcHostId = $self->{resvLib}->hostIPToId($pathInfo->{srcIP});
+    my $destHostId = $self->{resvLib}->hostIPToId($pathInfo->{destIP});
+    push(@fields, $srcHostId );
+    push(@fields, $destHostId );
+    return ( \@fields, $startTime, $createdTime );
+} #____________________________________________________________________________
+
+
+###############################################################################
+# buildResults:  build results hash
+#
+sub buildResults {
+    my( $self, $id, $params, $startTime, $createdTime, $pathInfo ) = @_;
+
+    my $results = {};
+    # TODO:  don't send back fields that are a straight copy from params
+    $results->{startTime} = $params->{startTime};
+    $results->{endTime} = $params->{endTime};
+    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                              $createdTime, $params->{origTimeZone});
+    $results->{origTimeZone} = $params->{origTimeZone};
+    $results->{bandwidth} = $params->{bandwidth};
+    $results->{burstLimit} = $params->{burstLimit} ? 
+                     $params->{burstLimit} : $self->{pssConfigs}->{burstLimit};
+    $results->{login} = $self->{user}->{login};
+    $results->{status} = 'pending';
+    $results->{class} = $params->{class} ?
+                     $params->{class} : $self->{pssConfigs}->{CoS};
+    $results->{dscp} = $params->{dscp} ?
+                     $params->{dscp} : $self->{pssConfigs}->{dscp};
+    $results->{srcPort} = $params->{srcPort} ?  $params->{srcPort} : 'DEFAULT';
+    $results->{destPort} = $params->{destPort} ?  $params->{destPort} : 'DEFAULT';
+    $results->{protocol} = $params->{protocol};
+    $results->{srcHost} = $params->{destHost};
+    $results->{destHost} = $params->{destHost};
+    $results->{description} = $params->{description};
+    # clean up NULL values
+    $self->{resvLib}->checkNulls($results);
+
+    # Get loopback fields and path if authorized.
+    if ( $self->{user}->authorized('Reservations', 'manage') ||
+         $self->{user}->authorized('Domains', 'set' ) ) {
+        ( $results->{ingressRouter}, $results->{ingressIP} ) =
+               $self->{resvLib}->getRouterInfo($pathInfo->{ingressInterfaceId}); 
+        ( $results->{egressRouter}, $results->{egressIP} ) =
+               $self->{resvLib}->getRouterInfo($pathInfo->{egressInterfaceId}); 
+        my $p = join(' ', @{$pathInfo->{path}});
+        my $pathArray = $self->{resvLib}->getPathRouterInfo($p);
+        $results->{path} = join(' ', @{$pathArray});
+    }
+    # get YYYY-MM-DD string to insert into reservation tag 
+    my $ymd = $self->{timeLib}->getYMD($startTime);
+    # Subsequent retrieval of information from db uses a view to compute the 
+    # tag.
+    my $statement = "SELECT abbrev FROM domains WHERE local=1";
+    my $row = $self->{db}->getRow($statement);
+    $results->{tag} = $row->{abbrev} . '-' . $self->{user}->{login} . '.' .
+          $ymd .  "-" .  $id;
+    $results->{tag} =~ s/@/../;
+    return $results;
 } #____________________________________________________________________________
 
 
@@ -167,78 +318,6 @@ sub idToRouterName {
 
 
 ###############################################################################
-# checkOverscribed:  gets the list of active reservations at the same time as
-#   this (proposed) reservation.  Also queries the db for the max speed of the
-#   router interfaces to see if we have exceeded it.
-#
-# In: list of reservations, new reservation
-# OUT: valid (0 or 1), and error message
-#
-sub checkOversubscribed {
-    my( $self, $params ) = @_;
-
-    my( %ifaceIdxs, $row, $path, $link, $res, $idx );
-    my( $routerName );
-    # maximum utilization for a particular link
-    my( $maxUtilization );
-
-    # XXX: what is the MAX percent we can allocate? for now 50% ...
-    my $maxReservationUtilization = 0.50; 
-
-    # Get bandwidth and times of reservations overlapping that of the
-    # reservation request.
-    my $statement = 'SELECT bandwidth, startTime, endTime, path ' .
-          'FROM reservations WHERE endTime >= ? AND ' .
-          "startTime <= ? AND (status = 'pending' OR status = 'active')";
-
-    # handled query with the comparison start & end datetime strings
-    my $reservations = $self->{db}->doQuery( $statement,
-           $params->{startTime}, $params->{endTime});
-
-    # assign the new path bandwidths 
-    for $link (@{$params->{path}}) {
-        $ifaceIdxs{$link} = $params->{bandwidth};
-    }
-
-    # loop through all active reservations
-    for $res (@$reservations) {
-        # get bandwidth allocated to each idx on that path
-        for $path ( $res->{path} ) {
-            for $link ( split(' ', $path) ) {
-                $ifaceIdxs{$link} += $res->{bandwidth};
-            }
-        }
-    }
-    # now for each of those interface idx
-    for $idx (keys %ifaceIdxs) {
-        # get max bandwith speed for an idx
-        $row = $self->getInterfaceFields($idx);
-        if (!$row ) { next; }
-
-        if ( $row->{valid} eq 'False' ) {
-            throw Error::Simple("interface $idx not valid");
-        }
- 
-        $maxUtilization = $row->{speed} * $maxReservationUtilization;
-        if ($ifaceIdxs{$idx} > $maxUtilization) {
-            my $errorMsg;
-            # only print router name if user has admin privileges
-            if ($params->{formType} eq 'admin') {
-                $routerName = $self->idToRouterName( $idx );
-                $errorMsg = "$routerName oversubscribed: ";
-            }
-            else { $errorMsg = 'Route oversubscribed: '; }
-            throw Error::Simple("$errorMsg  $ifaceIdxs{$idx}" .
-                  " Mbps > $maxUtilization Mbps\n");
-        }
-    }
-    # Replace array @$params->{path} with string separated by
-    # spaces
-    $params->{path} = join(' ', @{$params->{path}});
-} #____________________________________________________________________________
-
-
-###############################################################################
 # getInterfaceFields:  get the bandwidth of a router interface.
 #
 # IN: router interface idx
@@ -250,65 +329,6 @@ sub getInterfaceFields {
     my $statement = 'SELECT * FROM topology.interfaces WHERE id = ?';
     my $row = $self->{db}->getRow($statement, $interfaceId);
     return $row;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# buildResults:  build fields to insert in reservations row
-#
-sub buildResults {
-    my( $self, $params ) = @_;
-
-    my $statement = 'SHOW COLUMNS from reservations';
-    my $rows = $self->{db}->doQuery( $statement );
-    my @insertions;
-    my $results = {}; 
-    # TODO:  necessary to do insertions this way?
-    for $_ ( @$rows ) {
-       if ($params->{$_->{Field}}) {
-           $results->{$_->{Field}} = $params->{$_->{Field}};
-           push(@insertions, $params->{$_->{Field}}); 
-       }
-       else{ push(@insertions, 'NULL'); }
-    }
-
-    # insert all fields for reservation into database
-    $statement = "INSERT INTO reservations VALUES (
-             " . join( ', ', ('?') x @insertions ) . " )";
-    my $unused = $self->{db}->doQuery($statement, @insertions);
-    $results->{id} = $self->{db}->getPrimaryId();
-    # copy over non-db fields
-    $results->{srcHost} = $params->{srcHost};
-    $results->{destHost} = $params->{destHost};
-    # clean up NULL values
-    $self->{resvLib}->checkNulls($results);
-    # convert times back to xsd:datetime format in user's time zone for 
-    # email notification
-    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{startTime}, $results->{origTimeZone});
-    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{endTime}, $results->{origTimeZone});
-    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
-                             $results->{createdTime}, $results->{origTimeZone});
-
-    # gets YYYY-MM-DD string to insert into reservation tag 
-    my $ymd = $self->{timeLib}->getYMD($params->{startTime});
-    # set user-semi-readable tag
-    # FIX:  more domain independence
-    $results->{tag} = 'ESNet' . '-' . $self->{user}->{login} . '.' .
-          $ymd .  "-" .  $results->{id};
-    $statement = 'UPDATE reservations SET tag = ?, ' .
-                 "status = 'pending' WHERE id = ?";
-    $unused = $self->{db}->doQuery($statement, $results->{tag},
-                                    $results->{id});
-    # Get loopback fields if authorized.
-    if ( $self->{user}->authorized('Reservations', 'manage') ||
-         $self->{user}->authorized('Domains', 'set' ) ) {
-        $self->{resvLib}->getEngrFields($results); 
-    }
-    $results->{tag} =~ s/@/../;
-    $results->{status} = 'pending';
-    return $results;
 } #____________________________________________________________________________
 
 
