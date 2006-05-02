@@ -173,10 +173,12 @@ sub checkOversubscribed {
             }
         }
     }
+    $statement = 'SELECT name, valid, speed FROM CheckOversubscribe ' .
+                 'WHERE id = ?';
     # now for each of those interface idx
     for my $idx (keys %ifaceIdxs) {
         # get max bandwith speed for an idx
-        $row = $self->getInterfaceFields($idx);
+        $row = $self->{db}->getRow($statement, $idx);
         if (!$row ) { next; }
 
         if ( $row->{valid} eq 'False' ) {
@@ -189,8 +191,7 @@ sub checkOversubscribed {
             # only print router name if user is authorized
             if ( $self->{user}->authorized('Reservations', 'manage') ||
                  $self->{user}->authorized('Domains', 'set' ) ) {
-                $routerName = $self->idToRouterName( $idx );
-                $errorMsg = "$routerName oversubscribed: ";
+                $errorMsg = "$row->{name} oversubscribed: ";
             }
             else { $errorMsg = 'Route oversubscribed: '; }
             throw Error::Simple("$errorMsg  $ifaceIdxs{$idx}" .
@@ -293,41 +294,6 @@ sub buildResults {
           $ymd .  "-" .  $id;
     $results->{tag} =~ s/@/../;
     return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# idToRouterName:  get the router name given the interface primary key.
-# In:  interface table key id
-# Out: router name
-#
-sub idToRouterName {
-    my( $self, $interfaceId ) = @_;
-
-    my $statement = 'SELECT name FROM topology.routers WHERE id = 
-        (SELECT routerId from topology.interfaces WHERE topology.interfaces.id = ?)';
-    my $row = $self->{db}->getRow($statement, $interfaceId);
-    # no match
-    if ( !$row ) {
-        # not considered an error
-        return '';
-    }
-    return $row->{name};
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getInterfaceFields:  get the bandwidth of a router interface.
-#
-# IN: router interface idx
-# OUT: interface row
-#
-sub getInterfaceFields {
-    my( $self, $interfaceId) = @_;
-
-    my $statement = 'SELECT * FROM topology.interfaces WHERE id = ?';
-    my $row = $self->{db}->getRow($statement, $interfaceId);
-    return $row;
 } #____________________________________________________________________________
 
 
