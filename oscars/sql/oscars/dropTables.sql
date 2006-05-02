@@ -9,9 +9,5 @@ DROP TABLE  domains
 DROP TABLE  hosts
 DROP TABLE  reservations
 DROP TABLE  archivedReservations
-DROP TABLE  configScheduler
-DROP TABLE  configTrace
-DROP TABLE  configSNMP
-DROP TABLE  configPSS
 DROP TABLE  configTests
 DROP TABLE  configTestAddresses
