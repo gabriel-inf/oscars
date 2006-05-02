@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Simple tests => 5;
+use Test::Simple tests => 6;
 
 use DateTime;
 use DateTime::TimeZone;
@@ -15,9 +15,9 @@ my $testMgr = TestManager->new();
 my $params = $testMgr->getParams('oscars/params.xml');
 my( $status, $msg, $reservationId );
 
-#($status, $msg) = listReservations($testMgr, $params->{listReservations});
-#ok($status, $msg);
-#print STDERR $msg;
+($status, $msg) = listReservations($testMgr, $params->{listReservations});
+ok($status, $msg);
+print STDERR $msg;
 
 ( $status, $msg, $reservationId ) = createReservation( $testMgr, $params->{createReservation} );
 ok( $status, $msg );
@@ -86,7 +86,9 @@ sub createReservation {
 
     my $msg = "\nStatus: Your reservation has been processed successfully.\n";
     $msg .= "Details:\n" . Dumper($results);
-    return( 1, $msg, $results->{id} );
+    my @strArray = split('-', $results->{tag});
+    my $id = $strArray[-1];
+    return( 1, $msg, $id );
 } #___________________________________________________________________________
 
 
