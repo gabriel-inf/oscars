@@ -63,40 +63,8 @@ sub listInstitutions {
     my( $self, $db ) = @_;
 
     my $statement = "SELECT name FROM institutions";
-    my $results = $db->doQuery($statement);
+    my $results = $db->doSelect($statement);
     return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getId:  Get institution id given the institution name
-#
-sub getId {
-    my( $self, $db, $institutionName ) = @_;
-
-    my $statement = "SELECT id FROM institutions WHERE name = ?";
-    my $row = $db->getRow($statement, $institutionName);
-    if ( !$row ) {
-        throw Error::Simple("The organization " .
-                   "$institutionName is not in the database.");
-    }
-    return $row->{id};
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getName:  Get institution name given the institution id
-#
-sub getName {
-    my( $self, $db, $institutionId ) = @_;
-
-    my $statement = "SELECT name FROM institutions WHERE id = ?";
-    my $row = $db->getRow($statement, $institutionId);
-    if ( !$row ) {
-        throw Error::Simple("The organization identified by " .
-                   "$institutionId is not in the database.");
-    }
-    return $row->{name};
 } #____________________________________________________________________________
 
 
