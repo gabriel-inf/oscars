@@ -64,6 +64,7 @@ sub soapMethod {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage circuits");
     }
+    $self->{params}->{timeInterval} = 20;  #TODO:  FIX explicit setting
     if ($self->{opstring} eq 'setup') { $updateStatus = 'active'; }
     else { $updateStatus = 'finished'; }
     # find reservations that need to be scheduled
@@ -139,18 +140,6 @@ sub configurePSS {
     return "";
 } #____________________________________________________________________________
 
-
-
-###############################################################################
-#
-sub getTimeIntervals {
-    my( $self ) = @_;
-
-        # just use defaults for now
-    my $statement = "SELECT pollTime FROM configScheduler WHERE id = 1";
-    my $row = $self->{db}->getRow( $statement );
-    return( $row->{pollTime} );
-} #____________________________________________________________________________
 
 
 ###############################################################################
