@@ -64,9 +64,9 @@ sub soapMethod {
 	       	"The user does not exist.");
     }
     my $statement = 'DELETE from users where login = ?';
-    my $unused = $self->{db}->doQuery($statement, $params->{selectedUser});
-    $statement = "SELECT * FROM userList";
-    $results->{list} = $self->{db}->doQuery($statement);
+    $self->{db}->execStatement($statement, $params->{selectedUser});
+    $statement = "SELECT * FROM UserList";
+    $results->{list} = $self->{db}->doSelect($statement);
     return $results;
 } #____________________________________________________________________________
 

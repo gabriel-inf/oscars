@@ -62,7 +62,7 @@ sub soapMethod {
     my $permissionId =
         $self->{lib}->idFromName('permission', $params->{permissionName});
     my $statement = 'DELETE FROM permissions WHERE id = ?';
-    my $unused = $self->{db}->doQuery($statement, $permissionId);
+    $self->{db}->execStatement($statement, $permissionId);
     my $msg = "Removed permission named $params->{permissionName}";
     return $results;
 } #____________________________________________________________________________

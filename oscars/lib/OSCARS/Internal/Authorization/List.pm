@@ -64,7 +64,7 @@ sub soapMethod {
     my $results = {};
     my $statement = "SELECT login FROM users";
     $results->{users} = {};
-    my $auxResults = $self->{db}->doQuery($statement);
+    my $auxResults = $self->{db}->doSelect($statement);
     for my $row (@$auxResults) { $results->{users}->{$row->{login}} = 1; }
 
     $results->{resourcePermissions} =

@@ -206,7 +206,7 @@ sub updateRouters {
     if ( !$row ) {
         $statement = "INSERT into routers VALUES ( NULL, True,
                      '$routerName', '$mplsLoopback')";
-        $unused = $self->{db}->doQuery($statement);
+        $self->{db}->execStatement($statement);
         $routerId = $self->{db}->{dbh}->{mysql_insertid};
         return $routerId;
     }
@@ -214,7 +214,7 @@ sub updateRouters {
     if (!$row->{loopback}) { $row->loopback = 'NULL'; }
     if ($row->{loopback} ne $mplsLoopback) {
         $statement = "UPDATE routers SET loopback = ? WHERE id = ?";
-        $unused = $self->{db}->doQuery($statement, $mplsLoopback, $routerId);
+        $self->{db}->execStatement($statement, $mplsLoopback, $routerId);
     }
     return $routerId;
 } #___________________________________________________________________________
@@ -257,14 +257,14 @@ sub updateInterfaces {
         $statement = "INSERT into interfaces VALUES ( NULL, True, 
                   $xface->{index}, $newSpeed, '$xface->{ifDescr}',
                   '$xface->{ifAlias}', $routerId)";
-        $unused = $self->{db}->doQuery($statement);
+        $self->{db}->execStatement($statement);
         $interfaceId = $self->{db}->{dbh}->{mysql_insertid};
         return $interfaceId;
     }
     $interfaceId = $row->{interfaceId};
     $statement = "UPDATE interfaces SET speed = ?,
                   description = ?, alias = ? WHERE id = ?";
-    $unused = $self->{db}->doQuery($statement, $newSpeed,
+    $self->{db}->execStatement($statement, $newSpeed,
                   $xface->{ifDescr}, $xface->{ifAlias}, $interfaceId);
     return $interfaceId;
 } #___________________________________________________________________________
@@ -289,7 +289,7 @@ sub updateIpaddrs {
     if ( !$row ) {
         $statement = "INSERT into ipaddrs VALUES ( NULL, '$interfaceIP',
                   $interfaceId)";
-        $unused = $self->{db}->doQuery($statement);
+        $self->{db}->execStatement($statement);
         $ipaddrId = $self->{db}->getPrimaryId();
         return $ipaddrId;
     }

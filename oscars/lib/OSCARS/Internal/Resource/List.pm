@@ -61,14 +61,14 @@ sub soapMethod {
     my $results = {};
     my $statement = "SELECT name FROM resources";
     $results->{resources} = {};
-    my $rresults = $self->{db}->doQuery($statement);
+    my $rresults = $self->{db}->doSelect($statement);
     for my $row (@$rresults) {
         $results->{resources}->{$row->{name}} = 1;
     }
 
     my $statement = "SELECT name FROM permissions";
     $results->{permissions} = {};
-    my $presults = $self->{db}->doQuery($statement);
+    my $presults = $self->{db}->doSelect($statement);
     for my $row (@$presults) {
         $results->{permissions}->{$row->{name}} = 1;
     }

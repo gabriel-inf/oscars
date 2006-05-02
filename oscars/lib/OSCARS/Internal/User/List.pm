@@ -56,8 +56,8 @@ sub soapMethod {
             "User $self->{user}->{login} not authorized to manage users");
     }
     my $results = {};
-    my $statement = "SELECT * FROM userList";
-    $results->{list} = $self->{db}->doQuery($statement);
+    my $statement = "SELECT * FROM UserList";
+    $results->{list} = $self->{db}->doSelect($statement);
     return $results;
 } #____________________________________________________________________________
 

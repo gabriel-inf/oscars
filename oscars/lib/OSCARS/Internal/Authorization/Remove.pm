@@ -69,8 +69,7 @@ sub soapMethod {
     my $permissionId = $row->{id};
     $statement = 'DELETE FROM authorizations WHERE userId = ? AND ' .
                  'resourceId = ? AND permissionId = ?';
-    my $unused =
-        $self->{db}->doQuery($statement, $userId, $resourceId, $permissionId);
+    $self->{db}->execStatement($statement, $userId, $resourceId, $permissionId);
     my $msg = "Removed authorization for $self->{params}->{login} involving " .
               "resource $self->{params}->{resourceName} and " .
               "permission $self->{params}->{permissionName}";

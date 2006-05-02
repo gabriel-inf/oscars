@@ -77,7 +77,7 @@ sub removeResource {
     my $resourceId = $self->{lib}->idFromName('resource',
                                              $self->{params}->{resourceName});
     my $statement = 'DELETE FROM resources WHERE id = ?';
-    my $unused = $self->{db}->doQuery($statement, $resourceId);
+    $self->{db}->execStatement($statement, $resourceId);
     my $msg = "Removed resource with name $self->{params}->{resourceName}";
     $self->removeResourcePermission();
     return $msg;
@@ -96,7 +96,7 @@ sub removeResourcePermission {
     my $resourceId = $self->{lib}->idFromName('resource',
                                              $self->{params}->{resourceName});
     my $statement = 'DELETE FROM resourcePermissions WHERE resourceId = ?';
-    my $unused = $self->{db}->doQuery($statement, $resourceId);
+    $self->{db}->execStatement($statement, $resourceId);
     my $msg = "Removed resource permission pair";
     return $msg;
 } #____________________________________________________________________________

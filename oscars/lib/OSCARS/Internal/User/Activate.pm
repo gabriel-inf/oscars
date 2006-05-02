@@ -20,7 +20,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+April 27, 2006
 
 =cut
 
@@ -50,13 +50,15 @@ sub initialize {
 sub soapMethod {
     my( $self ) = @_;
 
-    my( $msg );
-
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
-            "User $self->{user}->{login} not authorized to manage users");
+            "User $self->{user}->{login} not authorized to activate user");
     }
-    my $results = {};
+    my $results = $self->activateAccount();
+    my $msg = 'The user account <strong>' .
+       "$self->{user}->{login}</strong> has been successfully activated. You " .
+       'will be redirected to the main service login page in 10 seconds. ' .
+       '<br>Please change the password to your own once you sign in.';
     return $results;
 } #____________________________________________________________________________
 
@@ -68,56 +70,24 @@ sub soapMethod {
 # Out: reference to hash of results
 #
 sub activateAccount {
-    my( $self, $params ) = @_;
+    my( $self ) = @_;
 
-    my ( $results) ;
-
+    my $results = {};
     my $login = $self->{user}->{login};
     # get the password from the database
-    my $statement = 'SELECT password, activationKey ' .
-                    'FROM users WHERE login = ?';
+    my $statement = 'SELECT activationKey FROM users WHERE login = ?';
     my $row = $self->{db}->getRow($statement, $login);
-
-    # check whether this person is a registered user
     if ( !$row ) {
-        throw Error::Simple('Please check your login name and try again.');
-    }
-    my $keysMatch = 0;
-    my( $pendingLevel, $nonMatchError );
-        # this login name is in the database; compare passwords
-    if ( $row->{activationKey} eq '' ) {
-        $nonMatchError = 'This account has already been activated.';
-    }
-    elsif ( $row->{password} ne $params->{password} ) {
-        $nonMatchError = 'Please check your password and try again.';
-    }
-    elsif ( $row->{activationKey} ne $params->{activationKey} ) {
-        $nonMatchError = 'Please check the activation key and ' .
-                           'try again.';
-    }
-    else {
-        $keysMatch = 1;
-        # TODO:  FIX, level no longer exists
-        #$pendingLevel = $row->{level};
+        throw Error::Simple("User $login has not registered yet.");
     }
 
-    # If the input password and the activation key matched against those
-    # in the database, activate the account.
-    if ( $keysMatch ) {
-        # Change the level to the pending level value and the pending level
-        # to 0; empty the activation key field
-        $statement = "UPDATE users SET activationKey = '' WHERE login = ?";
-        my $unused = $self->{db}->doQuery($statement, $login);
+    if ( $row->{activationKey} eq '' ) {
+        throw Error::Simple('This account has already been activated.');
     }
-    else {
-        throw Error::Simple($nonMatchError);
+    elsif ( $row->{activationKey} ne $self->{params}->{activationKey} ) {
+        throw Error::Simple('Please check the activation key and try again.');
     }
-    $results->{msg} = 'The user account <strong>' .
-       "$login</strong> has been successfully activated. You " .
-       'will be redirected to the main service login page in 10 seconds. ' .
-       '<br>Please change the password to your own once you sign in.';
-    my $msg = $results->{msg};
-    return( $msg, $results );
+    return $results;
 } #____________________________________________________________________________ 
 
 

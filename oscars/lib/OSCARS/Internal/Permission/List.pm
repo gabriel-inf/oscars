@@ -61,7 +61,7 @@ sub soapMethod {
     my $statement = "SELECT name FROM permissions";
     my $results = {};
     $results->{permissions} = {};
-    my $presults = $self->{db}->doQuery($statement);
+    my $presults = $self->{db}->doSelect($statement);
     for my $row (@$presults) {
         $results->{permissions}->{$row->{name}} = 1;
     }
