@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+May 1, 2006
 
 =cut
 
@@ -69,30 +69,42 @@ sub disconnect {
 
 
 ###############################################################################
-#
-sub doQuery {
+# doSelect:  returns all results from a select
+#        
+sub doSelect {
     my( $self, $statement, @args ) = @_;
 
-    # TODO, FIX:  selectall_arrayref probably better
-    my $sth = $self->{dbh}->prepare( $statement );
-    if ($DBI::err) {
-        throw Error::Simple("[DBERROR] Preparing $statement:  $DBI::errstr");
-    }
-    $sth->execute( @args );
-    if ( $DBI::err ) {
-        throw Error::Simple("[DBERROR] Executing $statement:  $DBI::errstr");
-    }
+    my $sth = $self->execStatement($statement, @args);
     my $rows = $sth->fetchall_arrayref({});
-    #if ( $DBI::err ) {
-        #throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
-    #}
+    if ( $DBI::err ) {
+        throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
+    }
+    if ( !@$rows ) { return undef; }
     return $rows;
-} #____________________________________________________________________________ 
+} #____________________________________________________________________________
 
 
 ###############################################################################
-#
+# getRow:  returns one row from a select (only one expected, TODO:  more error
+#          checking)
+#        
 sub getRow {
+    my( $self, $statement, @args ) = @_;
+
+    my $sth = $self->execStatement($statement, @args);
+    my $rows = $sth->fetchall_arrayref({});
+    if ( $DBI::err ) {
+        throw Error::Simple("[DBERROR] Fetching results of $statement:  $DBI::errstr");
+    }
+    if ( !@$rows ) { return undef; }
+    return $rows->[0];
+} #____________________________________________________________________________
+
+
+###############################################################################
+#  execStatement:  performs any DB operation not requiring a fetch
+#
+sub execStatement {
     my( $self, $statement, @args ) = @_;
 
     my $sth = $self->{dbh}->prepare( $statement );
@@ -103,10 +115,7 @@ sub getRow {
     if ( $DBI::err ) {
         throw Error::Simple("[DBERROR] Executing $statement:  $DBI::errstr");
     }
-    my $rows = $sth->fetchall_arrayref({});
-    if ( !@$rows ) { return undef; }
-    # TODO:  error checking if more than one row
-    return $rows->[0];
+    return $sth;
 } #____________________________________________________________________________
 
 
