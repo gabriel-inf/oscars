@@ -255,15 +255,14 @@ sub buildResults {
     $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
                               $createdTime, $params->{origTimeZone});
     $results->{origTimeZone} = $params->{origTimeZone};
-    $results->{bandwidth} = $params->{bandwidth};
+    $results->{bandwidth} = $params->{bandwidth} * 1000000;
     $results->{burstLimit} = $params->{burstLimit} ? 
                      $params->{burstLimit} : $self->{pssConfigs}->{burstLimit};
     $results->{login} = $self->{user}->{login};
     $results->{status} = 'pending';
     $results->{class} = $params->{class} ?
                      $params->{class} : $self->{pssConfigs}->{CoS};
-    $results->{dscp} = $params->{dscp} ?
-                     $params->{dscp} : $self->{pssConfigs}->{dscp};
+    $results->{dscp} = $params->{dscp};
     $results->{srcPort} = $params->{srcPort} ?  $params->{srcPort} : 'DEFAULT';
     $results->{destPort} = $params->{destPort} ?  $params->{destPort} : 'DEFAULT';
     $results->{protocol} = $params->{protocol};
