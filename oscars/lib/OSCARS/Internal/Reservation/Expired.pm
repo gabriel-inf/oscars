@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 1, 2006
 
 =cut
 
@@ -33,8 +33,6 @@ use strict;
 
 use Data::Dumper;
 use Error qw(:try);
-
-use OSCARS::PSS::JnxLSP;
 
 use OSCARS::Internal::Reservation::Scheduler;
 our @ISA = qw{OSCARS::Internal::Reservation::Scheduler};
@@ -59,7 +57,7 @@ sub getReservations {
     my $timeslot = $row->{nowTime} + $timeInterval;
     $statement = qq{ SELECT * FROM reservations WHERE (status = ? and
                  endTime < ?) or (status = ?)};
-    return $self->{db}->doQuery($statement, $status, $timeslot, 'precancel' );
+    return $self->{db}->doSelect($statement, $status, $timeslot, 'precancel' );
 } #____________________________________________________________________________
 
 

@@ -23,7 +23,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 1, 2006
 
 =cut
 
@@ -57,7 +57,7 @@ sub getReservations  {
     my $timeslot = $row->{nowTime} + $timeInterval;
     $statement = qq{ SELECT * FROM reservations WHERE status = ? and
                  startTime < ?};
-    return $self->{db}->doQuery($statement, $status, $timeslot);
+    return $self->{db}->doSelect($statement, $status, $timeslot);
 } #____________________________________________________________________________
 
 
