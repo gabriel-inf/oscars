@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 1, 2006
 
 =cut
 
@@ -30,6 +30,7 @@ use Data::Dumper;
 use Error qw(:try);
 use Socket;
 
+use OSCARS::PSS::JnxLSP;
 use OSCARS::Library::Reservation::TimeConversion;
 use OSCARS::Library::Reservation::Common;
 
@@ -127,8 +128,8 @@ sub configurePSS {
 
     # Create an LSP object.
     my $lsp_info = $self->mapFields($resv);
-    $lsp_info->{configs} = $self->{resvLib}->getPssConfigs();
     $lsp_info->{logger} = $self->{logger};
+    $lsp_info->{db} = $self->{db};
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
     $self->{logger}->info('LSP.' . $self->{opstring}, { 'id' => $resv->{id}  });
     $jnxLsp->configure_lsp($self->{opcode}, $self->{logger});
