@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 24, 2006
+May 1, 2006
 
 =cut
 
@@ -34,7 +34,6 @@ use DateTime::Format::W3CDTF;
 
 use Data::Dumper;
 use Error qw(:try);
-use Socket;
 
 sub new {
     my( $class, %args ) = @_;
