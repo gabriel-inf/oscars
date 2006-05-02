@@ -36,6 +36,7 @@ lib/OSCARS/Internal/Permission/List.pm
 lib/OSCARS/Internal/Permission/Remove.pm
 lib/OSCARS/Internal/Reservation/Expired.pm
 lib/OSCARS/Internal/Reservation/Pending.pm
+lib/OSCARS/Internal/Reservation/Scheduler.pm
 lib/OSCARS/Internal/Resource/Add.pm
 lib/OSCARS/Internal/Resource/List.pm
 lib/OSCARS/Internal/Resource/Remove.pm
@@ -50,7 +51,6 @@ lib/OSCARS/Library/AAA/AuthZ.pm
 lib/OSCARS/Library/AAA/Common.pm
 lib/OSCARS/Library/Reservation/ClientForward.pm
 lib/OSCARS/Library/Reservation/Common.pm
-lib/OSCARS/Library/Reservation/Scheduler.pm
 lib/OSCARS/Library/Reservation/TimeConversion.pm
 lib/OSCARS/Library/Topology/JnxSNMP.pm
 lib/OSCARS/Library/Topology/JnxTraceroute.pm
@@ -90,6 +90,7 @@ lib/OSCARS/WBUI/Method/ReservationDetails.pm
 lib/OSCARS/WBUI/Method/ResourceList.pm
 lib/OSCARS/WBUI/Method/UserAdd.pm
 lib/OSCARS/WBUI/Method/UserAddForm.pm
+lib/OSCARS/WBUI/Method/UserDetails.pm
 lib/OSCARS/WBUI/Method/UserList.pm
 lib/OSCARS/WBUI/Method/UserLogin.pm
 lib/OSCARS/WBUI/Method/UserLogout.pm
@@ -111,7 +112,9 @@ specs/fspec.html
 specs/interdomain.html
 specs/notes.txt
 specs/schedule.html
+sql/oscars/createFunctions.sql
 sql/oscars/createTables.sql
+sql/oscars/createViews.sql
 sql/oscars/dropTables.sql
 sql/topology/createTables.sql
 sql/topology/dropTables.sql
