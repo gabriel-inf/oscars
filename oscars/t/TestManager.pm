@@ -113,7 +113,7 @@ sub getReservationConfigs {
     }
     my $statement = "SELECT * FROM configTestAddresses a " .
         "INNER JOIN configTests t ON a.testConfId = t.id WHERE t.name = ?";
-    my $rows = $self->{db}->doQuery($statement, $testName);
+    my $rows = $self->{db}->doSelect($statement, $testName);
     my $configs = {};
     for my $row (@$rows) {
         $configs->{$row->{description}} = $row->{address};
