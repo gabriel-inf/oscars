@@ -43,7 +43,7 @@ sub new {
 
 ###############################################################################
 # addRow:  Add a row to the AAA resources, permissions, or
-#           resourcePermissions tables.
+#          resourcePermissions tables.  Not currently working.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of results
@@ -52,24 +52,21 @@ sub addRow {
     my( $self, $params, $tableName ) = @_;
 
     my $results = {};
-    my $statement = "SHOW COLUMNS from $tableName";
-    my $rows = $self->{db}->doQuery( $statement );
-
-    my @insertions;
-    # TODO:  FIX way to get insertions fields
-    for $_ ( @$rows ) {
-       if ($params->{$_->{Field}}) {
-           $results->{$_->{Field}} = $params->{$_->{Field}};
-           push(@insertions, $params->{$_->{Field}}); 
-       }
-       else{ push(@insertions, 'NULL'); }
-    }
-
-    $statement = "INSERT INTO $tableName VALUES ( " .
-             join( ', ', ('?') x @insertions ) . " )";
-             
-    my $unused = $self->{db}->doQuery($statement, @insertions);
+    my $fields = $self->buildFields($self->{params});
+    my $statement = "INSERT INTO foo VALUES(" .
+                     join(', ', @$fields) . ")";
+    $self->{db}->execStatement($statement);
     return;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub buildFields {
+    my( $self, $params ) = @_;
+
+    my @fields = ();
+    return \@fields;
 } #____________________________________________________________________________
 
 
@@ -80,7 +77,7 @@ sub getResourcePermissions {
     my $statement = "SELECT resourceId, permissionId " .
                     "FROM resourcePermissions";
     my $resourcePermissions = {};
-    my $rpResults = $self->{db}->doQuery($statement);
+    my $rpResults = $self->{db}->doSelect($statement);
     $statement = "SELECT name FROM resources WHERE id = ?";
     my $pstatement = "SELECT name FROM permissions WHERE id = ?";
     for my $row (@$rpResults) {

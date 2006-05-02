@@ -61,7 +61,7 @@ sub getResourcePermissions {
     my( $row, $resourceName, $permissionName );
 
     my $statement = "SELECT resourceId, permissionId FROM resourcePermissions";
-    my $results = $self->{db}->doQuery($statement);
+    my $results = $self->{db}->doSelect($statement);
     my $resourcePermissions = {};
     $statement = "SELECT name FROM resources WHERE id = ?";
     my $pstatement = "SELECT name FROM permissions WHERE id = ?";
@@ -94,7 +94,7 @@ sub getAuthorizations {
 
     $statement = "SELECT resourceId, permissionId FROM authorizations " .
                  "WHERE userId = ?";
-    $results = $self->{db}->doQuery($statement, $userId);
+    $results = $self->{db}->doSelect($statement, $userId);
     my $rstatement = "SELECT name FROM resources WHERE id = ?";
     my $pstatement = "SELECT name FROM permissions WHERE id = ?";
     for my $pair ( @$results ) {
