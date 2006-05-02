@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS configPSS (
     id			INT NOT NULL AUTO_INCREMENT,
     access		TEXT NOT NULL,
     login		TEXT NOT NULL,
-    passwd		TEXT NOT NULL,
+    password		TEXT NOT NULL,
     firewallMarker	TEXT NOT NULL,
     setupFile		TEXT NOT NULL,
     teardownFile	TEXT NOT NULL,
