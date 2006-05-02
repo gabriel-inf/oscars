@@ -41,6 +41,10 @@ CREATE OR REPLACE VIEW ReservationUserDetails AS
     INNER JOIN hosts sh ON sh.id = r.srcHostId
     INNER JOIN hosts dh ON dh.id = r.destHostId;
 
+CREATE OR REPLACE VIEW CheckOversubscribe AS
+    SELECT r.name, i.valid, i.speed
+    FROM topology.interfaces i
+    INNER JOIN topology.routers r ON r.id = i.routerId;
 
 --- reservation-related views intended to be run from a MySQL client
 
