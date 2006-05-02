@@ -17,11 +17,10 @@ the users table.  It inherits from OSCARS::Method.
 =head1 AUTHORS
 
 David Robertson (dwrobertson@lbl.gov)
-Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 25, 2006
+April 27, 2006
 
 =cut
 
@@ -31,23 +30,8 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::Public::Institution::List;
-
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
-
-sub initialize {
-    my( $self ) = @_;
-
-    $self->SUPER::initialize();
-    $self->{institutions} = OSCARS::Public::Institution::List->new();
-    $self->{profileFields} =
-         'lastName, firstName, login, password, ' .
-         'emailPrimary, emailSecondary, ' .
-         'phonePrimary, phoneSecondary, description, ' .
-#    'registerTime, activationKey, ' .
-         'institutionId';
-} #____________________________________________________________________________
 
 
 ###############################################################################
@@ -60,36 +44,27 @@ sub soapMethod {
     my( $self ) = @_;
 
     my $results = {};
-    my( $statement, $results );
-
+    my $user;
     my $params = $self->{params};
-    # only happens if coming in from ListUsers form, which requires
+    my $statement = 'SELECT * FROM UserDetails WHERE login = ?';
+    # only happens if coming in from UserList form, which requires
     # additional authorization
-    if ( $params->{selectedUser} ) {
-        $statement = 'SELECT * FROM users WHERE login = ?';
-        $results = $self->{db}->getRow($statement, $params->{selectedUser});
-        # check whether this person is in the database
-        if ( !$results ) {
-            throw Error::Simple("No such user $params->{selectedUser}.");
-        }
-        $results->{id} = 'hidden';
+    if ( $params->{selectedUser} ) { $user = $params->{selectedUser}; }
+    else { $user = $self->{user}->{login}; }
+    $results = $self->{db}->getRow($statement, $user);
+    # check whether this person is in the database
+    if ( !$results ) {
+        throw Error::Simple("No such user $user.");
     }
     else {
-        $statement = "SELECT $self->{profileFields} FROM users " .
-                     'WHERE login = ?';
-        $results = $self->{db}->getRow($statement, $self->{user}->{login});
+        $results = $self->{db}->getRow($statement, $user);
     }
-    $results->{institutionName} = $self->{institutions}->getName(
-                                   $self->{db}, $results->{institutionId});
-    $results->{institutionId} = 'hidden';
-    $results->{login} = $self->{user}->{login};
     $results->{selectedUser} = $params->{selectedUser};
-    # X out password
-    $results->{password} = 'hidden';
-    $results->{institutionList} =
-                $self->{institutions}->listInstitutions( $self->{db} );
+    $statement = 'SELECT name FROM institutions';
+    $results->{institutionList} = $self->{db}->doSelect($statement);
     return $results;
 } #____________________________________________________________________________
+
 
 ######
 1;
