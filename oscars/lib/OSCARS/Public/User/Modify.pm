@@ -73,7 +73,7 @@ sub soapMethod {
 
     # TODO:  FIX way to get update fields
     $statement = 'SHOW COLUMNS from users';
-    my $rows = $self->{db}->doQuery( $statement );
+    my $rows = $self->{db}->doSelect( $statement );
 
     $statement = 'UPDATE users SET ';
     for $_ (@$rows) {
@@ -86,9 +86,11 @@ sub soapMethod {
     }
     $statement =~ s/,\s$//;
     $statement .= ' WHERE login = ?';
-    my $unused = $self->{db}->doQuery($statement, $params->{selectedUser});
+    $self->{db}->execStatement($statement, $params->{selectedUser});
     $results->{selectedUser} = $params->{selectedUser};
     $results->{institutionName} = $params->{institutionName};
+    $statement = 'SELECT name FROM institutions';
+    $results->{institutionList} = $self->{db}->doSelect($statement);
     return $results;
 } #____________________________________________________________________________
 
