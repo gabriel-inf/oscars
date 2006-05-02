@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+April 27, 2006
 
 =cut
 
@@ -89,45 +89,69 @@ sub soapMethod {
 
     my $msg;
 
-    my $params = $self->{params};
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to add user");
     }
-    my $results = {};
-    $params->{login} = $params->{selectedUser};
-
+    my $login = $self->{params}->{selectedUser};
     # login name overlap check
     my $statement = 'SELECT login FROM users WHERE login = ?';
-    my $row = $self->{db}->getRow($statement, $params->{login});
+    my $row = $self->{db}->getRow($statement, $login);
     if ( $row ) {
-        throw Error::Simple("The login, $params->{login}, is already " .
+        throw Error::Simple("The login, $login, is already " .
 	       	"taken by someone else; please choose a different login name.");
     }
-    $params->{password} = crypt($params->{passwordNewOnce}, 'oscars');
-    $statement = 'SELECT id FROM institutions WHERE name = ?';
-    $row = $self->{db}->getRow($statement, $params->{institutionName});
-    $params->{institutionId} = $row->{id};
-    $statement = 'SHOW COLUMNS from users';
-    my $rows = $self->{db}->doQuery( $statement );
+    my $fields = $self->buildFields($self->{params});
+    my $statement = "INSERT INTO users VALUES(" .
+                     join(', ', @$fields) . ")";
+    $self->{db}->execStatement($statement);
 
-    my @insertions;
-    # TODO:  FIX way to get insertions fields
-    for $_ ( @$rows ) {
-       if ($params->{$_->{Field}}) {
-           $results->{$_->{Field}} = $params->{$_->{Field}};
-           push(@insertions, $params->{$_->{Field}}); 
-       }
-       else{ push(@insertions, 'NULL'); }
-    }
-    $statement = "INSERT INTO users VALUES ( " .
-             join( ', ', ('?') x @insertions ) . " )";
-    my $unused = $self->{db}->doQuery($statement, @insertions);
-    $statement = "SELECT * FROM userList";
-    $results->{list} = $self->{db}->doQuery($statement);
-    $msg = "$self->{user}->{login} added user $self->{params}->{selectedUser}";
+    my $results = {};
+    $statement = "SELECT * FROM UserList";
+    $results->{list} = $self->{db}->doSelect($statement);
+    $msg = "$self->{user}->{login} added user $login}";
     return $results;
 } #____________________________________________________________________________
+
+
+###############################################################################
+# buildFields:  Build fields for db insertion, quoting fields where necessary.
+#
+sub buildFields {
+    my( $self, $params ) = @_;
+
+    my @fields = ();
+    push( @fields, 'NULL' );
+    push( @fields, "'$params->{selectedUser}'" );    # login
+    push( @fields,
+        $params->{certificate} ? "'$params->{certificate}'" : 'NULL' ); 
+    push( @fields,
+        $params->{certSubject} ? "'$params->{certSubject}'" : 'NULL' );  
+    push( @fields, "'$params->{lastName}'" );
+    push( @fields, "'$params->{firstName}'" ); 
+    push( @fields, "'$params->{emailPrimary}'" );
+    push( @fields, "'$params->{phonePrimary}'" );
+    my $password = crypt($params->{passwordNewOnce}, 'oscars');
+    push( @fields, "'$password'" );
+    push( @fields,
+        $params->{description} ? "'$params->{description}'" : 'NULL' ); 
+    push( @fields,
+        $params->{emailSecondary} ? "'$params->{emailSecondary}'" : 'NULL' ); 
+    push( @fields,
+        $params->{phoneSecondary} ? "'$params->{phoneSecondary}'" : 'NULL' ); 
+    push( @fields, $params->{status} ? "'$params->{status}'" : 'NULL' ); 
+    push( @fields,
+        $params->{activationKey} ? "'$params->{activationKey}'" : 'NULL' ); 
+    push( @fields,
+        $params->{lastActiveTime} ? $params->{lastActiveTime} : 'NULL' ); 
+    push( @fields,
+        $params->{registerTime} ? $params->{registerTime} : 'NULL' ); 
+    my $statement = 'SELECT id FROM institutions WHERE name = ?';
+    my $row = $self->{db}->getRow($statement, $params->{institutionName});
+    push( @fields, $row->{id} );    # institutionId
+    return \@fields;
+} #____________________________________________________________________________
+
 
 ######
 1;
