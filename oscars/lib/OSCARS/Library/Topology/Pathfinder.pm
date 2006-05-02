@@ -1,4 +1,4 @@
-#==============================================================================
+#e==============================================================================
 package OSCARS::Library::Topology::Pathfinder; 
 
 =head1 NAME
@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-April 23, 2006
+May 1, 2006
 
 =cut
 
@@ -50,6 +50,7 @@ sub initialize {
 
     $self->{traceConfigs} = $self->getTracerouteConfig();
     $self->{snmpConfigs} = $self->getSNMPConfiguration();
+    $self->{pssConfigs} = $self->getPSSConfiguration();
     $self->{jnxSnmp} = OSCARS::Library::Topology::JnxSNMP->new();
 } #____________________________________________________________________________
 
@@ -69,15 +70,15 @@ sub findPath {
 
     my( $unusedPath, $src, $dst, $lastDomain, $nextAsNumber );
 
-    my $results = {};
+    my $pathInfo = {};
     if ($params->{nextDomain}) { $lastDomain = $params->{nextDomain}; }
     # converts source to IP address if it is a host name
-    $results->{srcIP} = $self->nameToIP($params->{srcHost}, 1);
-    if( !$results->{srcIP} ) {
+    $pathInfo->{srcIP} = $self->nameToIP($params->{srcHost}, 1);
+    if( !$pathInfo->{srcIP} ) {
         throw Error::Simple("Unable to look up IP address of source");
     }
-    $results->{destIP} = $self->nameToIP($params->{destHost}, 1);
-    if( !$results->{destIP} ) {
+    $pathInfo->{destIP} = $self->nameToIP($params->{destHost}, 1);
+    if( !$pathInfo->{destIP} ) {
         throw Error::Simple("Unable to look up IP address of destination");
     }
 
@@ -88,9 +89,9 @@ sub findPath {
     #  router chosen will be the router closest to the source that has
     #  a loopback.
     if ( $params->{ingressRouter} ) {
-        $results->{ingressIP} =
+        $pathInfo->{ingressIP} =
             $self->nameToLoopback($params->{ingressRouter});
-        $results->{ingressInterfaceId} = $self->getInterface(
+        $pathInfo->{ingressInterfaceId} = $self->getInterface(
             $self->nameToIP($params->{ingressRouter}, 0));
     }
     else {
@@ -102,18 +103,18 @@ sub findPath {
             $src = $self->nameToIP(
                         $self->{traceConfigs}->{jnxSource}, 0 );
         }
-        $dst = $results->{srcIP};
+        $dst = $pathInfo->{srcIP};
         $logger->info('traceroute.reverse',
-            { 'source' => $src, 'destination' => $results->{srcIP} });
+            { 'source' => $src, 'destination' => $pathInfo->{srcIP} });
         # Run a traceroute and find the loopback IP, the associated interface,
         # and whether the next hop is an OSCARS/BRUW router.
         ( $unusedPath,
-          $results->{ingressIP}, $results->{ingressInterfaceId},
+          $pathInfo->{ingressIP}, $pathInfo->{ingressInterfaceId},
           $nextAsNumber ) = $self->doTraceroute( 'ingress',
-                                       $src, $results->{srcIP}, $logger );
+                                       $src, $pathInfo->{srcIP}, $logger );
     }
 
-    if( !$results->{ingressInterfaceId} ) {
+    if( !$pathInfo->{ingressInterfaceId} ) {
         throw Error::Simple(
             "Ingress router $params->{ingressRouter} has no loopback");
     }
@@ -122,40 +123,40 @@ sub findPath {
     #  Otherwise, run a traceroute from the ingress IP arrived at in the last 
     #  step to the destination given in the reservation.
     if ( $params->{egressRouter} ) {
-        $results->{egressIP} =
+        $pathInfo->{egressIP} =
             $self->nameToLoopback($params->{egressRouter});
-        $results->{egressInterfaceId} = $self->getInterface(
+        $pathInfo->{egressInterfaceId} = $self->getInterface(
             $self->nameToIP($params->{egressRouter}, 0));
         # still have to do traceroute to get next hop and next domain
         my( $unusedIP, $unusedId );
-        if ($results->{egressInterfaceId}) {
+        if ($pathInfo->{egressInterfaceId}) {
             ( $unusedPath, $unusedIP, 
               $unusedId, $nextAsNumber ) = $self->doTraceroute('egress',
-                $results->{egressIP}, $results->{destIP}, $logger );
+                $pathInfo->{egressIP}, $pathInfo->{destIP}, $logger );
         }
     }
     else {
         $logger->info('traceroute.forward',
-            { 'source' => $results->{ingressIP},
-              'destination' => $results->{destIP} });
-        ( $results->{path},
-          $results->{egressIP},
-          $results->{egressInterfaceId},
+            { 'source' => $pathInfo->{ingressIP},
+              'destination' => $pathInfo->{destIP} });
+        ( $pathInfo->{path},
+          $pathInfo->{egressIP},
+          $pathInfo->{egressInterfaceId},
           $nextAsNumber ) = $self->doTraceroute('egress',
-                $results->{ingressIP}, $results->{destIP}, $logger );
-          my $unused = pop(@{$results->{path}});
+                $pathInfo->{ingressIP}, $pathInfo->{destIP}, $logger );
+          my $unused = pop(@{$pathInfo->{path}});
     }
-    if( !$results->{egressInterfaceId} ) {
+    if( !$pathInfo->{egressInterfaceId} ) {
         throw Error::Simple(
             "Egress router $params->{egressRouter} has no loopback");
     }
     if ($nextAsNumber ne 'noSuchInstance') {
         if ($lastDomain != $nextAsNumber) {
-            $results->{nextDomain} = $nextAsNumber;
+            $pathInfo->{nextDomain} = $nextAsNumber;
         }
-        else { $results->{nextDomain} = undef; }
+        else { $pathInfo->{nextDomain} = undef; }
     }
-    return $results;
+    return( $pathInfo, $self->{pssConfigs} );
 } #____________________________________________________________________________
 
 
@@ -268,7 +269,19 @@ sub getSNMPConfiguration {
     my( $self ) = @_;
 
         # use default for now
-    my $statement = "SELECT * FROM configSNMP where id = 1";
+    my $statement = "SELECT * FROM topology.configSNMP where id = 1";
+    my $configs = $self->{db}->getRow($statement);
+    return $configs;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub getPSSConfiguration {
+    my( $self ) = @_;
+
+        # use default for now
+    my $statement = "SELECT * FROM topology.configPSS where id = 1";
     my $configs = $self->{db}->getRow($statement);
     return $configs;
 } #____________________________________________________________________________
@@ -285,7 +298,8 @@ sub getLoopback {
 
     my $statement = 'SELECT loopback FROM topology.routers r ' .
         'INNER JOIN topology.interfaces i ON r.id = i.routerId ' .
-        'INNER JOIN topology.ipaddrs ip ON i.id = ip.interfaceId WHERE ip.IP = ?';
+        'INNER JOIN topology.ipaddrs ip ON i.id = ip.interfaceId ' .
+        'WHERE ip.IP = ?';
     my $row = $self->{db}->getRow($statement, $ipaddr);
     return( $row->{loopback} );
 } #____________________________________________________________________________
