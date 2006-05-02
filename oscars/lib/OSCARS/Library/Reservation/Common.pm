@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 23, 2006
+May 1, 2006
 
 =cut
 
@@ -31,12 +31,21 @@ use Data::Dumper;
 use Error qw(:try);
 use Socket;
 
+use OSCARS::Library::Reservation::TimeConversion;
+
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
   
     bless( $self, $class );
+    $self->initialize();
     return( $self );
+}
+
+sub initialize {
+    my( $self ) = @_;
+
+    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
 } #____________________________________________________________________________
 
 
@@ -52,24 +61,33 @@ sub new {
 sub listDetails {
     my( $self, $params ) = @_;
 
-    my( $statement, $row );
+    my( $statement, $results );
 
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = 'SELECT * FROM reservations WHERE id = ?';
-        $row = $self->{db}->getRow($statement, $params->{id});
-        $self->getEngrFields($row); 
+        $statement = 'SELECT * FROM ReservationAuthDetails WHERE id = ?';
+        $results = $self->{db}->getRow($statement, $params->{id});
+        my $pathArray = $self->getPathRouterInfo($results->{path});
+        $results->{path} = join(' ', @{$pathArray});
     }
     else {
-        $statement = 'SELECT * FROM userReservations ' .
+        $statement = 'SELECT * FROM ReservationUserDetails ' .
                      'WHERE login = ? AND id = ?';
-        $row = $self->{db}->getRow($statement, $self->{user}->{login},
+        $results = $self->{db}->getRow($statement, $self->{user}->{login},
                                       $params->{id});
     }
-    if (!$row) { return $row; }
-    
-    $self->getHostInfo($row);
-    $self->checkNulls($row);
-    return $row;
+    if (!$results) { return undef; }
+    $self->checkNulls($results);
+    ( $results->{ingressRouter}, $results->{ingressIP} ) = $self->getRouterInfo(
+                              $results->{ingressInterfaceId});
+    ( $results->{egressRouter}, $results->{egressIP} ) = $self->getRouterInfo(
+                              $results->{egressInterfaceId});
+    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{startTime}, $results->{origTimeZone});
+    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{endTime}, $results->{origTimeZone});
+    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                              $results->{createdTime}, $results->{origTimeZone});
+    return $results;
 } #____________________________________________________________________________
 
 
@@ -110,76 +128,37 @@ sub updateStatus {
         $status = 'cancelled';
     }
     $statement = qq{ UPDATE reservations SET status = ? WHERE id = ?};
-    my $unused = $self->{db}->doQuery($statement, $status, $id);
+    $self->{db}->execStatement($statement, $status, $id);
     return $status;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub getPssConfigs {
-    my( $self ) = @_;
-
-        # use defaults for now
-    my $statement = 'SELECT * FROM configPSS where id = 1';
-    my $configs = $self->{db}->getRow($statement);
-    return $configs;
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
-sub getHostInfo {
-    my( $self, $resv ) = @_;
- 
-    my $statement = 'SELECT IP FROM hosts WHERE id = ?';
-    my $hrow = $self->{db}->getRow($statement, $resv->{srcHostId});
-    my $ip = $hrow->{IP};
-    my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)+';
-    if ($ip =~ $regexp) { $ip = $1; }
-    my $ipaddr = inet_aton($ip);
-    $resv->{srcHost} = gethostbyaddr($ipaddr, AF_INET);
-    if (!$resv->{srcHost}) {
-        $resv->{srcHost} = $hrow->{IP};
-    }
-    $resv->{srcIP} = $hrow->{IP};
-
-    $hrow = $self->{db}->getRow($statement, $resv->{destHostId});
-    # TODO:  FIX, hrow might be empty
-    $ip = $hrow->{IP};
-    if ($ip =~ $regexp) { $ip = $1; }
-    $ipaddr = inet_aton($ip);
-    $resv->{destHost} = gethostbyaddr($ipaddr, AF_INET);
-    if (!$resv->{destHost}) {
-        $resv->{destHost} = $hrow->{IP};
-    }
-    $resv->{destIP} = $hrow->{IP};
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
-sub getEngrFields {
-    my( $self, $resv ) = @_;
+sub getRouterInfo {
+    my( $self, $interfaceId ) = @_;
  
     my $statement =
         qq{SELECT name, loopback FROM topology.routers WHERE id =
            (SELECT routerId FROM topology.interfaces WHERE topology.interfaces.id = ?)};
-
     # TODO:  FIX row might be empty
-    my $row = $self->{db}->getRow($statement, $resv->{ingressInterfaceId});
-    $resv->{ingressRouter} = $row->{name}; 
-    $resv->{ingressIP} = $row->{loopback}; 
+    my $row = $self->{db}->getRow($statement, $interfaceId);
+    return( $row->{name}, $row->{loopback} );
+} #____________________________________________________________________________
 
-    $row = $self->{db}->getRow($statement, $resv->{egressInterfaceId});
-    $resv->{egressRouter} = $row->{name}; 
-    $resv->{egressIP} = $row->{loopback}; 
-    my @pathRouters = split(' ', $resv->{path});
-    $resv->{path} = ();
-    for $_ (@pathRouters) {
-        $row = $self->{db}->getRow($statement, $_);
-        push(@{$resv->{path}}, $row->{name}); 
+
+###############################################################################
+#
+sub getPathRouterInfo {
+    my( $self, $path ) = @_;
+ 
+    my @pathRouters = split(' ', $path);
+    my $results = ();
+    for my $interfaceId (@pathRouters) {
+        my( $name, $loopback ) = $self->getRouterInfo($interfaceId);
+        push(@$results, $name); 
     }
+    return $results;
 } #____________________________________________________________________________
 
 
@@ -192,13 +171,23 @@ sub getEngrFields {
 sub hostIPToId {
     my( $self, $ipaddr ) = @_;
 
+    my $hostname;
+
     # TODO:  fix schema, possible hostIP would not be unique
     my $statement = 'SELECT id FROM hosts WHERE IP = ?';
     my $row = $self->{db}->getRow($statement, $ipaddr);
     # if no matches, insert a row in hosts
     if ( !$row ) {
-        $statement = "INSERT INTO hosts VALUES ( NULL, '$ipaddr'  )";
-        my $unused = $self->{db}->doQuery($statement);
+        # first group tests for IP address, second handles CIDR blocks
+        my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)';
+        # if doesn't match (not CIDR), attempt to get hostname
+        if ($ipaddr !~ $regexp) {
+            my $ip = inet_aton($ipaddr);
+            $hostname = gethostbyaddr($ip, AF_INET);
+        }
+        if (!$hostname) { $hostname = $ipaddr; }
+        $statement = "INSERT INTO hosts VALUES (NULL, '$ipaddr', '$hostname')";
+        $self->{db}->execStatement($statement);
         return $self->{db}->{dbh}->{mysql_insertid};
     }
     else { return $row->{id}; }
