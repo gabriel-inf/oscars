@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 1, 2006
 
 =cut
 
@@ -45,17 +45,18 @@ sub new {
 sub output {
     my( $self, $results, $authorizations ) = @_;
 
-    my $endTime;
-
-    if ($results->{endTime} ne '2039-01-01 00:00:00') {
-        $endTime = $results->{endTime};
-    }
-    else { $endTime = 'PERSISTENT'; }
     my $srcPort = $results->{srcPort} || 'DEFAULT';
     my $destPort = $results->{destPort} || 'DEFAULT';
     my $protocol = $results->{protocol} || 'DEFAULT';
     my $dscp = $results->{dscp} || 'DEFAULT';
-
+    my @strArray = split('-', $results->{tag});
+    my $id = $strArray[-1];
+    my $startTime = $self->formatTime($results->{startTime});
+    my $endTime = $self->formatTime($results->{endTime});
+    my $createdTime = $self->formatTime($results->{createdTime});
+    my $origTimeZone = $self->getTimeZone($results->{createdTime});
+    my $path = $results->{path};
+    $path =~ s/ /, /g;
     my $msg = "Successfully got reservation details.";
     print( qq{
     <div>
@@ -70,7 +71,7 @@ sub output {
              'method=CancelReservation;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancelSubmitStr">
-        <input type='hidden' class='SOAP' name='id' value="$results->{id}"></input>
+        <input type='hidden' class='SOAP' name='id' value="$id"></input>
         <input type='submit' value='CANCEL'></input>
         </form>
         } );
@@ -80,7 +81,7 @@ sub output {
              'method=QueryReservation;');";
     print( qq{
     <form method="post" action="" onsubmit="$refreshSubmitStr">
-    <input type='hidden' class='SOAP' name='id' value="$results->{id}"></input>
+    <input type='hidden' class='SOAP' name='id' value="$id"></input>
     <input type='submit' value='Refresh'>
     </input>
     </form>
@@ -91,9 +92,10 @@ sub output {
       <tr><td>Tag</td><td>$results->{tag}</td></tr>
       <tr><td>User</td><td>$results->{login}</td></tr> 
       <tr><td>Description</td><td>$results->{description}</td></tr>
-      <tr><td>Start time</td><td>$results->{startTime}</td></tr>
+      <tr><td>Start time</td><td>$startTime</td></tr>
       <tr><td>End time</td><td>$endTime</td></tr>
-      <tr><td>Created time</td><td>$results->{createdTime}</td></tr>
+      <tr><td>Created time</td><td>$createdTime</td></tr>
+      <tr><td>Original time zone</td><td>$origTimeZone</td></tr>
       <tr><td>Bandwidth</td><td>$results->{bandwidth}</td></tr>
       <tr><td>Burst limit</td><td>$results->{burstLimit}</td></tr>
       <tr><td>Status</td><td>$results->{status}</td></tr>
@@ -111,16 +113,8 @@ sub output {
         <tr><td>Ingress loopback</td><td>$results->{ingressIP}</td></tr>
         <tr><td>Egress router</td><td>$results->{egressRouter}</td></tr>
         <tr><td>Egress loopback</td><td>$results->{egressIP}</td></tr>
-        <tr><td>Routers in path</td>
-        <td>
+        <tr><td>Routers in path</td><td>$path</td></tr>
         } );
-        my $pathStr = '';
-        for $_ (@{$results->{path}}) {
-            $pathStr .= $_ . ' - ';
-        }
-        # remove last '-'
-        substr($pathStr, -3, 3) = '';
-        print("$pathStr </td> </tr>");
     }
     print( qq{
       </tbody>
@@ -128,6 +122,30 @@ sub output {
     } );
     return $msg;
 } #____________________________________________________________________________
+
+
+###############################################################################
+# formatTime:  formats xsd:datetime for output
+#
+sub formatTime {
+    my( $self, $datetime ) = @_;
+
+    my @datetimeSegments = split('T', $datetime);
+    my @timeSegment = split(':', $datetimeSegments[1]);
+    my $formattedTime =
+        $datetimeSegments[0] . ' ' . $timeSegment[0] . ':' . $timeSegment[1];
+    return $formattedTime;
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# getTimeZone:  gets time zone from xsd:datetime string
+#
+sub getTimeZone {
+    my( $self, $datetime ) = @_;
+
+    return substr($datetime, -6, 6);
+} #___________________________________________________________________________ 
 
 
 ######

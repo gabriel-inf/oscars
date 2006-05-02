@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 1, 2006
 
 =cut
 
@@ -27,6 +27,8 @@ April 22, 2006
 use strict;
 
 use Data::Dumper;
+
+use OSCARS::WBUI::Method::ReservationDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
@@ -41,6 +43,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub outputDiv {
     my ( $self, $results, $authorizations ) = @_;
 
+    my $timeHandler = OSCARS::WBUI::Method::ReservationDetails->new();
     my $msg = "Successfully retrieved reservations.";
     print( qq{
     <div>
@@ -62,7 +65,7 @@ sub outputDiv {
     <tbody>
     } );
     my $reservations = $results->{list};
-    for my $row (@$reservations) { $self->printRow( $row ); }
+    for my $row (@$reservations) { $self->printRow( $row, $timeHandler ); }
     print("</tbody></table></div>\n");
     return $msg;
 } #____________________________________________________________________________
@@ -75,22 +78,20 @@ sub outputDiv {
 # Out:  None
 #
 sub printRow {
-    my( $self, $row ) = @_;
+    my( $self, $row, $timeHandler ) = @_;
 
-    my( $endTime );
-
-    if ($row->{endTime} ne '2039-01-01 00:00:00') {
-        $endTime = $row->{endTime};
-    }
-    else { $endTime = 'PERSISTENT'; }
+    my @strArray = split('-', $row->{tag});
+    my $id = $strArray[-1];
+    my $startTime = $timeHandler->formatTime($row->{startTime});
+    my $endTime = $timeHandler->formatTime($row->{endTime});
     print( qq{
     <tr>
       <td>
       <a href='#' style='/styleSheets/layout.css'
        onclick="return new_section(
-       'method=QueryReservation;id=$row->{id};');" >$row->{tag}</a>
+       'method=QueryReservation;id=$id;');" >$row->{tag}</a>
       </td>
-      <td>$row->{startTime}</td>
+      <td>$startTime</td>
       <td>$endTime</td>
       <td>$row->{status}</td>
       <td>$row->{srcHost}</td>
