@@ -13,22 +13,22 @@ use TestManager;
 
 my $testMgr = TestManager->new();
 my $params = $testMgr->getParams('oscars/params.xml');
-my( $status, $msg, $reservationId );
+my( $status, $msg, $reservationTag );
 
 ($status, $msg) = listReservations($testMgr, $params->{listReservations});
 ok($status, $msg);
 print STDERR $msg;
 
-( $status, $msg, $reservationId ) = createReservation( $testMgr, $params->{createReservation} );
+( $status, $msg, $reservationTag ) = createReservation( $testMgr, $params->{createReservation} );
 ok( $status, $msg );
 print STDERR $msg;
 
-( $status, $msg ) = queryReservation( $testMgr, $params->{queryReservation}, $reservationId );
+( $status, $msg ) = queryReservation( $testMgr, $params->{queryReservation}, $reservationTag );
 ok( $status, $msg );
 print STDERR $msg;
 
 ( $status, $msg ) =
-    cancelReservation( $testMgr, $params->{cancelReservation}, $reservationId );
+    cancelReservation( $testMgr, $params->{cancelReservation}, $reservationTag );
 ok( $status, $msg );
 print STDERR $msg;
 
@@ -86,18 +86,16 @@ sub createReservation {
 
     my $msg = "\nStatus: Your reservation has been processed successfully.\n";
     $msg .= "Details:\n" . Dumper($results);
-    my @strArray = split('-', $results->{tag});
-    my $id = $strArray[-1];
-    return( 1, $msg, $id );
+    return( 1, $msg, $results->{tag} );
 } #___________________________________________________________________________
 
 
 #############################################################################
 #
 sub queryReservation {
-    my ( $testMgr, $params, $reservationId ) = @_;
+    my ( $testMgr, $params, $reservationTag ) = @_;
 
-    $params->{id} = $reservationId;
+    $params->{tag} = $reservationTag;
     my( $errorMsg, $results ) = $testMgr->dispatch($params, 'queryReservation');
     if ( $errorMsg ) { return( 0, $errorMsg ); }
 
@@ -107,16 +105,17 @@ sub queryReservation {
 
 
 #############################################################################
-# Delete the reservation with the given id (set its status
+# Delete the reservation with the given tag (set its status
 # to cancelled).
 sub cancelReservation {
-    my( $testMgr, $params, $reservationId ) = @_;
+    my( $testMgr, $params, $reservationTag ) = @_;
 
-    $params->{id} = $reservationId;
+    $params->{tag} = $reservationTag;
     my( $errorMsg, $results ) = $testMgr->dispatch($params, 'cancelReservation');
     if ( $errorMsg ) { return( 0, $errorMsg ); }
 
-    my $msg = "\nSuccessfully cancelled reservation $results->{id}\n";
+    my $msg = "\nSuccessfully cancelled reservation $params->{tag}\n";
+    $msg .= "\nDetails:\n" . Dumper($results) . "\n";
     return( 1, $msg );
 } #___________________________________________________________________________
 
