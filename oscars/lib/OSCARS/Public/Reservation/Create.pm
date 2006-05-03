@@ -275,9 +275,9 @@ sub buildResults {
     # Get loopback fields and path if authorized.
     if ( $self->{user}->authorized('Reservations', 'manage') ||
          $self->{user}->authorized('Domains', 'set' ) ) {
-        ( $results->{ingressRouter}, $results->{ingressIP} ) =
+        ( $results->{ingressRouterIP}, $results->{ingressLoopbackIP} ) =
                $self->{resvLib}->getRouterInfo($pathInfo->{ingressInterfaceId}); 
-        ( $results->{egressRouter}, $results->{egressIP} ) =
+        ( $results->{egressRouterIP}, $results->{egressLoopbackIP} ) =
                $self->{resvLib}->getRouterInfo($pathInfo->{egressInterfaceId}); 
         my $p = join(' ', @{$pathInfo->{path}});
         my $pathArray = $self->{resvLib}->getPathRouterInfo($p);

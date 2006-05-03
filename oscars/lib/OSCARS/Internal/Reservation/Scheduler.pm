@@ -158,10 +158,10 @@ sub mapToIPs {
 
     # TODO:  FIX row might be empty
     $row = $self->{db}->getRow($statement, $resv->{ingressInterfaceId});
-    $resv->{ingressIP} = $row->{loopback}; 
+    $resv->{ingressLoopbackIP} = $row->{loopback}; 
 
     $row = $self->{db}->getRow($statement, $resv->{egressInterfaceId});
-    $resv->{egressIP} = $row->{loopback}; 
+    $resv->{egressLoopbackIP} = $row->{loopback}; 
 } #____________________________________________________________________________
 
 
@@ -174,8 +174,8 @@ sub mapFields {
 
     %lsp_info = (
       'name' => "oscars_$resv->{id}",
-      'lsp_from' => $resv->{ingressIP},
-      'lsp_to' => $resv->{egressIP},
+      'lsp_from' => $resv->{ingressLoopbackIP},
+      'lsp_to' => $resv->{egressLoopbackIP},
       'bandwidth' => $resv->{bandwidth},
       'lsp_class-of-service' => $resv->{class},
       'policer_burst-size-limit' =>  $resv->{burstLimit},
@@ -241,15 +241,15 @@ sub reservationLspStats {
     }
     else { $msg .= "Class:   DEFAULT\n"; }
 
-    if ($resv->{ingressRouter}) {
-        $msg .= "Ingress loopback:   $resv->{ingressRouter}\n";
+    if ($resv->{ingressRouterIP}) {
+        $msg .= "Ingress loopback:   $resv->{ingressRouterIP}\n";
     }
-    else { $msg .= "Ingress loopback:   $resv->{ingressIP}\n"; }
+    else { $msg .= "Ingress loopback:   $resv->{ingressLoopbackIP}\n"; }
 
-    if ($resv->{egressRouter}) {
-        $msg .= "Egress loopback:    $resv->{egressRouter}\n";
+    if ($resv->{egressRouterIP}) {
+        $msg .= "Egress loopback:    $resv->{egressRouterIP}\n";
     }
-    else { $msg .= "Egress loopback:    $resv->{egressIP}\n"; }
+    else { $msg .= "Egress loopback:    $resv->{egressLoopbackIP}\n"; }
     
     $msg .= "$resv->{lspStatus}\n";
     return $msg;

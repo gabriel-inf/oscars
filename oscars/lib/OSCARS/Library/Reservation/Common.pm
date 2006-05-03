@@ -78,9 +78,9 @@ sub listDetails {
     }
     if (!$results) { return undef; }
     $self->checkNulls($results);
-    ( $results->{ingressRouter}, $results->{ingressIP} ) = $self->getRouterInfo(
+    ( $results->{ingressRouterIP}, $results->{ingressLoopbackIP} ) = $self->getRouterInfo(
                               $results->{ingressInterfaceId});
-    ( $results->{egressRouter}, $results->{egressIP} ) = $self->getRouterInfo(
+    ( $results->{egressRouterIP}, $results->{egressLoopbackIP} ) = $self->getRouterInfo(
                               $results->{egressInterfaceId});
     $results->{startTime} = $self->{timeLib}->secondsToDatetime(
                               $results->{startTime}, $results->{origTimeZone});
