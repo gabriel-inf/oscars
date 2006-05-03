@@ -56,7 +56,6 @@ sub initialize {
 
     $self->{firewall_filter_marker} =
                                  $self->{configs}->{firewallMarker};
-    print STDERR Dumper($self);
     return();
 } #____________________________________________________________________________
 
