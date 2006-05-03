@@ -116,6 +116,13 @@
 
 			<!--  Types  -->
 
+              <xs:simpleType name="createRouteDirectionType">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="forward"/>
+                    <xs:enumeration value="reverse"/>
+                </xs:restriction>
+            </xs:simpleType>
+
 			<xsd:complexType name="resReqType">
 				<xsd:sequence>
 					<xsd:element name="srcHost" type="xsd:string" />
@@ -124,8 +131,13 @@
 					<xsd:element name="endTime" type="xsd:dateTime" />
 					<xsd:element name="origTimeZone" type="xsd:string" />
 					<xsd:element name="bandwidth" type="xsd:int" />
-					<xsd:element name="description" type="xsd:string"
-						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="description" type="xsd:string" maxOccurs="1" minOccurs="0" />
+                    <xsd:element name="ingressRouterIP" type="xsd:string" maxOccurs="1" minOccurs="0" />
+                    <xsd:element name="egressRouterIP" type="xsd:string" maxOccurs="1" minOccurs="0" />
+                    <!-- forward means create path from src to dst, reverse
+                    means create path from dst to src (done by switching src &
+                    dst when you reach dst and setting this to forward-->
+                    <xsd:element name="createRouteDirection" type="createRouteDirectionType" />
 					<xsd:element name="protocol"
 						type="tns:resProtocolType" maxOccurs="1" minOccurs="0" />
 					<xsd:element name="srcPort" type="xsd:int"
@@ -159,6 +171,7 @@
 					<xsd:element name="bandwidth" type="xsd:int" />
 					<xsd:element name="burstLimit" type="xsd:string" />
 					<xsd:element name="resClass" type="xsd:string" />
+                    <!-- list of routers (hops) -->
 					<xsd:element name="path" type="xsd:string" />
 					<xsd:element name="description" type="xsd:string"
 						maxOccurs="1" minOccurs="0" />
@@ -172,9 +185,10 @@
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="egrressRouter" type="xsd:string"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="ingressIP" type="xsd:string"
+                    <!-- control inteterfaces on routers -->
+					<xsd:element name="ingressLoopbackIP" type="xsd:string"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="egressIP" type="xsd:string"
+					<xsd:element name="egressLoopbackIP" type="xsd:string"
 						maxOccurs="1" minOccurs="0" />
 				</xsd:sequence>
 			</xsd:complexType>
