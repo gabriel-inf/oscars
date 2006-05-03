@@ -6,5 +6,20 @@ WriteMakefile(
     NAME              => 'OSCARS',
     VERSION           => '0.2',
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
-    test              => {TESTS => 't/TEST'}
 );
+
+package MY;
+
+# What happens when we say 'make test' (from libwww)
+sub test
+{
+    q(
+TEST_VERBOSE=0
+
+test: all
+	$(FULLPERL) t/TEST $(TEST_VERBOSE)
+
+);
+}
+
+
