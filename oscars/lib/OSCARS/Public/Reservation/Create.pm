@@ -84,7 +84,6 @@ sub soapMethod {
     }
     # having found path, attempt to enter reservation in db
     my $results = $self->createReservation( $self->{params}, $pathInfo);
-    $results->{login} = $self->{user}->{login};
     $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________

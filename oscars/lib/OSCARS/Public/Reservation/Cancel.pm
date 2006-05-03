@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 2, 2006
 
 =cut
 
@@ -56,8 +56,9 @@ sub soapMethod {
     $self->{logger}->info("start", $self->{params});
     # TODO:  ensure unprivileged user can't cancel another's reservation
     my $status =  $self->{resvLib}->updateStatus(
-                          $self->{params}->{id}, 'precancel' );
-    my $results = $self->{resvLib}->listDetails($self->{params});
+                          $self->{params}->{tag}, 'precancel' );
+    my $results = {};
+    $results->{status} = 'precancel';
     $self->{logger}->info("finish", $results);
     return $results;
 } #____________________________________________________________________________
