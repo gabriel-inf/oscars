@@ -48,7 +48,7 @@ sub initialize {
 
 ###############################################################################
 # soapMethod:  get reservation details from the database, given its
-#     reservation id.  If a user has the 'manage' permission on the
+#     reservation tag.  If a user has the 'manage' permission on the
 #     'Reservations' resource, they can list any reservation's details.
 #     Otherwise they can only list reservations that they have made, with less
 #     of the details.

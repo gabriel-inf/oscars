@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 2, 2006
 
 =cut
 
@@ -80,8 +80,6 @@ sub outputDiv {
 sub printRow {
     my( $self, $row, $timeHandler ) = @_;
 
-    my @strArray = split('-', $row->{tag});
-    my $id = $strArray[-1];
     my $startTime = $timeHandler->formatTime($row->{startTime});
     my $endTime = $timeHandler->formatTime($row->{endTime});
     print( qq{
@@ -89,7 +87,7 @@ sub printRow {
       <td>
       <a href='#' style='/styleSheets/layout.css'
        onclick="return new_section(
-       'method=QueryReservation;id=$id;');" >$row->{tag}</a>
+       'method=QueryReservation;tag=$row->{tag};');" >$row->{tag}</a>
       </td>
       <td>$startTime</td>
       <td>$endTime</td>

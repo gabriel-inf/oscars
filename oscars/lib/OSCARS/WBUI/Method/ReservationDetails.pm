@@ -49,8 +49,6 @@ sub output {
     my $destPort = $results->{destPort} || 'DEFAULT';
     my $protocol = $results->{protocol} || 'DEFAULT';
     my $dscp = $results->{dscp} || 'DEFAULT';
-    my @strArray = split('-', $results->{tag});
-    my $id = $strArray[-1];
     my $startTime = $self->formatTime($results->{startTime});
     my $endTime = $self->formatTime($results->{endTime});
     my $createdTime = $self->formatTime($results->{createdTime});
@@ -71,7 +69,7 @@ sub output {
              'method=CancelReservation;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancelSubmitStr">
-        <input type='hidden' class='SOAP' name='id' value="$id"></input>
+        <input type='hidden' class='SOAP' name='tag' value="$results->{tag}"></input>
         <input type='submit' value='CANCEL'></input>
         </form>
         } );
@@ -81,7 +79,7 @@ sub output {
              'method=QueryReservation;');";
     print( qq{
     <form method="post" action="" onsubmit="$refreshSubmitStr">
-    <input type='hidden' class='SOAP' name='id' value="$id"></input>
+    <input type='hidden' class='SOAP' name='tag' value="$results->{tag}"></input>
     <input type='submit' value='Refresh'>
     </input>
     </form>

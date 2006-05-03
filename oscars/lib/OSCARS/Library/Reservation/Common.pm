@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 2, 2006
 
 =cut
 
@@ -63,17 +63,18 @@ sub listDetails {
 
     my( $statement, $results );
 
+    my @strArray = split('-', $params->{tag});
+    my $id = $strArray[-1];
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
         $statement = 'SELECT * FROM ReservationAuthDetails WHERE id = ?';
-        $results = $self->{db}->getRow($statement, $params->{id});
+        $results = $self->{db}->getRow($statement, $id);
         my $pathArray = $self->getPathRouterInfo($results->{path});
         $results->{path} = join(' ', @{$pathArray});
     }
     else {
         $statement = 'SELECT * FROM ReservationUserDetails ' .
                      'WHERE login = ? AND id = ?';
-        $results = $self->{db}->getRow($statement, $self->{user}->{login},
-                                      $params->{id});
+        $results = $self->{db}->getRow($statement, $self->{user}->{login}, $id);
     }
     if (!$results) { return undef; }
     $self->checkNulls($results);
@@ -100,10 +101,10 @@ sub updateReservation {
 
     if ( !$resv->{lspStatus} ) {
         $resv->{lspStatus} = "Successful configuration";
-        $status = $self->updateStatus($resv->{id}, $status);
-    } else { $status = $self->updateStatus($resv->{id}, 'failed'); }
+        $status = $self->updateStatus($resv->{tag}, $status);
+    } else { $status = $self->updateStatus($resv->{tag}, 'failed'); }
     $logger->info('updateReservation',
-        { 'status' => $status, 'id' => $resv->{id} });
+        { 'status' => $status, 'tag' => $resv->{tag} });
 } #____________________________________________________________________________
 
 
@@ -112,8 +113,10 @@ sub updateReservation {
 # finished, or cancelled.
 #
 sub updateStatus {
-    my ( $self, $id, $status ) = @_;
+    my ( $self, $tag, $status ) = @_;
 
+    my @strArray = split('-', $tag);
+    my $id = $strArray[-1];
     my $statement = qq{ SELECT status from reservations WHERE id = ?};
     my $row = $self->{db}->getRow($statement, $id);
 
@@ -220,7 +223,7 @@ sub reservationStats {
     my $infiniteTime = 'foo';
     # only optional fields need to be checked for existence
     my $msg = "Description:        $resv->{description}\n";
-    if ($resv->{id}) { $msg .= "Reservation id:     $resv->{id}\n"; }
+    if ($resv->{tag}) { $msg .= "Reservation tag:     $resv->{tag}\n"; }
 
     $msg .= "Start time:         $resv->{startTime}\n";
     if ($resv->{endTime} ne $infiniteTime) {
