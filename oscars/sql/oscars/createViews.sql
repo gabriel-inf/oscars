@@ -10,6 +10,7 @@ CREATE OR REPLACE VIEW ReservationList AS
     SELECT 
         makeTag(r.startTime, r.login, r.id) AS tag,
         r.startTime, r.endTime, r.createdTime, r.status, r.origTimeZone,
+        r.login,
         sh.name AS srcHost,
         dh.name AS destHost
     FROM reservations r
