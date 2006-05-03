@@ -18,7 +18,7 @@ ok($factory);
 my $params = {};
 $params->{method} = 'userLogin';
 $params->{login} = $login;
-$params->{user_password} = $credentials;
+$params->{password} = $credentials;
 
 my $handler = $factory->instantiate( $user, $params );
 ok($handler);
