@@ -24,7 +24,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 2, 2006
 
 =cut
 
@@ -55,7 +55,7 @@ sub getReservations {
     my $statement = "SELECT unix_timestamp() AS nowTime";
     my $row = $self->{db}->getRow( $statement );
     my $timeslot = $row->{nowTime} + $timeInterval;
-    $statement = qq{ SELECT * FROM reservations WHERE (status = ? and
+    $statement = qq{ SELECT * FROM ReservationAuthDetails WHERE (status = ? and
                  endTime < ?) or (status = ?)};
     return $self->{db}->doSelect($statement, $status, $timeslot, 'precancel' );
 } #____________________________________________________________________________
