@@ -18,7 +18,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 3, 2006
 
 =cut
 
@@ -26,11 +26,33 @@ April 22, 2006
 use strict;
 
 use Data::Dumper;
+use SOAP::Lite;
 
 use OSCARS::WBUI::Method::ReservationDetails;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
+
+
+###############################################################################
+# makeCall:  Make call to cancel reservation, and then make another call to
+#            get the reservation details (updates at less than main div level 
+#            not implemented yet).
+#
+sub makeCall {
+    my( $self, $soapServer, $soapParams ) = @_;
+
+    $soapParams->{method} =~ s/(\w)/\l$1/;
+    my $method = $soapParams->{method};
+    my $som = $soapServer->$method($soapParams);
+    $soapParams->{method} =~ s/(\w)/\U$1/;
+    my $secondParams = {};
+    $secondParams->{method} = 'queryReservation';
+    $secondParams->{tag} = $soapParams->{tag};
+    $secondParams->{login} = $soapParams->{login};
+    my $secondSom = $soapServer->queryReservation($secondParams);
+    return $secondSom;
+} #___________________________________________________________________________ 
 
 
 ###############################################################################
