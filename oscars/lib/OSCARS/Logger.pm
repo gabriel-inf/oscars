@@ -59,21 +59,10 @@ sub setUserLogin {
 
 ###############################################################################
 #
-sub setOp {
-    my( $self, $op ) = @_;
-
-    $self->{op} = $op;
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
 sub debug {
     my( $self, $evtName, $hash ) = @_;
 
-    my $newEvtName = $self->{method} . '.';
-    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
-    $newEvtName .= $evtName;
+    my $newEvtName = $self->{method} . '.' . $evtName;
     if (!$hash->{login}) {
 	$hash->{login} = $self->{login};
     }
@@ -89,9 +78,7 @@ sub debug {
 sub info {
     my( $self, $evtName, $hash ) = @_;
 
-    my $newEvtName = $self->{method} . '.';
-    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
-    $newEvtName .= $evtName;
+    my $newEvtName = $self->{method} . '.' . $evtName;
     if (!$hash->{login}) {
 	$hash->{login} = $self->{login};
     }
@@ -107,10 +94,7 @@ sub info {
 sub warning {
     my( $self, $evtName, $hash ) = @_;
 
-    if (!$hash) { return; }
-    my $newEvtName = $self->{method} . '.';
-    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
-    $newEvtName .= $evtName;
+    my $newEvtName = $self->{method} . '.' . $evtName;
     if (!$hash->{login}) {
 	$hash->{login} = $self->{login};
     }
@@ -126,9 +110,7 @@ sub warning {
 sub fatal {
     my( $self, $evtName, $hash ) = @_;
 
-    my $newEvtName = $self->{method} . '.';
-    if ($self->{op}) { $newEvtName .= $self->{op} . '.'; }
-    $newEvtName .= $evtName;
+    my $newEvtName = $self->{method} . '.' . $evtName;
     if (!$hash->{login}) {
 	$hash->{login} = $self->{login};
     }
