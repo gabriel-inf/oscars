@@ -4,9 +4,13 @@ use strict;
 use Test::Simple tests => 3;
 use Data::Dumper;
 
+use NetLogger;
+
 use TestManager;
 use OSCARS::PluginManager;
 use OSCARS::Database;
+use OSCARS::Logger;
+
 use OSCARS::Library::Topology::JnxSNMP;
 use OSCARS::Library::Topology::Pathfinder;
 
@@ -14,6 +18,10 @@ my $pluginMgr = OSCARS::PluginManager->new();
 my $database = $pluginMgr->getLocation('system');
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
+my $logger = OSCARS::Logger->new('method' => '10_jnxSNMP');
+$logger->set_level($NetLogger::INFO);
+$logger->setUserLogin('nologin');
+$logger->open('test.log');
 
 my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
 my $configs = $pf->getSNMPConfiguration();
@@ -30,42 +38,44 @@ my $routerName = $testConfigs->{router_name};
 my $jnxSnmp = OSCARS::Library::Topology::JnxSNMP->new();
 ok($jnxSnmp);
 
-print STDERR "routerName: $routerName\n";
+$logger->info("Router", { 'name' => $routerName });
 $jnxSnmp->initializeSession($configs, $routerName);
 
 my $ipaddr = $testConfigs->{next_hop};
-print STDERR "next hop: $ipaddr\n";
+$logger->info( "Next", { 'hop' => $ipaddr } );
 # Get AS number from IP address.
 my $asNumber = $jnxSnmp->queryAsNumber($ipaddr);
 my $error = $jnxSnmp->getError();
-if ($error) { print STDERR $error; }
-else { print STDERR "\nAS number: $asNumber\n"; }
+if ($error) { $logger->warn( "Error", { '' => $error } ); }
+else { $logger->info( "AS", { 'number' => $asNumber } ); }
 ok(!$error);
 
 $jnxSnmp->closeSession();
+$logger->close();
 exit;
 
 
 # TODO:  tests to be added later
 
 my( $val, $lspName, $lspVar );
-print STDERR "Device: $routerName  LSPName: $lspName  LSPVar: $lspVar\n";
+$logger->info( "Device", { 'name' => $routerName } );
+$logger->info( "LSP", { 'name' => $lspName } );
+$logger->info( "LSP", { 'var' => $lspVar } );
 
 # Get LSP SNMP data.
 $jnxSnmp->queryLspSnmp($configs, $routerName);
 $error = $jnxSnmp->getError();
-if ($error) { print STDERR $error; }
+if ($error) { $logger->warn( "Error", { '' => $error } ); }
 ok(!$error);
 
 # Print LSP SNMP data.
 my @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
 $error = $jnxSnmp->getError();
-if ($error) { print STDERR $error; }
+if ($error) { $logger->warn( "Error", { '' => $error } ); }
 ok(!$error);
 
-print STDERR "\n";
-print STDERR "Exe: queryLspInfo(undef, undef)\n";
-printVars();
+$logger->info( "Exe", { 'method' => "queryLspInfo(undef, undef)" } );
+logVars();
 
 
 # Get all oscars_ga-nersc_test-be-lsp info.
@@ -75,11 +85,11 @@ undef($lspVar);
 # Print LSP SNMP data.
 @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
 $error = $jnxSnmp->getError();
-if ($error) { print STDERR $error; }
+if ($error) { $logger->warn( "Error", { '' => $error } ); }
 ok(!$error);
 
-print STDERR "\nExe: queryLspInfo(oscars_ga-nersc_test-be-lsp, undef)\n";
-printVars();
+$logger->info( "Exe", { 'method' => "queryLspInfo($lspName, undef)" } );
+logVars();
 
 
 # Get all mplsLspStatesinfo.
@@ -89,11 +99,11 @@ $lspVar = 'mplsLspState';
 # Print LSP SNMP data.
 @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
 $error = $jnxSnmp->getError();
-if ($error) { print STDERR $error; }
+if ($error) { $logger->warn( "Error", { '' => $error } ); }
 ok(!$error);
 
-print STDERR "\nExe: queryLspInfo(undef, mplsLspState)\n";
-printVars();
+$logger->info( "Exe", { 'method' => "queryLspInfo(undef, mplsLspState)" } );
+logVars();
 
 # Get all mplsPathRecordRoute for oscars_ga-nersc_test-be-lsp.
 $lspName = 'oscars_ga-nersc_test-be-lsp';
@@ -102,22 +112,23 @@ $lspVar = 'mplsPathRecordRoute';
 # Print LSP SNMP data.
 @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
 $error = $jnxSnmp->getError();
-if ($error) { print STDERR $error; }
+if ($error) { $logger->warn( "Error", { '' => $error } ); }
 ok(!$error);
 
-print STDERR "\nExe: queryLspInfo(oscars_ga-nersc_test-be-lsp, mplsLspState)\n";
-printVars();
+$logger->info( "Exe", { 'method' => "queryLspInfo($lspName, mplsLspState)" } );
+logVars();
 
 
 ###############################################################################
 #
-sub printVars  {
+sub logVars  {
 
-  print STDERR "Results:\n";
+  my $vars = {};
   while (scalar(@lspInfo))  {
     $lspVar = shift(@lspInfo);
     $val = shift(@lspInfo);
-    print STDERR "$lspVar = $val\n";
+    $vars->{$lspVar} = $val;
   }
+  $logger->info( "Vars", { '' => $vars } );
 } #___________________________________________________________________________
 

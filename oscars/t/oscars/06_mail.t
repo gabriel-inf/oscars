@@ -16,4 +16,4 @@ my $msg = "This is a test on oscars-dev.\n";
 my $errMsg =
        $mailer->sendMail($sender, $recipient, $subject, $msg); 
 if ($errMsg) { ok(0, $errMsg); }
-else { ok(1, "Successfully sent mail"); }
+ok(1);

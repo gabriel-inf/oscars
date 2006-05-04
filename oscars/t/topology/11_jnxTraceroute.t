@@ -13,8 +13,8 @@ use OSCARS::Logger;
 
 my $logger = OSCARS::Logger->new('method' => '11_jnxTraceroute.t');
 $logger->set_level($NetLogger::INFO);
-$logger->setUserLogin('testaccount');
-$logger->open('/home/oscars/logs/test.log');
+$logger->setUserLogin('nologin');
+$logger->open('test.log');
 
 my $pluginMgr = OSCARS::PluginManager->new();
 my $database = $pluginMgr->getLocation('system');
@@ -24,8 +24,8 @@ $dbconn->connect($database);
 my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
 my $configs = $pf->getTracerouteConfig();
 ok( $configs );
-print STDERR "\n";
-print STDERR Dumper($configs);
+my $info = substr(Dumper($configs), 0, -1);
+$logger->info('Configs', { 'fields' => $info });
 
 my $testMgr = TestManager->new('db' => $dbconn,
                                         'database' => $database);
@@ -37,25 +37,9 @@ ok( $jnxTraceroute );
 
 my $src = $testConfigs->{ingress_loopback};
 my $dst = $testConfigs->{egress_loopback};
-print STDERR "\nTraceroute: $src to $dst\n";
 $jnxTraceroute->traceroute( $configs, $src, $dst, $logger );
-print STDERR "Raw results:\n";
 my @rawTracerouteData = $jnxTraceroute->getRawHopData();
 ok( @rawTracerouteData );
-
-while(defined($rawTracerouteData[0]))  {
-    print STDERR '  ' . $rawTracerouteData[0];
-    shift(@rawTracerouteData);
-}
-
-print STDERR "Hops:\n";
 my @hops = $jnxTraceroute->getHops();
 ok( @hops );
-
-while(defined($hops[0]))  {
-    print STDERR "  $hops[0]\n";
-    shift(@hops);
-}
-
-print STDERR "\n";
 $logger->close();

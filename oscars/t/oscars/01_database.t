@@ -2,13 +2,12 @@
 
 use strict;
 use Test::Simple tests => 2;
+use Error qw{:try};
 
 use OSCARS::PluginManager;
 use OSCARS::Database;
-use Error qw{:try};
 
-my $msg = "\n";
-my $ex;
+my( $ex, $msg );
  
 my $pluginMgr = OSCARS::PluginManager->new();
 my $dbconn = OSCARS::Database->new();
@@ -21,13 +20,6 @@ try {
 catch Error::Simple with { $ex = shift; }
 otherwise { $ex = shift; }
 finally {
-    if ($ex) {
-        $msg .= $ex->{-text};
-    }
-    else { 
-        $msg .= "Successful database connection";
-    }
-    $msg .= "\n";
-    print STDERR $msg;
+    if ($ex) { print STDERR "\n" . $ex->{-text} . "\n"; }
     ok( !$ex, $msg );
 };

@@ -22,12 +22,7 @@ catch Error::Simple with { $ex = shift; }
 otherwise { $ex = shift; }
 finally {
     if ($ex) {
-        $msg .= $ex->{-text};
+        print STDERR "\n" . $ex->{-text} . "\n";
     }
-    else { 
-        $msg .= "Successful database connection";
-    }
-    $msg .= "\n";
-    print STDERR $msg;
-    ok( !$ex, $msg );
+    ok( !$ex );
 };

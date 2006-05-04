@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+May 4, 2006
 
 =cut
 
@@ -34,9 +34,12 @@ use Error qw(:try);
 
 use strict;
 
+use NetLogger;
+
 use OSCARS::Database;
 use OSCARS::PluginManager;
 use OSCARS::ClientManager;
+use OSCARS::Logger;
 
 sub new {
     my( $class, %args ) = @_;
@@ -83,6 +86,12 @@ sub getParams {
 sub dispatch {
     my( $self, $params, $method ) = @_;
 
+    my $logger = OSCARS::Logger->new('method' => $method);
+    $logger->setUserLogin('testaccount');
+    $logger->set_level($NetLogger::INFO);
+    $logger->open('test.log');
+    my $info = Data::Dumper->Dump([$params], [qw(*REQUEST)]);
+    $logger->info("request", { 'fields' => substr($info, 0, -1) });
     if (!$self->{database}) {
         $self->{database} = $self->{pluginMgr}->getLocation('system');
         $self->{db}->connect($self->{database});
@@ -97,8 +106,14 @@ sub dispatch {
     }
     my $client = $self->{clientMgr}->getClient();
     my $som = $client->$method($params);
-    if ($som->faultstring) { return( $som->faultstring, undef ); }
-    return( undef, $som->result );
+    if ($som->faultstring) { $logger->warn( "Error", {$som->faultstring }); }
+    else {
+        $info = Data::Dumper->Dump([$som->result], [qw(*RESPONSE)]);
+        $logger->info("response", { 'fields' => substr($info, 0, -1) });
+    }
+
+    if ($som->faultstring) { return( 0, undef ); }
+    return( 1, $som->result );
 } #____________________________________________________________________________
 
 

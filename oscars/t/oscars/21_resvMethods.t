@@ -13,34 +13,17 @@ use TestManager;
 
 my $testMgr = TestManager->new();
 my $params = $testMgr->getParams('oscars/params.xml');
-my( $status, $msg, $reservationTag );
+my( $status, $tag );
 
-($status, $msg) = listReservations($testMgr, $params->{listReservations});
-ok($status, $msg);
-print STDERR $msg;
+ok( listReservations($testMgr, $params->{listReservations}) );
 
-( $status, $msg, $reservationTag ) = createReservation( $testMgr, $params->{createReservation} );
-ok( $status, $msg );
-print STDERR $msg;
+( $status, $tag ) = createReservation( $testMgr, $params->{createReservation} );
+ok( $status );
 
-( $status, $msg ) = queryReservation( $testMgr, $params->{queryReservation}, $reservationTag );
-ok( $status, $msg );
-print STDERR $msg;
-
-( $status, $msg ) =
-    cancelReservation( $testMgr, $params->{cancelReservation}, $reservationTag );
-ok( $status, $msg );
-print STDERR $msg;
-
-($status, $msg) =
-    reservationPending($testMgr, $params->{reservationPending});
-ok($status, $msg);
-print STDERR $msg;
-
-($status, $msg) =
-     reservationExpired($testMgr, $params->{reservationExpired});
-ok($status, $msg);
-print STDERR $msg;
+ok( queryReservation( $testMgr, $params->{queryReservation}, $tag ) );
+ok( cancelReservation( $testMgr, $params->{cancelReservation}, $tag ) );
+ok( reservationPending($testMgr, $params->{reservationPending}) );
+ok( reservationExpired($testMgr, $params->{reservationExpired}) );
 
 
 ###############################################################################
@@ -48,10 +31,7 @@ print STDERR $msg;
 sub listReservations {
     my ( $testMgr, $params ) = @_;
 
-    my( $errorMsg, $results ) = $testMgr->dispatch($params, 'listReservations');
-    if ( $errorMsg ) { return( 0, $errorMsg ); }
-    my $msg = "\nReservations:\n" . Dumper($results) . "\n";
-    return( 1, $msg );
+    return $testMgr->dispatch($params, 'listReservations');
 } #___________________________________________________________________________
 
 
@@ -81,12 +61,8 @@ sub createReservation {
     $dt->set_time_zone($timezone);
     $params->{endTime} = $f->format_datetime($dt);
 
-    my( $errorMsg, $results ) = $testMgr->dispatch($params, 'createReservation');
-    if ( $errorMsg ) { return( 0, $errorMsg ); }
-
-    my $msg = "\nStatus: Your reservation has been processed successfully.\n";
-    $msg .= "Details:\n" . Dumper($results);
-    return( 1, $msg, $results->{tag} );
+    my( $status, $results ) = $testMgr->dispatch($params, 'createReservation');
+    return( $status, $results->{tag} );
 } #___________________________________________________________________________
 
 
@@ -96,11 +72,7 @@ sub queryReservation {
     my ( $testMgr, $params, $reservationTag ) = @_;
 
     $params->{tag} = $reservationTag;
-    my( $errorMsg, $results ) = $testMgr->dispatch($params, 'queryReservation');
-    if ( $errorMsg ) { return( 0, $errorMsg ); }
-
-    my $msg = "\nReservation details:\n" . Dumper($results) . "\n";
-    return( 1, $msg );
+    return $testMgr->dispatch($params, 'queryReservation');
 } #___________________________________________________________________________
 
 
@@ -111,12 +83,7 @@ sub cancelReservation {
     my( $testMgr, $params, $reservationTag ) = @_;
 
     $params->{tag} = $reservationTag;
-    my( $errorMsg, $results ) = $testMgr->dispatch($params, 'cancelReservation');
-    if ( $errorMsg ) { return( 0, $errorMsg ); }
-
-    my $msg = "\nSuccessfully cancelled reservation $params->{tag}\n";
-    $msg .= "\nDetails:\n" . Dumper($results) . "\n";
-    return( 1, $msg );
+    return $testMgr->dispatch($params, 'cancelReservation');
 } #___________________________________________________________________________
 
 
@@ -125,11 +92,7 @@ sub cancelReservation {
 sub reservationPending {
     my ( $testMgr, $params ) = @_;
 
-    my( $errorMsg, $results ) = $testMgr->dispatch($params, 'reservationPending');
-    if ( $errorMsg ) { return( 0, $errorMsg ); }
-
-    my $msg = "\nReservations handled:\n" . Dumper($results->{list}) . "\n";
-    return( 1, $msg );
+    return $testMgr->dispatch($params, 'reservationPending');
 } #___________________________________________________________________________
 
 
@@ -138,9 +101,5 @@ sub reservationPending {
 sub reservationExpired {
     my ( $testMgr, $params ) = @_;
 
-    my( $errorMsg, $results ) = $testMgr->dispatch($params, 'reservationExpired');
-    if ( $errorMsg ) { return( 0, $errorMsg ); }
-
-    my $msg = "\nReservations handled:\n" . Dumper($results->{list}) . "\n";
-    return( 1, $msg );
+    return $testMgr->dispatch($params, 'reservationExpired');
 } #___________________________________________________________________________

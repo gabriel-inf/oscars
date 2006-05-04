@@ -8,6 +8,6 @@ my $login = 'testaccount';
 my $mgr = OSCARS::PluginManager->new();
 my $authN = $mgr->usePlugin('authentication');
 
-my $credentials = $authN->getCredentials($login, 'password');
+my $credentials = $authN->getCredentials($login, 'certificate');
 my $user = $authN->getUser($login);
 ok($user);
