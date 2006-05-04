@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 4, 2006
 
 =cut
 
@@ -78,11 +78,13 @@ sub traceroute
     # Parse the results.
     while ($hopInfo = <_TRACEROUTE_>)  {
         $self->{rawHopData}[$hopCount] = $hopInfo;
+	$logger->info('traceroute.raw', { 'hop' => substr($hopInfo, 0, -1) });
 
         # Get the hop IP address from output, e.g.
         #  1  esnet3-lbl3.es.net (198.129.76.26)  0.628 ms  0.569 ms  0.522 ms
         next if ($hopInfo !~ m/\((\d+\.\d+\.\d+\.\d+)\)/);
         $self->{hops}[$hopCount] = $1;
+	$logger->info('traceroute', { 'hop' => substr($1, 0, -1) });
         $hopCount++;
     }
     close(_TRACEROUTE_);

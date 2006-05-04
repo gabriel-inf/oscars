@@ -197,7 +197,6 @@ sub doTraceroute {
     }
     # Check starting point in case first hop is outside of domain
     for my $hop ( @hops )  {
-        $logger->info('traceroute.hop', {'hop' => $hop });
         # following two are for edge router IP and interface id
         $loopbackFound = $self->getLoopback( $hop );
         $interfaceFound = $self->getInterface( $hop );
