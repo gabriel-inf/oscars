@@ -8,7 +8,7 @@
 
 	<wsdl:documentation>
 		This is WSDL for the OSCARS public reservation interface. DRAFT
-		V0.1 April 20, 2006
+		V0.2 May 3, 2006
 	</wsdl:documentation>
 
 	<!-- Element and Type definitons -->
@@ -19,26 +19,11 @@
 
 			<xsd:element name="createReservationResponse"
 				type="tns:resDetailsType" />
-			<xsd:element name="createReservationRequest">
-				<xsd:complexType>
-					<xsd:sequence>
-						<xsd:element name="resReq"
-							type="tns:resReqType" />
-					</xsd:sequence>
-				</xsd:complexType>
-			</xsd:element>
+			
 
 			<xsd:element name="cancelReservationResponse"
 				type="xsd:string" />
-			<xsd:element name="cancelReservationRequest">
-				<xsd:complexType>
-					<xsd:sequence>
-						<xsd:element name="resTag"
-							type="tns:resTagType" />
-					</xsd:sequence>
-				</xsd:complexType>
-			</xsd:element>
-
+			
 			<xsd:element name="listReservationsResponse">
 				<xsd:complexType>
 					<xsd:sequence>
@@ -47,23 +32,11 @@
 					</xsd:sequence>
 				</xsd:complexType>
 			</xsd:element>
-			<xsd:element name="listReservationsRequest">
-				<xsd:complexType>
-					<xsd:sequence>
-					</xsd:sequence>
-				</xsd:complexType>
-			</xsd:element>
+			
 
 			<xsd:element name="queryReservationResponse"
 				type="tns:resDetailsType" />
-			<xsd:element name="queryReservationRequest">
-				<xsd:complexType>
-					<xsd:sequence>
-						<xsd:element name="resTag"
-							type="tns:resTagType" />
-					</xsd:sequence>
-				</xsd:complexType>
-			</xsd:element>
+			
 
 			<xsd:element name="forwardResponse" type="xsd:string"></xsd:element>
 			<xsd:element name="forwardRequest">
@@ -86,6 +59,9 @@
 								</xsd:sequence>
 							</xsd:complexType>
 						</xsd:element>
+						<xsd:element name="payloadSender"
+							type="xsd:string">
+						</xsd:element>
 					</xsd:sequence>
 				</xsd:complexType>
 			</xsd:element>
@@ -105,12 +81,12 @@
 
 			<!--  Types  -->
 
-			<xs:simpleType name="createRouteDirectionType">
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="forward"/>
-					<xs:enumeration value="reverse"/>
-				</xs:restriction>
-			</xs:simpleType>
+			<xsd:simpleType name="createRouteDirectionType">
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="forward"/>
+					<xsd:enumeration value="reverse"/>
+				</xsd:restriction>
+			</xsd:simpleType>
 
 			<xsd:complexType name="resReqType">
 				<xsd:sequence>
@@ -126,7 +102,7 @@
 					<!-- forward means create path from src to dst, reverse
 					means create path from dst to src (done by switching src &
 					dst when you reach dst and setting this to forward-->
-					<xsd:element name="createRouteDirection" type="createRouteDirectionType" />
+					<xsd:element name="createRouteDirection" type="tns:createRouteDirectionType" />
 					<xsd:element name="protocol"
 						type="tns:resProtocolType" maxOccurs="1" minOccurs="0" />
 					<xsd:element name="srcPort" type="xsd:int"
@@ -197,7 +173,14 @@
 			<xsd:simpleType name="resTagType">
 				<xsd:restriction base="xsd:string" />
 			</xsd:simpleType>
-		</xsd:schema>
+			<xsd:element name="ReservationTag"
+				type="tns:resTagType">
+			</xsd:element>
+			<xsd:element name="CreateReservationRequest"
+				type="tns:resReqType">
+			</xsd:element>
+            <xsd:element name="ListReservationsRequest" type="xsd:string"></xsd:element>
+        </xsd:schema>
 	</wsdl:types>
 
 	<!--   Message definitions -->
@@ -205,18 +188,11 @@
 		<wsdl:part name="createReservationResponse"
 			element="tns:createReservationResponse" />
 	</wsdl:message>
-	<wsdl:message name="createReservationRequest">
-		<wsdl:part name="createReservationRequest"
-			element="tns:createReservationRequest" />
-	</wsdl:message>
+	
 
 	<wsdl:message name="cancelReservationResponse">
 		<wsdl:part name="cancelReservationResponse"
 			element="tns:cancelReservationResponse" />
-	</wsdl:message>
-	<wsdl:message name="cancelReservationRequest">
-		<wsdl:part name="cancelReservationRequest"
-			element="tns:cancelReservationRequest" />
 	</wsdl:message>
 
 	<wsdl:message name="queryReservationResponse">
@@ -224,8 +200,7 @@
 			element="tns:queryReservationResponse" />
 	</wsdl:message>
 	<wsdl:message name="queryReservationRequest">
-		<wsdl:part name="queryReservationRequest"
-			element="tns:queryReservationRequest" />
+		<wsdl:part name="queryReservationRequest" element="tns:ReservationTag"/>
 	</wsdl:message>
 
 	<wsdl:message name="listReservationsResponse">
@@ -233,8 +208,7 @@
 			element="tns:listReservationsResponse" />
 	</wsdl:message>
 	<wsdl:message name="listReservationsRequest">
-		<wsdl:part name="listReservationsRequest"
-			element="tns:listReservationsRequest" />
+	<wsdl:part name="listReservationsRequest" element="tns:ListReservationsRequest"></wsdl:part>
 	</wsdl:message>
 
 	<wsdl:message name="forwardResponse">
@@ -272,7 +246,12 @@
 		</wsdl:part>
 	</wsdl:message>
 
-	<wsdl:portType name="OSCARS">
+    <wsdl:message name="createReservationRequest"><wsdl:part name="createReservationRequest" element="tns:CreateReservationRequest"></wsdl:part></wsdl:message>
+    <wsdl:message name="cancelReservationRequest">
+    	<wsdl:part name="cancelReservationRequest" element="tns:ReservationTag"></wsdl:part>
+    </wsdl:message>
+    
+    <wsdl:portType name="OSCARS">
 		<wsdl:operation name="createReservation">
 			<wsdl:input message="tns:createReservationRequest" />
 			<wsdl:output message="tns:createReservationResponse" />
@@ -281,8 +260,8 @@
 
 		</wsdl:operation>
 		<wsdl:operation name="cancelReservation">
-			<wsdl:input message="tns:cancelReservationRequest" />
-			<wsdl:output message="tns:cancelReservationResponse" />
+            <wsdl:input message="tns:cancelReservationRequest"></wsdl:input>
+            <wsdl:output message="tns:cancelReservationResponse" />
 			<wsdl:fault name="OSCARSException"
 				message="tns:cancelReservationOSCARSException" />
 
