@@ -5,6 +5,7 @@ use strict;
 use Data::Dumper;
 
 use OSCARS::PluginManager;
+use OSCARS::Mail;
 
 sub new {
     my( $class, %args ) = @_;
@@ -20,27 +21,23 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{pluginMgr} = OSCARS::PluginManager->new();
+    $self->{mailer} = OSCARS::Mail->new();
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
 sub instantiate {
-    my( $self, $user, $params, $logger ) = @_;
+    my( $self, $user, $method ) = @_;
 
-    my $className = $self->{pluginMgr}->getLocation($params->{method});
-    my $dbname = $self->{pluginMgr}->getLocation('system');
-    my $db = $user->getDbHandle($dbname);
+    my $className = $self->{pluginMgr}->getLocation($method);
+    my $database = $self->{pluginMgr}->getLocation('system');
     my $locationPrefix = $className;
     $locationPrefix =~ s/(::)/\//g;
     my $location = $locationPrefix . '.pm';
     require $location;
-    # TODO:  shouldn't need so many parameters
-    return $className->new( 'user' => $user,
-	                     'db' => $db,
-			     'database' => $dbname,
-                             'params' => $params,
-		             'logger' => $logger );
+    return $className->new( 'user' => $user, 'database' => $database,
+                            'mailer' => $self->{mailer});
 } #___________________________________________________________________________ 
 
 
@@ -66,7 +63,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 23, 2006
+May 4, 2006
 
 =cut
 
@@ -91,8 +88,8 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{forwarder} = OSCARS::Library::Reservation::ClientForward->new();
-    $self->{mailer} = OSCARS::Mail->new();
     $self->{paramTests} = {};
+    $self->{db} = $self->{user}->getDbHandle($self->{database});
 } #____________________________________________________________________________
 
 
@@ -112,21 +109,21 @@ sub authorized {
 # validate:  validate incoming parameters
 #
 sub validate {
-    my( $self ) = @_;
+    my( $self, $params ) = @_;
 
     my( $test );
 
-    my $method = $self->{params}->{method};
+    my $method = $params->{method};
     if ( !$method ) { return; }
 
     # for all tests 
     for my $testName (keys(%{$self->{paramTests}->{$method}})) {
         $test = $self->{paramTests}->{method}->{$testName};
-        if (!$self->{params}->{$testName}) {
+        if (!$params->{$testName}) {
             throw Error::Simple(
-                "Cannot validate $self->{params}->{method}, test $testName failed");
+                "Cannot validate $method, test $testName failed");
         }
-        if ($self->{params}->{$testName} !~ $test->{regexp}) {
+        if ($params->{$testName} !~ $test->{regexp}) {
             throw Error::Simple( $test->{error} );
         }
     }
@@ -144,35 +141,14 @@ sub numericCompare {
 
 
 ###############################################################################
-# dispatch
-#
-sub dispatch {
-    my( $self ) = @_;
-
-    return 1;
-} #___________________________________________________________________________ 
-
-
-###############################################################################
 # postProcess:  Perform any operations necessary after making SOAP call
 #
 sub postProcess {
-    my( $self, $results ) = @_;
+    my( $self, $params, $results ) = @_;
 
-    my $messages = $self->generateMessages($results);
-    if ($messages) {
-        $self->{mailer}->sendMessage($messages);
-    }
-} #___________________________________________________________________________ 
-
-
-###############################################################################
-# generateMessages:  overriden if anything to mail
-#
-sub generateMessages {
-    my( $self, $results ) = @_;
-
-    return undef;
+    # must be notification entry in the XML configuration file for this
+    # method, for any message to be sent
+    $self->{mailer}->sendMessage($self->{user}, $params->{method}, $results);
 } #___________________________________________________________________________ 
 
 

@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-January 4, 2006
+May 8, 2006
 
 =cut
 
@@ -29,6 +29,8 @@ January 4, 2006
 use strict;
 
 use Data::Dumper;
+use Error qw(:try);
+use XML::DOM;
 
 
 sub new {
@@ -45,46 +47,93 @@ sub initialize {
     # email text encoding
     $self->{emailEncoding} = 'ISO-8859-1';
     $self->{sendmailCmd} = '/usr/sbin/sendmail -oi';
-} #____________________________________________________________________________ 
+    $self->readConfiguration();
+} #____________________________________________________________________________
 
 
 ###############################################################################
-# sendMessage:  send mail message, if appropriate, from method results
+# readConfiguration:  read and parse XML configuration file.
+#
+sub readConfiguration {
+    my( $self ) = @_;
+
+    $self->{config} = {};
+    my $parser = new XML::DOM::Parser;
+    my $doc = $parser->parsefile( "$ENV{HOME}/.oscars.xml" );
+    my $topLevel = $doc->getElementsByTagName ("notifications");
+    my $topNode = $topLevel->item(0);
+    my @children = $topNode->getChildNodes();
+    # TODO:  error checking
+    for my $n (@children) {
+        if ( $n->getNodeType() == 1 ) {
+            my $attr = $n->getAttributeNode( "name" );
+	    my $msgName = $attr->getValue();
+	    $self->{config}->{$msgName} = {};
+	    $self->{config}->{$msgName}->{mappings} = ();
+            my $nc = $n->getFirstChild();
+            while ($nc) {
+		if ( $nc->getNodeType() == 1) {
+		    my $nodeName = $nc->getNodeName();
+		    if ($nodeName eq 'subject') {
+			$attr = $nc->getAttributeNode('msg');
+			$self->{config}->{$msgName}->{subject} = $attr->getValue();
+		    }
+		    elsif ($nodeName eq 'mapping') {
+			$attr = $nc->getAttributeNode('field');
+			if (!$attr) { next; }
+			my $descr = $nc->getAttributeNode('description');
+			if (!$descr) { next; }
+			my $mapping = {};
+			$mapping->{$attr->getValue()} = $descr->getValue();
+			push( @{$self->{config}->{$msgName}->{mappings}},
+                              $mapping );
+		    }
+		}
+	        $nc = $nc->getNextSibling();
+	    }
+	}
+    }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# sendMessage:  send mail message(s), if appropriate, from method results
 #
 sub sendMessage {
-    my( $self, $messages ) = @_;
+    my( $self, $user, $method, $results ) = @_;
 
     my( $errMsg );
 
-    for my $msg (@$messages) {
-         $errMsg = $self->sendMailings($msg);
-         if ($errMsg) { return $errMsg; }
+    if ( !$self->{config}->{$method} ) { return; }
+    my @resultsArray = ();
+    if ( ref($results) eq 'HASH' ) { push(@resultsArray, $results); }
+    else { @resultsArray = @{$results->{list}}; }
+    my $msg = $self->{config}->{$method}->{subject} . "\n\n";
+
+    for my $result (@resultsArray) {
+        for my $mapping ( @{$self->{config}->{$method}->{mappings}} ) {
+	    for my $key ( keys %{$mapping} ) {
+		if ( $result->{$key} ) {
+		    $msg .= $mapping->{$key} . ':    ' . $result->{$key} . "\n"; 
+		}
+	    }
+        }
+	$errMsg = $self->mailMessage($self->getWebmaster(), $user->{login},
+            'OSCARS:  ' . $self->{config}->{$method}->{subject}, $msg);
+	if ($errMsg) { throw Error::Simple( $errMsg ); }
+        $errMsg = $self->mailMessage($self->getWebmaster(), $self->getAdmins(),
+            'OSCARS:  Admin notice.  ' . $self->{config}->{$method}->{subject},
+	    $msg);
+	if ($errMsg) { throw Error::Simple( $errMsg ); }
     }
-    return '';
+    return;
 } #____________________________________________________________________________ 
 
 
 ###############################################################################
-# sendMailings:  Send mail to user and administrator(s).
+# mailMessage:  Mails message.
 #
-sub sendMailings {
-    my( $self, $msg ) = @_;
-
-    my $errMsg = $self->sendMail($self->getWebmaster(), $msg->{user},
-                     'OSCARS:  ' . $msg->{subject}, $msg->{msg});
-    if ($errMsg) { return $errMsg; }
-    $errMsg = $self->sendMail($self->getWebmaster(), $self->getAdmins(),
-                     'OSCARS:  Admin notice.  ' . $msg->{subject}, $msg->{msg});
-    if ($errMsg) { return $errMsg; }
-    return '';
-} #____________________________________________________________________________ 
-
-
-###############################################################################
-# sendMail:  Mails message.  Used by AAA, Intradomain, and Interdomain
-#     components for notifications
-#
-sub sendMail {
+sub mailMessage {
     my( $self, $sender, $recipient, $subject, $msg ) = @_;
 
     if (!open(MAIL, "|$self->{sendmailCmd} $recipient")) {
@@ -121,8 +170,8 @@ sub getAdmins {
     my( $self ) = @_;
 
     #return 'oscars-admin@es.net';
-    return 'dwrobertson@lbl.gov chin@es.net';
-    #return 'dwrobertson@lbl.gov';
+    #return 'dwrobertson@lbl.gov chin@es.net';
+    return 'dwrobertson@lbl.gov';
 } #____________________________________________________________________________
 
 
