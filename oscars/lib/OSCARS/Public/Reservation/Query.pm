@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 8, 2006
 
 =cut
 
@@ -53,14 +53,17 @@ sub initialize {
 #     Otherwise they can only list reservations that they have made, with less
 #     of the details.
 #
-# In:  reference to hash of parameters
-# Out: reservations if any, and status message
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my $results = $self->{resvLib}->listDetails($self->{params});
-    return $results;
+    my @strArray = split('-', $request->{tag});
+    my $id = $strArray[-1];
+    my $response = $self->{resvLib}->details($id);
+    return $response;
 } #____________________________________________________________________________
 
 

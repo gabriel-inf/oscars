@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 4, 2006
 
 =cut
 
@@ -30,7 +30,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Reservation::Pathfinder;
+use OSCARS::Library::Topology::Pathfinder;
 use OSCARS::Library::Reservation::Common;
 
 use OSCARS::Method;
@@ -48,15 +48,16 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Handles reservation modification.  Not implemented yet.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my $results = {};
-    $results->{login} = $self->{user}->{login};
-    return $results;
+    my $response = {};
+    $response->{login} = $self->{user}->{login};
+    return $response;
 } #____________________________________________________________________________
 
 

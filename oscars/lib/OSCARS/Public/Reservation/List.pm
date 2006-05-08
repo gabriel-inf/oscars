@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 4, 2006
 
 =cut
 
@@ -45,18 +45,18 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Handles all operations for the Manage Reservations page. 
-#     It uses information from the users and institutions tables.
+# soapMethod:  Retrieves a list of all reservations from the database. 
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my $results = {};
-    $results->{list} = $self->getReservations($self->{params});
-    return $results;
+    my $response = {};
+    $response->{list} = $self->getReservations($request);
+    return $response;
 } #____________________________________________________________________________
 
 
@@ -69,7 +69,7 @@ sub soapMethod {
 # Out: reference to array of hashes
 #
 sub getReservations {
-    my( $self, $params ) = @_;
+    my( $self, $request ) = @_;
 
     my( $rows, $statement );
 
