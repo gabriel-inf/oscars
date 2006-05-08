@@ -106,7 +106,7 @@ sub sendMessage {
 
     if ( !$self->{config}->{$method} ) { return; }
     my @resultsArray = ();
-    if ( ref($results) eq 'HASH' ) { push(@resultsArray, $results); }
+    if ( !$results->{list} ) { push(@resultsArray, $results); }
     else { @resultsArray = @{$results->{list}}; }
     my $msg = $self->{config}->{$method}->{subject} . "\n\n";
 
@@ -118,9 +118,11 @@ sub sendMessage {
 		}
 	    }
         }
-	$errMsg = $self->mailMessage($self->getWebmaster(), $user->{login},
-            'OSCARS:  ' . $self->{config}->{$method}->{subject}, $msg);
-	if ($errMsg) { throw Error::Simple( $errMsg ); }
+	if ($user->{login} ne 'testaccount') {
+	    $errMsg = $self->mailMessage($self->getWebmaster(), $user->{login},
+                'OSCARS:  ' . $self->{config}->{$method}->{subject}, $msg);
+	    if ($errMsg) { throw Error::Simple( $errMsg ); }
+	}
         $errMsg = $self->mailMessage($self->getWebmaster(), $self->getAdmins(),
             'OSCARS:  Admin notice.  ' . $self->{config}->{$method}->{subject},
 	    $msg);

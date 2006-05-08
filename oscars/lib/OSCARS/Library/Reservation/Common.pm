@@ -164,6 +164,13 @@ sub formatResults {
     }
     $results->{srcHost} = $fields->{srcHost};
     $results->{destHost} = $fields->{destHost};
+    # The following field is only set if coming in from the scheduler
+    if ( $fields->{lspStatus} ) {
+        $results->{lspStatus} = $fields->{lspStatus};
+        my $configTime = time();
+        $results->{lspConfigTime} = $self->{timeLib}->secondsToDatetime(
+                                         $configTime, $fields->{origTimeZone} );
+    }
     return $results;
 } #____________________________________________________________________________
 

@@ -79,7 +79,7 @@ sub soapMethod {
         push( @formattedList, $self->{resvLib}->formatResults($resv) );
     }
     my $response = {};
-    $response->{list} = \@formattedList;
+    @{$response->{list}} = @formattedList;
     return $response;
 } #____________________________________________________________________________
 
@@ -114,10 +114,10 @@ sub configurePSS {
 sub mapToIPs {
     my( $self, $resv ) = @_;
  
-    my $statement = 'SELECT IP FROM hosts WHERE id = ?';
-    my $row = $self->{db}->getRow($statement, $resv->{srcHostId});
+    my $statement = 'SELECT IP FROM hosts WHERE name = ?';
+    my $row = $self->{db}->getRow($statement, $resv->{srcHost});
     $resv->{srcIP} = $row->{IP};
-    $row = $self->{db}->getRow($statement, $resv->{destHostId});
+    $row = $self->{db}->getRow($statement, $resv->{destHost});
     $resv->{destIP} = $row->{IP};
 
     $statement = 'SELECT loopback FROM topology.routers WHERE id =' .
@@ -155,9 +155,9 @@ sub mapFields {
     if ($resv->{destPort} && ($resv->{destPort} != 'NULL')) {
         $lsp_info{'destination-port'} = $resv->{destPort};
     }
-    if ($resv->{dscp} && ($resv->{dscp} != 'NULL')) {
-        $lsp_info{dscp} = $resv->{dscp};
-    }
+    #if ($resv->{dscp} && ($resv->{dscp} != 'NULL')) {
+    #$lsp_info{dscp} = $resv->{dscp};
+    #}
     if ($resv->{protocol} && ($resv->{protocol} != 'NULL')) {
         $lsp_info{protocol} = $resv->{protocol};
     }

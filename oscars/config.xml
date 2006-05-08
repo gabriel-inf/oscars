@@ -97,12 +97,14 @@
 
 <notification name='reservationPending'>
     <subject msg='Circuit set up' />
+    <mapping field='tag' description='Reservation tag' />
     <mapping field='lspConfigTime' description='Path set up time' />
     <mapping field='lspStatus' description='Configuration status' />
 </notification>
 
 <notification name='reservationExpired'>
     <subject msg='Circuit torn down' />
+    <mapping field='tag' description='Reservation tag' />
     <mapping field='lspConfigTime' description='Path tear down time' />
     <mapping field='lspStatus' description='Configuration status' />
 </notification>
