@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -55,22 +55,22 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Gets all information necessary for the Manage Resources page. 
-#     It returns information from the resources and permissions tables.
+# soapMethod:  Adds a row to the resources table. 
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage resources");
     }
-    my $results = {};
-    $self->{lib}->addRow( $self->{params}, 'Resources' );
-    return $results;
+    my $response = {};
+    $self->{lib}->addRow( $request, 'Resources' );
+    return $response;
 } #____________________________________________________________________________
 
 

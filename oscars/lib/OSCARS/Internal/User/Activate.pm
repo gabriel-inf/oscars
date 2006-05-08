@@ -20,7 +20,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 27, 2006
+May 4, 2006
 
 =cut
 
@@ -41,25 +41,25 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Gets all information necessary for the Manage Users page. 
-#     It returns information from the users and institutions tables.
+# soapMethod:  Activates a user account.  Currently a noop. 
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to activate user");
     }
-    my $results = $self->activateAccount();
+    my $response = $self->activateAccount($request);
     my $msg = 'The user account <strong>' .
        "$self->{user}->{login}</strong> has been successfully activated. You " .
        'will be redirected to the main service login page in 10 seconds. ' .
        '<br>Please change the password to your own once you sign in.';
-    return $results;
+    return $response;
 } #____________________________________________________________________________
 
 
@@ -70,7 +70,7 @@ sub soapMethod {
 # Out: reference to hash of results
 #
 sub activateAccount {
-    my( $self ) = @_;
+    my( $self, $request ) = @_;
 
     my $results = {};
     my $login = $self->{user}->{login};
@@ -84,7 +84,7 @@ sub activateAccount {
     if ( $row->{activationKey} eq '' ) {
         throw Error::Simple('This account has already been activated.');
     }
-    elsif ( $row->{activationKey} ne $self->{params}->{activationKey} ) {
+    elsif ( $row->{activationKey} ne $request->{activationKey} ) {
         throw Error::Simple('Please check the activation key and try again.');
     }
     return $results;

@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -45,35 +45,33 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Deletes an authorization triple.
+# soapMethod:  Deletes a row containing an authorization triple.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage authorizations");
     }
-    my $results = {};
+    my $response = {};
     my $statement = 'SELECT id FROM users WHERE login = ?';
-    my $row = $self->{db}->getRow($statement, $self->{params}->{login});
+    my $row = $self->{db}->getRow($statement, $request->{login});
     my $userId = $row->{id};
     $statement = 'SELECT id FROM resources WHERE name = ?';
-    $row = $self->{db}->getRow($statement, $self->{params}->{resourceName});
+    $row = $self->{db}->getRow($statement, $request->{resourceName});
     my $resourceId = $row->{id};
     $statement = 'SELECT id FROM permissions WHERE name = ?';
-    $row = $self->{db}->getRow($statement, $self->{params}->{permissionName});
+    $row = $self->{db}->getRow($statement, $request->{permissionName});
     my $permissionId = $row->{id};
     $statement = 'DELETE FROM authorizations WHERE userId = ? AND ' .
                  'resourceId = ? AND permissionId = ?';
     $self->{db}->execStatement($statement, $userId, $resourceId, $permissionId);
-    my $msg = "Removed authorization for $self->{params}->{login} involving " .
-              "resource $self->{params}->{resourceName} and " .
-              "permission $self->{params}->{permissionName}";
-    return $results;
+    return $response;
 } #____________________________________________________________________________
 
 

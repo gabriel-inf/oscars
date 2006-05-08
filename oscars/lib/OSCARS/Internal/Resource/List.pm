@@ -11,7 +11,8 @@ OSCARS::Internal::Resource::List - SOAP method to list resources
 
 =head1 DESCRIPTION
 
-This is an internal SOAP method.  It returns information from the resources table.
+This is an internal SOAP method.  It returns information from the resources 
+table.
 
 =head1 AUTHORS
 
@@ -19,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 19, 2006
+May 4, 2006
 
 =cut
 
@@ -46,11 +47,12 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Lists information in the resources table.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
@@ -58,24 +60,24 @@ sub soapMethod {
     }
     my( $resourceName, $permissionName );
 
-    my $results = {};
+    my $response = {};
     my $statement = "SELECT name FROM resources";
-    $results->{resources} = {};
+    $response->{resources} = {};
     my $rresults = $self->{db}->doSelect($statement);
     for my $row (@$rresults) {
-        $results->{resources}->{$row->{name}} = 1;
+        $response->{resources}->{$row->{name}} = 1;
     }
 
     my $statement = "SELECT name FROM permissions";
-    $results->{permissions} = {};
+    $response->{permissions} = {};
     my $presults = $self->{db}->doSelect($statement);
     for my $row (@$presults) {
-        $results->{permissions}->{$row->{name}} = 1;
+        $response->{permissions}->{$row->{name}} = 1;
     }
 
-    $results->{resourcePermissions} =
+    $response->{resourcePermissions} =
                        $self->{lib}->getResourcePermissions();
-    return $results;
+    return $response;
 } #____________________________________________________________________________
 
 

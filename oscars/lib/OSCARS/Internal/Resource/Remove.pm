@@ -11,9 +11,9 @@ OSCARS::Internal::Resource::Remove - SOAP method to remove a resource.
 
 =head1 DESCRIPTION
 
-This is an internal SOAP method.  It removes a resource from the resources table,
-and any corresponding resource/permission pairs in the resourcePermissions
-table.
+This is an internal SOAP method.  It removes a resource from the resources 
+table, and any corresponding resource/permission pairs in the 
+resourcePermissions table.
 
 =head1 AUTHORS
 
@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -46,22 +46,22 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Gets all information necessary for the Manage Resources page. 
-#     It returns information from the resources and permissions tables.
+# soapMethod:  Removes a resource. 
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage resources");
     }
-    my $results = {};
-    $self->removeResource($self->{params} );
-    return $results;
+    my $response = {};
+    $self->removeResource( $request );
+    return $response;
 } #____________________________________________________________________________
 
 
@@ -72,15 +72,13 @@ sub soapMethod {
 # Out: reference to hash of results
 #
 sub removeResource {
-    my( $self ) = @_;
+    my( $self, $request ) = @_;
 
     my $resourceId = $self->{lib}->idFromName('resource',
-                                             $self->{params}->{resourceName});
+                                             $request->{resourceName});
     my $statement = 'DELETE FROM resources WHERE id = ?';
     $self->{db}->execStatement($statement, $resourceId);
-    my $msg = "Removed resource with name $self->{params}->{resourceName}";
-    $self->removeResourcePermission();
-    return $msg;
+    $self->removeResourcePermission($request);
 } #____________________________________________________________________________
 
 
@@ -91,14 +89,12 @@ sub removeResource {
 # Out: reference to hash of results
 #
 sub removeResourcePermission {
-    my( $self ) = @_;
+    my( $self, $request ) = @_;
 
     my $resourceId = $self->{lib}->idFromName('resource',
-                                             $self->{params}->{resourceName});
+                                             $request->{resourceName});
     my $statement = 'DELETE FROM resourcePermissions WHERE resourceId = ?';
     $self->{db}->execStatement($statement, $resourceId);
-    my $msg = "Removed resource permission pair";
-    return $msg;
 } #____________________________________________________________________________
 
 

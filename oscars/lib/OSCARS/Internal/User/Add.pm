@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 27, 2006
+May 4, 2006
 
 =cut
 
@@ -78,22 +78,21 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Gets all information necessary for the Manage Users page. 
-#     It returns information from the users and institutions tables.
+# soapMethod:  Adds an OSCARS user by inserting information into the users
+#     table.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
-
-    my $msg;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to add user");
     }
-    my $login = $self->{params}->{selectedUser};
+    my $login = $request->{selectedUser};
     # login name overlap check
     my $statement = 'SELECT login FROM users WHERE login = ?';
     my $row = $self->{db}->getRow($statement, $login);
@@ -101,16 +100,15 @@ sub soapMethod {
         throw Error::Simple("The login, $login, is already " .
 	       	"taken by someone else; please choose a different login name.");
     }
-    my $fields = $self->buildFields($self->{params});
+    my $fields = $self->buildFields( $request );
     my $statement = "INSERT INTO users VALUES(" .
                      join(', ', @$fields) . ")";
     $self->{db}->execStatement($statement);
 
-    my $results = {};
+    my $response = {};
     $statement = "SELECT * FROM UserList";
-    $results->{list} = $self->{db}->doSelect($statement);
-    $msg = "$self->{user}->{login} added user $login}";
-    return $results;
+    $response->{list} = $self->{db}->doSelect($statement);
+    return $response;
 } #____________________________________________________________________________
 
 
@@ -118,36 +116,36 @@ sub soapMethod {
 # buildFields:  Build fields for db insertion, quoting fields where necessary.
 #
 sub buildFields {
-    my( $self, $params ) = @_;
+    my( $self, $request ) = @_;
 
     my @fields = ();
     push( @fields, 'NULL' );
-    push( @fields, "'$params->{selectedUser}'" );    # login
+    push( @fields, "'$request->{selectedUser}'" );    # login
     push( @fields,
-        $params->{certificate} ? "'$params->{certificate}'" : 'NULL' ); 
+        $request->{certificate} ? "'$request->{certificate}'" : 'NULL' ); 
     push( @fields,
-        $params->{certSubject} ? "'$params->{certSubject}'" : 'NULL' );  
-    push( @fields, "'$params->{lastName}'" );
-    push( @fields, "'$params->{firstName}'" ); 
-    push( @fields, "'$params->{emailPrimary}'" );
-    push( @fields, "'$params->{phonePrimary}'" );
-    my $password = crypt($params->{passwordNewOnce}, 'oscars');
+        $request->{certSubject} ? "'$request->{certSubject}'" : 'NULL' );  
+    push( @fields, "'$request->{lastName}'" );
+    push( @fields, "'$request->{firstName}'" ); 
+    push( @fields, "'$request->{emailPrimary}'" );
+    push( @fields, "'$request->{phonePrimary}'" );
+    my $password = crypt($request->{passwordNewOnce}, 'oscars');
     push( @fields, "'$password'" );
     push( @fields,
-        $params->{description} ? "'$params->{description}'" : 'NULL' ); 
+        $request->{description} ? "'$request->{description}'" : 'NULL' ); 
     push( @fields,
-        $params->{emailSecondary} ? "'$params->{emailSecondary}'" : 'NULL' ); 
+        $request->{emailSecondary} ? "'$request->{emailSecondary}'" : 'NULL' ); 
     push( @fields,
-        $params->{phoneSecondary} ? "'$params->{phoneSecondary}'" : 'NULL' ); 
-    push( @fields, $params->{status} ? "'$params->{status}'" : 'NULL' ); 
+        $request->{phoneSecondary} ? "'$request->{phoneSecondary}'" : 'NULL' ); 
+    push( @fields, $request->{status} ? "'$request->{status}'" : 'NULL' ); 
     push( @fields,
-        $params->{activationKey} ? "'$params->{activationKey}'" : 'NULL' ); 
+        $request->{activationKey} ? "'$request->{activationKey}'" : 'NULL' ); 
     push( @fields,
-        $params->{lastActiveTime} ? $params->{lastActiveTime} : 'NULL' ); 
+        $request->{lastActiveTime} ? $request->{lastActiveTime} : 'NULL' ); 
     push( @fields,
-        $params->{registerTime} ? $params->{registerTime} : 'NULL' ); 
+        $request->{registerTime} ? $request->{registerTime} : 'NULL' ); 
     my $statement = 'SELECT id FROM institutions WHERE name = ?';
-    my $row = $self->{db}->getRow($statement, $params->{institutionName});
+    my $row = $self->{db}->getRow($statement, $request->{institutionName});
     push( @fields, $row->{id} );    # institutionId
     return \@fields;
 } #____________________________________________________________________________

@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -42,32 +42,30 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Removes a reservation system user.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
-
-    my( $msg );
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage users");
     }
-    my $results = {};
-    my $params = $self->{params};
     # check to make sure user exists
     my $statement = 'SELECT login FROM users WHERE login = ?';
-    my $row = $self->{db}->getRow($statement, $params->{selectedUser});
+    my $row = $self->{db}->getRow($statement, $request->{selectedUser});
     if ( !$row ) {
-        throw Error::Simple("Cannot remove user $params->{selectedUser}. " .
+        throw Error::Simple("Cannot remove user $request->{selectedUser}. " .
 	       	"The user does not exist.");
     }
     my $statement = 'DELETE from users where login = ?';
-    $self->{db}->execStatement($statement, $params->{selectedUser});
+    $self->{db}->execStatement($statement, $request->{selectedUser});
     $statement = "SELECT * FROM UserList";
-    $results->{list} = $self->{db}->doSelect($statement);
-    return $results;
+    my $response = {};
+    $response->{list} = $self->{db}->doSelect($statement);
+    return $response;
 } #____________________________________________________________________________
 
 

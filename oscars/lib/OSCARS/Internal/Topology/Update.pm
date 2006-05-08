@@ -25,7 +25,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -42,25 +42,26 @@ our @ISA = qw{OSCARS::Method};
 
 ###############################################################################
 # soapMethod:  Update information in router, interface, and ipaddrs
-#               tables
+#              tables
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
-
-    my( @fileList, $routerInfo );
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Domains', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to update routers");
     }
-    chdir($self->{params}->{directory});
-    opendir(DATADIR, ".") or die "Directory: $self->{params}->{directory}: $!";
+    chdir($request->{directory});
+    opendir(DATADIR, ".") or die "Directory: $request->{directory}: $!";
     # For now, assumes all files are data files
-    @fileList = grep { $_ ne '.' and $_ ne '..' } readdir(DATADIR);
+    my @fileList = grep { $_ ne '.' and $_ ne '..' } readdir(DATADIR);
     closedir(DATADIR);
-    $routerInfo = $self->readSnmpFiles(@fileList);
-    $self->updateDB($routerInfo);
-    return $routerInfo;
+    my $response = $self->readSnmpFiles(@fileList);
+    $self->updateDB($response);
+    return $response;
 } #___________________________________________________________________________
 
 

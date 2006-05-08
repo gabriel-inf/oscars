@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -47,24 +47,23 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Removes a permission from the permissions table
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage permissions");
     }
-    my $results = {};
-    my $params = $self->{params};
+    my $response = {};
     my $permissionId =
-        $self->{lib}->idFromName('permission', $params->{permissionName});
+        $self->{lib}->idFromName('permission', $request->{permissionName});
     my $statement = 'DELETE FROM permissions WHERE id = ?';
     $self->{db}->execStatement($statement, $permissionId);
-    my $msg = "Removed permission named $params->{permissionName}";
-    return $results;
+    return $response;
 } #____________________________________________________________________________
 
 

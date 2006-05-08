@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -65,19 +65,20 @@ sub initialize {
 # soapMethod:  Add a new authorization, given user, permission, and 
 #              resource names.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
-            "User $self->{user}->{login} not authorized to manage authorizations");
+            "User $self->{user}->{login} not authorized to add authorization");
     }
-    my $results = {};
-    $results->{login} = $self->{params}->{login};
-    return $results;
+    my $response = {};
+    $response->{login} = $request->{login};
+    return $response;
 } #____________________________________________________________________________
 
 

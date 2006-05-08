@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -47,25 +47,26 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Gets information about a particular user's authorizations.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage authorizations");
     }
-    my $results = {};
+    my $response = {};
     my $statement = "SELECT login FROM users";
-    $results->{users} = {};
+    $response->{users} = {};
     my $auxResults = $self->{db}->doSelect($statement);
-    for my $row (@$auxResults) { $results->{users}->{$row->{login}} = 1; }
+    for my $row (@$auxResults) { $response->{users}->{$row->{login}} = 1; }
 
-    $results->{resourcePermissions} =
-        $self->{lib}->getResourcePermissions( $self->{params} );
-    return $results;
+    $response->{resourcePermissions} =
+        $self->{lib}->getResourcePermissions( $request );
+    return $response;
 } #____________________________________________________________________________
 
 ######

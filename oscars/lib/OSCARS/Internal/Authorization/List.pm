@@ -3,7 +3,7 @@ package OSCARS::Internal::Authorization::List;
 
 =head1 NAME
 
-OSCARS::Internal::Authorization::List - Handles authorizations
+OSCARS::Internal::Authorization::List - Retrieves authorizations
 
 =head1 SYNOPSIS
 
@@ -11,10 +11,8 @@ OSCARS::Internal::Authorization::List - Handles authorizations
 
 =head1 DESCRIPTION
 
-This is an internal SOAP method.  It manages the retrieval of information from
-the permissions, resources, resourcepermissions and authorizations tables, as 
-well as additions and deletions upon the authoriozations table,  The specific 
-operation to perform is given by the 'op' parameter. 
+This is an internal SOAP method.  It retrieves all authorizations from the
+database.
 
 =head1 AUTHORS
 
@@ -22,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -47,29 +45,28 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Gets all information for the Manage Authorizations page. 
-#     It returns information from the resources, permissions, and
-#     authorizations tables.
+# soapMethod:  Retrieves all information from the authorizations table. 
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage authorizations");
     }
-    my $results = {};
+    my $response = {};
     my $statement = "SELECT login FROM users";
-    $results->{users} = {};
+    $response->{users} = {};
     my $auxResults = $self->{db}->doSelect($statement);
-    for my $row (@$auxResults) { $results->{users}->{$row->{login}} = 1; }
+    for my $row (@$auxResults) { $response->{users}->{$row->{login}} = 1; }
 
-    $results->{resourcePermissions} =
-        $self->{lib}->getResourcePermissions( $self->{params} );
-    return $results;
+    $response->{resourcePermissions} =
+        $self->{lib}->getResourcePermissions( $request );
+    return $response;
 } #____________________________________________________________________________
 
 

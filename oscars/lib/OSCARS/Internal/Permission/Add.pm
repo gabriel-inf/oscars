@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -56,22 +56,22 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  Gets all information necessary for the Manage Permissions page.
-#     It returns information from the permissions table.
+# soapMethod:  Handles adding a permission to the permissions table.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage permissions");
     }
-    $self->{lib}->addRow( $self->{params},'Permissions' );
-    my $results = {};
-    return $results;
+    $self->{lib}->addRow( $request,'Permissions' );
+    my $response = {};
+    return $response;
 } #____________________________________________________________________________
 
 

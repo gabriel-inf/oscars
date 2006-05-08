@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 4, 2006
 
 =cut
 
@@ -43,22 +43,21 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Retrieves a list of all system users.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
-
-    my( $msg );
+    my( $self, $request, $logger ) = @_;
 
     if ( !$self->{user}->authorized('Users', 'manage') ) {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage users");
     }
-    my $results = {};
+    my $response = {};
     my $statement = "SELECT * FROM UserList";
-    $results->{list} = $self->{db}->doSelect($statement);
-    return $results;
+    $response->{list} = $self->{db}->doSelect($statement);
+    return $response;
 } #____________________________________________________________________________
 
 
