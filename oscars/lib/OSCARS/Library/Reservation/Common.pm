@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 2, 2006
+May 4, 2006
 
 =cut
 
@@ -50,44 +50,31 @@ sub initialize {
 
 
 ###############################################################################
-# listDetails:  get reservation details from the database, given its
+# details:  get reservation details from the database, given its
 #     reservation id.  If a user has the proper authorization, he can view any 
 #     reservation's details.  Otherwise he can only view reservations that
-#     he has made, with less of the details.
+#     he has made, with less of the details.  If a database field is NULL
+#     or blank, it is not returned.
 #
 # In:  reference to hash of parameters
-# Out: reservations if any, and status message
+# Out: reference to hash of reservation details
 #
-sub listDetails {
-    my( $self, $params ) = @_;
+sub details {
+    my( $self, $id ) = @_;
 
-    my( $statement, $results );
+    my( $statement, $fields );
 
-    my @strArray = split('-', $params->{tag});
-    my $id = $strArray[-1];
     if ( $self->{user}->authorized('Reservations', 'manage') ) {
         $statement = 'SELECT * FROM ReservationAuthDetails WHERE id = ?';
-        $results = $self->{db}->getRow($statement, $id);
-        my $pathArray = $self->getPathRouterInfo($results->{path});
-        $results->{path} = join(' ', @{$pathArray});
+        $fields = $self->{db}->getRow($statement, $id);
     }
     else {
         $statement = 'SELECT * FROM ReservationUserDetails ' .
                      'WHERE login = ? AND id = ?';
-        $results = $self->{db}->getRow($statement, $self->{user}->{login}, $id);
+        $fields = $self->{db}->getRow($statement, $self->{user}->{login}, $id);
     }
-    if (!$results) { return undef; }
-    $self->checkNulls($results);
-    ( $results->{ingressRouterIP}, $results->{ingressLoopbackIP} ) = $self->getRouterInfo(
-                              $results->{ingressInterfaceId});
-    ( $results->{egressRouterIP}, $results->{egressLoopbackIP} ) = $self->getRouterInfo(
-                              $results->{egressInterfaceId});
-    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{startTime}, $results->{origTimeZone});
-    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{endTime}, $results->{origTimeZone});
-    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
-                              $results->{createdTime}, $results->{origTimeZone});
+    if (!$fields) { return undef; }
+    my $results = $self->formatResults($fields);
     return $results;
 } #____________________________________________________________________________
 
@@ -97,7 +84,7 @@ sub listDetails {
 #                     active
 #
 sub updateReservation {
-    my ($self, $resv, $status, $logger) = @_;
+    my( $self, $resv, $status, $logger ) = @_;
 
     if ( !$resv->{lspStatus} ) {
         $resv->{lspStatus} = "Successful configuration";
@@ -133,6 +120,51 @@ sub updateStatus {
     $statement = qq{ UPDATE reservations SET status = ? WHERE id = ?};
     $self->{db}->execStatement($statement, $status, $id);
     return $status;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# formatResults:  Format results to be sent back from SOAP methods, given
+#                fields from reservations table.
+#
+sub formatResults {
+    my( $self, $fields ) = @_;
+
+    my $unused;
+
+    my $results = {};
+    $results->{tag} = $fields->{tag};
+    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
+                              $fields->{startTime}, $fields->{origTimeZone});
+    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
+                              $fields->{endTime}, $fields->{origTimeZone});
+    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                              $fields->{createdTime}, $fields->{origTimeZone});
+    $results->{bandwidth} = $fields->{bandwidth};
+    $results->{burstLimit} = $fields->{burstLimit};
+    $results->{login} = $fields->{login};
+    $results->{status} = $fields->{status};
+    if ( $fields->{class} ) { $results->{class} = $fields->{class}; }
+    if ( $fields->{srcPort} ) { $results->{srcPort} = $fields->{srcPort}; }
+    if ( $fields->{destPort} ) { $results->{destPort} = $fields->{destPort}; }
+    if ( $fields->{dscp} ) { $results->{dscp} = $fields->{dscp}; }
+    if ( $fields->{protocol} ) { $results->{protocol} = $fields->{protocol}; }
+    if ( $fields->{path} ) {
+        my $pathArray = $self->getPathRouterInfo($fields->{path});
+        $results->{path} = join(' ', @{$pathArray});
+    }
+    $results->{description} = $fields->{description};
+    if ( $fields->{ingressInterfaceId} ) {
+        ( $results->{ingressRouterIP}, $results->{ingressLoopbackIP} ) =
+            $self->getRouterInfo( $fields->{ingressInterfaceId} );
+    }
+    if ( $fields->{egressInterfaceId} ) {
+        ( $results->{egressRouterIP}, $results->{egressLoopbackIP} ) =
+            $self->getRouterInfo( $fields->{egressInterfaceId} );
+    }
+    $results->{srcHost} = $fields->{srcHost};
+    $results->{destHost} = $fields->{destHost};
+    return $results;
 } #____________________________________________________________________________
 
 
@@ -174,21 +206,12 @@ sub getPathRouterInfo {
 sub hostIPToId {
     my( $self, $ipaddr ) = @_;
 
-    my $hostname;
-
     # TODO:  fix schema, possible hostIP would not be unique
     my $statement = 'SELECT id FROM hosts WHERE IP = ?';
     my $row = $self->{db}->getRow($statement, $ipaddr);
     # if no matches, insert a row in hosts
     if ( !$row ) {
-        # first group tests for IP address, second handles CIDR blocks
-        my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)';
-        # if doesn't match (not CIDR), attempt to get hostname
-        if ($ipaddr !~ $regexp) {
-            my $ip = inet_aton($ipaddr);
-            $hostname = gethostbyaddr($ip, AF_INET);
-        }
-        if (!$hostname) { $hostname = $ipaddr; }
+        my $hostname = $self->getHostName($ipaddr);
         $statement = "INSERT INTO hosts VALUES (NULL, '$ipaddr', '$hostname')";
         $self->{db}->execStatement($statement);
         return $self->{db}->{dbh}->{mysql_insertid};
@@ -197,69 +220,19 @@ sub hostIPToId {
 } #____________________________________________________________________________
 
 
-###############################################################################
-# checkNulls:  
-#
-sub checkNulls {
-    my( $self, $resv ) = @_ ;
+sub getHostName {
+    my( $self, $ipaddr ) = @_;
 
-    # clean up NULL values
-    if (!$resv->{protocol} || ($resv->{protocol} eq 'NULL')) {
-        $resv->{protocol} = 'DEFAULT';
+    my $hostname;
+    # first group tests for IP address, second handles CIDR blocks
+    my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)';
+    # if doesn't match (not CIDR), attempt to get hostname
+    if ($ipaddr !~ $regexp) {
+        my $ip = inet_aton($ipaddr);
+        $hostname = gethostbyaddr($ip, AF_INET);
     }
-    if (!$resv->{dscp} || ($resv->{dscp} eq 'NU')) {
-        $resv->{dscp} = 'DEFAULT';
-    }
-} #____________________________________________________________________________
-
-
-###############################################################################
-# reservationStats
-#
-sub reservationStats {
-    my( $self, $resv) = @_;
-
-    # TODO:  FIX! infiniteTime
-    my $infiniteTime = 'foo';
-    # only optional fields need to be checked for existence
-    my $msg = "Description:        $resv->{description}\n";
-    if ($resv->{tag}) { $msg .= "Reservation tag:     $resv->{tag}\n"; }
-
-    $msg .= "Start time:         $resv->{startTime}\n";
-    if ($resv->{endTime} ne $infiniteTime) {
-        $msg .= "End time:           $resv->{endTime}\n";
-    }
-    else { $msg .= "End time:           persistent circuit\n"; }
-
-    if ($resv->{createdTime}) {
-        $msg .= "Created time:       $resv->{createdTime}\n";
-    }
-    $msg .= "(Times are in UTC $resv->{origTimeZone})\n";
-    $msg .= "Bandwidth:          $resv->{bandwidth}\n";
-    if ($resv->{burstLimit}) {
-        $msg .= "Burst limit:         $resv->{burstLimit}\n";
-    }
-    $msg .= "Source:             $resv->{srcHost}\n" .
-        "Destination:        $resv->{destHost}\n";
-    if ($resv->{srcPort}) {
-        $msg .= "Source port:        $resv->{srcPort}\n";
-    }
-    else { $msg .= "Source port:        DEFAULT\n"; }
-
-    if ($resv->{destPort}) {
-        $msg .= "Destination port:   $resv->{destPort}\n";
-    }
-    else { $msg .= "Destination port:   DEFAULT\n"; }
-
-    $msg .= "Protocol:           $resv->{protocol}\n";
-    $msg .= "DSCP:               $resv->{dscp}\n";
-
-    if ($resv->{class}) {
-        $msg .= "Class:              $resv->{class}\n\n";
-    }
-    else { $msg .= "Class:              DEFAULT\n\n"; }
-
-    return( $msg );
+    if (!$hostname) { $hostname = $ipaddr; }
+    return $hostname;
 } #____________________________________________________________________________
 
 
