@@ -59,10 +59,8 @@
     </test>
     <test name="reservationPending">
         <param name="login" value="testaccount" />
-        <param name="pollTime" value="20" />
     </test>
     <test name="reservationExpired">
         <param name="login" value="testaccount" />
-        <param name="pollTime" value="20" />
     </test>
 </configuration>
