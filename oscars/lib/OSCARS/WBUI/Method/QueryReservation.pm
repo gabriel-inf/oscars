@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 5, 2006
 
 =cut
 
@@ -36,14 +36,14 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 ###############################################################################
 # outputDiv:  print details of reservation returned by SOAP call
-# In:   results of SOAP call
+# In:   response from SOAP call
 # Out:  None
 #
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $response, $authorizations ) = @_;
 
     my $details = OSCARS::WBUI::Method::ReservationDetails->new();
-    return $details->output( $results, $authorizations );
+    return $details->output( $response, $authorizations );
 } #____________________________________________________________________________
 
 

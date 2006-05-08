@@ -18,7 +18,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 3, 2006
+May 5, 2006
 
 =cut
 
@@ -40,31 +40,31 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 #            not implemented yet).
 #
 sub makeCall {
-    my( $self, $soapServer, $soapParams ) = @_;
+    my( $self, $soapServer, $request ) = @_;
 
-    $soapParams->{method} =~ s/(\w)/\l$1/;
-    my $method = $soapParams->{method};
-    my $som = $soapServer->$method($soapParams);
-    $soapParams->{method} =~ s/(\w)/\U$1/;
-    my $secondParams = {};
-    $secondParams->{method} = 'queryReservation';
-    $secondParams->{tag} = $soapParams->{tag};
-    $secondParams->{login} = $soapParams->{login};
-    my $secondSom = $soapServer->queryReservation($secondParams);
+    $request->{method} =~ s/(\w)/\l$1/;
+    my $method = $request->{method};
+    my $som = $soapServer->$method($request);
+    $request->{method} =~ s/(\w)/\U$1/;
+    my $secondRequest = {};
+    $secondRequest->{method} = 'queryReservation';
+    $secondRequest->{tag} = $request->{tag};
+    $secondRequest->{login} = $request->{login};
+    my $secondSom = $soapServer->queryReservation($secondRequest);
     return $secondSom;
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
 # outputDiv:  print details of reservation returned by SOAP call
-# In:   results of SOAP call
+# In:   response from SOAP call
 # Out:  None
 #
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $response, $authorizations ) = @_;
 
     my $details = OSCARS::WBUI::Method::ReservationDetails->new();
-    return $details->output( $results, $authorizations );
+    return $details->output( $response, $authorizations );
 } #____________________________________________________________________________
 
 

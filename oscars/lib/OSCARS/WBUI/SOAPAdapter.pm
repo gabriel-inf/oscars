@@ -51,7 +51,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+May 5, 2006
 
 =cut
 
@@ -81,17 +81,17 @@ sub new {
 sub handleRequest {
     my( $self, $soapServer ) = @_;
 
-    my $results;
+    my $response;
     my( $login, $authorizations ) = $self->authenticate();
     if ( !$login ) { return; }
-    my $soapParams = $self->modifyParams();  # adapts from form params
-    my $som = $self->makeCall($soapServer, $soapParams);
-    if (!$som) { my $results = {} ; }
-    else { $results = $som->result; }
-    $self->postProcess($soapParams, $results);
-    if (!$authorizations) { $authorizations = $results->{authorized}; }
+    my $request = $self->modifyParams();  # adapts from form params
+    my $som = $self->makeCall($soapServer, $request);
+    if (!$som) { my $response = {} ; }
+    else { $response = $som->result; }
+    $self->postProcess($request, $response);
+    if (!$authorizations) { $authorizations = $response->{authorized}; }
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
-    $self->output($som, $soapParams, $authorizations);
+    $self->output($som, $request, $authorizations);
 } #___________________________________________________________________________ 
 
 
@@ -128,15 +128,15 @@ sub modifyParams {
 
 
 ###############################################################################
-# makeCall:  make SOAP call, and get results
+# makeCall:  make SOAP call, and get response
 #
 sub makeCall {
-    my( $self, $soapServer, $soapParams ) = @_;
+    my( $self, $soapServer, $request ) = @_;
 
-    $soapParams->{method} =~ s/(\w)/\l$1/;
-    my $method = $soapParams->{method};
-    my $som = $soapServer->$method($soapParams);
-    $soapParams->{method} =~ s/(\w)/\U$1/;
+    $request->{method} =~ s/(\w)/\l$1/;
+    my $method = $request->{method};
+    my $som = $soapServer->$method($request);
+    $request->{method} =~ s/(\w)/\U$1/;
     return $som;
 } #___________________________________________________________________________ 
 
@@ -145,27 +145,27 @@ sub makeCall {
 # postProcess:  Perform any operations necessary after making SOAP call.
 #
 sub postProcess {
-    my( $self, $params, $results ) = @_;
+    my( $self, $request, $response ) = @_;
 
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# output:  formats and prints results to send back to browser
+# output:  formats and prints response to send back to browser
 #
 sub output {
-    my( $self, $som, $soapParams, $authorizations ) = @_;
+    my( $self, $som, $request, $authorizations ) = @_;
 
     my $msg;
 
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
-    $self->{tabs}->output( $soapParams->{method}, $authorizations );
-    if (!$som) { $msg = "SOAP call $soapParams->{method} failed"; }
+    $self->{tabs}->output( $request->{method}, $authorizations );
+    if (!$som) { $msg = "SOAP call $request->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
-	my $results = $som->result;
-        $msg = $self->outputDiv($results, $authorizations);
+	my $response = $som->result;
+        $msg = $self->outputDiv($response, $authorizations);
     }
     print "<msg>$msg</msg>\n";
     print "</xml>\n";

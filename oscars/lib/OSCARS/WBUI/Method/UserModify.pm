@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 5, 2006
 
 =cut
 
@@ -38,21 +38,21 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # postProcess:  Reset the method name so the correct tab is highlighted.
 #
 sub postProcess {
-    my( $self, $params, $results ) = @_;
+    my( $self, $request, $response ) = @_;
 
-    $params->{method} = 'UserList';
+    $request->{method} = 'UserList';
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# outputDiv:  print user profile form, and results retrieved via
+# outputDiv:  print user profile form, and response retrieved via
 # a SOAP call, if any
 #
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $response, $authorizations ) = @_;
 
     # may be accessing another user's profile if an administrator
-    my $login = $results->{selectedUser} ? $results->{selectedUser} : $results->{login};
+    my $login = $response->{selectedUser} ? $response->{selectedUser} : $response->{login};
     my $modifySubmitStr = "return submit_form(this,
                     'method=UserModify;', check_profile_modification);";
     my $msg = "User profile";
@@ -66,9 +66,9 @@ sub outputDiv {
       <tbody>
       <tr><td>Login Name</td><td>$login</td></tr>
     } );
-    $self->outputPasswordFields($results);
+    $self->outputPasswordFields($response);
     my $details = OSCARS::WBUI::Method::UserDetails->new();
-    $details->output( $results );
+    $details->output( $response );
     print("</tbody></table></form></div>\n");
     return $msg;
 } #____________________________________________________________________________
@@ -78,7 +78,7 @@ sub outputDiv {
 # outputPasswordFields:  print rows having to do with passwords
 #
 sub outputPasswordFields {
-    my( $self, $params ) = @_;
+    my( $self, $request ) = @_;
 
     print( qq{
       <tr>

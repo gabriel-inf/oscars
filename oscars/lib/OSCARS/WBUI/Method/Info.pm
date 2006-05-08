@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 5, 2006
 
 =cut
 
@@ -36,7 +36,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Currently a noop.
 #
 sub make_call {
-    my( $self, $soapServer, $soapParams ) = @_;
+    my( $self, $soapServer, $request ) = @_;
 
     return undef;
 } #____________________________________________________________________________ 
@@ -46,7 +46,7 @@ sub make_call {
 # output:  formats and prints information page
 #
 sub output {
-    my( $self, $som, $soapParams, $authorizations ) = @_;
+    my( $self, $som, $request, $authorizations ) = @_;
 
     my $msg;
 
@@ -61,8 +61,9 @@ sub output {
 
 ###############################################################################
 # Outputs information section.
+#
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $response, $authorizations ) = @_;
 
     my $msg = "Information page";
     print qq{

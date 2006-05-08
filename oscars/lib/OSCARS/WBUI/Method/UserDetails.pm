@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 5, 2006
 
 =cut
 
@@ -43,21 +43,21 @@ sub new {
 #          fields.
 #
 sub output {
-    my( $self, $results ) = @_;
+    my( $self, $response ) = @_;
 
     # take care of non_required fields
     my $description =
-        $results->{description} ? $results->{description} : "";
+        $response->{description} ? $response->{description} : "";
     my $emailSecondary =
-        $results->{emailSecondary} ne 'NULL' ? $results->{emailSecondary} : "";
+        $response->{emailSecondary} ne 'NULL' ? $response->{emailSecondary} : "";
     my $phoneSecondary =
-        $results->{phoneSecondary} ne 'NULL' ? $results->{phoneSecondary} : "";
+        $response->{phoneSecondary} ne 'NULL' ? $response->{phoneSecondary} : "";
 
-    my $firstName = $results->{firstName};
-    my $lastName = $results->{lastName};
-    my $institution = $results->{institutionName};
-    my $emailPrimary = $results->{emailPrimary};
-    my $phonePrimary = $results->{phonePrimary};
+    my $firstName = $response->{firstName};
+    my $lastName = $response->{lastName};
+    my $institution = $response->{institutionName};
+    my $emailPrimary = $response->{emailPrimary};
+    my $phonePrimary = $response->{phonePrimary};
     print( qq{
       <tr>
         <td>First Name</td>
@@ -75,7 +75,7 @@ sub output {
         <td>Organization</td>
         <td><select class='required' name='institutionName'>
       } );
-      my $institutionList = $results->{institutionList};
+      my $institutionList = $response->{institutionList};
       for my $row (@$institutionList) {
           print("<option value='$row->{name}' ");
 	  if ( $row->{name} eq $institution ) {

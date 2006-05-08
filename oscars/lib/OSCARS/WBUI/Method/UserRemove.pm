@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 5, 2006
 
 =cut
 
@@ -38,9 +38,9 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # postProcess:  Reset the method name so the correct tab is highlighted.
 #
 sub postProcess {
-    my( $self, $params, $results ) = @_;
+    my( $self, $request, $response ) = @_;
 
-    $params->{method} = 'UserList';
+    $request->{method} = 'UserList';
 } #___________________________________________________________________________ 
 
 
@@ -48,14 +48,14 @@ sub postProcess {
 # outputDiv:  If the caller has admin privileges print a list of 
 #          all users returned by the SOAP call
 #
-# In:  results of SOAP call
+# In:  response from SOAP call
 # Out: None
 #
 sub outputDiv {
-    my ( $self, $results, $authorizations ) = @_;
+    my ( $self, $response, $authorizations ) = @_;
 
     my $msg = "Successfully read user list.";
-    my $users = $results->{list};
+    my $users = $response->{list};
     my $addSubmitStr = "return submit_form(this, 'method=UserAddForm;');";
     print( qq{
       <div>

@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 5, 2006
 
 =cut
 
@@ -40,9 +40,9 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub modifyParams {
     my( $self ) = @_;
 
-    my $params = $self->SUPER::modifyParams();
-    $params->{method} = 'InstitutionList';
-    return $params;
+    my $request = $self->SUPER::modifyParams();
+    $request->{method} = 'InstitutionList';
+    return $request;
 } #____________________________________________________________________________
 
 
@@ -50,9 +50,9 @@ sub modifyParams {
 # postProcess:  Reset the method name so the correct tab is highlighted.
 #
 sub postProcess {
-    my( $self, $params, $results ) = @_;
+    my( $self, $request, $response ) = @_;
 
-    $params->{method} = 'UserList';
+    $request->{method} = 'UserList';
 } #___________________________________________________________________________ 
 
 
@@ -60,7 +60,7 @@ sub postProcess {
 # outputDiv: print add user form.
 #
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $response, $authorizations ) = @_;
 
     my $submitStr = "return submit_form(this, 'method=UserAdd;',
 			                check_add_user);";
@@ -77,11 +77,11 @@ sub outputDiv {
       <td><input class='required' type='text' name='selectedUser' size='40'></input></td>
     </tr>
     } );
-    $self->outputPasswordFields($results);
+    $self->outputPasswordFields($response);
     # default selection
-    $results->{institutionName} = 'Energy Sciences Network';
+    $response->{institutionName} = 'Energy Sciences Network';
     my $details = OSCARS::WBUI::Method::UserDetails->new();
-    $details->output( $results );
+    $details->output( $response );
     return $msg;
 } #___________________________________________________________________________ 
  
@@ -90,7 +90,7 @@ sub outputDiv {
 # outputPasswordFields:  print rows having to do with passwords
 #
 sub outputPasswordFields {
-    my( $self, $params ) = @_;
+    my( $self, $request ) = @_;
 
     print( qq{
     <tr>

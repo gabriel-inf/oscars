@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 5, 2006
 
 =cut
 
@@ -33,11 +33,10 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# outputDiv:  print authorizations form, with results retrieved 
-# via SOAP call
+# outputDiv:  print authorizations form, with response from SOAP call 
 #
 sub outputDiv {
-    my( $self, $results, $userTabAuths ) = @_;
+    my( $self, $response, $userTabAuths ) = @_;
 
     my $msg = "OSCARS authorizations";
     print( qq{
@@ -50,10 +49,10 @@ sub outputDiv {
     <table width='90%' class='auth-ui'>
     <tr>
     } );
-    $self->granteeTable('Users', $results->{users}, 'login');
+    $self->granteeTable('Users', $response->{users}, 'login');
     # No roles at the moment.
-    #$self->granteeTable('Roles', $results->{roles}, 'login');
-    $self->authorizationsTable($results);
+    #$self->granteeTable('Roles', $response->{roles}, 'login');
+    $self->authorizationsTable($response);
     print("</tr></table></form></div>\n");
     return $msg;
 } #____________________________________________________________________________
@@ -64,7 +63,7 @@ sub outputDiv {
 #     assigned authorizations
 #
 sub granteeTable {
-    my( $self, $headerName, $results, $key ) = @_;
+    my( $self, $headerName, $response, $key ) = @_;
 
     print( qq{
       <td class='auth-ui-td'>
@@ -72,7 +71,7 @@ sub granteeTable {
         <thead><tr><td>$headerName</td></tr></thead>
         <tbody>
     } );
-    for my $name (sort keys %{$results}) {
+    for my $name (sort keys %{$response}) {
         print("<tr><td>$name</td></tr>");
     }
     print("</tbody></table></td>\n");
@@ -83,7 +82,7 @@ sub granteeTable {
 # authorizationsTable:  output authorizations table
 #
 sub authorizationsTable {
-    my( $self, $results ) = @_;
+    my( $self, $response ) = @_;
 
     print( qq{
       <td class='auth-ui-td'>
@@ -91,8 +90,8 @@ sub authorizationsTable {
       <thead><tr><td>Resource</td><td>Permission</td></tr></thead>
       <tbody>
     } );
-    if ( $results->{id} ) {
-        my $grantee = $results->{authorizations}->{$results->{id}};
+    if ( $response->{id} ) {
+        my $grantee = $response->{authorizations}->{$response->{id}};
         for my $rkey (sort keys %{$grantee}) {
             for my $pkey (sort keys %{$grantee->{$rkey}}) {
                 print("<tr><td>$rkey</td><td>$pkey</td></tr>");

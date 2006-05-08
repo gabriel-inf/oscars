@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 2, 2006
+May 5, 2006
 
 =cut
 
@@ -37,11 +37,11 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 ###############################################################################
 # outputDiv:  Print list of all reservations if the caller is authorized, 
 #             otherwise just print that user's reservations
-# In:   results of SOAP call
+# In:   response from SOAP call
 # Out:  None
 #
 sub outputDiv {
-    my ( $self, $results, $authorizations ) = @_;
+    my ( $self, $response, $authorizations ) = @_;
 
     my $timeHandler = OSCARS::WBUI::Method::ReservationDetails->new();
     my $msg = "Successfully retrieved reservations.";
@@ -64,7 +64,7 @@ sub outputDiv {
     </thead>
     <tbody>
     } );
-    my $reservations = $results->{list};
+    my $reservations = $response->{list};
     for my $row (@$reservations) { $self->printRow( $row, $timeHandler ); }
     print("</tbody></table></div>\n");
     return $msg;
@@ -74,7 +74,7 @@ sub outputDiv {
 ###############################################################################
 # printRow:  print the table row corresponding to one reservation
 #
-# In:   one row of results from SOAP call
+# In:   one row of response from SOAP call
 # Out:  None
 #
 sub printRow {

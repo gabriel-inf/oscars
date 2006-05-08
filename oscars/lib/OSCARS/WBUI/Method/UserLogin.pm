@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 5, 2006
 
 =cut
 
@@ -51,11 +51,11 @@ sub authenticate {
 # output:  overrides superclass; formats and prints information page
 #
 sub output {
-    my( $self, $som, $soapParams, $authorizations ) = @_;
+    my( $self, $som, $request, $authorizations ) = @_;
 
     my $msg;
 
-    if (!$som) { $msg = "SOAP call $soapParams->{method} failed"; }
+    if (!$som) { $msg = "SOAP call $request->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     # if there was an error
     if ($msg) {
@@ -65,16 +65,16 @@ sub output {
         print "</xml>\n";
 	return;
     }
-    my $results = $som->result;
+    my $response = $som->result;
     my $session = OSCARS::WBUI::UserSession->new();
-    my $sid = $session->start($self->{cgi}, $results);
+    my $sid = $session->start($self->{cgi}, $response);
     # for some reason the CGI::Session variant doesn't work
     print $self->{cgi}->header(
 	        -type=>'text/xml',
 	        -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
     print "<xml>\n";
     $self->{tabs}->output( 'Info', $authorizations );
-    $msg = $self->outputDiv($results, $authorizations);
+    $msg = $self->outputDiv($response, $authorizations);
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
@@ -82,12 +82,12 @@ sub output {
 
 ###############################################################################
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $response, $authorizations ) = @_;
 
     my $info = OSCARS::WBUI::Method::Info->new();
-    my $msg = $info->outputDiv($results, $authorizations);
+    my $msg = $info->outputDiv($response, $authorizations);
     # override in this case
-    $msg = "User $results->{login} signed in.\n";
+    $msg = "User $response->{login} signed in.\n";
     return $msg;
 } #____________________________________________________________________________
 

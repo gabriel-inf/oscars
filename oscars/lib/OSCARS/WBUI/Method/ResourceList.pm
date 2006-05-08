@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 5, 2006
 
 =cut
 
@@ -34,10 +34,10 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# outputDiv:  print resources form, with results retrieved via SOAP call
+# outputDiv:  print resources form, with response retrieved via SOAP call
 #
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $response, $authorizations ) = @_;
 
     my $msg = "OSCARS resources";
     print( qq{
@@ -52,11 +52,11 @@ sub outputDiv {
     <tr>
     } );
     $self->entryFields();
-    $self->componentTable('Resources', $results->{resources}, 'resourceName');
-    $self->componentTable('Permissions', $results->{permissions},
+    $self->componentTable('Resources', $response->{resources}, 'resourceName');
+    $self->componentTable('Permissions', $response->{permissions},
                         'permissionName');
     $self->opsTable();
-    $self->resourcePermissionsTable($results->{resourcePermissions});
+    $self->resourcePermissionsTable($response->{resourcePermissions});
     print("</tr></table></form></div>\n");
     return $msg;
 } #____________________________________________________________________________
@@ -159,7 +159,7 @@ sub permissionEntryFields {
 # componentTable:  output table for one component of resources (deletion)
 #
 sub componentTable {
-    my( $self, $headerName, $results, $key ) = @_;
+    my( $self, $headerName, $response, $key ) = @_;
 
     print( qq{
       <td class='auth-ui-td'>
@@ -167,7 +167,7 @@ sub componentTable {
         <thead><tr><td>$headerName</td></tr></thead>
         <tbody>
     } );
-    for my $name (sort keys %{$results}) {
+    for my $name (sort keys %{$response}) {
         print("<tr><td>$name</td></tr>\n");
     }
     print("</tbody></table></td>\n");
@@ -198,7 +198,7 @@ sub opsTable {
 # resourcePermissionsTable:  output resource permissions table
 #
 sub resourcePermissionsTable {
-    my( $self, $results ) = @_;
+    my( $self, $response ) = @_;
 
     print( qq{
       <td class='auth-ui-td'>
@@ -206,8 +206,8 @@ sub resourcePermissionsTable {
         <thead><tr><td>Resource</td><td>Requires</td></tr></thead>
         <tbody>
     } );
-    for my $rkey (sort keys %{$results}) {
-        for my $pkey (sort keys %{$results->{$rkey}}) {
+    for my $rkey (sort keys %{$response}) {
+        for my $pkey (sort keys %{$response->{$rkey}}) {
             print("<tr><td>$rkey</td><td>$pkey</td></tr>");
         }
     }

@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 5, 2006
 
 =cut
 
@@ -38,14 +38,14 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # outputDiv:  If the caller has admin privileges print a list of 
 #          all users returned by the SOAP call
 #
-# In:  results of SOAP call
+# In:  response from SOAP call
 # Out: None
 #
 sub outputDiv {
-    my ( $self, $results, $authorizations ) = @_;
+    my ( $self, $response, $authorizations ) = @_;
 
     my $msg = "Successfully read user list.";
-    my $users = $results->{list};
+    my $users = $response->{list};
     my $addSubmitStr = "return submit_form(this, 'method=UserAddForm;');";
     print( qq{
       <div>

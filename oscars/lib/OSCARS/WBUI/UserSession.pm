@@ -23,7 +23,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+May 5, 2006
 
 =cut
 
@@ -57,13 +57,13 @@ sub new {
 #
 sub start
 {
-    my( $self, $cgi, $results ) = @_;
+    my( $self, $cgi, $response ) = @_;
 
     my $session = CGI::Session->new("driver:File", undef, {Directory => "/tmp"});
     my $sid = $session->id();
-    $session->param('login', $results->{login});
-    $session->param('lastPage', $results->{GetInfo});
-    $session->param('authorized', $results->{authorized});
+    $session->param('login', $response->{login});
+    $session->param('lastPage', $response->{GetInfo});
+    $session->param('authorized', $response->{authorized});
     $session->expire('+8h');  # expire after 8 hours
     return $sid;
 } #____________________________________________________________________________
