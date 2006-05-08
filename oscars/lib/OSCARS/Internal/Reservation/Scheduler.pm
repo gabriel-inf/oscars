@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+May 4, 2006
 
 =cut
 
@@ -31,7 +31,6 @@ use Error qw(:try);
 use Socket;
 
 use OSCARS::PSS::JnxLSP;
-use OSCARS::Library::Reservation::TimeConversion;
 use OSCARS::Library::Reservation::Common;
 
 use OSCARS::Method;
@@ -43,7 +42,6 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                             'user' => $self->{user}, 'db' => $self->{db});
     # must be overriden
@@ -52,11 +50,13 @@ sub initialize {
 
 
 ###############################################################################
-# soapMethod:  find reservations to run.  Find all the
-#    reservations in db that need to be setup and run in the next N minutes.
+# soapMethod:  handles setting up and tearing down LSP's.
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     my $updateStatus;
 
@@ -64,56 +64,23 @@ sub soapMethod {
         throw Error::Simple(
             "User $self->{user}->{login} not authorized to manage circuits");
     }
-    $self->{params}->{timeInterval} = 20;  #TODO:  FIX explicit setting
+    $request->{timeInterval} = 20;  #TODO:  FIX explicit setting
     if ($self->{opstring} eq 'setup') { $updateStatus = 'active'; }
     else { $updateStatus = 'finished'; }
     # find reservations that need to be scheduled
     my $reservations =
-        $self->getReservations($self->{params}->{timeInterval});
+        $self->getReservations($request->{timeInterval});
+    my @formattedList = ();
     for my $resv (@$reservations) {
         $self->mapToIPs($resv);
         # call PSS to schedule LSP
-        $resv->{lspStatus} = $self->configurePSS($resv);
-        $self->{resvLib}->updateReservation( $resv, $updateStatus, 
-                                                    $self->{logger} );
+        $resv->{lspStatus} = $self->configurePSS($resv, $logger);
+        $self->{resvLib}->updateReservation( $resv, $updateStatus, $logger );
+        push( @formattedList, $self->{resvLib}->formatResults($resv) );
     }
-    my $results = {};
-    $results->{list} = $reservations;
-    return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# generateMessages:  generate email message
-#
-sub generateMessages {
-    my( $self, $results ) = @_;
-
-    my $reservations = $results->{list};
-    if (!@$reservations) {
-        return( undef, undef );
-    }
-    my( @messages );
-    my( $subject, $msg );
-
-    for my $resv ( @$reservations ) {
-        $resv->{lspConfigTime} = time();
-        $resv->{startTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{startTime});
-        $resv->{endTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{endTime});
-        $resv->{createdTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{createdTime});
-        $resv->{lspConfigTime} = $self->{timeLib}->secondsToDatetime(
-                                               $resv->{lspConfigTime});
-        $subject = "Circuit " . $self->{opstring} . " status for $resv->{login}.";
-        $msg =
-          "Circuit " . $self->{opstring} .  " status for $resv->{login}, for reservation(s) with parameters:\n";
-            # TODO:  if more than one reservation, fix duplicated effort
-        $msg .= $self->reservationLspStats( $resv );
-        push( @messages, {'msg' => $msg, 'subject' => $subject, 'user' => $resv->{login} } );
-    }
-    return( \@messages );
+    my $response = {};
+    $response->{list} = \@formattedList;
+    return $response;
 } #____________________________________________________________________________
 
 
@@ -123,20 +90,20 @@ sub generateMessages {
 # configurePSS:  format the args and call pss to do the configuration change
 #
 sub configurePSS {
-    my( $self, $resv ) = @_;   
+    my( $self, $resv, $logger ) = @_;   
 
     my( $error );
 
     # Create an LSP object.
     my $lsp_info = $self->mapFields($resv);
-    $lsp_info->{logger} = $self->{logger};
+    $lsp_info->{logger} = $logger;
     $lsp_info->{db} = $self->{db};
     my $jnxLsp = new OSCARS::PSS::JnxLSP($lsp_info);
-    $self->{logger}->info('LSP.' . $self->{opstring}, { 'id' => $resv->{id}  });
-    $jnxLsp->configure_lsp($self->{opcode}, $self->{logger});
+    $logger->info('LSP.' . $self->{opstring}, { 'id' => $resv->{id}  });
+    $jnxLsp->configure_lsp($self->{opcode}, $logger);
 
     if ($error = $jnxLsp->get_error())  { return $error; }
-    $self->{logger}->info('LSP.' . $self->{opstring} . '.complete', { 'id' => $resv->{id} });
+    $logger->info('LSP.' . $self->{opstring} . '.complete', { 'id' => $resv->{id} });
     return "";
 } #____________________________________________________________________________
 
@@ -198,64 +165,6 @@ sub mapFields {
 } #____________________________________________________________________________
 
 
-###############################################################################
-# reservationLspStats
-#
-sub reservationLspStats {
-    my( $self, $resv ) = @_;
-
-    my $msg = 
-        "Config time:        $resv->{lspConfigTime}\n" .
-        "Description:        $resv->{description}\n" .
-        "Reservation id:     $resv->{id}\n" .
-        "Start time:         $resv->{startTime}\n" .
-        "End time:           $resv->{endTime}\n" .
-        "Created time:       $resv->{createdTime}\n" .
-        "(Times are in UTC $resv->{origTimeZone})\n" .
-        "Bandwidth:          $resv->{bandwidth}\n" .
-        "Burst limit:        $resv->{burstLimit}\n" .
-        "Source:             $resv->{srcIP}\n" .
-        "Destination:        $resv->{destIP}\n";
-    if ($resv->{srcPort}) {
-        $msg .= "Source port:        $resv->{srcPort}\n";
-    }
-    else { $msg .= "Source port:        DEFAULT\n"; }
-
-    if ($resv->{destPort}) {
-        $msg .= "Destination port:   $resv->{destPort}\n";
-    }
-    else { $msg .= "Destination port:   DEFAULT\n"; }
-
-    if ($resv->{protocol} && ($resv->{protocol} ne 'NULL')) {
-        $msg .= "Protocol:           $resv->{protocol}\n";
-    }
-    else { $msg .= "Protocol:           DEFAULT\n"; }
-
-    if ($resv->{dscp} && ($resv->{dscp} ne 'NU')) {
-        $msg .= "DSCP:               $resv->{dscp}\n";
-    }
-    else { $msg .= "DSCP:               DEFAULT\n"; }
-
-    if ($resv->{class}) {
-        $msg .= "Class:              $resv->{class}\n";
-    }
-    else { $msg .= "Class:   DEFAULT\n"; }
-
-    if ($resv->{ingressRouterIP}) {
-        $msg .= "Ingress loopback:   $resv->{ingressRouterIP}\n";
-    }
-    else { $msg .= "Ingress loopback:   $resv->{ingressLoopbackIP}\n"; }
-
-    if ($resv->{egressRouterIP}) {
-        $msg .= "Egress loopback:    $resv->{egressRouterIP}\n";
-    }
-    else { $msg .= "Egress loopback:    $resv->{egressLoopbackIP}\n"; }
-    
-    $msg .= "$resv->{lspStatus}\n";
-    return $msg;
-} #____________________________________________________________________________
-
-                   
 ######
 1;
 # vim: et ts=4 sw=4
