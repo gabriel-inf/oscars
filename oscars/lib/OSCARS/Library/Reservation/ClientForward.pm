@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 4, 2006
 
 =cut
 
@@ -47,17 +47,17 @@ sub initialize {
 
 
 sub forward {
-    my( $self, $params, $database ) = @_;
+    my( $self, $request, $database ) = @_;
 
-    print STDERR "next domain: $params->{nextDomain}\n";
+    print STDERR "next domain: $request->{nextDomain}\n";
     my $clientMgr = OSCARS::ClientManager->new('database' => $database);
-    my $client = $clientMgr->getClient($params->{nextDomain});
+    my $client = $clientMgr->getClient($request->{nextDomain});
     if ( !$client ) {
         return( 'Unable to get client for next domain', undef );
     }
     my $payload = {};
     $payload->{method} = 'Forward';
-    $payload->{params} = $params;
+    $payload->{request} = $request;
     # TODO:  FIX hard wiring
     $payload->{login} = 'xdomain';
     $payload->{password} = 'crosstest';
