@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 2, 2006
+May 4, 2006
 
 =cut
 
@@ -47,36 +47,20 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Handles cancellation of reservation.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    $self->{logger}->info("start", $self->{params});
+    $logger->info("start", $request);
     # TODO:  ensure unprivileged user can't cancel another's reservation
-    my $status =  $self->{resvLib}->updateStatus(
-                          $self->{params}->{tag}, 'precancel' );
-    my $results = {};
-    $results->{status} = 'precancel';
-    $self->{logger}->info("finish", $results);
-    return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# generateMessage:  generate cancelled email message
-#
-sub generateMessage {
-    my( $self, $resv ) = @_;
-
-    my( @messages );
-    my $login = $self->{user}->{login};
-    my $msg = "Reservation cancelled by $login with parameters:\n";
-    $msg .= $self->{resvLib}->reservationStats($resv);
-    my $subject = "Reservation cancelled by $login.";
-    push(@messages, { 'msg' => $msg, 'subject' => $subject, 'user' => $login } ); 
-    return( \@messages );
+    my $status =  $self->{resvLib}->updateStatus($request->{tag}, 'precancel');
+    my $response = {};
+    $response->{tag} = $request->{tag};
+    $logger->info("finish", $response);
+    return $response;
 } #____________________________________________________________________________
 
 
