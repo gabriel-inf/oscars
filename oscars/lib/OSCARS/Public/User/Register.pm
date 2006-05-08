@@ -20,7 +20,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 27, 2006
+May 4, 2006
 
 =cut
 
@@ -45,26 +45,27 @@ sub initialize {
 ###############################################################################
 # soapMethod:  Registers a user.  Currently a noop. 
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my $results = {};
+    my $response = {};
     # login name overlap check
     my $statement = 'SELECT login FROM users WHERE login = ?';
-    my $row = $self->{db}->getRow($statement, $self->{params}->{selectedUser});
+    my $row = $self->{db}->getRow($statement, $request->{selectedUser});
     if ( $row ) {
         throw Error::Simple('The selected login name is already taken ' .
                    'by someone else; please choose a different login name.');
     }
     # TODO:  call OSCARS::Internal::User::Add
     my $msg = 'Your user registration has been recorded ' .
-        "successfully. Your login name is <strong>$self->{params}->{selectedUser}</strong>. Once " .
+        "successfully. Your login name is <strong>$request->{selectedUser}</strong>. Once " .
         'your registration is accepted, information on ' .
         'activating your account will be sent to your primary email address.';
-    return $results;
+    return $response;
 } #____________________________________________________________________________
 
 

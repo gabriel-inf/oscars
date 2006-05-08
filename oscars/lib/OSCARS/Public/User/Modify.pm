@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-April 26, 2006
+May 4, 2006
 
 =cut
 
@@ -40,36 +40,36 @@ our @ISA = qw{OSCARS::Method};
 #     The default operation is to get the user's profile.  This method accesses
 #     the users and institutions tables.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my( $statement, $results );
+    my( $statement, $response );
 
-    my $params = $self->{params};
     # only happens if coming in from ListUsers form, which requires
     # additional authorization
-    if ( $params->{selectedUser} ) {
+    if ( $request->{selectedUser} ) {
         # check whether this person is in the database
         $statement = 'SELECT login FROM users WHERE login = ?';
-        $results = $self->{db}->getRow($statement, $params->{selectedUser});
-        if ( !$results ) {
-            throw Error::Simple("No such user $params->{selectedUser}.");
+        $response = $self->{db}->getRow($statement, $request->{selectedUser});
+        if ( !$response ) {
+            throw Error::Simple("No such user $request->{selectedUser}.");
         }
     }
-    $params->{login} = $self->{user}->{login};
+    $request->{login} = $self->{user}->{login};
 
     # If the password needs to be updated, set the input password field to
     # the new one.
-    if ( $params->{passwordNewOnce} ) {
-        $params->{password} = crypt( $params->{passwordNewOnce}, 'oscars');
+    if ( $request->{passwordNewOnce} ) {
+        $request->{password} = crypt( $request->{passwordNewOnce}, 'oscars');
     }
 
     my $statement = 'SELECT id FROM institutions WHERE name = ?';
-    my $row = $self->{db}->getRow($statement, $params->{institutionName});
-    $params->{institutionId} = $row->{id};
+    my $row = $self->{db}->getRow($statement, $request->{institutionName});
+    $request->{institutionId} = $row->{id};
 
     # TODO:  FIX way to get update fields
     $statement = 'SHOW COLUMNS from users';
@@ -78,20 +78,20 @@ sub soapMethod {
     $statement = 'UPDATE users SET ';
     for $_ (@$rows) {
         # TODO:  allow setting field to NULL where legal
-        if ( $params->{$_->{Field}} ) {
-            $statement .= "$_->{Field} = '$params->{$_->{Field}}', ";
+        if ( $request->{$_->{Field}} ) {
+            $statement .= "$_->{Field} = '$request->{$_->{Field}}', ";
             # TODO:  check that query preparation correct
-            $results->{$_->{Field}} = $params->{$_->{Field}};
+            $response->{$_->{Field}} = $request->{$_->{Field}};
 	}
     }
     $statement =~ s/,\s$//;
     $statement .= ' WHERE login = ?';
-    $self->{db}->execStatement($statement, $params->{selectedUser});
-    $results->{selectedUser} = $params->{selectedUser};
-    $results->{institutionName} = $params->{institutionName};
+    $self->{db}->execStatement($statement, $request->{selectedUser});
+    $response->{selectedUser} = $request->{selectedUser};
+    $response->{institutionName} = $request->{institutionName};
     $statement = 'SELECT name FROM institutions';
-    $results->{institutionList} = $self->{db}->doSelect($statement);
-    return $results;
+    $response->{institutionList} = $self->{db}->doSelect($statement);
+    return $response;
 } #____________________________________________________________________________
 
 

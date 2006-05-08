@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 27, 2006
+May 4, 2006
 
 =cut
 
@@ -37,32 +37,29 @@ our @ISA = qw{OSCARS::Method};
 ###############################################################################
 # soapMethod:  SOAP method to retrieve a user's profile.
 #
-# In:  reference to hash of parameters
-# Out: reference to hash of results
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my $results = {};
+    my $response = {};
     my $user;
-    my $params = $self->{params};
     my $statement = 'SELECT * FROM UserDetails WHERE login = ?';
     # only happens if coming in from UserList form, which requires
     # additional authorization
-    if ( $params->{selectedUser} ) { $user = $params->{selectedUser}; }
+    if ( $request->{selectedUser} ) { $user = $request->{selectedUser}; }
     else { $user = $self->{user}->{login}; }
-    $results = $self->{db}->getRow($statement, $user);
+    $response = $self->{db}->getRow($statement, $user);
     # check whether this person is in the database
-    if ( !$results ) {
+    if ( !$response ) {
         throw Error::Simple("No such user $user.");
     }
-    else {
-        $results = $self->{db}->getRow($statement, $user);
-    }
-    $results->{selectedUser} = $params->{selectedUser};
+    $response->{selectedUser} = $request->{selectedUser};
     $statement = 'SELECT name FROM institutions';
-    $results->{institutionList} = $self->{db}->doSelect($statement);
-    return $results;
+    $response->{institutionList} = $self->{db}->doSelect($statement);
+    return $response;
 } #____________________________________________________________________________
 
 

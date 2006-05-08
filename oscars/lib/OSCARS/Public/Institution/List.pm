@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 25, 2006
+May 4, 2006
 
 =cut
 
@@ -47,11 +47,11 @@ sub new {
 #              Used by the "add user" form.
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my $results = {};
-    $results->{institutionList} = $self->listInstitutions($self->{db});
-    return $results;
+    my $response = {};
+    $response->{institutionList} = $self->listInstitutions($self->{db});
+    return $response;
 } #____________________________________________________________________________
 
 

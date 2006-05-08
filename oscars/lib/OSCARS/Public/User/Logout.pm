@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 4, 2006
 
 =cut
 
@@ -34,16 +34,18 @@ our @ISA = qw{OSCARS::Method};
 
 ###############################################################################
 # soapMethod:  Logout.
-# In:  reference to hash of parameters
-# Out: reference to hash of results of user logout.
+#
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    my $results = {};
-    $results->{login} = $self->{user}->{login};
-    $self->{logger}->info("successful", $results);
-    return $results;
+    my $response = {};
+    $response->{login} = $self->{user}->{login};
+    $logger->info("successful", $response);
+    return $response;
 } #____________________________________________________________________________
 
 

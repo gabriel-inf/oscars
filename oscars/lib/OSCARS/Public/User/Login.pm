@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+May 4, 2006
 
 =cut
 
@@ -54,29 +54,29 @@ sub initialize {
 
 ###############################################################################
 # soapMethod:  Log in.  Authentication, if it was necessary, has
-#               already been performed by querying OSCARS::Library::AAA::AuthN
-# In:  reference to hash of parameters
-# Out: reference to hash of results containing user login.
+#              already been performed.
+# In:  reference to hash containing request parameters, and OSCARS::Logger 
+#      instance
+# Out: reference to hash containing response
 #
 sub soapMethod {
-    my( $self ) = @_;
+    my( $self, $request, $logger ) = @_;
 
-    $self->{logger}->info("start", $self->{params});
+    $logger->info("start", $request);
     my $login = $self->{user}->{login};
-    my $results = {};
-    $results->{login} = $login;
-    $results->{password} = 'hidden';
+    my $response = {};
+    $response->{login} = $login;
     # used to indicate which tabbed pages that require authorization can
     # be displayed
-    $results->{authorized} = {};
+    $response->{authorized} = {};
     if ( $self->{user}->authorized('Users', 'manage') ) {
-        $results->{authorized}->{ManageUsers} = 1;
+        $response->{authorized}->{ManageUsers} = 1;
     }
     if ( $self->{user}->authorized('Domains', 'manage') ) {
-        $results->{authorized}->{ManageDomains} = 1;
+        $response->{authorized}->{ManageDomains} = 1;
     }
-    $self->{logger}->info("finish", $results);
-    return $results;
+    $logger->info("finish", $response);
+    return $response;
 } #____________________________________________________________________________
 
 
