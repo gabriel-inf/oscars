@@ -10,7 +10,7 @@ use Data::Dumper;
 
 use OSCARS::PluginManager;
 
-my ( $daemon, $portnum, $authN );
+my ( $daemon, $portnum, $factory, $authN );
 
 # TODO:  Essentially going back to earlier version.  Need better UI.
 # port number needs to be option again, config file location (or default) needs
@@ -36,6 +36,7 @@ sub startDaemon {
     if ( !$authN ) {
         die( "Unable to find authentication plugin; does config file exist?");
     }
+    $factory = OSCARS::MethodFactory->new();
     $daemon = SOAP::Transport::HTTP::Daemon
         -> new (LocalPort => $portnum, Listen => 5, Reuse => 1)
         -> dispatch_to('OSCARS::Dispatcher');
@@ -65,7 +66,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 3, 2006
+May 5, 2006
 
 =cut
 
@@ -86,81 +87,81 @@ use OSCARS::Method;
 ###############################################################################
 #
 sub userLogin {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub userLogout {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub userQuery {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub userModify {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub institutionList {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub queryReservation {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub createReservation {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub modifyReservation {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub cancelReservation {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub listReservations {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ### internal methods
@@ -168,73 +169,73 @@ sub listReservations {
 ###############################################################################
 #
 sub userAdd {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub userRemove {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub userList {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub permissionList {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub resourceList {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub authorizationList {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub reservationPending {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub reservationExpired {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub topologyUpdate {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 # public Interdomain (currently in Intradomain)
@@ -242,53 +243,50 @@ sub topologyUpdate {
 ###############################################################################
 #
 sub forward {
-    my( $className, $params ) = @_;
+    my( $className, $request ) = @_;
 
-    return handle($params);
+    return handle($request);
 }
 
 ###############################################################################
 #
 sub handle {
-    my( $params ) = @_;
+    my( $request ) = @_;
 
     my $ex;
     my( $user, $handler, $som );
 
-    my $logger = OSCARS::Logger->new('method' => $params->{method});
+    my $logger = OSCARS::Logger->new('method' => $request->{method});
     $logger->set_level($NetLogger::INFO);
-    if ( $params->{login} ) {
-        $logger->setUserLogin($params->{login});
-    }
+    if ( $request->{login} ) { $logger->setUserLogin($request->{login}); }
     $logger->open('/home/oscars/logs/oscars.log');
-    my $results = {};
+    my $response = {};
     try {
-        $user = $authN->authenticate($daemon, $params);
+        $user = $authN->authenticate($daemon, $request);
 	$logger->setUserLogin($user->{login});
-        my $factory = OSCARS::MethodFactory->new();
-        $handler = $factory->instantiate( $user, $params, $logger );
+        $handler = $factory->instantiate( $user, $request->{method} );
         # Handles SOAP method.  Handler may make other SOAP calls to
 	# accomplish its task.
-        $results = $handler->soapMethod();
+        $response = $handler->soapMethod($request, $logger);
     }
     catch Error::Simple with { $ex = shift; }
     otherwise { $ex = shift; }
     finally {
         if ($ex) {
             print STDERR $ex->{-text}, "\n";
-            $logger->warning("exception: $ex->{-text}", $params);
+            $logger->warning("exception: $ex->{-text}", $request);
 	    $logger->close();
                 # caught by SOAP to indicate fault
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});
         }
-        elsif ($handler) { $handler->postProcess($results); }
-        if ($params->{method} eq 'userLogout') {
-            $authN->removeUser($params->{login});
+        elsif ($handler) { $handler->postProcess($request, $response); }
+        if ($request->{method} eq 'userLogout') {
+            $authN->removeUser($request->{login});
         }
         $logger->close();
     };
-    return $results;
+    return $response;
 } #____________________________________________________________________________
 
 
