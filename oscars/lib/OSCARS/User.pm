@@ -108,6 +108,7 @@ sub setAuthenticated {
 
 ###############################################################################
 # authorized:  See if user has permission to use a given resource.
+#
 sub authorized {
     my( $self, $resourceName, $permissionName ) = @_;
 
@@ -117,6 +118,7 @@ sub authorized {
 
 ###############################################################################
 # getAuthorizations:  returns user's cached authorizations.
+#
 sub getAuthorizations {
     my( $self ) = @_;
 
