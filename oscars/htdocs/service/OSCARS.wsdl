@@ -304,7 +304,9 @@
 				<soap:body use="literal"
 					parts="createReservationResponse" />
 			</wsdl:output>
-			<wsdl:fault name="OSCARSException" />
+			<wsdl:fault name="OSCARSException" >
+				<soap:fault name="OSCARSException" use="literal"/>
+                       </wsdl:fault>
 		</wsdl:operation>
 
 		<wsdl:operation name="queryReservation">
@@ -318,7 +320,9 @@
 				<soap:body use="literal"
 					parts="queryReservationResponse" />
 			</wsdl:output>
-			<wsdl:fault name="OSCARSException" />
+			<wsdl:fault name="OSCARSException" >
+                                <soap:fault name="OSCARSException" use="literal"/>
+                       </wsdl:fault>
 		</wsdl:operation>
 
 		<wsdl:operation name="listReservations">
@@ -332,6 +336,9 @@
 				<soap:body use="literal"
 					parts="listReservationsResponse" />
 			</wsdl:output>
+                       <wsdl:fault name="OSCARSException" >
+                                <soap:fault name="OSCARSException" use="literal"/>
+			</wsdl:fault>
 		</wsdl:operation>
 
 		<wsdl:operation name="cancelReservation">
