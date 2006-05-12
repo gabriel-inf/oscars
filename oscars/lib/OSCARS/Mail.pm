@@ -106,8 +106,8 @@ sub sendMessage {
 
     if ( !$self->{config}->{$method} ) { return; }
     my @resultsArray = ();
-    if ( !$results->{list} ) { push(@resultsArray, $results); }
-    else { @resultsArray = @{$results->{list}}; }
+    if ( ref($results) eq 'HASH' ) { push(@resultsArray, $results); }
+    else { @resultsArray = @{$results}; }
     my $msg = $self->{config}->{$method}->{subject} . "\n\n";
 
     for my $result (@resultsArray) {
