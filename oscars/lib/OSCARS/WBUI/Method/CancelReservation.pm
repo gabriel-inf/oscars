@@ -40,17 +40,18 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 #            not implemented yet).
 #
 sub makeCall {
-    my( $self, $soapServer, $request ) = @_;
+    my( $self, $soapServer, $params ) = @_;
 
-    $request->{method} =~ s/(\w)/\l$1/;
-    my $method = $request->{method};
+    my $method = $self->{method};
+    $method =~ s/(\w)/\l$1/;
+    my $request = { $method . "Request" => $params };
     my $som = $soapServer->$method($request);
-    $request->{method} =~ s/(\w)/\U$1/;
-    my $secondRequest = {};
-    $secondRequest->{method} = 'queryReservation';
-    $secondRequest->{tag} = $request->{tag};
-    $secondRequest->{login} = $request->{login};
-    my $secondSom = $soapServer->queryReservation($secondRequest);
+    my $secondParams = {};
+    $method = 'queryReservation';
+    $secondParams->{tag} = $request->{tag};
+    $secondParams->{login} = $request->{login};
+    $request = { $method . "Request" => $secondParams };
+    my $secondSom = $soapServer->queryReservation($request);
     return $secondSom;
 } #___________________________________________________________________________ 
 

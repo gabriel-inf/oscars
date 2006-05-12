@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 11, 2006
 
 =cut
 
@@ -40,7 +40,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 sub postProcess {
     my( $self, $request, $response ) = @_;
 
-    $request->{method} = 'UserList';
+    $self->{method} = 'UserList';
 } #___________________________________________________________________________ 
 
 
