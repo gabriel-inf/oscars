@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 8, 2006
+May 11, 2006
 
 =cut
 
@@ -49,7 +49,7 @@ sub initialize {
 ###############################################################################
 # soapMethod:  get reservation details from the database, given its
 #     reservation tag.  If a user has the 'manage' permission on the
-#     'Reservations' resource, they can list any reservation's details.
+#     'Reservations' resource, they can query any reservation's details.
 #     Otherwise they can only list reservations that they have made, with less
 #     of the details.
 #
@@ -62,8 +62,7 @@ sub soapMethod {
 
     my @strArray = split('-', $request->{tag});
     my $id = $strArray[-1];
-    my $response = $self->{resvLib}->details($id);
-    return $response;
+    return $self->{resvLib}->details($id);
 } #____________________________________________________________________________
 
 
