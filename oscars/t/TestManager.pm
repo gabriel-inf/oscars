@@ -97,16 +97,14 @@ sub dispatch {
         $self->{db}->connect($self->{database});
     }
     my $authN = $self->{pluginMgr}->usePlugin('authentication');
-    my $credentials = $authN->getCredentials($params->{login}, 'password');
-    $params->{method} = $method;
-    $params->{password} = $credentials;
     if ( !$self->{clientMgr} ) {
         $self->{clientMgr} = OSCARS::ClientManager->new(
                                     'database' => $self->{database});
     }
     my $client = $self->{clientMgr}->getClient();
-    my $som = $client->$method($params);
-    if ($som->faultstring) { $logger->warn( "Error", {$som->faultstring }); }
+    my $request = { $method . 'Request' => $params };
+    my $som = $client->$method($request);
+    if ($som->faultstring) { $logger->warn( "Error", { 'fault' => $som->faultstring }); }
     else {
         $info = Data::Dumper->Dump([$som->result], [qw(*RESPONSE)]);
         $logger->info("response", { 'fields' => substr($info, 0, -1) });
