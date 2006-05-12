@@ -25,7 +25,8 @@ sub instantiate {
     $location = 'OSCARS/WBUI/Method/' . $method . '.pm';
     $className = 'OSCARS::WBUI::Method::' . $method;
     require $location;
-    return $className->new('cgi' => $cgi);
+    return $className->new('cgi' => $cgi,
+                           'method' => $method );
 } #___________________________________________________________________________                                         
 
 
@@ -51,7 +52,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 11, 2006
 
 =cut
 
@@ -81,13 +82,21 @@ sub new {
 sub handleRequest {
     my( $self, $soapServer ) = @_;
 
-    my $response;
+    my( $results, $response );
     my( $login, $authorizations ) = $self->authenticate();
     if ( !$login ) { return; }
     my $request = $self->modifyParams();  # adapts from form params
     my $som = $self->makeCall($soapServer, $request);
-    if (!$som) { my $response = {} ; }
-    else { $response = $som->result; }
+    if (!$som) { $response = {} ; }
+    else {
+        $results = $som->result;
+        # top level is response object (e.g. userLoginResponse); strip it off
+        # in document/literal, should be only one top level, and one underlying 
+	# hash (?)
+        for my $t ( keys %{$results} ) {
+            $response = $results->{$t};
+        }
+    }
     $self->postProcess($request, $response);
     if (!$authorizations) { $authorizations = $response->{authorized}; }
     $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
@@ -116,12 +125,7 @@ sub modifyParams {
     my $params = {};
     for $_ ($self->{cgi}->param) {
 	# TODO:  Fix when figure out Apache2::Request
-        if ($_ ne 'permissions') {
-            $params->{$_} = $self->{cgi}->param($_);
-        }
-        else {
-            @{$params->{$_}} = $self->{cgi}->param($_);
-        }
+        if ($_ ne 'method') { $params->{$_} = $self->{cgi}->param($_); }
     }
     return $params;
 } #___________________________________________________________________________ 
@@ -131,12 +135,13 @@ sub modifyParams {
 # makeCall:  make SOAP call, and get response
 #
 sub makeCall {
-    my( $self, $soapServer, $request ) = @_;
+    my( $self, $soapServer, $params ) = @_;
 
-    $request->{method} =~ s/(\w)/\l$1/;
-    my $method = $request->{method};
+    my $method = $self->{method};
+    # make first letter lowercase
+    $method =~ s/(\w)/\l$1/;
+    my $request = { $method . "Request" => $params };
     my $som = $soapServer->$method($request);
-    $request->{method} =~ s/(\w)/\U$1/;
     return $som;
 } #___________________________________________________________________________ 
 
@@ -156,15 +161,21 @@ sub postProcess {
 sub output {
     my( $self, $som, $request, $authorizations ) = @_;
 
-    my $msg;
+    my( $msg, $response );
 
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
-    $self->{tabs}->output( $request->{method}, $authorizations );
-    if (!$som) { $msg = "SOAP call $request->{method} failed"; }
+    $self->{tabs}->output( $self->{method}, $authorizations );
+    if (!$som) { $msg = "SOAP call $self->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
-	my $response = $som->result;
+	my $results = $som->result;
+        # top level is response object (e.g. userLoginResponse); strip it off
+        # in document/literal, should be only one top level, and one underlying 
+	# hash (?)
+        for my $t ( keys %{$results} ) {
+            $response = $results->{$t};
+        }
         $msg = $self->outputDiv($response, $authorizations);
     }
     print "<msg>$msg</msg>\n";
