@@ -66,7 +66,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 11, 2006
 
 =cut
 
@@ -79,8 +79,8 @@ use strict;
 use OSCARS::Logger;
 use OSCARS::Method;
 
-# intermediate step to different style of dispatching; this is not the final 
-# version
+# NOTE:  Extra enclosing types are to satisfy clients that used WSDL to
+#        generate stubs (no Perl generator works for complexTypes yet).
 
 ### publicly available methods
 
@@ -89,7 +89,8 @@ use OSCARS::Method;
 sub userLogin {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'UserLogin');
+    return { 'userLoginResponse' => $results };
 }
 
 ###############################################################################
@@ -97,7 +98,8 @@ sub userLogin {
 sub userLogout {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'UserLogout');
+    return { 'userLogoutResponse' => $results };
 }
 
 ###############################################################################
@@ -105,7 +107,8 @@ sub userLogout {
 sub userQuery {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'UserQuery');
+    return { 'userQueryResponse' => $results };
 }
 
 ###############################################################################
@@ -113,7 +116,8 @@ sub userQuery {
 sub userModify {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'UserModify');
+    return { 'userModifyResponse' => $results };
 }
 
 ###############################################################################
@@ -121,7 +125,8 @@ sub userModify {
 sub institutionList {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'InstitutionList');
+    return { 'institutionListResponse' => $results };
 }
 
 ###############################################################################
@@ -129,7 +134,8 @@ sub institutionList {
 sub queryReservation {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'QueryReservation');
+    return { 'queryReservationResponse' => $results };
 }
 
 ###############################################################################
@@ -137,7 +143,8 @@ sub queryReservation {
 sub createReservation {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'CreateReservation');
+    return { 'createReservationResponse' => $results };
 }
 
 ###############################################################################
@@ -145,7 +152,8 @@ sub createReservation {
 sub modifyReservation {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'ModifyReservation');
+    return { 'modifyReservationResponse' => $results };
 }
 
 ###############################################################################
@@ -153,7 +161,8 @@ sub modifyReservation {
 sub cancelReservation {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'CancelReservation');
+    return { 'cancelReservationResponse' => $results };
 }
 
 ###############################################################################
@@ -161,7 +170,8 @@ sub cancelReservation {
 sub listReservations {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'ListReservations');
+    return { 'listReservationsResponse' => $results };
 }
 
 ### internal methods
@@ -171,7 +181,8 @@ sub listReservations {
 sub userAdd {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'UserAdd');
+    return { 'userAddResponse' => $results };
 }
 
 ###############################################################################
@@ -179,7 +190,8 @@ sub userAdd {
 sub userRemove {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'UserRemove');
+    return { 'userRemoveResponse' => $results };
 }
 
 ###############################################################################
@@ -187,7 +199,8 @@ sub userRemove {
 sub userList {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'UserList');
+    return { 'userListResponse' => $results };
 }
 
 ###############################################################################
@@ -195,7 +208,8 @@ sub userList {
 sub permissionList {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'PermissionList');
+    return { 'permissionListResponse' => $results };
 }
 
 ###############################################################################
@@ -203,7 +217,8 @@ sub permissionList {
 sub resourceList {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'ResourceList');
+    return { 'resourceListResponse' => $results };
 }
 
 ###############################################################################
@@ -211,7 +226,8 @@ sub resourceList {
 sub authorizationList {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'AuthorizationList');
+    return { 'authorizationListResponse' => $results };
 }
 
 ###############################################################################
@@ -219,7 +235,8 @@ sub authorizationList {
 sub reservationPending {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'ReservationPending');
+    return { 'reservationPendingResponse' => $results };
 }
 
 ###############################################################################
@@ -227,7 +244,8 @@ sub reservationPending {
 sub reservationExpired {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'ReservationExpired');
+    return { 'reservationExpiredResponse' => $results };
 }
 
 ###############################################################################
@@ -235,7 +253,8 @@ sub reservationExpired {
 sub topologyUpdate {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'TopologyUpdate');
+    return { 'topologyUpdateResponse' => $results };
 }
 
 # public Interdomain (currently in Intradomain)
@@ -245,18 +264,25 @@ sub topologyUpdate {
 sub forward {
     my( $className, $request ) = @_;
 
-    return handle($request);
+    my $results = handle($request, 'Forward');
+    return { 'forwardResponse' => $results };
 }
 
 ###############################################################################
 #
 sub handle {
-    my( $request ) = @_;
+    my( $request, $method ) = @_;
 
     my $ex;
     my( $user, $handler, $som );
 
-    my $logger = OSCARS::Logger->new('method' => $request->{method});
+    # top level is request object (e.g. userLoginRequest); strip it off
+    # in document/literal, will be only one top level, and one underlying hash
+    for my $t ( keys %{$request} ) {
+        $request = $request->{$t};
+    }
+    $request->{method} = $method;
+    my $logger = OSCARS::Logger->new('method' => $method);
     $logger->set_level($NetLogger::INFO);
     if ( $request->{login} ) { $logger->setUserLogin($request->{login}); }
     $logger->open('/home/oscars/logs/oscars.log');
@@ -264,7 +290,7 @@ sub handle {
     try {
         $user = $authN->authenticate($daemon, $request);
 	$logger->setUserLogin($user->{login});
-        $handler = $factory->instantiate( $user, $request->{method} );
+        $handler = $factory->instantiate( $user, $method );
         # Handles SOAP method.  Handler may make other SOAP calls to
 	# accomplish its task.
         $response = $handler->soapMethod($request, $logger);
@@ -281,7 +307,7 @@ sub handle {
                  ->faultstring($ex->{-text});
         }
         elsif ($handler) { $handler->postProcess($request, $response); }
-        if ($request->{method} eq 'userLogout') {
+        if ($method eq 'userLogout') {
             $authN->removeUser($request->{login});
         }
         $logger->close();
