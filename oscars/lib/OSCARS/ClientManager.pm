@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+May 3, 2006
 
 =cut
 
@@ -33,6 +33,7 @@ use Error qw(:try);
 
 use strict;
 
+use WSRF::Lite;
 use SOAP::Lite;
 
 use OSCARS::Database;
@@ -50,11 +51,17 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{clients} = {};
+    #Points to the public key of the X509 certificate
+    $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
+    #Points to the private key of the cert - must be unencrypted
+    $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
+    #Tells WSRF::Lite to sign the message with the above cert
+    $ENV{WSS_SIGN} = 'true';
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# getClient:  Adds SOAP::Lite client for given domain to clients 
+# getClient:  Adds WSRF::Lite client for given domain to clients 
 #              hash, indexed by autonomous system number.
 #
 sub getClient {
@@ -78,7 +85,7 @@ sub getClient {
     }
     $dbconn->disconnect();
     if (!$client) { return undef; }
-    $self->{clients}->{$asNum} = SOAP::Lite
+    $self->{clients}->{$asNum} = WSRF::Lite
                                         -> uri($client->{uri})
                                         -> proxy($client->{proxy});
     return $self->{clients}->{$asNum};
