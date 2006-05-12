@@ -18,59 +18,59 @@
 <plugin name='topology' location='topology' type='database' /> 
 
 <!-- Configuration of publicly available SOAP methods -->
-<plugin name='userLogin' location='OSCARS::Public::User::Login'
+<plugin name='UserLogin' location='OSCARS::Public::User::Login'
         type='package' />
-<plugin name='userLogout' location='OSCARS::Public::User::Logout'
+<plugin name='UserLogout' location='OSCARS::Public::User::Logout'
         type='package'/>
-<plugin name='userQuery' location='OSCARS::Public::User::Query'
+<plugin name='UserQuery' location='OSCARS::Public::User::Query'
         type='package'/>
-<plugin name='userModify' location='OSCARS::Public::User::Modify'
+<plugin name='UserModify' location='OSCARS::Public::User::Modify'
         type='package'/>
-<plugin name='institutionList' location='OSCARS::Public::Institution::List' 
+<plugin name='InstitutionList' location='OSCARS::Public::Institution::List' 
         type='package'/>
-<plugin name='queryReservation' location='OSCARS::Public::Reservation::Query' 
+<plugin name='QueryReservation' location='OSCARS::Public::Reservation::Query' 
         type='package'/>
-<plugin name='createReservation' location='OSCARS::Public::Reservation::Create'
+<plugin name='CreateReservation' location='OSCARS::Public::Reservation::Create'
         type='package'/>
-<plugin name='modifyReservation' location='OSCARS::Public::Reservation::Modify'
+<plugin name='ModifyReservation' location='OSCARS::Public::Reservation::Modify'
         type='package'/>
-<plugin name='cancelReservation' location='OSCARS::Public::Reservation::Cancel'
+<plugin name='CancelReservation' location='OSCARS::Public::Reservation::Cancel'
         type='package'/>
-<plugin name='listReservations' location='OSCARS::Public::Reservation::List' 
+<plugin name='ListReservations' location='OSCARS::Public::Reservation::List' 
         type='package'/>
-<plugin name='forward' location='OSCARS::Public::Reservation::Forward' 
+<plugin name='Forward' location='OSCARS::Public::Reservation::Forward' 
         type='package'/>
 
 <!-- Configuration of internal SOAP methods -->
-<plugin name='userAdd' location='OSCARS::Internal::User::Add' type='package'/>
-<plugin name='userRemove' location='OSCARS::Internal::User::Remove'
+<plugin name='UserAdd' location='OSCARS::Internal::User::Add' type='package'/>
+<plugin name='UserRemove' location='OSCARS::Internal::User::Remove'
         type='package'/>
-<plugin name='userList' location='OSCARS::Internal::User::List'
+<plugin name='UserList' location='OSCARS::Internal::User::List'
         type='package'/>
-<plugin name='permissionList' location='OSCARS::Internal::Permission::List'
+<plugin name='PermissionList' location='OSCARS::Internal::Permission::List'
         type='package'/>
-<plugin name='resourceList' location='OSCARS::Internal::Resource::List'
+<plugin name='ResourceList' location='OSCARS::Internal::Resource::List'
         type='package'/>
-<plugin name='authorizationList' 
+<plugin name='AuthorizationList' 
         location='OSCARS::Internal::Authorization::List' type='package'/>
 
-<plugin name='reservationPending' 
+<plugin name='ReservationPending' 
         location='OSCARS::Internal::Reservation::Pending' type='package'/>
-<plugin name='reservationExpired' 
+<plugin name='ReservationExpired' 
         location='OSCARS::Internal::Reservation::Expired' type='package'/>
-<plugin name='topologyUpdate' 
+<plugin name='TopologyUpdate' 
         location='OSCARS::Internal::Topology::Update' type='package'/>
 
 </plugins>
 
 <notifications>
 
-<notification name='cancelReservation'>
+<notification name='CancelReservation'>
     <subject msg='Reservation successfully cancelled' />
     <mapping field='tag' description='Reservation tag' />
 </notification>
 
-<notification name='createReservation'>
+<notification name='CreateReservation'>
     <subject msg='Reservation successfully created' />
     <mapping field='tag' description='Reservation tag' />
     <mapping field='srcHost' description='Source' />
@@ -95,33 +95,33 @@
     <mapping field='egressLoopbackIP' description='Egress loopback IP' />
 </notification>
 
-<notification name='reservationPending'>
+<notification name='ReservationPending'>
     <subject msg='Circuit set up' />
     <mapping field='tag' description='Reservation tag' />
     <mapping field='lspConfigTime' description='Path set up time' />
     <mapping field='lspStatus' description='Configuration status' />
 </notification>
 
-<notification name='reservationExpired'>
+<notification name='ReservationExpired'>
     <subject msg='Circuit torn down' />
     <mapping field='tag' description='Reservation tag' />
     <mapping field='lspConfigTime' description='Path tear down time' />
     <mapping field='lspStatus' description='Configuration status' />
 </notification>
 
-<notification name='userAdd'>
+<notification name='UserAdd'>
     <subject msg='OSCARS user added' />
 </notification>
 
-<notification name='permissionRemove'>
+<notification name='PermissionRemove'>
     <subject msg='Permission removed' />
 </notification>
 
-<notification name='resourceRemove'>
+<notification name='ResourceRemove'>
     <subject msg='Resource removed' />
 </notification>
 
-<notification name='authorizationRemove'>
+<notification name='AuthorizationRemove'>
     <subject msg='Authorization removed' />
 </notification>
 
