@@ -21,7 +21,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 9, 2006
 
 =cut
 
@@ -48,7 +48,6 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{db} = OSCARS::Database->new();
-    $self->{db}->connect($self->{database});
 } #____________________________________________________________________________
 
 
@@ -60,6 +59,7 @@ sub getResourcePermissions {
 
     my( $row, $resourceName, $permissionName );
 
+    $self->{db}->connect($self->{database});
     my $statement = "SELECT resourceId, permissionId FROM resourcePermissions";
     my $results = $self->{db}->doSelect($statement);
     my $resourcePermissions = {};
@@ -75,6 +75,7 @@ sub getResourcePermissions {
 	$permissionName = $row->{name};
         $resourcePermissions->{$resourceName}->{$permissionName} = 1;
     }
+    $self->{db}->disconnect();
     return $resourcePermissions;
 } #____________________________________________________________________________
 
@@ -87,6 +88,7 @@ sub getAuthorizations {
 
     my( $row, $resourceName, $permissionName );
 
+    $self->{db}->connect($self->{database});
     my $auths = {};
     my $statement = "SELECT id from users where login = ?";
     my $results = $self->{db}->getRow($statement, $user->{login});
@@ -107,6 +109,7 @@ sub getAuthorizations {
 	$permissionName = $row->{name};
         $auths->{$resourceName}->{$permissionName} = 1;
     }
+    $self->{db}->disconnect();
     return $auths;
 } #____________________________________________________________________________
 
