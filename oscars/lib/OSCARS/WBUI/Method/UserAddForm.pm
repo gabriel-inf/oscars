@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 11, 2006
 
 =cut
 
@@ -41,7 +41,7 @@ sub modifyParams {
     my( $self ) = @_;
 
     my $request = $self->SUPER::modifyParams();
-    $request->{method} = 'InstitutionList';
+    $self->{method} = 'InstitutionList';
     return $request;
 } #____________________________________________________________________________
 
@@ -52,7 +52,7 @@ sub modifyParams {
 sub postProcess {
     my( $self, $request, $response ) = @_;
 
-    $request->{method} = 'UserList';
+    $self->{method} = 'UserList';
 } #___________________________________________________________________________ 
 
 
@@ -60,7 +60,7 @@ sub postProcess {
 # outputDiv: print add user form.
 #
 sub outputDiv {
-    my( $self, $response, $authorizations ) = @_;
+    my( $self, $results, $authorizations ) = @_;
 
     my $submitStr = "return submit_form(this, 'method=UserAdd;',
 			                check_add_user);";
@@ -70,6 +70,7 @@ sub outputDiv {
     <h3>Add a new user</h3>
     <p>Required fields are outlined in green.</p>
     <form method='post' action='' onsubmit="$submitStr">
+    <p><input type='submit' value='ADD'></input></p>
     <table>
     <tbody>
     <tr>
@@ -77,11 +78,14 @@ sub outputDiv {
       <td><input class='required' type='text' name='selectedUser' size='40'></input></td>
     </tr>
     } );
-    $self->outputPasswordFields($response);
+    my $response = {};
+    $self->outputPasswordFields();
     # default selection
     $response->{institutionName} = 'Energy Sciences Network';
+    $response->{institutionList} = $results;
     my $details = OSCARS::WBUI::Method::UserDetails->new();
     $details->output( $response );
+    print("</tbody></table></form></div>\n");
     return $msg;
 } #___________________________________________________________________________ 
  
@@ -90,7 +94,7 @@ sub outputDiv {
 # outputPasswordFields:  print rows having to do with passwords
 #
 sub outputPasswordFields {
-    my( $self, $request ) = @_;
+    my( $self ) = @_;
 
     print( qq{
     <tr>

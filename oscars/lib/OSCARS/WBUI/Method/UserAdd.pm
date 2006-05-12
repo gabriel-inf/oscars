@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 11, 2006
 
 =cut
 
@@ -35,12 +35,32 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
+# makeCall:  Make call to add a user, and then make another call to
+#            retrieve the resulting user list
+#
+sub makeCall {
+    my( $self, $soapServer, $params ) = @_;
+
+    my $method = $self->{method};
+    # convert first letter to lowercase
+    $method =~ s/(\w)/\l$1/;
+    my $request = { $method . "Request" => $params };
+    my $som = $soapServer->$method($request);
+    my $secondParams = {};
+    $method = 'userList';
+    $request = { $method . "Request" => $secondParams };
+    my $secondSom = $soapServer->userList($request);
+    return $secondSom;
+} #___________________________________________________________________________ 
+
+
+###############################################################################
 # postProcess:  Reset the method name so the correct tab is highlighted.
 #
 sub postProcess {
     my( $self, $request, $response ) = @_;
 
-    $request->{method} = 'UserList';
+    $self->{method} = 'UserList';
 } #___________________________________________________________________________ 
 
 
