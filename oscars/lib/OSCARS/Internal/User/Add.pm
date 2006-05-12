@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+May 11, 2006
 
 =cut
 
@@ -106,8 +106,7 @@ sub soapMethod {
     $self->{db}->execStatement($statement);
 
     my $response = {};
-    $statement = "SELECT * FROM UserList";
-    $response->{list} = $self->{db}->doSelect($statement);
+    $response->{login} = $login;
     return $response;
 } #____________________________________________________________________________
 

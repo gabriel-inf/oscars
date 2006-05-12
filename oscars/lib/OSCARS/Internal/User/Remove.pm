@@ -64,7 +64,7 @@ sub soapMethod {
     $self->{db}->execStatement($statement, $request->{selectedUser});
     $statement = "SELECT * FROM UserList";
     my $response = {};
-    $response->{list} = $self->{db}->doSelect($statement);
+    $response->{login} = $request->{selectedUser};
     return $response;
 } #____________________________________________________________________________
 

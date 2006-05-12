@@ -78,8 +78,7 @@ sub soapMethod {
         $self->{resvLib}->updateReservation( $resv, $updateStatus, $logger );
         push( @formattedList, $self->{resvLib}->formatResults($resv) );
     }
-    my $response = {};
-    @{$response->{list}} = @formattedList;
+    my $response = \@formattedList;
     return $response;
 } #____________________________________________________________________________
 
