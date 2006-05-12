@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 11, 2006
 
 =cut
 
@@ -64,7 +64,7 @@ sub outputDiv {
     </thead>
     <tbody>
     } );
-    my $reservations = $response->{list};
+    my $reservations = $response;
     for my $row (@$reservations) { $self->printRow( $row, $timeHandler ); }
     print("</tbody></table></div>\n");
     return $msg;
