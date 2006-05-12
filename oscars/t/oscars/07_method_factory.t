@@ -15,10 +15,10 @@ my $user = $authN->getUser($login);
 my $factory = OSCARS::MethodFactory->new();
 ok($factory);
 
+my $method = 'userLogin';
 my $request = {};
-$request->{method} = 'userLogin';
 $request->{login} = $login;
 $request->{password} = $credentials;
 
-my $handler = $factory->instantiate( $user, $request->{method} );
+my $handler = $factory->instantiate( $user, $method );
 ok($handler);
