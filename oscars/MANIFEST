@@ -6,10 +6,6 @@ config.xml
 cron/crontab.entry
 cron/scheduler.pl
 doc/README
-htdocs/admin/adduser.html
-htdocs/admin/adduser.js
-htdocs/admin/userdetail.html
-htdocs/admin/userlist.js
 htdocs/favicon.ico
 htdocs/images/ESnetLogo.png
 htdocs/images/internet2_logo.png
@@ -22,10 +18,8 @@ htdocs/scripts/sarissa.js
 htdocs/scripts/selectable.js
 htdocs/scripts/sorttable.js
 htdocs/scripts/timeprint.js
+htdocs/service/OSCARS.wsdl
 htdocs/styleSheets/layout.css
-htdocs/user/activateaccount.html
-htdocs/user/register.html
-htdocs/user/register.js
 lib/OSCARS/ClientManager.pm
 lib/OSCARS/Database.pm
 lib/OSCARS/Internal/Authorization/Add.pm
@@ -76,7 +70,6 @@ lib/OSCARS/Public/User/Modify.pm
 lib/OSCARS/Public/User/Query.pm
 lib/OSCARS/Public/User/Register.pm
 lib/OSCARS/User.pm
-lib/OSCARS/WBUI/Info.pm
 lib/OSCARS/WBUI/Method/AuthorizationList.pm
 lib/OSCARS/WBUI/Method/CancelReservation.pm
 lib/OSCARS/WBUI/Method/CreateReservation.pm
@@ -138,4 +131,3 @@ t/topology/10_jnxSNMP.t
 t/topology/11_jnxTraceroute.t
 t/topology/params.xml
 TODO
-WSDL/OSCARS.wsdl
