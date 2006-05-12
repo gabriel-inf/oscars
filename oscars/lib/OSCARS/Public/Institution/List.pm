@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+May 11, 2006
 
 =cut
 
@@ -32,13 +32,11 @@ use Error qw(:try);
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
 
-sub new {
-    my ($class, %args) = @_;
-    my ($self) = {%args};
-  
-    # Bless $self into designated class.
-    bless($self, $class);
-    return($self);
+
+sub initialize {
+    my( $self ) = @_;
+
+    $self->SUPER::initialize();
 } #____________________________________________________________________________
 
 
@@ -49,9 +47,7 @@ sub new {
 sub soapMethod {
     my( $self, $request, $logger ) = @_;
 
-    my $response = {};
-    $response->{institutionList} = $self->listInstitutions($self->{db});
-    return $response;
+    return $self->listInstitutions($self->{db});
 } #____________________________________________________________________________
 
 
