@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 20, 2006
+May 9, 2006
 
 =cut
 
@@ -48,7 +48,6 @@ sub initialize {
 
     $self->{users} = {};
     $self->{db} = OSCARS::Database->new();
-    $self->{db}->connect($self->{database});
 } #____________________________________________________________________________
 
 
@@ -63,25 +62,23 @@ sub authenticate {
 
     my $user;
 
+    $self->{db}->connect($self->{database});
     # check to see if message should be signed
     my $envelope = $daemon->{_request}->{_content};
     my $de = WSRF::Deserializer->new();
     my $reqHost = $daemon->{_request}->{_headers}{host};
-    if (0) {
-	    #if ($reqHost !~ /localhost/ ){
+    if ($reqHost !~ /localhost/ ){
         my( $login, $errorMsg ) = $self->verifySignature($de, $envelope);
 	# throw type of exception that main try in oscars script understands
-#	if ( $errorMsg ) { throw Error::Simple($errorMsg); }
-	if ( !$errorMsg ) {
-	   $user = $self->getUser($login); 
-	   return $user;
-	
-	} else { print STDERR "return from verifySignature is $errorMsg \n";}
+	if ( $errorMsg ) { throw Error::Simple($errorMsg); }
+        $user = $self->getUser($login); 
+        return $user;
     }
     # otherwise, message came via web interface, use login name and password
     # in params for authentication
     # for now drop thru if message is not signed. Assume  message carries password.
     $user = $self->verifyLogin($params);
+    $self->{db}->disconnect();
     return $user;
 } #____________________________________________________________________________
 
@@ -103,17 +100,14 @@ sub verifySignature {
 	$ex = $@;
 	return ($login,$ex);
     }
-    print STDERR "received signed message\n";
     # print "$verifyResults(X509) \n";
     my $x509_pem = $verifyResults{X509};
     my $X509 = Crypt::OpenSSL::X509->new_from_string($x509_pem);
     my $subject = $X509->subject();
     my $issuer =$X509->issuer();
-    print STDERR "$issuer \n$subject\n";
     my $query = "SELECT login FROM users WHERE certSubject = '$subject'";
     my $row = $self->{db}->getRow($query);
     $login = $row->{login};
-    print STDERR "user is $login\n";
     return( $login, $ex );
 } #____________________________________________________________________________
 
@@ -186,12 +180,20 @@ sub removeUser {
 sub getCredentials {
     my( $self, $login, $credentialType ) = @_;
 
+    my $statement;
+
+    $self->{db}->connect($self->{database});
     if ($credentialType eq 'password') {
-        my $statement = 'SELECT password FROM users WHERE login = ?';
-        my $results = $self->{db}->getRow($statement, $login);
-        return $results->{password};
+        $statement = 
+	    'SELECT password AS credential FROM users WHERE login = ?';
     }
-    return undef;
+    else {
+        $statement = 
+	    'SELECT certificate AS credential FROM users WHERE login = ?';
+    }
+    my $results = $self->{db}->getRow($statement, $login);
+    $self->{db}->disconnect();
+    return $results->{credential};
 } #____________________________________________________________________________
 
 
