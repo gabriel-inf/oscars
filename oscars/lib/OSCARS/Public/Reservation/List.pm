@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+May 11, 2006
 
 =cut
 
@@ -54,9 +54,7 @@ sub initialize {
 sub soapMethod {
     my( $self, $request, $logger ) = @_;
 
-    my $response = {};
-    $response->{list} = $self->getReservations($request);
-    return $response;
+    return $self->getReservations($request);
 } #____________________________________________________________________________
 
 
