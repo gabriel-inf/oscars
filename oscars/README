@@ -1,16 +1,8 @@
-OSCARS version 0.01
+OSCARS version 0.2
 ===================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+DATE: May 12, 2006
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
 
 INSTALLATION
 
@@ -21,20 +13,144 @@ To install this module type the following:
    make test
    make install
 
+Note that the oscars and topology databases must be set up correctly before
+make test will work (more info to be provided).
+
+config.xml in this directory must be copied to $HOME/.oscars.xml, where the
+user is the user starting the OSCARS server (more info to be provided).
+
+The MySQL .my.cnf file must exist in the $HOME directory of the user starting
+the server.  It must contain the following:
+
+[client]
+user=youruser
+password=yourpassword
+
+where user is the OSCARS database user, and password is the corrresponding
+user.  The default user is named oscars.
+
 DEPENDENCIES
 
-This module requires these other modules and libraries:
+This module requires numerous other Perl modules.
 
-  blah blah blah
+Algorithm::Diff
+Archive::Tar
+Authen::SASL
+CGI
+CGI::Session
+Class::Factory::Util
+Class::Loader
+Class::Singleton
+Compress::Zlib
+Convert::ASCII::Armour
+Convert::ASN1
+Convert::BinHex
+Convert::PEM
+Crypt::Blowfish
+Crypt::CBC
+Crypt::DES
+Crypt::DES_EDE3
+Crypt::DH
+Crypt::DSA
+Crypt::OpenSSL::Bignum
+Crypt::OpenSSL::RSA
+Crypt::OpenSSL::Random
+Crypt::OpenSSL::X509
+Crypt::Primes
+Crypt::RSA
+Crypt::Random
+Crypt::SSLeay
+Cwd
+DBD::mysql
+DBI
+Data::Buffer
+Date::Manip
+DateTime
+DateTime::Format::Epoch
+DateTime::Format::W3CDTF
+Digest
+Digest::BubbleBabble
+Digest::HMAC
+Digest::MD5
+Digest::SHA1
+Error
+ExtUtils::CBuilder
+ExtUtils::ParseXS
+ExtUtils::XSBuilder
+HTML::Parser
+HTML::Tagset
+HTTP::Daemon::SSL
+IO::Socket::SSL
+IO::String
+IO::Stringy
+IO::Tty
+IO::Zlib
+LWP
+List::Util
+MD5
+MIME-tools
+MIME::Base64
+Mail
+Math-BigInt
+Math::GMP
+Math::Pari
+Net
+Net::SNMP
+Net::SSLeay
+NetLogger
+Params::Validate
+Parse::RecDescent
+Parse::Yapp
+SOAP::Lite -- 0.67 or later
+Sort::Versions
+Spiffy
+Storable
+String::CRC32
+Term::ReadKey
+Test::Base
+Test::Harness
+Test::Simple
+Text::Balanced
+Text::Diff
+Tie::EncryptedHash
+Tie::IxHash
+Time::Local
+URI
+WSRF::Lite -- 0.6 or later
+XML-DOM
+XML::CanonicalizeXML
+XML::NamespaceSupport
+XML::Parser
+XML::RegExp
+XML::SAX
+YAML
+junoscript-perl
+mod_perl2
 
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and licence information here.
+Copyright (C) 2006 by the Regents of the University
+of California.   Anyone may reproduce the software in this file,
+in whole or in part, provided that:
 
-Copyright (C) 2005 by David Robertson
+(1)  Any copy or redistribution of this code must show the
+        Regents of the University of California, through its
+        Lawrence Berkeley National Laboratory, as the source, and must
+        include this notice;
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.7 or,
-at your option, any later version of Perl 5 you may have available.
+(2)  Any use of this software must state that the software
+        copyright is held by the Regents of the University of
+        California, and that the software is used by their permission.
 
+It is acknowledged that the U.S. Government has rights
+in this code under Contract DE-AC03-765F00098 between the U.S.
+Department of Energy and the University of California.
+
+This code is provided as a professional academic contribution
+for joint exchange.  Thus it is experimental, is provided ``as is'',
+with no warranties of any kind  whatsoever,
+no support, promise of updates, or printed documentation.
+The Regents of the University of California shall have no
+liability with respect to the infringement of copyrights by
+this code, or any part thereof.
 
