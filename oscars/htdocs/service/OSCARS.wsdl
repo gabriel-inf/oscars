@@ -17,13 +17,17 @@
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			xmlns:tns="http://oscars.es.net/OSCARS/">
 
+			<xsd:element name="createReservationRequest"
+				type="tns:resReqType">
+			</xsd:element>
+
 			<xsd:element name="createReservationResponse"
 				type="tns:resDetailsType" />
-			
 
-			<xsd:element name="cancelReservationResponse"
-				type="xsd:string" />
-			
+			<xsd:element name="listReservationsRequest"
+				type="xsd:string">
+			</xsd:element>
+
 			<xsd:element name="listReservationsResponse">
 				<xsd:complexType>
 					<xsd:sequence>
@@ -33,12 +37,18 @@
 				</xsd:complexType>
 			</xsd:element>
 			
-
+            <xsd:element name="cancelReservationRequest" 
+                   type="xsd:string"/>
+                   
+			<xsd:element name="cancelReservationResponse"
+				type="xsd:string" />
+				
+	        <xsd:element name="queryReservationRequest" 
+	            type="xsd:string"/>
+	            
 			<xsd:element name="queryReservationResponse"
 				type="tns:resDetailsType" />
-			
 
-			<xsd:element name="forwardResponse" type="xsd:string"></xsd:element>
 			<xsd:element name="forwardRequest">
 				<xsd:complexType>
 					<xsd:sequence>
@@ -65,7 +75,10 @@
 					</xsd:sequence>
 				</xsd:complexType>
 			</xsd:element>
-
+			
+			<xsd:element name="forwardResponse" 
+			       type="xsd:string"/>
+			
 			<xsd:element name="createReservationOSCARSException"
 				type="tns:OSCARSExceptionType" />
 			<xsd:element name="cancelReservationOSCARSException"
@@ -83,8 +96,8 @@
 
 			<xsd:simpleType name="createRouteDirectionType">
 				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="forward"/>
-					<xsd:enumeration value="reverse"/>
+					<xsd:enumeration value="forward" />
+					<xsd:enumeration value="reverse" />
 				</xsd:restriction>
 			</xsd:simpleType>
 
@@ -96,13 +109,17 @@
 					<xsd:element name="endTime" type="xsd:dateTime" />
 					<xsd:element name="origTimeZone" type="xsd:string" />
 					<xsd:element name="bandwidth" type="xsd:int" />
-					<xsd:element name="description" type="xsd:string" maxOccurs="1" minOccurs="0" />
-                    			<xsd:element name="ingressRouterIP" type="xsd:string" maxOccurs="1" minOccurs="0" />
-					<xsd:element name="egressRouterIP" type="xsd:string" maxOccurs="1" minOccurs="0" />
+					<xsd:element name="description" type="xsd:string"
+						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="ingressRouterIP"
+						type="xsd:string" maxOccurs="1" minOccurs="0" />
+					<xsd:element name="egressRouterIP" type="xsd:string"
+						maxOccurs="1" minOccurs="0" />
 					<!-- forward means create path from src to dst, reverse
-					means create path from dst to src (done by switching src &
-					dst when you reach dst and setting this to forward-->
-					<xsd:element name="createRouteDirection" type="tns:createRouteDirectionType" />
+						means create path from dst to src (done by switching src &
+						dst when you reach dst and setting this to forward-->
+					<xsd:element name="createRouteDirection"
+						type="tns:createRouteDirectionType" />
 					<xsd:element name="protocol"
 						type="tns:resProtocolType" maxOccurs="1" minOccurs="0" />
 					<xsd:element name="srcPort" type="xsd:int"
@@ -130,11 +147,12 @@
 					<xsd:element name="destHost" type="xsd:string" />
 					<xsd:element name="startTime" type="xsd:dateTime" />
 					<xsd:element name="endTime" type="xsd:dateTime" />
-					<xsd:element name="origTimeZone" type="xsd:string" />
+					<xsd:element name="origTimeZone"
+						type="xsd:dateTime" />
 					<xsd:element name="createTime" type="xsd:string" />
 					<xsd:element name="bandwidth" type="xsd:int" />
-					<xsd:element name="burstLimit" type="xsd:string" />
-					<xsd:element name="resClass" type="xsd:string" />
+					<xsd:element name="burstLimit" type="xsd:int" />
+					<xsd:element name="class" type="xsd:string" />
 					<!-- list of routers (hops) -->
 					<xsd:element name="path" type="xsd:string" />
 					<xsd:element name="description" type="xsd:string"
@@ -145,15 +163,15 @@
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="destPort" type="xsd:int"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="ingressRouterIP" type="xsd:string"
-						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="ingressRouterIP"
+						type="xsd:string" maxOccurs="1" minOccurs="0" />
 					<xsd:element name="egressRouterIP" type="xsd:string"
 						maxOccurs="1" minOccurs="0" />
 					<!-- control inteterfaces on routers -->
-					<xsd:element name="ingressLoopbackIP" type="xsd:string"
-						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="egressLoopbackIP" type="xsd:string"
-						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="ingressLoopbackIP"
+						type="xsd:string" maxOccurs="1" minOccurs="0" />
+					<xsd:element name="egressLoopbackIP"
+						type="xsd:string" maxOccurs="1" minOccurs="0" />
 				</xsd:sequence>
 			</xsd:complexType>
 
@@ -173,23 +191,29 @@
 			<xsd:simpleType name="resTagType">
 				<xsd:restriction base="xsd:string" />
 			</xsd:simpleType>
-			<xsd:element name="ReservationTag"
-				type="tns:resTagType">
-			</xsd:element>
-			<xsd:element name="CreateReservationRequest"
-				type="tns:resReqType">
-			</xsd:element>
-            <xsd:element name="ListReservationsRequest" type="xsd:string"></xsd:element>
+
+
+ 
         </xsd:schema>
 	</wsdl:types>
 
 	<!--   Message definitions -->
+	
+	<wsdl:message name="createReservationRequest">
+		<wsdl:part name="createReservationRequest"
+			element="tns:createReservationRequest">
+		</wsdl:part>
+	</wsdl:message>
 	<wsdl:message name="createReservationResponse">
 		<wsdl:part name="createReservationResponse"
 			element="tns:createReservationResponse" />
 	</wsdl:message>
-	
 
+ 	<wsdl:message name="cancelReservationRequest">
+		<wsdl:part name="cancelReservationRequest"
+			element="tns:cancelReservationRequest">
+		</wsdl:part>
+	</wsdl:message>		
 	<wsdl:message name="cancelReservationResponse">
 		<wsdl:part name="cancelReservationResponse"
 			element="tns:cancelReservationResponse" />
@@ -198,9 +222,10 @@
 	<wsdl:message name="queryReservationResponse">
 		<wsdl:part name="queryReservationResponse"
 			element="tns:queryReservationResponse" />
-	</wsdl:message>
+	</wsdl:message>	
 	<wsdl:message name="queryReservationRequest">
-		<wsdl:part name="queryReservationRequest" element="tns:ReservationTag"/>
+		<wsdl:part name="queryReservationRequest"
+			element="tns:queryReservationRequest" />
 	</wsdl:message>
 
 	<wsdl:message name="listReservationsResponse">
@@ -208,7 +233,9 @@
 			element="tns:listReservationsResponse" />
 	</wsdl:message>
 	<wsdl:message name="listReservationsRequest">
-	<wsdl:part name="listReservationsRequest" element="tns:ListReservationsRequest"></wsdl:part>
+		<wsdl:part name="listReservationsRequest"
+			element="tns:listReservationsRequest">
+		</wsdl:part>
 	</wsdl:message>
 
 	<wsdl:message name="forwardResponse">
@@ -219,15 +246,15 @@
 	<wsdl:message name="forwardRequest">
 		<wsdl:part name="forwardRequest" element="tns:forwardRequest" />
 	</wsdl:message>
-
-	<wsdl:message name="cancelReservationOSCARSException">
-		<wsdl:part name="cancelReservationOSCARSException"
-			element="tns:cancelReservationOSCARSException" />
-	</wsdl:message>
-
-	<wsdl:message name="createReservationOSCARSException">
+	
+		<wsdl:message name="createReservationOSCARSException">
 		<wsdl:part name="createReservationOSCARSException"
 			element="tns:createReservationOSCARSException" />
+	</wsdl:message>
+	
+   <wsdl:message name="cancelReservationOSCARSException">
+		<wsdl:part name="cancelReservationOSCARSException"
+			element="tns:cancelReservationOSCARSException" />
 	</wsdl:message>
 
 	<wsdl:message name="queryReservationOSCARSException">
@@ -246,12 +273,9 @@
 		</wsdl:part>
 	</wsdl:message>
 
-    <wsdl:message name="createReservationRequest"><wsdl:part name="createReservationRequest" element="tns:CreateReservationRequest"></wsdl:part></wsdl:message>
-    <wsdl:message name="cancelReservationRequest">
-    	<wsdl:part name="cancelReservationRequest" element="tns:ReservationTag"></wsdl:part>
-    </wsdl:message>
-    
-    <wsdl:portType name="OSCARS">
+
+
+	<wsdl:portType name="OSCARS">
 		<wsdl:operation name="createReservation">
 			<wsdl:input message="tns:createReservationRequest" />
 			<wsdl:output message="tns:createReservationResponse" />
@@ -260,8 +284,8 @@
 
 		</wsdl:operation>
 		<wsdl:operation name="cancelReservation">
-            <wsdl:input message="tns:cancelReservationRequest"></wsdl:input>
-            <wsdl:output message="tns:cancelReservationResponse" />
+			<wsdl:input message="tns:cancelReservationRequest"></wsdl:input>
+			<wsdl:output message="tns:cancelReservationResponse" />
 			<wsdl:fault name="OSCARSException"
 				message="tns:cancelReservationOSCARSException" />
 
@@ -304,9 +328,9 @@
 				<soap:body use="literal"
 					parts="createReservationResponse" />
 			</wsdl:output>
-			<wsdl:fault name="OSCARSException" >
-				<soap:fault name="OSCARSException" use="literal"/>
-                       </wsdl:fault>
+			<wsdl:fault name="OSCARSException">
+				<soap:fault name="OSCARSException" use="literal" />
+			</wsdl:fault>
 		</wsdl:operation>
 
 		<wsdl:operation name="queryReservation">
@@ -320,9 +344,9 @@
 				<soap:body use="literal"
 					parts="queryReservationResponse" />
 			</wsdl:output>
-			<wsdl:fault name="OSCARSException" >
-                                <soap:fault name="OSCARSException" use="literal"/>
-                       </wsdl:fault>
+			<wsdl:fault name="OSCARSException">
+				<soap:fault name="OSCARSException" use="literal" />
+			</wsdl:fault>
 		</wsdl:operation>
 
 		<wsdl:operation name="listReservations">
@@ -336,8 +360,8 @@
 				<soap:body use="literal"
 					parts="listReservationsResponse" />
 			</wsdl:output>
-                       <wsdl:fault name="OSCARSException" >
-                                <soap:fault name="OSCARSException" use="literal"/>
+			<wsdl:fault name="OSCARSException">
+				<soap:fault name="OSCARSException" use="literal" />
 			</wsdl:fault>
 		</wsdl:operation>
 
