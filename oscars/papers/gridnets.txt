@@ -1,0 +1,45 @@
+
+
+Intra and Interdomain Circuit Provisioning using the OSCARS Reservation System
+
+Abstract:
+
+1.  Introduction
+
+    What the OSCARS system is, and high-level overview of components (David)
+
+    (put a pretty figure here)
+
+2. Description of components (David)
+
+3. Issues we had to deal with:
+
+    Path discovery and advanced reservations (Jason)
+
+    Provisioning and policing (Chin)
+
+    User interface (David)
+
+    AAA (Mary)
+
+
+4.  Interdomain reservations:   
+       -multiple domains (jason & david)
+       -reverse paths (jason)
+       
+       -interoperability (preformance??):  (jason/david/chin)
+          I2
+          GEANT (aka DANTE/AMPS)
+          TeraPaths
+          HOPI
+          Dragon
+          other collaborators?
+
+5. Future 
+ 
+    Topology Changes -- dynamic update of the reservations table. (jason)
+    Standards (Brian)
+    Testing and TestBeds (brain & chin)
+
+6 Conclusion
+
