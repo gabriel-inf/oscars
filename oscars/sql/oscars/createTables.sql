@@ -83,6 +83,8 @@ CREATE TABLE IF NOT EXISTS domains (
     id		INT NOT NULL AUTO_INCREMENT,
     as_num	INT NOT NULL,
     name	TEXT NOT NULL,
+        -- used in creating unique reservation tags
+    abbrev      TEXT NOT NULL,
         -- whether this is the local domain
     local	BOOLEAN NOT NULL,
     PRIMARY KEY (id)
@@ -113,7 +115,7 @@ CREATE TABLE IF NOT EXISTS reservations (
         -- in Mbps
     burstLimit		BIGINT UNSIGNED NOT NULL,
         -- user making the reservation
-    user_login		TEXT NOT NULL,
+    login		TEXT NOT NULL,
         -- pending, active, failed, precancel, or cancelled
     status		TEXT NOT NULL,
     class		TEXT NOT NULL,
