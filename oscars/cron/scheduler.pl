@@ -15,8 +15,6 @@ my $credentials  = $authN->getCredentials($login, 'password');
 
 my $database = $pluginMgr->getLocation('system');
 my $clientMgr = OSCARS::ClientManager->new('database' => $database);
-my $client = $clientMgr->getClient();
-
 
 my( $status, $msg ) = reservationPending( $login, $credentials );
 ( $status, $msg ) = reservationExpired( $login, $credentials );
@@ -29,15 +27,20 @@ sub reservationPending {
 
     # password necessary for test to run, but not for this method in general
     my %params = ('login' => $login, 'password' => $password );
-    $params{method} = 'reservationPending';
     $params{timeInterval} = 20;
+    my $methodName = 'reservationPending';
 
-    my $som = $client->reservationPending(\%params);
+    my $client = $clientMgr->getClient($methodName);
+    my $method = SOAP::Data -> name($methodName)
+        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
+    my $request = SOAP::Data -> name($methodName . "Request" => \%params );
+    my $som = $client->call($method => $request);
+
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
     my $msg = "\nReservations handled:\n";
-    $msg .= Dumper($results->{list});
+    $msg .= Dumper($results);
     $msg .= "\n";
     return( 1, $msg );
 } #___________________________________________________________________________
@@ -50,16 +53,20 @@ sub reservationExpired {
 
     # password necessary for test to run, but not for this method in general
     my %params = ('login' => $login, 'password' => $password );
-
-    $params{method} = 'reservationExpired';
     $params{timeInterval} = 20;
 
-    my $som = $client->reservationExpired(\%params);
+    my $methodName = 'reservationExpired';
+    my $client = $clientMgr->getClient($methodName);
+    my $method = SOAP::Data -> name($methodName)
+        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
+    my $request = SOAP::Data -> name($methodName . "Request" => \%params );
+    my $som = $client->call($method => $request);
+
     if ($som->faultstring) { return( 0, $som->faultstring ); }
     my $results = $som->result;
 
     my $msg = "\nReservations handled:\n";
-    $msg .= Dumper($results->{list});
+    $msg .= Dumper($results);
     $msg .= "\n";
     return( 1, $msg );
 } #___________________________________________________________________________
