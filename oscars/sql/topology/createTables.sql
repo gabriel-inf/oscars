@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS routers (
     name		TEXT NOT NULL,
         -- loopback interface IP, if present
     loopback		TEXT,
+    traceAddress	TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;
 

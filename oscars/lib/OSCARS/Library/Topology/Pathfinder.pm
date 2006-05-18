@@ -171,7 +171,7 @@ sub doTraceroute {
     my( $self, $action, $src, $dst, $logger )  = @_;
 
     my $jnxTraceroute = new OSCARS::Library::Topology::JnxTraceroute();
-    $jnxTraceroute->traceroute($self->{traceConfigs}, $src, $dst, $logger);
+    $jnxTraceroute->traceroute($self->{traceConfigs}, $self->getTraceAddress($src), $dst, $logger);
     my @hops = $jnxTraceroute->getHops();
     my @path = ();
 
@@ -303,6 +303,20 @@ sub getLoopback {
     return( $row->{loopback} );
 } #____________________________________________________________________________
 
+###############################################################################
+# getTraceAddress:  Gets address from which to run traceroute for a given router.
+# If none specified it returns the loopback
+# In:  Loopback address of router from which traceroute needs to be run
+# Out: Traceroute address, if any, otherwise the loopback
+#
+sub getTraceAddress {
+    my ($self, $loopback) = @_;
+	
+    my $statement = 'SELECT traceAddress FROM topology.routers' .
+        ' WHERE routers.loopback = ?';
+    my $row = $self->{db}->getRow($statement, $loopback);
+    return( $row->{traceAddress} ? $row->{traceAddress} : $loopback );
+} #____________________________________________________________________________
 
 ###############################################################################
 # getInterface: Gets the interface id associated with an IP address.  Any 
