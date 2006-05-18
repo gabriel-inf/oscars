@@ -84,14 +84,12 @@ sub getParams {
 ###############################################################################
 #
 sub dispatch {
-    my( $self, $params, $method ) = @_;
+    my( $self, $params, $methodName ) = @_;
 
-    my $logger = OSCARS::Logger->new('method' => $method);
+    my $logger = OSCARS::Logger->new('method' => $methodName);
     $logger->setUserLogin('testaccount');
     $logger->set_level($NetLogger::INFO);
     $logger->open('test.log');
-    my $info = Data::Dumper->Dump([$params], [qw(*REQUEST)]);
-    $logger->info("request", { 'fields' => substr($info, 0, -1) });
     if (!$self->{database}) {
         $self->{database} = $self->{pluginMgr}->getLocation('system');
         $self->{db}->connect($self->{database});
@@ -101,9 +99,15 @@ sub dispatch {
         $self->{clientMgr} = OSCARS::ClientManager->new(
                                     'database' => $self->{database});
     }
-    my $client = $self->{clientMgr}->getClient();
-    my $request = { $method . 'Request' => $params };
-    my $som = $client->$method($request);
+    my $info = Data::Dumper->Dump([$params], [qw(*REQUEST)]);
+    $logger->info("request", { 'fields' => substr($info, 0, -1) });
+    my $client = $self->{clientMgr}->getClient($methodName);
+
+    my $method = SOAP::Data -> name($methodName)
+        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
+    my $request = SOAP::Data -> name($methodName . "Request" => $params );
+    my $som = $client->call($method => $request);
+
     if ($som->faultstring) { $logger->warn( "Error", { 'fault' => $som->faultstring }); }
     else {
         $info = Data::Dumper->Dump([$som->result], [qw(*RESPONSE)]);
