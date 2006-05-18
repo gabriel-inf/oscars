@@ -17,14 +17,19 @@
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			xmlns:tns="http://oscars.es.net/OSCARS/">
 
-			<xsd:element name="createReservationRequest"
-				type="tns:resReqType">
+    	    <xsd:element name="createReservation">
+    	     	     <xsd:complexType>
+    	         	  <xsd:sequence>
+			             <xsd:element name="createReservationRequest"
+				                  type="tns:resReqType"/>
+				      </xsd:sequence>
+				     </xsd:complexType>           
 			</xsd:element>
 
 			<xsd:element name="createReservationResponse"
 				type="tns:resDetailsType" />
 
-			<xsd:element name="listReservationsRequest"
+			<xsd:element name="listReservations"
 				type="xsd:string">
 			</xsd:element>
 
@@ -37,19 +42,19 @@
 				</xsd:complexType>
 			</xsd:element>
 			
-            <xsd:element name="cancelReservationRequest" 
+            <xsd:element name="cancelReservation" 
                    type="xsd:string"/>
                    
 			<xsd:element name="cancelReservationResponse"
 				type="xsd:string" />
 				
-	        <xsd:element name="queryReservationRequest" 
+	        <xsd:element name="queryReservation" 
 	            type="xsd:string"/>
 	            
 			<xsd:element name="queryReservationResponse"
 				type="tns:resDetailsType" />
 
-			<xsd:element name="forwardRequest">
+			<xsd:element name="forward">
 				<xsd:complexType>
 					<xsd:sequence>
 						<xsd:element name="payload">
@@ -109,8 +114,7 @@
 					<xsd:element name="endTime" type="xsd:dateTime" />
 					<xsd:element name="origTimeZone" type="xsd:string" />
 					<xsd:element name="bandwidth" type="xsd:int" />
-					<xsd:element name="description" type="xsd:string"
-						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="description" type="xsd:string" />
 					<xsd:element name="ingressRouterIP"
 						type="xsd:string" maxOccurs="1" minOccurs="0" />
 					<xsd:element name="egressRouterIP" type="xsd:string"
@@ -118,10 +122,12 @@
 					<!-- forward means create path from src to dst, reverse
 						means create path from dst to src (done by switching src &
 						dst when you reach dst and setting this to forward-->
+		          <!--  change to createRouteDirectionType  if we can get SOAP::LIte to set it -->						
 					<xsd:element name="createRouteDirection"
-						type="tns:createRouteDirectionType" />
+						type="xsd:string" />
+					<!--  change to resProtocolType if we can get SOAP::LIte to set it -->
 					<xsd:element name="protocol"
-						type="tns:resProtocolType" maxOccurs="1" minOccurs="0" />
+						type="xsd:string" maxOccurs="1" minOccurs="0" />
 					<xsd:element name="srcPort" type="xsd:int"
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="destPort" type="xsd:int"
@@ -136,6 +142,7 @@
 					<xsd:element name="destHost" type="xsd:string" />
 					<xsd:element name="startTime" type="xsd:dateTime" />
 					<xsd:element name="endTime" type="xsd:dateTime" />
+					<!--  Should be changed to an ennumerated type -->
 					<xsd:element name="status" type="xsd:string" />
 				</xsd:sequence>
 			</xsd:complexType>
@@ -147,18 +154,17 @@
 					<xsd:element name="destHost" type="xsd:string" />
 					<xsd:element name="startTime" type="xsd:dateTime" />
 					<xsd:element name="endTime" type="xsd:dateTime" />
-					<xsd:element name="origTimeZone"
-						type="xsd:dateTime" />
-					<xsd:element name="createTime" type="xsd:string" />
+					<xsd:element name="origTimeZone" type="xsd:string" />
+					<xsd:element name="createTime" type="xsd:dateTime" />
 					<xsd:element name="bandwidth" type="xsd:int" />
 					<xsd:element name="burstLimit" type="xsd:int" />
-					<xsd:element name="class" type="xsd:string" />
+					<xsd:element name="resClass" type="xsd:string" />
 					<!-- list of routers (hops) -->
 					<xsd:element name="path" type="xsd:string" />
-					<xsd:element name="description" type="xsd:string"
-						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="description" type="xsd:string" />
+		<!--  change to resProtocolType if we can get SOAP::LIte to set it -->
 					<xsd:element name="protocol"
-						type="tns:resProtocolType" maxOccurs="1" minOccurs="0" />
+						type="xsd:string" maxOccurs="1" minOccurs="0" />
 					<xsd:element name="srcPort" type="xsd:int"
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="destPort" type="xsd:int"
@@ -199,9 +205,9 @@
 
 	<!--   Message definitions -->
 	
-	<wsdl:message name="createReservationRequest">
-		<wsdl:part name="createReservationRequest"
-			element="tns:createReservationRequest">
+	<wsdl:message name="createReservation">
+		<wsdl:part name="createReservation"
+			element="tns:createReservation">
 		</wsdl:part>
 	</wsdl:message>
 	<wsdl:message name="createReservationResponse">
@@ -209,43 +215,45 @@
 			element="tns:createReservationResponse" />
 	</wsdl:message>
 
- 	<wsdl:message name="cancelReservationRequest">
-		<wsdl:part name="cancelReservationRequest"
-			element="tns:cancelReservationRequest">
+ 	<wsdl:message name="cancelReservation">
+		<wsdl:part name="cancelReservation"
+			element="tns:cancelReservation">
 		</wsdl:part>
 	</wsdl:message>		
 	<wsdl:message name="cancelReservationResponse">
 		<wsdl:part name="cancelReservationResponse"
 			element="tns:cancelReservationResponse" />
 	</wsdl:message>
-
+	
+	<wsdl:message name="queryReservation">
+		<wsdl:part name="queryReservation"
+			element="tns:queryReservation" />
+	</wsdl:message>
 	<wsdl:message name="queryReservationResponse">
 		<wsdl:part name="queryReservationResponse"
 			element="tns:queryReservationResponse" />
 	</wsdl:message>	
-	<wsdl:message name="queryReservationRequest">
-		<wsdl:part name="queryReservationRequest"
-			element="tns:queryReservationRequest" />
-	</wsdl:message>
 
+	<wsdl:message name="listReservations">
+		<wsdl:part name="listReservations"
+			element="tns:listReservations">
+		</wsdl:part>
+	</wsdl:message>
 	<wsdl:message name="listReservationsResponse">
 		<wsdl:part name="listReservationsResponse"
 			element="tns:listReservationsResponse" />
 	</wsdl:message>
-	<wsdl:message name="listReservationsRequest">
-		<wsdl:part name="listReservationsRequest"
-			element="tns:listReservationsRequest">
-		</wsdl:part>
-	</wsdl:message>
 
+	<wsdl:message name="forward">
+		<wsdl:part name="forward" 
+			element="tns:forward" />
+	</wsdl:message>
 	<wsdl:message name="forwardResponse">
 		<wsdl:part name="forwardResponse"
 			element="tns:forwardResponse">
 		</wsdl:part>
 	</wsdl:message>
-	<wsdl:message name="forwardRequest">
-		<wsdl:part name="forwardRequest" element="tns:forwardRequest" />
-	</wsdl:message>
+
 	
 		<wsdl:message name="createReservationOSCARSException">
 		<wsdl:part name="createReservationOSCARSException"
@@ -277,35 +285,35 @@
 
 	<wsdl:portType name="OSCARS">
 		<wsdl:operation name="createReservation">
-			<wsdl:input message="tns:createReservationRequest" />
+			<wsdl:input message="tns:createReservation" />
 			<wsdl:output message="tns:createReservationResponse" />
 			<wsdl:fault name="OSCARSException"
 				message="tns:createReservationOSCARSException" />
 
 		</wsdl:operation>
 		<wsdl:operation name="cancelReservation">
-			<wsdl:input message="tns:cancelReservationRequest"></wsdl:input>
+			<wsdl:input message="tns:cancelReservation"></wsdl:input>
 			<wsdl:output message="tns:cancelReservationResponse" />
 			<wsdl:fault name="OSCARSException"
 				message="tns:cancelReservationOSCARSException" />
 
 		</wsdl:operation>
 		<wsdl:operation name="queryReservation">
-			<wsdl:input message="tns:queryReservationRequest" />
+			<wsdl:input message="tns:queryReservation" />
 			<wsdl:output message="tns:queryReservationResponse" />
 			<wsdl:fault name="OSCARSException"
 				message="tns:queryReservationOSCARSException" />
 
 		</wsdl:operation>
 		<wsdl:operation name="listReservations">
-			<wsdl:input message="tns:listReservationsRequest" />
+			<wsdl:input message="tns:listReservations" />
 			<wsdl:output message="tns:listReservationsResponse" />
 			<wsdl:fault name="OSCARSException"
 				message="tns:listReservationsOSCARSException" />
 		</wsdl:operation>
 
 		<wsdl:operation name="forward">
-			<wsdl:input message="tns:forwardRequest"></wsdl:input>
+			<wsdl:input message="tns:forward"></wsdl:input>
 			<wsdl:output message="tns:forwardResponse"></wsdl:output>
 			<wsdl:fault name="OSCARSException"
 				message="tns:forwardOSCARSException">
@@ -319,10 +327,10 @@
 
 		<wsdl:operation name="createReservation">
 			<soap:operation style="document"
-				soapAction="createReservation" />
+				soapAction="http://oscars.es.net/OSCARS/createReservation" />
 			<wsdl:input>
 				<soap:body use="literal"
-					parts="createReservationRequest" />
+					parts="createReservation" />
 			</wsdl:input>
 			<wsdl:output>
 				<soap:body use="literal"
@@ -335,10 +343,10 @@
 
 		<wsdl:operation name="queryReservation">
 			<soap:operation style="document"
-				soapAction="queryReservation" />
+				soapAction="http://oscars.es.net/OSCARS/queryReservation" />
 			<wsdl:input>
 				<soap:body use="literal"
-					parts="queryReservationRequest" />
+					parts="queryReservation" />
 			</wsdl:input>
 			<wsdl:output>
 				<soap:body use="literal"
@@ -351,10 +359,10 @@
 
 		<wsdl:operation name="listReservations">
 			<soap:operation style="document"
-				soapAction="listReservations" />
+				soapAction="http://oscars.es.net/OSCARS/listReservations" />
 			<wsdl:input>
 				<soap:body use="literal"
-					parts="listReservationsRequest" />
+					parts="listReservations" />
 			</wsdl:input>
 			<wsdl:output>
 				<soap:body use="literal"
@@ -370,7 +378,7 @@
 				soapAction="http://oscars.es.net/OSCARS/cancelReservation" />
 			<wsdl:input>
 				<soap:body use="literal"
-					parts=" cancelReservationRequest" />
+					parts=" cancelReservation" />
 			</wsdl:input>
 			<wsdl:output>
 				<soap:body use="literal"
@@ -385,7 +393,7 @@
 			<soap:operation
 				soapAction="http://oscars.es.net/OSCARS/forward" />
 			<wsdl:input>
-				<soap:body use="literal" parts=" forwardRequest" />
+				<soap:body use="literal" parts=" forward" />
 			</wsdl:input>
 			<wsdl:output>
 				<soap:body use="literal" parts=" forwardResponse" />
