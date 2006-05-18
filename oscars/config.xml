@@ -125,6 +125,11 @@
     <subject msg='Authorization removed' />
 </notification>
 
+<notification name='TestMessage'>
+    <subject msg='Test message' />
+    <mapping field='msg' description='Test message' />
+</notification>
+
 </notifications>
 
 </configuration>
