@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 17, 2006
 
 =cut
 
@@ -36,7 +36,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Currently a noop.
 #
 sub make_call {
-    my( $self, $soapServer, $request ) = @_;
+    my( $self, $request ) = @_;
 
     return undef;
 } #____________________________________________________________________________ 

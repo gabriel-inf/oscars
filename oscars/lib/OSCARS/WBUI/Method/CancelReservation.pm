@@ -18,7 +18,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 17, 2006
 
 =cut
 
@@ -40,19 +40,16 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 #            not implemented yet).
 #
 sub makeCall {
-    my( $self, $soapServer, $params ) = @_;
+    my( $self, $params ) = @_;
 
-    my $method = $self->{method};
-    $method =~ s/(\w)/\l$1/;
-    my $request = { $method . "Request" => $params };
-    my $som = $soapServer->$method($request);
+    my $methodName = $self->{method};
+    my $som = $self->docLiteralRequest($methodName, $params);
+
+    $methodName = 'queryReservation';
     my $secondParams = {};
-    $method = 'queryReservation';
-    $secondParams->{tag} = $request->{tag};
-    $secondParams->{login} = $request->{login};
-    $request = { $method . "Request" => $secondParams };
-    my $secondSom = $soapServer->queryReservation($request);
-    return $secondSom;
+    $secondParams->{tag} = $params->{tag};
+    $secondParams->{login} = $params->{login};
+    return $self->docLiteralRequest($methodName, $secondParams);
 } #___________________________________________________________________________ 
 
 

@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+May 17, 2006
 
 =cut
 
@@ -35,7 +35,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # handleRequest:  overrides superclass to just handle portions necessary
 #
 sub handleRequest {
-    my( $self, $soapServer ) = @_;
+    my( $self ) = @_;
 
     my( $login, $authorizations ) = $self->authenticate();
     if ( !$login ) { return; }

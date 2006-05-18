@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+May 17, 2006
 
 =cut
 
@@ -39,17 +39,11 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 #            retrieve the resulting user list
 #
 sub makeCall {
-    my( $self, $soapServer, $params ) = @_;
+    my( $self, $params ) = @_;
 
-    my $method = $self->{method};
-    # convert first letter to lowercase
-    $method =~ s/(\w)/\l$1/;
-    my $request = { $method . "Request" => $params };
-    my $som = $soapServer->$method($request);
-    my $secondParams = {};
-    $method = 'userList';
-    $request = { $method . "Request" => $secondParams };
-    my $secondSom = $soapServer->userList($request);
+    my $methodName = $self->{method};
+    my $som = $self->docLiteralRequest($methodName, $params);
+    my $secondSom = $self->docLiteralRequest('userList', {});
     return $secondSom;
 } #___________________________________________________________________________ 
 
@@ -75,7 +69,7 @@ sub outputDiv {
     my ( $self, $response, $authorizations ) = @_;
 
     my $msg = "Successfully added user.";
-    my $users = $response->{list};
+    my $users = $response;
     my $addSubmitStr = "return submit_form(this, 'method=UserAddForm;');";
     print( qq{
       <div>

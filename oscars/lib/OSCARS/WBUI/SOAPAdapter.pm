@@ -52,7 +52,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+May 17, 2006
 
 =cut
 
@@ -80,22 +80,16 @@ sub new {
 #     handle multiple requests
 #
 sub handleRequest {
-    my( $self, $soapServer ) = @_;
+    my( $self ) = @_;
 
-    my( $results, $response );
+    my $response;
     my( $login, $authorizations ) = $self->authenticate();
     if ( !$login ) { return; }
     my $request = $self->modifyParams();  # adapts from form params
-    my $som = $self->makeCall($soapServer, $request);
+    my $som = $self->makeCall( $request );
     if (!$som) { $response = {} ; }
     else {
-        $results = $som->result;
-        # top level is response object (e.g. userLoginResponse); strip it off
-        # in document/literal, should be only one top level, and one underlying 
-	# hash (?)
-        for my $t ( keys %{$results} ) {
-            $response = $results->{$t};
-        }
+        $response = $som->result;
     }
     $self->postProcess($request, $response);
     if (!$authorizations) { $authorizations = $response->{authorized}; }
@@ -135,14 +129,10 @@ sub modifyParams {
 # makeCall:  make SOAP call, and get response
 #
 sub makeCall {
-    my( $self, $soapServer, $params ) = @_;
+    my( $self, $params ) = @_;
 
-    my $method = $self->{method};
-    # make first letter lowercase
-    $method =~ s/(\w)/\l$1/;
-    my $request = { $method . "Request" => $params };
-    my $som = $soapServer->$method($request);
-    return $som;
+    my $methodName = $self->{method};
+    return $self->docLiteralRequest( $methodName, $params );
 } #___________________________________________________________________________ 
 
 
@@ -161,7 +151,7 @@ sub postProcess {
 sub output {
     my( $self, $som, $request, $authorizations ) = @_;
 
-    my( $msg, $response );
+    my $msg;
 
     print $self->{cgi}->header( -type => 'text/xml');
     print "<xml>\n";
@@ -169,17 +159,33 @@ sub output {
     if (!$som) { $msg = "SOAP call $self->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
-	my $results = $som->result;
-        # top level is response object (e.g. userLoginResponse); strip it off
-        # in document/literal, should be only one top level, and one underlying 
-	# hash (?)
-        for my $t ( keys %{$results} ) {
-            $response = $results->{$t};
-        }
+	my $response = $som->result;
         $msg = $self->outputDiv($response, $authorizations);
     }
     print "<msg>$msg</msg>\n";
     print "</xml>\n";
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# docLiteralRequest:  makes a SOAP request using document/literal
+#
+sub docLiteralRequest {
+    my( $self, $methodName, $params ) = @_;
+
+    # convert first letter to lowercase
+    $methodName =~ s/(\w)/\l$1/;
+    my $soapURI = 'http://localhost:2000/OSCARS/Dispatcher';
+    my $soapProxy = 'http://localhost:2000/OSCARS/Server';
+    my $soapAction = "http://oscars.es.net/OSCARS/Dispatcher/$methodName";
+    my $client = SOAP::Lite
+        -> uri( $soapURI )
+        -> proxy( $soapProxy )
+	-> on_action ( sub { return "$soapAction" } );
+    my $method = SOAP::Data -> name($methodName)
+        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
+    my $request = SOAP::Data -> name($methodName . "Request" => $params );
+    return $client->call($method => $request);
 } #___________________________________________________________________________ 
 
 

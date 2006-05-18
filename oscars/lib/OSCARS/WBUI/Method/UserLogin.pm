@@ -53,7 +53,7 @@ sub authenticate {
 sub output {
     my( $self, $som, $request, $authorizations ) = @_;
 
-    my( $msg, $response );
+    my $msg;
 
     if (!$som) { $msg = "SOAP call $self->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
@@ -65,10 +65,7 @@ sub output {
         print "</xml>\n";
 	return;
     }
-    my $results = $som->result;
-    for my $t ( keys %{$results} ) {
-        $response = $results->{$t};
-    }
+    my $response = $som->result;
     my $session = OSCARS::WBUI::UserSession->new();
     my $sid = $session->start($self->{cgi}, $response);
     # for some reason the CGI::Session variant doesn't work
