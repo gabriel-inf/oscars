@@ -148,7 +148,8 @@ sub postProcess {
 
     # must be notification entry in the XML configuration file for this
     # method, for any message to be sent
-    $self->{mailer}->sendMessage($self->{user}, $params->{method}, $results);
+    $self->{mailer}->sendMessage($self->{user}->{login}, $params->{method},
+	                         $results);
 } #___________________________________________________________________________ 
 
 

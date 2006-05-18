@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 8, 2006
+May 17, 2006
 
 =cut
 
@@ -100,7 +100,7 @@ sub readConfiguration {
 # sendMessage:  send mail message(s), if appropriate, from method results
 #
 sub sendMessage {
-    my( $self, $user, $method, $results ) = @_;
+    my( $self, $login, $method, $results ) = @_;
 
     my( $errMsg );
 
@@ -118,8 +118,8 @@ sub sendMessage {
 		}
 	    }
         }
-	if ($user->{login} ne 'testaccount') {
-	    $errMsg = $self->mailMessage($self->getWebmaster(), $user->{login},
+	if ($login ne 'testaccount') {
+	    $errMsg = $self->mailMessage($self->getWebmaster(), $login,
                 'OSCARS:  ' . $self->{config}->{$method}->{subject}, $msg);
 	    if ($errMsg) { throw Error::Simple( $errMsg ); }
 	}
