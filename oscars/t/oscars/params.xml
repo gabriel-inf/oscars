@@ -2,16 +2,15 @@
 <configuration>
     <!-- AAA method params -->
     <test name="userLogin">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="userQuery">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="userModify">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="userAdd">
-        <param name="login" value="testaccount" />
         <param name="selectedUser" value="temptest" />
         <param name="passwordNewOnce" value="ac@demy" />
         <param name="lastName" value="User" />
@@ -22,45 +21,44 @@
         <param name="description" value="test user" />
     </test>
     <test name="userRemove">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
         <param name="selectedUser" value="temptest" />
     </test>
     <test name="userList">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="authorizationList">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="resourceList">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="permissionList">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="userLogout">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <!-- reservation method params -->
     <test name="listReservations">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="queryReservation">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="createReservation">
-        <param name="login" value="testaccount" />
         <param name="origTimeZone" value="-08:00" />
         <param name="bandwidth" value="10" />
         <param name="protocol" value="udp" />
         <param name="description" value="This is a test." />
     </test>
     <test name="cancelReservation">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="reservationPending">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
     <test name="reservationExpired">
-        <param name="login" value="testaccount" />
+	<param name="login" value="testaccount" />
     </test>
 </configuration>
