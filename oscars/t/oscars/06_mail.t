@@ -8,12 +8,12 @@ use OSCARS::Mail;
 my $mailer = OSCARS::Mail->new();
 ok($mailer);
 
-my $sender = $mailer->getWebmaster();
+my $login = 'testaccount';
 my $recipient = $mailer->getWebmaster();
-my $subject = 'test';
-my $msg = "This is a test on oscars-dev.\n";
+my $results =
+    { 'msg' => "This is a test of OSCARS notifications on $ENV{HOST}." };
 
 my $errMsg =
-       $mailer->sendMail($sender, $recipient, $subject, $msg); 
+       $mailer->sendMessage($login, 'TestMessage', $results); 
 if ($errMsg) { ok(0, $errMsg); }
 ok(1);
