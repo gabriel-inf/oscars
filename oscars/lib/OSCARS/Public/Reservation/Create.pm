@@ -209,7 +209,7 @@ sub buildFields {
     $fields->{bandwidth} = $request->{bandwidth} * 1000000;
     $fields->{burstLimit} = $request->{burstLimit} ? 
                   $request->{burstLimit} : $self->{pssConfigs}->{burstLimit} ;
-    $fields->{user_login} = "'$self->{user}->{login}'" ;
+    $fields->{login} = "'$self->{user}->{login}'" ;
     $fields->{status} = "'pending'" ;
     $fields->{class} = $request->{class} ?
                   "'$request->{class}'" : "'$self->{pssConfigs}->{CoS}'" ;
