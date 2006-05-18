@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     dscp		TEXT,
         -- protocol used (0-255, or a protocol string, such as udp)
     protocol		TEXT,
+    path			TEXT,
     description		TEXT,
       -- foreign keys (not optional)
     ingressInterfaceId	INT NOT NULL,	-- foreign key
