@@ -171,9 +171,9 @@ sub getWebmaster {
 sub getAdmins {
     my( $self ) = @_;
 
-    #return 'oscars-admin@es.net';
+    return 'oscars-admin@es.net';
     #return 'dwrobertson@lbl.gov chin@es.net';
-    return 'dwrobertson@lbl.gov';
+    #return 'dwrobertson@lbl.gov';
 } #____________________________________________________________________________
 
 
