@@ -71,7 +71,7 @@
 </notification>
 
 <notification name='CreateReservation'>
-    <subject msg='Reservation successfully created' />
+    <subject msg='Reservation has been entered into the system' />
     <mapping field='tag' description='Reservation tag' />
     <mapping field='srcHost' description='Source' />
     <mapping field='destHost' description='Destination' />
