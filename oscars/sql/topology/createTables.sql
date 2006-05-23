@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS interfaces (
         -- bandwidth in bps
     speed		BIGINT UNSIGNED,
         -- description
-    descr		TEXT,
+    description		TEXT,
     alias		TEXT,
         -- key of corresponding router in routers table
     routerId		INT NOT NULL,	-- foreign key
