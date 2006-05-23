@@ -1,0 +1,43 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use SOAP::Lite;
+use Data::Dumper;
+
+use OSCARS::ClientManager;
+use OSCARS::PluginManager;
+
+my $pluginMgr = OSCARS::PluginManager->new();
+my $authN = $pluginMgr->usePlugin('authentication');
+my $login = 'testaccount';
+my $credentials  = $authN->getCredentials($login, 'password');
+
+my $database = $pluginMgr->getLocation('system');
+my $clientMgr = OSCARS::ClientManager->new('database' => $database);
+
+my( $status, $msg ) = topologyUpdate( $login, $credentials );
+print STDERR $msg;
+
+
+#############################################################################
+#
+sub topologyUpdate {
+    my( $user_dn, $password ) = @_;
+
+    my %params = ('login' => $user_dn, 'password' => $password );
+    $params{directory} = '/home/oscars/ifrefpoll';
+
+    my $methodName = 'topologyUpdate';
+    my $client = $clientMgr->getClient($methodName);
+    my $method = SOAP::Data -> name($methodName)
+        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
+    my $request = SOAP::Data -> name($methodName . "Request" => \%params );
+    my $som = $client->call($method => $request);
+
+    if ($som->faultstring) { return( 0, $som->faultstring ); }
+    my $results = $som->result;
+    my $msg = "\nStatus: Successfully updated router tables.\n";
+    $msg .= Dumper($results);
+    return( 1, $msg );
+} #___________________________________________________________________________
