@@ -1,13 +1,13 @@
 ###############################################################################
-package OSCARS::Internal::Routing::Update;
+package OSCARS::Internal::Topology::Update;
 
 =head1 NAME
 
-OSCARS::Internal::Routing::Update - SOAP method updating router-associated tables.
+OSCARS::Internal::Topology::Update - SOAP method updating router-associated tables.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Internal::Routing::Update;
+  use OSCARS::Internal::Topology::Update;
 
 =head1 DESCRIPTION
 
@@ -25,7 +25,7 @@ Jason Lee (jrlee@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+May 23, 2006
 
 =cut
 
@@ -168,8 +168,8 @@ sub updateDB {
 
     for my $routerName (sort keys %$routerInfo) {   # sort by router name
         print STDERR "$routerName\n";
-        $mplsLoopback = 'NULL';
         for my $ipaddr (sort keys %{$routerInfo->{$routerName}}) {    # sort by IP
+	    $mplsLoopback = 'NULL';
             if ($ipaddr =~ /134\.55\.75\.*/) {
                  $mplsLoopback = $ipaddr;
                  last;
@@ -199,24 +199,11 @@ sub updateDB {
 sub updateRouters {
     my( $self, $routerName, $mplsLoopback ) = @_;
 
-    my( $routerId, $unused );
-
-    my $statement = "SELECT id, name, loopback FROM routers WHERE name = ?";
-    my $row = $self->{db}->getRow($statement, $routerName);
-    # no match; need to do an insert
-    if ( !$row ) {
-        $statement = "INSERT into routers VALUES ( NULL, True,
-                     '$routerName', '$mplsLoopback')";
-        $self->{db}->execStatement($statement);
-        $routerId = $self->{db}->{dbh}->{mysql_insertid};
-        return $routerId;
-    }
-    $routerId = $row->{id};
-    if (!$row->{loopback}) { $row->loopback = 'NULL'; }
-    if ($row->{loopback} ne $mplsLoopback) {
-        $statement = "UPDATE routers SET loopback = ? WHERE id = ?";
-        $self->{db}->execStatement($statement, $mplsLoopback, $routerId);
-    }
+    if ($mplsLoopback ne 'NULL') { $mplsLoopback = "'$mplsLoopback'"; }
+    my $statement = "INSERT into topology.routers VALUES ( NULL, True,
+                    '$routerName', $mplsLoopback, NULL)";
+    $self->{db}->execStatement($statement);
+    my $routerId = $self->{db}->{dbh}->{mysql_insertid};
     return $routerId;
 } #___________________________________________________________________________
 
@@ -231,42 +218,38 @@ sub updateRouters {
 sub updateInterfaces {
     my( $self, $routerId, $xface ) = @_;
 
-    my( $interfaceId, $unused );
+    my( $description, $alias, $newSpeed );
 
-    my $statement = "SELECT id, snmpId, speed, description, alias " .
-                    "from interfaces WHERE routerId = ? AND snmpId = ?";
-    my $row = $self->{db}->getRow($statement, $routerId, $xface->{index});
-
-    # defaults if non-required fields not set
-    if (!$xface->{ifDescr}) { $xface->{ifDescr} = 'NULL'; }
-    if (!$xface->{ifAlias}) { $xface->{ifAlias} = 'NULL'; }
-    if (!$xface->{ifSpeed}) { $xface->{ifSpeed} = 0; }
-    if (!$xface->{ifHighSpeed}) { $xface->{ifHighSpeed} = 0; }
-
-    # calculate bandwidth given by new data
-    my $newSpeed = 0;
-    if ($xface->{ifSpeed}) {
-        $newSpeed = $xface->{ifSpeed};
+    # set to NULL if non-required fields are not set
+    if (!$xface->{ifDescr}) { $description = 'NULL'; }
+    # otherwise, get rid of any apostrophes or double quotes originally
+    # present, and quote
+    else {
+        $description = $xface->{ifDescr};	
+	$description =~ s/'//g;
+	$description =~ s/"//g;
+        $description = "'$description'";
     }
+    if (!$xface->{ifAlias}) { $alias = 'NULL'; }
+    else {
+        $alias = $xface->{ifAlias};	
+	$alias =~ s/'//g;
+	$alias =~ s/"//g;
+	$alias = "'$alias'";
+    }
+    # calculate bandwidth given by new data
+    if ($xface->{ifSpeed}) { $newSpeed = $xface->{ifSpeed}; }
+    else { $newSpeed = 0; }
+
     if ($xface->{ifHighSpeed}) {
         if ($newSpeed < ($xface->{ifHighSpeed} * 1000000)) {
             $newSpeed = $xface->{ifHighSpeed} * 1000000;
         }
     }
-    # no match; need to do an insert
-    if ( !$row ) {
-        $statement = "INSERT into interfaces VALUES ( NULL, True, 
-                  $xface->{index}, $newSpeed, '$xface->{ifDescr}',
-                  '$xface->{ifAlias}', $routerId)";
-        $self->{db}->execStatement($statement);
-        $interfaceId = $self->{db}->{dbh}->{mysql_insertid};
-        return $interfaceId;
-    }
-    $interfaceId = $row->{interfaceId};
-    $statement = "UPDATE interfaces SET speed = ?,
-                  description = ?, alias = ? WHERE id = ?";
-    $self->{db}->execStatement($statement, $newSpeed,
-                  $xface->{ifDescr}, $xface->{ifAlias}, $interfaceId);
+    my $statement = "INSERT into topology.interfaces VALUES ( NULL, True, 
+        $xface->{index}, $newSpeed, $description, $alias, $routerId)";
+    $self->{db}->execStatement($statement);
+    my $interfaceId = $self->{db}->{dbh}->{mysql_insertid};
     return $interfaceId;
 } #___________________________________________________________________________
 
@@ -279,22 +262,12 @@ sub updateInterfaces {
 # Out:  primary key in ipaddrs, and error message, if any
 #
 sub updateIpaddrs {
-
     my( $self, $interfaceId, $interfaceIP ) = @_;
-    my( $ipaddrId, $unused );
 
-    # TODO:  handling case where interfaceId is different?
-    my $statement = "SELECT id, IP, interfaceId FROM ipaddrs WHERE IP = ?";
-    my $row = $self->{db}->getRow($statement, $interfaceIP);
-    # no match; need to do an insert
-    if ( !$row ) {
-        $statement = "INSERT into ipaddrs VALUES ( NULL, '$interfaceIP',
-                  $interfaceId)";
-        $self->{db}->execStatement($statement);
-        $ipaddrId = $self->{db}->getPrimaryId();
-        return $ipaddrId;
-    }
-    $ipaddrId = $row->{ipaddrId};
+    my $statement = "INSERT into topology.ipaddrs VALUES ( NULL, '$interfaceIP',
+                    $interfaceId)";
+    $self->{db}->execStatement($statement);
+    my $ipaddrId = $self->{db}->getPrimaryId();
     return $ipaddrId;
 } #___________________________________________________________________________
 
