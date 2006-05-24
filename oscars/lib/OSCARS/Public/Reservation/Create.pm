@@ -83,6 +83,12 @@ sub soapMethod {
         $logger->info("forwarding.finish", $nextPathInfo );
         # TODO: process any differences
     }
+
+    if ($errMsg)
+    {
+        throw Error::Simple("Error forwrding reservervation to next domain: $errMsg");
+    }
+
     # having found path, attempt to enter reservation in db
     my $response = $self->createReservation( $request, $pathInfo);
     $logger->info("finish", $response);
