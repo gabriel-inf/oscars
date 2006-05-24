@@ -83,7 +83,7 @@ sub findPath {
     }
 
     #  If the ingress router is given, just get its loopback and interface id.
-    #  Otherwise, if tthe egress router is given, use it as the source of the 
+    #  Otherwise, if the egress router is given, use it as the source of the 
     #  traceroute.  Otherwise the default router is the source.  The destination
     #  of the traceroute is the source given for the reservation.  The ingress 
     #  router chosen will be the router closest to the source that has
@@ -200,12 +200,13 @@ sub doTraceroute {
         # following two are for edge router IP and interface id
         $loopbackFound = $self->getLoopback( $hop );
         $interfaceFound = $self->getInterface( $hop );
+
         if ( $loopbackFound ) {
             $loopbackIP = $loopbackFound;
             $interfaceId = $interfaceFound;
-        }
-        if ( $interfaceFound ) { push( @path, $interfaceFound ); }
-        elsif ($action eq 'egress') {
+        } elsif ( $interfaceFound ) { 
+            push( @path, $interfaceFound ); 
+        } elsif ($action eq 'egress') {
             $nextAsNumber = $self->getAsNumber($interfaceId, $hop, $logger);
             last;
         }
