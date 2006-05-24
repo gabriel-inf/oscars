@@ -260,15 +260,15 @@ sub execute_configuration_change {
     $self->{errMsg} = 0;
 
     # Initialize the XML Parser.
-    my ($_xmlParser) = new XML::DOM::Parser;
+    my $_xmlParser = new XML::DOM::Parser;
 
-    if (!$self->{configs}->{allowLsp}) {
+    if (!$self->{configs}->{allowLSP}) {
         return("Not configured to allow JUNOScript commands");
     }
 
     # Connect to the JUNOScript server.
     eval {
-        ($jnx) = new JUNOS::Device(%jnxInfo);
+        $jnx = new JUNOS::Device(%jnxInfo);
         unless (ref $jnx) {
             $self->{errMsg} = "ERROR: $jnxInfo{hostname}: failed to connect.\n";
             return();
@@ -362,7 +362,7 @@ sub execute_operational_command {
     # Clear error message.
     $self->{errMsg} = 0;
 
-    if (!$self->{configs}->{allowLsp}) {
+    if (!$self->{configs}->{allowLSP}) {
         return("Not configured to allow JUNOScript commands");
     }
     # Connect to the JUNOScript server.
