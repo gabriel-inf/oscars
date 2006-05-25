@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<configuration>
+    <!-- Currently only configuration for tests in oscars sub-directory -->
+    <!-- AAA method params -->
+    <test name="userLogin">
+        <login>testaccount</login>
+    </test>
+    <test name="userQuery">
+        <login>testaccount</login>
+    </test>
+    <test name="userModify">
+        <login>testaccount</login>
+    </test>
+    <test name="userAdd">
+	    <selectedUser>temptest</selectedUser>
+	    <passwordNewOnce>ac@demy</passwordNewOnce>
+	    <lastName>User</lastName>
+	    <firstName>Temp</firstName>
+	    <institutionName>NERSC</institutionName>
+	    <emailPrimary>dwrobertson@lbl.gov</emailPrimary>
+	    <phonePrimary>510-495-2399</phonePrimary>
+	    <description>test user</description>
+    </test>
+    <test name="userRemove">
+        <login>testaccount</login>
+	<selectedUser>temptest</selectedUser>
+    </test>
+    <test name="userList">
+        <login>testaccount</login>
+    </test>
+    <test name="authorizationList">
+        <login>testaccount</login>
+    </test>
+    <test name="resourceList">
+        <login>testaccount</login>
+    </test>
+    <test name="permissionList">
+        <login>testaccount</login>
+    </test>
+    <test name="userLogout">
+        <login>testaccount</login>
+    </test>
+    <!-- reservation method params -->
+    <test name="listReservations">
+        <login>testaccount</login>
+    </test>
+    <test name="queryReservation">
+        <login>testaccount</login>
+    </test>
+    <test name="createReservation">
+	    <origTimeZone>-08:00</origTimeZone>
+	    <bandwidth>10</bandwidth>
+	    <protocol>udp</protocol>
+	    <description>This is a test.</description>
+    </test>
+    <test name="cancelReservation">
+        <login>testaccount</login>
+    </test>
+    <test name="reservationPending">
+        <login>testaccount</login>
+    </test>
+    <test name="reservationExpired">
+        <login>testaccount</login>
+    </test>
+</configuration>
