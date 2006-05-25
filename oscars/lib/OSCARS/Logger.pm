@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+May 24, 2006
 
 =cut
 
@@ -45,6 +45,15 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{login} = 'undetermined';
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub setMethod {
+    my( $self, $methodName ) = @_;
+
+    $self->{method} = $methodName;
 } #____________________________________________________________________________
 
 
