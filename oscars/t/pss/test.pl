@@ -1,9 +1,6 @@
 #!/usr/bin/perl
 
 use strict;
-use Test qw(plan ok skip);
-
-plan tests => 5;
 
 use TestManager;
 use OSCARS::PSS::JnxLSP;
@@ -70,31 +67,26 @@ my %lspInfo = (
 
 # Create an LSP object.
 my $jnxLSP = new OSCARS::PSS::JnxLSP(\%lspInfo);
-ok($jnxLSP);
 
 # Setup an LSP.
 print("Setting up LSP...\n");
 $jnxLSP->configure_lsp(LSP_SETUP);
-ok($jnxLSP->get_error());
 print("LSP setup complete\n");
 print("\n");
 
 # Check that state of the LSP.
 print("Checking LSP state...  (expected result is 1=>Up)\n");
 my $lspState = $jnxLSP->get_lsp_status();
-ok($jnxLSP->get_error());
 print("LSP State: $lspState (-1=>NA, 0=>Down, 1=>Up)\n");
 print("\n");
 
 # Teardown an LSP.
 print("Tearing down LSP...\n");
 $jnxLSP->configure_lsp(LSP_TEARDOWN);
-ok($jnxLSP->get_error());
 print("LSP teardown complete\n");
 print("\n");
 
 # Check that state of the LSP.
 print("Checking LSP state...  (expected result is -1=>NA)\n");
 $lspState = $jnxLSP->get_lsp_status();
-ok($jnxLSP->get_error());
 print("LSP State: $lspState (-1=>NA, 0=>Down, 1=>Up)\n");

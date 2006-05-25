@@ -1,3 +1,10 @@
+The *.t tests in this directory do not currently work.  However,
+test.pl can be run standalone via
+
+perl pss/test.pl
+
+in the next directory up.
+
 When creating a JnxLSP object, the following parameters can be set:
  - name => string that uniquely identifies a reservation (required)
  - lsp_from => router that will initiate (start-point) LSP (required)
