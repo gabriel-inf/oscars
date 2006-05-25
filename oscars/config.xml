@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- Specifies AAA packages, databases, and SOAP method packages used.
+<!-- Specifies AAA packages, databases, and SOAP plugin packages used.
      In the future a url type may be supported (for a client call).
      All other configuration is in the given database.  -->
 <configuration>
 
-<plugins>
+<!-- System variables -->
+<user>oscars</user>
+<namespace>http://oscars.es.net/OSCARS/Dispatcher</namespace>
+
+<!-- Names of system and topology databases -->
+<database name='system' location='oscars' /> 
+<database name='topology' location='topology' /> 
+
 <!-- AAA configuration.  The database value is a reference to the plugin
      (see below). -->
 
@@ -13,21 +20,7 @@
 <plugin name='authorization' location='OSCARS::Library::AAA::AuthZ' 
         type='package' database='system' />
 
-<!-- Names of system and topology databases -->
-<plugin name='system' location='oscars' type='database' /> 
-<plugin name='topology' location='topology' type='database' /> 
-
-<!-- Configuration of publicly available SOAP methods -->
-<plugin name='UserLogin' location='OSCARS::Public::User::Login'
-        type='package' />
-<plugin name='UserLogout' location='OSCARS::Public::User::Logout'
-        type='package'/>
-<plugin name='UserQuery' location='OSCARS::Public::User::Query'
-        type='package'/>
-<plugin name='UserModify' location='OSCARS::Public::User::Modify'
-        type='package'/>
-<plugin name='InstitutionList' location='OSCARS::Public::Institution::List' 
-        type='package'/>
+<!-- Configuration of publicly described SOAP methods -->
 <plugin name='QueryReservation' location='OSCARS::Public::Reservation::Query' 
         type='package'/>
 <plugin name='CreateReservation' location='OSCARS::Public::Reservation::Create'
@@ -42,6 +35,16 @@
         type='package'/>
 
 <!-- Configuration of internal SOAP methods -->
+<plugin name='UserLogin' location='OSCARS::Public::User::Login'
+        type='package' />
+<plugin name='UserLogout' location='OSCARS::Public::User::Logout'
+        type='package'/>
+<plugin name='UserQuery' location='OSCARS::Public::User::Query'
+        type='package'/>
+<plugin name='UserModify' location='OSCARS::Public::User::Modify'
+        type='package'/>
+<plugin name='InstitutionList' location='OSCARS::Public::Institution::List' 
+        type='package'/>
 <plugin name='UserAdd' location='OSCARS::Internal::User::Add' type='package'/>
 <plugin name='UserRemove' location='OSCARS::Internal::User::Remove'
         type='package'/>
@@ -61,75 +64,70 @@
 <plugin name='TopologyUpdate' 
         location='OSCARS::Internal::Topology::Update' type='package'/>
 
-</plugins>
-
-<notifications>
 
 <notification name='CancelReservation'>
-    <subject msg='Reservation successfully cancelled' />
-    <mapping field='tag' description='Reservation tag' />
+    <subject>Reservation successfully cancelled</subject>
+    <tag>Reservation tag</tag>
 </notification>
 
 <notification name='CreateReservation'>
-    <subject msg='Reservation has been entered into the system' />
-    <mapping field='tag' description='Reservation tag' />
-    <mapping field='srcHost' description='Source' />
-    <mapping field='destHost' description='Destination' />
-    <mapping field='description' description='Description' />
-    <mapping field='startTime' description='Start time' />
-    <mapping field='endTime' description='End time' />
-    <mapping field='createdTime' description='Creation time' />
-    <mapping field='origTimeZone' description='Original time zone' />
-    <mapping field='bandwidth' description='Bandwidth' />
-    <mapping field='burstLimit' description='Burst limit' />
-    <mapping field='status' description='Status' />
-    <mapping field='class' description='Class' />
-    <mapping field='srcPort' description='Source port' />
-    <mapping field='destPort' description='Destination port' />
-    <mapping field='dscp' description='DSCP' />
-    <mapping field='protocol' description='Protocol' />
-    <mapping field='path' description='Routers in path' />
-    <mapping field='ingressRouterIP' description='Ingress router' />
-    <mapping field='ingressLoopbackIP' description='Ingress loopback IP' />
-    <mapping field='egressRouterIP' description='Egress router' />
-    <mapping field='egressLoopbackIP' description='Egress loopback IP' />
+    <subject>Reservation has been entered into the system</subject>
+    <tag>Reservation tag</tag>
+    <srcHost>Source</srcHost>
+    <destHost>Destination</destHost>
+    <description>Description</description>
+    <startTime>Start time</startTime>
+    <endTime>End time</endTime>
+    <createdTime>Creation time</createdTime>
+    <origTimeZone>Original time zone</origTimeZone>
+    <bandwidth>Bandwidth</bandwidth>
+    <burstLimit>Burst limit</burstLimit>
+    <status>Status</status>
+    <class>Class</class>
+    <srcPort>Source port</srcPort>
+    <destPort>Destination port</destPort>
+    <dscp>DSCP</dscp>
+    <protocol>Protocol</protocol>
+    <path>Routers in path</path>
+    <ingressRouterIP>Ingress router</ingressRouterIP>
+    <ingressLoopbackIP>Ingress loopback IP</ingressLoopbackIP>
+    <egressRouterIP>Egress router</egressRouterIP>
+    <egressLoopbackIP>Egress loopback IP</egressLoopbackIP>
 </notification>
 
 <notification name='ReservationPending'>
-    <subject msg='Circuit set up' />
-    <mapping field='tag' description='Reservation tag' />
-    <mapping field='lspConfigTime' description='Path set up time' />
-    <mapping field='lspStatus' description='Configuration status' />
+    <subject>Circuit set up</subject>
+    <tag>Reservation tag</tag>
+    <lspConfigTime>Path set up time</lspConfigTime>
+    <lspStatus>Configuration status</lspStatus>
 </notification>
 
 <notification name='ReservationExpired'>
-    <subject msg='Circuit torn down' />
-    <mapping field='tag' description='Reservation tag' />
-    <mapping field='lspConfigTime' description='Path tear down time' />
-    <mapping field='lspStatus' description='Configuration status' />
+    <subject>Circuit torn down</subject>
+    <tag>Reservation tag</tag>
+    <lspConfigTime>Path tear down time</lspConfigTime>
+    <lspStatus>Configuration status</lspStatus>
 </notification>
 
 <notification name='UserAdd'>
-    <subject msg='OSCARS user added' />
+    <subject>OSCARS user added</subject>
 </notification>
 
 <notification name='PermissionRemove'>
-    <subject msg='Permission removed' />
+    <subject>Permission removed</subject>
 </notification>
 
 <notification name='ResourceRemove'>
-    <subject msg='Resource removed' />
+    <subject>Resource removed</subject>
 </notification>
 
 <notification name='AuthorizationRemove'>
-    <subject msg='Authorization removed' />
+    <subject>Authorization removed</subject>
 </notification>
 
 <notification name='TestMessage'>
-    <subject msg='Test message' />
-    <mapping field='msg' description='Test message' />
+    <subject>Test message</subject>
+    <msg>Test message</msg>
 </notification>
-
-</notifications>
 
 </configuration>
