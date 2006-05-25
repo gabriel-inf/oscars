@@ -8,12 +8,15 @@ use Data::Dumper;
 use OSCARS::PluginManager;
 use OSCARS::ClientManager;
 
-my $pluginMgr = OSCARS::PluginManager->new();
+my $configFile = $ENV{HOME} . '/.oscars.xml';
+my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+my $configuration = $pluginMgr->getConfiguration();
+my $database = $configuration->{database}->{'system'}->{location};
+
 my $authN = $pluginMgr->usePlugin('authentication');
 my $login = 'testaccount';
-my $credentials  = $authN->getCredentials($login, 'password');
+my $credentials = $authN->getCredentials($login, 'password');
 
-my $database = $pluginMgr->getLocation('system');
 my $clientMgr = OSCARS::ClientManager->new('database' => $database);
 
 my( $status, $msg ) = reservationPending( $login, $credentials );
