@@ -57,10 +57,14 @@ sub forward {
         return( 'Unable to get client for next domain', undef );
     }
     my $payload = {};
-    $payload->{method} = 'Forward';
     $payload->{request} = $request;
     $payload->{login} = $login;
-    my $som = $client->dispatch($payload);
+
+    my $methodName = 'Forward';
+    my $method = SOAP::Data -> name($methodName)
+        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
+    my $soapRequest = SOAP::Data -> name($methodName . "Request" => $payload );
+    my $som = $client->call($method => $soapRequest);
     if ( !$som ) { return( 'Unable to make forwarding SOAP call', undef ); }
     if ($som->faultstring) { return( $som->faultstring, undef ); }
     return( undef, $som->result );
