@@ -6,13 +6,14 @@ use OSCARS::PluginManager;
 use OSCARS::Method;
 
 my $login = 'testaccount';
-my $mgr = OSCARS::PluginManager->new();
-my $authN = $mgr->usePlugin('authentication');
+my $configFile = $ENV{HOME} . '/.oscars.xml';
+my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+my $authN = $pluginMgr->usePlugin('authentication');
 
 my $credentials = $authN->getCredentials($login, 'password');
 my $user = $authN->getUser($login);
 
-my $factory = OSCARS::MethodFactory->new();
+my $factory = OSCARS::MethodFactory->new('pluginMgr' => $pluginMgr);
 ok($factory);
 
 my $method = 'UserLogin';

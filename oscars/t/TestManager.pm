@@ -20,14 +20,14 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+May 24, 2006
 
 =cut
 
 use vars qw($VERSION);
 $VERSION = '0.1';
 
-use XML::DOM;
+use XML::Simple;
 
 use Data::Dumper;
 use Error qw(:try);
@@ -46,74 +46,60 @@ sub new {
     my( $self ) = { %args };
 
     bless( $self, $class );
+    $self->initialize();
     return( $self );
-} #____________________________________________________________________________
+}
 
+sub initialize {
+    my( $self ) = @_;
 
-###############################################################################
-#
-sub getParams {
-    my( $self, $fname ) = @_;
-
-    $self->{pluginMgr} = OSCARS::PluginManager->new();
-    $self->{db} = OSCARS::Database->new();
-    my $params = {};
-    my $parser = new XML::DOM::Parser;
-    my $doc = $parser->parsefile( $fname );
-    my $testNodes = $doc->getElementsByTagName( "test" );
-    my $n = $testNodes->getLength;
-    for (my $i = 0; $i < $n; $i++) {
-        my $testNode = $testNodes->item ($i);
-        my $attr = $testNode->getAttributeNode( "name" );
-	my $testName = $attr->getValue;
-	# TODO:  error checking
-        $params->{$testName} = {};
-     	# iterate over the children of the test node (params)
-        for my $paramNode ($testNode->getChildNodes) {
-	    if ($paramNode->getNodeType() ne ELEMENT_NODE) { next; }
-            $attr = $paramNode->getAttributeNode( "name" );
-	    my $paramName = $attr->getValue;
-            $attr = $paramNode->getAttributeNode( "value" );
-	    $params->{$testName}->{$paramName} = $attr->getValue;
-	}
-    }
-    return $params;
+    my $paramsMgr = OSCARS::PluginManager->new('location' => 'params.xml');
+    $self->{params} = $paramsMgr->getConfiguration()->{test};
+    my $configFile = $ENV{HOME} . '/.oscars.xml';
+    my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+    $self->{dbconn} = OSCARS::Database->new();
+    $self->{config} = $pluginMgr->getConfiguration();
+    my $database = $self->{config}->{database}->{'system'}->{location};
+    $self->{dbconn}->connect($database);
+    $self->{authN} = $pluginMgr->usePlugin('authentication');
+    $self->{clientMgr} = OSCARS::ClientManager->new(
+                                    'database' => $database);
+    $self->{logger} = OSCARS::Logger->new();
+    $self->{logger}->setUserLogin('testaccount');
+    $self->{logger}->set_level($NetLogger::INFO);
+    $self->{logger}->open('test.log');
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
 sub dispatch {
-    my( $self, $params, $methodName ) = @_;
+    my( $self, $methodName, $params ) = @_;
 
-    my $logger = OSCARS::Logger->new('method' => $methodName);
-    $logger->setUserLogin('testaccount');
-    $logger->set_level($NetLogger::INFO);
-    $logger->open('test.log');
-    if (!$self->{database}) {
-        $self->{database} = $self->{pluginMgr}->getLocation('system');
-        $self->{db}->connect($self->{database});
+    my $methodParams = $self->{params}->{$methodName};
+    print STDERR Dumper($methodParams);
+    if ( $params ) {
+	for my $key ( keys %{ $methodParams } ) {
+	    $params->{$key} = $methodParams->{$key};
+	}
     }
-    my $authN = $self->{pluginMgr}->usePlugin('authentication');
-    if ( !$self->{clientMgr} ) {
-        $self->{clientMgr} = OSCARS::ClientManager->new(
-                                    'database' => $self->{database});
-    }
+    else { $params = $methodParams; }
+    print STDERR Dumper($params);
+    $self->{logger}->setMethod($methodName);
     my $info = Data::Dumper->Dump([$params], [qw(*REQUEST)]);
-    $logger->info("request", { 'fields' => substr($info, 0, -1) });
+    $self->{logger}->info("request", { 'fields' => substr($info, 0, -1) });
     my $client = $self->{clientMgr}->getClient($methodName);
 
     my $method = SOAP::Data -> name($methodName)
-        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
+        -> attr ( { 'xmlns' => $self->{config}->{namespace} } );
     my $request = SOAP::Data -> name($methodName . "Request" => $params );
     my $som = $client->call($method => $request);
 
-    if ($som->faultstring) { $logger->warn( "Error", { 'fault' => $som->faultstring }); }
+    if ($som->faultstring) { $self->{logger}->warn( "Error", { 'fault' => $som->faultstring }); }
     else {
         $info = Data::Dumper->Dump([$som->result], [qw(*RESPONSE)]);
-        $logger->info("response", { 'fields' => substr($info, 0, -1) });
+        $self->{logger}->info("response", { 'fields' => substr($info, 0, -1) });
     }
-
     if ($som->faultstring) { return( 0, undef ); }
     return( 1, $som->result );
 } #____________________________________________________________________________
@@ -124,13 +110,9 @@ sub dispatch {
 sub getReservationConfigs {
     my( $self, $testName ) = @_;
 
-    if (!$self->{database}) {
-        $self->{database} = $self->{pluginMgr}->getLocation('system');
-        $self->{db}->connect($self->{database});
-    }
     my $statement = "SELECT * FROM configTestAddresses a " .
         "INNER JOIN configTests t ON a.testConfId = t.id WHERE t.name = ?";
-    my $rows = $self->{db}->doSelect($statement, $testName);
+    my $rows = $self->{dbconn}->doSelect($statement, $testName);
     my $configs = {};
     for my $row (@$rows) {
         $configs->{$row->{description}} = $row->{address};
@@ -138,4 +120,10 @@ sub getReservationConfigs {
     return $configs;
 } #____________________________________________________________________________
 
+
+sub close {
+    my( $self ) = @_;
+
+    $self->{dbconn}->disconnect();
+} #____________________________________________________________________________
 

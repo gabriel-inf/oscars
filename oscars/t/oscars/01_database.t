@@ -9,13 +9,15 @@ use OSCARS::Database;
 
 my( $ex, $msg );
  
-my $pluginMgr = OSCARS::PluginManager->new();
+my $configFile = $ENV{HOME} . '/.oscars.xml';
+my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+my $configuration = $pluginMgr->getConfiguration();
+my $database = $configuration->{database}->{'system'}->{location};
 my $dbconn = OSCARS::Database->new();
-ok($dbconn);
+ok( $dbconn );
 
 try {
-    my $dbName = $pluginMgr->getLocation('system');
-    $dbconn->connect($dbName);
+    $dbconn->connect($database);
 }
 catch Error::Simple with { $ex = shift; }
 otherwise { $ex = shift; }
