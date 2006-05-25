@@ -61,7 +61,7 @@ sub initialize {
 sub soapMethod {
     my( $self, $request, $logger ) = @_;
 
-    my $pathInfo;
+    my( $pathInfo, $nextPathInfo, $errMsg );
 
     $logger->info("start", $request);
     # find path, and see if the next domain needs to be contacted
@@ -78,7 +78,7 @@ sub soapMethod {
         }
         $logger->info("forwarding.start", $request );
         # "database" parameter is database name
-        my( $errMsg, $nextPathInfo ) =
+        ( $errMsg, $nextPathInfo ) =
                $self->{forwarder}->forward($request, $self->{database});
         $logger->info("forwarding.finish", $nextPathInfo );
         # TODO: process any differences
