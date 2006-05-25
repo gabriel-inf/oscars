@@ -50,9 +50,13 @@ sub forward {
     my( $self, $request, $database ) = @_;
 
     print STDERR "next domain: $request->{nextDomain}\n";
+    my $methodName = 'Forward';
+    my $method = SOAP::Data -> name($methodName)
+        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
     my $clientMgr = OSCARS::ClientManager->new('database' => $database);
-    my $client = $clientMgr->getClient($request->{nextDomain});
+    my $client = $clientMgr->getClient($methodName, $request->{nextDomain});
     my $login = $clientMgr->getLogin($request->{nextDomain});
+
     if ( !$client ) {
         return( 'Unable to get client for next domain', undef );
     }
@@ -60,10 +64,8 @@ sub forward {
     $payload->{request} = $request;
     $payload->{login} = $login;
 
-    my $methodName = 'Forward';
-    my $method = SOAP::Data -> name($methodName)
-        -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
     my $soapRequest = SOAP::Data -> name($methodName . "Request" => $payload );
+    
     my $som = $client->call($method => $soapRequest);
     if ( !$som ) { return( 'Unable to make forwarding SOAP call', undef ); }
     if ($som->faultstring) { return( $som->faultstring, undef ); }
