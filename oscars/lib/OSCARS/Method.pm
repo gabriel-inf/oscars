@@ -12,32 +12,15 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
-    $self->initialize();
     return( $self );
 }
-
-
-sub initialize {
-    my( $self ) = @_;
-
-    $self->{pluginMgr} = OSCARS::PluginManager->new();
-    $self->{mailer} = OSCARS::Mail->new();
-} #____________________________________________________________________________
-
 
 ###############################################################################
 #
 sub instantiate {
     my( $self, $user, $method ) = @_;
 
-    my $className = $self->{pluginMgr}->getLocation($method);
-    my $database = $self->{pluginMgr}->getLocation('system');
-    my $locationPrefix = $className;
-    $locationPrefix =~ s/(::)/\//g;
-    my $location = $locationPrefix . '.pm';
-    require $location;
-    return $className->new( 'user' => $user, 'database' => $database,
-                            'mailer' => $self->{mailer});
+    return $self->{pluginMgr}->usePlugin($method, $user);
 } #___________________________________________________________________________ 
 
 
@@ -63,7 +46,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+May 24, 2006
 
 =cut
 
@@ -90,6 +73,9 @@ sub initialize {
     $self->{forwarder} = OSCARS::Library::Reservation::ClientForward->new();
     $self->{paramTests} = {};
     $self->{db} = $self->{user}->getDbHandle($self->{database});
+    my $configuration = $self->{pluginMgr}->getConfiguration();
+    $self->{mailer} = OSCARS::Mail->new(
+                         'configuration' => $configuration->{notification} );
 } #____________________________________________________________________________
 
 

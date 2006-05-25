@@ -154,7 +154,9 @@ sub getUser {
     my( $self, $login ) = @_;
 
     if (!$self->{users}->{$login}) {
-        $self->{users}->{$login} = OSCARS::User->new('login' => $login);
+        $self->{users}->{$login} = OSCARS::User->new(
+                         'login' => $login,
+		         'pluginMgr' => $self->{pluginMgr});
     }
     return $self->{users}->{$login};
 } #____________________________________________________________________________

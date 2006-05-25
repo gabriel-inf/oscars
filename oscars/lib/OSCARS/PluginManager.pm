@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 23, 2006
+May 24, 2006
 
 =cut
 
@@ -27,7 +27,7 @@ April 23, 2006
 use vars qw($VERSION);
 $VERSION = '0.1';
 
-use XML::DOM;
+use XML::Simple;
 
 use Data::Dumper;
 use Error qw(:try);
@@ -48,73 +48,46 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->readConfiguration();
+    $self->{config} = XMLin( $self->{location} );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# readConfiguration:  read and parse XML configuration file.
+# getConfiguration:  returns configuration.
 #
-sub readConfiguration {
+sub getConfiguration {
     my( $self ) = @_;
 
-    $self->{config} = {};
-    my $parser = new XML::DOM::Parser;
-    my $doc = $parser->parsefile( "$ENV{HOME}/.oscars.xml" );
-    # print all attributes of all plugin elements
-    my $nodes = $doc->getElementsByTagName( "plugin" );
-    my $n = $nodes->getLength;
-    for (my $i = 0; $i < $n; $i++) {
-        my $node = $nodes->item ($i);
-        my $attr = $node->getAttributeNode( "name" );
-	# TODO:  error checking
-        if ($attr) {
-	    my $name = $attr->getValue;
-            $self->{config}->{$name} = {};
-            $attr = $node->getAttributeNode( "location" );
-	    if ($attr) {
-                $self->{config}->{$name}->{location} = $attr->getValue;
-            }
-            $attr = $node->getAttributeNode ( "database" );
-	    if ($attr) { 
-                $self->{config}->{$name}->{database} = $attr->getValue;
-            }
-            $attr = $node->getAttributeNode ( "type" );
-	    if ($attr) { 
-                $self->{config}->{$name}->{type} = $attr->getValue;
-            }
-	}
-    }
+    return $self->{config};
 } #____________________________________________________________________________
-
 
 ###############################################################################
 # usePlugin:  use given package, given a plugin name.
 #
 sub usePlugin {
-    my( $self, $pluginName ) = @_;
+    my( $self, $pluginName, $user ) = @_;
 
-    my $packageName = $self->{config}->{$pluginName}->{location};
-    my $database = $self->getLocation($self->{config}->{$pluginName}->{database});
+    my $database;
+
+    my $plugin = $self->{config}->{plugin}->{$pluginName};
+    my $packageName = $plugin->{location};
+    if ( $plugin->{database} ) { 
+        $database =
+	        $self->{config}->{database}->{$plugin->{database}}->{location};
+    }
+    else {
+        $database = $self->{config}->{database}->{'system'}->{location};
+    }
     my $location = $packageName . '.pm';
 
     $location =~ s/(::)/\//g;
     eval { require $location };
     if (!$@) {
-        my $newInstance = $packageName->new('database' => $database);
-	return $newInstance;
+        return $packageName->new( 'database' => $database,
+                                  'pluginMgr' => $self,
+			          'user' => $user);
     }
     else { return undef; }
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getLocation:  get location of associated plugin.
-#
-sub getLocation {
-    my( $self, $pluginName ) = @_;
-
-    return $self->{config}->{$pluginName}->{location};
 } #____________________________________________________________________________
 
 

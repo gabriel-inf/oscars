@@ -47,52 +47,6 @@ sub initialize {
     # email text encoding
     $self->{emailEncoding} = 'ISO-8859-1';
     $self->{sendmailCmd} = '/usr/sbin/sendmail -oi';
-    $self->readConfiguration();
-} #____________________________________________________________________________
-
-
-###############################################################################
-# readConfiguration:  read and parse XML configuration file.
-#
-sub readConfiguration {
-    my( $self ) = @_;
-
-    $self->{config} = {};
-    my $parser = new XML::DOM::Parser;
-    my $doc = $parser->parsefile( "$ENV{HOME}/.oscars.xml" );
-    my $topLevel = $doc->getElementsByTagName ("notifications");
-    my $topNode = $topLevel->item(0);
-    my @children = $topNode->getChildNodes();
-    # TODO:  error checking
-    for my $n (@children) {
-        if ( $n->getNodeType() == 1 ) {
-            my $attr = $n->getAttributeNode( "name" );
-	    my $msgName = $attr->getValue();
-	    $self->{config}->{$msgName} = {};
-	    $self->{config}->{$msgName}->{mappings} = ();
-            my $nc = $n->getFirstChild();
-            while ($nc) {
-		if ( $nc->getNodeType() == 1) {
-		    my $nodeName = $nc->getNodeName();
-		    if ($nodeName eq 'subject') {
-			$attr = $nc->getAttributeNode('msg');
-			$self->{config}->{$msgName}->{subject} = $attr->getValue();
-		    }
-		    elsif ($nodeName eq 'mapping') {
-			$attr = $nc->getAttributeNode('field');
-			if (!$attr) { next; }
-			my $descr = $nc->getAttributeNode('description');
-			if (!$descr) { next; }
-			my $mapping = {};
-			$mapping->{$attr->getValue()} = $descr->getValue();
-			push( @{$self->{config}->{$msgName}->{mappings}},
-                              $mapping );
-		    }
-		}
-	        $nc = $nc->getNextSibling();
-	    }
-	}
-    }
 } #____________________________________________________________________________
 
 
@@ -102,29 +56,28 @@ sub readConfiguration {
 sub sendMessage {
     my( $self, $login, $method, $results ) = @_;
 
-    my( $errMsg );
+    my $errMsg;
 
-    if ( !$self->{config}->{$method} ) { return; }
+    my $notification = $self->{configuration}->{$method};
+    if ( !$notification ) { return; }
     my @resultsArray = ();
     if ( ref($results) eq 'HASH' ) { push(@resultsArray, $results); }
     else { @resultsArray = @{$results}; }
-    my $msg = $self->{config}->{$method}->{subject} . "\n\n";
+    my $msg = $notification->{subject} . "\n\n";
 
     for my $result (@resultsArray) {
-        for my $mapping ( @{$self->{config}->{$method}->{mappings}} ) {
-	    for my $key ( keys %{$mapping} ) {
-		if ( $result->{$key} ) {
-		    $msg .= $mapping->{$key} . ':    ' . $result->{$key} . "\n"; 
-		}
+        for my $key ( keys %{$notification} ) {
+            if ( $result->{$key} ) {
+                $msg .= $key . ':    ' . $result->{$key} . "\n"; 
 	    }
         }
 	if ($login ne 'testaccount') {
 	    $errMsg = $self->mailMessage($self->getWebmaster(), $login,
-                'OSCARS:  ' . $self->{config}->{$method}->{subject}, $msg);
+                'OSCARS:  ' . $notification->{subject}, $msg);
 	    if ($errMsg) { throw Error::Simple( $errMsg ); }
 	}
         $errMsg = $self->mailMessage($self->getWebmaster(), $self->getAdmins(),
-            'OSCARS:  Admin notice.  ' . $self->{config}->{$method}->{subject},
+            'OSCARS:  Admin notice.  ' . $notification->{subject},
 	    $msg);
 	if ($errMsg) { throw Error::Simple( $errMsg ); }
     }

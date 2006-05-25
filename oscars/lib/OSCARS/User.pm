@@ -22,7 +22,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 17, 2006
+May 24, 2006
 
 =cut
 
@@ -50,8 +50,7 @@ sub initialize {
     # initially not authenticated
     $self->{isAuthenticated} = 0;
     $self->{handles} = {};
-    my $pluginMgr = OSCARS::PluginManager->new();
-    $self->{authZ} = $pluginMgr->usePlugin('authorization');
+    $self->{authZ} = $self->{pluginMgr}->usePlugin('authorization');
     if ( !$self->{authZ} ) {
         die( "Unable to find authorization plugin; does config file exist?");
     }
