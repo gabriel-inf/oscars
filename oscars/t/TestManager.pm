@@ -77,14 +77,12 @@ sub dispatch {
     my( $self, $methodName, $params ) = @_;
 
     my $methodParams = $self->{params}->{$methodName};
-    print STDERR Dumper($methodParams);
     if ( $params ) {
 	for my $key ( keys %{ $methodParams } ) {
 	    $params->{$key} = $methodParams->{$key};
 	}
     }
     else { $params = $methodParams; }
-    print STDERR Dumper($params);
     $self->{logger}->setMethod($methodName);
     my $info = Data::Dumper->Dump([$params], [qw(*REQUEST)]);
     $self->{logger}->info("request", { 'fields' => substr($info, 0, -1) });
