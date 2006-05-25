@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+May 24, 2006
 
 =cut
 
@@ -52,15 +52,14 @@ sub forward {
     print STDERR "next domain: $request->{nextDomain}\n";
     my $clientMgr = OSCARS::ClientManager->new('database' => $database);
     my $client = $clientMgr->getClient($request->{nextDomain});
+    my $login = $clientMgr->getLogin($request->{nextDomain});
     if ( !$client ) {
         return( 'Unable to get client for next domain', undef );
     }
     my $payload = {};
     $payload->{method} = 'Forward';
     $payload->{request} = $request;
-    # TODO:  FIX hard wiring
-    $payload->{login} = 'xdomain';
-    $payload->{password} = 'crosstest';
+    $payload->{login} = $login;
     my $som = $client->dispatch($payload);
     if ( !$som ) { return( 'Unable to make forwarding SOAP call', undef ); }
     if ($som->faultstring) { return( $som->faultstring, undef ); }
