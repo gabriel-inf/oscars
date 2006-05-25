@@ -7,8 +7,10 @@ use OSCARS::PluginManager;
 use OSCARS::Database;
 use OSCARS::Library::Topology::Pathfinder;
 
-my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getLocation('system');
+my $configFile = $ENV{HOME} . '/.oscars.xml';
+my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+my $configuration = $pluginMgr->getConfiguration();
+my $database = $configuration->{database}->{topology}->{location};
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 

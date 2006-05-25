@@ -14,10 +14,13 @@ use OSCARS::Logger;
 use OSCARS::Library::Topology::JnxSNMP;
 use OSCARS::Library::Topology::Pathfinder;
 
-my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getLocation('system');
+my $configFile = $ENV{HOME} . '/.oscars.xml';
+my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+my $configuration = $pluginMgr->getConfiguration();
+my $database = $configuration->{database}->{topology}->{location};
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
+
 my $logger = OSCARS::Logger->new('method' => '10_jnxSNMP');
 $logger->set_level($NetLogger::INFO);
 $logger->setUserLogin('nologin');
@@ -27,8 +30,7 @@ my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
 my $configs = $pf->getSNMPConfiguration();
 ok( $configs );
 
-my $testMgr = TestManager->new('db' => $dbconn,
-                                'database' => $database);
+my $testMgr = TestManager->new();
 my $testConfigs = $testMgr->getReservationConfigs('jnxSNMP');
 
 # name of edge router to perform query on

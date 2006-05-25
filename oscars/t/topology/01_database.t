@@ -2,6 +2,7 @@
 
 use strict;
 use Test::Simple tests => 2;
+use Data::Dumper;
 
 use OSCARS::PluginManager;
 use OSCARS::Database;
@@ -10,8 +11,10 @@ use Error qw{:try};
 my $msg = "\n";
 my $ex;
  
-my $pluginMgr = OSCARS::PluginManager->new();
-my $database = $pluginMgr->getLocation('topology');
+my $configFile = $ENV{HOME} . '/.oscars.xml';
+my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+my $configuration = $pluginMgr->getConfiguration();
+my $database = $configuration->{database}->{topology}->{location};
 my $dbconn = OSCARS::Database->new();
 ok($dbconn);
 
