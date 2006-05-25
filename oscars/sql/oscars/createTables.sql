@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS clients (
     uri			TEXT NOT NULL,
     proxy		TEXT NOT NULL,
     asNum		TEXT,   -- autonomous system number
+    login               TEXT,   -- service pseudo-user login
     PRIMARY KEY (id)
 ) type=MyISAM;
 
