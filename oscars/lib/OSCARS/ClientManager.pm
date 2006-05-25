@@ -80,6 +80,7 @@ sub getClientInfo {
 	$clientInfo->{$domain} = {};
 	$clientInfo->{$domain}->{uri} = $row->{uri};
 	$clientInfo->{$domain}->{proxy} = $row->{proxy};
+	$clientInfo->{$domain}->{login} = $row->{login};
     }
     $clientInfo->{namespace} = 'http://oscars.es.net/OSCARS/Dispatcher';
     return $clientInfo;
@@ -101,6 +102,20 @@ sub getClient {
         -> proxy( $self->{clientInfo}->{$domain}->{proxy} )
 	-> on_action ( sub { return "$soapAction" } );
     return $client;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# getLogin:  Gets login name associated with other domain.  Requests are
+#            forwarded as this (pseudo) user, which must be in the users
+#            table in the local domain's database.
+#
+sub getLogin {
+    my( $self, $domain ) = @_;
+
+    # default is local domain
+    if ( !$domain ) { return undef; }
+    return $self->{clientInfo}->{$domain}->{login};
 } #____________________________________________________________________________
 
 
