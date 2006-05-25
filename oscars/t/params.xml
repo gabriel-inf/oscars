@@ -12,14 +12,15 @@
         <login>testaccount</login>
     </test>
     <test name="userAdd">
-	    <selectedUser>temptest</selectedUser>
-	    <passwordNewOnce>ac@demy</passwordNewOnce>
-	    <lastName>User</lastName>
-	    <firstName>Temp</firstName>
-	    <institutionName>NERSC</institutionName>
-	    <emailPrimary>dwrobertson@lbl.gov</emailPrimary>
-	    <phonePrimary>510-495-2399</phonePrimary>
-	    <description>test user</description>
+        <login>testaccount</login>
+        <selectedUser>temptest</selectedUser>
+        <passwordNewOnce>ac@demy</passwordNewOnce>
+        <lastName>User</lastName>
+        <firstName>Temp</firstName>
+        <institutionName>NERSC</institutionName>
+        <emailPrimary>dwrobertson@lbl.gov</emailPrimary>
+        <phonePrimary>510-495-2399</phonePrimary>
+        <description>test user</description>
     </test>
     <test name="userRemove">
         <login>testaccount</login>
@@ -48,10 +49,11 @@
         <login>testaccount</login>
     </test>
     <test name="createReservation">
-	    <origTimeZone>-08:00</origTimeZone>
-	    <bandwidth>10</bandwidth>
-	    <protocol>udp</protocol>
-	    <description>This is a test.</description>
+        <login>testaccount</login>
+        <origTimeZone>-08:00</origTimeZone>
+        <bandwidth>10</bandwidth>
+        <protocol>udp</protocol>
+        <description>This is a test.</description>
     </test>
     <test name="cancelReservation">
         <login>testaccount</login>

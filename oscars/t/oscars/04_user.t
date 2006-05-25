@@ -9,6 +9,6 @@ my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
 my $login = 'testaccount';
 my $authN = $pluginMgr->usePlugin('authentication');
 
-my $credentials = $authN->getCredentials($login, 'certificate');
+my $credentials = $authN->getCredentials($login, 'password');
 my $user = $authN->getUser($login);
 ok( $user );
