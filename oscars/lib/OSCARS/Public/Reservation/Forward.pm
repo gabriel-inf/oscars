@@ -53,10 +53,9 @@ sub soapMethod {
 
     my $forwardedRequest = $payload->{request};
     $logger->info("start", $payload);
-    my $factory = OSCARS::MethodFactory->new();
+    my $factory = OSCARS::MethodFactory->new('pluginMgr' => $self->{pluginMgr});
     my $handler =
-        $factory->instantiate( 'user' => $self->{user},
-                               'method' => $forwardedRequest->{method} );
+        $factory->instantiate( $self->{user}, $forwardedRequest->{method} );
     my $response = $handler->soapMethod($forwardedRequest, $logger);
     $logger->info("finish", $response);
     return $response;
