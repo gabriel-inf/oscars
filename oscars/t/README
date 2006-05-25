@@ -1,12 +1,40 @@
 Self test suite for OSCARS, adapted from the libwww-perl self test suite
+
+Last updated:  May 25, 2006
+
 ------------------------------------------------------------------------
 
-Tests are invoked by running the ./TEST script, but usually you run
-the tests with "make test" at the top OSCARS directory.  Use -v
-option for verbose tests.  You might run an individual test like this:
+Tests are invoked by running the ./TEST script.  You can also run all tests 
+with "make test" at the top OSCARS directory, if you are logged in as the 
+oscars user, or have your ssh config set up correctly.
 
-  ./TEST -v aaas/01_login
+You might run an individual test like this:
+
+  ./TEST -v oscars/01_database.t
 
 or all tests in a directory like this
 
-  ./TEST aaas
+  ./TEST oscars
+
+Test log output is written to test.log in this directory.
+
+
+The oscars sub-directory contains tests for many OSCARS classes and all SOAP 
+methods.  They can be run by any user.
+
+The TestManager class provides common functionality for all SOAP method tests.
+params.xml contains parameter configuration for the SOAP method tests.
+
+topology contains tests of classes handling traceroutes and SNMP.  The tests 
+must be run by the oscars user.
+
+pss contains tests of the PSS component of OSCARS.  They must be run by the
+oscars user.
+
+interop contains SOAP interoperability tests.  Currently it only contains tests 
+for the pyGridWare client.
+
+interdomain will contain tests for interdomain circuit setup, for example with
+I2.
+
+
