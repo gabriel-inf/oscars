@@ -50,7 +50,7 @@
     </test>
     <test name="createReservation">
         <login>testaccount</login>
-        <origTimeZone>-08:00</origTimeZone>
+        <origTimeZone>-07:00</origTimeZone>
         <bandwidth>10</bandwidth>
         <protocol>udp</protocol>
         <description>This is a test.</description>
@@ -63,5 +63,14 @@
     </test>
     <test name="reservationExpired">
         <login>testaccount</login>
+    </test>
+    <!-- interdomain test params -->
+    <test name="createInterdomainResv">
+        <login>testaccount</login>
+	<methodName>createReservation</methodName>
+        <origTimeZone>-07:00</origTimeZone>
+        <bandwidth>25</bandwidth>
+        <protocol>udp</protocol>
+        <description>Test from ESnet to I2.</description>
     </test>
 </configuration>

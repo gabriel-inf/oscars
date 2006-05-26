@@ -84,6 +84,10 @@ sub dispatch {
     }
     else { $params = $methodParams; }
     $self->{logger}->setMethod($methodName);
+
+    # if overriding actual method called
+    if ( $params->{methodName} ) { $methodName = $params->{methodName}; }
+
     my $info = Data::Dumper->Dump([$params], [qw(*REQUEST)]);
     $self->{logger}->info("request", { 'fields' => substr($info, 0, -1) });
     my $client = $self->{clientMgr}->getClient($methodName);
