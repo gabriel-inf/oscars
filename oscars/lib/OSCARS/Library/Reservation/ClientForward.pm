@@ -50,7 +50,10 @@ sub forward {
     my( $self, $request, $database ) = @_;
 
     print STDERR "next domain: $request->{nextDomain}\n";
-    my $methodName = 'Forward';
+    my $methodName = 'forward';
+    # TODO: change when get certificates working better
+    $ENV{HTTPS_CERT_FILE} = "/home/oscars/.globus/usercert.pem";
+    $ENV{HTTPS_KEY_FILE}  = "/home/oscars/.globus/userkey.pem";
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
     my $clientMgr = OSCARS::ClientManager->new('database' => $database);
@@ -67,6 +70,9 @@ sub forward {
     my $soapRequest = SOAP::Data -> name($methodName . "Request" => $payload );
     
     my $som = $client->call($method => $soapRequest);
+
+    $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
+    $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
     if ( !$som ) { return( 'Unable to make forwarding SOAP call', undef ); }
     if ($som->faultstring) { return( $som->faultstring, undef ); }
     return( undef, $som->result );
