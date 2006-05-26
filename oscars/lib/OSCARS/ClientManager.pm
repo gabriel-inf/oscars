@@ -53,10 +53,6 @@ sub initialize {
 
     # cache information from the clients table
     $self->{clientInfo} = $self->getClientInfo();
-    # points to the public key of the X509 certificate
-    $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
-    # points to the private key of the cert - must be unencrypted
-    $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
     # tells WSRF::Lite to sign the message with the above cert
     $ENV{WSS_SIGN} = 'true';
 } #____________________________________________________________________________
@@ -96,6 +92,15 @@ sub getClient {
 
     # default is local domain
     if ( !$domain ) { $domain = 'local'; }
+    if ( $domain ne 'local' ) {
+        # TODO: change when get certificates working better
+        $ENV{HTTPS_CERT_FILE} = "/home/oscars/.globus/usercert.pem";
+        $ENV{HTTPS_KEY_FILE}  = "/home/oscars/.globus/userkey.pem";
+    }
+    else {
+        $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
+        $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
+    }
     my $soapAction = $self->{clientInfo}->{namespace} . '/' . $methodName;
     my $client = WSRF::Lite
         -> uri( $self->{clientInfo}->{$domain}->{uri} )
