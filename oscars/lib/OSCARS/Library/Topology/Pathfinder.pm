@@ -93,6 +93,10 @@ sub findPath {
             $self->nameToLoopback($params->{ingressRouterIP});
         $pathInfo->{ingressInterfaceId} = $self->getInterface(
             $self->nameToIP($params->{ingressRouterIP}, 0));
+        $logger->info('ingress',
+            { 'router' => $params->{ingressRouterIP},
+              'ingress' => 'specified',
+	      'loopback' => $pathInfo->{ingressLoopbackIP} } );
     }
     else {
         if ( $params->{egressRouterIP} ) {
@@ -105,7 +109,9 @@ sub findPath {
         }
         $dst = $pathInfo->{srcIP};
         $logger->info('traceroute.reverse',
-            { 'source' => $src, 'destination' => $pathInfo->{srcIP} });
+            { 'source' => $src,
+              'destination' => $pathInfo->{srcIP},
+              'ingress' => 'unspecified' } );
         # Run a traceroute and find the loopback IP, the associated interface,
         # and whether the next hop is an OSCARS/BRUW router.
         ( $unusedPath,
@@ -129,16 +135,25 @@ sub findPath {
             $self->nameToIP($params->{egressRouterIP}, 0));
         # still have to do traceroute to get next hop and next domain
         my( $unusedIP, $unusedId );
+        $logger->info('traceroute.forward',
+            { 'source' => $pathInfo->{ingressLoopbackIP},
+              'destination' => $pathInfo->{destIP},
+	      'loopback' => $params->{egressLoopbackIP},
+	      'router' => $params->{egressRouterIP},
+              'egress' => 'specified' } );
         if ($pathInfo->{egressInterfaceId}) {
-            ( $unusedPath, $unusedIP, 
-              $unusedId, $nextAsNumber ) = $self->doTraceroute('egress',
-                $pathInfo->{egressLoopbackIP}, $pathInfo->{destIP}, $logger );
+            ( $pathInfo->{path},
+              $unusedIP, 
+              $unusedId,
+	      $nextAsNumber ) = $self->doTraceroute('egress',
+                $pathInfo->{ingressLoopbackIP}, $pathInfo->{destIP}, $logger );
         }
     }
     else {
         $logger->info('traceroute.forward',
             { 'source' => $pathInfo->{ingressLoopbackIP},
-              'destination' => $pathInfo->{destIP} });
+              'destination' => $pathInfo->{destIP},
+              'egress' => 'unspecified' } );
         ( $pathInfo->{path},
           $pathInfo->{egressLoopbackIP},
           $pathInfo->{egressInterfaceId},
@@ -150,6 +165,7 @@ sub findPath {
         throw Error::Simple(
             "Egress router $params->{egressRouterIP} has no loopback");
     }
+    print STDERR "nextAsNumber: $nextAsNumber\n";
     if ($nextAsNumber ne 'noSuchInstance') {
         if ($lastDomain != $nextAsNumber) {
             $pathInfo->{nextDomain} = $nextAsNumber;
