@@ -50,8 +50,9 @@ sub handleRequest {
 
 
 ###############################################################################
-# outputDiv:  prints out the reservation creation form
-#              accessible from the "Create Reservation" notebook tab
+# outputDiv:   accessible from the "Create Reservation" notebook tab.
+#    Prints out the reservation creation form.  Note that ingressRouterIP and 
+#    egressRouterIP can be either a host name or an IP address.
 # In:   user login name, and authorizations
 # Out:  message string
 #
@@ -123,14 +124,14 @@ sub outputDiv {
       <tr>
         <td>Ingress loopback</td>
         <td class='warning'>
-	    <input type='text' class='SOAP' name='ingressRouter' size='40'></input>
+	    <input type='text' class='SOAP' name='ingressRouterIP' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
 	</tr>
       <tr>
         <td>Egress loopback</td>
         <td class='warning'>
-	    <input type='text' class='SOAP' name='egressRouter' size='40'></input>
+	    <input type='text' class='SOAP' name='egressRouterIP' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
       </tr>
