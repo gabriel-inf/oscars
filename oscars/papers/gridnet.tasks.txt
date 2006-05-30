@@ -1,35 +1,32 @@
-Here's the latest outline and assignment of tasks (with Brian's input):
+Task assignments for GridNets 2006 paper (a/o 5-30).
 
 Abstract (David)
 
-1.  Intro
-    -what problem is OSCARS solving, why this is needed (David)
+1.  Intro (David)
+    -what problem is OSCARS solving, why this is needed
 
-2.  Related work
-    -Dragon, OCLP, TeraPaths, etc. (Brian)
-    -how OSCARS is different from these (David)
-
-3.  Architecture (David)
+2.  Architecture (David)
     -overall architecture
+    -use of web services
     -individual components
 
-4.  Issues dealt with
+3.  Issues dealt with
     -path discovery and advanced reservations (Jason)
     -provisioning and policing (Chin)
-    -use of web services (David)
     -AAA (Mary)
 
-5.  Interdomain reservations
-    -multiple domains (Jason & David)
+4.  Interdomain reservations
+    -other reservation systems, and collaborations we're setting up (David)
+    -architecture of interdomain reservation (David)
     -reverse paths (Jason)
-    -interoperability (preformance??) and collaborations:  (Jason/David/Chin)
+    -interoperability tests:  (Chin/Jason)
       + I2
       + GEANT (aka DANTE/AMPS)
       + TeraPaths
 
-6. Future
+5. Future
     -Topology Changes -- dynamic update of the reservations table. (Jason)
-    -Standards (Brian)
-    -Testing and TestBeds (Brian and Chin)
+    -Future standards work (Chin)
+    -Testing and testbeds (Chin)
 
-7. Conclusion (Chin and David)
+6. Conclusion (Chin and David)
