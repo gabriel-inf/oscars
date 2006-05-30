@@ -1,0 +1,48 @@
+
+Intra and Interdomain Circuit Provisioning using the OSCARS Reservation System
+
+Abstract
+
+1.  Intro
+
+2.  Related work
+
+3.  Architecture
+
+4.  Issues dealt with
+
+  A) Path Discovery 
+
+There are two scenarios for creating a path in OSCARS.  One is where the
+reservation originates within the OSCARS system.  The other is where a request
+is forwarded from another reservation system, 
+
+In the first case where the reservation originates within the OSCAR system,
+OSCARS does a trace towards the source IP address of the traffic. As the trace
+progress across the routers in the OSCARS system, each router it checked to make
+sure that it is controlled by OSCARS. As soon as OSCARS encounters a router that
+is outside of the system, OSCARS marks that router as the ingress router. After
+the ingress router is located, OSCARS acts the same as if it had received a
+request that contained the ingress router already (explained below).
+
+In the second case another reservation system contacts OSCARS and asks it to
+create a path from a particular ingress router towards a destination IP address.
+In this case OSCARS starts at the ingress router and 'traces' a path towards the
+destination address. As each router is traversed it is checked to see if it is
+contained within the OSCARS system. As soon as a router is encountered in the
+path that is outside of OSCARS control, that router is checked against a list of
+AS (Autonomous System) numbers that OSCARS knows how to communicate with. If the
+router is in that list, OSCARS will forward the request on to that system, so
+that that system can continue to trace the path. If the last router does not
+belong to another system that OSCARS knows how to communicate with, OSCARS marks
+that that as the egress router and establishes the LSP between the ingress and
+egress routers.
+
+ B) Advanced Reservations
+
+
+5.  Interdomain reservations
+
+6.  Future work
+
+7.  Conclusion
