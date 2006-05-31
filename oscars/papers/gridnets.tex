@@ -128,12 +128,37 @@ to handle a dynamically changing network (which may invalidate existing
 reservations), and to set up end-to-end circuits between domains
 in a secure, standards-based fashion.
 
-
 \section{Architecture (David)}
 
-\subsection{overall architecture}
-\subsection{use of Web services}
-\subsection{individual components}
+A user accesses OSCARS
+through requests to the reservation manager (RM).  Requests are made either
+through automated access to a service with a WSDL description, or via
+a Web browser.
+The RM is comprised of three components, the 
+Authentication, Authorization, and Auditing Subsystem (AAAS), the Bandwidth 
+Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).  It is
+implemented as a Web server with an associated database.
+
+The AAAS is responsible for authenticating and authorizing all external 
+requests.  Details of its operation are given below and in the Issues section.
+
+The BSS is responsible for scheduling reservations.  To do so, it keeps track 
+of pending and current reservations, and the current topology and state of
+the network.  As part of scheduling a requested reservation, it must
+determine whether the requested bandwidth will over-utilize any of the links
+in the path within the network.
+
+The PSS is responsible for setting up and tearing down the on-demand bandwidth 
+paths. This is accomplished by making the necessary configuration changes in 
+the routers to create or destroy a Label Switched Path (LSP) at the time
+indicated by the BSS. The authentication and authorization method for the PSS 
+is internal to the ESnet network and is specific to the router platform 
+(currently Juniper or Cisco) being configured.  It is therefore distinct from 
+the AAA used by the BSS.
+
+A notification of the success or failure of LSP setup is 
+passed back to the RM so that the user can be notified and the event 
+logged for auditing purposes.
 
 \section{Issues dealt with}
 \subsection{Path Discovery}
