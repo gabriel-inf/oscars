@@ -295,12 +295,13 @@
 % 
 \author{\authorblockN{Chin~Guok\authorrefmark{1},
 David~Robertson\authorrefmark{1}\authorrefmark{2},
-Mary~Thompson\authorrefmark{2} and 
+Mary~Thompson\authorrefmark{2} and
 Jason~Lee\authorrefmark{2}}
 \authorblockA{\authorrefmark{1}Energy Sciences Network\\
-1 Cyclotron Road, MS 50A-3111 Berkeley, California 94720}
-\authorblockA{\authorrefmark{2}Lawrence Berkeley National Laboratory (LBNL)\\
-1 Cyclotron Road, Berkeley, CA  94720}}
+Berkeley, California 94720}
+\authorblockA{\authorrefmark{2}Ernest Orlando Lawrence Berkeley National Laboratory\\
+Berkeley, CA  94720}}
+
 
 % use only for invited papers
 %\specialpapernotice{(Invited Paper)}
@@ -342,9 +343,42 @@ provide bandwidth guarantees.
 % Will be ignored for other modes.
 \IEEEpeerreviewmaketitle
 
+\section{Introduction (David to write remainder)}
+ESnet is a nation wide network that serves approximately 42 directly 
+connected sites around the country.
+Internally, ESnet manages about 270 routers and systems throughout the 
+network and its operations centers.
+The current ESnet architecture (Figure 1) is that of a high-bandwidth 
+(10/2.5 Gb/s) backbone ring around the country, with hubs at strategic 
+locations. The end sites are connected to the hubs in a spoke-like fashion 
+with local loops and last-mile tail circuits that are typically 0.6 or 
+2.5 Gb/s for the big science laboratories.
+OSCARS faces the constraint of operation within this production network, where
+99.9+ percent reliability is critical.
 
-\section{Introduction (David)}
-Fill this section from the propsal
+The goal of OSCARS is to satisfy the demands of
+high-impact network services, required by a subset of 
+production network sites, whose demands may be extremely high at times but for 
+which a considerably less reliable and potentially schedulable service will 
+nevertheless meet the needs.
+Provision of such services at greater than 99.9 percent
+reliability with the ability to match potential peak demands would otherwise 
+be prohibitively expensive.
+
+These high-impact services are designed to 
+move the massive amounts of data from experiments and simulations with 
+multi-terabyte to multi-petabyte datasets. Other network services with a 
+major impact on science, such as high-end remote visualizations, that cannot be 
+provided cost-effectively by the production network are also candidate 
+high-impact network services.
+
+To accomplish this goal, we must
+mitigate the risks that are engendered by introducing the ability to 
+dynamically allocate capacity in the network -- to the exclusion of normal 
+priority traffic -- for the exclusive use of the service. Circumstances
+under which this might lead to unintended and adverse consequences for the 
+network have to be identified and carefully characterized so that checks may 
+be designed to ensure that this circumstance never occurs.
 
 \section{Architecture (David)}
 
@@ -472,8 +506,8 @@ The conclusion goes here.
 \section*{Acknowledgment}
 % optional entry into table of contents (if used)
 %\addcontentsline{toc}{section}{Acknowledgment}
-The authors would like to thank the letter L and the number
-5.
+The authors would like to thank Bob Riddle and Andrew Lake of Internet2, both
+for help in the incorporation of BRUW, and for work on interoperability tests.
 
 % trigger a \newpage just before the given reference
 % number - used to balance the columns on the last page
