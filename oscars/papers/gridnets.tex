@@ -145,6 +145,24 @@ egress routers.
 
 \subsection{path discovery and advanced reservations (Jason)}
 \subsection{provisioning and policing (Chin)}
+To facilitate bandwidth guarantees, provisioning and policing are needed to 
+enforce reservation and usage limits.  In OSCARS, RSVP is used as the 
+provisioning mechanism.  To ensure that resources are not over-subscribed, QoS is 
+carefully configured to provision queues within the network core.  Within ESnet, 
+traffic utilizing the OSCARS service is classified into a distinct 
+Class-of-Service from all other traffic and isolated into a separate queue by 
+itself.  The size of this queue is configured to match the RSVP bandwidth limits 
+on each interface, e.g. if the RSVP bandwidth limit on an interface is 50%, the 
+"OSCARS" queue is also set at 50%.  This ensures that the RSVP provisioned 
+bandwidth will translate to available network bandwidth within the core.
+
+With all of OSCARS traffic using the same Class-of-Service queue within the core, 
+it is vital to ensure that the bandwidth usage of each corresponding RSVP 
+reservation is strictly adhered to.  This prevents the aggregate traffic from 
+overrunning the queue dedicated to the OSCARS service.  To do this, each flow 
+utilizing the OSCARS service is policed individually according to the reservation 
+bandwidth request.  This policing is done at the ingress point to ESnet.
+
 \subsection{AAA (Mary)}
 
 \section{Interdomain Reservations}
@@ -153,6 +171,24 @@ egress routers.
 \subsection{reverse paths (Jason)}
 \subsection{interoperability tests:  (Chin/Jason)}
 I2
+On Apr 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
+ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
+respectively. The unidirectional 25Mb/s guaranteed bandwidth path was configured 
+between an Internet2 test host in Indianapolis, IN and an ESnet Performance Center 
+[3] host in Sunnyvale, CA.  The path consisted of two unidirectional MPLS Label 
+Switched Paths (LSP's), one in Abilene, and the other in ESnet, "stitched" 
+together at the Abilene-ESnet peering point in Chicago, IL.
+
+Bandwidth tests using IPerf (see Table X.) revealed predictable results except for 
+the guaranteed bandwidth TCP transfer.
+<Table to be inserted later>
+
+The guaranteed bandwidth (25Mb/s) TCP transfer should have yielded a throughput 
+closer to 25Mb/s.  On further investigation, it was determined that the discrepancy 
+between the policing bandwidth and the achieved bandwidth was likely the result of 
+two things, first, the lack of traffic shaping at the source end, and second, 
+Juniper's policing function.  Similar results have been documented by others [8].
+
 GEANT (aka DANTE/AMPS)
 TeraPaths
 
