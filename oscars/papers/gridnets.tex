@@ -14,8 +14,9 @@
 % 
 \author{\authorblockN{Chin~Guok\authorrefmark{1},
 David~Robertson\authorrefmark{1}\authorrefmark{2},
-Mary~Thompson\authorrefmark{2} and
-Jason~Lee\authorrefmark{2}}
+Mary~Thompson\authorrefmark{2}
+Jason~Lee\authorrefmark{2} and
+William~Johnston\authorrefmark{1}\authorrefmark{2}}
 \authorblockA{\authorrefmark{1}Energy Sciences Network\\
 Berkeley, California 94720}
 \authorblockA{\authorrefmark{2}Ernest Orlando Lawrence Berkeley National Laboratory\\
@@ -25,17 +26,18 @@ Berkeley, CA  94720}}
 \maketitle
 
 \begin{abstract}
-The Energy Sciences Network (ESnet) is a high-speed network serving thousands 
-of Department of Energy scientists and collaborators worldwide.
 With the advent of service sensitive applications (such as remote controlled 
 experiments, time constrained massive data transfers, video-conferencing, etc.),
-it has become apparent that there is a need to augment the services present in
-today's ESnet infrastructure.  In particular, there is a need for dynamically 
-provisioned, quality of service enabled paths.
-
-The ESnet On-Demand Secure Circuits and Advance Reservation System (OSCARS) is 
+it has become apparent that there is a need for the setup of dynamically 
+provisioned, quality of service enabled circuits.
+The On-Demand Secure Circuits and Advance Reservation System (OSCARS) is 
 a prototype service enabling on-demand provisioning of guaranteed bandwidth 
-secure circuits both within ESnet, and across network domains.
+secure circuits.
+
+OSCARS operates within the Energy Sciences Network (ESnet), and has
+provisions for interoperation with other network domains.
+ESnet is a high-speed network serving thousands 
+of Department of Energy scientists and collaborators worldwide.
 
 OSCARS utilizes the Web services model and standards to implement communication
 with the system and between domains, and for authentication, authorization,
@@ -61,7 +63,28 @@ DE-[FILL IN].}
 \IEEEpeerreviewmaketitle
 
 \section{Introduction)}
-ESnet is a nation wide network that serves approximately 42 directly connected 
+Large-scale science is increasingly important as attention turns to the
+study of the most complex, subtle, and elusive natural phenomena.  Such
+study is completely dependent on world-wide collaborations of scientists
+and widely dispersed resources such as computing, data, and instruments.
+
+Over the past several years significant improvements have been made in the
+computing and communications infrastructure necessary for support of these
+collaborations.  Network bandwidths have increased, data transport protocols
+have improved, and security issues have become better understood.  However,
+for the network to fully enable such distributed science, network
+communication must be delivered as a manageable service to the distributed
+applications just as computing is.
+
+The goal of OSCARS is to manage and schedule high-impact network services
+associated with these collaborations.  These services
+move massive amounts of data from experiments and 
+simulations with multi-terabyte to multi-petabyte datasets, and also include
+services, such as high-end remote visualizations,
+that cannot be provided cost-effectively by the production network.
+
+OSCARS has been developed within ESnet,
+which is a nation wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
 systems throughout the network and its operations centers.  The current ESnet 
 architecture (Figure 1) is that of a high-bandwidth (10/2.5 Gb/s) backbone ring 
@@ -70,13 +93,6 @@ connected to the hubs in a spoke-like fashion, with local loops and last-mile
 tail circuits that are typically 0.6 or 2.5 Gb/s for the big science 
 laboratories.  OSCARS faces the constraint of operation within this production 
 network, where 99.9+ percent reliability is critical.
-
-The goal of OSCARS is to satisfy the demands of high-impact network services, 
-which are designed to move the massive amounts of data from experiments and 
-simulations with multi-terabyte to multi-petabyte datasets.  Other network 
-services with a major impact on science, such as high-end remote visualizations,
-that cannot be provided cost-effectively by the production network are also 
-candidate high-impact network services.
 
 These services, required by a subset of production network sites, have demands 
 which may be extremely high at times but for which a considerably less reliable 
@@ -103,6 +119,7 @@ Section II covers the architecture of OSCARS, how a typical path is set
 up, and an overview of security.  Section III describes the issues encountered 
 during OSCARS' implementation, including details on security considerations.  
 
+OSCARS will not be useful if it only operates within ESnet.
 The section on interdomain reservations covers other reservation systems and 
 collaborations that have been set up with their developers, as well as 
 interoperability tests that have been performed thus far.  The final section 
