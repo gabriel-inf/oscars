@@ -142,8 +142,25 @@ that that as the egress router and establishes the LSP between the ingress and
 egress routers.
 
 \subsection{Advanced Reservations (Jason)}
+In OSCARS advance reservations are handled in a slot based manner. This equates
+to 'fist come first served' for bandwidth across any particular link at any
+moment. As each reservation is requested in OSCARS, the end-to-end path is
+computed for that reservation. Once the entire path though all the routers
+controlled by OSCARS has been computed then each link in the path is checked for
+available bandwidth. To check the bandwidth of a link all outstanding
+reservations for that link during the time of the proposed reservation are
+queried from the data base. Then all the reserved bandwidth amounts are
+calculated and compared to the the actual capacity of the link. If the requested
+amount of bandwidth plus all outstanding reservations is more then the allocated
+amount of bandwidth available for reservations on that link (usually
+%50), then the reservation fails. Only if there is enough bandwidth available
+on all links is the reservation committed into the reservation system.
 
-\subsection{path discovery and advanced reservations (Jason)}
+In the case where the capacity of a link changes, all outstanding reservations
+that involve the use of that link are queried from the system and recomputed.
+This is done to ensure that at the time that the reservation is 'setup' there
+is adequate bandwidth available on that link for the reservation.
+
 \subsection{provisioning and policing (Chin)}
 To facilitate bandwidth guarantees, provisioning and policing are needed to 
 enforce reservation and usage limits.  In OSCARS, RSVP is used as the 
