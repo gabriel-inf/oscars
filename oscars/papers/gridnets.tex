@@ -295,12 +295,12 @@
 % 
 \author{\authorblockN{Chin~Guok\authorrefmark{1},
 David~Robertson\authorrefmark{1}\authorrefmark{2},
-Brian~Tierney\authorrefmark{2} and 
+Mary~Thompson\authorrefmark{2} and 
 Jason~Lee\authorrefmark{2}}
 \authorblockA{\authorrefmark{1}Energy Sciences Network\\
-some address}
+1 Cyclotron Road, MS 50A-3111 Berkeley, California 94720}
 \authorblockA{\authorrefmark{2}Lawrence Berkeley National Laboratory (LBNL)\\
-some address}}
+1 Cyclotron Road, Berkeley, CA  94720}}
 
 % use only for invited papers
 %\specialpapernotice{(Invited Paper)}
@@ -309,7 +309,27 @@ some address}}
 \maketitle
 
 \begin{abstract}
-The abstract goes here.
+The Energy Sciences Network (ESnet) 
+is a high-speed network serving thousands of Department of Energy scientists 
+and collaborators worldwide.
+With the advent of service sensitive applications (such as remote controlled 
+experiments, time constrained massive data transfers, video-conferencing, etc.),
+it has become apparent that there is a need to augment the services present in
+today's ESnet infrastructure.  In particular, there is a need for dynamically 
+provisioned, quality of service enabled paths.
+
+The ESnet On-Demand Secure Circuits and Advance Reservation 
+System (OSCARS) is  a prototype service enabling
+on-demand provisioning of guaranteed bandwidth secure circuits both within 
+ESnet, and across network domains.
+
+OSCARS utilizes the Web services model and standards to implement communication
+with the system and between domains, and for authentication, authorization,
+and auditing (AAA).  The management and operation of end-to-end circuits 
+within the network is done at the layer 3 level.  Label Switched Paths 
+(LSP's) are used, implemented using Multi-Protocol Label Switching (MPLS) and 
+the Resource Reservation Protocol (RSVP). Quality of Service (QoS) is used to 
+provide bandwidth guarantees.
 \end{abstract}
 
 % no keywords
@@ -323,22 +343,14 @@ The abstract goes here.
 \IEEEpeerreviewmaketitle
 
 
-\section{Introduction}
+\section{Introduction (David)}
 Fill this section from the propsal
 
-\section{Related Work}
-\subsection{Dragon, OCLP, TeraPaths, etc.}
-brian
-\subsection{how OSCARS is differnt}
-david
-
-\section{Architecture}
-david
+\section{Architecture (David)}
 
 \subsection{overall architecture}
-david
+\subsection{use of Web services}
 \subsection{individual components}
-david
 
 \section{Issues dealt with}
 \subsection{Path Discovery}
@@ -371,21 +383,21 @@ egress routers.
 
 \subsection{path discovery and advanced reservations (Jason)}
 \subsection{provisioning and policing (Chin)}
-\subsection{use of web services (David)}
 \subsection{AAA (Mary)}
 
 \section{Interdomain Reservations}
-\subsection{multiple domains (Jason and David)}
+\subsection{other reservation systems and collaborations (David)}
+\subsection{architecture of interdomain reservation setup (David)}
 \subsection{reverse paths (Jason)}
-\subsection{interoperability (preformance??) and collaborations:  (Jason/David/Chin)}
+\subsection{interoperability tests:  (Chin/Jason)}
 I2
 GEANT (aka DANTE/AMPS)
 TeraPaths
 
 \section{Future Work}
 \subsection{Topology Changes -- dynamic update of the reservations table. (Jason)}
-\subsection{Standards (Brian)}
-\subsection{Testing and TestBeds (Brian and Chin)}
+\subsection{Future standards work (Chin)}
+\subsection{Testing and testbeds (Chin)}
 
 % Reminder: the "draftcls" or "draftclsnofoot", not "draft", class option
 % should be used if it is desired that the figures are to be displayed while
