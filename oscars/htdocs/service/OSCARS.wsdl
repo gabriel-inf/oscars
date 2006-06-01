@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions name="OSCARS"
-	targetNamespace="http://oscars.es.net/OSCARS/"
+	targetNamespace="http://oscars.es.net/OSCARS/Dispatcher"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
 	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-	xmlns:tns="http://oscars.es.net/OSCARS/">
+	xmlns:tns="http://oscars.es.net/OSCARS/Dispatcher">
 
 	<wsdl:documentation>
 		This is WSDL for the OSCARS public reservation interface. DRAFT
@@ -13,9 +13,9 @@
 
 	<!-- Element and Type definitons -->
 	<wsdl:types>
-		<xsd:schema targetNamespace="http://oscars.es.net/OSCARS/"
+		<xsd:schema targetNamespace="http://oscars.es.net/OSCARS/Dispatcher"
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:tns="http://oscars.es.net/OSCARS/">
+			xmlns:tns="http://oscars.es.net/OSCARS/Dispatcher">
 
     	    <xsd:element name="createReservation">
     	     	     <xsd:complexType>
@@ -57,33 +57,34 @@
 			<xsd:element name="forward">
 				<xsd:complexType>
 					<xsd:sequence>
-						<xsd:element name="payload">
-							<xsd:complexType>
-								<xsd:sequence>
-									<xsd:choice>
-										<xsd:element name="createReq"
-											type="tns:resReqType">
-										</xsd:element>
-										<xsd:element name="cancelRes"
-											type="tns:resTagType">
-										</xsd:element>
-										<xsd:element name="queryRes"
-											type="tns:resTagType">
-										</xsd:element>
-									</xsd:choice>
-								</xsd:sequence>
-							</xsd:complexType>
-						</xsd:element>
+						<xsd:element name="payload"
+							 type="tns:payloadType"/>
 						<xsd:element name="payloadSender"
-							type="xsd:string">
-						</xsd:element>
+							type="xsd:string"/>
 					</xsd:sequence>
 				</xsd:complexType>
 			</xsd:element>
 			
 			<xsd:element name="forwardResponse" 
 			       type="xsd:string"/>
-			
+			       
+           <xsd:element name="testForward">
+            	<xsd:complexType>
+            		<xsd:sequence>
+            			<xsd:element name="payload"
+            			     type="tns:payloadType"/>
+            			 <xsd:element name="payloadSender"
+							type="xsd:string"/>
+            			<xsd:element name="userLogin"
+            			      type="tns:loginType"/>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            
+            <xsd:element name="testForwardResponse" 
+                type="xsd:string"/>
+            
+  	
 			<xsd:element name="createReservationOSCARSException"
 				type="tns:OSCARSExceptionType" />
 			<xsd:element name="cancelReservationOSCARSException"
@@ -93,9 +94,9 @@
 			<xsd:element name="listReservationsOSCARSException"
 				type="tns:OSCARSExceptionType" />
 			<xsd:element name="forwardOSCARSException"
-				type="xsd:string">
-			</xsd:element>
-
+				type="tns:OSCARSExceptionType"/>
+           <xsd:element name="testForwardOSCARSException" 
+              type="tns:OSCARSExceptionType"/>
 
 			<!--  Types  -->
 
@@ -180,7 +181,23 @@
 						type="xsd:string" maxOccurs="1" minOccurs="0" />
 				</xsd:sequence>
 			</xsd:complexType>
+			
 
+			<xsd:complexType name="payloadType">
+				 <xsd:sequence>
+				       <xsd:element name="contentType"
+				       	       type="tns:payloadContentType" maxOccurs="1" minOccurs="1"/>
+						<xsd:element name="createReq"
+								type="tns:resReqType" maxOccurs="1" minOccurs="0"/>
+						<xsd:element name="cancelRes"
+								type="tns:resTagType" maxOccurs="1" minOccurs="0"/>
+						<xsd:element name="queryRes"
+							type="tns:resTagType" maxOccurs="1" minOccurs="0" />
+						<xsd:element name="listRes" type="xsd:string">
+						</xsd:element>
+				 </xsd:sequence>
+			</xsd:complexType>
+	
 			<xsd:simpleType name="resProtocolType">
 				<xsd:restriction base="xsd:string">
 					<xsd:enumeration value="udp" />
@@ -193,14 +210,29 @@
 					<xsd:element name="msg" type="xsd:string" />
 				</xsd:sequence>
 			</xsd:complexType>
-
+			
 			<xsd:simpleType name="resTagType">
 				<xsd:restriction base="xsd:string" />
-			</xsd:simpleType>
-
-
+			</xsd:simpleType> 
  
-        </xsd:schema>
+            
+            <xsd:complexType name="loginType">
+            	<xsd:sequence>
+            		<xsd:element name="userName" type="xsd:string"></xsd:element>
+            		<xsd:element name="password" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:simpleType name="payloadContentType">
+            	<xsd:restriction base="xsd:string">
+            		<xsd:enumeration value="createRes"></xsd:enumeration>
+            		<xsd:enumeration value="queryRes"></xsd:enumeration>
+            		<xsd:enumeration value="cancelRes"></xsd:enumeration>
+            		<xsd:enumeration value="listRes"></xsd:enumeration>
+            	</xsd:restriction>
+            </xsd:simpleType>
+
+		</xsd:schema>
 	</wsdl:types>
 
 	<!--   Message definitions -->
@@ -254,6 +286,16 @@
 		</wsdl:part>
 	</wsdl:message>
 
+	<wsdl:message name="testForward">
+		<wsdl:part name="testForward"
+			element="tns:testForward">
+		</wsdl:part>
+	</wsdl:message>
+<wsdl:message name="testForwardResponse">
+		<wsdl:part name="testForwardResponse"
+			element="tns:testForwardResponse">
+		</wsdl:part>
+	</wsdl:message>
 	
 		<wsdl:message name="createReservationOSCARSException">
 		<wsdl:part name="createReservationOSCARSException"
@@ -281,8 +323,12 @@
 		</wsdl:part>
 	</wsdl:message>
 
-
-
+	<wsdl:message name="testForwardOSCARSException">
+		<wsdl:part name="testForwardOSCARSException"
+			element="tns:testForwardOSCARSException">
+		</wsdl:part>
+	</wsdl:message>
+	
 	<wsdl:portType name="OSCARS">
 		<wsdl:operation name="createReservation">
 			<wsdl:input message="tns:createReservation" />
@@ -319,6 +365,14 @@
 				message="tns:forwardOSCARSException">
 			</wsdl:fault>
 		</wsdl:operation>
+		
+		<wsdl:operation name="testForward">
+			<wsdl:input message="tns:testForward"></wsdl:input>
+			<wsdl:output message="tns:testForwardResponse"></wsdl:output>
+			<wsdl:fault name="OSCARSException"
+				message="tns:testForwardOSCARSException">
+			</wsdl:fault>
+		</wsdl:operation>
 	</wsdl:portType>
 
 	<wsdl:binding name="OSCARSSOAP" type="tns:OSCARS">
@@ -327,7 +381,7 @@
 
 		<wsdl:operation name="createReservation">
 			<soap:operation style="document"
-				soapAction="http://oscars.es.net/OSCARS/createReservation" />
+				soapAction="http://oscars.es.net/OSCARS/Dispatcher/createReservation" />
 			<wsdl:input>
 				<soap:body use="literal"
 					parts="createReservation" />
@@ -343,7 +397,7 @@
 
 		<wsdl:operation name="queryReservation">
 			<soap:operation style="document"
-				soapAction="http://oscars.es.net/OSCARS/queryReservation" />
+				soapAction="http://oscars.es.net/OSCARS/Dispatcher/queryReservation" />
 			<wsdl:input>
 				<soap:body use="literal"
 					parts="queryReservation" />
@@ -359,7 +413,7 @@
 
 		<wsdl:operation name="listReservations">
 			<soap:operation style="document"
-				soapAction="http://oscars.es.net/OSCARS/listReservations" />
+				soapAction="http://oscars.es.net/OSCARS/Dispatcher/listReservations" />
 			<wsdl:input>
 				<soap:body use="literal"
 					parts="listReservations" />
@@ -375,7 +429,7 @@
 
 		<wsdl:operation name="cancelReservation">
 			<soap:operation
-				soapAction="http://oscars.es.net/OSCARS/cancelReservation" />
+				soapAction="http://oscars.es.net/OSCARS/Dispatcher/cancelReservation" />
 			<wsdl:input>
 				<soap:body use="literal"
 					parts=" cancelReservation" />
@@ -391,7 +445,7 @@
 
 		<wsdl:operation name="forward">
 			<soap:operation
-				soapAction="http://oscars.es.net/OSCARS/forward" />
+				soapAction="http://oscars.es.net/OSCARS/Dispatcher/forward" />
 			<wsdl:input>
 				<soap:body use="literal" parts=" forward" />
 			</wsdl:input>
@@ -402,12 +456,13 @@
 				<soap:fault use="literal" name="OSCARSException" />
 			</wsdl:fault>
 		</wsdl:operation>
-	</wsdl:binding>
+        <wsdl:operation name="testForward"><soap:operation soapAction="http://oscars.es.net/OSCARS/Dispatcher/testForward"/><wsdl:input><soap:body use="literal" parts=" testForward"/></wsdl:input><wsdl:output><soap:body use="literal" parts=" testForwardResponse"/></wsdl:output><wsdl:fault name="OSCARSException"><soap:fault use="literal" name="OSCARSException"/></wsdl:fault></wsdl:operation>
+    </wsdl:binding>
 
 
 	<wsdl:service name="OSCARS">
 		<wsdl:port name="OSCARSSOAP" binding="tns:OSCARSSOAP">
-			<soap:address location="http://localhost:8090/OSCARS" />
+			<soap:address location="http://localhost:2000/OSCARS/Dispatcher" />
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>
