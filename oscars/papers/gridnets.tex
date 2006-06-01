@@ -62,7 +62,7 @@ DE-[FILL IN].}
 % Will be ignored for other modes.
 \IEEEpeerreviewmaketitle
 
-\section{Introduction)}
+\section{Introduction}
 Large-scale science is increasingly important as attention turns to the
 study of the most complex, subtle, and elusive natural phenomena.  Such
 study is completely dependent on world-wide collaborations of scientists
@@ -115,8 +115,8 @@ path are coordinated by OSCARS and managed by the routers in the network.
 
 The following sections cover how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.
-Section II covers the architecture of OSCARS, how a typical path is set
-up, and an overview of security.  Section III describes
+Section II covers the architecture of OSCARS,
+and an overview of security.  Section III describes
 OSCARS' implementation, including details on security considerations.  
 
 OSCARS will not be useful if it only operates within ESnet.
@@ -132,12 +132,10 @@ in a secure, standards-based fashion.
 
 A user accesses OSCARS
 through requests to the reservation manager (RM).  Requests are made either
-through automated access to a service with a WSDL description, or via
-a Web browser.
-The RM is comprised of three components, the 
+through automated access to a service with an associated service description, 
+or via a Web browser.  The RM is comprised of three components, the 
 Authentication, Authorization, and Auditing Subsystem (AAAS), the Bandwidth 
-Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).  It is
-implemented as a Web server with an associated database.
+Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).
 
 The AAAS is responsible for authenticating and authorizing all external 
 requests.  Details of its operation are given below and in the section
@@ -162,6 +160,7 @@ passed back to the RM so that the user can be notified and the event
 logged for auditing purposes.
 
 \section{Implementation}
+\subsection{Web Services (David)}
 \subsection{Path Discovery}
 There are two scenarios for creating a path in OSCARS.  One is where the
 reservation originates within the OSCARS system.  The other is where a request
@@ -190,7 +189,7 @@ egress routers.
 
 \subsection{Advanced Reservations (Jason)}
 In OSCARS advance reservations are handled in a slot based manner. This equates
-to 'fist come first served' for bandwidth across any particular link at any
+to 'first come first served' for bandwidth across any particular link at any
 moment. As each reservation is requested in OSCARS, the end-to-end path is
 computed for that reservation. Once the entire path though all the routers
 controlled by OSCARS has been computed then each link in the path is checked for
@@ -200,24 +199,26 @@ queried from the data base. Then all the reserved bandwidth amounts are
 calculated and compared to the the actual capacity of the link. If the requested
 amount of bandwidth plus all outstanding reservations is more then the allocated
 amount of bandwidth available for reservations on that link (usually
-%50), then the reservation fails. Only if there is enough bandwidth available
-on all links is the reservation committed into the reservation system.
+50 percent), then the reservation fails. Only if there is enough bandwidth 
+available on all links is the reservation committed into the reservation system.
 
 In the case where the capacity of a link changes, all outstanding reservations
 that involve the use of that link are queried from the system and recomputed.
 This is done to ensure that at the time that the reservation is 'setup' there
 is adequate bandwidth available on that link for the reservation.
 
-\subsection{provisioning and policing (Chin)}
+\subsection{Provisioning and Policing (Chin)}
 To facilitate bandwidth guarantees, provisioning and policing are needed to 
 enforce reservation and usage limits.  In OSCARS, RSVP is used as the 
 provisioning mechanism.  To ensure that resources are not over-subscribed, QoS is 
 carefully configured to provision queues within the network core.  Within ESnet, 
 traffic utilizing the OSCARS service is classified into a distinct 
 Class-of-Service from all other traffic and isolated into a separate queue by 
-itself.  The size of this queue is configured to match the RSVP bandwidth limits 
-on each interface, e.g. if the RSVP bandwidth limit on an interface is 50%, the 
-"OSCARS" queue is also set at 50%.  This ensures that the RSVP provisioned 
+itself.  The size of this queue is configured to match the RSVP bandwidth 
+limits on each interface, e.g. if the RSVP bandwidth limit on an interface is 
+50 percent, the 
+"OSCARS" queue is also set at 50 percent.  This ensures that the RSVP 
+provisioned 
 bandwidth will translate to available network bandwidth within the core.
 
 With all of OSCARS traffic using the same Class-of-Service queue within the core, 
@@ -227,34 +228,36 @@ overrunning the queue dedicated to the OSCARS service.  To do this, each flow
 utilizing the OSCARS service is policed individually according to the reservation 
 bandwidth request.  This policing is done at the ingress point to ESnet.
 
-\subsection{AAA (Mary)}
+\subsection{Security (Mary)}
 
 \section{Interdomain Reservations}
-\subsection{other reservation systems and collaborations (David)}
-\subsection{architecture of interdomain reservation setup (David)}
-\subsection{reverse paths (Jason)}
-\subsection{interoperability tests:  (Chin/Jason)}
-I2
+\subsection{Other reservation systems and collaborations (David)}
+\subsection{Architecture of interdomain reservation setup (David)}
+\subsection{Reverse Paths (Jason)}
+\subsection{Interoperability Tests:  (Chin/Jason)}
+\subsubsection{I2}
 On Apr 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
-respectively. The unidirectional 25Mb/s guaranteed bandwidth path was configured 
-between an Internet2 test host in Indianapolis, IN and an ESnet Performance Center 
-[3] host in Sunnyvale, CA.  The path consisted of two unidirectional MPLS Label 
-Switched Paths (LSP's), one in Abilene, and the other in ESnet, "stitched" 
-together at the Abilene-ESnet peering point in Chicago, IL.
+respectively. The unidirectional 25Mb/s guaranteed bandwidth path was 
+configured between an Internet2 test host in Indianapolis, IN and an ESnet 
+Performance Center [REF] host in Sunnyvale, CA.  The path consisted of two 
+unidirectional MPLS Label Switched Paths (LSP's), one in Abilene, and the 
+other in ESnet, "stitched" together at the Abilene-ESnet peering point in 
+Chicago, IL.
 
-Bandwidth tests using IPerf (see Table X.) revealed predictable results except for 
-the guaranteed bandwidth TCP transfer.
+Bandwidth tests using IPerf (see Table X.) revealed predictable results except 
+for the guaranteed bandwidth TCP transfer.
 <Table to be inserted later>
 
 The guaranteed bandwidth (25Mb/s) TCP transfer should have yielded a throughput 
-closer to 25Mb/s.  On further investigation, it was determined that the discrepancy 
-between the policing bandwidth and the achieved bandwidth was likely the result of 
-two things, first, the lack of traffic shaping at the source end, and second, 
-Juniper's policing function.  Similar results have been documented by others [8].
+closer to 25Mb/s.  On further investigation, it was determined that the 
+discrepancy between the policing bandwidth and the achieved bandwidth was 
+likely the result of two things, first, the lack of traffic shaping at the 
+source end, and second, Juniper's policing function.  Similar results have been 
+documented by others [REF].
 
-GEANT (aka DANTE/AMPS)
-TeraPaths
+\subsubsection{DANTE}
+\subsubsection{TeraPaths}
 
 \section{Future Work}
 \subsection{Topology Changes -- dynamic update of the reservations table. (Jason)}
