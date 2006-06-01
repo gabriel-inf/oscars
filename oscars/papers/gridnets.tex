@@ -102,9 +102,12 @@ match potential peak demands would otherwise be prohibitively expensive.
 
 Having the ability to dynamically allocate capacity in the network exclusively 
 to a scheduled service, to the exclusion of normal priority traffic, introduces 
-risks.  Unintended and adverse consequences for the network that may result
-have to be identified and carefully characterized, so that checks are
-designed to mitigate or eliminate these risks.
+risks.
+Throughout the design and implementation of OSCARS, security aspects were
+paramount.  The impact of an abuse could be very
+large.  A DoS attack could prevent reservations from being processed.  If the
+service is compromised, and thus the routers it has access to, the wide
+area network may be disabled.
 
 At the same time, the intent of OSCARS is to create a service for dynamic QoS 
 path establishment that is simple for users to use. The only task required of a
@@ -115,11 +118,11 @@ path are coordinated by OSCARS and managed by the routers in the network.
 
 The following sections cover how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.
-Section II covers the architecture of OSCARS,
-and an overview of security.  Section III describes
-OSCARS' implementation, including details on security considerations.  
+Section II covers the architecture of OSCARS, and
+Section III describes the implementation.  Section IV covers security issues.
 
-OSCARS will not be useful if it only operates within ESnet.
+OSCARS will only be useful if it is one part of a series of reservation
+systems setting up a complete end-to-end circuit.
 The section on interdomain reservations covers other reservation systems and 
 collaborations that have been set up with their developers, as well as 
 interoperability tests that have been performed thus far.  The final section 
@@ -130,6 +133,8 @@ in a secure, standards-based fashion.
 
 \section{Architecture (David)}
 
+\subsection{Components}
+
 A user accesses OSCARS
 through requests to the reservation manager (RM).  Requests are made either
 through automated access to a service with an associated service description, 
@@ -138,8 +143,7 @@ Authentication, Authorization, and Auditing Subsystem (AAAS), the Bandwidth
 Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).
 
 The AAAS is responsible for authenticating and authorizing all external 
-requests.  Details of its operation are given below and in the section
-on implementation.
+requests.
 
 The BSS is responsible for scheduling reservations.  To do so, it keeps track 
 of pending and current reservations, and the current topology and state of
@@ -158,6 +162,8 @@ the AAA used by the BSS.
 A notification of the success or failure of LSP setup is 
 passed back to the RM so that the user can be notified and the event 
 logged for auditing purposes.
+
+\subsection{Communication}
 
 \section{Implementation}
 \subsection{Web Services (David)}
@@ -228,8 +234,6 @@ overrunning the queue dedicated to the OSCARS service.  To do this, each flow
 utilizing the OSCARS service is policed individually according to the reservation 
 bandwidth request.  This policing is done at the ingress point to ESnet.
 
-\subsection{Security (Mary)}
-
 \section{Interdomain Reservations}
 \subsection{Other reservation systems and collaborations (David)}
 \subsection{Architecture of interdomain reservation setup (David)}
@@ -258,6 +262,10 @@ documented by others [REF].
 
 \subsubsection{DANTE}
 \subsubsection{TeraPaths}
+
+\section{Security}
+\subsection{Overview (David)}
+\subsection{AAA (Mary)}
 
 \section{Future Work}
 \subsection{Topology Changes -- dynamic update of the reservations table. (Jason)}
