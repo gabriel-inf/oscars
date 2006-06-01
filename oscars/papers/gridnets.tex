@@ -116,8 +116,8 @@ path are coordinated by OSCARS and managed by the routers in the network.
 The following sections cover how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.
 Section II covers the architecture of OSCARS, how a typical path is set
-up, and an overview of security.  Section III describes the issues encountered 
-during OSCARS' implementation, including details on security considerations.  
+up, and an overview of security.  Section III describes
+OSCARS' implementation, including details on security considerations.  
 
 OSCARS will not be useful if it only operates within ESnet.
 The section on interdomain reservations covers other reservation systems and 
@@ -140,7 +140,8 @@ Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).  It is
 implemented as a Web server with an associated database.
 
 The AAAS is responsible for authenticating and authorizing all external 
-requests.  Details of its operation are given below and in the Issues section.
+requests.  Details of its operation are given below and in the section
+on implementation.
 
 The BSS is responsible for scheduling reservations.  To do so, it keeps track 
 of pending and current reservations, and the current topology and state of
@@ -160,7 +161,7 @@ A notification of the success or failure of LSP setup is
 passed back to the RM so that the user can be notified and the event 
 logged for auditing purposes.
 
-\section{Issues dealt with}
+\section{Implementation}
 \subsection{Path Discovery}
 There are two scenarios for creating a path in OSCARS.  One is where the
 reservation originates within the OSCARS system.  The other is where a request
