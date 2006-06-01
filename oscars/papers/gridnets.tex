@@ -255,11 +255,37 @@ ESnet.
 
 \section{Interdomain Reservations}
 
-\subsection{Other Reservation Systems (David)}
+Analogous to QoS guarantees, guaranteed bandwidth paths are most effective 
+when the reservation spans end-to-end.  This however, introduces the 
+complexity of extending guaranteed bandwidth paths beyond the scope of a 
+single administrative domain to multiple domains.  To facilitate this, 
+neighboring domains must agree on several levels, mainly the management plan, 
+control plan, and data plan.
+
+o The management plane dictates policies and procedures, authentication, 
+authorization, and usage.  This essentially amounts to a Service Level 
+Agreement (SLA) between peer networks.
+
+o The control plane dictates the way control messages, such as setup and 
+teardown requests, are exchanged between the networks, e.g. RSVP signaling.
+
+o The data plane handles how user traffic is forwarded from one network to 
+another network, e.g. IP packets, Ethernet VLAN packets, etc.
+
+\subsection{Other Reservation Systems (David, Chin)}
+
+Today, there are several implementations of network resource management and 
+service provisioning systems in existence.  These include the DOE funded 
+TeraPaths and USN projects, the NSF funded CHEETAH and DRAGON projects, 
+Internet2's BRUW and HOPI projects,  CANARIE's UCLPv2 project, and GEANT's 
+JRA3 (BoD) and SA3 (AMPS) activities.
 
 \subsection{Interdomain Communication and Path Setup (Jason)}
 
 \subsection{Interoperability Tests:  (Chin/Jason)}
+
+The following sections outline some of the interoperability tests that were 
+conducted with other reservation systems.
 
 \subsubsection{I2}
 On Apr 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
@@ -273,14 +299,15 @@ Chicago, IL.
 
 Bandwidth tests using IPerf (see Table X.) revealed predictable results except 
 for the guaranteed bandwidth TCP transfer.
-<Table to be inserted later>
+<Table to be inserted from Word document>
 
-The guaranteed bandwidth (25Mb/s) TCP transfer should have yielded a throughput 
-closer to 25Mb/s.  On further investigation, it was determined that the 
+The guaranteed bandwidth (25Mb/s) TCP transfer should have yielded a 
+throughput closer to 25Mb/s.  On further investigation, it was determined 
+that the 
 discrepancy between the policing bandwidth and the achieved bandwidth was 
 likely the result of two things, first, the lack of traffic shaping at the 
-source end, and second, Juniper's policing function.  Similar results have been 
-documented by others [REF].
+source end, and second, Juniper's policing function.  Similar results have 
+been documented by others [REF].
 
 \subsubsection{DANTE}
 
