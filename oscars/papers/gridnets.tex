@@ -14,7 +14,7 @@
 % 
 \author{\authorblockN{Chin~Guok\authorrefmark{1},
 David~Robertson\authorrefmark{1}\authorrefmark{2},
-Mary~Thompson\authorrefmark{2}
+Mary~Thompson\authorrefmark{2},
 Jason~Lee\authorrefmark{2} and
 William~Johnston\authorrefmark{1}\authorrefmark{2}}
 \authorblockA{\authorrefmark{1}Energy Sciences Network\\
@@ -54,10 +54,6 @@ DE-[FILL IN].}
 
 % no keywords
 
-% For peer review papers, you can put extra information on the cover
-% page as needed:
-% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
-%
 % for peerreview papers, inserts a page break and creates the second title.
 % Will be ignored for other modes.
 \IEEEpeerreviewmaketitle
@@ -92,12 +88,12 @@ around the country, with hubs at strategic locations.  The end sites are
 connected to the hubs in a spoke-like fashion, with local loops and last-mile 
 tail circuits that are typically 0.6 or 2.5 Gb/s for the big science 
 laboratories.  OSCARS faces the constraint of operation within this production 
-network, where 99.9+ percent reliability is critical.
+network, where 99.9+\% reliability is critical.
 
 These services, required by a subset of production network sites, have demands 
 which may be extremely high at times but for which a considerably less reliable 
 and potentially schedulable service will nevertheless meet the needs.  Provision
-of such services at greater than 99.9 percent reliability with the ability to 
+of such services at greater than 99.9\% reliability with the ability to 
 match potential peak demands would otherwise be prohibitively expensive.
 
 Having the ability to dynamically allocate capacity in the network exclusively 
@@ -121,7 +117,7 @@ risks while implementing a scheduling system.
 Section II covers the architecture of OSCARS, and
 Section III describes the implementation.  Section IV covers security issues.
 
-OSCARS will only be useful if it is one part of a series of reservation
+OSCARS will only be useful if it is one element in a series of reservation
 systems setting up a complete end-to-end circuit.
 The section on interdomain reservations covers other reservation systems and 
 collaborations that have been set up with their developers, as well as 
@@ -141,15 +137,23 @@ through automated access to a service with an associated service description,
 or via a Web browser.  The RM is comprised of three components, the 
 Authentication, Authorization, and Auditing Subsystem (AAAS), the Bandwidth 
 Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).
+All persistent information is stored in a database.
 
 The AAAS is responsible for authenticating and authorizing all external 
-requests.
+requests, for logging request information, and sending notifications to
+users and administrators of the results of calls made to the RM.  It also
+handles a number of internal requests related to its management.
 
-The BSS is responsible for scheduling reservations.  To do so, it keeps track 
-of pending and current reservations, and the current topology and state of
-the network.  As part of scheduling a requested reservation, it must
+The BSS is responsible for scheduling reservations.  It handles
+requests to schedule bandwidth reservation, list a reservation's details,
+modify and/or cancel one or more existing reservations, and provide a summary
+of all current reservations.
+
+To perform these functions, the BSS keeps information about past,
+pending, and current reservations, and tracks the current topology and state of
+the network.  As part of scheduling a requested reservation, the BSS must
 determine whether the requested bandwidth will over-utilize any of the links
-in the path within the network.
+in the path to be set up within the network.
 
 The PSS is responsible for setting up and tearing down the on-demand bandwidth 
 paths. This is accomplished by making the necessary configuration changes in 
@@ -159,18 +163,32 @@ is internal to the ESnet network and is specific to the router platform
 (currently Juniper or Cisco) being configured.  It is therefore distinct from 
 the AAA used by the BSS.
 
+\subsection{Communication}
+
 A notification of the success or failure of LSP setup is 
 passed back to the RM so that the user can be notified and the event 
 logged for auditing purposes.
 
-\subsection{Communication}
 
 \section{Implementation}
+
+\subsection{Components (David)}
+
+The resource manager consists of an Apache Web server configured for
+mod\_perl, two databases within a MySQL server, and a set of Perl 
+packages that implement the AAAS, BSS, and PSS.
+
 \subsection{Web Services (David)}
+
+One of the primary design decisions was to implement the RM as a Web service.
+Web services (WS) standards are used wherever possible, including SOAP
+for communicating between a client and the RM, and WSDL for the service
+description. 
+
 \subsection{Path Discovery}
 There are two scenarios for creating a path in OSCARS.  One is where the
 reservation originates within the OSCARS system.  The other is where a request
-is forwarded from another reservation system, 
+is forwarded from another reservation system. 
 
 In the first case where the reservation originates within the OSCAR system,
 OSCARS does a trace towards the source IP address of the traffic. As the trace
@@ -205,7 +223,7 @@ queried from the data base. Then all the reserved bandwidth amounts are
 calculated and compared to the the actual capacity of the link. If the requested
 amount of bandwidth plus all outstanding reservations is more then the allocated
 amount of bandwidth available for reservations on that link (usually
-50 percent), then the reservation fails. Only if there is enough bandwidth 
+50\%), then the reservation fails. Only if there is enough bandwidth 
 available on all links is the reservation committed into the reservation system.
 
 In the case where the capacity of a link changes, all outstanding reservations
@@ -216,29 +234,33 @@ is adequate bandwidth available on that link for the reservation.
 \subsection{Provisioning and Policing (Chin)}
 To facilitate bandwidth guarantees, provisioning and policing are needed to 
 enforce reservation and usage limits.  In OSCARS, RSVP is used as the 
-provisioning mechanism.  To ensure that resources are not over-subscribed, QoS is 
-carefully configured to provision queues within the network core.  Within ESnet, 
-traffic utilizing the OSCARS service is classified into a distinct 
+provisioning mechanism.  To ensure that resources are not over-subscribed, QoS 
+is carefully configured to provision queues within the network core.  Within 
+ESnet, traffic utilizing the OSCARS service is classified into a distinct 
 Class-of-Service from all other traffic and isolated into a separate queue by 
 itself.  The size of this queue is configured to match the RSVP bandwidth 
 limits on each interface, e.g. if the RSVP bandwidth limit on an interface is 
-50 percent, the 
-"OSCARS" queue is also set at 50 percent.  This ensures that the RSVP 
-provisioned 
-bandwidth will translate to available network bandwidth within the core.
+50\%, the "OSCARS" queue is also set at 50\%.  This ensures that the RSVP 
+provisioned bandwidth will translate to available network bandwidth within 
+the core.
 
-With all of OSCARS traffic using the same Class-of-Service queue within the core, 
-it is vital to ensure that the bandwidth usage of each corresponding RSVP 
-reservation is strictly adhered to.  This prevents the aggregate traffic from 
-overrunning the queue dedicated to the OSCARS service.  To do this, each flow 
-utilizing the OSCARS service is policed individually according to the reservation 
-bandwidth request.  This policing is done at the ingress point to ESnet.
+With all of OSCARS traffic using the same Class-of-Service queue within the 
+core, it is vital to ensure that the bandwidth usage of each corresponding 
+RSVP reservation is strictly adhered to.  This prevents the aggregate traffic 
+from overrunning the queue dedicated to the OSCARS service.  To do this, each 
+flow utilizing the OSCARS service is policed individually according to the 
+reservation bandwidth request.  This policing is done at the ingress point to 
+ESnet.
+
 
 \section{Interdomain Reservations}
-\subsection{Other reservation systems and collaborations (David)}
-\subsection{Architecture of interdomain reservation setup (David)}
-\subsection{Reverse Paths (Jason)}
+
+\subsection{Other Reservation Systems (David)}
+
+\subsection{Interdomain Communication and Path Setup (Jason)}
+
 \subsection{Interoperability Tests:  (Chin/Jason)}
+
 \subsubsection{I2}
 On Apr 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
@@ -261,10 +283,19 @@ source end, and second, Juniper's policing function.  Similar results have been
 documented by others [REF].
 
 \subsubsection{DANTE}
+
 \subsubsection{TeraPaths}
 
+
 \section{Security}
-\subsection{Overview (David)}
+A goal in implementation was to make security mechanisms as easy to install
+and use as possible, as long as security is not compromised.
+
+The following section details steps taken to secure the system running
+OSCARS, and the remaining security sections cover AAA.
+
+\subsection{System (David)}
+
 \subsection{Authentication}
 OSCARS authenticates the creation and management of
 reservations. The web based interface and the SOAP server API use the
@@ -298,7 +329,6 @@ the time of provisioning no further authentication is
 done. Provisioning is triggered by the time of the reservation. Once
 the provisioning has been completed, any traffic coming from the
 specified ingress router is able to use the higher class of bandwidth.
-
 
 \subsection{Authorization}
 Once a request has been authenticated as from a registered OSCARS
@@ -399,7 +429,7 @@ used for either authorization or auditing.
 
 
 \section{Conclusion}
-The conclusion goes here.
+To be written.
 
 % conference papers do not normally have an appendix
 
@@ -440,7 +470,6 @@ H.~Kopka and P.~W. Daly, \emph{A Guide to {\LaTeX}}, 3rd~ed.\hskip 1em plus
 
 \end{thebibliography}
 
-% that's all folks
 \end{document}
 
 
