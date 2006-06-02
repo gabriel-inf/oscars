@@ -1,0 +1,614 @@
+STRING{INFOCOM00 = "IEEE INFOCOM 2000"}
+@STRING{INFOCOM01 = "IEEE INFOCOM 2001"}
+@STRING{IMW2001 = "ACM SIGCOMM Internet Measurement Workshop 2001 (IMW2001)"}
+@STRING{SIGCOMM01 = "Proceedings of {ACM} {SIGCOMM} 2001"}
+@STRING{PAM2002 = "Proceedings of the Passive and Active Measurements Workshop 2002 (PAM2002)"}
+@STRING{HPDC7 = "Proceedings of the Seventh IEEE International Symposium on High Performance Distributed Computing (HPDC 7)"}
+
+@InProceedings{ snfactory,
+ author = "G. Aldering and all",  
+  title =  "Overview of the Nearby Supernova  Factory", 
+  booktitle = "Proceedings of SPIE, Volume  4836,  pp. 61-72",
+  year = "2002",
+  url = {http://snfactory.lbl.gov/spie_2002.pdf}
+}
+
+@InProceedings{ reed98performance,
+  author = "D. Reed and R. Aydt and L. DeRose and C. Mendes and R. Ribler and E. Sha
+    and e Simitci and J. Vetter and D. Wells and S. Whitmore and Y. Zhang",
+  title = "Performance Analysis of Parallel Systems: Approaches and Open Problems",
+    booktitle = { Proceedings
+    of the Joint Symposium on Parallel Processing (JSPP), pages 239-256, June
+    1998.},
+  year = "1998" 
+}
+
+@InProceedings{svpablo-reeed,
+   author = "Luiz DeRose and Daniel A. Reed",
+   title = " SvPablo:  A Multi-Language Architecture-Independent Performance Analysis System",
+   booktitle = {  Proceedings  of the International Conference on Parallel Processing  (ICPP'99), Fukushima, Japan,  September 1999}
+}
+
+@article{ miller95paradyn,
+    author = "Barton P. Miller and Mark D. Callaghan and Joanthan M. Cargille and Jeffrey K. Hollingsworth and R. Bruce Irvin and Karen L. Karavanic and Krishna Kunchithapadam and Tia Newhall",
+    title = "The Paradyn Parallel Performance Measurement Tool",
+    journal = "IEEE Computer",
+    volume = "28",
+    number = "11",
+    pages = "37-46",
+    year = "1995",
+    url = "citeseer.ist.psu.edu/miller95paradyn.html" }
+
+
+@InProceedings{tau,
+ author = { S. Shende and A. D. Malony and J. Cuny and K. Lindlan and P. Beckman and S. Karmesin},   
+  title = { Portable Profiling and Tracing for Parallel Scientific Applications  using C++}, 
+ booktitle = { Proceedings of SPDT'98: ACM SIGMETRICS Symposium on Parallel and  Distributed Tools, pp. 134-145, Aug. 1998},
+    year = {1998}
+}
+
+@misc{intel,
+   title = {{Intel Trace Collector}},
+   howpublished = {\url{ http://www.intel.com/software/products/cluster/tcollector/}},
+   key = {Intel}
+}
+
+@misc{fpmpi,
+   title = {fpmpi},
+   howpublished = {\url{http://www-unix.mcs.anl.gov/fpmpi/WWW/}},
+   key = {fpmpi}
+}
+
+@misc{ganglia,
+   title = {{Ganglia}},
+   howpublished = {\url{http://ganglia.sourceforge.net/}},
+   key = {ganglia}
+}
+
+@misc{paraver,
+   title = {{Paraver}},
+   howpublished = {\url{http://www.cepba.upc.edu/paraver/overview.htm}},
+   key = {Paraver}
+}
+
+@InProceedings{netlogger-hpdc02,
+author = "D. Gunter and B. Tierney and K. Jackson and J. Lee and M. Stoufer",
+ title = {Dynamic Monitoring of High-Performance Distributed Applications},
+booktitle ={ 11th IEEE Symposium on High Performance Distributed Computing. 2002.},
+year={2002}
+}
+
+@InProceedings{netlogger-grid03,
+  author = "D. Gunter and B. Tierney and C. E. Tull and V. Virmani",
+ title = "On-Demand Grid Application Tuning and Debugging with the NetLogger Activation Service", 
+booktitle = {4th International Workshop on Grid Computing (Grid2003)},
+  year = {2003}
+}
+
+@misc{nersc,
+   title = {{NERSC}},
+   howpublished = {\url{http://www.nersc.gov/}},
+   key = {NERSC}
+}
+
+@misc{pdsf,
+   title = {{PDSF}},
+   howpublished = {\url{ http://www.nersc.gov/nusers/resources/PDSF/}},
+   key = {PDSF}
+}
+
+@InProceedings{svpablo-reed,
+author = "deRose, L.A. and D.A. Reed",
+ title = "SvPablo: A Multi-Language Architecture-Independent Performance Analysis System",  
+booktitle = {International Conference on Parallel Processing. 1999. Wakamatsu, Japan},
+ year = {1999}
+}
+
+@InProceedings{taylor,
+author = "Wu, X. and V. Taylor",
+ title = {Design and Development of Prophesy Performance Database for Distributed Scientific Applications}, 
+ booktitle = {Proc. the 10th SIAM Conference on Parallel Processing for Scientific Computing. 2001. Virginia},
+ year = {2001},
+   url = {http://prophesy.cs.tamu.edu/index.html}
+}
+
+@misc{svpablo,
+   title = {{SvPablo}},
+   howpublished = {\url{http://www.renci.unc.edu/Project/SVPablo/SvPabloOverview.htm}},
+   key = {SvPablo}
+}
+
+
+@InProceedings{netlogger-hpdc98,
+  author = 	 {B. Tierney and W. Johnston and B. Crowley and G. Hoo and C. Brooks and D. Gunter},
+  title = 	 {The NetLogger Methodology for High Performance Distributed Systems Performance Analysis},
+  booktitle = 	 HPDC7,
+  pages =	 {260--267},
+  year =	 1998
+}
+
+@InProceedings{lee-sc02,
+  author = 	 {J Lee and D Gunter and M Stoufer and B Tierney},
+  title = 	 {Monitoring data 
+archives for grid environments},
+  booktitle = 	 {Proceedings of IEEE Supercomputing 2002 Conference},
+  year =	 2002
+}
+
+
+
+@Misc{rfc2330,
+  author =	 {V. Paxson and G. Almes and J. Mahdavi and M. Mathis},
+  title =	 {Framework for {IP} Performance Metrics},
+  howpublished = {RFC2330},
+  month =	 {May},
+  year =	 1998
+}
+
+
+@InProceedings{mercator,
+  author = 	 {Ramesh Govindan and Hongsuda Tangmunarunkit},
+  title = 	 {Heuristics for Internet Map Discovery},
+  booktitle = 	 INFOCOM00,
+  year =	 2000,
+  address =	 {Tel Aviv, Israel},
+  month =	 {March}
+}
+
+
+@Misc{rfc2330,
+  author =	 {V. Paxson and G. Almes and J. Mahdavi and M. Mathis},
+  title =	 {Framework for {IP} Performance Metrics},
+  howpublished = {RFC2330},
+  month =	 {May},
+  year =	 1998
+}
+
+
+@Misc{grid-replicas,
+  author =	 {Ann Chervenak and GGF: Data Replication Research Group},
+  title =	 {An Architecture for Replica Management in Grid Computing Environments},
+  howpublished = {http://www.sdsc.edu/GridForum/RemoteData/Papers/ggf1replica.pdf}
+
+}
+
+@InProceedings{pathrate,
+  author = 	 {Constantinos Dovrolis and Parameswaran Ramanathan and David Moore},
+  title = 	 {What do packet dispersion techniques measure?},
+  booktitle = 	 INFOCOM01,
+  year =	 2001,
+  annote = {The packet pair technique estimates the capacity of a path
+  (bottleneck bandwidth) from the dispersion (spacing) experienced by
+  two back-to-back packets [1][2][3]. We demonstrate that the
+  dispersion of packet pairs in loaded paths follows a multimodal
+  distribution, and discuss the queueing effects that cause the
+  multiple modes. We show that the path capacity is often not the
+  global mode, and so it cannot be estimated using standard
+  statistical procedures. The effect of the size of the probing
+  packets is also investigated, showing that the conventional wisdom
+  of using maximum sized packet pairs is not optimal. We then study
+  the dispersion of long packet trains. Increasing the length of the.}
+
+}
+
+@misc{hacker,
+   author = "T. J. Hacker and B. D. Athey",
+   title = "The End-to-End Performance Effects of Parallel TCP Sockets on a Lossy Wide-Area
+     Network",
+   url = "citeseer.nj.nec.com/469508.html" 
+}
+
+@Misc{grid-sched,
+  author =	 {GGF},
+  title =	 {Grid Scheduling Area},
+  howpublished = {http://www.mcs.anl.gov/\textasciitilde schopf/ggf-sched}
+}
+
+@Misc{btc-rfc,
+  author =	 {M. Mathis and M. Allman},
+  title =	 {  A Framework for Defining Empirical Bulk Transfer Capacity Metrics
+
+},
+ howpublished = {RFC3148},
+  month =	 {July},
+  year =	 2001
+}
+
+@TechReport{cottrell-slac-9202,
+  author = 	 {R. L. Cottrell and Connie Logg},
+  title = 	 {A New High performance network and Application Monitoring Infrastructure},
+  institution =  {SLAC},
+  year = 	 2002,
+  number =	 {SLAC-PUB-9202}
+}
+
+@Article{nowak-tomography-2002,
+  author = 	 {Mark Coates and A O Hero {III} and Robert Nowak and Bin Yu},
+  title = 	 {Internet Tomography},
+  journal = 	 {IEEE Signal Processing Magazine},
+  year = 	 2002,
+  volume =	 19,
+  number =	 3,
+  pages =	 {47--65},
+  month =	 {May},
+  annote =	 {
+    Today's Internet is a massive, distributed network which continues
+    to explode in size as e-commerce and related activities grow. The
+    heterogeneous and largely unregulated structure of the Internet
+    renders tasks such as dynamic routing, optimized service
+    provision, service-level verification, and detection of
+    anomalous/malicious behavior increasingly challenging tasks. The
+    problem is compounded by the fact that one cannot rely on the
+    cooperation of individual servers and routers to aid in the
+    collection of network traffic measurements vital for these
+    tasks. In many ways, network monitoring and inference problems
+    bear a strong resemblance to other "inverse problems" in which key
+    aspects of a system are not directly observable. Familiar signal
+    processing problems such as tomographic image reconstruction,
+    system identification, and array processing all have interesting
+    interpretations in the networking context. This article introduces
+    the new field of network tomography, a field which we believe will
+    benefit greatly from the wealth of signal processing theory and
+    algorithms.}
+}
+
+@InProceedings{mercator,
+  author = 	 {Ramesh Govindan and Hongsuda Tangmunarunkit},
+  title = 	 {Heuristics for Internet Map Discovery},
+  booktitle = 	 INFOCOM00,
+  year =	 2000,
+  address =	 {Tel Aviv, Israel},
+  month =	 {March}
+}
+
+@InProceedings{SIMR,
+  author = 	 {Mark Allman and Ethan Blanton and Wesley M. Eddy},
+  title = 	 {A Scalable System for Sharing Internet Measurements},
+  booktitle = 	 PAM2002,
+  year =	 2002,
+  month =	 {March}
+}
+
+
+@InProceedings{effective-views,
+  author = 	 {Gary Shao and Fran Berman and Rich Wolski},
+  title = 	 {Using Effective Network Views to Promote Distributed Application Performance},
+  booktitle = 	 {
+                    Proceedings of the 1999 International Conference on Parallel and Distributed
+                    Processing Techniques and Applications (PDPTA'99)},
+  year =	 1999
+}
+
+@InProceedings{IDMaps,
+  author = 	 {Sugih Jamin and Cheng Jin and Yixin Jin and Danny Raz and Yuval Shavitt and Lixia Zhang},
+  title = 	 {On the Placement of Internet Instrumentation},
+  booktitle = 	 INFOCOM00,
+  year =	 2000,
+  address =	 {Tel Aviv, Israel},
+  month =	 {March}
+}
+
+@InProceedings{theilmann-distance-maps,
+  author = 	 {Wolfgang Theilmann and Kurt Rothermel},
+  title = 	 {Dynamic Distance Maps of the Internet},
+  booktitle = 	 INFOCOM00,
+  year =	 2000,
+  address =	 {Tel Aviv, Israel},
+  month =	 {March}
+}
+
+@Misc{rfc2680,
+  author =	 {G Almes and S Kalidindi and M Zekauskas},
+  title =	 {A One-way Packet Loss Metric for {IPPM}},
+  howpublished = {RFC2680},
+  month =	 {September},
+  year =	 1999
+}
+
+@Misc{rfc2679,
+  author =	 {G Almes and S Kalidindi and M Zekauskas},
+  title =	 {A One-way Delay Metric for {IPPM}},
+  howpublished = {RFC2679},
+  month =	 {September},
+  year =	 1999
+}
+
+
+@Misc{rfc2681,
+  author =	 {G Almes and S Kalidindi and M Zekauskas},
+  title =	 {A Round-Trip Delay Metric for {IPPM}},
+  howpublished = {RFC2681},
+  month =	 {September},
+  year =	 1999
+}
+
+
+@Article{closeness,
+  author = 	 {Tiziana Ferrari and Francesco Giacomini},
+  title = 	 {Network Monitoring for GRID Performance Optimization},
+  journal = 	 {Computer Communications},
+  year = 	 2002,
+  note =	 {submitted for publication}
+}
+
+@Article{bolot,
+  author =       {J. C. Bolot},
+  title =        {Characterizing End-to-End Packet Delay and Loss
+                  in the Internet},
+  journal =      {High-Speed Networks},
+  volume =       2,
+  number =       3,
+  year =         1993,
+  pages =        {305--323}
+}
+
+@Inproceedings{sting,
+  author =       {Stefan Savage},
+  title =        {Sting: a TCP-based Network Measurement Tool},
+  booktitle = 	 {USENIX Symposium on Internet Technologies and Systems},
+  year =	 1999,
+  address =	 {Boulder, CO},
+  month =	 {October},
+  pages =        {71--79}
+}
+
+@article{nws,
+ AUTHOR = {Wolski, R.},
+ TITLE = {Dynamically Forecasting Network Performance Using the
+          Network Weather Service},
+ journal = {Cluster Computing},
+ volume=1,
+ pages={119--132},
+ month={January},
+ YEAR = {1998}
+}
+
+@misc{nws-gis,
+                author = {M. Swany and R. Wolski},
+                title = {Representing Dynamic Performance Information in Grid Environments with the Network Weather Service},
+                howpublished = {2nd IEEE International Symposium on Cluster Computing and the Grid},
+                month = {May},
+                year = {2002},
+                city = {Berlin},
+                country = {Germany}
+}
+
+@misc{i2-e2e,
+    key = "i2-e2e",
+    title = "Internet2 End-to-End Performance Initiative",
+    howpublished = "http://www.internet2.edu/e2eperf/"
+}
+
+@misc{net100,
+   title = {{Net100}},
+   howpublished = {\url{http://www.net100.org}},
+   key = {net100}
+}
+
+@InProceedings{crovella-loss-pairs-imw2001,
+  author =       {Jun Liu and Mark Crovella},
+  title =        {Using Loss Pairs to Discover Network Properties},
+  booktitle =    IMW2001,
+  year =         2001,
+  month =        {November}
+}
+
+@Misc{icmp-rfc,
+  author =	 {J. Postel},
+  title =	 {Internet Control Message Protocol},
+  howpublished = {RFC792},
+  month =	 {September},
+  year =	 1981
+}
+
+@Misc{web100,
+  author =       {Web100 Project team},
+  title  =       {Web100 project},
+  howpublished = {http://www.web100.org}
+}
+  
+@Misc{ipdv,
+  author =       {C. Demichelis and P. Chimento},
+  title  =       {IP Packet Delay Variation Metric for IPPM},
+  howpublished = {http://www.ietf.org/internet-drafts/draft-ietf-ippm-ipdv-09.txt},
+  month =        {April},
+  year  =        2002
+}
+
+@Misc{tcptrace,
+  author =       {S. Ostermann},
+  title =        {tcptrace},
+  howpublished = {http://irg.cs.ohiou.edu/software/tcptrace/tcptrace.html},
+}
+
+@Misc{synack,
+  author =       {R. L. Cottrell and M. Shah},
+  title  =       {Measuring RTT by using SYN/ACKs instead of Pings},
+  howpublished = {http://www-iepm.slac.stanford.edu/monitoring/limit/limiting.html\#synack},
+  month =        {December},
+  year  =        1999
+}
+
+@misc{rich,
+  title = {Some Tools used for Testing Network Behaviour}, 
+  author = {Richard Hughes-Jones},
+  howpublished = {http://www.hep.man.ac.uk/~rich/net}
+}
+
+@article{box,
+  author  =    {R. McGill, J. W. Tukey and W. A. Larsen},
+  title   =    {Variations of Box Plots},
+  journal =    {The American Statistician},
+  volume  =    32,
+  number  =    1,
+  month   =    {February},
+  year    =    1978,
+  pages   =    {12--16}
+}
+
+@InProceedings{bridges-sigcomm01,
+  author = 	 {Bruce Lowekamp and David R. O'Hallaron and Thomas Gross},
+  title = 	 {Topology Discovery for Large Ethernet Networks},
+  booktitle = 	 {Proceedings of SIGCOMM 2001},
+  year =	 2001,
+  month =	 {August},
+  organization = {ACM}
+}
+
+@InProceedings{silberschatz-topology,
+  author = 	 {Yuri Breitbart and Minos Garofalakis and Cliff Martin and Rajeev Rastogi and S. Seshadri and Avi Silberschatz},
+  title = 	 {Topology Discovery in Heterogeneous {IP} Networks},
+  booktitle = 	 {Proceedings of INFOCOM 2000},
+  year =	 2000,
+  month =	 {March},
+  annote =	 {topology mapping using direct rule.  emphasis on vlans and multiple subnet ethernets}
+}
+
+
+@InProceedings{internet-geography,
+  author = 	 {Venkata N. Padmanabhan and Lakshminarayanan Subramanian},
+  title = 	 {An Investigation of Geographic Mapping Techniques for Internet Hosts},
+  booktitle = 	 SIGCOMM01,
+  pages =	 {173--185},
+  year =	 2001,
+  annote = {In this paper, we ask whether it is possible to build an
+  IP address to geographic location mapping service for Internet
+  hosts. Such a service would enable a large and interesting class of
+  location-aware applications. This is a challenging problem because
+  an IP address does not inherently contain an indication of location.
+  We present and evaluate three distinct techniques, collectively
+  referred to as IP2Geo, for determining the geographic location of
+  Internet hosts. The first technique, GeoTrack infers location based
+  on the DNS names of the target host or other nearby network
+  nodes. The second technique GeoPing uses network delay measurements
+  from geographically distributed locations to deduce the coordinates
+  of the target host. The third technique, GeoCluster couples partial
+  (and possibly inaccurate) host-to-location mapping information and
+  BGP prefix information to infer the location of the target
+  host. Using extensive and varied data sets, we evaluate the
+  performance of these techniques and identify fundamental challenges
+  in deducing geographic location from the IP address of an Internet
+  host.}
+}
+
+@misc{damed,
+   title = {{Discovery and Monitoring Event Description (DAMED) Working Group,
+ Global Grid Forum}},
+   howpublished = {\mbox{\url{http://www-didc.lbl.gov/damed/main.html}}},
+   key = {damed}
+}
+
+@InProceedings{pathload-pamw2002,
+  author = 	 {Constantinos Dovrolis and M. Jain},
+  title = 	 {Pathload: A Measurement Tool for End-to-End Available Bandwidth},
+  booktitle = 	 {Passive and Active Measurements Workshop},
+  year =	 2002
+}
+
+@inproceedings{topomon-icss02,
+    author = "Mathijs den Burger and Thilo Kielmann and Henri E. Bal",
+    title = "{TopoMon}: A Monitoring Tool for Grid Network Topology",
+    booktitle = "International Conference on Computational Science (2)",
+    pages = "558-567",
+    year = 2002,
+    howpublished = {LNCS, Vol. 2330}
+}
+
+
+@Article{remos-gridjournal,
+  author = 	 {Bruce B. Lowekamp and Nancy Miller and Roger Karrer and Thomas Gross and Peter Steenkiste},
+  title = 	 {Design, Implementation, and Evaluation of the Remos Network Monitoring System},
+  journal = 	 {Journal of Grid Computing},
+  year = 	 2003,
+  volume =	 1,
+  number =	 1
+}
+
+@Article{pinger,
+  author = 	 {W Matthews and R. L. Cottrell},
+  title = 	 {The PINGer Project: Active Internet Performance Monitoring},
+  journal = 	 {IEEE Communications Magazine},
+  year = 	 2000,
+  pages =	 {130--137},
+  month =	 {May}
+}
+
+@InProceedings{lee-sc02,
+  author = 	 {J Lee and D Gunter and M Stoufer and B Tierney},
+  title = 	 {Monitoring data 
+archives for grid environments},
+  booktitle = 	 {Proceedings of IEEE Supercomputing 2002 Conference},
+  year =	 2002
+}
+
+@article{gridlab,
+ author = {Gabrielle Allen and  Kelly Davis and  Konstantinos N. Dolkas and  Nikolaos D. Doulamis and  Tom Goodale and  Thilo Kielmann and  Andr\'{e} Merzky and  Jarek Nabrzyski and  Juliusz Pukacki and  Thomas Radke and  Michael Russell and  Ed Seidel and  John Shalf and Ian Taylor},
+ title = {{Enabling Applications on the Grid: A GridLab Overview}},
+ journal = {International Journal of High Performance Computing Applications},
+ month = aug,
+ year = 2003
+}
+
+@Unpublished{nmwg-measurement-taxonomy,
+  author = 	 {Bruce Lowekamp and Brian Tierney and R. Les Cottrell and Richard Hughes-Jones and Thilo Kielmann and Martin Swany},
+  title = 	 {A Hierarchy of Network Measurements for Grid Applications and Services},
+  note = 	 {draft at http://www-didc.lbl.gov/NMWG/}
+}
+@InProceedings{nws-short-probes,
+  author = 	 {Martin Swany and Rich Wolski},
+  title = 	 {Multivariate Resource Performance Forecasting in the Network Weather Service},
+  booktitle = 	 {Proceedings of SC02},
+  year =	 2002,
+  address =	 {Baltimore, MD},
+  month =	 {November}
+}
+
+
+@InProceedings{cottrell-pam2003,
+  author = 	 {R. L. Cottrell and C. Logg},
+  title = 	 {Experiences and Results from a New High Performance
+Network and Application Monitoring Toolkit},
+  booktitle = 	 {Proceedings of PAM2003},
+  year =	 2003,
+  note =	 {SLAC-PUB-9560}
+}
+
+@phdthesis{rody-thesis,
+   author = {Rody Schoonderwoerd},
+   title = {{ Network Performance Measurement Tools - a Comprehensive Comparison }},
+   school = {Vrije Universiteit},
+   type = {{M.Sc. Thesis}},
+   address = {Amsterdam},
+   month = {November},
+   year = 2002,
+   note = {{available from \url{http://www.cs.vu.nl/albatross}, 
+            summary results available at: 
+            \url{http://www-didc.lbl.gov/NMWG/NM-WG-tools.html}}}
+}
+
+@Unpublished{nmwg-profiles,
+  author = 	 {{Network Measurements Working Group}},
+  title = 	 {Schema/Profile for Network Performance Measurements for Grids},
+  note = 	 {\url{http://www-didc.lbl.gov/NMWG/NMWG-profile.html}}
+}
+
+@Inproceedings{richard-pfldnet,
+  author = {R. Hughes-Jones and S. Dallison and G. Fairey and
+            P. Clarke and I. Bridge},
+  title = {{Performance Measurements on Gigabit Ethernet NICs and
+            Server Quality Motherboards}},
+  booktitle = {{Proceedings of PFLDnet 2003}},
+  year = 2003,
+  note = {http://datatag.web.cern.ch/datatag/pfldnet2003/}
+}
+
+
+@article{compstddev,
+    author = {Tony F. Chan and John Gregg Lewis},
+    title = {{Computing Standard Deviations: Accuracy}},
+    journal = "Communications of the ACM",
+    volume = "22",
+    number = "9",
+    pages = "526-531",
+    year = "1979", 
+}
