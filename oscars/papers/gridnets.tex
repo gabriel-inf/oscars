@@ -15,7 +15,8 @@
 \author{\authorblockN{Chin~Guok\authorrefmark{1},
 David~Robertson\authorrefmark{1}\authorrefmark{2},
 Mary~Thompson\authorrefmark{2},
-Jason~Lee\authorrefmark{2} and
+Jason~Lee\authorrefmark{2},
+Brian~Tierney\authorrefmark{2} and
 William~Johnston\authorrefmark{1}\authorrefmark{2}}
 \authorblockA{\authorrefmark{1}Energy Sciences Network\\
 Berkeley, California 94720}
@@ -47,9 +48,11 @@ within the network is done at the layer 3 level.  Label Switched Paths
 the Resource Reservation Protocol (RSVP). Quality of Service (QoS) is used to 
 provide bandwidth guarantees.
 \footnote{
-This work was supported by the Director, Office of Science, Office of 
-Basic Energy Sciences, of the U.S. Department of Energy under Contract No. 
-DE-[FILL IN].}
+This work was supported by the Director, Office of Science. Office of
+Advanced Scientific Computing Research. Mathematical, Information, and
+Computational Sciences Division under U.S. Department of
+Energy Contract No. DE-AC03-76SF00098. This is report no. LBNL-NNNNN.
+}
 \end{abstract}
 
 % no keywords
@@ -73,11 +76,13 @@ communication must be delivered as a manageable service to the distributed
 applications just as computing is.
 
 The goal of OSCARS is to manage and schedule high-impact network services
-associated with these collaborations.  These services
-move massive amounts of data from experiments and 
-simulations with multi-terabyte to multi-petabyte datasets, and also include
-services, such as high-end remote visualizations,
-that cannot be provided cost-effectively by the production network.
+associated with these collaborations.  These services, which move 
+multi-terabyte to multi-petabyte datasets from experiments and simulations,
+and which include high-end remote visualizations, cannot be provided 
+cost-effectively by the production network.  In this context, services must 
+be \emph{deterministic}, implying a defined and guaranteed service level.
+At a minimum, bandwidth must be guaranteed, and possibly the ability to 
+specify loss rates, latency, jitter, and other parameters in the future.
 
 OSCARS has been developed within ESnet,
 which is a nation wide network that serves approximately 42 directly connected 
@@ -89,12 +94,6 @@ connected to the hubs in a spoke-like fashion, with local loops and last-mile
 tail circuits that are typically 0.6 or 2.5 Gb/s for the big science 
 laboratories.  OSCARS faces the constraint of operation within this production 
 network, where 99.9+\% reliability is critical.
-
-These services, required by a subset of production network sites, have demands 
-which may be extremely high at times but for which a considerably less reliable 
-and potentially schedulable service will nevertheless meet the needs.  Provision
-of such services at greater than 99.9\% reliability with the ability to 
-match potential peak demands would otherwise be prohibitively expensive.
 
 Having the ability to dynamically allocate capacity in the network exclusively 
 to a scheduled service, to the exclusion of normal priority traffic, introduces 
@@ -110,13 +109,13 @@ risks while implementing a scheduling system.  Section II covers the
 OSCARS system, and Section III describes the details of
 path setup and reservation handling.
 
-OSCARS will only be useful if it is one element in a series of reservation
-systems setting up a complete end-to-end circuit.
+OSCARS will only be useful if it is one element in a series of possibly
+heterogeneous reservation systems setting up a complete end-to-end circuit.
 The section on interdomain reservations covers other reservation systems and 
 collaborations that have been set up with their developers, as well as 
 interoperability tests that have been performed thus far.
 
-Section IV covers security, including system, interdomain, and AAA issues.
+Section V covers security, including system, interdomain, and AAA issues.
 The final section touches briefly on the future work that needs to be performed
 to handle a dynamically changing network (which may invalidate existing
 reservations), and to set up end-to-end circuits between domains
@@ -302,7 +301,7 @@ when the reservation spans end-to-end.  This however, introduces the
 complexity of extending guaranteed bandwidth paths beyond the scope of a 
 single administrative domain to multiple domains.  To facilitate this, 
 neighboring domains must agree on several levels, mainly the management plan, 
-control plan, and data plan.
+control plan, and data plan:
 
 \begin{itemize}
 \item
@@ -319,16 +318,40 @@ The data plane handles how user traffic is forwarded from one network to
 another network, e.g. IP packets, Ethernet VLAN packets, etc.
 \end{itemize}
 
-\subsection{Other Reservation Systems (David, Chin)}
+\subsection{Similar Work}
 
 Today, there are several implementations of network resource management and
 service provisioning systems in existence.  These include the DOE funded
 TeraPaths and USN projects, the NSF funded CHEETAH and DRAGON projects,
 Internet2's BRUW and HOPI projects,  CANARIE's UCLPv2 project, and GEANT's
-BoD (JRA3) and AMPS (SA3) activities.  With the exception of OSCARS, BRUW,
+BoD (JRA3) and AMPS (SA3) activities.
+
+All of these projects, as well as OSCARS, are based on a Web services 
+interface to reserve and configure a path across the network. However, they 
+have slightly different ways of handling reservations and AAA issues.
+
+Dragon uses  OSPF-TE [REF] for intradomain routing, and a component called
+the Network Aware Resource Broker (NARB) for interdomain routing.
+Dragon plans to use the Common Open Policy Service (COPS) [REF]
+protocol for support of policy provisioning (COPS-PR) [REF].
+
+Canarie, Canada's advanced Internet development organization, has been
+working on a project called User Controlled LightPath (UCLP).  UCLP
+allows end-users to create their own independent IP network as a subset
+of a larger optical network and to have a total control over their share
+of network.
+
+The University of Amsterdam's Advanced Internet Research group has
+published a number of papers
+describing both the networking and the AAA issues for such a system,
+including [REF][REF][REF]. They are using the IETF AAA Framework
+[rfc2905], and use XACML to describe policy. They have also defined a
+"Network Description Language" (NDL), which is a RDF-based method to
+describe networks, to facilitate interdomain interoperability.
+
+With the exception of OSCARS, BRUW,
 TeraPaths, and AMPS, all other projects mentioned above provision resources
 in the optical network layer (i.e. layer 1), creating lightpaths.
-
 With the OSCARS, BRUW, TeraPaths, and AMPS projects, IP connectivity (layer
 3) is used as the data plane exchange.  This facilitates interoperability
 trials as no additional network connection is needed outside of the production
@@ -561,6 +584,11 @@ To be written.
 \section*{Acknowledgment}
 % optional entry into table of contents (if used)
 %\addcontentsline{toc}{section}{Acknowledgment}
+This work was supported by the Director, Office of Science. Office of
+Advanced Scientific Computing Research. Mathematical, Information, and
+Computational Sciences Division under U.S. Department of
+Energy Contract No. DE-AC03-76SF00098. This is report no. LBNL-NNNNN.
+
 The authors would like to thank Bob Riddle and Andrew Lake of Internet2, both
 for help in the incorporation of BRUW, and for work on interoperability tests.
 
