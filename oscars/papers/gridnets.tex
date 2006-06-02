@@ -166,15 +166,20 @@ the AAA used by the BSS.
 
 \subsection{Implementation (David)}
 
-The resource manager consists of an Apache Web server configured for
-mod\_perl, two databases within a MySQL server, and a set of Perl 
-packages that implement the AAAS, BSS, and PSS.
-
-The RM is implemented as a Web service.
 Web services standards are used wherever possible, including SOAP
 for communicating between a client and the RM, and WSDL for the service
 description. 
  
+The resource manager is implemented as an Apache Web server configured for
+mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
+Perl packages that implement the AAAS, BSS, and PSS.  The Web server is
+used to accept CGI requests, and to forward API requests directly to the SOAP 
+server.  CGI requests are reformatted as SOAP requests, and then forwarded to 
+the SOAP server.  One database contains persistent information related to
+reservations and AAA, and the other contains a representation of the local
+network topology.  Security issues are discussed in the section on security
+below.
+
 \section{Paths and Reservations}
 
 \subsection{Path Setup}
@@ -383,12 +388,23 @@ been documented by others [REF].
 
 \section{Security}
 A goal in implementation was to make security mechanisms as easy to install
-and use as possible, as long as security is not compromised.
+use, and administer as possible, as long as security is not compromised.
 
-The following section details steps taken to secure the system running
-OSCARS, and the remaining security sections cover AAA.
+The following section details steps taken to secure the machines and 
+servers running OSCARS, and the remaining security sections cover AAA.
 
 \subsection{System (David)}
+
+An Apache2 Web server on an open ESnet machine is used to forward all 
+requests to the RM Web server, which runs on a machine behind a firewall. 
+This forwarding process is transparent to the end user, and hides the location 
+of the internal server.
+
+The internal Web server only accept https connections from the open machine.
+The RM SOAP server only accepts requests from clients on the internal machine. 
+Database server processes run as an unprivileged user without a login 
+shell.  The database server only accepts requests from the SOAP server.
+
 
 \subsection{Authentication}
 OSCARS authenticates the creation and management of
