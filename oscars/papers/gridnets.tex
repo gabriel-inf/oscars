@@ -281,6 +281,24 @@ Internet2's BRUW and HOPI projects,  CANARIE's UCLPv2 project, and GEANT's
 JRA3 (BoD) and SA3 (AMPS) activities.
 
 \subsection{Interdomain Communication and Path Setup (Jason)}
+One of the more complex examples of using the OSCARS reservation system involves
+setting up a path between two hosts when the path between the hosts spans
+several different Autonomous Systems (AS's) For example, imagine a setting up a
+path between Host A and Host B, where Host A is controlled by remote reservation
+system and Host B is part of the local OSCARS reservation system.  To accomplish
+this, a "Forward Create" message has to be sent across the network towards Host
+A, crossing all intervening reservations systems, until it reaches the last
+reservation system that is controlling the network that Host A is attached to.
+At that point the remote reservation system has to initiate the creation of the
+path from Host A towards Host B.  This can be especially complex when the path
+back is asymmetric and traverses AS's that were not traversed on the forward
+path, causing the local OSCARS to see the path originating from a different 
+AS then it originally sent the "Create" request out to. This forced us
+to come up with a efficient and heterogeneous WSDL that describes the various
+messages that can be passed between the Reservation Systems. This allows
+each Reservation System to communicate with other Reservation Systems in 
+well defined and general format. It is then up to the individual system to 
+transform the various messages to internal calls to reserve the path.
 
 \subsection{Interoperability Tests:  (Chin/Jason)}
 
@@ -297,8 +315,22 @@ unidirectional MPLS Label Switched Paths (LSP's), one in Abilene, and the
 other in ESnet, "stitched" together at the Abilene-ESnet peering point in 
 Chicago, IL.
 
-Bandwidth tests using IPerf (see Table X.) revealed predictable results except 
-for the guaranteed bandwidth TCP transfer.
+\begin{table}
+ \centering
+ {\scriptsize
+ \begin{tabular}{|c|c|c|c|c|}
+ \hline
+   & One & Two & Three & Four \\ \hline \hline
+ A & 1   & 2   &   3   & 4    \\ \hline 
+ B & 5   & 6   &   7   & 8    \\ \hline 
+ \end{tabular}
+ }
+ \caption{Bandwidth charateristics.}
+ \label{tab:bandwidth}
+\end{table}
+
+Bandwidth tests using IPerf (see Table ~\ref{tab:bandwidth}) revealed predictable results except for the guaranteed bandwidth TCP transfer.
+
 <Table to be inserted from Word document>
 
 The guaranteed bandwidth (25Mb/s) TCP transfer should have yielded a 
