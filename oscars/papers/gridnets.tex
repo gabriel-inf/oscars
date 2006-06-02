@@ -107,7 +107,7 @@ area network may be disabled.
 
 The following sections cover how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.  Section II covers the 
-architecture of OSCARS, and Section III describes issues involved in
+OSCARS system, and Section III describes the details of
 path setup and reservation handling.
 
 OSCARS will only be useful if it is one element in a series of reservation
@@ -122,20 +122,19 @@ to handle a dynamically changing network (which may invalidate existing
 reservations), and to set up end-to-end circuits between domains
 in a secure, standards-based fashion.
 
-\section{Architecture}
+\section{System}
 
 The intent of OSCARS is to create a service for dynamic QoS path establishment
 that is simple for users to use, and easy to administer.  The only task 
 required of a user is to make a bandwidth reservation.  The user does not have 
 to configure an alternate routing path, nor mark the packets in any way.  All 
 necessary mechanisms needed to provide the user with a guaranteed bandwidth 
-path are coordinated by the reservation manager and managed by the routers in 
-the network.
+path are coordinated by a reservation manager (RM) and managed by the routers 
+in the network.
 
 \subsection{Components}
 
-The reservation manager (RM) handles all capabilities except for initial
-router configuration.  The RM is comprised of three components:  the 
+The RM is comprised of three components:  the 
 Authentication, Authorization, and Auditing Subsystem (AAAS), the Bandwidth 
 Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).
 All persistent information is stored in a database.  Administration of
@@ -164,6 +163,19 @@ indicated by the BSS. The authentication and authorization method for the PSS
 is internal to the ESnet network and is specific to the router platform 
 (currently Juniper or Cisco) being configured.  It is therefore distinct from 
 the AAA used by the BSS.
+
+\subsection{Implementation (David)}
+
+The resource manager consists of an Apache Web server configured for
+mod\_perl, two databases within a MySQL server, and a set of Perl 
+packages that implement the AAAS, BSS, and PSS.
+
+The RM is implemented as a Web service.
+Web services standards are used wherever possible, including SOAP
+for communicating between a client and the RM, and WSDL for the service
+description. 
+ 
+\section{Paths and Reservations}
 
 \subsection{Path Setup}
 
@@ -200,19 +212,6 @@ passed back to the RM so that the user can be notified and the event
 logged for auditing purposes.
 
 o At the requested end time, the PSS tears down the LSP.
-
-\subsection{Implementation}
-
-The resource manager consists of an Apache Web server configured for
-mod\_perl, two databases within a MySQL server, and a set of Perl 
-packages that implement the AAAS, BSS, and PSS.
-
-The RM is implemented as a Web service.
-Web services standards are used wherever possible, including SOAP
-for communicating between a client and the RM, and WSDL for the service
-description. 
- 
-\section{Paths and Reservations}
 
 \subsection{Path Discovery}
 There are two scenarios for creating a path in OSCARS.  One is where the
@@ -316,7 +315,7 @@ With the OSCARS, BRUW, TeraPaths, and AMPS projects, IP connectivity (layer
 trials as no additional network connection is needed outside of the production
 peering exchange.
 
-\subsection{Interdomain Communication and Path Setup (Jason)}
+\subsection{Interdomain Path Setup (Jason)}
 One of the more complex examples of using the OSCARS reservation system involves
 setting up a path between two hosts when the path between the hosts spans
 several different Autonomous Systems (AS's) For example, imagine a setting up a
