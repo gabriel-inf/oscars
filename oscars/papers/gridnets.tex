@@ -186,37 +186,46 @@ below.
 
 The procedure of a typical path setup is as follows:
 
-o A user submits a request to the RM (using either an API or
+\begin{enumerate}
+\item
+A user submits a request to the RM (using either an API or
 an optional web front-end) to schedule an end-to-end path (e.g. between an
 experiment and computing cluster) specifying start and end times, bandwidth
 requirements, and specific source IP address and port that will be used to     
 provide application access to the path.
 
-o This information is stored by the BSS in a database, and a script 
+\item
+This information is stored by the BSS in a database, and a script 
 periodically checks to see if the PSS needs to be contacted, either to create 
 or tear down the circuit.
 
-o At the requested start time, the PSS configures the ESnet router
+\item
+At the requested start time, the PSS configures the ESnet router
 (at the start end of the path) to create an LSP with the
 specified bandwidth.
 
-o Each router along the route receives the path setup request (via RSVP)
+\item
+Each router along the route receives the path setup request (via RSVP)
 and commits bandwidth (if available) creating an end-to-end LSP.  The RM is
 notified by RSVP if the end-to-end path cannot be established.  The RM
 passes this notification bak to the user.
 
-o Packets from the source (e.g. experiment) are routed through the
+\item
+Packets from the source (e.g. experiment) are routed through the
 LAN's production path to ESnet's edge router.  On entering the edge router,
 these packets are identified and filtered using flow specification parameters
 (e.g. source/destination IP address/port numbers) and policed at the specified
 bandwidth.  The packets are then injected into the LSP and switched (using MPLS)
 through the network to its destination (e.g. computing cluster).
 
-o A notification of the success or failure of LSP setup is 
+\item
+A notification of the success or failure of LSP setup is 
 passed back to the RM so that the user can be notified and the event 
 logged for auditing purposes.
 
-o At the requested end time, the PSS tears down the LSP.
+\item
+At the requested end time, the PSS tears down the LSP.
+\end{enumerate}
 
 \subsection{Path Discovery}
 There are two scenarios for creating a path in OSCARS.  One is where the
@@ -295,15 +304,20 @@ single administrative domain to multiple domains.  To facilitate this,
 neighboring domains must agree on several levels, mainly the management plan, 
 control plan, and data plan.
 
-o The management plane dictates policies and procedures, authentication, 
+\begin{itemize}
+\item
+The management plane dictates policies and procedures, authentication, 
 authorization, and usage.  This essentially amounts to a Service Level 
 Agreement (SLA) between peer networks.
 
-o The control plane dictates the way control messages, such as setup and 
+\item
+The control plane dictates the way control messages, such as setup and 
 teardown requests, are exchanged between the networks, e.g. RSVP signaling.
 
-o The data plane handles how user traffic is forwarded from one network to 
+\item
+The data plane handles how user traffic is forwarded from one network to 
 another network, e.g. IP packets, Ethernet VLAN packets, etc.
+\end{itemize}
 
 \subsection{Other Reservation Systems (David, Chin)}
 
