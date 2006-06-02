@@ -105,63 +105,40 @@ large.  A DoS attack could prevent reservations from being processed.  If the
 service is compromised, and thus the routers it has access to, the wide
 area network may be disabled.
 
-At the same time, the intent of OSCARS is to create a service for dynamic QoS 
-path establishment that is simple for users to use. The only task required of a
-typical user is to make a bandwidth reservation. The user does not have to 
-configure an alternate routing path, nor mark the packets in any way. All 
-necessary mechanisms needed to provide the user with a guaranteed bandwidth 
-path are coordinated by OSCARS and managed by the routers in the network.
-
 The following sections cover how OSCARS addresses the above constraints and
-risks while implementing a scheduling system.
-Section II covers the architecture of OSCARS, and
-Section III describes the implementation.  Section IV covers security issues.
+risks while implementing a scheduling system.  Section II covers the 
+architecture of OSCARS, and Section III describes the implementation.
 
 OSCARS will only be useful if it is one element in a series of reservation
 systems setting up a complete end-to-end circuit.
 The section on interdomain reservations covers other reservation systems and 
 collaborations that have been set up with their developers, as well as 
-interoperability tests that have been performed thus far.  The final section 
-touches briefly on the future work that needs to be performed
+interoperability tests that have been performed thus far.
+
+Section IV covers security, including system, interdomain, and AAA issues.
+The final section touches briefly on the future work that needs to be performed
 to handle a dynamically changing network (which may invalidate existing
 reservations), and to set up end-to-end circuits between domains
 in a secure, standards-based fashion.
 
-\section{Architecture (David)}
+\section{Architecture}
 
 The intent of OSCARS is to create a service for dynamic QoS path establishment
-that is simple for users to use.  The only task required of a user is to make a
-bandwidth reservation.  The user does not have to configure an alternate
-routing path, nor mark the packets in any way.  All necessary mechanisms needed
-to provide the user with a guaranteed bandwidth path are coordinated by the
-reservation manager and managed by the routers in the network.
-
-The procedure of a typical path setup will be as follows:
-1)      A user submits a request to the ESnet Reservation Manager (RM) (using
-an optional web front-end) to schedule an end-to-end path (e.g. between an
-experiment and computing cluster) specifying start and end times, bandwidth
-requirements, and specific source IP address and port that will be used to     
-provide application access to the path.
-2)      At the requested start time, the RM will configure the ESnet router
-(at the start end of the path) to create a Label Switched Path (LSP) with the
-specified bandwidth.
-3)      Each router along the route receives the path setup request (via RSVP)
-and commits bandwidth (if available) creating an end-to-end LSP.  The RM will
-be notified by RSVP if the end-to-end path cannot be established.  The RM will
-then pass on this information to the user.
-4)      Packets from the source (e.g. experiment) will be routed through the
-LAN's production path to ESnet's edge router.  On entering the edge router,
-these packets are identified and filtered using flow specification parameters
-(e.g. source/destination IP address/port numbers) and policed at the specified
-bandwidth.  The packets are then injected into the LSP and switched (using MPLS)
-through the network to its destination (e.g. computing cluster).
+that is simple for users to use, and easy to administer.  The only task 
+required of a user is to make a bandwidth reservation.  The user does not have 
+to configure an alternate routing path, nor mark the packets in any way.  All 
+necessary mechanisms needed to provide the user with a guaranteed bandwidth 
+path are coordinated by the reservation manager and managed by the routers in 
+the network.
 
 \subsection{Components}
 
-The RM is comprised of three components, the 
+The reservation manager (RM) handles all capabilities except for initial
+router configuration.  The RM is comprised of three components:  the 
 Authentication, Authorization, and Auditing Subsystem (AAAS), the Bandwidth 
 Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).
-All persistent information is stored in a database.
+All persistent information is stored in a database.  Administration of
+the RM is done through simple Web forms.
 
 The AAAS is responsible for authenticating and authorizing all external 
 requests, for logging request information, and sending notifications to
@@ -187,12 +164,41 @@ is internal to the ESnet network and is specific to the router platform
 (currently Juniper or Cisco) being configured.  It is therefore distinct from 
 the AAA used by the BSS.
 
-\subsection{Communication}
+\subsection{Path Setup}
 
-A notification of the success or failure of LSP setup is 
+The procedure of a typical path setup is as follows:
+
+o A user submits a request to the RM (using either an API or
+an optional web front-end) to schedule an end-to-end path (e.g. between an
+experiment and computing cluster) specifying start and end times, bandwidth
+requirements, and specific source IP address and port that will be used to     
+provide application access to the path.
+
+o This information is stored by the BSS in a database, and a script 
+periodically checks to see if the PSS needs to be contacted, either to create 
+or tear down the circuit.
+
+o At the requested start time, the PSS configures the ESnet router
+(at the start end of the path) to create an LSP with the
+specified bandwidth.
+
+o Each router along the route receives the path setup request (via RSVP)
+and commits bandwidth (if available) creating an end-to-end LSP.  The RM is
+notified by RSVP if the end-to-end path cannot be established.  The RM
+passes this notification bak to the user.
+
+o Packets from the source (e.g. experiment) are routed through the
+LAN's production path to ESnet's edge router.  On entering the edge router,
+these packets are identified and filtered using flow specification parameters
+(e.g. source/destination IP address/port numbers) and policed at the specified
+bandwidth.  The packets are then injected into the LSP and switched (using MPLS)
+through the network to its destination (e.g. computing cluster).
+
+o A notification of the success or failure of LSP setup is 
 passed back to the RM so that the user can be notified and the event 
 logged for auditing purposes.
 
+o At the requested end time, the PSS tears down the LSP.
 
 \section{Implementation}
 
