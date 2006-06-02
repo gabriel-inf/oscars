@@ -107,7 +107,8 @@ area network may be disabled.
 
 The following sections cover how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.  Section II covers the 
-architecture of OSCARS, and Section III describes the implementation.
+architecture of OSCARS, and Section III describes issues involved in
+path setup and reservation handling.
 
 OSCARS will only be useful if it is one element in a series of reservation
 systems setting up a complete end-to-end circuit.
@@ -200,20 +201,18 @@ logged for auditing purposes.
 
 o At the requested end time, the PSS tears down the LSP.
 
-\section{Implementation}
-
-\subsection{Components (David)}
+\subsection{Implementation}
 
 The resource manager consists of an Apache Web server configured for
 mod\_perl, two databases within a MySQL server, and a set of Perl 
 packages that implement the AAAS, BSS, and PSS.
 
-\subsection{Web Services (David)}
-
-One of the primary design decisions was to implement the RM as a Web service.
-Web services (WS) standards are used wherever possible, including SOAP
+The RM is implemented as a Web service.
+Web services standards are used wherever possible, including SOAP
 for communicating between a client and the RM, and WSDL for the service
 description. 
+ 
+\section{Paths and Reservations}
 
 \subsection{Path Discovery}
 There are two scenarios for creating a path in OSCARS.  One is where the
