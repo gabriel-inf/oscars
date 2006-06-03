@@ -1,32 +1,38 @@
-Task assignments for GridNets 2006 paper (a/o 5-30).
+Task assignments and status of sections for GridNets 2006 paper (a/o 6-2).
+If no name is associated with a section, more caution has to be taken with
+check-ins since the first draft is written.
 
-Abstract (David)
+Abstract (first draft done)
 
-1.  Intro (David)
-    -what problem is OSCARS solving, why this is needed
+1.  INTRODUCTION (first draft done)
 
-2.  Architecture (David)
-    -overall architecture
-    -use of web services
-    -individual components
+2.  SYSTEM
+    -Components (first draft in progress, David)
+    -Implementation (first draft in progress, David)
 
-3.  Issues dealt with
-    -path discovery and advanced reservations (Jason)
-    -provisioning and policing (Chin)
-    -AAA (Mary)
+3.  PATHS and RESERVATIONS
+    -Path Setup (first draft done)
+    -Path Discovery (first draft done)
+    -Advance Reservations (first draft done)
+    -Provisioning and Policing (first draft done)
 
-4.  Interdomain reservations
-    -other reservation systems, and collaborations we're setting up (David)
-    -architecture of interdomain reservation (David)
-    -reverse paths (Jason)
-    -interoperability tests:  (Chin/Jason)
-      + I2
-      + GEANT (aka DANTE/AMPS)
-      + TeraPaths
+4.  INTERDOMAIN RESERVATIONS
+    -Related work (first draft mostly done, Brian, Chin, Jason, David))
+    -Interdomain Path Setup (first draft mostly done, add reverse paths, Jason)
+    -Interoperability Tests
+      + I2 (mostly done, David)
+      + AMPS (David and Chin)
+      + TeraPaths (David)
 
-5. Future
-    -Topology Changes -- dynamic update of the reservations table. (Jason)
+5.  SECURITY
+    -System (halfway done, David)
+    -AAA (first draft done, Mary)
+
+6.  FUTURE WORK
+    -Topology Changes (Jason)
     -Future standards work (Chin)
     -Testing and testbeds (Chin)
 
-6. Conclusion (Chin and David)
+7.  CONCLUSIONS (Chin and David)
+
+REFERENCES (everybody, to be added)
