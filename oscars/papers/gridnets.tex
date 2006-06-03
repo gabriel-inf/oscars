@@ -379,10 +379,6 @@ transform the various messages to internal calls to reserve the path.
 
 \subsection{Interoperability Tests:  (Chin/Jason)}
 
-The following sections outline some of the interoperability tests that were 
-conducted with other reservation systems.
-
-\subsubsection{I2}
 On Apr 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
 respectively. The unidirectional 25Mb/s guaranteed bandwidth path was 
@@ -417,10 +413,6 @@ discrepancy between the policing bandwidth and the achieved bandwidth was
 likely the result of two things, first, the lack of traffic shaping at the 
 source end, and second, Juniper's policing function.  Similar results have 
 been documented by others [REF].
-
-\subsubsection{DANTE}
-
-\subsubsection{TeraPaths}
 
 
 \section{Security}
@@ -508,8 +500,33 @@ used for either authorization or auditing.
 
 \section{Future Work}
 \subsection{Topology Changes -- dynamic update of the reservations table. (Jason)}
+
+\subsection{Recovery From Network Changes}
+A key consideration when running OSCARS as a production service, is the
+ability to recover from both scheduled and unscheduled network outages or
+changes.  This is particularly complex when dealing with bandwidth
+reservations made for a future date.  For example, in the event of an
+unscheduled network outage, future reservations committed on the affected
+links must be recalculated. This can be further complicated if the outage
+period is unknown.  The converse is also true.  If a new link were to be
+added or upgraded, increasing the bandwidth allocation for future
+reservations creates an inconsistent view with the current state of the
+network.
+
 \subsection{Future standards work (Chin)}
+With the objective of interoperability between the different networks,
+comes the need for defining standard interfaces (i.e. Network-to-Network
+Interface (NNI)).  This is to facilitate the sharing of network state and
+request information in quanitfiable characteristics that are common to
+collaborting networks.  This could include properties such as connectivity
+(topology), bandwidth, latency, and jitter.  There are several documents
+that have been published by the different projects as well as organizations
+related to this work [Ref JRA3,NDL,UCLP,IETF CCAMP]. However due to the
+heterogenity of network implementations and deployments, generate a single
+framework to quantify all networks is not trivial.
+
 \subsection{Testing and testbeds (Chin)}
+Bridging multi-layered data-planes.
 
 % Reminder: the "draftcls" or "draftclsnofoot", not "draft", class option
 % should be used if it is desired that the figures are to be displayed while
