@@ -73,8 +73,12 @@ sub soapMethod {
         # TODO:  better way of utilizing pathInfo in next domain
         # better handling of exit router, passing back next domain's tag
         $request->{nextDomain} = $pathInfo->{nextDomain};
+        if ( $pathInfo->{ingressRouterIP} ) {
+            $pathInfo->{ingressRouterIP} = undef;
+        }
         if ( $pathInfo->{egressRouterIP} ) {
-            $request->{ingressRouterIP} = $pathInfo->{egressRouterIP};
+            $request->{srcHost} = $pathInfo->{egressRouterIP};
+            $pathInfo->{egressRouterIP} = undef;
         }
         $logger->info("forwarding.start", $request );
         # "database" parameter is database name
