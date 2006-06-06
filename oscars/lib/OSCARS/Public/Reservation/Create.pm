@@ -69,25 +69,26 @@ sub soapMethod {
                                              $logger, $request );
     # if nextDomain is set, forward to corresponding method in next domain
     if ($pathInfo->{nextDomain} ) {
+        my $forwardRequest = {};
+        for my $key (keys %{$request}) {
+            $forwardRequest->{$key} = $request->{$key};
+        }
         $request->{pathInfo} = $pathInfo;
         # TODO:  better way of utilizing pathInfo in next domain
         # better handling of exit router, passing back next domain's tag
-        $request->{nextDomain} = $pathInfo->{nextDomain};
-        my $host;
-        if ( $pathInfo->{ingressRouterIP} ) {
-            $pathInfo->{ingressRouterIP} = undef;
+        $forwardRequest->{nextDomain} = $pathInfo->{nextDomain};
+        if ( $request->{ingressRouterIP} ) {
+            $forwardRequest->{ingressRouterIP} = undef;
         }
-        if ( $pathInfo->{egressRouterIP} ) {
-            $host = $request->{srcHost};
-            $request->{srcHost} = $pathInfo->{egressRouterIP};
-            $pathInfo->{egressRouterIP} = undef;
+        if ( $request->{egressRouterIP} ) {
+            $forwardRequest->{srcHost} = $request->{egressRouterIP};
+            $forwardRequest->{egressRouterIP} = undef;
         }
-        $logger->info("forwarding.start", $request );
+        $logger->info("forwarding.start", $forwardRequest );
         # "database" parameter is database name
         ( $errMsg, $nextPathInfo ) =
-               $self->{forwarder}->forward($request, $self->{database});
+               $self->{forwarder}->forward($forwardRequest, $self->{database});
         $logger->info("forwarding.finish", $nextPathInfo );
-        $request->{srcHost} = $host;
         # TODO: process any differences
     }
 
