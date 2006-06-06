@@ -573,35 +573,27 @@ changing:
 
 \subsection{Topology Changes}
 
-In any large network there will be outages, upgrades and changes that affect the
-topology of the network. In OSCARS we are in the process of implementing a XXXXX
-to deal with this. Any time the topology of the network changes all reservations
-in OSCARS can be affected. To address this problem we have come up with a
-polling mechanism that constantly compares the current state of the network to
-the state that is reflected in the OSCARS topology database. If there are
-differences that affect the characteristics of a link (i.e. a 1000 mb/s link is
-replaced with an 100 mb/s link), the new topology is pushed into the OSCARS
-database and all outstanding reservations that use that link are queried from
-the database. (The complete path of all reservations is kept in the database
-along with the reservation).  Then all the reservations are recomputed in the
-order they were placed into the OSCARS system to ensure that the requested
-resources are still available.  In he event that the necessary resources are
-unavailable for a reservation that has been entered into OSCARS, the
-reservations state will be changed to "XXXXX" and a notice will be sent to the
-administer informing them of the problem.
-
-
-\subsection{Recovery From Network Changes}
-A key consideration when running OSCARS as a production service, is the
-ability to recover from both scheduled and unscheduled network outages or
-changes.  This is particularly complex when dealing with bandwidth
-reservations made for a future date.  For example, in the event of an
-unscheduled network outage, future reservations committed on the affected
-links must be recalculated. This can be further complicated if the outage
-period is unknown.  The converse is also true.  If a new link were to be
-added or upgraded, increasing the bandwidth allocation for future
-reservations creates an inconsistent view with the current state of the
-network.
+A key consideration when running OSCARS as a production service, is the ability
+to recover from both scheduled and unscheduled network outages or changes.  This
+is particularly complex when dealing with bandwidth reservations made for a
+future date.  For example, in the event of an unscheduled network outage, future
+reservations committed on the affected links must be recalculated. This can be
+further complicated if the outage period is unknown.  The converse is also true.
+If a new link were to be added or upgraded, increasing the bandwidth allocation
+for future reservations creates an inconsistent view with the current state of
+the network.  In OSCARS we are in the process of implementing a methodology to
+deal with this.  We have come up with a polling mechanism that constantly
+compares the current state of the network to the state that is reflected in the
+OSCARS topology database. If there are differences that affect the
+characteristics of a link the new topology is pushed into the OSCARS database
+and all outstanding reservations that use that link are queried from the
+database. This is possible since the complete path of all reservations is kept
+in the database along with the reservation. Then all the reservations are
+recomputed in the order they were placed into the OSCARS system to ensure that
+the requested resources are still available.  In he event that the necessary
+resources are unavailable for a reservation that has been entered into OSCARS,
+the reservations state will be changed to "unavailable" and a notice will be
+sent to the administer informing them of the problem.
 
 \subsection{Network-Network Interface}
 With the objective of interoperability between the different networks,
