@@ -31,8 +31,8 @@ Berkeley, CA  94720}}
 \maketitle
 
 \begin{abstract}
-With the advent of service sensitive applications (such as remote controlled 
-experiments, time constrained massive data transfers, and video-conferencing),
+With the advent of service sensitive applications such as remote controlled 
+experiments, time constrained massive data transfers, and video-conferencing,
 it has become apparent that there is a need for the setup of dynamically 
 provisioned, quality of service enabled virtual circuits.
 The ESnet On-Demand Secure Circuits and Advance Reservation System (OSCARS) is 
@@ -52,6 +52,10 @@ Multi-Protocol Label Switching (MPLS) and the Resource Reservation Protocol
 (RSVP)
 are used to create the virtual circuits or Label Switched Paths (LSP's). 
 Quality of Service (QoS) is used to provide bandwidth guarantees.
+
+This paper describes our experience in implementing OSCARS, collaborations
+with other bandwidth-reservation projects, including interdomain testing, and 
+future work to be done.
 \footnote{
 This work was supported by the Director, Office of Science. Office of
 Advanced Scientific Computing Research. Mathematical, Information, and
@@ -98,16 +102,22 @@ network service on a production network. Some of these challenges are: allowing
 only authorized users to create and manage high-performance services;
 providing an easy-to-use interface for scheduling and managing network 
 resources; limiting the impact of high-performance traffic on other network
-traffic; handling changes in network paths between the time a reservation is
-scheduled and when it is claimed; and coordinating quality service end-to-end 
-across more than one autonomous network domain.
+traffic; 
+coordinating quality service end-to-end 
+across more than one autonomous network domain;
+and handling changes in network paths between the time a reservation is
+scheduled and when it is claimed.  OSCARS currently addresses all but the
+last item, where work is still in progress.
 
 Due to the highly distributed nature of large scale science which depends
 on world wide collaborations, the service framework for OSCARS is being
-developed in  coordination with other community network provisioning efforts. 
-The closest coordination is with the Internet2 BRUW[BRUW] system which 
-uses a common code base. Interoperability testing is on-going with Internet2 
+developed in coordination with other community network provisioning efforts. 
+
+The closest coordination is with the Internet2 BRUW [BRUW] system.  A version 
+of BRUW was used as the starting point for OSCARS, and now the two projects 
+share a common code base. Interoperability testing is on-going with Internet2 
 sites. 
+
 A Web Services compliant [WSI-BP]\emph{ Web Services Definition Language}
  \textbf({WSDL}) specification for the network-network 
 interface has been specified following the model of GEANT's [GN2-JRA3] 
@@ -430,16 +440,18 @@ including [REF][REF][REF]. They are using the IETF AAA Framework
 "Network Description Language" (NDL), which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability.
 
-With the exception of OSCARS, BRUW,
-TeraPaths, and AMPS, all other projects mentioned above provision resources
-in the optical network layer (i.e. layer 1), creating lightpaths.
-With OSCARS, BRUW, TeraPaths, and AMPS, IP connectivity (layer
+In the OSCARS, BRUW, TeraPaths, and AMPS projects, IP connectivity (layer
 3) is used as the data plane exchange.  This facilitates interoperability
 trials with no additional network connection needed outside of the production
 peering exchange.
 
-It should be noted that OSCARS and BRUW are jointly developed by ESnet and 
-Internet2, and share the same code base.
+It should be noted that OSCARS and BRUW now share a common code base, but
+are configured differently due to differing methods of network administration
+and user authentication.
+
+The other projects mentioned use the optical network layer (i.e. layer 1), 
+creating lightpaths.  The last section of this paper points out the
+necessity of future work to bridge projects using different layers.
 
 \begin{figure}
  \centering 
