@@ -143,7 +143,7 @@ OSCARS architecture, and Section III describes the details of
 path setup and reservation handling.
 
 The section on interdomain reservations outlines some issues with cross-domain
- interoperablilty, and covers other reservation systems and 
+ interoperability, and covers other reservation systems and 
 collaborative efforts, as well as 
 an example of an interoperability test between OSCARS and BRUW.
 
@@ -383,7 +383,7 @@ AS's
 The control plane dictates the way control messages, such as setup and 
 teardown requests, are exchanged between the networks, e.g. RSVP signaling.
 At this point in time, interdomain interoperability efforts do not permit
-the end-to-end signalling of LSP's via the control plane (i.e. interdomain 
+the end-to-end signaling of LSP's via the control plane (i.e. interdomain 
 exchange of RSVP messages).  This is because
 there is no vendor implementation that can enforce complex SLA requirements of 
 the various administrative domains.  As such, end-to-end virtual circuits are
@@ -479,7 +479,7 @@ traversed on the forward path, causing the local OSCARS to see the path
 originating from a different AS then it originally sent the "Create" request
 out to.
 
-To facilitate interdomain virtual ciruit setup, a WSDL was created to describe
+To facilitate interdomain virtual circuit setup, a WSDL was created to describe
 the various messages that could be passed between reservation systems. This
 allows reservation systems to communicate with one another in a well defined
 and general format. It is then up to the individual reservation system to 
@@ -503,13 +503,13 @@ Chicago, IL.
  {\scriptsize
  \begin{tabular}{|c|c|c|c|}
  \hline
- Test     & Test       & Guaranteed & Througput  \\ 
- Protocol & Parameters & Bandwidth  & Achived    \\ \hline \hline 
- UDP      & Thoughput  & No         &   30Mb/s   \\ \cline{3-4}
+ Test     & Test       & Guaranteed & Throughput  \\ 
+ Protocol & Parameters & Bandwidth  & Achieved    \\ \hline \hline 
+ UDP      & Throughput  & No         &   30Mb/s   \\ \cline{3-4}
           & Set: 30Mb/s& Yes (25Mb/s)&   24.6Mb/s \\ \hline
  TCP      & TCP Window & No         & 158.0 Mb/s  \\ \cline{3-4}
           & Size: 1MB  & Yes (25Mb/s)&  14.7Mb/s  \\ 
-          & Latency: ~50ms &          &            \\  \hline
+          & Latency: ~50 ms &          &            \\  \hline
  \end{tabular}
  }
  \caption{IPerf results of guaranteed bandwidth paths.}
@@ -585,7 +585,7 @@ of an individual user, and in the subsequent domains on the basis of
 the RM in the adjacent domain. Normally all requests
 between domains will be a SOAP "forward"  message
 signed by the RM. Each domain has a list of the
-co-operating RM certificates as well as a list of
+cooperating RM certificates as well as a list of
 permissions for that domain. In effect a service level agreement gets
 implemented in the users and authorization databases. The forward
 message includes the name of the originating user, in case other
@@ -611,7 +611,7 @@ reservation, duration of a reservation and the right to specify
 routing.  The maximum number of authorized users at any one time is estimated 
 to be around 50, remembering that OSCARS only needs to know
 about users at ESnet sites who have the rights to schedule
-high-bandwidth service and co-operating RM's in other
+high-bandwidth service and cooperating RM's in other
 domains. If the users grow beyond this point, the tables can be
 expanded to define groups (e.g. roles or projects) of users.
 
@@ -675,7 +675,7 @@ heterogeneity of network implementations and deployments, generating a single
 framework to quantify all networks is not trivial.
 
 \subsection{Hybrid Data-Planes}
-With the emergence of numerious reservation systems, it is becoming evident 
+With the emergence of numerous reservation systems, it is becoming evident 
 that there is a need to bridge these systems which provision virtual circuits 
 at different network layers.
 For example, OSCARS and BRUW provision MPLS LSP's over an IP (layer 3) shared 
@@ -692,7 +692,7 @@ connectivity information is meaningless to a layer 3 reservation system unless
 it is associated with an IP address).  This is the approach explored by DRAGON.
 Second, there needs to be a mechanism to redistribute multi-layer connectivity 
 information. Within the IP layer, this is done via BGP.  At lower network 
-layers, no such comparable protocols exisits.
+layers, no such comparable protocols exists.
 
 % Reminder: the "draftcls" or "draftclsnofoot", not "draft", class option
 % should be used if it is desired that the figures are to be displayed while
@@ -809,6 +809,13 @@ J.R.Burruss, T.W.Fredian, M.R.Thompson. \emph{Security on the U.S. FusionGridD},
 \bibitem{rsvp-te}
 L. Berger (ed), ÒGeneralized MPLS Signaling - RSVP-TE Extensions,Ó IETF RFC 3473, January 2003.
 
+\bibitem{bradley}
+S. Bradley, F. Burstein, L. Cottrell, B. Gibbard, D. Katramatos, Y. Li, S. McKee, R. Pope-scu, D. Stampf, D. Yu. 
+\emph{TeraPaths: A QoS-Enabled Collaborative Data Sharing Infra-structure for Peta-scale Computing Research}, Computing in High Energy and Nuclear Physics (CHEP 2006), T.I.F.R., Mumbai, India, Feb 13-17, 2006
+
+\bibitem{canarie}Canarie UCLP Project Website: http://www.canarie.ca/canet4/uclp/
+\bibitem{cops-pr}K. Chan et al., ÒCOPS Usage for Policy Provisioning (COPS-PR),Ó IETF RFC 3084, March 2001.
+
 \bibitem{demchenko}
 Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
  \emph{Policy Based Access Control in Dynamic Grid-Based Collaboratie Environment},
@@ -816,15 +823,22 @@ Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
 
 \bibitem{dragon}
 DRAGON Project Website, http://dragon.maxgigapop.net
-
+\bibitem{cops}D. Durham et al., ÒThe COPS (Common Open Policy Service Protocol),Ó IETF RFC 2748, January 2000. 
 \bibitem{eastlake}
 D. Eastlake, J. Reagle, D. Solo. \emph{XML-Signature Syntax and Processing. W3C Recommendation} W3C Recommendation, Feb, 2002, http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/
 
+\bibitem{esnet-pc}ESnet Performance Center: https://performance.es.net/
+\bibitem{geant}GEANT GN2-JRA3 Project Website: http://www.geant2.net/server/show/nav.756\bibitem{geant-amps}GEANT AMPS Project Website: http://www.geant2.net/server/show/nav.893
 \bibitem{gommans05}
 Leon Gommans, Cees de Laat, Robert Meijer, \emph{Token Based path authorization at Interconnection Points between Hybrid Networks and a Lambda Grid}, Proceedings of IEEE GRIDNETS 2005
 
 \bibitem{gommans06}
 Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inder Monga, Arie Taal, Franco Travostino, Alfred Wan, \emph{Applications Drive Secure Lightpath Creation across Heterogeneous Domains}, IEEE Communications Magazine, Feature topic Optical Control Planes for Grid Networks: Opportunities, Challenges and the Vision, vol. 44, no. 3, March 2006
+
+\bibitem{ndt}Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
+\bibitem{iperf}iperf: http://dast.nlanr.net/Projects/Iperf/
+
+\bibitem{ospf-te}D. Katz, D. Yeung and K. Kompella, \emph{Traffic engineering extensions to OSPF version 3}, IETF Internet Draft, Work in Progress, draft-ietf-ospf- ospfv3-traffic-05.txt, March 2005. IETF RFC 2543, March 1999. 
 
 \bibitem{XACML} T.  Moses (ed), \emph{eXtensible Access Control Markup Language 2 
 (XACML) Version 2.0 3 }
@@ -845,14 +859,15 @@ Opticomm, Dallas, Texas, October 2003.
 \bibitem{rfc2904}
 J. Vollbrecht, P. Calhoun, S. Farrell, L. Gommans, G. Gross,B. de Bruijn, C. de Laat, M. Holdrege,
 D. Spence, \emph{AAA Authorization Framework}, IETF RFC , Aug. 2000, http://www.ietf.org/rfc/rfc2904.txt
-
+
+
 \bibitem{Yang}
 Xi Yang, Tom Lehman, Chris Tracy, Jerry Sobieski, Shujia Gong, Payam Torab, Bijan Jabbari, \emph{Policy-
 Based Resource Management and Service Provisioning in GMPLS Networks}, Adaptive Policy-based
 Management in Network Management and Control Workshop at INFOCOMM 2006, Barcelona Spain,
 April 2006.
 
-\end{thebibliography}
+\end{thebibliography}
 
 \end{document}
 
