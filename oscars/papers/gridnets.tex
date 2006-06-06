@@ -432,23 +432,30 @@ unidirectional MPLS Label Switched Paths (LSP's), one in Abilene, and the
 other in ESnet, "stitched" together at the Abilene-ESnet peering point in 
 Chicago, IL.
 
+% example table
 \begin{table}
  \centering
  {\scriptsize
- \begin{tabular}{|c|c|c|c|c|}
+ \begin{tabular}{|c|c|c|c|}
  \hline
-   & One & Two & Three & Four \\ \hline \hline
- A & 1   & 2   &   3   & 4    \\ \hline 
- B & 5   & 6   &   7   & 8    \\ \hline 
+ Test     & Test       & Guaranteed & Througput  \\ 
+ Protocol & Parameters & Bandwidth  & Achived    \\ \hline \hline 
+ UDP      & Thoughput  & No         &   30Mb/s   \\ 
+          & Set: 30Mb/s& Yes        &   24.6Mb/s \\ 
+          &            & (25Mb/s)   &            \\ \hline 
+ TCP      & TCP        & No         & 158.0Mb/s  \\ 
+          & Window     & Yes        &  14.7Mb/s  \\ 
+          & Size: 1MB  & (25Mb/s)   &            \\ 
+          & Latency:   &            &            \\ 
+          & ~50ms      &            &            \\ \hline
  \end{tabular}
  }
- \caption{Bandwidth charateristics.}
+ \caption{IPerf results of guaranteed bandwidth paths.}
  \label{tab:bandwidth}
 \end{table}
 
-Bandwidth tests using IPerf [IPerf] (see Table ~\ref{tab:bandwidth}) revealed predictable results except for the guaranteed bandwidth TCP transfer.
 
-<Table to be inserted from Word document>
+Bandwidth tests using IPerf [IPerf] (see Table ~\ref{tab:bandwidth}) revealed predictable results except for the guaranteed bandwidth TCP transfer.
 
 The guaranteed bandwidth (25Mb/s) TCP transfer should have yielded a 
 throughput closer to 25Mb/s.  On further investigation, it was determined 
@@ -551,7 +558,26 @@ used for either authorization or auditing.
 
 
 \section{Future Work}
+This section covers work this is currently in-progress.
 \subsection{Topology Changes -- dynamic update of the reservations table. (Jason)}
+
+In any large network there will be outages, upgrades and changes that affect the
+topology of the network. In OSCARS we are in the process of implementing a XXXXX
+to deal with this. Any time the topology of the network changes all reservations
+in OSCARS can be affected. To address this problem we have come up with a
+polling mechanism that constantly compares the current state of the network to
+the state that is reflected in the OSCARS topology database. If there are
+differences that affect the characteristics of a link (i.e. a 1000 mb/s link is
+replaced with an 100 mb/s link), the new topology is pushed into the OSCARS
+database and all outstanding reservations that use that link are queried from
+the database. (The complete path of all reservations is kept in the database
+along with the reservation).  Then all the reservations are recomputed in the
+order they were placed into the OSCARS system to ensure that the requested
+resources are still available.  In he event that the necessary resources are
+unavailable for a reservation that has been entered into OSCARS, the
+reservations state will be changed to "XXXXX" and a notice will be sent to the
+administer informing them of the problem.
+
 
 \subsection{Recovery From Network Changes}
 A key consideration when running OSCARS as a production service, is the
