@@ -426,7 +426,7 @@ The University of Amsterdam's Advanced Internet Research group has
 published a number of papers
 describing both the networking and the AAA issues for such a system,
 including [REF][REF][REF]. They are using the IETF AAA Framework
-[rfc2905], and use XACML to describe policy. They have also defined a
+\cite{rfc2904}, and use XACML \cite{XACML} to describe policy. They have also defined a
 "Network Description Language" (NDL), which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability.
 
@@ -557,7 +557,7 @@ encrypted https in order to protect against the stealing of passwords
 or cookies. The SOAP API distinguishes between requests coming from
 the Web server on the local host, which it assumes have been authenticated
 as just described and requests coming from the open Web server. The 
-latter requests  must be digitally signed messages [digSig] signed by the
+latter requests  must be digitally signed messages \cite{eastlake} signed by the
 originator of the message. The AAAS verifies the signature and the signing 
 certificate to authenticate
 the user. It then uses the subject name from the signing certificate
@@ -594,7 +594,7 @@ Once a request has been authenticated as from a registered OSCARS
 users, that user's authorization is checked against an authorization
 table in the database. This implementation was inspired by one
 author's experience with the ROAM authorization service of the
-FusionGrid [ROAM]. This approach allows the use of standard database
+FusionGrid \cite{burruss}. This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
 authorizations. As long as there are not too many resources,
 permissions or users, it provides an easily managed and understood
@@ -788,12 +788,17 @@ for help in the incorporation of BRUW, and for work on interoperability tests.
 % (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
+\bibitem{ballinger}
+K. Ballinger, D. Ehnebusk, M. Gudgin, M. Nottingham, P. Yendluri, \emph{Basic Profile, Version 1.0}, WS-I Reccommendation, April, 2004, http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html
+
 \bibitem{bell}
-E.Bell, A.Smith, P.Langille, A.Rijhsinghani, K.McLoghrie, "Definitions of Managed Objects for Bridges
-with Traffic Classes, Multicast Filtering and Virtual LAN Extensions", RFC 2674, August 1999.
+E.Bell, A.Smith, P.Langille, A.Rijhsinghani, K.McLoghrie,D\emph{"Definitions of Managed Objects for Bridges
+with Traffic Classes, Multicast Filtering and Virtual LAN Extensions}, IETF RFC 2674, August 1999.
 
 \bibitem{bruw}
 Internet2 BRUW project: http://vbvod.internet2.edu/internship/bruw/index.html
+\bibitem{burruss}
+J.R.Burruss, T.W.Fredian, M.R.Thompson. \emph{Security on the U.S. FusionGridD}, Fusion Engineering and Design, Elesevier, to appear in 2006
 
 \bibitem{rsvp-te}
 L. Berger (ed), ÒGeneralized MPLS Signaling - RSVP-TE Extensions,Ó IETF RFC 3473, January 2003.
@@ -806,11 +811,17 @@ Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
 \bibitem{dragon}
 DRAGON Project Website, http://dragon.maxgigapop.net
 
+\bibitem{eastlake}
+D. Eastlake, J. Reagle, D. Solo. \emph{XML-Signature Syntax and Processing. W3C Recommendation} W3C Recommendation, Feb, 2002, http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/
+
 \bibitem{gommans05}
 Leon Gommans, Cees de Laat, Robert Meijer, \emph{Token Based path authorization at Interconnection Points between Hybrid Networks and a Lambda Grid}, Proceedings of IEEE GRIDNETS 2005
 
 \bibitem{gommans06}
 Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inder Monga, Arie Taal, Franco Travostino, Alfred Wan, \emph{Applications Drive Secure Lightpath Creation across Heterogeneous Domains}, IEEE Communications Magazine, Feature topic Optical Control Planes for Grid Networks: Opportunities, Challenges and the Vision, vol. 44, no. 3, March 2006
+
+\bibitem{XACML} T.  Moses (ed), \emph{eXtensible Access Control Markup Language 2 
+(XACML) Version 2.0 3 }
 
 \bibitem{shallow}
 G. Swallow, et al., \emph{Generalize Multiprotocol Label Switching(GMPLS) User-Network Interface (UNI):
@@ -825,6 +836,10 @@ M. Veeraraghavan, X. Zheng, H. Lee, M. Gardner, and W. Feng,
 \emph{CHEETAH: Circuit-switched High-speed End-to-End Transport Architecture},
 Opticomm, Dallas, Texas, October 2003.
 
+\bibitem{rfc2904}
+J. Vollbrecht, P. Calhoun, S. Farrell, L. Gommans, G. Gross,B. de Bruijn, C. de Laat, M. Holdrege,
+D. Spence, \emph{AAA Authorization Framework}, IETF RFC , Aug. 2000, http://www.ietf.org/rfc/rfc2904.txt
+
 \bibitem{Yang}
 Xi Yang, Tom Lehman, Chris Tracy, Jerry Sobieski, Shujia Gong, Payam Torab, Bijan Jabbari, \emph{Policy-
 Based Resource Management and Service Provisioning in GMPLS Networks}, Adaptive Policy-based
