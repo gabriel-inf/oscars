@@ -500,13 +500,10 @@ Chicago, IL.
  Test     & Test       & Guaranteed & Througput  \\ 
  Protocol & Parameters & Bandwidth  & Achived    \\ \hline \hline 
  UDP      & Thoughput  & No         &   30Mb/s   \\ \cline{3-4}
-          & Set: 30Mb/s& Yes        &   24.6Mb/s \\ 
-          &            & (25Mb/s)   &            \\ \hline 
- TCP      & TCP        & No         & 158.0Mb/s  \\ \cline{3-4}
-          & Window     & Yes        &  14.7Mb/s  \\ 
-          & Size: 1MB  & (25Mb/s)   &            \\ 
-          & Latency:   &            &            \\ 
-          & ~50ms      &            &            \\ \hline
+          & Set: 30Mb/s& Yes (25Mb/s)&   24.6Mb/s \\ \hline
+ TCP      & TCP Window & No         & 158.0 Mb/s  \\ \cline{3-4}
+          & Size: 1MB  & Yes (25Mb/s)&  14.7Mb/s  \\ 
+          & Latency: ~50ms &          &            \\  \hline
  \end{tabular}
  }
  \caption{IPerf results of guaranteed bandwidth paths.}
