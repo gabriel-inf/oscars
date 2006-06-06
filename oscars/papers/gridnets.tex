@@ -3,6 +3,10 @@
 %% 
 \documentclass[conference]{IEEEtran}
 
+\usepackage[dvips]{color}
+\usepackage[xdvi]{graphicx}
+\usepackage{subfigure}
+
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor IEEEtran ESnet}
 
@@ -109,7 +113,7 @@ A Web Services compliant [WSI-BP]\emph{ Web Services Definition Language}
 interface has been specified following the model of GEANT's [GN2-JRA3] 
 Advance Multi-domain Provisioning System (AMPS) [AMPS]. This interface is being 
 tested with the DOE/BNL, TeraPaths [TeraPaths] project. 
- 
+
 OSCARS has been developed jointly with Internet2, and deployed within ESnet,
 which is a nation-wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
@@ -156,6 +160,13 @@ to configure an alternate routing path, nor mark the packets in any way.  All
 necessary mechanisms needed to provide the user with a guaranteed bandwidth 
 path are coordinated by a  \emph{Reservation Manager} (\textbf{RM}) and 
 managed by the routers in the network.
+
+\begin{figure}
+ \centering 
+   \includegraphics[scale=0.3]{pict1.eps}
+   \caption{OSCARS Architecture.}
+ \label{fig:oscars_arch}
+\end{figure}
 
 \subsection{Components}
 
@@ -429,6 +440,14 @@ peering exchange.
 
 It should be noted that OSCARS and BRUW are jointly developed by ESnet and 
 Internet2, and share the same code base.
+
+\begin{figure}
+ \centering 
+%   \includegraphics[scale=0.40]{pict2.eps}
+   \includegraphics[width=3in]{pict2.eps}
+   \caption{Interdomain Path Setup.}
+ \label{fig:interdomain_path_setup}
+\end{figure}
 
 \subsection{Interdomain Path Setup }
 One of the more complex examples of using the OSCARS reservation system
@@ -709,8 +728,6 @@ layers, no such comparable protocols exisits.
 %\caption{Simulation results}
 %\label{fig_sim}
 %\end{figure*}
-
-
 
 % An example of a floating table. Note that, for IEEE style tables, the 
 % \caption command should come BEFORE the table. Table text will default to
