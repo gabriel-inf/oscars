@@ -358,7 +358,7 @@ another network, e.g. IP packets, Ethernet VLAN packets, etc.  This is one of th
 \end{itemize}
 
 
-\subsection{Similar Work}
+\subsection{Related Work}
 
 There are several implementations of network resource management and
 service provisioning systems in existence today.  These include the DOE funded
@@ -557,9 +557,21 @@ of the originating user is passed to the next domain where it can be
 used for either authorization or auditing.
 
 
-\section{Future Work}
-This section covers work this is currently in-progress.
-\subsection{Topology Changes -- dynamic update of the reservations table. (Jason)}
+\section{Conclusions and Future Work}
+
+OSCARS is one example of a system that will become increasingly necessary
+as experiments such as the Large Hadron Collider become operational.  It
+provides the ability for users to easily schedule in advance the 
+network bandwidth necessary for their experiment or simulation.  Since it
+provides the ability to change router configurations in a production network,
+maintaining security is an integral part of its operation.
+
+A number of issues need to be addressed before such systems become
+production level in complex network environments, where many autonomous
+domains may be involved, and in which the network may be constantly
+changing:
+
+\subsection{Topology Changes}
 
 In any large network there will be outages, upgrades and changes that affect the
 topology of the network. In OSCARS we are in the process of implementing a XXXXX
@@ -675,9 +687,6 @@ In addition, numerious complications arise when reservation systems managing dis
 %\end{center}
 %\end{table}
 
-
-\section{Conclusion}
-To be written.
 
 % conference papers do not normally have an appendix
 
