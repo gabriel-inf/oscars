@@ -56,9 +56,9 @@ Energy Contract No. DE-AC03-76SF00098. This is report no. LBNL-NNNNN.
 \end{abstract}
 
 % no keywords
-\begin{keywords}
-Multi-Protocol Label Switching (MPLS); Resource Reservation Protocol (RSVP); Quality of Service (QoS);
-ESnet On-Demand Secure Circuits and Advance Reservation System (OSCARS)
+%\begin{keywords}
+%Multi-Protocol Label Switching (MPLS); Resource Reservation Protocol (RSVP); Quality of Service (QoS);
+%ESnet On-Demand Secure Circuits and Advance Reservation System (OSCARS)
 
 
 % for peerreview papers, inserts a page break and creates the second title.
@@ -78,23 +78,38 @@ have improved, and security issues have become better understood.  However,
 for the network to fully enable such distributed science, network
 communication must be delivered as a manageable service to the distributed
 applications just as computing is.
-
+ 
 The goal of OSCARS is to manage and schedule high-impact network services
 associated with these collaborations.  These services, which move 
 multi-terabyte to multi-petabyte datasets from experiments and simulations,
 and which include high-end remote visualizations, cannot be provided 
-cost-effectively by the shared service production network.  In this context, services must 
+cost-effectively by best-effort service on a production network.  In this context, services must 
 be \emph{deterministic}, implying a defined and guaranteed service level.
 At a minimum, bandwidth must be guaranteed, and possibly the ability to 
 specify loss rates, latency, jitter, and other parameters in the future.
 
+There are significant challenges to allowing users to schedule high-performance 
+network service on a production network. Some of these challenges are: allowing 
+only authorized users to create and manage high-performance services;
+providing an easy-to-use interface for scheduling and managing network 
+resources; limiting the impact of high-performance traffic on other network
+traffic; handling changes in network paths between the time a reservation is
+scheduled and when it is claimed; and coordinating quality service end-to-end 
+across more than one autonomous network domain.
+
 Due to the highly distributed nature of large scale science which depends
 on world wide collaborations, the service framework for OSCARS is being
-developed in various coordinated community efforts (e.g. the ESnet, OSCARS;
-Internet2, BRUW [BRUW]; GEANT-GN2-JRA3 [GN2-JRA3], SA3-PACE, and Advance Multi-domain Provisioning System (AMPS) [AMPS]; and DOE/BNL, TeraPaths [TeraPaths] projects) to ensure compatible network-network interfaces, which are not yet well defined in the standards arena.
-
+developed in  coordination with other community network provisioning efforts. 
+The closest coordination is with the Internet2 BRUW[BRUW] system which 
+uses a common code base. Interoperability testing is on-going with Internet2 sites. 
+A Web Services compliant [WSI-BP]\emph{ Web Services Definition Language}
+ \textbf({WSDL}) specification for the network-network 
+interface has been specified following the model of GEANT's [GN2-JRA3] 
+Advance Multi-domain Provisioning System (AMPS) [AMPS]. This interface is being 
+tested with the DOE/BNL, TeraPaths [TeraPaths] project. 
+ 
 OSCARS has been developed jointly with Internet2, and deployed within ESnet,
-which is a nation wide network that serves approximately 42 directly connected 
+which is a nation-wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
 systems throughout the network and its operations centers.  The current ESnet 
 architecture (Figure 1) is that of a high-bandwidth (10/2.5 Gb/s) backbone ring 
@@ -113,7 +128,7 @@ service is compromised, an attacker could disable the wide area network.
 
 The following sections cover how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.  Section II covers the 
-OSCARS system, and Section III describes the details of
+OSCARS architecture, and Section III describes the details of
 path setup and reservation handling.
 
 The section on interdomain reservations outlines some issues with cross-domain
@@ -127,28 +142,34 @@ to handle a dynamically changing network (which may invalidate existing
 reservations), and to set up end-to-end circuits between domains
 in a secure, standards-based fashion.
 
-\section{System}
+\section{Architecture}
 
 The intent of OSCARS is to create a service for dynamic QoS path establishment
 that is simple for users to use, and easy to administer.  The only task 
-required of a user is to make a bandwidth reservation.  The user does not have 
+required of a user is to make a bandwidth reservation.  Reservation can be made 
+in advance for either one-time use or persistent use, e.g. for the same time everyday, 
+or for immediate use. The user does not have 
 to configure an alternate routing path, nor mark the packets in any way.  All 
 necessary mechanisms needed to provide the user with a guaranteed bandwidth 
-path are coordinated by a reservation manager (RM) and managed by the routers 
+path are coordinated by a  \emph{Reservation Manager} (\textbf{RM}) and managed by the routers 
 in the network.
 
 \subsection{Components}
 
 The RM is comprised of three components:  the 
-Authentication, Authorization, and Auditing Subsystem (AAAS), the Bandwidth 
-Scheduler Subsystem (BSS), and the Path Setup Subsystem (PSS).
-All persistent information is stored in a database.  Administration of
-the RM is done through simple Web forms.
+ \emph{Authentication, Authorization, and Auditing Subsystem} (\textbf{AAAS}), 
+the  \emph{Bandwidth Scheduler Subsystem} (\textbf{BSS}), and the  \emph{Path 
+Setup Subsystem} (\textbf{PSS}). All persistent information is stored in a database.  
+The RM provides simple Web forms for creating and managing reservations, 
+setting authorization policy and other administrative tasks.
+It also supports a SOAP message interface API to support programable reservation 
+management and requests from other network service providers.
 
 The AAAS is responsible for authenticating and authorizing all external 
 requests, for logging request information, and sending notifications to
 users and administrators of the results of calls made to the RM.  It also
-handles a number of internal requests related to its management.
+handles a number of internal requests related to management of users 
+and resources.
 
 The BSS is responsible for scheduling reservations.  It handles
 requests to schedule bandwidth reservations, list reservation details,
@@ -163,16 +184,17 @@ in the path to be set up within the network.
 
 The PSS is responsible for setting up and tearing down the on-demand bandwidth 
 paths. This is accomplished by making the necessary configuration changes in 
-the routers to create or destroy a Label Switched Path (LSP) at the time
+the routers to create or destroy a \emph{Label Switched Path }(\textbf{LSP}) at the time
 indicated by the BSS. The authentication and authorization method for the PSS 
 is internal to the ESnet network and is specific to the router platform 
 (currently Juniper or Cisco) being configured.  It is therefore distinct from 
-the AAA used by the BSS.
+the AAAS used by the BSS.
 
-\subsection{Implementation (David)}
+\subsection{Implementation}
 
 Web services standards are used wherever possible, including SOAP [SOAP]
-for communicating between a client and the RM, and WSDL [WSDL] for the service
+for communicating between a client and the RM, and 
+WSDL [WSDL] for the service
 description. 
  
 The resource manager is implemented as an Apache Web server configured for
@@ -205,12 +227,12 @@ periodically checks to see if the PSS needs to be contacted, either to create
 or tear down the circuit.
 
 \item
-At the requested start time, the PSS configures the ESnet provider edge (PE) router
+At the requested start time, the PSS configures the ESnet \emph{provider edge} (\textbf{PE}) router
 (at the start end of the path) to create an LSP with the
 specified bandwidth.
 
 \item
-Each router along the route receives the path setup request (via RSVP)
+Each router along the route receives the path setup request via \emph{Reservation Resource Protocol} (\textbf{RSVP})
 and commits bandwidth (if available) creating an end-to-end LSP.  The RM is
 notified by RSVP if the end-to-end path cannot be established.
 
@@ -255,13 +277,13 @@ The need for OSCARS to support reservations with explicit ingress and egress PE 
 facilitate traffic engineering for sites or networks that have more then one peering connection with ESnet.
 
 In the event that the virtual circuit extends beyond OSCARS' administrative domain,
-routing information harvested from the Border Gateway Protocol (BGP) [BGP] on the egress PE router is used to determine the next
-Autonomous System (AS) that the request should be forwarded to.   The AS number is
+routing information harvested from the \emph{Border Gateway Protocol} (\textbf{BGP}) [BGP] on the egress PE router is used to determine the next
+\emph{Autonomous System} (\textbf{AS}) that the request should be forwarded to.   The AS number is
 checked against a list of known administrative domains that have reservation systems
 that are compatible with OSCARS.  If a match is found, the request is forwarded to the
 downstream AS.
 
-\subsection{Advanced Reservations (Jason)}
+\subsection{Advanced Reservations }
 In OSCARS, advance reservations are handled in a slot based manner. This equates
 to 'first come first served' for bandwidth across any particular link at any
 moment. As each reservation is requested in OSCARS, the end-to-end path is
@@ -280,7 +302,7 @@ In the case where the capacity of a link changes (e.g. link upgrade or failure),
 that involve the use of that link are queried from the system and recomputed.
 This is done to ensure that there is adequate bandwidth available on the link when it comes time to provision the reservation.
 
-\subsection{Provisioning and Policing (Chin)}
+\subsection{Provisioning and Policing}
 To facilitate bandwidth guarantees, provisioning and policing are needed to 
 enforce reservation and usage limits.  In OSCARS, RSVP is used as the 
 provisioning mechanism.  To ensure that resources are not over-subscribed, QoS 
@@ -314,8 +336,12 @@ control plane, and data plane:
 \begin{itemize}
 \item
 The management plane dictates policies and procedures for authentication, 
-authorization, and usage.  This essentially amounts to a Service Level 
-Agreement (SLA) between peer networks.  In almost all cases, the usage condition outlined within an SLA determines the maximum aggregate limit.  This implies that individual bandwidth requests are managed by the rervation system of the originating AS and not propagated independently to the transit ASes (i.e. the transit AS will see the request as coming from the originating AS and not the individual making the request).
+authorization, and usage.  This essentially amounts to a \emph{Service Level 
+Agreement} (\textbf{SLA}) between peer networks.  In almost all cases, the usage 
+condition outlined within an SLA determines the maximum aggregate limit.  
+This implies that individual bandwidth requests are managed by the rervation 
+system of the originating AS and not propagated independently to the transit AS's 
+(i.e. the transit AS will see the request as coming from the originating AS and not the individual making the request).
 
 \item
 The control plane dictates the way control messages, such as setup and 
@@ -373,7 +399,7 @@ peering exchange.
 
 It should be noted that OSCARS and BRUW are jointly developed by ESnet and Internet2, and share the same code base.
 
-\subsection{Interdomain Path Setup (Jason)}
+\subsection{Interdomain Path Setup }
 One of the more complex examples of using the OSCARS reservation system involves
 the setting up of a virtual circuit between two hosts that span several administrative domains.
 For example, imagine setting up a
@@ -389,13 +415,13 @@ path, causing the local OSCARS to see the path originating from a different
 AS then it originally sent the "Create" request out to (see Figure 2.).
 
 To facilitate interdomain virtual ciruit setup, 
-an efficient and heterogeneous WSDL was created to describe the various
+a WSDL was created to describe the various
 messages that could be passed between reservation systems. This allows
 reservation systems to communicate with one another in a
 well defined and general format. It is then up to the individual reservation system to 
 transform the various messages to internal calls to reserve and provision the virtual circuit.
 
-\subsection{Interoperability Tests:  (Chin/Jason)}
+\subsection{Interoperability Tests: }
 
 On Apr 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
@@ -440,32 +466,40 @@ use, and administer as possible, as long as security is not compromised.
 The following section details steps taken to secure the machines and 
 servers running OSCARS, and the remaining security sections cover AAA.
 
-\subsection{System (David)}
+\subsection{System}
 
 An Apache2 Web server on an open ESnet machine is used to forward all 
 requests to the RM Web server, which runs on a machine behind a firewall. 
 This forwarding process is transparent to the end user, and hides the location 
 of the internal server.
 
-The internal Web server only accept https connections from the open machine.
-The RM SOAP server only accepts requests from clients on the internal machine. 
+The internal Web server only accepts https connections from the open machine.
+The RM SOAP server only accepts requests from the Web server on the internal machine
+or digitally signed SOAP messages forwarded from the open Web server.
 Database server processes run as an unprivileged user without a login 
 shell.  The database server only accepts requests from the SOAP server.
 
 
 \subsection{Authentication}
-OSCARS authenticates the creation and management of
-reservations. The web based interface and the SOAP server API use the
-authentication mechanism that is most natural for them. The web server
+OSCARS authenticates the sender of all requests that it receives.
+The Web based interface and the SOAP server API use the
+authentication mechanism that is most natural for them. The Web server
 requires a username and password for authentication on the first
 access during which it creates session information for the user and a
-8-hour cookie referencing this information to be used on subsequent
-connections. All communication with the web server takes place over
+8-hour cookie referencing this information. This cookie is used on subsequent
+connections. All communication with the Web server takes place over
 encrypted https in order to protect against the stealing of passwords
-or cookies. The SOAP API requires digitally signed messages [digSig]
-and verifies the signature and the signing certificate to authenticate
+or cookies. The SOAP API distinguishes between requests coming from
+the Web server on the local host, which it assumes have been authenticated
+as just described and requests coming from the open Web server. The 
+latter requests  must be digitally signed messages [digSig] signed by the
+originator of the message. The AAAS verifies the signature and the signing certificate to authenticate
 the user. It then uses the subject name from the signing certificate
-to identify the user. Both mechanisms use the database user table to
+to identify the user. Because there is a Web server on the open  network interposed between the
+requester and the SOAP server behind the firewall, digitally signed messages are 
+needed to do end-to-end client authentication and to support proxy certificates
+as a single-signon mechanism. Both the username/password and certificate 
+authentication methods use the database user table to
 determine if the request is coming from a legitimate user. This table
 contains a mapping of the OSCARS user name, password, subject name
 from the certificate and the certificate itself, as well as other
@@ -474,15 +508,15 @@ information about the user.
 Requests for or about interdomain
 reservations are authenticated in the originating domain on the basis
 of an individual user, and in the subsequent domains on the basis of
-the reservation server in the adjacent domain. Normally all requests
-between domains will be a SOAP "forward" operation and be in messages
-signed by the reservation server. Each domain has a list of the
-co-operating domain server certificates as well as a list of
+the RM in the adjacent domain. Normally all requests
+between domains will be a SOAP "forward"  message
+signed by the RM. Each domain has a list of the
+co-operating RM certificates as well as a list of
 permissions for that domain. In effect a service level agreement gets
 implemented in the users and authorization databases. The forward
 message includes the name of the originating user, in case other
-domains wish to use that information for authorization. Currently, at
-the time of provisioning no further authentication is
+domains wish to use that information for authorization or auditing.
+Currently, at the time of provisioning no further authentication is
 done. Provisioning is triggered by the time of the reservation. Once
 the provisioning has been completed, any traffic coming from the
 specified ingress router is able to use the higher class of bandwidth.
@@ -495,17 +529,17 @@ author's experience with the ROAM authorization service of the
 FusionGrid [ROAM]. This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
 authorizations. As long as there are not too many resources,
-permissions or users, it provides simple to manage and understand
-access control. In the case of OSCARS, we control access to the
-classes of reservations, users and domains. The permissions that can
+permissions or users, it provides an easily managed and understand
+access control scheme. In the case of OSCARS,  access  is controlled for 
+the management of reservations, users and domains. The permissions that can
 be granted are view, manage(modify), maximum-bandwidth for a
 reservation, duration of a reservation and the right to specify
 routing.  We anticipate that the total number of authorized users will
 be no greater than 50, remembering that OSCARS only needs to know
 about users at ESnet sites who have the rights to schedule
-high-bandwidth service and co-operating reservation servers in other
+high-bandwidth service and co-operating RM's in other
 domains. If the users grow beyond this point, the tables can be
-expanded to define groups (roles, or projects) of users.
+expanded to define groups (e.g. roles or projects) of users.
 
 \subsection{Auditing}
 At this point, the OSCARS server logs all significant activity such as
@@ -531,11 +565,11 @@ added or upgraded, increasing the bandwidth allocation for future
 reservations creates an inconsistent view with the current state of the
 network.
 
-\subsection{Network-Network Interface(Chin)}
+\subsection{Network-Network Interface}
 With the objective of interoperability between the different networks,
 comes the need for defining standard interfaces (i.e. Network-to-Network
 Interface (NNI)).  This is to facilitate the sharing of network state and
-request information in quanitfiable characteristics that are common to
+request information in quantifiable characteristics that are common to
 collaborting networks.  This could include properties such as connectivity
 (topology), bandwidth, latency, and jitter.  There are several documents
 that have been published by the different projects as well as organizations
