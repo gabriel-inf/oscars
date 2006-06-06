@@ -8,7 +8,7 @@
 \usepackage{subfigure}
 
 % correct bad hyphenation here 
-\hyphenation{op-tical net-works semi-conduc-tor IEEEtran ESnet OSCARS}
+\hyphenation{op-tical net-works semi-conduc-tor IEEEtran ESnet}
 
 \begin{document}
 
@@ -56,6 +56,12 @@ Quality of Service (QoS) is used to provide bandwidth guarantees.
 This paper describes our experience in implementing OSCARS, collaborations
 with other bandwidth-reservation projects, including interdomain testing, and 
 future work to be done.
+\footnote{
+This work was supported by the Director, Office of Science. Office of
+Advanced Scientific Computing Research. Mathematical, Information, and
+Computational Sciences Division under U.S. Department of
+Energy Contract No. DE-AC02-05CH11231.
+}
 \end{abstract}
 
 % no keywords
@@ -107,16 +113,16 @@ Due to the highly distributed nature of large scale science which depends
 on world wide collaborations, the service framework for OSCARS is being
 developed in coordination with other community network provisioning efforts. 
 
-The closest coordination is with the Internet2 BRUW [BRUW] system.  A version 
+The closest coordination is with the Internet2 BRUW \cite{bruw} system.  A version 
 of BRUW was used as the starting point for OSCARS, and now the two projects 
 share a common code base. Interoperability testing is on-going with Internet2 
 sites. 
 
 A Web Services compliant [WSI-BP]\emph{ Web Services Definition Language}
  \textbf({WSDL}) specification for the network-network 
-interface has been specified following the model of GEANT's [GN2-JRA3] 
+interface has been specified following the model of GEANT's \cite{geant-amps}
 Advance Multi-domain Provisioning System (AMPS) [AMPS]. This interface is being 
-tested with the DOE/BNL, TeraPaths [TeraPaths] project. 
+tested with the DOE/BNL, TeraPaths \cite{bradley} project. 
 
 OSCARS has been developed jointly with Internet2, and deployed within ESnet,
 which is a nation-wide network that serves approximately 42 directly connected 
@@ -137,16 +143,13 @@ paramount.  The impact of an abuse could be very
 large.  A DoS attack could prevent reservations from being processed.  If the
 service is compromised, an attacker could disable the wide area network.
 
-The following sections cover how OSCARS addresses the above constraints and
+This paper describes how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.  Section II covers the 
 OSCARS architecture, and Section III describes the details of
-path setup and reservation handling.
-
-The section on interdomain reservations outlines some issues with cross-domain
- interoperability, and covers other reservation systems and 
+path setup and reservation handling. Section IV outlines some issues with cross-domain
+interoperability, and covers other reservation systems and 
 collaborative efforts, as well as 
 an example of an interoperability test between OSCARS and BRUW.
-
 Section V covers security, including system, interdomain, and AAA issues.
 The final section touches briefly on the future work that needs to be performed
 to handle a dynamically changing network (which may invalidate existing
@@ -405,20 +408,20 @@ ongoing collaborative efforts.
 
 There are several implementations of network resource management and
 service provisioning systems in existence today.  These include the DOE funded
-TeraPaths [TeraPaths] and USN [USN] projects, the NSF funded CHEETAH [8] and
-DRAGON [9] projects,
-Internet2's BRUW [BRUW] and HOPI [HOPI] projects, CANARIE's UCLP [UCLP] 
+TeraPaths \cite{terapaths} and USN [USN] projects, the NSF funded CHEETAH \cite{veeraraghavan} and
+DRAGON \cite{yang}\cite{dragon} projects,
+Internet2's BRUW \cite{bruw} and HOPI [HOPI] projects, CANARIE's UCLP \cite{canarie} 
 project, and GEANT's
-BoD (GN2-JRA3) [GN2-JRA3] and AMPS (SA3) [AMPS] activities.
+BoD (GN2-JRA3) \cite{geant} and AMPS (SA3) \cite{geant-amps} activities.
 
 All of these projects, as well as OSCARS, are based on a Web services 
 interface to reserve and configure a path across the network. However, they 
 have slightly different ways of handling reservations and AAA issues.
 
-Dragon uses OSPF-TE [OSPF-TE] for intradomain routing, and a component called
+Dragon uses OSPF-TE \cite{ospf-te} for intradomain routing, and a component called
 the Network Aware Resource Broker (NARB) for interdomain routing.
-Dragon plans to use the Common Open Policy Service (COPS) [COPS]
-protocol for support of policy provisioning (COPS-PR) [COPS-PR].
+Dragon plans to use the Common Open Policy Service (COPS) \cite{cops}
+protocol for support of policy provisioning (COPS-PR) \cite{cops-pr}.
 
 Canarie, Canada's advanced Internet development organization, has been
 working on a project called User Controlled LightPath (UCLP).  UCLP
@@ -429,7 +432,8 @@ of network.
 The University of Amsterdam's Advanced Internet Research group has
 published a number of papers
 describing both the networking and the AAA issues for such a system,
-including [REF][REF][REF]. They are using the IETF AAA Framework
+including cite{gommans05} \cite{gommans06} \cite{demchenko} . 
+They are using the IETF AAA Framework
 \cite{rfc2904}, and use XACML \cite{XACML} to describe policy. They have also defined a
 "Network Description Language" (NDL), which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability.
@@ -492,7 +496,7 @@ On April 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
 respectively. The unidirectional 25Mb/s guaranteed bandwidth path was 
 configured between an Internet2 test host in Indianapolis, IN and an ESnet 
-Performance Center [REF] host in Sunnyvale, CA.  The path consisted of two 
+Performance Center \cite{esnet-pc} host in Sunnyvale, CA.  The path consisted of two 
 unidirectional MPLS Label Switched Paths (LSP's), one in Abilene, and the 
 other in ESnet, "stitched" together at the Abilene-ESnet peering point in 
 Chicago, IL.
@@ -517,7 +521,7 @@ Chicago, IL.
 \end{table}
 
 
-Bandwidth tests using IPerf [IPerf] (see Table ~\ref{tab:bandwidth}) revealed
+Bandwidth tests using IPerf \cite{iperf} (see Table ~\ref{tab:bandwidth}) revealed
 predictable results except for the guaranteed bandwidth TCP transfer.
 
 The guaranteed bandwidth (25Mb/s) TCP transfer should have yielded a 
@@ -670,7 +674,7 @@ request information in quantifiable characteristics that are common to
 collaborating networks.  This could include properties such as connectivity
 (topology), bandwidth, latency, and jitter.  There are several documents
 that have been published by the different projects as well as organizations
-related to this work [Ref JRA3,NDL,UCLP,IETF CCAMP]. However due to the
+related to this work [Ref JRA3, \cite{ndl} \cite{},UCLP,IETF CCAMP]. However due to the
 heterogeneity of network implementations and deployments, generating a single
 framework to quantify all networks is not trivial.
 
@@ -813,8 +817,12 @@ L. Berger (ed), ÒGeneralized MPLS Signaling - RSVP-TE Extensions,Ó IETF RFC 3473
 S. Bradley, F. Burstein, L. Cottrell, B. Gibbard, D. Katramatos, Y. Li, S. McKee, R. Pope-scu, D. Stampf, D. Yu. 
 \emph{TeraPaths: A QoS-Enabled Collaborative Data Sharing Infra-structure for Peta-scale Computing Research}, Computing in High Energy and Nuclear Physics (CHEP 2006), T.I.F.R., Mumbai, India, Feb 13-17, 2006
 
-\bibitem{canarie}Canarie UCLP Project Website: http://www.canarie.ca/canet4/uclp/
-\bibitem{cops-pr}K. Chan et al., ÒCOPS Usage for Policy Provisioning (COPS-PR),Ó IETF RFC 3084, March 2001.
+\bibitem{canarie}
+Canarie UCLP Project Website: http://www.canarie.ca/canet4/uclp/
+
+\bibitem{cops-pr}
+K. Chan et al., ÒCOPS Usage for Policy Provisioning 
+(COPS-PR),Ó IETF RFC 3084, March 2001.
 
 \bibitem{demchenko}
 Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
@@ -823,22 +831,40 @@ Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
 
 \bibitem{dragon}
 DRAGON Project Website, http://dragon.maxgigapop.net
-\bibitem{cops}D. Durham et al., ÒThe COPS (Common Open Policy Service Protocol),Ó IETF RFC 2748, January 2000. 
+
+\bibitem{cops}
+D. Durham et al., ÒThe COPS (Common Open Policy 
+Service Protocol),Ó IETF RFC 2748, January 2000. 
+
 \bibitem{eastlake}
 D. Eastlake, J. Reagle, D. Solo. \emph{XML-Signature Syntax and Processing. W3C Recommendation} W3C Recommendation, Feb, 2002, http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/
 
-\bibitem{esnet-pc}ESnet Performance Center: https://performance.es.net/
-\bibitem{geant}GEANT GN2-JRA3 Project Website: http://www.geant2.net/server/show/nav.756\bibitem{geant-amps}GEANT AMPS Project Website: http://www.geant2.net/server/show/nav.893
+\bibitem{esnet-pc}
+ESnet Performance Center: https://performance.es.net/
+
+\bibitem{geant}
+GEANT GN2-JRA3 Project Website: http://www.geant2.net/server/show/nav.756
+
+\bibitem{geant-amps}
+GEANT AMPS Project Website: http://www.geant2.net/server/show/nav.893
+
 \bibitem{gommans05}
 Leon Gommans, Cees de Laat, Robert Meijer, \emph{Token Based path authorization at Interconnection Points between Hybrid Networks and a Lambda Grid}, Proceedings of IEEE GRIDNETS 2005
 
 \bibitem{gommans06}
 Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inder Monga, Arie Taal, Franco Travostino, Alfred Wan, \emph{Applications Drive Secure Lightpath Creation across Heterogeneous Domains}, IEEE Communications Magazine, Feature topic Optical Control Planes for Grid Networks: Opportunities, Challenges and the Vision, vol. 44, no. 3, March 2006
 
-\bibitem{ndt}Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
-\bibitem{iperf}iperf: http://dast.nlanr.net/Projects/Iperf/
+\bibitem{ndt}
+Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
 
-\bibitem{ospf-te}D. Katz, D. Yeung and K. Kompella, \emph{Traffic engineering extensions to OSPF version 3}, IETF Internet Draft, Work in Progress, draft-ietf-ospf- ospfv3-traffic-05.txt, March 2005. IETF RFC 2543, March 1999. 
+\bibitem{iperf}
+iperf: http://dast.nlanr.net/Projects/Iperf/
+
+\bibitem{ospf-te}
+D. Katz, D. Yeung and K. Kompella, \emph{Traffic engineering extensions to OSPF version 3}, IETF 
+Internet Draft, Work in Progress, draft-ietf-ospf- 
+ospfv3-traffic-05.txt, March 2005. 
+IETF RFC 2543, March 1999. 
 
 \bibitem{XACML} T.  Moses (ed), \emph{eXtensible Access Control Markup Language 2 
 (XACML) Version 2.0 3 }
@@ -861,13 +887,14 @@ J. Vollbrecht, P. Calhoun, S. Farrell, L. Gommans, G. Gross,B. de Bruijn, C. de 
 D. Spence, \emph{AAA Authorization Framework}, IETF RFC , Aug. 2000, http://www.ietf.org/rfc/rfc2904.txt
 
 
-\bibitem{Yang}
+\bibitem{yang}
 Xi Yang, Tom Lehman, Chris Tracy, Jerry Sobieski, Shujia Gong, Payam Torab, Bijan Jabbari, \emph{Policy-
 Based Resource Management and Service Provisioning in GMPLS Networks}, Adaptive Policy-based
 Management in Network Management and Control Workshop at INFOCOMM 2006, Barcelona Spain,
 April 2006.
 
-\end{thebibliography}
+
+\end{thebibliography}
 
 \end{document}
 
