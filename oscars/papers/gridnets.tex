@@ -433,29 +433,33 @@ It should be noted that OSCARS and BRUW are jointly developed by ESnet and
 Internet2, and share the same code base.
 
 \subsection{Interdomain Path Setup }
-One of the more complex examples of using the OSCARS reservation system 
-involves
-the setting up of a virtual circuit between two hosts that span several 
-administrative domains.  For example, imagine setting up a
+One of the more complex examples of using the OSCARS reservation system
+involves the setting up of a virtual circuit between two hosts that span
+several administrative domains.  For example, imagine setting up a
 virtual circuit between Host A and Host B, where Host A is controlled by a
-remote reservation
-system and Host B is part of the local OSCARS reservation system.  To 
-accomplish
-this, a "Forward Create" message has to be sent across the network towards Host
-A, crossing all intervening reservations systems, until it reaches the last
-reservation system that has administrative control over the network that Host A is attached to.
-At that point the remote reservation system has to initiate the creation of the
-path from Host A towards Host B.  This can be especially complex when the path
-back is asymmetric and traverses AS's that were not traversed on the forward
-path, causing the local OSCARS to see the path originating from a different 
-AS then it originally sent the "Create" request out to (see Figure 2.).
+remote reservation system RM A in ISP A, and Host B is part of the local
+OSCARS reservation system in ISP B (see Figure 2). The routed path from ISP B
+to ISP A transits ISP X, but the reserve path from ISP A to ISP B is via ISP Y.
+In order for an OSCARS' user to make an interdomain virtual circuit reservation
+request from Host A to Host B, the following must occur.
+1. On receiving the request from the user, OSCARS
+computes the virtual circuit path and determines the downstream AS (ISP X).
+2. A "Forward Create" message is sent across the network (ISP X) towards Host
+A, crossing all intervening reservations systems (RM X), until it reaches the
+last reservation system (RM A) that has administrative control over the network
+(ISP A) that Host A is attached to.
+3. The remote reservation system (RM A) then computes the path of the virtual
+circuit, and initiates the bandwidth reservation requests from Host A towards
+Host B (via ISP Y).  This can be especially complex when the path back (from
+Host B to A) is asymmetric and traverses AS's (e.g. ISP Y) that were not
+traversed on the forward path, causing the local OSCARS to see the path
+originating from a different AS then it originally sent the "Create" request
+out to.
 
-To facilitate interdomain virtual ciruit setup, 
-a WSDL was created to describe the various
-messages that could be passed between reservation systems. This allows
-reservation systems to communicate with one another in a
-well defined and general format. It is then up to the individual reservation 
-system to 
+To facilitate interdomain virtual ciruit setup, a WSDL was created to describe
+the various messages that could be passed between reservation systems. This
+allows reservation systems to communicate with one another in a well defined
+and general format. It is then up to the individual reservation system to 
 transform the various messages to internal calls to reserve and provision the 
 virtual circuit.
 
