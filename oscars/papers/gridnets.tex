@@ -461,9 +461,9 @@ and general format. It is then up to the individual reservation system to
 transform the various messages to internal calls to reserve and provision the 
 virtual circuit.
 
-\subsection{Interoperability Tests: }
+\subsection{Interoperability Tests}
 
-On Apr 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
+On April 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
 respectively. The unidirectional 25Mb/s guaranteed bandwidth path was 
 configured between an Internet2 test host in Indianapolis, IN and an ESnet 
@@ -606,19 +606,19 @@ used for either authorization or auditing.
 
 OSCARS is one example of a system that will become increasingly necessary
 as experiments such as the Large Hadron Collider become operational.  It
-provides the ability for users to easily schedule in advance the 
+allows users to easily schedule in advance the 
 network bandwidth necessary for their experiment or simulation.  Since it
 provides the ability to change router configurations in a production network,
 maintaining security is an integral part of its operation.
 
 A number of issues need to be addressed before such systems become
-production level in complex network environments, where many autonomous
-domains may be involved, and in which the network may be constantly
-changing:
+production level in complex network environments where many autonomous
+domains may be involved, and where network topologies may be constantly
+changing.
 
 \subsection{Topology Changes}
 
-A key consideration when running OSCARS as a production service, is the ability
+A key consideration, when running OSCARS as a production service, is the ability
 to recover from both scheduled and unscheduled network outages or changes.  This
 is particularly complex when dealing with bandwidth reservations made for a
 future date.  For example, in the event of an unscheduled network outage, future
@@ -630,11 +630,11 @@ the network.  To deal with this, OSCARS
 has a polling mechanism that constantly
 compares the current state of the network to the state that is reflected in the
 OSCARS topology database. If there are differences that affect the
-characteristics of a link the new topology is pushed into the OSCARS database
+characteristics of a link, the new topology is pushed into the OSCARS database
 and all outstanding reservations that use that link are queried from the
 database. This is possible since the complete path of all reservations is kept
 in the database along with the reservation. Then all the reservations are
-recomputed in the order they were placed into the OSCARS system to ensure that
+recomputed in the order they were placed into the OSCARS system, to ensure that
 the requested resources are still available.  In the event that the necessary
 resources are unavailable for a reservation that has been entered into OSCARS,
 the reservation's state will be changed to "unavailable" and a notice will be
