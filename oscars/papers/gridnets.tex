@@ -30,22 +30,22 @@ Berkeley, CA  94720}}
 With the advent of service sensitive applications (such as remote controlled 
 experiments, time constrained massive data transfers, video-conferencing, etc.),
 it has become apparent that there is a need for the setup of dynamically 
-provisioned, quality of service enabled circuits.
+provisioned, quality of service enabled virtual circuits.
 The ESnet On-Demand Secure Circuits and Advance Reservation System (OSCARS) is 
-a prototype service enabling on-demand provisioning of guaranteed bandwidth 
-secure circuits.
+a prototype service enabling advance reservation of guaranteed bandwidth 
+secure virtual circuits.
 
 OSCARS operates within the Energy Sciences Network (ESnet), and has
 provisions for interoperation with other network domains.
 ESnet is a high-speed network serving thousands 
 of Department of Energy scientists and collaborators worldwide.
 
-?? OSCARS utilizes the Web services model and standards to implement communication
+OSCARS utilizes the Web services model and standards to implement communication
 with the system and between domains, and for authentication, authorization,
-and auditing (AAA).  The management and operation of end-to-end circuits 
-within the network is done at the layer 3 level.  Label Switched Paths 
-(LSP's) are used, implemented using Multi-Protocol Label Switching (MPLS) and 
-the Resource Reservation Protocol (RSVP). Quality of Service (QoS) is used to 
+and auditing (AAA).  The management and operation of end-to-end virtual circuits 
+within the network is done at the layer 3 network level.  
+Multi-Protocol Label Switching (MPLS) and the Resource Reservation Protocol (RSVP)
+are used to create the virtual circuits or Label Switched Paths (LSPs). Quality of Service (QoS) is used to 
 provide bandwidth guarantees.
 \footnote{
 This work was supported by the Director, Office of Science. Office of
@@ -56,6 +56,10 @@ Energy Contract No. DE-AC03-76SF00098. This is report no. LBNL-NNNNN.
 \end{abstract}
 
 % no keywords
+\begin{keywords}
+Multi-Protocol Label Switching (MPLS); Resource Reservation Protocol (RSVP); Quality of Service (QoS);
+ESnet On-Demand Secure Circuits and Advance Reservation System (OSCARS)
+
 
 % for peerreview papers, inserts a page break and creates the second title.
 % Will be ignored for other modes.
@@ -87,9 +91,9 @@ specify loss rates, latency, jitter, and other parameters in the future.
 Due to the highly distributed nature of large scale science which depends
 on world wide collaborations, the service framework for OSCARS is being
 developed in various coordinated community efforts (e.g. the ESnet, OSCARS;
-Internet2, BRUW; GEANT-GN2-JRA3, SA3-PACE, and Advance Multi-domain Provisioning System (AMPS); and DOE/BNL, TeraPaths projects) to ensure compatible network-network interfaces, which are not yet well defined in the standards arena.
+Internet2, BRUW [BRUW]; GEANT-GN2-JRA3 [GN2-JRA3], SA3-PACE, and Advance Multi-domain Provisioning System (AMPS) [AMPS]; and DOE/BNL, TeraPaths [TeraPaths] projects) to ensure compatible network-network interfaces, which are not yet well defined in the standards arena.
 
-OSCARS has been developed and deployed within ESnet,
+OSCARS has been developed jointly with Internet2, and deployed within ESnet,
 which is a nation wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
 systems throughout the network and its operations centers.  The current ESnet 
@@ -105,19 +109,17 @@ risks.
 Throughout the design and implementation of OSCARS, security aspects were
 paramount.  The impact of an abuse could be very
 large.  A DoS attack could prevent reservations from being processed.  If the
-service is compromised, and thus the routers it has access to, the wide
-area network may be disabled.
+service is compromised, an attacker could disable the wide area network.
 
 The following sections cover how OSCARS addresses the above constraints and
 risks while implementing a scheduling system.  Section II covers the 
 OSCARS system, and Section III describes the details of
 path setup and reservation handling.
 
-OSCARS will only be useful if it is one element in a series of possibly
-heterogeneous reservation systems setting up a complete end-to-end circuit.
-The section on interdomain reservations covers other reservation systems and 
-collaborations that have been set up with their developers, as well as 
-interoperability tests that have been performed thus far.
+The section on interdomain reservations outlines some issues with cross-domain
+ interoperablilty, and covers other reservation systems and 
+collaborative efforts, as well as 
+an example of an interoperability test between OSCARS and BRUW.
 
 Section V covers security, including system, interdomain, and AAA issues.
 The final section touches briefly on the future work that needs to be performed
@@ -149,13 +151,13 @@ users and administrators of the results of calls made to the RM.  It also
 handles a number of internal requests related to its management.
 
 The BSS is responsible for scheduling reservations.  It handles
-requests to schedule bandwidth reservation, list a reservation's details,
+requests to schedule bandwidth reservations, list reservation details,
 modify and/or cancel one or more existing reservations, and provide a summary
 of all current reservations.
 
 To perform these functions, the BSS keeps information about past,
 pending, and current reservations, and tracks the current topology and state of
-the network.  As part of scheduling a requested reservation, the BSS must
+the network.  As part of scheduling a reservation request, the BSS must
 determine whether the requested bandwidth will over-subscribe any of the links
 in the path to be set up within the network.
 
@@ -169,8 +171,8 @@ the AAA used by the BSS.
 
 \subsection{Implementation (David)}
 
-Web services standards are used wherever possible, including SOAP
-for communicating between a client and the RM, and WSDL for the service
+Web services standards are used wherever possible, including SOAP [SOAP]
+for communicating between a client and the RM, and WSDL [WSDL] for the service
 description. 
  
 The resource manager is implemented as an Apache Web server configured for
@@ -203,19 +205,18 @@ periodically checks to see if the PSS needs to be contacted, either to create
 or tear down the circuit.
 
 \item
-At the requested start time, the PSS configures the ESnet router
+At the requested start time, the PSS configures the ESnet provider edge (PE) router
 (at the start end of the path) to create an LSP with the
 specified bandwidth.
 
 \item
 Each router along the route receives the path setup request (via RSVP)
 and commits bandwidth (if available) creating an end-to-end LSP.  The RM is
-notified by RSVP if the end-to-end path cannot be established.  The RM
-passes this notification back to the user.
+notified by RSVP if the end-to-end path cannot be established.
 
 \item
-Packets from the source (e.g. experiment) are routed through the
-LAN's production path to ESnet's edge router.  On entering the edge router,
+Packets from the source (e.g. experiment) are routed through the site's
+LAN production path to ESnet's PE router.  On entering the PE router,
 these packets are identified and filtered using flow specification parameters
 (e.g. source/destination IP address/port numbers) and policed at the specified
 bandwidth.  The packets are then injected into the LSP and switched (using MPLS)
@@ -234,51 +235,50 @@ At the requested end time, the PSS tears down the LSP.
 There are two scenarios for creating a path in OSCARS.  One is where the
 reservation request does not contain any connectivity information outside of
 the source and destination (IP addresses).  The other is where a request
-contains additional routing information such as the ingress and/or egress border routers
+contains additional routing information such as the ingress and/or egress PE routers
 within the OSCARS administrative domain.
 
-In the scenario where an ingress border router is not explicitly communicated, 
+In the scenario where an ingress PE router is not explicitly communicated, 
 OSCARS does a traceroute (from the core of the network) towards the source IP address of the traffic. As the traceroute
 progresses, each router in the trace is checked to verify if 
 it is within the administrative control of OSCARS. As soon as OSCARS encounters a router that
-is outside of its administrative domain, OSCARS marks that last router (within its administrative
- control) as the ingress router.
+is outside of its administrative domain, OSCARS marks the last router (within its administrative
+ control) as the ingress PE router.
 
-In the scenario where the egress border router is not contained in the reservation requests, 
-the destination IP address is used as the target of the traceroute (sourced from the ingress border router).
-Using the same method outlined in the previous paragraph, the egress border router can be determined.
+In the scenario where the egress PE router is not contained in the reservation requests, 
+the destination IP address is used as the target of the traceroute (sourced from the ingress PE router).
+Using the same method outlined in the previous paragraph, the egress PE router can be determined.
 
-With the ingress and egress border routers identified, the path (or route) between the two can be trivially determined.
+With the ingress and egress PE routers identified, the path (or route) between the two can be trivially determined.
 
-The need for OSCARS to support reservations with explicit ingress and egress routers is to
-facilitate traffic engineering for sites or networks that have more then one peering connection to ESnet.
+The need for OSCARS to support reservations with explicit ingress and egress PE routers is to
+facilitate traffic engineering for sites or networks that have more then one peering connection with ESnet.
 
-In the event that the circuit spans multiple administrative domains, OSCARS uses
-routing information harvested from the Border Gateway Protocol (BGP) on the egress router to determine the next
+In the event that the virtual circuit extends beyond OSCARS' administrative domain,
+routing information harvested from the Border Gateway Protocol (BGP) [BGP] on the egress PE router is used to determine the next
 Autonomous System (AS) that the request should be forwarded to.   The AS number is
 checked against a list of known administrative domains that have reservation systems
 that are compatible with OSCARS.  If a match is found, the request is forwarded to the
 downstream AS.
 
 \subsection{Advanced Reservations (Jason)}
-In OSCARS advance reservations are handled in a slot based manner. This equates
+In OSCARS, advance reservations are handled in a slot based manner. This equates
 to 'first come first served' for bandwidth across any particular link at any
 moment. As each reservation is requested in OSCARS, the end-to-end path is
 computed for that reservation. Once the entire path though all the routers
-controlled by OSCARS has been computed then each link in the path is checked for
+controlled by OSCARS has been computed, each link in the path is checked for
 available bandwidth. To check the bandwidth of a link, all outstanding
 reservations for that link during the time of the proposed reservation are
 queried from the data base. Then all the reserved bandwidth amounts are
 calculated and compared to the actual capacity of the link. If the requested
 amount of bandwidth plus all outstanding reservations is more then the allocated
-amount of bandwidth available for reservations on that link (usually
+amount of bandwidth available for reservations on that link (in this case
 50\%), then the reservation fails. Only if there is enough bandwidth 
 available on all links is the reservation committed into the reservation system.
 
-In the case where the capacity of a link changes, all outstanding reservations
+In the case where the capacity of a link changes (e.g. link upgrade or failure), all outstanding reservations
 that involve the use of that link are queried from the system and recomputed.
-This is done to ensure that at the time that the reservation is 'setup' there
-is adequate bandwidth available on that link for the reservation.
+This is done to ensure that there is adequate bandwidth available on the link when it comes time to provision the reservation.
 
 \subsection{Provisioning and Policing (Chin)}
 To facilitate bandwidth guarantees, provisioning and policing are needed to 
@@ -291,10 +291,10 @@ itself.  The size of this queue is configured to match the RSVP bandwidth
 limits on each interface, e.g. if the RSVP bandwidth limit on an interface is 
 50\%, the "OSCARS" queue is also set at 50\%.  This ensures that the RSVP 
 provisioned bandwidth will translate to available network bandwidth within 
-the core.
+the network core.
 
 With all of OSCARS traffic using the same Class-of-Service queue within the 
-core, it is vital to ensure that the bandwidth usage of each corresponding 
+network core, it is vital to ensure that the bandwidth usage of each individual 
 RSVP reservation is strictly adhered to.  This prevents the aggregate traffic 
 from overrunning the queue dedicated to the OSCARS service.  To do this, each 
 flow utilizing the OSCARS service is policed individually according to the 
@@ -306,16 +306,16 @@ ESnet.
 
 Analogous to QoS guarantees, guaranteed bandwidth paths are most effective 
 when the reservation spans end-to-end.  This however, introduces the 
-complexity of extending guaranteed bandwidth paths beyond the scope of a 
+complexity of extending virtual circuits beyond the scope of a 
 single administrative domain to multiple domains.  To facilitate this, 
-neighboring domains must agree on several levels, mainly the management plan, 
-control plan, and data plan:
+neighboring domains must agree on several levels, mainly, the management plane, 
+control plane, and data plane:
 
 \begin{itemize}
 \item
 The management plane dictates policies and procedures for authentication, 
 authorization, and usage.  This essentially amounts to a Service Level 
-Agreement (SLA) between peer networks.  In almost all cases, the usage condition outlined within an SLA determines the maximum aggregate limit.  This implies that individual bandwidth requests are managed by the RM of the originating AS and not propagated independently to the transit ASes (i.e. the transit AS will see the request as coming from the originating AS and not the individual making the request).
+Agreement (SLA) between peer networks.  In almost all cases, the usage condition outlined within an SLA determines the maximum aggregate limit.  This implies that individual bandwidth requests are managed by the rervation system of the originating AS and not propagated independently to the transit ASes (i.e. the transit AS will see the request as coming from the originating AS and not the individual making the request).
 
 \item
 The control plane dictates the way control messages, such as setup and 
@@ -324,7 +324,7 @@ At this point in time, interdomain interoperability efforts do not permit
 the end-to-end signalling of LSPs via the control plane (i.e. interdomain exchange of RSVP messages).  This is because
 there is no vendor implementation that can enforce complex SLA requirements of the
 various administrative domains.  As such, end-to-end virtual circuits comprise
-of intradomain LSPs stiched together at agreed peering points.
+of intradomain LSPs stiched together at agreed interconenction points.
 
 \item
 The data plane handles how user traffic is forwarded from one network to 
@@ -336,23 +336,23 @@ another network, e.g. IP packets, Ethernet VLAN packets, etc.  This is one of th
 
 There are several implementations of network resource management and
 service provisioning systems in existence today.  These include the DOE funded
-TeraPaths and USN projects, the NSF funded CHEETAH and DRAGON projects,
-Internet2's BRUW and HOPI projects,  CANARIE's UCLPv2 project, and GEANT's
-BoD (JRA3) and AMPS (SA3) activities.
+TeraPaths [TeraPaths] and USN [USN] projects, the NSF funded CHEETAH [8] and DRAGON [9] projects,
+Internet2's BRUW [BRUW] and HOPI [HOPI] projects,  CANARIE's UCLP [UCLP] project, and GEANT's
+BoD (GN2-JRA3) [GN2-JRA3] and AMPS (SA3) [AMPS] activities.
 
 All of these projects, as well as OSCARS, are based on a Web services 
 interface to reserve and configure a path across the network. However, they 
 have slightly different ways of handling reservations and AAA issues.
 
-Dragon uses  OSPF-TE [REF] for intradomain routing, and a component called
+Dragon uses OSPF-TE [OSPF-TE] for intradomain routing, and a component called
 the Network Aware Resource Broker (NARB) for interdomain routing.
-Dragon plans to use the Common Open Policy Service (COPS) [REF]
-protocol for support of policy provisioning (COPS-PR) [REF].
+Dragon plans to use the Common Open Policy Service (COPS) [COPS]
+protocol for support of policy provisioning (COPS-PR) [COPS-PR].
 
 Canarie, Canada's advanced Internet development organization, has been
 working on a project called User Controlled LightPath (UCLP).  UCLP
 allows end-users to create their own independent IP network as a subset
-of a larger optical network and to have a total control over their share
+of a larger optical network and to have total control over their share
 of network.
 
 The University of Amsterdam's Advanced Internet Research group has
@@ -366,30 +366,34 @@ describe networks, to facilitate interdomain interoperability.
 With the exception of OSCARS, BRUW,
 TeraPaths, and AMPS, all other projects mentioned above provision resources
 in the optical network layer (i.e. layer 1), creating lightpaths.
-With the OSCARS, BRUW, TeraPaths, and AMPS projects, IP connectivity (layer
+With OSCARS, BRUW, TeraPaths, and AMPS, IP connectivity (layer
 3) is used as the data plane exchange.  This facilitates interoperability
-trials as no additional network connection is needed outside of the production
+trials with no additional network connection needed outside of the production
 peering exchange.
+
+It should be noted that OSCARS and BRUW are jointly developed by ESnet and Internet2, and share the same code base.
 
 \subsection{Interdomain Path Setup (Jason)}
 One of the more complex examples of using the OSCARS reservation system involves
-setting up a path between two hosts that are several Autonomous Systems apart.
-For example, imagine a setting up a
-path between Host A and Host B, where Host A is controlled by remote reservation
+the setting up of a virtual circuit between two hosts that span several administrative domains.
+For example, imagine setting up a
+virtual circuit between Host A and Host B, where Host A is controlled by a remote reservation
 system and Host B is part of the local OSCARS reservation system.  To accomplish
 this, a "Forward Create" message has to be sent across the network towards Host
 A, crossing all intervening reservations systems, until it reaches the last
-reservation system that is controlling the network that Host A is attached to.
+reservation system that has administrative control over the network that Host A is attached to.
 At that point the remote reservation system has to initiate the creation of the
 path from Host A towards Host B.  This can be especially complex when the path
 back is asymmetric and traverses AS's that were not traversed on the forward
 path, causing the local OSCARS to see the path originating from a different 
-AS then it originally sent the "Create" request out to. This resulted  to create 
-an efficient and heterogeneous WSDL that describes the various
-messages that can be passed between the Reservation Systems. This allows
-each Reservation System to communicate with other Reservation Systems in 
-well defined and general format. It is then up to the individual system to 
-transform the various messages to internal calls to reserve the path.
+AS then it originally sent the "Create" request out to (see Figure 2.).
+
+To facilitate interdomain virtual ciruit setup, 
+an efficient and heterogeneous WSDL was created to describe the various
+messages that could be passed between reservation systems. This allows
+reservation systems to communicate with one another in a
+well defined and general format. It is then up to the individual reservation system to 
+transform the various messages to internal calls to reserve and provision the virtual circuit.
 
 \subsection{Interoperability Tests:  (Chin/Jason)}
 
@@ -416,7 +420,7 @@ Chicago, IL.
  \label{tab:bandwidth}
 \end{table}
 
-Bandwidth tests using IPerf (see Table ~\ref{tab:bandwidth}) revealed predictable results except for the guaranteed bandwidth TCP transfer.
+Bandwidth tests using IPerf [IPerf] (see Table ~\ref{tab:bandwidth}) revealed predictable results except for the guaranteed bandwidth TCP transfer.
 
 <Table to be inserted from Word document>
 
@@ -527,7 +531,7 @@ added or upgraded, increasing the bandwidth allocation for future
 reservations creates an inconsistent view with the current state of the
 network.
 
-\subsection{Future standards work (Chin)}
+\subsection{Network-Network Interface(Chin)}
 With the objective of interoperability between the different networks,
 comes the need for defining standard interfaces (i.e. Network-to-Network
 Interface (NNI)).  This is to facilitate the sharing of network state and
@@ -539,8 +543,14 @@ related to this work [Ref JRA3,NDL,UCLP,IETF CCAMP]. However due to the
 heterogenity of network implementations and deployments, generate a single
 framework to quantify all networks is not trivial.
 
-\subsection{Testing and testbeds (Chin)}
-Bridging multi-layered data-planes.
+\subsection{Hybrid Data-Planes}
+With the emergence of numerious reservation systems, it is becoming evident 
+that there is a need to bridge these systems which provision virtual circuits at different network layers.
+For example, OSCARS and BRUW provision MPLS LSPs over an IP (layer 3) shared network, whereas DRAGON and CHEETAH uses
+GMPLS [GMPLS] to setup lightpaths over a lambda switched (layer 1) network.  The challenge here is to bridge the two systems such
+that an end-to-end connection appears to be seamless to the end-user.
+
+In addition, numerious complications arise when reservation systems managing disparate data planes attempt to exchange connectivity information.  First, there is a need to translate or map  connectivity information such that it is useable by the reservation system receiving the information (e.g. layer 1 connectivity information is meaningless to a layer 3 reservation system unless it is associated with an IP address).  This is the approach explored by DRAGON.  Second, there needs to be a mechanism to redistribute multi-layer connectivity information. Within the IP layer, this is done via BGP.  At lower network layers, no such comparable protocols exisits.
 
 % Reminder: the "draftcls" or "draftclsnofoot", not "draft", class option
 % should be used if it is desired that the figures are to be displayed while
