@@ -4,7 +4,7 @@
 \documentclass[conference]{IEEEtran}
 
 % correct bad hyphenation here
-\hyphenation{op-tical net-works semi-conduc-tor IEEEtran}
+\hyphenation{op-tical net-works semi-conduc-tor IEEEtran ESnet}
 
 \begin{document}
 
@@ -114,7 +114,7 @@ OSCARS has been developed jointly with Internet2, and deployed within ESnet,
 which is a nation-wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
 systems throughout the network and its operations centers.  The current ESnet 
-architecture (Figure 1) is that of a high-bandwidth (10/2.5 Gb/s) backbone ring 
+architecture is that of a high-bandwidth (10/2.5 Gb/s) backbone ring 
 around the country, with hubs at strategic locations.  The sites, which are 
 mainly
 large Office of Science laboratories, are connected to the hubs via metro rings at 2 x 10Gb/s speeds.
@@ -151,25 +151,23 @@ The intent of OSCARS is to create a service for dynamic QoS path establishment
 that is simple for users to use, and easy to administer.  The only task 
 required of a user is to make a bandwidth reservation.  Reservation can be made 
 in advance for either one-time use or persistent use, e.g. for the same time 
-everyday, 
-or for immediate use. The user does not have 
+everyday, or for immediate use. The user does not have 
 to configure an alternate routing path, nor mark the packets in any way.  All 
 necessary mechanisms needed to provide the user with a guaranteed bandwidth 
-path are coordinated by a  \emph{Reservation Manager} (\textbf{RM}) and managed by the routers 
-in the network.
+path are coordinated by a  \emph{Reservation Manager} (\textbf{RM}) and 
+managed by the routers in the network.
 
 \subsection{Components}
 
 The RM is comprised of three components:  the 
  \emph{Authentication, Authorization, and Auditing Subsystem} (\textbf{AAAS}), 
 the  \emph{Bandwidth Scheduler Subsystem} (\textbf{BSS}), and the  \emph{Path 
-Setup Subsystem} (\textbf{PSS}). All persistent information is stored in a 
-database.  
+Setup Subsystem} (\textbf{PSS}) (Figure 1). All persistent information is 
+stored in a database.  
 The RM provides simple Web forms for creating and managing reservations, 
 setting authorization policy and other administrative tasks.
-It also supports a SOAP message interface API to support programable 
-reservation 
-management and requests from other network service providers.
+It also supports a SOAP message interface API to support programmable 
+reservation management and requests from other network service providers.
 
 The AAAS is responsible for authenticating and authorizing all external 
 requests, for logging request information, and sending notifications to
@@ -439,7 +437,7 @@ several administrative domains.  For example, imagine setting up a
 virtual circuit between Host A and Host B, where Host A is controlled by a
 remote reservation system RM A in ISP A, and Host B is part of the local
 OSCARS reservation system in ISP B (see Figure 2). The routed path from ISP B
-to ISP A transits ISP X, but the reserve path from ISP A to ISP B is via ISP Y.
+to ISP A transits ISP X, but the reverse path from ISP A to ISP B is via ISP Y.
 In order for an OSCARS' user to make an interdomain virtual circuit reservation
 request from Host A to Host B, the following must occur.
 1. On receiving the request from the user, OSCARS
@@ -583,8 +581,8 @@ author's experience with the ROAM authorization service of the
 FusionGrid [ROAM]. This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
 authorizations. As long as there are not too many resources,
-permissions or users, it provides an easily managed and understand
-access control scheme. In the case of OSCARS,  access  is controlled for 
+permissions or users, it provides an easily managed and understood
+access control scheme. In the case of OSCARS,  access is controlled for 
 the management of reservations, users and domains. The permissions that can
 be granted are view, manage (modify), maximum-bandwidth for a
 reservation, duration of a reservation and the right to specify
