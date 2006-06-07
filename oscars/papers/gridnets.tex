@@ -98,7 +98,7 @@ only authorized users to create and manage high-performance services;
 providing an easy-to-use interface for scheduling and managing network 
 resources; limiting the impact of high-performance traffic on other network
 traffic; 
-coordinating quality service end-to-end 
+coordinating quality of service end-to-end 
 across more than one autonomous network domain;
 and handling changes in network paths between the time a reservation is
 scheduled and when it is claimed.  OSCARS currently addresses all but the
@@ -172,7 +172,8 @@ the  \emph{Bandwidth Scheduler Subsystem} (\textbf{BSS}), and the  \emph{Path
 Setup Subsystem} (\textbf{PSS}) (Figure 1). All persistent information is 
 stored in a database.  
 The RM provides simple Web forms for creating and managing reservations, 
-setting authorization policy and other administrative tasks.
+setting authorization policy and other administrative tasks (the Web-based
+user interface in the figure).
 It also supports a SOAP message interface API to support programmable 
 reservation management and requests from other network service providers.
 
@@ -228,8 +229,8 @@ The procedure of a typical path setup is as follows:
 A user submits a request to the RM (using either an API or
 an optional Web front-end) to schedule an end-to-end path (e.g. between an
 experiment and computing cluster) specifying start and end times, bandwidth
-requirements, and specific source IP address and port that will be used to     
-provide application access to the path.
+requirements, the source host that will be used 
+to provide an application access to the path, and the destination host.
 
 \item
 This information is stored by the BSS in a database, and a script 
@@ -322,9 +323,12 @@ amount of bandwidth available for reservations on that link (in this case
 50\%), then the reservation fails. Only if there is enough bandwidth 
 available on all links is the reservation committed into the reservation system.
 
-In the case where the capacity of a link changes (e.g. link upgrade or failure), all outstanding reservations
-that involve the use of that link are queried from the system and recomputed.
-This is done to ensure that there is adequate bandwidth available on the link when it comes time to provision the reservation.
+In the future, in the case where the capacity of a link changes (e.g. a link 
+upgrade or failure), all outstanding reservations
+that involve the use of that link will be queried from the system and 
+recomputed.
+This will be done to ensure that there is adequate bandwidth available on the
+link when it comes time to provision the reservation.
 
 \subsection{Provisioning and Policing}
 To facilitate bandwidth guarantees, provisioning and policing are needed to 
@@ -351,7 +355,7 @@ ESnet.
 
 \section{Interdomain Reservations}
 
-Analogous to QoS guarantees, guaranteed bandwidth paths are most effective 
+Guaranteed bandwidth paths are most effective 
 when the reservation spans end-to-end.  This however, introduces the 
 complexity of extending virtual circuits beyond the scope of a 
 single administrative domain to multiple domains.  To facilitate this, 
@@ -472,7 +476,7 @@ circuit, and initiates the bandwidth reservation requests from Host A towards
 Host B (via ISP Y).  This can be especially complex when the path back (from
 Host B to A) is asymmetric and traverses AS's (e.g. ISP Y) that were not
 traversed on the forward path, causing the local OSCARS to see the path
-originating from a different AS then it originally sent the \emph{Create} request
+originating from a different AS than it originally sent the \emph{Create} request
 out to.
 
 \end{enumerate}
@@ -495,7 +499,7 @@ virtual circuit.
 
  \subsection{Interoperability Tests}
 
-In April 2006, an inter-domain guaranteed bandwidth path between Abilene and 
+In April 2006, an interdomain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
 respectively. The unidirectional 25Mb/s guaranteed bandwidth path was 
 configured between an Internet2 test host in Indianapolis, IN and an ESnet 
@@ -570,7 +574,7 @@ connections. All communication with the Web server takes place over
 encrypted https in order to protect against the stealing of passwords
 or cookies. The SOAP API distinguishes between requests coming from
 the Web server on the local host, which it assumes have been authenticated
-as just described and requests coming from the open Web server. The 
+as just described, and requests coming from the open Web server. The 
 latter requests  must be digitally signed messages \cite{eastlake} signed by the
 originator of the message. The AAAS verifies the signature and the signing 
 certificate to authenticate
@@ -598,7 +602,7 @@ assurance that  a request is coming from a trusted server in a trusted domain. N
 signed by the RM. The OSCARS RM has a list of the
 cooperating RM certificates as well as a list of
 permissions for those AS's. In effect a service level agreement gets
-implemented in the users and authorization databases. The forward
+implemented in the user and authorization tables in the database. The forward
 message includes the name of the originating user, in case other
 domains wish to use that information for authorization or auditing.
 Currently, at the time of provisioning no further authentication is
@@ -608,15 +612,16 @@ specified ingress router is able to use the higher class of bandwidth.
 
 \subsection{Authorization}
 Once a request has been authenticated as from a registered OSCARS
-users, that user's authorization is checked against an authorization
+user, that user's authorization is checked against an authorization
 table in the database. This implementation was inspired by one
 author's experience with the ROAM authorization service of the
 FusionGrid \cite{burruss}. This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
 authorizations. As long as there are not too many resources,
 permissions or users, it provides an easily managed and understood
-access control scheme. While there are many "policy languages" (e.g. S-expresions,
-SAML, XACML) that facilitate the expression of complex access policy they
+access control scheme. While there are many "policy languages" 
+(e.g. S-expressions,
+SAML, XACML) that facilitate the expression of complex access policy, they
 typically require the use of a parsing engine and interpreter to evaluate a 
 request for action. If the administrators start specifying complex policy, it
 becomes difficult to tell at a glance exactly what access is allowed. With the simple database 
@@ -633,7 +638,7 @@ routing.  The maximum number of authorized users at any one time is estimated
 to be around 50, remembering that OSCARS only needs to know
 about users at ESnet sites who have the rights to schedule
 high-bandwidth service and cooperating RM's in other
-domains. If the users grow beyond this point, the tables can be
+domains. If the number of users grows beyond this point, the tables can be
 expanded to define groups (e.g. roles or projects) of users.
 
 \subsection{Auditing}
@@ -714,7 +719,7 @@ connectivity information is meaningless to a layer 3 reservation system unless
 it is associated with an IP address).  This is the approach explored by DRAGON.
 Second, there needs to be a mechanism to redistribute multi-layer connectivity 
 information. Within the IP layer, this is done via BGP.  At lower network 
-layers, no such comparable protocols exists.
+layers, no such comparable protocols exist.
 
 % Reminder: the "draftcls" or "draftclsnofoot", not "draft", class option
 % should be used if it is desired that the figures are to be displayed while
