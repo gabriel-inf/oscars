@@ -624,13 +624,13 @@ authorizations.
 While there are many ``policy languages'' (e.g. S-expressions,
 SAML, XACML) that facilitate the expression of complex access policy, they
 typically require the use of a parsing engine and interpreter to evaluate a 
-request for action. If the administrators start specifying complex policy, it
+request for action. When even moderately complex policies are used, it
 becomes difficult to tell at a glance exactly what access is allowed. With the 
 simple database policy, it is easy to query exactly who has access to a 
 resource and what resources a particular user or AS  has. Thus an ESnet system 
 administrator who is
-not directly part of the OSCARS implementation team could check on (or modify)
-who had rights to make reservations or control routing on ``his'' network. 
+not directly part of the OSCARS implementation team can use familiar tools to check on (or modify)
+who has rights to make reservations or control routing on ``his'' network. 
 
 Within OSCARS, access is controlled for 
 the management of reservations, users and domains. The permissions that can
@@ -638,7 +638,7 @@ be granted are view, manage (modify), maximum-bandwidth for a
 reservation, duration of a reservation and the right to specify
 routing.
 
-As long as there are not too many resource, permissions, or users, this
+As long as there are not too many resources, permissions, or users, this
 method provides an easily managed and understood access control scheme.
 For practical purposes, having to scale to larger numbers is not an
 issue.  The typical user does not need special authorization to access
