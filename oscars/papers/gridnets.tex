@@ -614,8 +614,7 @@ specified ingress router is able to use the higher class of bandwidth.
 \subsection{Authorization}
 User's authorizations to operate on resources are stored as relations
 in database tables.  After a user has been authenticated, their request
-is checked to see if authorization is required, and if so, the user's
-authorizations are checked to see if they are sufficient.
+is checked by the RM to see if the user's authorizations are sufficient.
 
 This implementation is similar to the ROAM authorization service of the
 FusionGrid \cite{burruss}.  This approach allows the use of standard database
@@ -629,24 +628,22 @@ becomes difficult to tell at a glance exactly what access is allowed. With the
 simple database policy, it is easy to query exactly who has access to a 
 resource and what resources a particular user or AS  has. Thus an ESnet system 
 administrator who is
-not directly part of the OSCARS implementation team can use familiar tools to check on (or modify)
+not directly part of the OSCARS implementation team can use familiar tools to 
+check on (or modify)
 who has rights to make reservations or control routing on ``his'' network. 
 
-Within OSCARS, access is controlled for 
-the management of reservations, users and domains. The permissions that can
-be granted are view, manage (modify), maximum-bandwidth for a
-reservation, duration of a reservation and the right to specify
-routing.
+Within OSCARS, access is controlled for the creation and management of 
+reservations, users and domains. The permissions that can
+be granted are viewing or managing (modifying) a resource, creating
+reservations, and specifying routing.
 
 As long as there are not too many resources, permissions, or users, this
 method provides an easily managed and understood access control scheme.
 For practical purposes, having to scale to larger numbers is not an
-issue.  The typical user does not need special authorization to access
-default functionality, as long as they have been authenticated.  Authorization 
-checks are only required for the small subset of users at ESnet 
-sites who need to request tasks such as administrative actions, creation
-of reservations with larger than 
-normal bandwidth, or changes in routing configuration. 
+issue.  The maximum number of users who will be able to use the OSCARS
+system is small, consisting of users at ESnet sites responsible for moving
+large amounts of information.  Users from other domains will be authorized by
+their own RM.
 
 \subsection{Auditing}
 At this point, the OSCARS server logs all significant activity such as
