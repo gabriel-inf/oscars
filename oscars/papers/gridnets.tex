@@ -205,7 +205,7 @@ the AAAS used by the BSS.
 
 Web services standards are used wherever possible.  SOAP \cite{SOAP} messsages are
 used for communications between clients and the RM, and 
-the \emph{Web Services Definition Language} (\textbf{WSDL}) \cite{WSDL}is used for the service description.
+the \emph{Web Services Definition Language} (\textbf{WSDL}) \cite{WSDL} is used for the service description.
  
 The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
@@ -244,7 +244,7 @@ specified bandwidth.
 
 \item
 Each router along the route receives the path setup request 
-via \emph{Reservation Resource Protocol} (\textbf{RSVP})
+via \emph{Reservation Resource Protocol} (\textbf{RSVP}) \cite{rfc2205}
 and commits bandwidth (if available) creating an end-to-end LSP.  The RM is
 notified by RSVP if the end-to-end path cannot be established.
 
@@ -480,8 +480,8 @@ out to.
 
 To facilitate interdomain virtual circuit setup, a WSI-BP \cite{ballinger} compliant WSDL   specification for the 
 network-network interface has been specified following the model of 
-GEANT's \cite{geant-amps} Advance Multi-domain Provisioning
-System (AMPS) [AMPS]. This interface is being tested with the 
+GEANT's Advance Multi-domain Provisioning
+System (AMPS)  \cite{geant-amps} . This interface is being tested with the 
 TeraPaths \cite{bradley} project. 
 Having a WSDL specification allows reservation systems to communicate with one 
 another in a well defined 
@@ -537,8 +537,9 @@ been documented by others \cite{martelli}.
 
 
 \section{Security}
-A goal in implementation was to make security mechanisms as easy to install
-use, and administer as possible, as long as security is not compromised.
+Since OSCARS is being deployed on the ESnet production network, security was 
+an absolute requirement from the beginning. Good security needs mechanisms that are easy to understand, install, use, and administer. It is very important that there
+are no unintended consequences of authorization policy decisions.
 
 The following section details steps taken to secure the machines and 
 servers running OSCARS, and the remaining security sections cover AAA.
@@ -592,11 +593,11 @@ of an individual user, and in the subsequent domains on the basis of
 the RM in the adjacent domain.  This approach follows the AAA  Authorization
 model defined by the IETF Networking Group. \cite{rfc2904}. In this model
 users are authenticated and authorized for actions in their home domain and 
-interdomain authorization depends on SLA's between domains and the
+interdomain authorization depends on SLA's between domains (AS's) and the
 assurance that  a request is coming from a trusted server in a trusted domain. Normally all requests between domains will be a SOAP \emph{forward}  message
-signed by the RM. Each domain has a list of the
+signed by the RM. The OSCARS RM has a list of the
 cooperating RM certificates as well as a list of
-permissions for that domain. In effect a service level agreement gets
+permissions for those AS's. In effect a service level agreement gets
 implemented in the users and authorization databases. The forward
 message includes the name of the originating user, in case other
 domains wish to use that information for authorization or auditing.
@@ -614,7 +615,17 @@ FusionGrid \cite{burruss}. This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
 authorizations. As long as there are not too many resources,
 permissions or users, it provides an easily managed and understood
-access control scheme. In the case of OSCARS,  access is controlled for 
+access control scheme. While there are many "policy languages" (e.g. S-expresions,
+SAML, XACML) that facilitate the expression of complex access policy they
+typically require the use of a parsing engine and interpreter to evaluate a 
+request for action. If the administrators start specifying complex policy, it
+becomes difficult to tell at a glance exactly what access is allowed. With the simple database 
+policy, it is easy to query exactly who has access to a resource and what
+resources a particular user or AS  has. Thus an ESnet system administrator who is
+not directly part of the OSCARS implementation team could check on (or modify)
+who had rights to make reservations or control routing on "his" network. 
+
+In the case of OSCARS,  access is controlled for 
 the management of reservations, users and domains. The permissions that can
 be granted are view, manage (modify), maximum-bandwidth for a
 reservation, duration of a reservation and the right to specify
@@ -683,7 +694,7 @@ that have been published by the different projects as well as organizations
 related to this work (e.g.: Geant \cite{geant},  Univ Amsterdam \cite{ndl}, 
 Canarie UCLP \cite{canarie-interop}, IETF CCAMP \cite{ietf-ccamp}). However due to the
 heterogeneity of network implementations and deployments, generating a single
-framework to quantify all networks is not trivial.
+framework to quantify all networks is challenging.
 
 \subsection{Hybrid Data-Planes}
 With the emergence of numerous reservation systems, it is becoming evident 
@@ -805,28 +816,31 @@ for help in the incorporation of BRUW, and for work on interoperability tests.
 % (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
-
 \bibitem{ballinger}
-K. Ballinger, D. Ehnebusk, M. Gudgin, M. Nottingham, P. Yendluri, \emph{Basic Profile, Version 1.0}, WS-I Reccommendation, April, 2004, http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html (URL valid 5/06/2006)
+K. Ballinger, D. Ehnebusk, M. Gudgin, M. Nottingham, P. Yendluri, \emph{Basic Profile, Version 1.0}, WS-I Reccommendation, April, 2004, http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html 
 
 \bibitem{bell}
 E. Bell, A. Smith, P. Langille, A. Rijhsinghani, K. McLoghrie, \emph{"Definitions of Managed Objects for Bridges
 with Traffic Classes, Multicast Filtering and Virtual LAN Extensions}, IETF RFC 2674, August 1999.
 
+\bibitem{rfc2205}
+R.Branden, L. Zhang, S. Berson, S. Herzog, S.Jamin \emph{Resource ReSerVation Protocol (RSVP) -- Version 1 Functional Specification} IETF RFC , Sept. 1997
+
 \bibitem{bruw}
 Internet2 BRUW project: http://vbvod.internet2.edu/internship/bruw/index.html
 
 \bibitem{burruss}
-J.R.Burruss, T.W.Fredian, M.R.Thompson. \emph{Security on the U.S. FusionGridD}, Fusion Engineering and Design, Elesevier, to appear in 2006
+J.R.Burruss, T.W.Fredian, M.R.Thompson. \emph{Security on the U.S. FusionGridD}, Fusion Engineering and Design, Elesevier, to appear Fall 2006
 
 \bibitem{rsvp-te}
 L. Berger (ed), ÒGeneralized MPLS Signaling - RSVP-TE Extensions,Ó IETF RFC 3473, January 2003.
  
 \bibitem{bradley}
 S. Bradley, F. Burstein, L. Cottrell, B. Gibbard, D. Katramatos, Y. Li, S. McKee, R. Pope-scu, D. Stampf, D. Yu. 
+\emph{TeraPaths: A QoS-Enabled Collaborative Data Sharing Infra-structure for Peta-scale Computing Research}, Computing in High Energy and Nuclear Physics (CHEP 2006), T.I.F.R., Mumbai, India, Feb 13-17, 2006
 
 \bibitem{terapaths}
-\emph{TeraPaths: A QoS-Enabled Collaborative Data Sharing Infra-structure for Peta-scale Computing Research}, Computing in High Energy and Nuclear Physics (CHEP 2006), T.I.F.R., Mumbai, India, Feb 13-17, 2006
+http://www.atlasgrid.bnl.gov/terapaths/
 
 \bibitem{canarie}
 Canarie UCLP Project Website: http://www.canarie.ca/canet4/uclp/
@@ -839,7 +853,7 @@ K. Chan et al., ÒCOPS Usage for Policy Provisioning
 (COPS-PR),Ó IETF RFC 3084, March 2001.
 
 \bibitem{WSDL}
- E. Christensen,  F. Curbera, G. Meredith, S. Weerawarana, \emph{Web Services Description Language (WSDL) 1.1} W3C Reccommendation, March, 2001, http://www.w3.org/TR/wsdl (URL valid 5/06/2006) 
+ E. Christensen,  F. Curbera, G. Meredith, S. Weerawarana, \emph{Web Services Description Language (WSDL) 1.1} W3C Reccommendation, March, 2001, http://www.w3.org/TR/wsdl  
 
 \bibitem{demchenko}
 Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
@@ -864,7 +878,7 @@ Internet2 HOPI Project website: http://networks.internet2.edu/hopi/
 
 \bibitem{geant}
 GEANT GN2-JRA3 Project website: http://www.geant2.net/server/show/nav.756
-%http://www.geant2.net/ (URL valid 5/06/2006)
+%http://www.geant2.net/ 
 
 \bibitem{geant-amps}
 GEANT AMPS Project Website: http://www.geant2.net/server/show/nav.893
@@ -877,7 +891,7 @@ Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inde
 
 
 \bibitem{SOAP}
-N. Mitra (ed.) \emph{SOAP Version 1.2 Part 0: Primer}, W3C Recommendation 24-June-2003.  http://www.w3.org/TR/soap12-part0/ (URL valid 5/0/2006)
+N.Mitra (ed.) \emph{SOAP Version 1.2 Part 0: Primer}, W3C Recommendation 24-June-2003.  http://www.w3.org/TR/soap12-part0/ 
 
 \bibitem{ndl}
 Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
