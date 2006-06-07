@@ -56,12 +56,7 @@ Quality of Service (QoS) is used to provide bandwidth guarantees.
 This paper describes our experience in implementing OSCARS, collaborations
 with other bandwidth-reservation projects, including interdomain testing, and 
 future work to be done.
-\footnote{
-This work was supported by the Director, Office of Science. Office of
-Advanced Scientific Computing Research. Mathematical, Information, and
-Computational Sciences Division under U.S. Department of
-Energy Contract No. DE-AC02-05CH11231.
-}
+
 \end{abstract}
 
 % no keywords
@@ -117,7 +112,22 @@ A version of BRUW was used as the starting point for OSCARS, and now the two
 projects share a common code base. Interoperability testing is on-going with 
 Internet2 sites. 
 
+<<<<<<< .mine
+The closest coordination is with the Internet2 BRUW \cite{bruw} system.  A version 
+of BRUW was used as the starting point for OSCARS, and now the two projects 
+share a common code base. Interoperability testing is on-going with Internet2 
+sites. 
+
+A Web Services compliant [WSI-BP]\emph{ Web Services Definition Language}
+ \textbf({WSDL}) specification for the network-network 
+interface has been specified following the model of GEANT's
+Advance Multi-domain Provisioning System (AMPS)  \cite{geant-amps}. This interface is being 
+tested with the DOE/BNL, TeraPaths \cite{bradley} project. 
+
+OSCARS has been developed jointly with Internet2, and deployed within ESnet,
+=======
 OSCARS has been deployed within ESnet,
+>>>>>>> .r2818
 which is a nation-wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
 systems throughout the network and its operations centers.  The current ESnet 
@@ -302,7 +312,7 @@ peering connection with ESnet.
 In the event that the virtual circuit extends beyond OSCARS' administrative 
 domain,
 routing information harvested from the \emph{Border Gateway Protocol} 
-(\textbf{BGP}) [BGP] on the egress PE router is used to determine the next
+(\textbf{BGP}) on the egress PE router is used to determine the next
 \emph{Autonomous System} (\textbf{AS}) that the request should be forwarded 
 to.   The AS number is
 checked against a list of known administrative domains that have reservation 
@@ -399,9 +409,9 @@ ongoing collaborative efforts.
 
 There are several implementations of network resource management and
 service provisioning systems in existence today.  These include the DOE funded
-TeraPaths \cite{terapaths} and USN [USN] projects, the NSF funded CHEETAH \cite{veeraraghavan} and
+TeraPaths \cite{terapaths} and UltraScience Net \cite{usn} projects, the NSF funded CHEETAH \cite{veeraraghavan} and
 DRAGON \cite{yang}\cite{dragon} projects,
-Internet2's BRUW \cite{bruw} and HOPI [HOPI] projects, CANARIE's UCLP \cite{canarie} 
+Internet2's BRUW \cite{bruw} and HOPI \cite{hopi} projects, CANARIE's UCLP \cite{canarie} 
 project, and GEANT's
 BoD (GN2-JRA3) \cite{geant} and AMPS (SA3) \cite{geant-amps} activities.
 
@@ -423,11 +433,11 @@ of network.
 The University of Amsterdam's Advanced Internet Research group has
 published a number of papers
 describing both the networking and the AAA issues for such a system,
-including cite{gommans05} \cite{gommans06} \cite{demchenko} . 
+including \cite{gommans05} \cite{gommans06} \cite{demchenko} . 
 They are using the IETF AAA Framework
 \cite{rfc2904}, and use XACML \cite{XACML} to describe policy. They have also defined a
 "Network Description Language" (NDL), which is a RDF-based method to
-describe networks, to facilitate interdomain interoperability.
+describe networks, to facilitate interdomain interoperability \cite{ndl}.
 
 In the OSCARS, BRUW, TeraPaths, and AMPS projects, IP connectivity (layer
 3) is used as the data plane exchange.  This facilitates interoperability
@@ -668,7 +678,7 @@ request information in quantifiable characteristics that are common to
 collaborating networks.  This could include properties such as connectivity
 (topology), bandwidth, latency, and jitter.  There are several documents
 that have been published by the different projects as well as organizations
-related to this work [Ref JRA3, \cite{ndl} \cite{},UCLP,IETF CCAMP]. However due to the
+related to this work (e.g.: \cite{geant}, \cite{ndl}, \cite{canarie-interop}, \cite{ietf-ccamp}). However due to the
 heterogeneity of network implementations and deployments, generating a single
 framework to quantify all networks is not trivial.
 
@@ -678,7 +688,7 @@ that there is a need to bridge these systems which provision virtual circuits
 at different network layers.
 For example, OSCARS and BRUW provision MPLS LSP's over an IP (layer 3) shared 
 network, whereas DRAGON and CHEETAH use
-GMPLS [GMPLS] to set up lightpaths over a lambda switched (layer 1) network.
+GMPLS to set up lightpaths over a lambda switched (layer 1) network.
 The challenge here is to bridge the two systems such
 that an end-to-end connection appears to be seamless to the end-user.
 
@@ -763,7 +773,7 @@ layers, no such comparable protocols exists.
 This work was supported by the Director, Office of Science. Office of
 Advanced Scientific Computing Research. Mathematical, Information, and
 Computational Sciences Division under U.S. Department of
-Energy Contract No. DE-AC02-05CH11231.
+Energy Contract No. DE-AC02-05CH11231. This is LBNL report number LBNL-NNNNN.
 
 The authors would like to thank Bob Riddle and Andrew Lake of Internet2, both
 for help in the incorporation of BRUW, and for work on interoperability tests.
@@ -814,6 +824,9 @@ S. Bradley, F. Burstein, L. Cottrell, B. Gibbard, D. Katramatos, Y. Li, S. McKee
 \bibitem{canarie}
 Canarie UCLP Project Website: http://www.canarie.ca/canet4/uclp/
 
+\bibitem{canarie-interop}
+Canarie Interoperability Work: http://grid2.canarie.ca/wiki/index.php/
+
 \bibitem{cops-pr}
 K. Chan et al., ÒCOPS Usage for Policy Provisioning 
 (COPS-PR),Ó IETF RFC 3084, March 2001.
@@ -836,8 +849,11 @@ D. Eastlake, J. Reagle, D. Solo. \emph{XML-Signature Syntax and Processing. W3C 
 \bibitem{esnet-pc}
 ESnet Performance Center: https://performance.es.net/
 
+\bibitem{hopi}
+Internet2 HOPI Project website: http://networks.internet2.edu/hopi/
+
 \bibitem{geant}
-GEANT GN2-JRA3 Project Website: http://www.geant2.net/server/show/nav.756
+GEANT GN2-JRA3 Project website: http://www.geant2.net/server/show/nav.756
 
 \bibitem{geant-amps}
 GEANT AMPS Project Website: http://www.geant2.net/server/show/nav.893
@@ -848,11 +864,15 @@ Leon Gommans, Cees de Laat, Robert Meijer, \emph{Token Based path authorization 
 \bibitem{gommans06}
 Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inder Monga, Arie Taal, Franco Travostino, Alfred Wan, \emph{Applications Drive Secure Lightpath Creation across Heterogeneous Domains}, IEEE Communications Magazine, Feature topic Optical Control Planes for Grid Networks: Opportunities, Challenges and the Vision, vol. 44, no. 3, March 2006
 
-\bibitem{ndt}
+\bibitem{ndl}
 Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
 
 \bibitem{iperf}
 iperf: http://dast.nlanr.net/Projects/Iperf/
+
+\bibitem{ietf-ccamp}
+IETF CCAMP Working Group: http://www.ietf.org/html.charters/ccamp-charter.html
+
 
 \bibitem{ospf-te}
 D. Katz, D. Yeung and K. Kompella, \emph{Traffic engineering extensions to OSPF version 3}, IETF 
@@ -870,6 +890,9 @@ Internet Draft, Work in Progress, draft-ietf-ccamp-gmpls-overlay-05.txt, October
 
 \bibitem{terapaths}
 Terapaths Project Website,  http://www.atlasgrid.bnl.gov/terapaths/
+
+\bibitem{usn}
+DOE UltraScience Network Project Website: http://www.csm.ornl.gov/ultranet/
 
 \bibitem{veeraraghavan}
 M. Veeraraghavan, X. Zheng, H. Lee, M. Gardner, and W. Feng,
