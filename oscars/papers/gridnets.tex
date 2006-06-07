@@ -112,12 +112,6 @@ A version of BRUW was used as the starting point for OSCARS, and now the two
 projects share a common code base. Interoperability testing is on-going with 
 Internet2 sites. 
 
-A Web Services compliant [WSI-BP]\emph{ Web Services Definition Language}
- \textbf({WSDL}) specification for the network-network 
-interface has been specified following the model of GEANT's
-Advance Multi-domain Provisioning System (AMPS)  \cite{geant-amps}. This interface is being 
-tested with the DOE/BNL, TeraPaths \cite{bradley} project. 
-
 OSCARS has been deployed within ESnet,
 which is a nation-wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
@@ -144,7 +138,8 @@ path setup and reservation handling. Section IV outlines some issues with cross-
 interoperability, and covers other reservation systems and 
 collaborative efforts, as well as 
 an example of an interoperability test between OSCARS and BRUW.
-Section V covers security, including system, interdomain, and AAA issues.
+Section V covers security, including system, interdomain, and authentication,
+authorization and auditing issues.
 The final section touches briefly on the future work that needs to be performed
 to handle a dynamically changing network (which may invalidate existing
 reservations), and to set up end-to-end circuits between domains
@@ -155,8 +150,8 @@ in a secure, standards-based fashion.
 The intent of OSCARS is to create a service for dynamic QoS path establishment
 that is simple for users to use, and easy to administer.  The only task 
 required of a user is to make a bandwidth reservation.  Reservation can be made 
-in advance for either one-time use or persistent use, e.g. for the same time 
-everyday, or for immediate use. The user does not have 
+either for immediate use or in advance for either one-time use or persistent use, 
+e.g. for the same time everyday. The user does not have 
 to configure an alternate routing path, nor mark the packets in any way.  All 
 necessary mechanisms needed to provide the user with a guaranteed bandwidth 
 path are coordinated by a  \emph{Reservation Manager} (\textbf{RM}) and 
@@ -208,9 +203,10 @@ the AAAS used by the BSS.
 
 \subsection{Implementation}
 
-Web services standards are used wherever possible.  SOAP [SOAP] messsages are
+Web services standards are used wherever possible.  SOAP \cite{SOAP} messsages are
 used for communications between clients and the RM, and 
-the Web Services Definition Language [WSDL] is used for the service description. 
+the \emph{Web Services Definition Language} (\textbf{WSDL}) \cite{WSDL}is used for the service description.
+ 
 The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
 Perl packages that implement the AAAS, BSS, and PSS.  The Web server is
@@ -230,7 +226,7 @@ The procedure of a typical path setup is as follows:
 \begin{enumerate}
 \item
 A user submits a request to the RM (using either an API or
-an optional web front-end) to schedule an end-to-end path (e.g. between an
+an optional Web front-end) to schedule an end-to-end path (e.g. between an
 experiment and computing cluster) specifying start and end times, bandwidth
 requirements, and specific source IP address and port that will be used to     
 provide application access to the path.
@@ -308,7 +304,7 @@ routing information harvested from the \emph{Border Gateway Protocol}
 to.   The AS number is
 checked against a list of known administrative domains that have reservation 
 systems
-that are compatible with OSCARS.  If a match is found, the request is 
+that are co-operating with OSCARS.  If a match is found, the request is 
 forwarded to the downstream AS.
 
 \subsection{Advanced Reservations }
@@ -417,7 +413,7 @@ protocol for support of policy provisioning (COPS-PR) \cite{cops-pr}.
 
 Canarie, Canada's advanced Internet development organization, has been
 working on a project called User Controlled LightPath (UCLP).  UCLP
-allows end-users to create their own independent IP network as a subset
+allows end-users to create their own static independent IP network as a subset
 of a larger optical network and to have total control over their share
 of network.
 
@@ -475,17 +471,22 @@ traversed on the forward path, causing the local OSCARS to see the path
 originating from a different AS then it originally sent the "Create" request
 out to.
 
-To facilitate interdomain virtual circuit setup, a WSDL specification for the 
+To facilitate interdomain virtual circuit setup, a WSI-BP \cite{ballinger} compliant WSDL   specification for the 
 network-network interface has been specified following the model of 
 GEANT's \cite{geant-amps} Advance Multi-domain Provisioning
 System (AMPS) [AMPS]. This interface is being tested with the 
 TeraPaths \cite{bradley} project. 
 Having a WSDL specification allows reservation systems to communicate with one 
-another in a well defined manner. It is then up to the individual reservation 
-system to transform the various messages to internal calls to reserve and 
-provision the virtual circuit.
+another in a well defined 
+syntax. While the OSCARS interface is similar to the one specified by AMPS, these
+are both quite different from the TeraPaths interdomain WSDL.
+One of the next challenges in
+automating trans-domain circuit setup is to define a standard request for interdomain
+reservations. It would then be up to the individual reservation system to 
+transform the standardized messages to internal calls to reserve and provision the 
+virtual circuit.
 
-\subsection{Interoperability Tests}
+ \subsection{Interoperability Tests}
 
 On April 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
@@ -545,7 +546,7 @@ of the internal server.
 The internal Web server only accepts https connections from the open machine.
 The RM SOAP server only accepts requests from the Web server on the internal 
 machine
-or digitally signed SOAP messages forwarded from the open Web server.
+or digitally signed SOAP messages encapsulated in https messages forwarded from the open Web server.
 Database server processes run as an unprivileged user without a login 
 shell.  The database server only accepts requests from the SOAP server.
 
@@ -581,8 +582,11 @@ information about the user.
 Requests for or about interdomain
 reservations are authenticated in the originating domain on the basis
 of an individual user, and in the subsequent domains on the basis of
-the RM in the adjacent domain. Normally all requests
-between domains will be a SOAP "forward"  message
+the RM in the adjacent domain.  This approach follows the AAA  Authorization
+model defined by the IETF Networking Group. \cite{rfc2904}. In this model
+users are authenticated and authorized for actions in their home domain and 
+interdomain authorization depends on SLA's between domains and the
+assurance that  a request is coming from a trusted server in a trusted domain. Normally all requests between domains will be a SOAP "forward"  message
 signed by the RM. Each domain has a list of the
 cooperating RM certificates as well as a list of
 permissions for that domain. In effect a service level agreement gets
@@ -793,8 +797,11 @@ for help in the incorporation of BRUW, and for work on interoperability tests.
 % (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
+\bibitem{AMPS}
+http://www.geant2.net/server/show/conWebDoc.998 (URL valid Jun 5, 2006)
+
 \bibitem{ballinger}
-K. Ballinger, D. Ehnebusk, M. Gudgin, M. Nottingham, P. Yendluri, \emph{Basic Profile, Version 1.0}, WS-I Reccommendation, April, 2004, http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html
+K. Ballinger, D. Ehnebusk, M. Gudgin, M. Nottingham, P. Yendluri, \emph{Basic Profile, Version 1.0}, WS-I Reccommendation, April, 2004, http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html (URL valid 5/06/2006)
 
 \bibitem{bell}
 E.Bell, A.Smith, P.Langille, A.Rijhsinghani, K.McLoghrie,D\emph{"Definitions of Managed Objects for Bridges
@@ -802,14 +809,17 @@ with Traffic Classes, Multicast Filtering and Virtual LAN Extensions}, IETF RFC 
 
 \bibitem{bruw}
 Internet2 BRUW project: http://vbvod.internet2.edu/internship/bruw/index.html
+
 \bibitem{burruss}
 J.R.Burruss, T.W.Fredian, M.R.Thompson. \emph{Security on the U.S. FusionGridD}, Fusion Engineering and Design, Elesevier, to appear in 2006
 
 \bibitem{rsvp-te}
 L. Berger (ed), ÒGeneralized MPLS Signaling - RSVP-TE Extensions,Ó IETF RFC 3473, January 2003.
-
+ 
 \bibitem{bradley}
 S. Bradley, F. Burstein, L. Cottrell, B. Gibbard, D. Katramatos, Y. Li, S. McKee, R. Pope-scu, D. Stampf, D. Yu. 
+
+\bibitem{terapaths}
 \emph{TeraPaths: A QoS-Enabled Collaborative Data Sharing Infra-structure for Peta-scale Computing Research}, Computing in High Energy and Nuclear Physics (CHEP 2006), T.I.F.R., Mumbai, India, Feb 13-17, 2006
 
 \bibitem{canarie}
@@ -821,6 +831,9 @@ Canarie Interoperability Work: http://grid2.canarie.ca/wiki/index.php/
 \bibitem{cops-pr}
 K. Chan et al., ÒCOPS Usage for Policy Provisioning 
 (COPS-PR),Ó IETF RFC 3084, March 2001.
+
+  \bibitem{WSDL}
+ E. Christensen,  F. Curbera, G. Meredith, S. Weerawarana, \emph{Web Services Description Language (WSDL) 1.1} W3C Reccommendation, March, 2001, http://www.w3.org/TR/wsdl (URL valid 5/06/2006) 
 
 \bibitem{demchenko}
 Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
@@ -845,6 +858,7 @@ Internet2 HOPI Project website: http://networks.internet2.edu/hopi/
 
 \bibitem{geant}
 GEANT GN2-JRA3 Project website: http://www.geant2.net/server/show/nav.756
+%http://www.geant2.net/ (URL valid 5/06/2006)
 
 \bibitem{geant-amps}
 GEANT AMPS Project Website: http://www.geant2.net/server/show/nav.893
@@ -854,6 +868,10 @@ Leon Gommans, Cees de Laat, Robert Meijer, \emph{Token Based path authorization 
 
 \bibitem{gommans06}
 Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inder Monga, Arie Taal, Franco Travostino, Alfred Wan, \emph{Applications Drive Secure Lightpath Creation across Heterogeneous Domains}, IEEE Communications Magazine, Feature topic Optical Control Planes for Grid Networks: Opportunities, Challenges and the Vision, vol. 44, no. 3, March 2006
+
+
+\bibitem{SOAP}
+N.Mitra (ed.) \emph{SOAP Version 1.2 Part 0: Primer}, W3C Recommendation 24-June-2003.  http://www.w3.org/TR/soap12-part0/ (URL valid 5/0/2006)
 
 \bibitem{ndl}
 Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
@@ -871,16 +889,15 @@ Internet Draft, Work in Progress, draft-ietf-ospf-
 ospfv3-traffic-05.txt, March 2005. 
 IETF RFC 2543, March 1999. 
 
-\bibitem{XACML} T.  Moses (ed), \emph{eXtensible Access Control Markup Language 2 
-(XACML) Version 2.0 3 }
+\bibitem{XACML} 
+T.  Moses (ed), \emph{eXtensible Access Control Markup Language 2 
+(XACML) Version 2.0 3}, Feb. 2005
+% http://docs.www.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf
 
 \bibitem{shallow}
 G. Swallow, et al., \emph{Generalize Multiprotocol Label Switching(GMPLS) User-Network Interface (UNI):
 Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Support for the Overlay Model}, IETF
 Internet Draft, Work in Progress, draft-ietf-ccamp-gmpls-overlay-05.txt, October 2004.
-
-\bibitem{terapaths}
-Terapaths Project Website,  http://www.atlasgrid.bnl.gov/terapaths/
 
 \bibitem{usn}
 DOE UltraScience Network Project Website: http://www.csm.ornl.gov/ultranet/
@@ -893,7 +910,6 @@ Opticomm, Dallas, Texas, October 2003.
 \bibitem{rfc2904}
 J. Vollbrecht, P. Calhoun, S. Farrell, L. Gommans, G. Gross,B. de Bruijn, C. de Laat, M. Holdrege,
 D. Spence, \emph{AAA Authorization Framework}, IETF RFC , Aug. 2000, http://www.ietf.org/rfc/rfc2904.txt
-
 
 \bibitem{yang}
 Xi Yang, Tom Lehman, Chris Tracy, Jerry Sobieski, Shujia Gong, Payam Torab, Bijan Jabbari, \emph{Policy-
