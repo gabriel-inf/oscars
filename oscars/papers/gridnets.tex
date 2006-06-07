@@ -109,22 +109,15 @@ and handling changes in network paths between the time a reservation is
 scheduled and when it is claimed.  OSCARS currently addresses all but the
 last item, where work is still in progress.
 
-Due to the highly distributed nature of large scale science which depends
-on world wide collaborations, the service framework for OSCARS is being
+Due to the highly distributed nature of large scale science,
+the service framework for OSCARS is being
 developed in coordination with other community network provisioning efforts. 
+The closest coordination is with the Internet2 BRUW \cite{bruw} system. 
+A version of BRUW was used as the starting point for OSCARS, and now the two 
+projects share a common code base. Interoperability testing is on-going with 
+Internet2 sites. 
 
-The closest coordination is with the Internet2 BRUW \cite{bruw} system.  A version 
-of BRUW was used as the starting point for OSCARS, and now the two projects 
-share a common code base. Interoperability testing is on-going with Internet2 
-sites. 
-
-A Web Services compliant [WSI-BP]\emph{ Web Services Definition Language}
- \textbf({WSDL}) specification for the network-network 
-interface has been specified following the model of GEANT's \cite{geant-amps}
-Advance Multi-domain Provisioning System (AMPS) [AMPS]. This interface is being 
-tested with the DOE/BNL, TeraPaths \cite{bradley} project. 
-
-OSCARS has been developed jointly with Internet2, and deployed within ESnet,
+OSCARS has been deployed within ESnet,
 which is a nation-wide network that serves approximately 42 directly connected 
 sites around the country.  Internally, ESnet manages about 270 routers and 
 systems throughout the network and its operations centers.  The current ESnet 
@@ -214,11 +207,9 @@ the AAAS used by the BSS.
 
 \subsection{Implementation}
 
-Web services standards are used wherever possible, including SOAP [SOAP]
-for communicating between a client and the RM, and 
-WSDL [WSDL] for the service
-description. 
- 
+Web services standards are used wherever possible.  SOAP [SOAP] messsages are
+used for communications between clients and the RM, and 
+the Web Services Definition Language [WSDL] is used for the service description. 
 The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
 Perl packages that implement the AAAS, BSS, and PSS.  The Web server is
@@ -483,12 +474,15 @@ traversed on the forward path, causing the local OSCARS to see the path
 originating from a different AS then it originally sent the "Create" request
 out to.
 
-To facilitate interdomain virtual circuit setup, a WSDL was created to describe
-the various messages that could be passed between reservation systems. This
-allows reservation systems to communicate with one another in a well defined
-and general format. It is then up to the individual reservation system to 
-transform the various messages to internal calls to reserve and provision the 
-virtual circuit.
+To facilitate interdomain virtual circuit setup, a WSDL specification for the 
+network-network interface has been specified following the model of 
+GEANT's \cite{geant-amps} Advance Multi-domain Provisioning
+System (AMPS) [AMPS]. This interface is being tested with the 
+TeraPaths \cite{bradley} project. 
+Having a WSDL specification allows reservation systems to communicate with one 
+another in a well defined manner. It is then up to the individual reservation 
+system to transform the various messages to internal calls to reserve and 
+provision the virtual circuit.
 
 \subsection{Interoperability Tests}
 
