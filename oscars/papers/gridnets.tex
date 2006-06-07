@@ -619,7 +619,7 @@ FusionGrid \cite{burruss}. This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
 authorizations. As long as there are not too many resources,
 permissions or users, it provides an easily managed and understood
-access control scheme. While there are many "policy languages" 
+access control scheme. While there are many ``policy languages'' 
 (e.g. S-expressions,
 SAML, XACML) that facilitate the expression of complex access policy, they
 typically require the use of a parsing engine and interpreter to evaluate a 
@@ -628,7 +628,7 @@ becomes difficult to tell at a glance exactly what access is allowed. With the s
 policy, it is easy to query exactly who has access to a resource and what
 resources a particular user or AS  has. Thus an ESnet system administrator who is
 not directly part of the OSCARS implementation team could check on (or modify)
-who had rights to make reservations or control routing on "his" network. 
+who had rights to make reservations or control routing on ``his'' network. 
 
 In the case of OSCARS,  access is controlled for 
 the management of reservations, users and domains. The permissions that can
@@ -674,8 +674,8 @@ reservations committed on the affected links must be recalculated. This can be
 further complicated if the outage period is unknown.  The converse is also true.
 If a new link were to be added or upgraded, increasing the bandwidth allocation
 for future reservations creates an inconsistent view with the current state of
-the network.  To deal with this, OSCARS
-has a polling mechanism that constantly
+the network.  To deal with this in OSCAS,
+a polling mechanism is being developed that constantly
 compares the current state of the network to the state that is reflected in the
 OSCARS topology database. If there are differences that affect the
 characteristics of a link, the new topology is pushed into the OSCARS database
