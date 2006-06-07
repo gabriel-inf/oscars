@@ -86,11 +86,11 @@ applications just as computing is.
 The goal of OSCARS is to manage and schedule high-impact network services
 associated with these collaborations.  These services, which move 
 multi-terabyte to multi-petabyte datasets from experiments and simulations,
-and which include high-end remote visualizations, cannot be provided 
+and may include high-end remote visualizations, cannot be provided 
 cost-effectively by best-effort service on a production network.  In this context, services must 
 be \emph{deterministic}, implying a defined and guaranteed service level.
-At a minimum, bandwidth must be guaranteed, and possibly the ability to 
-specify loss rates, latency, jitter, and other parameters in the future.
+At a minimum, bandwidth must be guaranteed. Other possible future service guarantees
+include loss rates, latency, and jitter.
 
 There are significant challenges to allowing users to schedule high-performance 
 network service on a production network. Some of these challenges are: allowing 
@@ -107,7 +107,7 @@ last item, where work is still in progress.
 Due to the highly distributed nature of large scale science,
 the service framework for OSCARS is being
 developed in coordination with other community network provisioning efforts. 
-The closest coordination is with the Internet2 BRUW \cite{bruw} system. 
+The closest coordination is with the Internet2 BRUW \cite{bruw}\cite{riddle} system. 
 A version of BRUW was used as the starting point for OSCARS, and now the two 
 projects share a common code base. Interoperability testing is on-going with 
 Internet2 sites. 
@@ -336,7 +336,7 @@ Class-of-Service distinct from all other traffic and isolated into a separate
 queue by 
 itself.  The size of this queue is configured to match the RSVP bandwidth 
 limits on each interface, e.g. if the RSVP bandwidth limit on an interface is 
-50\%, the "OSCARS" queue is also set at 50\%.  This ensures that the RSVP 
+50\%, the OSCARS queue is also set at 50\%.  This ensures that the RSVP 
 provisioned bandwidth will translate to available network bandwidth within 
 the network core.
 
@@ -423,7 +423,7 @@ describing both the networking and the AAA issues for such a system,
 including \cite{gommans05} \cite{gommans06} \cite{demchenko} . 
 They are using the IETF AAA Framework
 \cite{rfc2904}, and use XACML \cite{XACML} to describe policy. They have also defined a
-"Network Description Language" (NDL), which is a RDF-based method to
+\emph{Network Description Language} (NDL), which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability \cite{ndl}.
 
 In the OSCARS, BRUW, TeraPaths, and AMPS projects, IP connectivity (layer
@@ -457,19 +457,26 @@ OSCARS reservation system in ISP B (see Figure 2). The routed path from ISP B
 to ISP A transits ISP X, but the reverse path from ISP A to ISP B is via ISP Y.
 In order for an OSCARS' user to make an interdomain virtual circuit reservation
 request from Host A to Host B, the following must occur.
-1. On receiving the request from the user, OSCARS
+\begin{enumerate}
+\item 
+On receiving the request from the user, OSCARS
 computes the virtual circuit path and determines the downstream AS (ISP X).
-2. A "Forward Create" message is sent across the network (ISP X) towards Host
+\item
+A \emph{Forward Create} message is sent across the network (ISP X) towards Host
 A, crossing all intervening reservations systems (RM X), until it reaches the
 last reservation system (RM A) that has administrative control over the network
 (ISP A) that Host A is attached to.
-3. The remote reservation system (RM A) then computes the path of the virtual
+\item
+The remote reservation system (RM A) then computes the path of the virtual
 circuit, and initiates the bandwidth reservation requests from Host A towards
 Host B (via ISP Y).  This can be especially complex when the path back (from
 Host B to A) is asymmetric and traverses AS's (e.g. ISP Y) that were not
 traversed on the forward path, causing the local OSCARS to see the path
-originating from a different AS then it originally sent the "Create" request
+originating from a different AS then it originally sent the \emph{Create} request
 out to.
+
+\end{enumerate}
+
 
 To facilitate interdomain virtual circuit setup, a WSI-BP \cite{ballinger} compliant WSDL   specification for the 
 network-network interface has been specified following the model of 
@@ -488,13 +495,13 @@ virtual circuit.
 
  \subsection{Interoperability Tests}
 
-On April 6, 2006, an inter-domain guaranteed bandwidth path between Abilene and 
+In April 2006, an inter-domain guaranteed bandwidth path between Abilene and 
 ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems 
 respectively. The unidirectional 25Mb/s guaranteed bandwidth path was 
 configured between an Internet2 test host in Indianapolis, IN and an ESnet 
 Performance Center \cite{esnet-pc} host in Sunnyvale, CA.  The path consisted of two 
 unidirectional MPLS Label Switched Paths (LSP's), one in Abilene, and the 
-other in ESnet, "stitched" together at the Abilene-ESnet peering point in 
+other in ESnet, \emph{stitched} together at the Abilene-ESnet peering point in 
 Chicago, IL.
 
 % example table
@@ -526,7 +533,7 @@ that the
 discrepancy between the policing bandwidth and the achieved bandwidth was 
 likely the result of two things, first, the lack of traffic shaping at the 
 source end, and second, Juniper's policing function.  Similar results have 
-been documented by others [REF].
+been documented by others \cite{martelli}.
 
 
 \section{Security}
@@ -586,7 +593,7 @@ the RM in the adjacent domain.  This approach follows the AAA  Authorization
 model defined by the IETF Networking Group. \cite{rfc2904}. In this model
 users are authenticated and authorized for actions in their home domain and 
 interdomain authorization depends on SLA's between domains and the
-assurance that  a request is coming from a trusted server in a trusted domain. Normally all requests between domains will be a SOAP "forward"  message
+assurance that  a request is coming from a trusted server in a trusted domain. Normally all requests between domains will be a SOAP \emph{forward}  message
 signed by the RM. Each domain has a list of the
 cooperating RM certificates as well as a list of
 permissions for that domain. In effect a service level agreement gets
@@ -621,7 +628,7 @@ expanded to define groups (e.g. roles or projects) of users.
 \subsection{Auditing}
 At this point, the OSCARS server logs all significant activity such as
 creating or canceling reservations. In addition a list of all
-reservations is kept and can be read with the "list reservations"
+reservations is kept and can be read with the \emph{list reservations}
 operation. As was mentioned above, in interdomain requests, the name
 of the originating user is passed to the next domain where it can be
 used for either authorization or auditing.
@@ -662,7 +669,7 @@ in the database along with the reservation. Then all the reservations are
 recomputed in the order they were placed into the OSCARS system, to ensure that
 the requested resources are still available.  In the event that the necessary
 resources are unavailable for a reservation that has been entered into OSCARS,
-the reservation's state will be changed to "unavailable" and a notice will be
+the reservation's state will be changed to \emph{unavailable} and a notice will be
 sent to the administrators informing them of the problem.
 
 \subsection{Network-Network Interface}
@@ -673,7 +680,8 @@ request information in quantifiable characteristics that are common to
 collaborating networks.  This could include properties such as connectivity
 (topology), bandwidth, latency, and jitter.  There are several documents
 that have been published by the different projects as well as organizations
-related to this work (e.g.: \cite{geant}, \cite{ndl}, \cite{canarie-interop}, \cite{ietf-ccamp}). However due to the
+related to this work (e.g.: Geant \cite{geant},  Univ Amsterdam \cite{ndl}, 
+Canarie UCLP \cite{canarie-interop}, IETF CCAMP \cite{ietf-ccamp}). However due to the
 heterogeneity of network implementations and deployments, generating a single
 framework to quantify all networks is not trivial.
 
@@ -797,14 +805,12 @@ for help in the incorporation of BRUW, and for work on interoperability tests.
 % (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
-\bibitem{AMPS}
-http://www.geant2.net/server/show/conWebDoc.998 (URL valid Jun 5, 2006)
 
 \bibitem{ballinger}
 K. Ballinger, D. Ehnebusk, M. Gudgin, M. Nottingham, P. Yendluri, \emph{Basic Profile, Version 1.0}, WS-I Reccommendation, April, 2004, http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html (URL valid 5/06/2006)
 
 \bibitem{bell}
-E.Bell, A.Smith, P.Langille, A.Rijhsinghani, K.McLoghrie,D\emph{"Definitions of Managed Objects for Bridges
+E. Bell, A. Smith, P. Langille, A. Rijhsinghani, K. McLoghrie, \emph{"Definitions of Managed Objects for Bridges
 with Traffic Classes, Multicast Filtering and Virtual LAN Extensions}, IETF RFC 2674, August 1999.
 
 \bibitem{bruw}
@@ -832,7 +838,7 @@ Canarie Interoperability Work: http://grid2.canarie.ca/wiki/index.php/
 K. Chan et al., “COPS Usage for Policy Provisioning 
 (COPS-PR),” IETF RFC 3084, March 2001.
 
-  \bibitem{WSDL}
+\bibitem{WSDL}
  E. Christensen,  F. Curbera, G. Meredith, S. Weerawarana, \emph{Web Services Description Language (WSDL) 1.1} W3C Reccommendation, March, 2001, http://www.w3.org/TR/wsdl (URL valid 5/06/2006) 
 
 \bibitem{demchenko}
@@ -871,7 +877,7 @@ Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inde
 
 
 \bibitem{SOAP}
-N.Mitra (ed.) \emph{SOAP Version 1.2 Part 0: Primer}, W3C Recommendation 24-June-2003.  http://www.w3.org/TR/soap12-part0/ (URL valid 5/0/2006)
+N. Mitra (ed.) \emph{SOAP Version 1.2 Part 0: Primer}, W3C Recommendation 24-June-2003.  http://www.w3.org/TR/soap12-part0/ (URL valid 5/0/2006)
 
 \bibitem{ndl}
 Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
@@ -882,20 +888,29 @@ iperf: http://dast.nlanr.net/Projects/Iperf/
 \bibitem{ietf-ccamp}
 IETF CCAMP Working Group: http://www.ietf.org/html.charters/ccamp-charter.html
 
-
 \bibitem{ospf-te}
 D. Katz, D. Yeung and K. Kompella, \emph{Traffic engineering extensions to OSPF version 3}, IETF 
 Internet Draft, Work in Progress, draft-ietf-ospf- 
 ospfv3-traffic-05.txt, March 2005. 
 IETF RFC 2543, March 1999. 
 
+\bibitem{martelli}
+Edoardo Martelli, \emph{Protect production traffic against aggressive streams using Juniper routers},
+http://emartell.home.cern.ch/emartell/done/datatag/ 
+% full URL breaks latex, no clue why
+% juniper_rate_limit/ traffic_protection_with_juniper.html
+
 \bibitem{XACML} 
 T.  Moses (ed), \emph{eXtensible Access Control Markup Language 2 
 (XACML) Version 2.0 3}, Feb. 2005
 % http://docs.www.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf
 
+\bibitem{riddle} 
+B. Riddle,  “BRUW: A Bandwidth Reservation System to Support End-user Work”, Terena 
+Networking Conference 2005.  
+
 \bibitem{shallow}
-G. Swallow, et al., \emph{Generalize Multiprotocol Label Switching(GMPLS) User-Network Interface (UNI):
+G. Swallow, et al., \emph{Generalized Multiprotocol Label Switching(GMPLS) User-Network Interface (UNI):
 Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Support for the Overlay Model}, IETF
 Internet Draft, Work in Progress, draft-ietf-ccamp-gmpls-overlay-05.txt, October 2004.
 
