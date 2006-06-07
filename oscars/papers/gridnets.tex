@@ -54,7 +54,7 @@ are used to create the virtual circuits or Label Switched Paths (LSP's).
 Quality of Service (QoS) is used to provide bandwidth guarantees.
 
 This paper describes our experience in implementing OSCARS, collaborations
-with other bandwidth-reservation projects, including interdomain testing, and 
+with other bandwidth-reservation projects (including interdomain testing) and 
 future work to be done.
 
 \end{abstract}
@@ -93,7 +93,7 @@ At a minimum, bandwidth must be guaranteed. Other possible future service guaran
 include loss rates, latency, and jitter.
 
 There are significant challenges to allowing users to schedule high-performance 
-network service on a production network. Some of these challenges are: allowing 
+network services on a production network. Some of these challenges are: allowing 
 only authorized users to create and manage high-performance services;
 providing an easy-to-use interface for scheduling and managing network 
 resources; limiting the impact of high-performance traffic on other network
@@ -482,8 +482,9 @@ out to.
 \end{enumerate}
 
 
-To facilitate interdomain virtual circuit setup, a WSI-BP \cite{ballinger} compliant WSDL   specification for the 
-network-network interface has been specified following the model of 
+To facilitate interdomain virtual circuit setup, a WSI-BP \cite{ballinger}
+compliant WSDL specification for the 
+network-network interface has been written following the model of 
 GEANT's Advance Multi-domain Provisioning
 System (AMPS)  \cite{geant-amps} . This interface is being tested with the 
 TeraPaths \cite{bradley} project. 
@@ -611,35 +612,41 @@ the provisioning has been completed, any traffic coming from the
 specified ingress router is able to use the higher class of bandwidth.
 
 \subsection{Authorization}
-Once a request has been authenticated as from a registered OSCARS
-user, that user's authorization is checked against an authorization
-table in the database. This implementation was inspired by one
-author's experience with the ROAM authorization service of the
-FusionGrid \cite{burruss}. This approach allows the use of standard database
+User's authorizations to operate on resources are stored as relations
+in database tables.  After a user has been authenticated, their request
+is checked to see if authorization is required, and if so, the user's
+authorizations are checked to see if they are sufficient.
+
+This implementation is similar to the ROAM authorization service of the
+FusionGrid \cite{burruss}.  This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
-authorizations. As long as there are not too many resources,
-permissions or users, it provides an easily managed and understood
-access control scheme. While there are many ``policy languages'' 
-(e.g. S-expressions,
+authorizations.
+While there are many ``policy languages'' (e.g. S-expressions,
 SAML, XACML) that facilitate the expression of complex access policy, they
 typically require the use of a parsing engine and interpreter to evaluate a 
 request for action. If the administrators start specifying complex policy, it
-becomes difficult to tell at a glance exactly what access is allowed. With the simple database 
-policy, it is easy to query exactly who has access to a resource and what
-resources a particular user or AS  has. Thus an ESnet system administrator who is
+becomes difficult to tell at a glance exactly what access is allowed. With the 
+simple database policy, it is easy to query exactly who has access to a 
+resource and what resources a particular user or AS  has. Thus an ESnet system 
+administrator who is
 not directly part of the OSCARS implementation team could check on (or modify)
 who had rights to make reservations or control routing on ``his'' network. 
 
-In the case of OSCARS,  access is controlled for 
+Within OSCARS, access is controlled for 
 the management of reservations, users and domains. The permissions that can
 be granted are view, manage (modify), maximum-bandwidth for a
 reservation, duration of a reservation and the right to specify
-routing.  The maximum number of authorized users at any one time is estimated 
-to be around 50, remembering that OSCARS only needs to know
-about users at ESnet sites who have the rights to schedule
-high-bandwidth service and cooperating RM's in other
-domains. If the number of users grows beyond this point, the tables can be
-expanded to define groups (e.g. roles or projects) of users.
+routing.
+
+As long as there are not too many resource, permissions, or users, this
+method provides an easily managed and understood access control scheme.
+For practical purposes, having to scale to larger numbers is not an
+issue.  The typical user does not need special authorization to access
+default functionality, as long as they have been authenticated.  Authorization 
+checks are only required for the small subset of users at ESnet 
+sites who need to request tasks such as administrative actions, creation
+of reservations with larger than 
+normal bandwidth, or changes in routing configuration. 
 
 \subsection{Auditing}
 At this point, the OSCARS server logs all significant activity such as
@@ -674,7 +681,7 @@ reservations committed on the affected links must be recalculated. This can be
 further complicated if the outage period is unknown.  The converse is also true.
 If a new link were to be added or upgraded, increasing the bandwidth allocation
 for future reservations creates an inconsistent view with the current state of
-the network.  To deal with this in OSCAS,
+the network.  To deal with this in OSCARS,
 a polling mechanism is being developed that constantly
 compares the current state of the network to the state that is reflected in the
 OSCARS topology database. If there are differences that affect the
