@@ -53,7 +53,7 @@
         <origTimeZone>-07:00</origTimeZone>
         <bandwidth>10</bandwidth>
         <protocol>udp</protocol>
-        <description>This is a test.</description>
+        <description>OSCARS test suite.</description>
     </test>
     <test name="cancelReservation">
         <login>testaccount</login>
@@ -71,6 +71,6 @@
         <origTimeZone>-07:00</origTimeZone>
         <bandwidth>25</bandwidth>
         <protocol>udp</protocol>
-        <description>Test from ESnet to I2.</description>
+        <description>Dummy test simulating ESnet to I2.</description>
     </test>
 </configuration>
