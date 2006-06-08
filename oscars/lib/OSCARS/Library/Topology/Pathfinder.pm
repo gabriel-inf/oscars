@@ -22,7 +22,7 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+June 7, 2006
 
 =cut
 
@@ -93,7 +93,7 @@ sub findPath {
             $self->nameToLoopback($params->{ingressRouterIP});
         $pathInfo->{ingressInterfaceId} = $self->getInterface(
             $self->nameToIP($params->{ingressRouterIP}, 0));
-        $logger->info('ingress',
+        $logger->info('Pathfinder.ingress',
             { 'router' => $params->{ingressRouterIP},
               'ingress' => 'specified',
 	      'loopback' => $pathInfo->{ingressLoopbackIP} } );
@@ -108,7 +108,7 @@ sub findPath {
                         $self->{traceConfigs}->{jnxSource}, 0 );
         }
         $dst = $pathInfo->{srcIP};
-        $logger->info('traceroute.reverse',
+        $logger->info('Pathfinder.traceroute.reverse',
             { 'source' => $src,
               'destination' => $pathInfo->{srcIP},
               'ingress' => 'unspecified' } );
@@ -135,7 +135,7 @@ sub findPath {
             $self->nameToIP($params->{egressRouterIP}, 0));
         # still have to do traceroute to get next hop and next domain
         my( $unusedIP, $unusedId );
-        $logger->info('traceroute.forward',
+        $logger->info('Pathfinder.traceroute.forward',
             { 'source' => $pathInfo->{ingressLoopbackIP},
               'destination' => $pathInfo->{destIP},
 	      'loopback' => $params->{egressLoopbackIP},
@@ -150,7 +150,7 @@ sub findPath {
         }
     }
     else {
-        $logger->info('traceroute.forward',
+        $logger->info('Pathfinder.traceroute.forward',
             { 'source' => $pathInfo->{ingressLoopbackIP},
               'destination' => $pathInfo->{destIP},
               'egress' => 'unspecified' } );
@@ -172,6 +172,7 @@ sub findPath {
         }
         else { $pathInfo->{nextDomain} = undef; }
     }
+    $logger->info('Pathfinder.pathInfo', $pathInfo);
     return( $pathInfo, $self->{pssConfigs} );
 } #____________________________________________________________________________
 
@@ -222,6 +223,7 @@ sub doTraceroute {
             $interfaceId = $interfaceFound;
         } elsif ( $interfaceFound ) { 
             push( @path, $interfaceFound ); 
+	    $interfaceId = $interfaceFound;
         } elsif ($action eq 'egress') {
             $nextAsNumber = $self->getAsNumber($interfaceId, $hop, $logger);
             last;
@@ -375,13 +377,15 @@ sub getAsNumber {
     $asNumber = $self->{jnxSnmp}->queryAsNumber($ipaddr);
     $errorMsg = $self->{jnxSnmp}->getError();
     if ( $errorMsg ) {
-        #throw Error::Simple("Unable to query $ipaddr for AS number: $errorMsg");
-        
         #Log SNMP failure but build reservation up to this point
         $logger->info('Pathfinder.getAsNumber',
-            { 'ip' => $ipaddr , 'errorMessage' => $errorMsg});
+            { 'router' => $routerName , 'nextHop' => $ipaddr,
+              'errorMessage' => $errorMsg });
         $asNumber = 'noSuchInstance';
     }
+    $logger->info('Pathfinder.getAsNumber',
+            { 'router' => $routerName , 'nextHop' => $ipaddr,
+	      'AS' => $asNumber });
     $self->{jnxSnmp}->closeSession();
     
     return $asNumber;
