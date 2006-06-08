@@ -165,7 +165,6 @@ sub findPath {
         throw Error::Simple(
             "Egress router $params->{egressRouterIP} has no loopback");
     }
-    print STDERR "nextAsNumber: $nextAsNumber\n";
     if ($nextAsNumber ne 'noSuchInstance') {
         if ($lastDomain != $nextAsNumber) {
             $pathInfo->{nextDomain} = $nextAsNumber;
@@ -223,7 +222,9 @@ sub doTraceroute {
             $interfaceId = $interfaceFound;
         } elsif ( $interfaceFound ) { 
             push( @path, $interfaceFound ); 
-	    $interfaceId = $interfaceFound;
+	    if ($action eq 'egress') {
+	        $interfaceId = $interfaceFound;
+	    }
         } elsif ($action eq 'egress') {
             $nextAsNumber = $self->getAsNumber($interfaceId, $hop, $logger);
             last;
