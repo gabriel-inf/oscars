@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 24, 2006
+June 8, 2006
 
 =cut
 
@@ -47,30 +47,48 @@ sub initialize {
 
 
 sub forward {
-    my( $self, $request, $database ) = @_;
+    my( $self, $request, $database, $logger ) = @_;
 
-    print STDERR "next domain: $request->{nextDomain}\n";
     my $methodName = 'forward';
+    my $nextDomain = $request->{pathInfo}->{nextDomain};
+    print STDERR "next domain: $nextDomain\n";
+    my $clientMgr = OSCARS::ClientManager->new('database' => $database);
+    my $client = $clientMgr->getClient($methodName, $nextDomain);
+    if ( !$client ) {
+        $logger->info("forwarding.error",
+                      { 'error' => "No such domain $nextDomain" });
+        return undef;
+    }
+
+    $logger->info("forwarding.start", $request );
+    my $forwardRequest = {};
+    for my $key (keys %{$request}) {
+        $forwardRequest->{$key} = $request->{$key};
+    }
+    if ( $request->{ingressRouterIP} ) {
+        $forwardRequest->{ingressRouterIP} = undef;
+    }
+    if ( $request->{egressRouterIP} ) {
+        $forwardRequest->{srcHost} = $request->{egressRouterIP};
+        $forwardRequest->{egressRouterIP} = undef;
+    }
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
-    my $clientMgr = OSCARS::ClientManager->new('database' => $database);
-    my $client = $clientMgr->getClient($methodName, $request->{nextDomain});
-    my $login = $clientMgr->getLogin($request->{nextDomain});
-
-    if ( !$client ) {
-        return( 'Unable to get client for next domain', undef );
-    }
+    my $login = $clientMgr->getLogin($nextDomain);
     my $payload = {};
-    $payload->{request} = $request;
+    $payload->{request} = $forwardRequest;
     $payload->{login} = $login;
 
     my $soapRequest = SOAP::Data -> name($methodName . "Request" => $payload );
-    
     my $som = $client->call($method => $soapRequest);
-
-    if ( !$som ) { return( 'Unable to make forwarding SOAP call', undef ); }
-    if ($som->faultstring) { return( $som->faultstring, undef ); }
-    return( undef, $som->result );
+    if (!$som) {
+        throw Error::Simple("Unable to make forwarding SOAP call");
+    }
+    if ( $som->faultstring ) {
+        throw Error::Simple("Unable to forward: $som->faultstring");
+    }
+    $logger->info("forwarding.finish", $som->result );
+    return( $som->result );
 }
 
 
