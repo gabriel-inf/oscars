@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+June 8, 2006
 
 =cut
 
@@ -61,44 +61,22 @@ sub initialize {
 sub soapMethod {
     my( $self, $request, $logger ) = @_;
 
-    my( $pathInfo, $nextPathInfo, $errMsg );
+    my( $pathInfo, $forwardResponse );
 
     $logger->info("start", $request);
     # find path, and see if the next domain needs to be contacted
     ( $pathInfo, $self->{pssConfigs} ) = $self->{pathfinder}->findPath(
                                              $logger, $request );
-    # if nextDomain is set, forward to corresponding method in next domain
+    # save path for this domain
+    $request->{pathInfo} = $pathInfo;
+    # If nextDomain is set, forward checks to see if it is in the database,
+    # and if so, forwards the request to the next domain.
     if ($pathInfo->{nextDomain} ) {
-        my $forwardRequest = {};
-        for my $key (keys %{$request}) {
-            $forwardRequest->{$key} = $request->{$key};
-        }
-        $request->{pathInfo} = $pathInfo;
-        # TODO:  better way of utilizing pathInfo in next domain
-        # better handling of exit router, passing back next domain's tag
-        $forwardRequest->{nextDomain} = $pathInfo->{nextDomain};
-        if ( $request->{ingressRouterIP} ) {
-            $forwardRequest->{ingressRouterIP} = undef;
-        }
-        if ( $request->{egressRouterIP} ) {
-            $forwardRequest->{srcHost} = $request->{egressRouterIP};
-            $forwardRequest->{egressRouterIP} = undef;
-        }
-        $logger->info("forwarding.start", $forwardRequest );
-        # "database" parameter is database name
-        ( $errMsg, $nextPathInfo ) =
-               $self->{forwarder}->forward($forwardRequest, $self->{database});
-        $logger->info("forwarding.finish", $nextPathInfo );
-        # TODO: process any differences
+        $forwardResponse =
+             $self->{forwarder}->forward($request, $self->{database}, $logger);
     }
-
-    if ($errMsg)
-    {
-        throw Error::Simple("Error forwrding reservervation to next domain: $errMsg");
-    }
-
-    # having found path, attempt to enter reservation in db
-    my $response = $self->createReservation( $request, $pathInfo);
+    # if successfuly found path, attempt to enter local domain's portion in db
+    my $response = $self->createReservation( $request );
     $logger->info("finish", $response);
     return $response;
 } #____________________________________________________________________________
@@ -115,11 +93,11 @@ sub soapMethod {
 # Out: ref to results hash.
 #
 sub createReservation {
-    my( $self, $request, $pathInfo ) = @_;
+    my( $self, $request ) = @_;
     my( $durationSeconds );
 
     $self->checkOversubscribed($request);
-    my $fields = $self->buildFields($request, $pathInfo);
+    my $fields = $self->buildFields( $request );
     my @k = keys %$fields;
     my @v = values %$fields;
     my $strKeys = join (', ', @k);
@@ -209,7 +187,7 @@ sub checkOversubscribed {
 # Out: ref to fields hash.
 #
 sub buildFields {
-    my( $self, $request, $pathInfo ) = @_;
+    my( $self, $request ) = @_;
 
     my $fields = {};
 
@@ -234,6 +212,7 @@ sub buildFields {
                   "'$request->{dscp}'" : "'$self->{pssConfigs}->{dscp}'" ;
     $fields->{protocol} = $request->{protocol} ?
                   "'$request->{protocol}'" : 'NULL' ;
+    my $pathInfo = $request->{pathInfo};
     my $pathStr = join(' ', @{$pathInfo->{path}});
     $fields->{path} = "'$pathStr'" ;
     $fields->{description} = "'$request->{description}'" ;
