@@ -85,7 +85,8 @@ sub forward {
         throw Error::Simple("Unable to make forwarding SOAP call");
     }
     if ( $som->faultstring ) {
-        throw Error::Simple("Unable to forward: $som->faultstring");
+	my $msg = $som->faultstring;
+        throw Error::Simple("Unable to forward: $msg");
     }
     $logger->info("forwarding.finish", $som->result );
     return( $som->result );
