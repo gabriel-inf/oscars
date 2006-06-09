@@ -75,6 +75,9 @@ sub soapMethod {
     if ( $self->{user}->authorized('Domains', 'manage') ) {
         $response->{authorized}->{ManageDomains} = 1;
     }
+    if ( $self->{user}->authorized('Domains', 'persistent') ) {
+        $response->{authorized}->{persistent} = 1;
+    }
     $logger->info("finish", $response);
     return $response;
 } #____________________________________________________________________________

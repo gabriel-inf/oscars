@@ -171,7 +171,7 @@ sub outputDiv {
        	</td>
 	<td>0.01 (0.01 to 4 years)</td></tr>
     } );
-    if ($authorizations && $authorizations->{ManageDomains}) {
+    if ($authorizations && ($authorizations->{ManageDomains} || $authorizations->{persistent}) ) {
         print( qq{
       <tr><td>Persistent reservation</td>
         <td><input type='checkbox' name='persistent' size='8' value='0'></input></td>
