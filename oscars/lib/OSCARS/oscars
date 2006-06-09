@@ -67,7 +67,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+June 8, 2006
 
 =cut
 
@@ -247,6 +247,14 @@ sub forward {
     my( $className, $request ) = @_;
 
     return handle($request, 'Forward');
+}
+
+###############################################################################
+#  Test for use with BNL.
+sub testForward {
+    my( $className, $request ) = @_;
+
+    return handle($request, 'TestForward');
 }
 
 ###############################################################################
