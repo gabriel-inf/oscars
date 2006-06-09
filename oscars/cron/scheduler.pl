@@ -15,21 +15,19 @@ my $database = $configuration->{database}->{'system'}->{location};
 
 my $authN = $pluginMgr->usePlugin('authentication');
 my $login = 'testaccount';
-my $credentials = $authN->getCredentials($login, 'password');
 
 my $clientMgr = OSCARS::ClientManager->new('database' => $database);
 
-my( $status, $msg ) = reservationPending( $login, $credentials );
-( $status, $msg ) = reservationExpired( $login, $credentials );
+my( $status, $msg ) = reservationPending( $login );
+( $status, $msg ) = reservationExpired( $login );
 
 
 #############################################################################
 #
 sub reservationPending {
-    my ( $login, $password ) = @_;
+    my ( $login ) = @_;
 
-    # password necessary for test to run, but not for this method in general
-    my %params = ('login' => $login, 'password' => $password );
+    my %params = ('login' => $login );
     $params{timeInterval} = 20;
     my $methodName = 'reservationPending';
 
@@ -52,10 +50,9 @@ sub reservationPending {
 #############################################################################
 #
 sub reservationExpired {
-    my ( $login, $password ) = @_;
+    my ( $login ) = @_;
 
-    # password necessary for test to run, but not for this method in general
-    my %params = ('login' => $login, 'password' => $password );
+    my %params = ('login' => $login );
     $params{timeInterval} = 20;
 
     my $methodName = 'reservationExpired';
