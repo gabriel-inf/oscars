@@ -33,6 +33,8 @@
         type='package'/>
 <plugin name='Forward' location='OSCARS::Public::Reservation::Forward' 
         type='package'/>
+<plugin name='TestForward' location='OSCARS::Public::Reservation::TestForward' 
+        type='package'/>
 
 <!-- Configuration of internal SOAP methods -->
 <plugin name='UserLogin' location='OSCARS::Public::User::Login'
