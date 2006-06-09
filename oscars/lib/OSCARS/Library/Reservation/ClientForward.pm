@@ -50,13 +50,12 @@ sub forward {
     my( $self, $request, $database, $logger ) = @_;
 
     my $methodName = 'forward';
-    my $nextDomain = $request->{pathInfo}->{nextDomain};
-    print STDERR "next domain: $nextDomain\n";
+    print STDERR "next domain: $request->{nextDomain}\n";
     my $clientMgr = OSCARS::ClientManager->new('database' => $database);
-    my $client = $clientMgr->getClient($methodName, $nextDomain);
+    my $client = $clientMgr->getClient($methodName, $request->{nextDomain});
     if ( !$client ) {
         $logger->info("forwarding.error",
-                      { 'error' => "No such domain $nextDomain" });
+                      { 'error' => "No such domain $request->{nextDomain}" });
         return undef;
     }
 
@@ -74,7 +73,7 @@ sub forward {
     }
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
-    my $login = $clientMgr->getLogin($nextDomain);
+    my $login = $clientMgr->getLogin($request->{nextDomain});
     my $payload = {};
     $payload->{request} = $forwardRequest;
     $payload->{login} = $login;

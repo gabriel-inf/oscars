@@ -72,6 +72,7 @@ sub soapMethod {
     # If nextDomain is set, forward checks to see if it is in the database,
     # and if so, forwards the request to the next domain.
     if ($pathInfo->{nextDomain} ) {
+        $request->{nextDomain} = $pathInfo->{nextDomain};
         $forwardResponse =
              $self->{forwarder}->forward($request, $self->{database}, $logger);
     }
