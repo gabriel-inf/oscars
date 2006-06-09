@@ -91,8 +91,6 @@ sub dispatch {
     my $info = Data::Dumper->Dump([$params], [qw(*REQUEST)]);
     $self->{logger}->info("request", { 'fields' => substr($info, 0, -1) });
     my $client = $self->{clientMgr}->getClient($methodName);
-    $params->{password} =
-            $self->{authN}->getCredentials($params->{login}, 'password');
     my $method = SOAP::Data -> name($methodName)
         -> attr ( { 'xmlns' => $self->{config}->{namespace} } );
     my $request = SOAP::Data -> name($methodName . "Request" => $params );
