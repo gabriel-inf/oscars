@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 9, 2006
+June 8, 2006
 
 =cut
 
@@ -58,27 +58,40 @@ sub initialize {
 # Out: None
 #
 sub authenticate {
-    my( $self, $daemon, $params ) = @_;
+    my( $self, $daemon, $request ) = @_;
 
-    my $user;
+    my( $user, $errorMsg );
 
     $self->{db}->connect($self->{database});
     # check to see if message should be signed
     my $envelope = $daemon->{_request}->{_content};
     my $de = WSRF::Deserializer->new();
     my $reqHost = $daemon->{_request}->{_headers}{host};
-    if ($reqHost !~ /localhost/ ){
-        my( $login, $errorMsg ) = $self->verifySignature($de, $envelope);
-	# throw type of exception that main try in oscars script understands
-	if ( $errorMsg ) { throw Error::Simple($errorMsg); }
-        $user = $self->getUser($login); 
-        return $user;
+    # Special case for BNL forwarding.  Use password for authentication.
+    if ( $request->{method} eq 'testForward' ) {
+        ( $user, $errorMsg ) = $self->verifyLogin($request);
     }
-    # otherwise, message came via web interface, use login name and password
-    # in params for authentication
-    # for now drop thru if message is not signed. Assume  message carries password.
-    $user = $self->verifyLogin($params);
+    # Otherwise, if request did not come from localhost, require signature.
+    elsif ($reqHost !~ /localhost/ ){
+        ( $user, $errorMsg ) = $self->verifySignature($de, $envelope);
+    }
+    else {
+        # If from localhost, check for signature first (scheduler and test 
+        # clients).
+        ( $user, $errorMsg ) = $self->verifySignature($de, $envelope);
+
+        # If no signature, message should only have arrived via web interface. 
+        # Use login name and password in request for authentication.
+        if ( $errorMsg ) {
+            ( $user, $errorMsg ) = $self->verifyLogin($request);
+        }
+    }
     $self->{db}->disconnect();
+
+    # If an occur occurred, throw the type of exception that the main try in 
+    # the oscars script understands.
+    if ( $errorMsg ) { throw Error::Simple($errorMsg); }
+
     return $user;
 } #____________________________________________________________________________
 
@@ -92,13 +105,13 @@ sub authenticate {
 sub verifySignature {
     my( $self, $de, $envelope ) = @_;
 
-    my ( $login, $ex );
+    my $ex;
     my %verifyResults;
     my $msgSom = $de->deserialize($envelope);
     eval { %verifyResults = WSRF::WSS::verify($msgSom); };
     if ($@) {
 	$ex = $@;
-	return ($login,$ex);
+	return( undef, $ex );
     }
     # print "$verifyResults(X509) \n";
     my $x509_pem = $verifyResults{X509};
@@ -107,8 +120,8 @@ sub verifySignature {
     my $issuer =$X509->issuer();
     my $query = "SELECT login FROM users WHERE certSubject = '$subject'";
     my $row = $self->{db}->getRow($query);
-    $login = $row->{login};
-    return( $login, $ex );
+    my $user = $self->getUser($row->{login}); 
+    return( $user, undef );
 } #____________________________________________________________________________
 
 
@@ -119,30 +132,32 @@ sub verifySignature {
 # Out: OSCARS::User instance
 #
 sub verifyLogin {
-    my( $self, $params ) = @_;
+    my( $self, $request ) = @_;
 
-    my $user = $self->getUser($params->{login});
-    if ($user->authenticated()) { return $user; }
-    if (!$params->{password}) {
-	throw Error::Simple('Attempting to access a SOAP method before authenticating.');
+    my $user = $self->getUser($request->{login});
+    if ($user->authenticated()) { return( $user, undef ); }
+    if (!$request->{password}) {
+	return( undef, "Password required for this request.");
     }
     # Get the password and privilege level from the database.
     my $statement = 'SELECT password FROM users WHERE login = ?';
     my $results = $self->{db}->getRow($statement, $user->{login});
     # Make sure user exists.
-    if ( !$results ) {
-        throw Error::Simple('Please check your login name and try again.');
+    if ( !$results ) { 
+        return( undef, "Login $request->{login} does not exist.");
     }
+
     # compare passwords
-    my $encodedPassword = crypt($params->{password}, 'oscars');
+    my $encodedPassword = crypt($request->{password}, 'oscars');
     if ( $results->{password} ne $encodedPassword ) {
         # see if password already encrypted
-        if ( $results->{password} ne $params->{password} ) {
-            throw Error::Simple('Please check your password and try again.');
+        if ( $results->{password} ne $request->{password} ) {
+            return( undef,
+                    "Password for $request->{login} is incorrect.");
         }
     }
     $user->setAuthenticated(1);
-    return $user;
+    return( $user, undef );
 } #____________________________________________________________________________
 
 
