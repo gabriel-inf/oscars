@@ -1,2 +1,2 @@
 # Run the scheduler every minute
-00-59 * * * * /home/davidr/oscars/cron/scheduler.pl
+00-59 * * * * /home/oscars/cron/scheduler.pl
