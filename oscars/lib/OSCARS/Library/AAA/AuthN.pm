@@ -68,7 +68,7 @@ sub authenticate {
     my $de = WSRF::Deserializer->new();
     my $reqHost = $daemon->{_request}->{_headers}{host};
     # Special case for BNL forwarding.  Use password for authentication.
-    if ( $request->{method} eq 'testForward' ) {
+    if ( $request->{method} eq 'TestForward' ) {
         ( $user, $errorMsg ) = $self->verifyLogin($request);
     }
     # Otherwise, if request did not come from localhost, require signature.
@@ -76,14 +76,19 @@ sub authenticate {
         ( $user, $errorMsg ) = $self->verifySignature($de, $envelope);
     }
     else {
-        # If from localhost, check for signature first (scheduler and test 
-        # clients).
-        ( $user, $errorMsg ) = $self->verifySignature($de, $envelope);
+        # If from localhost, check for password first (occurs if arrived
+	# via Web interface).  Done in this order to avoid useless
+        # signature verification for requests via browser.
+        ( $user, $errorMsg ) = $self->verifyLogin($request);
 
-        # If no signature, message should only have arrived via web interface. 
-        # Use login name and password in request for authentication.
+        # If no password present, try signature (present in scheduler and test
+	# suite).
         if ( $errorMsg ) {
-            ( $user, $errorMsg ) = $self->verifyLogin($request);
+	    my $verifyErrorMsg;
+	    # More important to have correct error message for browser, than
+	    # for scheduler or tests.
+            ( $user, $verifyErrorMsg ) = $self->verifySignature($de, $envelope);
+	    if ( !$verifyErrorMsg ) { $errorMsg = undef; }
         }
     }
     $self->{db}->disconnect();
@@ -137,7 +142,7 @@ sub verifyLogin {
     my $user = $self->getUser($request->{login});
     if ($user->authenticated()) { return( $user, undef ); }
     if (!$request->{password}) {
-	return( undef, "Password required for this request.");
+	return( undef, "Server may have been restarted.  Please try logging in again.");
     }
     # Get the password and privilege level from the database.
     my $statement = 'SELECT password FROM users WHERE login = ?';
