@@ -16,6 +16,10 @@ my $database = $configuration->{database}->{'system'}->{location};
 my $authN = $pluginMgr->usePlugin('authentication');
 my $login = 'testaccount';
 
+# sign using user's certificate
+$ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
+$ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
+
 my $clientMgr = OSCARS::ClientManager->new('database' => $database);
 
 my( $status, $msg ) = reservationPending( $login );
