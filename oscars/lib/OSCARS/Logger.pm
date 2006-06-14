@@ -95,7 +95,7 @@ sub warning {
 
     my $newEvtName = $self->{method} . '.' . $evtName;
     my $logMessage = $self->sanitize($hash);
-    $self->SUPER::info($newEvtName, $logMessage);
+    $self->SUPER::warning($newEvtName, $logMessage);
 } #____________________________________________________________________________
 
 
@@ -106,7 +106,7 @@ sub fatal {
 
     my $newEvtName = $self->{method} . '.' . $evtName;
     my $logMessage = $self->sanitize($hash);
-    $self->SUPER::info($newEvtName, $logMessage);
+    $self->SUPER::fatal($newEvtName, $logMessage);
 } #____________________________________________________________________________
 
 
