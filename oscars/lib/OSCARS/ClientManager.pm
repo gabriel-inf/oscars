@@ -96,17 +96,6 @@ sub getClient {
 	print STDERR "domain $domain not handled\n";
 	return undef;
     }
-    if ( $domain ne 'local' ) {
-        # TODO: change when get certificates working better
-	print STDERR "using service certificate\n";
-        $ENV{HTTPS_CERT_FILE} = "/home/oscars/.globus/usercert.pem";
-        $ENV{HTTPS_KEY_FILE}  = "/home/oscars/.globus/userkey.pem";
-    }
-    else {
-	print STDERR "using user certificate\n";
-        $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
-        $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
-    }
     my $soapAction = $self->{clientInfo}->{namespace} . '/' . $methodName;
     my $client = WSRF::Lite
         -> uri( $self->{clientInfo}->{$domain}->{uri} )
