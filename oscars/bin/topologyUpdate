@@ -13,22 +13,23 @@ my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
 my $configuration = $pluginMgr->getConfiguration();
 my $database = $configuration->{database}->{'system'}->{location};
 
-my $authN = $pluginMgr->usePlugin('authentication');
 my $login = 'testaccount';
-my $credentials = $authN->getCredentials($login, 'password');
+# sign using user's certificate
+$ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
+$ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
 
 my $clientMgr = OSCARS::ClientManager->new('database' => $database);
 
-my( $status, $msg ) = topologyUpdate( $login, $credentials );
+my( $status, $msg ) = topologyUpdate( $login );
 print STDERR $msg;
 
 
 #############################################################################
 #
 sub topologyUpdate {
-    my( $user_dn, $password ) = @_;
+    my( $login ) = @_;
 
-    my %params = ('login' => $user_dn, 'password' => $password );
+    my %params = ( 'login' => $login );
     $params{directory} = '/home/oscars/ifrefpoll';
 
     my $methodName = 'topologyUpdate';
