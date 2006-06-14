@@ -73,4 +73,13 @@
         <protocol>udp</protocol>
         <description>Dummy test simulating ESnet to I2.</description>
     </test>
+    <!-- BNL test params -->
+    <test name="testForward">
+        <login>testaccount</login>
+	<methodName>createReservation</methodName>
+        <origTimeZone>-07:00</origTimeZone>
+        <bandwidth>25</bandwidth>
+        <protocol>udp</protocol>
+        <description>testForward test.</description>
+    </test>
 </configuration>
