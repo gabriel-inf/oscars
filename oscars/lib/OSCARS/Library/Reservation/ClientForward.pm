@@ -49,8 +49,20 @@ sub initialize {
 sub forward {
     my( $self, $request, $database, $logger ) = @_;
 
-    my $methodName = 'forward';
-    print STDERR "next domain: $request->{nextDomain}\n";
+    my $methodName;
+
+    if (!$request->{password}) {
+        $methodName = 'forward';
+        $ENV{HTTPS_CERT_FILE} = "/home/oscars/.globus/usercert.pem";
+        $ENV{HTTPS_KEY_FILE}  = "/home/oscars/.globus/userkey.pem";
+    }
+    # BNL special case, using password
+    else {
+        $methodName = 'testForward';
+        $ENV{HTTPS_CERT_FILE} = undef;
+        $ENV{HTTPS_KEY_FILE}  = undef;
+    }
+
     my $clientMgr = OSCARS::ClientManager->new('database' => $database);
     my $client = $clientMgr->getClient($methodName, $request->{nextDomain});
     if ( !$client ) {
