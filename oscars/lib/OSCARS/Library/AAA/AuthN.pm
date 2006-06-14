@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 8, 2006
+June 14, 2006
 
 =cut
 
@@ -139,17 +139,25 @@ sub verifySignature {
 sub verifyLogin {
     my( $self, $request ) = @_;
 
-    my $user = $self->getUser($request->{login});
+    my $login;
+
+    # will only happen with testForward method (for BNL)
+    if ( $request->{request} && $request->{request}->{password} ) {
+        $request->{password} = $request->{request}->{password};
+        $login = $request->{request}->{login};
+    }
+    else { $login = $request->{login}; }
+    my $user = $self->getUser($login);
     if ($user->authenticated()) { return( $user, undef ); }
     if (!$request->{password}) {
 	return( undef, "Server may have been restarted.  Please try logging in again.");
     }
     # Get the password and privilege level from the database.
     my $statement = 'SELECT password FROM users WHERE login = ?';
-    my $results = $self->{db}->getRow($statement, $user->{login});
+    my $results = $self->{db}->getRow($statement, $login);
     # Make sure user exists.
     if ( !$results ) { 
-        return( undef, "Login $request->{login} does not exist.");
+        return( undef, "Login $login does not exist.");
     }
 
     # compare passwords
@@ -158,7 +166,7 @@ sub verifyLogin {
         # see if password already encrypted
         if ( $results->{password} ne $request->{password} ) {
             return( undef,
-                    "Password for $request->{login} is incorrect.");
+                    "Password for $login is incorrect.");
         }
     }
     $user->setAuthenticated(1);
