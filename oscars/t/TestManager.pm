@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 24, 2006
+June 13, 2006
 
 =cut
 
@@ -84,6 +84,18 @@ sub dispatch {
     }
     else { $params = $methodParams; }
     $self->{logger}->setMethod($methodName);
+    print STDERR "method: $methodName\n";
+    # special case for BNL
+    if ($methodName eq 'testForward') {
+        print STDERR "using password\n";
+        $params->{password} =
+            $self->{authN}->getCredentials($params->{login}, 'password');
+    }
+    else {
+        # sign using user's certificate
+        $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
+        $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
+    }
 
     # if overriding actual method called
     if ( $params->{methodName} ) { $methodName = $params->{methodName}; }
