@@ -72,13 +72,8 @@ sub debug {
     my( $self, $evtName, $hash ) = @_;
 
     my $newEvtName = $self->{method} . '.' . $evtName;
-    if (!$hash->{login}) {
-	$hash->{login} = $self->{login};
-    }
-    if ($hash->{password}) {
-	$hash->{password} = '';
-    }
-    $self->SUPER::debug($newEvtName, $hash);
+    my $logMessage = $self->sanitize($hash);
+    $self->SUPER::debug($newEvtName, $logMessage);
 } #____________________________________________________________________________
 
 
@@ -88,13 +83,8 @@ sub info {
     my( $self, $evtName, $hash ) = @_;
 
     my $newEvtName = $self->{method} . '.' . $evtName;
-    if (!$hash->{login}) {
-	$hash->{login} = $self->{login};
-    }
-    if ($hash->{password}) {
-	$hash->{password} = '';
-    }
-    $self->SUPER::info($newEvtName, $hash);
+    my $logMessage = $self->sanitize($hash);
+    $self->SUPER::info($newEvtName, $logMessage);
 } #____________________________________________________________________________
 
 
@@ -104,13 +94,8 @@ sub warning {
     my( $self, $evtName, $hash ) = @_;
 
     my $newEvtName = $self->{method} . '.' . $evtName;
-    if (!$hash->{login}) {
-	$hash->{login} = $self->{login};
-    }
-    if ($hash->{password}) {
-	$hash->{password} = '';
-    }
-    $self->SUPER::warning($newEvtName, $hash);
+    my $logMessage = $self->sanitize($hash);
+    $self->SUPER::info($newEvtName, $logMessage);
 } #____________________________________________________________________________
 
 
@@ -120,13 +105,26 @@ sub fatal {
     my( $self, $evtName, $hash ) = @_;
 
     my $newEvtName = $self->{method} . '.' . $evtName;
-    if (!$hash->{login}) {
-	$hash->{login} = $self->{login};
+    my $logMessage = $self->sanitize($hash);
+    $self->SUPER::info($newEvtName, $logMessage);
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub sanitize {
+    my( $self, $hash ) = @_;
+
+    my $logMessage = {};
+    for my $key ( keys %{$hash} ) {
+	if ($key ne 'password') {
+	    $logMessage->{$key} = $hash->{$key};
+	}
     }
-    if ($hash->{password}) {
-	$hash->{password} = '';
+    if (!$logMessage->{login}) {
+	$logMessage->{login} = $self->{login};
     }
-    $self->SUPER::fatal($newEvtName, $hash);
+    return $logMessage;
 } #____________________________________________________________________________
 
 
