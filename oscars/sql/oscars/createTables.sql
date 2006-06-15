@@ -69,16 +69,6 @@ CREATE TABLE IF NOT EXISTS authorizations (
 
 -- Reservations tables -------------------------------------------
 
--- Table for default clients.
-CREATE TABLE IF NOT EXISTS clients (
-    id			INT NOT NULL AUTO_INCREMENT,
-    uri			TEXT NOT NULL,
-    proxy		TEXT NOT NULL,
-    asNum		TEXT,   -- autonomous system number
-    login               TEXT,   -- service pseudo-user login
-    PRIMARY KEY (id)
-) type=MyISAM;
-
 -- table for administrative domain, e.g. ESnet
 CREATE TABLE IF NOT EXISTS domains (
     id		INT NOT NULL AUTO_INCREMENT,
