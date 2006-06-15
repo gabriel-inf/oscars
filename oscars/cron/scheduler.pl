@@ -10,6 +10,7 @@ use OSCARS::ClientManager;
 
 my $configFile = $ENV{HOME} . '/.oscars.xml';
 my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
+my $configs = $pluginMgr->getConfiguration()->{client};
 
 # sign using user's certificate
 $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
@@ -17,7 +18,7 @@ $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
 # tells WSRF::Lite to sign the message with the above cert
 $ENV{WSS_SIGN} = 'true';
 
-my $clientMgr = OSCARS::ClientManager->new();
+my $clientMgr = OSCARS::ClientManager->new('configuration' => $configs);
 
 my( $status, $msg ) = reservationPending();
 ( $status, $msg ) = reservationExpired();
