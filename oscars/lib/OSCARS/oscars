@@ -67,7 +67,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 8, 2006
+June 14, 2006
 
 =cut
 
@@ -90,7 +90,7 @@ use OSCARS::Method;
 sub userLogin {
     my( $className, $request ) = @_;
 
-    return handle($request, 'UserLogin');
+    return handle($request, 'userLogin');
 }
 
 ###############################################################################
@@ -98,7 +98,7 @@ sub userLogin {
 sub userLogout {
     my( $className, $request ) = @_;
 
-    return handle($request, 'UserLogout');
+    return handle($request, 'userLogout');
 }
 
 ###############################################################################
@@ -106,7 +106,7 @@ sub userLogout {
 sub userQuery {
     my( $className, $request ) = @_;
 
-    return handle($request, 'UserQuery');
+    return handle($request, 'userQuery');
 }
 
 ###############################################################################
@@ -114,7 +114,7 @@ sub userQuery {
 sub userModify {
     my( $className, $request ) = @_;
 
-    return handle($request, 'UserModify');
+    return handle($request, 'userModify');
 }
 
 ###############################################################################
@@ -122,7 +122,7 @@ sub userModify {
 sub institutionList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'InstitutionList');
+    return handle($request, 'institutionList');
 }
 
 ###############################################################################
@@ -130,7 +130,7 @@ sub institutionList {
 sub queryReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'QueryReservation');
+    return handle($request, 'queryReservation');
 }
 
 ###############################################################################
@@ -138,7 +138,7 @@ sub queryReservation {
 sub createReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'CreateReservation');
+    return handle($request, 'createReservation');
 }
 
 ###############################################################################
@@ -146,7 +146,7 @@ sub createReservation {
 sub modifyReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'ModifyReservation');
+    return handle($request, 'modifyReservation');
 }
 
 ###############################################################################
@@ -154,7 +154,7 @@ sub modifyReservation {
 sub cancelReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'CancelReservation');
+    return handle($request, 'cancelReservation');
 }
 
 ###############################################################################
@@ -162,7 +162,7 @@ sub cancelReservation {
 sub listReservations {
     my( $className, $request ) = @_;
 
-    return handle($request, 'ListReservations');
+    return handle($request, 'listReservations');
 }
 
 ### internal methods
@@ -172,7 +172,7 @@ sub listReservations {
 sub userAdd {
     my( $className, $request ) = @_;
 
-    return handle($request, 'UserAdd');
+    return handle($request, 'userAdd');
 }
 
 ###############################################################################
@@ -180,7 +180,7 @@ sub userAdd {
 sub userRemove {
     my( $className, $request ) = @_;
 
-    return handle($request, 'UserRemove');
+    return handle($request, 'userRemove');
 }
 
 ###############################################################################
@@ -188,7 +188,7 @@ sub userRemove {
 sub userList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'UserList');
+    return handle($request, 'userList');
 }
 
 ###############################################################################
@@ -196,7 +196,7 @@ sub userList {
 sub permissionList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'PermissionList');
+    return handle($request, 'permissionList');
 }
 
 ###############################################################################
@@ -204,7 +204,7 @@ sub permissionList {
 sub resourceList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'ResourceList');
+    return handle($request, 'resourceList');
 }
 
 ###############################################################################
@@ -212,7 +212,7 @@ sub resourceList {
 sub authorizationList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'AuthorizationList');
+    return handle($request, 'authorizationList');
 }
 
 ###############################################################################
@@ -220,7 +220,7 @@ sub authorizationList {
 sub reservationPending {
     my( $className, $request ) = @_;
 
-    return handle($request, 'ReservationPending');
+    return handle($request, 'reservationPending');
 }
 
 ###############################################################################
@@ -228,7 +228,7 @@ sub reservationPending {
 sub reservationExpired {
     my( $className, $request ) = @_;
 
-    return handle($request, 'ReservationExpired');
+    return handle($request, 'reservationExpired');
 }
 
 ###############################################################################
@@ -236,7 +236,7 @@ sub reservationExpired {
 sub topologyUpdate {
     my( $className, $request ) = @_;
 
-    return handle($request, 'TopologyUpdate');
+    return handle($request, 'topologyUpdate');
 }
 
 # public Interdomain (currently in Intradomain)
@@ -246,7 +246,7 @@ sub topologyUpdate {
 sub forward {
     my( $className, $request ) = @_;
 
-    return handle($request, 'Forward');
+    return handle($request, 'forward');
 }
 
 ###############################################################################
@@ -254,7 +254,7 @@ sub forward {
 sub testForward {
     my( $className, $request ) = @_;
 
-    return handle($request, 'TestForward');
+    return handle($request, 'testForward');
 }
 
 ###############################################################################
@@ -265,10 +265,11 @@ sub handle {
     my $ex;
     my( $user, $handler, $som );
 
+    # this occurs if there are no input parameters
+    if (!$request) { $request = {}; }
     $request->{method} = $method;
     my $logger = OSCARS::Logger->new('method' => $method);
     $logger->set_level($NetLogger::INFO);
-    if ( $request->{login} ) { $logger->setUserLogin($request->{login}); }
     $logger->open('/home/oscars/logs/oscars.log');
     my $results = {};
     try {
