@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-June 8, 2006
+June 14, 2006
 
 =cut
 
@@ -47,7 +47,7 @@ sub initialize {
 
 
 sub forward {
-    my( $self, $request, $database, $logger ) = @_;
+    my( $self, $request, $logger ) = @_;
 
     my $methodName;
 
@@ -55,15 +55,17 @@ sub forward {
         $methodName = 'forward';
         $ENV{HTTPS_CERT_FILE} = "/home/oscars/.globus/usercert.pem";
         $ENV{HTTPS_KEY_FILE}  = "/home/oscars/.globus/userkey.pem";
+        # tells WSRF::Lite to sign the message with the above cert
+        $ENV{WSS_SIGN} = 'true';
     }
     # BNL special case, using password
     else {
         $methodName = 'testForward';
-        $ENV{HTTPS_CERT_FILE} = undef;
-        $ENV{HTTPS_KEY_FILE}  = undef;
+        $ENV{WSS_SIGN} = 'false';
     }
 
-    my $clientMgr = OSCARS::ClientManager->new('database' => $database);
+    my $clientMgr = OSCARS::ClientManager->new(
+                          'configuration' => $self->{configuration}->{client});
     my $client = $clientMgr->getClient($methodName, $request->{nextDomain});
     if ( !$client ) {
         $logger->info("forwarding.error",
