@@ -73,9 +73,9 @@ sub initialize {
     $self->{forwarder} = OSCARS::Library::Reservation::ClientForward->new();
     $self->{paramTests} = {};
     $self->{db} = $self->{user}->getDbHandle($self->{database});
-    my $configuration = $self->{pluginMgr}->getConfiguration();
+    $self->{configuration} = $self->{pluginMgr}->getConfiguration();
     $self->{mailer} = OSCARS::Mail->new(
-                         'configuration' => $configuration->{notification} );
+                   'configuration' => $self->{configuration}->{notification} );
 } #____________________________________________________________________________
 
 
