@@ -27,12 +27,7 @@ ok( $testMgr->dispatch('cancelReservation', $params ) );
 sub createReservationParams {
     my( $testMgr ) = @_;
 
-    my $testConfigs =
-        $testMgr->getReservationConfigs('createReservation');
     my $params = {};
-    $params->{srcHost} = $testConfigs->{reservation_source};
-    $params->{destHost} = $testConfigs->{reservation_destination};
-
     my $epoch = time();
     my $f = DateTime::Format::W3CDTF->new;
     my $dt = DateTime->from_epoch( epoch => $epoch );
