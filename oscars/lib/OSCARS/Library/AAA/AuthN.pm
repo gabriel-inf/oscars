@@ -139,17 +139,20 @@ sub verifySignature {
 sub verifyLogin {
     my( $self, $request ) = @_;
 
-    my $login;
+    my( $login, $password );
 
     # will only happen with testForward method (for BNL)
-    if ( $request->{request} && $request->{request}->{password} ) {
-        $request->{password} = $request->{request}->{password};
-        $login = $request->{request}->{login};
+    if ( $request->{payload} && $request->{payload}->{userLogin} ) {
+        $login = $request->{payload}->{userLogin}->{userName};
+        $password = $request->{payload}->{userLogin}->{password};
     }
-    else { $login = $request->{login}; }
+    else {
+        $login = $request->{login};
+	$password = $request->{password};
+    }
     my $user = $self->getUser($login);
     if ($user->authenticated()) { return( $user, undef ); }
-    if (!$request->{password}) {
+    if ( !$password ) {
 	return( undef, "Server may have been restarted.  Please try logging in again.");
     }
     # Get the password and privilege level from the database.
@@ -161,10 +164,10 @@ sub verifyLogin {
     }
 
     # compare passwords
-    my $encodedPassword = crypt($request->{password}, 'oscars');
+    my $encodedPassword = crypt($password, 'oscars');
     if ( $results->{password} ne $encodedPassword ) {
         # see if password already encrypted
-        if ( $results->{password} ne $request->{password} ) {
+        if ( $results->{password} ne $password ) {
             return( undef,
                     "Password for $login is incorrect.");
         }
