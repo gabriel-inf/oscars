@@ -252,19 +252,24 @@ sub forward {
 ###############################################################################
 #  Test for use with BNL.
 sub testForward {
-    my( $className, $request ) = @_;
+    my( $className, $request, $payloadSender, $userLogin ) = @_;
 
-    return handle($request, 'testForward');
+    return handle($request, 'testForward', $payloadSender, $userLogin);
 }
 
 ###############################################################################
 #
 sub handle {
-    my( $request, $method ) = @_;
+    my( $request, $method, $payloadSender, $userLogin ) = @_;
 
     my $ex;
     my( $user, $handler, $som );
 
+    if ($userLogin) {
+        $request->{userLogin} = {};
+        $request->{userLogin}->{userName} = $userLogin->{userName};
+        $request->{userLogin}->{password} = $userLogin->{password};
+    }
     # this occurs if there are no input parameters
     if (!$request) { $request = {}; }
     $request->{method} = $method;
