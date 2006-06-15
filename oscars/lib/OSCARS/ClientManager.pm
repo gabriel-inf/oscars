@@ -21,7 +21,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 17, 2006
+June 14, 2006
 
 =cut
 
@@ -37,8 +37,6 @@ use strict;
 use WSRF::Lite;
 use SOAP::Lite;
 
-use OSCARS::Database;
-
 sub new {
     my( $class, %args ) = @_;
     my( $self ) = { %args };
@@ -51,35 +49,8 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    # cache information from the clients table
-    $self->{clientInfo} = $self->getClientInfo();
-    # tells WSRF::Lite to sign the message with the above cert
-    $ENV{WSS_SIGN} = 'true';
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getClientInfo:  Caches information from clients table in oscars database.
-#
-sub getClientInfo {
-    my( $self ) = @_;
-
-    my $dbconn = OSCARS::Database->new();
-    $dbconn->connect($self->{database});
-    my $statement = 'SELECT * FROM clients';
-    my $rows = $dbconn->doSelect($statement);
-    $dbconn->disconnect();
-    my $clientInfo = {};
-    for my $row (@$rows) {
-	my $domain = $row->{asNum};
-	if (!$domain) { $domain = 'local'; }
-	$clientInfo->{$domain} = {};
-	$clientInfo->{$domain}->{uri} = $row->{uri};
-	$clientInfo->{$domain}->{proxy} = $row->{proxy};
-	$clientInfo->{$domain}->{login} = $row->{login};
-    }
-    $clientInfo->{namespace} = 'http://oscars.es.net/OSCARS/Dispatcher';
-    return $clientInfo;
+    $self->{configuration}->{namespace} =
+                                      'http://oscars.es.net/OSCARS/Dispatcher';
 } #____________________________________________________________________________
 
 
@@ -90,16 +61,15 @@ sub getClientInfo {
 sub getClient {
     my( $self, $methodName, $domain ) = @_;
 
-    # default is local domain
-    if ( !$domain ) { $domain = 'local'; }
-    if (!$self->{clientInfo}->{$domain}) {
+    if ( !$domain ) { $domain = 'default'; }
+    if (!$self->{configuration}->{$domain}) {
 	print STDERR "domain $domain not handled\n";
 	return undef;
     }
-    my $soapAction = $self->{clientInfo}->{namespace} . '/' . $methodName;
+    my $soapAction = $self->{configuration}->{namespace} . '/' . $methodName;
     my $client = WSRF::Lite
-        -> uri( $self->{clientInfo}->{$domain}->{uri} )
-        -> proxy( $self->{clientInfo}->{$domain}->{proxy} )
+        -> uri( $self->{configuration}->{$domain}->{uri} )
+        -> proxy( $self->{configuration}->{$domain}->{proxy} )
 	-> on_action ( sub { return "$soapAction" } );
     return $client;
 } #____________________________________________________________________________
@@ -113,9 +83,8 @@ sub getClient {
 sub getLogin {
     my( $self, $domain ) = @_;
 
-    # default is local domain
     if ( !$domain ) { return undef; }
-    return $self->{clientInfo}->{$domain}->{login};
+    return $self->{configuration}->{$domain}->{payloadSender};
 } #____________________________________________________________________________
 
 
