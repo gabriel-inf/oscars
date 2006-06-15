@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 13, 2006
+June 14, 2006
 
 =cut
 
@@ -36,7 +36,6 @@ use strict;
 
 use NetLogger;
 
-use OSCARS::Database;
 use OSCARS::PluginManager;
 use OSCARS::ClientManager;
 use OSCARS::Logger;
@@ -57,13 +56,9 @@ sub initialize {
     $self->{params} = $paramsMgr->getConfiguration()->{test};
     my $configFile = $ENV{HOME} . '/.oscars.xml';
     my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
-    $self->{dbconn} = OSCARS::Database->new();
     $self->{config} = $pluginMgr->getConfiguration();
-    my $database = $self->{config}->{database}->{'system'}->{location};
-    $self->{dbconn}->connect($database);
-    $self->{authN} = $pluginMgr->usePlugin('authentication');
     $self->{clientMgr} = OSCARS::ClientManager->new(
-                                    'database' => $database);
+                                  'configuration' => $self->{config}->{client});
     $self->{logger} = OSCARS::Logger->new();
     $self->{logger}->setUserLogin('testaccount');
     $self->{logger}->set_level($NetLogger::INFO);
@@ -78,11 +73,13 @@ sub dispatch {
 
     my $methodParams = $self->{params}->{$methodName};
     if ( $params ) {
-	for my $key ( keys %{ $methodParams } ) {
-	    $params->{$key} = $methodParams->{$key};
+	if ( $methodParams ) {
+	    for my $key ( keys %{ $methodParams } ) {
+	        $params->{$key} = $methodParams->{$key};
+	    }
 	}
     }
-    else { $params = $methodParams; }
+    elsif ( $methodParams ) { $params = $methodParams; }
     $self->{logger}->setMethod($methodName);
     print STDERR "method: $methodName\n";
     # special case for BNL
@@ -90,11 +87,14 @@ sub dispatch {
         print STDERR "using password\n";
         $params->{password} =
             $self->{authN}->getCredentials($params->{login}, 'password');
+        $ENV{WSS_SIGN} = 'false';
     }
     else {
         # sign using user's certificate
         $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
         $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
+        # tells WSRF::Lite to sign the message with the above cert
+        $ENV{WSS_SIGN} = 'true';
     }
 
     # if overriding actual method called
@@ -118,25 +118,8 @@ sub dispatch {
 } #____________________________________________________________________________
 
 
-###############################################################################
-#
-sub getReservationConfigs {
-    my( $self, $testName ) = @_;
-
-    my $statement = "SELECT * FROM configTestAddresses a " .
-        "INNER JOIN configTests t ON a.testConfId = t.id WHERE t.name = ?";
-    my $rows = $self->{dbconn}->doSelect($statement, $testName);
-    my $configs = {};
-    for my $row (@$rows) {
-        $configs->{$row->{description}} = $row->{address};
-    }
-    return $configs;
-} #____________________________________________________________________________
-
-
 sub close {
     my( $self ) = @_;
 
-    $self->{dbconn}->disconnect();
 } #____________________________________________________________________________
 
