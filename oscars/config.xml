@@ -12,6 +12,17 @@
 <database name='system' location='oscars' /> 
 <database name='topology' location='topology' /> 
 
+<client name='default' uri='http://localhost:2000/OSCARS/Dispatcher'
+	proxy='http://localhost:2000/Server' payloadSender='' />
+<client payloadSender='discvenue.internet2.edu'
+	uri='https://discvenue.internet2.edu/OSCARS/Dispatcher'
+	proxy='https://discvenue.internet2.edu/OSCARS/Server'
+	name='1000000' />
+<client payloadSender='oscars.es.net'
+	uri='https://oscars.es.net/OSCARS/Dispatcher'
+	proxy='https://oscars.es.net/OSCARS/Server'
+	name='11537' />
+
 <!-- AAA configuration.  The database value is a reference to the plugin
      (see below). -->
 
@@ -21,58 +32,58 @@
         type='package' database='system' />
 
 <!-- Configuration of publicly described SOAP methods -->
-<plugin name='QueryReservation' location='OSCARS::Public::Reservation::Query' 
+<plugin name='queryReservation' location='OSCARS::Public::Reservation::Query' 
         type='package'/>
-<plugin name='CreateReservation' location='OSCARS::Public::Reservation::Create'
+<plugin name='createReservation' location='OSCARS::Public::Reservation::Create'
         type='package'/>
-<plugin name='ModifyReservation' location='OSCARS::Public::Reservation::Modify'
+<plugin name='modifyReservation' location='OSCARS::Public::Reservation::Modify'
         type='package'/>
-<plugin name='CancelReservation' location='OSCARS::Public::Reservation::Cancel'
+<plugin name='cancelReservation' location='OSCARS::Public::Reservation::Cancel'
         type='package'/>
-<plugin name='ListReservations' location='OSCARS::Public::Reservation::List' 
+<plugin name='listReservations' location='OSCARS::Public::Reservation::List' 
         type='package'/>
-<plugin name='Forward' location='OSCARS::Public::Reservation::Forward' 
+<plugin name='forward' location='OSCARS::Public::Reservation::Forward' 
         type='package'/>
-<plugin name='TestForward' location='OSCARS::Public::Reservation::TestForward' 
+<plugin name='testForward' location='OSCARS::Public::Reservation::TestForward' 
         type='package'/>
 
 <!-- Configuration of internal SOAP methods -->
-<plugin name='UserLogin' location='OSCARS::Public::User::Login'
+<plugin name='userLogin' location='OSCARS::Public::User::Login'
         type='package' />
-<plugin name='UserLogout' location='OSCARS::Public::User::Logout'
+<plugin name='userLogout' location='OSCARS::Public::User::Logout'
         type='package'/>
-<plugin name='UserQuery' location='OSCARS::Public::User::Query'
+<plugin name='userQuery' location='OSCARS::Public::User::Query'
         type='package'/>
-<plugin name='UserModify' location='OSCARS::Public::User::Modify'
+<plugin name='userModify' location='OSCARS::Public::User::Modify'
         type='package'/>
-<plugin name='InstitutionList' location='OSCARS::Public::Institution::List' 
+<plugin name='institutionList' location='OSCARS::Public::Institution::List' 
         type='package'/>
-<plugin name='UserAdd' location='OSCARS::Internal::User::Add' type='package'/>
-<plugin name='UserRemove' location='OSCARS::Internal::User::Remove'
+<plugin name='userAdd' location='OSCARS::Internal::User::Add' type='package'/>
+<plugin name='userRemove' location='OSCARS::Internal::User::Remove'
         type='package'/>
-<plugin name='UserList' location='OSCARS::Internal::User::List'
+<plugin name='userList' location='OSCARS::Internal::User::List'
         type='package'/>
-<plugin name='PermissionList' location='OSCARS::Internal::Permission::List'
+<plugin name='permissionList' location='OSCARS::Internal::Permission::List'
         type='package'/>
-<plugin name='ResourceList' location='OSCARS::Internal::Resource::List'
+<plugin name='resourceList' location='OSCARS::Internal::Resource::List'
         type='package'/>
-<plugin name='AuthorizationList' 
+<plugin name='authorizationList' 
         location='OSCARS::Internal::Authorization::List' type='package'/>
 
-<plugin name='ReservationPending' 
+<plugin name='reservationPending' 
         location='OSCARS::Internal::Reservation::Pending' type='package'/>
-<plugin name='ReservationExpired' 
+<plugin name='reservationExpired' 
         location='OSCARS::Internal::Reservation::Expired' type='package'/>
-<plugin name='TopologyUpdate' 
+<plugin name='topologyUpdate' 
         location='OSCARS::Internal::Topology::Update' type='package'/>
 
 
-<notification name='CancelReservation'>
+<notification name='cancelReservation'>
     <subject>Reservation successfully cancelled</subject>
     <tag>Reservation tag</tag>
 </notification>
 
-<notification name='CreateReservation'>
+<notification name='createReservation'>
     <subject>Reservation has been entered into the system</subject>
     <tag>Reservation tag</tag>
     <srcHost>Source</srcHost>
@@ -97,37 +108,37 @@
     <egressLoopbackIP>Egress loopback IP</egressLoopbackIP>
 </notification>
 
-<notification name='ReservationPending'>
+<notification name='reservationPending'>
     <subject>Circuit set up</subject>
     <tag>Reservation tag</tag>
     <lspConfigTime>Path set up time</lspConfigTime>
     <lspStatus>Configuration status</lspStatus>
 </notification>
 
-<notification name='ReservationExpired'>
+<notification name='reservationExpired'>
     <subject>Circuit torn down</subject>
     <tag>Reservation tag</tag>
     <lspConfigTime>Path tear down time</lspConfigTime>
     <lspStatus>Configuration status</lspStatus>
 </notification>
 
-<notification name='UserAdd'>
+<notification name='userAdd'>
     <subject>OSCARS user added</subject>
 </notification>
 
-<notification name='PermissionRemove'>
+<notification name='permissionRemove'>
     <subject>Permission removed</subject>
 </notification>
 
-<notification name='ResourceRemove'>
+<notification name='resourceRemove'>
     <subject>Resource removed</subject>
 </notification>
 
-<notification name='AuthorizationRemove'>
+<notification name='authorizationRemove'>
     <subject>Authorization removed</subject>
 </notification>
 
-<notification name='TestMessage'>
+<notification name='testMessage'>
     <subject>Test message</subject>
     <msg>Test message</msg>
 </notification>
