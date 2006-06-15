@@ -10,35 +10,31 @@ use OSCARS::ClientManager;
 
 my $configFile = $ENV{HOME} . '/.oscars.xml';
 my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
-my $configuration = $pluginMgr->getConfiguration();
-my $database = $configuration->{database}->{'system'}->{location};
-
-my $authN = $pluginMgr->usePlugin('authentication');
-my $login = 'testaccount';
 
 # sign using user's certificate
 $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
 $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
+# tells WSRF::Lite to sign the message with the above cert
+$ENV{WSS_SIGN} = 'true';
 
-my $clientMgr = OSCARS::ClientManager->new('database' => $database);
+my $clientMgr = OSCARS::ClientManager->new();
 
-my( $status, $msg ) = reservationPending( $login );
-( $status, $msg ) = reservationExpired( $login );
+my( $status, $msg ) = reservationPending();
+( $status, $msg ) = reservationExpired();
 
 
 #############################################################################
 #
 sub reservationPending {
-    my ( $login ) = @_;
 
-    my %params = ('login' => $login );
-    $params{timeInterval} = 20;
+    my $params = {};
+    $params->{timeInterval} = 20;
     my $methodName = 'reservationPending';
 
     my $client = $clientMgr->getClient($methodName);
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
-    my $request = SOAP::Data -> name($methodName . "Request" => \%params );
+    my $request = SOAP::Data -> name($methodName . "Request" => $params );
     my $som = $client->call($method => $request);
 
     if ($som->faultstring) { return( 0, $som->faultstring ); }
@@ -54,16 +50,15 @@ sub reservationPending {
 #############################################################################
 #
 sub reservationExpired {
-    my ( $login ) = @_;
 
-    my %params = ('login' => $login );
-    $params{timeInterval} = 20;
+    my $params = {};
+    $params->{timeInterval} = 20;
 
     my $methodName = 'reservationExpired';
     my $client = $clientMgr->getClient($methodName);
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
-    my $request = SOAP::Data -> name($methodName . "Request" => \%params );
+    my $request = SOAP::Data -> name($methodName . "Request" => $params );
     my $som = $client->call($method => $request);
 
     if ($som->faultstring) { return( 0, $som->faultstring ); }

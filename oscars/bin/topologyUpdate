@@ -10,33 +10,31 @@ use OSCARS::PluginManager;
 
 my $configFile = $ENV{HOME} . '/.oscars.xml';
 my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
-my $configuration = $pluginMgr->getConfiguration();
-my $database = $configuration->{database}->{'system'}->{location};
 
-my $login = 'testaccount';
 # sign using user's certificate
 $ENV{HTTPS_CERT_FILE} = $ENV{HOME}."/.globus/usercert.pem";
 $ENV{HTTPS_KEY_FILE}  = $ENV{HOME}."/.globus/userkey.pem";
+# tells WSRF::Lite to sign the message with the above cert
+$ENV{WSS_SIGN} = 'true';
 
-my $clientMgr = OSCARS::ClientManager->new('database' => $database);
+my $clientMgr = OSCARS::ClientManager->new();
 
-my( $status, $msg ) = topologyUpdate( $login );
+my( $status, $msg ) = topologyUpdate();
 print STDERR $msg;
 
 
 #############################################################################
 #
 sub topologyUpdate {
-    my( $login ) = @_;
 
-    my %params = ( 'login' => $login );
-    $params{directory} = '/home/oscars/ifrefpoll';
+    my $params = {};
+    $params->{directory} = '/home/oscars/ifrefpoll';
 
     my $methodName = 'topologyUpdate';
     my $client = $clientMgr->getClient($methodName);
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
-    my $request = SOAP::Data -> name($methodName . "Request" => \%params );
+    my $request = SOAP::Data -> name($methodName . "Request" => $params );
     my $som = $client->call($method => $request);
 
     if ($som->faultstring) { return( 0, $som->faultstring ); }
