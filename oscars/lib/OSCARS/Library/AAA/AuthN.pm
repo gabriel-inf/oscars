@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 14, 2006
+June 15, 2006
 
 =cut
 
@@ -68,7 +68,7 @@ sub authenticate {
     my $de = WSRF::Deserializer->new();
     my $reqHost = $daemon->{_request}->{_headers}{host};
     # Special case for BNL forwarding.  Use password for authentication.
-    if ( $request->{method} eq 'TestForward' ) {
+    if ( $request->{method} eq 'testForward' ) {
         ( $user, $errorMsg ) = $self->verifyLogin($request);
     }
     # Otherwise, if request did not come from localhost, require signature.
@@ -142,9 +142,9 @@ sub verifyLogin {
     my( $login, $password );
 
     # will only happen with testForward method (for BNL)
-    if ( $request->{payload} && $request->{payload}->{userLogin} ) {
-        $login = $request->{payload}->{userLogin}->{userName};
-        $password = $request->{payload}->{userLogin}->{password};
+    if ( $request->{userLogin} ) {
+        $login = $request->{userLogin}->{userName};
+        $password = $request->{userLogin}->{password};
     }
     else {
         $login = $request->{login};
