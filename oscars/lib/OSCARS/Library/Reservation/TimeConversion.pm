@@ -51,6 +51,13 @@ sub new {
 sub datetimeToSeconds {
     my( $self, $datetime ) = @_;
 
+    # DateTime::Format::W3CDTF is deprecated; supposedly
+    # DateTime::Format::Builder supposedly handles fractional seconds correctly,
+    # but documentation on how to use W3CDTF with it is non-existent.  The
+    # example in its distribution is, shall we say, not clear.
+
+    # strip the decimal fraction digits (from perl.datetime (6248) )
+    $datetime =~ s/(\d\d)\.\d+$/$1/;
     my $f = DateTime::Format::W3CDTF->new();
     my $dt = $f->parse_datetime( $datetime );
     my $epochSeconds = $dt->epoch();
