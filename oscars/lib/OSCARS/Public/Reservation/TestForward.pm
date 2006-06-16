@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 8, 2006
+June 15, 2006
 
 =cut
 
@@ -50,12 +50,15 @@ sub initialize {
 sub soapMethod {
     my( $self, $payload, $logger ) = @_;
 
-    my $forwardedRequest = $payload->{request};
+    my $forwardedRequest = $payload->{$payload->{contentType}};
     $logger->info("start", $payload);
     my $factory = OSCARS::MethodFactory->new('pluginMgr' => $self->{pluginMgr});
     my $handler =
-        $factory->instantiate( $self->{user}, $forwardedRequest->{method} );
-    my $response = $handler->soapMethod($forwardedRequest, $logger);
+        $factory->instantiate( $self->{user}, $payload->{contentType} );
+    my $results = $handler->soapMethod($forwardedRequest, $logger);
+    my $response = {};
+    $response->{testForwardResponse} = {};
+    $response->{testForwardResponse}->{msg} = "Successful forwarding of $payload->{contentType}";
     $logger->info("finish", $response);
     return $response;
 } #____________________________________________________________________________
