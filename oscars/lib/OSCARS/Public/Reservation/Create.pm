@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-June 8, 2006
+June 19, 2006
 
 =cut
 
@@ -48,6 +48,7 @@ sub initialize {
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                              'user' => $self->{user}, 'db' => $self->{db});
     $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
+    $self->{pssConfigs} = $self->getPSSConfiguration();
 } #____________________________________________________________________________
 
 
@@ -61,12 +62,11 @@ sub initialize {
 sub soapMethod {
     my( $self, $request, $logger ) = @_;
 
-    my( $pathInfo, $forwardResponse );
+    my $forwardResponse;
 
     $logger->info("start", $request);
     # find path, and see if the next domain needs to be contacted
-    ( $pathInfo, $self->{pssConfigs} ) = $self->{pathfinder}->findPath(
-                                             $logger, $request );
+    my $pathInfo = $self->{pathfinder}->findPathInfo( $request, $logger );
     # save path for this domain
     $request->{pathInfo} = $pathInfo;
     # If nextDomain is set, forward checks to see if it is in the database,
@@ -190,6 +190,7 @@ sub checkOversubscribed {
 sub buildFields {
     my( $self, $request ) = @_;
 
+    my( @interfaceInfo, $row );
     my $fields = {};
 
     $fields->{id} = 'NULL';
@@ -213,17 +214,43 @@ sub buildFields {
                   "'$request->{dscp}'" : "'$self->{pssConfigs}->{dscp}'" ;
     $fields->{protocol} = $request->{protocol} ?
                   "'$request->{protocol}'" : 'NULL' ;
+
+    my $statement = 'SELECT i.id FROM topology.interfaces i ' .
+        'INNER JOIN topology.ipaddrs ip ON i.id = ip.interfaceId ' .
+	'WHERE ip.IP = ?';
     my $pathInfo = $request->{pathInfo};
-    my $pathStr = join(' ', @{$pathInfo->{path}});
+    for my $hop ( @{$pathInfo->{localPath}} ) {
+	$row = $self->{db}->getRow( $statement, $hop );  
+	push( @interfaceInfo, $row->{id} );
+    }
+    my $pathStr = join(' ', @interfaceInfo);
     $fields->{path} = "'$pathStr'" ;
     $fields->{description} = "'$request->{description}'" ;
-    $fields->{ingressInterfaceId} = $pathInfo->{ingressInterfaceId} ;
-    $fields->{egressInterfaceId} = $pathInfo->{egressInterfaceId} ;
+    if ( $pathInfo->{ingressLoopbackIP} ) {
+	$row = $self->{db}->getRow( $statement, $pathInfo->{ingressLoopbackIP});
+    }
+    $fields->{ingressInterfaceId} = $row->{id} ;
+    if ( $pathInfo->{egressIP} ) {
+	$row = $self->{db}->getRow( $statement, $pathInfo->{egressIP});
+    }
+    $fields->{egressInterfaceId} = $row->{id} ;
     my $srcHostId = $self->{resvLib}->hostIPToId($pathInfo->{srcIP});
     $fields->{srcHostId} = $srcHostId;
     my $destHostId = $self->{resvLib}->hostIPToId($pathInfo->{destIP});
     $fields->{destHostId} = $destHostId;
     return $fields;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub getPSSConfiguration {
+    my( $self ) = @_;
+
+        # use default for now
+    my $statement = "SELECT * FROM topology.configPSS where id = 1";
+    my $configs = $self->{db}->getRow($statement);
+    return $configs;
 } #____________________________________________________________________________
 
 
