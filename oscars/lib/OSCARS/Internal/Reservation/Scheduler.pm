@@ -137,8 +137,9 @@ sub mapToIPs {
     my $row = $self->{db}->getRow($statement, $resv->{egressInterfaceId});
     if ( !$row->{name} ) { $resv->{egressLoopbackIP} = undef; }
     else {
-        $row = $self->{db}->getRow($ipStatement, $row->{name});
-        $resv->{egressLoopbackIP} = $row->{IP}; 
+        my $egressRow = $self->{db}->getRow($ipStatement, $row->{name});
+        if ( !$egressRow->{IP} ) { $egressRow->{IP} = $row->{name}; }
+        $resv->{egressLoopbackIP} = $egressRow->{IP}; 
     }
 } #____________________________________________________________________________
 
