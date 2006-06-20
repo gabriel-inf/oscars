@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 22, 2006
+June 19, 2006
 
 =cut
 
@@ -48,6 +48,7 @@ sub initialize {
     #"/home/oscars/mibs/mib-jnx-smi.txt",
     #"/home/oscars/mibs/mib-jnx-mpls.txt"
     #);
+    $self->{configs} = $self->getConfigs();
 } #___________________________________________________________________________
 
 
@@ -58,7 +59,7 @@ sub initialize {
 # Output: <none>
 #
 sub initializeSession {
-    my( $self, $configs, $dst ) = @_;
+    my( $self, $dst ) = @_;
 
     # Clear error message.
     $self->{errMsg} = 0;
@@ -69,15 +70,17 @@ sub initializeSession {
         $self->{errMsg} = "ERROR: SNMP destination not defined\n";
         return;
     }
+    # Add domain suffix
+    $dst = $dst .  $self->{configs}->{domainSuffix};
     # Initialize Net::SNMP session.
     my $error;
     ( $self->{session}, $error ) = Net::SNMP->session (
                      -hostname		=> $dst,
-                     -port		=> $configs->{port},
-		     -community		=> $configs->{community},
-                     -version		=> $configs->{version},
-                     -timeout		=> $configs->{timeout},
-                     -retries		=> $configs->{retries},
+                     -port		=> $self->{configs}->{port},
+		     -community		=> $self->{configs}->{community},
+                     -version		=> $self->{configs}->{version},
+                     -timeout		=> $self->{configs}->{timeout},
+                     -retries		=> $self->{configs}->{retries},
                    );
     if (!defined($self->{session})) {
         $self->{errMsg} = "ERROR:  Cannot create session: $error\n";
@@ -234,6 +237,18 @@ sub getError {
 
     return $self->{errMsg};
 } #___________________________________________________________________________
+
+
+###############################################################################
+#
+sub getConfigs {
+    my( $self ) = @_;
+
+        # use default for now
+    my $statement = "SELECT * FROM topology.configSNMP where id = 1";
+    my $configs = $self->{db}->getRow($statement);
+    return $configs;
+} #____________________________________________________________________________
 
 
 ######

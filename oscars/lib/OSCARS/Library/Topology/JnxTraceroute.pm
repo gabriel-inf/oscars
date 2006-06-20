@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+June 19, 2006
 
 =cut
 
@@ -36,7 +36,14 @@ sub new {
     my( $self ) = { %args };
   
     bless( $self, $class );
+    $self->initialize();
     return( $self );
+}
+
+sub initialize {
+    my ($self) = @_;
+
+    $self->{configs} = $self->getConfigs();
 } #____________________________________________________________________________
 
 
@@ -47,24 +54,25 @@ sub new {
 #
 sub traceroute
 {
-    my ($self, $configs, $src, $dst, $logger) = @_;
-    my ($hopInfo, $hopCount, $cmd);
+    my( $self, $src, $dst ) = @_;
 
-    # Clear error message.
+    my( $hopInfo, $hopCount, $cmd );
+
     if ( !defined($src) || !defined($dst) )  {
         throw Error::Simple("Traceroute source or destination not defined.");
     }
+    if ( $src eq 'default' ) { $src = $self->{configs}->{jnxSource}; }
 
     # Remove subnet mask if necessary.
     # e.g. 10.0.0.0/8 => 10.0.0.0
     $dst =~ s/\/\d*$//;
 
     # Perform the traceroute.
-    $cmd = "ssh -x -a -i $configs->{jnxKey} -l " .
-           "$configs->{jnxUser} $src traceroute $dst wait " .
-           "$configs->{timeout} ttl " .
-           "$configs->{ttl}";
-    $logger->info('JnxTraceroute.ssh',
+    $cmd = "ssh -x -a -i $self->{configs}->{jnxKey} -l " .
+           "$self->{configs}->{jnxUser} $src traceroute $dst wait " .
+           "$self->{configs}->{timeout} ttl " .
+           "$self->{configs}->{ttl}";
+    $self->{logger}->info('JnxTraceroute.ssh',
 	    {'command' => $cmd, 'src' => $src, 'dst' => $dst});
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Error::Simple("Unable to ssh into router and perform traceroute.");
@@ -78,7 +86,7 @@ sub traceroute
     # Parse the results.
     while ($hopInfo = <_TRACEROUTE_>)  {
         $self->{rawHopData}[$hopCount] = $hopInfo;
-	$logger->info('JnxTraceroute', { 'hop' => substr($hopInfo, 0, -1) });
+	$self->{logger}->info('JnxTraceroute', { 'hop' => substr($hopInfo, 0, -1) });
 
         # Get the hop IP address from output, e.g.
         #  1  esnet3-lbl3.es.net (198.129.76.26)  0.628 ms  0.569 ms  0.522 ms
@@ -88,6 +96,18 @@ sub traceroute
     }
     close(_TRACEROUTE_);
     return 1;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub getConfigs {
+    my( $self ) = @_;
+
+        # use default for now
+    my $statement = "SELECT * FROM topology.configTrace where id = 1";
+    my $configs = $self->{db}->getRow($statement);
+    return $configs;
 } #____________________________________________________________________________
 
 
