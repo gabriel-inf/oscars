@@ -88,14 +88,14 @@ sub findPathInfo {
     $pathInfo->{localPath} = $localPath;
     # if user specified egress router, use its loopback
     if ( $egressRouterIP ) {
-	$pathInfo->{egressIP} = $self->getRouterAddress( $egressRouterIP,
+    $pathInfo->{egressIP} = $self->getRouterAddress( $egressRouterIP,
                                                          'loopback' ); 
     }
     # otherwise, use last hop with an interface
     else { $pathInfo->{egressIP} = $pathInfo->{localPath}->[-1]; }
 
     my $nextAsNumber = $self->getAsNumber( $pathInfo->{localPath}->[-1],
-	                                   $nextHop );
+                                      $nextHop );
     if ($nextAsNumber ne 'noSuchInstance') {
         if (!$params->{nextDomain} || ($params->{nextDomain}) != $nextAsNumber) {
             $pathInfo->{nextDomain} = $nextAsNumber;
@@ -120,16 +120,16 @@ sub doReversePath {
     # the loopback.
     if ( $ingressRouterIP ) {
         $ingressLoopbackIP = $self->getRouterAddress( $ingressRouterIP,
-	                                              'loopback' );
+                                                  'loopback' );
         $self->{logger}->info('Pathfinder.ingress.specified',
             { 'router' => $ingressRouterIP } );
     }
     else {
         # Otherwise, if the egress router is given, use it as the source of 
-	# a traceroute.
+        # a traceroute.
         if ( $egressRouterIP ) { $src = $egressRouterIP; }
         # The destination address of the traceroute is the source given for the 
-	# reservation.
+        # reservation.
         $dest = $srcHostIP;
 
         $self->{logger}->info('Pathfinder.traceroute.reverse',
@@ -141,7 +141,7 @@ sub doReversePath {
         # being a loopback.
         for my $hop ( @{$path} )  {
             $loopbackFound = $self->getRouterAddress( $hop, 'loopback' );
-	    if ( $loopbackFound ) { $ingressLoopbackIP = $loopbackFound; }
+        if ( $loopbackFound ) { $ingressLoopbackIP = $loopbackFound; }
         }
     }
     if( !$ingressLoopbackIP ) {
@@ -183,11 +183,11 @@ sub doTraceroute {
     my $source;
 
     my $jnxTraceroute = new OSCARS::Library::Topology::JnxTraceroute(
-	                                          'db' => $self->{db},
+                                                  'db' => $self->{db},
                                                   'logger' => $self->{logger} );
     if ( $src ) {
         $source = $self->getRouterAddress($src, 'traceAddress');
-	if ( !$source ) { $source = $self->getRouterAddress($src, 'loopback'); }
+    if ( !$source ) { $source = $self->getRouterAddress($src, 'loopback'); }
     }
     else { $source = 'default'; }
     $jnxTraceroute->traceroute( $source, $destIP );
@@ -217,7 +217,7 @@ sub findLocalPath {
         }
         else {
             $nextHop = $hop;
-	    last; 
+        last; 
         }
     }
     return( \@interfacePath, $nextHop );
@@ -300,7 +300,7 @@ sub getAsNumber {
     }
     $self->{logger}->info('Pathfinder.getAsNumber',
             { 'router' => $row->{name} , 'nextHop' => $ipaddr,
-	      'AS' => $asNumber });
+            'AS' => $asNumber });
     $self->{jnxSnmp}->closeSession();
     
     return $asNumber;
