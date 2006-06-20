@@ -180,12 +180,20 @@ sub formatResults {
 sub getRouterInfo {
     my( $self, $interfaceId ) = @_;
  
-    my $statement =
-        qq{SELECT name, loopback FROM topology.routers WHERE id =
-           (SELECT routerId FROM topology.interfaces WHERE topology.interfaces.id = ?)};
-    # TODO:  FIX row might be empty
+    # first get router name
+    my $statement = 'SELECT name FROM topology.routers r ' .
+        'INNER JOIN topology.interfaces i ON r.id = i.routerId ' .
+        'WHERE i.id = ?';
     my $row = $self->{db}->getRow($statement, $interfaceId);
-    return( $row->{name}, $row->{loopback} );
+    if ( !$row->{name} ) { return( undef, undef ); }
+
+    # given router name, get address
+    $statement = 'SELECT IP FROM topology.ipaddrs ip ' .
+        'INNER JOIN topology.interfaces i ON i.id = ip.interfaceId ' .
+        'INNER JOIN topology.routers r ON r.id = i.routerId ' .
+        "WHERE r.name = ? AND ip.description = 'loopback'";
+    my $routerInfo = $self->{db}->getRow($statement, $row->{name});
+    return( $row->{name}, $routerInfo->{IP} );
 } #____________________________________________________________________________
 
 
