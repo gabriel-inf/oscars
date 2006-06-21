@@ -74,7 +74,7 @@ sub soapMethod {
     if ($pathInfo->{nextDomain} ) {
         $request->{nextDomain} = $pathInfo->{nextDomain};
         $forwardResponse =
-             $self->{forwarder}->forward($request, $logger);
+             $self->{forwarder}->forward($request, $self->{configuration}, $logger);
     }
     # if successfuly found path, attempt to enter local domain's portion in db
     my $response = $self->createReservation( $request );
