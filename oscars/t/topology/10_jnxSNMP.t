@@ -1,22 +1,24 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::Simple tests => 3;
+use Test::Simple tests => 4;
+use Socket;
 use Data::Dumper;
 
 use NetLogger;
 
-use TestManager;
 use OSCARS::PluginManager;
 use OSCARS::Database;
 use OSCARS::Logger;
 
 use OSCARS::Library::Topology::JnxSNMP;
-use OSCARS::Library::Topology::Pathfinder;
 
 my $configFile = $ENV{HOME} . '/.oscars.xml';
 my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
 my $configuration = $pluginMgr->getConfiguration();
+
+my $paramsMgr = OSCARS::PluginManager->new('location' => 'params.xml');
+my $params = $paramsMgr->getConfiguration()->{test};
 my $database = $configuration->{database}->{topology}->{location};
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
@@ -24,33 +26,34 @@ $dbconn->connect($database);
 my $logger = OSCARS::Logger->new('method' => '10_jnxSNMP');
 $logger->set_level($NetLogger::INFO);
 $logger->setUserLogin('nologin');
+$logger->setMethod('10_jnxSNMP');
 $logger->open('test.log');
 
-my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
-my $configs = $pf->getSNMPConfiguration();
-ok( $configs );
-
-my $testMgr = TestManager->new();
-my $testConfigs = $testMgr->getReservationConfigs('jnxSNMP');
-
 # name of edge router to perform query on
-my $routerName = $testConfigs->{router_name};
+my $routerName = $params->{'10_jnxSNMP'}->{'router_name'};
 
 # Create a query object instance
-my $jnxSnmp = OSCARS::Library::Topology::JnxSNMP->new();
+my $jnxSnmp = OSCARS::Library::Topology::JnxSNMP->new('db' => $dbconn );
 ok($jnxSnmp);
 
-$logger->info("Router", { 'name' => $routerName });
-$jnxSnmp->initializeSession($configs, $routerName);
+my $configs = $jnxSnmp->getConfigs();
+ok( $configs );
 
-my $ipaddr = $testConfigs->{next_hop};
-$logger->info( "Next", { 'hop' => $ipaddr } );
+$jnxSnmp->initializeSession( $routerName );
+my $errorMsg = $jnxSnmp->getError();
+if ($errorMsg) { $logger->warn( "Error", { '' => $errorMsg } ); }
+ok(!$errorMsg);
+
+my $hostname = $params->{'10_jnxSNMP'}->{'next_hop'};
+my $ipaddr = inet_ntoa(inet_aton($hostname));
+$logger->info("NextHop", { 'IP' => $ipaddr } ); 
+
 # Get AS number from IP address.
 my $asNumber = $jnxSnmp->queryAsNumber($ipaddr);
-my $error = $jnxSnmp->getError();
-if ($error) { $logger->warn( "Error", { '' => $error } ); }
+$errorMsg = $jnxSnmp->getError();
+if ($errorMsg) { $logger->warn( "Error", { '' => $errorMsg } ); }
 else { $logger->info( "AS", { 'number' => $asNumber } ); }
-ok(!$error);
+ok(!$errorMsg);
 
 $jnxSnmp->closeSession();
 $logger->close();
@@ -66,15 +69,15 @@ $logger->info( "LSP", { 'var' => $lspVar } );
 
 # Get LSP SNMP data.
 $jnxSnmp->queryLspSnmp($configs, $routerName);
-$error = $jnxSnmp->getError();
-if ($error) { $logger->warn( "Error", { '' => $error } ); }
-ok(!$error);
+$errorMsg = $jnxSnmp->getError();
+if ($errorMsg) { $logger->warn( "Error", { '' => $errorMsg } ); }
+ok(!$errorMsg);
 
 # Print LSP SNMP data.
 my @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
-$error = $jnxSnmp->getError();
-if ($error) { $logger->warn( "Error", { '' => $error } ); }
-ok(!$error);
+$errorMsg = $jnxSnmp->getError();
+if ($errorMsg) { $logger->warn( "Error", { '' => $errorMsg } ); }
+ok(!$errorMsg);
 
 $logger->info( "Exe", { 'method' => "queryLspInfo(undef, undef)" } );
 logVars();
@@ -86,9 +89,9 @@ undef($lspVar);
 
 # Print LSP SNMP data.
 @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
-$error = $jnxSnmp->getError();
-if ($error) { $logger->warn( "Error", { '' => $error } ); }
-ok(!$error);
+$errorMsg = $jnxSnmp->getError();
+if ($errorMsg) { $logger->warn( "Error", { '' => $errorMsg } ); }
+ok(!$errorMsg);
 
 $logger->info( "Exe", { 'method' => "queryLspInfo($lspName, undef)" } );
 logVars();
@@ -100,9 +103,9 @@ $lspVar = 'mplsLspState';
 
 # Print LSP SNMP data.
 @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
-$error = $jnxSnmp->getError();
-if ($error) { $logger->warn( "Error", { '' => $error } ); }
-ok(!$error);
+$errorMsg = $jnxSnmp->getError();
+if ($errorMsg) { $logger->warn( "Error", { '' => $errorMsg } ); }
+ok(!$errorMsg);
 
 $logger->info( "Exe", { 'method' => "queryLspInfo(undef, mplsLspState)" } );
 logVars();
@@ -113,9 +116,9 @@ $lspVar = 'mplsPathRecordRoute';
 
 # Print LSP SNMP data.
 @lspInfo = $jnxSnmp->queryLspInfo($lspName, $lspVar);
-$error = $jnxSnmp->getError();
-if ($error) { $logger->warn( "Error", { '' => $error } ); }
-ok(!$error);
+$errorMsg = $jnxSnmp->getError();
+if ($errorMsg) { $logger->warn( "Error", { '' => $errorMsg } ); }
+ok(!$errorMsg);
 
 $logger->info( "Exe", { 'method' => "queryLspInfo($lspName, mplsLspState)" } );
 logVars();

@@ -1,14 +1,12 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::Simple tests => 4;
+use Test::Simple tests => 3;
 use Data::Dumper;
 
-use TestManager;
 use OSCARS::PluginManager;
 use OSCARS::Database;
 use OSCARS::Library::Topology::JnxTraceroute;
-use OSCARS::Library::Topology::Pathfinder;
 use OSCARS::Logger;
 
 my $logger = OSCARS::Logger->new('method' => '11_jnxTraceroute.t');
@@ -19,27 +17,22 @@ $logger->open('test.log');
 my $configFile = $ENV{HOME} . '/.oscars.xml';
 my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
 my $configuration = $pluginMgr->getConfiguration();
+
+my $paramsMgr = OSCARS::PluginManager->new('location' => 'params.xml');
+my $params = $paramsMgr->getConfiguration()->{test};
 my $database = $configuration->{database}->{topology}->{location};
 my $dbconn = OSCARS::Database->new();
 $dbconn->connect($database);
 
-my $pf = OSCARS::Library::Topology::Pathfinder->new('db' => $dbconn);
-my $configs = $pf->getTracerouteConfig();
-ok( $configs );
-my $info = substr(Dumper($configs), 0, -1);
-$logger->info('Configs', { 'fields' => $info });
-
-my $testMgr = TestManager->new('db' => $dbconn,
-                                        'database' => $database);
-my $testConfigs = $testMgr->getReservationConfigs('jnxTraceroute');
-
 # Create a traceroute object.
-my $jnxTraceroute = OSCARS::Library::Topology::JnxTraceroute->new();
+my $jnxTraceroute = OSCARS::Library::Topology::JnxTraceroute->new(
+                                           'db' => $dbconn,
+                                           'logger' => $logger );
 ok( $jnxTraceroute );
 
-my $src = $testConfigs->{ingress_loopback};
-my $dst = $testConfigs->{egress_loopback};
-$jnxTraceroute->traceroute( $configs, $src, $dst, $logger );
+my $src = $params->{'11_jnxTraceroute'}->{'ingress_loopback'};
+my $dst = $params->{'11_jnxTraceroute'}->{'egress_loopback'};
+$jnxTraceroute->traceroute( $src, $dst, $logger );
 my @rawTracerouteData = $jnxTraceroute->getRawHopData();
 ok( @rawTracerouteData );
 my @hops = $jnxTraceroute->getHops();
