@@ -82,8 +82,10 @@ sub findPathInfo {
     $pathInfo->{srcIP} = $srcHostIP;
     $pathInfo->{destIP} = $destHostIP;
     # find path from ingress to reservation destination
+    print STDERR "before doForwardPath\n";
     $pathInfo->{path} = $self->doForwardPath( $pathInfo->{ingressRouterIP},
                                                          $destHostIP );
+    print STDERR "after doForwardPath\n";
     # find path strictly within this domain
     my( $localPath, $nextHop ) = $self->findLocalPath( $pathInfo->{path} );
     $pathInfo->{localPath} = $localPath;
@@ -137,18 +139,25 @@ sub doReversePath {
             { 'source' => $src, 'destination' => $dest } );
         # Run the traceroute and find all the hops.
         my $path = $self->doTraceroute( $src, $dest );
+        print STDERR Dumper($path);
         # Loop through hops, identifying last hop with a loopback.  Note that 
         # an interface may be associated with an IP address without there also 
         # being a loopback.
         for my $hop ( @{$path} )  {
+            print STDERR "hop: $hop\n";
             $loopbackFound = $self->getRouterAddress( $hop, 'loopback' );
         if ( $loopbackFound ) { $ingressLoopbackIP = $loopbackFound; }
         }
     }
     if( !$ingressLoopbackIP ) {
-        throw Error::Simple(
+        # try source (hops don't include it)
+        $ingressLoopbackIP = $self->getRouterAddress( $src, 'loopback' );
+        if( !$ingressLoopbackIP ) {
+            throw Error::Simple(
             "No router with loopback in (reverse) path from $src to $dest");
+        }
     }
+    print STDERR "ingress loopback: $ingressLoopbackIP\n";
     return $ingressLoopbackIP;
 } #____________________________________________________________________________
 
