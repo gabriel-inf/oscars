@@ -14,7 +14,7 @@ use TestManager;
 my $testMgr = TestManager->new();
 
 my $params = createInterdomainResvParams($testMgr);
-my( $status, $results ) = $testMgr->dispatch('createInterdomainResv', $params);
+my( $status, $results ) = $testMgr->dispatch('forward', $params);
 ok($status);
 
 $params = { 'tag' => $results->{tag} };
@@ -24,13 +24,6 @@ $params = { 'tag' => $results->{tag} };
 #
 sub createInterdomainResvParams {
     my( $testMgr ) = @_;
-
-    my $testConfigs =
-        $testMgr->getReservationConfigs('createInterdomainResv');
-    my $params = {};
-    $params->{srcHost} = $testConfigs->{reservation_source};
-    $params->{destHost} = $testConfigs->{reservation_destination};
-    $params->{egressRouterIP} = $testConfigs->{egress_loopback};
 
     my $epoch = time();
     my $f = DateTime::Format::W3CDTF->new;
