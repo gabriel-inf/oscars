@@ -57,7 +57,7 @@ sub datetimeToSeconds {
     # example in its distribution is, shall we say, not clear.
 
     # strip the decimal fraction digits (from perl.datetime (6248) )
-    $datetime =~ s/(\d\d)\.\d+$/$1/;
+    $datetime =~ s/([\d-T:]+)(\.[0-9]+)([-\d:Z]+)/$1$3/;
     my $f = DateTime::Format::W3CDTF->new();
     my $dt = $f->parse_datetime( $datetime );
     my $epochSeconds = $dt->epoch();
