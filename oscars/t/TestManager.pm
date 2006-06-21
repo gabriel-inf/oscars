@@ -81,7 +81,7 @@ sub dispatch {
     }
     elsif ( $methodParams ) { $params = $methodParams; }
     $self->{logger}->setMethod($methodName);
-    print STDERR "method: $methodName\n";
+    print STDERR "\nmethod: $methodName\n";
     # special case for BNL
     if ($methodName eq 'testForward') {
         print STDERR "using password\n";
