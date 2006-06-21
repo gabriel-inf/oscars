@@ -187,9 +187,11 @@ sub doTraceroute {
                                                   'logger' => $self->{logger} );
     if ( $src ) {
         $source = $self->getRouterAddress($src, 'traceAddress');
-    if ( !$source ) { $source = $self->getRouterAddress($src, 'loopback'); }
+        if ( !$source ) { $source = $self->getRouterAddress($src, 'loopback'); }
     }
-    else { $source = 'default'; }
+    if ( !$source ) {
+        $source = 'default';
+    }
     $jnxTraceroute->traceroute( $source, $destIP );
     my @path = $jnxTraceroute->getHops();
     # if we didn't hop much, maybe the same router?
