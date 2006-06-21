@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-June 15, 2006
+June 20, 2006
 
 =cut
 
@@ -56,11 +56,8 @@ sub soapMethod {
     my $handler =
         $factory->instantiate( $self->{user}, $payload->{contentType} );
     my $results = $handler->soapMethod($forwardedRequest, $logger);
-    my $response = {};
-    $response->{testForwardResponse} = {};
-    $response->{testForwardResponse}->{msg} = "Successful forwarding of $payload->{contentType}";
-    $logger->info("finish", $response);
-    return $response;
+    $logger->info("finish", $results);
+    return $results;
 } #____________________________________________________________________________
 
 
