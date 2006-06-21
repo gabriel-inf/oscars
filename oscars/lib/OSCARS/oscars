@@ -67,7 +67,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 14, 2006
+June 20, 2006
 
 =cut
 
@@ -90,7 +90,11 @@ use OSCARS::Method;
 sub userLogin {
     my( $className, $request ) = @_;
 
-    return handle($request, 'userLogin');
+    my $results = handle($request, 'userLogin');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -98,7 +102,11 @@ sub userLogin {
 sub userLogout {
     my( $className, $request ) = @_;
 
-    return handle($request, 'userLogout');
+    my $results = handle($request, 'userLogout');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -106,7 +114,11 @@ sub userLogout {
 sub userQuery {
     my( $className, $request ) = @_;
 
-    return handle($request, 'userQuery');
+    my $results = handle($request, 'userQuery');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -114,7 +126,11 @@ sub userQuery {
 sub userModify {
     my( $className, $request ) = @_;
 
-    return handle($request, 'userModify');
+    my $results = handle($request, 'userModify');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -122,7 +138,11 @@ sub userModify {
 sub institutionList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'institutionList');
+    my $results = handle($request, 'institutionList');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -130,7 +150,11 @@ sub institutionList {
 sub queryReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'queryReservation');
+    my $results = handle($request, 'queryReservation');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -138,7 +162,11 @@ sub queryReservation {
 sub createReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'createReservation');
+    my $results = handle($request, 'createReservation');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -146,7 +174,11 @@ sub createReservation {
 sub modifyReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'modifyReservation');
+    my $results = handle($request, 'modifyReservation');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -154,7 +186,11 @@ sub modifyReservation {
 sub cancelReservation {
     my( $className, $request ) = @_;
 
-    return handle($request, 'cancelReservation');
+    my $results = handle($request, 'cancelReservation');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -162,7 +198,11 @@ sub cancelReservation {
 sub listReservations {
     my( $className, $request ) = @_;
 
-    return handle($request, 'listReservations');
+    my $results = handle($request, 'listReservations');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ### internal methods
@@ -172,7 +212,11 @@ sub listReservations {
 sub userAdd {
     my( $className, $request ) = @_;
 
-    return handle($request, 'userAdd');
+    my $results = handle($request, 'userAdd');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -180,7 +224,11 @@ sub userAdd {
 sub userRemove {
     my( $className, $request ) = @_;
 
-    return handle($request, 'userRemove');
+    my $results = handle($request, 'userRemove');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -188,7 +236,11 @@ sub userRemove {
 sub userList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'userList');
+    my $results = handle($request, 'userList');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -196,7 +248,11 @@ sub userList {
 sub permissionList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'permissionList');
+    my $results = handle($request, 'permissionList');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -204,7 +260,11 @@ sub permissionList {
 sub resourceList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'resourceList');
+    my $results = handle($request, 'resourceList');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -212,7 +272,11 @@ sub resourceList {
 sub authorizationList {
     my( $className, $request ) = @_;
 
-    return handle($request, 'authorizationList');
+    my $results = handle($request, 'authorizationList');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -220,7 +284,11 @@ sub authorizationList {
 sub reservationPending {
     my( $className, $request ) = @_;
 
-    return handle($request, 'reservationPending');
+    my $results = handle($request, 'reservationPending');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -228,7 +296,11 @@ sub reservationPending {
 sub reservationExpired {
     my( $className, $request ) = @_;
 
-    return handle($request, 'reservationExpired');
+    my $results = handle($request, 'reservationExpired');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
@@ -236,7 +308,11 @@ sub reservationExpired {
 sub topologyUpdate {
     my( $className, $request ) = @_;
 
-    return handle($request, 'topologyUpdate');
+    my $results = handle($request, 'topologyUpdate');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 # public Interdomain (currently in Intradomain)
@@ -246,15 +322,23 @@ sub topologyUpdate {
 sub forward {
     my( $className, $request ) = @_;
 
-    return handle($request, 'forward');
+    my $results = handle($request, 'forward');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
 }
 
 ###############################################################################
 #  Test for use with BNL.
 sub testForward {
-    my( $className, $request, $payloadSender, $userLogin ) = @_;
+    my( $className, $payload, $payloadSender, $userLogin ) = @_;
 
-    return handle($request, 'testForward', $payloadSender, $userLogin);
+    my $results = handle($payload, 'testForward', $payloadSender, $userLogin);
+    my $response = SOAP::Data
+          ->name(retMsg =>
+          SOAP::Data->value( SOAP::Data->name(msg=>'success')));
+    return $response;
 }
 
 ###############################################################################
@@ -302,10 +386,7 @@ sub handle {
         }
         $logger->close();
     };
-    my $response = SOAP::Data
-        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
-        ->value($results);
-    return $response;
+    return $results;
 } #____________________________________________________________________________
 
 
