@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <configuration>
-    <!-- Currently only configuration for tests in oscars sub-directory -->
+    <!-- params for tests in topology subdirectory -->
+    <test name="10_jnxSNMP">
+        <router_name>lbl-rt2</router_name>
+	<next_hop>routemon1</next_hop>
+    </test>
+    <test name="11_jnxTraceroute">
+        <ingress_loopback>lbl-rt2.es.net</ingress_loopback>
+        <egress_loopback>atl-cr1.es.net</egress_loopback>
+    </test>
+    <!-- params for tests in oscars subdirectory -->
     <!-- AAA method params -->
     <test name="userAdd">
         <selectedUser>temptest</selectedUser>
@@ -25,27 +34,35 @@
     </test>
     <!-- interdomain test params -->
     <test name="createInterdomainResv">
-	<contentType>createRes</contentType>
+	<contentType>createReservation</contentType>
+	<createReservation>
+            <origTimeZone>-07:00</origTimeZone>
+            <bandwidth>25</bandwidth>
+            <protocol>udp</protocol>
+            <description>Dummy test simulating ESnet to I2.</description>
+	    <srcHost>nettrash3.es.net</srcHost>
+	    <destHost>nms5-ipls.abilene.ucaid.edu</destHost>
+	    <egressRouterIP>chi-cr1.es.net</egressRouterIP>
+        </createReservation>
 	<payloadSender>oscars.es.net</payloadSender>
-        <origTimeZone>-07:00</origTimeZone>
-        <bandwidth>25</bandwidth>
-        <protocol>udp</protocol>
-        <description>Dummy test simulating ESnet to I2.</description>
-	<srcHost>nettrash3.es.net</srcHost>
-	<destHost>nms5-ipls.abilene.ucaid.edu</destHost>
     </test>
     <!-- BNL test params -->
     <test name="testForward">
-	<contentType>createRes</contentType>
+	<contentType>createReservation</contentType>
+	<createReservation>
+            <origTimeZone>-07:00</origTimeZone>
+            <bandwidth>25</bandwidth>
+            <protocol>udp</protocol>
+            <description>Dummy testForward test.</description>
+	    <srcHost>nettrash3.es.net</srcHost>
+	    <destHost>nms5-ipls.abilene.ucaid.edu</destHost>
+	    <egressRouterIP>chi-cr1.es.net</egressRouterIP>
+	</createReservation>
 	<payloadSender>oscars.es.net</payloadSender>
-	<userName>testaccount</userName>
-	<!-- if password is set to 'certificate', signing still used -->
-	<password>certificate</password>
-        <origTimeZone>-07:00</origTimeZone>
-        <bandwidth>25</bandwidth>
-        <protocol>udp</protocol>
-        <description>Dummy testForward test.</description>
-	<srcHost>nettrash3.es.net</srcHost>
-	<destHost>nms5-ipls.abilene.ucaid.edu</destHost>
+	<userLogin>
+	    <userName>testaccount</userName>
+	    <!-- if password is set to 'certificate', signing still used -->
+	    <password>certificate</password>
+	</userLogin>
     </test>
 </configuration>
