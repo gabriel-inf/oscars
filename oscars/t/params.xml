@@ -33,18 +33,15 @@
 	<destHost>dc-cr1.es.net</destHost>
     </test>
     <!-- interdomain test params -->
-    <test name="createInterdomainResv">
-	<contentType>createReservation</contentType>
-	<createReservation>
-            <origTimeZone>-07:00</origTimeZone>
-            <bandwidth>25</bandwidth>
-            <protocol>udp</protocol>
-            <description>Dummy test simulating ESnet to I2.</description>
-	    <srcHost>nettrash3.es.net</srcHost>
-	    <destHost>nms5-ipls.abilene.ucaid.edu</destHost>
-	    <egressRouterIP>chi-cr1.es.net</egressRouterIP>
-        </createReservation>
-	<payloadSender>oscars.es.net</payloadSender>
+    <test name="forward">
+	<methodName>createReservation</methodName>
+        <origTimeZone>-07:00</origTimeZone>
+        <bandwidth>25</bandwidth>
+        <protocol>udp</protocol>
+        <description>Dummy test simulating ESnet to I2.</description>
+        <srcHost>nettrash3.es.net</srcHost>
+        <destHost>nms5-ipls.abilene.ucaid.edu</destHost>
+        <egressRouterIP>chi-cr1.es.net</egressRouterIP>
     </test>
     <!-- BNL test params -->
     <test name="testForward">
