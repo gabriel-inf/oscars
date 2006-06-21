@@ -79,7 +79,7 @@ sub forward {
         $forwardRequest->{$key} = $request->{$key};
     }
     if ( $request->{pathInfo}->{egressRouterIP} ) {
-        $forwardRequest->{srcHost} = $request->{pathInfo}->{egressRouterIP};
+        $forwardRequest->{ingressRouterIP} = $request->{pathInfo}->{egressRouterIP};
     }
     $forwardRequest->{pathInfo} = undef;
     my $method = SOAP::Data -> name($methodName)
