@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-June 14, 2006
+June 20, 2006
 
 =cut
 
@@ -89,9 +89,9 @@ sub forward {
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
     my $login = $clientMgr->getLogin($request->{nextDomain});
     my $payload = {};
-    $payload->{request} = $forwardRequest;
-    $payload->{login} = $login;
     $payload->{contentType} =  $request->{method};
+    $payload->{$payload->{contentType}} = $forwardRequest;
+    $payload->{login} = $login;
 
     my $soapRequest = SOAP::Data -> name($methodName . "Request" => $payload );
     my $som = $client->call($method => $soapRequest);
