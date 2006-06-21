@@ -78,13 +78,10 @@ sub forward {
     for my $key (keys %{$request}) {
         $forwardRequest->{$key} = $request->{$key};
     }
-    if ( $request->{ingressRouterIP} ) {
-        $forwardRequest->{ingressRouterIP} = undef;
+    if ( $request->{pathInfo}->{egressRouterIP} ) {
+        $forwardRequest->{srcHost} = $request->{pathInfo}->{egressRouterIP};
     }
-    if ( $request->{egressRouterIP} ) {
-        $forwardRequest->{srcHost} = $request->{egressRouterIP};
-        $forwardRequest->{egressRouterIP} = undef;
-    }
+    $forwardRequest->{pathInfo} = undef;
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
     my $login = $clientMgr->getLogin($request->{nextDomain});
