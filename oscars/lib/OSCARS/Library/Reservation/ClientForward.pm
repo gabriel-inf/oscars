@@ -47,7 +47,7 @@ sub initialize {
 
 
 sub forward {
-    my( $self, $request, $logger ) = @_;
+    my( $self, $request, $config, $logger ) = @_;
 
     my $methodName;
 
@@ -65,7 +65,7 @@ sub forward {
     }
 
     my $clientMgr = OSCARS::ClientManager->new(
-                          'configuration' => $self->{configuration}->{client});
+                          'configuration' => $config->{client});
     my $client = $clientMgr->getClient($methodName, $request->{nextDomain});
     if ( !$client ) {
         $logger->info("forwarding.error",
