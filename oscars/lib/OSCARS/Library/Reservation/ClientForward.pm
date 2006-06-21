@@ -91,6 +91,7 @@ sub forward {
     my $payload = {};
     $payload->{request} = $forwardRequest;
     $payload->{login} = $login;
+    $payload->{contentType} =  $request->{method};
 
     my $soapRequest = SOAP::Data -> name($methodName . "Request" => $payload );
     my $som = $client->call($method => $soapRequest);
