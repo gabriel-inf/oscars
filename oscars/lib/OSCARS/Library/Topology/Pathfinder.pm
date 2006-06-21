@@ -67,6 +67,7 @@ sub findPathInfo {
     my( $self, $params, $logger ) = @_;
 
     $self->{logger} = $logger;
+    print STDERR Dumper($params);
     # make sure working with IP addresses
     my $srcHostIP = $self->nameToIP( $params->{srcHost} );
     my $ingressRouterIP =
@@ -74,25 +75,25 @@ sub findPathInfo {
     my $egressRouterIP =
                $params->{egressRouterIP} ? $params->{egressRouterIP} : undef;
     my $pathInfo = {};
-    $pathInfo->{ingressLoopbackIP} = 
+    $pathInfo->{ingressRouterIP} = 
         $self->doReversePath( $srcHostIP, $ingressRouterIP, $egressRouterIP );
 
     my $destHostIP = $self->nameToIP( $params->{destHost} );
     $pathInfo->{srcIP} = $srcHostIP;
     $pathInfo->{destIP} = $destHostIP;
     # find path from ingress to reservation destination
-    $pathInfo->{path} = $self->doForwardPath( $pathInfo->{ingressLoopbackIP},
+    $pathInfo->{path} = $self->doForwardPath( $pathInfo->{ingressRouterIP},
                                                          $destHostIP );
     # find path strictly within this domain
     my( $localPath, $nextHop ) = $self->findLocalPath( $pathInfo->{path} );
     $pathInfo->{localPath} = $localPath;
     # if user specified egress router, use its loopback
     if ( $egressRouterIP ) {
-    $pathInfo->{egressIP} = $self->getRouterAddress( $egressRouterIP,
+    $pathInfo->{egressRouterIP} = $self->getRouterAddress( $egressRouterIP,
                                                          'loopback' ); 
     }
     # otherwise, use last hop with an interface
-    else { $pathInfo->{egressIP} = $pathInfo->{localPath}->[-1]; }
+    else { $pathInfo->{egressRouterIP} = $pathInfo->{localPath}->[-1]; }
 
     my $nextAsNumber = $self->getAsNumber( $pathInfo->{localPath}->[-1],
                                       $nextHop );
