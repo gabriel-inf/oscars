@@ -84,12 +84,15 @@ sub verify
     #if ( $session->is_expired ) { return 0; }
     my $login = $session->param("login");
     my $authorized = $session->param("authorized");
+    if ( $login && !$authorized ) { $authorized = { 'default' => 'default' }; }
 
     # If there is no login parameter, session is invalid
     if (!$login)  { return undef; }
     # CGI::Session doesn't quite work as advertised
     $cgi->param(-name=>'login',-value=>$login);
-    $cgi->param(-name=>'authorized',-value=>$authorized);
+    if ( !$authorized->{default} ) {
+        $cgi->param(-name=>'authorized',-value=>$authorized);
+    }
     return( $login, $authorized);
 } #____________________________________________________________________________
 
