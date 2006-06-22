@@ -41,7 +41,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out:  None
 #
 sub outputDiv {
-    my ( $self, $request, response, $authorizations ) = @_;
+    my ( $self, $request, $response, $authorizations ) = @_;
 
     my $timeHandler = OSCARS::WBUI::Method::ReservationDetails->new();
     my $msg = "Successfully retrieved reservations.";
