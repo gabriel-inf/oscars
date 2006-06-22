@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+June 22, 2006
 
 =cut
 
@@ -62,14 +62,88 @@ sub modifyParams {
 
 ###############################################################################
 # outputDiv:  print details of reservation returned by SOAP call
+#    Different than ReservationDetails->output in that some information is not
+#    returned that is already in the request.
 # In:   response from SOAP call
 # Out:  None
 #
 sub outputDiv {
-    my( $self, $response, $authorizations ) = @_;
+    my( $self, $request, $response, $authorizations ) = @_;
 
     my $details = OSCARS::WBUI::Method::ReservationDetails->new();
-    return $details->output( $response, $authorizations );
+    my $burstLimit = $request->{burstLimit} || 'DEFAULT';
+    my $srcPort = $request->{srcPort} || 'DEFAULT';
+    my $destPort = $request->{destPort} || 'DEFAULT';
+    my $protocol = $request->{protocol} || 'DEFAULT';
+    my $dscp = $request->{dscp} || 'DEFAULT';
+    my $createdTime = $details->formatTime($response->{createdTime});
+    my $msg = "Successfully got reservation details.";
+    print( qq{
+    <div>
+    <p><strong>Reservation Details</strong></p>
+    <p>To return to the reservations list, click on the Reservations tab.</p>
+    <p>
+    } );
+
+    if (($response->{status} eq 'pending') ||
+        ($response->{status} eq 'active')) {
+        my $cancelSubmitStr = "return submit_form(this,
+             'method=CancelReservation;');";
+        print( qq{
+        <form method="post" action="" onsubmit="$cancelSubmitStr">
+        <input type='hidden' class='SOAP' name='tag' value="$response->{tag}"></input>
+        <input type='submit' value='CANCEL'></input>
+        </form>
+        } );
+    }
+
+    my $refreshSubmitStr = "return submit_form(this,
+             'method=QueryReservation;');";
+    print( qq{
+    <form method="post" action="" onsubmit="$refreshSubmitStr">
+    <input type='hidden' class='SOAP' name='tag' value="$response->{tag}"></input>
+    <input type='submit' value='Refresh'>
+    </input>
+    </form>
+    </p>
+    <table width='90%' class='sortable'>
+      <thead><tr><td>Attribute</td><td>Value</td></tr></thead>
+      <tbody>
+      <tr><td>Tag</td><td>$response->{tag}</td></tr>
+      <tr><td>User</td><td>$request->{login}</td></tr> 
+      <tr><td>Description</td><td>$request->{description}</td></tr>
+      <tr><td>Start time</td><td>$request->{startTime}</td></tr>
+      <tr><td>End time</td><td>$request->{endTime}</td></tr>
+      <tr><td>Created time</td><td>$createdTime</td></tr>
+      <tr><td>Original time zone</td><td>$request->{origTimeZone}</td></tr>
+      <tr><td>Bandwidth</td><td>$request->{bandwidth}</td></tr>
+      <tr><td>Burst limit</td><td>$burstLimit</td></tr>
+      <tr><td>Status</td><td>$response->{status}</td></tr>
+      <tr><td>Source</td><td>$request->{srcHost}</td></tr>
+      <tr><td>Destination</td><td>$request->{destHost}</td></tr>
+      <tr><td>Source port</td><td>$srcPort</td></tr>
+      <tr><td>Destination port</td><td>$destPort</td></tr>
+      <tr><td>Protocol</td><td>$protocol</td></tr>
+      <tr><td>DSCP</td><td>$dscp</td></tr>
+    } );
+    if ( $authorizations->{ManageDomains} ) {
+        my $class = $request->{class} || 'DEFAULT';
+        my $path = $response->{path};
+        $path =~ s/ /, /g;
+        print( qq{
+        <tr><td>Class</td><td>$class</td></tr>
+        <tr><td>Ingress router</td><td>$response->{ingressRouterIP}</td></tr>
+        <tr><td>Ingress loopback</td><td>$response->{ingressLoopbackIP}</td></tr>
+        <tr><td>Egress router</td><td>$response->{egressRouterIP}</td></tr>
+        <tr><td>Egress loopback</td><td>$response->{egressLoopbackIP}</td></tr>
+        <tr><td>Routers in path</td><td>$path</td></tr>
+        } );
+    }
+    print( qq{
+      </tbody>
+    </table></div>
+    } );
+    return $msg;
 } #____________________________________________________________________________
 
 
