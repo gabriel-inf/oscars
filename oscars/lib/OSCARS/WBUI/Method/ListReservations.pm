@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+June 22, 2006
 
 =cut
 
@@ -41,7 +41,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out:  None
 #
 sub outputDiv {
-    my ( $self, $response, $authorizations ) = @_;
+    my ( $self, $request, response, $authorizations ) = @_;
 
     my $timeHandler = OSCARS::WBUI::Method::ReservationDetails->new();
     my $msg = "Successfully retrieved reservations.";

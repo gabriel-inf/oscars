@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+June 22, 2006
 
 =cut
 
@@ -43,7 +43,7 @@ sub new {
 #          fields.
 #
 sub output {
-    my( $self, $response ) = @_;
+    my( $self, $request, $response ) = @_;
 
     # take care of non_required fields
     my $description =

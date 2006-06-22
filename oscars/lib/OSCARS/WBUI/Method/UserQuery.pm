@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+June 22, 2006
 
 =cut
 
@@ -48,7 +48,7 @@ sub postProcess {
 # outputDiv:  print user profile form, with response from SOAP call
 #
 sub outputDiv {
-    my( $self, $response, $authorizations ) = @_;
+    my( $self, $request, $response, $authorizations ) = @_;
 
     # may be accessing another user's profile if an administrator
     my $login = $response->{selectedUser} ? $response->{selectedUser} : $response->{login};
@@ -67,7 +67,7 @@ sub outputDiv {
     } );
     $self->outputPasswordFields($response);
     my $details = OSCARS::WBUI::Method::UserDetails->new();
-    $details->output( $response );
+    $details->output( $request, $response );
     print("</tbody></table></form></div>\n");
     return $msg;
 } #____________________________________________________________________________

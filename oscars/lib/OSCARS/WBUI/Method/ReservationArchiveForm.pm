@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 17, 2006
+June 22, 2006
 
 =cut
 
@@ -48,7 +48,7 @@ sub makeCall {
 # Out:  None
 #
 sub outputDiv {
-    my( $self, $response, $authorizations ) = @_;
+    my( $self, $request, $response, $authorizations ) = @_;
 
     my $msg = "Reservation archiving form";
     print( qq{

@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+June 22, 2006
 
 =cut
 
@@ -36,7 +36,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # outputDiv:  print authorizations form, with response from SOAP call 
 #
 sub outputDiv {
-    my( $self, $response, $userTabAuths ) = @_;
+    my( $self, $request, $response, $userTabAuths ) = @_;
 
     my $msg = "OSCARS authorizations";
     print( qq{

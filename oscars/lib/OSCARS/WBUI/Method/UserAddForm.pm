@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+June 22, 2006
 
 =cut
 
@@ -60,7 +60,7 @@ sub postProcess {
 # outputDiv: print add user form.
 #
 sub outputDiv {
-    my( $self, $results, $authorizations ) = @_;
+    my( $self, $request, $results, $authorizations ) = @_;
 
     my $submitStr = "return submit_form(this, 'method=UserAdd;',
 			                check_add_user);";
@@ -84,7 +84,7 @@ sub outputDiv {
     $response->{institutionName} = 'Energy Sciences Network';
     $response->{institutionList} = $results;
     my $details = OSCARS::WBUI::Method::UserDetails->new();
-    $details->output( $response );
+    $details->output( $request, $response );
     print("</tbody></table></form></div>\n");
     return $msg;
 } #___________________________________________________________________________ 

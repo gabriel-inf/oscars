@@ -160,7 +160,7 @@ sub output {
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
 	my $response = $som->result;
-        $msg = $self->outputDiv($response, $authorizations);
+        $msg = $self->outputDiv($request, $response, $authorizations);
     }
     print "<msg>$msg</msg>\n";
     print "</xml>\n";

@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+June 22, 2006
 
 =cut
 
@@ -42,7 +42,7 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 # Out: None
 #
 sub outputDiv {
-    my ( $self, $users, $authorizations ) = @_;
+    my ( $self, $request, $users, $authorizations ) = @_;
 
     my $msg = "Successfully read user list.";
     my $addSubmitStr = "return submit_form(this, 'method=UserAddForm;');";
