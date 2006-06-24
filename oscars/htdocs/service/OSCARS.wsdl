@@ -8,12 +8,13 @@
 
 	<wsdl:documentation>
 		This is WSDL for the OSCARS public reservation interface. DRAFT
-		V0.2.1 June 15, 2006
+		V0.2.2 June 23, 2006
 	</wsdl:documentation>
 
 	<!-- Element and Type definitons -->
 	<wsdl:types>
 		<xsd:schema
+			elementFormDefault="qualified"
 			targetNamespace="http://oscars.es.net/OSCARS/Dispatcher"
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 			xmlns:tns="http://oscars.es.net/OSCARS/Dispatcher">
@@ -28,25 +29,22 @@
 			</xsd:element>
 
 			<xsd:element name="createReservationResponse"
-				type="tns:resDetails" />
+				type="tns:resCreateReply"/>
 
-			<xsd:element name="listReservations" />
+			<xsd:element name="listReservations" 
+				type="tns:emptyArg"/>
 
-			<xsd:element name="listReservationsResponse">
-				<xsd:complexType>
-					<xsd:sequence>
-						<xsd:element name="resInfo"
-							type="tns:resInfoContent" maxOccurs="unbounded" minOccurs="0" />
-					</xsd:sequence>
-				</xsd:complexType>
-			</xsd:element>
+			<xsd:element name="listReservationsResponse"
+				type="tns:listReply"/>
 
-			<xsd:element name="cancelReservation" type="xsd:string" />
+			<xsd:element name="cancelReservation" 
+			        type="tns:resTag" />
 
 			<xsd:element name="cancelReservationResponse"
-				type="xsd:string" />
+				type="tns:retMsg" />
 
-			<xsd:element name="queryReservation" type="xsd:string" />
+			<xsd:element name="queryReservation" 
+				type="tns:resTag" />
 
 			<xsd:element name="queryReservationResponse"
 				type="tns:resDetails" />
@@ -62,7 +60,8 @@
 				</xsd:complexType>
 			</xsd:element>
 
-			<xsd:element name="forwardResponse" type="xsd:string" />
+			<xsd:element name="forwardResponse" 
+			      type="tns:forwardReply" />
 
 			<xsd:element name="testForward">
 				<xsd:complexType>
@@ -76,7 +75,8 @@
 				</xsd:complexType>
 			</xsd:element>
 
-			<xsd:element name="testForwardResponse" type="tns:retMsg" />
+			<xsd:element name="testForwardResponse" 
+				type="tns:forwardReply" />
 
 			<xsd:element name="createReservationOSCARSException"
 				type="tns:OSCARSExceptionType" />
@@ -127,6 +127,13 @@
 				</xsd:sequence>
 			</xsd:complexType>
 
+			<xsd:complexType name="resCreateReply">
+				<xsd:sequence>
+					<xsd:element name="tag" type="tns:resTag"/>
+					<xsd:element name="status" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			
 			<xsd:complexType name="resInfoContent">
 				<xsd:sequence>
 					<xsd:element name="tag" type="xsd:string" />
@@ -172,6 +179,12 @@
 				</xsd:sequence>
 			</xsd:complexType>
 
+			<xsd:complexType name="listReply">
+				<xsd:sequence>
+					<xsd:element name="resInfo"
+						type="tns:resInfoContent" maxOccurs="unbounded" minOccurs="0" />
+				</xsd:sequence>
+			</xsd:complexType>
 
 			<xsd:complexType name="forwardPayload">
 				<xsd:sequence>
@@ -179,11 +192,27 @@
 						type="tns:payloadContentType" />
 					<xsd:element name="createReservation"
 						type="tns:resCreateContent" maxOccurs="1" minOccurs="0" />
-					<xsd:element name="cancelReservation" type="tns:resTagType"
+					<xsd:element name="cancelReservation" type="tns:resTag"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="queryReservation" type="tns:resTagType"
+					<xsd:element name="queryReservation" type="tns:resTag"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="listReservation" type="xsd:string"
+					<xsd:element name="listReservation" type="tns:emptyArg"
+						maxOccurs="1" minOccurs="0">
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>
+			
+			<xsd:complexType name="forwardReply">
+			     	<xsd:sequence>
+					<xsd:element name="contentType"
+						type="tns:payloadContentType" />
+					<xsd:element name="createResReply"
+						type="tns:resCreateContent" maxOccurs="1" minOccurs="0" />
+					<xsd:element name="cancelResReply" type="tns:retMsg"
+						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="queryResReply" type="tns:resDetails"
+						maxOccurs="1" minOccurs="0" />
+					<xsd:element name="listResReply" type="tns:listReply"
 						maxOccurs="1" minOccurs="0">
 					</xsd:element>
 				</xsd:sequence>
@@ -211,15 +240,31 @@
 					<xsd:enumeration value="listReservation"></xsd:enumeration>
 				</xsd:restriction>
 			</xsd:simpleType>
+			
 			<xsd:complexType name="OSCARSExceptionType">
 				<xsd:sequence>
 					<xsd:element name="msg" type="xsd:string" />
 				</xsd:sequence>
 			</xsd:complexType>
+			
+			<!--  WS1-BP approved way to pass null arguments -->
+			<xsd:complexType name="emptyArg">
+			       <xsd:sequence>
+			       		<xsd:element name="msg" minOccurs = "0"
+						type="xsd:string" >
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>			     
 
-			<xsd:simpleType name="resTagType">
-				<xsd:restriction base="xsd:string" />
-			</xsd:simpleType>
+                     <!--  All the  top level elements that should be simpletypes need to be complexTypes that
+                              contain a named element because the SOAP::Lite server insists on including a lease one
+                              tagged element within the soap body
+                               -->
+			<xsd:complexType name="resTag">
+				<xsd:sequence>
+					<xsd:element name="tag" type="xsd:string" />
+				</xsd:sequence>
+			</xsd:complexType>			
 
 			<xsd:complexType name="retMsg">
 				<xsd:sequence>
