@@ -144,6 +144,7 @@ sub doReversePath {
         # an interface may be associated with an IP address without there also 
         # being a loopback.
         for my $hop ( @{$path} )  {
+            print STDERR Dumper($hop);
             $loopbackFound = $self->getRouterAddress( $hop, 'loopback' );
         if ( $loopbackFound ) { $ingressLoopbackIP = $loopbackFound; }
         }
@@ -196,10 +197,10 @@ sub doTraceroute {
     if ( !$source ) {
         $source = 'default';
     }
-    $jnxTraceroute->traceroute( $source, $destIP );
+    my $pathSrc = $jnxTraceroute->traceroute( $source, $destIP );
     my @path = $jnxTraceroute->getHops();
     # prepend source to path
-    unshift @path, $source;
+    unshift @path, $pathSrc;
     # if we didn't hop much, maybe the same router?
     if ( $#path < 0 ) { throw Error::Simple("same router?"); }
     return \@path;

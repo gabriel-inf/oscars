@@ -95,7 +95,7 @@ sub traceroute
         $hopCount++;
     }
     close(_TRACEROUTE_);
-    return 1;
+    return $src;
 } #____________________________________________________________________________
 
 
