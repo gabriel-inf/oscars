@@ -67,7 +67,6 @@ sub findPathInfo {
     my( $self, $params, $logger ) = @_;
 
     $self->{logger} = $logger;
-    print STDERR Dumper($params);
     # make sure working with IP addresses
     my $srcHostIP = $self->nameToIP( $params->{srcHost} );
     my $ingressRouterIP =
@@ -77,27 +76,28 @@ sub findPathInfo {
     my $pathInfo = {};
     $pathInfo->{ingressRouterIP} = 
         $self->doReversePath( $srcHostIP, $ingressRouterIP, $egressRouterIP );
+    $pathInfo->{ingressLoopbackIP} = $pathInfo->{ingressRouterIP};
 
     my $destHostIP = $self->nameToIP( $params->{destHost} );
     $pathInfo->{srcIP} = $srcHostIP;
     $pathInfo->{destIP} = $destHostIP;
     # find path from ingress to reservation destination
-    print STDERR "before doForwardPath\n";
-    $pathInfo->{path} = $self->doForwardPath( $pathInfo->{ingressRouterIP},
+    my $fullPath = $self->doForwardPath( $pathInfo->{ingressRouterIP},
                                                          $destHostIP );
-    print STDERR "after doForwardPath\n";
     # find path strictly within this domain
-    my( $localPath, $nextHop ) = $self->findLocalPath( $pathInfo->{path} );
-    $pathInfo->{localPath} = $localPath;
+    my( $localPath, $nextHop ) = $self->findLocalPath( $fullPath );
+    $pathInfo->{path} = $localPath;
     # if user specified egress router, use its loopback
     if ( $egressRouterIP ) {
-    $pathInfo->{egressRouterIP} = $self->getRouterAddress( $egressRouterIP,
+    $pathInfo->{egressIP} = $self->getRouterAddress( $egressRouterIP,
                                                          'loopback' ); 
     }
     # otherwise, use last hop with an interface
-    else { $pathInfo->{egressRouterIP} = $pathInfo->{localPath}->[-1]; }
+    else { 
+        $pathInfo->{egressIP} = $pathInfo->{path}->[-1];
+     }
 
-    my $nextAsNumber = $self->getAsNumber( $pathInfo->{localPath}->[-1],
+    my $nextAsNumber = $self->getAsNumber( $pathInfo->{path}->[-1],
                                       $nextHop );
     if ($nextAsNumber ne 'noSuchInstance') {
         if (!$params->{nextDomain} || ($params->{nextDomain}) != $nextAsNumber) {
@@ -137,27 +137,21 @@ sub doReversePath {
 
         $self->{logger}->info('Pathfinder.traceroute.reverse',
             { 'source' => $src, 'destination' => $dest } );
-        # Run the traceroute and find all the hops.
+        # Run the traceroute and finding all the hops and adding the
+        # source at the beginning.
         my $path = $self->doTraceroute( $src, $dest );
-        print STDERR Dumper($path);
         # Loop through hops, identifying last hop with a loopback.  Note that 
         # an interface may be associated with an IP address without there also 
         # being a loopback.
         for my $hop ( @{$path} )  {
-            print STDERR "hop: $hop\n";
             $loopbackFound = $self->getRouterAddress( $hop, 'loopback' );
         if ( $loopbackFound ) { $ingressLoopbackIP = $loopbackFound; }
         }
     }
     if( !$ingressLoopbackIP ) {
-        # try source (hops don't include it)
-        $ingressLoopbackIP = $self->getRouterAddress( $src, 'loopback' );
-        if( !$ingressLoopbackIP ) {
-            throw Error::Simple(
-            "No router with loopback in (reverse) path from $src to $dest");
-        }
+        throw Error::Simple(
+        "No router with loopback in (reverse) path from $src to $dest");
     }
-    print STDERR "ingress loopback: $ingressLoopbackIP\n";
     return $ingressLoopbackIP;
 } #____________________________________________________________________________
 
@@ -204,6 +198,8 @@ sub doTraceroute {
     }
     $jnxTraceroute->traceroute( $source, $destIP );
     my @path = $jnxTraceroute->getHops();
+    # prepend source to path
+    unshift @path, $source;
     # if we didn't hop much, maybe the same router?
     if ( $#path < 0 ) { throw Error::Simple("same router?"); }
     return \@path;
