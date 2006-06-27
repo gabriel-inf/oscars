@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-June 19, 2006
+June 27, 2006
 
 =cut
 
@@ -219,7 +219,7 @@ sub buildFields {
         'INNER JOIN topology.ipaddrs ip ON i.id = ip.interfaceId ' .
 	'WHERE ip.IP = ?';
     my $pathInfo = $request->{pathInfo};
-    for my $hop ( @{$pathInfo->{localPath}} ) {
+    for my $hop ( @{$pathInfo->{path}} ) {
 	$row = $self->{db}->getRow( $statement, $hop );  
 	push( @interfaceInfo, $row->{id} );
     }
