@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-June 20, 2006
+June 27, 2006
 
 =cut
 
@@ -78,9 +78,9 @@ sub forward {
     for my $key (keys %{$request}) {
         $forwardRequest->{$key} = $request->{$key};
     }
-    if ( $request->{pathInfo}->{egressRouterIP} ) {
-        $forwardRequest->{srcHost} = $request->{pathInfo}->{egressRouterIP};
-    }
+    # Make the source in the new domain the last hop in the path in this
+    # domain.
+    $forwardRequest->{srcHost} = $request->{pathInfo}->{path}->{-1};
     $forwardRequest->{pathInfo} = undef;
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
