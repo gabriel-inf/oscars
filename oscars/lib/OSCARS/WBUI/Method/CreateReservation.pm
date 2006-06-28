@@ -132,10 +132,6 @@ sub outputDiv {
         $path =~ s/ /, /g;
         print( qq{
         <tr><td>Class</td><td>$class</td></tr>
-        <tr><td>Ingress router</td><td>$response->{ingressRouterIP}</td></tr>
-        <tr><td>Ingress loopback</td><td>$response->{ingressLoopbackIP}</td></tr>
-        <tr><td>Egress router</td><td>$response->{egressRouterIP}</td></tr>
-        <tr><td>Egress loopback</td><td>$response->{egressLoopbackIP}</td></tr>
         <tr><td>Routers in path</td><td>$path</td></tr>
         } );
     }
