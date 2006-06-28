@@ -55,7 +55,7 @@ sub initialize {
 ##############################################################################
 # initializeSession:  initialize SNMP session, given configs from database and
 #                      router.
-# Input:  configs, destination
+# Input:  configs, destination (must be IP address)
 # Output: <none>
 #
 sub initializeSession {
@@ -70,8 +70,6 @@ sub initializeSession {
         $self->{errMsg} = "ERROR: SNMP destination not defined\n";
         return;
     }
-    # Add domain suffix
-    $dst = $dst .  $self->{configs}->{domainSuffix};
     # Initialize Net::SNMP session.
     my $error;
     ( $self->{session}, $error ) = Net::SNMP->session (
