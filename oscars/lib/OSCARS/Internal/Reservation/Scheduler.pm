@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 19, 2006
+June 28, 2006
 
 =cut
 
@@ -102,7 +102,8 @@ sub configurePSS {
     $jnxLsp->configure_lsp($self->{opcode}, $logger);
 
     if ($error = $jnxLsp->get_error())  { return $error; }
-    $logger->info('LSP.' . $self->{opstring} . '.complete', { 'id' => $resv->{id} });
+    $logger->info('LSP.' . $self->{opstring} . '.complete',
+                  { 'id' => $resv->{id} });
     return "";
 } #____________________________________________________________________________
 
@@ -113,34 +114,12 @@ sub configurePSS {
 sub mapToIPs {
     my( $self, $resv ) = @_;
  
-    # TODO:  FIX handling empty results
-    my $statement = 'SELECT IP FROM hosts WHERE name = ?';
-    my $row = $self->{db}->getRow($statement, $resv->{srcHost});
-    $resv->{srcIP} = $row->{IP};
-    $row = $self->{db}->getRow($statement, $resv->{destHost});
-    $resv->{destIP} = $row->{IP};
-
-    my $statement = 'SELECT name FROM topology.routers r ' .
-        'INNER JOIN topology.interfaces i ON r.id = i.routerId ' .
-        'WHERE i.id = ?';
-   my $ipStatement = 'SELECT IP FROM topology.ipaddrs ip ' .
-        'INNER JOIN topology.interfaces i ON i.id = ip.interfaceId ' .
-        'INNER JOIN topology.routers r ON r.id = i.routerId ' .
-        "WHERE r.name = ? AND ip.description = 'loopback'";
-    # first get router name
-    my $row = $self->{db}->getRow($statement, $resv->{ingressInterfaceId});
-    if ( !$row->{name} ) { $resv->{ingressLoopbackIP} = undef; }
-    else {     # given router name, get address
-        $row = $self->{db}->getRow($ipStatement, $row->{name});
-        $resv->{ingressLoopbackIP} = $row->{IP}; 
-    }
-    my $row = $self->{db}->getRow($statement, $resv->{egressInterfaceId});
-    if ( !$row->{name} ) { $resv->{egressLoopbackIP} = undef; }
-    else {
-        my $egressRow = $self->{db}->getRow($ipStatement, $row->{name});
-        if ( !$egressRow->{IP} ) { $egressRow->{IP} = $row->{name}; }
-        $resv->{egressLoopbackIP} = $egressRow->{IP}; 
-    }
+    $resv->{srcIP} = $self->{resvLib}->nameToIP( $resv->{srcHost} );
+    $resv->{destIP} = $self->{resvLib}->nameToIP( $resv->{destHost} );
+    $resv->{ingressLoopbackIP} = $self->{resvLib}->routerAddressType(
+	                             $resv->{ingressIpaddrId}, 'loopback' );
+    $resv->{egressLoopbackIP} = $self->{resvLib}->routerAddressType(
+	                             $resv->{egressIpaddrId}, 'loopback' );
 } #____________________________________________________________________________
 
 
