@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+June 28, 2006
 
 =cut
 
@@ -96,6 +96,184 @@ sub updateReservation {
 
 
 ###############################################################################
+# formatResults:  Format results to be sent back from SOAP methods, given
+#                fields from reservations table.
+#
+sub formatResults {
+    my( $self, $fields ) = @_;
+
+    my $pathArray;;
+
+    my $results = {};
+    $results->{tag} = $fields->{tag};
+    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
+                              $fields->{startTime}, $fields->{origTimeZone});
+    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
+                              $fields->{endTime}, $fields->{origTimeZone});
+    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
+                              $fields->{createdTime}, $fields->{origTimeZone});
+    $results->{bandwidth} = $fields->{bandwidth};
+    $results->{burstLimit} = $fields->{burstLimit};
+    $results->{login} = $fields->{login};
+    $results->{status} = $fields->{status};
+    if ( $fields->{class} ) { $results->{class} = $fields->{class}; }
+    if ( $fields->{srcPort} ) { $results->{srcPort} = $fields->{srcPort}; }
+    if ( $fields->{destPort} ) { $results->{destPort} = $fields->{destPort}; }
+    if ( $fields->{dscp} ) { $results->{dscp} = $fields->{dscp}; }
+    if ( $fields->{protocol} ) { $results->{protocol} = $fields->{protocol}; }
+    if ( $fields->{path} ) {
+        $results->{path} = $fields->{path};
+    }
+    $results->{description} = $fields->{description};
+    $results->{srcHost} = $fields->{srcHost};
+    $results->{destHost} = $fields->{destHost};
+    # The following field is only set if coming in from the scheduler
+    if ( $fields->{lspStatus} ) {
+        $results->{lspStatus} = $fields->{lspStatus};
+        my $configTime = time();
+        $results->{lspConfigTime} = $self->{timeLib}->secondsToDatetime(
+                                         $configTime, $fields->{origTimeZone} );
+    }
+    return $results;
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub getRouterName {
+    my( $self, $ipaddr, $ipaddrId ) = @_;
+ 
+    my $row;
+
+    my $statement = 'SELECT r.name FROM topology.routers r ' .
+        'INNER JOIN topology.interfaces i ON r.id = i.routerId ' .
+        'INNER JOIN topology.ipaddrs ip ON i.id = ip.interfaceId';
+    if ($ipaddrId) {
+        $statement .= ' WHERE ip.id = ?';
+        $row = $self->{db}->getRow($statement, $ipaddrId);
+    }
+    else { 
+        $statement .= ' WHERE ip.IP = ?';
+        $row = $self->{db}->getRow($statement, $ipaddr);
+    }
+    return $row->{name};
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub getPathInfo {
+    my( $self, $pathId ) = @_;
+ 
+    my $hops = $self->getPathHopAddresses($pathId);
+    my $results = ();
+    # FIX to be able to use id as well as IP
+    for my $hop ( @{$hops} ) {
+        my $routerName = $self->getRouterName(undef, $hop->{id});
+        push(@$results, $routerName); 
+    }
+    return $results;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# hostIPToId:  get the primary key in the hosts table, given an
+#     IP address.  A row is created if that address is not present.
+# In:  hostIP
+# Out: hostID
+#
+sub hostIPToId {
+    my( $self, $ipaddr ) = @_;
+
+    # TODO:  fix schema, possible hostIP would not be unique
+    my $statement = 'SELECT id FROM hosts WHERE IP = ?';
+    my $row = $self->{db}->getRow($statement, $ipaddr);
+    # if no matches, insert a row in hosts
+    if ( !$row ) {
+        my $hostname = $self->ipToName($ipaddr);
+        $statement = "INSERT INTO hosts VALUES (NULL, '$ipaddr', '$hostname')";
+        $self->{db}->execStatement($statement);
+        return $self->{db}->{dbh}->{mysql_insertid};
+    }
+    else { return $row->{id}; }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# hostIdToIP:  given the primary key in the hosts table, get the
+#     host name.
+# In:  hostID
+# Out: hostIP
+#
+sub hostIdToIP {
+    my( $self, $id ) = @_;
+
+    my $statement = 'SELECT name, IP FROM hosts WHERE id = ?';
+    my $row = $self->{db}->getRow($statement, $id);
+    if ( $row->{name} ) { return $row->{name}; }
+    else { return $row->{IP}; }
+} #____________________________________________________________________________
+
+
+###############################################################################
+# nameToIP:  convert host name to IP address if it isn't already one
+# In:   host name or IP, and whether to keep CIDR portion if IP address
+# Out:  host IP address
+#
+sub nameToIP{
+    my( $self, $host, $keepCidr ) = @_;
+
+    # first group tests for IP address, second handles CIDR blocks
+    my $regexp = '(\d+\.\d+\.\d+\.\d+)(/\d+)*';
+    # if doesn't match IP format, attempt to convert host name to IP address
+    if ($host !~ $regexp) { return( inet_ntoa(inet_aton($host)) ); }
+    elsif ($keepCidr) { return $host; }
+    else { return $1; }   # return IP address without CIDR suffix
+} #____________________________________________________________________________
+
+
+###############################################################################
+# getInterface:  Finds whether interface associated with IP address or host
+#                name.
+# IN:  IP address
+# OUT: associated interface
+#
+sub getInterface {
+    my( $self, $hop ) = @_;
+
+    my $ipaddr = $self->nameToIP($hop);
+    my $statement = 'SELECT interfaceId FROM topology.ipaddrs WHERE IP = ?';
+    my $row = $self->{db}->getRow($statement, $ipaddr);
+    return $row->{interfaceId};
+} #____________________________________________________________________________
+
+
+###############################################################################
+# routerAddressType:  Gets trace or loopback IP address, if any, of router. 
+# In:  IP address associated with router, and type of address to look from
+# Out: alternative addres to do traceroute from, or loopback address, if any
+#
+sub routerAddressType {
+    my( $self, $ipaddr, $addressType ) = @_;
+
+    my $routerName = $self->getRouterName($ipaddr);
+    if ( !$routerName ) { return undef; }
+
+    # given router name, get address if any
+    my $statement = 'SELECT IP FROM topology.ipaddrs ip ' .
+        'INNER JOIN topology.interfaces i ON i.id = ip.interfaceId ' .
+        'INNER JOIN topology.routers r ON r.id = i.routerId ' .
+        "WHERE r.name = ? AND ip.description = '$addressType'";
+    my $row = $self->{db}->getRow($statement, $routerName);
+    return( $row->{IP} );
+} #____________________________________________________________________________
+
+
+#############
+# Internal methods
+#############
+
+###############################################################################
 # updateStatus: Updates reservation status.  Used to mark as active,
 # finished, or cancelled.
 #
@@ -124,118 +302,21 @@ sub updateStatus {
 
 
 ###############################################################################
-# formatResults:  Format results to be sent back from SOAP methods, given
-#                fields from reservations table.
 #
-sub formatResults {
-    my( $self, $fields ) = @_;
-
-    my $unused;
-
-    my $results = {};
-    $results->{tag} = $fields->{tag};
-    $results->{startTime} = $self->{timeLib}->secondsToDatetime(
-                              $fields->{startTime}, $fields->{origTimeZone});
-    $results->{endTime} = $self->{timeLib}->secondsToDatetime(
-                              $fields->{endTime}, $fields->{origTimeZone});
-    $results->{createdTime} = $self->{timeLib}->secondsToDatetime(
-                              $fields->{createdTime}, $fields->{origTimeZone});
-    $results->{bandwidth} = $fields->{bandwidth};
-    $results->{burstLimit} = $fields->{burstLimit};
-    $results->{login} = $fields->{login};
-    $results->{status} = $fields->{status};
-    if ( $fields->{class} ) { $results->{class} = $fields->{class}; }
-    if ( $fields->{srcPort} ) { $results->{srcPort} = $fields->{srcPort}; }
-    if ( $fields->{destPort} ) { $results->{destPort} = $fields->{destPort}; }
-    if ( $fields->{dscp} ) { $results->{dscp} = $fields->{dscp}; }
-    if ( $fields->{protocol} ) { $results->{protocol} = $fields->{protocol}; }
-    if ( $fields->{path} ) {
-        my $pathArray = $self->getPathRouterInfo($fields->{path});
-        $results->{path} = join(' ', @{$pathArray});
-    }
-    $results->{description} = $fields->{description};
-    if ( $fields->{ingressInterfaceId} ) {
-        ( $results->{ingressRouterIP}, $results->{ingressLoopbackIP} ) =
-            $self->getRouterInfo( $fields->{ingressInterfaceId} );
-    }
-    if ( $fields->{egressInterfaceId} ) {
-        ( $results->{egressRouterIP}, $results->{egressLoopbackIP} ) =
-            $self->getRouterInfo( $fields->{egressInterfaceId} );
-    }
-    $results->{srcHost} = $fields->{srcHost};
-    $results->{destHost} = $fields->{destHost};
-    # The following field is only set if coming in from the scheduler
-    if ( $fields->{lspStatus} ) {
-        $results->{lspStatus} = $fields->{lspStatus};
-        my $configTime = time();
-        $results->{lspConfigTime} = $self->{timeLib}->secondsToDatetime(
-                                         $configTime, $fields->{origTimeZone} );
-    }
-    return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
-sub getRouterInfo {
-    my( $self, $interfaceId ) = @_;
+sub getPathHopAddresses {
+    my( $self, $pathId ) = @_;
  
-    # first get router name
-    my $statement = 'SELECT name FROM topology.routers r ' .
-        'INNER JOIN topology.interfaces i ON r.id = i.routerId ' .
-        'WHERE i.id = ?';
-    my $row = $self->{db}->getRow($statement, $interfaceId);
-    if ( !$row->{name} ) { return( undef, undef ); }
-
-    # given router name, get address
-    $statement = 'SELECT IP FROM topology.ipaddrs ip ' .
-        'INNER JOIN topology.interfaces i ON i.id = ip.interfaceId ' .
-        'INNER JOIN topology.routers r ON r.id = i.routerId ' .
-        "WHERE r.name = ? AND ip.description = 'loopback'";
-    my $routerInfo = $self->{db}->getRow($statement, $row->{name});
-    return( $row->{name}, $routerInfo->{IP} );
+    my $statement = 'SELECT ip.IP, ip.description FROM topology.ipaddrs ip ' .
+        'INNER JOIN pathIpaddrs pips ON pathId = ? ' .
+        'WHERE pathId = ? ORDER BY sequenceNumber';
+    my $hops = $self->{db}->doSelect($statement, $pathId);
+    return $hops;
 } #____________________________________________________________________________
 
 
 ###############################################################################
 #
-sub getPathRouterInfo {
-    my( $self, $path ) = @_;
- 
-    my @pathRouters = split(' ', $path);
-    my $results = ();
-    for my $interfaceId (@pathRouters) {
-        my( $name, $loopback ) = $self->getRouterInfo($interfaceId);
-        push(@$results, $name); 
-    }
-    return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# hostIPToId:  get the primary key in the hosts table, given an
-#     IP address.  A row is created if that address is not present.
-# In:  hostIP
-# Out: hostID
-#
-sub hostIPToId {
-    my( $self, $ipaddr ) = @_;
-
-    # TODO:  fix schema, possible hostIP would not be unique
-    my $statement = 'SELECT id FROM hosts WHERE IP = ?';
-    my $row = $self->{db}->getRow($statement, $ipaddr);
-    # if no matches, insert a row in hosts
-    if ( !$row ) {
-        my $hostname = $self->getHostName($ipaddr);
-        $statement = "INSERT INTO hosts VALUES (NULL, '$ipaddr', '$hostname')";
-        $self->{db}->execStatement($statement);
-        return $self->{db}->{dbh}->{mysql_insertid};
-    }
-    else { return $row->{id}; }
-} #____________________________________________________________________________
-
-
-sub getHostName {
+sub ipToName {
     my( $self, $ipaddr ) = @_;
 
     my $hostname;
