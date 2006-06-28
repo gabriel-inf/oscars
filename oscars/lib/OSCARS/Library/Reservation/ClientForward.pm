@@ -78,9 +78,6 @@ sub forward {
     for my $key (keys %{$request}) {
         $forwardRequest->{$key} = $request->{$key};
     }
-    # Make the source in the new domain the last hop in the path in this
-    # domain.
-    $forwardRequest->{srcHost} = $request->{pathInfo}->{path}->{-1};
     $forwardRequest->{pathInfo} = undef;
     my $method = SOAP::Data -> name($methodName)
         -> attr ({'xmlns' => 'http://oscars.es.net/OSCARS/Dispatcher'});
