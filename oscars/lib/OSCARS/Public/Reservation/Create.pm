@@ -74,6 +74,9 @@ sub soapMethod {
     # and if so, forwards the request to the next domain.
     if ($pathInfo->{nextDomain} ) {
         $request->{nextDomain} = $pathInfo->{nextDomain};
+	# TODO:  FIX (do copy here rather than in ClientForward
+        $request->{ingressRouterIP} = undef;
+        $request->{egressRouterIP} = undef;
         $forwardResponse =
              $self->{forwarder}->forward($request, $self->{configuration}, $logger);
     }
