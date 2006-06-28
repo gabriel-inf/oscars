@@ -41,19 +41,23 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
 
 -- table for intradomain paths of reservations
 CREATE TABLE IF NOT EXISTS paths (
-    pathId			INT NOT NULL AUTO_INCREMENT,
-       -- total number of hops, including ingress and egress
-    numHops			INT,
-    PRIMARY KEY (pathId)
+    id				INT NOT NULL AUTO_INCREMENT,
+        -- if path still valid
+    valid                       BOOLEAN NOT NULL,
+        -- used for quick comparison to see if path already exists
+    pathList			TEXT,
+        -- number of times this path is referenced (inactive if 0)
+    refCtr                      INT,
+    PRIMARY KEY (id)
 ) type=MyISAM;
 
 -- cross reference table
-CREATE TABLE IF NOT EXISTS pathInterfaces (
+CREATE TABLE IF NOT EXISTS pathIpaddrs (
     pathId			INT NOT NULL,	-- foreign key
-    interfaceId			INT NOT NULL,	-- foreign key
+    ipaddrId			INT NOT NULL,	-- foreign key
        -- used to order path
     sequenceNumber              INT NOT NULL,
-    PRIMARY KEY (pathId, interfaceId)
+    PRIMARY KEY (pathId, ipaddrId)
 ) type=MyISAM;
 
 

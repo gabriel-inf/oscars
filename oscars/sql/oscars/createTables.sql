@@ -118,11 +118,9 @@ CREATE TABLE IF NOT EXISTS reservations (
     dscp		TEXT,
         -- protocol used (0-255, or a protocol string, such as udp)
     protocol		TEXT,
-    path			TEXT,
     description		TEXT,
       -- foreign keys (not optional)
-    ingressInterfaceId	INT NOT NULL,	-- foreign key
-    egressInterfaceId	INT NOT NULL,	-- foreign key
+    pathId		INT NOT NULL,   -- foreign key
         -- TODO:  storing tags of reservations in other domains
         -- keys of source and destination addresses in hosts table
     srcHostId		INT NOT NULL,   -- foreign key 
@@ -164,8 +162,6 @@ CREATE TABLE IF NOT EXISTS archivedReservations (
         -- space separated list of names or addresses of routers in path
     path		TEXT,
     description		TEXT,
-    ingressRouter	TEXT NOT NULL,
-    egressRouter	TEXT NOT NULL,
     srcHost		TEXT NOT NULL, 
     destHost		TEXT NOT NULL,
     PRIMARY KEY (id)

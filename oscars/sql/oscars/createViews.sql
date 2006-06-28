@@ -23,13 +23,13 @@ CREATE OR REPLACE VIEW ReservationAuthDetails AS
         r.bandwidth, r.burstLimit, r.login, r.status,
         r.class, r.srcPort, r.destPort, r.dscp, r.protocol, r.description,
         makeTag(r.startTime, r.login, r.id) AS tag,
-        r.path,
-        r.ingressInterfaceId, r.egressInterfaceId,
+        p.pathList AS path,
         sh.name AS srcHost,
         dh.name AS destHost 
     FROM reservations r
     INNER JOIN hosts sh ON sh.id = r.srcHostId
-    INNER JOIN hosts dh ON dh.id = r.destHostId;
+    INNER JOIN hosts dh ON dh.id = r.destHostId
+    INNER JOIN topology.paths p ON p.id = r.pathId;
 
 CREATE OR REPLACE VIEW ReservationUserDetails AS
     SELECT r.id, r.startTime, r.endTime, r.createdTime, r.origTimeZone,
@@ -43,7 +43,7 @@ CREATE OR REPLACE VIEW ReservationUserDetails AS
     INNER JOIN hosts dh ON dh.id = r.destHostId;
 
 CREATE OR REPLACE VIEW CheckOversubscribe AS
-    SELECT r.name, i.valid, i.speed
+    SELECT r.name, i.id, i.valid, i.speed
     FROM topology.interfaces i
     INNER JOIN topology.routers r ON r.id = i.routerId;
 
@@ -81,18 +81,13 @@ CREATE OR REPLACE VIEW sqlResvDetails AS
         r.class, r.srcPort, r.destPort, r.dscp, r.protocol,
         makeTag(r.startTime, r.login, r.id) AS tag,
         r.description,
-        r.path,
-        sr.name AS ingressRouter,
-        dr.name AS egressRouter,
+        p.pathList AS path,
         sh.name AS srcHost,
         dh.name AS destHost 
     FROM reservations r
     INNER JOIN hosts sh ON sh.id = r.srcHostId
     INNER JOIN hosts dh ON dh.id = r.destHostId
-    INNER JOIN topology.interfaces si ON si.id = r.ingressInterfaceId
-    INNER JOIN topology.interfaces di on di.id = r.egressInterfaceId
-    INNER JOIN topology.routers sr ON sr.id = si.routerId
-    INNER JOIN topology.routers dr on dr.id = di.routerId;
+    INNER JOIN topology.paths p ON p.id = r.pathId;
 
 --- AAA related views
 
