@@ -43,11 +43,12 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{pathfinder} = OSCARS::Library::Topology::Pathfinder->new(
-                             'db' => $self->{db});
     $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
                              'user' => $self->{user}, 'db' => $self->{db});
     $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
+    $self->{pathfinder} = OSCARS::Library::Topology::Pathfinder->new(
+                             'db' => $self->{db},
+		             'resvLib' => $self->{resvLib} );
     $self->{pssConfigs} = $self->getPSSConfiguration();
 } #____________________________________________________________________________
 
@@ -97,7 +98,7 @@ sub createReservation {
     my( $self, $request ) = @_;
     my( $durationSeconds );
 
-    $self->checkOversubscribed($request);
+    $self->checkOversubscribed( $request );
     my $fields = $self->buildFields( $request );
     my @k = keys %$fields;
     my @v = values %$fields;
@@ -113,9 +114,9 @@ sub createReservation {
 
 
 ###############################################################################
-# checkOverscribed:  gets the list of active reservations at the same time as
-#   this (proposed) reservation.  Also queries the db for the max speed of the
-#   router interfaces to see if we have exceeded it.
+# checkOversubscribed:  gets the list of active reservations at the same time
+#   as this (proposed) reservation.  Also queries the db for the max speed of
+#   the router interfaces to see if we have exceeded it.
 #
 # In:  hash of SOAP parameters
 # Out: None
@@ -123,7 +124,7 @@ sub createReservation {
 sub checkOversubscribed {
     my( $self, $request ) = @_;
 
-    my( %ifaceIdxs, $row, $routerName, $maxUtilization );
+    my( %ifaceIdxs, $row, $path, $routerName, $maxUtilization );
 
     # XXX: what is the MAX percent we can allocate? for now 50% ...
     my $maxReservationUtilization = 0.50; 
@@ -131,7 +132,7 @@ sub checkOversubscribed {
 
     # Get bandwidth and times of reservations overlapping that of the
     # reservation request.
-    my $statement = 'SELECT bandwidth, startTime, endTime, path ' .
+    my $statement = 'SELECT bandwidth, startTime, endTime, pathId ' .
           'FROM reservations WHERE endTime >= ? AND ' .
           "startTime <= ? AND (status = 'pending' OR status = 'active')";
 
@@ -139,18 +140,22 @@ sub checkOversubscribed {
     my $reservations = $self->{db}->doSelect( $statement,
            $request->{startTime}, $request->{endTime});
 
-    # assign the new path bandwidths 
-    for my $link (@{$request->{path}}) {
+    # get the bandwidth associated with each hop
+    for my $hop (@{$request->{pathInfo}->{path}}) {
+        # get interface associated with that address
+	my $link = $self->{resvLib}->getInterface( $hop );
         $ifaceIdxs{$link} = $bandwidth;
     }
 
-    # loop through all active reservations
+    # Loop through all active reservations, getting bandwidth allocated to 
+    # each interface on that path.
     for my $res (@$reservations) {
-        # get bandwidth allocated to each idx on that path
-        for my $path ( $res->{path} ) {
-            for my $link ( split(' ', $path) ) {
-                $ifaceIdxs{$link} += $res->{bandwidth};
-            }
+	# get hops in path
+	$path = $self->{resvLib}->getPathHopAddresses( $res->{pathId} );
+        for my $hop ( @{$path} ) {
+	    # get interface associated with that address
+	    my $link = $self->{resvLib}->{resvLib}->getInterface( $hop );
+            $ifaceIdxs{$link} += $res->{bandwidth};
         }
     }
     $statement = 'SELECT name, valid, speed FROM CheckOversubscribe ' .
@@ -165,6 +170,7 @@ sub checkOversubscribed {
             throw Error::Simple("interface $idx not valid");
         }
  
+	if ( $row->{speed} == 0 ) { next; }
         $maxUtilization = $row->{speed} * $maxReservationUtilization;
         if ($ifaceIdxs{$idx} > $maxUtilization) {
             my $errorMsg;
@@ -190,7 +196,7 @@ sub checkOversubscribed {
 sub buildFields {
     my( $self, $request ) = @_;
 
-    my( @interfaceInfo, $row );
+    my( @ipaddrInfo, $row );
     my $fields = {};
 
     $fields->{id} = 'NULL';
@@ -215,25 +221,30 @@ sub buildFields {
     $fields->{protocol} = $request->{protocol} ?
                   "'$request->{protocol}'" : 'NULL' ;
 
-    my $statement = 'SELECT i.id FROM topology.interfaces i ' .
-        'INNER JOIN topology.ipaddrs ip ON i.id = ip.interfaceId ' .
-	'WHERE ip.IP = ?';
+    # set up path information
+    my $idStatement = 'SELECT id FROM topology.ipaddrs WHERE IP = ?';
+    # get id for each hop in path
     my $pathInfo = $request->{pathInfo};
     for my $hop ( @{$pathInfo->{path}} ) {
-	$row = $self->{db}->getRow( $statement, $hop );  
-	push( @interfaceInfo, $row->{id} );
+	$row = $self->{db}->getRow( $idStatement, $hop );  
+	push( @ipaddrInfo, $row->{id} );
     }
-    my $pathStr = join(' ', @interfaceInfo);
-    $fields->{path} = "'$pathStr'" ;
+    # build summary string for insertion
+    my $pathStr = join(' ', @ipaddrInfo);
+    # insert row into paths table (TODO:  check for duplicates)
+    my $insertStatement = qq{ INSERT INTO topology.paths VALUES ( NULL, 1, ?, 1 ) };
+    $self->{db}->execStatement( $insertStatement, $pathStr );
+    $fields->{pathId} = $self->{db}->getPrimaryId();
+    # for each hop, insert row into pathIpaddrs cross reference table
+    $insertStatement = qq{INSERT INTO topology.pathIpaddrs VALUES ( ?, ?, ? ) };
+    my $ctr = 1;     # sequence number
+    for my $id ( @ipaddrInfo ) {
+        $self->{db}->execStatement( $insertStatement, $fields->{pathId}, $id, 
+		                    $ctr );
+	$ctr += 1;
+    }
+
     $fields->{description} = "'$request->{description}'" ;
-    if ( $pathInfo->{ingressLoopbackIP} ) {
-	$row = $self->{db}->getRow( $statement, $pathInfo->{ingressLoopbackIP});
-    }
-    $fields->{ingressInterfaceId} = $row->{id} ;
-    if ( $pathInfo->{egressIP} ) {
-	$row = $self->{db}->getRow( $statement, $pathInfo->{egressIP});
-    }
-    $fields->{egressInterfaceId} = $row->{id} ;
     my $srcHostId = $self->{resvLib}->hostIPToId($pathInfo->{srcIP});
     $fields->{srcHostId} = $srcHostId;
     my $destHostId = $self->{resvLib}->hostIPToId($pathInfo->{destIP});
