@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-June 27, 2006
+July 3, 2006
 
 =cut
 
@@ -31,10 +31,8 @@ use strict;
 use Data::Dumper;
 use Error qw(:try);
 
-use OSCARS::Database;
+use OSCARS::Library::Reservation;
 use OSCARS::Library::Topology::Pathfinder;
-use OSCARS::Library::Reservation::Common;
-use OSCARS::Library::Reservation::TimeConversion;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -43,13 +41,8 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
+    $self->{reservation} = OSCARS::Library::Reservation->new(
                              'user' => $self->{user}, 'db' => $self->{db});
-    $self->{timeLib} = OSCARS::Library::Reservation::TimeConversion->new();
-    $self->{pathfinder} = OSCARS::Library::Topology::Pathfinder->new(
-                             'db' => $self->{db},
-		             'resvLib' => $self->{resvLib} );
-    $self->{pssConfigs} = $self->getPSSConfiguration();
 } #____________________________________________________________________________
 
 
@@ -65,15 +58,16 @@ sub soapMethod {
 
     my $forwardResponse;
 
+    $self->{pathfinder} = OSCARS::Library::Topology::Pathfinder->new(
+                             'db' => $self->{db}, 'logger' => $logger );
     $logger->info("start", $request);
     # find path, and see if the next domain needs to be contacted
-    my $pathInfo = $self->{pathfinder}->findPathInfo( $request, $logger );
-    # save path for this domain
-    $request->{pathInfo} = $pathInfo;
+    my( $path, $nextDomain ) = $self->{pathfinder}->getPath( $request );
+    $request->{path} = $path;     # save path for this domain
     # If nextDomain is set, forward checks to see if it is in the database,
     # and if so, forwards the request to the next domain.
-    if ($pathInfo->{nextDomain} ) {
-        $request->{nextDomain} = $pathInfo->{nextDomain};
+    if ( $nextDomain ) {
+        $request->{nextDomain} = $nextDomain;
 	# TODO:  FIX (do copy here rather than in ClientForward
         $request->{ingressRouterIP} = undef;
         $request->{egressRouterIP} = undef;
@@ -99,172 +93,14 @@ sub soapMethod {
 #
 sub createReservation {
     my( $self, $request ) = @_;
-    my( $durationSeconds );
 
-    $self->checkOversubscribed( $request );
-    my $fields = $self->buildFields( $request );
-    my @k = keys %$fields;
-    my @v = values %$fields;
-    my $strKeys = join (', ', @k);
-    my $strValues = join ( ', ', @v );
-    my $statement = qq{INSERT INTO reservations ( $strKeys ) VALUES ( $strValues ) };
-    $self->{db}->execStatement($statement);
-    my $id = $self->{db}->getPrimaryId();
-    # get results back from database (minus extra quotes)
-    my $results = $self->{resvLib}->details($id);
+    # Make sure no link is oversubscribed.
+    $self->{reservation}->checkOversubscribed( $request );
+    # Insert reservation in reservations table
+    my $id = $self->{reservation}->insert( $request );
+    # get results back from reservations table (minus extra quotes)
+    my $results = $self->{reservation}->details( $id );
     return $results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# checkOversubscribed:  gets the list of active reservations at the same time
-#   as this (proposed) reservation.  Also queries the db for the max speed of
-#   the router interfaces to see if we have exceeded it.
-#
-# In:  hash of SOAP parameters
-# Out: None
-#
-sub checkOversubscribed {
-    my( $self, $request ) = @_;
-
-    my( %ifaceIdxs, $row, $path, $routerName, $maxUtilization );
-
-    # XXX: what is the MAX percent we can allocate? for now 50% ...
-    my $maxReservationUtilization = 0.50; 
-    my $bandwidth = $request->{bandwidth} * 1000000;
-
-    # Get bandwidth and times of reservations overlapping that of the
-    # reservation request.
-    my $statement = 'SELECT bandwidth, startTime, endTime, pathId ' .
-          'FROM reservations WHERE endTime >= ? AND ' .
-          "startTime <= ? AND (status = 'pending' OR status = 'active')";
-
-    # do query with the comparison start & end datetime strings
-    my $reservations = $self->{db}->doSelect( $statement,
-           $request->{startTime}, $request->{endTime});
-
-    # get the bandwidth associated with each hop
-    for my $hop (@{$request->{pathInfo}->{path}}) {
-        # get interface associated with that address
-	my $link = $self->{resvLib}->getInterface( $hop );
-        $ifaceIdxs{$link} = $bandwidth;
-    }
-
-    # Loop through all active reservations, getting bandwidth allocated to 
-    # each interface on that path.
-    for my $res (@$reservations) {
-	# get hops in path
-	$path = $self->{resvLib}->getPathHopAddresses( $res->{pathId} );
-        for my $hop ( @{$path} ) {
-	    # get interface associated with that address
-	    my $link = $self->{resvLib}->{resvLib}->getInterface( $hop );
-            $ifaceIdxs{$link} += $res->{bandwidth};
-        }
-    }
-    $statement = 'SELECT name, valid, speed FROM CheckOversubscribe ' .
-                 'WHERE id = ?';
-    # now for each of those interface idx
-    for my $idx (keys %ifaceIdxs) {
-        # get max bandwith speed for an idx
-        $row = $self->{db}->getRow($statement, $idx);
-        if (!$row ) { next; }
-
-        if ( $row->{valid} eq 'False' ) {
-            throw Error::Simple("interface $idx not valid");
-        }
- 
-	if ( $row->{speed} == 0 ) { next; }
-        $maxUtilization = $row->{speed} * $maxReservationUtilization;
-        if ($ifaceIdxs{$idx} > $maxUtilization) {
-            my $errorMsg;
-            # only print router name if user is authorized
-            if ( $self->{user}->authorized('Reservations', 'manage') ||
-                 $self->{user}->authorized('Domains', 'set' ) ) {
-                $errorMsg = "$row->{name} oversubscribed: ";
-            }
-            else { $errorMsg = 'Route oversubscribed: '; }
-            throw Error::Simple("$errorMsg  $ifaceIdxs{$idx}" .
-                  " Mbps > $maxUtilization Mbps\n");
-        }
-    }
-} #____________________________________________________________________________
-
-
-###############################################################################
-# buildFields:  convert parameters as necessary to build fields to insert
-#      into reservations table.
-# In:  reference to array of fields to insert
-# Out: ref to fields hash.
-#
-sub buildFields {
-    my( $self, $request ) = @_;
-
-    my( @ipaddrInfo, $row );
-    my $fields = {};
-
-    $fields->{id} = 'NULL';
-    $fields->{startTime} =
-        $self->{timeLib}->datetimeToSeconds($request->{startTime} );
-    $fields->{endTime} =
-        $self->{timeLib}->datetimeToSeconds( $request->{endTime} ) ;
-    $fields->{createdTime} = time();
-    $fields->{origTimeZone} = "'$request->{origTimeZone}'";
-    $fields->{bandwidth} = $request->{bandwidth} * 1000000;
-    $fields->{burstLimit} = $request->{burstLimit} ? 
-                  $request->{burstLimit} : $self->{pssConfigs}->{burstLimit} ;
-    $fields->{login} = "'$self->{user}->{login}'" ;
-    $fields->{status} = "'pending'" ;
-    $fields->{class} = $request->{class} ?
-                  "'$request->{class}'" : "'$self->{pssConfigs}->{CoS}'" ;
-    $fields->{srcPort} = $request->{srcPort} ?  $request->{srcPort} : 'NULL';
-    $fields->{destPort} = $request->{destPort} ? 
-                  $request->{destPort} : 'NULL';
-    $fields->{dscp} = $request->{dscp} ?
-                  "'$request->{dscp}'" : "'$self->{pssConfigs}->{dscp}'" ;
-    $fields->{protocol} = $request->{protocol} ?
-                  "'$request->{protocol}'" : 'NULL' ;
-
-    # set up path information
-    my $idStatement = 'SELECT id FROM topology.ipaddrs WHERE IP = ?';
-    # get id for each hop in path
-    my $pathInfo = $request->{pathInfo};
-    for my $hop ( @{$pathInfo->{path}} ) {
-	$row = $self->{db}->getRow( $idStatement, $hop );  
-	push( @ipaddrInfo, $row->{id} );
-    }
-    # build summary string for insertion
-    my $pathStr = join(' ', @ipaddrInfo);
-    # insert row into paths table (TODO:  check for duplicates)
-    my $insertStatement = qq{ INSERT INTO topology.paths VALUES ( NULL, 1, ?, 1 ) };
-    $self->{db}->execStatement( $insertStatement, $pathStr );
-    $fields->{pathId} = $self->{db}->getPrimaryId();
-    # for each hop, insert row into pathIpaddrs cross reference table
-    $insertStatement = qq{INSERT INTO topology.pathIpaddrs VALUES ( ?, ?, ? ) };
-    my $ctr = 1;     # sequence number
-    for my $id ( @ipaddrInfo ) {
-        $self->{db}->execStatement( $insertStatement, $fields->{pathId}, $id, 
-		                    $ctr );
-	$ctr += 1;
-    }
-
-    $fields->{description} = "'$request->{description}'" ;
-    my $srcHostId = $self->{resvLib}->hostIPToId($pathInfo->{srcIP});
-    $fields->{srcHostId} = $srcHostId;
-    my $destHostId = $self->{resvLib}->hostIPToId($pathInfo->{destIP});
-    $fields->{destHostId} = $destHostId;
-    return $fields;
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
-sub getPSSConfiguration {
-    my( $self ) = @_;
-
-        # use default for now
-    my $statement = "SELECT * FROM topology.configPSS where id = 1";
-    my $configs = $self->{db}->getRow($statement);
-    return $configs;
 } #____________________________________________________________________________
 
 

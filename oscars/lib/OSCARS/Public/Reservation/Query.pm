@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 11, 2006
+July 3, 2006
 
 =cut
 
@@ -32,7 +32,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Reservation::Common;
+use OSCARS::Library::Reservation;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -41,7 +41,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
+    $self->{reservation} = OSCARS::Library::Reservation->new(
                                  'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 
@@ -62,7 +62,7 @@ sub soapMethod {
 
     my @strArray = split('-', $request->{tag});
     my $id = $strArray[-1];
-    return $self->{resvLib}->details($id);
+    return $self->{reservation}->details($id);
 } #____________________________________________________________________________
 
 

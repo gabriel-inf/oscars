@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+July 3, 2006
 
 =cut
 
@@ -30,7 +30,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Database;
-use OSCARS::Library::Reservation::Common;
+use OSCARS::Library::Reservation;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -39,7 +39,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
+    $self->{reservation} = OSCARS::Library::Reservation->new(
                            'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 
@@ -56,7 +56,8 @@ sub soapMethod {
 
     $logger->info("start", $request);
     # TODO:  ensure unprivileged user can't cancel another's reservation
-    my $status =  $self->{resvLib}->updateStatus($request->{tag}, 'precancel');
+    my $status =  $self->{reservation}->updateStatus(
+	                                        $request->{tag}, 'precancel' );
     my $response = {};
     $response->{tag} = $request->{tag};
     $logger->info("finish", $response);

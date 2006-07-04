@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+July 3, 2006
 
 =cut
 
@@ -31,7 +31,7 @@ use Error qw(:try);
 
 use OSCARS::Database;
 use OSCARS::Library::Topology::Pathfinder;
-use OSCARS::Library::Reservation::Common;
+use OSCARS::Library::Reservation;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -40,7 +40,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->SUPER::initialize();
-    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
+    $self->{reservation} = OSCARS::Library::Reservation->new(
                             'user' => $self->{user}, 'db' => $self->{db});
 } #____________________________________________________________________________
 
