@@ -3,7 +3,7 @@
 use Test::Simple tests => 1;
 
 use OSCARS::PluginManager;
-use OSCARS::Method;
+use OSCARS::MethodFactory;
 
 my $configFile = $ENV{HOME} . '/.oscars.xml';
 my $pluginMgr = OSCARS::PluginManager->new('location' => $configFile);
