@@ -125,10 +125,10 @@ sub mapToIPs {
     my $addresses = $self->{path}->addresses( $resv->{pathId}, 'loopback' );
     my @hopInfo = @{$addresses};
     for my $hop ( @hopInfo ) {
-	if ( $hop->{description} eq 'loopback' ) {
-	    $resv->{ingressLoopbackIP} = $hop->{IP};
-	    last;
-	}
+        if ( $hop->{description} eq 'loopback' ) {
+            $resv->{ingressLoopbackIP} = $hop->{IP};
+            last;
+        }
     }
     $resv->{egressLoopbackIP} = $hopInfo[-1]->{IP};
 } #____________________________________________________________________________
