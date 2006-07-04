@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 28, 2006
+July 3, 2006
 
 =cut
 
@@ -31,7 +31,9 @@ use Error qw(:try);
 use Socket;
 
 use OSCARS::PSS::JnxLSP;
-use OSCARS::Library::Reservation::Common;
+use OSCARS::Library::Reservation;
+use OSCARS::Library::Topology::Host;
+use OSCARS::Library::Topology::Path;
 
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
@@ -42,8 +44,12 @@ sub initialize {
     $self->SUPER::initialize();
     $self->{LSP_SETUP} = 1;
     $self->{LSP_TEARDOWN} = 0;
-    $self->{resvLib} = OSCARS::Library::Reservation::Common->new(
+    $self->{reservation} = OSCARS::Library::Reservation->new(
                             'user' => $self->{user}, 'db' => $self->{db});
+    $self->{host} = OSCARS::Library::Topology::Host->new(
+                                                     'db' => $self->{db});
+    $self->{path} = OSCARS::Library::Topology::Path->new(
+                                                     'db' => $self->{db});
     # must be overriden
     $self->{opstring} = 'incorrect';
 } #____________________________________________________________________________
@@ -75,8 +81,8 @@ sub soapMethod {
         $self->mapToIPs($resv);
         # call PSS to schedule LSP
         $resv->{lspStatus} = $self->configurePSS($resv, $logger);
-        $self->{resvLib}->updateReservation( $resv, $updateStatus, $logger );
-        push( @formattedList, $self->{resvLib}->formatResults($resv) );
+        $self->{reservation}->update( $resv, $updateStatus );
+        push( @formattedList, $self->{reservation}->format($resv) );
     }
     my $response = \@formattedList;
     return $response;
@@ -114,12 +120,17 @@ sub configurePSS {
 sub mapToIPs {
     my( $self, $resv ) = @_;
  
-    $resv->{srcIP} = $self->{resvLib}->nameToIP( $resv->{srcHost} );
-    $resv->{destIP} = $self->{resvLib}->nameToIP( $resv->{destHost} );
-    $resv->{ingressLoopbackIP} = $self->{resvLib}->routerAddressType(
-	                             $resv->{ingressIpaddrId}, 'loopback' );
-    $resv->{egressLoopbackIP} = $self->{resvLib}->routerAddressType(
-	                             $resv->{egressIpaddrId}, 'loopback' );
+    $resv->{srcIP} = $self->{host}->nameToIP( $resv->{srcHost} );
+    $resv->{destIP} = $self->{host}->nameToIP( $resv->{destHost} );
+    my $addresses = $self->{path}->addresses( $resv->{pathId}, 'loopback' );
+    my @hopInfo = @{$addresses};
+    for my $hop ( @hopInfo ) {
+	if ( $hop->{description} eq 'loopback' ) {
+	    $resv->{ingressLoopbackIP} = $hop->{IP};
+	    last;
+	}
+    }
+    $resv->{egressLoopbackIP} = $hopInfo[-1]->{IP};
 } #____________________________________________________________________________
 
 
