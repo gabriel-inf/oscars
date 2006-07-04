@@ -1,13 +1,13 @@
 #==============================================================================
-package OSCARS::Library::Reservation::TimeConversion;
+package OSCARS::Library::TimeConverter;
 
 =head1 NAME
 
-OSCARS::Library::Reservation::TimeConversion- Functionality for timezone conversions.
+OSCARS::Library::TimeConverter- Functionality for timezone conversions.
 
 =head1 SYNOPSIS
 
-  use OSCARS::Library::Reservation::TimeConversion;
+  use OSCARS::Library::TimeConverter;
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 1, 2006
+July 3, 2006
 
 =cut
 
