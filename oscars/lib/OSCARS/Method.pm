@@ -1,30 +1,4 @@
 #==============================================================================
-package OSCARS::MethodFactory;
-
-use strict;
-use Data::Dumper;
-
-use OSCARS::PluginManager;
-use OSCARS::Mail;
-
-sub new {
-    my( $class, %args ) = @_;
-    my( $self ) = { %args };
-  
-    bless( $self, $class );
-    return( $self );
-}
-
-###############################################################################
-#
-sub instantiate {
-    my( $self, $user, $method ) = @_;
-
-    return $self->{pluginMgr}->usePlugin($method, $user);
-} #___________________________________________________________________________ 
-
-
-#==============================================================================
 package OSCARS::Method;
 
 =head1 NAME
@@ -46,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 24, 2006
+July 3, 2006
 
 =cut
 
@@ -56,7 +30,7 @@ use Data::Dumper;
 use Error qw(:try);
 
 use OSCARS::Mail;
-use OSCARS::Library::Reservation::ClientForward;
+use OSCARS::Forward;
 
 sub new {
     my( $class, %args ) = @_;
@@ -70,7 +44,7 @@ sub new {
 sub initialize {
     my( $self ) = @_;
 
-    $self->{forwarder} = OSCARS::Library::Reservation::ClientForward->new();
+    $self->{forwarder} = OSCARS::Forward->new();
     $self->{paramTests} = {};
     $self->{db} = $self->{user}->getDbHandle($self->{database});
     $self->{configuration} = $self->{pluginMgr}->getConfiguration();
@@ -139,5 +113,6 @@ sub postProcess {
 } #___________________________________________________________________________ 
 
 
+# vim: et ts=4 sw=4
 ######
 1;

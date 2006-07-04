@@ -10,6 +10,7 @@ use strict;
 use Data::Dumper;
 
 use OSCARS::PluginManager;
+use OSCARS::MethodFactory;
 
 my ( $daemon, $factory, $authN );
 
