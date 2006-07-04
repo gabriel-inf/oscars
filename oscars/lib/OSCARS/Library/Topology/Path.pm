@@ -44,7 +44,7 @@ sub initialize {
     my( $self ) = @_;
 
     $self->{router} = OSCARS::Library::Topology::Router->new(
-	                                             'db' => $self->{db});
+                                                          'db' => $self->{db});
 } #____________________________________________________________________________
 
 
@@ -132,8 +132,8 @@ sub insert {
     my $idStatement = 'SELECT id FROM topology.ipaddrs WHERE IP = ?';
     # get id for each hop in path
     for my $hop ( @{$self->{hops}} ) {
-	$row = $self->{db}->getRow( $idStatement, $hop );  
-	push( @ipaddrInfo, $row->{id} );
+        $row = $self->{db}->getRow( $idStatement, $hop );  
+        push( @ipaddrInfo, $row->{id} );
     }
     # build summary string for insertion
     my $pathStr = join(' ', @ipaddrInfo);
@@ -146,8 +146,8 @@ sub insert {
     my $ctr = 1;     # sequence number
     for my $id ( @ipaddrInfo ) {
         $self->{db}->execStatement( $insertStatement, $pathId, $id, 
-		                    $ctr );
-	$ctr += 1;
+                                    $ctr );
+        $ctr += 1;
     }
     return $pathId;
 } #____________________________________________________________________________
@@ -176,21 +176,22 @@ sub addresses {
  
     my $hops;
 
-    my $statement = 'SELECT ip.IP FROM topology.ipaddrs ip ' .
+    my $statement = 'SELECT ip.IP, ip.description FROM topology.ipaddrs ip ' .
         'INNER JOIN topology.pathIpaddrs pip ON pip.ipaddrId = ip.id  ' .
         'WHERE pip.pathId = ? ORDER BY sequenceNumber';
     if ( !$addressType ) {
         $hops = $self->{db}->doSelect($statement, $pathId);
     }
     elsif ( $addressType eq 'loopback' ) {
-	my $rows = $self->{db}->doSelect($statement, $pathId);
-	my @loopbacks = ();
-	for my $row ( @{$rows} ) {
-	    my $loopback = $self->{router}->info( $row->{IP}, 'loopback' );
-	    if ( !$loopback ) { $loopback = $row->{IP}; }
-	    push( @loopbacks, { 'IP' => $loopback } );
-	}
-	$hops = \@loopbacks;
+        my $rows = $self->{db}->doSelect($statement, $pathId);
+        my @loopbacks = ();
+        for my $row ( @{$rows} ) {
+            my $loopback = $self->{router}->info( $row->{IP}, 'loopback' );
+            if ( !$loopback ) { $loopback = $row->{IP}; }
+            push( @loopbacks,
+                 { 'IP' => $loopback, 'description' => $row->{description} } );
+        }
+        $hops = \@loopbacks;
     }
     return $hops;
 } #____________________________________________________________________________
