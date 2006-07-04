@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 19, 2006
+July 3, 2006
 
 =cut
 
@@ -55,7 +55,7 @@ sub initialize {
 ##############################################################################
 # initializeSession:  initialize SNMP session, given configs from database and
 #                      router.
-# Input:  configs, destination (must be IP address)
+# Input:  configs, and destination (which must be host name)
 # Output: <none>
 #
 sub initializeSession {
@@ -70,6 +70,8 @@ sub initializeSession {
         $self->{errMsg} = "ERROR: SNMP destination not defined\n";
         return;
     }
+    # Add domain suffix
+    $dst = $dst .  $self->{configs}->{domainSuffix};
     # Initialize Net::SNMP session.
     my $error;
     ( $self->{session}, $error ) = Net::SNMP->session (

@@ -26,18 +26,18 @@ Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-June 28, 2006
+July 3, 2006
 
 =cut
 
 use strict;
 
 use Data::Dumper;
-use Socket;
 use Error qw(:try);
 
 use OSCARS::Library::Topology::JnxTraceroute;
-use OSCARS::Library::Topology::JnxSNMP;
+use OSCARS::Library::Topology::Path;
+use OSCARS::Library::Topology::Router;
 
 
 sub new {
@@ -52,13 +52,17 @@ sub new {
 sub initialize {
     my ($self) = @_;
 
-    $self->{jnxSnmp} = OSCARS::Library::Topology::JnxSNMP->new(
+    $self->{router} = OSCARS::Library::Topology::Router->new(
+                            'db' => $self->{db}, 'logger' => $self->{logger} );
+    $self->{path} = OSCARS::Library::Topology::Path->new(
                                                      'db' => $self->{db} );
+    $self->{jnxTraceroute} = new OSCARS::Library::Topology::JnxTraceroute(
+                            'db' => $self->{db}, 'logger' => $self->{logger} );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# findPathInfo:  Finds local path from ingress to egress.  If one of these
+# getPath:  Finds local path from ingress to egress.  If one of these
 #     has been specified by an admin, that overrules the default path.
 #     It also finds the autonomous system number of the next hop
 #     past the local domain, if any.
@@ -68,64 +72,58 @@ sub initialize {
 # OUT: Hash containing source and destination host IP's, path list, and next 
 #     domain, if any.
 #
-sub findPathInfo {
-    my( $self, $params, $logger ) = @_;
+sub getPath {
+    my( $self, $params ) = @_;
 
-    my( $path, $nextHop );
+    my( $hops, $nextHop, $nextDomain );
 
-    $self->{logger} = $logger;
-    my $pathInfo = {};
-    $pathInfo->{srcIP} = $self->{resvLib}->nameToIP($params->{srcHost});
-    $pathInfo->{destIP} = $self->{resvLib}->nameToIP($params->{destHost});
-    my $ingressRouterIP = $self->doReversePath( $params );
+    my $ingressRouterIP = $self->reversePath( $params );
 
     # If the egress router was specified by an admin.
     if ( $params->{egressRouterIP} ) {
 	# Do a forward trace to get the local path
-        ( $path, $nextHop ) = $self->doForwardPath( $ingressRouterIP,
+        ( $hops, $nextHop ) = $self->forwardPath( $ingressRouterIP,
                                                     $params->{egressRouterIP} );
-        $pathInfo->{path} = $path;
+        $self->{path}->setHops( $hops );
 	# Do a forward trace from the egress to the destination to get the
 	# next hop.
-        ( $path, $nextHop ) = $self->doForwardPath( $params->{egressRouterIP},
+        ( $hops, $nextHop ) = $self->forwardPath( $params->{egressRouterIP},
                                                     $params->{destHost} );
     }
     # Else, trace from ingress to reservation destination, and get next hop if 
     # any.
     else {
-        ( $path, $nextHop ) = $self->doForwardPath( $ingressRouterIP,
+        ( $hops, $nextHop ) = $self->forwardPath( $ingressRouterIP,
                                                     $params->{destHost} );
-        $pathInfo->{path} = $path;
+        $self->{path}->setHops( $hops );
     }
-    my $nextAsNumber = $self->getAsNumber( $pathInfo->{path}->[-1], $nextHop );
+    my $nextAsNumber = $self->{router}->queryDomain( $hops->[-1], $nextHop );
     if ($nextAsNumber ne 'noSuchInstance') {
         if (!$params->{nextDomain} || 
            ($params->{nextDomain}) != $nextAsNumber) {
-            $pathInfo->{nextDomain} = $nextAsNumber;
+            $nextDomain = $nextAsNumber;
         }
     }
-    return $pathInfo;
+    return( $self->{path}, $nextDomain );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# doReversePath:  Finds the ingress router if it has not already been 
+# reversePath:  Finds the ingress router if it has not already been 
 #                 specified.
 # IN:  hash containing relevant parameters.
 # OUT: address of ingress router
 #
-sub doReversePath {
+sub reversePath {
     my( $self, $params ) = @_;
 
-    my( $src, $ingressRouterIP, $interfaceFound, $loopbackFound );
-    my( $ingressLoopbackIP );
+    my $src;
 
     # If the ingress router is given, make sure it is in the database,
     # and then return as is.
     if ( $params->{ingressRouterIP} ) {
-        $ingressLoopbackIP =
-            $self->{resvLib}->routerAddressType( $params->{ingressRouterIP},
-	                                         'loopback' );
+        my $ingressLoopbackIP =
+            $self->{router}->info( $params->{ingressRouterIP}, 'loopback' );
         if ( !$ingressLoopbackIP ) { 
             throw Error::Simple("No loopback for specified ingress router $params->{ingressRouterIP}");
         }
@@ -143,121 +141,57 @@ sub doReversePath {
         { 'source' => $src,
           'destination' => $params->{srcHost} } );
     # Run the reverse traceroute to the reservation source.
-    my $hops = $self->doTraceroute( $src, $params->{srcHost} );
+    my $hops = $self->traceroute( $src, $params->{srcHost} );
     # Find the last router in the database to get the ingress router.
-    for my $hop ( @{$hops} )  {
-        $interfaceFound = $self->{resvLib}->getInterface( $hop );
-        if ( $interfaceFound ) { $ingressRouterIP = $hop; }
-    }
-    if ( !$ingressRouterIP ) { 
-        throw Error::Simple("No ingress interface found by reverse traceroute");
-    }
-    # Make sure the path has an ingress loopback address.
-    for my $hop ( @{$hops} )  {
-        $loopbackFound = $self->{resvLib}->routerAddressType( $hop, 'loopback' );
-        if ( $loopbackFound ) { $ingressLoopbackIP = $hop; }
-    }
-    if ( !$ingressLoopbackIP ) { 
-        throw Error::Simple("No ingress loopback found by reverse traceroute");
-    }
-    return $ingressLoopbackIP;
+    my $ingressRouterIP = $self->{path}->lastInterface( $hops );
+    # Return the ingress loopback address (exception thrown if none).
+    return $self->{path}->lastLoopback( $hops );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# doForwardPath:  Finds the forward path from ingress router IP to
+# forwardPath:  Finds the forward path from ingress router IP to
 #     egress router IP.
 # IN:  ingress router IP, destination IP, and hash to pass back to Create
 # OUT: forward path (array of IP's)
 #
-sub doForwardPath {
+sub forwardPath {
     my( $self, $src, $dest) = @_;
-
-    my( $interfaceFound, @path, $nextHop );
 
     # Traceroute is performed whether the egress router is specified or not. 
     # It is necessary to get the path within the local domain, and the 
     # autonomous system number of the next domain.
     $self->{logger}->info('Pathfinder.traceroute.forward',
                           { 'source' => $src, 'destination' => $dest } );
-    my $hops = $self->doTraceroute( $src, $dest );
-    for my $hop ( @{$hops} )  {
-        $interfaceFound = $self->{resvLib}->getInterface( $hop );
-        if ( $interfaceFound ) { push( @path, $hop ); }
-        else {
-            $nextHop = $hop;
-            last; 
-        }
-    }
-    return( \@path, $nextHop );
+    my $hops = $self->traceroute( $src, $dest );
+    my( $path, $nextHop ) = $self->{path}->nextHop( $hops );
+    return( $path, $nextHop );
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# doTraceroute:  Finds complete path between source and destination, converting
+# traceroute:  Finds complete path between source and destination, converting
 #     source and destination to IP addresses if necessary.
 # IN:  source and destination, traceroute configuration variables
 # OUT: path list (IP addresses)
 #
-sub doTraceroute {
+sub traceroute {
     my( $self, $src, $dest ) = @_;
 
     my $source;
 
-    my $jnxTraceroute = new OSCARS::Library::Topology::JnxTraceroute(
-                            'db' => $self->{db}, 'logger' => $self->{logger} );
     if ( $src ) {
-        $source = $self->{resvLib}->routerAddressType( $src, 'traceAddress' );
+        $source = $self->{router}->info( $src, 'traceAddress' );
         if ( !$source ) { $source = $src; }
     }
     else { $source = 'default'; }
-    my $pathSrc = $jnxTraceroute->traceroute( $source, $dest );
-    my @hops = $jnxTraceroute->getHops();
+    my $pathSrc = $self->{jnxTraceroute}->traceroute( $source, $dest );
+    my @hops = $self->{jnxTraceroute}->getHops();
     # prepend source to path
     unshift @hops, $pathSrc;
     # if we didn't hop much, maybe the same router?
     if ( $#hops < 0 ) { throw Error::Simple("same router?"); }
     return \@hops;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# getAsNumber:  Gets the autonomous service number associated with an IP 
-#     address by performing an SNMP query against the egress router
-#                
-# In:  IP address of egress router, IP address of next hop
-# Out: autonomous service number (used by the AAAS to look up uri and proxy)
-#
-sub getAsNumber {
-    my( $self, $interfaceIP, $ipaddr ) = @_;
-
-    my $asNumber;
-
-    # Get router name for logging.  If unable to get, router not in db
-    my $routerName = $self->{resvLib}->getRouterName($interfaceIP);
-    if ( !$routerName ) {
-        throw Error::Simple("Pathfinder.getAsNumber: no router in database for $interfaceIP");
-    }
-    $self->{jnxSnmp}->initializeSession( $interfaceIP );
-    my $errorMsg = $self->{jnxSnmp}->getError();
-    if ( $errorMsg ) {
-        throw Error::Simple("Unable to initialize SNMP session: $errorMsg");
-    }
-    $asNumber = $self->{jnxSnmp}->queryAsNumber($ipaddr);
-    $errorMsg = $self->{jnxSnmp}->getError();
-    if ( $errorMsg ) {
-        #Log SNMP failure but build reservation up to this point
-        $self->{logger}->info('Pathfinder.getAsNumber',
-            { 'router' => $routerName , 'nextHop' => $ipaddr,
-              'errorMessage' => $errorMsg });
-        $asNumber = 'noSuchInstance';
-    }
-    $self->{logger}->info('Pathfinder.getAsNumber',
-            { 'router' => $routerName , 'nextHop' => $ipaddr,
-            'AS' => $asNumber });
-    $self->{jnxSnmp}->closeSession();
-    
-    return $asNumber;
 } #____________________________________________________________________________
 
 
