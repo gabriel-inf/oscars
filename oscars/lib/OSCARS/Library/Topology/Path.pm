@@ -188,6 +188,7 @@ sub addresses {
         for my $row ( @{$rows} ) {
             my $loopback = $self->{router}->info( $row->{IP}, 'loopback' );
             if ( !$loopback ) { $loopback = $row->{IP}; }
+	    else { $row->{description} = 'loopback'; }
             push( @loopbacks,
                  { 'IP' => $loopback, 'description' => $row->{description} } );
         }
