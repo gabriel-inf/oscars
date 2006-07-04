@@ -77,7 +77,7 @@ sub initializeSession {
     ( $self->{session}, $error ) = Net::SNMP->session (
                      -hostname		=> $dst,
                      -port		=> $self->{configs}->{port},
-		     -community		=> $self->{configs}->{community},
+                     -community		=> $self->{configs}->{community},
                      -version		=> $self->{configs}->{version},
                      -timeout		=> $self->{configs}->{timeout},
                      -retries		=> $self->{configs}->{retries},
@@ -121,10 +121,9 @@ sub queryAsNumber {
     # OID is for bgpPeerRemoteAs, concatenated with $ipaddr
     my $oid = '1.3.6.1.2.1.15.3.1.9';
     my $results = $self->{session}->get_request(
-		     -varbindlist => ["$oid.$ipaddr"]
-    );
+                                             -varbindlist => ["$oid.$ipaddr"] );
     if (!defined($results))  {
-	my $err = $self->{session}->error;
+        my $err = $self->{session}->error;
         $self->{errMsg} = "ERROR: Cannot make as number query: $err\n";
         return;
     }
@@ -150,8 +149,8 @@ sub queryLspSnmp {
     # only for that many repeaters.
     # TODO:  figure out mpls mib, this oid is for bgpPeerRemoteAs
     my $results = $self->{session}->get_bulk_request(
-	             -maxrepetitions => 8,
-		     -varbindlist => ["1.3.6.1.2.1.15.3.1.9"]
+                     -maxrepetitions => 8,
+                     -varbindlist => ["1.3.6.1.2.1.15.3.1.9"]
     );
 
     if (!defined($results))  {

@@ -73,7 +73,7 @@ sub traceroute
            "$self->{configs}->{timeout} ttl " .
            "$self->{configs}->{ttl}";
     $self->{logger}->info('JnxTraceroute.ssh',
-	    {'command' => $cmd, 'src' => $src, 'dst' => $dst});
+           {'command' => $cmd, 'src' => $src, 'dst' => $dst});
     if (not(open(_TRACEROUTE_, "$cmd 2>/dev/null |")))  {
         throw Error::Simple("Unable to ssh into router and perform traceroute.");
     }
@@ -86,7 +86,7 @@ sub traceroute
     # Parse the results.
     while ($hopInfo = <_TRACEROUTE_>)  {
         $self->{rawHopData}[$hopCount] = $hopInfo;
-	$self->{logger}->info('JnxTraceroute', { 'hop' => substr($hopInfo, 0, -1) });
+        $self->{logger}->info('JnxTraceroute', { 'hop' => substr($hopInfo, 0, -1) });
 
         # Get the hop IP address from output, e.g.
         #  1  esnet3-lbl3.es.net (198.129.76.26)  0.628 ms  0.569 ms  0.522 ms

@@ -134,18 +134,18 @@ sub checkOversubscribed {
     $addresses = $request->{path}->getHops();
     for my $hop ( @{$addresses} ) {
         # get interface associated with that address
-	my $link = $self->{router}->interface( $hop );
+        my $link = $self->{router}->interface( $hop );
         $ifaceIdxs{$link} = $bandwidth;
     }
 
     # Loop through all active reservations, getting bandwidth allocated to 
     # each interface on that path.
     for my $res (@$reservations) {
-	# get hops in reservation's path
-	$addresses = $self->{path}->addresses( $res->{pathId} );
+        # get hops in reservation's path
+        $addresses = $self->{path}->addresses( $res->{pathId} );
         for my $hop ( @{$addresses} ) {
-	    # get interface associated with that address
-	    my $link = $self->{router}->interface( $hop );
+            # get interface associated with that address
+            my $link = $self->{router}->interface( $hop );
             $ifaceIdxs{$link} += $res->{bandwidth};
         }
     }
@@ -161,7 +161,7 @@ sub checkOversubscribed {
             throw Error::Simple("interface $idx not valid");
         }
  
-	if ( $row->{speed} == 0 ) { next; }
+        if ( $row->{speed} == 0 ) { next; }
         $maxUtilization = $row->{speed} * $maxReservationUtilization;
         if ($ifaceIdxs{$idx} > $maxUtilization) {
             my $errorMsg;

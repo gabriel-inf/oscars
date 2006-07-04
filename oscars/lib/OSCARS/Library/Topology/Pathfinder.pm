@@ -81,12 +81,12 @@ sub getPath {
 
     # If the egress router was specified by an admin.
     if ( $params->{egressRouterIP} ) {
-	# Do a forward trace to get the local path
+        # Do a forward trace to get the local path
         ( $hops, $nextHop ) = $self->forwardPath( $ingressRouterIP,
                                                     $params->{egressRouterIP} );
         $self->{path}->setHops( $hops );
-	# Do a forward trace from the egress to the destination to get the
-	# next hop.
+        # Do a forward trace from the egress to the destination to get the
+        # next hop.
         ( $hops, $nextHop ) = $self->forwardPath( $params->{egressRouterIP},
                                                     $params->{destHost} );
     }
