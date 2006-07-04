@@ -3,7 +3,7 @@ package OSCARS::PSS::JnxLSP;
 
 # Authors: chin guok (chin@es.net), David Robertson (dwrobertson@lbl.gov)
 # Description:  Class and methods to setup/teardown LSPs on Juniper routers.
-# Last Modified:  March 28, 2006
+# Last Modified:  July 3, 2006
 
 
 use strict;
@@ -13,10 +13,6 @@ use JUNOS::Trace;
 use XML::DOM;
 
 use Data::Dumper;
-
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT = qw();
 
 # JUNOScript constants
 
@@ -276,7 +272,7 @@ sub execute_configuration_change {
     };
     if ($@) {
         $self->{logger}->info("exception.ignored: $@",
-	        {'XML' => substr($xmlString, 0, length($xmlString)-1) });
+               {'XML' => substr($xmlString, 0, length($xmlString)-1) });
         return;
     }
 
@@ -293,7 +289,7 @@ sub execute_configuration_change {
     my $xmlDoc = $_xmlParser->parsestring($xmlString);
     unless (ref($xmlDoc)) {
         $self->{errMsg} = "ERROR: Cannot parse XML, check to make sure the XML data is well-formed\n";
-	$self->update_log( $xmlString );
+        $self->update_log( $xmlString );
         graceful_shutdown($jnx, _STATE_LOCKED);
         return();
     }
@@ -398,7 +394,7 @@ sub update_log {
     my $errmsg = $self->get_error();
     if ($errmsg)  { $xmlString .= "*** $errmsg"; }
     $self->{logger}->info('JnxLSP.configuration',
-	    {'XML' => substr($xmlString, 0, length($xmlString)-1) });
+                     {'XML' => substr($xmlString, 0, length($xmlString)-1) });
 } #____________________________________________________________________________
 
 
