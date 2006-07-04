@@ -69,17 +69,16 @@ sub sendMessage {
         for my $key ( keys %{$notification} ) {
             if ( $result->{$key} ) {
                 $msg .= $key . ':    ' . $result->{$key} . "\n"; 
-	    }
+            }
         }
-	if ($login ne 'testaccount') {
-	    $errMsg = $self->mailMessage($self->getWebmaster(), $login,
+        if ($login ne 'testaccount') {
+            $errMsg = $self->mailMessage($self->getWebmaster(), $login,
                 'OSCARS:  ' . $notification->{subject}, $msg);
-	    if ($errMsg) { throw Error::Simple( $errMsg ); }
-	}
+            if ($errMsg) { throw Error::Simple( $errMsg ); }
+        }
         $errMsg = $self->mailMessage($self->getWebmaster(), $self->getAdmins(),
-            'OSCARS:  Admin notice.  ' . $notification->{subject},
-	    $msg);
-	if ($errMsg) { throw Error::Simple( $errMsg ); }
+            'OSCARS:  Admin notice.  ' . $notification->{subject}, $msg);
+        if ($errMsg) { throw Error::Simple( $errMsg ); }
     }
     return;
 } #____________________________________________________________________________ 
@@ -99,7 +98,6 @@ sub mailMessage {
     print MAIL "Subject:  $subject\n";
     print MAIL 'Content-Type: text/plain; charset="' .
                    $self->{emailEncoding} . '"' . "\n\n";
-			
     print MAIL $msg;
     print MAIL "\n";
     print MAIL "---------------------------------------------------\n";

@@ -117,12 +117,12 @@ sub sanitize {
 
     my $logMessage = {};
     for my $key ( keys %{$hash} ) {
-	if ($key ne 'password') {
-	    $logMessage->{$key} = $hash->{$key};
-	}
+        if ($key ne 'password') {
+            $logMessage->{$key} = $hash->{$key};
+        }
     }
     if (!$logMessage->{login}) {
-	$logMessage->{login} = $self->{login};
+        $logMessage->{login} = $self->{login};
     }
     return $logMessage;
 } #____________________________________________________________________________

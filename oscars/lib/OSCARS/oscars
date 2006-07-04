@@ -68,7 +68,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 20, 2006
+July 3, 2006
 
 =cut
 
@@ -364,10 +364,10 @@ sub handle {
     my $results = {};
     try {
         $user = $authN->authenticate($daemon, $request);
-	$logger->setUserLogin($user->{login});
+        $logger->setUserLogin($user->{login});
         $handler = $factory->instantiate( $user, $method );
         # Handles SOAP method.  Handler may make other SOAP calls to
-	# accomplish its task.
+        # accomplish its task.
         $results = $handler->soapMethod($request, $logger);
     }
     catch Error::Simple with { $ex = shift; }
@@ -376,7 +376,7 @@ sub handle {
         if ($ex) {
             print STDERR $ex->{-text}, "\n";
             $logger->warning("exception: $ex->{-text}", $request);
-	    $logger->close();
+            $logger->close();
                 # caught by SOAP to indicate fault
             die SOAP::Fault->faultcode('Server')
                  ->faultstring($ex->{-text});

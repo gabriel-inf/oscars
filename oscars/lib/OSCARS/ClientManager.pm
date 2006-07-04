@@ -63,14 +63,14 @@ sub getClient {
 
     if ( !$domain ) { $domain = 'default'; }
     if (!$self->{configuration}->{$domain}) {
-	print STDERR "domain $domain not handled\n";
-	return undef;
+        print STDERR "domain $domain not handled\n";
+        return undef;
     }
     my $soapAction = $self->{configuration}->{namespace} . '/' . $methodName;
     my $client = WSRF::Lite
         -> uri( $self->{configuration}->{$domain}->{uri} )
         -> proxy( $self->{configuration}->{$domain}->{proxy} )
-	-> on_action ( sub { return "$soapAction" } );
+        -> on_action ( sub { return "$soapAction" } );
     return $client;
 } #____________________________________________________________________________
 

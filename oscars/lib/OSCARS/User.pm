@@ -66,8 +66,8 @@ sub getDbHandle {
     my( $self, $dbname ) = @_;
 
     if ( !$self->{handles}->{$dbname} ) {
-	$self->{handles}->{$dbname} = OSCARS::Database->new();
-	$self->{handles}->{$dbname}->connect($dbname);
+        $self->{handles}->{$dbname} = OSCARS::Database->new();
+        $self->{handles}->{$dbname}->connect($dbname);
     }
     return $self->{handles}->{$dbname};
 } #____________________________________________________________________________

@@ -73,7 +73,7 @@ sub usePlugin {
     my $packageName = $plugin->{location};
     if ( $plugin->{database} ) { 
         $database =
-	        $self->{config}->{database}->{$plugin->{database}}->{location};
+                $self->{config}->{database}->{$plugin->{database}}->{location};
     }
     else {
         $database = $self->{config}->{database}->{'system'}->{location};
@@ -85,7 +85,7 @@ sub usePlugin {
     if (!$@) {
         return $packageName->new( 'database' => $database,
                                   'pluginMgr' => $self,
-			          'user' => $user);
+                                  'user' => $user);
     }
     else { return undef; }
 } #____________________________________________________________________________
