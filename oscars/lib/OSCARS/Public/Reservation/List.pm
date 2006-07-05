@@ -33,6 +33,8 @@ use Error qw(:try);
 use OSCARS::Method;
 our @ISA = qw{OSCARS::Method};
 
+use OSCARS::Library::Reservation;
+
 sub initialize {
     my( $self ) = @_;
 
