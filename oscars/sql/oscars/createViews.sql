@@ -23,13 +23,12 @@ CREATE OR REPLACE VIEW ReservationAuthDetails AS
         r.bandwidth, r.burstLimit, r.login, r.status,
         r.class, r.srcPort, r.destPort, r.dscp, r.protocol, r.description,
         makeTag(r.startTime, r.login, r.id) AS tag,
-        p.pathList AS path,
+        r.pathId,
         sh.name AS srcHost,
         dh.name AS destHost 
     FROM reservations r
     INNER JOIN hosts sh ON sh.id = r.srcHostId
-    INNER JOIN hosts dh ON dh.id = r.destHostId
-    INNER JOIN topology.paths p ON p.id = r.pathId;
+    INNER JOIN hosts dh ON dh.id = r.destHostId;
 
 CREATE OR REPLACE VIEW ReservationUserDetails AS
     SELECT r.id, r.startTime, r.endTime, r.createdTime, r.origTimeZone,
