@@ -129,24 +129,28 @@ sub insert {
     my( @ipaddrInfo, $row );
 
     # set up path information
-    my $idStatement = 'SELECT id FROM topology.ipaddrs WHERE IP = ?';
+    my $statement = 'SELECT id FROM topology.ipaddrs WHERE IP = ?';
     # get id for each hop in path
     for my $hop ( @{$self->{hops}} ) {
-        $row = $self->{db}->getRow( $idStatement, $hop );  
+        $row = $self->{db}->getRow( $statement, $hop );  
         push( @ipaddrInfo, $row->{id} );
     }
     # build summary string for insertion
     my $pathStr = join(' ', @ipaddrInfo);
-    # insert row into paths table (TODO:  check for duplicates)
-    my $insertStatement = qq{ INSERT INTO topology.paths VALUES ( NULL, 1, ?, 1 ) };
-    $self->{db}->execStatement( $insertStatement, $pathStr );
+    # check for existing path
+    $statement = 'SELECT id FROM topology.paths WHERE pathList = ?';
+    my $pathList = $self->{db}->getRow( $statement, $pathStr );
+    if ( $pathList->{id} ) { return $pathList->{id}; }
+
+    # insert row into paths table
+    $statement = qq{ INSERT INTO topology.paths VALUES ( NULL, 1, ?, 1 ) };
+    $self->{db}->execStatement( $statement, $pathStr );
     my $pathId = $self->{db}->getPrimaryId();
     # for each hop, insert row into pathIpaddrs cross reference table
-    $insertStatement = qq{INSERT INTO topology.pathIpaddrs VALUES ( ?, ?, ? ) };
+    $statement = qq{INSERT INTO topology.pathIpaddrs VALUES ( ?, ?, ? ) };
     my $ctr = 1;     # sequence number
     for my $id ( @ipaddrInfo ) {
-        $self->{db}->execStatement( $insertStatement, $pathId, $id, 
-                                    $ctr );
+        $self->{db}->execStatement( $statement, $pathId, $id, $ctr );
         $ctr += 1;
     }
     return $pathId;
