@@ -17,10 +17,6 @@
 <client payloadSender='discvenue.internet2.edu'
 	uri='https://discvenue.internet2.edu/OSCARS/Dispatcher'
 	proxy='https://discvenue.internet2.edu/OSCARS/Server'
-	name='1000000' />
-<client payloadSender='oscars.es.net'
-	uri='https://oscars.es.net/OSCARS/Dispatcher'
-	proxy='https://oscars.es.net/OSCARS/Server'
 	name='11537' />
 
 <!-- AAA configuration.  The database value is a reference to the plugin
@@ -102,10 +98,6 @@
     <dscp>DSCP</dscp>
     <protocol>Protocol</protocol>
     <path>Routers in path</path>
-    <ingressRouterIP>Ingress router</ingressRouterIP>
-    <ingressLoopbackIP>Ingress loopback IP</ingressLoopbackIP>
-    <egressRouterIP>Egress router</egressRouterIP>
-    <egressLoopbackIP>Egress loopback IP</egressLoopbackIP>
 </notification>
 
 <notification name='reservationPending'>
