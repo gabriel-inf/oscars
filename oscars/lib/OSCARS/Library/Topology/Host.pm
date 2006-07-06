@@ -58,7 +58,7 @@ sub toId {
     my $row = $self->{db}->getRow($statement, $ipaddr);
     # if no matches, insert a row in hosts
     if ( !$row ) {
-        my $hostname = $self->toName($ipaddr);
+        my $hostname = $self->ipToName($ipaddr);
         $statement = "INSERT INTO hosts VALUES (NULL, '$ipaddr', '$hostname')";
         $self->{db}->execStatement($statement);
         return $self->{db}->{dbh}->{mysql_insertid};
