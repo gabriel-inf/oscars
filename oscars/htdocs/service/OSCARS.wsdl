@@ -8,7 +8,7 @@
 
 	<wsdl:documentation>
 		This is WSDL for the OSCARS public reservation interface. DRAFT
-		V0.2.3  June 30, 2006
+		V0.2.3  July 5, 2006
 	</wsdl:documentation>
 
 	<!-- Element definitons -->
@@ -228,10 +228,10 @@
 
 			<xsd:simpleType name="payloadContentType">
 				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="CREATERESERVATION"/>
-					<xsd:enumeration value="QUERYRESERVATION"/>
-					<xsd:enumeration value="CANCELRESERVATION"/>
-					<xsd:enumeration value="LISTRESERVATION"/>
+					<xsd:enumeration value="createReservation"/>
+					<xsd:enumeration value="queryReservation"/>
+					<xsd:enumeration value="cancelReservation"/>
+					<xsd:enumeration value="listReservation"/>
 				</xsd:restriction>
 			</xsd:simpleType>
 			
