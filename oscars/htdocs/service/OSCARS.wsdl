@@ -161,15 +161,6 @@
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="destPort" type="xsd:int"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="ingressRouterIP"
-						type="xsd:string" maxOccurs="1" minOccurs="0" />
-					<xsd:element name="egressRouterIP" type="xsd:string"
-						maxOccurs="1" minOccurs="0" />
-					<!-- control inteterfaces on routers -->
-					<xsd:element name="ingressLoopbackIP"
-						type="xsd:string" maxOccurs="1" minOccurs="0" />
-					<xsd:element name="egressLoopbackIP"
-						type="xsd:string" maxOccurs="1" minOccurs="0" />
 				</xsd:sequence>
 			</xsd:complexType>
 
