@@ -81,6 +81,30 @@ CREATE TABLE IF NOT EXISTS domains (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+-- table for interdomain paths of reservations
+CREATE TABLE IF NOT EXISTS interdomainPaths (
+    id				INT NOT NULL AUTO_INCREMENT,
+        -- if path still valid
+    valid                       BOOLEAN NOT NULL,
+        -- used for quick comparison to see if path already exists
+    domainList			TEXT,
+        -- number of times this path is referenced (inactive if 0)
+    refCtr                      INT,
+    PRIMARY KEY (id)
+) type=MyISAM;
+
+-- cross reference table
+CREATE TABLE IF NOT EXISTS interdomainPathDomains (
+    interdomainPathId		INT NOT NULL,	-- foreign key
+    domainId			INT NOT NULL,	-- foreign key
+       -- unique reservation tag used in that domain
+    reservationTag              TEXT NOT NULL,  -- foreign key
+       -- used to order path
+    sequenceNumber              INT NOT NULL,
+    PRIMARY KEY (interdomainPathId, domainId)
+) type=MyISAM;
+
+
 -- table for source and destination IP addresses
 CREATE TABLE IF NOT EXISTS hosts (
     id			INT NOT NULL AUTO_INCREMENT,
@@ -120,8 +144,10 @@ CREATE TABLE IF NOT EXISTS reservations (
     protocol		TEXT,
     description		TEXT,
       -- foreign keys (not optional)
+      -- local path
     pathId		INT NOT NULL,   -- foreign key
-        -- TODO:  storing tags of reservations in other domains
+      -- interdomain path
+    interdomainPathId	INT NOT NULL,   -- foreign key
         -- keys of source and destination addresses in hosts table
     srcHostId		INT NOT NULL,   -- foreign key 
     destHostId		INT NOT NULL,	-- foreign key 
