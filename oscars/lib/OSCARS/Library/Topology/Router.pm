@@ -123,6 +123,8 @@ sub queryDomain {
 
     my $asNumber;
 
+    # temporary kludge
+    $interfaceIP = $self->nameToIP( $interfaceIP );
     # Get router name for logging.  If unable to get, router not in db
     my $routerName = $self->name( $interfaceIP );
     if ( !$routerName ) {
