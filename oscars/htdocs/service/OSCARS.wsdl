@@ -8,7 +8,7 @@
 
 	<wsdl:documentation>
 		This is WSDL for the OSCARS public reservation interface. DRAFT
-		V0.2.3  July 5, 2006
+		V0.2.3  July 7, 2006
 	</wsdl:documentation>
 
 	<!-- Element definitons -->
@@ -191,13 +191,13 @@
 			     	<xsd:sequence>
 					<xsd:element name="contentType"
 						type="tns:payloadContentType" />
-					<xsd:element name="createResReply"
+					<xsd:element name="createReservation"
 						type="tns:createReply" maxOccurs="1" minOccurs="0" />
-					<xsd:element name="cancelResReply" type="tns:resStatus"
+					<xsd:element name="cancelReservation" type="tns:resStatus"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="queryResReply" type="tns:resDetails"
+					<xsd:element name="queryReservation" type="tns:resDetails"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="listResReply" type="tns:listReply"
+					<xsd:element name="listReservation" type="tns:listReply"
 						maxOccurs="1" minOccurs="0">
 					</xsd:element>
 				</xsd:sequence>
