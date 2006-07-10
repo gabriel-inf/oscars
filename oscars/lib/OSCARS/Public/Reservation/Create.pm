@@ -98,8 +98,8 @@ sub createReservation {
     $self->{reservation}->checkOversubscribed( $request );
     # Insert reservation in reservations table
     my $id = $self->{reservation}->insert( $request );
-    # get results back from reservations table (minus extra quotes)
-    my $results = $self->{reservation}->details( $id );
+    # get status back, and tag if creation was successful
+    my $results = $self->{reservation}->createReply( $id );
     return $results;
 } #____________________________________________________________________________
 

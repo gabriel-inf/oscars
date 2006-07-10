@@ -60,6 +60,24 @@ sub initialize {
 
 
 ###############################################################################
+# createReply:  get the return fields for a createReservation request.
+#
+# In:  reference to hash of parameters
+# Out: reference to hash of reservation details
+#
+sub createReply {
+    my( $self, $id ) = @_;
+
+    my( $statement, $fields );
+
+    $statement = 'SELECT tag, status FROM ReservationUserDetails WHERE id = ?';
+    $fields = $self->{db}->getRow($statement, $id);
+    my $results = { 'status' => $fields->{status}, 'tag' => $fields->{tag} };
+    return $results;
+} #____________________________________________________________________________
+
+
+###############################################################################
 # details:  get reservation details from the database, given its
 #     reservation id.  If a user has the proper authorization, he can view any 
 #     reservation's details.  Otherwise he can only view reservations that
