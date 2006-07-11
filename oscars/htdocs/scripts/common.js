@@ -95,7 +95,8 @@ function new_section( params ) {
 function get_response(xmlhttp) {
     //alert(xmlhttp.responseText);
     var response_dom = xmlhttp.responseXML;
-    //alert(Sarissa.serialize(response_dom));
+    var serializer = new XMLSerializer();
+    //alert(serializer.serializeToString(response_dom));
     if (!response_dom) {
         var status_node = document.getElementById('status-div');
         status_node.innerHTML = date_str() + ' Please contact dwrobertson@lbl.gov to make sure that the OSCARS server is running.';
@@ -110,7 +111,7 @@ function get_response(xmlhttp) {
     var nav_bar_str = '';
     var nav_node = document.getElementById('nav-div');
     if (returned_nav_nodes.length) {
-        nav_bar_str = Sarissa.serialize(returned_nav_nodes[0]);
+        nav_bar_str = serializer.serializeToString(returned_nav_nodes[0]);
         nav_node.innerHTML = nav_bar_str;
     }
 
@@ -132,7 +133,7 @@ function get_response(xmlhttp) {
         return;
     }
     var main_node = document.getElementById('main-div');
-    main_node.innerHTML = Sarissa.serialize(returned_divs[0]);
+    main_node.innerHTML = serializer.serializeToString(returned_divs[0]);
 
     // only used with time zones in ReservationCreateForm:  TODO:  FIX
     var time_node = document.getElementById('time-zone-options');
