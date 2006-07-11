@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-July 3, 2006
+July 10, 2006
 
 =cut
 
@@ -62,7 +62,7 @@ sub soapMethod {
 
     my @strArray = split('-', $request->{tag});
     my $id = $strArray[-1];
-    return $self->{reservation}->details($id);
+    return $self->{reservation}->queryReservationResponse($id);
 } #____________________________________________________________________________
 
 

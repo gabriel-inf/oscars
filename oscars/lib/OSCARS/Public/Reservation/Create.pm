@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-July 3, 2006
+July 10, 2006
 
 =cut
 
@@ -99,8 +99,7 @@ sub createReservation {
     # Insert reservation in reservations table
     my $id = $self->{reservation}->insert( $request );
     # get status back, and tag if creation was successful
-    my $results = $self->{reservation}->createReply( $id );
-    return $results;
+    return $self->{reservation}->createReservationResponse( $id );
 } #____________________________________________________________________________
 
 

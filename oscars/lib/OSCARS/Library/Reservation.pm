@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-July 3, 2006
+July 10, 2006
 
 =cut
 
@@ -60,34 +60,35 @@ sub initialize {
 
 
 ###############################################################################
-# createReply:  get the return fields for a createReservation request.
+# createReservationResponse:  get the response fields for a createReservation 
+# request.
 #
 # In:  reference to hash of parameters
-# Out: reference to hash of reservation details
+# Out:  hash containing SOAP method response
 #
-sub createReply {
+sub createReservationResponse {
     my( $self, $id ) = @_;
 
-    my( $statement, $fields );
-
-    $statement = 'SELECT tag, status FROM ReservationUserDetails WHERE id = ?';
-    $fields = $self->{db}->getRow($statement, $id);
-    my $results = { 'status' => $fields->{status}, 'tag' => $fields->{tag} };
-    return $results;
+    my $statement = 'SELECT tag, status FROM ReservationUserDetails ' .
+                    ' WHERE id = ?';
+    my $fields = $self->{db}->getRow($statement, $id);
+    my $createReply = { 'status' => $fields->{status},
+	                'tag' => $fields->{tag} };
+    return $createReply;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# details:  get reservation details from the database, given its
-#     reservation id.  If a user has the proper authorization, he can view any 
-#     reservation's details.  Otherwise he can only view reservations that
+# queryReservationResponse:  get reservation details from the database, given 
+#     its reservation id.  If a user has the proper authorization, he can view 
+#     any reservation's details.  Otherwise he can only view reservations that
 #     he has made, with less of the details.  If a database field is NULL
 #     or blank, it is not returned.
 #
 # In:  reference to hash of parameters
 # Out: reference to hash of reservation details
 #
-sub details {
+sub queryReservationResponse {
     my( $self, $id ) = @_;
 
     my( $statement, $fields );
@@ -102,22 +103,33 @@ sub details {
         $fields = $self->{db}->getRow($statement, $self->{user}->{login}, $id);
     }
     if (!$fields) { return undef; }
-    my $results = $self->format($fields);
-    return $results;
+    my $resDetails = $self->format($fields);
+    return $resDetails;
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# update: change the status of the reservervation from pending to active
 #
-sub update {
-    my( $self, $resv, $status ) = @_;
+sub listReservationsResponse {
+    my( $self ) = @_;
 
-    if ( !$resv->{lspStatus} ) {
-        $resv->{lspStatus} = "Successful configuration";
-        $status = $self->updateStatus($resv->{tag}, $status);
-    } else { $status = $self->updateStatus($resv->{tag}, 'failed'); }
-    return $status;
+    my( $resInfoContent, $statement );
+
+    if ( $self->{user}->authorized('Reservations', 'manage') ) {
+        $statement = 'SELECT * FROM ReservationList ORDER BY startTime DESC';
+        $resInfoContent = $self->{db}->doSelect($statement);
+    }
+    else {
+        $statement = 'SELECT * FROM ReservationList WHERE login = ? ' .
+                     'ORDER BY startTime DESC';
+        $resInfoContent = $self->{db}->doSelect($statement, $self->{user}->{login});
+    }
+    # format results before returning
+    my @listReply = ();
+    for my $row ( @{$resInfoContent} ) {
+        push( @listReply, $self->summarize($row) );
+    }
+    return \@listReply;
 } #____________________________________________________________________________
 
 
@@ -290,31 +302,6 @@ sub format {
 
 ###############################################################################
 #
-sub summaryList {
-    my( $self ) = @_;
-
-    my( $rows, $statement );
-
-    if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = 'SELECT * FROM ReservationList ORDER BY startTime DESC';
-        $rows = $self->{db}->doSelect($statement);
-    }
-    else {
-        $statement = 'SELECT * FROM ReservationList WHERE login = ? ' .
-                     'ORDER BY startTime DESC';
-        $rows = $self->{db}->doSelect($statement, $self->{user}->{login});
-    }
-    # format results before returning
-    my @results = ();
-    for my $row ( @{$rows} ) {
-        push( @results, $self->summarize($row) );
-    }
-    return \@results;
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
 sub getPSSConfiguration {
     my( $self ) = @_;
 
@@ -322,6 +309,20 @@ sub getPSSConfiguration {
     my $statement = "SELECT * FROM topology.configPSS where id = 1";
     my $configs = $self->{db}->getRow($statement);
     return $configs;
+} #____________________________________________________________________________
+
+
+###############################################################################
+# update: change the status of the reservervation from pending to active
+#
+sub update {
+    my( $self, $resv, $status ) = @_;
+
+    if ( !$resv->{lspStatus} ) {
+        $resv->{lspStatus} = "Successful configuration";
+        $status = $self->updateStatus($resv->{tag}, $status);
+    } else { $status = $self->updateStatus($resv->{tag}, 'failed'); }
+    return $status;
 } #____________________________________________________________________________
 
 
