@@ -364,7 +364,7 @@ sub handle {
     $request->{method} = $method;
     my $logger = OSCARS::Logger->new('method' => $method);
     $logger->set_level($NetLogger::INFO);
-    $logger->open('/home/oscars/mrtlogs/oscars.log');
+    $logger->open('/home/oscars/logs/oscars.log');
     my $results = {};
     try {
         $user = $authN->authenticate($daemon, $request);
