@@ -34,29 +34,45 @@ our @ISA = qw{OSCARS::Method};
 
 sub initialize {
     my( $self ) = @_;
-
     $self->SUPER::initialize();
 } #____________________________________________________________________________
 
 
 ###############################################################################
-# soapMethod:  Handles forwarding a request.  Makes call to forwarded method,
+# soapMethod:  Handles a forwarded  request.  Makes call to forwarded method,
 #              extracting that method's parameters from the payload.
 #
-# In:  reference to hash containing a request and its parameters, and 
+# In:  reference to hash containing the forwarded request and its parameters, 
+#      the user login, the payload sender's name and
 #      OSCARS::Logger instance
 # Out: reference to hash containing response
 #
 sub soapMethod {
     my( $self, $payload, $logger ) = @_;
-
     my $forwardedRequest = $payload->{$payload->{contentType}};
     $logger->info("start", $payload);
     my $factory = OSCARS::MethodFactory->new('pluginMgr' => $self->{pluginMgr});
     my $handler =
         $factory->instantiate( $self->{user}, $payload->{contentType} );
+   print "in TestForward, calling $payload->{contentType}\n";
+   print "request is ", Dumper($forwardedRequest), "\n";
+
     my $results = $handler->soapMethod($forwardedRequest, $logger);
-    $logger->info("finish", $results);
+    print "results are", Dumper($results), "\n";
+    if (!defined $results) {
+	$results->{ $payload->{contentType}} = undef;
+    }
+    if ( $payload->{contentType} eq "listReservations" ) {
+       print "return value is a ", ref($results), "\n";
+       my @res = @{$results};
+       my $length = @res +0;
+       print "length is $length\n";
+      my $info = {reservationCnt => $length};
+       $logger->info("finish", $info);
+    } else {
+        $results = $handler->soapMethod($forwardedRequest, $logger);
+       $logger->info("finish", $results);
+    }
     return $results;
 } #____________________________________________________________________________
 
