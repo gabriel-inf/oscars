@@ -42,6 +42,7 @@ sub startDaemon {
     $daemon = SOAP::Transport::HTTP::Daemon
         -> new (LocalPort => $portnum, Listen => 5, Reuse => 1)
         -> dispatch_to('OSCARS::Dispatcher');
+    print "contact server at oscars-dev.es.net:2001\n";
     $daemon->handle;
 } #____________________________________________________________________________
 
@@ -80,6 +81,7 @@ use strict;
 
 use OSCARS::Logger;
 use OSCARS::Method;
+use OSCARS::Library::Serializer;
 
 # NOTE:  Extra enclosing types are to satisfy clients that used WSDL to
 #        generate stubs (no Perl generator works for complexTypes yet).
@@ -154,7 +156,8 @@ sub queryReservation {
     my $results = handle($request, 'queryReservation');
     my $response = SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
-        ->value($results);
+	->value($results);
+#        ->value(OSCARS::Library::Serializer::serializeQueryResReply($results));
     return $response;
 }
 
@@ -324,9 +327,8 @@ sub forward {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'forward');
-    my $response = SOAP::Data
-        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
-        ->value($results);
+    my $response = OSCARS::Library::Serializer::serializeForwardReply($results);
+    
     return $response;
 }
 
@@ -334,33 +336,35 @@ sub forward {
 #  Test for use with BNL.
 sub testForward {
     my( $className, $payload, $payloadSender, $userLogin ) = @_;
-
-    my $results = handle($payload, 'testForward', $payloadSender, $userLogin);
-    my $response = SOAP::Data
-          ->name(retMsg =>
-          SOAP::Data->value( SOAP::Data->name(msg=>'success')));
+    my $request = $payload;
+    $request->{userLogin} = {};
+    $request->{userLogin}->{userName} = $userLogin->{userName};
+    $request->{userLogin}->{password} = $userLogin->{password};
+    $request->{payloadSender}= $payloadSender;
+    print "in oscars - testForward request\n", Dumper($request);
+    my $results = handle($request, 'testForward');
+    #print "in oscars testForward results are:\n";
+    #print Dumper ($results); 
+   print "payloadContentType is $payload->{contentType}\n";
+    my $response =  OSCARS::Library::Serializer::serializeForwardReply(
+		$payload->{contentType},$results);
     return $response;
 }
 
 ###############################################################################
 #
 sub handle {
-    my( $request, $method, $payloadSender, $userLogin ) = @_;
+    my( $request, $method ) = @_;
 
     my $ex;
     my( $user, $handler, $som );
 
-    if ($userLogin) {
-        $request->{userLogin} = {};
-        $request->{userLogin}->{userName} = $userLogin->{userName};
-        $request->{userLogin}->{password} = $userLogin->{password};
-    }
-    # this occurs if there are no input parameters
+     # this occurs if there are no input parameters
     if (!$request) { $request = {}; }
     $request->{method} = $method;
     my $logger = OSCARS::Logger->new('method' => $method);
     $logger->set_level($NetLogger::INFO);
-    $logger->open('/home/oscars/logs/oscars.log');
+    $logger->open('/home/oscars/mrtlogs/oscars.log');
     my $results = {};
     try {
         $user = $authN->authenticate($daemon, $request);
