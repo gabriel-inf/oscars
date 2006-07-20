@@ -1,4 +1,4 @@
-/**
+/*
  * ====================================================================
  * About
  * ====================================================================
@@ -26,7 +26,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/**
+/*
  * <p>Sarissa is a utility class. Provides "static" methods for DOMDocument, 
  * DOM Node serialization to XML strings and other utility goodies.</p>
  * @constructor

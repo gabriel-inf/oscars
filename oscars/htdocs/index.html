@@ -7,71 +7,33 @@
       <meta name="Keywords" content="">
       <meta name="Description" content="">
 
-      <link rel="stylesheet" type="text/css" href="/styleSheets/layout.css">
+      <link rel="stylesheet" type="text/css" href="/css/layout.css">
 
-      <script language="javascript" type="text/javascript" src="/scripts/sarissa.js"></script>
-      <script language="javascript" type="text/javascript" src="/scripts/common.js"></script>
-      <script language="javascript" type="text/javascript" src="/scripts/timeprint.js"></script>
-      <script language="javascript" type="text/javascript" src="/scripts/selectable.js"></script>
-      <script language="javascript" type="text/javascript" src="/scripts/sorttable.js"></script>
+      <script language="javascript" type="text/javascript" src="/js/sarissa.js"></script>
+      <script language="javascript" type="text/javascript" src="/js/dateHandler.js"></script>
+      <script language="javascript" type="text/javascript" src="/js/common.js"></script>
+      <script language="javascript" type="text/javascript" src="/js/validator.js"></script>
+      <script language="javascript" type="text/javascript" src="/js/sorttable.js"></script>
   </head>
 
   <body>
+    <div id="titles">&nbsp;</div>
 
-    <table id="pagetitle">
+    <table id="status-line">
       <tr>
-        <td>
-          <a href="http://www.internet2.edu/"><img src="/images/internet2_logo.png" width="73" height="58" border="0" alt="Internet2 logo" title="Internet 2"></a>
-        </td>
-        <td>
-           <a href="http://www.es.net/"><img src="/images/ESnetLogo.png" width="77" height="58" border="0" alt="ESnet Logo" title="ESnet"></a>
-        </td>
-        <td>
-          <h1>On-demand Secure Circuits and Advance Reservation System</h1>
-            In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project
-        </td>
+      <td width="18%" id="clock">&nbsp;
+      </td>
+      <td id="status">Please sign in.</td>
       </tr>
     </table>
 
-    <div id="status-div">
-        <script language="javascript">print_current_date(document);</script> | Please sign in.
-    </div>
+    <div id="navigation">&nbsp;</div>
 
-    <div id="nav-div">
-        <p></p>
-    </div>
-
-    <div id="main-div">
-        <form id="login-ui" method="post" action="" 
-         onsubmit="return submit_form( this, 'method=UserLogin;', check_login);">
-        <table>
-          <tr>
-            <th>Login Name:</th>
-            <td>
-              <input type="text" class="SOAP" name="login" size="28">
-            </td>
-          </tr>
-          <tr>
-            <th>Password:</th>
-	    <td><input type="password" class="SOAP" name="password" size="28"></td>
-          </tr>
-        </table>
-        <input type="submit" value="Sign in" size="16">
-      </form>
-    </div>
+    <div id="content">&nbsp;</div>
+    <div id="info">&nbsp;</div>
 
     <hr width="33%">
 
-    <div id="notices-div">
-        <p><a href="http://www.es.net/">ESnet</a> |
-        <a href="http://www.lbl.gov/">Berkeley Lab</a> |
-        <a href="http://www.lbl.gov/Disclaimers.html">Notice to Users</a> |
-        <a href="http://www.es.net/OSCARS/">OSCARS</a></p>
-
-        <p><strong>Contacts:</strong>
-          <a href="mailto:chin@es.net">Chin Guok</a>, 
-          <a href="mailto:DWRobertson@lbl.gov">David Robertson</a></p>
-    </div>
-
+    <div id="notices">&nbsp;</div>
   </body>
 </html>

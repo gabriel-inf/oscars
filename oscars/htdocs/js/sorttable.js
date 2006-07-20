@@ -2,10 +2,11 @@
 // The code is covered by the MIT license:
 //     http://www.kryogenix.org/code/browser/licence.html
 
-// addEvent(window, "load", sortables_init);
 // Changed so that call sortables_init explicitly - David Robertson
+// Removed addEvent, which is also in DHTML code material from SitePoint
 
 var SORT_COLUMN_INDEX;
+
 
 function sortables_init() {
     // Find all tables with class sortable and make them sortable
@@ -16,7 +17,6 @@ function sortables_init() {
         if (((' '+thisTbl.className+' ').indexOf("sortable") != -1)) {
             //initTable(thisTbl.id);
             ts_makeSortable(thisTbl);
-            //tse_makeSelectable(thisTbl);
         }
     }
 }
@@ -35,7 +35,7 @@ function ts_makeSortable(table) {
     }
     // David Robertson: do initial zebra striping
     for (i=0;i<table.rows.length;i++) {
-        tse_zebraStripe(table.rows[i], i, 0);
+        zebraStripe(table.rows[i], i, 0);
     }
 }
 
@@ -100,7 +100,7 @@ function ts_resortTable(lnk) {
     // David Robertson:  restripe while resorting
     for (i=0;i<newRows.length;i++) {
         if (!newRows[i].className || (newRows[i].className && (newRows[i].className.indexOf('sortbottom') == -1))) {
-            tse_zebraStripe(newRows[i], i, 1);
+            zebraStripe(newRows[i], i, 1);
             table.tBodies[0].appendChild(newRows[i]);
         }
     }
@@ -108,7 +108,7 @@ function ts_resortTable(lnk) {
     for (i=0;i<newRows.length;i++) {
         if (newRows[i].className && (newRows[i].className.indexOf('sortbottom') != -1))
         {
-            tse_zebraStripe(newRows[i], i, 1);
+            zebraStripe(newRows[i], i, 1);
             table.tBodies[0].appendChild(newRows[i]);
         }
     }
@@ -179,20 +179,3 @@ function ts_sort_default(a,b) {
     if (aa<bb) return -1;
     return 1;
 }
-
-
-function addEvent(elm, evType, fn, useCapture)
-// addEvent and removeEvent
-// cross-browser event handling for IE5+,  NS6 and Mozilla
-// By Scott Andrew
-{
-  if (elm.addEventListener){
-    elm.addEventListener(evType, fn, useCapture);
-    return true;
-  } else if (elm.attachEvent){
-    var r = elm.attachEvent("on"+evType, fn);
-    return r;
-  } else {
-    alert("Handler could not be removed");
-  }
-} 
