@@ -58,9 +58,13 @@ sub soapMethod {
     # TODO:  ensure unprivileged user can't cancel another's reservation
     my $status =  $self->{reservation}->updateStatus(
 	                                        $request->{tag}, 'precancel' );
+    print "cancel.pm status is $status \n";
     my $response = {};
-    $response->{tag} = $request->{tag};
-    $logger->info("finish", $response);
+    my $loggerInfo ={};
+    $loggerInfo->{tag} = $request->{tag};
+    $loggerInfo->{status} = $status;
+    $logger->info("finish", $loggerInfo);
+    $response->{status} = $status;
     return $response;
 } #____________________________________________________________________________
 
