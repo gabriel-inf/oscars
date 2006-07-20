@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 17, 2006
+July 19, 2006
 
 =cut
 
@@ -32,41 +32,35 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# handleRequest:  overrides superclass to just handle portions necessary
+# getTab:  Gets navigation tab to set if this method returned successfully.
 #
-sub handleRequest {
+# In:  None
+# Out: Tab name
+#
+sub getTab {
     my( $self ) = @_;
 
-    my( $login, $authorizations ) = $self->authenticate();
-    if ( !$login ) { return; }
-    $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
-    print $self->{cgi}->header( -type => 'text/xml');
-    print "<xml>\n";
-    $self->{tabs}->output( 'ReservationCreateForm', $authorizations );
-    my $msg = $self->outputDiv($login, $authorizations);
-    print "<msg>$msg</msg>\n";
-    print "</xml>\n";
+    return 'ReservationCreateForm';
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# outputDiv:   accessible from the "Create Reservation" notebook tab.
+# outputContent:   accessible from the "Create Reservation" notebook tab.
 #    Prints out the reservation creation form.  Note that ingressRouterIP and 
 #    egressRouterIP can be either a host name or an IP address.
-# In:   user login name, and authorizations
+# In:   hashes for request, response
 # Out:  message string
 #
-sub outputDiv {
-    my( $self, $login, $authorizations ) = @_;
+sub outputContent {
+    my( $self, $request, $response ) = @_;
 
     my $msg = "Reservation creation form";
     print( qq{
-    <div id='reservation-ui'>
-    <form method='post' action='' onsubmit="return submit_form(this, 
-               'method=CreateReservation;', check_reservation);">
+    <form method='post' action='' onsubmit="return submitForm(this, 
+               'method=CreateReservation;', checkReservation);">
       <input type='hidden' class='SOAP' name='startTime'></input>
       <input type='hidden' class='SOAP' name='endTime'></input>
-      <input type='hidden' class='SOAP' name='login' value='$login'></input>
+      <input type='hidden' class='SOAP' name='login' value='$request->{login}'></input>
       <input type='submit' value='Reserve bandwidth'></input>
       <input type='reset' value='Reset form fields'></input>
 
@@ -76,7 +70,7 @@ sub outputDiv {
       defaults.  The default time zone is your local time.</p>
     } );
 
-    if ($authorizations && $authorizations->{ManageDomains}) {
+    if ( $response->{loopbacksAllowed} ) {
         print( qq{
           <p><strong>WARNING</strong>:  Entering a value in a red-outlined field 
 	  may change default routing behavior for the selected flow.</p> } );
@@ -119,7 +113,8 @@ sub outputDiv {
 	    <input type='text' class='SOAP' name='description' size='40'></input></td>
         <td>(For our records)</td></tr>
     } );
-    if ($authorizations && $authorizations->{ManageDomains}) {
+
+    if ( $response->{loopbacksAllowed} ) {
       print( qq{
       <tr>
         <td>Ingress loopback</td>
@@ -137,6 +132,7 @@ sub outputDiv {
       </tr>
       } );
     }
+
     my @localSettings = localtime();
     my $year = $localSettings[5] + 1900;
     my $month = $localSettings[4] + 1;
@@ -171,13 +167,13 @@ sub outputDiv {
        	</td>
 	<td>0.01 (0.01 to 4 years)</td></tr>
     } );
-    if ($authorizations && ($authorizations->{ManageDomains} || $authorizations->{persistent}) ) {
+    if ( $response->{persistentAllowed} ) {
         print( qq{
       <tr><td>Persistent reservation</td>
         <td><input type='checkbox' name='persistent' size='8' value='0'></input></td>
 	<td>Doesn't expire until explicitly cancelled.</td></tr> } );
     }
-    print("</tbody></table></form></div>\n");
+    print("</tbody></table></form>\n");
     return $msg;
 } #____________________________________________________________________________
 

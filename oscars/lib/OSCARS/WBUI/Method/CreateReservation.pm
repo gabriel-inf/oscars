@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -61,14 +61,27 @@ sub modifyParams {
 
 
 ###############################################################################
-# outputDiv:  print details of reservation returned by SOAP call
+# getTab:  Gets navigation tab to set if this method returned successfully.
+#
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
+
+    return 'ListReservations';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# outputContent:  print details of reservation returned by SOAP call
 #    Different than ReservationDetails->output in that some information is not
 #    returned that is already in the request.
 # In:   response from SOAP call
 # Out:  None
 #
-sub outputDiv {
-    my( $self, $request, $response, $authorizations ) = @_;
+sub outputContent {
+    my( $self, $request, $response ) = @_;
 
     my $details = OSCARS::WBUI::Method::ReservationDetails->new();
     my $burstLimit = $request->{burstLimit} || 'DEFAULT';
@@ -79,7 +92,6 @@ sub outputDiv {
     my $createdTime = $details->formatTime($response->{createdTime});
     my $msg = "Successfully got reservation details.";
     print( qq{
-    <div>
     <p><strong>Reservation Details</strong></p>
     <p>To return to the reservations list, click on the Reservations tab.</p>
     <p>
@@ -87,7 +99,7 @@ sub outputDiv {
 
     if (($response->{status} eq 'pending') ||
         ($response->{status} eq 'active')) {
-        my $cancelSubmitStr = "return submit_form(this,
+        my $cancelSubmitStr = "return submitForm(this,
              'method=CancelReservation;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancelSubmitStr">
@@ -97,7 +109,7 @@ sub outputDiv {
         } );
     }
 
-    my $refreshSubmitStr = "return submit_form(this,
+    my $refreshSubmitStr = "return submitForm(this,
              'method=QueryReservation;');";
     print( qq{
     <form method="post" action="" onsubmit="$refreshSubmitStr">
@@ -126,18 +138,18 @@ sub outputDiv {
       <tr><td>Protocol</td><td>$protocol</td></tr>
       <tr><td>DSCP</td><td>$dscp</td></tr>
     } );
-    if ( $authorizations->{ManageDomains} ) {
+    if ( $request->{class} ) {
         my $class = $request->{class} || 'DEFAULT';
+        print( qq{ <tr><td>Class</td><td>$class</td></tr> } );
+    }
+    if ( $response->{path} ) {
         my $path = $response->{path};
         $path =~ s/ /, /g;
-        print( qq{
-        <tr><td>Class</td><td>$class</td></tr>
-        <tr><td>Routers in path</td><td>$path</td></tr>
-        } );
+        print( qq{ <tr><td>Routers in path</td><td>$path</td></tr> } );
     }
     print( qq{
       </tbody>
-    </table></div>
+    </table>
     } );
     return $msg;
 } #____________________________________________________________________________

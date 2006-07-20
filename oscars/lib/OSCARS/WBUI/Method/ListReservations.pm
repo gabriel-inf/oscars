@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -35,23 +35,34 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# outputDiv:  Print list of all reservations if the caller is authorized, 
-#             otherwise just print that user's reservations
+# getTab:  Gets navigation tab to set if this method returned successfully.
+#
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
+
+    return 'ListReservations';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# outputContent:  Print list of all reservations returned from SOAP server. 
 # In:   response from SOAP call
 # Out:  None
 #
-sub outputDiv {
-    my ( $self, $request, $response, $authorizations ) = @_;
+sub outputContent {
+    my ( $self, $request, $response ) = @_;
 
     my $timeHandler = OSCARS::WBUI::Method::ReservationDetails->new();
     my $msg = "Successfully retrieved reservations.";
     print( qq{
-    <div>
     <p>Click on a column header to sort by that column. Times given are in the
     time zone of the browser.  Click on the Reservation Tag link to view
     detailed information about the reservation.</p>
 
-    <p><form method="post" action="" onsubmit="return submit_form(this, 
+    <p><form method="post" action="" onsubmit="return submitForm(this, 
         'method=ListReservations;');">
     <input type='submit' value='Refresh'></input>
     </form></p>
@@ -66,7 +77,7 @@ sub outputDiv {
     } );
     my $reservations = $response;
     for my $row (@$reservations) { $self->printRow( $row, $timeHandler ); }
-    print("</tbody></table></div>\n");
+    print("</tbody></table>\n");
     return $msg;
 } #____________________________________________________________________________
 
@@ -86,7 +97,7 @@ sub printRow {
     <tr>
       <td>
       <a href='#' style='/styleSheets/layout.css'
-       onclick="return new_section(
+       onclick="return newSection(
        'method=QueryReservation;tag=$row->{tag};');" >$row->{tag}</a>
       </td>
       <td>$startTime</td>

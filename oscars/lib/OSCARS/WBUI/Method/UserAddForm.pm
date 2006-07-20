@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -47,26 +47,28 @@ sub modifyParams {
 
 
 ###############################################################################
-# postProcess:  Reset the method name so the correct tab is highlighted.
+# getTab:  Gets navigation tab to set if this method returned successfully.
 #
-sub postProcess {
-    my( $self, $request, $response ) = @_;
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
 
-    $self->{method} = 'UserList';
+    return 'UserList';
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# outputDiv: print add user form.
+# outputContent: print add user form.
 #
-sub outputDiv {
-    my( $self, $request, $results, $authorizations ) = @_;
+sub outputContent {
+    my( $self, $request, $results ) = @_;
 
-    my $submitStr = "return submit_form(this, 'method=UserAdd;',
-			                check_add_user);";
+    my $submitStr = "return submitForm(this, 'method=UserAdd;',
+			                checkAddUser);";
     my $msg = "Add User Form";
     print( qq{
-    <div>
     <h3>Add a new user</h3>
     <p>Required fields are outlined in green.</p>
     <form method='post' action='' onsubmit="$submitStr">
@@ -85,7 +87,7 @@ sub outputDiv {
     $response->{institutionList} = $results;
     my $details = OSCARS::WBUI::Method::UserDetails->new();
     $details->output( $request, $response );
-    print("</tbody></table></form></div>\n");
+    print("</tbody></table></form>\n");
     return $msg;
 } #___________________________________________________________________________ 
  

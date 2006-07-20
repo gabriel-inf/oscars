@@ -42,7 +42,7 @@ sub startDaemon {
     $daemon = SOAP::Transport::HTTP::Daemon
         -> new (LocalPort => $portnum, Listen => 5, Reuse => 1)
         -> dispatch_to('OSCARS::Dispatcher');
-    print "contact server at oscars-dev.es.net:2001\n";
+    print "contact server at oscars-dev.es.net:$portnum\n";
     $daemon->handle;
 } #____________________________________________________________________________
 
@@ -319,7 +319,19 @@ sub topologyUpdate {
     return $response;
 }
 
-# public Interdomain (currently in Intradomain)
+###############################################################################
+#
+sub reservationCreateForm {
+    my( $className, $request ) = @_;
+
+    my $results = handle($request, 'reservationCreateForm');
+    my $response = SOAP::Data
+        ->uri('http://oscars.es.net/OSCARS/Dispatcher')
+        ->value($results);
+    return $response;
+}
+
+# public Interdomain (currently in Public/Reservation)
 
 ###############################################################################
 #

@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -35,19 +35,31 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# outputDiv:  If the caller has admin privileges print a list of 
+# getTab:  Gets navigation tab to set if this method returned successfully.
+#
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
+
+    return 'UserList';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# outputContent:  If the caller has admin privileges print a list of 
 #          all users returned by the SOAP call
 #
 # In:  response from SOAP call
 # Out: None
 #
-sub outputDiv {
-    my ( $self, $request, $users, $authorizations ) = @_;
+sub outputContent {
+    my ( $self, $request, $users ) = @_;
 
     my $msg = "Successfully read user list.";
-    my $addSubmitStr = "return submit_form(this, 'method=UserAddForm;');";
+    my $addSubmitStr = "return submitForm(this, 'method=UserAddForm;');";
     print( qq{
-      <div>
       <p>Click on the user's last name to view detailed user information.</p>
       <p><input type='button' 
           onclick="$addSubmitStr" 
@@ -60,7 +72,7 @@ sub outputDiv {
       <tbody>
     } );
     for my $row (@$users) { $self->printUser( $row ); }
-    print( qq{ </tbody></table></div> } );
+    print( qq{ </tbody></table> } );
     return $msg;
 } #____________________________________________________________________________
 
@@ -71,9 +83,9 @@ sub outputDiv {
 sub printUser {
     my( $self, $row ) = @_;
 
-    my $profileHrefStr = "return new_section(
+    my $profileHrefStr = "return newSection(
                     'method=UserQuery;selectedUser=$row->{login};');";
-    my $deleteHrefStr = "return new_section(
+    my $deleteHrefStr = "return newSection(
                     'method=UserRemove;selectedUser=$row->{login};');";
     print qq{
     <tr>

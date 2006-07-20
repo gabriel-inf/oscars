@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+July 19, 2006
 
 =cut
 
@@ -28,31 +28,20 @@ use strict;
 
 use Data::Dumper;
 use CGI;
-
-use OSCARS::WBUI::UserSession;
+use CGI::Session;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# postProcess:  In this case, closes CGI session.
-#
-sub postProcess {
-    my( $self, $request, $response ) = @_;
-
-    my $session = OSCARS::WBUI::UserSession->new();
-    $session->end($self->{cgi});
-    return {};
-} #___________________________________________________________________________ 
-
-
-###############################################################################
 #
 sub output {
-    my( $self, $response, $authorizations ) = @_;
+    my( $self, $response ) = @_;
 
-    $self->{cgi}->redirect('/');
+    my $cgi = $self->{session}->query();
+    $self->{session}->delete();
+    $cgi->redirect('/');
 } #____________________________________________________________________________
 
 

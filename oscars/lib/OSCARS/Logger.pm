@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 24, 2006
+July 17, 2006
 
 =cut
 
@@ -117,9 +117,11 @@ sub sanitize {
 
     my $logMessage = {};
     for my $key ( keys %{$hash} ) {
-        if ($key ne 'password') {
-            $logMessage->{$key} = $hash->{$key};
+        if ( $key eq 'password' ) { next; }
+	if ( ref( $hash->{$key} ) eq 'HASH' ) {
+            $logMessage->{$key} = Dumper($hash->{$key});
         }
+	else { $logMessage->{$key} = $hash->{$key}; }
     }
     if (!$logMessage->{login}) {
         $logMessage->{login} = $self->{login};

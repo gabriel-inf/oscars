@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- Specifies AAA packages, databases, and SOAP plugin packages used.
-     In the future a url type may be supported (for a client call).
-     All other configuration is in the given database.  -->
+<!-- Specifies system variables, databases, default clients, AAA packages, 
+     SOAP plugin packages, and mapping of fields to descriptions 
+     for emails.  All other configuration is in the given database.  -->
 <configuration>
 
 <!-- System variables -->
@@ -16,123 +16,82 @@
 	proxy='http://localhost:2000/Server' payloadSender='' />
 <client payloadSender='discvenue.internet2.edu'
 	uri='https://discvenue.internet2.edu/OSCARS/Dispatcher'
-	proxy='https://discvenue.internet2.edu/OSCARS/Server'
-	name='11537' />
+	proxy='https://discvenue.internet2.edu/OSCARS/Server' name='11537' />
 
+<!-- 'OSCARS::' at the beginning of all plugin locations is implicit -->
 <!-- AAA configuration.  The database value is a reference to the plugin
      (see below). -->
 
-<plugin name='authentication' location='OSCARS::Library::AAA::AuthN' 
-        type='package' database='system' />
-<plugin name='authorization' location='OSCARS::Library::AAA::AuthZ' 
-        type='package' database='system' />
+<plugin name='authentication' location='Library::AAA::AuthN' database='system'/>
+<plugin name='authorization' location='Library::AAA::AuthZ' database='system'/>
 
 <!-- Configuration of publicly described SOAP methods -->
-<plugin name='queryReservation' location='OSCARS::Public::Reservation::Query' 
-        type='package'/>
-<plugin name='createReservation' location='OSCARS::Public::Reservation::Create'
-        type='package'/>
-<plugin name='modifyReservation' location='OSCARS::Public::Reservation::Modify'
-        type='package'/>
-<plugin name='cancelReservation' location='OSCARS::Public::Reservation::Cancel'
-        type='package'/>
-<plugin name='listReservations' location='OSCARS::Public::Reservation::List' 
-        type='package'/>
-<plugin name='forward' location='OSCARS::Public::Reservation::Forward' 
-        type='package'/>
-<plugin name='testForward' location='OSCARS::Public::Reservation::TestForward' 
-        type='package'/>
+<plugin name='queryReservation' location='Public::Reservation::Query'/>
+<plugin name='createReservation' location='Public::Reservation::Create'/>
+<plugin name='modifyReservation' location='Public::Reservation::Modify'/>
+<plugin name='cancelReservation' location='Public::Reservation::Cancel'/>
+<plugin name='listReservations' location='Public::Reservation::List'/>
+<plugin name='forward' location='Public::Reservation::Forward'/>
+<plugin name='testForward' location='Public::Reservation::TestForward'/>
 
 <!-- Configuration of internal SOAP methods -->
-<plugin name='userLogin' location='OSCARS::Public::User::Login'
-        type='package' />
-<plugin name='userLogout' location='OSCARS::Public::User::Logout'
-        type='package'/>
-<plugin name='userQuery' location='OSCARS::Public::User::Query'
-        type='package'/>
-<plugin name='userModify' location='OSCARS::Public::User::Modify'
-        type='package'/>
-<plugin name='institutionList' location='OSCARS::Public::Institution::List' 
-        type='package'/>
-<plugin name='userAdd' location='OSCARS::Internal::User::Add' type='package'/>
-<plugin name='userRemove' location='OSCARS::Internal::User::Remove'
-        type='package'/>
-<plugin name='userList' location='OSCARS::Internal::User::List'
-        type='package'/>
-<plugin name='permissionList' location='OSCARS::Internal::Permission::List'
-        type='package'/>
-<plugin name='resourceList' location='OSCARS::Internal::Resource::List'
-        type='package'/>
-<plugin name='authorizationList' 
-        location='OSCARS::Internal::Authorization::List' type='package'/>
+<plugin name='userLogin' location='Public::User::Login'/>
+<plugin name='userLogout' location='Public::User::Logout'/>
+<plugin name='userQuery' location='Public::User::Query'/>
+<plugin name='userModify' location='Public::User::Modify'/>
+<plugin name='institutionList' location='Public::Institution::List'/>
+<plugin name='userAdd' location='Internal::User::Add'/>
+<plugin name='userRemove' location='Internal::User::Remove'/>
+<plugin name='userList' location='Internal::User::List'/>
+<plugin name='permissionList' location='Internal::Permission::List'/>
+<plugin name='resourceList' location='Internal::Resource::List'/>
+<plugin name='authorizationList' location='Internal::Authorization::List'/>
 
-<plugin name='reservationPending' 
-        location='OSCARS::Internal::Reservation::Pending' type='package'/>
-<plugin name='reservationExpired' 
-        location='OSCARS::Internal::Reservation::Expired' type='package'/>
-<plugin name='topologyUpdate' 
-        location='OSCARS::Internal::Topology::Update' type='package'/>
-
+<plugin name='reservationPending' location='Internal::Reservation::Pending'/>
+<plugin name='reservationExpired' location='Internal::Reservation::Expired'/>
+<plugin name='topologyUpdate' location='Internal::Topology::Update'/>
+<plugin name='reservationCreateForm' 
+        location='Internal::Reservation::CreateForm'/>
 
 <notification name='cancelReservation'>
     <subject>Reservation successfully cancelled</subject>
-    <tag>Reservation tag</tag>
-</notification>
+    <tag>Reservation tag</tag> </notification>
 
 <notification name='createReservation'>
     <subject>Reservation has been entered into the system</subject>
-    <tag>Reservation tag</tag>
-    <srcHost>Source</srcHost>
-    <destHost>Destination</destHost>
-    <description>Description</description>
-    <startTime>Start time</startTime>
-    <endTime>End time</endTime>
+    <tag>Reservation tag</tag> <srcHost>Source</srcHost>
+    <destHost>Destination</destHost> <description>Description</description>
+    <startTime>Start time</startTime> <endTime>End time</endTime>
     <createdTime>Creation time</createdTime>
     <origTimeZone>Original time zone</origTimeZone>
-    <bandwidth>Bandwidth</bandwidth>
-    <burstLimit>Burst limit</burstLimit>
-    <status>Status</status>
-    <class>Class</class>
-    <srcPort>Source port</srcPort>
-    <destPort>Destination port</destPort>
-    <dscp>DSCP</dscp>
-    <protocol>Protocol</protocol>
-    <path>Routers in path</path>
-</notification>
+    <bandwidth>Bandwidth</bandwidth> <burstLimit>Burst limit</burstLimit>
+    <status>Status</status> <class>Class</class>
+    <srcPort>Source port</srcPort> <destPort>Destination port</destPort>
+    <dscp>DSCP</dscp> <protocol>Protocol</protocol>
+    <path>Routers in path</path> </notification>
 
 <notification name='reservationPending'>
-    <subject>Circuit set up</subject>
-    <tag>Reservation tag</tag>
+    <subject>Circuit set up</subject> <tag>Reservation tag</tag>
     <lspConfigTime>Path set up time</lspConfigTime>
-    <lspStatus>Configuration status</lspStatus>
-</notification>
+    <lspStatus>Configuration status</lspStatus> </notification>
 
 <notification name='reservationExpired'>
-    <subject>Circuit torn down</subject>
-    <tag>Reservation tag</tag>
+    <subject>Circuit torn down</subject> <tag>Reservation tag</tag>
     <lspConfigTime>Path tear down time</lspConfigTime>
-    <lspStatus>Configuration status</lspStatus>
-</notification>
+    <lspStatus>Configuration status</lspStatus> </notification>
 
-<notification name='userAdd'>
-    <subject>OSCARS user added</subject>
-</notification>
+<notification name='userAdd'><subject>OSCARS user added</subject></notification>
 
-<notification name='permissionRemove'>
-    <subject>Permission removed</subject>
-</notification>
+<notification name='permissionRemove'> 
+    <subject>Permission removed</subject> </notification>
 
-<notification name='resourceRemove'>
-    <subject>Resource removed</subject>
-</notification>
+<notification name='resourceRemove'> 
+    <subject>Resource removed</subject> </notification>
 
 <notification name='authorizationRemove'>
-    <subject>Authorization removed</subject>
-</notification>
+    <subject>Authorization removed</subject> </notification>
 
 <notification name='testMessage'>
-    <subject>Test message</subject>
-    <msg>Test message</msg>
-</notification>
+    <subject>Test message</subject> <msg>Test message</msg> </notification>
 
 </configuration>

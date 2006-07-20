@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -35,29 +35,31 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# postProcess:  Reset the method name so the correct tab is highlighted.
+# getTab:  Gets navigation tab to set if this method returned successfully.
 #
-sub postProcess {
-    my( $self, $request, $response ) = @_;
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
 
-    $self->{method} = 'UserList';
+    return 'UserList';
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# outputDiv:  print user profile form, and response retrieved via
+# outputContent:  print user profile form, and response retrieved via
 # a SOAP call, if any
 #
-sub outputDiv {
-    my( $self, $request, $response, $authorizations ) = @_;
+sub outputContent {
+    my( $self, $request, $response ) = @_;
 
     # may be accessing another user's profile if an administrator
-    my $login = $response->{selectedUser} ? $response->{selectedUser} : $response->{login};
-    my $modifySubmitStr = "return submit_form(this,
-                    'method=UserModify;', check_profile_modification);";
+    my $login = $response->{selectedUser} ? $response->{selectedUser} : $request->{login};
+    my $modifySubmitStr = "return submitForm(this,
+                    'method=UserModify;', checkProfileModification);";
     my $msg = "User profile";
     print( qq{
-    <div>
     <h3>Editing profile for user: $login</h3>
     <p>Required fields are outlined in green.</p>
     <form method='post' action='' onsubmit="$modifySubmitStr">
@@ -69,7 +71,7 @@ sub outputDiv {
     $self->outputPasswordFields($response);
     my $details = OSCARS::WBUI::Method::UserDetails->new();
     $details->output( $request, $response );
-    print("</tbody></table></form></div>\n");
+    print("</tbody></table></form>\n");
     return $msg;
 } #____________________________________________________________________________
 

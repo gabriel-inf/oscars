@@ -17,20 +17,15 @@ and formats the results for output.
 =head1 AUTHOR
 
 David Robertson (dwrobertson@lbl.gov)
-Andy Lake (arl10@albion.edu)
 
 =head1 LAST MODIFIED
 
-May 17, 2006
+July 19, 2006
 
 =cut
 
 
 use strict;
-
-use CGI qw{:cgi};
-use SOAP::Lite;
-use Data::Dumper;
 
 use OSCARS::WBUI::SOAPAdapter;
 
@@ -40,9 +35,8 @@ use OSCARS::WBUI::SOAPAdapter;
 ###############################################################################
 #
 sub run {
-    my $cgi = CGI->new();
     my $factory = OSCARS::WBUI::SOAPAdapterFactory->new();
-    my $adapter = $factory->instantiate($cgi);
+    my $adapter = $factory->instantiate();
     $adapter->handleRequest();
 } #____________________________________________________________________________
 

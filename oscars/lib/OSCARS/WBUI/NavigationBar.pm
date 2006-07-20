@@ -11,8 +11,7 @@ OSCARS::WBUI::NavigationBar - Handles HTML output of the tabbed navigation bar.
 
 =head1 DESCRIPTION
 
-Outputs HTML for the tabbed navigation bar, and indicates which page is
-active.
+Outputs initial HTML for the tabbed navigation bar.
 
 =head1 AUTHOR
 
@@ -20,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-April 19, 2006
+July 15, 2006
 
 =cut
 
@@ -40,103 +39,97 @@ sub new {
 
 
 ###############################################################################
-# output: Outputs tabbed bar used for navigation within the OSCARS site. 
-#         Some tabs are enabled by default and do not require a specific
-#         authorization.
+# init:   Outputs initial HTML for tabbed bar used for navigation within the 
+#         system.  Initially, no tab is active.
 #
-sub output {
-    my( $self, $activeTab, $authorizations ) = @_;
+# In:   hash indicating which tabs will be displayed (some require
+#       specific authorization).
+# Out:  None
+sub init {
+    my( $self, $tabs ) = @_;
 
-    my $activeStatus;
+    my $method;
 
     print qq{
-      <navigation-bar>
+      <navigation>
       <ul id="tabnav">
     };
-    my $method = 'ListReservations';
-    if ( $method eq $activeTab ) { $activeStatus = 'active'; }
-    else { $activeStatus = 'inactive'; }
-    print qq{
+    if ( $tabs->{ListReservations} ) {
+      $method = 'ListReservations';
+      print qq{
       <li>
-        <a style="/styleSheets/layout.css" title="View/edit reservations"
-           onclick="return new_section('method=$method;');"
-           class='$activeStatus' href="#">Reservations</a>
+        <a id="ListReservations"
+           style="/styleSheets/layout.css" title="View/edit reservations"
+           onclick="return newSection('method=$method;');"
+           href="#">Reservations</a>
       </li>
-    };
-    my $method = 'ReservationCreateForm';
-    if ( $method eq $activeTab ) { $activeStatus = 'active'; }
-    else { $activeStatus = 'inactive'; }
-    print qq{
+      };
+    }
+    if ( $tabs->{ReservationCreateForm} ) {
+      $method = 'ReservationCreateForm';
+      print qq{
       <li>
-        <a style="/styleSheets/layout.css" title="Create an OSCARS reservation"
-           onclick="return new_section('method=$method;');"
-           class='$activeStatus' href="#">Create Reservation</a>
+        <a id="ReservationCreateForm" style="/styleSheets/layout.css" 
+           title="Create an OSCARS reservation"
+           onclick="return newSection('method=$method;');"
+           href="#">Create Reservation</a>
       </li>
-    };
-    if ( $authorizations && $authorizations->{ManageUsers} ) {
-	$method = 'UserList';
-        if ( $method eq $activeTab ) { $activeStatus = 'active'; }
-        else { $activeStatus = 'inactive'; }
-        print qq{
-          <li>
-            <a style='/styleSheets/layout.css' title='Manage user accounts'
-               onclick="return new_section('method=$method;');"
-               class='$activeStatus' href="#">Users</a>
-          </li>
-        };
+      };
     }
-    else {
-	$method = 'UserQuery';
-        if ( $method eq $activeTab ) { $activeStatus = 'active'; }
-        else { $activeStatus = 'inactive'; }
-        print qq{
-          <li>
-            <a style="/styleSheets/layout.css" title="View/edit my profile"
-               onclick="return new_section('method=$method;');"
-               class='$activeStatus' href="#">User Profile</a>
-          </li>
-        };
+    # Of the following two, only one should have been indicated by the
+    # SOAP server.
+    if ( $tabs->{UserList} ) {
+      $method = 'UserList';
+      print qq{
+      <li>
+        <a id="UserList" style='/styleSheets/layout.css' 
+           title='Manage user accounts'
+           onclick="return newSection('method=$method;');"
+           href="#">Users</a>
+      </li>
+      };
     }
-    if ( $authorizations && $authorizations->{ManageUsers} ) {
+    if ( $tabs->{UserQuery} ) {
+      $method = 'UserQuery';
+      print qq{
+      <li>
+        <a id="UserQuery" style="/styleSheets/layout.css" 
+           title="View/edit my profile"
+           onclick="return newSection('method=$method;');"
+           href="#">User Profile</a>
+      </li>
+      };
+    }
+    if ( $tabs->{ResourceList} ) {
       $method = 'ResourceList';
-      if ( $method eq $activeTab ) { $activeStatus = 'active'; }
-      else { $activeStatus = 'inactive'; }
       print qq{
-        <li>
-          <a style="/styleSheets/layout.css" title="Manage resources"
-             onclick="return new_section('method=$method;');"
-             class='$activeStatus' href="#">Resources</a>
-        </li>
-      };
-
-      $method = 'AuthorizationList';
-      if ( $method eq $activeTab ) { $activeStatus = 'active'; }
-      else { $activeStatus = 'inactive'; }
-      print qq{
-        <li>
-          <a style="/styleSheets/layout.css" title="Manage authorizations"
-             onclick="return new_section('method=$method;');"
-             class='$activeStatus' href="#">Authorizations</a>
-        </li>
+      <li>
+        <a id="ResourceList" style="/styleSheets/layout.css" 
+           title="Manage resources"
+           onclick="return newSection('method=$method;');"
+           href="#">Resources</a>
+      </li>
       };
     }
-    $method = 'Info';
-    if ( $method eq $activeTab ) { $activeStatus = 'active'; }
-    else { $activeStatus = 'inactive'; }
-    print qq{
+    if ( $tabs->{AuthorizationList} ) {
+      $method = 'AuthorizationList';
+      print qq{
       <li>
-        <a style='/styleSheets/layout.css' title='Information page'
-           onclick="return new_section('method=$method;');"
-           class='$activeStatus' href="#">Information</a>
+        <a id="AuthorizationList" style="/styleSheets/layout.css" 
+           title="Manage authorizations"
+           onclick="return newSection('method=$method;');"
+           href="#">Authorizations</a>
       </li>
-    };
+      };
+    }
     print qq{
         <li>
-          <a style="/styleSheets/layout.css" title="Log out on click"
+          <a id="UserLogout" style="/styleSheets/layout.css" 
+             title="Log out on click"
              href="/perl/adapt.pl?method=UserLogout;">Log out</a>
         </li>
       </ul>
-      </navigation-bar>
+      </navigation>
     };
 } #____________________________________________________________________________
 

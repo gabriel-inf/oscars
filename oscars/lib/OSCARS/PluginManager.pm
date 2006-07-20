@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 24, 2006
+July 16, 2006
 
 =cut
 
@@ -70,7 +70,7 @@ sub usePlugin {
     my $database;
 
     my $plugin = $self->{config}->{plugin}->{$pluginName};
-    my $packageName = $plugin->{location};
+    my $packageName = 'OSCARS::' . $plugin->{location};
     if ( $plugin->{database} ) { 
         $database =
                 $self->{config}->{database}->{$plugin->{database}}->{location};

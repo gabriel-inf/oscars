@@ -11,7 +11,7 @@ OSCARS::WBUI::Method::ReservationArchiveForm - outputs archive reservations form
 
 =head1 DESCRIPTION
 
-Handles CGI request to display the archive reservations form.
+Handles request to display the archive reservations form.
 
 =head1 AUTHOR
 
@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -42,24 +42,36 @@ sub makeCall {
 
 
 ###############################################################################
-# outputDiv:  Prints out the archive reservations form.  Not functional yet. 
+# getTab:  Gets navigation tab to set if this method returned successfully.
+#
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
+
+    return 'ListReservations';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# outputContent:  Prints out new reservations list after archiving.
+#       Not functional yet. 
 #
 # In:   response from SOAP call
 # Out:  None
 #
-sub outputDiv {
-    my( $self, $request, $response, $authorizations ) = @_;
+sub outputContent {
+    my( $self, $request, $response ) = @_;
 
     my $msg = "Reservation archiving form";
     print( qq{
-    <div id='reservation-ui'>
-    <form method='post' action='' onsubmit="return submit_form(this, 
+    <form method='post' action='' onsubmit="return submitForm(this, 
 	     'method=ReservationArchive;');">
 
      <p>Required inputs are bordered in green.  Ranges or types of valid 
      entries are given in parentheses below the input fields.</p>
     </form>
-    </div>
     } );
     return $msg;
 } #____________________________________________________________________________

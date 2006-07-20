@@ -3,6 +3,7 @@ package OSCARS::WBUI::SOAPAdapterFactory;
 
 use strict;
 
+use CGI;
 use Data::Dumper;
 
 
@@ -17,16 +18,16 @@ sub new {
 ###############################################################################
 #
 sub instantiate {
-    my( $self, $cgi ) = @_;
+    my( $self ) = @_;
 
     my( $location, $className );
 
+    my $cgi = CGI->new();
     my $method = $cgi->param('method'); 
     $location = 'OSCARS/WBUI/Method/' . $method . '.pm';
     $className = 'OSCARS::WBUI::Method::' . $method;
     require $location;
-    return $className->new('cgi' => $cgi,
-                           'method' => $method );
+    return $className->new('method' => $method );
 } #___________________________________________________________________________                                         
 
 
@@ -52,18 +53,16 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 17, 2006
+July 19, 2006
 
 =cut
 
 use strict;
 
-use Data::Dumper;
 use SOAP::Lite;
-use CGI;
+use CGI::Session;
 
-use OSCARS::WBUI::UserSession;
-use OSCARS::WBUI::NavigationBar;
+use Data::Dumper;
 
 
 sub new {
@@ -83,29 +82,31 @@ sub handleRequest {
     my( $self ) = @_;
 
     my $response;
-    my( $login, $authorizations ) = $self->authenticate();
-    if ( !$login ) { return; }
+
+    my $verified = $self->authenticate();
+    if ( !$verified ) { return; }
     my $request = $self->modifyParams();  # adapts from form params
+    if ( !$request->{login} ) { $request->{login} = $self->{login}; }
     my $som = $self->makeCall( $request );
     if (!$som) { $response = {} ; }
-    else {
-        $response = $som->result;
-    }
-    $self->postProcess($request, $response);
-    if (!$authorizations) { $authorizations = $response->{authorized}; }
-    $self->{tabs} = OSCARS::WBUI::NavigationBar->new();
-    $self->output($som, $request, $authorizations);
+    else { $response = $som->result; }
+
+    $self->postProcess( $request, $response );
+    $self->output( $som, $request );
 } #___________________________________________________________________________ 
 
 
 ###############################################################################
-# authenticate
+# authenticate:  Authenticates user on pages after user login.
 #
 sub authenticate {
-    my( $self ) = @_;
+    my( $self, $request ) = @_;
 
-    my $session = OSCARS::WBUI::UserSession->new();
-    return $session->verify($self->{cgi});
+    # Attempt to authenticate by loading existing session
+    $self->{session} = CGI::Session->load();
+    if ( CGI::Session->errstr ) { return 0; }
+    $self->{login} = $self->{session}->param("login");
+    return 1;
 } #___________________________________________________________________________ 
 
 
@@ -116,10 +117,11 @@ sub authenticate {
 sub modifyParams {
     my( $self ) = @_;
 
+    my $cgi = $self->{session}->query();
     my $params = {};
-    for $_ ($self->{cgi}->param) {
+    for $_ ($cgi->param) {
 	# TODO:  Fix when figure out Apache2::Request
-        if ($_ ne 'method') { $params->{$_} = $self->{cgi}->param($_); }
+        if ($_ ne 'method') { $params->{$_} = $cgi->param($_); }
     }
     return $params;
 } #___________________________________________________________________________ 
@@ -149,20 +151,33 @@ sub postProcess {
 # output:  formats and prints response to send back to browser
 #
 sub output {
-    my( $self, $som, $request, $authorizations ) = @_;
+    my( $self, $som, $request ) = @_;
 
-    my $msg;
+    my( $response, $msg, $activeTab, $previousTab );
 
-    print $self->{cgi}->header( -type => 'text/xml');
-    print "<xml>\n";
-    $self->{tabs}->output( $self->{method}, $authorizations );
     if (!$som) { $msg = "SOAP call $self->{method} failed"; }
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     else {
-	my $response = $som->result;
-        $msg = $self->outputDiv($request, $response, $authorizations);
+	$response = $som->result;
     }
-    print "<msg>$msg</msg>\n";
+    # stores new active tab name in cookie
+    if ( $response ) {
+        $activeTab = $self->getTab();
+        $previousTab = $self->{session}->param("tab");
+        $self->{session}->param("tab", $activeTab );
+    }
+
+    print $self->{session}->header( -type => 'text/xml' );
+    print "<xml>\n";
+    if ( $response ) {
+	print "<content>\n";
+        $msg = $self->outputContent( $request, $response );
+	print "</content>\n";
+        print "<tabs>\n";
+        print "<active>$activeTab</active><previous>$previousTab</previous>\n";
+        print "</tabs>\n";
+    }
+    print "<status>$msg</status>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
 

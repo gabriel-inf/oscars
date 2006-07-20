@@ -20,29 +20,31 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+July 19, 2006
 
 =cut
 
 
 use strict;
 
+use CGI::Session;
 use Data::Dumper;
 
-use OSCARS::WBUI::UserSession;
-use OSCARS::WBUI::Method::Info;
+use OSCARS::WBUI::NavigationBar;
 
 use OSCARS::WBUI::SOAPAdapter;
 our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# Overrides super-class call to avoid trying to verify a non-existent session.
+# Overrides super-class call to avoid trying to load an existing session.
 # In this case, the SOAP call is used to authenticate.
 #
 sub authenticate {
     my( $self ) = @_;
 
+    $self->{session} = CGI::Session->new() or die CGI::Session->errstr;
+    $self->{session}->expire("+8h");  # expire after 8 hours
     return 1;
 } #____________________________________________________________________________
 
@@ -51,7 +53,7 @@ sub authenticate {
 # output:  overrides superclass; formats and prints information page
 #
 sub output {
-    my( $self, $som, $request, $authorizations ) = @_;
+    my( $self, $som, $request ) = @_;
 
     my $msg;
 
@@ -59,37 +61,31 @@ sub output {
     elsif ($som->faultstring) { $msg = $som->faultstring; }
     # if there was an error
     if ($msg) {
-        print $self->{cgi}->header( -type=>'text/xml' );
+        print $self->{session}->header( -type=>'text/xml' );
 	print "<xml>\n";
-        print "<msg>$msg</msg>\n";
+        print "<status>$msg</status>\n";
         print "</xml>\n";
+	$self->{session}->delete();
 	return;
     }
     my $response = $som->result;
-    my $session = OSCARS::WBUI::UserSession->new();
-    my $sid = $session->start($self->{cgi}, $response);
-    # for some reason the CGI::Session variant doesn't work
-    print $self->{cgi}->header(
-	        -type=>'text/xml',
-	        -cookie=>$self->{cgi}->cookie(CGISESSID => $sid));
+    # set parameters now that have successfully authenticated via SOAP call
+    $self->{session}->param("login", $request->{login});
+    # needs the space
+    $self->{session}->param("tab", " ");
+
+    my $tabs = OSCARS::WBUI::NavigationBar->new();
+    print $self->{session}->header( -type=>'text/xml' );
     print "<xml>\n";
-    $self->{tabs}->output( 'Info', $authorizations );
-    $msg = $self->outputDiv($response, $authorizations);
-    print "<msg>$msg</msg>\n";
+    # output status
+    print "<status>User $request->{login} signed in.</status>\n";
+    # initialize navigation bar
+    $tabs->init( $response->{tabs} );
+    print "<content><h3>Click on a tab to start using the system</h3></content>\n";
+    # clear information section
+    print "<info> </info>\n";
     print "</xml>\n";
 } #___________________________________________________________________________ 
-
-
-###############################################################################
-sub outputDiv {
-    my( $self, $response, $authorizations ) = @_;
-
-    my $info = OSCARS::WBUI::Method::Info->new();
-    my $msg = $info->outputDiv($response, $authorizations);
-    # override in this case
-    $msg = "User $response->{login} signed in.\n";
-    return $msg;
-} #____________________________________________________________________________
 
 
 ######

@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -33,14 +33,26 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# outputDiv:  print authorizations form, with response from SOAP call 
+# getTab:  Gets navigation tab to set if this method returned successfully.
 #
-sub outputDiv {
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
+
+    return 'AuthorizationList';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# outputContent:  print authorizations form, with response from SOAP call 
+#
+sub outputContent {
     my( $self, $request, $response, $userTabAuths ) = @_;
 
     my $msg = "OSCARS authorizations";
     print( qq{
-    <div>
     <p>Select a user to view a list of all resource/permission pairs.  The
        user's current authorizations are highlighted in green.  Click on an
        unhighlighted resource/permission pair to grant an authorization to a 
@@ -53,7 +65,7 @@ sub outputDiv {
     # No roles at the moment.
     #$self->granteeTable('Roles', $response->{roles}, 'login');
     $self->authorizationsTable($response);
-    print("</tr></table></form></div>\n");
+    print("</tr></table></form>\n");
     return $msg;
 } #____________________________________________________________________________
 

@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-May 5, 2006
+July 15, 2006
 
 =cut
 
@@ -43,7 +43,7 @@ sub new {
 # Out:  None
 #
 sub output {
-    my( $self, $response, $authorizations ) = @_;
+    my( $self, $response ) = @_;
 
     my $srcPort = $response->{srcPort} || 'DEFAULT';
     my $destPort = $response->{destPort} || 'DEFAULT';
@@ -57,7 +57,6 @@ sub output {
     $path =~ s/ /, /g;
     my $msg = "Successfully got reservation details.";
     print( qq{
-    <div>
     <p><strong>Reservation Details</strong></p>
     <p>To return to the reservations list, click on the Reservations tab.</p>
     <p>
@@ -65,7 +64,7 @@ sub output {
 
     if (($response->{status} eq 'pending') ||
         ($response->{status} eq 'active')) {
-        my $cancelSubmitStr = "return submit_form(this,
+        my $cancelSubmitStr = "return submitForm(this,
              'method=CancelReservation;');";
         print( qq{
         <form method="post" action="" onsubmit="$cancelSubmitStr">
@@ -75,7 +74,7 @@ sub output {
         } );
     }
 
-    my $refreshSubmitStr = "return submit_form(this,
+    my $refreshSubmitStr = "return submitForm(this,
              'method=QueryReservation;');";
     print( qq{
     <form method="post" action="" onsubmit="$refreshSubmitStr">
@@ -104,7 +103,7 @@ sub output {
       <tr><td>Protocol</td><td>$protocol</td></tr>
       <tr><td>DSCP</td><td>$dscp</td></tr>
     } );
-    if ( $authorizations->{ManageDomains} ) {
+    if ( $response->{class} ) {
         print( qq{
         <tr><td>Class</td><td>$response->{class}</td></tr>
         <tr><td>Routers in path</td><td>$path</td></tr>
@@ -112,7 +111,7 @@ sub output {
     }
     print( qq{
       </tbody>
-    </table></div>
+    </table>
     } );
     return $msg;
 } #____________________________________________________________________________

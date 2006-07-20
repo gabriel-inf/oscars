@@ -66,18 +66,19 @@ sub soapMethod {
     my $login = $self->{user}->{login};
     my $response = {};
     $response->{login} = $login;
-    # used to indicate which tabbed pages that require authorization can
-    # be displayed
-    $response->{authorized} = {};
+    # used to indicate which tabbed pages can be displayed (some require
+    # authorization)
+    $response->{tabs} = {};
+    $response->{tabs}->{Info} = 1;
+    $response->{tabs}->{ReservationCreateForm} = 1;
+    $response->{tabs}->{ListReservations} = 1;
+    $response->{tabs}->{Logout} = 1;
     if ( $self->{user}->authorized('Users', 'manage') ) {
-        $response->{authorized}->{ManageUsers} = 1;
+        $response->{tabs}->{UserList} = 1;
+        $response->{tabs}->{ResourceList} = 1;
+        $response->{tabs}->{AuthorizationList} = 1;
     }
-    if ( $self->{user}->authorized('Domains', 'manage') ) {
-        $response->{authorized}->{ManageDomains} = 1;
-    }
-    if ( $self->{user}->authorized('Domains', 'persistent') ) {
-        $response->{authorized}->{persistent} = 1;
-    }
+    else { $response->{tabs}->{UserQuery} = 1; }
     $logger->info("finish", $response);
     return $response;
 } #____________________________________________________________________________

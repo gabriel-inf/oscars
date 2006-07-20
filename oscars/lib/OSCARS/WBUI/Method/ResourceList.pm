@@ -20,7 +20,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-June 22, 2006
+July 19, 2006
 
 =cut
 
@@ -34,14 +34,26 @@ our @ISA = qw{OSCARS::WBUI::SOAPAdapter};
 
 
 ###############################################################################
-# outputDiv:  print resources form, with response retrieved via SOAP call
+# getTab:  Gets navigation tab to set if this method returned successfully.
 #
-sub outputDiv {
-    my( $self, $request, $response, $authorizations ) = @_;
+# In:  None
+# Out: Tab name
+#
+sub getTab {
+    my( $self ) = @_;
+
+    return 'ResourceList';
+} #___________________________________________________________________________ 
+
+
+###############################################################################
+# outputContent:  print resources form, with response retrieved via SOAP call
+#
+sub outputContent {
+    my( $self, $request, $response ) = @_;
 
     my $msg = "OSCARS resources";
     print( qq{
-    <div>
     <p>To add a resource, fill in the required fields, and then click on
     'Add'.  To delete a resource, click on that row in the resources table,
     and click 'Delete'.  This form also associates permissions with a resource.
@@ -57,7 +69,7 @@ sub outputDiv {
                         'permissionName');
     $self->opsTable();
     $self->resourcePermissionsTable($response->{resourcePermissions});
-    print("</tr></table></form></div>\n");
+    print("</tr></table></form>\n");
     return $msg;
 } #____________________________________________________________________________
 
@@ -88,8 +100,8 @@ sub entryFields {
 sub resourceEntryFields {
     my( $self ) = @_;
 
-    my $addSubmitStr = "return submit_form(this, 'method=ResourceAdd;');";
-    my $deleteSubmitStr = "return submit_form(this,
+    my $addSubmitStr = "return submitForm(this, 'method=ResourceAdd;');";
+    my $deleteSubmitStr = "return submitForm(this,
                     'method=ResourceRemove;');";
     print( qq{
     <td class='auth-ui-td'>
@@ -125,8 +137,8 @@ sub resourceEntryFields {
 sub permissionEntryFields {
     my( $self ) = @_;
 
-    my $addSubmitStr = "return submit_form(this, 'method=PermissionAdd;');";
-    my $deleteSubmitStr = "return submit_form(this, 'method=PermissionRemove;";
+    my $addSubmitStr = "return submitForm(this, 'method=PermissionAdd;');";
+    my $deleteSubmitStr = "return submitForm(this, 'method=PermissionRemove;";
     print( qq{
     <td class='auth-ui-td'>
     <table>
