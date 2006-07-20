@@ -8,7 +8,7 @@
 
 	<wsdl:documentation>
 		This is WSDL for the OSCARS public reservation interface. DRAFT
-		V0.2.3  July 7, 2006
+		V0.2.3  July 17, 2006
 	</wsdl:documentation>
 
 	<!-- Element definitons -->
@@ -181,7 +181,7 @@
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="queryReservation" type="tns:resTag"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="listReservation" type="tns:emptyArg"
+					<xsd:element name="listReservations" type="tns:emptyArg"
 						maxOccurs="1" minOccurs="0">
 					</xsd:element>
 				</xsd:sequence>
@@ -197,7 +197,7 @@
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="queryReservation" type="tns:resDetails"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="listReservation" type="tns:listReply"
+					<xsd:element name="listReservations" type="tns:listReply"
 						maxOccurs="1" minOccurs="0">
 					</xsd:element>
 				</xsd:sequence>
@@ -222,7 +222,7 @@
 					<xsd:enumeration value="createReservation"/>
 					<xsd:enumeration value="queryReservation"/>
 					<xsd:enumeration value="cancelReservation"/>
-					<xsd:enumeration value="listReservation"/>
+					<xsd:enumeration value="listReservations"/>
 				</xsd:restriction>
 			</xsd:simpleType>
 			
@@ -250,6 +250,7 @@
 				  <xsd:enumeration value="CANCELLED"/>
 				  <xsd:enumeration value="FAILED"/>
 				  <xsd:enumeration value="PENDINGCANCEL"/>
+				  <xsd:enumeration value="PRECANCEL"/>
 			   </xsd:restriction>
 			</xsd:simpleType>
 			     
@@ -260,7 +261,7 @@
                                -->
 			<xsd:complexType name="resTag">
 				<xsd:sequence>
-					<xsd:element name="sTag" type="xsd:string" />
+					<xsd:element name="tag" type="xsd:string" />
 				</xsd:sequence>
 			</xsd:complexType>			
 
