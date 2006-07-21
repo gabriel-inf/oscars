@@ -14,6 +14,7 @@ use OSCARS::MethodFactory;
 
 my ( $daemon, $factory, $authN );
 
+# defaults
 my $usage ="oscars [-p portnum] [-c configFile] [-h]\n";
 my $portnum = 2000;
 my $configFile = "$ENV{HOME}/.oscars.xml";
@@ -69,7 +70,7 @@ Mary Thompson (mrthompson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-July 3, 2006
+July 20, 2006
 
 =cut
 
@@ -94,11 +95,12 @@ sub userLogin {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'userLogin');
-    my $response = SOAP::Data
+    # return serialized results
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -106,11 +108,11 @@ sub userLogout {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'userLogout');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -118,11 +120,11 @@ sub userQuery {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'userQuery');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -130,11 +132,11 @@ sub userModify {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'userModify');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -142,11 +144,11 @@ sub institutionList {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'institutionList');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -154,12 +156,12 @@ sub queryReservation {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'queryReservation');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
 	->value($results);
 #        ->value(OSCARS::Library::Serializer::serializeQueryResReply($results));
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -167,11 +169,11 @@ sub createReservation {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'createReservation');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -179,11 +181,11 @@ sub modifyReservation {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'modifyReservation');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -191,11 +193,11 @@ sub cancelReservation {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'cancelReservation');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -203,11 +205,11 @@ sub listReservations {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'listReservations');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ### internal methods
 
@@ -217,11 +219,11 @@ sub userAdd {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'userAdd');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -229,11 +231,11 @@ sub userRemove {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'userRemove');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -241,11 +243,11 @@ sub userList {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'userList');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -253,11 +255,11 @@ sub permissionList {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'permissionList');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -265,11 +267,11 @@ sub resourceList {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'resourceList');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -277,11 +279,11 @@ sub authorizationList {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'authorizationList');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #___________________________________________________________________________ 
+
 
 ###############################################################################
 #
@@ -289,11 +291,11 @@ sub reservationPending {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'reservationPending');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -301,11 +303,11 @@ sub reservationExpired {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'reservationExpired');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -313,11 +315,11 @@ sub topologyUpdate {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'topologyUpdate');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
@@ -325,11 +327,11 @@ sub reservationCreateForm {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'reservationCreateForm');
-    my $response = SOAP::Data
+    return SOAP::Data
         ->uri('http://oscars.es.net/OSCARS/Dispatcher')
         ->value($results);
-    return $response;
-}
+} #____________________________________________________________________________
+
 
 # public Interdomain (currently in Public/Reservation)
 
@@ -339,10 +341,9 @@ sub forward {
     my( $className, $request ) = @_;
 
     my $results = handle($request, 'forward');
-    my $response = OSCARS::Library::Serializer::serializeForwardReply($results);
-    
-    return $response;
-}
+    return OSCARS::Library::Serializer::serializeForwardReply($results);
+} #___________________________________________________________________________ 
+
 
 ###############################################################################
 #  Test for use with BNL.
@@ -353,15 +354,11 @@ sub testForward {
     $request->{userLogin}->{userName} = $userLogin->{userName};
     $request->{userLogin}->{password} = $userLogin->{password};
     $request->{payloadSender}= $payloadSender;
-    print "in oscars - testForward request\n", Dumper($request);
     my $results = handle($request, 'testForward');
-    #print "in oscars testForward results are:\n";
-    #print Dumper ($results); 
-   print "payloadContentType is $payload->{contentType}\n";
-    my $response =  OSCARS::Library::Serializer::serializeForwardReply(
-		$payload->{contentType},$results);
-    return $response;
-}
+    return  OSCARS::Library::Serializer::serializeForwardReply(
+                                           $payload->{contentType}, $results );
+} #____________________________________________________________________________
+
 
 ###############################################################################
 #
