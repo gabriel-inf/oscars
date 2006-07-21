@@ -28,10 +28,6 @@ use strict;
 use vars qw(@ISA);
 @ISA = qw(OSCARS::Library::Topology::Address);
 
-use Data::Dumper;
-use Error qw(:try);
-use Socket;
-
 use OSCARS::Library::Topology::Address;
 
 

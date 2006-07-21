@@ -19,15 +19,13 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-July 3, 2006
+July 20, 2006
 
 =cut
 
 
 use strict;
 
-use Data::Dumper;
-use Error qw(:try);
 use Socket;
 
 sub new {
