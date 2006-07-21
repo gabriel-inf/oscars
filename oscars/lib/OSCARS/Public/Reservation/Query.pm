@@ -21,7 +21,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-July 10, 2006
+July 20, 2006
 
 =cut
 
@@ -62,7 +62,37 @@ sub soapMethod {
 
     my @strArray = split('-', $request->{tag});
     my $id = $strArray[-1];
-    return $self->{reservation}->queryReservationResponse($id);
+    return $self->queryReservation($id);
+} #____________________________________________________________________________
+
+
+###############################################################################
+# queryReservation:  get reservation details from the database, given 
+#     its reservation id.  If a user has the proper authorization, he can view 
+#     any reservation's details.  Otherwise he can only view reservations that
+#     he has made, with less of the details.  If a database field is NULL
+#     or blank, it is not returned.
+#
+# In:  reference to hash of parameters
+# Out: reference to hash of reservation details
+#
+sub queryReservation {
+    my( $self, $id ) = @_;
+
+    my( $statement, $fields );
+
+    if ( $self->{user}->authorized('Reservations', 'manage') ) {
+        $statement = 'SELECT * FROM ReservationAuthDetails WHERE id = ?';
+        $fields = $self->{db}->getRow($statement, $id);
+    }
+    else {
+        $statement = 'SELECT * FROM ReservationUserDetails ' .
+                     'WHERE login = ? AND id = ?';
+        $fields = $self->{db}->getRow($statement, $self->{user}->{login}, $id);
+    }
+    if (!$fields) { return undef; }
+    my $resDetails = $self->{reservation}->format($fields);
+    return $resDetails;
 } #____________________________________________________________________________
 
 

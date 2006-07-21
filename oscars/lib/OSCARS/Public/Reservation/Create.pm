@@ -21,7 +21,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-July 10, 2006
+July 20, 2006
 
 =cut
 
@@ -75,7 +75,8 @@ sub soapMethod {
              $self->{forwarder}->forward($request, $self->{configuration}, $logger);
     }
     # if successfuly found path, attempt to enter local domain's portion in db
-    my $response = $self->createReservation( $request );
+    my $fields = $self->createReservation( $request );
+    my $response = { 'status' => $fields->{status}, 'tag' => $fields->{tag} };
     $logger->info("finish", $response);
     return $response;
 } #____________________________________________________________________________
@@ -98,8 +99,10 @@ sub createReservation {
     $self->{reservation}->checkOversubscribed( $request );
     # Insert reservation in reservations table
     my $id = $self->{reservation}->insert( $request );
-    # get status back, and tag if creation was successful
-    return $self->{reservation}->createReservationResponse( $id );
+    # return status back, and tag if creation was successful
+    my $statement = 'SELECT tag, status FROM ReservationUserDetails ' .
+                    ' WHERE id = ?';
+    return $self->{db}->getRow($statement, $id);
 } #____________________________________________________________________________
 
 

@@ -20,7 +20,7 @@ Soo-yeon Hwang  (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-July 10, 2006
+July 20, 2006
 
 =cut
 
@@ -57,7 +57,54 @@ sub initialize {
 sub soapMethod {
     my( $self, $request, $logger ) = @_;
 
-    return $self->{reservation}->listReservationsResponse( $request );
+    return $self->listReservations( $request );
+} #____________________________________________________________________________
+
+
+###############################################################################
+#
+sub listReservations {
+    my( $self ) = @_;
+
+    my( $resInfoContent, $statement );
+
+    if ( $self->{user}->authorized('Reservations', 'manage') ) {
+        $statement = 'SELECT * FROM ReservationList ORDER BY startTime DESC';
+        $resInfoContent = $self->{db}->doSelect($statement);
+    }
+    else {
+        $statement = 'SELECT * FROM ReservationList WHERE login = ? ' .
+                     'ORDER BY startTime DESC';
+        $resInfoContent = $self->{db}->doSelect($statement, $self->{user}->{login});
+    }
+    # format results before returning
+    my @listReply = ();
+    for my $row ( @{$resInfoContent} ) {
+        push( @listReply, $self->summarize($row) );
+    }
+    return \@listReply;
+} #____________________________________________________________________________
+
+
+##################
+# Internal methods
+##################
+
+###############################################################################
+#
+sub summarize {
+    my( $self, $row ) = @_;
+
+    my $results = {};
+    $results->{startTime} = $self->{reservation}->secondsToDatetime(
+                              $row->{startTime}, $row->{origTimeZone});
+    $results->{endTime} = $self->{reservation}->secondsToDatetime(
+                              $row->{endTime}, $row->{origTimeZone});
+    $results->{tag} = $row->{tag};
+    $results->{status} = $row->{status};
+    $results->{srcHost} = $row->{srcHost};
+    $results->{destHost} = $row->{destHost};
+    return $results;
 } #____________________________________________________________________________
 
 

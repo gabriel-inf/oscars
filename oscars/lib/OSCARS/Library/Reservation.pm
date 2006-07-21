@@ -60,80 +60,6 @@ sub initialize {
 
 
 ###############################################################################
-# createReservationResponse:  get the response fields for a createReservation 
-# request.
-#
-# In:  reference to hash of parameters
-# Out:  hash containing SOAP method response
-#
-sub createReservationResponse {
-    my( $self, $id ) = @_;
-
-    my $statement = 'SELECT tag, status FROM ReservationUserDetails ' .
-                    ' WHERE id = ?';
-    my $fields = $self->{db}->getRow($statement, $id);
-    my $createReply = { 'status' => $fields->{status},
-	                'tag' => $fields->{tag} };
-    return $createReply;
-} #____________________________________________________________________________
-
-
-###############################################################################
-# queryReservationResponse:  get reservation details from the database, given 
-#     its reservation id.  If a user has the proper authorization, he can view 
-#     any reservation's details.  Otherwise he can only view reservations that
-#     he has made, with less of the details.  If a database field is NULL
-#     or blank, it is not returned.
-#
-# In:  reference to hash of parameters
-# Out: reference to hash of reservation details
-#
-sub queryReservationResponse {
-    my( $self, $id ) = @_;
-
-    my( $statement, $fields );
-
-    if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = 'SELECT * FROM ReservationAuthDetails WHERE id = ?';
-        $fields = $self->{db}->getRow($statement, $id);
-    }
-    else {
-        $statement = 'SELECT * FROM ReservationUserDetails ' .
-                     'WHERE login = ? AND id = ?';
-        $fields = $self->{db}->getRow($statement, $self->{user}->{login}, $id);
-    }
-    if (!$fields) { return undef; }
-    my $resDetails = $self->format($fields);
-    return $resDetails;
-} #____________________________________________________________________________
-
-
-###############################################################################
-#
-sub listReservationsResponse {
-    my( $self ) = @_;
-
-    my( $resInfoContent, $statement );
-
-    if ( $self->{user}->authorized('Reservations', 'manage') ) {
-        $statement = 'SELECT * FROM ReservationList ORDER BY startTime DESC';
-        $resInfoContent = $self->{db}->doSelect($statement);
-    }
-    else {
-        $statement = 'SELECT * FROM ReservationList WHERE login = ? ' .
-                     'ORDER BY startTime DESC';
-        $resInfoContent = $self->{db}->doSelect($statement, $self->{user}->{login});
-    }
-    # format results before returning
-    my @listReply = ();
-    for my $row ( @{$resInfoContent} ) {
-        push( @listReply, $self->summarize($row) );
-    }
-    return \@listReply;
-} #____________________________________________________________________________
-
-
-###############################################################################
 # checkOversubscribed:  gets the list of active reservations at the same time
 #   as this (proposed) reservation.  Also queries the db for the max speed of
 #   the router interfaces to see if we have exceeded it.
@@ -351,28 +277,6 @@ sub updateStatus {
     $statement = qq{ UPDATE reservations SET status = ? WHERE id = ?};
     $self->{db}->execStatement($statement, $status, $id);
     return $status;
-} #____________________________________________________________________________
-
-
-##################
-# Internal methods
-##################
-
-###############################################################################
-#
-sub summarize {
-    my( $self, $row ) = @_;
-
-    my $results = {};
-    $results->{startTime} = $self->secondsToDatetime(
-                              $row->{startTime}, $row->{origTimeZone});
-    $results->{endTime} = $self->secondsToDatetime(
-                              $row->{endTime}, $row->{origTimeZone});
-    $results->{tag} = $row->{tag};
-    $results->{status} = $row->{status};
-    $results->{srcHost} = $row->{srcHost};
-    $results->{destHost} = $row->{destHost};
-    return $results;
 } #____________________________________________________________________________
 
 
