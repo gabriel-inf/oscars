@@ -6,6 +6,7 @@
 \usepackage[dvips]{color}
 \usepackage[xdvi]{graphicx}
 \usepackage{subfigure}
+\usepackage{url}
 
 % correct bad hyphenation here 
 \hyphenation{op-tical net-works semi-conduc-tor IEEEtran ESnet OSCARS}
@@ -103,7 +104,8 @@ last item, where work is still in progress.
 Due to the highly distributed nature of large scale science,
 the service framework for OSCARS is being
 developed in coordination with other community network provisioning efforts. 
-The closest coordination is with the Internet2 BRUW \cite{bruw}\cite{riddle} system. 
+The closest coordination is with the Internet2 BRUW \cite{riddle}
+system. 
 A version of BRUW was used as the starting point for OSCARS, and now the two 
 projects share a common code base. Interoperability testing is on-going with 
 Internet2 sites. 
@@ -241,7 +243,7 @@ specified bandwidth.
 
 \item
 Each router along the route receives the path setup request 
-via \emph{Reservation Resource Protocol} (\textbf{RSVP}) \cite{rfc2205}
+via \emph{Reservation Resource Protocol} (\textbf{RSVP}) \cite{rsvp}
 and commits bandwidth (if available) creating an end-to-end LSP.  The RM is
 notified by RSVP if the end-to-end path cannot be established.
 
@@ -396,9 +398,9 @@ ongoing collaborative efforts.
 
 There are several implementations of network resource management and
 service provisioning systems in existence today.  These include the DOE funded
-TeraPaths \cite{terapaths} and UltraScience Net \cite{usn} projects, the NSF funded CHEETAH \cite{veeraraghavan} and
-DRAGON \cite{yang}\cite{dragon} projects,
-Internet2's BRUW \cite{bruw} and HOPI \cite{hopi} projects, CANARIE's UCLP \cite{canarie} 
+TeraPaths \cite{bradley} and UltraScience Net \cite{usn} projects, the NSF funded CHEETAH \cite{veeraraghavan} and
+DRAGON \cite{yang} projects,
+Internet2's BRUW \cite{riddle} and HOPI \cite{hopi} projects, CANARIE's UCLP \cite{canarie} 
 project, and GEANT's
 BoD (GN2-JRA3) \cite{geant} and AMPS (SA3) \cite{geant-amps} activities.
 
@@ -422,7 +424,7 @@ published a number of papers
 describing both the networking and the AAA issues for such a system,
 including \cite{gommans05} \cite{gommans06} \cite{demchenko} . 
 They are using the IETF AAA Framework
-\cite{rfc2904}, and use XACML \cite{XACML} to describe policy. They have also defined a
+\cite{AAA}, and use XACML \cite{XACML} to describe policy. They have also defined a
 \emph{Network Description Language} (NDL), which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability \cite{ndl}.
 
@@ -592,7 +594,7 @@ Requests for or about interdomain
 reservations are authenticated in the originating domain on the basis
 of an individual user, and in the subsequent domains on the basis of
 the RM in the adjacent domain.  This approach follows the AAA  Authorization
-model defined by the IETF Networking Group. \cite{rfc2904}. In this model
+model defined by the IETF Networking Group. \cite{AAA}. In this model
 users are authenticated and authorized for actions in their home domain and 
 interdomain authorization depends on SLA's between domains (AS's) and the
 assurance that  a request is coming from a trusted server in a trusted domain. Normally all requests between domains will be a SOAP \emph{forward}  message
@@ -697,7 +699,8 @@ collaborating networks.  This could include properties such as connectivity
 (topology), bandwidth, latency, and jitter.  There are several documents
 that have been published by the different projects as well as organizations
 related to this work (e.g.: Geant \cite{geant},  Univ Amsterdam \cite{ndl}, 
-Canarie UCLP \cite{canarie-interop}, IETF CCAMP \cite{ietf-ccamp}). However due to the
+Canarie UCLP \cite{canarie-interop}, IETF CCAMP \cite{ietf-ccamp}). However 
+due to the
 heterogeneity of network implementations and deployments, generating a single
 framework to quantify all networks is challenging.
 
@@ -822,135 +825,170 @@ for help in the incorporation of BRUW, and for work on interoperability tests.
 \begin{thebibliography}{1}
 
 \bibitem{ballinger}
-K. Ballinger, D. Ehnebusk, M. Gudgin, M. Nottingham, P. Yendluri, \emph{Basic Profile, Version 1.0}, WS-I Reccommendation, April, 2004, http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html 
+K.~Ballinger, D.~Ehnebusk, M.~Gudgin, M.~Nottingham, and~~~~\\
+P.~Yendluri, ``Basic Profile Version 1.0,'' Apr. 2004, Available at: \\
+\url{http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html}
 
-\bibitem{bell}
-E. Bell, A. Smith, P. Langille, A. Rijhsinghani, K. McLoghrie, \emph{"Definitions of Managed Objects for Bridges
-with Traffic Classes, Multicast Filtering and Virtual LAN Extensions}, IETF RFC 2674, August 1999.
+\bibitem{vlan-ext}
+E.~Bell, A.~Smith, P.~Langille, A.~Rijhsinghani, and K.~McLoghrie,
+``Definitions of Managed Objects for Bridges with Traffic Classes, Multicast
+Filtering and Virtual LAN Extensions,''
+IETF RFC 2674, Aug. 1999.
 
-\bibitem{rfc2205}
-R.Branden, L. Zhang, S. Berson, S. Herzog, S.Jamin \emph{Resource ReSerVation Protocol (RSVP) -- Version 1 Functional Specification} IETF RFC , Sept. 1997
-
-\bibitem{bruw}
-Internet2 BRUW project: http://vbvod.internet2.edu/internship/bruw/index.html
+\bibitem{rsvp}
+R.~Branden, L.~Zhang, S.~Berson, S.~Herzog, and S.~Jamin,
+``Resource ReSerVation Protocol (RSVP) -- Version 1 Functional
+Specification,'' IETF RFC 2205, Sept. 1997.
 
 \bibitem{burruss}
-J.R.Burruss, T.W.Fredian, M.R.Thompson. \emph{Security on the U.S. FusionGridD}, Fusion Engineering and Design, Elesevier, to appear Fall 2006
+J.R.~Burruss, T.W.~Fredian, and M.R.~Thompson,
+``Security on the U.S. FusionGrid,''
+in \emph{Fusion Engineering and Design}, Elesevier, to appear Fall 2006.
 
 \bibitem{rsvp-te}
-L. Berger (ed), “Generalized MPLS Signaling - RSVP-TE Extensions,” IETF RFC 3473, January 2003.
+L.~Berger,~Ed.,
+``Generalized MPLS Signaling - RSVP-TE Extensions,''
+IETF RFC 3473, Jan. 2003.
  
 \bibitem{bradley}
-S. Bradley, F. Burstein, L. Cottrell, B. Gibbard, D. Katramatos, Y. Li, S. McKee, R. Pope-scu, D. Stampf, D. Yu. 
-\emph{TeraPaths: A QoS-Enabled Collaborative Data Sharing Infra-structure for Peta-scale Computing Research}, Computing in High Energy and Nuclear Physics (CHEP 2006), T.I.F.R., Mumbai, India, Feb 13-17, 2006
-
-\bibitem{terapaths}
-http://www.atlasgrid.bnl.gov/terapaths/
+S.~Bradley, F.~Burstein, L.~Cottrell, B.~Gibbard, D.~Katramatos, Y.~Li,
+S.~McKee, R.~Pope-scu, D.~Stampf, and D.~Yu,
+``TeraPaths: A QoS-Enabled Collaborative Data Sharing Infra-structure for
+Peta-scale Computing Research,''
+in \emph{Computing in High Energy and Nuclear Physics (CHEP 2006)}, T.I.F.R.,
+Mumbai, India, Feb. 13-17, 2006.
 
 \bibitem{canarie}
-Canarie UCLP Project Website: http://www.canarie.ca/canet4/uclp/
+``Canarie UCLP Project,'' Available at: \\
+\url{http://www.canarie.ca/canet4/uclp/}
 
 \bibitem{canarie-interop}
-Canarie Interoperability Work: http://grid2.canarie.ca/wiki/index.php/
+``Canarie Interoperability Work,'' Available at: \\
+\url{http://grid2.canarie.ca/wiki/index.php/}
 
 \bibitem{cops-pr}
-K. Chan et al., “COPS Usage for Policy Provisioning 
-(COPS-PR),” IETF RFC 3084, March 2001.
+K.~Chan~et~al., ``COPS Usage for Policy Provisioning (COPS-PR),''
+IETF RFC 3084, Mar. 2001.
 
 \bibitem{WSDL}
- E. Christensen,  F. Curbera, G. Meredith, S. Weerawarana, \emph{Web Services Description Language (WSDL) 1.1} W3C Reccommendation, March, 2001, http://www.w3.org/TR/wsdl  
+E.~Christensen, F.~Curbera, G.~Meredith, and S.~Weerawarana,
+``Web Services Description Language (WSDL) 1.1,'' Mar. 2001,
+Available at: \url{http://www.w3.org/TR/wsdl}
 
 \bibitem{demchenko}
-Yuri Demchenko, Leon Gommans, Cees de Laat, Andrew Tokmakoff and Rene van Buren,
- \emph{Policy Based Access Control in Dynamic Grid-Based Collaboratie Environment},
- submitted to 2006 International Symposium on Collaborative Technologies and Systems (CTS 2006)
-
-\bibitem{dragon}
-DRAGON Project Website, http://dragon.maxgigapop.net
+Y.~Demchenko, L.~Gommans, C.~de~Laat, A.~Tokmakoff, and R.~van~Buren,
+``Policy Based Access Control in Dynamic Grid-Based Collaborative Environment,''
+submitted to
+\emph{2006 International Symposium on Collaborative Technologies and Systems (CTS 2006)}.
 
 \bibitem{cops}
-D. Durham et al., “The COPS (Common Open Policy 
-Service Protocol),” IETF RFC 2748, January 2000. 
+D.~Durham~et~al.,
+``The COPS (Common Open Policy Service Protocol),'' IETF RFC 2748, Jan. 2000.
 
 \bibitem{eastlake}
-D. Eastlake, J. Reagle, D. Solo. \emph{XML-Signature Syntax and Processing. W3C Recommendation} W3C Recommendation, Feb, 2002, http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/
+D.~Eastlake, J.~Reagle, and D.~Solo,
+``XML-Signature Syntax and Processing,'' Feb. 2002, Available at: \\
+\url{http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/}
 
 \bibitem{esnet-pc}
-ESnet Performance Center: https://performance.es.net/
+``ESnet Performance Center,'' Available at: \\
+\url{https://performance.es.net/}
 
 \bibitem{hopi}
-Internet2 HOPI Project website: http://networks.internet2.edu/hopi/
+``Internet2 HOPI Project,'' Available at: \\
+\url{http://networks.internet2.edu/hopi/}
 
 \bibitem{geant}
-GEANT GN2-JRA3 Project website: http://www.geant2.net/server/show/nav.756
-%http://www.geant2.net/ 
+``GEANT GN2-JRA3 Project,'' Available at: \\
+\url{http://www.geant2.net/server/show/nav.756}
 
 \bibitem{geant-amps}
-GEANT AMPS Project Website: http://www.geant2.net/server/show/nav.893
+``GEANT AMPS Project,'' Available at: \\
+\url{http://www.geant2.net/server/show/nav.893}
 
 \bibitem{gommans05}
-Leon Gommans, Cees de Laat, Robert Meijer, \emph{Token Based path authorization at Interconnection Points between Hybrid Networks and a Lambda Grid}, Proceedings of IEEE GRIDNETS 2005
+L.~Gommans, C.~de~Laat, and R.~Meijer,
+``Token Based Path Authorization at Interconnection Points between Hybrid
+Networks and a Lambda Grid,''
+\emph{Proceedings of IEEE GRIDNETS 2005}.
 
 \bibitem{gommans06}
-Leon Gommans, Bas van Oudenaarde, Freek Dijkstra, Cees de Laat, Tal Lavian, Inder Monga, Arie Taal, Franco Travostino, Alfred Wan, \emph{Applications Drive Secure Lightpath Creation across Heterogeneous Domains}, IEEE Communications Magazine, Feature topic Optical Control Planes for Grid Networks: Opportunities, Challenges and the Vision, vol. 44, no. 3, March 2006
-
+L.~Gommans, B.~van~Oudenaarde, F.~Dijkstra, C.~de~Laat, T.~Lavian, I.~Monga,
+A.~Taal, F.~Travostino, and A.~Wan,
+``Applications Drive Secure Lightpath Creation across Heterogeneous Domains,''
+\emph{IEEE Communications Magazine},
+vol. 44, no. 3, Mar. 2006.
 
 \bibitem{SOAP}
-N.Mitra (ed.) \emph{SOAP Version 1.2 Part 0: Primer}, W3C Recommendation 24-June-2003.  http://www.w3.org/TR/soap12-part0/ 
+N.~Mitra,~Ed.,
+``SOAP Version 1.2 Part 0: Primer,'' Jun. 2003, Available at:
+\url{http://www.w3.org/TR/soap12-part0/}
 
 \bibitem{ndl}
-Jeroen van der Ham, Freek Dijkstra, Franco Travostino, Hubertus Andree and Cees de Laat, \emph{Using RDF to Describe Networks}. Unpublished (accepted by Future Generation Computer Systems, Feature topic iGrid 2005), October 2005.
+J.~van~der~Ham, F.~Dijkstra, F.~Travostino, H.~Andree, and C.~de~Laat,
+\emph{Using RDF to Describe Networks},
+Unpublished
+(accepted by Future Generation Computer Systems, Feature topic iGrid 2005),
+October 2005.
 
 \bibitem{iperf}
-iperf: http://dast.nlanr.net/Projects/Iperf/
+``iperf,'' Available at: \\
+\url{http://dast.nlanr.net/Projects/Iperf/}
 
 \bibitem{ietf-ccamp}
-IETF CCAMP Working Group: http://www.ietf.org/html.charters/ccamp-charter.html
+``IETF CCAMP Working Group,'' Available at:
+\url{http://www.ietf.org/html.charters/ccamp-charter.html}
 
 \bibitem{ospf-te}
-D. Katz, D. Yeung and K. Kompella, \emph{Traffic engineering extensions to OSPF version 3}, IETF 
-Internet Draft, Work in Progress, draft-ietf-ospf- 
-ospfv3-traffic-05.txt, March 2005. 
-IETF RFC 2543, March 1999. 
+D.~Katz, D.~Yeung, and K.~Kompella,
+``Traffic engineering extensions to OSPF version 3'',
+IETF Internet Draft, Work in Progress,
+draft-ietf-ospf-ospfv3-traffic-05.txt, March 2005.
+IETF RFC 2543, March 1999.
 
 \bibitem{martelli}
-Edoardo Martelli, \emph{Protect production traffic against aggressive streams using Juniper routers},
-http://emartell.home.cern.ch/emartell/done/datatag/ 
-% full URL breaks latex, no clue why
-% juniper_rate_limit/ traffic_protection_with_juniper.html
+E.~Martelli,
+``Protect production traffic against aggressive streams using Juniper routers,''
+Aug. 2003, Available at:
+\url{http://emartell.web.cern.ch/emartell/done/datatag/juniper_rate_limit/traffic_protection_with_juniper.html}
 
-\bibitem{XACML} 
-T.  Moses (ed), \emph{eXtensible Access Control Markup Language 2 
-(XACML) Version 2.0 3}, Feb. 2005
-% http://docs.www.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf
+\bibitem{XACML}
+T.~Moses,~Ed.,
+``eXtensible Access Control Markup Language 2 (XACML) Version 2.0,''
+Feb. 2005, Available at:
+\url{http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf}
 
-\bibitem{riddle} 
-B. Riddle,  “BRUW: A Bandwidth Reservation System to Support End-user Work”, Terena 
-Networking Conference 2005.  
+\bibitem{riddle}
+B.~Riddle,
+``BRUW: A Bandwidth Reservation System to Support End-user Work'',
+Terena Networking Conference 2005.
 
 \bibitem{shallow}
-G. Swallow, et al., \emph{Generalized Multiprotocol Label Switching(GMPLS) User-Network Interface (UNI):
-Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Support for the Overlay Model}, IETF
-Internet Draft, Work in Progress, draft-ietf-ccamp-gmpls-overlay-05.txt, October 2004.
+G.~Swallow,~et~al.,
+``Generalized Multiprotocol Label Switching (GMPLS) User-Network Interface
+(UNI): Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Support
+for the Overlay Model'', IETF Internet Draft, Work in Progress,
+draft-ietf-ccamp-gmpls-overlay-05.txt, Oct. 2004.
 
 \bibitem{usn}
-DOE UltraScience Network Project Website: http://www.csm.ornl.gov/ultranet/
+``DOE UltraScience Network Project,'' Available at: \\
+\url{http://www.csm.ornl.gov/ultranet/};
 
 \bibitem{veeraraghavan}
-M. Veeraraghavan, X. Zheng, H. Lee, M. Gardner, and W. Feng,
-\emph{CHEETAH: Circuit-switched High-speed End-to-End Transport Architecture},
-Opticomm, Dallas, Texas, October 2003.
+M.~Veeraraghavan, X.~Zheng, H.~Lee, M.~Gardner, and W.~Feng,
+``CHEETAH: Circuit-switched High-speed End-to-End Transport Architecture,''
+Opticomm, Dallas, Texas, Oct. 2003.
 
-\bibitem{rfc2904}
-J. Vollbrecht, P. Calhoun, S. Farrell, L. Gommans, G. Gross,B. de Bruijn, C. de Laat, M. Holdrege,
-D. Spence, \emph{AAA Authorization Framework}, IETF RFC , Aug. 2000, http://www.ietf.org/rfc/rfc2904.txt
+\bibitem{AAA}
+J.~Vollbrecht, P.~Calhoun, S.~Farrell, L.~Gommans, G.~Gross, B.~de~Bruijn,
+C.~de~Laat, M.~Holdrege, and D.~Spence,
+``AAA Authorization Framework,'' IETF RFC 2904, Aug. 2000.
 
 \bibitem{yang}
-Xi Yang, Tom Lehman, Chris Tracy, Jerry Sobieski, Shujia Gong, Payam Torab, Bijan Jabbari, \emph{Policy-
-Based Resource Management and Service Provisioning in GMPLS Networks}, Adaptive Policy-based
-Management in Network Management and Control Workshop at INFOCOMM 2006, Barcelona Spain,
-April 2006.
-
+X.~Yang, T.~Lehman, C.~Tracy, J.~Sobieski, S.~Gong, P.~Torab, and B.~Jabbari,
+``Policy-Based Resource Management and Service Provisioning in GMPLS Networks,''
+Adaptive Policy-based Management in Network Management and Control Workshop
+at INFOCOMM 2006, Barcelona Spain, Apr. 2006.
 
 \end{thebibliography}
 
