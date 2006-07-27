@@ -211,7 +211,7 @@ The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
 Perl packages that implement the AAAS, BSS, and PSS.  A mod\_perl script on
 the Web server is used to accept browser requests sent via Asynchronous
-Javascript + XML (Ajax) techniques.
+Javascript + XML \textbf{(Ajax)} techniques.
 Parameters from the Ajax request are then placed into a SOAP request, and
 forwarded to the SOAP server.
 URL's indicating an explicit SOAP request conforming to the service 
@@ -316,7 +316,8 @@ that are cooperating with OSCARS.  If a match is found, the request is
 forwarded to the downstream AS.
 
 \subsection{Advanced Reservations }
-To support advanced reservations, RSVP-TE information on the network's current
+To support advanced reservations, RSVP-TE \cite{RSVP-TE} information on the 
+network's current
 provisioned bandwidth, if available, must be supplemented with a mechanism 
 that will permit a view of the network's provisioned bandwidth in a slice of
 time in the future.  In OSCARS, advance reservations are handled in a slot 
@@ -406,7 +407,8 @@ of intradomain LSP's stitched together at agreed interconnection points.
 
 \item
 The data plane handles how user traffic is forwarded from one network to 
-another network, e.g. IP packets, Ethernet VLAN packets, etc.  This is one of 
+another network, e.g. IP packets, Ethernet VLAN packets, etc. \cite{vlan-ext}.
+This is one of 
 the fundamental issues that must be resolved in order for an interdomain 
 end-to-end virtual circuit to be successful.  Complications arise when 
 peering RM's provision virtual circuits at different network layers (e.g. 
@@ -878,7 +880,7 @@ A.~Sevasti,
 ``GN2-JRA3: A multi-domain bandwidth on demand service for the NREN community,''
 Presented at TERENA Networking Conference, Catania, Italy, 2006.
 
-\bibitem{shallow}
+\bibitem{RSVP-TE}
 G.~Swallow,~et~al.,
 ``Generalized Multiprotocol Label Switching (GMPLS) User-Network Interface
 (UNI): Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Support
