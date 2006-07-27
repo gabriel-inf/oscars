@@ -172,7 +172,7 @@ stored in a database.
 The RM provides simple Web forms for creating and managing reservations, 
 setting authorization policy and other administrative tasks (the Web-based
 user interface in the figure).
-It also supports a SOAP message interface API to support programmable 
+It also supports an API using the SOAP messaging protocol to support programmable 
 reservation management and requests from other network service providers.
 
 The AAAS is responsible for authenticating and authorizing all external 
@@ -202,9 +202,9 @@ the AAAS used by the BSS.
 
 \subsection{Implementation}
 
-Web services standards are used wherever possible.  SOAP \cite{SOAP} messages are
+Web services standards are used wherever possible.  SOAP messages are
 used for communications between clients and the RM, and 
-the \emph{Web Services Definition Language} (\textbf{WSDL}) \cite{WSDL} is used for the service description.
+the \emph{Web Services Definition Language} (\textbf{WSDL}) is used for the service description.
  
 The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
@@ -443,7 +443,9 @@ published a number of papers
 describing both the networking and the AAA issues for such a system,
 including \cite{gommans05} \cite{gommans06} \cite{demchenko} . 
 They are using the IETF AAA Framework
-\cite{AAA}, and use XACML \cite{XACML} to describe policy. They have also defined a
+\cite{AAA}, and use the 
+eXtensible Access Control Markup Language (XACML) Version 2
+to describe policy. They have also defined a
 \emph{Network Description Language} (NDL), which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability \cite{ndl}.
 
@@ -885,11 +887,6 @@ to appear in \underline{Fusion Engineering and Design}, Elsevier, Fall 2006.
 K.~Chan~et~al., ``COPS usage for policy provisioning (COPS-PR),''
 IETF RFC 3084, Mar. 2001.
 
-\bibitem{WSDL}
-E.~Christensen, F.~Curbera, G.~Meredith, and S.~Weerawarana,
-``Web Services Description Language (WSDL) 1.1,'' [Online document] Mar. 2001,
-Available at: \url{http://www.w3.org/TR/wsdl}
-
 \bibitem{demchenko}
 Y.~Demchenko, L.~Gommans, C.~de~Laat, A.~Tokmakoff, and R.~van~Buren,
 ``Policy based access control in dynamic Grid-based collaborative environment,''
@@ -956,17 +953,6 @@ E.~Martelli,
 ``Protect production traffic against aggressive streams using Juniper routers,''
 [Online document] Aug. 2003, Available at:
 \url{http://emartell.web.cern.ch/emartell/done/datatag/juniper_rate_limit/traffic_protection_with_juniper.html}
-
-\bibitem{SOAP}
-N.~Mitra,~Ed.,
-``SOAP Version 1.2 Part 0: Primer,'' Jun. 2003, [Online document] Available at:
-\url{http://www.w3.org/TR/soap12-part0/}
-
-\bibitem{XACML}
-T.~Moses,~Ed.,
-``eXtensible Access Control Markup Language 2 (XACML) Version 2.0,''
-[Online document] Feb. 2005, Available at:
-\url{http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf}
 
 \bibitem{GEANT-AMPS}
 A.~Patil,
