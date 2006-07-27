@@ -307,19 +307,25 @@ that are cooperating with OSCARS.  If a match is found, the request is
 forwarded to the downstream AS.
 
 \subsection{Advanced Reservations }
-In OSCARS, advance reservations are handled in a slot based manner. This equates
-to 'first come first served' for bandwidth across any particular link at any
-moment. As each reservation is requested in OSCARS, the end-to-end path is
+To support advanced reservations, RSVP-TE information on the network's current
+provisioned bandwidth, if available, must be supplemented with a mechanism 
+that will permit a view of the network's provisioned bandwidth in a slice of
+time in the future.  In OSCARS, advance reservations are handled in a slot 
+based manner.  This equates to ``first come first served'' for bandwidth across
+any particular link at any moment.
+
+As each reservation is requested in OSCARS, the end-to-end path is
 computed for that reservation. Once the entire path though all the routers
 controlled by OSCARS has been computed, each link in the path is checked for
 available bandwidth. To check the bandwidth of a link, all outstanding
 reservations for that link during the time of the proposed reservation are
 queried from the data base. Then all the reserved bandwidth amounts are
 calculated and compared to the actual capacity of the link. If the requested
-amount of bandwidth plus all outstanding reservations is more then the allocated
-amount of bandwidth available for reservations on that link (in this case
-50\%), then the reservation fails. Only if there is enough bandwidth 
-available on all links is the reservation committed into the reservation system.
+amount of bandwidth plus all outstanding reservations is more then the 
+allocated amount of bandwidth available for reservations on that link (in 
+this case 50\%), then the reservation fails. Only if there is enough bandwidth 
+available on all links is the reservation committed into the reservation 
+system.
 
 In the future, in the case where the capacity of a link changes (e.g. a link 
 upgrade or failure), all outstanding reservations
@@ -329,21 +335,27 @@ This will be done to ensure that there is adequate bandwidth available on the
 link when it comes time to provision the reservation.
 
 \subsection{Provisioning and Policing}
-To facilitate bandwidth guarantees, provisioning and policing are needed to 
-enforce reservation and usage limits.  In OSCARS, RSVP is used as the 
-provisioning mechanism.  To ensure that resources are not over-subscribed, QoS 
-is carefully configured to provision queues within the network core.  Within 
-ESnet, traffic utilizing the OSCARS service is classified into a 
-Class-of-Service distinct from all other traffic and isolated into a separate 
-queue by 
-itself.  The size of this queue is configured to match the RSVP bandwidth 
+With reservations (current and advanced) managed by the OSCARS database, 
+provisioning and policing are the next steps in permitting the reservation to
+be claimed. These steps are necessary in order to facilitate bandwidth 
+guarantees to enforce reservation and usage limits.  In OSCARS, RSVP is used 
+as the provisioning mechanism to instantiate and manage active reservations. 
+However, RSVP does not police the usage limits of the reservations.  To
+ensure that bandwidth resources are not over-subscribed, QoS is carefully 
+configured to provision queues within the network core.
+
+Within ESnet, traffic 
+utilizing the OSCARS service is classified into a Class-of-Service distinct 
+from all other traffic and isolated into a separate queue by itself.  The size 
+and transmit rate of this queue is configured to match the RSVP bandwidth 
 limits on each interface, e.g. if the RSVP bandwidth limit on an interface is 
-50\%, the OSCARS queue is also set at 50\%.  This ensures that the RSVP 
-provisioned bandwidth will translate to available network bandwidth within 
-the network core.
+50\%, the OSCARS queue depth and service rate is also set at 50\%.  This 
+ensures that the RSVP provisioned bandwidth will translate to available 
+network bandwidth within the network core.
 
 With all of OSCARS traffic using the same Class-of-Service queue within the 
-network core, it is vital to ensure that the bandwidth usage of each individual 
+network core, it is vital to ensure that the bandwidth usage of each 
+individual 
 RSVP reservation is strictly adhered to.  This prevents the aggregate traffic 
 from overrunning the queue dedicated to the OSCARS service.  To do this, each 
 flow utilizing the OSCARS service is policed individually according to the 
@@ -398,11 +410,11 @@ ongoing collaborative efforts.
 
 There are several implementations of network resource management and
 service provisioning systems in existence today.  These include the DOE funded
-TeraPaths \cite{TeraPaths} and UltraScience Net \cite{usn} projects, the NSF funded CHEETAH \cite{CHEETAH} and
+TeraPaths \cite{TeraPaths} and UltraScience Net \cite{USN} projects, the NSF funded CHEETAH \cite{CHEETAH} and
 DRAGON \cite{DRAGON} projects,
 Internet2's BRUW \cite{BRUW} and HOPI \cite{HOPI} projects, CANARIE's UCLP \cite{UCLP} 
 project, and GEANT's
-BoD (GN2-JRA3) \cite{geant} and AMPS (SA3) \cite{geant-amps} activities.
+BoD (GN2-JRA3) \cite{GEANT} and AMPS (SA3) \cite{GEANT-AMPS} activities.
 
 All of these projects, as well as OSCARS, are based on a Web services 
 interface to reserve and configure a path across the network. However, they 
@@ -410,8 +422,8 @@ have slightly different ways of handling reservations and AAA issues.
 
 Dragon uses OSPF-TE \cite{ospf-te} for intradomain routing, and a component called
 the Network Aware Resource Broker (NARB) for interdomain routing.
-Dragon plans to use the Common Open Policy Service (COPS) \cite{cops}
-protocol for support of policy provisioning (COPS-PR) \cite{cops-pr}.
+Dragon plans to use the Common Open Policy Service (COPS) \cite{COPS}
+protocol for support of policy provisioning (COPS-PR) \cite{COPS-PR}.
 
 Canarie, Canada's advanced Internet development organization, has been
 working on a project called User Controlled LightPath (UCLP).  UCLP
@@ -484,7 +496,7 @@ To facilitate interdomain virtual circuit setup, a WSI-BP \cite{ballinger}
 compliant WSDL specification for the 
 network-network interface has been written following the model of 
 GEANT's Advance Multi-domain Provisioning
-System (AMPS)  \cite{geant-amps} . This interface is being tested with the 
+System (AMPS)  \cite{GEANT-AMPS} . This interface is being tested with the 
 TeraPaths \cite{TeraPaths} project. 
 Having a WSDL specification allows reservation systems to communicate with one 
 another in a well defined 
@@ -698,7 +710,7 @@ request information in quantifiable characteristics that are common to
 collaborating networks.  This could include properties such as connectivity
 (topology), bandwidth, latency, and jitter.  There are several documents
 that have been published by the different projects as well as organizations
-related to this work (e.g.: Geant \cite{geant},  Univ Amsterdam \cite{ndl}, 
+related to this work (e.g.: Geant \cite{GEANT},  Univ Amsterdam \cite{ndl}, 
 Canarie UCLP \cite{canarie-interop}, IETF CCAMP \cite{ietf-ccamp}). However 
 due to the
 heterogeneity of network implementations and deployments, generating a single
@@ -868,7 +880,7 @@ vol. 15, no. 5, pp. 349-362, 2005.
 ``Canarie interoperability work,'' [Online document] Available at: \\
 \url{http://grid2.canarie.ca/wiki/index.php/}
 
-\bibitem{cops-pr}
+\bibitem{COPS-PR}
 K.~Chan~et~al., ``COPS usage for policy provisioning (COPS-PR),''
 IETF RFC 3084, Mar. 2001.
 
@@ -884,7 +896,7 @@ in
 \underline{International Symposium on Collaborative Technologies and Systems},
 pp. 64-73, 2006.
 
-\bibitem{cops}
+\bibitem{COPS}
 D.~Durham~et~al.,
 ``The COPS (Common Open Policy Service Protocol),'' IETF RFC 2748, Jan. 2000.
 
@@ -903,12 +915,12 @@ H.~Boyles,
 ``Recent Results from Internet2's Hybrid Optical and Packet Infrastructure Project (HOPI),''
 Presented at TERENA Networking Conference, Rhodes, Greece, 2004.
 
-\bibitem{geant}
+\bibitem{GEANT}
 A.~Sevasti,
 ``GN2-JRA3: A multi-domain bandwidth on demand service for the NREN community,''
 Presented at TERENA Networking Conference, Catania, Italy, 2006.
 
-\bibitem{geant-amps}
+\bibitem{GEANT-AMPS}
 A.~Patil,
 ``Advance multi-domain provisioning system,''
 Presented at TERENA Networking Conference, Catania, Italy, 2006.
@@ -977,7 +989,7 @@ G.~Swallow,~et~al.,
 for the Overlay Model'', IETF Internet Draft, Work in Progress,
 draft-ietf-ccamp-gmpls-overlay-05.txt, Oct. 2004.
 
-\bibitem{usn}
+\bibitem{USN}
 N.S.V.~Rao, W.R.~Wing, S.M.~Carter, Q.~Wu,
 ``UltraScience Net: Network testbed for large-scale science applications,''
 \underline{IEEE Communications Magazine}, vol. 43, no. 11, pp. S12-17, 2005.
