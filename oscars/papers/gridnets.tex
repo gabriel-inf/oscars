@@ -13,7 +13,6 @@
 
 \begin{document}
 
-% paper title
 \title{Intra and Interdomain Circuit Provisioning Using the OSCARS Reservation System}
 
 % 
@@ -126,7 +125,8 @@ to a scheduled service, to the exclusion of normal priority traffic, introduces
 risks.
 Throughout the design and implementation of OSCARS, security aspects were
 paramount.  The impact of an abuse could be very
-large.  A DoS attack could prevent reservations from being processed.  If the
+large.  A denial of service attack could prevent reservations from being 
+processed.  If the
 service is compromised, an attacker could disable the wide area network.
 
 This paper describes how OSCARS addresses the above constraints and
@@ -152,7 +152,7 @@ either for immediate use or in advance for either one-time use or persistent use
 e.g. for the same time everyday. The user does not have 
 to configure an alternate routing path, nor mark the packets in any way.  All 
 necessary mechanisms needed to provide the user with a guaranteed bandwidth 
-path are coordinated by a  \emph{Reservation Manager} (\textbf{RM}) and 
+path are coordinated by a Reservation Manager (RM) and 
 managed by the routers in the network.
 
 \begin{figure}
@@ -165,14 +165,14 @@ managed by the routers in the network.
 \subsection{Components}
 
 The RM is comprised of three components:  the 
- \emph{Authentication, Authorization, and Auditing Subsystem} (\textbf{AAAS}), 
-the  \emph{Bandwidth Scheduler Subsystem} (\textbf{BSS}), and the  \emph{Path 
-Setup Subsystem} (\textbf{PSS}) (Figure 1). All persistent information is 
+Authentication, Authorization, and Auditing Subsystem (AAAS), 
+the Bandwidth Scheduler Subsystem (BSS), and the Path 
+Setup Subsystem (PSS) (Figure 1). All persistent information is 
 stored in a database.  
 The RM provides simple Web forms for creating and managing reservations, 
 setting authorization policy and other administrative tasks (the Web-based
 user interface in the figure).
-It also supports an API using the SOAP messaging protocol to support programmable 
+It also supports an API using the \textbf{SOAP} messaging protocol to support programmable 
 reservation management and requests from other network service providers.
 
 The AAAS is responsible for authenticating and authorizing all external 
@@ -194,7 +194,8 @@ in the path to be set up within the network.
 
 The PSS is responsible for setting up and tearing down the on-demand bandwidth 
 paths. This is accomplished by making the necessary configuration changes in 
-the routers to create or destroy a \emph{Label Switched Path }(\textbf{LSP}) at the time
+the routers to create or destroy a Label Switched Path (\textbf{LSP}) at the
+time
 indicated by the BSS. The authentication and authorization method for the PSS 
 is internal to the ESnet network and is specific to the router platform 
 (currently Juniper or Cisco) being configured.  It is therefore distinct from 
@@ -204,17 +205,18 @@ the AAAS used by the BSS.
 
 Web services standards are used wherever possible.  SOAP messages are
 used for communications between clients and the RM, and 
-the \emph{Web Services Definition Language} (\textbf{WSDL}) is used for the service description.
+the Web Services Definition Language (\textbf{WSDL}) is used for the service description.
  
 The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
 Perl packages that implement the AAAS, BSS, and PSS.  A mod\_perl script on
-the Web server is used to accept browser requests sent via Ajax \cite{Ajax}.
+the Web server is used to accept browser requests sent via Asynchronous
+Javascript + XML (Ajax) techniques.
 Parameters from the Ajax request are then placed into a SOAP request, and
 forwarded to the SOAP server.
 URL's indicating an explicit SOAP request conforming to the service 
 description are proxied by the Web server directly to the SOAP server.
-Note that these latter requests require an XML signature \cite{XML-Signature}.
+Note that these latter requests require that the SOAP message be signed.
 Security issues are discussed in more detail in the section on security below.
 
 The SOAP server makes database requests as necessary, depending on the
@@ -244,13 +246,13 @@ or tear down the circuit.
 
 \item
 At the requested start time, the PSS configures the 
-ESnet \emph{provider edge} (\textbf{PE}) router
+ESnet provider edge (\textbf{PE}) router
 (at the start end of the path) to create an LSP with the
 specified bandwidth.
 
 \item
 Each router along the route receives the path setup request 
-via \emph{Reservation Resource Protocol} (\textbf{RSVP}) \cite{rsvp}
+via the Reservation Resource Protocol (RSVP) \cite{rsvp}
 and commits bandwidth (if available) creating an end-to-end LSP.  The RM is
 notified by RSVP if the end-to-end path cannot be established.
 
@@ -304,9 +306,9 @@ peering connection with ESnet.
 
 In the event that the virtual circuit extends beyond OSCARS' administrative 
 domain,
-routing information harvested from the \emph{Border Gateway Protocol} 
+routing information harvested from the Border Gateway Protocol 
 (\textbf{BGP}) on the egress PE router is used to determine the next
-\emph{Autonomous System} (\textbf{AS}) that the request should be forwarded 
+Autonomous System (\textbf{AS}) that the request should be forwarded 
 to.   The AS number is
 checked against a list of known administrative domains that have reservation 
 systems
@@ -382,8 +384,8 @@ control plane, and data plane:
 \begin{itemize}
 \item
 The management plane dictates policies and procedures for authentication, 
-authorization, and usage.  This essentially amounts to a \emph{Service Level 
-Agreement} (\textbf{SLA}) between peer networks.  In almost all cases, the 
+authorization, and usage.  This essentially amounts to a Service Level 
+Agreement (\textbf{SLA}) between peer networks.  In almost all cases, the 
 usage 
 condition outlined within an SLA determines the maximum aggregate limit.  
 This implies that individual bandwidth requests are managed by the reservation 
@@ -444,9 +446,9 @@ describing both the networking and the AAA issues for such a system,
 including \cite{gommans05} \cite{gommans06} \cite{demchenko} . 
 They are using the IETF AAA Framework
 \cite{AAA}, and use the 
-eXtensible Access Control Markup Language (XACML) Version 2
+eXtensible Access Control Markup Language \textbf{(XACML)} Version 2
 to describe policy. They have also defined a
-\emph{Network Description Language} (NDL), which is a RDF-based method to
+Network Description Language, which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability \cite{ndl}.
 
 In the OSCARS, BRUW, TeraPaths, and AMPS projects, IP connectivity (layer
@@ -485,7 +487,8 @@ request from Host A to Host B, the following must occur.
 On receiving the request from the user, OSCARS
 computes the virtual circuit path and determines the downstream AS (ISP X).
 \item
-A \emph{Forward Create} message is sent across the network (ISP X) towards Host
+The request is then encapsulated in a message forwarded across the network 
+(ISP X) towards Host
 A, crossing all intervening reservations systems (RM X), until it reaches the
 last reservation system (RM A) that has administrative control over the network
 (ISP A) that Host A is attached to.
@@ -495,8 +498,7 @@ circuit, and initiates the bandwidth reservation requests from Host A towards
 Host B (via ISP Y).  This can be especially complex when the path back (from
 Host B to A) is asymmetric and traverses AS's (e.g. ISP Y) that were not
 traversed on the forward path, causing the local OSCARS to see the path
-originating from a different AS than it originally sent the \emph{Create} request
-out to.
+originating from a different AS than it originally sent the request to.
 
 \end{enumerate}
 
@@ -595,9 +597,10 @@ encrypted https in order to protect against the stealing of passwords
 or cookies. The SOAP API distinguishes between requests coming from
 the Web server on the local host, which it assumes have been authenticated
 as just described, and requests coming from the open Web server. The 
-latter requests  must be digitally signed messages \cite{XML-Signature} signed by the
-originator of the message. The AAAS verifies the signature and the signing 
-certificate to authenticate
+latter requests must be digitally signed messages signed by the
+originator of the message.  \textbf{XML-Signature} rules and syntax are used 
+for the signing.
+The AAAS verifies the signature and the signing certificate to authenticate
 the user. It then uses the subject name from the signing certificate
 to identify the user. Because there is a Web server on the open network 
 interposed between the
@@ -618,12 +621,13 @@ the RM in the adjacent domain.  This approach follows the AAA  Authorization
 model defined by the IETF Networking Group. \cite{AAA}. In this model
 users are authenticated and authorized for actions in their home domain and 
 interdomain authorization depends on SLA's between domains (AS's) and the
-assurance that  a request is coming from a trusted server in a trusted domain. Normally all requests between domains will be a SOAP \emph{forward}  message
+assurance that  a request is coming from a trusted server in a trusted 
+domain. Normally all requests forwarded between domains will be SOAP messages
 signed by the RM. The OSCARS RM has a list of the
 cooperating RM certificates as well as a list of
 permissions for those AS's. In effect a service level agreement gets
-implemented in the user and authorization tables in the database. The forward
-message includes the name of the originating user, in case other
+implemented in the user and authorization tables in the database. The message
+forwarded adds the name of the originating user, in case other
 domains wish to use that information for authorization or auditing.
 Currently, at the time of provisioning no further authentication is
 done. Provisioning is triggered by the time of the reservation. Once
@@ -667,8 +671,8 @@ their own RM.
 \subsection{Auditing}
 At this point, the OSCARS server logs all significant activity such as
 creating or canceling reservations. In addition a list of all
-reservations is kept and can be read with the \emph{list reservations}
-operation. As was mentioned above, in interdomain requests, the name
+reservations is kept and can be read via a SOAP request.
+As was mentioned above, in interdomain requests, the name
 of the originating user is passed to the next domain where it can be
 used for either authorization or auditing.
 
@@ -745,74 +749,7 @@ Second, there needs to be a mechanism to redistribute multi-layer connectivity
 information. Within the IP layer, this is done via BGP.  At lower network 
 layers, no such comparable protocols exist.
 
-% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class option
-% should be used if it is desired that the figures are to be displayed while
-% in draft mode.
-
-% An example of a floating figure using the graphicx package.
-% Note that \label must occur AFTER (or within) \caption.
-% For figures, \caption should occur after the \includegraphics.
-%
-%\begin{figure}
-%\centering
-%\includegraphics[width=2.5in]{myfigure}
-% where an .eps filename suffix will be assumed under latex, 
-% and a .pdf suffix will be assumed for pdflatex
-%\caption{Simulation Results}
-%\label{fig_sim}
-%\end{figure}
-
-
-% An example of a double column floating figure using two subfigures.
-%(The subfigure.sty package must be loaded for this to work.)
-% The subfigure \label commands are set within each subfigure command, the
-% \label for the overall fgure must come after \caption.
-% \hfil must be used as a separator to get equal spacing
-%
-%\begin{figure*}
-%\centerline{\subfigure[Case I]{\includegraphics[width=2.5in]{subfigcase1}
-% where an .eps filename suffix will be assumed under latex, 
-% and a .pdf suffix will be assumed for pdflatex
-%\label{fig_first_case}}
-%\hfil
-%\subfigure[Case II]{\includegraphics[width=2.5in]{subfigcase2}
-% where an .eps filename suffix will be assumed under latex, 
-% and a .pdf suffix will be assumed for pdflatex
-%\label{fig_second_case}}}
-%\caption{Simulation results}
-%\label{fig_sim}
-%\end{figure*}
-
-% An example of a floating table. Note that, for IEEE style tables, the 
-% \caption command should come BEFORE the table. Table text will default to
-% \footnotesize as IEEE normally uses this smaller font for tables.
-% The \label must come after \caption as always.
-%
-%\begin{table}
-%% increase table row spacing, adjust to taste
-%\renewcommand{\arraystretch}{1.3}
-%\caption{An Example of a Table}
-%\label{table_example}
-%\begin{center}
-%% Some packages, such as MDW tools, offer better commands for making tables
-%% than the plain LaTeX2e tabular which is used here.
-%\begin{tabular}{|c||c|}
-%\hline
-%One & Two\\
-%\hline
-%Three & Four\\
-%\hline
-%\end{tabular}
-%\end{center}
-%\end{table}
-
-
-% conference papers do not normally have an appendix
-
-% use section* for acknowledgement
 \section*{Acknowledgment}
-% optional entry into table of contents (if used)
-%\addcontentsline{toc}{section}{Acknowledgment}
 This work was supported by the Director, Office of Science. Office of
 Advanced Scientific Computing Research. Mathematical, Information, and
 Computational Sciences Division under U.S. Department of
@@ -821,28 +758,6 @@ Energy Contract No. DE-AC02-05CH11231. This is LBNL report number LBNL-60373.
 The authors would like to thank Bob Riddle and Andrew Lake of Internet2, both
 for help in the incorporation of BRUW, and for work on interoperability tests.
 
-% trigger a \newpage just before the given reference
-% number - used to balance the columns on the last page
-% adjust value as needed - may need to be readjusted if
-% the document is modified later
-%\IEEEtriggeratref{8}
-% The "triggered" command can be changed if desired:
-%\IEEEtriggercmd{\enlargethispage{-5in}}
-
-% references section
-% NOTE: BibTeX documentation can be easily obtained at:
-% http://www.ctan.org/tex-archive/biblio/bibtex/contrib/doc/
-
-% can use a bibliography generated by BibTeX as a .bbl file
-% standard IEEE bibliography style from:
-% http://www.ctan.org/tex-archive/macros/latex/contrib/supported/IEEEtran/bibtex
-%\bibliographystyle{IEEEtran.bst}
-% argument is your BibTeX string definitions and bibliography database(s)
-%\bibliography{IEEEabrv,../bib/paper}
-%
-% <OR> manually copy in the resultant .bbl file
-% set second argument of \begin to the number of references
-% (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
 \bibitem{ballinger}
@@ -898,20 +813,9 @@ pp. 64-73, 2006.
 D.~Durham~et~al.,
 ``The COPS (Common Open Policy Service Protocol),'' IETF RFC 2748, Jan. 2000.
 
-\bibitem{XML-Signature}
-D.~Eastlake, J.~Reagle, and D.~Solo,
-``XML-Signature syntax and processing,'' [Online document] Feb. 2002,
-Available at: \\
-\url{http://www.w3.org/TR/2002/REC-xmldsig-core-20020212/}
-
 \bibitem{esnet-pc}
 ``ESnet performance center,'' [Online document] Available at: \\
 \url{https://performance.es.net/}
-
-\bibitem{Ajax}
-J.J.~Garrett,
-``Ajax: A new approach to Web applications,'' [Online document] Feb. 2005,
-Available at: \url{http://www.adaptivepath.com/publications/essays/archives/000385.php}
 
 \bibitem{gommans05}
 L.~Gommans, C.~de~Laat, and R.~Meijer,
