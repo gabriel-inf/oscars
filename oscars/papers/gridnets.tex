@@ -208,13 +208,20 @@ the \emph{Web Services Definition Language} (\textbf{WSDL}) \cite{WSDL} is used 
  
 The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
-Perl packages that implement the AAAS, BSS, and PSS.  The Web server is
-used to accept CGI requests, and to forward API requests directly to the SOAP 
-server.  CGI requests are reformatted as SOAP requests, and then forwarded to 
-the SOAP server.  One database contains persistent information related to
+Perl packages that implement the AAAS, BSS, and PSS.  A mod\_perl script on
+the Web server is used to accept browser requests sent via Ajax \cite{Ajax}.
+Parameters from the Ajax request are then placed into a SOAP request, and
+forwarded to the SOAP server.
+URL's indicating an explicit SOAP request conforming to the service 
+description are proxied by the Web server directly to the SOAP server.
+Note that these latter requests require an XML signature \cite{XML-Signature}.
+Security issues are discussed in more detail in the section on security below.
+
+The SOAP server makes database requests as necessary, depending on the
+method called.  One database 
+contains persistent information related to methods handling 
 reservations and AAA, and the other contains a representation of the local
-network topology.  Security issues are discussed in the section on security
-below.
+network topology.  The latter is used primarily during reservation setup.
 
 \section{Paths and Reservations}
 
@@ -586,7 +593,7 @@ encrypted https in order to protect against the stealing of passwords
 or cookies. The SOAP API distinguishes between requests coming from
 the Web server on the local host, which it assumes have been authenticated
 as just described, and requests coming from the open Web server. The 
-latter requests  must be digitally signed messages \cite{eastlake} signed by the
+latter requests  must be digitally signed messages \cite{XML-Signature} signed by the
 originator of the message. The AAAS verifies the signature and the signing 
 certificate to authenticate
 the user. It then uses the subject name from the signing certificate
@@ -848,6 +855,18 @@ E.~Bell, A.~Smith, P.~Langille, A.~Rijhsinghani, and K.~McLoghrie,
 filtering and virtual LAN extensions,''
 IETF RFC 2674, Aug. 1999.
 
+\bibitem{HOPI}
+H.~Boyles,
+``Recent Results from Internet2's Hybrid Optical and Packet Infrastructure Project (HOPI),''
+Presented at TERENA Networking Conference, Rhodes, Greece, 2004.
+
+\bibitem{TeraPaths}
+S.~Bradley, F.~Burstein, L.~Cottrell, B.~Gibbard, D.~Katramatos, Y.~Li,
+S.~McKee, R.~Pope-scu, D.~Stampf, and D.~Yu,
+``TeraPaths: A QoS-enabled collaborative data sharing infra-structure for
+peta-scale computing research,''
+in \underline{Computing in High Energy and Nuclear Physics}, 2006.
+
 \bibitem{rsvp}
 R.~Branden, L.~Zhang, S.~Berson, S.~Herzog, and S.~Jamin,
 ``Resource ReSerVation Protocol (RSVP) -- Version 1 Functional
@@ -857,24 +876,6 @@ Specification,'' IETF RFC 2205, Sept. 1997.
 J.R.~Burruss, T.W.~Fredian, and M.R.~Thompson,
 ``Security on the U.S. FusionGrid,''
 to appear in \underline{Fusion Engineering and Design}, Elsevier, Fall 2006.
-
-\bibitem{rsvp-te}
-L.~Berger,~Ed.,
-``Generalized MPLS signaling - RSVP-TE extensions,''
-IETF RFC 3473, Jan. 2003.
- 
-\bibitem{TeraPaths}
-S.~Bradley, F.~Burstein, L.~Cottrell, B.~Gibbard, D.~Katramatos, Y.~Li,
-S.~McKee, R.~Pope-scu, D.~Stampf, and D.~Yu,
-``TeraPaths: A QoS-enabled collaborative data sharing infra-structure for
-peta-scale computing research,''
-in \underline{Computing in High Energy and Nuclear Physics}, 2006.
-
-\bibitem{UCLP}
-J.~Wu, M.~Savoie, S.~Campbell, H.~Zhang, G.V.~Bochmann, and B.~St.~Arnaud,
-``Customer-managed end-to-end lightpath provisioning,''
-\underline{International Journal of Network Management},
-vol. 15, no. 5, pp. 349-362, 2005.
 
 \bibitem{canarie-interop}
 ``Canarie interoperability work,'' [Online document] Available at: \\
@@ -900,7 +901,7 @@ pp. 64-73, 2006.
 D.~Durham~et~al.,
 ``The COPS (Common Open Policy Service Protocol),'' IETF RFC 2748, Jan. 2000.
 
-\bibitem{eastlake}
+\bibitem{XML-Signature}
 D.~Eastlake, J.~Reagle, and D.~Solo,
 ``XML-Signature syntax and processing,'' [Online document] Feb. 2002,
 Available at: \\
@@ -910,20 +911,10 @@ Available at: \\
 ``ESnet performance center,'' [Online document] Available at: \\
 \url{https://performance.es.net/}
 
-\bibitem{HOPI}
-H.~Boyles,
-``Recent Results from Internet2's Hybrid Optical and Packet Infrastructure Project (HOPI),''
-Presented at TERENA Networking Conference, Rhodes, Greece, 2004.
-
-\bibitem{GEANT}
-A.~Sevasti,
-``GN2-JRA3: A multi-domain bandwidth on demand service for the NREN community,''
-Presented at TERENA Networking Conference, Catania, Italy, 2006.
-
-\bibitem{GEANT-AMPS}
-A.~Patil,
-``Advance multi-domain provisioning system,''
-Presented at TERENA Networking Conference, Catania, Italy, 2006.
+\bibitem{Ajax}
+J.J.~Garrett,
+``Ajax: A new approach to Web applications,'' [Online document] Feb. 2005,
+Available at: \url{http://www.adaptivepath.com/publications/essays/archives/000385.php}
 
 \bibitem{gommans05}
 L.~Gommans, C.~de~Laat, and R.~Meijer,
@@ -938,11 +929,6 @@ A.~Taal, F.~Travostino, and A.~Wan,
 \underline{IEEE Communications Magazine},
 vol. 44, no. 3, 2006.
 
-\bibitem{SOAP}
-N.~Mitra,~Ed.,
-``SOAP Version 1.2 Part 0: Primer,'' Jun. 2003, [Online document] Available at:
-\url{http://www.w3.org/TR/soap12-part0/}
-
 \bibitem{ndl}
 J.J.~van~der~Ham, F.~Dijkstra, F.~Travostino, H.M.A.~Andree, and C.T.A.M.~de~Laat,
 \underline{Using RDF to describe networks},
@@ -950,13 +936,13 @@ iGrid 2005 special issue,
 \underline{Future Generation Computer Systems},
 vol. 22, no. 8, pp. 862-867, 2006.
 
-\bibitem{iperf}
-``iperf,'' [Online document] Available at: \\
-\url{http://dast.nlanr.net/Projects/Iperf/}
-
 \bibitem{ietf-ccamp}
 ``IETF CCAMP Working Group,'' [Online document] Available at:
 \url{http://www.ietf.org/html.charters/ccamp-charter.html}
+
+\bibitem{iperf}
+``iperf,'' [Online document] Available at: \\
+\url{http://dast.nlanr.net/Projects/Iperf/}
 
 \bibitem{ospf-te}
 D.~Katz, D.~Yeung, and K.~Kompella,
@@ -971,16 +957,36 @@ E.~Martelli,
 [Online document] Aug. 2003, Available at:
 \url{http://emartell.web.cern.ch/emartell/done/datatag/juniper_rate_limit/traffic_protection_with_juniper.html}
 
+\bibitem{SOAP}
+N.~Mitra,~Ed.,
+``SOAP Version 1.2 Part 0: Primer,'' Jun. 2003, [Online document] Available at:
+\url{http://www.w3.org/TR/soap12-part0/}
+
 \bibitem{XACML}
 T.~Moses,~Ed.,
 ``eXtensible Access Control Markup Language 2 (XACML) Version 2.0,''
 [Online document] Feb. 2005, Available at:
 \url{http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf}
 
+\bibitem{GEANT-AMPS}
+A.~Patil,
+``Advance multi-domain provisioning system,''
+Presented at TERENA Networking Conference, Catania, Italy, 2006.
+
+\bibitem{USN}
+N.S.V.~Rao, W.R.~Wing, S.M.~Carter, and Q.~Wu,
+``UltraScience Net: Network testbed for large-scale science applications,''
+\underline{IEEE Communications Magazine}, vol. 43, no. 11, pp. S12-17, 2005.
+
 \bibitem{BRUW}
 B.~Riddle,
 ``BRUW: A bandwidth reservation system to support end-user work'',
 Presented at TERENA Networking Conference, Poznan, Poland, 2005.
+
+\bibitem{GEANT}
+A.~Sevasti,
+``GN2-JRA3: A multi-domain bandwidth on demand service for the NREN community,''
+Presented at TERENA Networking Conference, Catania, Italy, 2006.
 
 \bibitem{shallow}
 G.~Swallow,~et~al.,
@@ -988,11 +994,6 @@ G.~Swallow,~et~al.,
 (UNI): Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Support
 for the Overlay Model'', IETF Internet Draft, Work in Progress,
 draft-ietf-ccamp-gmpls-overlay-05.txt, Oct. 2004.
-
-\bibitem{USN}
-N.S.V.~Rao, W.R.~Wing, S.M.~Carter, and Q.~Wu,
-``UltraScience Net: Network testbed for large-scale science applications,''
-\underline{IEEE Communications Magazine}, vol. 43, no. 11, pp. S12-17, 2005.
 
 \bibitem{CHEETAH}
 M.~Veeraraghavan, X.~Zheng, H.~Lee, M.~Gardner, and W.~Feng,
@@ -1003,6 +1004,12 @@ Opticomm, Dallas, Texas, Oct. 2003.
 J.~Vollbrecht, P.~Calhoun, S.~Farrell, L.~Gommans, G.~Gross, B.~de~Bruijn,
 C.~de~Laat, M.~Holdrege, and D.~Spence,
 ``AAA authorization framework,'' IETF RFC 2904, Aug. 2000.
+
+\bibitem{UCLP}
+J.~Wu, M.~Savoie, S.~Campbell, H.~Zhang, G.V.~Bochmann, and B.~St.~Arnaud,
+``Customer-managed end-to-end lightpath provisioning,''
+\underline{International Journal of Network Management},
+vol. 15, no. 5, pp. 349-362, 2005.
 
 \bibitem{DRAGON}
 X.~Yang, T.~Lehman, C.~Tracy, J.~Sobieski, S.~Gong, P.~Torab, and B.~Jabbari,
