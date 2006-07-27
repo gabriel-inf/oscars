@@ -57,19 +57,9 @@ sub serializeForwardReply {
 			  ->type('tns:resStatus')));
         return $response;
     }
-    # an array of resInfo structures may is returned
+    # not currently implemented, and may not be
     elsif ($payloadContentType eq "listReservations") {
-        my @emMsg = serializeListResReply($values);
-        my $response= SOAP::Data->name(testForwardResponse=>
-	      SOAP::Data->value( 
-		SOAP::Data->name('contentType')
-			  ->value($payloadContentType)
-		          ->attr({'xmlns:tns' =>
-				'http://oscars.es.net/OSCARS/Dispatcher'})
-			  ->type('tns:payloadContentType'),
- 		SOAP::Data->name($payloadContentType => 
-		      \SOAP::Data->value(@emMsg))));
-        return $response;		       
+        return undef;		       
     }
     # a resDetails structure is returned
     elsif ( $payloadContentType eq "queryReservation") { 
@@ -178,26 +168,6 @@ sub serializeResInfo{
 		SOAP::Data->name(startTime => $results-> {startTime}),
 		SOAP::Data->name(endTime =>  $results->{endTime})));
     return $resInfo;
-} #____________________________________________________________________________
-
-
-##############################################################################
-#
-sub serializeListResReply{
-    # @_ is an array of resInfo hashes
-    my $values = shift;
-    print STDERR "values is a reference to an ref($values) \n";
-    my @resInfo;
-    my $i;
-    my $len = @{$values} + 0;
-    print STDERR "in serializeListResReply len is $len\n";
-    for ( $i = 0; $i < $len ; $i++ ) {
-        print STDERR "calling serializeResInfo\n";
-        my $resInfoItem = $values->[$i];
-        print STDERR "item ", Dumper($resInfoItem), "\n";
-        push @resInfo, serializeResInfo ($resInfoItem);
-    }
-    return @resInfo;
 } #____________________________________________________________________________
 
 
