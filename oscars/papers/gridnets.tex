@@ -172,8 +172,12 @@ stored in a database.
 The RM provides simple Web forms for creating and managing reservations, 
 setting authorization policy and other administrative tasks (the Web-based
 user interface in the figure).
-It also supports an API using the \textbf{SOAP} messaging protocol to support programmable 
+It also supports an API using the W3C \textbf{SOAP}\footnotemark~messaging protocol to support programmable 
 reservation management and requests from other network service providers.
+
+\footnotetext[1]{Bold-faced text indicates a specification that is only available online
+(see \url{http://www.w3.org} for W3C and 
+\url{http://oasis-open.org} for OASIS).}
 
 The AAAS is responsible for authenticating and authorizing all external 
 requests, for logging request information, and sending notifications to
@@ -194,7 +198,7 @@ in the path to be set up within the network.
 
 The PSS is responsible for setting up and tearing down the on-demand bandwidth 
 paths. This is accomplished by making the necessary configuration changes in 
-the routers to create or destroy a Label Switched Path (\textbf{LSP}) at the
+the routers to create or destroy a Label Switched Path (LSP) at the
 time
 indicated by the BSS. The authentication and authorization method for the PSS 
 is internal to the ESnet network and is specific to the router platform 
@@ -205,13 +209,13 @@ the AAAS used by the BSS.
 
 Web services standards are used wherever possible.  SOAP messages are
 used for communications between clients and the RM, and 
-the Web Services Definition Language (\textbf{WSDL}) is used for the service description.
+the W3C Web Services Definition Language (\textbf{WSDL}) is used for the service description.
  
 The resource manager is implemented as an Apache Web server configured for
 mod\_perl, a SOAP server, two databases within a MySQL server, and a set of 
 Perl packages that implement the AAAS, BSS, and PSS.  A mod\_perl script on
 the Web server is used to accept browser requests sent via Asynchronous
-Javascript + XML \textbf{(Ajax)} techniques.
+Javascript + XML \cite{Ajax} techniques.
 Parameters from the Ajax request are then placed into a SOAP request, and
 forwarded to the SOAP server.
 URL's indicating an explicit SOAP request conforming to the service 
@@ -246,7 +250,7 @@ or tear down the circuit.
 
 \item
 At the requested start time, the PSS configures the 
-ESnet provider edge (\textbf{PE}) router
+ESnet provider edge (PE) router
 (at the start end of the path) to create an LSP with the
 specified bandwidth.
 
@@ -307,8 +311,8 @@ peering connection with ESnet.
 In the event that the virtual circuit extends beyond OSCARS' administrative 
 domain,
 routing information harvested from the Border Gateway Protocol 
-(\textbf{BGP}) on the egress PE router is used to determine the next
-Autonomous System (\textbf{AS}) that the request should be forwarded 
+(BGP) on the egress PE router is used to determine the next
+Autonomous System (AS) that the request should be forwarded 
 to.   The AS number is
 checked against a list of known administrative domains that have reservation 
 systems
@@ -355,7 +359,7 @@ ensure that bandwidth resources are not over-subscribed, QoS is carefully
 configured to provision queues within the network core.
 
 Within ESnet, traffic 
-utilizing the OSCARS service is classified into a Class-of-Service distinct 
+utilizing the OSCARS service is classified into a Class-of-Service (CoS) distinct 
 from all other traffic and isolated into a separate queue by itself.  The size 
 and transmit rate of this queue is configured to match the RSVP bandwidth 
 limits on each interface, e.g. if the RSVP bandwidth limit on an interface is 
@@ -363,7 +367,7 @@ limits on each interface, e.g. if the RSVP bandwidth limit on an interface is
 ensures that the RSVP provisioned bandwidth will translate to available 
 network bandwidth within the network core.
 
-With all of OSCARS traffic using the same Class-of-Service queue within the 
+With all of OSCARS traffic using the same CoS queue within the 
 network core, it is vital to ensure that the bandwidth usage of each 
 individual 
 RSVP reservation is strictly adhered to.  This prevents the aggregate traffic 
@@ -386,7 +390,7 @@ control plane, and data plane:
 \item
 The management plane dictates policies and procedures for authentication, 
 authorization, and usage.  This essentially amounts to a Service Level 
-Agreement (\textbf{SLA}) between peer networks.  In almost all cases, the 
+Agreement (SLA) between peer networks.  In almost all cases, the 
 usage 
 condition outlined within an SLA determines the maximum aggregate limit.  
 This implies that individual bandwidth requests are managed by the reservation 
@@ -448,7 +452,7 @@ describing both the networking and the AAA issues for such a system,
 including \cite{gommans05} \cite{gommans06} \cite{demchenko} . 
 They are using the IETF AAA Framework
 \cite{AAA}, and use the 
-eXtensible Access Control Markup Language \textbf{(XACML)} Version 2
+OASIS eXtensible Access Control Markup Language \textbf{(XACML)} Version 2
 to describe policy. They have also defined a
 Network Description Language, which is a RDF-based method to
 describe networks, to facilitate interdomain interoperability \cite{ndl}.
@@ -528,7 +532,7 @@ ESnet was dynamically negotiated and configured by the BRUW and OSCARS systems
 respectively. The unidirectional 25Mb/s guaranteed bandwidth path was 
 configured between an Internet2 test host in Indianapolis, IN and an ESnet 
 Performance Center \cite{esnet-pc} host in Sunnyvale, CA.  The path consisted of two 
-unidirectional MPLS Label Switched Paths (LSP's), one in Abilene, and the 
+unidirectional MPLS LSP's, one in Abilene, and the 
 other in ESnet, \emph{stitched} together at the Abilene-ESnet peering point in 
 Chicago, IL.
 
@@ -600,7 +604,7 @@ or cookies. The SOAP API distinguishes between requests coming from
 the Web server on the local host, which it assumes have been authenticated
 as just described, and requests coming from the open Web server. The 
 latter requests must be digitally signed messages signed by the
-originator of the message.  \textbf{XML-Signature} rules and syntax are used 
+originator of the message.  The W3C \textbf{XML-Signature} rules and syntax are used 
 for the signing.
 The AAAS verifies the signature and the signing certificate to authenticate
 the user. It then uses the subject name from the signing certificate
@@ -645,8 +649,11 @@ This implementation is similar to the ROAM authorization service of the
 FusionGrid \cite{burruss}.  This approach allows the use of standard database
 commands to define resources and permissions and to manage and check
 authorizations.
-While there are many ``policy languages'' (e.g. S-expressions,
-SAML, XACML) that facilitate the expression of complex access policy, they
+While there are many ``policy languages'' (e.g.
+S-expressions \cite{S-expressions},
+the OASIS Security Assertion Markup Language (\textbf{SAML}),
+and XACML) that facilitate the 
+expression of complex access policy, they
 typically require the use of a parsing engine and interpreter to evaluate a 
 request for action. When even moderately complex policies are used, it
 becomes difficult to tell at a glance exactly what access is allowed. With the 
@@ -720,14 +727,14 @@ sent to the administrators informing them of the problem.
 \subsection{Network-Network Interface}
 With the objective of interoperability between the different networks,
 comes the need for defining standard interfaces (i.e. Network-to-Network
-Interface (NNI)).  This is to facilitate the sharing of network state and
+Interface).  This is to facilitate the sharing of network state and
 request information in quantifiable characteristics that are common to
 collaborating networks.  This could include properties such as connectivity
 (topology), bandwidth, latency, and jitter.  There are several documents
 that have been published by the different projects as well as organizations
-related to this work (e.g.: Geant \cite{GEANT},  Univ Amsterdam \cite{ndl}, 
-Canarie UCLP \cite{canarie-interop}, IETF CCAMP \cite{ietf-ccamp}). However 
-due to the
+related to this work (e.g.: GEANT \cite{GEANT}, the University of Amsterdam 
+\cite{ndl}, Canarie's UCLP project \cite{canarie-interop}, and the IETF CCAMP 
+Working Group \cite{ietf-ccamp}).  However, due to the
 heterogeneity of network implementations and deployments, generating a single
 framework to quantify all networks is challenging.
 
@@ -784,7 +791,8 @@ S.~Bradley, F.~Burstein, L.~Cottrell, B.~Gibbard, D.~Katramatos, Y.~Li,
 S.~McKee, R.~Pope-scu, D.~Stampf, and D.~Yu,
 ``TeraPaths: A QoS-enabled collaborative data sharing infra-structure for
 peta-scale computing research,''
-in \underline{Computing in High Energy and Nuclear Physics}, 2006.
+in \underline{Computing in High Energy and Nuclear Physics (CHEP) 2006},
+Mumbai, India, Feb. 13-17, 2006.
 
 \bibitem{rsvp}
 R.~Branden, L.~Zhang, S.~Berson, S.~Herzog, and S.~Jamin,
@@ -807,8 +815,7 @@ IETF RFC 3084, Mar. 2001.
 \bibitem{demchenko}
 Y.~Demchenko, L.~Gommans, C.~de~Laat, A.~Tokmakoff, and R.~van~Buren,
 ``Policy based access control in dynamic Grid-based collaborative environment,''
-in
-\underline{International Symposium on Collaborative Technologies and Systems},
+in \underline{International Symposium on Collaborative Technologies and Systems},
 pp. 64-73, 2006.
 
 \bibitem{COPS}
@@ -819,11 +826,16 @@ D.~Durham~et~al.,
 ``ESnet performance center,'' [Online document] Available at: \\
 \url{https://performance.es.net/}
 
+\bibitem{Ajax}
+J.J.~Garrett,
+``Ajax: A new approach to Web applications,'' [Online document] Feb. 2005,
+Available at: \url{http://www.adaptivepath.com/publications/essays/archives/000385.php}
+
 \bibitem{gommans05}
 L.~Gommans, C.~de~Laat, and R.~Meijer,
 ``Token based path authorization at interconnection points between hybrid
 networks and a lambda grid,''
-\underline{Proceedings of IEEE GRIDNETS 2005}.
+in \underline{Proceedings of IEEE GRIDNETS 2005}.
 
 \bibitem{gommans06}
 L.~Gommans, B.~van~Oudenaarde, F.~Dijkstra, C.~de~Laat, T.~Lavian, I.~Monga,
@@ -834,7 +846,7 @@ vol. 44, no. 3, 2006.
 
 \bibitem{ndl}
 J.J.~van~der~Ham, F.~Dijkstra, F.~Travostino, H.M.A.~Andree, and C.T.A.M.~de~Laat,
-\underline{Using RDF to describe networks},
+``Using RDF to describe networks'',
 iGrid 2005 special issue,
 \underline{Future Generation Computer Systems},
 vol. 22, no. 8, pp. 862-867, 2006.
@@ -848,11 +860,10 @@ vol. 22, no. 8, pp. 862-867, 2006.
 \url{http://dast.nlanr.net/Projects/Iperf/}
 
 \bibitem{ospf-te}
-D.~Katz, D.~Yeung, and K.~Kompella,
+K.~Ishiguro, A.~Davey, and A.~Lindem~(Ed.),
 ``Traffic engineering extensions to OSPF version 3'',
-IETF Internet Draft, Work in Progress,
-draft-ietf-ospf-ospfv3-traffic-05.txt, March 2005.
-IETF RFC 2543, March 1999.
+IETF Internet Draft,
+draft-ietf-ospf-ospfv3-traffic-07.txt, Apr. 2006.
 
 \bibitem{martelli}
 E.~Martelli,
@@ -875,22 +886,28 @@ B.~Riddle,
 ``BRUW: A bandwidth reservation system to support end-user work'',
 Presented at TERENA Networking Conference, Poznan, Poland, 2005.
 
+\bibitem{S-expressions}
+R.~Rivest,
+``S-expressions'',
+Network Working Group, Internet Draft [Online document] May 1997,
+Available at \\
+\url{http://theory.lcs.mit.edu/rivest/sexp.txt}
+
 \bibitem{GEANT}
 A.~Sevasti,
 ``GN2-JRA3: A multi-domain bandwidth on demand service for the NREN community,''
 Presented at TERENA Networking Conference, Catania, Italy, 2006.
 
 \bibitem{RSVP-TE}
-G.~Swallow,~et~al.,
+G.~Swallow, J.~Drake, H.~Ishimatsu, and Y.~Rekhter.
 ``Generalized Multiprotocol Label Switching (GMPLS) User-Network Interface
 (UNI): Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Support
-for the Overlay Model'', IETF Internet Draft, Work in Progress,
-draft-ietf-ccamp-gmpls-overlay-05.txt, Oct. 2004.
+for the Overlay Model'', IETF RFC 4208, Oct. 2005.
 
 \bibitem{CHEETAH}
 M.~Veeraraghavan, X.~Zheng, H.~Lee, M.~Gardner, and W.~Feng,
 ``CHEETAH: Circuit-switched high-speed end-to-end transport architecture,''
-Opticomm, Dallas, Texas, Oct. 2003.
+in \underline{Proceedings OptiComm 2003}, Dallas, TX, Oct. 13-17, 2003.
 
 \bibitem{AAA}
 J.~Vollbrecht, P.~Calhoun, S.~Farrell, L.~Gommans, G.~Gross, B.~de~Bruijn,
@@ -906,11 +923,10 @@ vol. 15, no. 5, pp. 349-362, 2005.
 \bibitem{DRAGON}
 X.~Yang, T.~Lehman, C.~Tracy, J.~Sobieski, S.~Gong, P.~Torab, and B.~Jabbari,
 ``Policy-based resource management and service provisioning in GMPLS networks,''
-Adaptive Policy-based Management in Network Management and Control Workshop
-at INFOCOMM 2006, Barcelona Spain, Apr. 2006.
+in First IEEE Workshop on ``Adaptive Policy-based Management in Network Management and Control'',
+at \underline{IEEE INFOCOM 2006}, Barcelona, Spain, Apr. 2006.
 
 \end{thebibliography}
 
 \end{document}
-
 
