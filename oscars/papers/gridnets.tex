@@ -244,6 +244,16 @@ requirements, the source host that will be used
 to provide an application access to the path, and the destination host.
 
 \item
+User parameters are validated by the RM, to ensure that they have the
+correct format, and to prevent SQL injection attacks.
+
+\item
+Using the source and destination host information submitted by the user,
+a traceroute is executed to determine the path within ESnet that the
+MPLS LSP will traverse, as well as the ingress and egress border routers
+that will originate and terminate the LSP.
+
+\item
 This information is stored by the BSS in a database, and a script 
 periodically checks to see if the PSS needs to be contacted, either to create 
 or tear down the circuit.
@@ -359,7 +369,7 @@ ensure that bandwidth resources are not over-subscribed, QoS is carefully
 configured to provision queues within the network core.
 
 Within ESnet, traffic 
-utilizing the OSCARS service is classified into a Class-of-Service (CoS) distinct 
+utilizing the OSCARS service is classified into a Class-of-Service distinct 
 from all other traffic and isolated into a separate queue by itself.  The size 
 and transmit rate of this queue is configured to match the RSVP bandwidth 
 limits on each interface, e.g. if the RSVP bandwidth limit on an interface is 
@@ -367,7 +377,7 @@ limits on each interface, e.g. if the RSVP bandwidth limit on an interface is
 ensures that the RSVP provisioned bandwidth will translate to available 
 network bandwidth within the network core.
 
-With all of OSCARS traffic using the same CoS queue within the 
+With all of OSCARS traffic using the same Class-of-Service queue within the 
 network core, it is vital to ensure that the bandwidth usage of each 
 individual 
 RSVP reservation is strictly adhered to.  This prevents the aggregate traffic 
@@ -604,7 +614,7 @@ or cookies. The SOAP API distinguishes between requests coming from
 the Web server on the local host, which it assumes have been authenticated
 as just described, and requests coming from the open Web server. The 
 latter requests must be digitally signed messages signed by the
-originator of the message.  The W3C \textbf{XML-Signature} rules and syntax are used 
+originator of the message.  The OASIS \textbf{WS-Security X509 profile} rules and syntax are used 
 for the signing.
 The AAAS verifies the signature and the signing certificate to authenticate
 the user. It then uses the subject name from the signing certificate
