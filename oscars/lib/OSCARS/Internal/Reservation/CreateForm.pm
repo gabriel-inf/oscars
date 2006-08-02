@@ -61,6 +61,7 @@ sub soapMethod {
          $self->{user}->authorized('Domains', 'persistent') ) {
         $response->{persistentAllowed}= 1;
     }
+    $response->{test} = 1;
     $logger->info("finish", $response);
     return $response;
 } #____________________________________________________________________________
