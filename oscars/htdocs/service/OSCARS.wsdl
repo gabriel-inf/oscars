@@ -25,12 +25,6 @@
 			<xsd:element name="createReservationResponse"
 				type="tns:createReply"/>
 
-			<xsd:element name="listReservations" 
-				type="tns:emptyArg"/>
-
-			<xsd:element name="listReservationsResponse"
-				type="tns:listReply"/>
-
 			<xsd:element name="cancelReservation" 
 			        type="tns:resTag" />
 
@@ -77,8 +71,6 @@
 			<xsd:element name="cancelReservationOSCARSException"
 				type="tns:OSCARSExceptionType" />
 			<xsd:element name="queryReservationOSCARSException"
-				type="tns:OSCARSExceptionType" />
-			<xsd:element name="listReservationsOSCARSException"
 				type="tns:OSCARSExceptionType" />
 			<xsd:element name="forwardOSCARSException"
 				type="tns:OSCARSExceptionType" />
@@ -164,13 +156,6 @@
 				</xsd:sequence>
 			</xsd:complexType>
 
-			<xsd:complexType name="listReply">
-				<xsd:sequence>
-					<xsd:element name="resInfo"
-						type="tns:resInfoContent" maxOccurs="unbounded" minOccurs="0" />
-				</xsd:sequence>
-			</xsd:complexType>
-
 			<xsd:complexType name="forwardPayload">
 				<xsd:sequence>
 					<xsd:element name="contentType"
@@ -181,8 +166,6 @@
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="queryReservation" type="tns:resTag"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="listReservations" type="tns:emptyArg"
-						maxOccurs="1" minOccurs="0">
 					</xsd:element>
 				</xsd:sequence>
 			</xsd:complexType>
@@ -197,8 +180,6 @@
 						maxOccurs="1" minOccurs="0" />
 					<xsd:element name="queryReservation" type="tns:resDetails"
 						maxOccurs="1" minOccurs="0" />
-					<xsd:element name="listReservations" type="tns:listReply"
-						maxOccurs="1" minOccurs="0">
 					</xsd:element>
 				</xsd:sequence>
 			</xsd:complexType>
@@ -222,7 +203,6 @@
 					<xsd:enumeration value="createReservation"/>
 					<xsd:enumeration value="queryReservation"/>
 					<xsd:enumeration value="cancelReservation"/>
-					<xsd:enumeration value="listReservations"/>
 				</xsd:restriction>
 			</xsd:simpleType>
 			
@@ -299,16 +279,6 @@
 			element="tns:queryReservationResponse" />
 	</wsdl:message>
 
-	<wsdl:message name="listReservations">
-		<wsdl:part name="listReservations"
-			element="tns:listReservations">
-		</wsdl:part>
-	</wsdl:message>
-	<wsdl:message name="listReservationsResponse">
-		<wsdl:part name="listReservationsResponse"
-			element="tns:listReservationsResponse" />
-	</wsdl:message>
-
 	<wsdl:message name="forward">
 		<wsdl:part name="forward" element="tns:forward" />
 	</wsdl:message>
@@ -341,11 +311,6 @@
 	<wsdl:message name="queryReservationOSCARSException">
 		<wsdl:part name="queryReservationOSCARSException"
 			element="tns:queryReservationOSCARSException" />
-	</wsdl:message>
-
-	<wsdl:message name="listReservationsOSCARSException">
-		<wsdl:part name="listReservationsOSCARSException"
-			element="tns:listReservationsOSCARSException" />
 	</wsdl:message>
 
 	<wsdl:message name="forwardOSCARSException">
@@ -381,12 +346,6 @@
 			<wsdl:fault name="OSCARSException"
 				message="tns:queryReservationOSCARSException" />
 
-		</wsdl:operation>
-		<wsdl:operation name="listReservations">
-			<wsdl:input message="tns:listReservations" />
-			<wsdl:output message="tns:listReservationsResponse" />
-			<wsdl:fault name="OSCARSException"
-				message="tns:listReservationsOSCARSException" />
 		</wsdl:operation>
 
 		<wsdl:operation name="forward">
@@ -434,21 +393,6 @@
 			<wsdl:output>
 				<soap:body use="literal"
 					parts="queryReservationResponse" />
-			</wsdl:output>
-			<wsdl:fault name="OSCARSException">
-				<soap:fault name="OSCARSException" use="literal" />
-			</wsdl:fault>
-		</wsdl:operation>
-
-		<wsdl:operation name="listReservations">
-			<soap:operation style="document"
-				soapAction="http://oscars.es.net/OSCARS/Dispatcher/listReservations" />
-			<wsdl:input>
-				<soap:body use="literal" parts="listReservations" />
-			</wsdl:input>
-			<wsdl:output>
-				<soap:body use="literal"
-					parts="listReservationsResponse" />
 			</wsdl:output>
 			<wsdl:fault name="OSCARSException">
 				<soap:fault name="OSCARSException" use="literal" />
