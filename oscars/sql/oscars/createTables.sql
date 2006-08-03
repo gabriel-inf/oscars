@@ -192,23 +192,3 @@ CREATE TABLE IF NOT EXISTS archivedReservations (
     destHost		TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type = MyISAM;
-
--- Tests tables ---------------------------------------------------
-
--- Test configuration.
-CREATE TABLE IF NOT EXISTS configTests (
-    id			INT NOT NULL AUTO_INCREMENT,
-    testName		TEXT NOT NULL,
-    PRIMARY KEY (id)
-) type=MyISAM;
-
-
--- Test address.
-CREATE TABLE IF NOT EXISTS configAddresses (
-    id			INT NOT NULL AUTO_INCREMENT,
-    address		TEXT NOT NULL,
-    description		TEXT,
-    testConfId		INT,	-- foreign key
-    PRIMARY KEY (id)
-) type=MyISAM;
-

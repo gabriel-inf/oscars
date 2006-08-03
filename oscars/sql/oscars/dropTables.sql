@@ -9,5 +9,3 @@ DROP TABLE  domains
 DROP TABLE  hosts
 DROP TABLE  reservations
 DROP TABLE  archivedReservations
-DROP TABLE  configTests
-DROP TABLE  configTestAddresses
