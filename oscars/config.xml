@@ -14,9 +14,6 @@
 
 <client name='default' uri='http://localhost:2000/OSCARS/Dispatcher'
 	proxy='http://localhost:2000/Server' payloadSender='' />
-<client payloadSender='discvenue.internet2.edu'
-	uri='https://discvenue.internet2.edu/OSCARS/Dispatcher'
-	proxy='https://discvenue.internet2.edu/OSCARS/Server' name='11537' />
 
 <!-- 'OSCARS::' at the beginning of all plugin locations is implicit -->
 <!-- AAA configuration.  The database value is a reference to the plugin
