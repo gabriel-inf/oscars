@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov),
 
 =head1 LAST MODIFIED
 
-June 20, 2006
+August 9, 2006
 
 =cut
 
@@ -54,24 +54,17 @@ sub soapMethod {
     my $factory = OSCARS::MethodFactory->new('pluginMgr' => $self->{pluginMgr});
     my $handler =
         $factory->instantiate( $self->{user}, $payload->{contentType} );
-   print "in TestForward, calling $payload->{contentType}\n";
-   print "request is ", Dumper($forwardedRequest), "\n";
+    print STDERR "in TestForward, calling $payload->{contentType}\n";
+    print STDERR "request is ", Dumper($forwardedRequest), "\n";
 
     my $results = $handler->soapMethod($forwardedRequest, $logger);
-    print "results are", Dumper($results), "\n";
+    print STDERR "results are", Dumper($results), "\n";
     if (!defined $results) {
 	$results->{ $payload->{contentType}} = undef;
     }
-    if ( $payload->{contentType} eq "listReservations" ) {
-       print "return value is a ", ref($results), "\n";
-       my @res = @{$results};
-       my $length = @res +0;
-       print "length is $length\n";
-      my $info = {reservationCnt => $length};
-       $logger->info("finish", $info);
-    } else {
-        $results = $handler->soapMethod($forwardedRequest, $logger);
-       $logger->info("finish", $results);
+    else {
+        my $info = {'results' => $results};
+        $logger->info("finish", $info);
     }
     return $results;
 } #____________________________________________________________________________
