@@ -21,7 +21,7 @@ Soo-yeon Hwang (dapi@umich.edu)
 
 =head1 LAST MODIFIED
 
-May 4, 2006
+August 9, 2006
 
 =cut
 
@@ -59,7 +59,9 @@ sub soapMethod {
             throw Error::Simple("No such user $request->{selectedUser}.");
         }
     }
-    $request->{login} = $self->{user}->{login};
+    else { $request->{selectedUser} = $self->{user}->{login}; }
+    # don't want to set this field in table
+    $request->{login} = undef;
 
     # If the password needs to be updated, set the input password field to
     # the new one.
