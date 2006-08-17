@@ -19,7 +19,7 @@ David Robertson (dwrobertson@lbl.gov)
 
 =head1 LAST MODIFIED
 
-July 19, 2006
+August 17, 2006
 
 =cut
 
@@ -46,8 +46,8 @@ sub getTab {
 
 ###############################################################################
 # outputContent:   accessible from the "Create Reservation" notebook tab.
-#    Prints out the reservation creation form.  Note that ingressRouterIP and 
-#    egressRouterIP can be either a host name or an IP address.
+#    Prints out the reservation creation form.  Note that ingressRouter and 
+#    egressRouter can be either a host name or an IP address.
 # In:   hashes for request, response
 # Out:  message string
 #
@@ -119,14 +119,14 @@ sub outputContent {
       <tr>
         <td>Ingress loopback</td>
         <td class='warning'>
-	    <input type='text' class='SOAP' name='ingressRouterIP' size='40'></input>
+	    <input type='text' class='SOAP' name='ingressRouter' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
 	</tr>
       <tr>
         <td>Egress loopback</td>
         <td class='warning'>
-	    <input type='text' class='SOAP' name='egressRouterIP' size='40'></input>
+	    <input type='text' class='SOAP' name='egressRouter' size='40'></input>
         </td>
 	<td>(Host name or IP address)</td>
       </tr>
