@@ -1,0 +1,4268 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> 
+<nmwg:message id="msg2"
+   type="InterfaceLatencies" 
+   xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/" 
+   xmlns:nmwgt="http://ggf.org/ns/nmwg/topology/2.0/" 
+   xmlns:ping="http://ggf.org/ns/nmwg/tools/ping/2.0/"> 
+  <nmwg:metadata id="meta1">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.46"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data1" metadataIdRef="meta1">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.22" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta2">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.210.217"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data2" metadataIdRef="meta2">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.41" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta3">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.57"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data3" metadataIdRef="meta3">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="19.97" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta4">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.24"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data4" metadataIdRef="meta4">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.73" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta5">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.57"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data5" metadataIdRef="meta5">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="19.99" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta6">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.53"/> 
+        <nmwgt:dst type="ipv4" value="134.55.207.38"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data6" metadataIdRef="meta6">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta7">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.9"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.43"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data7" metadataIdRef="meta7">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.03" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta8">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.234"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data8" metadataIdRef="meta8">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta9">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.13"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.61"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data9" metadataIdRef="meta9">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta10">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.66"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.16"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data10" metadataIdRef="meta10">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.60" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta11">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.117"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.81"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data11" metadataIdRef="meta11">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.12" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta12">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.1"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.17"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data12" metadataIdRef="meta12">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.20" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta13">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data13" metadataIdRef="meta13">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta14">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.222"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.174"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data14" metadataIdRef="meta14">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="8.53" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta15">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.21"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data15" metadataIdRef="meta15">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta16">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.53"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.50"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data16" metadataIdRef="meta16">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.10" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta17">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.33"/> 
+        <nmwgt:dst type="ipv4" value="134.55.16.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data17" metadataIdRef="meta17">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta18">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.118"/> 
+        <nmwgt:dst type="ipv4" value="134.55.17.165"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data18" metadataIdRef="meta18">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="5.65" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta19">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.27"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data19" metadataIdRef="meta19">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.07" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta20">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.25"/> 
+        <nmwgt:dst type="ipv4" value="134.55.17.165"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data20" metadataIdRef="meta20">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta21">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.13"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.48"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data21" metadataIdRef="meta21">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta22">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.174"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data22" metadataIdRef="meta22">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="8.51" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta23">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.165"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.5"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data23" metadataIdRef="meta23">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.39" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta24">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.40"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data24" metadataIdRef="meta24">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.04" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta25">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.24"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data25" metadataIdRef="meta25">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta26">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.208.1"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.8"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data26" metadataIdRef="meta26">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta27">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data27" metadataIdRef="meta27">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.76" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta28">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.24"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data28" metadataIdRef="meta28">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.38" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta29">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.65"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data29" metadataIdRef="meta29">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.51" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta30">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.15"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data30" metadataIdRef="meta30">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta31">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.213.210"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data31" metadataIdRef="meta31">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.59" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta32">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data32" metadataIdRef="meta32">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta33">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.174"/> 
+        <nmwgt:dst type="ipv4" value="134.55.8.225"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data33" metadataIdRef="meta33">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta34">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.17"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.60"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data34" metadataIdRef="meta34">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta35">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.15"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data35" metadataIdRef="meta35">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta36">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.24"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data36" metadataIdRef="meta36">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.73" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta37">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data37" metadataIdRef="meta37">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.93" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta38">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.38"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data38" metadataIdRef="meta38">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.97" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta39">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.242"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data39" metadataIdRef="meta39">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.44" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta40">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.53"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.42"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data40" metadataIdRef="meta40">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="17.55" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta41">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.1"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.9"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data41" metadataIdRef="meta41">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta42">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.24"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data42" metadataIdRef="meta42">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.97" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta43">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.32"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data43" metadataIdRef="meta43">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.11" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta44">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.41"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data44" metadataIdRef="meta44">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="48.08" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta45">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data45" metadataIdRef="meta45">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="19.24" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta46">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.40"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data46" metadataIdRef="meta46">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta47">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.17.65"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data47" metadataIdRef="meta47">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta48">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.26"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data48" metadataIdRef="meta48">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta49">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data49" metadataIdRef="meta49">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta50">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.221"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data50" metadataIdRef="meta50">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta51">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.222"/> 
+        <nmwgt:dst type="ipv4" value="134.55.213.210"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data51" metadataIdRef="meta51">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.61" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta52">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.82"/> 
+        <nmwgt:dst type="ipv4" value="134.55.34.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data52" metadataIdRef="meta52">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.33" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta53">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.82"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.8"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data53" metadataIdRef="meta53">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.62" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta54">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.42.18"/> 
+        <nmwgt:dst type="ipv4" value="134.55.18.165"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data54" metadataIdRef="meta54">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta55">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data55" metadataIdRef="meta55">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta56">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.41"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.62"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data56" metadataIdRef="meta56">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta57">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.47"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data57" metadataIdRef="meta57">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta58">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.213.210"/> 
+        <nmwgt:dst type="ipv4" value="134.55.18.165"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data58" metadataIdRef="meta58">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.47" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta59">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.66"/> 
+        <nmwgt:dst type="ipv4" value="134.55.213.210"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data59" metadataIdRef="meta59">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.60" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta60">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.41"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data60" metadataIdRef="meta60">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="48.07" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta61">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.154"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data61" metadataIdRef="meta61">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="5.08" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta62">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.27"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data62" metadataIdRef="meta62">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.05" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta63">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data63" metadataIdRef="meta63">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.25" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta64">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.27"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data64" metadataIdRef="meta64">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.41" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta65">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.10.67"/> 
+        <nmwgt:dst type="ipv4" value="134.55.10.70"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data65" metadataIdRef="meta65">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.22" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta66">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.26"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data66" metadataIdRef="meta66">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="19.99" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta67">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.66"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.24"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data67" metadataIdRef="meta67">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta68">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.28"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data68" metadataIdRef="meta68">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.18" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta69">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.5"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data69" metadataIdRef="meta69">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.03" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta70">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.1"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data70" metadataIdRef="meta70">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.38" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta71">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.13"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data71" metadataIdRef="meta71">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.42" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta72">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data72" metadataIdRef="meta72">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta73">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.16"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data73" metadataIdRef="meta73">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.59" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta74">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.118"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data74" metadataIdRef="meta74">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta75">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.40.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data75" metadataIdRef="meta75">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="13.00" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta76">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data76" metadataIdRef="meta76">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.60" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta77">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.29"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data77" metadataIdRef="meta77">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.69" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta78">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.42.9"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data78" metadataIdRef="meta78">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="13.00" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta79">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.82"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data79" metadataIdRef="meta79">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta80">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data80" metadataIdRef="meta80">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta81">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.6"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.47"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data81" metadataIdRef="meta81">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.03" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta82">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.10.70"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data82" metadataIdRef="meta82">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.04" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta83">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.222"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.16"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data83" metadataIdRef="meta83">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.59" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta84">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.15"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data84" metadataIdRef="meta84">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta85">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.45"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data85" metadataIdRef="meta85">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.19" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta86">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.15"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data86" metadataIdRef="meta86">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta87">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data87" metadataIdRef="meta87">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta88">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.117"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.1"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data88" metadataIdRef="meta88">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta89">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.50"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data89" metadataIdRef="meta89">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.09" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta90">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.217"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data90" metadataIdRef="meta90">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.61" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta91">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.150"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data91" metadataIdRef="meta91">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.00" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta92">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.13"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data92" metadataIdRef="meta92">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.42" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta93">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.19.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data93" metadataIdRef="meta93">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.27" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta94">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.90"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data94" metadataIdRef="meta94">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta95">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.134"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data95" metadataIdRef="meta95">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="36.59" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta96">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.66"/> 
+        <nmwgt:dst type="ipv4" value="134.55.8.225"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data96" metadataIdRef="meta96">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="8.51" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta97">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.58"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.31"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data97" metadataIdRef="meta97">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.09" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta98">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.117"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.7"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data98" metadataIdRef="meta98">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta99">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.53"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.13"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data99" metadataIdRef="meta99">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="11.04" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta100">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.53"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data100" metadataIdRef="meta100">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="48.09" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta101">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.27"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data101" metadataIdRef="meta101">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.22" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta102">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.23.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data102" metadataIdRef="meta102">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="2.05" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta103">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.63"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data103" metadataIdRef="meta103">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.09" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta104">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.46"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data104" metadataIdRef="meta104">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.04" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta105">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.24"/> 
+        <nmwgt:dst type="ipv4" value="134.55.210.28"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data105" metadataIdRef="meta105">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.40" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta106">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data106" metadataIdRef="meta106">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.98" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta107">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.42"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.26"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data107" metadataIdRef="meta107">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.39" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta108">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.13"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data108" metadataIdRef="meta108">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="11.04" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta109">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data109" metadataIdRef="meta109">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.69" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta110">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.28"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data110" metadataIdRef="meta110">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.16" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta111">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.58"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data111" metadataIdRef="meta111">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.05" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta112">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.66"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.174"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data112" metadataIdRef="meta112">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="8.52" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta113">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.53"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data113" metadataIdRef="meta113">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="48.08" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta114">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.6"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.1"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data114" metadataIdRef="meta114">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.38" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta115">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.23.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data115" metadataIdRef="meta115">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="2.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta116">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.10.70"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.27"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data116" metadataIdRef="meta116">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="2.23" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta117">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.82"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.174"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data117" metadataIdRef="meta117">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.33" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta118">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.1"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data118" metadataIdRef="meta118">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta119">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.117"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.174"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data119" metadataIdRef="meta119">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.31" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta120">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data120" metadataIdRef="meta120">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta121">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.213.210"/> 
+        <nmwgt:dst type="ipv4" value="134.55.42.18"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data121" metadataIdRef="meta121">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.42" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta122">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.58"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.45"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data122" metadataIdRef="meta122">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.19" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta123">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.233"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data123" metadataIdRef="meta123">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.21" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta124">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data124" metadataIdRef="meta124">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta125">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.30"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data125" metadataIdRef="meta125">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.22" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta126">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.218"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data126" metadataIdRef="meta126">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.94" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta127">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.49"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data127" metadataIdRef="meta127">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.03" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta128">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.38.2"/> 
+        <nmwgt:dst type="ipv4" value="134.55.18.101"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data128" metadataIdRef="meta128">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta129">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.29.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data129" metadataIdRef="meta129">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.63" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta130">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.90"/> 
+        <nmwgt:dst type="ipv4" value="134.55.207.17"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data130" metadataIdRef="meta130">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.49" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta131">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.16.193"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data131" metadataIdRef="meta131">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta132">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.36"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data132" metadataIdRef="meta132">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.81" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta133">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.222"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.28"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data133" metadataIdRef="meta133">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.51" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta134">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data134" metadataIdRef="meta134">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.58" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta135">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.12"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data135" metadataIdRef="meta135">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.22" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta136">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.82"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.7"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data136" metadataIdRef="meta136">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta137">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data137" metadataIdRef="meta137">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta138">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data138" metadataIdRef="meta138">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta139">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.30"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data139" metadataIdRef="meta139">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.03" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta140">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.54"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data140" metadataIdRef="meta140">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta141">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.218"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.222"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data141" metadataIdRef="meta141">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta142">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.11.226"/> 
+        <nmwgt:dst type="ipv4" value="134.55.13.193"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data142" metadataIdRef="meta142">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta143">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.42"/> 
+        <nmwgt:dst type="ipv4" value="134.55.210.44"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data143" metadataIdRef="meta143">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.38" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta144">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.42"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data144" metadataIdRef="meta144">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="17.56" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta145">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.31"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data145" metadataIdRef="meta145">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.07" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta146">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.154"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data146" metadataIdRef="meta146">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="5.14" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta147">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.150"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data147" metadataIdRef="meta147">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.07" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta148">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.19.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data148" metadataIdRef="meta148">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.26" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta149">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.90"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data149" metadataIdRef="meta149">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.05" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta150">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.58"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data150" metadataIdRef="meta150">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta151">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.82"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.1"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data151" metadataIdRef="meta151">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.65" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta152">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.34"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data152" metadataIdRef="meta152">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.00" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta153">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.36"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data153" metadataIdRef="meta153">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.78" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta154">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.134"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data154" metadataIdRef="meta154">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="36.55" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta155">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.26"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data155" metadataIdRef="meta155">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta156">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.227"/> 
+        <nmwgt:dst type="ipv4" value="134.55.210.225"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data156" metadataIdRef="meta156">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.45" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta157">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.17"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.49"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data157" metadataIdRef="meta157">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.98" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta158">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.40"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data158" metadataIdRef="meta158">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.03" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta159">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.165"/> 
+        <nmwgt:dst type="ipv4" value="134.55.210.166"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data159" metadataIdRef="meta159">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.39" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta160">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data160" metadataIdRef="meta160">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.91" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta161">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.65"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data161" metadataIdRef="meta161">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta162">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data162" metadataIdRef="meta162">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.10" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta163">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.29.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data163" metadataIdRef="meta163">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.62" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta164">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.32"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data164" metadataIdRef="meta164">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.10" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta165">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.34"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data165" metadataIdRef="meta165">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta166">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data166" metadataIdRef="meta166">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.92" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta167">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.10.70"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.46"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data167" metadataIdRef="meta167">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="2.24" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta168">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.6"/> 
+        <nmwgt:dst type="ipv4" value="134.55.207.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data168" metadataIdRef="meta168">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.14" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta169">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.53"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.63"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data169" metadataIdRef="meta169">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.11" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta170">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.65"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data170" metadataIdRef="meta170">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta171">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data171" metadataIdRef="meta171">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta172">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.46"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data172" metadataIdRef="meta172">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.26" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta173">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.29.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data173" metadataIdRef="meta173">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.62" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta174">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.5"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.25"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data174" metadataIdRef="meta174">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.17" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta175">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data175" metadataIdRef="meta175">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta176">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.17"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data176" metadataIdRef="meta176">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.94" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta177">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.217"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data177" metadataIdRef="meta177">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.59" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta178">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.42.9"/> 
+        <nmwgt:dst type="ipv4" value="134.55.40.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data178" metadataIdRef="meta178">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta179">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.17"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data179" metadataIdRef="meta179">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.24" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta180">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.218"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data180" metadataIdRef="meta180">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.72" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta181">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.45"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data181" metadataIdRef="meta181">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.97" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta182">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.17"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data182" metadataIdRef="meta182">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.96" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta183">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.13"/> 
+        <nmwgt:dst type="ipv4" value="134.55.20.229"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data183" metadataIdRef="meta183">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.21" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta184">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.44"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.15"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data184" metadataIdRef="meta184">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta185">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.54"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data185" metadataIdRef="meta185">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta186">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.50"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.61"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data186" metadataIdRef="meta186">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="22.39" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta187">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.154"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data187" metadataIdRef="meta187">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="5.10" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta188">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.150"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data188" metadataIdRef="meta188">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.07" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta189">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.90"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data189" metadataIdRef="meta189">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta190">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.13"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data190" metadataIdRef="meta190">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.39" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta191">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.54"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data191" metadataIdRef="meta191">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.26" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta192">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.1"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data192" metadataIdRef="meta192">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta193">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data193" metadataIdRef="meta193">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.10" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta194">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.15"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data194" metadataIdRef="meta194">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta195">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.54"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data195" metadataIdRef="meta195">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta196">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.32"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data196" metadataIdRef="meta196">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.09" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta197">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.36"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data197" metadataIdRef="meta197">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.77" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta198">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.34"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data198" metadataIdRef="meta198">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.95" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta199">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.118"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.25"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data199" metadataIdRef="meta199">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="5.63" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta200">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.82"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data200" metadataIdRef="meta200">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta201">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.25"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data201" metadataIdRef="meta201">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.60" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta202">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data202" metadataIdRef="meta202">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta203">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.34"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data203" metadataIdRef="meta203">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.92" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta204">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.165"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.34"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data204" metadataIdRef="meta204">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.40" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta205">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.58"/> 
+        <nmwgt:dst type="ipv4" value="134.55.23.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data205" metadataIdRef="meta205">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="2.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta206">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.23.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data206" metadataIdRef="meta206">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="2.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta207">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.5"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data207" metadataIdRef="meta207">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.17" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta208">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.16.193"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data208" metadataIdRef="meta208">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="19.19" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta209">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.29"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data209" metadataIdRef="meta209">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.65" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta210">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.50"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.13"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data210" metadataIdRef="meta210">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="22.38" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta211">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.90"/> 
+        <nmwgt:dst type="ipv4" value="134.55.207.21"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data211" metadataIdRef="meta211">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="14.94" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta212">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data212" metadataIdRef="meta212">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta213">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.16.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data213" metadataIdRef="meta213">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.76" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta214">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.17"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.38"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data214" metadataIdRef="meta214">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta215">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.1"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.45"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data215" metadataIdRef="meta215">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta216">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.7"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data216" metadataIdRef="meta216">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta217">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.28"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data217" metadataIdRef="meta217">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.47" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta218">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.45"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data218" metadataIdRef="meta218">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.18" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta219">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data219" metadataIdRef="meta219">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta220">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.166"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data220" metadataIdRef="meta220">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="19.20" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta221">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.9"/> 
+        <nmwgt:dst type="ipv4" value="134.55.29.65"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data221" metadataIdRef="meta221">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.17" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta222">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.58"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.21"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data222" metadataIdRef="meta222">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta223">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.218"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.5"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data223" metadataIdRef="meta223">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.92" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta224">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.213.210"/> 
+        <nmwgt:dst type="ipv4" value="134.55.18.101"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data224" metadataIdRef="meta224">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.30" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta225">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.225"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.6"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data225" metadataIdRef="meta225">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta226">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.57"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data226" metadataIdRef="meta226">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="20.00" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta227">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.28"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data227" metadataIdRef="meta227">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta228">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.30"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.234"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data228" metadataIdRef="meta228">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.02" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta229">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.58"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.28"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data229" metadataIdRef="meta229">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.17" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta230">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.57"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data230" metadataIdRef="meta230">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.30" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta231">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.7"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data231" metadataIdRef="meta231">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta232">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.27"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data232" metadataIdRef="meta232">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.25" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta233">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.208.174"/> 
+        <nmwgt:dst type="ipv4" value="134.55.34.97"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data233" metadataIdRef="meta233">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta234">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.5"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.46"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data234" metadataIdRef="meta234">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta235">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.11.226"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data235" metadataIdRef="meta235">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="10.50" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta236">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.117"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.28"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data236" metadataIdRef="meta236">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.07" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta237">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.24"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.25"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data237" metadataIdRef="meta237">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.38" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta238">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.227"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.29"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data238" metadataIdRef="meta238">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.44" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta239">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.31"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data239" metadataIdRef="meta239">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.12" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta240">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.66"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.221"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data240" metadataIdRef="meta240">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.66" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta241">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.65"/> 
+        <nmwgt:dst type="ipv4" value="134.55.15.197"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data241" metadataIdRef="meta241">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.05" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta242">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.118"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.21"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data242" metadataIdRef="meta242">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta243">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data243" metadataIdRef="meta243">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta244">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data244" metadataIdRef="meta244">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.74" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta245">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.208.134"/> 
+        <nmwgt:dst type="ipv4" value="134.55.35.69"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data245" metadataIdRef="meta245">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta246">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.118"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data246" metadataIdRef="meta246">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta247">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.118"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data247" metadataIdRef="meta247">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta248">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.90"/> 
+        <nmwgt:dst type="ipv4" value="134.55.17.65"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data248" metadataIdRef="meta248">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="14.96" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta249">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.213.210"/> 
+        <nmwgt:dst type="ipv4" value="134.55.38.2"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data249" metadataIdRef="meta249">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.28" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta250">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.38"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.222"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data250" metadataIdRef="meta250">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.65" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta251">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.1"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data251" metadataIdRef="meta251">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.05" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta252">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.45"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data252" metadataIdRef="meta252">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.92" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta253">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.45"/> 
+        <nmwgt:dst type="ipv4" value="134.55.15.197"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data253" metadataIdRef="meta253">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.08" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta254">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.13.193"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data254" metadataIdRef="meta254">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="10.50" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta255">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.222"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.65"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data255" metadataIdRef="meta255">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.51" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta256">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.33"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.62"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data256" metadataIdRef="meta256">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta257">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.5"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data257" metadataIdRef="meta257">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.91" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta258">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.22"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.33"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data258" metadataIdRef="meta258">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.41" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta259">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.154"/> 
+        <nmwgt:dst type="ipv4" value="134.55.15.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data259" metadataIdRef="meta259">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta260">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.150"/> 
+        <nmwgt:dst type="ipv4" value="134.55.15.197"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data260" metadataIdRef="meta260">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta261">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.5"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.17"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data261" metadataIdRef="meta261">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.96" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta262">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.40.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data262" metadataIdRef="meta262">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="12.99" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta263">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.26"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data263" metadataIdRef="meta263">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="48.11" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta264">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.37"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data264" metadataIdRef="meta264">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.13" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta265">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.53"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.48"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data265" metadataIdRef="meta265">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="11.06" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta266">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.58"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.66"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data266" metadataIdRef="meta266">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="1.93" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta267">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.221"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.25"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data267" metadataIdRef="meta267">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.59" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta268">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.6"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.41"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data268" metadataIdRef="meta268">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.15" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta269">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.17"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.20"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data269" metadataIdRef="meta269">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.25" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta270">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.218"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data270" metadataIdRef="meta270">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="26.73" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta271">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.58"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.118"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data271" metadataIdRef="meta271">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta272">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.21"/> 
+        <nmwgt:dst type="ipv4" value="134.55.35.69"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data272" metadataIdRef="meta272">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="36.59" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta273">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.15"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data273" metadataIdRef="meta273">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta274">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.9"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.22"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data274" metadataIdRef="meta274">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.19" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta275">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.217.5"/> 
+        <nmwgt:dst type="ipv4" value="134.55.218.21"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data275" metadataIdRef="meta275">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.18" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta276">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.218.46"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.31"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data276" metadataIdRef="meta276">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.10" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta277">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.219.9"/> 
+        <nmwgt:dst type="ipv4" value="134.55.217.41"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data277" metadataIdRef="meta277">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.63" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta278">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.81"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.29"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data278" metadataIdRef="meta278">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="15.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta279">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.218"/> 
+        <nmwgt:dst type="ipv4" value="134.55.200.29"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data279" metadataIdRef="meta279">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="35.64" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta280">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.210.114"/> 
+        <nmwgt:dst type="ipv4" value="134.55.210.117"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data280" metadataIdRef="meta280">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.42" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta281">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.207.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.209.54"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data281" metadataIdRef="meta281">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="48.10" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta282">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.218"/> 
+        <nmwgt:dst type="ipv4" value="134.55.219.34"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data282" metadataIdRef="meta282">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="4.94" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta283">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.208.37"/> 
+        <nmwgt:dst type="ipv4" value="134.55.16.133"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data283" metadataIdRef="meta283">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="0.01" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+  <nmwg:metadata id="meta284">
+    <ping:subject id="sub">
+      <nmwgt:endPointPair> 
+        <nmwgt:src type="ipv4" value="134.55.209.217"/> 
+        <nmwgt:dst type="ipv4" value="134.55.208.134"/> 
+      </nmwgt:endPointPair> 
+    </ping:subject> 
+    <eventType>ping_derived</eventType> 
+  </nmwg:metadata> 
+  <nmwg:data id="data284" metadataIdRef="meta284">
+    <nmwg:commonTime type="unix" value="1156752000">  
+       <ping:datum numBytes="64" numBytesUnits="bytes" valueUnits="ms" value="36.55" /> 
+    </nmwg:commonTime> 
+  </nmwg:data> 
+
+</nmwg:message>
+
