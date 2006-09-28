@@ -1,6 +1,6 @@
 /*
 Javascript object for handling dates and times
-Last modified:  July 15, 2006
+Last modified:  September 28, 2006
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang (dapi@umich.edu)
 */
@@ -83,13 +83,6 @@ DateHandler.daylightTzNames = {
 }
 
 
-// Init and update are adapted from the DHTML Utopia book.
-DateHandler.prototype.init = function() {
-    var clock = document.getElementById('clock');
-    this.update(clock);
-    setInterval(function() { this.update(clock); }, 60000);
-}
-
 // Updates datetime element with current date (format: July 1, 2005 13:00).
 DateHandler.prototype.update = function(clock) {
     var localDate = new Date();
@@ -105,6 +98,13 @@ DateHandler.prototype.update = function(clock) {
     readout += (digits > 9 ? '' : '0') + digits;
 
     clock.innerHTML = readout;
+}
+
+// Init and update are adapted from the DHTML Utopia book.
+DateHandler.prototype.init = function() {
+    var clock = document.getElementById('clock');
+    this.update(clock);
+    setInterval(function() { this.update(clock); }, 60000);
 }
 
 // get string with timezone options

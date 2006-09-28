@@ -1,6 +1,6 @@
 /*
 validator.js:      Javascript functions for form validation
-Last modified:  July 19, 2006
+Last modified:  September 28, 2006
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
@@ -325,7 +325,9 @@ function checkDateFields(form) {
         }
     }
     if (!defaultYear || !defaultDate) {
-        if ( isLeapYear(form.startYear.value) ) {
+        dateHandler = new DateHandler();
+        dateHandler.init();
+        if ( dateHandler.isLeapYear(form.startYear.value) ) {
             if ( form.startDate.value > 29 ) {
                 alert("The reservation start date is out of proper range. Please check again.");
                 form.startDate.focus();
