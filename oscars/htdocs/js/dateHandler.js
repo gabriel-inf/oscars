@@ -84,7 +84,7 @@ DateHandler.daylightTzNames = {
 
 
 // Updates datetime element with current date (format: July 1, 2005 13:00).
-DateHandler.prototype.update = function(clock) {
+DateHandler.prototype.updateClock = function(clock) {
     var localDate = new Date();
     var digits, readout = '';
 
@@ -100,11 +100,23 @@ DateHandler.prototype.update = function(clock) {
     clock.innerHTML = readout;
 }
 
-// Init and update are adapted from the DHTML Utopia book.
+// Init and updateClock are adapted from the DHTML Utopia book.
 DateHandler.prototype.init = function() {
+    var digits, readout = '';
+    var localDate = new Date();
     var clock = document.getElementById('clock');
-    this.update(clock);
-    setInterval(function() { this.update(clock); }, 60000);
+
+    var currentMonth = localDate.getMonth();
+    readout += DateHandler.monthName[currentMonth] + " " +
+                    localDate.getDate() + ", " + localDate.getFullYear() + " ";
+
+    digits = localDate.getHours();
+    readout += (digits > 9 ? '' : '0') + digits + ':';
+    digits = localDate.getMinutes();
+    readout += (digits > 9 ? '' : '0') + digits;
+
+    clock.innerHTML = readout;
+    setInterval(function() { DateHandler.updateClock(clock); }, 60000);
 }
 
 // get string with timezone options

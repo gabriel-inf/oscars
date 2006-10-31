@@ -232,8 +232,8 @@ function checkDateFields(form) {
     }
 
     if ( isBlank(form.startMonth.value) ) {
-        form.startMonth.value = localDate.getMonth();
-        defaultMonth = 0;
+        form.startMonth.value = parseInt(localDate.getMonth());
+        defaultMonth = 1;
     }
     else {
         if ( !(isNumeric(form.startMonth.value))) {
@@ -241,9 +241,9 @@ function checkDateFields(form) {
             form.startMonth.focus();
             return false;
         }
-        form.startMonth.value = parseInt(form.startMonth.value) - 1;
-        if ( form.startMonth.value < 0 || form.startMonth.value > 11 ) {
-            alert("The reservation start month is out of proper range. Please check again.");
+        form.startMonth.value = parseInt(form.startMonth.value);
+        if ( form.startMonth.value < 1 || form.startMonth.value > 12 ) {
+            alert("The reservation start month " + form.startMonth.value + "is out of proper range. Please check again.");
             form.startMonth.focus();
             return false;
         }
@@ -342,10 +342,9 @@ function checkDateFields(form) {
             }
         }
     }
-   reservationDate = new Date(form.startYear.value, form.startMonth.value,
+   reservationDate = new Date(form.startYear.value, form.startMonth.value-1,
                                 form.startDate.value, form.startHour.value,
                                 form.startMinute.value, 0, 0);
-    form.startMonth.value = parseInt(form.startMonth.value) + 1;
     // convert local time to seconds since epoch
     var startTime = reservationDate.getTime() / 1000;
 
