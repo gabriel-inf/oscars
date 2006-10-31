@@ -94,6 +94,29 @@ in binary and source code form. -->
                         <name><user-var>name</user-var></name>
                     </term>
                 </filter>
+                <filter>
+                    <name><user-var>internal_interface_filter</user-var></name>
+                    <term>
+                    <name><user-var>name</user-var></name>
+                    <from>
+                        <source-address><user-var>source-address</user-var></source-address>
+                        <destination-address><user-var>destination-address</user-var></destination-address>
+                        <dscp><user-var>dscp</user-var></dscp>
+                        <protocol><user-var>protocol</user-var></protocol>
+                        <source-port><user-var>source-port</user-var></source-port>
+                        <destination-port><user-var>destination-port</user-var></destination-port>
+                    </from>
+                    <then>
+                        <policer><user-var>name</user-var></policer>
+                        <count><user-var>name</user-var></count>
+                        <forwarding-class>expedited-forwarding</forwarding-class>
+                        <routing-instance><user-var>name</user-var></routing-instance>
+                    </then>
+                    </term>
+                    <term insert="after" name="<user-var>firewall_filter_marker</user-var>">
+                        <name><user-var>name</user-var></name>
+                    </term>
+                </filter>
             </inet>
         </family>
     </firewall>

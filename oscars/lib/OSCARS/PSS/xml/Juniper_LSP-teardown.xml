@@ -61,6 +61,12 @@ in binary and source code form. -->
                     <name><user-var>name</user-var></name>
                     </term>
                 </filter>
+                <filter>
+                    <name><user-var>internal_interface_filter</user-var></name>
+                    <term delete="delete">
+                    <name><user-var>name</user-var></name>
+                    </term>
+                </filter>
             </inet>
         </family>
     </firewall>
