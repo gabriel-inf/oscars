@@ -91,6 +91,8 @@ sub initialize {
                                  $self->{configs}->{setupPriority};
     $self->{'lsp_reservation-priority'} =
                                  $self->{configs}->{reservationPriority};
+    $self->{internal_interface_filter} =
+                                 $self->{configs}->{internalInterfaceFilter};
     $self->{external_interface_filter} =
                                  $self->{configs}->{externalInterfaceFilter};
 
