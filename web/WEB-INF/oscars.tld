@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib 
+	xmlns="http://java.sun.com/xml/ns/j2ee" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd" 
+	version="2.0">
+	
+	<tlib-version>0.03</tlib-version>
+  	<short-name>oscars</short-name>
+  	<uri>oscars</uri>
+    <display-name>oscars</display-name>
+  	<description>
+    	This tag library contains tags used by the oscars application.
+  	</description>
+  
+	<tag>
+		<name>reservationForm</name>
+		<tag-class>net.es.oscars.ui.taglib.CreateReservationTag</tag-class>
+		<body-content>empty</body-content>
+		<description>Reservation form</description>
+	</tag>
+	
+<!--	<tag>
+		<name>reservationList</name>
+		<tag-class>net.es.oscars.ui.taglib.ReservationListTag</tag-class>
+		<body-content>empty</body-content>
+		<description>Reservation list</description>
+	</tag>
+	
+	<tag>
+		<name>reservationInfo</name>
+		<tag-class>net.es.oscars.ui.taglib.ReservationInfoTag</tag-class>
+		<body-content>empty</body-content>
+		<description>Reservation info</description>
+	</tag>
+	
+	<tag>
+		<name>userList</name>
+		<tag-class>net.es.oscars.ui.taglib.UserListTag</tag-class>
+		<body-content>empty</body-content>
+		<description>User list</description>
+	</tag>
+	
+	<tag>
+		<name>userInfo</name>
+		<tag-class>net.es.oscars.ui.taglib.UserInfoTag</tag-class>
+		<body-content>empty</body-content>
+		<description>User info</description>
+	</tag>
+	
+	<tag>
+		<name>resourceManager</name>
+		<tag-class>net.es.oscars.ui.taglib.ResourceManagerTag</tag-class>
+		<body-content>empty</body-content>
+		<description>Resource manager</description>
+	</tag> -->
+	
+	<tag>
+		<name>ajaxNavigation</name>
+		<tag-class>net.es.oscars.ui.taglib.AjaxNavigationTag</tag-class>
+		<body-content>empty</body-content>
+		<description>Tabs and content holder for ajax navigation</description>
+	</tag>
+
+</taglib>

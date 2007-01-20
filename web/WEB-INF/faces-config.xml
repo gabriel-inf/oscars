@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE faces-config PUBLIC
+  "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
+  "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+
+<faces-config>
+
+	<!-- ========== Application Settings =============================== -->
+  	<application>
+    	<locale-config>
+      		<default-locale>en</default-locale>
+    	</locale-config>
+	</application>
+
+	<!-- ========== Components ========================================= -->
+	<component>
+    	<component-type>CreateReservationForm</component-type>
+    	<component-class>net.es.oscars.ui.components.CreateReservationForm</component-class>
+    
+   		<component-extension>
+      		<component-family>CreateReservationForm</component-family>
+      		<renderer-type>CreateReservationForm</renderer-type>
+    	</component-extension>
+    
+  	</component>
+  	
+  	<component>
+    	<component-type>AjaxNavigation</component-type>
+    	<component-class>net.es.oscars.ui.components.AjaxNavigation</component-class>
+    
+   		<component-extension>
+      		<component-family>AjaxNavigation</component-family>
+      		<renderer-type>AjaxNavigation</renderer-type>
+    	</component-extension>
+    
+  	</component>
+  	
+  	<!-- ========== Renderers ========================================== -->
+  	<render-kit>
+
+    	<renderer>
+			<description>
+    	    	Renderer for a create reservation form
+    	    </description>
+    	    <component-family>CreateReservationForm</component-family>
+			<renderer-type>CreateReservationForm</renderer-type>
+			<renderer-class>net.es.oscars.ui.renderers.CreateReservationRenderer</renderer-class>
+		</renderer>
+    	
+    	<renderer>
+			<description>
+    	    	Renderer for ajax navigation tabs
+    	    </description>
+    	    <component-family>AjaxNavigation</component-family>
+			<renderer-type>AjaxNavigation</renderer-type>
+			<renderer-class>net.es.oscars.ui.renderers.AjaxNavigationRenderer</renderer-class>
+		</renderer>
+		
+ 	</render-kit>
+ 	
+ 	
+ 	<!-- ========== Phase Listeners ==================================== -->
+ 	<lifecycle>
+		<phase-listener>net.es.oscars.ui.phaselisteners.OscarsPhaseListener</phase-listener>
+	</lifecycle>
+
+</faces-config>

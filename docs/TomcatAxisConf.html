@@ -1,0 +1,112 @@
+<html>
+<body>
+
+<pre>
+Tomcat
+  apache-tomcat-5.5.17/conf
+  
+  	service.xml  - defines standalone Tomcat server - catalina
+  	     http and/or https connectors are defined here
+  	       can define a dumper valve
+  	       define remoteAddrValve here to limit the sites that can access the connector
+  	  web.xml- defines defaults servlets for static resources, jsp, server-side-includes
+  	  context.xml
+  	  logging.properties 
+  	  tomcat-users.xml  - usernames and passwords
+  
+  Every Tomcat webapp has a WEB-INF/web.xml file
+  
+  /usr/local/apache-tomcat-5.5.17/webapps/axis2/WEB-INF/web.xml
+  		defines servlets, e.g SOAPMonitor. AdminServlet,Axis2Servlet
+  		maps urls to servlet names, and servlet names to class
+  		
+/usr/local/apache-tomcat-5.5.17/webapps/axis2/WEB-INF/conf/axis2.xml
+    Defines parameters like enableMTOM, username, password (for axis admin)
+    defnines messageRecievers, transportReceivers(http, tcp, smtp
+    Add global modules like SOAPMonitor and rampart
+    define phase order (added soapMonitor phase)
+     
+     
+     Client side can use an axis2.xml configuration file, which is needed for signing messages
+        One way it is used is by
+        ConfigurationContext configContext = ConfigurationContextFactory.createConfigurationContextFromFileSystem(repo, null);
+            ServiceClient serviceClient = new ServiceClient(configContext, null)
+            
+          where repo is a directory that contains a conf/axis2.xml file.
+          
+          <signaturePropFile> set in axis2.xml  
+          org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+          org.apache.ws.security.crypto.merlin.keystore.type=jks
+          org.apache.ws.security.crypto.merlin.keystore.password=password
+          org.apache.ws.security.crypto.merlin.file=sec.jks  (name of keystore file)
+          
+  	  The security inFlow and outFlow parameters are defined in OSCARS.jar/META-INF/services.xml for the service
+  	
+  Things that need to be copied to webapp axis2 for 1.0 to work
+      classes/
+      			 log4j.properties with oscar.log
+      			 all the hbm.xml files
+      lib/
+ bcprov-jdk13-132.jar
+commons-discovery-0.2.jar
+hibernate3.jar
+wss4j-1.5.0.jar
+xalan-2.7.0.jar
+xmlsec-1.3.0.jar
+dom4j-1.6.1.jar
+commons-collections-2.1.1.jar
+cglib-2.1.3.jar
+jta.jar
+
+added all the rest from old lib
+SNMP4J.jar
+antlr-2.7.6rc1.jar
+asm-attrs.jar
+asm.jar
+jaxme2-0.5.1.jar
+jaxmeapi-0.5.1.jar
+jaxmejs-0.5.1.jar
+jaxmexs-0.5.1.jar
+jdom.jar
+jsch-20060815.jar
+jsr173_api.jar
+mail.jar
+mysql-connector-java-3.1.13-bin.jar
+secUtil.jar
+serializer-2.7.0.jar
+servletapi-2.3.jar
+stax-utils-20060501.jar
+
+Axis2.1.1
+  No longer needs library files to be copied from the aar to webapp/axis2/lib
+the hibernate configuration classes are  now found from the aar.
+  
+Need to  keep modifiied log4j.properties in webapps/axis2/classes
+
+Needed rampart 1.1 and wss4j.SNAPSHOT
+
+Rampart 1.1-RC1 
+   I needed to copy wss4j, bcprov and xmlsec to webapp/axis2/lib so that both
+rampart and oscars could find all the classes they  needed. and remove
+wss4j from the OSCARS.aar.
+
+Nov 29 (nightly build)
+  Soap faults in return messages cause exception in OMelement
+
+  Enumerated types now have their  own class which enforces the enumerated
+    values, but the OMelement classes don't like finding these elements.
+  ie on server side doing cancelReservation reply
+ org.apache.axiom.om.impl.llom.OMSourcedElementImpl forceExpand
+SEVERE: forceExpand: expected element name cancelReservationResponse, found resStatus
+	
+
+When installing a new version of Axis
+   Copy rampart.mar to webapps/axis2/modules
+   Copy the old log4j.properties webapp/axis2/classes
+   in conf/axis2.xml
+	engage rampart
+	change DrillDownToRootCause to true
+	change sendStackTraceDetails to true
+</pre>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+    
+<hibernate-mapping>
+<!-- 
+    Adapted from mapping created by the Middlegen Hibernate plugin 2.1.
+
+    http://boss.bekk.no/boss/middlegen/
+    http://www.hibernate.org/
+-->
+
+<class name="net.es.oscars.bss.topology.Path" table="paths">
+    <meta attribute="class-description" inherit="false">
+       @hibernate.class table="paths"
+    </meta>
+
+    <id name="id">
+        <meta attribute="field-description">
+           @hibernate.id generator-class="increment"
+        </meta>
+        <generator class="increment" />
+    </id>
+
+    <property name="addressType" />
+
+    <!-- Associations -->
+
+    <many-to-one name="nextPath" cascade="all" column="nextId" />
+
+    <many-to-one name="ipaddr" column="ipaddrId"
+	    class="net.es.oscars.bss.topology.Ipaddr" not-null="true" />
+
+</class>
+</hibernate-mapping>

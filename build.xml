@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- Main build file
+
+Uses properties from the mandatory file
+${user.home}/oscars.config/properties/oscars.properties
+This file contains properties that should not be distributed via Subversion
+(e.g. database logins and passwords). -->
+
+<project name="OSCARS" default="api.compile" basedir=".">
+
+
+<!-- Server section  ********************************************************
+
+Note that the standard task of copying static Web files is not done in this
+section because an installation may not necessarily require the WBUI,
+and may only use the API. -->
+
+
+<property name="app.name" value="oscars" />
+<property name="app.version" value="0.3-dev" />
+<property name="devdir" value="${basedir}" />
+
+<property name="src.home" value="${devdir}/src" />
+
+<property name="webapp.home" value="/usr/local/jakarta-tomcat5.5/webapps" />
+
+<property name="api.build.home" value="${devdir}/api.build" />
+<property name="api.build.classes" value="${api.build.home}/WEB-INF/classes" />
+
+<property name="compile.debug" value="true" />
+<property name="compile.deprecation" value="false" />
+<property name="compile.optimize" value="true" />
+
+<path id="api.classpath">
+     <fileset dir="${devdir}/lib/axis2"> <include name="*.jar" /> </fileset>
+    <fileset dir="${devdir}/lib"> <include name="*.jar" /> </fileset>
+</path>
+
+<path id="axis2.classpath">
+    <fileset dir="${devdir}/lib/axis2"> <include name="*.jar" /> </fileset>
+</path>
+
+<target name="all" depends="api.clean, api.compile"
+    description="Clean build directory, then compile">
+</target>
+
+
+<target name="api.prepare">
+    <!-- Create build directories as needed -->
+    <mkdir dir="${api.build.home}" />
+    <mkdir dir="${api.build.home}/WEB-INF" />
+    <mkdir dir="${api.build.home}/WEB-INF/classes" />
+
+    <mkdir dir="${api.build.home}/WEB-INF/lib" />
+
+</target>
+
+
+<!-- wsdl2java (Axis 2.0) Target 
+
+Generates code in net.es.oscars.service.  Currently all auto-generated code
+is checked into Subversion as reference material.
+
+Note that the compile and test tasks will check that this task has been
+done eventually, but will not automatically depend on it.
+
+Adding a -t switch generates a Junit test in test/ne/es/oscars/service
+Adding a -sd switch generates resources/services.xml
+It also copies the OSCARS.wsdl into resources.  Generates a services.xml in
+resources.  Generates a build.xml in the output directory -->
+
+<target name="wsdl2java">
+
+    <!-- build OSCARS service -->
+	<delete  failonerror="false">
+	<fileset dir="resources">
+	    <include name="services.xml"/>
+	</fileset>
+</delete>
+
+    <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+        <classpath refid="axis2.classpath" /> 
+        <arg value="-uri" />
+        <arg file="conf/server/OSCARS.wsdl" />
+        <arg value="--server-side" />
+        <arg value="--serverside-interface" />
+        <arg value="--sync" />
+        <arg value="--service-description" />
+        <arg value="--generate-all" />
+       <arg value="--namespace2package" />
+        <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes" />
+    </java>
+	<echo> 
+  **** 
+  **** Please merge any changes in resources/services.xml with conf/server/services.xml 
+  ****
+	</echo>
+   </target>
+
+  <target name="api.compile" depends="api.prepare" description="Compile Java sources">
+    <javac sourcepath="" srcdir="${src.home}"  destdir="${api.build.classes}"
+               debug="${compile.debug}"  deprecation="${compile.deprecation}"
+               optimize="${compile.optimize}">
+           <classpath refid="api.classpath" />
+           <!-- <compilerarg value="-Xlint" /> -->
+           <include name="**/*.java" />
+           <exclude name="net/es/oscars/wbui/**/*.java" />
+           <exclude name="net/es/oscars/client/**/*.java" />
+    </javac>
+    <copy  todir="${api.build.classes}">
+        <fileset dir="${src.home}" includes="**/*.hbm.xml" />
+        <fileset dir="${devdir}/conf/server"
+            includes="aaa.cfg.xml, bss.cfg.xml" />
+    </copy>
+</target>
+
+
+<path id="api.full.classpath">
+    <path refid="api.classpath" />
+    <pathelement location="${api.build.classes}" />
+</path>
+
+
+<target name="javadoc" depends="api.compile"
+    description="Create Javadoc API documentation">
+
+    <mkdir dir="${devdir}/docs/api" />
+    <javadoc destdir="${devdir}/docs/api" author="true">
+        <fileset dir="${src.home}">
+            <include name="**/*.java" />
+            <exclude name="net/es/oscars/wbui/**/*.java" />
+        </fileset>
+        <classpath refid="api.full.classpath" />
+    </javadoc>
+</target>
+
+
+<target name="api.clean" description="Delete old build directory">
+    <delete dir="${api.build.home}" />
+</target>
+
+
+<!-- OSCARS.aar file, get puts on the server -->
+<target name="api.aar" description="Create OSCARS.aar file" depends="api.compile">
+
+    <copy  todir="${api.build.classes}">
+        <fileset dir="${user.home}/oscars.config/conf/server"
+            includes="sec-server.properties, sec-server.jks" />
+        <fileset dir="${devdir}/conf/server"
+            includes="log4j.properties" />
+    </copy>
+    <copy todir="${api.build.home}/WEB-INF/lib">
+        <fileset dir="${devdir}/lib">
+            <include name="*.jar" />
+            <exclude name="wss4j*"/>  <!-- until problem with rampart1.1-RC1 is resolved -->
+        </fileset>
+        <fileset dir="${devdir}/lib/axis2">
+            <include name="*.jar" />
+        </fileset>
+    </copy>
+    <mkdir dir="${api.build.home}/WEB-INF/META-INF" />
+    <copy todir="${api.build.home}/WEB-INF/META-INF">
+        <fileset dir="${devdir}/conf/server/"
+                 includes="*.wsdl,*.xsd,services.xml"/>
+   </copy>
+
+    <jar destfile="${api.build.home}/OSCARS.aar" 
+           basedir="${api.build.home}/WEB-INF/classes" includes="*">  
+        <include name="net/**/*.class" />
+        <include name="net/**/*.xml" />
+        <exclude name="net/es/oscars/client/**/*.class" />
+        <fileset dir="${api.build.home}/WEB-INF/" includes="lib/*.jar" />
+        <metainf dir="${api.build.home}/WEB-INF/META-INF"> 
+            <include name="*.wsdl" /> 
+            <include name="*.xsd"/>
+            <include name="services.xml" />
+        </metainf>
+    </jar>
+</target>
+
+
+<!-- WBUI section ******************************************************** -->
+
+<property name="wbui.home" value="${devdir}/web" />
+<property name="wbui.classes" value="${wbui.home}/WEB-INF/classes" />
+
+<!-- The "wbui.prepare" target is used to create the destination directory for
+compiled JSF classes, and copy the static contents of the web app to that
+directory. -->
+
+<target name="wbui.prepare">
+    <mkdir dir="${wbui.home}" />
+    <mkdir dir="${wbui.home}/WEB-INF" />
+    <mkdir dir="${wbui.home}/WEB-INF/classes" />
+</target>
+
+
+<target name="wbui.compile" depends="wbui.prepare"
+        description="Compile servlet sources">
+
+    <javac sourcepath="" srcdir="${src.home}"  destdir="${wbui.classes}"
+               debug="${compile.debug}"  deprecation="${compile.deprecation}"
+               optimize="${compile.optimize}">
+           <classpath refid="api.classpath" />
+           <!-- <compilerarg value="-Xlint" /> -->
+	   <include name="net/es/oscars/**/*.java" />
+	   <exclude name="net/es/oscars/oscars/OSCARSSk*.java" />
+	   <exclude name="net/es/oscars/oscars/OSCARSM*.java" />
+	   <exclude name="net/es/oscars/oscars/ReservationAdapter.java" />
+    </javac>
+</target>
+
+
+<target name="wbui.clean" description="Delete wbui build directory">
+    <delete dir="${wbui.classes}" />
+    <delete dir="${wbui.home}/docs" />
+</target>
+
+
+<target name="wbui.war" description="Build war file for Tomcat deploy"
+        depends="wbui.compile">
+    <copy todir="${wbui.home}/docs">
+        <fileset dir="${devdir}/docs">
+            <include name="*.html" />
+            <include name="api/**/*" />
+            <include name="specs/*.html" />
+            <include name="papers/*.pdf" />
+        </fileset>
+    </copy>
+    <war destfile="${devdir}/OSCARS.war"
+         basedir="${wbui.home}" webxml="${wbui.home}/WEB-INF/web.xml">
+        <include name="*.html" />
+        <include name="images/*.*" />
+        <include name="**/*.css" />
+        <include name="**/*.ico" />
+        <include name="xml/*.xml" />
+        <include name="js/*.js" />
+        <include name="docs/**/*" />
+        <classes dir="${wbui.classes}" />
+        <classes dir="${src.home}">
+            <include name="**/*.hbm.xml" />
+        </classes>
+        <classes dir="${user.home}/oscars.config/conf/server">
+            <include name="sec-server.*" />
+        </classes>
+        <classes dir="${devdir}/conf/server">
+            <include name="log4j.properties" />
+            <include name="*.cfg.xml" />
+        </classes>
+        <lib dir="${devdir}/lib">
+            <include name="*.jar" />
+	    <include name="axis2/activation-1.1.jar" />
+	    <include name="axis2/mail-1.4.jar" />
+            <exclude name="servlet*.jar" />
+        </lib>
+    </war>
+</target>
+
+<!--   Targets for distribution -->
+
+<property name="clientDistDir" value="${api.build.home}/clientDist" />
+<property name="exampleSrc" value="${devdir}/examples/javaClients" />
+
+<target name="clientInit">
+    <echo>"Building the client.tar.gz file"</echo>
+    <mkdir dir="${clientDistDir}" />
+    <mkdir dir="${clientDistDir}/lib" />
+    <mkdir dir="${clientDistDir}/repo" />
+    <mkdir dir="${clientDistDir}/repo/modules" />
+</target>
+
+<target name="compile-stubs" depends="clientInit">
+    <javac sourcepath="" srcdir="${src.home}" destdir="${clientDistDir}">
+        <classpath refid="api.classpath" />
+        <include name="net/es/oscars/service/*.java" />
+        <include name="net/es/oscars/client/**/*.java" />
+        <include name="net/es/oscars/PropHandler.java" />
+        <include name="net/es/oscars/LogWrapper.java" />
+        <exclude name="net/es/oscars/service/*Skeleton*.java" />
+        <exclude name="net/es/oscars/service/*MessageReceiverInOut.java" />        
+        <exclude name="net/es/oscars/service/ReservationAdapter.java" />
+    </javac>
+</target>
+
+<target name="compile-examples" depends="compile-stubs">
+    <javac sourcepath="" srcdir="${exampleSrc}" destdir="${clientDistDir}">
+        <classpath refid="api.classpath" />
+    </javac>
+</target>
+
+<target name="clientDist"
+        description="Build tar file with all the pieces a remote client needs to access OSCARS"
+        depends="compile-examples">
+    <copy  todir="${clientDistDir}">
+        <fileset dir="${devdir}/conf/client">
+            <include name="log4j.properties" />
+            <include name="sec-client.properties" />
+            <include name="sec-client.jks" />
+        </fileset>
+        <fileset dir="${exampleSrc}">
+            <include name="*.csh" />
+        </fileset>
+    </copy>
+    <move file="${clientDistDir}/setclientcp.csh"
+          tofile="${clientDistDir}/setclasspath.csh" />
+    <copy  todir="${clientDistDir}/repo">
+        <fileset dir="${devdir}/conf/client">
+            <include name="axis2.xml" />
+            <include name="axis2_unsigned.xml" />
+        </fileset>
+    </copy>
+    <copy file="${exampleSrc}/repo/modules/rampart-1.0.mar"
+          todir="${clientDistDir}/repo/modules" />
+    <copy todir="${clientDistDir}/lib">
+        <fileset dir="${devdir}/lib" includes="*.jar" />
+    </copy>
+
+    <tar destfile="${api.build.home}/OSCARSClient.tar.gz" compression="gzip">
+        <tarfileset dir="${clientDistDir}" prefix="OSCARSClientDist">
+            <include name="**/*" />
+        </tarfileset>
+    </tar>
+</target>
+
+<target name="cleanClientDist">
+    <delete dir="${clientDistDir}" />
+</target>
+
+<!-- test target section -->
+
+<property name="test.home" value="${devdir}/test" />
+<property name="test.build" value="${test.home}/test.build" />
+<property name="test.build.classes" value="${test.build}/classes" />
+
+<condition property="test.core"><equals arg1="core" arg2="${t}" /></condition>
+
+<condition property="test.component">
+    <or> <equals arg1="aaa" arg2="${t}" />
+        <equals arg1="bss" arg2="${t}" />
+        <equals arg1="pss" arg2="${t}" />
+        <equals arg1="bss/topology" arg2="${t}" />
+        <equals arg1="bss/pathfinder" arg2="${t}" /> </or>
+</condition>
+
+<target name="test.clean" description="Delete test server build directory">
+    <delete dir="${test.build}" />
+</target>
+
+
+<path id="test.compile.classpath">
+    <path refid="api.classpath" />
+    <pathelement location="${api.build.classes}" />
+</path>
+
+<path id="test.classpath">
+    <path refid="test.compile.classpath" />
+    <pathelement location="${test.build.classes}" />
+    <pathelement location="${test.home}" />
+</path>
+
+
+<target name="test.prepare"> <mkdir dir="${test.build}" /> </target>
+
+<target name="test.compile" depends="api.compile, test.prepare"
+        description="Compile test cases">
+
+    <mkdir dir="${test.build.classes}" />
+    <javac sourcepath="" srcdir="${test.home}" destdir="${test.build.classes}"
+           debug="${compile.debug}" deprecation="${compile.deprecation}"
+           optimize="${compile.optimize}">
+        <classpath refid="test.compile.classpath" />
+        <include name="**/*.java" />
+    </javac>
+</target>
+
+<target name="test" depends="test.compile"
+        description="Run given server-side tests">
+
+    <copy  todir="${test.build.classes}">
+        <fileset dir="${src.home}" includes="**/*.hbm.xml" />
+        <fileset dir="${devdir}/conf/server"
+            includes="aaa.cfg.xml, bss.cfg.xml, log4j.properties" />
+    </copy>
+    <junit printsummary="yes" haltonfailure="yes" fork="yes">
+        <jvmarg value="-Djava.net.preferIPv4Stack=true" />
+        <formatter type="brief" />
+        <classpath refid="test.classpath" />
+        <batchtest todir="${test.home}">
+            <fileset dir="${test.home}">
+                <include if="test.component" name="**/${t}/AllTests.java" />
+                <include if="test.core" name="net/es/oscars/AllTests.java" />
+                <include unless="t" name="**/AllTests.java" />
+            </fileset>          
+        </batchtest>
+    </junit>
+    <fail message="Test failed!" if="test.failed" />
+</target>
+
+</project>

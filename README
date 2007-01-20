@@ -1,0 +1,42 @@
+OSCARS version 0.3
+===================
+
+DATE: October 30, 2006
+
+Material in this directory is for the Java port.
+
+Note that the oscars and topology databases must be set up correctly before
+oscars will work (ant task to be provided).
+
+The build.xml file uses properties from private/oscars.properties.  Test
+targets are contained in test/build.xml, and test properties in
+test/private/test.properties
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2006 by the Regents of the University
+of California.   Anyone may reproduce the software in this file,
+in whole or in part, provided that:
+
+(1)  Any copy or redistribution of this code must show the
+        Regents of the University of California, through its
+        Lawrence Berkeley National Laboratory, as the source, and must
+        include this notice;
+
+(2)  Any use of this software must state that the software
+        copyright is held by the Regents of the University of
+        California, and that the software is used by their permission.
+
+It is acknowledged that the U.S. Government has rights
+in this code under Contract DE-AC03-765F00098 between the U.S.
+Department of Energy and the University of California.
+
+This code is provided as a professional academic contribution
+for joint exchange.  Thus it is experimental, is provided ``as is'',
+with no warranties of any kind  whatsoever,
+no support, promise of updates, or printed documentation.
+The Regents of the University of California shall have no
+liability with respect to the infringement of copyrights by
+this code, or any part thereof.
+

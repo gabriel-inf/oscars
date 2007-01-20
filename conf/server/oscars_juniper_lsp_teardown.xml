@@ -1,0 +1,29 @@
+<configuration>
+    <protocols>
+        <mpls>
+            <label-switched-path delete="delete">
+                <name>user_var_name_user_var</name>
+            </label-switched-path>
+        </mpls>
+    </protocols>
+    <firewall>
+        <policer delete="delete">
+            <name>user_var_name_user_var</name>
+        </policer>
+        <family>
+            <inet>
+                <filter>
+                    <name>user_var_external_interface_filter_user_var</name>
+                    <term delete="delete">
+                    <name>user_var_name_user_var</name>
+                    </term>
+                </filter>
+            </inet>
+        </family>
+    </firewall>
+    <routing-instances>
+        <instance delete="delete">
+            <name>user_var_name_user_var</name>
+        </instance>
+    </routing-instances>
+</configuration>

@@ -1,2 +1,0 @@
-# Run the scheduler every minute
-00-59 * * * * /home/oscars/cron/scheduler.pl

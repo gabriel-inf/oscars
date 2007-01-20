@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<init>
+<titles>
+    <table id="pagetitle">
+      <tr>
+        <td>
+        <a href="http://www.internet2.edu/">
+          <img src="images/internet2_logo.png" width="73" height="58" 
+               border="0" alt="Internet2 logo" title="Internet 2" /></a>
+        </td>
+        <td>
+        <a href="http://www.es.net/">
+          <img src="images/ESnetLogo.png" width="77" height="58" 
+               border="0" alt="ESnet Logo" title="ESnet" /></a>
+        </td>
+        <td>
+          <h1>On-demand Secure Circuits and Advance Reservation System</h1>
+          <div>In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project</div>
+        </td>
+      </tr>
+    </table>
+</titles>
+
+<!-- Not sure these can be dynamically assigned; still in index.html -->
+<meta>
+    <title>On-demand Secure Circuits and Advance Reservation System</title>
+    <authors>
+        <author>David Robertson</author>
+        <author>Chin Guok</author>
+    </authors>
+    <keywords></keywords>
+    <description></description>
+</meta>
+
+<content>
+    <form id="AuthenticateUser" method="post" 
+          onsubmit="return submitForm(this, 'AuthenticateUser', '');">
+        <table>
+          <tr>
+            <th>Login Name:</th>
+            <td><input type="text" class="SOAP" name="userName" size="28" /></td>
+          </tr>
+          <tr>
+            <th>Password:</th>
+            <td>
+              <input type="password" class="SOAP" name="password" size="28" />
+            </td>
+          </tr>
+        </table>
+        <input type="submit" value="Sign in" size="16" />
+    </form>
+</content>
+
+<info>
+<div class="info">
+
+<p>Sign in via your
+<a href="/OSCARS/docs">OSCARS</a>
+login and password to access this system.  To obtain an account or request more 
+information, email one of the contacts below.</p>
+
+<p>NOTE: This page contacts the new Java port of the OSCARS server after you
+log in.  Please report any problems that you might encounter to
+<a href="mailto:DWRobertson@lbl.gov">David Robertson</a>.</p>
+
+</div>
+</info>
+
+<notices>
+    <p>
+        <a href="/OSCARS/docs">Documentation</a> |
+        <a href="http://www.es.net/">ESnet</a> |
+        <a href="http://www.lbl.gov/">Berkeley Lab</a> |
+        <a href="http://www.lbl.gov/Disclaimers.html">Notice to Users</a>
+    </p>
+    <p><strong>Contacts:</strong>
+        <a href="mailto:chin@es.net">Chin Guok</a>, 
+        <a href="mailto:DWRobertson@lbl.gov">David Robertson</a>
+    </p>
+</notices>
+
+</init>

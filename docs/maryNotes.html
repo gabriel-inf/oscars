@@ -1,0 +1,90 @@
+<html>
+<body>
+<pre>
+Create Project 
+File ->  new -> other -> SVN check out project
+     select repository location https://oscars-test.es.net/repos/oscars/branches
+check out as project to be configured by project wizard
+Project wizard lets you pick a project name
+  source files and build files can be chosen later using the project->properties-> build path
+`
+  Java Project, Set Java VM (1.5)
+    separate src and build directories
+       rename the bin dir to build
+
+Add libraries:
+  project -> properties -> java build path -> Libaries ->  add library
+    user library ->  new -> name, system library, add jars 
+
+run axis2 WSDL2Java
+file -> new ->other -> Axis2Wizards Axis2 Code Generator
+   select wsdl file, ->  next
+   chose server-side, client-side, skeleton, default services.xml
+    generate sync style only
+    changed custom package name from net.es.oscars.oscars to .../OSCARS
+   -> next  select the project for the generate code - OSCARS2
+  -> finish  generating code
+NB: this does not regenerate the OSCARSSkeleton.java,
+	OSCARSMessageReceiverInOut, OSCARSStub,OSCARSSkeletonInterface.java 
+    or the resources/OSCARS.wsdl, services.xml
+  if any of these files already exist. 
+
+Copied some of the axis2 jar files in lib-axis2
+  project -> properties -> java build path -> add library
+   defined axis2, then added jars to it.
+
+Tried data binding none and xmlbeans
+   Only creates four files: Skeleton, service stub MessageReceiverInOut
+   Uses org.apache.axion.om.OMElement classes for the params.
+   xmlbeans gives three times as many classes foo, fooImpl, fooDocument, 
+   fooDocumentImpl
+ 
+Using the ADB data binding I now accept a CreateReservation instead of
+a ResCreateContent, and return a CreateReservationResponse instead of
+a CreateReply.  Question = Does the message on the wire look different?
+
+Create a jar file of all the classes needed for the service + the directory
+META-INF with services.xml and a copy of OSCARS.wsdl
+ In the package explorer page  File->Export -> Java -> jar file
+ selected class and resource files. Note services.xml is created by the
+axis code generator wsdl2java in the
+resources directory but it wants to be in the META-INF directory in the jar
+file. It also creates a OSCARSService.wsdl file there.
+Copy and rename the jar file to webapps/axis2/WEB-INF/services/OSCARS.aar
+
+while deploying changed the axis2 admin user to mrt, axis2admin. The page 
+lets you upload files among other things.
+
+Trying to get CancelReservationClient to run
+
+Command line:
+  run OSCARS2/setClassPath. set path to everything in lib,lib2, src and build
+Fails with
+   OSCARSService cannot be resolved to a tyoe
+   same for OSCARSServiceStub and OSCARS
+
+
+Eclipse
+   click on the CancelReservationClient.class file and chose run
+  class not found org.apache.axis2.client.stub  Is isn axis2-kernel.jar
+  which is on the project build path. Don't know what eclipse is using for 
+  a run path.
+
+
+Ant
+  Set classpath in my build.xml
+     First could not find org.apache.ws.policy.Assertion
+       Downloaded policy-1.0.jar from apache/commons/ws-policy
+    Second could not find HttpException
+       copied commons-httpclient-3.0.jar from package/axis2/lib to
+       OSCARS2/lib2
+   Third can't find  org/apache/ws/commons/om/OMContainer
+      Version skew between Axis 1.4 and 2.0
+   finally copied over all the jar files from axis2. 
+   Then it worked "got could not connect to server"
+
+Need to fix OSCARS.wsdl to point to http://localhost:9090 and try again
+Now gets to the server who returns "Service not found operation terminated"
+</pre>
+</body>
+</html>
