@@ -11,18 +11,14 @@ public class PropHandlerTest extends TestCase {
     }
         
     public void testLoad() {
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/oscars.properties");
-        Properties props =
-            propHandler.getPropertyGroup("reservation", true);
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("reservation", true);
         Assert.assertNotNull(props);
     }
 
     public void testGetProperty() {
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/test.properties");
-        Properties props = propHandler.getPropertyGroup("test.bss",
-                                                        true);
+        PropHandler propHandler = new PropHandler("test.properties");
+        Properties props = propHandler.getPropertyGroup("test.bss", true);
         Assert.assertNotNull(props.getProperty("domainName"));
     }
 }

@@ -23,8 +23,7 @@ public class JnxLSPTest extends TestCase {
     }
 
     public void setUp() {
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/test.properties");
+        PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.pss", true);
         this.jlsp = new JnxLSP();
         this.testHM = build_hash();
@@ -56,7 +55,7 @@ public class JnxLSPTest extends TestCase {
 
         hm.put("user", this.props.getProperty("user"));
         hm.put("passphrase",this.props.getProperty("passphrase"));
-        String keyfile = System.getProperty("user.home") + "/oscars.config/keys/pss_key";
+        String keyfile = System.getenv("OSCARS_HOME") + "/conf/private/server/pss_key";
         hm.put("keyfile", keyfile);
         hm.put("host", this.props.getProperty("host"));
         hm.put("user", this.props.getProperty("user"));

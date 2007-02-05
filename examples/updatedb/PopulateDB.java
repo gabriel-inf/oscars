@@ -12,51 +12,66 @@ import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.*;
 import org.hibernate.*;
 
-
-
 public class PopulateDB {
 
-    /* comman line arg later */
-    //private static String dName = "/var/tmp/oo";
-    private static String dName = "/var/tmp/ifrefpoll";
+    private static String dName = null;
     private static Properties props;
     private static Session session;
+    private static boolean dryrun = false;
+    private static boolean verbosity;
 
-    public static void main(String[] args) {
+    public static void main(String[] argv) 
+    {
 
-        System.out.println("Start initalization");
+        int optind;
+        String usage = "updatedb [-v] [-d] -f /path/to/files";
 
-        if (args.length == 0) {
-            System.out.println("You must specify the directory with" + 
-                " the router.out files in it");
-            return;
-        } 
+        for (optind = 0; optind < argv.length; optind++) {
+            if (argv[optind].equals("-d")) {
+                dryrun = true;
+            } else
+                if (argv[optind].equals("-f")) {
+                    dName = argv[++optind];
+                } else
+                    if (argv[optind].equals("-v")) {
+                        verbosity = true;
+                        } else
+                            if (argv[optind].startsWith("-")) {
+                                System.out.println("" + usage);
+                                System.out.println("-- Invalid option " + argv[optind]);
+                                System.exit(1);
+                            } else {
+                                break;
+                            }
+        }
 
-        dName = args[0] ;
+        if (dName == null) {
+            System.out.println(usage);
+            System.exit(1);
+        }
 
-        PropHandler propHandler = new PropHandler(
-            "/oscars.config/properties/oscars.properties");
+        PropHandler propHandler = new PropHandler("oscars.properties");
 
         Initializer initializer = new Initializer();
         initializer.initDatabase();
-
-        System.out.println("Starting update.");
 
         List<Router> db_rlist = null;
         List<Router> file_rlist = null;
         List<Path> db_plist;
         List<Path> file_plist;
 
-        // should be dbUpdater and fileUpdater
+        // setup the classes 
         TopologyFiles topo_files = new TopologyFiles();
         TopologyDB topo_db = new TopologyDB();
 
+        System.out.println("Getting db entries...");
         db_rlist = topo_db.topologyFromDB();
         db_plist = topo_db.getPaths();
 
         System.out.println("Got all lists from db");
         System.out.println("Loading DB done.");
      
+        System.out.println("Getting entires from files.");
         // create the local topology
         try {
             file_rlist = topo_files.constructTopology(dName);
@@ -65,12 +80,17 @@ public class PopulateDB {
             System.out.println("Unknown exception: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("Loading files done.");
+
+        if (verbosity)
+            System.out.println("Loading files done.");
+
+        if (verbosity)
+            System.out.println("Starting to map");
 
         /* remap the paths file */
         for (Path p : db_plist ) {
-            Ipaddr ipad = p.getIpaddr();
 
+            Ipaddr ipad = p.getIpaddr();
             Integer old_ipId = ipad.getId();
             String ipString = ipad.getIp();
             Integer ipId = topo_db.findIp(ipString); 
@@ -83,9 +103,17 @@ public class PopulateDB {
             if (ipId != old_ipId) {
                 Ipaddr new_ipaddr = topo_files.getIpAddr(ipString);
                 p.setIpaddr(new_ipaddr);
+                if (verbosity) {
+                    System.out.println("Mapping " + ipString + " " + ipad + " to " + new_ipaddr.toString() );
+                }
             }
         }
         System.out.println("Finished updating paths.");
+
+        if (dryrun) {
+            System.out.println("Finished dryrun mode, exiting...");
+            System.exit(1);
+        }
 
         topo_db.removeOldRouters();
 

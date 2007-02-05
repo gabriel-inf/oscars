@@ -60,18 +60,21 @@ public class PathManager {
             ipaddrs = this.getIpaddrs(currPath);
             this.addPathBandwidths(ipaddrs, xfaceSums);
         }
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/oscars.properties");
+        PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("reservation", true);
         maxPercentUtilization = Double.valueOf(props.getProperty("maxPercentUtilization"));
 
         // now for each of those interface instances
         for (Interface xface: xfaceSums.keySet()) {
-            if (xface.getSpeed() == 0) { continue; }
+            Long speed = xface.getSpeed();
+            if (speed == null) {
+                continue; 
+            }
+
             maxUtilization = xface.getSpeed() * maxPercentUtilization;
             if (((Long)xfaceSums.get(xface)) > maxUtilization) {
                 throw new BSSException(
-                      "Router oversubscribed:  " + xfaceSums.get(xface) +
+                      "Router (" + xface.getId() + ") oversubscribed:  " + xfaceSums.get(xface) +
                       " bps > " + maxUtilization + " bps");
             }
         }
@@ -109,7 +112,8 @@ public class PathManager {
     }
 
     public Path getPath(List<String> hops,
-                        String ingressIP, String egressRouterIP) {
+                        String ingressIP, String egressRouterIP) 
+                        throws net.es.oscars.bss.BSSException {
 
         List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
         Path path = null;
@@ -126,6 +130,7 @@ public class PathManager {
         for (String hop: hops) {
             ipaddrs.add(ipaddrDAO.queryByParam("ip", hop));
         }
+
         // check to make sure path is not already in the database
         Path currentPath = (Path)
                      pathDAO.queryByParam("ipaddrId", ipaddrs.get(0).getId());
@@ -152,7 +157,10 @@ public class PathManager {
         }
         if (!samePath) {
             path = pathDAO.create(ipaddrs, ingressIP, egressRouterIP);
-        } else { path = currentPath; }
+        } else { 
+            path = currentPath; 
+        }
+
         return path;
     }
 
@@ -253,7 +261,6 @@ public class PathManager {
 
         Ipaddr ipaddr;
         String ingressLoopbackIp = "";
-        String loopbackFound = "";
 
         Session session = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
@@ -262,10 +269,13 @@ public class PathManager {
         IpaddrDAO ipaddrDAO = new IpaddrDAO();
         ipaddrDAO.setSession(session);
         for (String hop: hops)  {
+            this.log.info("hop: ", hop);
+            String loopbackFound = "";
             Router router = routerDAO.fromIp(hop);
             if ((router != null) && (router.getName() != null)) {
                 loopbackFound = ipaddrDAO.getIpType(router.getName(), "loopback");
             }
+
             if (!loopbackFound.equals("")) { ingressLoopbackIp = hop; }
         }
         if (ingressLoopbackIp.equals("")) { 

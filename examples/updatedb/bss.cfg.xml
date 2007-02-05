@@ -8,7 +8,7 @@
         <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
         <property name="connection.driver_class">com.mysql.jdbc.Driver
         </property>
-        <property name="connection.url">jdbc:mysql://foobar.lbl.gov/bss</property>
+        <property name="connection.url">jdbc:mysql:///bss</property>
 
         <property name="query.substitutions">yes 'Y', no 'N'</property>
         <!-- XXX: add these jrl -->

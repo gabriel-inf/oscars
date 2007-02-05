@@ -1,19 +1,19 @@
 <project name="javaClients" default="compile" basedir=".">
 
-<property name="build" location="../build.examples" />
+<property name="build" location="../../build/examples" />
 <property name="lib" location="../../lib" />
 <property name="repo" location="./repo" />
 <property name="src" location="../../src" />
-<property name="private" location="${user.home}/oscars.config/conf/client" />
-<property name="public" location="../../conf" />
-<property name="public.client" location="../../conf/client" />
+<property name="private" location="../../conf/private/client" />
+<property name="public" location="../../conf/public" />
+<property name="public.client" location="../../conf/public/client" />
 <property name="url"
           value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
 
 
-<path id="classpath">
-    <fileset dir="${lib}/axis2"> <include name="*.jar" /> </fileset>
-    <fileset dir="${lib}"> <include name="*.jar" /> </fileset>
+<path id="client.path">
+    <fileset dir="${lib}/axis2" includes="*.jar" />
+    <fileset dir="${lib}" includes="*.jar" />
     <pathelement location="${build}/classes" />
     <pathelement location="." />
 </path>
@@ -25,29 +25,26 @@
 <target name="copyprivate" depends="checkprivate" if="private.exists">
     <!-- Copy private material to repo -->
     <copy todir="${repo}" overwrite="true">
-        <fileset dir="${private}"> <include name="*.*" /> </fileset>
+        <fileset dir="${private}" includes="*.*" />
     </copy>
 </target>
 
 <target name="prepare">
-    <mkdir dir="${repo}" />
     <mkdir dir="${repo}/modules" />
-    <mkdir dir="${build}" />
     <mkdir dir="${build}/classes" />
     <!-- Copy public material to repo -->
     <copy todir="${repo}">
-        <fileset dir="${public.client}"> <include  name="*.*" /> </fileset>
+        <fileset dir="${public.client}" includes="*.*" />
     </copy>
     <copy todir="${repo}/modules">
-        <fileset dir="${public}"> <include  name="*rampart-1.1*.mar" />
-        </fileset>
+        <fileset dir="${public}" includes="*rampart-1.1*.mar" />
     </copy>
 
 </target>
 
 <target name="compile-stubs" depends="prepare">
-    <javac sourcepath="" srcdir="${src}" destdir="${build}/classes">
-        <classpath refid="classpath" />
+    <javac srcdir="${src}" destdir="${build}/classes">
+        <classpath refid="client.path" />
         <include name="net/es/oscars/oscars/OSCARSStub.java" />
         <include name="net/es/oscars/oscars/*FaultMessageException.java" />
         <include name="net/es/oscars/oscars/ExtensionMapper.java" />
@@ -59,21 +56,18 @@
 </target>
 
 <target name ="compile" depends="compile-stubs, copyprivate">
-    <javac classpathref="classpath" srcdir="." destdir="${build}/classes" />
+    <javac classpathref="client.path" srcdir="." destdir="${build}/classes" />
     <!-- Copy application resources -->
     <copy  todir="${build}/classes">
-        <fileset dir="${repo}">
-            <include name="log4j.properties" />
-            <include name="sec-client.properties" />
-            <include name="sec-client.jks" />
-        </fileset>
+        <fileset dir="${repo}"
+           includes="log4j.properties, sec-client.properties, sec-client.jks" />
     </copy>
 </target>
 
 <!-- create reservation test -->
 <target name="createRes" depends="compile">
     <java classname="CreateReservationClient"
-            classpathref="classpath" fork="true">
+            classpathref="client.path" fork="true">
            <arg value="${repo}" />
         <arg value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
     </java>
@@ -91,7 +85,7 @@
           unless="params.ok" />
 
     <java classname="CancelReservationClient"
-              classpathref="classpath" fork="true">
+              classpathref="client.path" fork="true">
         <arg line="${repo} ${url} ${tag}" />
     </java>
 </target>
@@ -106,7 +100,7 @@
     </condition>
     <fail message="Please set the resTag parameter. Usage: CancelReservationClientt [-Durl=&lt;url&gt;] -Dtag=&lt;tag&gt;"
           unless="params.ok" />
-    <java classname="QueryReservationClient" classpathref="classpath"
+    <java classname="QueryReservationClient" classpathref="client.path"
             fork="true">
         <arg line="${repo} ${url} ${tag}" />
     </java>
@@ -114,7 +108,7 @@
 
 <!-- List Reservations test -->
 <target name="listRes" depends="compile">
-    <java classname="ListReservationsClient" classpathref="classpath"
+    <java classname="ListReservationsClient" classpathref="client.path"
               fork="true">
         <arg line="${repo} ${url}" />
     </java>
@@ -122,58 +116,16 @@
 
 <!-- forward -->
 <target name="forward" depends="compile">
-    <java classname="ForwardClient" classpathref="classpath" fork="true">
+    <java classname="ForwardClient" classpathref="client.path" fork="true">
         <arg value="${repo}" />
         <arg value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
         <arg value="false" />
     </java>
 </target>
 
-<!-- Test Input -->
-<target name="testInput" depends="compile">
-    <java classname="TestInput" classpathref="classpath">
-        <arg value="${repo}" />
-        <arg value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
-    </java>
-</target>
-
 <target name="clean" description="Delete old build directory">
     <delete dir="${build}" />
     <delete dir="${repo}" />
-</target>
-
-<!-- Automated tests section -->
-
-<property name="test.home" location="${basedir}/test" />
-<property name="test.build" location="${test.home}/build" />
-
-<target name="test.compile" depends="compile"
-        description="Compile automated test cases">
-
-    <mkdir dir="${test.build}" />
-    <javac sourcepath="" srcdir="${test.home}" destdir="${test.build}">
-        <classpath refid="classpath" />
-	<include name="${test.home}/**/*.java" />
-    </javac>
-</target>
-
-<target name="test" depends="test.compile"
-        description="Run automated client-side tests">
-
-    <junit printsummary="yes" haltonfailure="yes">
-        <sysproperty key="oscars.properties.file"
-            value="${user.home}/oscars.config/properties/oscars.properties" />
-        <sysproperty key="test.properties.file"
-            value="${user.home}/oscars.config/properties/test.properties" />
-        <formatter type="brief" />
-        <classpath refid="classpath" />
-        <batchtest todir="${basedir}">
-            <fileset dir="${test.home}">
-                <include name="**/AllTests.java" />
-            </fileset>          
-        </batchtest>
-    </junit>
-    <fail message="Test failed!" if="test.failed" />
 </target>
 
 </project>

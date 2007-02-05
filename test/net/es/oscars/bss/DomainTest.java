@@ -23,8 +23,7 @@ public class DomainTest extends TestCase {
 
     public DomainTest(String name) {
         super(name);
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/test.properties");
+        PropHandler propHandler = new PropHandler("test.properties");
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         this.props = propHandler.getPropertyGroup("test.bss", true);

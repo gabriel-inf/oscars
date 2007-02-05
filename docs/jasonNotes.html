@@ -1,0 +1,18 @@
+<html>
+
+
+    To update the DB for oscars:
+
+        <li> Go to nettrash3.es.net
+        <li> Change to /usr/stats/data/today/ifrefpoll
+        <li> Copy all those files to the machine that
+             you are going to run updatedb on:
+
+         (mkdir /tmp/buzz; cd /tmp/buzz; scp 'nettrash3.es.net:/usr/stats/data/today/ifrefpoll/*' . )
+
+        <li> change directory to $OSCARS_HOME/examples/updatedb 
+        <li> run the update command with the directory you copied
+             the files into
+
+        (cd $OSCARS_HOME/examples/updatedb ; ./populatedb.sh -f /tmp/buzz)
+</html>

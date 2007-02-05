@@ -24,8 +24,7 @@ public class ReservationManagerTest extends TestCase {
 
     public ReservationManagerTest(String name) {
         super(name);
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/test.properties");
+        PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
         Initializer initializer = new Initializer();
         initializer.initDatabase();

@@ -18,6 +18,7 @@ public class JnxTraceroute {
     private ArrayList<String> rawHopData;
     private ArrayList<String> hops;
     private Properties props;
+    private LogWrapper log;
 
     /**
      * Contructor for JnxTraceroute.
@@ -25,8 +26,8 @@ public class JnxTraceroute {
     public JnxTraceroute() {
         this.rawHopData = new ArrayList<String>();
         this.hops = new ArrayList<String>();
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/oscars.properties");
+        this.log = new LogWrapper(this.getClass());
+        PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("trace", true);
     }
 
@@ -53,8 +54,8 @@ public class JnxTraceroute {
 
         // remove subnet mask if necessary,  e.g. 10.0.0.0/8 => 10.0.0.0
         dst = dst.replaceAll("/\\d*", "");
-        String jnxKey = System.getProperty("user.home") +
-                        "/oscars.config/keys/oscars.key";
+        String jnxKey = System.getenv("OSCARS_HOME") +
+                        "/conf/private/server/oscars.key";
 
         // prepare traceroute command
         cmd = "ssh -x -a -i " + jnxKey + " -l " + 
@@ -63,6 +64,7 @@ public class JnxTraceroute {
                    " ttl " + this.props.getProperty("ttl");
         //cmd = "traceroute " + dst;
 
+        this.log.info("traceroute", cmd);
         // run traceroute command
         Process p = Runtime.getRuntime().exec(cmd);
         BufferedReader tracerouteOuput = 

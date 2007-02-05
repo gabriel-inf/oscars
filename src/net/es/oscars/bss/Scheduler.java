@@ -189,7 +189,7 @@ public class Scheduler {
         // TODO:  check values
         lspInfo.put("user", "jason");
         lspInfo.put("host", "dev-m20-rt1.es.net");
-        String keyfile = System.getProperty("user.home") + "/oscars.config/keys/pss_key";
+        String keyfile = System.getenv("OSCARS_HOME") + "/conf/private/server/pss_key";
         lspInfo.put("keyfile", keyfile);
         lspInfo.put("passphrase", "passphrase");
 

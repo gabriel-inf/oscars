@@ -33,12 +33,11 @@ public class ExampleClient {
 				url= args[1];
 				url = Args.getArg(br, "Requested service URL", url);
 			} else {
-				PropHandler propHandler = new PropHandler(
-						"/oscars.config/properties/test.properties");
+        PropHandler propHandler = new PropHandler("test.properties");
 				Properties clientProps = propHandler.getPropertyGroup(
 						"test.client", true);
 				this.props = propHandler.getPropertyGroup("test.bss", true);
-				repo = clientProps.getProperty("repo");
+				repo = "../" + clientProps.getProperty("repo");
 				url = clientProps.getProperty("url");
 			}
 			System.out.println("Service URL is: " + url);

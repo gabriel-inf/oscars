@@ -1,3 +1,5 @@
+package net.es.oscars.bss;
+
 import java.util.*;
 import java.io.*;
 import java.lang.Throwable;
@@ -6,12 +8,8 @@ import org.hibernate.*;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
-import net.es.oscars.bss.Scheduler;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.BSSException;
-
 /**
- * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
+ * @author Jason Lee (jrlee@lbl.gov), David Robertson (dwrobertson@lbl.gov)
  */
 
 public class LSPScheduler {

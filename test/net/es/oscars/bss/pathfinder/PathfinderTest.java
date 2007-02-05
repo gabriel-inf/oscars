@@ -30,8 +30,7 @@ public class PathfinderTest extends TestCase {
     protected void setUp() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/test.properties");
+        PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss.topology.pathfinder", true);
     }
 

@@ -19,8 +19,7 @@ public class Notifier {
     private List<String> sysadmins;
 
     public Notifier() {
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/oscars.properties");
+        PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("mail", true);
         // fill props with any information
         this.session = Session.getDefaultInstance(props, null);

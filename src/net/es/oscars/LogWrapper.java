@@ -17,7 +17,6 @@ public class LogWrapper {
      * @param classObj class of invoker
      */
     public LogWrapper(Class classObj) {
-//        PropertyConfigurator.configure("log4j.properties");
         this.log = Logger.getLogger(classObj);
         this.className = classObj.getName();
     }

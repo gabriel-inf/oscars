@@ -21,8 +21,7 @@ public class UserManager {
     
     public UserManager() {
         this.log = new LogWrapper(getClass());
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/oscars.properties");
+        PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("aaa", true);
         this.salt = props.getProperty("salt");
     }

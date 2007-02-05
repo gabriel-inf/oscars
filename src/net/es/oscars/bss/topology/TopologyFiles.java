@@ -153,8 +153,8 @@ public class TopologyFiles {
         String snmpVar = null;
         String snmpValue = null;
         String mplsLoopback = null;
-        Long speed = null;
-        Long highSpeed = null;
+        Long speed = 0L;
+        Long highSpeed = 0L;
         int lineNumber = 0;
         boolean valid = false;
 
@@ -176,7 +176,7 @@ public class TopologyFiles {
         routersList.add(router);
 
         pattern = Pattern.compile("([\\w]*)\\.{1}(.*)");
-        loopbackPattern = Pattern.compile("134\\.55\\.75\\.*");
+        loopbackPattern = Pattern.compile("134\\.55\\.75\\..*");
 
 
         // construct the full path
@@ -229,15 +229,21 @@ public class TopologyFiles {
                 xface = xfaces.get(snmpValue);
                 xface.setAlias(dataString);
             } else if (snmpVar.equals("ifSpeed")) {
-                speed = Long.parseLong(dataString);
-                if (speed == 0) { continue; }
                 xface = xfaces.get(snmpValue);
+                speed = Long.parseLong(dataString);
+                if (speed == 0) { 
+                    xface.setSpeed(speed);
+                    continue; 
+                }
                 // note this may be overwritten in ifHighSpeed section
                 xface.setSpeed(speed);
             } else if (snmpVar.equals("ifHighSpeed")) {
                 highSpeed = Long.parseLong(dataString);
-                if (highSpeed == 0) { continue; }
                 xface = xfaces.get(snmpValue);
+                if (highSpeed == 0) { 
+                    xface.setSpeed(highSpeed);
+                    continue; 
+                }
                 speed = xface.getSpeed();
                 if (speed < (highSpeed * 1000000)) {
                     xface.setSpeed(highSpeed * 1000000);
@@ -251,8 +257,12 @@ public class TopologyFiles {
 
                 loopbackMatcher = loopbackPattern.matcher(snmpValue);
 
+                //System.out.println("snmpvalue ["+snmpValue+"]");
+
                 if (loopbackMatcher.matches()) {
+                    //System.out.println("Setting loopback for " + snmpValue);
                     mplsLoopback = snmpValue;
+                    ipaddr.setDescription("loopback");
                 }
 
                 ipaddrsList.add(ipaddr);

@@ -51,8 +51,7 @@ public class JnxLSP {
     private Properties props;
 
     public JnxLSP() {
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/oscars.properties");
+        PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("pss", true);
     }
 
@@ -633,8 +632,9 @@ public class JnxLSP {
      */
     private boolean createLSP(Map hm, OutputStream out) 
             throws BSSException {
-        //String lsp_setup = "oscars_juniper_lsp_setup.xml";
-        String lsp_setup = this.props.getProperty("setupFile");
+        String lsp_setup =  System.getenv("OSCARS_HOME") +
+                this.props.getProperty("setupFile");
+
         Document doc = null;
 
         try {
@@ -679,7 +679,9 @@ public class JnxLSP {
     public boolean destroyLSP(Map hm, OutputStream out) 
             throws BSSException {
 
-        String lsp_teardown = this.props.getProperty("teardownFile");
+        String lsp_teardown = System.getenv("OSCARS_HOME") +
+                this.props.getProperty("teardownFile");
+
         Document doc = null;
 
         try {

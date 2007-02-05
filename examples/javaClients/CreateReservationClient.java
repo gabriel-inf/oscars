@@ -112,9 +112,7 @@ public class CreateReservationClient extends ExampleClient {
     public ResCreateContent readProperties() {
         ResCreateContent content = new ResCreateContent();
 
-        PropHandler propHandler = new PropHandler(
-                        "/oscars.config/properties/test.properties");
-
+        PropHandler propHandler = new PropHandler("test.properties");
         Properties clientProps = propHandler.getPropertyGroup(
                         "test.client", true);
 

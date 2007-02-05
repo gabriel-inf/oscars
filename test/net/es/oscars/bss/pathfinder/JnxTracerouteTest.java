@@ -23,8 +23,7 @@ public class JnxTracerouteTest extends TestCase {
     }
 
     public void setUp() {
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/test.properties");
+        PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss.JnxTraceroute", true);
     }
 

@@ -25,8 +25,7 @@ public class IpaddrTest extends TestCase {
         super(name);
         Initializer initializer = new Initializer();
         initializer.initDatabase();
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/test.properties");
+        PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
     }
 

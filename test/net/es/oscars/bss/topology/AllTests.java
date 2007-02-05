@@ -20,10 +20,10 @@ public class AllTests {
         suite.addTest(new IpaddrTest("testQuery"));
         suite.addTest(new IpaddrTest("testList"));
         suite.addTest(new IpaddrTest("testGetIpType"));
-        //suite.addTest(new PathTest("testCreate"));
-        //suite.addTest(new PathTest("testQuery"));
-        //suite.addTest(new PathTest("testList"));
-        //suite.addTest(new PathTest("testRemove"));
+        suite.addTest(new PathTest("testCreate"));
+        suite.addTest(new PathTest("testQuery"));
+        suite.addTest(new PathTest("testList"));
+        suite.addTest(new PathTest("testRemove"));
         suite.addTest(new RouterTest("testRemove"));
         suite.addTest(new IpaddrTest("testCascadingDelete"));
         suite.addTest(new InterfaceTest("testCascadingDelete"));

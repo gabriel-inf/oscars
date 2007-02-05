@@ -14,7 +14,8 @@ public class PropHandler {
     private String propertiesFile;
 
     public PropHandler(String fname) {
-        this.propertiesFile = System.getProperty("user.home") + fname;
+        this.propertiesFile = System.getenv("OSCARS_HOME") +
+            "/conf/private/server/" + fname;
     }
 
     /**
@@ -22,7 +23,7 @@ public class PropHandler {
      *
      * @param groupName A string with the name of the prefix
      * @return properties Properties from
-     *     ${HOME}/oscars.config/properties/oscars.properties
+     *     $OSCARS_HOME/conf/private/server/oscars.properties
      */
     public Properties getPropertyGroup(String groupName,
                                        boolean stripPrefix) {

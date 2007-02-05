@@ -32,8 +32,7 @@ public class JnxSNMP {
      * Constructor.
      */
     public JnxSNMP() throws IOException {
-        PropHandler propHandler =
-            new PropHandler("/oscars.config/properties/oscars.properties");
+        PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("snmp", true);
         this.lspInfo = new HashMap<String, Variable>();
         this.lsp = new HashMap();

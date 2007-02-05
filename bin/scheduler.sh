@@ -42,7 +42,7 @@ export OSCARS_CLASSPATH=$OSCARS_CLASSPATH
 export CLASSPATH=$CLASSPATH
 
 #echo CLASSPATH is $CLASSPATH
-export CLASSPATH=$CLASSPATH:${OSCARS_HOME}/api.build/WEB-INF/classes
+export CLASSPATH=$CLASSPATH:${OSCARS_HOME}/build/WEB-INF/classes
 
 unset scheduler_debug
 
@@ -64,10 +64,10 @@ if ! [ -z "${scheduler_debug}" ];  then
     # back up log file
     mv -f /tmp/scheduler.log /tmp/scheduler.log.bak > /dev/null 2>&1
     # start up logging to file in /tmp
-    java -Djava.net.preferIPv4Stack=true LSPScheduler $* > /tmp/jscheduler.log 2>&1
+    java -Djava.net.preferIPv4Stack=true net.es.oscars.bss.LSPScheduler $* > /tmp/jscheduler.log 2>&1
 else
     # start normally
-    java -Djava.net.preferIPv4Stack=true LSPScheduler $* > /dev/null 2>&1 
+    java -Djava.net.preferIPv4Stack=true net.es.oscars.bss.LSPScheduler $* > /dev/null 2>&1 
 fi
 
 exit 1

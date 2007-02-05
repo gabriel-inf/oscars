@@ -29,8 +29,7 @@ public class HibernateUtil {
      */
     public static void initSessionFactories(ClassLoader CL) {
         try {
-            PropHandler propHandler =
-                new PropHandler("/oscars.config/properties/oscars.properties");
+            PropHandler propHandler = new PropHandler("oscars.properties");
             if (propHandler == null) {
                 throw new ExceptionInInitializerError(
                             "Could not find properties file");

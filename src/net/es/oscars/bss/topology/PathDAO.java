@@ -1,6 +1,7 @@
 package net.es.oscars.bss.topology;
 
 import java.util.*;
+import net.es.oscars.bss.BSSException;
 
 import net.es.oscars.database.GenericHibernateDAO;
 
@@ -19,7 +20,7 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
      * @return path beginning path instance
      */
     public Path create(List<Ipaddr> ipaddrs,
-                       String ingressRouter, String egressRouter) {
+                       String ingressRouter, String egressRouter) throws BSSException {
 
         List<Path> paths = new ArrayList<Path>();
         Path path = null;
@@ -28,6 +29,10 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
 
         // Fill in Path instance information given list of Ipaddr instances
         for (Ipaddr ipaddr: ipaddrs) {
+            if ( ipaddr == null ) { 
+                throw new BSSException("Unknown router in path: " 
+                + ipaddr.getIp());
+            }
             addr = ipaddr.getIp();
             path = new Path();
             if (addr.equals(ingressRouter)) {
@@ -38,6 +43,7 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
             path.setIpaddr(ipaddr);
             paths.add(path);
         }
+
         ctr = paths.size() - 1;
         for (int i = 0; i < ctr; i++) {
             path = paths.get(i);
@@ -45,6 +51,7 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
         }
         path = paths.get(0);
         this.makePersistent(path);
+
         return path;
     }
     
