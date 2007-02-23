@@ -291,7 +291,7 @@
                     if (!"resTag".equals(type)){
                         //find namespace for the prefix
                         java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                        return (ResTag)net.es.oscars.oscars.ExtensionMapper.getTypeObject(
+                        return (ResTag)net.es.oscars.wsdlTypes.ExtensionMapper.getTypeObject(
                              nsUri,type,reader);
                       }
 

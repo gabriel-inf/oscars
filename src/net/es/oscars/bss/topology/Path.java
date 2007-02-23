@@ -30,26 +30,22 @@ public class Path implements Serializable {
     public Path() { }
 
     /**
-     * Auto generated getter method.
      * @return id primary key in the paths table
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method
      * @param id primary key in the paths table
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method.
      * @return addressType a string with this path element's address type
      */ 
     public String getAddressType() { return this.addressType; }
 
     /**
-     * Auto generated setter method.
      * @param addressType a string with this path element's address type
      */ 
     public void setAddressType(String addressType) {
@@ -58,26 +54,22 @@ public class Path implements Serializable {
 
 
     /**
-     * Auto generated getter method.
      * @return nextPath a path with the next path element (uses association)
      */ 
     public Path getNextPath() { return this.nextPath; }
 
     /**
-     * Auto generated setter method.
      * @param nextPath a path with the next path element (uses association)
      */ 
     public void setNextPath(Path nextPath) { this.nextPath = nextPath; }
 
 
     /**
-     * Auto generated getter method.
      * @return ipaddr ipaddr instance associated with this path instance
      */ 
     public Ipaddr getIpaddr() { return this.ipaddr; }
 
     /**
-     * Auto generated setter method.
      * @param ipaddr ipaddr instance associated with this path instance
      */ 
     public void setIpaddr(Ipaddr ipaddr) { this.ipaddr = ipaddr; }

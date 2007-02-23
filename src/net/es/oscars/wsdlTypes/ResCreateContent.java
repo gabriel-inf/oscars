@@ -1159,7 +1159,7 @@
                     if (!"resCreateContent".equals(type)){
                         //find namespace for the prefix
                         java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                        return (ResCreateContent)net.es.oscars.oscars.ExtensionMapper.getTypeObject(
+                        return (ResCreateContent)net.es.oscars.wsdlTypes.ExtensionMapper.getTypeObject(
                              nsUri,type,reader);
                       }
 

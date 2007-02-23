@@ -30,39 +30,33 @@ public class Ipaddr implements Serializable {
     public Ipaddr() { }
 
     /**
-     * Auto generated getter method.
      * @return id primary key in the ipaddrs table
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method.
      * @param id primary key in the ipaddrs table
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method.
      * @return ip a string with the IP address
      */ 
     public String getIp() { return this.ip; }
 
     /**
-     * Auto generated setter method.
      * @param ip a string with the IP address
      */ 
     public void setIp(String ip) { this.ip = ip; }
 
 
     /**
-     * Auto generated getter method.
      * @return description a string with this address's description
      */ 
     public String getDescription() { return this.description; }
 
     /**
-     * Auto generated setter method.
      * @param description a string with this address's description
      */ 
     public void setDescription(String description) {
@@ -71,13 +65,11 @@ public class Ipaddr implements Serializable {
 
 
     /**
-     * Auto generated getter method.
      * @return xface interface instance (association used)
      */ 
     public Interface getInterface() { return this.xface; }
 
     /**
-     * Auto generated setter method.
      * @param xface an interface instance (association used)
      */ 
     public void setInterface(Interface xface) {

@@ -29,6 +29,7 @@ import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.interdomain.*;
 
 /**
  * OSCARS Axis2 service
@@ -68,6 +69,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bss.getTransaction().rollback();
             this.log.error("createReservation", e.getMessage());
             throw new BSSFaultMessageException("createReservation " +
+                                               e.getMessage());
+        }   catch (InterdomainException e) {
+            bss.getTransaction().rollback();
+            this.log.error("createReservation interdomain error", e.getMessage());
+            throw new BSSFaultMessageException("createReservation interdomain error " +
                                                e.getMessage());
         }
         response.setCreateReservationResponse(reply);
@@ -143,7 +149,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             reply = this.adapter.query(params, authorized);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
-            this.log.error("queryReservation", e.getMessage());
+            this.log.error("queryReservation", e.  getMessage());
             throw new BSSFaultMessageException("queryReservation: " +
                                                e.getMessage());
         }
@@ -190,6 +196,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     }
 
     /**
+     *  This is used by adjacent domain to forward a request that it has received that requires
+     *  transisting the ESnet domain.
+     *  
+     *  This method is just a  dispatcher. The user authentication is performed by the specific operation methods.
+     *  The forward message will be signed by the adjacent domain server. At this point we are
+     *  authorizing access based on that alone. This should be changed to look at the payload sender 
+     *  as well.
+     *  
      * @param request Forward instance with request params.
      * @return response ForwardResponse encapsulating library reply.
      * @throws AAAFaultMessageException
@@ -330,6 +344,15 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.log.debug("setOperationContext.finish", "done.");
     }
 
+    /**
+     *  Called from each of the messages to check that the user who signed the message
+     *  is entered in the user table.
+     *  Also checks to see if there was a certifiate in the message which should never happen
+     *  unless the axis2/rampart configuration is incorrect.
+     *  
+     * @return
+     * @throws AAAFaultMessageException 
+     */
     public String checkUser() throws AAAFaultMessageException {
 
         String login = null;
@@ -367,6 +390,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
            throw AAAErrorEx;
         }
         aaa.getTransaction().commit();
+        this.log.info("checkUser authenticated user: " ,login);
         return login;
     }
 }

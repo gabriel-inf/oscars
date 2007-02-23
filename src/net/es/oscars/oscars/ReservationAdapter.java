@@ -12,8 +12,10 @@ import java.util.*;
 import java.io.IOException;
 
 import net.es.oscars.LogWrapper;
+import net.es.oscars.interdomain.*;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.Domain;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.wsdlTypes.*;
 
@@ -36,15 +38,19 @@ public class ReservationAdapter {
      * @throws BSSException
      */
     public CreateReply create(ResCreateContent params, String login) 
-            throws  BSSException {
+            throws  BSSException, InterdomainException {
 
         this.log.info("create.start", params.toString());
         this.rm.setSession();
-        Reservation reservation = this.toReservation(params);
-        String queryDomain = this.rm.create(reservation, login,
-                                            params.getIngressRouterIP(),
-                                             params.getEgressRouterIP());
-        CreateReply reply = this.toReply(reservation);
+        Reservation resv = this.toReservation(params);
+        Forwarder forwarder = new Forwarder();
+         Domain nextDomain = this.rm.create(resv, login,
+                                           params.getIngressRouterIP(),
+                                           params.getEgressRouterIP());
+        // checks whether next domain should be contacted, forwards to
+        // the next domain if necessary, and handles the response
+        forwarder.create(resv, nextDomain);
+        CreateReply reply = this.toReply(resv);
         this.log.info("create.finish", reply.toString());
         return reply;
     }
@@ -64,9 +70,9 @@ public class ReservationAdapter {
         reply = this.rm.cancel(tag, login);
         this.log.info("cancel.finish",
                       "tag: " + tag + ", status: " + reply);
-        /** TODO Don't know if this should be fromString or fromValue --mrt
+        /** TODO Check for nextDomain
          */
-        //return ResStatus.fromString(reply);
+        
         return reply;
     }
 
@@ -79,14 +85,16 @@ public class ReservationAdapter {
     public ResDetails query(ResTag params, boolean authorized)
             throws BSSException {
 
-        Reservation reservation = null;
+        Reservation resv = null;
 
         String tag = params.getTag();
         this.log.info("query.start", tag);
         this.rm.setSession();
-        reservation = this.rm.query(tag, authorized);
-        ResDetails reply = this.toDetails(reservation);
-        this.log.info("query.finish", reply.toString());
+        resv = this.rm.query(tag, authorized);
+        ResDetails reply = this.toDetails(resv);
+        /* TODO check for nextDomain
+         * */
+                 this.log.info("query.finish", reply.toString());
         return reply;
     }
 
@@ -104,9 +112,7 @@ public class ReservationAdapter {
 
         this.log.info("list.start", "");
         this.rm.setSession();
-        if (!authorized) { login = null; }
-
-        reservations = this.rm.list(login);
+        reservations = this.rm.list(login, authorized);
         reply = this.toListReply(reservations);
         this.log.info("list.finish", reply.toString());
         return reply;
@@ -121,87 +127,85 @@ public class ReservationAdapter {
      */
     private Reservation toReservation(ResCreateContent params) {
 
-        Reservation reservation = new Reservation();
-        reservation.setSrcHost(params.getSrcHost());
-        reservation.setDestHost(params.getDestHost());
-        reservation.setStartTime(
-                    params.getStartTime().getTimeInMillis());
-        reservation.setEndTime(
-                    params.getEndTime().getTimeInMillis());
+        Reservation resv = new Reservation();
+        resv.setSrcHost(params.getSrcHost());
+        resv.setDestHost(params.getDestHost());
+        resv.setStartTime(params.getStartTime().getTimeInMillis());
+        resv.setEndTime(params.getEndTime().getTimeInMillis());
         Long bandwidth = new Long(
                 Integer.valueOf(params.getBandwidth() * 1000000).longValue());
-        reservation.setBandwidth(bandwidth);
+        resv.setBandwidth(bandwidth);
         Long burstLimit = new Long(
                 Integer.valueOf(params.getBurstLimit() * 1000000).longValue());
-        reservation.setBurstLimit(burstLimit);
-        reservation.setDescription(params.getDescription());
-        reservation.setProtocol(params.getProtocol());
-        reservation.setSrcPort(params.getSrcPort());
-        reservation.setDestPort(params.getDestPort());
-        return reservation;
+        resv.setBurstLimit(burstLimit);
+        resv.setDescription(params.getDescription());
+        resv.setProtocol(params.getProtocol());
+        resv.setSrcPort(params.getSrcPort());
+        resv.setDestPort(params.getDestPort());
+        return resv;
     }
 
     /**
      * Converts Hibernate bean to Axis bean.
-     * @param reservation A Hibernate reservation instance
+     * @param resv A Hibernate reservation instance
      * @return CreateReply instance
      */
-    private CreateReply toReply(Reservation reservation) {
+    private CreateReply toReply(Reservation resv) {
         CreateReply reply = new CreateReply();
-        reply.setTag(this.rm.toTag(reservation));
+        reply.setTag(this.rm.toTag(resv));
         /** TODO check on fromString vs fromValue */
-        //reply.setStatus(ResStatus.fromString(reservation.getStatus()));
-     reply.setStatus(reservation.getStatus());
+        //reply.setStatus(ResStatus.fromString(resv.getStatus()));
+     reply.setStatus(resv.getStatus());
         return reply;
     }
 
     /**
      * Converts Hibernate bean to Axis bean.
-     * @param reservation A Hibernate reservation instance
+     * @param resv A Hibernate reservation instance
      * @return ResDetails instance
      */
-    private ResDetails toDetails(Reservation reservation) {
+    private ResDetails toDetails(Reservation resv) {
 
-        String path = this.rm.pathToString(reservation, "ip");
+        String path = this.rm.pathToString(resv, "ip");
         long millis = 0;
 
         ResDetails reply = new ResDetails();
         reply.setPath(path);
-        reply.setTag(this.rm.toTag(reservation));
-        //reply.setStatus(ResStatus.fromString(reservation.getStatus()));
-        reply.setStatus(reservation.getStatus());
-        reply.setSrcHost(reservation.getSrcHost());
-        reply.setDestHost(reservation.getDestHost());
+        reply.setTag(this.rm.toTag(resv));
+        //reply.setStatus(ResStatus.fromString(resv.getStatus()));
+        reply.setStatus(resv.getStatus());
+        reply.setSrcHost(resv.getSrcHost());
+        reply.setDestHost(resv.getDestHost());
         // make sure that protocol is in upper case to match WSDL
-        //reply.setProtocol(ResProtocolType.fromString(reservation.getProtocol().toUpperCase()));
-        reply.setProtocol(reservation.getProtocol().toUpperCase());
+        //reply.setProtocol(ResProtocolType.fromString(resv.getProtocol().toUpperCase()));
+        reply.setProtocol(resv.getProtocol().toUpperCase());
 
         Calendar startTime = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        millis = reservation.getStartTime();
+        millis = resv.getStartTime();
         startTime.setTimeInMillis(millis);
         reply.setStartTime(startTime);
         Calendar endTime = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        millis = reservation.getEndTime();
+        millis = resv.getEndTime();
         endTime.setTimeInMillis(millis);
         reply.setEndTime(endTime);
         Calendar createTime = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        millis = reservation.getCreatedTime();
+        millis = resv.getCreatedTime();
         createTime.setTimeInMillis(millis);
         reply.setCreateTime(createTime);
 
-        int bandwidth = reservation.getBandwidth().intValue();
+        int bandwidth = resv.getBandwidth().intValue();
         reply.setBandwidth(bandwidth);
-        int burstLimit = reservation.getBurstLimit().intValue();
+        int burstLimit = resv.getBurstLimit().intValue();
         reply.setBurstLimit(burstLimit);
-        reply.setResClass(reservation.getLspClass());
-        reply.setDescription(reservation.getDescription());
-        if (reservation.getSrcPort() != null){
-            reply.setSrcPort(reservation.getSrcPort());
+        reply.setResClass(resv.getLspClass());
+        reply.setDescription(resv.getDescription());
+        if (resv.getSrcPort() != null){
+            reply.setSrcPort(resv.getSrcPort());
         } else {
             reply.setSrcPort(0);
         }
-        if (reservation.getDestPort() != null){
-            reply.setDestPort(reservation.getDestPort());
+        if (resv.getDestPort() != null){
+            reply.setDestPort(resv.getDestPort());
         } else {
             reply.setDestPort(0);
         } 

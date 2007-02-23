@@ -1,6 +1,7 @@
 import java.util.*;
 import java.text.DateFormat;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
@@ -112,19 +113,23 @@ public class CreateReservationClient extends ExampleClient {
     public ResCreateContent readProperties() {
         ResCreateContent content = new ResCreateContent();
 
-        PropHandler propHandler = new PropHandler("test.properties");
-        Properties clientProps = propHandler.getPropertyGroup(
-                        "test.client", true);
-
-        Properties props = propHandler.getPropertyGroup("test.bss", true);
-
-
-        //;Properties props = this.getProperties();
-
-        content.setDescription(props.getProperty("description"));
-        content.setSrcHost(props.getProperty("sourceHostName"));
-        content.setDestHost(props.getProperty("destHostName"));
-        String duration = props.getProperty("duration");
+        Properties props = new Properties();
+        String propFileName =  System.getenv("OSCARS_HOME") +
+        "/examples/javaClient/reservation.properties";
+        try {
+            FileInputStream in = new FileInputStream(propFileName);
+            props.load(in);
+            in.close();
+        }
+        catch (IOException e) {
+            System.out.println(" no default properties file " +
+                               propFileName);
+        }
+   
+        content.setDescription(props.getProperty("description",""));
+        content.setSrcHost(props.getProperty("sourceHostName",""));
+        content.setDestHost(props.getProperty("destHostName",""));
+        String duration = props.getProperty("duration","0.04");
         Calendar time = Calendar.getInstance();
         time.setTime(new Date());
         content.setStartTime(time);
@@ -134,12 +139,12 @@ public class CreateReservationClient extends ExampleClient {
         time.add(Calendar.MINUTE, minutes);
         content.setEndTime(time);
         content.setBandwidth(
-                Integer.parseInt(props.getProperty("bandwidth")));
+                Integer.parseInt(props.getProperty("bandwidth","10")));
         content.setCreateRouteDirection(
-                props.getProperty("routeDirection"));
+                props.getProperty("routeDirection","FORWARD"));
         content.setBurstLimit(
-                Integer.parseInt(props.getProperty("burstLimit")));
-        content.setProtocol(props.getProperty("protocol"));
+                Integer.parseInt(props.getProperty("burstLimit","10000")));
+        content.setProtocol(props.getProperty("protocol","TCP"));
         return content;
     }
 

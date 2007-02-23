@@ -70,19 +70,24 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
 
 
     /**
-     * Lists all reservations if no login is given; otherwise, list only
-     *     reservations owned by a particular user.
+     * Lists all reservations if authorized; otherwise, list only
+     *     reservations owned by that particular user.
      *     Note that GenericHibernateDAO has Criteria based methods for
      *     doing lists, but they are less clear to someone used to SQL.
      *
      * @param login a string identifier for a user
+     * @param authorized boolean indicating can view all reservations
      * @return a list of reservations.
      * @throws BSSException
      */
-    public List<Reservation> list(String login) throws BSSException {
+    public List<Reservation> list(String login, boolean authorized)
+            throws BSSException {
         List<Reservation> reservations = null;
 
-        if (login != null) {
+        // must provide user name
+        if (login == null) { return null; }
+        // if not authorized, can only view individual reservations
+        if (!authorized) {
             this.log.info("list", "individual: " + login);
             String hsql = "from Reservation r where r.login = :login " +
                           "order by r.startTime desc";

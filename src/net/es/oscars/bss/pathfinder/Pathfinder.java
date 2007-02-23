@@ -147,14 +147,13 @@ public class Pathfinder {
      * Gets the autonomous service number associated with an IP address by 
      * performing an SNMP query against the egress router.
      *
-     * @param lastAsNumber a string containing the AS number of last domain
      * @param routerName a string containing the router's name
      * @param nextHop a string containing the IP address of the next hop
      * @return nextAsNumber a string containing autonomous service number
      * @throws BSSException
      */
-    public String queryDomain(String lastAsNumber, String routerName,
-                              String nextHop) throws BSSException {
+    public String findNextDomain(String routerName, String nextHop)
+            throws BSSException {
 
         String nextAsNumber = null;
 
@@ -173,7 +172,7 @@ public class Pathfinder {
 
         errorMsg = this.jnxSnmp.getError();
         if (errorMsg != null) {
-            this.log.info("queryDomain", errorMsg);
+            this.log.info("findNextDomain", errorMsg);
             return "noSuchInstance";
         }
         if ((nextAsNumber == null) || (nextAsNumber.equals("noSuchInstance"))) {

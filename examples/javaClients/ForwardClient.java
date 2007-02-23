@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.es.oscars.oscars.AAAFaultMessageException;
 import net.es.oscars.oscars.BSSFaultMessageException;
@@ -20,7 +21,7 @@ public class ForwardClient extends ExampleClient {
     public static void main(String[] args) {
         try {
             ForwardClient fc = new ForwardClient();
-            fc.forwardingTests(args, true);
+            fc.forward(args, true);
         } catch (IOException e1) {
             ;
         }
@@ -45,36 +46,59 @@ public class ForwardClient extends ExampleClient {
         } */
     }
 
-    public void forwardingTests(String[] args, boolean isInteractive)
+    public void forward(String[] args, boolean isInteractive)
             throws IOException {
 
         String operation = null;
-
+        String sender = null;
+ 
         super.init(args, isInteractive);
-        HashMap<String,String> params = this.readParams(isInteractive);
-        BufferedReader br = 
+         BufferedReader br = 
                 new BufferedReader(new InputStreamReader(System.in));
+        sender =  Args.getArg(br,"Name of user originating the request");
         operation = Args.getArg(br, "Operation: create, cancel, " +
-                                    "query, or list.  Type quit to exit.");
+           "query, or list.  Type quit to exit.");
+        try {
         while (!operation.equals("quit")) {
+            Forward fwd =  new Forward();
+            fwd.setPayloadSender(sender);
+            ForwardPayload forPayload = new ForwardPayload();
+
             if (operation.equals("list")) {
-                params.put("operation", operation + "Reservations");
-            } else { params.put("operation", operation + "Reservation"); }
+                forPayload.setContentType(operation + "Reservations");
+            } else {forPayload.setContentType(operation + "Reservation"); }
 
             if (operation.equals("create")) {
-                CreateReservationClient payload =
+                CreateReservationClient createRes =
                     new CreateReservationClient();
-
+                forPayload.setCreateReservation(createRes.readParams(isInteractive));
+                fwd.setPayload(forPayload);
+                ForwardReply reply = this.getClient().forward(fwd);
+                createRes.outputResponse(reply.getCreateReservation());
+                
             } else if (operation.equals("cancel")) {
-                CancelReservationClient payload =
+                CancelReservationClient canRes=
                     new CancelReservationClient();
+                forPayload.setCancelReservation( canRes.readParams(isInteractive));
+                fwd.setPayload(forPayload);
+                ForwardReply reply = this.getClient().forward(fwd);
+                canRes.outputResponse(reply.getCancelReservation());
 
             } else if (operation.equals("query")) {
-                QueryReservationClient payload = new QueryReservationClient();
-                ResTag rt = payload.readParams(false); 
-
+                QueryReservationClient queryRes= new QueryReservationClient();
+                forPayload.setQueryReservation(queryRes.readParams(isInteractive));
+                fwd.setPayload(forPayload);
+                ForwardReply reply = this.getClient().forward(fwd);
+                queryRes.outputResponse(reply.getQueryReservation());
+                
             } else if (operation.equals("list")) {
-                ListReservationsClient payload = new ListReservationsClient();
+                ListReservationsClient listRes = new ListReservationsClient();
+                EmptyArg ea = new EmptyArg();
+                ea.setMsg("");
+                forPayload.setListReservations(ea);
+                fwd.setPayload(forPayload);
+                ForwardReply reply = this.getClient().forward(fwd);
+                listRes.outputResponse(reply.getListReservations());
 
             } else {
                 System.out.println("Unable to submit request that is not " +
@@ -83,22 +107,39 @@ public class ForwardClient extends ExampleClient {
             operation = Args.getArg(br, "Operation: create, cancel, " +
                                         "query, or list.  Type quit to exit.");
         }
-    }
+        } catch (AAAFaultMessageException e1) {
+    	    System.out.println(
+                    "AAAFaultMessageException from queryReservation");
+            System.out.println(e1.getFaultMessage().getMsg());
+        } catch (BSSFaultMessageException e1) {
+            System.out.println(
+                    "BSSFaultMessageException from queryReservation");
+            System.out.println(e1.getFaultMessage().getMsg());
+        } catch (java.rmi.RemoteException e1) {
+            System.out.println(
+                    "RemoteException returned from queryReservation");
+            System.out.println(e1.getMessage());
+        } catch (Exception e1) {
+            System.out.println(
+                    "OSCARSStub threw exception in queryReservation");
+            System.out.println(e1.getMessage());
+            e1.printStackTrace();
+        }    
+     }
 
-    public HashMap<String,String> readParams(boolean isInteractive) {
+    public String readParams(boolean isInteractive) {
 
-        HashMap<String,String> params = new HashMap<String,String>();
+        String sender = null;
         // Prompt for input parameters
         try {
             BufferedReader br = 
                 new BufferedReader(new InputStreamReader(System.in));
-            params.put("payloadSender",
-                    Args.getArg(br,"Name of user originating the request"));
+            sender =  Args.getArg(br,"Name of user originating the request");
         } catch (IOException ioe) {
             System.out.println("IO error reading input");
             System.exit(1);
         }
-        return params;
+        return sender;
     }
 
     public HashMap<String,String> readProperties() {

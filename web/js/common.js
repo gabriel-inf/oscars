@@ -1,9 +1,10 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  January 22, 2007
+Last modified:  November 16, 2006
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
+
 
 /* List of functions:
 submitForm(form, methodName, params)

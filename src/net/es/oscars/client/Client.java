@@ -24,16 +24,13 @@ import org.apache.axis2.client.ServiceClient;
  * etc.)
  */
 public class Client {
-    private LogWrapper log;
-    private ConfigurationContext configContext;
-    private OSCARSStub stub;
+    protected LogWrapper log;
+    protected ConfigurationContext configContext;
+    protected OSCARSStub stub;
 
-    public Client(boolean useKeyStore) {
+    public void setUp(boolean useKeyStore, String url, String repo) throws AxisFault {
         if (useKeyStore) { KeyManagement.setKeyStore(); }
         this.log = new LogWrapper(this.getClass());
-    }
-
-    public void setUp(String url, String repo) throws AxisFault {
         this.configContext =
                 ConfigurationContextFactory
                         .createConfigurationContextFromFileSystem(repo, null);
@@ -51,9 +48,9 @@ public class Client {
      *
      * @param rt a ResTag instance containing the reservation's unique tag
      * @return a string with the reservation's status
-     * @throws OSCARSStub.AAAFaultMessageException
+     * @throws AAAFaultMessageException
+     * @throws BSSFaultMessageException
      * @throws java.rmi.RemoteException
-     * @throws Exception
      */
     public String cancelReservation(ResTag rt) 
             throws AAAFaultMessageException, java.rmi.RemoteException,
@@ -72,9 +69,9 @@ public class Client {
      *
      * @param resRequest a ResCreateContent with reservation parameters
      * @return crr a CreateReply instance with the reservation's tag and status
-     * @throws OSCARSStub.AAAFaultMessageException
+     * @throws AAAFaultMessageException
+     * @throws BSSFaultMessageException
      * @throws java.rmi.RemoteException
-     * @throws Exception
      */
     public CreateReply createReservation(ResCreateContent resRequest)
            throws AAAFaultMessageException, java.rmi.RemoteException,
@@ -95,13 +92,13 @@ public class Client {
      *
      * @param login a string, possibly null, with a user's login name
      * @return response a ListReply instance with summaries of each reservation
-     * @throws OSCARSStub.AAAFaultMessageException
+     * @throws AAAFaultMessageException
+     * @throws BSSFaultMessageException
      * @throws java.rmi.RemoteException
-     * @throws Exception
      */
-    public ListReply listReservations(String login)
-           throws AAAFaultMessageException, java.rmi.RemoteException,
-              Exception {
+    public ListReply listReservations()
+           throws AAAFaultMessageException, BSSFaultMessageException,java.rmi.RemoteException
+               {
 
         ListReservations listRes = new ListReservations();
         EmptyArg ea = new EmptyArg();
@@ -117,10 +114,10 @@ public class Client {
      *
      * @param rt a ResTag instance containing the reservation's unique tag
      * @return a ResDetails instance containing the reservations tag and status
-     * @throws OSCARSStub.AAAFaultMessageException
+     * @throws AAAFaultMessageException
+     * @throws BSSFaultMessageException
      * @throws java.rmi.RemoteException
-     * @throws Exception
-     */
+      */
     public ResDetails queryReservation(ResTag rt)
            throws AAAFaultMessageException, java.rmi.RemoteException,
               Exception {
@@ -136,59 +133,22 @@ public class Client {
      * Makes call to server to forward a create reservation request to the
      * next domain.
      *
-     * @param params a hash map
-     * @return response a list of hash maps
-     * @throws OSCARSStub.AAAFaultMessageException
+     * @param fwd a Forward object
+     * @return response a ForwardReply object
+     * @throws AAAFaultMessageException
+     * @throws BSSFaultMessageException
      * @throws java.rmi.RemoteException
-     * @throws Exception
      */
-    public List<Map<String,String>>
-        forward(String op, Map<String,String> params)
+    public ForwardReply 
+        forward(Forward fwd)
            throws AAAFaultMessageException, BSSFaultMessageException,
-                  java.rmi.RemoteException, Exception {
+                  java.rmi.RemoteException {
 
-        ForwardPayload pl = new ForwardPayload();
         ForwardReply freply = null;
-        Forward fwd = null;
         ForwardResponse frsp = null;
-        List<Map<String,String>> response = null;
         
-        pl.setContentType(op);
-        fwd = new Forward();
-        fwd.setPayload(pl);
-        fwd.setPayloadSender(params.get("payloadSender"));
- 
-         if (op.equals("cancelReservation")) {
-            ResTag rt = new ResTag();
-            rt.setTag(params.get("tag"));
-            pl.setCancelReservation(rt); 
-            frsp = this.stub.forward(fwd);
-            freply = frsp.getForwardResponse();
- 
-        } else if (op.equals("queryReservation")) {
-            ResTag rt = new ResTag();
-            ResDetails qreply = null;
-            rt.setTag(params.get("tag"));
-            pl.setQueryReservation(rt);
-            frsp = this.stub.forward(fwd);
-            freply = frsp.getForwardResponse();
-            qreply = freply.getQueryReservation();
-             
-        } else if (op.equals("listReservations")) {
-            EmptyArg ea = new EmptyArg();
-            ea.setMsg("");
-            pl.setListReservations(ea);
-            frsp = this.stub.forward(fwd);
-            freply = frsp.getForwardResponse();
-            ListReply lr = freply.getListReservations();
-        } else if (op.equals("createReservation")) {
-            ResCreateContent resRequest = new ResCreateContent();
-            resRequest.setSrcHost(params.get("srcHost"));
-            pl.setCreateReservation(resRequest);
-            frsp = this.stub.forward(fwd);
-            freply = frsp.getForwardResponse();
-            CreateReply cr = freply.getCreateReservation();            
-        }       
-        return response;
+        frsp = this.stub.forward(fwd);
+        freply = frsp.getForwardResponse();
+        return freply;
     }
 }

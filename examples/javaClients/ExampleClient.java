@@ -45,9 +45,9 @@ public class ExampleClient {
 			System.out.println("IO error reading input");
 			System.exit(1);
 		}
-		this.client = new Client(true);
+		this.client = new Client();
 		try {
-			this.client.setUp(url, repo);
+			this.client.setUp(true,url, repo);
 		} catch (AxisFault e) {
 			System.out.println(e.getMessage());
 			System.exit(1);

@@ -69,39 +69,33 @@ public class User implements Serializable {
     public User() { }
 
     /**
-     * Auto generated getter method
      * @return id An Integer with a user table primary key
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method
      * @param id An Integer with a user table primary key
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method
      * @return login A String with the user login name
      */ 
     public String getLogin() { return this.login; }
 
     /**
-     * Auto generated setter method
      * @param login A String with the user login name
      */ 
     public void setLogin(String login) { this.login = login; }
 
 
     /**
-     * Auto generated getter method
      * @return certificate A String with the certificate name
      */ 
     public String getCertificate() { return this.certificate; }
 
     /**
-     * Auto generated setter method
      * @param certificate A String with the certificate name
      */ 
     public void setCertificate(String certificate) {
@@ -110,13 +104,11 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return certSubject A String with the certificate subject
      */ 
     public String getCertSubject() { return this.certSubject; }
 
     /**
-     * Auto generated setter method
      * @param certSubject A String with the certificate subject
      */ 
     public void setCertSubject(String certSubject) {
@@ -125,39 +117,33 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return lastName A String with the user's last name
      */ 
     public String getLastName() { return this.lastName; }
 
     /**
-     * Auto generated setter method
      * @param lastName A String with the user's last name
      */ 
     public void setLastName(String lastName) { this.lastName = lastName; }
 
 
     /**
-     * Auto generated getter method
      * @return firstName A String with the user's first name
      */ 
     public String getFirstName() { return this.firstName; }
 
     /**
-     * Auto generated setter method
      * @param firstName A String with the user's first name
      */ 
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
 
     /**
-     * Auto generated getter method
      * @return emailPrimary A String with the user's primary email address
      */ 
     public String getEmailPrimary() { return this.emailPrimary; }
 
     /**
-     * Auto generated setter method
      * @param emailPrimary A String with the user's primary email address
      */ 
     public void setEmailPrimary(String emailPrimary) {
@@ -166,13 +152,11 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return phonePrimary A String with the user's primary phone number
      */ 
     public String getPhonePrimary() { return this.phonePrimary; }
 
     /**
-     * Auto generated setter method
      * @param phonePrimary A String with the user's primary phone number
      */ 
     public void setPhonePrimary(String phonePrimary) {
@@ -181,26 +165,22 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return password A String with the user's password
      */ 
     public String getPassword() { return this.password; }
 
     /**
-     * Auto generated setter method
      * @param password A String with the user's password
      */ 
     public void setPassword(String password) { this.password = password; }
 
 
     /**
-     * Auto generated getter method
      * @return description A String with a description of the user
      */ 
     public String getDescription() { return this.description; }
 
     /**
-     * Auto generated setter method
      * @param description A String with a description of the user
      */ 
     public void setDescription(String description) {
@@ -209,13 +189,11 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return emailSecondary A String with the user's secondary email address
      */ 
     public String getEmailSecondary() { return this.emailSecondary; }
 
     /**
-     * Auto generated setter method
      * @param emailSecondary A String with the user's secondary email address
      */ 
     public void setEmailSecondary(String emailSecondary) {
@@ -224,13 +202,11 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return phoneSecondary A String with the user's secondary phone #
      */ 
     public String getPhoneSecondary() { return this.phoneSecondary; }
 
     /**
-     * Auto generated setter method
      * @param phoneSecondary A String with the user's secondary phone #
      */ 
     public void setPhoneSecondary(String phoneSecondary) {
@@ -239,26 +215,22 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return status A String with the user's current system status
      */ 
     public String getStatus() { return this.status; }
 
     /**
-     * Auto generated setter method
      * @param status A String with the user's current system status
      */ 
     public void setStatus(String status) { this.status = status; }
 
 
     /**
-     * Auto generated getter method
      * @return activationKey A String, currently unused
      */ 
     public String getActivationKey() { return this.activationKey; }
 
     /**
-     * Auto generated setter method
      * @param activationKey A String, currently unused
      */ 
     public void setActivationKey(String activationKey) {
@@ -267,13 +239,11 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return lastActiveTime A Long instance with user's active time
      */ 
     public Long getLastActiveTime() { return this.lastActiveTime; }
 
     /**
-     * Auto generated setter method
      * @param lastActiveTime A Long instance with user's active time
      */ 
     public void setLastActiveTime(Long lastActiveTime) {
@@ -282,7 +252,6 @@ public class User implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return registerTime A Long with the user's registration time
      */ 
     public Long getRegisterTime() {
@@ -290,7 +259,6 @@ public class User implements Serializable {
     }
 
     /**
-     * Auto generated setter method
      * @param registerTime A Long with the user's registration time
      */ 
     public void setRegisterTime(Long registerTime) {

@@ -30,39 +30,33 @@ public class Resource implements Serializable {
     public Resource() { }
 
     /**
-     * Auto generated getter method
      * @return id An Integer with a resource table primary key
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method
      * @param id An Integer with a resource table primary key
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method
      * @return name A String with the name of this resource
      */ 
     public String getName() { return this.name; }
 
     /**
-     * Auto generated setter method
      * @param name A String with the name of this resource
      */ 
     public void setName(String name) { this.name = name; }
 
 
     /**
-     * Auto generated getter method
      * @return description A String with the description of this resource
      */ 
     public String getDescription() { return this.description; }
 
     /**
-     * Auto generated setter method
      * @param description A String with the description of this resource
      */ 
     public void setDescription(String description) {
@@ -71,13 +65,11 @@ public class Resource implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return updateTime A Long with this row's last update time
      */ 
     public Long getUpdateTime() { return this.updateTime; }
 
     /**
-     * Auto generated setter method
      * @param updateTime A Long with this row's last update time
      */ 
     public void setUpdateTime(Long updateTime) {

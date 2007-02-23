@@ -340,7 +340,7 @@
                     if (!"listReply".equals(type)){
                         //find namespace for the prefix
                         java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                        return (ListReply)net.es.oscars.oscars.ExtensionMapper.getTypeObject(
+                        return (ListReply)net.es.oscars.wsdlTypes.ExtensionMapper.getTypeObject(
                              nsUri,type,reader);
                       }
 
@@ -393,11 +393,12 @@
                                                 }
                                             }
                                             // call the converter utility  to convert and set the array
-                                            object.setResInfo((net.es.oscars.wsdlTypes.ResInfoContent[])
-                                                org.apache.axis2.databinding.utils.ConverterUtil.convertToArray(
-                                                    net.es.oscars.wsdlTypes.ResInfoContent.class,
-                                                    list1));
-                                        
+                                            
+                                                    object.setResInfo((net.es.oscars.wsdlTypes.ResInfoContent[])
+                                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToArray(
+                                                            net.es.oscars.wsdlTypes.ResInfoContent.class,
+                                                            list1));
+                                                
                               }  // End of if for expected property start element
                               
                             while (!reader.isStartElement() && !reader.isEndElement())

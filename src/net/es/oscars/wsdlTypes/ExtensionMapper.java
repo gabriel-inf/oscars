@@ -6,7 +6,7 @@
             * by the Apache Axis2 version: #axisVersion# #today#
             */
 
-            package net.es.oscars.oscars;
+            package net.es.oscars.wsdlTypes;
             /**
             *  ExtensionMapper class
             */
@@ -18,16 +18,7 @@
                                                        javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
 
               
-                  if (
-                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
-                  "login".equals(typeName)){
-                   
-                            return  net.es.oscars.wsdlTypes.Login.Factory.parse(reader);
-                        
-
-                  }
-
-              
+               
                   if (
                   "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
                   "forwardPayload".equals(typeName)){

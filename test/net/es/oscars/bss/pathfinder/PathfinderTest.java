@@ -59,17 +59,17 @@ public class PathfinderTest extends TestCase {
         Assert.assertNotNull(ret);
     }
 
-    public void testQueryDomain() {
+    public void testFindNextDomain() {
         String ret = null; 
         try {
-            ret = this.pathFinder.queryDomain(null,
+            ret = this.pathFinder.findNextDomain(
                                   this.props.getProperty("ingressLoopback"),
                                   this.props.getProperty("egressLoopback"));
         } catch (BSSException ex) {
-            fail("testQueryDomain: " + ex.getMessage());
+            fail("testFindNextDomain: " + ex.getMessage());
         }
-        System.out.println("queryDomain == " + ret);
-        Assert.assertNotNull("testQueryDomain empty", ret);
+        System.out.println("nextDomain == " + ret);
+        Assert.assertNotNull("testFindNextDomain empty", ret);
     }
 
     /*

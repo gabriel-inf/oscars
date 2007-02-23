@@ -30,39 +30,33 @@ public class Router implements Serializable {
     public Router() { }
 
     /**
-     * Auto generated getter method.
      * @return id primary key in the routers table
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method.
      * @param id primary key in the routers table
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method.
      * @return valid a boolean indicating whether this entry is still valid
      */ 
     public boolean isValid() { return this.valid; }
 
     /**
-     * Auto generated setter method.
      * @param valid a boolean indicating whether this entry is still valid
      */ 
     public void setValid(boolean valid) { this.valid = valid; }
 
 
     /**
-     * Auto generated getter method.
      * @return name a string with the name of this router
      */ 
     public String getName() { return this.name; }
 
     /**
-     * Auto generated setter method.
      * @param name a string with the name of this router
      */ 
     public void setName(String name) { this.name = name; }

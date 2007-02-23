@@ -36,39 +36,33 @@ public class Authorization implements Serializable {
     public Authorization() { }
 
     /**
-     * Auto generated getter method
      * @return id An Integer containing the primary key
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method
      * @param id An Integer containing the primary key
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method
      * @return context A String corresponding to a currently unused field
      */ 
     public String getContext() { return this.context; }
 
     /**
-     * Auto generated setter method
      * @param context A String corresponding to a currently unused field
      */ 
     public void setContext(String context) { this.context = context; }
 
 
     /**
-     * Auto generated getter method
      * @return updateTime A Long instance with the last update time
      */ 
     public Long getUpdateTime() { return this.updateTime; }
 
     /**
-     * Auto generated setter method
      * @param updateTime A Long instance with the last update time
      */ 
     public void setUpdateTime(Long updateTime) {
@@ -77,26 +71,22 @@ public class Authorization implements Serializable {
 
 
     /**
-     * Auto generated getter method.
      * @return userId An Integer containing a user table row primary key
      */ 
     public int getUserId() { return this.userId; }
 
     /**
-     * Auto generated setter method
      * @param userId An Integer containing a user table row primary key
      */ 
     public void setUserId(int userId) { this.userId = userId; }
 
 
     /**
-     * Auto generated getter method
      * @return resourceId An Integer with a resource table primary key
      */ 
     public int getResourceId() { return this.resourceId; }
 
     /**
-     * Auto generated setter method
      * @param resourceId An Integer with a resource table primary key
      */ 
     public void setResourceId(int resourceId) {
@@ -105,13 +95,11 @@ public class Authorization implements Serializable {
 
 
     /**
-     * Auto generated getter method
      * @return permissionId An Integer with a permission table primary key
      */ 
     public int getPermissionId() { return this.permissionId; }
 
     /**
-     * Auto generated setter method
      * @param permissionId An Integer with a permission table primary key
      */ 
     public void setPermissionId(int permissionId) {

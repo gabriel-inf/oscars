@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Installing Axis2</title>
+</head>
+<body>
+<h2>How to install or upgrade Axis2 + rampart.mar</h2>
+<span style="font-weight: bold; font-style: italic;">To Build<br>
+<br>
+</span>The OSCARS code uses the the WSSE functionality provided by the
+ramapart.mar to digitally sign and verify SOAP messages. So when you
+install axist2 you must include the rampart.mar.<br>
+<br>
+Download the axis2 distribution from http://ws.apache.org/axis2 and the
+rampart module from
+http://ws.apache.org/axis2/modules/rampart/1_1/security-module.html.&nbsp;
+Extract the zip files and follow the instructions in the README.txt
+available in the rampart-1.1.zip file to copy the required libraries to
+the main "lib" dir of Axis2. Then build an axis2.war file that includes
+rampart.war<br>
+<br>
+You should then copy all the axis2 jar files into OSCARS/lib/axis2 and
+the rampart jar files into OSCARS/lib. <br>
+<br>
+Now move aside the src/net/es/osccars//{oscars,wsdlTypes} directories
+and run ant wsdl2jJava. We have hand edited teh OSCARSSkeleton.jave and
+AAAFaultMessageExcpetion and BSSFaultMessageException, so you need to
+replace the newely genertated files with the old ones, makeing sure
+that none of the interfacedes changed.<br>
+<br>
+Clean and rebuild the OSCARS compile tree and OSCARS.aar.<br>
+<br>
+<span style="font-weight: bold; font-style: italic;">To Install<br>
+</span>Shutdown tomcat; delete webapps/axis2/WEB-INF/axis2.war and
+axis2 directory<br>
+<br>
+Copy the new axis.2war file into /usr/local/jarkarta/webapps/<br>
+start Tomcat, which will create the new axis2 directory,<br>
+Copy the OSCARS.aar into into
+/usr/local/jarkarta/webapps/axis2/WEB-INF/services<br>
+restart Tomcat.<br>
+</body>
+</html>

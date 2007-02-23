@@ -42,65 +42,55 @@ public class Interface implements Serializable {
     public Interface() { }
 
     /**
-     * Auto generated getter method.
      * @return primary key in the interfaces table
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method.
      * @param id primary key in the interfaces table
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method.
      * @return valid a boolean indicating whether interface is still valid
      */ 
     public boolean isValid() { return this.valid; }
 
     /**
-     * Auto generated setter method.
      * @param valid a boolean indicating whether interface is still valid
      */ 
     public void setValid(boolean valid) { this.valid = valid; }
 
 
     /**
-     * Auto generated getter method.
      * @return snmpIndex a SNMP index from ifrefpoll
      */ 
     public int getSnmpIndex() { return this.snmpIndex; }
 
     /**
-     * Auto generated setter method.
      * @param snmpIndex a SNMP index
      */ 
     public void setSnmpIndex(int snmpIndex) { this.snmpIndex = snmpIndex; }
 
 
     /**
-     * Auto generated getter method.
      * @return speed a long with the interface's maximum bandwidth
      */ 
     public Long getSpeed() { return this.speed; }
 
     /**
-     * Auto generated setter method.
      * @param speed a long with the interface's maximum bandwidth
      */ 
     public void setSpeed(Long speed) { this.speed = speed; }
 
 
     /**
-     * Auto generated getter method.
      * @return description a string with the interface's description
      */ 
     public String getDescription() { return this.description; }
 
     /**
-     * Auto generated setter method.
      * @param description a string with the interface's description
      */ 
     public void setDescription(String description) {
@@ -109,26 +99,22 @@ public class Interface implements Serializable {
 
 
     /**
-     * Auto generated getter method.
      * @return alias a string with the interface's alias
      */ 
     public String getAlias() { return this.alias; }
 
     /**
-     * Auto generated setter method.
      * @param alias a string with the interface's alias
      */ 
     public void setAlias(String alias) { this.alias = alias; }
 
 
     /**
-     * Auto generated getter method.
      * @return router a router instance (uses association)
      */ 
     public Router getRouter() { return this.router; }
 
     /**
-     * Auto generated setter method.
      * @param router a router instance (uses association)
      */ 
     public void setRouter(Router router) { this.router = router; }

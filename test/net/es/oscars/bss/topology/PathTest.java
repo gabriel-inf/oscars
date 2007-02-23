@@ -10,6 +10,7 @@ import org.hibernate.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.bss.BSSException;
 
 /**
  * This class tests methods in PathDAO.java, which requires a working
@@ -44,6 +45,7 @@ public class PathTest extends TestCase {
 
     public void testCreate() {
         ArrayList<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
+        Path path = null;
 
         String description = this.props.getProperty("pathDescription");
         // need to save these in global variable so can remove in testRemove
@@ -66,7 +68,11 @@ public class PathTest extends TestCase {
         }
         String ingressRouter = "134.55.75.27";
         String egressRouter = "134.55.75.28";
-        Path path = this.dao.create(ipaddrs, ingressRouter, egressRouter);
+        try {
+            path = this.dao.create(ipaddrs, ingressRouter, egressRouter);
+        } catch (BSSException e) {
+            fail(e.getMessage());
+        }
         this.session.getTransaction().commit();
         Assert.assertNotNull(path);
     }

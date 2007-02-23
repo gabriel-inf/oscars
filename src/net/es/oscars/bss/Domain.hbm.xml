@@ -23,12 +23,6 @@
         <generator class="increment" />
     </id>
 
-    <property name="asNum" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
     <property name="name" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
@@ -36,6 +30,18 @@
     </property>
 
     <property name="abbrev" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <property name="url" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <property name="asNum" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    

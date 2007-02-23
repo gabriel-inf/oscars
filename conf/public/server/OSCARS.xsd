@@ -179,15 +179,7 @@
 			<xsd:enumeration value="TCP" />
 		</xsd:restriction>
 	</xsd:simpleType>
--->
-	<xsd:complexType name="login">
-		<xsd:sequence>
-			<xsd:element name="userName" type="xsd:string" />
-			<xsd:element name="password" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
 
-<!--  Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006 
 	<xsd:simpleType name="payloadContentType">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="createReservation" />

@@ -56,10 +56,11 @@ CREATE TABLE IF NOT EXISTS paths (
 -- table for administrative domain, e.g. ESnet
 CREATE TABLE IF NOT EXISTS domains (
     id                  INT NOT NULL AUTO_INCREMENT,
-    as_num              INT NOT NULL,
     name                TEXT NOT NULL,
-        -- used in creating unique reservation tags
+    url                 TEXT NOT NULL,
     abbrev              TEXT NOT NULL,
+    asNum               INT NOT NULL,
+        -- used in creating unique reservation tags
         -- whether this is the local domain
     local               BOOLEAN NOT NULL,
     PRIMARY KEY (id)
@@ -92,8 +93,11 @@ CREATE TABLE IF NOT EXISTS reservations (
     dscp                TEXT,
         -- protocol used (0-255, or a protocol string, such as udp)
     protocol            TEXT,
+        -- VLAN id
+    vlanId              INT,
     description         TEXT,
     pathId              INT NOT NULL,   -- foreign key
+    nextDomainId        INT NOT NULL,   -- foreign key
     PRIMARY KEY (id)
 ) type = MyISAM;
 
@@ -128,8 +132,12 @@ CREATE TABLE IF NOT EXISTS archivedReservations (
         -- protocol used (0-255, or a protocol string, such as udp)
     protocol            TEXT,
     description         TEXT,
+        -- VLAN id
+    vlanId              INT,
         -- was a foreign key before archiving
         -- space separated list of names or addresses of routers in path
     path                TEXT,
+        -- was a foreign key before archiving
+    nextDomain          TEXT,
     PRIMARY KEY (id)
 ) type = MyISAM;

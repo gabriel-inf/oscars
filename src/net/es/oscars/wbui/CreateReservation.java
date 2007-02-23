@@ -9,10 +9,9 @@ import org.hibernate.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.Domain;
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.client.Client;
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
+import net.es.oscars.interdomain.*;
 
 
 public class CreateReservation extends HttpServlet {
@@ -21,15 +20,13 @@ public class CreateReservation extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String nextDomain = null;
-
+        Forwarder forwarder = new Forwarder();;
         ReservationManager rm = new ReservationManager();
         rm.setSession();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
         ReservationDetails detailsOutput = new ReservationDetails();
-        Map<String,String> params = null;
         List<Map<String,String>> forwardResponse = null;
 
         response.setContentType("text/xml");
@@ -44,20 +41,12 @@ public class CreateReservation extends HttpServlet {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            nextDomain = rm.create(resv, userName, ingressRouterIP,
-                                   egressRouterIP);
-            if (nextDomain != null) {
-                Client client = new Client(true);
-                params = this.toClientRequest(resv);
-                forwardResponse = client.forward("", params);
-            }
+            Domain nextDomain = rm.create(resv, userName,
+                                          ingressRouterIP, egressRouterIP);
+            // checks whether next domain should be contacted, forwards to
+            // the next domain if necessary, and handles the response
+            //Forwarder.create(resv, nextDomain);
         } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(), null, bss);
-            return;
-        } catch (AAAFaultMessageException e) {
-            utils.handleFailure(out, e.getMessage(), null, bss);
-            return;
-        } catch (BSSFaultMessageException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;
         } catch (Exception e) {
@@ -123,20 +112,5 @@ public class CreateReservation extends HttpServlet {
         resv.setDscp(request.getParameter("dscp"));
         resv.setDescription(request.getParameter("description"));
         return resv;
-    }
-
-    public Map<String,String> toClientRequest(Reservation resv) {
-
-        Map<String,String> params = new HashMap<String,String>();
-
-        params.put("srcHost", resv.getSrcHost());
-        params.put("destHost", resv.getDestHost());
-        params.put("startTime", resv.getStartTime().toString());
-        params.put("endTime", resv.getEndTime().toString());
-        params.put("bandwidth", resv.getBandwidth().toString());
-        params.put("protocol", resv.getProtocol());
-        params.put("description", resv.getDescription());
-        params.put("routeDirection", "FORWARD");
-        return params;
     }
 }

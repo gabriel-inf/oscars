@@ -1,9 +1,10 @@
 /*
 validator.js:      Javascript functions for form validation
-Last modified:  January 22, 2007
+Last modified:  November 8, 2006
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
+
 
 /* List of functions:
 checkForRequired(form, required)

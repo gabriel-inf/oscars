@@ -1,26 +1,19 @@
-# Only set AXIS2_HOME if not already set
-[ -z "$AXIS2_HOME" ] && AXIS2_HOME=../..
-echo AXIS2_HOME is $AXIS2_HOME
+# Only set OSCARS_HOME if not already set
+[ -z "$OSCARS_HOME" ] && OSCARS_HOME=../..
+echo OSCARS_HOME is $OSCARS_HOME
 # update classpath
 OSCARS_CLASSPATH=""
-for f in "$AXIS2_HOME"/lib/*.jar
+for f in "$OSCARS_HOME"/lib/*.jar
 do
  OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
-AXIS2_CLASSPATH=""
-for f in "$AXIS2_HOME"/lib/axis2/*.jar
+for f in "$OSCARS_HOME"/lib/axis2/*.jar
 do
- AXIS2_CLASSPATH="$AXIS2_CLASSPATH":$f
-done
-for f in "$AXIS2_HOME"/lib/rampart/*.jar
-do
- AXIS2_CLASSPATH="$AXIS2_CLASSPATH":$f
+ OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
 
-CLASSPATH=.:../../build/examples/classes:$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
-export AXIS2_HOME=$AXIS2_HOME
-export AXIS2_CLASSPATH=$AXIS2_CLASSPATH
-export OSCARS_CLASSPATH=$OSCARS_CLASSPATH
+CLASSPATH=.:../../build/examples/classes:$OSCARS_CLASSPATH
+export OSCARS_HOME=$OSCARS_HOME
 export CLASSPATH=$CLASSPATH
 
 #echo CLASSPATH is $CLASSPATH

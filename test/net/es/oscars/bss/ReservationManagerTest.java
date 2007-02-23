@@ -42,7 +42,7 @@ public class ReservationManagerTest extends TestCase {
         
     public void testCreate() {
         Reservation resv = new Reservation();
-        String nextDomain = null;
+        Domain nextDomain = null;
         Long millis = 0L;
         Long bandwidth = 0L;
 

@@ -42,35 +42,14 @@ public class ListReservationsClient extends ExampleClient {
                    java.rmi.RemoteException, Exception {
 
         super.init(args, isInteractive);
-        /*  don't know if login is coming or going, but it is currently  not used
-        String login = this.readParams(isInteractive);
-        */
-        String login = null;
+   
         // make the call to the server
-        ListReply response = this.getClient().listReservations(login);
+        ListReply response = this.getClient().listReservations();
         this.outputResponse(response);
         return response;
     }
 
-    public String readParams(boolean isInteractive) {
-        String login = null;
-
-        // Prompt for input parameters
-        try {
-            if (isInteractive) {
-                BufferedReader br =
-                     new BufferedReader(new InputStreamReader(System.in));
-                /* the following does  not work because getArg loops until it get an answer */
-	              login = Args.getArg(br, "User login (may be left blank)");
-            }
-        } catch (IOException ioe) {
-            System.out.println("IO error reading input");
-            System.exit(1);
-        }
-        return login;
-    }
-
-    public void outputResponse(ListReply response) {
+     public void outputResponse(ListReply response) {
         ResInfoContent[] resInfo = response.getResInfo();
         for (int i=0; i < resInfo.length; i++) {
             System.out.println("Tag: " + resInfo[i].getTag());

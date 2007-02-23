@@ -11,6 +11,7 @@ import org.hibernate.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.aaa.UserManager;
 import net.es.oscars.bss.BSSException;
 
 
@@ -31,10 +32,13 @@ public class ListReservations extends HttpServlet {
         response.setContentType("text/xml");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
+        Session aaa = 
+            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        aaa.beginTransaction();
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
-        reservations = this.getReservations(out, rm);
+        reservations = this.getReservations(out, rm, userName);
         if (reservations == null) {
             String msg = "Error in getting reservations";
             utils.handleFailure(out, msg, null, bss);
@@ -45,6 +49,7 @@ public class ListReservations extends HttpServlet {
         utils.tabSection(out, request, response, "ListReservations");
         this.contentSection(out, reservations, rm, userName);
         out.println("</xml>");
+        aaa.getTransaction().commit();
         bss.getTransaction().commit();
     }
 
@@ -56,11 +61,18 @@ public class ListReservations extends HttpServlet {
     }
 
     public List<Reservation>
-        getReservations(PrintWriter out, ReservationManager rm) {
+        getReservations(PrintWriter out, ReservationManager rm, String login) {
 
         List<Reservation> reservations = null;
+        boolean authorized = false;
+
+        UserManager mgr = new UserManager();
+        mgr.setSession();
+        if (mgr.verifyAuthorized(login, "Reservations", "manage")) {
+            authorized = true;
+        }
         try {
-            reservations = rm.list(null);
+            reservations = rm.list(login, authorized);
         } catch (BSSException e) {
             out.println("<xml><status>");
             out.println(e.getMessage());
@@ -72,7 +84,7 @@ public class ListReservations extends HttpServlet {
 
     public void
         contentSection(PrintWriter out, List<Reservation> reservations,
-                       ReservationManager rm, String userName) {
+                       ReservationManager rm, String login) {
 
         InetAddress inetAddress = null;
         String tag = "";

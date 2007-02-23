@@ -1,0 +1,40 @@
+<html>
+<body>
+<pre>
+To create a new Java project with the sources checked out from  the repository 
+File ->  new -> other -> SVN check out project
+     select repository location https://oscars-test.es.net/repos/oscars/branches
+check out as project to be configured by project wizard
+Project wizard lets you pick a project name
+  source files and build files can be chosen later using the project->properties-> build path
+`
+  Java Project, Set Java VM (1.5)
+    separate src and build directories
+       rename the bin dir to build
+
+Add libraries:
+  project -> properties -> java build path -> Libaries ->  add library
+    user library ->  new -> name, system library, add jars 
+
+run axis2 WSDL2Java
+file -> new ->other -> Axis2Wizards Axis2 Code Generator
+   select wsdl file, ->  next
+   chose server-side, client-side, skeleton, default services.xml
+    generate sync style only
+    set the package name to net.es.oscars.oscars 
+   -> next  select the project for the generated code - net.es.net.oscars.wsdlTypes
+  -> finish  generating code
+NB: this does not regenerate the OSCARSSkeleton.java,
+	OSCARSMessageReceiverInOut, OSCARSStub,OSCARSSkeletonInterface.java 
+    or the resources/OSCARS.wsdl, services.xml
+  if any of these files already exist. 
+
+Tried data binding none and xmlbeans
+   Only creates four files: Skeleton, service stub MessageReceiverInOut
+   Uses org.apache.axion.om.OMElement classes for the params.
+   xmlbeans gives three times as many classes foo, fooImpl, fooDocument, 
+   fooDocumentImpl
+ 
+</pre>
+</body>
+</html>

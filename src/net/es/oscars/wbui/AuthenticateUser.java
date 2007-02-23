@@ -70,7 +70,7 @@ public class AuthenticateUser extends HttpServlet {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         // first page that comes up is list of reservations
-        reservations = lister.getReservations(out, rm);
+        reservations = lister.getReservations(out, rm, userName);
         if (reservations == null) {
             String msg = "Error in getting reservations";
             utils.handleFailure(out, msg, aaa, bss);

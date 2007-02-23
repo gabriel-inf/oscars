@@ -24,26 +24,22 @@ public class Institution implements Serializable {
     public Institution() { }
 
     /**
-     * Auto generated getter method
      * @return id An Integer containing the primary key
      */ 
     public Integer getId() { return this.id; }
 
     /**
-     * Auto generated setter method
      * @param id An Integer containing the primary key
      */ 
     public void setId(Integer id) { this.id = id; }
 
 
     /**
-     * Auto generated getter method
      * @return name A String with the institution name
      */ 
     public String getName() { return this.name; }
 
     /**
-     * Auto generated getter method
      * @param name A String with the institution name
      */ 
     public void setName(String name) { this.name = name; }

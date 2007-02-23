@@ -23,9 +23,12 @@ public class ReservationManager {
     private LogWrapper log;
     private Notifier notifier;
     private PathManager pathMgr;
+    private Properties props;
 
     /** Constructor. */
     public ReservationManager() {
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        this.props = propHandler.getPropertyGroup("trace", true);
         this.log = new LogWrapper(this.getClass());
         this.notifier = new Notifier();
         this.pathMgr = new PathManager();
@@ -44,10 +47,10 @@ public class ReservationManager {
      * @param login string with login name
      * @param ingressRouterIP string with address of ingress router
      * @param egressRouterIP string with address of egress router
-     * @return nextDomain string with next domain, if any
+     * @return Domain instance, if any, associated with next domain
      * @throws BSSException
      */
-    public String create(Reservation resv, String login,
+    public Domain create(Reservation resv, String login,
                          String ingressRouterIP, String egressRouterIP) 
             throws  BSSException {
 
@@ -67,6 +70,10 @@ public class ReservationManager {
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
+        // this is only 0 for testing form submission and validation
+        String runTrace = this.props.getProperty("runTrace");
+        if (runTrace.equals("0")) { return null; }
+
         ReservationDAO dao = new ReservationDAO();
         dao.setSession(this.session);
 
@@ -83,10 +90,6 @@ public class ReservationManager {
         this.pathMgr.setSession(this.session);
         this.pathMgr.checkOversubscribed(currentPaths, path, bandwidth);
 
-        // If nextDomain is set, return for handling by forwarding method
-        String nextDomain = this.getNextDomain(pathfinder, path, null);
-        if (nextDomain != null) { return nextDomain; }
-
         // set start of path
         resv.setPath(path);
         resv.setLspClass("4");
@@ -95,7 +98,6 @@ public class ReservationManager {
         long millis = System.currentTimeMillis();
         resv.setCreatedTime(millis);
         dao.create(resv);
-        this.log.info("create.finish", resv.toString());
         try {
             String subject = "Reservation has been entered into the system";
             String notification = this.createReservationMessage(resv);
@@ -107,7 +109,12 @@ public class ReservationManager {
         } catch (UnsupportedOperationException e) {
             this.log.info("create.mail.unsupported", e.getMessage());
         }
-        return null;
+        // finds next domain, if any, to hand to interdomain component
+        Domain nextDomain = this.getNextDomain(pathfinder, path);
+        // disable forwarding for now
+        nextDomain = null;
+        this.log.info("create.finish", resv.toString());
+        return nextDomain;
     }
 
     /**
@@ -124,11 +131,17 @@ public class ReservationManager {
         String reply = null;
         this.log.info("cancel.start", tag);
    
-        dao = new ReservationDAO();
-        dao.setSession(this.session);
-        reply = dao.cancel(tag);
-
-        this.log.info("cancel.finish", "tag: " + tag + ", status: " + reply);
+        try {
+	        dao = new ReservationDAO();
+	        dao.setSession(this.session);
+	        reply = dao.cancel(tag);
+	
+	        this.log.info("cancel.finish", "tag: " + tag + ", status: " + reply);
+        } catch (Exception eIn) {
+        	BSSException eOut = new BSSException("Reservation not found: "+ tag);
+        	//eOut.fillInStackTrace();
+        	throw eOut;       	
+        }
         Reservation resv = dao.query(tag, false);
         String subject = "Reservation successfully cancelled";
         String notification = this.cancelReservationMessage(resv);
@@ -161,20 +174,27 @@ public class ReservationManager {
         this.log.info("query.start", tag);
         ReservationDAO dao = new ReservationDAO();
         dao.setSession(this.session);
-        resv = dao.query(tag, authorized);
-        this.log.info("query.finish", resv.toString());
-        return resv;
-    }
+        try {
+            resv = dao.query(tag, authorized);
+           this.log.info("query.finish", resv.toString());
+           return resv;
+        } catch (Exception eIn) {
+        	BSSException eOut = new BSSException("Reservation not found: "+ tag);
+        	eOut.fillInStackTrace();
+        	throw eOut;
+        }
+    } 
 
     /**
-     * Lists all reservations if login is null; otherwise only lists the
+     * Lists all reservations if authorized; otherwise only lists the
      *     corresponding user's reservations.
      *
      * @return reservations list of rseervations
      * @param login string with user's login name
+     * @param authorized boolean setting whether can view all reservations
      * @throws BSSException 
      */
-    public List<Reservation> list(String login)
+    public List<Reservation> list(String login, boolean authorized)
             throws BSSException {
 
         List<Reservation> reservations = null;
@@ -182,7 +202,7 @@ public class ReservationManager {
         this.log.info("list.start", "login: " + login);
         ReservationDAO dao = new ReservationDAO();
         dao.setSession(this.session);
-        reservations = dao.list(login);
+        reservations = dao.list(login, authorized);
         this.log.info("list.finish", "success");
         return reservations;
     }
@@ -233,12 +253,11 @@ public class ReservationManager {
      *
      * @param pathfinder a pathfinder.Pathfinder instance
      * @param path a path from source to destination
-     * @param lastDomain a string with the previous domain, if any
-     * @return nextDomain a string with the next domain's as number, if any
+     * @return Domain an instance associated with the next domain, if any
      * @throws BSSException
      */
-    public String getNextDomain(Pathfinder pathfinder, Path path,
-                                String lastDomain) throws BSSException {
+    public Domain getNextDomain(Pathfinder pathfinder, Path path)
+            throws BSSException {
 
         RouterDAO routerDAO = new RouterDAO();
         routerDAO.setSession(this.session);
@@ -262,11 +281,13 @@ public class ReservationManager {
         if (routerName == null) {
             throw new BSSException("getAsNumber: no router in database for " + lastIface);
         }
-        String nextDomain = pathfinder.queryDomain(null, routerName,
-                                                   nextHop);
-        if (nextDomain.equals("noSuchInstance")) {
-            nextDomain = null;
-        }
+        String nextDomainAsNum =
+            pathfinder.findNextDomain(routerName, nextHop);
+        if (nextDomainAsNum.equals("noSuchInstance")) { return null; }
+
+        DomainDAO domainDAO = new DomainDAO();
+        domainDAO.setSession(this.session);
+        Domain nextDomain = domainDAO.queryByParam(nextDomainAsNum, "asNum");
         return nextDomain;
     }
 

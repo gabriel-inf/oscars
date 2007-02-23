@@ -48,7 +48,8 @@ Adding a -sd switch generates resources/services.xml -->
         <fileset dir="resources" includes="services.xml" />
     </delete>
     <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
-        <classpath> <fileset dir="lib/axis2" includes="*.jar"/> </classpath>
+        <classpath> <fileset dir="lib"  includes="**/*.jar"/> 
+        </classpath>
         <arg value="-uri" />
         <arg file="conf/public/server/OSCARS.wsdl" />
         <arg value="--server-side" />
@@ -56,8 +57,11 @@ Adding a -sd switch generates resources/services.xml -->
         <arg value="--sync" />
         <arg value="--service-description" />
         <arg value="--generate-all" />
+        <arg value="-package"/>
+    	<arg value="net.es.oscars.oscars" />
         <arg value="--namespace2package" />
         <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes" />
+ 
     </java>
     <echo> 
   *** 
@@ -92,17 +96,6 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <delete dir="${build.home}" />
 </target>
 
-<!-- OSCARS.aar file, gets copied into container-specific location.  For
-Tomcat, this is webapps/axis2/WEB-INF/services -->
-<target name="aar" description="Create OSCARS.aar file" depends="compile">
-    <jar destfile="build/OSCARS.aar">  
-        <fileset dir="${build.classes}" includes="**/*"
-                 excludes="**/client/**/*, **/wbui/**/*" />
-        <!-- <fileset dir="." includes="lib/**/*.jar" /> -->
- 	<fileset dir="${build.lib}/.." includes="lib/*.jar" />
-        <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
-    </jar>
-</target>
 
 <!-- WBUI section ******************************************************** -->
 
@@ -138,6 +131,31 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
                            **/oscars/ReservationAdapter.class" />
         <lib dir="lib" includes="**/*.jar" />
     </war>
+</target>
+
+<!-- OSCARS.aar file, gets copied into container-specific location.  For
+Tomcat, this is webapps/axis2/WEB-INF/services -->
+<target name="aar" description="Create OSCARS.aar file" depends="compile">
+    <jar destfile="build/OSCARS.aar">  
+        <fileset dir="${build.classes}" includes="**/*"
+                 excludes="**/client/**/*, **/wbui/**/*" />
+        <!-- <fileset dir="." includes="lib/**/*.jar" /> -->
+    <fileset dir="${build.lib}/.." includes="lib/*.jar" />
+        <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
+    </jar>
+</target>
+
+<target name="foogui" description="Build war file for deploy"
+        depends="compile, copydojo, copydocs">
+        <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
+            <fileset dir="web"
+                     includes="**/*" excludes="WEB-INF/web.xml" />
+            <fileset dir="${build.lib}/.." includes="lib/*.jar" />
+            <classes dir="${build.classes}" includes="**/*"
+                     excludes="**/oscars/OSCARSSk*.class, **/oscars/OSCARSM*.class,
+                               **/oscars/ReservationAdapter.class" />
+                           <!--<lib dir="lib" includes="**/*.jar" /> -->
+        </war>
 </target>
 
 

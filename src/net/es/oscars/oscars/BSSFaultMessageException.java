@@ -3,9 +3,10 @@
  * BSSFaultMessageException.java
  *
  * This file was auto-generated from WSDL
- * by the Apache Axis2 version: 1.1.1-SNAPSHOT Nov 29, 2006 (02:53:00 GMT+00:00)
+ * by the Apache Axis2 version: 1.1.1 Jan 09, 2007 (06:20:51 LKT)
  */
 package net.es.oscars.oscars;
+import net.es.oscars.wsdlTypes.*;
 
 public class BSSFaultMessageException extends java.lang.Exception{
     
@@ -16,7 +17,9 @@ public class BSSFaultMessageException extends java.lang.Exception{
     }
            
     public BSSFaultMessageException(java.lang.String s) {
-       super(s);
+       super("BSSFaultMessageException");
+       faultMessage = new BSSFault();
+       faultMessage.setMsg(s);
     }
     
     public BSSFaultMessageException(java.lang.String s, java.lang.Throwable ex) {
