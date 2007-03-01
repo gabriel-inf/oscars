@@ -9,7 +9,7 @@ import org.hibernate.*;
 import net.es.oscars.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.bss.pathfinder.Pathfinder;
+import net.es.oscars.pathfinder.traceroute.Pathfinder;
 
 
 /**
@@ -60,9 +60,9 @@ public class ReservationManager {
         Path path = null;
         Long bandwidth = 0L;
 
-        this.log.info("create.start", resv.toString());
         // login is checked in validate so set it here
         resv.setLogin(login);
+        this.log.info("create.start", resv.toString());
 
         // so far just validation for create
         StringBuilder errorMsg =
@@ -72,6 +72,7 @@ public class ReservationManager {
         }
         // this is only 0 for testing form submission and validation
         String runTrace = this.props.getProperty("runTrace");
+        this.log.debug("runTrace variable is", runTrace);
         if (runTrace.equals("0")) { return null; }
 
         ReservationDAO dao = new ReservationDAO();
@@ -111,9 +112,7 @@ public class ReservationManager {
         }
         // finds next domain, if any, to hand to interdomain component
         Domain nextDomain = this.getNextDomain(pathfinder, path);
-        // disable forwarding for now
-        nextDomain = null;
-        this.log.info("create.finish", resv.toString());
+        this.log.info("create.finish reservation tag is ", this.toTag(resv)); 
         return nextDomain;
     }
 

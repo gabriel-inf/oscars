@@ -55,7 +55,7 @@ public class JnxLSPTest extends TestCase {
 
         hm.put("user", this.props.getProperty("user"));
         hm.put("passphrase",this.props.getProperty("passphrase"));
-        String keyfile = System.getenv("OSCARS_HOME") + "/conf/private/server/pss_key";
+        String keyfile = System.getenv("CATALINA_HOME") + "/shared/oscars.conf/server/pss_key";
         hm.put("keyfile", keyfile);
         hm.put("host", this.props.getProperty("host"));
         hm.put("user", this.props.getProperty("user"));

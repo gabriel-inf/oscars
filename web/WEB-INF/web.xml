@@ -16,57 +16,57 @@
     <!-- BSS section -->
     <servlet>
         <servlet-name>CancelReservation</servlet-name>
-        <servlet-class>net.es.oscars.wbui.CancelReservation</servlet-class>
+        <servlet-class>net.es.oscars.servlets.CancelReservation</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>CreateReservation</servlet-name>
-        <servlet-class>net.es.oscars.wbui.CreateReservation</servlet-class>
+        <servlet-class>net.es.oscars.servlets.CreateReservation</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>QueryReservation</servlet-name>
-        <servlet-class>net.es.oscars.wbui.QueryReservation</servlet-class>
+        <servlet-class>net.es.oscars.servlets.QueryReservation</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>ListReservations</servlet-name>
-        <servlet-class>net.es.oscars.wbui.ListReservations</servlet-class>
+        <servlet-class>net.es.oscars.servlets.ListReservations</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>CreateReservationForm</servlet-name>
-        <servlet-class>net.es.oscars.wbui.CreateReservationForm</servlet-class>
+        <servlet-class>net.es.oscars.servlets.CreateReservationForm</servlet-class>
     </servlet>
 
     <!-- AAA section -->
     <servlet>
         <servlet-name>AuthenticateUser</servlet-name>
-        <servlet-class>net.es.oscars.wbui.AuthenticateUser</servlet-class>
+        <servlet-class>net.es.oscars.servlets.AuthenticateUser</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserLogout</servlet-name>
-        <servlet-class>net.es.oscars.wbui.UserLogout</servlet-class>
+        <servlet-class>net.es.oscars.servlets.UserLogout</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserAdd</servlet-name>
-        <servlet-class>net.es.oscars.wbui.UserAdd</servlet-class>
+        <servlet-class>net.es.oscars.servlets.UserAdd</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserAddForm</servlet-name>
-        <servlet-class>net.es.oscars.wbui.UserAddForm</servlet-class>
+        <servlet-class>net.es.oscars.servlets.UserAddForm</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserList</servlet-name>
-        <servlet-class>net.es.oscars.wbui.UserList</servlet-class>
+        <servlet-class>net.es.oscars.servlets.UserList</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserModify</servlet-name>
-        <servlet-class>net.es.oscars.wbui.UserModify</servlet-class>
+        <servlet-class>net.es.oscars.servlets.UserModify</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserQuery</servlet-name>
-        <servlet-class>net.es.oscars.wbui.UserQuery</servlet-class>
+        <servlet-class>net.es.oscars.servlets.UserQuery</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserRemove</servlet-name>
-        <servlet-class>net.es.oscars.wbui.UserRemove</servlet-class>
+        <servlet-class>net.es.oscars.servlets.UserRemove</servlet-class>
     </servlet>
 
     <!-- BSS section -->

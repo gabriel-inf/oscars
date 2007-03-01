@@ -10,14 +10,14 @@
        and one named tabName which starts out as ListReservations and changes to UserList, CreateReservationFor, Logout 
        depending on  the last tab viewed. <b>This will be changed so the user only gets a reference to the cookies.</b>
    <pre>    
-    wbui.UserSession
+    servlets.UserSession
           String checkSession(PrintWriter out, HttpServletRequest request) - 
                returns the userName from the cookie or an xml status message
           void setCookie(String cookieName, String cookieValue,
             HttpServletResponse response)
          String getCookie(String cookieName, HttpServletRequest request) 
-         	called by wbui.UserSession.checkSession
-         	               wbui.Utils.tabSection
+         	called by servlets.UserSession.checkSession
+         	               servlets.Utils.tabSection
          If there is a cookie named "userName" , returns the value of the cookie which is the user's login name
          Otherwise returns null. 
 
@@ -53,16 +53,16 @@
 aaa/UserManager
        String LoginFromDN(String DN)   -called from OSCARSSkeleton.checkUser
        		uses UserDAO to lookup DN and return login name
-       String verifyLogin(String userName, String password)  - called from wbui.AuthenticateUser.doGet
+       String verifyLogin(String userName, String password)  - called from servlets.AuthenticateUser.doGet
        		user UserDAO to see if user is already authenticate
        		if not looks up login Name
        		looks up enrypted password and compares to input password
        	boolean verifyAuthorized(String userName, String resourceName,
                                     String permissionName) {
                           called by
-                            wbui.CreateReservationForm.contentSection
-                            wbui.AuthenticateUser.doGet
-                            wbui.ListReservations.getReservations
+                            servlets.CreateReservationForm.contentSection
+                            servlets.AuthenticateUser.doGet
+                            servlets.ListReservations.getReservations
                             OSCARSSkeleton.listReservations
                             OSCARSSkeleton.queryReservations
                  verifies that this user has the specified permission to the specified resource

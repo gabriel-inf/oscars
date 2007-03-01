@@ -26,9 +26,9 @@
     </copy>
     <mkdir dir="${build.lib}"/>
     <copy todir="${build.lib}">
-	<fileset dir="lib" includes="*.jar"/>
-	<fileset dir="lib/axis2" includes="*.jar"/>
-	<fileset dir="lib/jsf" includes="*.jar"/>
+        <fileset dir="lib" includes="*.jar"/>
+        <fileset dir="lib/axis2" includes="*.jar"/>
+        <fileset dir="lib/jsf" includes="*.jar"/>
     </copy>
 </target>
 
@@ -58,7 +58,7 @@ Adding a -sd switch generates resources/services.xml -->
         <arg value="--service-description" />
         <arg value="--generate-all" />
         <arg value="-package"/>
-    	<arg value="net.es.oscars.oscars" />
+        <arg value="net.es.oscars.oscars" />
         <arg value="--namespace2package" />
         <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes" />
  
@@ -83,8 +83,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
 <target name="docs">
     <mkdir dir="docs/api" />
     <javadoc destdir="docs/api" author="true">
-        <packageset dir="src"
-                    includes="**/oscars/**/*" excludes="**/wbui/**/*" />
+        <packageset dir="src" includes="**/*.java, **/*.html" />
         <classpath>
             <fileset dir="lib" includes="**/*.jar" />
         </classpath>
@@ -96,6 +95,17 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <delete dir="${build.home}" />
 </target>
 
+<!-- OSCARS.aar file, gets copied into container-specific location.  For
+Tomcat, this is webapps/axis2/WEB-INF/services -->
+<target name="aar" description="Create OSCARS.aar file" depends="compile">
+    <jar destfile="build/OSCARS.aar">  
+        <fileset dir="${build.classes}" includes="**/*"
+                 excludes="**/servlets/**/*" />
+        <!-- <fileset dir="." includes="lib/**/*.jar" /> -->
+        <fileset dir="${build.lib}/.."  includes="lib/*.jar" />
+        <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
+    </jar>
+</target>
 
 <!-- WBUI section ******************************************************** -->
 
@@ -121,7 +131,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
     </copy>
 </target>
 
-<target name="gui" description="Build war file for deploy"
+<target name="wbui" description="Build war file for deploy"
         depends="compile, copydojo, copydocs">
     <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
         <fileset dir="web"
@@ -129,33 +139,8 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
         <classes dir="${build.classes}" includes="**/*"
                  excludes="**/oscars/OSCARSSk*.class, **/oscars/OSCARSM*.class,
                            **/oscars/ReservationAdapter.class" />
-        <lib dir="lib" includes="**/*.jar" />
+        <lib dir="lib" includes="*.jar" />
     </war>
-</target>
-
-<!-- OSCARS.aar file, gets copied into container-specific location.  For
-Tomcat, this is webapps/axis2/WEB-INF/services -->
-<target name="aar" description="Create OSCARS.aar file" depends="compile">
-    <jar destfile="build/OSCARS.aar">  
-        <fileset dir="${build.classes}" includes="**/*"
-                 excludes="**/client/**/*, **/wbui/**/*" />
-        <!-- <fileset dir="." includes="lib/**/*.jar" /> -->
-    <fileset dir="${build.lib}/.." includes="lib/*.jar" />
-        <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
-    </jar>
-</target>
-
-<target name="foogui" description="Build war file for deploy"
-        depends="compile, copydojo, copydocs">
-        <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
-            <fileset dir="web"
-                     includes="**/*" excludes="WEB-INF/web.xml" />
-            <fileset dir="${build.lib}/.." includes="lib/*.jar" />
-            <classes dir="${build.classes}" includes="**/*"
-                     excludes="**/oscars/OSCARSSk*.class, **/oscars/OSCARSM*.class,
-                               **/oscars/ReservationAdapter.class" />
-                           <!--<lib dir="lib" includes="**/*.jar" /> -->
-        </war>
 </target>
 
 

@@ -1,4 +1,4 @@
-package net.es.oscars.wbui;
+package net.es.oscars.servlets;
 
 import java.io.IOException;
 import javax.servlet.*;

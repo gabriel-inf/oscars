@@ -1,4 +1,4 @@
-package net.es.oscars.bss.pathfinder;
+package net.es.oscars.pathfinder.traceroute;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -45,6 +45,8 @@ public class JnxTraceroute {
         String hopInfo = "";
         Pattern ipPattern = 
             Pattern.compile(".*?\\((\\d+\\.\\d+\\.\\d+\\.\\d+)\\).*?");
+        
+        Pattern errPattern = Pattern.compile(".*Operation timed out.*");
 
         if ((src == null) || (dst == null)) {
             throw new BSSException("Traceroute source or destination not defined");
@@ -54,8 +56,8 @@ public class JnxTraceroute {
 
         // remove subnet mask if necessary,  e.g. 10.0.0.0/8 => 10.0.0.0
         dst = dst.replaceAll("/\\d*", "");
-        String jnxKey = System.getenv("OSCARS_HOME") +
-                        "/conf/private/server/oscars.key";
+        String jnxKey = System.getenv("CATALINA_HOME") +
+                        "/shared/oscars.conf/server/oscars.key";
 
         // prepare traceroute command
         cmd = "ssh -x -a -i " + jnxKey + " -l " + 
@@ -70,8 +72,25 @@ public class JnxTraceroute {
         BufferedReader tracerouteOuput = 
             new BufferedReader(new InputStreamReader(p.getInputStream()));
 
+        BufferedReader tracerouteError =
+        	new BufferedReader(new InputStreamReader(p.getErrorStream()));
+        
+        String errInfo = tracerouteError.readLine();
+        if (errInfo != null )
+        {
+        	this.log.error("error stream is: ", errInfo );
+        	if ( errPattern.matcher(errInfo).matches())
+        	{
+                tracerouteOuput.close();
+                tracerouteError.close();
+        		throw new BSSException("Traceroute error: " + errInfo);
+        	}
+        }
+    	
         // parse the results
         while ((hopInfo = tracerouteOuput.readLine()) != null) {
+        	this.log.debug("hopinfo is ",hopInfo);
+       
             this.rawHopData.add(hopInfo);
 
             Matcher m = ipPattern.matcher(hopInfo);

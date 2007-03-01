@@ -1,4 +1,4 @@
-package net.es.oscars.bss.pathfinder;
+package net.es.oscars.pathfinder.traceroute;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

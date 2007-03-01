@@ -274,6 +274,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public void init(ServiceContext sc) {
 
         System.out.println("******OSCARS  init.start: starting*****");
+        String catalinaHome = System.getProperty("catalina.home");
+         System.out.println("catalina.home is "+ catalinaHome);
         Initializer initializer = new Initializer();
         initializer.initDatabase();
 
@@ -358,6 +360,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String login = null;
         String[] dnElems = null;
         setOperationContext();
+ 
         if (this.subjectDN == null){
             this.log.error("checkUser: ", "no certificate found in message");
             AAAFaultMessageException AAAErrorEx = new AAAFaultMessageException(

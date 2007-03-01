@@ -99,7 +99,7 @@ public class ReservationManagerTest extends TestCase {
         List<Reservation> reservations = null;
 
         try {
-            reservations = this.rm.list(null);
+            reservations = this.rm.list(this.props.getProperty("login"), true);
         } catch (BSSException ex) {
             this.session.getTransaction().rollback();
             fail("Caught BSSException: " + ex.getMessage());
@@ -113,7 +113,7 @@ public class ReservationManagerTest extends TestCase {
 
         String login = this.props.getProperty("login");
         try {
-            reservations = this.rm.list(login);
+            reservations = this.rm.list(login, false);
         } catch (BSSException ex) {
             this.session.getTransaction().rollback();
             fail("Caught BSSException: " + ex.getMessage());

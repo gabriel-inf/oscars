@@ -29,9 +29,12 @@ public class Forwarder  extends Client {
     private void setup(Reservation resv, Domain  nextDomain) 
     throws InterdomainException {
         String url =nextDomain.getUrl();
-        String repo = "directory where axis2.xml lives";
+        String catalinaHome = System.getProperty("catalina.home");
+        String repo = catalinaHome + "shared/oscars.conf/axis2.repo/";
+        this.log.info("Forwarder.setup, next Domain: " + url + "repo: " , repo );
+ 
         try {
-            super.setUp(true, url, repo);
+            super.setUp(true, url, repo, repo + "conf/axis2.xml");
         } catch (AxisFault af) {
       		this.log.error("axis setup failed ", af.getMessage());
         	throw new InterdomainException("failed to reach remote domain:" + url +  af.getMessage());
@@ -42,6 +45,7 @@ public class Forwarder  extends Client {
     throws  InterdomainException {
     	
         if (nextDomain == null) { return null; }
+        this.log.info("Forwarding createReservation to ", nextDomain.getUrl());
         ForwardReply reply = this.forward("createReservation", resv, nextDomain);
         return reply.getCreateReservation();
     }
@@ -50,6 +54,7 @@ public class Forwarder  extends Client {
     throws  InterdomainException {
     	
         if (nextDomain == null) { return null; }
+        this.log.info("Forwarding queryReservation to ", nextDomain.getUrl());
         ForwardReply reply = this.forward("queryReservation", resv, nextDomain);
        return reply.getQueryReservation();
     }
@@ -58,6 +63,7 @@ public class Forwarder  extends Client {
     throws  InterdomainException {
     	
         if (nextDomain == null) { return null; }
+        this.log.info("Forwarding cancelReservation to ", nextDomain.getUrl());
          ForwardReply reply = this.forward("cancelReservation", resv, nextDomain);
          return reply.getCancelReservation();
     }

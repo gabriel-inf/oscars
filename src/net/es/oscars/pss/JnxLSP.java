@@ -632,7 +632,8 @@ public class JnxLSP {
      */
     private boolean createLSP(Map hm, OutputStream out) 
             throws BSSException {
-        String lsp_setup =  System.getenv("OSCARS_HOME") +
+        String lsp_setup =  System.getenv("CATALINA_HOME") +
+                "/shared/oscars.conf/server/" +
                 this.props.getProperty("setupFile");
 
         Document doc = null;
@@ -679,9 +680,9 @@ public class JnxLSP {
     public boolean destroyLSP(Map hm, OutputStream out) 
             throws BSSException {
 
-        String lsp_teardown = System.getenv("OSCARS_HOME") +
+        String lsp_teardown =  System.getenv("CATALINA_HOME") +
+                "/shared/oscars.conf/server/" +
                 this.props.getProperty("teardownFile");
-
         Document doc = null;
 
         try {

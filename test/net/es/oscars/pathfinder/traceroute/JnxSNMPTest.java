@@ -1,4 +1,4 @@
-package net.es.oscars.bss.pathfinder;
+package net.es.oscars.pathfinder.traceroute;
 
 import junit.framework.*;
 import java.util.*;

@@ -18,6 +18,16 @@ import net.es.oscars.client.Client;
 public class ExampleClient {
     private Client client;
     private Properties props;
+    
+    /**
+     *    Init called by all the derived classes to get the parameters either by prompting
+     *    or from the test.properties (now unused). Creates a client and calls setup on it.
+     *    
+     * @param args [0] pathname of the repository directory that contains the axis2.xml configuration file
+     *                args [1] URL to the requested service. -can be overidden by prompted for arguments.
+     * @param isInteractive - if true, prompt for addtional parameters, otherwise get values from
+     *                a properties file.
+     */
 
     public void init(String[] args, boolean isInteractive) {
 		String url = null;

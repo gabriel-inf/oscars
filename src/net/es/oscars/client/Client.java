@@ -29,6 +29,10 @@ public class Client {
     protected OSCARSStub stub;
 
     public void setUp(boolean useKeyStore, String url, String repo) throws AxisFault {
+    	this.setUp(useKeyStore, url, repo, null);
+     }
+
+    public void setUp(boolean useKeyStore, String url, String repo, String axisConfig) throws AxisFault {
         if (useKeyStore) { KeyManagement.setKeyStore(); }
         this.log = new LogWrapper(this.getClass());
         this.configContext =
@@ -42,7 +46,6 @@ public class Client {
         sc.setOptions(opts);
         this.stub._setServiceClient(sc);
     }
-
     /**
      * Makes call to server to cancel a reservation.
      *

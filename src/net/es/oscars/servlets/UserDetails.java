@@ -1,4 +1,4 @@
-package net.es.oscars.wbui;
+package net.es.oscars.servlets;
 
 import java.io.PrintWriter;
 import java.util.List;

@@ -1,4 +1,4 @@
-package net.es.oscars.wbui;
+package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
@@ -11,7 +11,8 @@ import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.AAAException;
 
-public class UserAdd extends HttpServlet {
+
+public class UserRemove extends HttpServlet {
 
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
@@ -20,26 +21,22 @@ public class UserAdd extends HttpServlet {
         List<User> users = null;
         UserList ulist = null;
 
-        Session aaa;
         UserSession userSession = new UserSession();
+        Utils utils = new Utils();
         UserManager mgr = new UserManager();
         mgr.setSession();
-        User newUser = null;
-        Utils utils = new Utils();
-
         PrintWriter out = response.getWriter();
         response.setContentType("text/xml");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
+
         String profileName = request.getParameter("profileName");
-        aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = 
+            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
         try {
-            // admin cannot add him or herself
-            if (profileName != userName) {
-                newUser = this.toUser(out, profileName, request);
-                mgr.create(newUser, request.getParameter("institutionName"));
-            }
+            // admin cannot remove him or herself
+            if (profileName != userName) { mgr.remove(profileName); }
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
@@ -58,25 +55,5 @@ public class UserAdd extends HttpServlet {
             throws IOException, ServletException {
 
         this.doGet(request, response);
-    }
-
-    public User toUser(PrintWriter out, String userName,
-                       HttpServletRequest request) {
-
-        User user = new User();
-        user.setLogin(userName);
-        user.setCertificate(request.getParameter("certificate"));
-        user.setCertSubject(request.getParameter("certSubject"));
-        user.setLastName(request.getParameter("lastName"));
-        user.setFirstName(request.getParameter("firstName"));
-        user.setEmailPrimary(request.getParameter("emailPrimary"));
-        user.setPhonePrimary(request.getParameter("phonePrimary"));
-        user.setPassword(request.getParameter("password"));
-        user.setDescription(request.getParameter("description"));
-        user.setEmailSecondary(request.getParameter("emailSecondary"));
-        user.setPhoneSecondary(request.getParameter("phoneSecondary"));
-        user.setStatus(request.getParameter("status"));
-        user.setActivationKey(request.getParameter("activationKey"));
-        return user;
     }
 }

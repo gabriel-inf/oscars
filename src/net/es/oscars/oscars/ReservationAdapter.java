@@ -41,6 +41,7 @@ public class ReservationAdapter {
             throws  BSSException, InterdomainException {
 
         this.log.info("create.start", params.toString());
+ 
         this.rm.setSession();
         Reservation resv = this.toReservation(params);
         Forwarder forwarder = new Forwarder();
@@ -153,9 +154,7 @@ public class ReservationAdapter {
     private CreateReply toReply(Reservation resv) {
         CreateReply reply = new CreateReply();
         reply.setTag(this.rm.toTag(resv));
-        /** TODO check on fromString vs fromValue */
-        //reply.setStatus(ResStatus.fromString(resv.getStatus()));
-     reply.setStatus(resv.getStatus());
+        reply.setStatus(resv.getStatus());
         return reply;
     }
 
