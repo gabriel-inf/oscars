@@ -34,7 +34,7 @@ public class Forwarder  extends Client {
         this.log.info("Forwarder.setup, next Domain: " + url + "repo: " , repo );
  
         try {
-            super.setUp(true, url, repo, repo + "conf/axis2.xml");
+            super.setUp(true, url, repo, repo + "axis2.xml");
         } catch (AxisFault af) {
       		this.log.error("axis setup failed ", af.getMessage());
         	throw new InterdomainException("failed to reach remote domain:" + url +  af.getMessage());

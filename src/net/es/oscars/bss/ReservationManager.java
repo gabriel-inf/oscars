@@ -113,6 +113,9 @@ public class ReservationManager {
         // finds next domain, if any, to hand to interdomain component
         Domain nextDomain = this.getNextDomain(pathfinder, path);
         this.log.info("create.finish reservation tag is ", this.toTag(resv)); 
+        if (nextDomain != null) {
+        	this.log.info("create.finish next domain is " , nextDomain.getUrl());
+        }
         return nextDomain;
     }
 
@@ -175,7 +178,7 @@ public class ReservationManager {
         dao.setSession(this.session);
         try {
             resv = dao.query(tag, authorized);
-           this.log.info("query.finish", resv.toString());
+           this.log.info("query.finish" , this.toTag(resv));
            return resv;
         } catch (Exception eIn) {
         	BSSException eOut = new BSSException("Reservation not found: "+ tag);

@@ -1,0 +1,78 @@
+<html>
+<body>
+
+<h3>Setting up the example clients</h3>
+
+<p>Assume the OSCARS source tree is checked out in $OSCARS_HOME. "OH" for 
+short.</p>
+
+<p>Running ant in OH/examples/javaClients will build all the client-side
+classes and populate ./repo in that directory with
+sec-client.{properties,jks} and axis2.xml.  The properties file has the
+name and password for the keystore (sec-client.jks) and the keystore has the
+certs for the ESnet Root CA, the DOEGrids CA, the OASIS interop CA and the
+cert/key for "alice" and "bob".  alice is known to OSCARS on oscars-dev and
+can list, cancel, query her own reservations and make a new reservation.
+(These permisions seem a bit generous and will probably be limited in the
+future.)</p>
+
+<p>The other client configuration file is ./repo/axis2.xml. This tells the
+code to sign and timestamp the outgoing message and to expect timestamps on
+the replies. It also says what user to run as, which is currently set to
+alice.</p>
+
+<p>These files were copied from OH/conf/public/conf/client. You can override
+these files by placing your own versions (e.g. with your user name/key) in
+OH/conf/private/conf/client.</p>
+
+<p>Use the shell scripts to run the client programs. These will set the
+classpath first, and then run java with the right switches.</p>
+
+<p>At this point, query, list, and cancel all work. CreateReservation wants
+to look at a test.properties file that is in conf/private/server/topology.
+I'm guessing that you do not have permission to check out that file.  It
+provides default values for the parameters.  David and I are trying to
+decide how to deal with this. The only issue seems to be the src and
+destination host and router names.</p>
+
+<h3>Handling the keystore</h3>
+
+<p>The keytool command will do most of what you need:  listing contents,
+setting aliases, adding  new trust certificates. The one think it does not
+do is to import a trusted entry, e.g. cert and key.  There is a class that
+comes with the jetty release that we have used. There may be tools in the
+Sun suite as well.
+
+<h4>input a pkcs12 file to a key store</h4>
+<pre>
+
+#NOTE:
+# Need both the cert and private key in the keystore so...
+# need to be in pem format so if it in DER format
+openssl x509 -in mycert.der -inform DER -outform PEM -out mycert.pem
+
+#use openssl to make ONE pkcs12 file (combine both cert & private key)
+openssl pkcs12 -inkey jason.key.pem -in jason.cert.pem  -export -out foo.pkcs12
+
+# use jetty to load it (from http://jetty.mortbay.org/)
+/opt/java/j2re1.4.2_08/bin/java -cp `pwd`/lib/org.mortbay.jetty.jar org.mortbay.util.PKCS12Import /home/portnoy/u2/jason/De
+sktop/keystore/foo.pkcs12 keystore.all.jks
+
+</pre>
+
+<p>Now to rename the alias use:</p>
+
+<pre>
+keytool -keyclone -alias 1 -dest mrt -keystore sec-client.jks
+keytool -delete -alias 1 -keystore sec-client.jks
+</pre>
+
+<p>Then to import the DOEGrids CA cert:</p>
+
+<pre>
+keytool -import -keystore sec-client.jks -file ~mrt/certs/doeGridsCA.pem -trustcacerts -alias DOEGridsCA
+keytool -import -keystore sec-client.jks -file ~mrt/certs/esnetRoot.pem -trustcacerts -alias esnetRoot
+</pre>
+
+</body>
+</html>

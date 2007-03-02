@@ -21,8 +21,7 @@
     <mkdir dir="${build.classes}" />
     <copy todir="${build.classes}">
         <fileset dir="src" includes="**/*.hbm.xml" />
-        <fileset dir="conf/public/server" includes="*.cfg.xml, log4j.properties" />
-        <fileset dir="conf/private/server" includes="sec-server.*" />
+        <fileset dir="conf/public/server" includes="*.cfg.xml, log4j.properties,sec-server*" />
     </copy>
     <mkdir dir="${build.lib}"/>
     <copy todir="${build.lib}">
@@ -83,7 +82,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
 <target name="docs">
     <mkdir dir="docs/api" />
     <javadoc destdir="docs/api" author="true">
-        <packageset dir="src" includes="**/*.java, **/*.html" />
+        <packageset dir="src" includes="**/*" />
         <classpath>
             <fileset dir="lib" includes="**/*.jar" />
         </classpath>
@@ -101,7 +100,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <jar destfile="build/OSCARS.aar">  
         <fileset dir="${build.classes}" includes="**/*"
                  excludes="**/servlets/**/*" />
-        <!-- <fileset dir="." includes="lib/**/*.jar" /> -->
         <fileset dir="${build.lib}/.."  includes="lib/*.jar" />
         <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
     </jar>
@@ -142,7 +140,22 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <lib dir="lib" includes="*.jar" />
     </war>
 </target>
-
+	
+<!-- Deployment section -->
+	<property  name="catalina.home" value="/usr/local/jakarta-tomcat5.5"/>
+	
+	<target name="setupServer" description="populate the oscars.conf directory">
+		<mkdir dir="${catalina.home}/shared/conf.oscars/axis2.repo"/>
+		<mkdir dir="${catalina.home}/shared/conf.oscars/server"/>
+		<copy todir="${catalina.home}/shared/conf.oscars/axis2.repo">
+			<fileset dir="conf/private/server" includes="sec-client.*"/>
+		</copy>
+		<copy file="conf/public/client/axis2.xml" todir ="${catalina.home}/shared/conf.oscars/axis2.repo"/>
+		<copy todir="${catalina.home}/shared/conf.oscars/server">
+			<fileset dir="conf/private/server/" includes="*key, oscars.properties, test.properties"/>
+			<fileset dir="conf/public/server/" includes="*juniper*"/>
+		</copy>
+     </target>
 
 <!-- Junit test section -->
 

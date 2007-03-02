@@ -78,7 +78,7 @@ public class JnxTraceroute {
         String errInfo = tracerouteError.readLine();
         if (errInfo != null )
         {
-        	this.log.error("error stream is: ", errInfo );
+        	this.log.warn("error stream is: ", errInfo );
         	if ( errPattern.matcher(errInfo).matches())
         	{
                 tracerouteOuput.close();

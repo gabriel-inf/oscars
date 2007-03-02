@@ -1,0 +1,33 @@
+<html>
+<head>
+    <title>Notes on using the BSS component</title>
+</head>
+<body>
+
+<h2>Updating the BSS topology database</h2>
+
+<ol>
+    <li>Go to nettrash3.es.net</li>
+    <li>cd to /usr/stats/data/today/ifrefpoll</li>
+    <li>Copy the files in that directory to the machine that you will run
+    updatedb on:<br/>
+
+        <pre>
+             mkdir /tmp/buzz;
+             cd /tmp/buzz;
+             scp 'nettrash3.es.net:/usr/stats/data/today/ifrefpoll/*' . 
+        </pre>
+    </li>
+
+    <li>cd to $OSCARS_HOME/examples/updatedb</li>
+    <li>Run the update command with the directory you copied the files into
+    <br/>
+
+        <pre>
+            (cd $OSCARS_HOME/examples/updatedb ; ./populatedb.sh -f /tmp/buzz)
+        </pre>
+    </li>
+</ol>
+
+</body>
+</html>

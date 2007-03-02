@@ -95,7 +95,7 @@ public class ReservationAdapter {
         ResDetails reply = this.toDetails(resv);
         /* TODO check for nextDomain
          * */
-                 this.log.info("query.finish", reply.toString());
+        this.log.info("query.finish ", this.rm.toTag(resv));
         return reply;
     }
 

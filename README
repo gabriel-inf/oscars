@@ -1,21 +1,22 @@
-OSCARS version 0.3
+OSCARS version 0.5
 ===================
 
-DATE: October 30, 2006
+DATE: March 1, 2007
 
-Material in this directory is for the Java port.
+This branch is the main development branch.
 
-Note that the oscars and topology databases must be set up correctly before
-oscars will work (ant task to be provided).
+Note that the aaa and bss databases must be set up correctly before
+OSCARS will work (ant sql task to be provided).
 
-The build.xml file uses properties from private/oscars.properties.  Test
-targets are contained in test/build.xml, and test properties in
-test/private/test.properties
+The build.xml file uses properties from conf/private/server/oscars.properties,
+which should be copied to $CATALINA_HOME using the provided Ant task.
+Test properties are in conf/private/server/test.properties, which are
+also copied by the Ant task.
 
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2006 by the Regents of the University
+Copyright (C) 2006, 2007 by the Regents of the University
 of California.   Anyone may reproduce the software in this file,
 in whole or in part, provided that:
 

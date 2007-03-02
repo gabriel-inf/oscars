@@ -1,0 +1,65 @@
+<html>
+<head>
+    <title>Notes on using Subversion</title>
+</head>
+
+<body>
+<h2>Merging from a branch into the trunk</h2>
+
+<ol>
+    <li>Make sure you have a copy of the trunk is clean:<br/>
+        <pre>
+            % svn status
+        </pre>
+    </li>
+
+    <li>Check what the current head version is:<br/>
+        <pre>
+            % svn update 
+        </pre>
+    </li>
+
+    <li>Do a 'dry-run' to see what files will change:<br/>
+        <pre>
+            % svn merge --dry-run -r <em>trunkrevnumber></em>:<em>headrevnumber</em> ../branches/java
+         </pre>
+    </li>
+
+    <li>Save this list:<br/>
+        <pre>
+            svn merge --dry-run -r <em>trunkrevnumber></em>:<em>headrevnumber</em> ../branches/java >~/svn.list
+        </pre>
+    </li>
+
+    <li>Merge in from the branch (in this case branches/java):<br/>
+        <pre>
+             svn merge -r  <em>trunkrevnumber></em>:<em>headrevnumber</em> ../branches/java
+        </pre>
+    </li>
+
+    <li>Check for any conflicts, these will be marked by a 'C' before the
+    filename.  In this example, validator.js has a
+    conflict that we will have to manually resolve:<br/>
+        <pre>
+             U    web/index.html
+             C    web/js/validator.js
+        </pre>
+    </li>
+
+    <li>After resolving this conflict do:<br/>
+        <pre>
+            svn resolved web/js/validator.js
+        </pre>
+    </li>
+
+    <li>Then, test with a deploy of the aar and war files on the server.
+
+    <li>Commit the changes in the working copy of the trunk:<br/>
+        <pre>
+            svn commit
+        </pre>
+    </li>
+</ol>
+
+</body>
+</html>
