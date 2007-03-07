@@ -9,7 +9,7 @@ import org.hibernate.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.Domain;
+import net.es.oscars.pathfinder.Domain;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.interdomain.*;
 

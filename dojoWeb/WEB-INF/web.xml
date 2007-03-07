@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+    <display-name>OSCARS Web Interface</display-name>
+    <description>
+      Web based interface to OSCARS Reservation System
+    </description>
+
+    <!-- Servlets in webapp -->
+
+    <!-- BSS section -->
+    <servlet>
+        <servlet-name>CancelReservation</servlet-name>
+        <servlet-class>net.es.oscars.wbui.CancelReservation</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateReservation</servlet-name>
+        <servlet-class>net.es.oscars.wbui.CreateReservation</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>QueryReservation</servlet-name>
+        <servlet-class>net.es.oscars.wbui.QueryReservation</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ListReservations</servlet-name>
+        <servlet-class>net.es.oscars.wbui.ListReservations</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateReservationForm</servlet-name>
+        <servlet-class>net.es.oscars.wbui.CreateReservationForm</servlet-class>
+    </servlet>
+
+    <!-- AAA section -->
+    <servlet>
+        <servlet-name>AuthenticateUser</servlet-name>
+        <servlet-class>net.es.oscars.wbui.AuthenticateUser</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserLogout</servlet-name>
+        <servlet-class>net.es.oscars.wbui.UserLogout</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserAdd</servlet-name>
+        <servlet-class>net.es.oscars.wbui.UserAdd</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserAddForm</servlet-name>
+        <servlet-class>net.es.oscars.wbui.UserAddForm</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserList</servlet-name>
+        <servlet-class>net.es.oscars.wbui.UserList</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserModify</servlet-name>
+        <servlet-class>net.es.oscars.wbui.UserModify</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserQuery</servlet-name>
+        <servlet-class>net.es.oscars.wbui.UserQuery</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserRemove</servlet-name>
+        <servlet-class>net.es.oscars.wbui.UserRemove</servlet-class>
+    </servlet>
+
+    <!-- BSS section -->
+    <servlet-mapping>
+        <servlet-name>CancelReservation</servlet-name>
+        <url-pattern>/servlet/CancelReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateReservation</servlet-name>
+        <url-pattern>/servlet/CreateReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>QueryReservation</servlet-name>
+        <url-pattern>/servlet/QueryReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ListReservations</servlet-name>
+        <url-pattern>/servlet/ListReservations</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateReservationForm</servlet-name>
+        <url-pattern>/servlet/CreateReservationForm</url-pattern>
+    </servlet-mapping>
+
+    <!-- AAA section -->
+    <servlet-mapping>
+        <servlet-name>AuthenticateUser</servlet-name>
+        <url-pattern>/servlet/AuthenticateUser</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserLogout</servlet-name>
+        <url-pattern>/servlet/UserLogout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserAdd</servlet-name>
+        <url-pattern>/servlet/UserAdd</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserAddForm</servlet-name>
+        <url-pattern>/servlet/UserAddForm</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserList</servlet-name>
+        <url-pattern>/servlet/UserList</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserModify</servlet-name>
+        <url-pattern>/servlet/UserModify</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserQuery</servlet-name>
+        <url-pattern>/servlet/UserQuery</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserRemove</servlet-name>
+        <url-pattern>/servlet/UserRemove</url-pattern>
+    </servlet-mapping>
+
+    <!-- Security section -->
+
+</web-app>

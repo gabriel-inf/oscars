@@ -1,0 +1,56 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <script type="text/javascript">
+        dojo.require("dojo.widget.Form");
+        dojo.require("dojo.widget.Button");
+    </script>
+</head>
+
+<body>
+
+<p>Click on a column header to sort by that column. Times given are in the
+time zone of the browser.  Click on the Reservation Tag link to view detailed
+information about a reservation.</p>
+
+<p><form id="ListReservationsForm" dojoType="Form" method="POST" action="servlet/UserSession">
+    <button dojoType="Button" id="refreshReservationsButton">Refresh</button>
+</form></p>
+
+<table cellspacing="0" width="90%">
+    <thead>
+        <tr><td>Tag</td><td>Start Time</td><td>End Time</td><td>Status</td>
+        <td>Origin</td><td>Destination</td>
+        </tr>
+    </thead>
+    <tbody>
+<!--
+        for (Reservation resv: reservations) {
+            <tr>
+            <td>
+                <a href="#">rm.toTag(resv)</a>
+            </td>
+            <td name="startTime" class="dt"> resv.getStartTime() </td>
+            <td name="endTime" class="dt">" resv.getEndTime() </td>
+            <td> resv.getStatus() </td>
+            srcHost = resv.getSrcHost();
+            try {
+                inetAddress = InetAddress.getByName(srcHost);
+                hostName = inetAddress.getHostName();
+		<td> hostName </td>
+            } catch (UnknownHostException e) {
+                <td> srcHost </td>
+            }
+            destHost = resv.getDestHost();
+            try {
+                inetAddress = InetAddress.getByName(destHost);
+                hostName = inetAddress.getHostName();
+                <td> hostName </td>
+            } catch (UnknownHostException e) {
+                <td> destHost </td>
+            }
+            </tr>
+    </tbody>
+-->
+</table>
+</body>
+</html>

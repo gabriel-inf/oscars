@@ -1,0 +1,44 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <script type="text/javascript">
+        dojo.require("dojo.widget.Form");
+        dojo.require("dojo.widget.Button");
+    </script>
+</head>
+
+<body>
+    <p>Navigation tab functionality is as follows:</p>
+
+    <ul>
+    <li>
+        Clicking on the Reservations tab will list all current reservations.
+    </li>
+    <li>
+    Choosing a particular reservation from that list will bring up that
+    reservation's details under the ReservationDetails tab.
+    </li>
+    <li>
+    Clicking on the Create Reservation tab will bring up a form to create a
+    reservation.
+    </li>
+    <li>
+    Clicking on the Users tab brings up a list of all current users.
+    </li>
+    <li>
+    Choosing a particular user from that list brings up the User Details tab,
+    allowing modification of a user's profile.
+    </li>
+    </ul>
+    <p>
+    To log out, return to this tab, and click on the corresponding button.
+    </p>
+
+    <form id="UserSessionForm" dojoType="Form" method="POST"
+                                               action="">
+        <div>
+            <button dojoType="Button" id="userLogoutButton">Log out of OSCARS
+            </button>
+        </div>
+    </form>
+</body>
+</html>

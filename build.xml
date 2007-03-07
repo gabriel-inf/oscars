@@ -72,7 +72,8 @@ Adding a -sd switch generates resources/services.xml -->
 <!-- Compile everything except tests.  Various targets will use portions they
 need. Will need to separate if someone wants only WBUI and not Axis2 -->
 <target name="compile" depends="prepare" description="Compile Java sources">
-    <javac srcdir="src" includes="**/*.java" destdir="${build.classes}">
+    <javac srcdir="src" includes="**/*.java" 
+       	   destdir="${build.classes}">
         <classpath>
             <fileset dir="lib" includes="**/*.jar" />
         </classpath>
@@ -82,7 +83,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
 <target name="docs">
     <mkdir dir="docs/api" />
     <javadoc destdir="docs/api" author="true">
-        <packageset dir="src" includes="**/*" />
+        <packageset dir="src"  includes="**/*"  />
         <classpath>
             <fileset dir="lib" includes="**/*.jar" />
         </classpath>
@@ -145,13 +146,13 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 	<property  name="catalina.home" value="/usr/local/jakarta-tomcat5.5"/>
 	
 	<target name="setupServer" description="populate the oscars.conf directory">
-		<mkdir dir="${catalina.home}/shared/conf.oscars/axis2.repo"/>
-		<mkdir dir="${catalina.home}/shared/conf.oscars/server"/>
-		<copy todir="${catalina.home}/shared/conf.oscars/axis2.repo">
+		<mkdir dir="${catalina.home}/shared/oscars.conf/axis2.repo"/>
+		<mkdir dir="${catalina.home}/shared/oscars.conf/server"/>
+		<copy todir="${catalina.home}/shared/oscars.conf/axis2.repo">
 			<fileset dir="conf/private/server" includes="sec-client.*"/>
 		</copy>
-		<copy file="conf/public/client/axis2.xml" todir ="${catalina.home}/shared/conf.oscars/axis2.repo"/>
-		<copy todir="${catalina.home}/shared/conf.oscars/server">
+		<copy file="conf/public/client/axis2.xml" todir ="${catalina.home}/shared/oscars.conf/axis2.repo"/>
+		<copy todir="${catalina.home}/shared/oscars.conf/server">
 			<fileset dir="conf/private/server/" includes="*key, oscars.properties, test.properties"/>
 			<fileset dir="conf/public/server/" includes="*juniper*"/>
 		</copy>

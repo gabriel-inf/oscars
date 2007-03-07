@@ -1,7 +1,8 @@
-package net.es.oscars.bss.topology;
+package net.es.oscars.pathfinder;
 
 import java.util.*;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.topology.Ipaddr;
 
 import net.es.oscars.database.GenericHibernateDAO;
 

@@ -1,0 +1,84 @@
+/*
+CSS for Web pages
+Last modified: February 9, 2007
+David Robertson (dwrobertson@lbl.gov)
+Soo-yeon Hwang (dapi@umich.edu)
+*/
+
+body {
+    font-family: sans-serif;
+    background: #fff;
+    color: #000;
+    text-align: left;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+p.notice {
+    font-weight: bold;
+    color: #f00;
+}
+
+th {
+    padding: .2em;
+}
+
+td {
+    padding: .2em;
+}
+
+.required {
+    border: 3px solid #0a0;
+    padding: 0;
+}
+
+.warning {
+    border: 3px solid #d00;
+    padding: 0;
+}
+
+
+/* settings for title section of Web page */
+#pagetitle {
+    border: 0;
+    margin-bottom: 2em;
+    width: 100%;
+}
+
+#pagetitle img {
+    display: inline;
+    margin: 0 0 .4em 0;
+}
+
+#pagetitle h1 {
+    font-size: 2.1em;
+    font-weight: bold;
+    line-height: 80%;
+}
+
+
+body .dojoTabContainer {
+    height: 42em;
+}
+
+body .dojoTabPane {
+    padding: 14px;
+    overflow: auto;
+}
+
+body .dojoButton {
+    margin: 10px;
+    border: 1px solid #335;
+}
+
+/* needed for IE to not be too small */
+body .dojoButtonContent {
+    font-size: medium;
+}
+
+/* settings for notices section at bottom of Web page */
+#notices {
+    color: gray;
+    margin: 1em;
+    padding: 1em;
+}

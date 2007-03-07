@@ -9,7 +9,7 @@ import org.hibernate.*;
 import net.es.oscars.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.pathfinder.traceroute.Pathfinder;
+import net.es.oscars.pathfinder.*;
 
 
 /**
@@ -23,12 +23,16 @@ public class ReservationManager {
     private LogWrapper log;
     private Notifier notifier;
     private PathManager pathMgr;
-    private Properties props;
+    private Properties traceProps;
+    private Properties narbProps;
+    private Properties snmpProps;
 
     /** Constructor. */
     public ReservationManager() {
         PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("trace", true);
+        this.traceProps = propHandler.getPropertyGroup("trace", true);
+        this.narbProps = propHandler.getPropertyGroup("narb", true);
+        this.snmpProps = propHandler.getPropertyGroup("snmp", true);
         this.log = new LogWrapper(this.getClass());
         this.notifier = new Notifier();
         this.pathMgr = new PathManager();
@@ -70,17 +74,27 @@ public class ReservationManager {
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
-        // this is only 0 for testing form submission and validation
-        String runTrace = this.props.getProperty("runTrace");
+        
+        String runTrace = this.traceProps.getProperty("runTrace");
+        String runNARB = this.narbProps.getProperty("runNARB");
         this.log.debug("runTrace variable is", runTrace);
-        if (runTrace.equals("0")) { return null; }
-
+		this.log.debug("runNARB variable is", runNARB);
+		
         ReservationDAO dao = new ReservationDAO();
         dao.setSession(this.session);
-
-        Pathfinder pathfinder = new Pathfinder();
-        path = this.findPath(pathfinder, resv.getSrcHost(), resv.getDestHost(),
+        this.pathMgr.setSession(this.session);
+        
+        /* Determine path calculation to perform */
+        if (runTrace != null && runTrace.equals("1")) {
+       		 path = this.pathMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
                              ingressRouterIP, egressRouterIP);
+        }else if(runNARB != null && runNARB.equals("1")){
+        	path = this.pathMgr.findNARBPath(resv.getSrcHost(), resv.getDestHost(),
+                             ingressRouterIP, egressRouterIP);
+        }else{
+        	throw new BSSException("No path computation method configured. Please contact administrator.");
+        }
+		
         bandwidth = resv.getBandwidth();
         reservations =
             dao.getActiveReservations(resv.getStartTime(), resv.getEndTime());
@@ -88,7 +102,6 @@ public class ReservationManager {
         for (Reservation r: reservations) {
             currentPaths.add(r.getPath());
         }
-        this.pathMgr.setSession(this.session);
         this.pathMgr.checkOversubscribed(currentPaths, path, bandwidth);
 
         // set start of path
@@ -110,8 +123,17 @@ public class ReservationManager {
         } catch (UnsupportedOperationException e) {
             this.log.info("create.mail.unsupported", e.getMessage());
         }
+        
         // finds next domain, if any, to hand to interdomain component
-        Domain nextDomain = this.getNextDomain(pathfinder, path);
+        this.pathMgr.setSession(this.session);
+        String runSNMP = this.snmpProps.getProperty("runSNMP");
+        Domain nextDomain = null;
+        if(runSNMP != null && runSNMP.equals("1")){
+         	nextDomain = this.pathMgr.getNextDomain(path);
+        }else{
+        	nextDomain = this.pathMgr.getNextDomainFromDB();
+        }
+        
         this.log.info("create.finish reservation tag is ", this.toTag(resv)); 
         if (nextDomain != null) {
         	this.log.info("create.finish next domain is " , nextDomain.getUrl());
@@ -207,90 +229,6 @@ public class ReservationManager {
         reservations = dao.list(login, authorized);
         this.log.info("list.finish", "success");
         return reservations;
-    }
-
-    /**
-     * Finds path from source to destination, taking into account ingress
-     *    and egress routers if specified by user.
-     *
-     * @param pathfinder pathfinder.Pathfinder instance
-     * @param srcHost string with address of source host
-     * @param destHost string with address of destination host
-     * @param ingressRouterIP string with address of ingress router, if any
-     * @param egressRouterIP string with address of egress router, if any
-     * @return path A path instance
-     * @throws BSSException
-     */
-    public Path findPath(Pathfinder pathfinder,
-                         String srcHost, String destHost,
-                         String ingressRouterIP, String egressRouterIP)
-            throws BSSException {
-
-        List<String> hops = null;
-        List<String> reverseHops = null;
-        String ingressIP = null;
-
-        this.pathMgr.setSession(this.session);
-        /* If the ingress router is given, make sure it is in the database,
-           and then return as is. */
-        if (ingressRouterIP != null) {
-            ingressIP = this.pathMgr.checkIngressLoopback(ingressRouterIP);
-        } else {
-            reverseHops = pathfinder.reversePath(egressRouterIP, srcHost);
-            ingressIP = this.pathMgr.lastLoopback(reverseHops);
-        }
-        this.log.info("createReservation.ingressIP", ingressIP);
-
-        // find best valid path, contacting next domain if necessary
-        hops = pathfinder.forwardPath(destHost, ingressIP, egressRouterIP);
-
-        // recalculate path to be *inside*
-        String lastIface = this.pathMgr.lastInterface(hops);
-        hops = pathfinder.forwardPath(ingressIP, lastIface);
-        return this.pathMgr.getPath(hops, ingressIP, egressRouterIP);
-    }
-
-    /**
-     * Finds autonomous system number of next domain, if any.
-     *
-     * @param pathfinder a pathfinder.Pathfinder instance
-     * @param path a path from source to destination
-     * @return Domain an instance associated with the next domain, if any
-     * @throws BSSException
-     */
-    public Domain getNextDomain(Pathfinder pathfinder, Path path)
-            throws BSSException {
-
-        RouterDAO routerDAO = new RouterDAO();
-        routerDAO.setSession(this.session);
-        this.pathMgr.setSession(this.session);
-        List<Ipaddr> ipaddrs = this.pathMgr.getIpaddrs(path);
-
-        List<String> hops = this.pathMgr.getHops(path);
-        // XXX: TODO: HACK: Dave -- can we review what this was/is doing ?
-        String lastIface = this.pathMgr.lastInterface(hops);
-        //System.out.println("Last Iface = " + lastIface);
-
-        String nextHop = this.pathMgr.nextHop(hops);
-        //System.out.println("NextHop = " + nextHop);
-
-        // Get router name for logging.  If unable to get, router not in db.
-        Router router = routerDAO.fromIp(lastIface);
-        if (router == null) {
-            throw new BSSException("getAsNumber: no router in database for " + lastIface);
-        }
-        String routerName = routerDAO.fromIp(lastIface).getName();
-        if (routerName == null) {
-            throw new BSSException("getAsNumber: no router in database for " + lastIface);
-        }
-        String nextDomainAsNum =
-            pathfinder.findNextDomain(routerName, nextHop);
-        if (nextDomainAsNum.equals("noSuchInstance")) { return null; }
-
-        DomainDAO domainDAO = new DomainDAO();
-        domainDAO.setSession(this.session);
-        Domain nextDomain = domainDAO.queryByParam(nextDomainAsNum, "asNum");
-        return nextDomain;
     }
 
     /**

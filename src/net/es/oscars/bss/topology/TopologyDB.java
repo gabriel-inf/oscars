@@ -7,6 +7,8 @@ import java.util.regex.Matcher;
 
 import org.hibernate.*;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.pathfinder.Path;
+import net.es.oscars.pathfinder.PathDAO;
 
 import net.es.oscars.LogWrapper;
 import net.es.oscars.bss.BSSException;

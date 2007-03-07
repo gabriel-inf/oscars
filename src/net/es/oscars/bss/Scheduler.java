@@ -8,6 +8,7 @@ import net.es.oscars.LogWrapper;
 import net.es.oscars.Notifier;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.pathfinder.*;
 import net.es.oscars.pss.JnxLSP;
 
 import java.net.InetAddress;

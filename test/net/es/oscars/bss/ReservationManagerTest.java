@@ -9,6 +9,7 @@ import org.hibernate.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.pathfinder.*;
 
 
 /**

@@ -5,7 +5,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import net.es.oscars.bss.topology.Path;
+import net.es.oscars.pathfinder.Path;
 
 /**
  * Reservation is adapted from a Middlegen class automatically generated 

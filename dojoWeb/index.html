@@ -1,0 +1,67 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>On-demand Secure Circuits and Advance Reservation System</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="Author" content="David Robertson" />
+
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+
+    <script type="text/javascript">
+        var djConfig = { isDebug: true, debugAtAllCosts: false };
+    </script>
+    <script type="text/javascript" src="dojo/dojo.js"></script>
+    <script type="text/javascript" src="js/Form.js"></script>
+    <script type="text/javascript">dojo.registerModulePath("js", "../js")
+    </script>
+    <script type="text/javascript">
+        dojo.require("dojo.event.*");
+        dojo.require("dojo.io.*");
+        dojo.require("dojo.widget.*");
+        dojo.require("dojo.widget.TabContainer");
+        dojo.require("dojo.widget.ContentPane");
+        dojo.require("dojo.widget.Form");
+        dojo.require("dojo.widget.Button");
+    </script>
+
+</head>
+
+<body>
+    <table id="pagetitle">
+        <tr>
+            <td>
+                <a href="http://www.internet2.edu/">
+                  <img src="images/internet2_logo.png" width="73" height="58" 
+                   border="0" alt="Internet2 logo" title="Internet 2" /></a>
+            </td>
+            <td>
+                <a href="http://www.es.net/">
+                  <img src="images/ESnetLogo.png" width="77" height="58" 
+                   border="0" alt="ESnet Logo" title="ESnet" /></a>
+            </td>
+            <td>
+          <h1>On-demand Secure Circuits and Advance Reservation System</h1>
+          <div>In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- other tabs added after successful login, and removed upon logout -->
+    <div id="mainTabContainer" dojoType="TabContainer" selectedChild="userSession">
+    <div id="userSession" dojoType="ContentPane" label="Session"
+         loadingMessage="Loading login session form..." href="Login.html"
+         onload="javascript:initLogin();">
+    </div>
+    </div>
+
+    <p>
+        <a href="/OSCARS/docs">Documentation</a> |
+        <a href="http://www.es.net/">ESnet</a> |
+        <a href="http://www.lbl.gov/">Berkeley Lab</a> |
+        <a href="http://www.lbl.gov/Disclaimers.html">Notice to Users</a>
+    </p>
+    <p><strong>Contacts:</strong>
+        <a href="mailto:chin@es.net">Chin Guok</a>, 
+        <a href="mailto:DWRobertson@lbl.gov">David Robertson</a>
+    </p>
+</body>
+</html>

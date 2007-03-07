@@ -48,22 +48,22 @@ Sun suite as well.
 
 #NOTE:
 # Need both the cert and private key in the keystore so...
-# need to be in pem format so if it in DER format
+# need to be in pem format so if it is in DER format
 openssl x509 -in mycert.der -inform DER -outform PEM -out mycert.pem
 
 #use openssl to make ONE pkcs12 file (combine both cert & private key)
-openssl pkcs12 -inkey jason.key.pem -in jason.cert.pem  -export -out foo.pkcs12
+openssl pkcs12 -inkey jason.key.pem -in jason.cert.pem  -export -out jason.pkcs12
 
 # use jetty to load it (from http://jetty.mortbay.org/)
-/opt/java/j2re1.4.2_08/bin/java -cp `pwd`/lib/org.mortbay.jetty.jar org.mortbay.util.PKCS12Import /home/portnoy/u2/jason/De
-sktop/keystore/foo.pkcs12 keystore.all.jks
+# with  jetty-6.0.2 the command is
+java -cp org.mortbay.jetty-6.0.2.jar org.mortbay.jetty.security.PKCS12Import jason.pkcs12 sec-client.jks
 
 </pre>
 
 <p>Now to rename the alias use:</p>
 
 <pre>
-keytool -keyclone -alias 1 -dest mrt -keystore sec-client.jks
+keytool -keyclone -alias 1 -dest jason -keystore sec-client.jks
 keytool -delete -alias 1 -keystore sec-client.jks
 </pre>
 

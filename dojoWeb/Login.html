@@ -1,0 +1,28 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <script type="text/javascript">
+        dojo.require("dojo.widget.Form");
+        dojo.require("dojo.widget.Button");
+    </script>
+</head>
+
+<body>
+<p>
+An <a href="/OSCARS/docs">OSCARS</a> login and password are required to
+access this system.  To log in, or to request an account, click on the
+corresponding buttons.
+<strong>NOTE</strong>: OSCARS is now using the Dojo Javascript library.
+Please report any problems that you might encounter to
+<a href="mailto:DWRobertson@lbl.gov">David Robertson</a>.
+</p>
+
+<form id="LoginSessionForm" dojoType="Form" method="POST"
+                                           action="">
+    <button dojoType="Button" id="loginButton">Log into OSCARS</button>
+    <!--
+    <button dojoType="Button" id="requestAcctButton">Request account</button>
+    -->
+</form>
+
+</body>
+</html>

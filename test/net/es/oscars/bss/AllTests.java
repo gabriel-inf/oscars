@@ -7,8 +7,6 @@ import junit.framework.TestSuite;
 public class AllTests { 
     public static Test suite() { 
         TestSuite suite = new TestSuite("BSS tests suite");
-        suite.addTest(new DomainTest("testQuery"));
-        suite.addTest(new DomainTest("testList"));
         suite.addTest(new ReservationManagerTest("testCreate"));
         suite.addTest(new ReservationManagerTest("testQuery"));
         suite.addTest(new ReservationManagerTest("testAuthList"));

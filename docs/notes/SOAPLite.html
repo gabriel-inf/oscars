@@ -1,0 +1,367 @@
+<html>
+<head>
+    <title>Using WSDL and document/literal encoding with SOAP::Lite
+</head>
+
+<body>
+<h2>Notes on how to use WSDL and document/literal encoding with SOAP::Lite</h2>
+
+<h3>Introduction</h3>
+
+<p>
+<a href="http://www.soaplite.com/">SOAP::Lite</a> (Perl) does not look actually
+look at the WSDL, but
+<a href="http://dev.globus.org/wiki/PyGridWare">pyGridware</a>
+(Python), Axis (Java), and wscompile (Java) do.
+So one needs to create a WSDL that corresponds to what the SOAP::Lite server
+does.
+</p>
+
+<h3>document-literal binding</h3>
+
+<p>SOAP::Lite defaults to the SOAP rpc/encoding, but the
+<a href="http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html">
+WS-I Basic Profile</a>, Version 1, dictates
+document/literal. In document/literal, only the elements are sent over
+the wire. The message names and part names are not used.  You can specify
+document/literal in a SOAP::Lite client, but it does not seem to get put in
+the response message.  However, it does not seem to  matter to a pyGridware
+server, e.g. with:</p>
+
+<pre>
+my $method = SOAP::Data -> name ('createReservation')
+#	-> encodingStyle ('http://xml.apache.org/xml-soap/literalxml')
+	-> attr ({xmlns => 'http://oscars.es.net/OSCARS/Dispatcher'});
+/pre>
+
+<p>the encoding style put in the message is still</p>
+
+<pre>
+    soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/
+</pre>
+
+
+<h3>SOAP actions</h3>
+
+<p>The SOAP::Lite server expects soap actions of the form
+uri/classname/method/:</p>
+
+<pre>
+
+SOAP::Lite client  
+  Specifying the soap action (taken from the WSDL)
+# do not forget to specify the soapaction (on_action)
+# you will find it in the WSDL,
+# uri is the target namespace in the WSDL - doesn't seem to be used by client
+# proxy is the endpoint address 
+my $soap = SOAP::Lite
+   -> uri('http://oscars.es.net/OSCARS/')
+   -> on_action( sub { return '"http://oscars.es.net/OSCARS/createReservation"' } )
+   -> proxy('http://localhost:8090/OSCARS');
+</pre>
+
+<p>The following works:</p>
+
+<pre>
+my $soap = SOAP::Lite
+   -> uri('http://localhost:8090/foo')     # package  name
+   -> proxy ('http://localhost:8090/OSCARS')    # script name
+-> on_action( sub { return '"http://oscars.es.net/OSCARS/ping"'});
+</pre>
+
+<p>The only thing that mattered is that the proxy points to the right host,
+port and file (OSCARS.pm), and that the action part matches the namespace,
+the class name and the method name.</p>
+
+<p>To work with a Python or Java server, the soapaction in a Perl client
+must match what is in the WSDL.</p>
+
+
+<h3>Making a SOAP::Lite server send document/literal messages</h3>
+
+<p>The following perl code in the server sends the message xml:</p>
+
+<pre>
+# <inputQuery>
+#   <login>...</login>
+#   <password>...</password>
+#   ....
+#   <CoordType>...</CoordType>
+# </inputQuery>
+
+my $query =
+  SOAP::Data
+  ->name(inputQuery =>
+    \SOAP::Data->value(   # the \SOAP causes the tag <InputQuery> to be included
+      SOAP::Data->name(login => 'infobel'),
+      SOAP::Data->name(password => 'test'),
+      (...)
+      SOAP::Data->name(CoordType => 'aeCTWGS')));
+
+# make the call
+my $result = $soap->call($method => $query);
+</pre>
+
+<h3>SOAP::Lite client referring to the doc/literal return args</h3>
+
+<pre>
+my $statusmes = $result->valueof('//SearchResponse/SearchResult/Status');
+my $numrecs = $result->valueof('//SearchResponse/SearchResult/Result/NumRecs');
+</pre>
+
+<h3>SOAP::Lite server referring to args</h3>
+
+<p>Parameters at the top level of the message get presented as an array to the
+server. This is not good for items of 1 or more instances. Items at lower
+levels get presented as hashes.  A solution to multiple top-level arguments is
+to use the Server::Parameter class, which will cause a SOM object to be added
+on the list of arguments.  With the SOM there are several methods for
+retrieving arguments:</p>
+
+<pre>
+$som ->valueof(//createRequest/srcHost)  or
+
+my($srcHost, $srcPort) = SOAP::Server::Parameters::byName([qw(srcHost srcPort)], $envelope);
+
+</pre>
+
+
+<h3>SOAP::Lite error handling</h3>
+
+<pre>
+  print join ', ',
+    $result->faultcode,
+    $result->faultstring,
+    $result->faultdetail;
+</pre>
+
+
+<h3>Limitations of SOAP::Lite</h3>
+
+<p>SOAP::Lite is unable to pass a simple argument as the child of a top level
+element, e.g.:</p>
+
+<pre>
+ <soap:Body><ping1 type=xsd:string>input string</ping1></soap:Body>
+</pre>
+
+<p>It insists on either putting in a c_gensym tag or else having an explicit
+tag set. This requires a WSDL that specifies a sub element for any message</p>
+
+<pre>
+    <xsd:element name="testForwardResponse" type="tns:retMsg" />
+
+    <xsd:complexType name="retMsg">
+	<xsd:sequence>
+	   <xsd:element name="msg" type="xsd:string" />
+	</xsd:sequence>
+   </xsd:complexType>
+</pre>
+
+<p>Response names from a SOAP::Lite server will be the input message name
+concatenated with Response.  Thus if the operation is Ping the response
+message is PingResponse.  So the WSDL must enforce this.  This corresponds
+to the rpc style of Web services.  It also picks up the name space of elements
+from the input message, so be sure that any URI's that are set match what is
+in the WSDL.</p>
+
+ 
+<h3>String enum messages</h3>
+
+<p>Strings that are an enum type need a custom deserializer on the Perl
+server to deal with the type that pyGridware and Axis send. The simpler
+sub ab_enumType did not work because the typename was qualified with the
+namespace: {http://oscars.es.net/OSCARS}enumType which cannot be used as a
+subroutine name.</p>
+
+<p>In the SOAP::Lite server,</p>
+
+<pre>
+my $daemon = SOAP::Transport::HTTP::Daemon
+  -> new (LocalPort => $port_number, Listen => 5, Reuse => 1)
+  -> deserializer(MyDeserializer->new)
+-> dispatch_to('OSCARS');
+
+package MyDeserializer;
+
+use SOAP::Lite;
+@MyDeserializer::ISA = 'SOAP::Deserializer';
+
+sub typecast {
+
+    my ($self, $val, $name, $attrs, $kids, $type ) = @_;
+    return $val if  $type && $type =~ /enumType/;
+    return undef;
+};
+
+sub as_emumType {
+         my($self, $value, $name, $type, $attr) = @_;
+         return $value;
+}
+</pre>
+
+
+<h3>elementFormDefault="qualified"</h3>
+
+<p>This line in the xml::schema tag specifies that all names have a namespace
+associated with them.  This was required to make wscompile clients work with
+the Perl server.  In some cases, for example pyGridware and Axis clients,
+the namespace did not need to be explictly stated in the message, but it could
+not be stated and not match what was in the WSDL.</p>
+
+
+<h3>Empty messages</h3>
+
+<p>While Axis, pyGridware and SOAP::Lite allow messages with no values,
+this is not accepted by WS1-BP and wscompile.  The recommended way to pass no
+argument is:</p>
+
+<pre>
+	<xsd:element name="listReservations" 
+		type="tns:emptyArg"/>
+
+	<xsd:complexType name="emptyArg">
+	    <xsd:sequence>
+		<xsd:element name="msg" minOccurs = "0"
+			type="xsd:string" >
+		</xsd:element>
+	    </xsd:sequence>
+	</xsd:complexType>	
+</pre>
+
+
+<h3>xsd:choice</h3>
+
+<p>xsd:choice is not supported by wscompile. Axis and pyGridware produce a class
+that contains all of the choices.  Instead, use a sequence (of 0-1 instances),
+where the first item specifies the choice that has been used.</p>
+
+<pre>
+wscompile complains
+warning: unsupported XML Schema feature: "xsd:choice" in component {http://oscars.es.net/OSCARS}pingchoice, mapping it to javax.xml.soap.SOAPElement
+
+
+resTag type
+
+
+	<xsd:complexType name="resTag">
+		<xsd:sequence>
+			<xsd:element name="sTag" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>			
+
+
+the following code:
+
+	       SOAP::Data->name(createResReply =>
+    	  	  \SOAP::Data->value(
+    	  	 	SOAP::Data->name('tag')
+				  ->attr({'xmlns:tns' =>
+				     'http://oscars.es.net/OSCARS/Dispatcher'})
+				  ->type('tns:resTag')
+				  ->value(\SOAP::Data->name(sTag => "a1234")),
+
+generates the message
+
+
+<createResReply><tag xsi:type="tns:resTag" xmlns:tns="http://oscars.es.net/OSCARS/Dispatcher">
+<sTag xsi:type="xsd:string">a1234</sTag></tag>
+(…)
+</createResReply>
+
+But the java client complains that sTag is an unrecognized element
+
+	       SOAP::Data->name(createResReply =>
+    	  	  \SOAP::Data->value(
+    	  	 	SOAP::Data->name('tag')
+				  ->attr({'xmlns:tns' =>
+				     'http://oscars.es.net/OSCARS/Dispatcher'})
+				  ->type('tns:resTag')
+				  ->value(a1234"),
+
+generates
+
+<createResReply><tag xsi:type="tns:resTag" xmlns:tns="http://oscars.es.net/OSCARS/Dispatcher">
+a1234</tag>
+
+Which the java client accepts, but then createResReply.getTag().getSTag() is null
+and createResReply.getTag().toString is net.es.oscars.OSCARS.Dispatcher.ResTag@1
+
+When a java client sends a resTag type the Java code is 
+
+ResTag queryRequest = new ResTag();
+		    
+queryRequest.setSTag("1234");
+
+
+and the message is
+<queryReservation xmlns="http://oscars.es.net/OSCARS/Dispatcher">
+<sTag>1234</sTag></queryReservation>		
+
+
+wscompile complains
+warning: unsupported XML Schema feature: "xsd:choice" in component {http://oscars.es.net/OSCARS}pingchoice, mapping it to javax.xml.soap.SOAPElement
+
+
+resTag type
+
+
+	<xsd:complexType name="resTag">
+		<xsd:sequence>
+			<xsd:element name="sTag" type="xsd:string" />
+		</xsd:sequence>
+	</xsd:complexType>			
+
+
+the following code:
+
+	       SOAP::Data->name(createResReply =>
+    	  	  \SOAP::Data->value(
+    	  	 	SOAP::Data->name('tag')
+				  ->attr({'xmlns:tns' =>
+				     'http://oscars.es.net/OSCARS/Dispatcher'})
+				  ->type('tns:resTag')
+				  ->value(\SOAP::Data->name(sTag => "a1234")),
+
+generates the message
+
+
+<createResReply><tag xsi:type="tns:resTag" xmlns:tns="http://oscars.es.net/OSCARS/Dispatcher">
+<sTag xsi:type="xsd:string">a1234</sTag></tag>
+(…)
+</createResReply>
+
+But the java client complains that sTag is an unrecognized element:
+
+SOAP::Data->name(createResReply =>
+    \SOAP::Data->value(
+    SOAP::Data->name('tag')
+    ->attr({'xmlns:tns' =>
+            'http://oscars.es.net/OSCARS/Dispatcher'})
+				  ->type('tns:resTag')
+				  ->value(a1234"),
+
+generates
+
+<createResReply><tag xsi:type="tns:resTag" xmlns:tns="http://oscars.es.net/OSCARS/Dispatcher">
+a1234</tag>
+
+Which the java client accepts, but then createResReply.getTag().getSTag() is null
+and createResReply.getTag().toString is net.es.oscars.OSCARS.Dispatcher.ResTag@1
+
+When a java client sends a resTag type the Java code is 
+
+ResTag queryRequest = new ResTag();
+		    
+queryRequest.setSTag("1234");
+
+
+and the message is
+<queryReservation xmlns="http://oscars.es.net/OSCARS/Dispatcher">
+<sTag>1234</sTag></queryReservation>		
+
+</pre>
+
+</body>
+</html>
+

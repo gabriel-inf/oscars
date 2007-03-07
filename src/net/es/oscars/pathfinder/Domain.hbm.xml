@@ -11,7 +11,7 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.bss.Domain" table="domains">
+<class name="net.es.oscars.pathfinder.Domain" table="domains">
     <meta attribute="class-description" inherit="false">
        @hibernate.class table="domains"
     </meta>

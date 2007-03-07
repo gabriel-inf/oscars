@@ -1,4 +1,4 @@
-package net.es.oscars.bss;
+package net.es.oscars.pathfinder;
 
 import java.io.Serializable;
 import org.apache.commons.lang.builder.EqualsBuilder;

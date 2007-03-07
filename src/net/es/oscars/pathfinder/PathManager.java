@@ -1,4 +1,4 @@
-package net.es.oscars.bss.topology;
+package net.es.oscars.pathfinder;
 
 import java.util.*;
 import java.net.UnknownHostException;
@@ -10,6 +10,9 @@ import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.LogWrapper;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.topology.*;
+import net.es.oscars.pathfinder.traceroute.Pathfinder;
+import net.es.oscars.pathfinder.dragon.*;
 
 /**
  * This class contains convenience methods for handling and validating
@@ -20,14 +23,185 @@ import net.es.oscars.bss.BSSException;
 public class PathManager {
     private LogWrapper log;
     private Session session;
-
+    private Pathfinder pathfinder;
+	private String nextHop;
+	
     public PathManager() {
         this.log = new LogWrapper(this.getClass());
+        this.pathfinder = new Pathfinder();
+        this.nextHop = null;
     }
 
     public void setSession(Session session) {
         this.session = session;
     }
+
+    /**
+     * Finds path from source to destination, taking into account ingress
+     *    and egress routers if specified by user.
+     *
+     * @param srcHost string with address of source host
+     * @param destHost string with address of destination host
+     * @param ingressRouterIP string with address of ingress router, if any
+     * @param egressRouterIP string with address of egress router, if any
+     * @return path A path instance
+     * @throws BSSException
+     */
+    public Path findPath(String srcHost, String destHost,
+                         String ingressRouterIP, String egressRouterIP)
+            throws BSSException {
+
+        List<String> hops = null;
+        List<String> reverseHops = null;
+        String ingressIP = null;
+
+        this.pathfinder.initialize();
+        /* If the ingress router is given, make sure it is in the database,
+           and then return as is. */
+        if (ingressRouterIP != null) {
+            ingressIP = this.checkIngressLoopback(ingressRouterIP);
+        } else {
+            reverseHops = this.pathfinder.reversePath(egressRouterIP, srcHost);
+            ingressIP = this.lastLoopback(reverseHops);
+        }
+        this.log.info("createReservation.ingressIP", ingressIP);
+
+        // find best valid path, contacting next domain if necessary
+        hops = this.pathfinder.forwardPath(destHost, ingressIP, egressRouterIP);
+		
+		//set next hop for static lookup - do this now because path not yet reduced to local path
+		this.nextHop = this.nextExternalHop(hops);
+		
+        // recalculate path to be *inside*
+        String lastIface = this.lastInterface(hops);
+        hops = this.pathfinder.forwardPath(ingressIP, lastIface);
+        return this.getPath(hops, ingressIP, egressRouterIP);
+    }
+    
+    /**
+     * Finds path from source to destination using the NARB web service interface, 
+     * taking into account ingress and egress routers if specified by user.
+     *
+     * @param srcHost string with address of source host
+     * @param destHost string with address of destination host
+     * @param ingressRouterIP string with address of ingress router, if any
+     * @param egressRouterIP string with address of egress router, if any
+     * @return path A path instance
+     * @throws BSSException
+     */
+    public Path findNARBPath(String srcHost, String destHost,
+                         String ingressRouterIP, String egressRouterIP)
+            throws BSSException {
+        List<String> hops = null;
+        String ingressIP = null;
+		NARBPathfinder narbPathfinder = new NARBPathfinder();
+   	
+        /* If the ingress router is given, make sure it is in the database,
+           and then return as is. */
+        if (ingressRouterIP != null) {
+            ingressIP = this.checkIngressLoopback(ingressRouterIP);
+        }
+		
+		/* NARB find path */
+		hops = narbPathfinder.findPath(srcHost, destHost, ingressRouterIP, egressRouterIP);
+		/* get the next hop */
+		this.nextHop = this.nextExternalHop(hops);
+		/* create reverse list */
+		ArrayList<String> ingressList = new ArrayList<String>();
+		for(int i = (hops.size() - 1); i >= 0; i--){
+			ingressList.add(hops.get(i));
+		}
+		ingressRouterIP =this.lastLoopback(ingressList);
+		egressRouterIP =this.lastLoopback(hops);
+		
+		/* get ingress to egress path */
+		ArrayList<String> inegHops = new ArrayList<String>();
+		boolean ingressFound=false;
+		boolean egressFound = false;
+		for(int i = 0; (!egressFound) && i < hops.size(); i++){
+			if(hops.get(i).equals(egressRouterIP)){
+				egressFound = true;
+			    inegHops.add(hops.get(i));
+			}else if(hops.get(i).equals(ingressRouterIP)){
+				ingressFound = true;
+				inegHops.add(hops.get(i));
+			}else if(ingressFound){
+				inegHops.add(hops.get(i));
+			}
+		}
+		this.log.debug("findNARBPath.firstHop", hops.get(0));
+		this.log.debug("findNARBPath.ingressIP", ingressRouterIP);
+		this.log.debug("findNARBPath.egressIP", egressRouterIP);
+		
+        return this.getPath(inegHops, ingressRouterIP, egressRouterIP);
+    }
+
+    /**
+     * Finds autonomous system number of next domain, if any.
+     *
+     * @param path a path from source to destination
+     * @return Domain an instance associated with the next domain, if any
+     * @throws BSSException
+     */
+    public Domain getNextDomain(Path path)
+            throws BSSException {
+
+        RouterDAO routerDAO = new RouterDAO();
+        routerDAO.setSession(this.session);
+        List<Ipaddr> ipaddrs = this.getIpaddrs(path);
+
+        List<String> hops = this.getHops(path);
+        // XXX: TODO: HACK: Dave -- can we review what this was/is doing ?
+        String lastIface = this.lastInterface(hops);
+        //System.out.println("Last Iface = " + lastIface);
+
+        String nextHop = this.nextHop(hops);
+        //System.out.println("NextHop = " + nextHop);
+
+        // Get router name for logging.  If unable to get, router not in db.
+        Router router = routerDAO.fromIp(lastIface);
+        if (router == null) {
+            throw new BSSException("getAsNumber: no router in database for " + lastIface);
+        }
+        String routerName = routerDAO.fromIp(lastIface).getName();
+        if (routerName == null) {
+            throw new BSSException("getAsNumber: no router in database for " + lastIface);
+        }
+        String nextDomainAsNum =
+            this.pathfinder.findNextDomain(routerName, nextHop);
+        if (nextDomainAsNum.equals("noSuchInstance")) { return null; }
+
+        DomainDAO domainDAO = new DomainDAO();
+        domainDAO.setSession(this.session);
+        Domain nextDomain = domainDAO.queryByParam(nextDomainAsNum, "asNum");
+        return nextDomain;
+    }
+    
+     /**
+     * Finds next domain by looking up first hop in peerIpaddr table
+     *
+     * @param nextHop first IP outside of domain to lookup in database
+     * @return Domain an instance associated with the next domain, if any
+     * @throws BSSException
+     */
+    public Domain getNextDomainFromDB()
+            throws BSSException {
+
+        PeerIpaddrDAO peerDAO = new PeerIpaddrDAO();
+        peerDAO.setSession(this.session);
+        Domain nextDomain = null;
+
+        this.log.info("getNextDomain.nextHop", this.nextHop);
+       
+       	if(nextHop != null){
+       		nextDomain = peerDAO.getDomain(nextHop);
+       		if(nextDomain != null){
+       			this.log.info("getNextDomain.nextDomain", nextDomain.getAsNum()+"");
+       		}
+       	}
+       	
+       	return nextDomain;
+     }
 
     /**
      * Checks whether adding this reservation would cause oversubscription
@@ -311,6 +485,35 @@ public class PathManager {
                     outsideHop = hop;
                     break; 
                 }
+            }
+        }
+        return outsideHop;
+    }
+    
+    /**
+     * Gets next hop outside of this domain.
+     *
+     * @param hops list of IP addresses
+     * @return String representation of next hop
+     */
+    public String nextExternalHop(List<String> hops) {
+
+        Ipaddr ipaddr = null;
+        String outsideHop = "";
+        boolean ingressFound = false;
+        
+        Session session = 
+            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        IpaddrDAO ipaddrDAO = new IpaddrDAO();
+        ipaddrDAO.setSession(session);
+        for (String hop: hops) {
+            // get IP address
+            ipaddr = ipaddrDAO.queryByParam("ip", hop);
+            if(ingressFound && ipaddr == null){
+            	outsideHop = hop;
+                break; 
+            }else if(ipaddr != null){
+				ingressFound = true;           	
             }
         }
         return outsideHop;

@@ -1,4 +1,4 @@
-package net.es.oscars.bss.topology;
+package net.es.oscars.pathfinder;
 
 import junit.framework.*;
 
@@ -11,6 +11,7 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.topology.*;
 
 /**
  * This class tests methods in PathDAO.java, which requires a working

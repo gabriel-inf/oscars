@@ -1,0 +1,44 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <script type="text/javascript">
+        dojo.require("dojo.widget.Form");
+        dojo.require("dojo.widget.Button");
+    </script>
+</head>
+
+<body>
+    <!-- target = UserAddForm -->
+    <form id="UserListForm" dojoType="Form" method="POST" action="servlet/UserSession">
+        <p>Click on the user's last name to view detailed user information.</p>
+	<p><button dojoType="Button" id="userAddButton">Add user</button></p>
+        <table id="UserList-table" cellspacing="0" width="90%">
+        <thead><tr>
+        <td>Last Name</td><td>First Name</td><td>Login Name</td>
+        <td>Organization</td><td>Phone</td><td>Action</td></tr>
+        </thead>
+        <tbody>
+		<!-- for (User user: users) printUser(user) -->
+	</tbody></table>
+    </form>
+</body>
+</html>
+
+
+<!-- 
+        String profileHrefStr = return newSection('UserQuery',
+                    'profileName=user.getLogin()')
+        String removeHrefStr = return newSection('UserRemove',
+                    'profileName=user.getLogin()')
+        <tr>
+            <td>
+                <a href="#" onclick="profileHrefStr"> user.getLastName() </a>
+            </td>
+
+        <td> user.getFirstName() </td> <td> user.getLogin() </td>
+        <td> user.getInstitution().getName() </td>
+        <td> user.getPhonePrimary() </td>
+	<td>
+		<a href="#" onclick=" removeHrefStr ">DELETE</a>
+	</td>
+        </tr>
+-->

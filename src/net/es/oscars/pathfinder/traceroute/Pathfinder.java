@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import net.es.oscars.*;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.pathfinder.PCE;
 
 
 /**
@@ -19,9 +20,12 @@ public class Pathfinder {
     private JnxSNMP jnxSnmp;
 
     /** Constructor. */
-    public Pathfinder()
-            throws BSSException {
+    public Pathfinder() {
         this.log = new LogWrapper(this.getClass());
+    }
+
+    // for lack of a better place for now
+    public void initialize() throws BSSException {
         try {
             this.jnxSnmp = new JnxSNMP();
         } catch (IOException e) {

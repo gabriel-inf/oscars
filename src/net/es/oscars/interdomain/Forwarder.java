@@ -9,7 +9,7 @@ import net.es.oscars.LogWrapper;
 import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.AAAFaultMessageException;
 import net.es.oscars.oscars.BSSFaultMessageException;
-import net.es.oscars.bss.Domain;
+import net.es.oscars.pathfinder.Domain;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.wsdlTypes.*;

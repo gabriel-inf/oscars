@@ -1,4 +1,4 @@
-package net.es.oscars.bss;
+package net.es.oscars.pathfinder;
 
 import net.es.oscars.database.GenericHibernateDAO;
 

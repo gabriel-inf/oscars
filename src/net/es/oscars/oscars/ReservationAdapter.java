@@ -15,7 +15,7 @@ import net.es.oscars.LogWrapper;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.Domain;
+import net.es.oscars.pathfinder.Domain;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.wsdlTypes.*;
 
@@ -45,7 +45,7 @@ public class ReservationAdapter {
         this.rm.setSession();
         Reservation resv = this.toReservation(params);
         Forwarder forwarder = new Forwarder();
-         Domain nextDomain = this.rm.create(resv, login,
+        Domain nextDomain = this.rm.create(resv, login,
                                            params.getIngressRouterIP(),
                                            params.getEgressRouterIP());
         // checks whether next domain should be contacted, forwards to
