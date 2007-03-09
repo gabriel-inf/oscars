@@ -4,69 +4,85 @@
 </head>
 
 <body>
-<h2>Merging from a branch into the trunk</h2>
+<h2>Merging revisions from a branch into the trunk</h2>
+
+You may want to merge all the changes on the branch or just the changes within
+a single directory. There does not seem to be a way to just merge a single file.
 
 <ol>
-    <li>Make sure you have a clean copy of the trunk:<br/>
-        <pre>
-            % svn status
+    <li>Make sure you have a clean copy of the trunk or at least the directory in which your
+    changes reside.:<p>
+        <code>
+           % cd &lt;Trunk Working Directory&gt; or  subdirectory<br>
+           % svn status <br>
             should show nothing. e.g  no M &lt;filename&gt;
-        </pre>
+        </code>
     </li>
 
-    <li>Check what the current head version is:<br/>
-        <pre>
-            % svn update 
-              returns headrevnumber
-        </pre>
-    </li>
     
-       <li>Check when the last revision to the trunk was made:<br/>
-        <pre>
-            % svn info
-            returns trunkrevnumber as Last Changed Rev
-        </pre>
+       <li>Check when the last revision to the trunk/directory was made:<p>
+        <code>
+            % svn info <br>
+            returns trunkrevnumber as "Last Changed Rev"
+        </code>
       </li>
 
-    <li>Do a 'dry-run' to see what files will change:<br/>
-        <pre>
-            % svn merge --dry-run -r <em>trunkrevnumber></em>:<em>headrevnumber</em> ../branches/java
-         </pre>
+    <li>Do a 'dry-run' to see what files will change:<p>
+    The svn merge command we are using is: <br>
+            <em>svn merge sourceURL1[@N] sourceURL2[@M] [WCPATH]</em><br>
+            The source URLs are specified at revisions
+     N and M.  These are the two sources to be compared.   The differences are merged into the WCPATH which
+     is your trunk working directory and defaults to ".". The revisions
+     default to HEAD if omitted. In our examples the M defaults to the HEAD. For example:<p>
+
+      To merge the entire branch: <br>
+             <code>
+            %  svn merge https://oscars-test.es.net/repos/oscars/branches/java/@4691
+                  https://oscars-test.es.net/repos/oscars/branches/java/ </code>
+                  <p>
+            To merge just the files in the docs directory:<br>
+            <code>
+            % cd docs <br>
+            % svn merge https://oscars-test.es.net/repos/oscars/branches/java/docs/@4691 
+                   https://oscars-test.es.net/repos/oscars/branches/java/docs/
+          </code>
     </li>
 
-    <li>Save this list:<br/>
-        <pre>
-            svn merge --dry-run -r <em>trunkrevnumber></em>:<em>headrevnumber</em> ../branches/java >~/svn.list
-        </pre>
+    <li>Save this list, it may be long and you may need it to find conflicts:<p>
+        <code>
+            % svn merge --dry-run https://oscars-test.es.net/repos/oscars/branches/java/@4691
+                  https://oscars-test.es.net/repos/oscars/branches/java/ > ~/svn.list
+        </code>
     </li>
 
-    <li>Merge in from the branch (in this case branches/java):<br/>
-        <pre>
-             svn merge -r  <em>trunkrevnumber></em>:<em>headrevnumber</em> ../branches/java
-        </pre>
+    <li>Merge  from the branch (in this case branches/java) to your working directory:<p>
+        <code>
+             % svn merge  https://oscars-test.es.net/repos/oscars/branches/java/@4691
+                  https://oscars-test.es.net/repos/oscars/branches/java/
+        </code>
     </li>
 
     <li>Check for any conflicts, these will be marked by a 'C' before the
     filename.  In this example, validator.js has a
-    conflict that we will have to manually resolve:<br/>
-        <pre>
-             U    web/index.html
+    conflict that we will have to manually resolve:<p>
+        <code>
+             U    web/index.html <br>
              C    web/js/validator.js
-        </pre>
+        </code>
     </li>
 
-    <li>After resolving this conflict do:<br/>
-        <pre>
-            svn resolved web/js/validator.js
-        </pre>
+    <li>After resolving this conflict do:<p>
+        <code>
+            % svn resolved web/js/validator.js
+        </code>
     </li>
 
     <li>Then, test with a deploy of the aar and war files on the server.
 
-    <li>Commit the changes in the working copy of the trunk:<br/>
-        <pre>
-            svn commit
-        </pre>
+    <li>Commit the changes in the working copy of the trunk:<p>
+        <code>
+            % svn commit
+        </code>
     </li>
 </ol>
 
