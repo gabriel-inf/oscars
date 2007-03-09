@@ -7,17 +7,26 @@
 <h2>Merging from a branch into the trunk</h2>
 
 <ol>
-    <li>Make sure you have a copy of the trunk is clean:<br/>
+    <li>Make sure you have a clean copy of the trunk:<br/>
         <pre>
             % svn status
+            should show nothing. e.g  no M &lt;filename&gt;
         </pre>
     </li>
 
     <li>Check what the current head version is:<br/>
         <pre>
             % svn update 
+              returns headrevnumber
         </pre>
     </li>
+    
+       <li>Check when the last revision to the trunk was made:<br/>
+        <pre>
+            % svn info
+            returns trunkrevnumber as Last Changed Rev
+        </pre>
+      </li>
 
     <li>Do a 'dry-run' to see what files will change:<br/>
         <pre>
