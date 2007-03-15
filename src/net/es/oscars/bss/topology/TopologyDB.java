@@ -48,8 +48,6 @@ public class TopologyDB {
     /**
      * Updates information in router, interface, and ipaddrs tables.
      * It currently uses data from SNMP output files.
-     * @param dirName A String containing the log file directory name.
-     * @throws FileNotFoundException
      */
     public List topologyFromDB() {
 

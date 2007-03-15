@@ -11,7 +11,7 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.pathfinder.dragon.PeerIpaddr" table="peerIpaddrs">
+<class name="net.es.oscars.pathfinder.PeerIpaddr" table="peerIpaddrs">
     <meta attribute="class-description" inherit="false">
        @hibernate.class table="peerIpaddrs"
     </meta>
@@ -32,7 +32,7 @@
     <!-- Associations -->
 
     <many-to-one name="domain" column="domainId"
-	    class="net.es.oscars.pathfinder.Domain" not-null="true" />
+                 class="net.es.oscars.pathfinder.Domain" not-null="true" />
 
 </class>
 </hibernate-mapping>

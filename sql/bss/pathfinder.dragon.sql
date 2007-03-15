@@ -10,11 +10,3 @@ CREATE TABLE IF NOT EXISTS dragonLocalIdMap (
     type 				TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type = MyISAM;
-
--- Table that associates outside hops with domains
-CREATE TABLE IF NOT EXISTS peerIpaddrs (
-    id		INT NOT NULL AUTO_INCREMENT,
-    domainId	INT NOT NULL,
-    ip		TEXT NOT NULL,
-    PRIMARY KEY(id)
-) type = MyISAM;

@@ -20,13 +20,13 @@ import java.net.UnknownHostException;
  */
 public class Scheduler {
     private LogWrapper log;
-    private PathManager pathMgr;
+    private PCEManager pceMgr;
     private Notifier notifier;
     private ReservationManager rm;
 
     public Scheduler() {
         this.log = new LogWrapper(this.getClass());
-        this.pathMgr = new PathManager();
+        this.pceMgr = new PCEManager();
         this.notifier = new Notifier();
         this.rm = new ReservationManager();
     }
@@ -132,7 +132,7 @@ public class Scheduler {
         String egressLoopback = this.getLoopback(path, "egress");
         // Egress loopback allowed to be non-MPLS
         if (egressLoopback == null) {
-            hops = this.pathMgr.getIpaddrs(path);
+            hops = this.pceMgr.getIpaddrs(path);
             egressLoopback = hops.get(hops.size()-1).getIp();
         }
 
@@ -243,7 +243,7 @@ public class Scheduler {
 
     /**
      * Returns a description of the pending reservation suitable for email.
-     * @param reservation a reservation instance
+     * @param resv a reservation instance
      * @return a String describing the pending reservation
      */
     public String pendingReservationMessage(Reservation resv) {
@@ -258,7 +258,7 @@ public class Scheduler {
 
     /**
      * Returns a description of the expired reservation suitable for email.
-     * @param reservation a reservation instance
+     * @param resv a reservation instance
      * @return a String describing the expired reservation
      */
     public String expiredReservationMessage(Reservation resv) {

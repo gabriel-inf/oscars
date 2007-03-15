@@ -21,7 +21,7 @@ public class DragonLocalIdMap implements Serializable {
 
     /** persistent field */
     private String ip;
-	private int number;
+    private int number;
     private String type;
 
     /** persistent field */
@@ -54,14 +54,14 @@ public class DragonLocalIdMap implements Serializable {
      * @param ip a string with the IP address
      */ 
     public void setIp(String ip) { this.ip = ip; }
-	
-	/**
+
+    /**
      * @return local id number
      */ 
     public int getNumber() { return this.number; }
 
     /**
-     * @param local id dumber to set
+     * @param number to set
      */ 
     public void setNumber(int number) { this.number = number; }
 
@@ -84,7 +84,7 @@ public class DragonLocalIdMap implements Serializable {
     public Ipaddr getVlsrIp() { return this.vlsrIp; }
 
     /**
-     * @param ipaddr of vlsr that controls the switch to which host is connected
+     * @param vlsrIp an Ipaddr instance of vlsr that controls the switch to which host is connected
      */ 
     public void setVlsrIp(Ipaddr vlsrIp) {
         this.vlsrIp = vlsrIp;

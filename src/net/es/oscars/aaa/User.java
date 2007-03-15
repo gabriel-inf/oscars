@@ -57,10 +57,10 @@ public class User implements Serializable {
     private String activationKey;
 
     /** nullable persistent field */
-    private Long lastActiveTime;
+    private Long loginTime;
 
     /** nullable persistent field */
-    private Long registerTime;
+    private String cookieHash;
 
     /** persistent field */
     private Institution institution;
@@ -239,30 +239,29 @@ public class User implements Serializable {
 
 
     /**
-     * @return lastActiveTime A Long instance with user's active time
+     * @return loginTime A Long instance with user's login time
      */ 
-    public Long getLastActiveTime() { return this.lastActiveTime; }
+    public Long getLoginTime() { return this.loginTime; }
 
     /**
-     * @param lastActiveTime A Long instance with user's active time
+     * @param loginTime A Long instance with user's login time
      */ 
-    public void setLastActiveTime(Long lastActiveTime) {
-        this.lastActiveTime = lastActiveTime;
-    }
-
-
-    /**
-     * @return registerTime A Long with the user's registration time
-     */ 
-    public Long getRegisterTime() {
-        return this.registerTime;
+    public void setLoginTime(Long loginTime) {
+        this.loginTime = loginTime;
     }
 
     /**
-     * @param registerTime A Long with the user's registration time
+     * @return cookieHash A String with the user's cookie
      */ 
-    public void setRegisterTime(Long registerTime) {
-        this.registerTime = registerTime;
+    public String getCookieHash() {
+        return this.cookieHash;
+    }
+
+    /**
+     * @param cookieHash A String with the user's cookie
+     */ 
+    public void setCookieHash(String cookieHash) {
+        this.cookieHash = cookieHash;
     }
 
 

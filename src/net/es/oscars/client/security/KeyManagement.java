@@ -6,12 +6,16 @@ import java.security.*;
 public class KeyManagement {
 
     /* setup to use our keystore ... */
-    public static void setKeyStore() {
+    public static void setKeyStore(String repo) {
         try {  
             System.setProperty("javax.net.ssl.keyStoreType", "JKS");
-            System.setProperty("javax.net.ssl.trustStore", 
+    /*            System.setProperty("javax.net.ssl.trustStore", 
                                System.getProperty("user.home") + "/.keystore");
-            // should set this somewhere else
+       */
+       System.out.println("KeyManagement keystore file is " + repo  +"/ssl-keystore.jks");
+             System.setProperty("javax.net.ssl.trustStore",
+                               repo +"/ssl-keystore.jks");
+        // should set this somewhere else
             System.setProperty("javax.net.ssl.trustStorePassword", "oscars");
             System.setProperty("java.protocol.handler.pkgs", 
                                "com.sun.net.ssl.internal.www.protocol" );

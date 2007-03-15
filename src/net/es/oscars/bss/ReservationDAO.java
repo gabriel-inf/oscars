@@ -43,7 +43,8 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
 
         // TODO:  ensure unprivileged user can't cancel another's reservation
         String[] strArray = tag.split("-");
-        Integer id = Integer.valueOf(strArray[strArray.length - 1]);
+        // TODO:  FIX
+        Integer id = Integer.valueOf(strArray[1]);
         return this.updateStatus(id, "PRECANCEL");
     }
 
@@ -61,7 +62,8 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
         throws BSSException {
 
         String[] strArray = tag.split("-");
-        Integer id = Integer.valueOf(strArray[strArray.length - 1]);
+        // TODO:  FIX
+        Integer id = Integer.valueOf(strArray[1]);
         // NOTE:  calling method must call pathDAO.toString() to get path
         // from Reservation bean's pathId
         Reservation reservation = this.findById(id, false);

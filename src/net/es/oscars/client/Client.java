@@ -33,7 +33,7 @@ public class Client {
      }
 
     public void setUp(boolean useKeyStore, String url, String repo, String axisConfig) throws AxisFault {
-        if (useKeyStore) { KeyManagement.setKeyStore(); }
+        if (useKeyStore) { KeyManagement.setKeyStore(repo); }
         this.log = new LogWrapper(this.getClass());
         this.configContext =
                 ConfigurationContextFactory
@@ -93,7 +93,6 @@ public class Client {
     /**
      * Makes call to server to get list of reservations.
      *
-     * @param login a string, possibly null, with a user's login name
      * @return response a ListReply instance with summaries of each reservation
      * @throws AAAFaultMessageException
      * @throws BSSFaultMessageException

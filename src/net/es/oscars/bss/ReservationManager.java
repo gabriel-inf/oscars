@@ -22,20 +22,17 @@ public class ReservationManager {
     private Session session;
     private LogWrapper log;
     private Notifier notifier;
-    private PathManager pathMgr;
-    private Properties traceProps;
-    private Properties narbProps;
-    private Properties snmpProps;
+    private PCEManager pceMgr;
+    private DomainManager domainMgr;
+    private PolicyManager policyMgr;
 
     /** Constructor. */
     public ReservationManager() {
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.traceProps = propHandler.getPropertyGroup("trace", true);
-        this.narbProps = propHandler.getPropertyGroup("narb", true);
-        this.snmpProps = propHandler.getPropertyGroup("snmp", true);
         this.log = new LogWrapper(this.getClass());
         this.notifier = new Notifier();
-        this.pathMgr = new PathManager();
+        this.pceMgr = new PCEManager();
+        this.domainMgr = new DomainManager();
+        this.policyMgr = new PolicyManager();
     }
 
     public void setSession() {
@@ -71,38 +68,28 @@ public class ReservationManager {
         // so far just validation for create
         StringBuilder errorMsg =
             paramValidator.validate(resv, ingressRouterIP, egressRouterIP);
+        this.log.info("create.validate", "ok");
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
-        
-        String runTrace = this.traceProps.getProperty("runTrace");
-        String runNARB = this.narbProps.getProperty("runNARB");
-        this.log.debug("runTrace variable is", runTrace);
-		this.log.debug("runNARB variable is", runNARB);
-		
         ReservationDAO dao = new ReservationDAO();
         dao.setSession(this.session);
-        this.pathMgr.setSession(this.session);
         
-        /* Determine path calculation to perform */
-        if (runTrace != null && runTrace.equals("1")) {
-       		 path = this.pathMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
-                             ingressRouterIP, egressRouterIP);
-        }else if(runNARB != null && runNARB.equals("1")){
-        	path = this.pathMgr.findNARBPath(resv.getSrcHost(), resv.getDestHost(),
-                             ingressRouterIP, egressRouterIP);
-        }else{
-        	throw new BSSException("No path computation method configured. Please contact administrator.");
-        }
-		
+        path = this.pceMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
+                                    ingressRouterIP, egressRouterIP);
+        this.log.info("create.findPath", "after");
+        // only occurs if testing only a portion of the system
+        if (path == null) { return null; }
+        this.log.info("create.findPath", "after null test");
+
         bandwidth = resv.getBandwidth();
-        reservations =
-            dao.getActiveReservations(resv.getStartTime(), resv.getEndTime());
+        reservations = dao.getActiveReservations(resv.getStartTime(),
+                                                 resv.getEndTime());
  
         for (Reservation r: reservations) {
             currentPaths.add(r.getPath());
         }
-        this.pathMgr.checkOversubscribed(currentPaths, path, bandwidth);
+        this.policyMgr.checkOversubscribed(currentPaths, path, bandwidth);
 
         // set start of path
         resv.setPath(path);
@@ -124,19 +111,11 @@ public class ReservationManager {
             this.log.info("create.mail.unsupported", e.getMessage());
         }
         
-        // finds next domain, if any, to hand to interdomain component
-        this.pathMgr.setSession(this.session);
-        String runSNMP = this.snmpProps.getProperty("runSNMP");
-        Domain nextDomain = null;
-        if(runSNMP != null && runSNMP.equals("1")){
-         	nextDomain = this.pathMgr.getNextDomain(path);
-        }else{
-        	nextDomain = this.pathMgr.getNextDomainFromDB();
-        }
-        
+        Domain nextDomain = this.domainMgr.getNextDomain(this.pceMgr.getNextHop());
         this.log.info("create.finish reservation tag is ", this.toTag(resv)); 
         if (nextDomain != null) {
-        	this.log.info("create.finish next domain is " , nextDomain.getUrl());
+            this.log.info("create.finish next domain is ",
+                          nextDomain.getUrl());
         }
         return nextDomain;
     }
@@ -156,15 +135,16 @@ public class ReservationManager {
         this.log.info("cancel.start", tag);
    
         try {
-	        dao = new ReservationDAO();
-	        dao.setSession(this.session);
-	        reply = dao.cancel(tag);
-	
-	        this.log.info("cancel.finish", "tag: " + tag + ", status: " + reply);
+            dao = new ReservationDAO();
+            dao.setSession(this.session);
+            reply = dao.cancel(tag);
+            this.log.info("cancel.finish",
+                          "tag: " + tag + ", status: " + reply);
         } catch (Exception eIn) {
-        	BSSException eOut = new BSSException("Reservation not found: "+ tag);
-        	//eOut.fillInStackTrace();
-        	throw eOut;       	
+            BSSException eOut =
+                new BSSException("Reservation not found: "+ tag);
+        //eOut.fillInStackTrace();
+            throw eOut;
         }
         Reservation resv = dao.query(tag, false);
         String subject = "Reservation successfully cancelled";
@@ -203,9 +183,10 @@ public class ReservationManager {
            this.log.info("query.finish" , this.toTag(resv));
            return resv;
         } catch (Exception eIn) {
-        	BSSException eOut = new BSSException("Reservation not found: "+ tag);
-        	eOut.fillInStackTrace();
-        	throw eOut;
+            BSSException eOut =
+                new BSSException("Reservation not found: "+ tag);
+            eOut.fillInStackTrace();
+            throw eOut;
         }
     } 
 
@@ -242,8 +223,7 @@ public class ReservationManager {
     public String pathToString(Reservation resv, String retType) {
         if (resv.getPath() == null) { return ""; }
         Path path = resv.getPath();
-        this.pathMgr.setSession(this.session);
-        return this.pathMgr.pathToString(path, retType);
+        return this.pceMgr.pathToString(path, retType);
     }
 
     /**
@@ -265,11 +245,11 @@ public class ReservationManager {
         startTime.setTimeInMillis(millis);
         // months start at 0 in Calendar
         int month = startTime.get(Calendar.MONTH) + 1;
-        String tag = domain.getAbbrev() + "-" + reservation.getLogin() + "-" +
+        String tag = domain.getAbbrev() + "-" + reservation.getId() + "-" +
+            reservation.getLogin() + "-" +
             startTime.get(Calendar.YEAR) + "-" +
             this.fixedLengthTime(month) + "-" +
-            this.fixedLengthTime(startTime.get(Calendar.DAY_OF_MONTH)) + "-" +
-            reservation.getId();
+            this.fixedLengthTime(startTime.get(Calendar.DAY_OF_MONTH));
         return tag;
     }
 
@@ -294,7 +274,7 @@ public class ReservationManager {
 
     /**
      * Returns a description of the created reservation suitable for email.
-     * @param reservation a reservation instance
+     * @param resv a reservation instance
      * @return a String describing the created reservation
      */
     public String createReservationMessage(Reservation resv) {
@@ -305,7 +285,7 @@ public class ReservationManager {
 
     /**
      * Returns a description of the cancelled reservation suitable for email.
-     * @param reservation a reservation instance
+     * @param resv a reservation instance
      * @return a String describing the cancelled reservation
      */
     public String cancelReservationMessage(Reservation resv) {

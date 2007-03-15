@@ -1,4 +1,4 @@
-package net.es.oscars.pathfinder.dragon;
+package net.es.oscars.pathfinder;
 
 import java.io.Serializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -52,12 +52,12 @@ public class PeerIpaddr implements Serializable {
 
 
     /**
-     * @return xface interface instance (association used)
+     * @return domain instance (association used)
      */ 
     public Domain getDomain() { return this.domain; }
 
     /**
-     * @param xface an interface instance (association used)
+     * @param domain a domain instance (association used)
      */ 
     public void setDomain(Domain domain) {
         this.domain = domain;

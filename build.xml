@@ -9,6 +9,7 @@
 <property name="app.name" value="oscars" />
 <property name="app.version" value="0.5-dev" />
 <property name="webapp.home" value="/usr/local/jakarta-tomcat5.5/webapps" />
+<property name="webservice.home" value="${webapp.home}/axis2/WEB-INF/services"/>
 
 <property name="build.home" value="build" />
 <property name="build.classes" value="${build.home}/WEB-INF/classes" />
@@ -22,10 +23,14 @@
     <copy todir="${build.classes}">
         <fileset dir="src" includes="**/*.hbm.xml" />
         <fileset dir="conf/public/server" includes="*.cfg.xml, log4j.properties,sec-server*" />
+        <fileset dir="conf/public/client" includes="sec-client*" />
     </copy>
     <mkdir dir="${build.lib}"/>
     <copy todir="${build.lib}">
-        <fileset dir="lib" includes="*.jar"/>
+        <fileset dir="lib" includes="*.jar"
+    	      excludes="wss4j-1.5.1.jar"/> 
+    	<!-- wss4j.jar  must be in tomcat/shared/lib for the forwarding code to work.
+    	         does not need to be in the aar -->
         <fileset dir="lib/axis2" includes="*.jar"/>
         <fileset dir="lib/jsf" includes="*.jar"/>
     </copy>
@@ -73,9 +78,10 @@ Adding a -sd switch generates resources/services.xml -->
 need. Will need to separate if someone wants only WBUI and not Axis2 -->
 <target name="compile" depends="prepare" description="Compile Java sources">
     <javac srcdir="src" includes="**/*.java" 
+       excludes="**/dragon/**/*"
        	   destdir="${build.classes}">
         <classpath>
-            <fileset dir="lib" includes="**/*.jar" />
+            <fileset dir="lib" includes="**/*.jar"/> 
         </classpath>
     </javac>
 </target>
@@ -102,22 +108,13 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <fileset dir="${build.classes}" includes="**/*"
                  excludes="**/servlets/**/*" />
         <fileset dir="${build.lib}/.."  includes="lib/*.jar" />
-        <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
+         <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
     </jar>
 </target>
 
 <!-- WBUI section ******************************************************** -->
 
-<property name="dojo" value="/usr/local/src/dojo" />
-<available property="dojo.present" file="web/dojo" />
 <available property="docs.present" file="web/docs" />
-
-<target name="copydojo" unless="dojo.present"
-        description="copy necessary Dojo material from /usr/local/src">
-    <copy todir="web/dojo">
-        <fileset dir="${dojo}" includes="src/**/*,iframe_history.html,dojo.js" />
-    </copy>
-</target>
 
 <!-- TODO: also needs to be done if top-level docs have changed -->
 <target name="copydocs" unless="docs.present"
@@ -131,7 +128,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 </target>
 
 <target name="wbui" description="Build war file for deploy"
-        depends="compile, copydojo, copydocs">
+        depends="compile, copydocs">
     <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
         <fileset dir="web"
                  includes="**/*" excludes="WEB-INF/web.xml" />
@@ -142,6 +139,32 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     </war>
 </target>
 	
+<!-- dojo dev section ***************************************************** -->
+
+<property name="dojo" value="/usr/local/src/dojo" />
+<available property="dojo.present" file="dojoWeb/dojo" />
+
+<target name="copydojo" unless="dojo.present"
+        description="copy necessary Dojo material from /usr/local/src">
+    <copy todir="dojoWeb/dojo">
+        <fileset dir="${dojo}" includes="src/**/*,tests/**/*,iframe_history.html,dojo.js" />
+    </copy>
+    <copy todir="dojoWeb/dojo">
+        <fileset dir="." includes="*.html" />
+    </copy>
+</target>
+
+<target name="dojo" description="Build war file, dojo version, for deploy"
+        depends="compile, copydojo">
+    <war destfile="OSCARSDojo.war" webxml="dojoWeb/WEB-INF/web.xml">
+        <fileset dir="dojoWeb"
+                 includes="**/*" excludes="WEB-INF/web.xml" />
+        <classes dir="${build.classes}" includes="**/*"
+                 excludes="**/oscars/OSCARSSk*.class, **/oscars/OSCARSM*.class,
+                           **/oscars/ReservationAdapter.class" />
+        <lib dir="lib" includes="*.jar" />
+    </war>
+</target>
 <!-- Deployment section -->
 	<property  name="catalina.home" value="/usr/local/jakarta-tomcat5.5"/>
 	
@@ -150,13 +173,23 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 		<mkdir dir="${catalina.home}/shared/oscars.conf/server"/>
 		<copy todir="${catalina.home}/shared/oscars.conf/axis2.repo">
 			<fileset dir="conf/private/server" includes="sec-client.*"/>
+			<fileset dir="conf/public/client/" includes="axis2.xml, ssl-keystore.jks"/>
 		</copy>
-		<copy file="conf/public/client/axis2.xml" todir ="${catalina.home}/shared/oscars.conf/axis2.repo"/>
 		<copy todir="${catalina.home}/shared/oscars.conf/server">
 			<fileset dir="conf/private/server/" includes="*key, oscars.properties, test.properties"/>
 			<fileset dir="conf/public/server/" includes="*juniper*"/>
 		</copy>
      </target>
+	
+	<target  name="deployaar"   description="copy OSCARS.aar to axis2 services directory"
+		depends="aar" >
+	    <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}" />
+	    <copy file="${build.home}/WEB-INF/classes/net/es/oscars/client/security/PWCallback.class"
+		       todir="${webapp.home}/../shared/classes/net/es/oscars/client/security/" />
+	    <copy todir="${webapp.home}/../shared/lib" >
+	    	   <fileset dir="lib" includes="wss4j-1.5.1.jar, xmlsec-1.3.0.jar"/>
+	    	</copy>
+	</target>
 
 <!-- Junit test section -->
 

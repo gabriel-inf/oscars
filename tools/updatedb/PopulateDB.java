@@ -10,6 +10,8 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.*;
+import net.es.oscars.pathfinder.Path;
 import org.hibernate.*;
 
 public class PopulateDB {

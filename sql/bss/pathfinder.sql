@@ -66,6 +66,14 @@ CREATE TABLE IF NOT EXISTS domains (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+-- Table that associates outside hops with domains
+CREATE TABLE IF NOT EXISTS peerIpaddrs (
+    id		INT NOT NULL AUTO_INCREMENT,
+    domainId	INT NOT NULL,
+    ip		TEXT NOT NULL,
+    PRIMARY KEY(id)
+) type = MyISAM;
+
 -- table holding reservation information
 -- this information is passed to the PSS
 CREATE TABLE IF NOT EXISTS reservations (

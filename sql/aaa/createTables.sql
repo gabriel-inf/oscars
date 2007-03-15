@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
     phoneSecondary      TEXT,
     status              TEXT,
     activationKey       TEXT,
-    lastActiveTime      BIGINT,
-    registerTime        BIGINT,
+    loginTime           BIGINT,
+    cookieHash          TEXT,
     institutionId       INT NOT NULL,    -- foreign key (when convert to InnoDB)
     PRIMARY KEY (id)
 

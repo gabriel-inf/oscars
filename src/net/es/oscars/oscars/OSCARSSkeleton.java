@@ -22,14 +22,14 @@ import org.apache.ws.security.WSConstants;
 
 import org.hibernate.*;
 
+import net.es.oscars.LogWrapper;
+import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
-import net.es.oscars.LogWrapper;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
-import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.interdomain.*;
+import net.es.oscars.interdomain.InterdomainException;
 
 /**
  * OSCARS Axis2 service
@@ -196,13 +196,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     }
 
     /**
-     *  This is used by adjacent domain to forward a request that it has received that requires
-     *  transisting the ESnet domain.
-     *  
-     *  This method is just a  dispatcher. The user authentication is performed by the specific operation methods.
-     *  The forward message will be signed by the adjacent domain server. At this point we are
-     *  authorizing access based on that alone. This should be changed to look at the payload sender 
-     *  as well.
+     * Serves as a dispatcher for requests forwarded from an
+     * adjacent domain. The user authentication is performed
+     * by the specific operation methods.  The forward message will be signed
+     * by the adjacent domain server. At this point we are authorizing access
+     * based on that alone. This should be changed to look at the payload
+     * sender as well.
      *  
      * @param request Forward instance with request params.
      * @return response ForwardResponse encapsulating library reply.
@@ -352,7 +351,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      *  Also checks to see if there was a certifiate in the message which should never happen
      *  unless the axis2/rampart configuration is incorrect.
      *  
-     * @return
+     * @return login A string with the login associated with the subjectDN
      * @throws AAAFaultMessageException 
      */
     public String checkUser() throws AAAFaultMessageException {

@@ -209,7 +209,7 @@ public class UserManager {
     /**
      * Authenticates user via login name and password.
      *
-     * @param login A string with the user's login name
+     * @param userName A string with the user's login name
      * @param password A string with the user's password
      * @return A string with the login name if verification was successful
      */

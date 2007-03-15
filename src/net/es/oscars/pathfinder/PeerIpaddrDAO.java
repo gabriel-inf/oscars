@@ -1,4 +1,4 @@
-package net.es.oscars.pathfinder.dragon;
+package net.es.oscars.pathfinder;
 
 import java.util.*;
 
@@ -17,7 +17,7 @@ public class PeerIpaddrDAO extends GenericHibernateDAO<PeerIpaddr,Integer> {
     /**
      * Inserts a row into the ipaddrs table.
      *
-     * @param ipaddr an Ipaddr instance to be persisted
+     * @param peerIpaddr a PeerIpaddr instance to be persisted
      */
     public void create(PeerIpaddr peerIpaddr) {
         this.makePersistent(peerIpaddr);
@@ -49,9 +49,8 @@ public class PeerIpaddrDAO extends GenericHibernateDAO<PeerIpaddr,Integer> {
      * Returns ipaddr instance given SQL query with routerName and addressType
      *     as named parameters.
      * @param sql string containing a SQL query
-     * @param routerName  string with the name of associated router
-     * @param addressType string with address type ("ingress" or "egress")
-     * @return ipaddrObj an ipaddr instance, if any, obtained from the query
+     * @param ip  string containing an IP address
+     * @return ipaddrObj a PeerIpaddr instance, if any, obtained from the query
      */
     public PeerIpaddr getAddress(String sql, String ip) {
 
@@ -64,13 +63,11 @@ public class PeerIpaddrDAO extends GenericHibernateDAO<PeerIpaddr,Integer> {
     }
     
     public Domain getDomain(String ip){
-    	String sql = "SELECT * FROM peerIpaddrs WHERE ip = ?";
-    	
-    	PeerIpaddr ipaddrObj = this.getAddress(sql, ip);
+        String sql = "SELECT * FROM peerIpaddrs WHERE ip = ?";
+        PeerIpaddr ipaddrObj = this.getAddress(sql, ip);
         //
         // if the lookup fails, return null, else return the IP
-        if (ipaddrObj == null){ return null;}
-        else
-            return ipaddrObj.getDomain();
+        if (ipaddrObj == null) { return null; }
+        else { return ipaddrObj.getDomain(); }
     }
 }

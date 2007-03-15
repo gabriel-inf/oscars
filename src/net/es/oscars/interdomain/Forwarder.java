@@ -24,6 +24,7 @@ public class Forwarder  extends Client {
 
     public Forwarder() {
     	rm = new ReservationManager();
+    	 log = new LogWrapper(this.getClass());
     }
 
     private void setup(Reservation resv, Domain  nextDomain) 
@@ -31,7 +32,8 @@ public class Forwarder  extends Client {
         String url =nextDomain.getUrl();
         String catalinaHome = System.getProperty("catalina.home");
         String repo = catalinaHome + "shared/oscars.conf/axis2.repo/";
-        this.log.info("Forwarder.setup, next Domain: " + url + "repo: " , repo );
+        this.log.debug("Forwarder.setup, next Domain: " + url + "  repo: " , repo );
+        System.setProperty("axis2.xml", repo + "axis2.xml");
  
         try {
             super.setUp(true, url, repo, repo + "axis2.xml");
@@ -68,14 +70,14 @@ public class Forwarder  extends Client {
          return reply.getCancelReservation();
     }
 
-
     public ForwardReply forward(String operation, Reservation resv, Domain nextDomain)
            throws  InterdomainException {
     	
     	setup(resv, nextDomain);
         String login = resv.getLogin();
+        this.log.debug("login is ", login);
         ForwardReply reply = null;
-        Forward fwd =  new Forward();;
+        Forward fwd =  new Forward();
         ForwardPayload forPayload = new ForwardPayload();
         fwd.setPayloadSender(login);
         forPayload.setContentType(operation);
@@ -96,10 +98,12 @@ public class Forwarder  extends Client {
  
             }
             fwd.setPayload(forPayload);
+            this.log.debug("payloader sender is ", fwd.getPayloadSender());
             reply = super.forward(fwd);
             return reply;
     } catch (java.rmi.RemoteException e) {
  	   this.log.error("failed to reach remote domain: " + url,  "\n " + e.getMessage() );
+ 	   e.printStackTrace();
  	   throw new InterdomainException("failed to reach remote domain:" + url +  e.getMessage());
  	}	catch (AAAFaultMessageException e) {
  		this.log.error ("AAAFaultMessageException",e.getMessage());
@@ -111,14 +115,23 @@ public class Forwarder  extends Client {
     }
     
     public ResCreateContent toCreateRequest(Reservation resv) {
-
+       
+       long millis;
        ResCreateContent resCont = new ResCreateContent();
 
         resCont.setSrcHost(resv.getSrcHost());
         resCont.setDestHost(resv.getDestHost());
-        //resCont.setStartTime(resv.getStartTime());  convert long to calendar
-        //resCont.setEndTime(resv.getEndTime());
-        resCont.setBandwidth( resv.getBandwidth().intValue());
+        Calendar startTime = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        millis = resv.getStartTime();
+        startTime.setTimeInMillis(millis);
+        resCont.setStartTime(startTime);
+        Calendar endTime = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        millis = resv.getEndTime();
+        endTime.setTimeInMillis(millis);
+        resCont.setEndTime(endTime);
+        /* output bandwidth is in bytes, input is in Mbytes */
+        Long bandwidth = resv.getBandwidth()/1000000;
+        resCont.setBandwidth( bandwidth.intValue());
         resCont.setProtocol(resv.getProtocol());
         resCont.setDescription(resv.getDescription());
         resCont.setCreateRouteDirection("FORWARD");

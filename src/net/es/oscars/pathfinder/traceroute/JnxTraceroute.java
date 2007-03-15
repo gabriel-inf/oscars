@@ -28,7 +28,7 @@ public class JnxTraceroute {
         this.hops = new ArrayList<String>();
         this.log = new LogWrapper(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("trace", true);
+        this.props = propHandler.getPropertyGroup("traceroute", true);
     }
 
     /**

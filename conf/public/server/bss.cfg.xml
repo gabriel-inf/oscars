@@ -32,7 +32,7 @@
 
         <mapping resource="net/es/oscars/pathfinder/Path.hbm.xml"/>
         <mapping resource="net/es/oscars/pathfinder/Domain.hbm.xml"/>
-	<mapping resource="net/es/oscars/pathfinder/dragon/PeerIpaddr.hbm.xml"/>
+	<mapping resource="net/es/oscars/pathfinder/PeerIpaddr.hbm.xml"/>
 	<mapping resource="net/es/oscars/pathfinder/dragon/DragonLocalIdMap.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/Reservation.hbm.xml"/>
 	<mapping resource="net/es/oscars/bss/ArchivedReservation.hbm.xml"/>

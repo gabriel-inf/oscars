@@ -1,12 +1,12 @@
-package net.es.oscars.bss;
-
 import java.util.*;
 import java.io.*;
 import java.lang.Throwable;
+
 import org.hibernate.*;
 
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.database.Initializer;
+import net.es.oscars.bss.*;
 
 /**
  * @author Jason Lee (jrlee@lbl.gov), David Robertson (dwrobertson@lbl.gov)
@@ -25,12 +25,7 @@ public class LSPScheduler {
     public static void main (String[] args) {
        System.err.println ("Start of LSPScheduler");
 
-       if (args.length != 0 ) { 
-           if(args[0].equals("-d")) {
-               System.err.println("Debug ON");
-               debug = 1;
-           }
-       }
+       debug = 1;
 
        Initializer initializer = new Initializer();
        initializer.initDatabase();
