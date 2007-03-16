@@ -32,7 +32,7 @@ public class NARBPathfinder extends Pathfinder implements PCE {
     public NARBPathfinder() {
         this.log = new LogWrapper(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("pathfinder", true);
+        this.props = propHandler.getPropertyGroup("narb", true);
     }
 
 

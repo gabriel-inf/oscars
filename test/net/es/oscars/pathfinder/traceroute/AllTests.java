@@ -13,18 +13,6 @@ public class AllTests {
         suite.addTest(new JnxTracerouteTest("testRawHopData"));
         suite.addTest(new JnxTracerouteTest("testHopData"));
 
-        //suite.addTest(new TestSuite(JnxSNMPTest.class));
-        suite.addTest(new JnxSNMPTest("testJnxSNMP"));
-        //suite.addTest(new JnxSNMPTest("testQueryLSPInfo"));
-        // testQuesryLSPInfo doesn't work yet
-        //suite.addTest(new JnxSNMPTest("testQueryLSPInfo"));
-
-        // network tests need to run in right order
-        suite.addTest(new PathfinderTest("testTraceroute"));
-        suite.addTest(new PathfinderTest("testForwardPath"));
-        suite.addTest(new PathfinderTest("testQueryDomain"));
-        suite.addTest(new PathfinderTest("testReversePath1"));
-        suite.addTest(new PathfinderTest("testReversePath2"));
         return suite;
     }
 }
