@@ -1,40 +1,33 @@
 package net.es.oscars;
 
-import junit.framework.*;
+import org.testng.annotations.*;
 
-public class LogWrapperTest extends TestCase {
-    private LogWrapper log;
+@Test(groups={ "core" })
+public class LogWrapperTest {
+    private LogWrapper logWrapper;
 
-    public LogWrapperTest(String name) {
-        super(name);
-    }
-        
-    protected void setUp() {
-        this.log = new LogWrapper(LogWrapperTest.class);
+  @BeforeClass
+    protected void setUpClass() {
+        this.logWrapper = new LogWrapper(getClass());
     }
 
-    public void testDebug() {
-        this.log.debug("testDebug", "test LogWrapper debug level");
-        Assert.assertTrue(true);
+    public void logDebug() {
+        this.logWrapper.debug("logDebug", "test LogWrapper debug level");
     }
 
-    public void testInfo() {
-        this.log.info("testInfo", "test LogWrapper info level");
-        Assert.assertTrue(true);
+    public void logInfo() {
+        this.logWrapper.info("logInfo", "test LogWrapper info level");
     }
 
-    public void testWarn() {
-        this.log.warn("testWarn", "test LogWrapper warn level");
-        Assert.assertTrue(true);
+    public void logWarn() {
+        this.logWrapper.warn("logWarn", "test LogWrapper warn level");
     }
 
-    public void testError() {
-        this.log.error("testError", "test LogWrapper error level");
-        Assert.assertTrue(true);
+    public void logError() {
+        this.logWrapper.error("logError", "test LogWrapper error level");
     }
 
-    public void testFatal() {
-        this.log.fatal("testFatal", "test LogWrapper fatal level");
-        Assert.assertTrue(true);
+    public void logFatal() {
+        this.logWrapper.fatal("logFatal", "test LogWrapper fatal level");
     }
 }

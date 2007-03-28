@@ -1,6 +1,6 @@
 package net.es.oscars.aaa;
 
-import junit.framework.*;
+import org.testng.annotations.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -16,21 +16,23 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class PermissionTest extends TestCase {
+@Test(groups={ "aaa" })
+public class PermissionTest {
     private Properties props;
     private Session session;
     private PermissionDAO dao;
 
-    public PermissionTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-    }
-        
-    public void setUp() {
         this.dao = new PermissionDAO();
+    }
+
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         this.dao.setSession(this.session);
@@ -41,12 +43,12 @@ public class PermissionTest extends TestCase {
         Permission permission = (Permission) this.dao.queryByParam("name",
                                     this.props.getProperty("permissionName"));
         this.session.getTransaction().commit();
-        Assert.assertNotNull(permission);
+        assert permission != null;
     }
 
     public void testList() {
         List<Permission> perms = this.dao.findAll();
         this.session.getTransaction().commit();
-        Assert.assertFalse(perms.isEmpty());
+        assert !perms.isEmpty();
     }
 }

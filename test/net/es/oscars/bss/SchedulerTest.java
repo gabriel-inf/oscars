@@ -1,6 +1,7 @@
 package net.es.oscars.bss;
 
-import junit.framework.*;
+import org.testng.annotations.*;
+import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -16,19 +17,21 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class SchedulerTest extends TestCase {
+@Test(groups={ "bss" })
+public class SchedulerTest {
     private Properties props;
     private Session session;
 
-    public SchedulerTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
     }
         
-    public void setUp() {
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         this.session.beginTransaction();
@@ -46,7 +49,6 @@ public class SchedulerTest extends TestCase {
             fail("SchedulerTest.pending: " + e.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertTrue(true);
     }
 
     public void testExpiredReservations() {
@@ -62,6 +64,5 @@ public class SchedulerTest extends TestCase {
             fail("SchedulerTest.expired: " + e.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertTrue(true);
     }
 }

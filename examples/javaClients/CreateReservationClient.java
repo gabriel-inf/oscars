@@ -78,7 +78,7 @@ public class CreateReservationClient extends ExampleClient {
         // if prompting for parameters
         BufferedReader br =
                 new BufferedReader(new InputStreamReader(System.in));
-        arg = Args.getArg(br, "Source host", content.getSrcHost());
+        arg = Args.getArg(br, "Source host",content.getSrcHost());
         if (arg != null) { content.setSrcHost(arg); }
         arg = Args.getArg(br, "Destination host", content.getDestHost());
         if (arg != null) { content.setDestHost(arg); }
@@ -107,6 +107,21 @@ public class CreateReservationClient extends ExampleClient {
         if (arg != null) { content.setProtocol(arg); }
         arg = Args.getArg(br, "Description", content.getDescription());
         if (arg != null) { content.setDescription(arg); }
+        arg=Args.getArg(br, "RequestedPath: input dotted ipAddrs separated by spaces"," ");
+        if (arg != " ") {
+        	String ipaddr[] = arg.split(" ");
+            ExplicitPath ePath = new ExplicitPath();
+            HopList hList = new HopList();
+            for (int i = 0; i < ipaddr.length; i++){
+               Hop hop = new Hop();
+               hop.setLoose(true);
+               hop.setType("ipv4");
+               hop.setValue(ipaddr[i]);
+               hList.addHop(hop);
+            }
+        ePath.setHops(hList);
+        content.setReqPath(ePath);
+        }
         return content;
     }
 
@@ -115,7 +130,7 @@ public class CreateReservationClient extends ExampleClient {
 
         Properties props = new Properties();
         String propFileName =  System.getenv("OSCARS_HOME") +
-        "/examples/javaClient/reservation.properties";
+        "/examples/javaClients/reservation.properties";
         try {
             FileInputStream in = new FileInputStream(propFileName);
             props.load(in);
@@ -151,5 +166,13 @@ public class CreateReservationClient extends ExampleClient {
     public void outputResponse(CreateReply response) {
         System.out.println("Tag: " + response.getTag());
         System.out.println("Status: " + response.getStatus().toString());
+        if (response.getPath() != null){
+        	System.out.println("Path is:");
+        	HopList hList = response.getPath().getHops();
+        	Hop hop[] = hList.getHop();
+          	for (int i=0; i <hop.length; i++) {
+        		System.out.println("\t" +  hop[i].getValue() );
+        	}
+        }
     }
 }

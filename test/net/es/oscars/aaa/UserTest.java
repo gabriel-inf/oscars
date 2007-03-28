@@ -1,6 +1,7 @@
 package net.es.oscars.aaa;
 
-import junit.framework.*;
+import org.testng.annotations.*;
+import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -16,23 +17,25 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class UserTest extends TestCase {
+@Test(groups={ "aaa" })
+public class UserTest {
     private Properties props;
     private Session session;
     private UserManager mgr;
 
-    public UserTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
+        this.mgr = new UserManager();
     }
-        
-    public void setUp() {
+
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.mgr = new UserManager();
         this.mgr.setSession();
         this.session.beginTransaction();
     }
@@ -75,9 +78,10 @@ public class UserTest extends TestCase {
             fail("Unable to query newly created user: " + ulogin);
         }
         this.session.getTransaction().commit();
-        Assert.assertNotNull(user);
+        assert user != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testAssociation() {
         User user = null;
 
@@ -89,9 +93,10 @@ public class UserTest extends TestCase {
         }
         String institutionName = user.getInstitution().getName();
         this.session.getTransaction().commit();
-        Assert.assertNotNull(institutionName);
+        assert institutionName != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testVerifyLogin() {
         String userName = null;
 
@@ -105,9 +110,10 @@ public class UserTest extends TestCase {
             fail(e.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertNotNull(userName);
+        assert userName != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testQuery() {
         User user = null;
         String ulogin = this.props.getProperty("login");
@@ -119,15 +125,17 @@ public class UserTest extends TestCase {
         }
         String userLogin = user.getLogin();
         this.session.getTransaction().commit();
-        Assert.assertEquals(ulogin, userLogin);
+        assert ulogin.equals(userLogin);
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testList() {
         List<User> users = this.mgr.list();
         this.session.getTransaction().commit();
-        Assert.assertFalse(users.isEmpty());
+        assert !users.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testUpdate() {
         String ulogin = this.props.getProperty("login");
         String phoneSecondary = this.props.getProperty("phoneSecondary");
@@ -152,9 +160,19 @@ public class UserTest extends TestCase {
             fail("Unable to query newly updated user: " + ulogin);
         }
         this.session.getTransaction().commit();
-        Assert.assertEquals(user.getPhoneSecondary(), phoneSecondary);
+        assert user.getPhoneSecondary().equals(phoneSecondary);
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
+    public void testLoginFromDN() {
+        String userName = null;
+
+        userName = this.mgr.loginFromDN(this.props.getProperty("dn"));
+        this.session.getTransaction().commit();
+        assert userName != null;
+    }
+
+  @Test(dependsOnMethods={ "testCreate", "testAssociation", "testVerifyLogin", "testQuery", "testList", "testUpdate", "testLoginFromDN" })
     public void testRemove() {
         String ulogin = this.props.getProperty("login");
         try {
@@ -164,14 +182,5 @@ public class UserTest extends TestCase {
             fail(e.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertTrue(true);
-    }
-
-    public void testLoginFromDN() {
-        String userName = null;
-
-        userName = this.mgr.loginFromDN(this.props.getProperty("dn"));
-        this.session.getTransaction().commit();
-        Assert.assertNotNull(userName);
     }
 }

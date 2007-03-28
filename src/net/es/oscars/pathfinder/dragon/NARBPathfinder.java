@@ -5,10 +5,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 import net.es.oscars.*;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.pathfinder.Path;
-import net.es.oscars.pathfinder.PCE;
-import net.es.oscars.pathfinder.Pathfinder;
+import net.es.oscars.pathfinder.*;
 
 import edu.internet2.hopi.dragon.narb.NARBWSClient;
 import edu.internet2.hopi.dragon.narb.ws.client.NARBStub;
@@ -45,11 +42,11 @@ public class NARBPathfinder extends Pathfinder implements PCE {
      * @param ingressRouterIP string with address of ingress router, if any
      * @param egressRouterIP string with address of egress router, if any
      * @return hops A list of strings containing IP addresses
-     * @throws BSSException
+     * @throws PathfinderException
      */
     public Path findPath(String srcHost, String destHost,
                          String ingressRouterIP, String egressRouterIP)
-            throws BSSException {
+            throws PathfinderException {
         List<String> hops = null;
 
         /* NARB find path */
@@ -96,11 +93,11 @@ public class NARBPathfinder extends Pathfinder implements PCE {
      * @param src string with IP address of source host
      * @param dst string with IP address of destination host
      * @return list of hops in path
-     * @throws BSSException
+     * @throws PathfinderException
      */
     public List<String>
         findNARBPath(String src, String dst, String ingress, String egress)
-            throws BSSException {
+            throws PathfinderException {
 
         List<String> hops = new ArrayList<String>();
         String narbURL = this.props.getProperty("url");
@@ -123,11 +120,11 @@ public class NARBPathfinder extends Pathfinder implements PCE {
 
             this.log.info("narbPath.end", "end");
         } catch(UnknownHostException e) {
-            throw new BSSException(e.getMessage());
+            throw new PathfinderException(e.getMessage());
         } catch(IOException e) {
-            throw new BSSException(e.getMessage());
+            throw new PathfinderException(e.getMessage());
         } catch(NARBFaultMessageException e) {
-            throw new BSSException(e.getFaultMessage().getMsg());
+            throw new PathfinderException(e.getFaultMessage().getMsg());
         }
         return hops;
     }

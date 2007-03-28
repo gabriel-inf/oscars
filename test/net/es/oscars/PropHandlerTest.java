@@ -1,24 +1,21 @@
 package net.es.oscars;
 
+import org.testng.annotations.*;
+
 import java.util.Properties;
 
-import junit.framework.*;
+@Test(groups={ "core" })
+public class PropHandlerTest {
 
-public class PropHandlerTest extends TestCase {
-
-    public PropHandlerTest(String name) {
-        super(name);
-    }
-        
-    public void testLoad() {
+    public void getPropertyGroup() {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("reservation", true);
-        Assert.assertNotNull(props);
+        assert props != null;
     }
 
-    public void testGetProperty() {
+    public void getProperty() {
         PropHandler propHandler = new PropHandler("test.properties");
         Properties props = propHandler.getPropertyGroup("test.bss", true);
-        Assert.assertNotNull(props.getProperty("domainName"));
+        assert props.getProperty("domainName") != null;
     }
 }

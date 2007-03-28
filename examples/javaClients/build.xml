@@ -24,7 +24,7 @@
 
 <target name="copyprivate" depends="checkprivate" if="private.exists">
     <!-- Copy private material to repo -->
-    <copy todir="${repo}" overwrite="true">
+    <copy todir="${repo}" >
         <fileset dir="${private}" includes="*.*" />
     </copy>
 </target>
@@ -55,12 +55,12 @@
      </javac>
 </target>
 
-<target name ="compile" depends="compile-stubs, copyprivate">
+<target name ="compile" depends="copyprivate, compile-stubs">
     <javac classpathref="client.path" srcdir="." destdir="${build}/classes" />
     <!-- Copy application resources -->
     <copy  todir="${build}/classes">
         <fileset dir="${repo}"
-           includes="log4j.properties, sec-client.properties, sec-client.jks" />
+           includes="log4j.properties" />
     </copy>
 </target>
 

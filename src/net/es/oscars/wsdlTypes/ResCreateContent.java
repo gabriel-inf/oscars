@@ -310,6 +310,49 @@
                             
 
                         /**
+                        * field for ReqPath
+                        */
+
+                        protected net.es.oscars.wsdlTypes.ExplicitPath localReqPath ;
+                        
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localReqPathTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return net.es.oscars.wsdlTypes.ExplicitPath
+                           */
+                           public  net.es.oscars.wsdlTypes.ExplicitPath getReqPath(){
+                               return localReqPath;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param ReqPath
+                               */
+                               public void setReqPath(net.es.oscars.wsdlTypes.ExplicitPath param){
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localReqPathTracker = true;
+                                       } else {
+                                          localReqPathTracker = false;
+                                              
+                                       }
+                                   
+                                    this.localReqPath=param;
+                            
+
+                               }
+                            
+
+                        /**
                         * field for CreateRouteDirection
                         */
 
@@ -815,7 +858,14 @@
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             }
+                             } if (localReqPathTracker){
+                                    if (localReqPath==null){
+                                         throw new RuntimeException("reqPath cannot be null!!");
+                                    }
+                                   localReqPath.getOMDataSource(
+                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","reqPath"),
+                                       factory).serialize(xmlWriter);
+                                }
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -1086,7 +1136,16 @@
                                         } else {
                                            throw new RuntimeException("egressRouterIP cannot be null!!");
                                         }
+                                    } if (localReqPathTracker){
+                            elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                                      "reqPath"));
+                            
+                            
+                                    if (localReqPath==null){
+                                         throw new RuntimeException("reqPath cannot be null!!");
                                     }
+                                    elementList.add(localReqPath);
+                                }
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                       "createRouteDirection"));
                             
@@ -1333,6 +1392,17 @@
                                               object.setEgressRouterIP(
                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
                                               
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                            
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","reqPath").equals(reader.getName())){
+                                
+                                        object.setReqPath(net.es.oscars.wsdlTypes.ExplicitPath.Factory.parse(reader));
+                                      
                                         reader.next();
                                     
                               }  // End of if for expected property start element

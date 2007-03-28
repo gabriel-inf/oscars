@@ -1,6 +1,6 @@
 package net.es.oscars.bss.topology;
 
-import junit.framework.*;
+import org.testng.annotations.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -16,23 +16,25 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class IpaddrTest extends TestCase {
+@Test(groups={ "bss/topology" })
+public class IpaddrTest {
     private Properties props;
     private Session session;
     private IpaddrDAO dao;
 
-    public IpaddrTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
+        this.dao = new IpaddrDAO();
     }
 
-    public void setUp() {
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao = new IpaddrDAO();
         this.dao.setSession(this.session);
         this.session.beginTransaction();
     }
@@ -51,31 +53,35 @@ public class IpaddrTest extends TestCase {
 
         this.dao.create(ipaddr);
         this.session.getTransaction().commit();
-        Assert.assertNotNull(ipaddr);
+        assert ipaddr != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testQuery() {
         String description = this.props.getProperty("ipaddrDescription");
         Ipaddr ipaddr = 
             (Ipaddr) this.dao.queryByParam("description", description);
         this.session.getTransaction().commit();
-        Assert.assertNotNull(ipaddr);
+        assert ipaddr != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testList() {
         List<Ipaddr> ipaddrs = this.dao.list();
         this.session.getTransaction().commit();
-        Assert.assertFalse(ipaddrs.isEmpty());
+        assert !ipaddrs.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testGetIpType() {
         String ipType =
             this.dao.getIpType(this.props.getProperty("routerName"),
                                "ingress");
         this.session.getTransaction().commit();
-        Assert.assertNotNull(ipType);
+        assert ipType != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate", "testQuery", "testList", "testGetIpType" })
     public void testCascadingDelete() {
         String description = this.props.getProperty("ipaddrDescription");
         Ipaddr ipaddr =
@@ -83,6 +89,6 @@ public class IpaddrTest extends TestCase {
         this.session.getTransaction().commit();
         // if cascading delete works with router testRemove, this will
         // be null
-        Assert.assertNull(ipaddr);
+        assert ipaddr == null;
     }
 }

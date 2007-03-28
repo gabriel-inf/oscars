@@ -6,7 +6,6 @@ import org.hibernate.*;
 import net.es.oscars.database.HibernateUtil;
 
 import net.es.oscars.LogWrapper;
-import net.es.oscars.bss.BSSException;
 
 /**
  * This class contains methods for finding the next domain.
@@ -25,9 +24,9 @@ public class DomainManager {
      *
      * @param nextHop string with IP address of next hop
      * @return Domain an instance associated with the next domain, if any
-     * @throws BSSException
+     * @throws PathfinderException
      */
-    public Domain getNextDomain(String nextHop) throws BSSException {
+    public Domain getNextDomain(String nextHop) throws PathfinderException {
 
         PeerIpaddrDAO peerDAO = new PeerIpaddrDAO();
         Session session = 

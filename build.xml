@@ -8,7 +8,8 @@
 
 <property name="app.name" value="oscars" />
 <property name="app.version" value="0.5-dev" />
-<property name="webapp.home" value="/usr/local/jakarta-tomcat5.5/webapps" />
+<property  name="catalina.home" value="/usr/local/jakarta-tomcat5.5"/>
+<property name="webapp.home" value="${catalina.home}/webapps" />
 <property name="webservice.home" value="${webapp.home}/axis2/WEB-INF/services"/>
 
 <property name="build.home" value="build" />
@@ -27,10 +28,9 @@
     </copy>
     <mkdir dir="${build.lib}"/>
     <copy todir="${build.lib}">
-        <fileset dir="lib" includes="*.jar"
-    	      excludes="wss4j-1.5.1.jar"/> 
-    	<!-- wss4j.jar  must be in tomcat/shared/lib for the forwarding code to work.
-    	         does not need to be in the aar -->
+        <fileset dir="lib" includes="*.jar" excludes="wss4j-1.5.1.jar"/> 
+        <!-- wss4j.jar  must be in tomcat/shared/lib for the forwarding code to work.
+             does not need to be in the aar -->
         <fileset dir="lib/axis2" includes="*.jar"/>
         <fileset dir="lib/jsf" includes="*.jar"/>
     </copy>
@@ -61,6 +61,8 @@ Adding a -sd switch generates resources/services.xml -->
         <arg value="--sync" />
         <arg value="--service-description" />
         <arg value="--generate-all" />
+       <arg value="-d" />
+       <arg value="adb" />
         <arg value="-package"/>
         <arg value="net.es.oscars.oscars" />
         <arg value="--namespace2package" />
@@ -78,8 +80,7 @@ Adding a -sd switch generates resources/services.xml -->
 need. Will need to separate if someone wants only WBUI and not Axis2 -->
 <target name="compile" depends="prepare" description="Compile Java sources">
     <javac srcdir="src" includes="**/*.java" 
-       excludes="**/dragon/**/*"
-       	   destdir="${build.classes}">
+           destdir="${build.classes}">
         <classpath>
             <fileset dir="lib" includes="**/*.jar"/> 
         </classpath>
@@ -107,7 +108,9 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <jar destfile="build/OSCARS.aar">  
         <fileset dir="${build.classes}" includes="**/*"
                  excludes="**/servlets/**/*" />
+    	
         <fileset dir="${build.lib}/.."  includes="lib/*.jar" />
+     
          <metainf dir="conf/public/server" includes="*.wsdl, *.xsd, services.xml" /> 
     </jar>
 </target>
@@ -138,7 +141,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <lib dir="lib" includes="*.jar" />
     </war>
 </target>
-	
+
 <!-- dojo dev section ***************************************************** -->
 
 <property name="dojo" value="/usr/local/src/dojo" />
@@ -165,8 +168,17 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <lib dir="lib" includes="*.jar" />
     </war>
 </target>
+
 <!-- Deployment section -->
-	<property  name="catalina.home" value="/usr/local/jakarta-tomcat5.5"/>
+	<property name="catalina.home" value="/usr/local/jakarta-tomcat5.5"/>
+
+	<target  name="deploylibs" description="copy all the libraries used by the aar and war to lib/shared">
+		  <copy todir="${catalina.home}/shared/lib">
+		        <fileset dir="lib" includes="*.jar" />
+		        <fileset dir="lib/axis2" includes="*.jar"/>
+		        <fileset dir="lib/jsf" includes="*.jar"/>
+		    </copy>
+		</target>
 	
 	<target name="setupServer" description="populate the oscars.conf directory">
 		<mkdir dir="${catalina.home}/shared/oscars.conf/axis2.repo"/>
@@ -186,14 +198,19 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 	    <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}" />
 	    <copy file="${build.home}/WEB-INF/classes/net/es/oscars/client/security/PWCallback.class"
 		       todir="${webapp.home}/../shared/classes/net/es/oscars/client/security/" />
+		<!-- these jars  need to be in shared/lib to avoid classNotFound errors ... mrt/3/27 -->
 	    <copy todir="${webapp.home}/../shared/lib" >
-	    	   <fileset dir="lib" includes="wss4j-1.5.1.jar, xmlsec-1.3.0.jar"/>
+	    	   <fileset dir="lib" includes="wss4j-1.5.1.jar, xmlsec-1.3.0.jar, xalan-2.7.0.jar"/>
 	    	</copy>
 	</target>
+	
+	<target name="deploywar" description="copy OSCARS.war to webapp directory" depends="wbui">
+		<copy file="OSCARS.war" todir="${webapp.home}"/>
+	</target>
 
-<!-- Junit test section -->
+<!-- TestNG test section -->
 
-<property name="test.classes" value="build/tests" />
+<property name="test.classes" value="build/test" />
 
 <path id="test.compile.path">
     <fileset dir="lib" includes="*.jar, axis2/*.jar" />
@@ -204,9 +221,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <path refid="test.compile.path" />
     <pathelement location="${test.classes}" />
 </path>
-
-<condition property="test.core"><equals arg1="core" arg2="${t}" /></condition>
-<available property="test.component" file="test/net/es/oscars/${t}" />
 
 <target name="test.clean" description="Delete test server build directory">
     <delete dir="${test.classes}" />
@@ -220,21 +234,26 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
            classpathref="test.compile.path" />
 </target>
 
-<target name="test" depends="test.compile"
-        description="Run given server tests">
-    <junit printsummary="yes" haltonfailure="yes" fork="yes">
-        <jvmarg value="-Djava.net.preferIPv4Stack=true" />
-        <formatter type="brief" />
-        <classpath refid="test.path" />
-        <batchtest todir="test">
-            <fileset dir="test">
-                <include if="test.component" name="**/${t}/AllTests.java" />
-                <include if="test.core" name="**/oscars/AllTests.java" />
-                <include unless="t" name="**/AllTests.java" />
-            </fileset>          
-        </batchtest>
-    </junit>
-    <fail message="Test failed!" if="test.failed" />
+<taskdef name="testng" classpathref="test.path"
+         classname="org.testng.TestNGAntTask" />
+
+<target name="testcomp" if="t">
+    <property name="groups" value="${t}" />
+    <property name="testsuite" value="${t}.suite" />
 </target>
+
+<target name="testall" unless="t">
+    <property name="groups" value=".*" />
+    <property name="testsuite" value="all.suite" />
+</target>
+
+<target name="test" depends="test.compile, testcomp, testall">
+    <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}"
+	    outputDir="${webapp.home}/OSCARS/test" haltOnFailure="true" verbose="2">
+        <jvmarg value="-Djava.net.preferIPv4Stack=true" />
+        <classfileset dir="${test.classes}" includes="**/*.class" />
+    </testng>
+</target>
+
 
 </project>

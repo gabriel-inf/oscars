@@ -98,8 +98,8 @@ public class DragonLocalIdMap implements Serializable {
     }
 
     public boolean equals(Object other) {
-        if ( !(other instanceof Ipaddr) ) return false;
-        Ipaddr castOther = (Ipaddr) other;
+        if ( !(other instanceof DragonLocalIdMap) ) return false;
+        DragonLocalIdMap castOther = (DragonLocalIdMap) other;
         return new EqualsBuilder()
             .append(this.getId(), castOther.getId())
             .isEquals();

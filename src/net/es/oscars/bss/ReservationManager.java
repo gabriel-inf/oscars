@@ -60,6 +60,7 @@ public class ReservationManager {
         List<Path> currentPaths = new ArrayList<Path>();
         Path path = null;
         Long bandwidth = 0L;
+        Domain nextDomain = null;
 
         // login is checked in validate so set it here
         resv.setLogin(login);
@@ -75,8 +76,12 @@ public class ReservationManager {
         ReservationDAO dao = new ReservationDAO();
         dao.setSession(this.session);
         
-        path = this.pceMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
-                                    ingressRouterIP, egressRouterIP);
+        try {
+            path = this.pceMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
+                                        ingressRouterIP, egressRouterIP);
+        } catch (PathfinderException e) {
+            throw new BSSException(e.getMessage());
+        }
         this.log.info("create.findPath", "after");
         // only occurs if testing only a portion of the system
         if (path == null) { return null; }
@@ -111,7 +116,11 @@ public class ReservationManager {
             this.log.info("create.mail.unsupported", e.getMessage());
         }
         
-        Domain nextDomain = this.domainMgr.getNextDomain(this.pceMgr.getNextHop());
+        try {
+            nextDomain = this.domainMgr.getNextDomain(this.pceMgr.getNextHop());
+        } catch (PathfinderException e) {
+            throw new BSSException(e.getMessage());
+        }
         this.log.info("create.finish reservation tag is ", this.toTag(resv)); 
         if (nextDomain != null) {
             this.log.info("create.finish next domain is ",

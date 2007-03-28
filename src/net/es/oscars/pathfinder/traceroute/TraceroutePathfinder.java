@@ -4,10 +4,7 @@ import java.util.*;
 import java.io.IOException;
 
 import net.es.oscars.LogWrapper;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.pathfinder.Path;
-import net.es.oscars.pathfinder.PCE;
-import net.es.oscars.pathfinder.Pathfinder;
+import net.es.oscars.pathfinder.*;
 
 
 /**
@@ -32,11 +29,11 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      * @param ingressRouterIP string with address of ingress router, if any
      * @param egressRouterIP string with address of egress router, if any
      * @return hops A list of strings containing the hops
-     * @throws BSSException
+     * @throws PathfinderException
      */
     public Path findPath(String srcHost, String destHost,
                          String ingressRouterIP, String egressRouterIP)
-            throws BSSException {
+            throws PathfinderException {
 
         List<String> hops = null;
         List<String> reverseHops = null;
@@ -76,11 +73,11 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      * @param ingressRouterIP string with address of ingress router, if any
      * @param egressRouterIP string with address of egress router, if any
      * @return hops list of strings with addresses in path
-     * @throws BSSException
+     * @throws PathfinderException
      */
     public List<String> forwardPath(String destHost,
                              String ingressRouterIP, String egressRouterIP)
-            throws BSSException {
+            throws PathfinderException {
 
         List<String> hops = null;
         List<String> unused = null;
@@ -109,10 +106,10 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      * @param egressRouterIP string with egress router, if any
      * @param srcHost string with IP address of source host
      * @return hops list of strings with addresses in path
-     * @throws BSSException
+     * @throws PathfinderException
      */
     public List<String> reversePath(String egressRouterIP, String srcHost)
-            throws BSSException {
+            throws PathfinderException {
 
         String src = null;
         List<String> hops = null;
@@ -136,10 +133,10 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      * @param src source string
      * @param dest destination string
      * @return hops list of strings with addresses in path
-     * @throws BSSException
+     * @throws PathfinderException
      */
     public List<String> traceroute(String src, String dest)
-        throws BSSException {
+        throws PathfinderException {
 
         JnxTraceroute jnxTraceroute = null;
         String source = null;
@@ -150,7 +147,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         try {
             pathSrc = jnxTraceroute.traceroute(src, dest);
         } catch (IOException e) {
-            throw new BSSException(e.getMessage());
+            throw new PathfinderException(e.getMessage());
         }
         hops = jnxTraceroute.getHops();
         // prepend source to path
@@ -158,7 +155,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
 
         // if we didn't hop much, maybe the same router (is this needed?)
         if (hops.size() == 0) {
-            throw new BSSException("same router?");
+            throw new PathfinderException("same router?");
         }
         return hops;
     }

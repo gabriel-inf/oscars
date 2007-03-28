@@ -1,6 +1,7 @@
 package net.es.oscars.aaa;
 
-import junit.framework.*;
+import org.testng.annotations.*;
+import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -17,21 +18,23 @@ import net.es.oscars.PropHandler;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class AuthorizationTest extends TestCase {
+@Test(groups={ "aaa" })
+public class AuthorizationTest {
     private Properties props;
     private AuthorizationDAO dao;
     private Session session;
 
-    public AuthorizationTest(String name) {
-        super(name);
+  @BeforeClass
+    public void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-    }
-        
-    public void setUp() {
         this.dao = new AuthorizationDAO();
+    }
+
+  @BeforeMethod
+    public void setUpMethod() {
         this.session =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         this.dao.setSession(this.session);
@@ -76,7 +79,7 @@ public class AuthorizationTest extends TestCase {
         auth = (Authorization)
             this.dao.query(user.getId(), resource.getId(), permission.getId());
         this.session.getTransaction().commit();
-        Assert.assertNotNull(auth);
+        assert auth != null;
     }
 
     public void testList() {
@@ -89,6 +92,6 @@ public class AuthorizationTest extends TestCase {
             fail("AuthorizationTest.testList: " + ex.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertFalse(auths.isEmpty());
+        assert !auths.isEmpty();
     }
 }

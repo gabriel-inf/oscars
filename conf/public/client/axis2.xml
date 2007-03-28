@@ -26,7 +26,7 @@
         <passwordCallbackClass>
             net.es.oscars.client.security.PWCallback
         </passwordCallbackClass>
-        <signaturePropFile>sec-client.properties</signaturePropFile>
+        <signaturePropFile>repo/sec-client.properties</signaturePropFile>
         <signatureKeyIdentifier>DirectReference</signatureKeyIdentifier>
         <signatureParts>
             {Element}{http://www.w3.org/2003/05/soap-envelope}Body;{Element}{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Timestamp

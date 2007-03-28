@@ -1,6 +1,6 @@
 
             /**
-            * CreateReply.java
+            * ExplicitPath.java
             *
             * This file was auto-generated from WSDL
             * by the Apache Axis2 version: #axisVersion# #today#
@@ -8,114 +8,128 @@
 
             package net.es.oscars.wsdlTypes;
             /**
-            *  CreateReply bean class
+            *  ExplicitPath bean class
             */
         
-        public  class CreateReply
+        public  class ExplicitPath
         implements org.apache.axis2.databinding.ADBBean{
         /* This type was generated from the piece of schema that had
-                name = createReply
+                name = explicitPath
                 Namespace URI = http://oscars.es.net/OSCARS
                 Namespace Prefix = ns1
                 */
             
 
                         /**
-                        * field for Tag
+                        * field for Hops
                         */
 
-                        protected java.lang.String localTag ;
+                        protected net.es.oscars.wsdlTypes.HopList localHops ;
                         
 
                            /**
                            * Auto generated getter method
-                           * @return java.lang.String
+                           * @return net.es.oscars.wsdlTypes.HopList
                            */
-                           public  java.lang.String getTag(){
-                               return localTag;
+                           public  net.es.oscars.wsdlTypes.HopList getHops(){
+                               return localHops;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param Tag
+                               * @param param Hops
                                */
-                               public void setTag(java.lang.String param){
+                               public void setHops(net.es.oscars.wsdlTypes.HopList param){
                             
-                                    this.localTag=param;
+                                    this.localHops=param;
                             
 
                                }
                             
 
                         /**
-                        * field for Status
+                        * field for Vtag
                         */
 
-                        protected java.lang.String localStatus ;
-                        
-
-                           /**
-                           * Auto generated getter method
-                           * @return java.lang.String
-                           */
-                           public  java.lang.String getStatus(){
-                               return localStatus;
-                           }
-
-                           
-                        
-                            /**
-                               * Auto generated setter method
-                               * @param param Status
-                               */
-                               public void setStatus(java.lang.String param){
-                            
-                                    this.localStatus=param;
-                            
-
-                               }
-                            
-
-                        /**
-                        * field for Path
-                        */
-
-                        protected net.es.oscars.wsdlTypes.ExplicitPath localPath ;
+                        protected java.lang.String localVtag ;
                         
                            /*  This tracker boolean wil be used to detect whether the user called the set method
                           *   for this attribute. It will be used to determine whether to include this field
                            *   in the serialized XML
                            */
-                           protected boolean localPathTracker = false ;
+                           protected boolean localVtagTracker = false ;
                            
 
                            /**
                            * Auto generated getter method
-                           * @return net.es.oscars.wsdlTypes.ExplicitPath
+                           * @return java.lang.String
                            */
-                           public  net.es.oscars.wsdlTypes.ExplicitPath getPath(){
-                               return localPath;
+                           public  java.lang.String getVtag(){
+                               return localVtag;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param Path
+                               * @param param Vtag
                                */
-                               public void setPath(net.es.oscars.wsdlTypes.ExplicitPath param){
+                               public void setVtag(java.lang.String param){
                             
                                        if (param != null){
                                           //update the setting tracker
-                                          localPathTracker = true;
+                                          localVtagTracker = true;
                                        } else {
-                                          localPathTracker = false;
+                                          localVtagTracker = false;
                                               
                                        }
                                    
-                                    this.localPath=param;
+                                    this.localVtag=param;
+                            
+
+                               }
+                            
+
+                        /**
+                        * field for AvailableVtags
+                        */
+
+                        protected net.es.oscars.wsdlTypes.VtagList localAvailableVtags ;
+                        
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localAvailableVtagsTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return net.es.oscars.wsdlTypes.VtagList
+                           */
+                           public  net.es.oscars.wsdlTypes.VtagList getAvailableVtags(){
+                               return localAvailableVtags;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param AvailableVtags
+                               */
+                               public void setAvailableVtags(net.es.oscars.wsdlTypes.VtagList param){
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localAvailableVtagsTracker = true;
+                                       } else {
+                                          localAvailableVtagsTracker = false;
+                                              
+                                       }
+                                   
+                                    this.localAvailableVtags=param;
                             
 
                                }
@@ -196,6 +210,13 @@
 
                 
                
+                                    if (localHops==null){
+                                         throw new RuntimeException("hops cannot be null!!");
+                                    }
+                                   localHops.getOMDataSource(
+                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","hops"),
+                                       factory).serialize(xmlWriter);
+                                 if (localVtagTracker){
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -203,72 +224,38 @@
                                         if (prefix == null) {
                                             prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
 
-                                            xmlWriter.writeStartElement(prefix,"tag", namespace);
+                                            xmlWriter.writeStartElement(prefix,"vtag", namespace);
                                             xmlWriter.writeNamespace(prefix, namespace);
                                             xmlWriter.setPrefix(prefix, namespace);
 
                                         } else {
-                                            xmlWriter.writeStartElement(namespace,"tag");
+                                            xmlWriter.writeStartElement(namespace,"vtag");
                                         }
 
                                     } else {
-                                        xmlWriter.writeStartElement("tag");
+                                        xmlWriter.writeStartElement("vtag");
                                     }
                                 
 
-                                          if (localTag==null){
+                                          if (localVtag==null){
                                               // write the nil attribute
                                               
-                                                     throw new RuntimeException("tag cannot be null!!");
+                                                     throw new RuntimeException("vtag cannot be null!!");
                                                   
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(localTag);
+                                                   xmlWriter.writeCharacters(localVtag);
                                             
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             
-                                    namespace = "http://oscars.es.net/OSCARS";
-                                    if (! namespace.equals("")) {
-                                        prefix = xmlWriter.getPrefix(namespace);
-
-                                        if (prefix == null) {
-                                            prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
-
-                                            xmlWriter.writeStartElement(prefix,"status", namespace);
-                                            xmlWriter.writeNamespace(prefix, namespace);
-                                            xmlWriter.setPrefix(prefix, namespace);
-
-                                        } else {
-                                            xmlWriter.writeStartElement(namespace,"status");
-                                        }
-
-                                    } else {
-                                        xmlWriter.writeStartElement("status");
+                             } if (localAvailableVtagsTracker){
+                                    if (localAvailableVtags==null){
+                                         throw new RuntimeException("availableVtags cannot be null!!");
                                     }
-                                
-
-                                          if (localStatus==null){
-                                              // write the nil attribute
-                                              
-                                                     throw new RuntimeException("status cannot be null!!");
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(localStatus);
-                                            
-                                          }
-                                    
-                                   xmlWriter.writeEndElement();
-                              if (localPathTracker){
-                                    if (localPath==null){
-                                         throw new RuntimeException("path cannot be null!!");
-                                    }
-                                   localPath.getOMDataSource(
-                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","path"),
+                                   localAvailableVtags.getOMDataSource(
+                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","availableVtags"),
                                        factory).serialize(xmlWriter);
                                 }
                    
@@ -353,32 +340,32 @@
                  java.util.ArrayList attribList = new java.util.ArrayList();
 
                 
-                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "tag"));
-                            
-                                        if (localTag != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localTag));
-                                        } else {
-                                           throw new RuntimeException("tag cannot be null!!");
-                                        }
-                                    
-                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "status"));
-                            
-                                        if (localStatus != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStatus));
-                                        } else {
-                                           throw new RuntimeException("status cannot be null!!");
-                                        }
-                                     if (localPathTracker){
                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "path"));
+                                                                      "hops"));
                             
                             
-                                    if (localPath==null){
-                                         throw new RuntimeException("path cannot be null!!");
+                                    if (localHops==null){
+                                         throw new RuntimeException("hops cannot be null!!");
                                     }
-                                    elementList.add(localPath);
+                                    elementList.add(localHops);
+                                 if (localVtagTracker){
+                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                                      "vtag"));
+                            
+                                        if (localVtag != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localVtag));
+                                        } else {
+                                           throw new RuntimeException("vtag cannot be null!!");
+                                        }
+                                    } if (localAvailableVtagsTracker){
+                            elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                                      "availableVtags"));
+                            
+                            
+                                    if (localAvailableVtags==null){
+                                         throw new RuntimeException("availableVtags cannot be null!!");
+                                    }
+                                    elementList.add(localAvailableVtags);
                                 }
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
@@ -402,8 +389,8 @@
         * Postcondition: If this object is an element, the reader is positioned at its end element
         *                If this object is a complex type, the reader is positioned at the end element of its outer element
         */
-        public static CreateReply parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
-            CreateReply object = new CreateReply();
+        public static ExplicitPath parse(javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
+            ExplicitPath object = new ExplicitPath();
             int event;
             try {
                 
@@ -419,10 +406,10 @@
                     nsPrefix = nsPrefix==null?"":nsPrefix;
 
                     java.lang.String type = fullTypeName.substring(fullTypeName.indexOf(":")+1);
-                    if (!"createReply".equals(type)){
+                    if (!"explicitPath".equals(type)){
                         //find namespace for the prefix
                         java.lang.String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
-                        return (CreateReply)net.es.oscars.wsdlTypes.ExtensionMapper.getTypeObject(
+                        return (ExplicitPath)net.es.oscars.wsdlTypes.ExtensionMapper.getTypeObject(
                              nsUri,type,reader);
                       }
 
@@ -442,13 +429,10 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","tag").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","hops").equals(reader.getName())){
                                 
-                                    java.lang.String content = reader.getElementText();
-                                    
-                                              object.setTag(
-                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                              
+                                        object.setHops(net.es.oscars.wsdlTypes.HopList.Factory.parse(reader));
+                                      
                                         reader.next();
                                     
                               }  // End of if for expected property start element
@@ -461,28 +445,23 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","status").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","vtag").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setStatus(
+                                              object.setVtag(
                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
                                               
                                         reader.next();
                                     
                               }  // End of if for expected property start element
                             
-                                else{
-                                    // A start element we are not expecting indicates an invalid parameter was passed
-                                    throw new java.lang.RuntimeException("Unexpected subelement " + reader.getLocalName());
-                                }
-                            
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","path").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","availableVtags").equals(reader.getName())){
                                 
-                                        object.setPath(net.es.oscars.wsdlTypes.ExplicitPath.Factory.parse(reader));
+                                        object.setAvailableVtags(net.es.oscars.wsdlTypes.VtagList.Factory.parse(reader));
                                       
                                         reader.next();
                                     

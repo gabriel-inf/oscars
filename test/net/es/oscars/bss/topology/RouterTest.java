@@ -1,6 +1,6 @@
 package net.es.oscars.bss.topology;
 
-import junit.framework.*;
+import org.testng.annotations.*;
 
 import java.util.*;
 import org.hibernate.*;
@@ -15,23 +15,25 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class RouterTest extends TestCase {
+@Test(groups={ "bss/topology" })
+public class RouterTest {
     private Properties props;
     private Session session;
     private RouterDAO dao;
 
-    public RouterTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
+        this.dao = new RouterDAO();
     }
         
-    public void setUp() {
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao = new RouterDAO();
         this.dao.setSession(this.session);
         this.session.beginTransaction();
     }
@@ -42,32 +44,35 @@ public class RouterTest extends TestCase {
         router.setName(this.props.getProperty("routerName"));
         this.dao.create(router);
         this.session.getTransaction().commit();
-        Assert.assertNotNull(router);
+        assert router != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testQuery() {
         String routerName = this.props.getProperty("routerName");
         Router router = (Router) this.dao.queryByParam("name", routerName);
         this.session.getTransaction().commit();
-        Assert.assertNotNull(router);
+        assert router != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testList() {
         List<Router> routers = this.dao.list();
-        Assert.assertFalse(routers.isEmpty());
+        assert !routers.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testFromIp() {
         Router router = this.dao.fromIp(this.props.getProperty("ipaddrIP"));
         this.session.getTransaction().commit();
-        Assert.assertNotNull(router);
+        assert router != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate", "testQuery", "testList", "testFromIp" })
     public void testRemove() {
         String routerName = this.props.getProperty("routerName");
         Router router = (Router) this.dao.queryByParam("name", routerName);
         this.dao.remove(router);
         this.session.getTransaction().commit();
-        Assert.assertTrue(true);
     }
 }

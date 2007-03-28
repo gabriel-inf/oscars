@@ -314,14 +314,14 @@
                         * field for Path
                         */
 
-                        protected java.lang.String localPath ;
+                        protected net.es.oscars.wsdlTypes.ExplicitPath localPath ;
                         
 
                            /**
                            * Auto generated getter method
-                           * @return java.lang.String
+                           * @return net.es.oscars.wsdlTypes.ExplicitPath
                            */
-                           public  java.lang.String getPath(){
+                           public  net.es.oscars.wsdlTypes.ExplicitPath getPath(){
                                return localPath;
                            }
 
@@ -331,7 +331,7 @@
                                * Auto generated setter method
                                * @param param Path
                                */
-                               public void setPath(java.lang.String param){
+                               public void setPath(net.es.oscars.wsdlTypes.ExplicitPath param){
                             
                                     this.localPath=param;
                             
@@ -880,40 +880,13 @@
                                     
                                    xmlWriter.writeEndElement();
                              
-                                    namespace = "http://oscars.es.net/OSCARS";
-                                    if (! namespace.equals("")) {
-                                        prefix = xmlWriter.getPrefix(namespace);
-
-                                        if (prefix == null) {
-                                            prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
-
-                                            xmlWriter.writeStartElement(prefix,"path", namespace);
-                                            xmlWriter.writeNamespace(prefix, namespace);
-                                            xmlWriter.setPrefix(prefix, namespace);
-
-                                        } else {
-                                            xmlWriter.writeStartElement(namespace,"path");
-                                        }
-
-                                    } else {
-                                        xmlWriter.writeStartElement("path");
+                                    if (localPath==null){
+                                         throw new RuntimeException("path cannot be null!!");
                                     }
+                                   localPath.getOMDataSource(
+                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","path"),
+                                       factory).serialize(xmlWriter);
                                 
-
-                                          if (localPath==null){
-                                              // write the nil attribute
-                                              
-                                                     throw new RuntimeException("path cannot be null!!");
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(localPath);
-                                            
-                                          }
-                                    
-                                   xmlWriter.writeEndElement();
-                             
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -1194,15 +1167,15 @@
                                            throw new RuntimeException("resClass cannot be null!!");
                                         }
                                     
-                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                            elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                       "path"));
                             
-                                        if (localPath != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localPath));
-                                        } else {
-                                           throw new RuntimeException("path cannot be null!!");
-                                        }
-                                    
+                            
+                                    if (localPath==null){
+                                         throw new RuntimeException("path cannot be null!!");
+                                    }
+                                    elementList.add(localPath);
+                                
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                       "description"));
                             
@@ -1487,11 +1460,8 @@
                                 
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","path").equals(reader.getName())){
                                 
-                                    java.lang.String content = reader.getElementText();
-                                    
-                                              object.setPath(
-                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                              
+                                        object.setPath(net.es.oscars.wsdlTypes.ExplicitPath.Factory.parse(reader));
+                                      
                                         reader.next();
                                     
                               }  // End of if for expected property start element

@@ -87,6 +87,14 @@ public class QueryReservationClient extends ExampleClient {
                 Integer.toString(response.getBurstLimit()));
         System.out.println("Protocol: " + response.getProtocol().toString());
         System.out.println("Description: " + response.getDescription());
+        if (response.getPath() != null){
+        	System.out.println("Path is:");
+        	HopList hList = response.getPath().getHops();
+        	Hop hop[] = hList.getHop();
+          	for (int i=0; i <hop.length; i++) {
+        		System.out.println("\t" +  hop[i].getValue() );
+        	}
+        }
        System.out.println(" ");
         //response.put("path", qreply.getPath());
 		}

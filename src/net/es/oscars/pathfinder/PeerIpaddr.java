@@ -71,8 +71,8 @@ public class PeerIpaddr implements Serializable {
     }
 
     public boolean equals(Object other) {
-        if ( !(other instanceof Ipaddr) ) return false;
-        Ipaddr castOther = (Ipaddr) other;
+        if ( !(other instanceof PeerIpaddr) ) return false;
+        PeerIpaddr castOther = (PeerIpaddr) other;
         return new EqualsBuilder()
             .append(this.getId(), castOther.getId())
             .isEquals();

@@ -79,6 +79,8 @@
 				maxOccurs="1" minOccurs="0" />
 			<xsd:element name="egressRouterIP" type="xsd:string"
 				maxOccurs="1" minOccurs="0" />
+			<xsd:element name="reqPath" type="tns:explicitPath"
+				maxOccurs="1" minOccurs="0" />			
 			<!-- forward means create path from src to dst, reverse
 				means create path from dst to src (done by switching
 				src & dst when you reach dst and setting this to forward) -->
@@ -97,6 +99,8 @@
 		<xsd:sequence>
 			<xsd:element name="tag" type="xsd:string" />
 			<xsd:element name="status" type="xsd:string" />
+			<xsd:element name="path" type="tns:explicitPath"
+				maxOccurs="1" minOccurs="0" />			
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -123,8 +127,7 @@
 			<xsd:element name="bandwidth" type="xsd:int" />
 			<xsd:element name="burstLimit" type="xsd:int" />
 			<xsd:element name="resClass" type="xsd:string" />
-			<!-- list of routers (hops) -->
-			<xsd:element name="path" type="xsd:string" />
+			<xsd:element name="path" type="tns:explicitPath" />
 			<xsd:element name="description" type="xsd:string" />
 			<xsd:element name="protocol" type="xsd:string"
 				maxOccurs="1" minOccurs="0" />
@@ -171,6 +174,34 @@
 				maxOccurs="1" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>
+	
+	<xsd:complexType name="explicitPath">
+		<xsd:sequence>
+			<xsd:element name="hops" type="tns:hopList" minOccurs="1"/>
+			<xsd:element name="vtag" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="availableVtags" type="tns:vtagList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="hopList">
+		<xsd:sequence >
+		     <xsd:element name="hop" type="tns:hop" minOccurs="1" maxOccurs="unbounded"/>		
+	        </xsd:sequence>
+	</xsd:complexType>
+	
+
+	<xsd:complexType name="hop">
+		<xsd:attribute name="loose" type="xsd:boolean" use="optional"/>
+		<xsd:attribute name="type" type="xsd:string" use="optional"/>
+		<xsd:attribute name="value" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="vtagList">
+		<xsd:sequence>
+			<xsd:element name="vtag" type="xsd:string" minOccurs="1" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	
 <!--    Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006
 	<xsd:simpleType name="resProtocolType">

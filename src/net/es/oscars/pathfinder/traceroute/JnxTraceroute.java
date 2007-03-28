@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.es.oscars.*;
-import net.es.oscars.bss.BSSException;
+import net.es.oscars.pathfinder.PathfinderException;
 
 
 /**
@@ -39,7 +39,7 @@ public class JnxTraceroute {
      * @throws IOException
      */
     public String traceroute(String src, String dst)
-            throws BSSException, IOException {
+            throws PathfinderException, IOException {
 
         String cmd = "";
         String hopInfo = "";
@@ -49,7 +49,7 @@ public class JnxTraceroute {
         Pattern errPattern = Pattern.compile(".*Operation timed out.*");
 
         if ((src == null) || (dst == null)) {
-            throw new BSSException("Traceroute source or destination not defined");
+            throw new PathfinderException("Traceroute source or destination not defined");
         } else if(src.equals("default")) {
             src = this.props.getProperty("jnxSource");
         }
@@ -83,7 +83,7 @@ public class JnxTraceroute {
         	{
                 tracerouteOuput.close();
                 tracerouteError.close();
-        		throw new BSSException("Traceroute error: " + errInfo);
+        		throw new PathfinderException("Traceroute error: " + errInfo);
         	}
         }
     	

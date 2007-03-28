@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 
 import net.es.oscars.LogWrapper;
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.Ipaddr;
 
 /**
@@ -31,11 +30,11 @@ public class PCEManager {
      * @param ingressRouterIP string with address of ingress router, if any
      * @param egressRouterIP string with address of egress router, if any
      * @return path A path instance
-     * @throws BSSException
+     * @throws PathfinderException
      */
     public Path findPath(String srcHost, String destHost,
                          String ingressRouterIP, String egressRouterIP)
-            throws BSSException {
+            throws PathfinderException {
 
         List<String> hops;
         Path path = null;
@@ -50,7 +49,7 @@ public class PCEManager {
         return path;
     }
 
-    public String getPathMethod() throws BSSException {
+    public String getPathMethod() throws PathfinderException {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("pathfinder", true);
 
@@ -63,10 +62,10 @@ public class PCEManager {
 
         String pathMethod = props.getProperty("pathMethod");
         if (pathMethod == null) {
-            throw new BSSException("No path computation method specified in oscars.properties.");
+            throw new PathfinderException("No path computation method specified in oscars.properties.");
         }
         if (!pathMethod.equals("traceroute") && !pathMethod.equals("narb")) {
-            throw new BSSException("Path computation method specified in oscars.properties must be either traceroute or narb.");
+            throw new PathfinderException("Path computation method specified in oscars.properties must be either traceroute or narb.");
         }
         return pathMethod;
     }

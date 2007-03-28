@@ -1,10 +1,9 @@
 package net.es.oscars.pathfinder;
 
-import junit.framework.*;
+import org.testng.annotations.*;
+import static org.testng.AssertJUnit.*;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Properties;
+import java.util.*;
 import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
@@ -19,28 +18,28 @@ import net.es.oscars.bss.topology.*;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class PathTest extends TestCase {
+@Test(groups={ "pathfinder" })
+public class PathTest {
     private Properties props;
     private Session session;
     private PathDAO dao;
     private ArrayList<String> hops;
 
-    public PathTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
+        this.dao = new PathDAO();
+        this.hops = new ArrayList<String>();
     }
         
-    public void setUp() {
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao = new PathDAO();
         this.dao.setSession(this.session);
-        if (this.hops == null) {
-            this.hops = new ArrayList<String>();
-        }
         this.session.beginTransaction();
     }
 
@@ -71,13 +70,14 @@ public class PathTest extends TestCase {
         String egressRouter = "134.55.75.28";
         try {
             path = this.dao.create(ipaddrs, ingressRouter, egressRouter);
-        } catch (BSSException e) {
+        } catch (PathfinderException e) {
             fail(e.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertNotNull(path);
+        assert path != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testQuery() {
         IpaddrDAO ipaddrDAO = new IpaddrDAO();
         ipaddrDAO.setSession(this.session);
@@ -85,15 +85,17 @@ public class PathTest extends TestCase {
                                  this.props.getProperty("pathDescription"));
         Path path = (Path) this.dao.queryByParam("ipaddrId", ipaddr.getId()); 
         this.session.getTransaction().commit();
-        Assert.assertNotNull(path);
+        assert path != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testList() {
         List<Path> paths = this.dao.list();
         this.session.getTransaction().commit();
-        Assert.assertFalse(paths.isEmpty());
+        assert !paths.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "testCreate", "testQuery", "testList" })
     public void testRemove() {
         IpaddrDAO ipaddrDAO = new IpaddrDAO();
         ipaddrDAO.setSession(this.session);
@@ -107,7 +109,5 @@ public class PathTest extends TestCase {
             ipaddrDAO.remove(ipaddr);
         }
         this.session.getTransaction().commit();
-        // if got to here, OK (for now)
-        Assert.assertTrue(true);
     }
 }

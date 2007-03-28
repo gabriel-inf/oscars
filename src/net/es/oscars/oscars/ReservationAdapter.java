@@ -15,8 +15,10 @@ import net.es.oscars.LogWrapper;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.pathfinder.Path;
 import net.es.oscars.pathfinder.Domain;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
 
 /**
@@ -155,6 +157,7 @@ public class ReservationAdapter {
         CreateReply reply = new CreateReply();
         reply.setTag(this.rm.toTag(resv));
         reply.setStatus(resv.getStatus());
+        reply.setPath(toPath(resv));
         return reply;
     }
 
@@ -165,11 +168,11 @@ public class ReservationAdapter {
      */
     private ResDetails toDetails(Reservation resv) {
 
-        String path = this.rm.pathToString(resv, "ip");
+       // String path = this.rm.pathToString(resv, "ip");
         long millis = 0;
 
         ResDetails reply = new ResDetails();
-        reply.setPath(path);
+        reply.setPath(this.toPath(resv));
         reply.setTag(this.rm.toTag(resv));
         //reply.setStatus(ResStatus.fromString(resv.getStatus()));
         reply.setStatus(resv.getStatus());
@@ -250,5 +253,27 @@ public class ReservationAdapter {
         }
         reply.setResInfo(contents);
         return reply;
+    }
+    private ExplicitPath toPath(Reservation resv){
+    	ExplicitPath ePath = new net.es.oscars.wsdlTypes.ExplicitPath();
+    	HopList hList = new HopList();
+    	Ipaddr ip = null;
+    
+    	Path nextPath = resv.getPath();
+    	
+    	while (nextPath != null ) {
+    		Hop nextHop = new Hop();
+           	nextHop.setLoose(false);
+    	     ip=nextPath.getIpaddr();
+    	     nextHop.setValue(ip.getIp());
+    	     /* TODO parse the ip address to find out if it is ipv4 or 4 */
+   	         nextHop.setType("ipv4");
+    	     hList.addHop(nextHop);
+    	     nextPath = nextPath.getNextPath();
+    	}
+    	ePath.setHops(hList);
+    	/* TODO figure out a vlan tag */
+    	ePath.setVtag(" ");
+    	return ePath;
     }
 }

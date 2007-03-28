@@ -1,28 +1,27 @@
 package net.es.oscars.pathfinder.traceroute;
 
-import junit.framework.*;
+import org.testng.annotations.*;
+import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
 import java.io.IOException;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.BSSException;
+import net.es.oscars.pathfinder.PathfinderException;
 
 /**
  * This class tests methods in the JnxTraceroute class.
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class JnxTracerouteTest extends TestCase {
+@Test(groups={ "pathfinder" })
+public class JnxTracerouteTest {
 
     private Properties props;
 
-    public JnxTracerouteTest(String name) {
-        super(name);
-    }
-
-    public void setUp() {
+  @BeforeClass
+    protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss.JnxTraceroute", true);
     }
@@ -38,12 +37,12 @@ public class JnxTracerouteTest extends TestCase {
                 this.props.getProperty("dstHost"));
         } catch (IOException e) {
             fail("JnxTraceroute.traceroute: " + e.getMessage());
-        } catch (BSSException e) {
+        } catch (PathfinderException e) {
             fail("JnxTraceroute.traceroute: " + e.getMessage());
         }
 
         // return value should be same as dstHost
-        Assert.assertEquals(this.props.getProperty("srcHost"), route);
+        assert this.props.getProperty("srcHost").equals(route);
     
     }
 
@@ -58,14 +57,14 @@ public class JnxTracerouteTest extends TestCase {
                 this.props.getProperty("dstHost"));
         } catch (IOException e) {
             fail("JnxTraceroute.traceroute: " + e.getMessage());
-        } catch (BSSException e) {
+        } catch (PathfinderException e) {
             fail("JnxTraceroute.traceroute: " + e.getMessage());
         }
 
         // should be at least one hop
         hops = jnxTraceroute.getRawHopData();
         System.out.println("RawHopData: " + hops);
-        Assert.assertFalse(hops.isEmpty());
+        assert !hops.isEmpty();
     }
 
     public void testHopData() {
@@ -79,13 +78,13 @@ public class JnxTracerouteTest extends TestCase {
                 this.props.getProperty("dstHost"));
         } catch (IOException e) {
             fail("JnxTraceroute.traceroute: " + e.getMessage());
-        } catch (BSSException e) {
+        } catch (PathfinderException e) {
             fail("JnxTraceroute.traceroute: " + e.getMessage());
         }
 
         // should be at least one hop
         hops = jnxTraceroute.getHops();
         System.out.println("HopData: " + hops);
-        Assert.assertFalse(hops.isEmpty());
+        assert !hops.isEmpty();
     }
 }

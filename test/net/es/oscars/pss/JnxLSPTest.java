@@ -1,6 +1,7 @@
 package net.es.oscars.pss;
 
-import junit.framework.*;
+import org.testng.annotations.*;
+import static org.testng.AssertJUnit.*;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -13,16 +14,14 @@ import net.es.oscars.bss.BSSException;
  * This class tests loading/saving to/from the domains table.
  *
  */
-public class JnxLSPTest extends TestCase {
+@Test(groups={ "pss" })
+public class JnxLSPTest {
     private Properties props;
     private JnxLSP jlsp;
     private HashMap<String, String> testHM;
 
-    public JnxLSPTest(String name) {
-        super(name);
-    }
-
-    public void setUp() {
+  @BeforeClass
+    protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.pss", true);
         this.jlsp = new JnxLSP();
@@ -36,7 +35,7 @@ public class JnxLSPTest extends TestCase {
         } catch (BSSException ex) {
             fail("JnxLSP.SetupLSP: " + ex.getMessage());
         }
-        Assert.assertTrue(ret);
+        assert ret = true;
     }
 
     public void testTearDownLSP() {
@@ -47,7 +46,7 @@ public class JnxLSPTest extends TestCase {
         } catch (BSSException ex) {
             fail("JnxLSP.TearDownLSP: " + ex.getMessage());
         }
-        Assert.assertTrue(ret);
+        assert ret == true;
     }
 
     public HashMap<String,String> build_hash() {

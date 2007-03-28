@@ -1,6 +1,6 @@
 package net.es.oscars.pathfinder;
 
-import junit.framework.*;
+import org.testng.annotations.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -16,23 +16,25 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class DomainTest extends TestCase {
+@Test(groups={ "pathfinder" })
+public class DomainTest {
     private Properties props;
     private Session session;
     private DomainDAO dao;
 
-    public DomainTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         this.props = propHandler.getPropertyGroup("test.bss", true);
+        this.dao = new DomainDAO();
     }
         
-    public void setUp() {
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao = new DomainDAO();
         this.dao.setSession(this.session);
         this.session.beginTransaction();
     }
@@ -41,12 +43,12 @@ public class DomainTest extends TestCase {
         Domain domain = (Domain) this.dao.queryByParam("name",
                                        this.props.getProperty("domainName"));
         this.session.getTransaction().commit();
-        Assert.assertNotNull(domain);
+        assert domain != null;
     }
 
     public void testList() {
         List<Domain> domains = this.dao.findAll();
         this.session.getTransaction().commit();
-        Assert.assertFalse(domains.isEmpty());
+        assert !domains.isEmpty();
     }
 }

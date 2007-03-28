@@ -1,35 +1,29 @@
 package net.es.oscars;
 
+import org.testng.annotations.*;
+
 import java.util.Properties;
 import javax.mail.*;
 
-import junit.framework.*;
+public class NotifierTest {
 
-public class NotifierTest extends TestCase {
-
-    public NotifierTest(String name) {
-        super(name);
-    }
-        
-    public void testLoad() {
+  @Test(groups={ "core" })
+    public void notifierConstructor() {
         Notifier notifier = new Notifier();
-        Assert.assertNotNull(notifier);
+        assert notifier != null;
     }
 
-    public void testGetWebmaster() {
+  @Test(groups={ "core" })
+    public void getWebmaster() {
         Notifier notifier = new Notifier();
-        Assert.assertNotNull(notifier.getWebmaster());
+        assert notifier.getWebmaster() != null;
     }
 
-    public void testSendMessage() {
+  @Test(groups={ "broken" })
+    public void sendMessage() throws MessagingException {
         Notifier notifier = new Notifier();
         String subject = "This is a test of email notifications.\n";
         String notification = "This is a test.\n";
-        try {
-            notifier.sendMessage(subject, notification);
-        } catch (javax.mail.MessagingException e) {
-            fail(e.getMessage());
-        }
-        Assert.assertNotNull(notifier.getWebmaster());
+        notifier.sendMessage(subject, notification);
     }
 }

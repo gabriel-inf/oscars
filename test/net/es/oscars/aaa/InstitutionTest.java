@@ -1,6 +1,6 @@
 package net.es.oscars.aaa;
 
-import junit.framework.*;
+import org.testng.annotations.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -16,23 +16,25 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class InstitutionTest extends TestCase {
+@Test(groups={ "aaa" })
+public class InstitutionTest {
     private Properties props;
     private Session session;
     private InstitutionDAO dao;
 
-    public InstitutionTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
+        this.dao = new InstitutionDAO();
     }
-        
-    public void setUp() {
+
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.dao = new InstitutionDAO();
         this.dao.setSession(this.session);
         this.session.beginTransaction();
     }
@@ -42,12 +44,12 @@ public class InstitutionTest extends TestCase {
             this.dao.queryByParam("name",
                              this.props.getProperty("institutionName"));
         this.session.getTransaction().commit();
-        Assert.assertNotNull(institution);
+        assert institution != null;
     }
 
     public void testList() {
         List<Institution> institutions = this.dao.findAll();
         this.session.getTransaction().commit();
-        Assert.assertFalse(institutions.isEmpty());
+        assert !institutions.isEmpty();
     }
 }

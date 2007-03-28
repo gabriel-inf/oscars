@@ -1,6 +1,6 @@
 package net.es.oscars.bss.topology;
 
-import junit.framework.*;
+import org.testng.annotations.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -17,23 +17,25 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class InterfaceTest extends TestCase {
+@Test(groups={ "bss/topology" })
+public class InterfaceTest {
     private Properties props;
     private Session session;
     private InterfaceDAO dao;
 
-    public InterfaceTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
+        this.dao = new InterfaceDAO();
     }
         
-    public void setUp() {
+  @BeforeMethod
+    protected void setUpMethod() {
         this.session = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao = new InterfaceDAO();
         this.dao.setSession(this.session);
         this.session.beginTransaction();
     }
@@ -52,23 +54,26 @@ public class InterfaceTest extends TestCase {
         xface.setRouter(router);
         this.dao.create(xface);
         this.session.getTransaction().commit();
-        Assert.assertNotNull(xface);
+        assert xface != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testQuery() {
         String description = this.props.getProperty("xfaceDescription");
         Interface xface = (Interface)
             this.dao.queryByParam("description", description);
         this.session.getTransaction().commit();
-        Assert.assertNotNull(xface);
+        assert xface != null;
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testList() {
         List<Interface> interfaces = this.dao.list();
         this.session.getTransaction().commit();
-        Assert.assertFalse(interfaces.isEmpty());
+        assert !interfaces.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "testCreate", "testQuery", "testList" })
     public void testCascadingDelete() {
         String description = this.props.getProperty("xfaceDescription");
         Interface xface = (Interface)
@@ -76,6 +81,6 @@ public class InterfaceTest extends TestCase {
         this.session.getTransaction().commit();
         // if cascading delete works with router testRemove, this will
         // be null
-        Assert.assertNull(xface);
+        assert xface == null;
     }
 }

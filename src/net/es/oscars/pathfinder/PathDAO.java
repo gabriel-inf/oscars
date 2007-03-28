@@ -1,7 +1,6 @@
 package net.es.oscars.pathfinder;
 
 import java.util.*;
-import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.Ipaddr;
 
 import net.es.oscars.database.GenericHibernateDAO;
@@ -21,7 +20,8 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
      * @return path beginning path instance
      */
     public Path create(List<Ipaddr> ipaddrs,
-                       String ingressRouter, String egressRouter) throws BSSException {
+                       String ingressRouter, String egressRouter)
+            throws PathfinderException {
 
         List<Path> paths = new ArrayList<Path>();
         Path path = null;
@@ -31,7 +31,7 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
         // Fill in Path instance information given list of Ipaddr instances
         for (Ipaddr ipaddr: ipaddrs) {
             if ( ipaddr == null ) { 
-                throw new BSSException("Unknown router in path: " 
+                throw new PathfinderException("Unknown router in path: " 
                 + ipaddr.getIp());
             }
             addr = ipaddr.getIp();

@@ -1,6 +1,7 @@
 package net.es.oscars.bss;
 
-import junit.framework.*;
+import org.testng.annotations.*;
+import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -17,26 +18,28 @@ import net.es.oscars.pathfinder.*;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class ReservationManagerTest extends TestCase {
+@Test(groups={ "bss" })
+public class ReservationManagerTest {
     private ReservationManager rm;
     private Properties props;
     private Session session;
     private ReservationDAO dao;
 
-    public ReservationManagerTest(String name) {
-        super(name);
+  @BeforeClass
+    protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
         Initializer initializer = new Initializer();
         initializer.initDatabase();
         this.rm = new ReservationManager();
+        this.dao = new ReservationDAO();
     }
 
-    public void setUp() {
+  @BeforeMethod
+    protected void setUpMethod() {
         this.rm.setSession();
         this.session = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao = new ReservationDAO();
         this.dao.setSession(this.session);
         this.session.beginTransaction();
     }
@@ -46,6 +49,7 @@ public class ReservationManagerTest extends TestCase {
         Domain nextDomain = null;
         Long millis = 0L;
         Long bandwidth = 0L;
+        int id = -1;
 
         resv.setSrcHost(this.props.getProperty("sourceHostName"));
         resv.setDestHost(this.props.getProperty("destHostName"));
@@ -74,11 +78,11 @@ public class ReservationManagerTest extends TestCase {
             this.session.getTransaction().rollback();
             fail("testCreate failed: " + e.getMessage());
         }
-        int id = resv.getId();
+        id = resv.getId();
         this.session.getTransaction().commit();
-        Assert.assertNotNull(id);
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testQuery() {
         Reservation reservation = null;
 
@@ -93,9 +97,10 @@ public class ReservationManagerTest extends TestCase {
         String testTag = this.rm.toTag(reservation);
         String newTag = this.rm.toTag(testResv);
         this.session.getTransaction().commit();
-        Assert.assertEquals(testTag, newTag);
+        assert testTag.equals(newTag);
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testAuthList() {
         List<Reservation> reservations = null;
 
@@ -106,9 +111,10 @@ public class ReservationManagerTest extends TestCase {
             fail("Caught BSSException: " + ex.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertFalse(reservations.isEmpty());
+        assert !reservations.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testUserList() {
         List<Reservation> reservations = null;
 
@@ -120,9 +126,10 @@ public class ReservationManagerTest extends TestCase {
             fail("Caught BSSException: " + ex.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertFalse(reservations.isEmpty());
+        assert !reservations.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testCancel() {
         List<Reservation> reservations = null;
 
@@ -135,14 +142,14 @@ public class ReservationManagerTest extends TestCase {
             fail("testCancel failed: " + ex.getMessage());
         }
         this.session.getTransaction().commit();
-        Assert.assertTrue(true);
     }
 
+  @Test(dependsOnMethods={ "testCreate" })
     public void testPathToString() {
         String description = this.props.getProperty("description");
         Reservation resv = this.dao.queryByParam("description", description);
         String pathString = this.rm.pathToString(resv, "host");
         this.session.getTransaction().commit();
-        Assert.assertNotNull(pathString);
+        assert pathString != null;
     }
 }

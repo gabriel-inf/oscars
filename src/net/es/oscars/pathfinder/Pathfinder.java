@@ -8,7 +8,6 @@ import org.hibernate.*;
 import net.es.oscars.database.HibernateUtil;
 
 import net.es.oscars.LogWrapper;
-import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 
 /**
@@ -25,7 +24,7 @@ public class Pathfinder {
 
     public Path checkPath(List<String> hops,
                         String ingressIP, String egressRouterIP) 
-                        throws net.es.oscars.bss.BSSException {
+            throws PathfinderException {
 
         List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
         Path path = null;
@@ -83,9 +82,9 @@ public class Pathfinder {
      *
      * @param hops list of IP addresses
      * @return string containing last interface address, if any
-     * @throws BSSException
+     * @throws PathfinderException
      */
-    public String lastInterface(List<String> hops) throws BSSException {
+    public String lastInterface(List<String> hops) throws PathfinderException {
 
         Ipaddr ipaddr = null;
         String ingressIP = "";
@@ -103,7 +102,7 @@ public class Pathfinder {
             if (xface != null) { ingressIP = hop; }
         }
         if (ingressIP.equals("")) { 
-            throw new BSSException(
+            throw new PathfinderException(
                 "No ingress interface found by reverse traceroute");
         }
         return ingressIP;
@@ -112,7 +111,7 @@ public class Pathfinder {
     /* If the ingress router is given, make sure it is in the database,
            and then return as is. */
     public String checkIngressLoopback(String ingressRouterIP)
-            throws BSSException {
+            throws PathfinderException {
 
         Router router = null;
         String ingressIP = null;
@@ -129,7 +128,7 @@ public class Pathfinder {
             ingressIP = ipaddrDAO.getIpType(router.getName(), "loopback");
         }
         if (ingressIP.equals("")) {
-            throw new BSSException(
+            throw new PathfinderException(
                 "No loopback for specified ingress router" +
                  ingressRouterIP);
         }
@@ -141,9 +140,9 @@ public class Pathfinder {
      *
      * @param hops list of IP addresses
      * @return string containing last loopback address, if any
-     * @throws BSSException
+     * @throws PathfinderException
      */
-    public String lastLoopback(List<String> hops) throws BSSException {
+    public String lastLoopback(List<String> hops) throws PathfinderException {
 
         Ipaddr ipaddr;
         String ingressLoopbackIp = "";
@@ -165,7 +164,7 @@ public class Pathfinder {
             if (!loopbackFound.equals("")) { ingressLoopbackIp = hop; }
         }
         if (ingressLoopbackIp.equals("")) { 
-            throw new BSSException(
+            throw new PathfinderException(
                 "No ingress loopback found by reverse traceroute");
         }
         return ingressLoopbackIp;

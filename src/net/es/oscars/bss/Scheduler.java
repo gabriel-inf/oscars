@@ -270,4 +270,53 @@ public class Scheduler {
         msg += "Reservation status: " + resv.getStatus() + "\n";
         return msg;
     }
+    
+    /**
+     * Returns a list of all pending reservation in given time interval
+     * @param timeInterval an integer with the time window to check 
+     * @return response a list of reservations that are pending
+     */
+    public List<Reservation> listPendingReservations(int timeInterval) 
+            throws BSSException {
+        Session session = 
+            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+
+        ReservationDAO dao = new ReservationDAO();
+
+        dao.setSession(session);
+
+		return dao.pendingReservations(timeInterval);
+    }
+    
+    /**
+     * Returns a list of all expired  reservation in given time interval
+     * @param timeInterval an integer with the time window to check 
+     * @return response a list of reservations that have expired
+     */
+    public List<Reservation> listExpiredReservations(int timeInterval) 
+            throws BSSException {
+        Session session = 
+            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+
+        ReservationDAO dao = new ReservationDAO();
+
+        dao.setSession(session);
+
+		return dao.expiredReservations(timeInterval);
+    }
+    
+    /**
+     * Update reservation status
+     * @param id Integer id of reservation
+     * @param status status string to change reservation
+     */
+    public void updateReservationStatus(Integer id, String status) throws BSSException{
+    	Session session = 
+            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+
+        ReservationDAO dao = new ReservationDAO();
+
+        dao.setSession(session);
+    	dao.updateStatus(id, status);
+    }
 }

@@ -18,42 +18,21 @@
                                                        javax.xml.stream.XMLStreamReader reader) throws java.lang.Exception{
 
               
-               
+                  if (
+                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
+                  "explicitPath".equals(typeName)){
+                   
+                            return  net.es.oscars.wsdlTypes.ExplicitPath.Factory.parse(reader);
+                        
+
+                  }
+
+              
                   if (
                   "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
                   "forwardPayload".equals(typeName)){
                    
                             return  net.es.oscars.wsdlTypes.ForwardPayload.Factory.parse(reader);
-                        
-
-                  }
-
-              
-                  if (
-                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
-                  "forwardReply".equals(typeName)){
-                   
-                            return  net.es.oscars.wsdlTypes.ForwardReply.Factory.parse(reader);
-                        
-
-                  }
-
-              
-                  if (
-                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
-                  "createReply".equals(typeName)){
-                   
-                            return  net.es.oscars.wsdlTypes.CreateReply.Factory.parse(reader);
-                        
-
-                  }
-
-              
-                  if (
-                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
-                  "resCreateContent".equals(typeName)){
-                   
-                            return  net.es.oscars.wsdlTypes.ResCreateContent.Factory.parse(reader);
                         
 
                   }
@@ -71,9 +50,9 @@
               
                   if (
                   "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
-                  "resTag".equals(typeName)){
+                  "hop".equals(typeName)){
                    
-                            return  net.es.oscars.wsdlTypes.ResTag.Factory.parse(reader);
+                            return  net.es.oscars.wsdlTypes.Hop.Factory.parse(reader);
                         
 
                   }
@@ -91,6 +70,16 @@
               
                   if (
                   "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
+                  "vtagList".equals(typeName)){
+                   
+                            return  net.es.oscars.wsdlTypes.VtagList.Factory.parse(reader);
+                        
+
+                  }
+
+              
+                  if (
+                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
                   "resDetails".equals(typeName)){
                    
                             return  net.es.oscars.wsdlTypes.ResDetails.Factory.parse(reader);
@@ -101,9 +90,59 @@
               
                   if (
                   "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
+                  "hopList".equals(typeName)){
+                   
+                            return  net.es.oscars.wsdlTypes.HopList.Factory.parse(reader);
+                        
+
+                  }
+
+              
+                  if (
+                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
                   "listReply".equals(typeName)){
                    
                             return  net.es.oscars.wsdlTypes.ListReply.Factory.parse(reader);
+                        
+
+                  }
+
+              
+                  if (
+                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
+                  "forwardReply".equals(typeName)){
+                   
+                            return  net.es.oscars.wsdlTypes.ForwardReply.Factory.parse(reader);
+                        
+
+                  }
+
+              
+                  if (
+                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
+                  "resCreateContent".equals(typeName)){
+                   
+                            return  net.es.oscars.wsdlTypes.ResCreateContent.Factory.parse(reader);
+                        
+
+                  }
+
+              
+                  if (
+                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
+                  "createReply".equals(typeName)){
+                   
+                            return  net.es.oscars.wsdlTypes.CreateReply.Factory.parse(reader);
+                        
+
+                  }
+
+              
+                  if (
+                  "http://oscars.es.net/OSCARS".equals(namespaceURI) &&
+                  "resTag".equals(typeName)){
+                   
+                            return  net.es.oscars.wsdlTypes.ResTag.Factory.parse(reader);
                         
 
                   }
