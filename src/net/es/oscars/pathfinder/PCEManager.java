@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import net.es.oscars.LogWrapper;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.topology.Ipaddr;
+import net.es.oscars.wsdlTypes.ExplicitPath;
+
 
 /**
  * This class contains methods for handling PCE's (path computation elements)
@@ -33,7 +35,7 @@ public class PCEManager {
      * @throws PathfinderException
      */
     public Path findPath(String srcHost, String destHost,
-                         String ingressRouterIP, String egressRouterIP)
+                         String ingressRouterIP, String egressRouterIP, ExplicitPath reqPath)
             throws PathfinderException {
 
         List<String> hops;
@@ -45,7 +47,7 @@ public class PCEManager {
         if (pathMethod == null) { return null; }
         this.pathfinder = new PathfinderFactory().createPathfinder(pathMethod);
         path = this.pathfinder.findPath(srcHost, destHost,
-                                        ingressRouterIP, egressRouterIP);
+                                        ingressRouterIP, egressRouterIP, reqPath);
         return path;
     }
 
@@ -84,7 +86,7 @@ public class PCEManager {
     public String pathToString(Path path, String retType) {
         StringBuilder sb = new StringBuilder();
         InetAddress inetAddress = null;
-
+		
         List<Ipaddr> ipaddrs = this.getIpaddrs(path);
         if (retType.equals("host")) {
             for (Ipaddr ipaddr: ipaddrs) {
@@ -123,6 +125,9 @@ public class PCEManager {
             }
             if (ingressFound) {
                 ipaddrs.add(path.getIpaddr());
+            }else{
+            	/* Fixes problem with servlet. Is addressType still used? */
+            	ipaddrs.add(path.getIpaddr());
             }
             if (addressType.equals("egress")) { break; }
             path = (Path) path.getNextPath();

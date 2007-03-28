@@ -41,8 +41,9 @@ public class CreateReservation extends HttpServlet {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
+        	//TODO: Add support for new path element
             Domain nextDomain = rm.create(resv, userName,
-                                          ingressRouterIP, egressRouterIP);
+                                          ingressRouterIP, egressRouterIP, null);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             //Forwarder.create(resv, nextDomain);

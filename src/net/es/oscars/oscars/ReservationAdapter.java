@@ -49,7 +49,7 @@ public class ReservationAdapter {
         Forwarder forwarder = new Forwarder();
         Domain nextDomain = this.rm.create(resv, login,
                                            params.getIngressRouterIP(),
-                                           params.getEgressRouterIP());
+                                           params.getEgressRouterIP(), params.getReqPath());
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and handles the response
         forwarder.create(resv, nextDomain);

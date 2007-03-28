@@ -10,6 +10,8 @@ import net.es.oscars.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.wsdlTypes.ExplicitPath;
+
 
 
 /**
@@ -52,7 +54,7 @@ public class ReservationManager {
      * @throws BSSException
      */
     public Domain create(Reservation resv, String login,
-                         String ingressRouterIP, String egressRouterIP) 
+                         String ingressRouterIP, String egressRouterIP, ExplicitPath reqPath) 
             throws  BSSException {
 
         ParamValidator paramValidator = new ParamValidator();
@@ -78,7 +80,7 @@ public class ReservationManager {
         
         try {
             path = this.pceMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
-                                        ingressRouterIP, egressRouterIP);
+                                        ingressRouterIP, egressRouterIP, reqPath);
         } catch (PathfinderException e) {
             throw new BSSException(e.getMessage());
         }

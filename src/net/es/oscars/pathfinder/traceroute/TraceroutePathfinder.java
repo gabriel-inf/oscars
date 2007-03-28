@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import net.es.oscars.LogWrapper;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.wsdlTypes.ExplicitPath;
 
 
 /**
@@ -32,7 +33,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      * @throws PathfinderException
      */
     public Path findPath(String srcHost, String destHost,
-                         String ingressRouterIP, String egressRouterIP)
+                         String ingressRouterIP, String egressRouterIP, ExplicitPath reqPath)
             throws PathfinderException {
 
         List<String> hops = null;

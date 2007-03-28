@@ -12,6 +12,7 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.pathfinder.Domain;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.interdomain.*;
+import net.es.oscars.wsdlTypes.ExplicitPath;
 
 
 public class ReservationMethods {
@@ -40,9 +41,10 @@ public class ReservationMethods {
         Reservation resv = this.toReservation(request, userName);
         String ingressRouterIP = request.getParameter("ingressRouter");
         String egressRouterIP = request.getParameter("egressRouter");
-
+		
+		//TODO: Add support for new path element
         nextDomain = this.rm.create(resv, userName, ingressRouterIP,
-                                    egressRouterIP);
+                                    egressRouterIP, null);
         if (nextDomain != null) {
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response

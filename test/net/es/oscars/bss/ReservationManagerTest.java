@@ -73,7 +73,7 @@ public class ReservationManagerTest {
         String account = this.props.getProperty("login");
 
         try {
-            nextDomain = this.rm.create(resv, account, null, null);
+            nextDomain = this.rm.create(resv, account, null, null, null);
         } catch (BSSException e) {
             this.session.getTransaction().rollback();
             fail("testCreate failed: " + e.getMessage());
