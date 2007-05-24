@@ -2,21 +2,19 @@ package net.es.oscars.bss.topology;
 
 import java.util.Set;
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+
+import net.es.oscars.BeanUtils;
 
 /**
  * Interface is adapted from a Middlegen class automatically generated 
- * from the schema for the topology.interfaces table.
+ * from the schema for the bss.interfaces table.
  */
-public class Interface implements Serializable {
+public class Interface extends BeanUtils implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
-
-    /** identifier field */
-    private Integer id;
 
     /** persistent field */
     private boolean valid;
@@ -40,17 +38,6 @@ public class Interface implements Serializable {
 
     /** default constructor */
     public Interface() { }
-
-    /**
-     * @return primary key in the interfaces table
-     */ 
-    public Integer getId() { return this.id; }
-
-    /**
-     * @param id primary key in the interfaces table
-     */ 
-    public void setId(Integer id) { this.id = id; }
-
 
     /**
      * @return valid a boolean indicating whether interface is still valid
@@ -132,23 +119,37 @@ public class Interface implements Serializable {
         this.ipaddrs.add(ipaddr);
     }
 
+
+    // need to override superclass because dealing with transient
+    // instances as well
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        Class thisClass = getClass();
+        if (o == null || thisClass != o.getClass()) {
+            return false;
+        }
+        Interface castOther = (Interface) o;
+        // if one of these has been saved to the database
+        if ((this.getId() != null) ||
+            (castOther.getId() != null)) {
+            return new EqualsBuilder()
+                .append(this.getId(), castOther.getId())
+                .isEquals();
+        } else {
+            return new EqualsBuilder()
+                .append(this.isValid(), castOther.isValid())
+                .append(this.getSnmpIndex(), castOther.getSnmpIndex())
+                .append(this.getSpeed(), castOther.getSpeed())
+                .append(this.getDescription(), castOther.getDescription())
+                .append(this.getAlias(), castOther.getAlias())
+                .append(this.getRouter(), castOther.getRouter())
+                .isEquals();
+        }
+    }
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .toString();
-    }
-
-    public boolean equals(Object other) {
-        if ( !(other instanceof Interface) ) return false;
-        Interface castOther = (Interface) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
     }
 }

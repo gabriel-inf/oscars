@@ -20,9 +20,9 @@ import org.apache.ws.security.handler.*;
 import org.apache.ws.security.WSSecurityEngineResult;
 import org.apache.ws.security.WSConstants;
 
+import org.apache.log4j.*;
 import org.hibernate.*;
 
-import net.es.oscars.LogWrapper;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
@@ -35,15 +35,15 @@ import net.es.oscars.interdomain.InterdomainException;
  * OSCARS Axis2 service
  */
 public class OSCARSSkeleton implements OSCARSSkeletonInterface {
-    private LogWrapper log;
+    private Logger log;
     private ReservationAdapter adapter;
     private UserManager userMgr;
-    private Principal issuerDN;
-    private Principal subjectDN;
+    private Principal certIssuer;
+    private Principal certSubject;
     // private X509Certificate cert;
 
     public OSCARSSkeleton() {
-        this.log = new LogWrapper(this.getClass());
+        this.log = Logger.getLogger(this.getClass());
     }
 
     /**
@@ -67,12 +67,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             reply = this.adapter.create(params, login);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
-            this.log.error("createReservation", e.getMessage());
+            this.log.error("createReservation: " + e.getMessage());
             throw new BSSFaultMessageException("createReservation " +
                                                e.getMessage());
         }   catch (InterdomainException e) {
             bss.getTransaction().rollback();
-            this.log.error("createReservation interdomain error", e.getMessage());
+            this.log.error("createReservation interdomain error: " + e.getMessage());
             throw new BSSFaultMessageException("createReservation interdomain error " +
                                                e.getMessage());
         }
@@ -105,13 +105,18 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             reply = this.adapter.cancel(params, login);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
-            this.log.error("cancelReservation caught BSSException",
+            this.log.error("cancelReservation caught BSSException: " +
                            e.getMessage());
             throw new BSSFaultMessageException("cancelReservation: " +
                                                e.getMessage());
+        }   catch (InterdomainException e) {
+            bss.getTransaction().rollback();
+            this.log.error("cancelReservation interdomain error: " + e.getMessage());
+            throw new BSSFaultMessageException("cancelReservation interdomain error " +
+                                               e.getMessage());
         } catch (Exception e) {
             bss.getTransaction().rollback();
-            this.log.error("cancelReservation caught Exception",
+            this.log.error("cancelReservation caught Exception: " +
                            e.getMessage());
             throw new BSSFaultMessageException("cancelReservation: " +
                            e.getMessage());
@@ -149,8 +154,13 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             reply = this.adapter.query(params, authorized);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
-            this.log.error("queryReservation", e.  getMessage());
+            this.log.error("queryReservation: " + e.getMessage());
             throw new BSSFaultMessageException("queryReservation: " +
+                                               e.getMessage());
+        }  catch (InterdomainException e) {
+            bss.getTransaction().rollback();
+            this.log.error("queryReservation interdomain error: " + e.getMessage());
+            throw new BSSFaultMessageException("queryReservation interdomain error " +
                                                e.getMessage());
         }
         QueryReservationResponse response = new QueryReservationResponse();
@@ -185,7 +195,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             reply = this.adapter.list(login, authorized);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
-            this.log.error("listReservations", e.getMessage());
+            this.log.error("listReservations: " + e.getMessage());
             throw new BSSFaultMessageException("listReservations: " +
                                                e.getMessage());
         }
@@ -253,7 +263,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             forwardReply.setListReservations(reply);
 
         } else {
-            this.log.error("forward.error", "unrecognized request type" +
+            this.log.error("forward.error, unrecognized request type" +
                                             contentType);
             throw new BSSFaultMessageException(
                 "Forward: unrecognized request type" + contentType);
@@ -276,18 +286,21 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String catalinaHome = System.getProperty("catalina.home");
          System.out.println("catalina.home is "+ catalinaHome);
         Initializer initializer = new Initializer();
-        initializer.initDatabase();
+        List<String> dbnames = new ArrayList<String>();
+        dbnames.add("aaa");
+        dbnames.add("bss");
+        initializer.initDatabase(dbnames);
 
         System.out.println("******2nd OSCARS  init.start: starting*****");
         this.adapter = new ReservationAdapter();
-        this.userMgr = new UserManager();
+        this.userMgr = new UserManager("aaa");
     }
 
     public UserManager getUserManager() { return this.userMgr; }
 
-    public void setSubjectDN(Principal DN) { this.subjectDN = DN; }
+    public void setCertSubject(Principal DN) { this.certSubject = DN; }
 
-    public void setIssuerDN(Principal DN) { this.issuerDN = DN; }
+    public void setCertIssuer(Principal DN) { this.certIssuer = DN; }
 
     /**
      * Called from checkUser to get the DN out of the message context.
@@ -297,15 +310,15 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      */
     private void setOperationContext() {
 
-        this.log.debug("OSCARS:  setOperationContext.start", "starting");
-        this.subjectDN = null;
-        this.issuerDN = null;
+        this.log.debug("setOperationContext.start");
+        this.certSubject = null;
+        this.certIssuer = null;
         try {
             MessageContext inContext =
                     MessageContext.getCurrentMessageContext();
             // opContext.getMessageContext(WSDLConstants.MESSAGE_LABEL_IN_VALUE);
             if (inContext == null) {
-                this.log.debug("setOperationContext.start", "NULL");
+                this.log.debug("setOperationContext.start: context is NULL");
                 return;
             }
             Vector results = (Vector)
@@ -321,12 +334,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     // actions return a principal.
                     if ((eResult.getAction() == WSConstants.SIGN) ||
                         (eResult.getAction() == WSConstants.UT)) {
-                        this.log.debug("setOperationContext.getSecurityInfo",
+                        this.log.debug("setOperationContext.getSecurityInfo, " +
                                        "Principal's name: " +
                                        eResult.getPrincipal().getName());
-                        this.setSubjectDN(
+                        this.setCertSubject(
                                 eResult.getCertificate().getSubjectDN());
-                        this.setIssuerDN(
+                        this.setCertIssuer(
                                 eResult.getCertificate().getIssuerDN());
                     } else if (eResult.getAction() == WSConstants.ENCR) {
                         // Encryption action returns what ?
@@ -340,9 +353,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                 }
             }
         } catch (Exception e) {
-            this.log.error("setOperationContext.exception", e.getMessage());
+            this.log.error("setOperationContext.exception: " + e.getMessage());
         }
-        this.log.debug("setOperationContext.finish", "done.");
+        this.log.debug("setOperationContext.finish");
     }
 
     /**
@@ -351,7 +364,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      *  Also checks to see if there was a certifiate in the message which should never happen
      *  unless the axis2/rampart configuration is incorrect.
      *  
-     * @return login A string with the login associated with the subjectDN
+     * @return login A string with the login associated with the certSubject
      * @throws AAAFaultMessageException 
      */
     public String checkUser() throws AAAFaultMessageException {
@@ -360,39 +373,44 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String[] dnElems = null;
         setOperationContext();
  
-        if (this.subjectDN == null){
-            this.log.error("checkUser: ", "no certificate found in message");
+        if (this.certSubject == null){
+            this.log.error("checkUser: no certSubject found in message");
             AAAFaultMessageException AAAErrorEx = new AAAFaultMessageException(
-                                 "checkUser: no certificate found in message");
+                                 "checkUser: no certSubject found in message");
             throw AAAErrorEx;
         }
-
-        // serious hack to reverse the elements in the DN to match
-        // the order in the data base.
-        // we should change the lookup to be on just the CN
-        String origDN = this.subjectDN.getName();
-        dnElems = origDN.split(",");
-        String dn = " " + dnElems[0];
-        for (int i = 1; i < dnElems.length; i++) {
-            dn = dnElems[i] + "," + dn;
-        }
-        dn = dn.substring(1);
-        this.log.debug("checkUser", this.subjectDN.getName());
 
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         this.userMgr.setSession();
         aaa.beginTransaction();
-        login = this.userMgr.loginFromDN(dn);
+        
+        // lookup up using input DN first
+        String origDN = this.certSubject.getName();
+        this.log.debug("checkUser: " + origDN);
+        login = this.userMgr.loginFromDN(origDN);
         if (login == null) {
-            this.log.error("checkUser invalid user: ", dn);
-            AAAFaultMessageException AAAErrorEx = new AAAFaultMessageException(
+        
+        	// if that fails try the reverse of the elements in the DN 
+        	dnElems = origDN.split(",");
+        	String dn = " " + dnElems[0];
+        	for (int i = 1; i < dnElems.length; i++) {
+        		dn = dnElems[i] + "," + dn;
+        	}	
+        	dn = dn.substring(1);
+        	this.log.debug("checkUser: " + dn);
+
+        	login = this.userMgr.loginFromDN(dn);
+        	if (login == null) {
+        		this.log.error("checkUser invalid user: " + dn);
+        		AAAFaultMessageException AAAErrorEx = new AAAFaultMessageException(
                                                "checkUser: invalid user" + dn);
-           aaa.getTransaction().rollback();
-           throw AAAErrorEx;
+        		aaa.getTransaction().rollback();
+        		throw AAAErrorEx;
+        	}
         }
         aaa.getTransaction().commit();
-        this.log.info("checkUser authenticated user: " ,login);
+        this.log.info("checkUser authenticated user: " + login);
         return login;
     }
 }

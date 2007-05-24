@@ -5,39 +5,43 @@ import javax.net.ssl.*;
 import java.security.*;
 import java.util.*;
 
+import org.apache.log4j.*;
+
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.axis2.AxisFault;
+import org.apache.axis2.client.Options;
+import org.apache.axis2.client.ServiceClient;
 
-import net.es.oscars.LogWrapper;
 import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.AAAFaultMessageException;
 import net.es.oscars.oscars.BSSFaultMessageException;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.security.KeyManagement;
 
-import org.apache.axis2.client.Options;
-import org.apache.axis2.client.ServiceClient;
 
 /**
  * Client handles functionality common to all clients (forwarders, tests,
  * etc.)
  */
 public class Client {
-    protected LogWrapper log;
+    protected Logger log;
     protected ConfigurationContext configContext;
     protected OSCARSStub stub;
 
-    public void setUp(boolean useKeyStore, String url, String repo) throws AxisFault {
-    	this.setUp(useKeyStore, url, repo, null);
-     }
+    public void setUp(boolean useKeyStore, String url, String repo)
+            throws AxisFault {
+        this.setUp(useKeyStore, url, repo, null);
+    }
 
-    public void setUp(boolean useKeyStore, String url, String repo, String axisConfig) throws AxisFault {
+    public void setUp(boolean useKeyStore, String url, String repo,
+                      String axisConfig) throws AxisFault {
+
         if (useKeyStore) { KeyManagement.setKeyStore(repo); }
-        this.log = new LogWrapper(this.getClass());
+        this.log = Logger.getLogger(this.getClass());
         this.configContext =
                 ConfigurationContextFactory
-                        .createConfigurationContextFromFileSystem(repo, null);
+                .createConfigurationContextFromFileSystem(repo, null);
 
         this.stub = new OSCARSStub(this.configContext, url); 
         ServiceClient sc = this.stub._getServiceClient();
@@ -46,6 +50,7 @@ public class Client {
         sc.setOptions(opts);
         this.stub._setServiceClient(sc);
     }
+
     /**
      * Makes call to server to cancel a reservation.
      *
@@ -100,7 +105,7 @@ public class Client {
      */
     public ListReply listReservations()
            throws AAAFaultMessageException, BSSFaultMessageException,java.rmi.RemoteException
-               {
+    {
 
         ListReservations listRes = new ListReservations();
         EmptyArg ea = new EmptyArg();
@@ -141,8 +146,7 @@ public class Client {
      * @throws BSSFaultMessageException
      * @throws java.rmi.RemoteException
      */
-    public ForwardReply 
-        forward(Forward fwd)
+    public ForwardReply forward(Forward fwd)
            throws AAAFaultMessageException, BSSFaultMessageException,
                   java.rmi.RemoteException {
 

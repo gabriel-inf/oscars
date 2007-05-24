@@ -2,10 +2,6 @@ package net.es.oscars.pathfinder;
 
 import java.util.List;
 
-import org.hibernate.*;
-
-import net.es.oscars.wsdlTypes.ExplicitPath;
-
 /**
  * PCE is the interface implemented by the path computation element.
  *
@@ -13,9 +9,15 @@ import net.es.oscars.wsdlTypes.ExplicitPath;
  */
 public interface PCE {
 
-    Path findPath(String srcHost, String destHost,
-                  String ingressRouterIP, String egressRouterIP, ExplicitPath reqPath)
+    List<CommonPathElem> findPath(String srcHost, String destHost,
+                        String ingressRouterIP,
+                        String egressRouterIP)
         throws PathfinderException;
 
-    String getNextHop();
+    List<CommonPathElem> findPath(List<CommonPathElem> reqPath)
+        throws PathfinderException;
+
+    String nextExternalHop();
+    
+    List<CommonPathElem> getCompletePath();
 }

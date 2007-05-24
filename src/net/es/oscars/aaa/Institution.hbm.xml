@@ -18,9 +18,9 @@
 
     <id name="id">
         <meta attribute="field-description">
-           @hibernate.id generator-class="increment"
+           @hibernate.id generator-class="identity"
         </meta>
-        <generator class="increment" />
+        <generator class="identity" />
     </id>
 
     <property name="name" not-null="true">
@@ -30,6 +30,11 @@
     </property>
 
     <!-- Associations -->
+
+    <set name="users" inverse="true" cascade="all, delete-orphan">
+        <key column="institutionId" />
+        <one-to-many class="net.es.oscars.aaa.User" />
+    </set>
 
 </class>
 </hibernate-mapping>

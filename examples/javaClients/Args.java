@@ -12,7 +12,7 @@ public class Args {
         while (inarg == null || inarg.equals ("")){
             System.out.print(prompt + ": ");
             System.out.flush();
-            inarg = br.readLine();
+            inarg = br.readLine().trim();
         }
         return inarg;
     }
@@ -21,10 +21,10 @@ public class Args {
             throws IOException {
 
         String inarg = null;
-        System.out.print(prompt + ": [" + def +"] ");
+        System.out.print(prompt + ": [" + def.trim() +"] ");
         System.out.flush();
-        inarg = br.readLine();
-        if (inarg == null || inarg.equals("")) { inarg = def; }
+        inarg = br.readLine().trim();
+        if (inarg == null || inarg.equals("")) { inarg = def.trim(); }
         return inarg;
     }
 }

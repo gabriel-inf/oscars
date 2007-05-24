@@ -23,7 +23,7 @@ public class UserQuery extends HttpServlet {
         User requester = null;
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager();
+        UserManager mgr = new UserManager("aaa");
         mgr.setSession();
         UserDetails userDetails = new UserDetails();
         List<Institution> institutions = null;

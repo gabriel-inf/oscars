@@ -20,7 +20,7 @@ public class UserAddForm extends HttpServlet {
             throws IOException, ServletException {
 
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager();
+        UserManager mgr = new UserManager("aaa");
         mgr.setSession();
         User user = new User();
         UserDetails userDetails = new UserDetails();

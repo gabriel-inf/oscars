@@ -18,9 +18,9 @@
 
     <id name="id">
         <meta attribute="field-description">
-           @hibernate.id generator-class="increment"
+           @hibernate.id generator-class="identity"
         </meta>
-        <generator class="increment" />
+        <generator class="identity" />
     </id>
 
     <property name="startTime" not-null="true">
@@ -96,7 +96,8 @@
     <!-- Associations -->
 
     <many-to-one name="path" column="pathId"
-	    class="net.es.oscars.pathfinder.Path" not-null="true" />
+	    class="net.es.oscars.bss.topology.Path" cascade="save-update"
+	    not-null="true" />
 
 </class>
 </hibernate-mapping>

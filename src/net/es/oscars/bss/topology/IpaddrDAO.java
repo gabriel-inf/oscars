@@ -11,52 +11,25 @@ import net.es.oscars.database.GenericHibernateDAO;
  */
 public class IpaddrDAO extends GenericHibernateDAO<Ipaddr,Integer> { 
 
-    /**
-     * Inserts a row into the ipaddrs table.
-     *
-     * @param ipaddr an Ipaddr instance to be persisted
-     */
-    public void create(Ipaddr ipaddr) {
-        this.makePersistent(ipaddr);
+    public IpaddrDAO(String dbname) {
+        this.setDatabase(dbname);
     }
 
     /**
-     * List all interfaces.
-     *
-     * @return a list of interfaces
+     * Gets ipaddr instance, given IP address and what type of validity.
+     * @param ip string containing IP address
+     * @param valid boolean indicating whether to look for valid IP
+     * @return ipaddr valid Ipaddr instance
      */
-    public List<Ipaddr> list() {
-        List<Ipaddr> ipaddrs = null;
+    public Ipaddr getIpaddr(String ip, boolean valid) {
 
-        String hsql = "from Ipaddr";
-        ipaddrs = this.getSession().createQuery(hsql).list();
-        return ipaddrs;
-    }
-
-    /**
-     * Deletes a row from the ipaddrs table.
-     *
-     * @param ipaddr an Ipaddr instance to remove from the database
-     */
-    public void remove(Ipaddr ipaddr) {
-        this.makeTransient(ipaddr);
-    }
-
-    /**
-     * Returns ipaddr instance given SQL query with routerName and addressType
-     *     as named parameters.
-     * @param sql string containing a SQL query
-     * @param routerName  string with the name of associated router
-     * @param addressType string with address type ("ingress" or "egress")
-     * @return ipaddrObj an ipaddr instance, if any, obtained from the query
-     */
-    public Ipaddr getAddress(String sql, String routerName,
-                             String addressType) {
+        String sql = "select * from ipaddrs ip " +
+            "where ip.IP = ? and ip.valid = ?";
 
         Ipaddr ipaddrObj = (Ipaddr) this.getSession().createSQLQuery(sql)
                                 .addEntity(Ipaddr.class)
-                                .setString(0, routerName)
-                                .setString(1, addressType)
+                                .setString(0, ip)
+                                .setBoolean(1, valid)
                                 .setMaxResults(1)
                                 .uniqueResult();
         return ipaddrObj;
@@ -66,22 +39,36 @@ public class IpaddrDAO extends GenericHibernateDAO<Ipaddr,Integer> {
      * Gets trace or loopback IP address, if any, associated with router, given
      *     routerName. 
      * @param routerName string containing name of router
-     * @param addressType string containing type of address to look for
+     * @param description string containing type of address to look for
      * @return string with the IP address of the desired type, if any
      */
-    public String getIpType(String routerName, String addressType) {
+    public String getIpType(String routerName, String description) {
 
         // given router name, get address if any
         String sql = "select * from ipaddrs ip " +
             "inner join interfaces i on i.id = ip.interfaceId " +
             "inner join routers r on r.id = i.routerId " +
-            "where r.name = ? and ip.description = ?";
+            "where r.name = ? and ip.description = ? " +
+            "and ip.valid = true";
 
-        Ipaddr ipaddrObj = this.getAddress(sql, routerName, addressType);
+        Ipaddr ipaddrObj = (Ipaddr) this.getSession().createSQLQuery(sql)
+                                .addEntity(Ipaddr.class)
+                                .setString(0, routerName)
+                                .setString(1, description)
+                                .setMaxResults(1)
+                                .uniqueResult();
         //
         // if the lookup fails, return null, else return the IP
-        if (ipaddrObj == null){ return "";}
+        if (ipaddrObj == null) { return null; }
         else
-            return ipaddrObj.getIp();
+            return ipaddrObj.getIP();
+    }
+
+    public void invalidateAll() {
+        List<Ipaddr> ipaddrs = this.list();
+        for (Ipaddr ipaddr: ipaddrs) {
+            ipaddr.setValid(false);
+            this.update(ipaddr);
+        }
     }
 }

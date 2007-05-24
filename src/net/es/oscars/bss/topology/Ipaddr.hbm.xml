@@ -18,12 +18,18 @@
 
     <id name="id">
         <meta attribute="field-description">
-           @hibernate.id generator-class="increment"
+           @hibernate.id generator-class="identity"
         </meta>
-        <generator class="increment" />
+        <generator class="identity" />
     </id>
 
-    <property name="ip" not-null="true">
+    <property name="valid" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <property name="IP" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    

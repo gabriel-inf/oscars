@@ -1,78 +1,88 @@
 /*
 Form.js:        Javascript form handling
-Last modified:  February 9, 2007
+Last modified:  April 6, 2007
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
 initLogin()
-submit()
-handleReply()
-handleError()
+submitForm()
+handleReply(type, data, evt)
+startSession()
+closeSession()
 */
 
 dojo.provide("js.Form");
 
-function initLogin() {
-    var loginButton = dojo.widget.byId("loginButton");
-    dojo.event.connect(loginButton, "onClick", "initSession");
+function submitForm() {
+    var x = new dojo.io.FormBind({
+    formNode: document.forms[0],
+    load: handleReply,
+    error: handleError });
 }
 
-function initLogout() {
-    var logoutButton = dojo.widget.byId("logoutButton");
-    alert(logoutButton);
-    dojo.event.connect(logoutButton, "onClick", "closeSession");
+
+function handleReply(type, data, http) {
+    dojo.debug(http["responseText"]);
+    startSession();
 }
 
-function initSession() {
-    var tabPane = dojo.widget.byId("mainTabContainer");
 
-    var session = dojo.widget.byId("userSession");
-    session.setUrl("forms/Session.html");
+function startSession() {
+    var tabContainer = dojo.widget.byId("mainTabContainer");
+
+    var sessionPane = dojo.widget.byId("sessionPane");
+    sessionPane.setUrl("forms/session.html");
 
     // create session tab widgets
-    var resvList = dojo.widget.createWidget("ContentPane",
-            {widgetId: "reservationList",
-             href:     "forms/ListReservations.html", label: "Reservations"});
-    var resvDetails = dojo.widget.createWidget("ContentPane",
-            {widgetId: "reservationDetails",
-             href: "forms/Reservation.html", label: "Reservation Details"});
-    var resvCreate = dojo.widget.createWidget("ContentPane",
-            {widgetId: "createReservation", 
-             href: "forms/CreateReservation.html",
+    var listReservationsPane = dojo.widget.createWidget("ContentPane",
+            {widgetId: "listReservationsPane",
+             href:     "forms/listReservations.html", label: "Reservations"});
+    var reservationPane = dojo.widget.createWidget("ContentPane",
+            {widgetId: "reservationPane",
+             href: "forms/reservation.html", label: "Reservation Details"});
+    var createReservationPane = dojo.widget.createWidget("ContentPane",
+            {widgetId: "createReservationPane", 
+             href: "forms/createReservation.html",
              label: "Create Reservation"});
-    var userList = dojo.widget.createWidget("ContentPane",
-            {widgetId: "userList",
-             href: "forms/UserList.html", label: "Users"});
-    var userDetails = dojo.widget.createWidget("ContentPane",
-            {widgetId: "user",
-             href: "forms/User.html", label: "User Details"});
+    var userListPane = dojo.widget.createWidget("ContentPane",
+            {widgetId: "userListPane",
+             href: "forms/userList.html", label: "Users"});
+    var userPane = dojo.widget.createWidget("ContentPane",
+            {widgetId: "userPane",
+             href: "forms/user.html", label: "User Details"});
     // add tabs requiring authorization to container
-    tabPane.addChild(resvList);
-    tabPane.addChild(resvDetails);
-    tabPane.addChild(resvCreate);
-    tabPane.addChild(userList);
-    tabPane.addChild(userDetails);
-    
+    tabContainer.addChild(listReservationsPane);
+    tabContainer.addChild(reservationPane);
+    tabContainer.addChild(createReservationPane);
+    tabContainer.addChild(userListPane);
+    tabContainer.addChild(userPane);
 }
+
 
 function closeSession() {
-    var tabPane = dojo.widget.byId("mainTabContainer");
-    var resvList = dojo.widget.byId("resvList");
-    var resvDetails = dojo.widget.byId("resvDetails");
-    var resvCreate = dojo.widget.byId("resvCreate");
-    var userList = dojo.widget.byId("userList");
-    var userDetails = dojo.widget.byId("userDetails");
-    var session = dojo.widget.byId("userSession");
-    session.setUrl("Login.html");
+    var tabContainer = dojo.widget.byId("mainTabContainer");
+    var listReservationsPane = dojo.widget.byId("listReservationsPane");
+    var reservationPane = dojo.widget.byId("reservationPane");
+    var createReservationPane = dojo.widget.byId("createReservationPane");
+    var userListPane = dojo.widget.byId("userListPane");
+    var userPane = dojo.widget.byId("userPane");
+    var sessionPane = dojo.widget.byId("sessionPane");
+    sessionPane.setUrl("login.html");
     // remove protected tabs
-    tabPane.removeChild(resvList);
-    tabPane.removeChild(resvDetails);
-    tabPane.removeChild(resvCreate);
-    tabPane.removeChild(userList);
-    tabPane.removeChild(userDetails);
+    tabContainer.removeChild(listReservationsPane);
+    tabContainer.removeChild(reservationPane);
+    tabContainer.removeChild(createReservationPane);
+    tabContainer.removeChild(userListPane);
+    tabContainer.removeChild(userPane);
 }
 
-function handleError() {
-    alert("error");
+
+function handleError(type, evt) {
+    var msg = evt["message"];
+    // The message has non-useful information in it for the user.
+    // The servlet inserts a series of *'s in the message so that
+    // the non-helpful info can be parsed out.
+    var lastIndex = msg.lastIndexOf("*");
+    dojo.debug(msg.substring(lastIndex+2, msg.length));
 }

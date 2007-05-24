@@ -1,256 +1,248 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema targetNamespace="http://oscars.es.net/OSCARS" 
-	elementFormDefault="qualified"
-	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:tns="http://oscars.es.net/OSCARS">
+<xsd:schema targetNamespace="http://oscars.es.net/OSCARS"
+    elementFormDefault="qualified"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://oscars.es.net/OSCARS">
 
-	<!--
-		This is the type definition schema for the OSCARS public reservation interface. 
-		DRAFT V1.0, Nov 2006
-	-->
+    <!--
+        This is the type definition schema for the OSCARS public reservation interface. 
+        DRAFT V1.0, Nov 2006
+    -->
 
-	<!-- Element definitons -->
-	<xsd:element name="createReservation" type="tns:resCreateContent" />
+    <!-- Element definitons -->
+    <xsd:element name="createReservation" type="tns:resCreateContent" />
 
-	<xsd:element name="createReservationResponse"
-		type="tns:createReply" />
+    <xsd:element name="createReservationResponse"
+        type="tns:createReply" />
 
-	<xsd:element name="listReservations" type="tns:emptyArg" />
+    <xsd:element name="listReservations" type="tns:emptyArg" />
 
-	<xsd:element name="listReservationsResponse" type="tns:listReply" />
+    <xsd:element name="listReservationsResponse" type="tns:listReply" />
 
-	<xsd:element name="cancelReservation" type="tns:resTag" />
+    <xsd:element name="cancelReservation" type="tns:resTag" />
 
-	<xsd:element name="cancelReservationResponse" type="xsd:string" />
+    <xsd:element name="cancelReservationResponse" type="xsd:string" />
 
-	<xsd:element name="queryReservation" type="tns:resTag" />
+    <xsd:element name="queryReservation" type="tns:resTag" />
 
-	<xsd:element name="queryReservationResponse" type="tns:resDetails" />
+    <xsd:element name="queryReservationResponse" type="tns:resDetails" />
 
-	<xsd:element name="forward">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="payload" type="tns:forwardPayload" />
-				<xsd:element name="payloadSender" type="xsd:string" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
+    <xsd:element name="forward">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="payload" type="tns:forwardPayload" />
+                <xsd:element name="payloadSender" type="xsd:string" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
-	<xsd:element name="forwardResponse" type="tns:forwardReply" />
+    <xsd:element name="forwardResponse" type="tns:forwardReply" />
 
 
 
-	<xsd:element name="AAAFault">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="msg" type="xsd:string" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
+    <xsd:element name="AAAFault">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="msg" type="xsd:string" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
-	<xsd:element name="BSSFault">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="msg" type="xsd:string" />
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
+    <xsd:element name="BSSFault">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="msg" type="xsd:string" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 
-	<!--  Types  -->
-<!--    Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006
-	<xsd:simpleType name="createRouteDirectionType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="FORWARD" />
-			<xsd:enumeration value="REVERSE" />
-		</xsd:restriction>
-	</xsd:simpleType>
--->
-     
-	<xsd:complexType name="resCreateContent">
-		<xsd:sequence>
-			<xsd:element name="srcHost" type="xsd:string" />
-			<xsd:element name="destHost" type="xsd:string" />
-			<xsd:element name="startTime" type="xsd:dateTime" />
-			<xsd:element name="endTime" type="xsd:dateTime" />
-			<xsd:element name="bandwidth" type="xsd:int" />
-			<xsd:element name="burstLimit" type="xsd:int" />
-			<xsd:element name="description" type="xsd:string" />
-			<xsd:element name="ingressRouterIP" type="xsd:string"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="egressRouterIP" type="xsd:string"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="reqPath" type="tns:explicitPath"
-				maxOccurs="1" minOccurs="0" />			
-			<!-- forward means create path from src to dst, reverse
-				means create path from dst to src (done by switching
-				src & dst when you reach dst and setting this to forward) -->
-			<xsd:element name="createRouteDirection"
-				type="xsd:string" />
-			<xsd:element name="protocol" type="xsd:string"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="srcPort" type="xsd:int" maxOccurs="1"
-				minOccurs="0" />
-			<xsd:element name="destPort" type="xsd:int" maxOccurs="1"
-				minOccurs="0" />
-		</xsd:sequence>
-	</xsd:complexType>
+    <!--  Types  -->
+    <!--    Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006
+        <xsd:simpleType name="createRouteDirectionType">
+        <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="FORWARD" />
+        <xsd:enumeration value="REVERSE" />
+        </xsd:restriction>
+        </xsd:simpleType>
+    -->
 
-	<xsd:complexType name="createReply">
-		<xsd:sequence>
-			<xsd:element name="tag" type="xsd:string" />
-			<xsd:element name="status" type="xsd:string" />
-			<xsd:element name="path" type="tns:explicitPath"
-				maxOccurs="1" minOccurs="0" />			
-		</xsd:sequence>
-	</xsd:complexType>
+    <xsd:complexType name="resCreateContent">
+        <xsd:sequence>
+            <xsd:element name="srcHost" type="xsd:string" />
+            <xsd:element name="destHost" type="xsd:string" />
+            <xsd:element name="startTime" type="xsd:dateTime" />
+            <xsd:element name="endTime" type="xsd:dateTime" />
+            <xsd:element name="bandwidth" type="xsd:int" />
+            <xsd:element name="burstLimit" type="xsd:int" />
+            <xsd:element name="description" type="xsd:string" />
+            <xsd:element name="ingressRouterIP" type="xsd:string"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="egressRouterIP" type="xsd:string"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="reqPath" type="tns:explicitPath"
+                maxOccurs="1" minOccurs="0" />
+            <!-- forward means create path from src to dst, reverse
+                means create path from dst to src (done by switching
+                src & dst when you reach dst and setting this to forward) -->
+            <xsd:element name="createRouteDirection" type="xsd:string" />
+            <xsd:element name="protocol" type="xsd:string" maxOccurs="1"
+                minOccurs="0" />
+            <xsd:element name="srcPort" type="xsd:int" maxOccurs="1"
+                minOccurs="0" />
+            <xsd:element name="destPort" type="xsd:int" maxOccurs="1"
+                minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<xsd:complexType name="resInfoContent">
-		<xsd:sequence>
-			<xsd:element name="tag" type="xsd:string" />
-			<xsd:element name="status" type="xsd:string" />
-			<xsd:element name="srcHost" type="xsd:string" />
-			<xsd:element name="destHost" type="xsd:string" />
-			<xsd:element name="startTime" type="xsd:dateTime" />
-			<xsd:element name="endTime" type="xsd:dateTime" />
-		</xsd:sequence>
-	</xsd:complexType>
+    <xsd:complexType name="createReply">
+        <xsd:sequence>
+            <xsd:element name="tag" type="xsd:string" />
+            <xsd:element name="status" type="xsd:string" />
+            <xsd:element name="path" type="tns:explicitPath"
+                maxOccurs="1" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<xsd:complexType name="resDetails">
-		<xsd:sequence>
-			<xsd:element name="tag" type="xsd:string" />
-			<xsd:element name="status" type="xsd:string" />
-			<xsd:element name="srcHost" type="xsd:string" />
-			<xsd:element name="destHost" type="xsd:string" />
-			<xsd:element name="startTime" type="xsd:dateTime" />
-			<xsd:element name="endTime" type="xsd:dateTime" />
-			<xsd:element name="createTime" type="xsd:dateTime" />
-			<xsd:element name="bandwidth" type="xsd:int" />
-			<xsd:element name="burstLimit" type="xsd:int" />
-			<xsd:element name="resClass" type="xsd:string" />
-			<xsd:element name="path" type="tns:explicitPath" />
-			<xsd:element name="description" type="xsd:string" />
-			<xsd:element name="protocol" type="xsd:string"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="srcPort" type="xsd:int" maxOccurs="1"
-				minOccurs="0" />
-			<xsd:element name="destPort" type="xsd:int" maxOccurs="1"
-				minOccurs="0" />
-		</xsd:sequence>
-	</xsd:complexType>
+    <xsd:complexType name="resInfoContent">
+        <xsd:sequence>
+            <xsd:element name="tag" type="xsd:string" />
+            <xsd:element name="status" type="xsd:string" />
+            <xsd:element name="srcHost" type="xsd:string" />
+            <xsd:element name="destHost" type="xsd:string" />
+            <xsd:element name="startTime" type="xsd:dateTime" />
+            <xsd:element name="endTime" type="xsd:dateTime" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<xsd:complexType name="listReply">
-		<xsd:sequence>
-			<xsd:element name="resInfo" type="tns:resInfoContent"
-				maxOccurs="unbounded" minOccurs="0" />
-		</xsd:sequence>
-	</xsd:complexType>
+    <xsd:complexType name="resDetails">
+        <xsd:sequence>
+            <xsd:element name="tag" type="xsd:string" />
+            <xsd:element name="status" type="xsd:string" />
+            <xsd:element name="srcHost" type="xsd:string" />
+            <xsd:element name="destHost" type="xsd:string" />
+            <xsd:element name="startTime" type="xsd:dateTime" />
+            <xsd:element name="endTime" type="xsd:dateTime" />
+            <xsd:element name="createTime" type="xsd:dateTime" />
+            <xsd:element name="bandwidth" type="xsd:int" />
+            <xsd:element name="burstLimit" type="xsd:int" />
+            <xsd:element name="resClass" type="xsd:string" />
+            <xsd:element name="path" type="tns:explicitPath" />
+            <xsd:element name="description" type="xsd:string" />
+            <xsd:element name="protocol" type="xsd:string" maxOccurs="1"
+                minOccurs="0" />
+            <xsd:element name="srcPort" type="xsd:int" maxOccurs="1"
+                minOccurs="0" />
+            <xsd:element name="destPort" type="xsd:int" maxOccurs="1"
+                minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<xsd:complexType name="forwardPayload">
-		<xsd:sequence>
-			<xsd:element name="contentType"
-				type="xsd:string" />
-			<xsd:element name="createReservation"
-				type="tns:resCreateContent" maxOccurs="1" minOccurs="0" />
-			<xsd:element name="cancelReservation" type="tns:resTag"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="queryReservation" type="tns:resTag"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="listReservations" type="tns:emptyArg"
-				maxOccurs="1" minOccurs="0" />
-		</xsd:sequence>
-	</xsd:complexType>
+    <xsd:complexType name="listReply">
+        <xsd:sequence>
+            <xsd:element name="resInfo" type="tns:resInfoContent"
+                maxOccurs="unbounded" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<xsd:complexType name="forwardReply">
-		<xsd:sequence>
-			<xsd:element name="contentType"
-				type="xsd:string" />
-			<xsd:element name="createReservation" type="tns:createReply"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="cancelReservation" type="xsd:string"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="queryReservation" type="tns:resDetails"
-				maxOccurs="1" minOccurs="0" />
-			<xsd:element name="listReservations" type="tns:listReply"
-				maxOccurs="1" minOccurs="0" />
-		</xsd:sequence>
-	</xsd:complexType>
-	
-	<xsd:complexType name="explicitPath">
-		<xsd:sequence>
-			<xsd:element name="hops" type="tns:hopList" minOccurs="1"/>
-			<xsd:element name="vtag" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-			<xsd:element name="availableVtags" type="tns:vtagList" minOccurs="0" maxOccurs="1"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	
-	<xsd:complexType name="hopList">
-		<xsd:sequence >
-		     <xsd:element name="hop" type="tns:hop" minOccurs="1" maxOccurs="unbounded"/>		
-	        </xsd:sequence>
-	</xsd:complexType>
-	
+    <xsd:complexType name="forwardPayload">
+        <xsd:sequence>
+            <xsd:element name="contentType" type="xsd:string" />
+            <xsd:element name="createReservation"
+                type="tns:resCreateContent" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="cancelReservation" type="tns:resTag"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="queryReservation" type="tns:resTag"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="listReservations" type="tns:emptyArg"
+                maxOccurs="1" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<xsd:complexType name="hop">
-		<xsd:attribute name="loose" type="xsd:boolean" use="optional"/>
-		<xsd:attribute name="type" type="xsd:string" use="optional"/>
-		<xsd:attribute name="value" type="xsd:string" use="required"/>
-	</xsd:complexType>
-	
-	<xsd:complexType name="vtagList">
-		<xsd:sequence>
-			<xsd:element name="vtag" type="xsd:string" minOccurs="1" maxOccurs="unbounded"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	
-	
-<!--    Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006
-	<xsd:simpleType name="resProtocolType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="UDP" />
-			<xsd:enumeration value="TCP" />
-		</xsd:restriction>
-	</xsd:simpleType>
+    <xsd:complexType name="forwardReply">
+        <xsd:sequence>
+            <xsd:element name="contentType" type="xsd:string" />
+            <xsd:element name="createReservation" type="tns:createReply"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="cancelReservation" type="xsd:string"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="queryReservation" type="tns:resDetails"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="listReservations" type="tns:listReply"
+                maxOccurs="1" minOccurs="0" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<xsd:simpleType name="payloadContentType">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="createReservation" />
-			<xsd:enumeration value="queryReservation" />
-			<xsd:enumeration value="cancelReservation" />
-			<xsd:enumeration value="listReservations" />
-		</xsd:restriction>
-	</xsd:simpleType>
--->
+    <xsd:complexType name="explicitPath">
+        <xsd:sequence>
+            <xsd:element name="hops" type="tns:hopList"/>
+            <xsd:element name="vtag" type="xsd:string" minOccurs="0"
+                maxOccurs="1" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<!--  WS1-BP approved way to pass null arguments -->
-	<xsd:complexType name="emptyArg">
-		<xsd:sequence>
-			<xsd:element name="msg" minOccurs="0" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
-	
-<!--   Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006	
-	<xsd:simpleType name="resStatus">
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="PENDING" />
-			<xsd:enumeration value="ACTIVE" />
-			<xsd:enumeration value="FINISHED" />
-			<xsd:enumeration value="CANCELLED" />
-			<xsd:enumeration value="FAILED" />
-			<xsd:enumeration value="PENDINGCANCEL" />
-			<xsd:enumeration value="PRECANCEL" />
-		</xsd:restriction>
-	</xsd:simpleType>
-	-->
+    <xsd:complexType name="hopList">
+        <xsd:sequence>
+            <xsd:element name="hop" type="tns:hop" minOccurs="1"
+                maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
 
-	<!--  All the  top level elements that should be simpletypes need to be
-		complexTypes that contain a named element because the SOAP::Lite server
-		insists on including a least one tagged element within the soap body
-	-->
-	<xsd:complexType name="resTag">
-		<xsd:sequence>
-			<xsd:element name="tag" type="xsd:string" />
-		</xsd:sequence>
-	</xsd:complexType>
+
+    <xsd:complexType name="hop">
+        <xsd:attribute name="loose" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="type" type="xsd:string" use="optional" />
+        <xsd:attribute name="value" type="xsd:string" use="required" />
+    </xsd:complexType>
+
+
+    <!--    Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006
+        <xsd:simpleType name="resProtocolType">
+        <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="UDP" />
+        <xsd:enumeration value="TCP" />
+        </xsd:restriction>
+        </xsd:simpleType>
+        
+        <xsd:simpleType name="payloadContentType">
+        <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="createReservation" />
+        <xsd:enumeration value="queryReservation" />
+        <xsd:enumeration value="cancelReservation" />
+        <xsd:enumeration value="listReservations" />
+        </xsd:restriction>
+        </xsd:simpleType>
+    -->
+
+    <!--  WS1-BP approved way to pass null arguments -->
+    <xsd:complexType name="emptyArg">
+        <xsd:sequence>
+            <xsd:element name="msg" minOccurs="0" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!--   Enumerated types are not working for Axis2-1.1, rampart1-1.RC1 Dec 6, 2006	
+        <xsd:simpleType name="resStatus">
+        <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="PENDING" />
+        <xsd:enumeration value="ACTIVE" />
+        <xsd:enumeration value="FINISHED" />
+        <xsd:enumeration value="CANCELLED" />
+        <xsd:enumeration value="FAILED" />
+        <xsd:enumeration value="PENDINGCANCEL" />
+        <xsd:enumeration value="PRECANCEL" />
+        </xsd:restriction>
+        </xsd:simpleType>
+    -->
+
+    <!--  All the  top level elements that should be simpletypes need to be
+        complexTypes that contain a named element because the SOAP::Lite server
+        insists on including a least one tagged element within the soap body
+    -->
+    <xsd:complexType name="resTag">
+        <xsd:sequence>
+            <xsd:element name="tag" type="xsd:string" />
+        </xsd:sequence>
+    </xsd:complexType>
 
 </xsd:schema>
 

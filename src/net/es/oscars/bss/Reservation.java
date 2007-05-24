@@ -1,23 +1,20 @@
 package net.es.oscars.bss;
 
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import net.es.oscars.pathfinder.Path;
+import net.es.oscars.BeanUtils;
+import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.Domain;
+import net.es.oscars.pathfinder.CommonPath;
 
 /**
- * Reservation is adapted from a Middlegen class automatically generated 
- * from the schema for the oscars.reservations table.
+ * Reservation is the Hibernate bean for for the bss.reservations table.
  */
-public class Reservation implements Serializable {
+public class Reservation extends BeanUtils implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4099;
-
-    /** identifier field */
-    private Integer id;
 
     /** persistent field */
     private Long startTime;
@@ -67,19 +64,10 @@ public class Reservation implements Serializable {
     /** persistent field */
     private Path path;
 
+    private CommonPath commonPath;
+
     /** default constructor */
     public Reservation() { }
-
-
-    /**
-     * @return id An Integer with the reservation's primary key
-     */ 
-    public Integer getId() { return this.id; }
-
-    /**
-     * @param id An Integer with the primary key
-     */ 
-    public void setId(Integer id) { this.id = id; }
 
 
     /**
@@ -266,23 +254,28 @@ public class Reservation implements Serializable {
     public void setPath(Path path) { this.path = path; }
 
 
+    /**
+     * @return commonPath transient CommonPath instance for reservation
+     */ 
+    public CommonPath getCommonPath() { return this.commonPath; }
+
+    /**
+     * @param commonPath transient CommonPath instance 
+     */ 
+    public void setCommonPath(CommonPath commonPath) {
+        this.commonPath = commonPath;
+    }
+
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
+            .append("login", getLogin())
+            .append("start", getSrcHost())
+            .append("destination", getDestHost())
+            .append("status", getStatus())
+            .append("startTime", getStartTime())
+            .append("endTime", getEndTime())
             .toString();
-    }
-
-    public boolean equals(Object other) {
-        if ( !(other instanceof Reservation) ) return false;
-        Reservation castOther = (Reservation) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
     }
 }

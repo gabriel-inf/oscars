@@ -14,6 +14,13 @@ import net.es.oscars.database.GenericHibernateDAO;
 public class AuthorizationDAO
     extends GenericHibernateDAO<Authorization, Integer> {
 
+    String dbname;
+
+    public AuthorizationDAO(String dbname) {
+        this.setDatabase(dbname);
+        this.dbname = dbname;
+    }
+
     /**
      * Deletes a row containing an authorization triple.
      *
@@ -30,7 +37,7 @@ public class AuthorizationDAO
             throw new AAAException(
                     "Trying to remove non-existent authorization");
         }
-        this.makeTransient(auth);
+        super.remove(auth);
     }
 
     /**
@@ -45,7 +52,7 @@ public class AuthorizationDAO
 
         List<Authorization> auths = null;
         User user = null;
-        UserDAO userDAO = new UserDAO();
+        UserDAO userDAO = new UserDAO(this.dbname);
 
         if (userName != null) {
             user = userDAO.query(userName);
@@ -60,7 +67,7 @@ public class AuthorizationDAO
                            .list();
             return auths;
         }
-        auths = this.findAll();
+        auths = super.list();
         return auths;
     }
 

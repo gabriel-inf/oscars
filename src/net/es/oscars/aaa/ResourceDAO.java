@@ -7,4 +7,10 @@ import net.es.oscars.database.GenericHibernateDAO;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class ResourceDAO extends GenericHibernateDAO<Resource, Integer> { }
+public class ResourceDAO extends GenericHibernateDAO<Resource, Integer> {
+
+    public ResourceDAO(String dbname) {
+        this.setDatabase(dbname);
+    }
+
+}

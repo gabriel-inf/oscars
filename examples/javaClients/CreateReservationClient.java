@@ -82,17 +82,12 @@ public class CreateReservationClient extends ExampleClient {
         if (arg != null) { content.setSrcHost(arg); }
         arg = Args.getArg(br, "Destination host", content.getDestHost());
         if (arg != null) { content.setDestHost(arg); }
-        arg = Args.getArg(br, "Duration (hours)", "0.04");
-        // for now
-        if ((arg != null) && !arg.equals("0.04")) {
-            Calendar time = Calendar.getInstance();
-            time.setTime(new Date());
-            content.setStartTime(time);
-            double dminutes = Double.parseDouble(arg) * 60.0;
-            Integer minutes = Integer.valueOf((int)dminutes);
-            time.add(Calendar.MINUTE, minutes);
-            content.setEndTime(time);
+        arg = Args.getArg(br, "Duration (hours)", "0.06");
+        if (arg == null) {
+            System.out.println("Duration must be provided");
+            System.exit(1);
         }
+        this.setTimes(content, arg);
         arg = Args.getArg(br, "Burst limit",
                 Integer.toString(content.getBurstLimit()));
         if (arg != null) { content.setBurstLimit(Integer.parseInt(arg)); }
@@ -103,24 +98,38 @@ public class CreateReservationClient extends ExampleClient {
         arg = Args.getArg(br, "Route direction",
                 content.getCreateRouteDirection());
         if (arg != null) { content.setCreateRouteDirection(arg); }
-        arg = Args.getArg(br, "Protocol", content.getProtocol());
+        arg = Args.getArg(br, "Protocol", "");
         if (arg != null) { content.setProtocol(arg); }
         arg = Args.getArg(br, "Description", content.getDescription());
         if (arg != null) { content.setDescription(arg); }
-        arg=Args.getArg(br, "RequestedPath: input dotted ipAddrs separated by spaces"," ");
-        if (arg != " ") {
-        	String ipaddr[] = arg.split(" ");
-            ExplicitPath ePath = new ExplicitPath();
-            HopList hList = new HopList();
+        arg = Args.getArg(br, "Ingress router", "");
+        if (!arg.equals("")) { content.setIngressRouterIP(arg); }
+        arg = Args.getArg(br, "Egress router", "");
+        if (!arg.equals("")) { content.setEgressRouterIP(arg); }
+        arg=Args.getArg(br, "RequestedPath: input dotted ipAddrs separated by spaces", "");
+        if (!arg.equals("")) {
+            String ipaddr[] = arg.split(" ");
+            ExplicitPath explicitPath = new ExplicitPath();
+            HopList hopList = new HopList();
             for (int i = 0; i < ipaddr.length; i++){
                Hop hop = new Hop();
-               hop.setLoose(true);
-               hop.setType("ipv4");
+               // r ight now this is all traceroutePathfinder accepts
+               hop.setLoose(false);
+               if ( ipaddr[i].indexOf('.') != -1) {
+                   hop.setType("ipv4");
+               } else if (ipaddr[i].indexOf(':')!= -1){
+                   hop.setType("ipv6");                 
+               } else {
+                   System.out.println("Path must be either dotted ipv4 addres or : separated ipv6 addresses");
+                   System.exit (1);
+               }
                hop.setValue(ipaddr[i]);
-               hList.addHop(hop);
+               hopList.addHop(hop);
             }
-        ePath.setHops(hList);
-        content.setReqPath(ePath);
+            explicitPath.setHops(hopList);
+            content.setReqPath(explicitPath);
+            arg = Args.getArg(br, "VLAN Tag", "");
+            if (!arg.equals("")) { explicitPath.setVtag(arg); }
         }
         return content;
     }
@@ -144,35 +153,47 @@ public class CreateReservationClient extends ExampleClient {
         content.setDescription(props.getProperty("description",""));
         content.setSrcHost(props.getProperty("sourceHostName",""));
         content.setDestHost(props.getProperty("destHostName",""));
-        String duration = props.getProperty("duration","0.04");
-        Calendar time = Calendar.getInstance();
-        time.setTime(new Date());
-        content.setStartTime(time);
- 
-        double dminutes = Double.parseDouble(duration) * 60.0;
-        Integer minutes = Integer.valueOf((int)dminutes);
-        time.add(Calendar.MINUTE, minutes);
-        content.setEndTime(time);
         content.setBandwidth(
                 Integer.parseInt(props.getProperty("bandwidth","10")));
         content.setCreateRouteDirection(
                 props.getProperty("routeDirection","FORWARD"));
         content.setBurstLimit(
                 Integer.parseInt(props.getProperty("burstLimit","10000")));
-        content.setProtocol(props.getProperty("protocol","TCP"));
         return content;
     }
 
     public void outputResponse(CreateReply response) {
+
         System.out.println("Tag: " + response.getTag());
         System.out.println("Status: " + response.getStatus().toString());
         if (response.getPath() != null){
-        	System.out.println("Path is:");
-        	HopList hList = response.getPath().getHops();
-        	Hop hop[] = hList.getHop();
-          	for (int i=0; i <hop.length; i++) {
-        		System.out.println("\t" +  hop[i].getValue() );
-        	}
+            this.outputHops(response.getPath());
         }
     }
+
+    public void setTimes(ResCreateContent content, String duration) {
+        // all times are communicated to the server in UTC
+        Long startTime;
+        Long endTime;
+        
+        startTime = System.currentTimeMillis();
+        content.setStartTime(startTime);
+
+        double dseconds = Double.valueOf(duration) * 3600.0;
+        long seconds = (long)dseconds;
+           
+        endTime = startTime + (seconds * 1000);
+        content.setEndTime(endTime);
+        // format for printing
+        Date date = new Date(startTime);
+        System.out.println("Start time: " +
+                DateFormat.getDateTimeInstance(
+                    DateFormat.LONG, DateFormat.LONG).format(date));
+        date = new Date(endTime);
+        System.out.println("End time: " + 
+                DateFormat.getDateTimeInstance(
+                    DateFormat.LONG, DateFormat.LONG).format(date));
+    }
 }
+
+

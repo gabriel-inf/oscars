@@ -1,0 +1,43 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <script type="text/javascript">
+        dojo.require("dojo.widget.Form");
+    </script>
+</head>
+
+<body>
+
+<form id="reservationDetailsForm" dojoType="Form" method="POST" action="servlet/UserSession">
+
+<table width="30%">
+        <tr>
+          <td>
+            <input type="submit" name="refreshResvDetails" value="Refresh" />
+          </td>
+          <td>
+            <input type="submit" name="cancelReservation" value="Cancel" />
+	  </td>
+        </tr>
+</table>
+<table width="90%">
+        <tr><td>Tag</td> <td /></tr>
+        <tr><td>User</td> <td /></tr>
+        <tr><td>Description</td> <td /></tr>
+        <tr><td>Start time</td> <td /></tr>
+        <tr><td>End time</td> <td class="dt" /></tr>
+        <tr><td>Created time</td> <td class="dt" /> </tr>
+        <tr><td>Bandwidth</td> <td /></tr>
+        <tr><td>Burst limit</td> <td /></tr>
+        <tr><td>Status</td> <td /></tr>
+        <tr><td>Source</td> <td /></tr>
+        <tr><td>Destination</td> <td /></tr>
+        <tr><td>Source port</td> <td /></tr>
+        <tr><td>Destination port</td> <td /></tr>
+        <tr><td>Protocol</td> <td /></tr>
+        <tr><td>DSCP</td> <td /></tr>
+        <tr><td>Class</td> <td /></tr>
+        <tr><td>Routers in path</td> <td /></tr>
+</table>
+</form>
+</body>
+</html>

@@ -20,91 +20,68 @@ public class LSPScheduler {
     // shutdown hook delay time in seconds
     private static final int shutdownTime = 2;     
 
-    private static int debug = 0;
-
     public static void main (String[] args) {
-       System.err.println ("Start of LSPScheduler");
 
-       debug = 1;
-
-       Initializer initializer = new Initializer();
-       initializer.initDatabase();
-       Thread runtimeHookThread = new Thread() {
+        Initializer initializer = new Initializer();
+        List<String> dbnames = new ArrayList<String>();
+        dbnames.add("bss");
+        initializer.initDatabase(dbnames);
+        Thread runtimeHookThread = new Thread() {
             public void run() {
                 shutdownHook(); 
             }
-       };
+        };
 
-       Scheduler sched = new Scheduler();
-
-        //if (!debug)
-        //    closeIO();
+        Scheduler sched = new Scheduler("bss");
         Runtime.getRuntime().addShutdownHook (runtimeHookThread);
-
         try {
             while (true) {
-                // make this 30 sec
+                checkReservations(sched);
+                // sleep for 30 seconds
                 Thread.sleep (30000);
-                //XXX: do something
-                CheckReservations( sched );
             }
         } catch (Throwable t) {
-            System.out.println("Error: " + t.toString());
             t.printStackTrace();
         }
     }
 
-    private static void CheckReservations(Scheduler s) {
+    private static void checkReservations(Scheduler scheduler) {
         List<Reservation> resList = null;
 
         Session session =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         session.beginTransaction();
         try {
-            // Check for expired reservations 1st, that way we don't
-            // setup reservations and then tear them down again if they're
-            // in the past.
-            System.out.println("Checking for expired reserverations: ");
-            resList = s.expiredReservations(0);
-            for (Reservation r: resList ) {
-                System.out.println ("Tore down: " + r.toString());
-            }
-            /* Look for stuff that *is* exprired as of now (0) */
-            resList = s.pendingReservations(reservationInterval);
-
-            System.out.println("Checking for new reserverations: ");
-            for (Reservation r: resList ) {
-                System.out.println ("Setting up: " + r.toString());
-            }
-
+            // Check for expired reservations first, so reservations aren't
+            // set up, and then torn down again if they're already in the past.
+            // Look for stuff that *is* expired as of now (0)
+            resList = scheduler.expiredReservations(0);
+            resList = scheduler.pendingReservations(reservationInterval);
         } catch (BSSException e) {
             session.getTransaction().rollback();
-            System.out.println("BSSError: " + e.getMessage());
+            // exit on a BSS exception
+            System.exit(1);
         } catch (Exception e ) {
-            // catch everything elese and keep marching on
-            System.out.println("Exception: " + e.getMessage());
+            // catch everything else and keep marching on
+            session.getTransaction().rollback();
         }
 
         session.getTransaction().commit();
     }
 
     private static void shutdownHook() {
-        System.out.println("ShutdownHook started");
         long t0 = System.currentTimeMillis();
         while (true) 
         {
             try {
-             Thread.sleep (500); 
+                Thread.sleep (500); 
             } catch (Exception e) {
-                System.out.println("Exception: "+e.toString());
                 break; 
             }
 
             if (System.currentTimeMillis() - t0 > shutdownTime*1000) 
                 break;
-            System.out.println("shutdown"); 
         }
-        System.out.println("ShutdownHook completed"); 
     }
 
     /* close down the standard IO ports we are a daemon */

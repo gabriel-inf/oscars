@@ -7,13 +7,15 @@
     <link rel="stylesheet" type="text/css" href="css/main.css" />
 
     <script type="text/javascript">
-        var djConfig = { isDebug: true, debugAtAllCosts: false };
+        var djConfig = {isDebug: true,debugContainerId: "dojoDebug" };
     </script>
     <script type="text/javascript" src="dojo/dojo.js"></script>
     <script type="text/javascript" src="js/Form.js"></script>
+    <script type="text/javascript" src="js/DigitalClock.js"></script>
     <script type="text/javascript">dojo.registerModulePath("js", "../js")
     </script>
     <script type="text/javascript">
+        dojo.require("dojo.debug.console");
         dojo.require("dojo.event.*");
         dojo.require("dojo.io.*");
         dojo.require("dojo.widget.*");
@@ -22,13 +24,13 @@
         dojo.require("dojo.widget.Form");
         dojo.require("dojo.widget.Button");
     </script>
-
+    <script type="text/javascript">dojo.addOnLoad(initClock);</script>
 </head>
 
 <body>
     <table id="pagetitle">
         <tr>
-            <td>
+		<td>
                 <a href="http://www.internet2.edu/">
                   <img src="images/internet2_logo.png" width="73" height="58" 
                    border="0" alt="Internet2 logo" title="Internet 2" /></a>
@@ -40,16 +42,17 @@
             </td>
             <td>
           <h1>On-demand Secure Circuits and Advance Reservation System</h1>
-          <div>In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project</div>
+	  <div id="clock">&nbsp;</div>
             </td>
         </tr>
     </table>
 
     <!-- other tabs added after successful login, and removed upon logout -->
-    <div id="mainTabContainer" dojoType="TabContainer" selectedChild="userSession">
-    <div id="userSession" dojoType="ContentPane" label="Session"
-         loadingMessage="Loading login session form..." href="Login.html"
-         onload="javascript:initLogin();">
+    <div id="mainTabContainer" dojoType="TabContainer"
+	 doLayout="false" selectedChild="sessionPane">
+    <div id="sessionPane" dojoType="ContentPane" label="Login"
+         loadingMessage="Loading login form..." href="login.html"
+         onload="javascript:submitForm();">
     </div>
     </div>
 

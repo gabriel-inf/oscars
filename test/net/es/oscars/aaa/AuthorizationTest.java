@@ -1,13 +1,11 @@
 package net.es.oscars.aaa;
 
 import org.testng.annotations.*;
-import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.PropHandler;
 
@@ -21,77 +19,71 @@ import net.es.oscars.PropHandler;
 @Test(groups={ "aaa" })
 public class AuthorizationTest {
     private Properties props;
-    private AuthorizationDAO dao;
-    private Session session;
+    private SessionFactory sf;
+    private String dbname;
 
   @BeforeClass
     public void setUpClass() {
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-        this.dao = new AuthorizationDAO();
+        this.dbname = "aaa";
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
 
-  @BeforeMethod
-    public void setUpMethod() {
-        this.session =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.dao.setSession(this.session);
-        this.session.beginTransaction();
-    }
-
-    public void testQuery() {
+  @Test
+    public void authorizationQuery() throws AAAException {
         User user = null;
         Resource resource = null;
         Permission permission = null;
         Authorization auth = null;
 
+        this.sf.getCurrentSession().beginTransaction();
+        AuthorizationDAO dao = new AuthorizationDAO(this.dbname);
         String userName = this.props.getProperty("superuser");
         String resourceName = this.props.getProperty("resourceName");
         String permissionName = this.props.getProperty("permissionName");
 
-        UserDAO userDAO = new UserDAO();
-        userDAO.setSession(this.session);
+        UserDAO userDAO = new UserDAO(this.dbname);
         user = (User) userDAO.queryByParam("login", userName);
         if (user == null) {
-            this.session.getTransaction().rollback();
-            fail("User " + userName + " does not exist");
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw new AAAException("User " + userName + " does not exist");
         }
 
-        ResourceDAO resourceDAO = new ResourceDAO();
-        resourceDAO.setSession(this.session);
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
         resource = (Resource) resourceDAO.queryByParam("name", resourceName);
         if (resource == null) {
-            this.session.getTransaction().rollback();
-            fail("Resource " + resourceName + " does not exist");
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw new AAAException("Resource " + resourceName + " does not exist");
         }
 
-        PermissionDAO permissionDAO = new PermissionDAO();
-        permissionDAO.setSession(this.session);
+        PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
         permission = (Permission)
                 permissionDAO.queryByParam("name", permissionName);
         if (permission == null) {
-            this.session.getTransaction().rollback();
-            fail("permission " + permissionName + " does not exist");
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw new AAAException("permission " + permissionName + " does not exist");
         }
 
         auth = (Authorization)
-            this.dao.query(user.getId(), resource.getId(), permission.getId());
-        this.session.getTransaction().commit();
+            dao.query(user.getId(), resource.getId(), permission.getId());
+        this.sf.getCurrentSession().getTransaction().commit();
         assert auth != null;
     }
 
-    public void testList() {
+  @Test
+    public void authorizationList() throws AAAException {
         List<Authorization> auths = null;
 
+        this.sf.getCurrentSession().beginTransaction();
+        AuthorizationDAO dao = new AuthorizationDAO(this.dbname);
         try {
-            auths = this.dao.list(null);
+            auths = dao.list(null);
         } catch (AAAException ex) {
-            this.session.getTransaction().rollback();
-            fail("AuthorizationTest.testList: " + ex.getMessage());
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !auths.isEmpty();
     }
 }

@@ -1,7 +1,6 @@
 package net.es.oscars.pathfinder.traceroute;
 
 import org.testng.annotations.*;
-import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
@@ -15,7 +14,7 @@ import net.es.oscars.pathfinder.PathfinderException;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "pathfinder" })
+@Test(groups={ "pathfinder", "traceroute" })
 public class JnxTracerouteTest {
 
     private Properties props;
@@ -23,65 +22,46 @@ public class JnxTracerouteTest {
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss.JnxTraceroute", true);
+        this.props = propHandler.getPropertyGroup("test.pathfinder", true);
     }
 
-    // this does the traceroute
-    public void testTraceroute() {
-        String route = null;
+  @Test
+    public void testTraceroute() throws PathfinderException, IOException {
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        try {
-            route = jnxTraceroute.traceroute( 
-                this.props.getProperty("srcHost"),
-                this.props.getProperty("dstHost"));
-        } catch (IOException e) {
-            fail("JnxTraceroute.traceroute: " + e.getMessage());
-        } catch (PathfinderException e) {
-            fail("JnxTraceroute.traceroute: " + e.getMessage());
-        }
-
-        // return value should be same as dstHost
-        assert this.props.getProperty("srcHost").equals(route);
+        String ingressRouter = this.props.getProperty("ingressRouter");
+        String pathSrc =
+            jnxTraceroute.traceroute(ingressRouter,
+                                     this.props.getProperty("destHost"));
+        // just tests that traceroute completed
+        assert ingressRouter.equals(pathSrc);
     
     }
 
-    public void testRawHopData() {
-        String route = null;
+  @Test
+    public void testRawHopData() throws PathfinderException, IOException {
         List<String> hops = null;
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        try {
-            route = jnxTraceroute.traceroute( 
-                this.props.getProperty("srcHost"),
-                this.props.getProperty("dstHost"));
-        } catch (IOException e) {
-            fail("JnxTraceroute.traceroute: " + e.getMessage());
-        } catch (PathfinderException e) {
-            fail("JnxTraceroute.traceroute: " + e.getMessage());
-        }
-
+        String ingressRouter = this.props.getProperty("ingressRouter");
+        String pathSrc =
+            jnxTraceroute.traceroute(ingressRouter,
+                                     this.props.getProperty("destHost"));
         // should be at least one hop
         hops = jnxTraceroute.getRawHopData();
         System.out.println("RawHopData: " + hops);
         assert !hops.isEmpty();
     }
 
-    public void testHopData() {
-        String route = null;
+  @Test
+    public void testHopData() throws PathfinderException, IOException {
         List<String> hops = null;
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        try {
-            route = jnxTraceroute.traceroute( 
-                this.props.getProperty("srcHost"),
-                this.props.getProperty("dstHost"));
-        } catch (IOException e) {
-            fail("JnxTraceroute.traceroute: " + e.getMessage());
-        } catch (PathfinderException e) {
-            fail("JnxTraceroute.traceroute: " + e.getMessage());
-        }
-
+        String ingressRouter = this.props.getProperty("ingressRouter");
+        String pathSrc =
+            jnxTraceroute.traceroute(ingressRouter,
+                                     this.props.getProperty("destHost"));
         // should be at least one hop
         hops = jnxTraceroute.getHops();
         System.out.println("HopData: " + hops);

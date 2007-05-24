@@ -42,14 +42,14 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
         T entity;
         if (lock)
             entity = (T)
-                getSession().load(getPersistentClass(), id, LockMode.UPGRADE);
+                getSession().get(getPersistentClass(), id, LockMode.UPGRADE);
         else
-            entity = (T) getSession().load(getPersistentClass(), id);
+            entity = (T) getSession().get(getPersistentClass(), id);
 
         return entity;
     }
 
-    public List<T> findAll() { return findByCriteria(); }
+    public List<T> list() { return findByCriteria(); }
 
     public List<T> findByExample(T exampleInstance, String[] excludeProperty) {
         Criteria crit = getSession().createCriteria(getPersistentClass());
@@ -61,12 +61,16 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
         return crit.list();
     }
 
-    public T makePersistent(T entity) {
+    public void create(T entity) {
         getSession().saveOrUpdate(entity);
-        return entity;
     }
 
-    public void makeTransient(T entity) { getSession().delete(entity); }
+  @SuppressWarnings("unchecked")
+    public void update(T entity) {
+        getSession().saveOrUpdate(entity);
+    }
+
+    public void remove(T entity) { getSession().delete(entity); }
     public void flush() { getSession().flush(); }
     public void clear() { getSession().clear(); }
 

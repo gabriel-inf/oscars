@@ -6,6 +6,8 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
 
+import org.apache.log4j.*;
+
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.UserManager;
@@ -16,25 +18,43 @@ import net.es.oscars.bss.Reservation;
 
 public class AuthenticateUser extends HttpServlet {
 
+    // This is only called once, the first time this servlet is
+    // called.
+    public void init() throws ServletException {
+        Logger log = Logger.getLogger(this.getClass());
+        log.info("init.start");
+        Initializer initializer = new Initializer();
+        List<String> dbnames = new ArrayList<String>();
+        dbnames.add("aaa");
+        dbnames.add("bss");
+        initializer.initDatabase(dbnames);
+        log.info("init.end");
+    }
+
+    // This is only called once, when the server is brought down.
+    public void destroy() {
+        Logger log = Logger.getLogger(this.getClass());
+        log.info("destroy.start");
+        HibernateUtil.closeSessionFactory("aaa");
+        HibernateUtil.closeSessionFactory("bss");
+        log.info("destroy.end");
+    }
+
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
             throws IOException, ServletException {
 
-        ClassLoader OSCARSCL = null;
         PrintWriter out = null;
         List<Reservation> reservations = null;
-
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
 
         NavigationBar tabs = new NavigationBar();
         Map<String,String> tabParams = new HashMap<String,String>();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
-        UserManager mgr = new UserManager();
+        UserManager mgr = new UserManager("aaa");
         mgr.setSession();
         ListReservations lister = new ListReservations();
-        ReservationManager rm = new ReservationManager();
+        ReservationManager rm = new ReservationManager("bss");
         rm.setSession();
 
         out = response.getWriter();

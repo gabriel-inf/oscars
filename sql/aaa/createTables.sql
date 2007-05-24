@@ -66,3 +66,18 @@ CREATE TABLE IF NOT EXISTS authorizations (
     permissionId        INT NOT NULL,    -- foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
+
+CREATE TABLE IF NOT EXISTS attributes (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    name                TEXT NOT NULL,
+    userId              INT,             -- foreign key
+    PRIMARY KEY (id)
+) type=MyISAM;
+
+-- cross reference table
+CREATE TABLE IF NOT EXISTS userAttributes (
+    userId              INT NOT NULL,    -- foreign key
+    attributeId         INT NOT NULL,    -- foreign key
+    PRIMARY KEY (userId, attributeId)
+) type=MyISAM;
+

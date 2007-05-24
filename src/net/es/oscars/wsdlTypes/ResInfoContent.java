@@ -140,14 +140,14 @@
                         * field for StartTime
                         */
 
-                        protected java.util.Calendar localStartTime ;
+                        protected long localStartTime ;
                         
 
                            /**
                            * Auto generated getter method
-                           * @return java.util.Calendar
+                           * @return long
                            */
-                           public  java.util.Calendar getStartTime(){
+                           public  long getStartTime(){
                                return localStartTime;
                            }
 
@@ -157,7 +157,7 @@
                                * Auto generated setter method
                                * @param param StartTime
                                */
-                               public void setStartTime(java.util.Calendar param){
+                               public void setStartTime(long param){
                             
                                     this.localStartTime=param;
                             
@@ -169,14 +169,14 @@
                         * field for EndTime
                         */
 
-                        protected java.util.Calendar localEndTime ;
+                        protected long localEndTime ;
                         
 
                            /**
                            * Auto generated getter method
-                           * @return java.util.Calendar
+                           * @return long
                            */
-                           public  java.util.Calendar getEndTime(){
+                           public  long getEndTime(){
                                return localEndTime;
                            }
 
@@ -186,7 +186,7 @@
                                * Auto generated setter method
                                * @param param EndTime
                                */
-                               public void setEndTime(java.util.Calendar param){
+                               public void setEndTime(long param){
                             
                                     this.localEndTime=param;
                             
@@ -424,18 +424,7 @@
                                         xmlWriter.writeStartElement("startTime");
                                     }
                                 
-
-                                          if (localStartTime==null){
-                                              // write the nil attribute
-                                              
-                                                     throw new RuntimeException("startTime cannot be null!!");
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStartTime));
-                                            
-                                          }
+                                       xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStartTime));
                                     
                                    xmlWriter.writeEndElement();
                              
@@ -458,18 +447,7 @@
                                         xmlWriter.writeStartElement("endTime");
                                     }
                                 
-
-                                          if (localEndTime==null){
-                                              // write the nil attribute
-                                              
-                                                     throw new RuntimeException("endTime cannot be null!!");
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEndTime));
-                                            
-                                          }
+                                       xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEndTime));
                                     
                                    xmlWriter.writeEndElement();
                              
@@ -594,21 +572,15 @@
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                       "startTime"));
                             
-                                        if (localStartTime != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStartTime));
-                                        } else {
-                                           throw new RuntimeException("startTime cannot be null!!");
-                                        }
-                                    
+                                elementList.add(
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localStartTime));
+                            
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                       "endTime"));
                             
-                                        if (localEndTime != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEndTime));
-                                        } else {
-                                           throw new RuntimeException("endTime cannot be null!!");
-                                        }
-                                    
+                                elementList.add(
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEndTime));
+                            
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
             
@@ -752,7 +724,7 @@
                                     java.lang.String content = reader.getElementText();
                                     
                                               object.setStartTime(
-                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToDateTime(content));
+                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToLong(content));
                                               
                                         reader.next();
                                     
@@ -771,7 +743,7 @@
                                     java.lang.String content = reader.getElementText();
                                     
                                               object.setEndTime(
-                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToDateTime(content));
+                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToLong(content));
                                               
                                         reader.next();
                                     

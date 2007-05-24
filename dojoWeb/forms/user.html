@@ -1,0 +1,109 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <script type="text/javascript">
+        dojo.require("dojo.widget.Form");
+    </script>
+</head>
+
+<body>
+
+<p>Required fields are outlined in green.</p>
+<form id="userDetailsForm" method="POST" action="">
+    <input type="submit" name="userModify" value="Modify" />
+    <table>
+        <tbody>
+        <tr>
+            <td>Login Name</td>
+            <td>
+                <input class="required" type="text" name="profileName"
+                       size="40" value="" />
+            </td>
+        </tr>
+        <tr>
+        <td>Password (Enter twice)</td>
+        <td>
+            <input class="required" type="password" name="password" size="40" />
+            </td>
+        </tr>
+        <tr>
+            <td>Password Confirmation</td>
+            <td>
+                <input class="required" type="password"
+                       name="passwordConfirmation" size="40" />
+            </td>
+        </tr>
+        <tr>
+            <td>First Name</td>
+            <td>
+                <input class="required" type="text" name="firstName"
+                       size="40" value="" />
+            </td>
+        </tr>
+        <tr>
+            <td>Last Name</td>
+            <td>
+                <input class="required" type="text" name="lastName"
+                       size="40" value="" />
+            </td>
+        </tr>
+        <tr>
+
+        <td>Organization</td>
+        <!--
+        <td><select class="required" name="institutionName">
+        userInstitution = user.getInstitution()
+        userInstitution != null
+            institutionName = userInstitution.getName()
+        } else
+            institutionName = "Energy Sciences Network"
+        }
+        for (Institution i: insts)
+            <option value="i.getName()"
+            if (i.getName().equals(institutionName))
+                selected="selected"
+            > i.getName() </option>
+        }
+        </select>
+        </td>
+        -->
+        </tr>
+        <tr>
+            <td valign="top">Personal Description</td>
+            <td>
+                <input class="SOAP" type="text" name="description" size="40"
+                       value="" />
+            </td>
+        </tr>
+        <tr>
+            <td>E-mail (Primary)</td>
+            <td>
+                <input class="required" type="text" name="emailPrimary"
+                       size="40" value="" />
+            </td>
+        </tr>
+        <tr>
+            <td>E-mail (Secondary)</td>
+            <td>
+                <input class="SOAP" type="text" name="emailSecondary" size="40"
+                       value="" />
+            </td>
+        </tr>
+        <tr>
+            <td>Phone Number (Primary)</td>
+            <td>
+                <input class="required" type="text" name="phonePrimary"
+                       size="40" value="" />
+            </td>
+        </tr>
+        <tr>
+            <td>Phone Number (Secondary)</td>
+            <td>
+                <input class="SOAP" type="text" name="phoneSecondary" size="40"
+                       value="" />
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</form>
+</body>
+</html>

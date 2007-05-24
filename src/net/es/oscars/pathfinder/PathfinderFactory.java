@@ -16,13 +16,13 @@ public class PathfinderFactory {
      *
      * @return pathfinder An instance of a class implementing the PCE interface.
      */
-    public PCE createPathfinder(String pathMethod) {
+    public PCE createPathfinder(String pathMethod, String dbname) {
 
         // only two choices at the moment
         if (pathMethod.equals("traceroute")) {
-            return new TraceroutePathfinder();
+            return new TraceroutePathfinder(dbname);
         } else if (pathMethod.equals("narb")) {
-            return new NARBPathfinder();
+            return new NARBPathfinder(dbname);
         }
         return null;
     }

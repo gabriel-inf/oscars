@@ -8,4 +8,10 @@ import net.es.oscars.database.GenericHibernateDAO;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class PermissionDAO extends GenericHibernateDAO<Permission, Integer> { }
+public class PermissionDAO extends GenericHibernateDAO<Permission, Integer> {
+
+    public PermissionDAO(String dbname) {
+        this.setDatabase(dbname);
+    }
+
+}

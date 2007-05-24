@@ -1,14 +1,13 @@
 package net.es.oscars.bss;
 
 import org.testng.annotations.*;
-import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
+import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.pathfinder.*;
 
@@ -22,35 +21,30 @@ import net.es.oscars.pathfinder.*;
 public class ReservationManagerTest {
     private ReservationManager rm;
     private Properties props;
-    private Session session;
-    private ReservationDAO dao;
+    private SessionFactory sf;
+    private String dbname;
+    private TypeConverter tc;
 
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
-        this.rm = new ReservationManager();
-        this.dao = new ReservationDAO();
+        this.dbname = "bss";
+        this.sf = HibernateUtil.getSessionFactory(dbname);
+        this.rm = new ReservationManager(this.dbname);
+        this.tc = new TypeConverter();
     }
 
-  @BeforeMethod
-    protected void setUpMethod() {
-        this.rm.setSession();
-        this.session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao.setSession(this.session);
-        this.session.beginTransaction();
-    }
-        
-    public void testCreate() {
+  @Test
+    public void testCreate() throws BSSException {
         Reservation resv = new Reservation();
-        Domain nextDomain = null;
         Long millis = 0L;
         Long bandwidth = 0L;
+        String url = null;
         int id = -1;
 
+        this.sf.getCurrentSession().beginTransaction();
+        ReservationDAO dao = new ReservationDAO(this.dbname);
         resv.setSrcHost(this.props.getProperty("sourceHostName"));
         resv.setDestHost(this.props.getProperty("destHostName"));
 
@@ -73,83 +67,82 @@ public class ReservationManagerTest {
         String account = this.props.getProperty("login");
 
         try {
-            nextDomain = this.rm.create(resv, account, null, null, null);
-        } catch (BSSException e) {
-            this.session.getTransaction().rollback();
-            fail("testCreate failed: " + e.getMessage());
+            url = this.rm.create(resv, account, null, null, null);
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
         id = resv.getId();
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
     }
 
   @Test(dependsOnMethods={ "testCreate" })
-    public void testQuery() {
+    public void testQuery() throws BSSException {
         Reservation reservation = null;
 
+        this.sf.getCurrentSession().beginTransaction();
+        ReservationDAO dao = new ReservationDAO(this.dbname);
         String description = this.props.getProperty("description");
-        Reservation testResv = this.dao.queryByParam("description", description);
+        Reservation testResv = dao.queryByParam("description", description);
         try {
-            reservation = this.rm.query(this.rm.toTag(testResv), true);
-        } catch (BSSException e) {
-            this.session.getTransaction().rollback();
-            fail("testQuery failed: " + e.getMessage());
+            reservation = this.rm.query(this.tc.getReservationTag(testResv), true);
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
-        String testTag = this.rm.toTag(reservation);
-        String newTag = this.rm.toTag(testResv);
-        this.session.getTransaction().commit();
+        String testTag = this.tc.getReservationTag(reservation);
+        String newTag = this.tc.getReservationTag(testResv);
+        this.sf.getCurrentSession().getTransaction().commit();
         assert testTag.equals(newTag);
     }
 
   @Test(dependsOnMethods={ "testCreate" })
-    public void testAuthList() {
+    public void testAuthList() throws BSSException {
         List<Reservation> reservations = null;
 
+        this.sf.getCurrentSession().beginTransaction();
+        ReservationDAO dao = new ReservationDAO(this.dbname);
         try {
             reservations = this.rm.list(this.props.getProperty("login"), true);
         } catch (BSSException ex) {
-            this.session.getTransaction().rollback();
-            fail("Caught BSSException: " + ex.getMessage());
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !reservations.isEmpty();
     }
 
   @Test(dependsOnMethods={ "testCreate" })
-    public void testUserList() {
+    public void testUserList() throws BSSException {
         List<Reservation> reservations = null;
 
+        this.sf.getCurrentSession().beginTransaction();
+        ReservationDAO dao = new ReservationDAO(this.dbname);
         String login = this.props.getProperty("login");
         try {
             reservations = this.rm.list(login, false);
         } catch (BSSException ex) {
-            this.session.getTransaction().rollback();
-            fail("Caught BSSException: " + ex.getMessage());
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !reservations.isEmpty();
     }
 
   @Test(dependsOnMethods={ "testCreate" })
-    public void testCancel() {
+    public void testCancel() throws BSSException {
         List<Reservation> reservations = null;
 
+        this.sf.getCurrentSession().beginTransaction();
+        ReservationDAO dao = new ReservationDAO(this.dbname);
         String description = this.props.getProperty("description");
-        Reservation resv = this.dao.queryByParam("description", description);
+        Reservation resv = dao.queryByParam("description", description);
         try {
-            this.rm.cancel(this.rm.toTag(resv), resv.getLogin());
+            this.rm.cancel(this.tc.getReservationTag(resv), resv.getLogin());
         } catch (BSSException ex) {
-            this.session.getTransaction().rollback();
-            fail("testCancel failed: " + ex.getMessage());
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
-        this.session.getTransaction().commit();
-    }
-
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testPathToString() {
-        String description = this.props.getProperty("description");
-        Reservation resv = this.dao.queryByParam("description", description);
-        String pathString = this.rm.pathToString(resv, "host");
-        this.session.getTransaction().commit();
-        assert pathString != null;
+        this.sf.getCurrentSession().getTransaction().commit();
     }
 }

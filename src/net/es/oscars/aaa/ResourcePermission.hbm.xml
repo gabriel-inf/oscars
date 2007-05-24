@@ -21,7 +21,7 @@
         class="net.es.oscars.aaa.ResourcePermissionPK">
 
         <meta attribute="field-description" inherit="false">
-           @hibernate.id generator-class="increment"
+           @hibernate.id generator-class="identity"
         </meta>
 	<key-property name="resourceId" />
 	<key-property name="permissionId" />

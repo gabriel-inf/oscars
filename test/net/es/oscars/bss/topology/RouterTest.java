@@ -6,7 +6,6 @@ import java.util.*;
 import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -15,64 +14,57 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss/topology" })
+@Test(groups={ "bss/topology", "router" })
 public class RouterTest {
     private Properties props;
-    private Session session;
-    private RouterDAO dao;
+    private SessionFactory sf;
+    private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss", true);
-        this.dao = new RouterDAO();
+        this.props = propHandler.getPropertyGroup("test.bss.topology", true);
+        this.dbname = "bss";
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
-  @BeforeMethod
-    protected void setUpMethod() {
-        this.session =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao.setSession(this.session);
-        this.session.beginTransaction();
-    }
-
-    public void testCreate() {
+  @Test
+    public void routerCreate() {
+        this.sf.getCurrentSession().beginTransaction();
+        RouterDAO dao = new RouterDAO(this.dbname);
         Router router = new Router();
-        router.setValid(false);
+        router.setValid(true);
         router.setName(this.props.getProperty("routerName"));
-        this.dao.create(router);
-        this.session.getTransaction().commit();
+        dao.create(router);
+        this.sf.getCurrentSession().getTransaction().commit();
         assert router != null;
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testQuery() {
+  @Test(dependsOnMethods={ "routerCreate" })
+    public void routerQuery() {
+        this.sf.getCurrentSession().beginTransaction();
+        RouterDAO dao = new RouterDAO(this.dbname);
         String routerName = this.props.getProperty("routerName");
-        Router router = (Router) this.dao.queryByParam("name", routerName);
-        this.session.getTransaction().commit();
+        Router router = (Router) dao.queryByParam("name", routerName);
+        this.sf.getCurrentSession().getTransaction().commit();
         assert router != null;
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testList() {
-        List<Router> routers = this.dao.list();
+  @Test(dependsOnMethods={ "routerCreate" })
+    public void routerList() {
+        this.sf.getCurrentSession().beginTransaction();
+        RouterDAO dao = new RouterDAO(this.dbname);
+        List<Router> routers = dao.list();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !routers.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testFromIp() {
-        Router router = this.dao.fromIp(this.props.getProperty("ipaddrIP"));
-        this.session.getTransaction().commit();
+  @Test(dependsOnMethods={ "routerCreate" })
+    public void routerFromIp() {
+        this.sf.getCurrentSession().beginTransaction();
+        RouterDAO dao = new RouterDAO(this.dbname);
+        Router router = dao.fromIp(this.props.getProperty("routerIP"));
+        this.sf.getCurrentSession().getTransaction().commit();
         assert router != null;
-    }
-
-  @Test(dependsOnMethods={ "testCreate", "testQuery", "testList", "testFromIp" })
-    public void testRemove() {
-        String routerName = this.props.getProperty("routerName");
-        Router router = (Router) this.dao.queryByParam("name", routerName);
-        this.dao.remove(router);
-        this.session.getTransaction().commit();
     }
 }

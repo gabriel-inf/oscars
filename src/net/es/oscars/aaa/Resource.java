@@ -1,21 +1,18 @@
 package net.es.oscars.aaa;
 
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import net.es.oscars.BeanUtils;
 
 /**
  * Resource is adapted from an Middlegen class automatically generated 
  * from the schema for the aaa.resources table.
  */
-public class Resource implements Serializable {
+public class Resource extends BeanUtils implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4149;
-
-    /** identifier field */
-    private Integer id;
 
     /** persistent field */
     private String name;
@@ -28,17 +25,6 @@ public class Resource implements Serializable {
 
     /** default constructor */
     public Resource() { }
-
-    /**
-     * @return id An Integer with a resource table primary key
-     */ 
-    public Integer getId() { return this.id; }
-
-    /**
-     * @param id An Integer with a resource table primary key
-     */ 
-    public void setId(Integer id) { this.id = id; }
-
 
     /**
      * @return name A String with the name of this resource
@@ -76,25 +62,9 @@ public class Resource implements Serializable {
         this.updateTime = updateTime;
     }
 
-
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .toString();
     }
-
-    public boolean equals(Object other) {
-        if ( !(other instanceof Resource) ) return false;
-        Resource castOther = (Resource) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
-    }
-
 }

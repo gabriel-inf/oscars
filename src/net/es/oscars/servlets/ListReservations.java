@@ -8,6 +8,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
 
+import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
@@ -23,7 +24,7 @@ public class ListReservations extends HttpServlet {
 
         List<Reservation> reservations = null;
 
-        ReservationManager rm = new ReservationManager();
+        ReservationManager rm = new ReservationManager("bss");
         rm.setSession();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
@@ -66,7 +67,7 @@ public class ListReservations extends HttpServlet {
         List<Reservation> reservations = null;
         boolean authorized = false;
 
-        UserManager mgr = new UserManager();
+        UserManager mgr = new UserManager("aaa");
         mgr.setSession();
         if (mgr.verifyAuthorized(login, "Reservations", "manage")) {
             authorized = true;
@@ -86,6 +87,7 @@ public class ListReservations extends HttpServlet {
         contentSection(PrintWriter out, List<Reservation> reservations,
                        ReservationManager rm, String login) {
 
+        TypeConverter tc = new TypeConverter();
         InetAddress inetAddress = null;
         String tag = "";
         String srcHost = null;
@@ -108,7 +110,7 @@ public class ListReservations extends HttpServlet {
         out.println("<td>Origin</td><td>Destination</td>");
         out.println("</tr></thead> <tbody>");
         for (Reservation resv: reservations) {
-            tag = rm.toTag(resv);
+            tag = tc.getReservationTag(resv);
             out.println("<tr>");
             out.println("<td>");
             out.println("<a href='#' " +

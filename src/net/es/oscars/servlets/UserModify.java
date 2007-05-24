@@ -33,7 +33,7 @@ public class UserModify extends HttpServlet {
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
 
-        mgr = new UserManager();
+        mgr = new UserManager("aaa");
         mgr.setSession();
         String profileName = request.getParameter("profileName");
         Session aaa = 
@@ -48,10 +48,15 @@ public class UserModify extends HttpServlet {
             utils.handleFailure(out, msg, aaa, null);
         }
         this.convertParams(out, request, user);
+        String password = user.getPassword();
+        String confirmationPassword =
+            request.getParameter("passwordConfirmation");
 
         try {
-            mgr.update(user, user.getInstitution().getName(),
-                       request.getParameter("passwordConfirmation"));
+            // handle password modification if necessary
+            user.setPassword(
+                    this.checkPassword(password, confirmationPassword));
+            mgr.update(user);
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
@@ -79,10 +84,10 @@ public class UserModify extends HttpServlet {
 
         String strParam = null;
 
-        strParam = request.getParameter("certificate");
+        strParam = request.getParameter("certIssuer");
         // allow setting existent non-required field to null
-        if ((strParam != null) || (user.getCertificate() != null)) {
-            user.setCertificate(strParam);
+        if ((strParam != null) || (user.getCertIssuer() != null)) {
+            user.setCertIssuer(strParam);
         }
         strParam = request.getParameter("certSubject");
         if ((strParam != null) || (user.getCertSubject() != null)) {
@@ -114,5 +119,29 @@ public class UserModify extends HttpServlet {
         if ((strParam != null) || (user.getActivationKey() != null)) {
             user.setActivationKey(strParam);
         }
+    }
+
+    /**
+     * Checks for proper confirmation of password change. 
+     *
+     * @param password  A string with the desired password
+     * @param confirmationPassword  A string with the confirmation password
+     */
+    public String checkPassword(String password, String confirmationPassword)
+            throws AAAException {
+
+        // If the password needs to be updated, make sure there is a
+        // confirmation password, and that it matches the given password.
+        if ((password != null) && (!password.equals("")) &&
+                (!password.equals("********"))) {
+           if (confirmationPassword == null) {
+                throw new AAAException(
+                    "Cannot update password without confirmation password");
+            } else if (!confirmationPassword.equals(password)) {
+                throw new AAAException(
+                     "Password and password confirmation do not match");
+            }
+        }
+        return password;
     }
 }

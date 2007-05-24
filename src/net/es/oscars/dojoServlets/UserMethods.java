@@ -69,8 +69,7 @@ public class UserMethods {
         }
         this.convertParams(request, user);
 
-        this.mgr.update(user, user.getInstitution().getName(),
-                       request.getParameter("passwordConfirmation"));
+        this.mgr.update(user);
         institutions = this.mgr.getInstitutions();
         return null;
     }
@@ -98,10 +97,10 @@ public class UserMethods {
 
         String strParam = null;
 
-        strParam = request.getParameter("certificate");
+        strParam = request.getParameter("certIssuer");
         // allow setting existent non-required field to null
-        if ((strParam != null) || (user.getCertificate() != null)) {
-            user.setCertificate(strParam);
+        if ((strParam != null) || (user.getCertIssuer() != null)) {
+            user.setCertIssuer(strParam);
         }
         strParam = request.getParameter("certSubject");
         if ((strParam != null) || (user.getCertSubject() != null)) {
@@ -139,7 +138,7 @@ public class UserMethods {
 
         User user = new User();
         user.setLogin(userName);
-        user.setCertificate(request.getParameter("certificate"));
+        user.setCertIssuer(request.getParameter("certIssuer"));
         user.setCertSubject(request.getParameter("certSubject"));
         user.setLastName(request.getParameter("lastName"));
         user.setFirstName(request.getParameter("firstName"));

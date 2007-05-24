@@ -1,24 +1,25 @@
 package net.es.oscars.bss.topology;
 
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+
+import net.es.oscars.BeanUtils;
 
 /**
  * Ipaddr is adapted from a Middlegen class automatically generated 
- * from the schema for the topology.ipaddrs table.
+ * from the schema for the bss.ipaddrs table.
  */
-public class Ipaddr implements Serializable {
+public class Ipaddr extends BeanUtils implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
 
-    /** identifier field */
-    private Integer id;
+    /** persistent field */
+    private boolean valid;
 
     /** persistent field */
-    private String ip;
+    private String IP;
 
     /** nullable persistent field */
     private String description;
@@ -29,26 +30,27 @@ public class Ipaddr implements Serializable {
     /** default constructor */
     public Ipaddr() { }
 
-    /**
-     * @return id primary key in the ipaddrs table
-     */ 
-    public Integer getId() { return this.id; }
 
     /**
-     * @param id primary key in the ipaddrs table
+     * @return valid a boolean indicating whether this entry is still valid
      */ 
-    public void setId(Integer id) { this.id = id; }
+    public boolean isValid() { return this.valid; }
+
+    /**
+     * @param valid a boolean indicating whether this entry is still valid
+     */ 
+    public void setValid(boolean valid) { this.valid = valid; }
 
 
     /**
      * @return ip a string with the IP address
      */ 
-    public String getIp() { return this.ip; }
+    public String getIP() { return this.IP; }
 
     /**
      * @param ip a string with the IP address
      */ 
-    public void setIp(String ip) { this.ip = ip; }
+    public void setIP(String IP) { this.IP = IP; }
 
 
     /**
@@ -77,23 +79,34 @@ public class Ipaddr implements Serializable {
     }
 
 
+    // need to override superclass because dealing with transient
+    // instances as well
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        Class thisClass = getClass();
+        if (o == null || thisClass != o.getClass()) {
+            return false;
+        }
+        Ipaddr castOther = (Ipaddr) o;
+        // if one of these has been saved to the database
+        if ((this.getId() != null) ||
+            (castOther.getId() != null)) {
+            return new EqualsBuilder()
+                .append(this.getId(), castOther.getId())
+                .isEquals();
+        } else {
+            return new EqualsBuilder()
+                .append(this.isValid(), castOther.isValid())
+                .append(this.getIP(), castOther.getIP())
+                .append(this.getDescription(), castOther.getDescription())
+                .append(this.getInterface(), castOther.getInterface())
+                .isEquals();
+        }
+    }
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .toString();
-    }
-
-    public boolean equals(Object other) {
-        if ( !(other instanceof Ipaddr) ) return false;
-        Ipaddr castOther = (Ipaddr) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
     }
 }

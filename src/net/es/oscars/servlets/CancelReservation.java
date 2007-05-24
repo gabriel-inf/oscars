@@ -22,7 +22,7 @@ public class CancelReservation extends HttpServlet {
         Reservation reservation = null;
         String reply = null;
 
-        ReservationManager rm = new ReservationManager();
+        ReservationManager rm = new ReservationManager("bss");
         rm.setSession();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
@@ -38,8 +38,7 @@ public class CancelReservation extends HttpServlet {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = rm.cancel(tag, userName);
-            reservation = rm.query(tag, true);
+            reservation = rm.cancel(tag, userName);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;
@@ -47,7 +46,7 @@ public class CancelReservation extends HttpServlet {
         out.println("<xml>");
         out.println("<status>Successfully got reservation details</status>");
         utils.tabSection(out, request, response, "ListReservations");
-        detailsOutput.contentSection(out, reservation, rm, userName);
+        detailsOutput.contentSection(out, reservation, userName);
         out.println("</xml>");
         bss.getTransaction().commit();
     }

@@ -9,4 +9,9 @@ import net.es.oscars.database.GenericHibernateDAO;
  * @author David Robertson (dwrobertson@lbl.gov)
  */
 public class InstitutionDAO
-        extends GenericHibernateDAO<Institution, Integer> { }
+        extends GenericHibernateDAO<Institution, Integer> {
+
+    public InstitutionDAO(String dbname) {
+        this.setDatabase(dbname);
+    }
+}

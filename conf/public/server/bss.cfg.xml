@@ -17,8 +17,14 @@
         <property name="transaction.factory_class">
             org.hibernate.transaction.JDBCTransactionFactory</property>
         <property name="current_session_context_class">thread</property>
+
         <!-- connection pool section -->
-        <property name="connection.pool_size">1</property>
+        <property name="c3p0.min_size">5</property>
+        <property name="c3p0.max_size">20</property>
+	<property name="c3p0.timeout">300</property>
+	<property name="c3p0.max_statements">50</property>
+	<property name="c3p0.idle_test_period">3000</property>
+
         <!-- miscellaneous settings section -->
         <!-- enable batch updates even for versioned data -->
         <property name="jdbc.batch_versioned_data">true</property>
@@ -26,18 +32,18 @@
         <!-- use JDBC 3 PreparedStatement.getGeneratedKeys for id of row -->
         <property name="jdbc.use_get_generated_keys">true</property>
         <!-- set a prefix for cache region names -->
-	<property name="cache.region_prefix">hibernate.test</property>
+        <property name="cache.region_prefix">hibernate.test</property>
         <property name="cache.provider_class">
                   org.hibernate.cache.HashtableCacheProvider</property>
 
-        <mapping resource="net/es/oscars/pathfinder/Path.hbm.xml"/>
-        <mapping resource="net/es/oscars/pathfinder/Domain.hbm.xml"/>
-	<mapping resource="net/es/oscars/pathfinder/PeerIpaddr.hbm.xml"/>
 	<!-- <mapping resource="net/es/oscars/pathfinder/dragon/DragonLocalIdMap.hbm.xml"/> -->
         <mapping resource="net/es/oscars/bss/Reservation.hbm.xml"/>
-	<mapping resource="net/es/oscars/bss/ArchivedReservation.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Router.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Interface.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/Ipaddr.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Path.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/PathElem.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/Domain.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/PeerIpaddr.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>

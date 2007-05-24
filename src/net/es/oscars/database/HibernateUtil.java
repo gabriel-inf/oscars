@@ -8,12 +8,12 @@ import org.hibernate.cfg.*;
 import net.es.oscars.PropHandler;
 
 /**
- * HibernateUtil is adapted from the tutorial in the Hibernate 3.1
+ * HibernateUtil is adapted from the tutorial in the Hibernate 3.2
  * distribution.
- * Currently it maintains an array of session factories: one
- * for the aaa database, and one for the bss database.
+ * It maintains a hash map of session factories with one entry for each item
+ * in the list of db names given to initSessionFactories.
  *
- * @author (besides Hibernate developers) dwrobertson@lbl.gov
+ * @author (besides Hibernate developers) dwrobertson@lbl.gov, mrthompson@lbl.gov
  */
 public class HibernateUtil {
 
@@ -26,8 +26,10 @@ public class HibernateUtil {
      *     to set the classLoader in order for it to find the .xml files.
      *
      * @param CL classloader for the calling class
+     * @param list of db names to build session factories for
      */
-    public static void initSessionFactories(ClassLoader CL) {
+    public static void initSessionFactories(ClassLoader CL,
+                                            List<String> dbnames) {
         try {
             PropHandler propHandler = new PropHandler("oscars.properties");
             if (propHandler == null) {
@@ -41,19 +43,19 @@ public class HibernateUtil {
             
             ClassLoader clsave =
                     Thread.currentThread().getContextClassLoader();
-            //Thread.currentThread().setContextClassLoader(CL);
 
-            putSessionFactory("aaa",
-                    cfg.configure("aaa.cfg.xml").buildSessionFactory());
-            putSessionFactory("bss",
-                    cfg.configure("bss.cfg.xml").buildSessionFactory());
-            //Thread.currentThread().setContextClassLoader(clsave);
+            for (String dbname: dbnames) {
+                putSessionFactory(dbname,
+                    cfg.configure(dbname + ".cfg.xml").buildSessionFactory());
+            }
         } catch (Throwable ex) {
             throw new ExceptionInInitializerError(ex.getMessage());
         }
     }
 
     public static SessionFactory closeSessionFactory(String factoryName) {
+        SessionFactory sessionFactory = sessionFactories.get(factoryName);
+        sessionFactory.close();
         return sessionFactories.remove(factoryName);
     }
 

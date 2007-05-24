@@ -1,14 +1,12 @@
 package net.es.oscars.bss;
 
 import org.testng.annotations.*;
-import static org.testng.AssertJUnit.*;
 
 import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -20,49 +18,45 @@ import net.es.oscars.database.HibernateUtil;
 @Test(groups={ "bss" })
 public class SchedulerTest {
     private Properties props;
-    private Session session;
+    private SessionFactory sf;
+    private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.bss", true);
+        this.dbname = dbname;
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
-  @BeforeMethod
-    protected void setUpMethod() {
-        this.session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.session.beginTransaction();
-    }
-
-    public void testPendingReservations() {
+    public void testPendingReservations() throws BSSException {
         List<Reservation> reservations = null;
 
+        this.sf.getCurrentSession().beginTransaction();
         Integer timeInterval = Integer.valueOf(this.props.getProperty("timeInterval"));
-        Scheduler scheduler = new Scheduler();
+        Scheduler scheduler = new Scheduler(this.dbname);
         try {
             reservations = scheduler.pendingReservations(timeInterval);
-        } catch (BSSException e) {
-            this.session.getTransaction().rollback();
-            fail("SchedulerTest.pending: " + e.getMessage());
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
     }
 
-    public void testExpiredReservations() {
+    public void testExpiredReservations() throws BSSException {
         List<Reservation> reservations = null;
 
+        this.sf.getCurrentSession().beginTransaction();
         Integer timeInterval =
             Integer.valueOf(this.props.getProperty("timeInterval"));
-        Scheduler scheduler = new Scheduler();
+        Scheduler scheduler = new Scheduler(this.dbname);
         try {
             reservations = scheduler.expiredReservations(timeInterval);
-        } catch (BSSException e) {
-            this.session.getTransaction().rollback();
-            fail("SchedulerTest.expired: " + e.getMessage());
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
         }
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
     }
 }

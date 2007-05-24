@@ -18,9 +18,9 @@
 
     <id name="id">
         <meta attribute="field-description">
-           @hibernate.id generator-class="increment"
+           @hibernate.id generator-class="identity"
         </meta>
-        <generator class="increment" />
+        <generator class="identity" />
     </id>
 
     <property name="valid" not-null="true">
@@ -46,7 +46,7 @@
     <many-to-one name="router" column="routerId"
 	    class="net.es.oscars.bss.topology.Router" not-null="true" />
 
-    <set name="ipaddrs" inverse="true" cascade="all-delete-orphan">
+    <set name="ipaddrs" inverse="true" cascade="save-update">
         <key column="interfaceId" />
         <one-to-many class="net.es.oscars.bss.topology.Ipaddr" />
     </set>

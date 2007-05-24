@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+    
+<hibernate-mapping>
+<!-- 
+    Adapted from mapping created by the Middlegen Hibernate plugin 2.1.
+
+    http://boss.bekk.no/boss/middlegen/
+    http://www.hibernate.org/
+-->
+
+<class name="net.es.oscars.bss.topology.PathElem" table="pathElems">
+    <meta attribute="class-description" inherit="false">
+       @hibernate.class table="pathElems"
+    </meta>
+
+    <id name="id">
+        <meta attribute="field-description">
+           @hibernate.id generator-class="identity"
+        </meta>
+        <generator class="identity" />
+    </id>
+
+    <property name="loose" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <property name="description" />
+
+    <!-- Associations -->
+
+    <many-to-one name="ipaddr" column="ipaddrId"
+	    class="net.es.oscars.bss.topology.Ipaddr" not-null="true" />
+
+    <many-to-one name="nextElem" cascade="all" column="nextId" />
+
+</class>
+</hibernate-mapping>

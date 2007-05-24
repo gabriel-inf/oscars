@@ -1,27 +1,24 @@
 package net.es.oscars.aaa;
 
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import net.es.oscars.BeanUtils;
 
 /**
  * User is adapted from an Middlegen class automatically generated 
  * from the schema for the aaa.users table.
  */
-public class User implements Serializable {
+public class User extends BeanUtils implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4149;
-
-    /** identifier field */
-    private Integer id;
 
     /** persistent field */
     private String login;
 
     /** nullable persistent field */
-    private String certificate;
+    private String certIssuer;
 
     /** nullable persistent field */
     private String certSubject;
@@ -69,17 +66,6 @@ public class User implements Serializable {
     public User() { }
 
     /**
-     * @return id An Integer with a user table primary key
-     */ 
-    public Integer getId() { return this.id; }
-
-    /**
-     * @param id An Integer with a user table primary key
-     */ 
-    public void setId(Integer id) { this.id = id; }
-
-
-    /**
      * @return login A String with the user login name
      */ 
     public String getLogin() { return this.login; }
@@ -91,15 +77,15 @@ public class User implements Serializable {
 
 
     /**
-     * @return certificate A String with the certificate name
+     * @return certIssuer A String with the certificate issuer
      */ 
-    public String getCertificate() { return this.certificate; }
+    public String getCertIssuer() { return this.certIssuer; }
 
     /**
-     * @param certificate A String with the certificate name
+     * @param certIssuer A String with the certIssuer name
      */ 
-    public void setCertificate(String certificate) {
-        this.certificate = certificate;
+    public void setCertIssuer(String certIssuer) {
+        this.certIssuer = certIssuer;
     }
 
 
@@ -277,24 +263,9 @@ public class User implements Serializable {
         this.institution = institution;
     }
 
-
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .toString();
-    }
-
-    public boolean equals(Object other) {
-        if ( !(other instanceof User) ) return false;
-        User castOther = (User) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
     }
 }

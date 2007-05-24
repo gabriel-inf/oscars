@@ -92,49 +92,6 @@
                                }
                             
 
-                        /**
-                        * field for AvailableVtags
-                        */
-
-                        protected net.es.oscars.wsdlTypes.VtagList localAvailableVtags ;
-                        
-                           /*  This tracker boolean wil be used to detect whether the user called the set method
-                          *   for this attribute. It will be used to determine whether to include this field
-                           *   in the serialized XML
-                           */
-                           protected boolean localAvailableVtagsTracker = false ;
-                           
-
-                           /**
-                           * Auto generated getter method
-                           * @return net.es.oscars.wsdlTypes.VtagList
-                           */
-                           public  net.es.oscars.wsdlTypes.VtagList getAvailableVtags(){
-                               return localAvailableVtags;
-                           }
-
-                           
-                        
-                            /**
-                               * Auto generated setter method
-                               * @param param AvailableVtags
-                               */
-                               public void setAvailableVtags(net.es.oscars.wsdlTypes.VtagList param){
-                            
-                                       if (param != null){
-                                          //update the setting tracker
-                                          localAvailableVtagsTracker = true;
-                                       } else {
-                                          localAvailableVtagsTracker = false;
-                                              
-                                       }
-                                   
-                                    this.localAvailableVtags=param;
-                            
-
-                               }
-                            
-
      /**
      * isReaderMTOMAware
      * @return true if the reader supports MTOM
@@ -250,14 +207,7 @@
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             } if (localAvailableVtagsTracker){
-                                    if (localAvailableVtags==null){
-                                         throw new RuntimeException("availableVtags cannot be null!!");
-                                    }
-                                   localAvailableVtags.getOMDataSource(
-                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","availableVtags"),
-                                       factory).serialize(xmlWriter);
-                                }
+                             }
                    
                xmlWriter.writeEndElement();
             
@@ -357,16 +307,7 @@
                                         } else {
                                            throw new RuntimeException("vtag cannot be null!!");
                                         }
-                                    } if (localAvailableVtagsTracker){
-                            elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "availableVtags"));
-                            
-                            
-                                    if (localAvailableVtags==null){
-                                         throw new RuntimeException("availableVtags cannot be null!!");
                                     }
-                                    elementList.add(localAvailableVtags);
-                                }
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
             
@@ -452,17 +393,6 @@
                                               object.setVtag(
                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
                                               
-                                        reader.next();
-                                    
-                              }  // End of if for expected property start element
-                            
-                                    
-                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
-                                
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","availableVtags").equals(reader.getName())){
-                                
-                                        object.setAvailableVtags(net.es.oscars.wsdlTypes.VtagList.Factory.parse(reader));
-                                      
                                         reader.next();
                                     
                               }  // End of if for expected property start element

@@ -9,7 +9,6 @@ import org.hibernate.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
-import net.es.oscars.pathfinder.Domain;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.ExplicitPath;
@@ -19,11 +18,12 @@ public class ReservationMethods {
     private ReservationManager rm;
 
     public ReservationMethods() {
-        this.rm = new ReservationManager();
+        this.rm = new ReservationManager("bss");
     }
 
     public Reservation query(HttpServletRequest request)
             throws IOException, ServletException, BSSException {
+        //TODO may want to query the remote component, if any
 
         String tag = request.getParameter("tag");
         return this.rm.query(tag, true);
@@ -33,34 +33,33 @@ public class ReservationMethods {
             throws IOException, ServletException, BSSException,
               Exception {
 
-        Domain nextDomain = null;
-
+        Forwarder forwarder = new Forwarder();
+        
         Map<String,String> params = null;
         List<Map<String,String>> forwardResponse = null;
 
         Reservation resv = this.toReservation(request, userName);
         String ingressRouterIP = request.getParameter("ingressRouter");
         String egressRouterIP = request.getParameter("egressRouter");
-		
-		//TODO: Add support for new path element
-        nextDomain = this.rm.create(resv, userName, ingressRouterIP,
+        
+        //TODO: Add support for new path element
+        String url = this.rm.create(resv, userName, ingressRouterIP,
                                     egressRouterIP, null);
-        if (nextDomain != null) {
+        if (url != null) {
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
-            //Forwarder.create(resv, nextDomain);
+            forwarder.create(resv, null);
         }
     }
 
     public Reservation cancel(HttpServletRequest request, String userName)
-            throws IOException, ServletException, BSSException {
+            throws IOException, ServletException, BSSException, InterdomainException {
 
-        Reservation reservation = null;
-        String reply = null;
-
+        Forwarder forwarder = new Forwarder();
+        
         String tag = request.getParameter("tag");
-        reply = this.rm.cancel(tag, userName);
-        reservation = this.rm.query(tag, true);
+        Reservation reservation = this.rm.cancel(tag, userName);
+        String remoteStatus = forwarder.cancel(reservation);
         return reservation;
     }
 

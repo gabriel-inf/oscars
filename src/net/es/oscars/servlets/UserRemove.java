@@ -23,7 +23,7 @@ public class UserRemove extends HttpServlet {
 
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
-        UserManager mgr = new UserManager();
+        UserManager mgr = new UserManager("aaa");
         mgr.setSession();
         PrintWriter out = response.getWriter();
         response.setContentType("text/xml");

@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -19,37 +18,34 @@ import net.es.oscars.database.HibernateUtil;
 @Test(groups={ "aaa" })
 public class InstitutionTest {
     private Properties props;
-    private Session session;
-    private InstitutionDAO dao;
+    private SessionFactory sf;
+    private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-        this.dao = new InstitutionDAO();
+        this.dbname = "aaa";
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
 
-  @BeforeMethod
-    protected void setUpMethod() {
-        this.session =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.dao.setSession(this.session);
-        this.session.beginTransaction();
-    }
-
-    public void testQuery() {
+  @Test
+    public void institutionQuery() {
+        this.sf.getCurrentSession().beginTransaction();
+        InstitutionDAO dao = new InstitutionDAO(this.dbname);
         Institution institution = (Institution)
-            this.dao.queryByParam("name",
+            dao.queryByParam("name",
                              this.props.getProperty("institutionName"));
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert institution != null;
     }
 
-    public void testList() {
-        List<Institution> institutions = this.dao.findAll();
-        this.session.getTransaction().commit();
+  @Test
+    public void institutionList() {
+        this.sf.getCurrentSession().beginTransaction();
+        InstitutionDAO dao = new InstitutionDAO(this.dbname);
+        List<Institution> institutions = dao.list();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !institutions.isEmpty();
     }
 }

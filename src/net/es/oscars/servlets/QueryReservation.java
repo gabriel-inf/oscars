@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
@@ -19,7 +20,7 @@ public class QueryReservation extends HttpServlet {
             throws IOException, ServletException {
 
         Reservation reservation = null;
-        ReservationManager rm = new ReservationManager();
+        ReservationManager rm = new ReservationManager("bss");
         rm.setSession();
         ReservationDetails detailsOutput = new ReservationDetails();
         UserSession userSession = new UserSession();
@@ -40,11 +41,14 @@ public class QueryReservation extends HttpServlet {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;
         }
+        if (reservation == null) {
+            utils.handleFailure(out, "reservation does not exist", null, bss);
+        }
         detailsOutput = new ReservationDetails();
         out.println("<xml>");
         out.println("<status>Successfully got reservation details</status>");
         utils.tabSection(out, request, response, "ListReservations");
-        detailsOutput.contentSection(out, reservation, rm, userName);
+        detailsOutput.contentSection(out, reservation, userName);
         out.println("</xml>");
         bss.getTransaction().commit();
     }

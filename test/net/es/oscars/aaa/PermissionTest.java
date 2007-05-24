@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -19,36 +18,31 @@ import net.es.oscars.database.HibernateUtil;
 @Test(groups={ "aaa" })
 public class PermissionTest {
     private Properties props;
-    private Session session;
-    private PermissionDAO dao;
+    private SessionFactory sf;
+    private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-        this.dao = new PermissionDAO();
+        this.dbname = "aaa";
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
 
-  @BeforeMethod
-    protected void setUpMethod() {
-        this.session =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.dao.setSession(this.session);
-        this.session.beginTransaction();
-    }
-
-    public void testQuery() {
-        Permission permission = (Permission) this.dao.queryByParam("name",
+    public void permissionQuery() {
+        PermissionDAO dao = new PermissionDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        Permission permission = (Permission) dao.queryByParam("name",
                                     this.props.getProperty("permissionName"));
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert permission != null;
     }
 
-    public void testList() {
-        List<Permission> perms = this.dao.findAll();
-        this.session.getTransaction().commit();
+    public void permissionList() {
+        PermissionDAO dao = new PermissionDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        List<Permission> perms = dao.list();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !perms.isEmpty();
     }
 }

@@ -22,7 +22,7 @@ public class UserAdd extends HttpServlet {
 
         Session aaa;
         UserSession userSession = new UserSession();
-        UserManager mgr = new UserManager();
+        UserManager mgr = new UserManager("aaa");
         mgr.setSession();
         User newUser = null;
         Utils utils = new Utils();
@@ -65,7 +65,7 @@ public class UserAdd extends HttpServlet {
 
         User user = new User();
         user.setLogin(userName);
-        user.setCertificate(request.getParameter("certificate"));
+        user.setCertIssuer(request.getParameter("certIssuer"));
         user.setCertSubject(request.getParameter("certSubject"));
         user.setLastName(request.getParameter("lastName"));
         user.setFirstName(request.getParameter("firstName"));

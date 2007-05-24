@@ -5,35 +5,17 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import org.hibernate.*;
-import net.es.oscars.database.HibernateUtil;
+import org.apache.log4j.*;
 
-import net.es.oscars.LogWrapper;
 import net.es.oscars.bss.BSSException;
 
 public class TopologyFiles {
-    private LogWrapper log;
-    private Session session;
+    private Logger log;
     private List<Router> routersList;
-    private List<Interface> interfacesList;
-    private List<Ipaddr> ipaddrsList;
-    private Integer routerId;
-    private Integer interfaceId;
-    private Integer ipaddrId;
 
     public TopologyFiles() {
-        this.log = new LogWrapper(this.getClass());
+        this.log = Logger.getLogger(this.getClass());
         this.routersList = new ArrayList<Router>();
-        this.interfacesList = new ArrayList<Interface>();
-        this.ipaddrsList = new ArrayList<Ipaddr>();
-
-        this.routerId=1;
-        this.interfaceId=1;
-        this.ipaddrId=1;
-    }
-
-    public void setSession(Session session) {
-        this.session = session;
     }
 
     // construct what the db should look like based
@@ -56,12 +38,8 @@ public class TopologyFiles {
         for (String fname: dataFileList) {
             lastSnapshot = this.findLastSnapshot(dirName + "/" + fname);
             this.updateRouter(dirName, fname, lastSnapshot);
-            routerId++;
         }
-
-        System.out.println("\nFinished " + routerId + " files.");
-
-        return routersList;
+        return this.routersList;
     }
 
     /**
@@ -93,9 +71,6 @@ public class TopologyFiles {
 
         in = new BufferedReader(new FileReader(fname));
 
-        // System.out.println("working on file: " + fname);
-        System.out.print(".");
-
         while ((line = in.readLine()) != null) {
             matcher = pattern.matcher(line);
             if (matcher.matches()) { lastSnapshotLine = lineNumber; }
@@ -103,8 +78,10 @@ public class TopologyFiles {
         }
         in.close();
         // Increment past line containing "sysUpTimeInstance", and blank
-        // line.
-        lastSnapshotLine += 2;
+        // line, if there are any lines in the file.
+        if (lastSnapshotLine != -1) {
+            lastSnapshotLine += 2;
+        }
         return lastSnapshotLine;
     }
 
@@ -139,50 +116,44 @@ public class TopologyFiles {
             throws FileNotFoundException, IOException {
 
         Map<String,Interface> xfaces = new HashMap<String,Interface>();
-        Map<String,Ipaddr> ipaddrs = new HashMap<String,Ipaddr>();
         Interface xface = null;
-        Pattern pattern = null;
-        Pattern loopbackPattern = null;
         Matcher matcher = null;
-        Matcher loopbackMatcher = null;
-        BufferedReader in = null;
+        Matcher oscarsMatcher = null;
+        Matcher wanMatcher = null;
         String[] columns = null;
         String line = null;
         String varColumn = null;
         String dataString = null;
         String snmpVar = null;
         String snmpValue = null;
-        String mplsLoopback = null;
         Long speed = 0L;
         Long highSpeed = 0L;
         int lineNumber = 0;
         boolean valid = false;
 
-
-        Set<Interface> xface_set = new HashSet<Interface>();
-        Set<Ipaddr> ipaddr_set = new HashSet<Ipaddr>();
-
-        this.log.debug("updateRouter.start", "routerName: " + fname);
-        //System.out.println("updateRouter.start routerName: " + fname);
+        this.log.debug("updateRouter.start reading file: " + fname);
 
         Router router = new Router();
-        router.setInterfaces(xface_set);
-
-        /* setup */
         String rname = fname.substring(0,fname.length()-4);
         router.setName(rname);
-        router.setId(routerId);
+        // create set to hold interfaces
+        router.setInterfaces(new HashSet<Interface>());
+        this.routersList.add(router);
+
+        // if empty file
+        if (lastSnapshot == -1) {
+            this.log.debug("file for router " + rname + " is empty");
+            router.setValid(false);
+            return;
+        }
+
         router.setValid(true);
-        routersList.add(router);
+        Pattern pattern = Pattern.compile("([\\w]*)\\.{1}(.*)");
+        Pattern oscarsPattern = Pattern.compile("134\\.55\\.75\\..*");
+        Pattern wanPattern = Pattern.compile("134\\.55\\..*");
+        fname = dname + "/" + fname;     // construct the full path
 
-        pattern = Pattern.compile("([\\w]*)\\.{1}(.*)");
-        loopbackPattern = Pattern.compile("134\\.55\\.75\\..*");
-
-
-        // construct the full path
-        fname = dname + "/" + fname;
-
-        in = new BufferedReader(new FileReader(fname));
+        BufferedReader in = new BufferedReader(new FileReader(fname));
         // skip to last snapshot
         while (lineNumber < lastSnapshot) {
             in.readLine();
@@ -209,21 +180,14 @@ public class TopologyFiles {
             // note that sections are expected in thie order
             // TODO:  less fragile
 
-            //System.out.println("snmpVar == " + snmpVar);
-
             if (snmpVar.equals("ifDescr")) {
                 xface = new Interface();
-
                 xface.setDescription(dataString);
-                xfaces.put(snmpValue, xface);
-                interfacesList.add(xface);
-                // add to the routers list 
-                router.addInterface(xface);
-                xface.setId(interfaceId);
+                xface.setValid(true);
+                xface.setSnmpIndex(Integer.parseInt(snmpValue.trim()));
                 // create set to hold Ipaddrs
                 xface.setIpaddrs(new HashSet<Ipaddr>());
-                
-                interfaceId++;
+                xfaces.put(snmpValue, xface);
 
             } else if (snmpVar.equals("ifAlias")) {
                 xface = xfaces.get(snmpValue);
@@ -249,78 +213,30 @@ public class TopologyFiles {
                     xface.setSpeed(highSpeed * 1000000);
                 }
             } else if (snmpVar.equals("ipAdEntIfIndex")) {
-        
                 Ipaddr ipaddr = new Ipaddr();
-
                 xface = xfaces.get(dataString);
-                ipaddr.setInterface(xface);
 
-                loopbackMatcher = loopbackPattern.matcher(snmpValue);
-
-                //System.out.println("snmpvalue ["+snmpValue+"]");
-
-                if (loopbackMatcher.matches()) {
-                    //System.out.println("Setting loopback for " + snmpValue);
-                    mplsLoopback = snmpValue;
-                    ipaddr.setDescription("loopback");
+                oscarsMatcher = oscarsPattern.matcher(snmpValue);
+                if (oscarsMatcher.matches()) {
+                    ipaddr.setDescription("oscars-loopback");
+                } else {
+                    wanMatcher = wanPattern.matcher(snmpValue);
+                    if (wanMatcher.matches()) {
+                        ipaddr.setDescription("wan-loopback");
+                    }
                 }
-
-                ipaddrsList.add(ipaddr);
-                ipaddr.setId(ipaddrId);
-                ipaddr.setIp(snmpValue);
-
+                ipaddr.setIP(snmpValue);
+                ipaddr.setValid(true);
+                // add to the interface's set of ipaddrs
                 xface.addIpaddr(ipaddr);
-                ipaddrId++;
-                
             }
         }
-       in.close();
-       this.log.debug("updateRouter.finish","routerName: "+router.getName());
-    }
-
-    public void listInterfaces(Router router) {
-
-       System.out.println("Router: " + router.getName());
-
-       Set<Interface> ifaces = router.getInterfaces();
-       System.out.println("topologyFiles: number of xfaces is "+ifaces.size());
-
-        for ( Interface i: ifaces) {
-                System.out.println("    Interface: " + i.getDescription() + 
-                        "  (" + i.getId() + ")" );
-                Integer id = i.getId();
-                Set<Ipaddr> iplist = i.getIpaddrs();
-                for (Ipaddr ip : iplist) {
-                     System.out.println("       IP: " + ip.getIp()
-                             + " (" + ip.getId() + ")");
-                }
+        in.close();
+        // need to do here so equality check is better;
+        // set can't have duplicates
+        for (Interface xf: xfaces.values()) {
+            router.addInterface(xf);
         }
-    }
-
-    /*
-     * Finds the IPaddrID of the IP address
-     */
-    public Integer findIp(String ipString) {
-        
-        for (Ipaddr i: ipaddrsList ) {
-            String dbIp = i.getIp();
-            if ( 0 == ipString.compareTo(dbIp) ) {
-                return i.getId();
-            }
-        }
-        System.out.println("Not found: " + ipString);
-        return -1;
-    }
-
-    public Ipaddr getIpAddr(String ipString) {
-
-        for (Ipaddr i: ipaddrsList ) {
-            String dbIp = i.getIp();
-            if ( 0 == ipString.compareTo(dbIp) ) {
-                return i;
-            }
-        }
-        System.out.println("Not found: " + ipString);
-        return null;
+        this.log.debug("updateRouter.finish router: " + router.getName());
     }
 }

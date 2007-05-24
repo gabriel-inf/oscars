@@ -1,21 +1,18 @@
 package net.es.oscars.aaa;
 
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import net.es.oscars.BeanUtils;
 
 /**
  * Authorization is adapted from a Middlegen class automatically generated 
  * from the schema for the aaa.authorizations table.
  */
-public class Authorization implements Serializable {
+public class Authorization extends BeanUtils implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4149;
-
-    /** identifier field */
-    private Integer id;
 
     /** nullable persistent field */
     private String context;
@@ -34,17 +31,6 @@ public class Authorization implements Serializable {
 
     /** default constructor */
     public Authorization() { }
-
-    /**
-     * @return id An Integer containing the primary key
-     */ 
-    public Integer getId() { return this.id; }
-
-    /**
-     * @param id An Integer containing the primary key
-     */ 
-    public void setId(Integer id) { this.id = id; }
-
 
     /**
      * @return context A String corresponding to a currently unused field
@@ -106,24 +92,9 @@ public class Authorization implements Serializable {
         this.permissionId = permissionId;
     }
 
-
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .toString();
-    }
-
-    public boolean equals(Object other) {
-        if ( !(other instanceof Authorization) ) return false;
-        Authorization castOther = (Authorization) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
     }
 }

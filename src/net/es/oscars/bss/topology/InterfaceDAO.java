@@ -11,35 +11,15 @@ import net.es.oscars.database.GenericHibernateDAO;
  */
 public class InterfaceDAO extends GenericHibernateDAO<Interface, Integer> {
 
-    /**
-     * Inserts a row into the interfaces table.
-     *
-     * @param xface an Interface instance to be persisted
-     */
-    public void create(Interface xface) {
-        this.makePersistent(xface);
+    public InterfaceDAO(String dbname) {
+        this.setDatabase(dbname);
     }
 
-    /**
-     * List all interfaces.
-     *
-     * @return a list of interfaces
-     */
-    public List<Interface> list() {
-        List<Interface> xfaces = null;
-
-        String hsql = "from Interface";
-        xfaces = this.getSession().createQuery(hsql).list();
-        return xfaces;
+    public void invalidateAll() {
+        List<Interface> xfaces = this.list();
+        for (Interface xface: xfaces) {
+            xface.setValid(false);
+            this.update(xface);
+        }
     }
-
-    /**
-     * Deletes a row from the interfaces table.
-     *
-     * @param xface an Interface instance to remove from the database
-     */
-    public void remove(Interface xface) {
-        this.makeTransient(xface);
-    }
-
 }

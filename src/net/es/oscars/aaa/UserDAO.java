@@ -13,6 +13,10 @@ import net.es.oscars.database.GenericHibernateDAO;
  */
 public class UserDAO extends GenericHibernateDAO<User, Integer> {
 
+    public UserDAO(String dbname) {
+        this.setDatabase(dbname);
+    }
+
     /**
      * Finds a system user based on their login name.
      *
@@ -22,46 +26,6 @@ public class UserDAO extends GenericHibernateDAO<User, Integer> {
     public User query(String login) {
         User user = (User) this.queryByParam("login", login);
         return user;
-    }
-
-    /**
-     * Creates a system user by persisting information into the users table.
-     *
-     * @param user A user instance to persist
-     */
-    public void create(User user) {
-        this.makePersistent(user);
-    }
-
-    /**
-     * Removes a reservation system user.
-     *
-     * @param user A user instance to remove from the database
-     */
-    public void remove(User user) {
-        this.makeTransient(user);
-    }
-
-    /**
-     * List all users.
-     *
-     * @return A list of users
-     */
-    public List<User> list() {
-        List<User> users = null;
-
-        String hsql = "from User";
-        users = this.getSession().createQuery(hsql).list();
-        return users;
-    }
-
-    /**
-     * Persists requested modification to a user's profile.
-     *
-     * @param user A user instance with the modified parameters
-     */
-    public void update(User user) {
-        this.makePersistent(user);
     }
 
     /**

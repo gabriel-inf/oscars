@@ -4,10 +4,9 @@ import java.util.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import net.es.oscars.LogWrapper;
+import org.apache.log4j.*;
+
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.topology.Ipaddr;
-import net.es.oscars.wsdlTypes.ExplicitPath;
 
 
 /**
@@ -16,41 +15,65 @@ import net.es.oscars.wsdlTypes.ExplicitPath;
  * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
  */
 public class PCEManager {
-    private LogWrapper log;
+    private Logger log;
     private PCE pathfinder;
+    private String dbname;
 
-    public PCEManager() {
-        this.log = new LogWrapper(this.getClass());
+    public PCEManager(String dbname) {
+        this.log = Logger.getLogger(this.getClass());
+        this.dbname = dbname;
     }
 
     /**
      * Finds path from source to destination, taking into account ingress
-     *    and egress routers if specified by user.
+     * and egress routers if specified by user.
      *
      * @param srcHost string with address of source host
      * @param destHost string with address of destination host
      * @param ingressRouterIP string with address of ingress router, if any
      * @param egressRouterIP string with address of egress router, if any
-     * @return path A path instance
+     * @param reqPath CommonPath instance, may be null
+     * @return path a CommonPath instance
      * @throws PathfinderException
      */
-    public Path findPath(String srcHost, String destHost,
-                         String ingressRouterIP, String egressRouterIP, ExplicitPath reqPath)
+    public CommonPath findPath(String srcHost, String destHost,
+                         String ingressRouterIP, String egressRouterIP,
+                         CommonPath reqPath)
             throws PathfinderException {
 
-        List<String> hops;
-        Path path = null;
+        CommonPath path = null;
+        List<CommonPathElem> elems = null;
 
-        this.log.info("PCEManager.findPath", "start");
+        this.log.info("findPath.start");
+        if (reqPath != null) {
+             this.log.debug("findPath-reqPath not null: " + reqPath.toString());
+        }
         String pathMethod = this.getPathMethod();
-        this.log.info("PCEManager.method", pathMethod);
+        this.log.info("pathfinder method is " + pathMethod);
         if (pathMethod == null) { return null; }
-        this.pathfinder = new PathfinderFactory().createPathfinder(pathMethod);
-        path = this.pathfinder.findPath(srcHost, destHost,
-                                        ingressRouterIP, egressRouterIP, reqPath);
+        this.pathfinder = 
+            new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
+        if (reqPath == null) {
+            elems = this.pathfinder.findPath(srcHost, destHost,
+                                        ingressRouterIP, egressRouterIP);
+            path = new CommonPath();
+            path.setElems(elems);
+        } else {
+            elems = this.pathfinder.findPath(reqPath.getElems());
+            path = new CommonPath();
+            path.setVlanId(reqPath.getVlanId());
+            path.setElems(elems);
+        }
         return path;
     }
 
+    /**
+     * Does error checking to make sure method of pathfinding is set,
+     * and that it is set correctly.
+     *
+     * @return string with name of pathfinding component to use.
+     * @throws PathfinderException
+     */
     public String getPathMethod() throws PathfinderException {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("pathfinder", true);
@@ -72,86 +95,22 @@ public class PCEManager {
         return pathMethod;
     }
 
-    public String getNextHop() {
-        return this.pathfinder.getNextHop();
+    /**
+     * Gets next hop past this domain.
+     * Called only by bss.ReservationManager in its create method.
+     * @return string with next hop
+     */
+    public String nextExternalHop() {
+        return this.pathfinder.nextExternalHop();
     }
 
-    /**
-     * Given the starting path instance, returns a string representation.
+     /**
+     * Returns path that includes both local and interdomain hops
+     * Called by bss.ReservationManager.getCompletePath.
      *
-     * @param path a path instance
-     * @param retType a string, either "ip" or "host"
-     * @return string representation of the path
+     * @return path that includes both local and interdomain hops
      */
-    public String pathToString(Path path, String retType) {
-        StringBuilder sb = new StringBuilder();
-        InetAddress inetAddress = null;
-		
-        List<Ipaddr> ipaddrs = this.getIpaddrs(path);
-        if (retType.equals("host")) {
-            for (Ipaddr ipaddr: ipaddrs) {
-                try {
-                    inetAddress = inetAddress.getByName(ipaddr.getIp());
-                    sb.append(" " + inetAddress.getHostName());
-                } catch (UnknownHostException e) {
-                    sb.append(" " + ipaddr.getIp());
-                }
-            }
-        }
-        else { 
-            for (Ipaddr ipaddr: ipaddrs) {
-                sb.append(" " + ipaddr.getIp());
-            }
-        }
-        return sb.substring(1);
-    }
-
-    /**
-     * Gets list of addresses, with loopbacks if possible.
-     * @param path beginning path instance
-     * @return ipaddrs list of ipaddr instances
-     */
-    public List<Ipaddr> getIpaddrs(Path path) {
-
-        boolean ingressFound = false;
-        String addressType = null;
-
-        List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
-        while (path != null) {
-            addressType = path.getAddressType();
-            if (addressType == null) { addressType = ""; }
-            if (!ingressFound) {
-                if (addressType.equals("ingress")) { ingressFound = true; }
-            }
-            if (ingressFound) {
-                ipaddrs.add(path.getIpaddr());
-            }else{
-            	/* Fixes problem with servlet. Is addressType still used? */
-            	ipaddrs.add(path.getIpaddr());
-            }
-            if (addressType.equals("egress")) { break; }
-            path = (Path) path.getNextPath();
-        }
-        return ipaddrs;
-    }
-
-    /**
-     * Gets IP addresses of physical interfaces in path.
-     * @param path beginning path instance
-     * @return hops list of strings
-     */
-    public List<String> getHops(Path path) {
-
-        Ipaddr ipaddr = null;
-        boolean ingressFound = false;
-        String addressType = null;
-
-        List<String> hops = new ArrayList<String>();
-        while (path != null) {
-            ipaddr = path.getIpaddr();
-            hops.add(ipaddr.getIp());
-            path = (Path) path.getNextPath();
-        }
-        return hops;
+    public List<CommonPathElem> getCompletePath(){
+        return this.pathfinder.getCompletePath();
     }
 }

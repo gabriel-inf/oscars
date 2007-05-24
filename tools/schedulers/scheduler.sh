@@ -2,7 +2,6 @@
 
 # Jason Lee, David Robertson
 cwd=`pwd`
-echo $cwd
 progname="$0"
 curdir=`dirname "$progname"`
 
@@ -25,24 +24,9 @@ CLASSPATH=$CLASSPATH:../../build/WEB-INF/classes
 CLASSPATH=$CLASSPATH:.
 
 export CLASSPATH=$CLASSPATH
-echo CLASSPATH is $CLASSPATH
+#echo CLASSPATH is $CLASSPATH
 
-unset scheduler_debug
-
-# check for debug flag
-for arg in $* ; do 
-   case "${arg}" in
-   -d) echo "debug on" 
-       scheduler_debug=1
-      ;;
-   *) echo "Error: unknown arg to shell"
-      ;;
-   esac
-done
-
-mv -f ${CATALINA_HOME}/logs/scheduler.log ${CATALINA_HOME}/logs/scheduler.log.bak > /dev/null 2>&1
-# start up logging to file
 javac `pwd`/LSPScheduler.java
-java -Djava.net.preferIPv4Stack=true LSPScheduler $* > ${CATALINA_HOME}/logs/scheduler.log 2>&1
+java -Djava.net.preferIPv4Stack=true LSPScheduler $*
 
 exit 1

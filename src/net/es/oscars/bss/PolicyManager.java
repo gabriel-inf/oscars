@@ -1,15 +1,12 @@
 package net.es.oscars.bss;
 
 import java.util.*;
+import org.apache.log4j.*;
 
-import org.hibernate.*;
-import net.es.oscars.database.HibernateUtil;
-
-import net.es.oscars.*;
+import net.es.oscars.PropHandler;
+import net.es.oscars.pathfinder.CommonPathElem;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
-import net.es.oscars.pathfinder.Path;
-import net.es.oscars.pathfinder.PCEManager;
 
 /**
  * This class contains methods for handling reservation setup policy
@@ -17,28 +14,26 @@ import net.es.oscars.pathfinder.PCEManager;
  * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
  */
 public class PolicyManager {
-    private LogWrapper log;
-    private Session session;
+    private Logger log;
+    private String dbname;
 
-    public PolicyManager() {
-        this.log = new LogWrapper(this.getClass());
-    }
-
-    public void setSession(Session session) {
-        this.session = session;
+    public PolicyManager(String dbname) {
+        this.log = Logger.getLogger(this.getClass());
+        this.dbname = dbname;
     }
 
     /**
      * Checks whether adding this reservation would cause oversubscription
      *     on an interface.
      *
-     * @param currentPaths existing paths
-     * @param path path to check for oversubscription
+     * @param activeReservations existing reservations
+     * @param path a list of CommonPathElem's to check for oversubscription
      * @param bandwidth Long with the desired bandwidth
      * @throws BSSException
      */
-    public void checkOversubscribed(List<Path> currentPaths, Path path,
-                                    Long bandwidth)
+    public void checkOversubscribed(
+               List<Reservation> activeReservations, List<CommonPathElem> path,
+               Long bandwidth)
             throws BSSException {
 
         List<Ipaddr> ipaddrs = null;
@@ -47,16 +42,15 @@ public class PolicyManager {
         double maxUtilization = 0.0;
         double maxPercentUtilization = 0.0;
 
-        PCEManager pceMgr = new PCEManager();
-        ipaddrs = pceMgr.getIpaddrs(path);
+        ipaddrs = this.getIpaddrs(path);
         // initialize sums to requested bandwidth for each link in path
         for (Ipaddr ipaddr: ipaddrs) {
             ipaddrXface = ipaddr.getInterface();
             xfaceSums.put(ipaddrXface, bandwidth);
         }
-        for (Path currPath: currentPaths) {
-            ipaddrs = pceMgr.getIpaddrs(currPath);
-            this.addPathBandwidths(ipaddrs, xfaceSums);
+        for (Reservation resv: activeReservations) {
+            ipaddrs = this.getIpaddrs(resv.getPath());
+            this.addPathBandwidths(resv.getBandwidth(), ipaddrs, xfaceSums);
         }
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("reservation", true);
@@ -65,47 +59,80 @@ public class PolicyManager {
         // now for each of those interface instances
         for (Interface xface: xfaceSums.keySet()) {
             Long speed = xface.getSpeed();
-            if (speed == null) {
+            // speed will be 0 for ingress or egress router
+            if ((speed == null) || (speed == 0)) {
                 continue; 
             }
 
             maxUtilization = xface.getSpeed() * maxPercentUtilization;
             if (((Long)xfaceSums.get(xface)) > maxUtilization) {
                 throw new BSSException(
-                      "Router (" + xface.getId() + ") oversubscribed:  " + xfaceSums.get(xface) +
+                      "Router (" + xface.getRouter().getName() + ") oversubscribed:  " + xfaceSums.get(xface) +
                       " bps > " + maxUtilization + " bps");
             }
         }
     }
 
     /**
-     * For a given path, gets bandwidths associated with all valid interfaces,
-     *     that have an associated bandwidth (some do not).  Then add it to a
-     *     running sum of bandwidths for current circuits.
+     * Add a current reservation's bandwidth to a running total of all
+     * links that are in the requested path.
      *
-     * @param ipaddrs a list of ipaddr instances comprising the path
+     * @param bandwidth the bandwidth for an active or pending reservation
+     * @param ipaddrs a list of ipaddr instances in the reservation's path
      * @param xfaceSums a mapping from interfaces to the current sum of
      *                  bandwidths for all reservations utilizing that link
      * @throws BSSException
      */
-    public void addPathBandwidths(List<Ipaddr> ipaddrs,
+    public void addPathBandwidths(Long bandwidth, List<Ipaddr> ipaddrs,
                  Map<Interface,Long> xfaceSums) throws BSSException {
 
         Interface xface = null;
-        Long bandwidth = new Long(0);
 
         for (Ipaddr ipaddr: ipaddrs) {
             xface = ipaddr.getInterface();
             if (!xface.isValid() || (xface.getSpeed() <= 0)) {
                 continue;
             }
-            bandwidth = xface.getSpeed();
-            Long currentBandwidth = xfaceSums.get(xface);
-            if (currentBandwidth != null) {
-                xfaceSums.put(xface, currentBandwidth + bandwidth);
-            } else {
-                xfaceSums.put(xface, bandwidth);
+            // if not in xfaceSums, not part of requested path
+            Long totalBandwidth = xfaceSums.get(xface);
+            if (totalBandwidth != null) {
+                xfaceSums.put(xface, bandwidth + totalBandwidth);
             }
         }
+    }
+
+    /**
+     * Gets list of ipaddr instances given a start of a path.
+     *
+     * @param path start of a path to check
+     * @return ipaddrs list of ipaddr instances
+     */
+    private List<Ipaddr> getIpaddrs(Path path) {
+
+        List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
+        PathElem pathElem = path.getPathElem();
+        while (pathElem != null) {
+            ipaddrs.add(pathElem.getIpaddr());
+            pathElem = pathElem.getNextElem();
+        }
+        return ipaddrs;
+    }
+
+    /**
+     * Gets list of ipaddr instances given a list of common path elements.
+     *
+     * @param path list of elements
+     * @return ipaddrs list of ipaddr instances
+     */
+    private List<Ipaddr> getIpaddrs(List<CommonPathElem> path) {
+
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
+        // TODO:  error checking, assumes local
+        for (int i = 0; i < path.size(); i++) {
+            Ipaddr ipaddr = ipaddrDAO.getIpaddr(path.get(i).getIP(), true);
+            ipaddrs.add(ipaddr);
+        }
+        return ipaddrs;
     }
 }

@@ -48,7 +48,7 @@ public class CreateReservationForm extends HttpServlet {
         contentSection(PrintWriter out, HttpServletRequest request,
                        String userName) {
 
-        UserManager mgr = new UserManager();
+        UserManager mgr = new UserManager("aaa");
         mgr.setSession();
         out.println("<content>");
         out.println("<form method='post' action='' onsubmit=\"" +
@@ -98,7 +98,7 @@ public class CreateReservationForm extends HttpServlet {
         out.println("<input type='text' class='SOAP' name='bandwidth' maxlength='7' size='40'>");
         out.println("</input>");
         out.println("</td>");
-        out.println("<td>(10-10000)</td></tr>");
+        out.println("<td>(10-5000)</td></tr>");
         out.println("<tr><td>Protocol</td>");
         out.println("<td><input type='text' class='SOAP' name='protocol' size='40'></input></td>");
         out.println("<td>(0-255, or string)</td></tr>");

@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -19,38 +18,33 @@ import net.es.oscars.database.HibernateUtil;
 @Test(groups={ "aaa" })
 public class ResourceTest {
     private Properties props;
-    private Session session;
-    private ResourceDAO dao;
+    private SessionFactory sf;
+    private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-        this.dao = new ResourceDAO();
+        this.dbname = "aaa";
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
-  @BeforeMethod
-    protected void setUpMethod() {
-        this.session =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.dao.setSession(this.session);
-        this.session.beginTransaction();
-    }
-
-    public void testQuery() {
+    public void resourceQuery() {
         String rname = "Users";
 
-        Resource resource = (Resource) this.dao.queryByParam("name",
+        ResourceDAO dao = new ResourceDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        Resource resource = (Resource) dao.queryByParam("name",
                                      this.props.getProperty("resourceName"));
-        this.session.getTransaction().commit();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert resource != null;
     }
 
-    public void testList() {
-        List<Resource> resources = this.dao.findAll();
-        this.session.getTransaction().commit();
+    public void resourceList() {
+        ResourceDAO dao = new ResourceDAO(this.dbname);
+        this.sf.getCurrentSession().beginTransaction();
+        List<Resource> resources = dao.list();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !resources.isEmpty();
     }
 }

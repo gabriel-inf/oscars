@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.*;
 
 import net.es.oscars.*;
 import net.es.oscars.pathfinder.PathfinderException;
@@ -18,7 +19,7 @@ public class JnxTraceroute {
     private ArrayList<String> rawHopData;
     private ArrayList<String> hops;
     private Properties props;
-    private LogWrapper log;
+    private Logger log;
 
     /**
      * Contructor for JnxTraceroute.
@@ -26,7 +27,7 @@ public class JnxTraceroute {
     public JnxTraceroute() {
         this.rawHopData = new ArrayList<String>();
         this.hops = new ArrayList<String>();
-        this.log = new LogWrapper(this.getClass());
+        this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("traceroute", true);
     }
@@ -49,9 +50,8 @@ public class JnxTraceroute {
         Pattern errPattern = Pattern.compile(".*Operation timed out.*");
 
         if ((src == null) || (dst == null)) {
-            throw new PathfinderException("Traceroute source or destination not defined");
-        } else if(src.equals("default")) {
-            src = this.props.getProperty("jnxSource");
+            throw new PathfinderException(
+                    "Traceroute source or destination not defined");
         }
 
         // remove subnet mask if necessary,  e.g. 10.0.0.0/8 => 10.0.0.0
@@ -61,12 +61,13 @@ public class JnxTraceroute {
 
         // prepare traceroute command
         cmd = "ssh -x -a -i " + jnxKey + " -l " + 
-                   this.props.getProperty("jnxUser") + " " + src + " traceroute " + dst + 
+                   this.props.getProperty("jnxUser") + " " + src +
+                   " traceroute " + dst + 
                    " wait " + this.props.getProperty("timeout") +
                    " ttl " + this.props.getProperty("ttl");
         //cmd = "traceroute " + dst;
 
-        this.log.info("traceroute", cmd);
+        this.log.info("traceroute: " + cmd);
         // run traceroute command
         Process p = Runtime.getRuntime().exec(cmd);
         BufferedReader tracerouteOuput = 
@@ -78,7 +79,7 @@ public class JnxTraceroute {
         String errInfo = tracerouteError.readLine();
         if (errInfo != null )
         {
-        	this.log.warn("error stream is: ", errInfo );
+        	this.log.warn("error stream: " + errInfo );
         	if ( errPattern.matcher(errInfo).matches())
         	{
                 tracerouteOuput.close();
@@ -89,7 +90,7 @@ public class JnxTraceroute {
     	
         // parse the results
         while ((hopInfo = tracerouteOuput.readLine()) != null) {
-        	this.log.debug("hopinfo is ",hopInfo);
+        	this.log.debug("hop: " + hopInfo);
        
             this.rawHopData.add(hopInfo);
 

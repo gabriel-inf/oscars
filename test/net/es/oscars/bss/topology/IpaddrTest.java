@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.hibernate.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -16,79 +15,65 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss/topology" })
+@Test(groups={ "bss/topology", "ipaddr" }, dependsOnGroups={ "interface" })
 public class IpaddrTest {
     private Properties props;
-    private Session session;
-    private IpaddrDAO dao;
+    private SessionFactory sf;
+    private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        Initializer initializer = new Initializer();
-        initializer.initDatabase();
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss", true);
-        this.dao = new IpaddrDAO();
+        this.props = propHandler.getPropertyGroup("test.bss.topology", true);
+        this.dbname = "bss";
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
 
-  @BeforeMethod
-    protected void setUpMethod() {
-        this.session =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        this.dao.setSession(this.session);
-        this.session.beginTransaction();
-    }
-        
-    public void testCreate() {
+    public void ipaddrCreate() {
+        this.sf.getCurrentSession().beginTransaction();
+        IpaddrDAO dao = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = new Ipaddr();
-        ipaddr.setIp(this.props.getProperty("ipaddrIP"));
+        ipaddr.setValid(true);
+        ipaddr.setIP(this.props.getProperty("routerIP"));
         ipaddr.setDescription(this.props.getProperty("ipaddrDescription"));
-
-        InterfaceDAO xfaceDAO = new InterfaceDAO();
-        xfaceDAO.setSession(this.session);
+        InterfaceDAO xfaceDAO = new InterfaceDAO(this.dbname);
         String xfaceDescription = this.props.getProperty("xfaceDescription");
         Interface xface = (Interface)
             xfaceDAO.queryByParam("description", xfaceDescription);
         ipaddr.setInterface(xface);
-
-        this.dao.create(ipaddr);
-        this.session.getTransaction().commit();
+        dao.create(ipaddr);
+        this.sf.getCurrentSession().getTransaction().commit();
         assert ipaddr != null;
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testQuery() {
+  @Test(dependsOnMethods={ "ipaddrCreate" })
+    public void ipaddrQuery() {
+        this.sf.getCurrentSession().beginTransaction();
+        IpaddrDAO dao = new IpaddrDAO(this.dbname);
         String description = this.props.getProperty("ipaddrDescription");
         Ipaddr ipaddr = 
-            (Ipaddr) this.dao.queryByParam("description", description);
-        this.session.getTransaction().commit();
+            (Ipaddr) dao.queryByParam("description", description);
+        this.sf.getCurrentSession().getTransaction().commit();
         assert ipaddr != null;
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testList() {
-        List<Ipaddr> ipaddrs = this.dao.list();
-        this.session.getTransaction().commit();
+  @Test(dependsOnMethods={ "ipaddrCreate" })
+    public void ipaddrList() {
+        this.sf.getCurrentSession().beginTransaction();
+        IpaddrDAO dao = new IpaddrDAO(this.dbname);
+        List<Ipaddr> ipaddrs = dao.list();
+        this.sf.getCurrentSession().getTransaction().commit();
         assert !ipaddrs.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testGetIpType() {
+  @Test(dependsOnMethods={ "ipaddrCreate" })
+    public void ipaddrGetIpType() {
+        this.sf.getCurrentSession().beginTransaction();
+        IpaddrDAO dao = new IpaddrDAO(this.dbname);
         String ipType =
-            this.dao.getIpType(this.props.getProperty("routerName"),
-                               "ingress");
-        this.session.getTransaction().commit();
+            dao.getIpType(this.props.getProperty("routerName"),
+                          this.props.getProperty("ipaddrDescription"));
+        this.sf.getCurrentSession().getTransaction().commit();
         assert ipType != null;
-    }
-
-  @Test(dependsOnMethods={ "testCreate", "testQuery", "testList", "testGetIpType" })
-    public void testCascadingDelete() {
-        String description = this.props.getProperty("ipaddrDescription");
-        Ipaddr ipaddr =
-            (Ipaddr) this.dao.queryByParam("description", description);
-        this.session.getTransaction().commit();
-        // if cascading delete works with router testRemove, this will
-        // be null
-        assert ipaddr == null;
     }
 }

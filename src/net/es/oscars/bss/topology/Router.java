@@ -2,21 +2,18 @@ package net.es.oscars.bss.topology;
 
 import java.util.Set;
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import net.es.oscars.BeanUtils;
 
 /**
  * Router is adapted from a Middlegen class automatically generated 
- * from the schema for the topology.routers table.
+ * from the schema for the bss.routers table.
  */
-public class Router implements Serializable {
+public class Router extends BeanUtils implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
-
-    /** identifier field */
-    private Integer id;
 
     /** persistent field */
     private boolean valid;
@@ -28,17 +25,6 @@ public class Router implements Serializable {
 
     /** default constructor */
     public Router() { }
-
-    /**
-     * @return id primary key in the routers table
-     */ 
-    public Integer getId() { return this.id; }
-
-    /**
-     * @param id primary key in the routers table
-     */ 
-    public void setId(Integer id) { this.id = id; }
-
 
     /**
      * @return valid a boolean indicating whether this entry is still valid
@@ -61,6 +47,7 @@ public class Router implements Serializable {
      */ 
     public void setName(String name) { this.name = name; }
 
+
     public void setInterfaces(Set xfaces) {
         this.xfaces = xfaces;
     }
@@ -74,23 +61,10 @@ public class Router implements Serializable {
         this.xfaces.add(xface);
     }
 
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
             .toString();
-    }
-
-    public boolean equals(Object other) {
-        if ( !(other instanceof Router) ) return false;
-        Router castOther = (Router) other;
-        return new EqualsBuilder()
-            .append(this.getId(), castOther.getId())
-            .isEquals();
-    }
-
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(getId())
-            .toHashCode();
     }
 }

@@ -1,10 +1,9 @@
 /*
 validator.js:      Javascript functions for form validation
-Last modified:  November 8, 2006
+Last modified:  February 27, 2007
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
-
 
 /* List of functions:
 checkForRequired(form, required)
@@ -79,18 +78,18 @@ function checkReservation( form ) {
     if (!valid) { return false; }
 
     if (!(isNumeric(form.bandwidth.value))) {
-        alert( "The bandwidth must be a positive integer." );
+        alert( "The bandwidth entered is " + form.bandwidth.value + ".  It must be a positive integer." );
         form.bandwidth.focus();
         return false;
     }
     else if ( (form.bandwidth.value < 1 ) || (form.bandwidth.value > 10000)) {
-        alert( "The amount of bandwidth must be in the range 1-10000 Mbps." );
+        alert( "The bandwidth entered is " + form.bandwidth.value + ".  It must be in the range 1-10000 Mbps." );
         form.bandwidth.focus();
         return false;
     }
 
     if ( form.srcHost.value == form.destHost.value ) {
-        alert( "Please provide different host names or IP addresses for the source and destination." );
+        alert( "The host names or IP addresses for the source and destination cannot be the same." );
         form.srcHost.focus();
         return false;
     }
@@ -111,38 +110,38 @@ function checkReservation( form ) {
     // check non-required fields if a value has been entered
     if ( !isBlank(form.srcPort.value) ) {
         if (!(isNumeric(form.srcPort.value))) {
-            alert( "The source port must be a positive integer." );
+            alert( "The source port entered is " + form.srcPort.value + ".  It must be a positive integer." );
             form.srcPort.focus();
             return false;
         }
         else if ( (form.srcPort.value < 1024) ||
                 (form.srcPort.value > 65535) ) {
-            alert( "The source port, if given, must be in the range 1024-65535." );
+            alert( "The source port entered is " + form.srcPort.value + ".  It must be in the range 1024-65535." );
             form.srcPort.focus();
             return false;
         }
     }
     if ( !isBlank(form.destPort.value) ) {
         if (!(isNumeric(form.destPort.value))) {
-            alert( "The destination port must be a positive integer." );
+            alert( "The destination port entered is " + form.srcPort.value + ".  It must be a positive integer." );
             form.destPort.focus();
             return false;
         }
         else if ( (form.destPort.value < 1024) ||
                 (form.destPort.value > 65535) ) {
-            alert( "The destination port, if given, must be in the range 1024-65535." );
+            alert( "The destination port entered is " + form.srcPort.value + ".  It must be in the range 1024-65535." );
             form.destPort.focus();
             return false;
         }
     }
     if ( !isBlank(form.dscp.value) ) {
         if (!(isNumeric(form.dscp.value))) {
-            alert( "The DSCP must be a positive integer." );
+            alert( "The DSCP entered is " + form.dscp.value + ".  It must be a positive integer." );
             form.dscp.focus();
             return false;
         }
         else if ( (form.dscp.value < 0) || (form.dscp.value > 63) ) {
-            alert( "The DSCP, if given, must be in the range 0-63." );
+            alert( "The DSCP entered is " + form.dscp.value + ".  It must be in the range 0-63." );
             form.dscp.focus();
             return false;
         }
@@ -153,56 +152,42 @@ function checkReservation( form ) {
 
 // Reference: http://javascript.internet.com/forms/val-date.html
 function checkDateFields(form) {
-    var defaultYear = 0;
-    var defaultMonth = 0;
-    var defaultDate = 0;
-    var defaultHour = 0;
-    var defaultMinute = 0;
     var durationMilliseconds = 240000;
 
     var localDate = new Date();
     if ( isBlank(form.startYear.value) ) {
         form.startYear.value = localDate.getFullYear();
-        defaultYear = 1;
     }
     else {
         if (!(isNumeric(form.startYear.value))) {
-            alert("The reservation start year is not a number. Please check again.");
+            alert("The start year entered is " + form.startYear.value + ".  This is not a number.");
             form.startYear.focus();
             return false;
         }
         if ( form.startYear.value.length != 4 ) {
-            alert("The reservation start year must be in four digits.");
+            alert("The start year entered is " + form.startYear.value + ".  It must be four digits, e.g. 2007.");
             form.startYear.focus();
             return false;
         }
     }
 
     if ( isBlank(form.startMonth.value) ) {
-        form.startMonth.value = parseInt(localDate.getMonth());
-        defaultMonth = 1;
+        form.startMonth.value = localDate.getMonth();
     }
     else {
-        if ( !(isNumeric(form.startMonth.value))) {
-            alert("The reservation start month is not a number. Please check again.");
-            form.startMonth.focus();
-            return false;
-        }
-        form.startMonth.value = parseInt(form.startMonth.value);
-        if ( form.startMonth.value < 1 || form.startMonth.value > 12 ) {
-            alert("The reservation start month " + form.startMonth.value + "is out of proper range. Please check again.");
-            form.startMonth.focus();
+        if (!(isNumeric(form.startMonth.value))) {
+            alert("The start month entered is " + form.startMonth.value + ".  This is not a number.");
+            form.startDate.focus();
             return false;
         }
     }
 
     if ( isBlank(form.startDate.value) ) {
         form.startDate.value = localDate.getDate();
-        defaultDate = 1;
     }
     else {
         if (!(isNumeric(form.startDate.value))) {
-            alert("The reservation start date is not a number. Please check again.");
+            alert("The start date entered is " + form.startDate.value + ".  This is not a number.");
             form.startDate.focus();
             return false;
         }
@@ -210,16 +195,15 @@ function checkDateFields(form) {
 
     if ( isBlank(form.startHour.value) ) {
         form.startHour.value = localDate.getHours();
-        defaultHour = 1;
     }
     else {
         if (!(isNumeric(form.startHour.value))) {
-            alert("The reservation start hour is not a number. Please check again.");
+            alert("The start hour entered is " + form.startHour.value + ".  This is not a number.");
             form.startHour.focus();
             return false;
         }
         if ( form.startHour.value < 0 || form.startHour.value > 23 ) {
-            alert("The reservation start hour is out of proper range. Please check again.");
+            alert("The start hour entered is " + form.startHour.value + ".  It must be between 0 and 23, inclusive.");
             form.startHour.focus();
             return false;
         }
@@ -227,66 +211,54 @@ function checkDateFields(form) {
 
     if ( isBlank(form.startMinute.value) ) {
         form.startMinute.value = localDate.getMinutes();
-        defaultMinute = 1;
     }
 
     if ( !isBlank(form.durationHour.value) ) {
         if (!(isNumeric(form.durationHour.value))) {
-            alert("The reservation duration hour is not a number. Please check again.");
+            alert("The duration hour entered is " + form.durationHour.value + ".  This is not a number.");
             form.durationHour.focus();
             return false;
         }
         durationMilliseconds = form.durationHour.value * 3600000;
     }
 
-    if (!defaultMonth || !defaultDate) {
-        if ( ( form.startMonth.value == 1 || form.startMonth.value == 3 || 
-              form.startMonth.value == 5 || form.startMonth.value == 7 || 
-              form.startMonth.value == 8 || form.startMonth.value == 10 || 
-              form.startMonth.value == 12 ) && ( form.startDate.value > 31 || 
-               form.startDate.value < 1 ) )
-        {
-            alert("The reservation start date is out of proper range. Please check again.");
-            form.startDate.focus();
-            return false;
-        }
-
-        if ( ( form.startMonth.value == 4 || form.startMonth.value == 6 || 
-               form.startMonth.value == 9 || form.startMonth.value == 11 ) && 
-             ( form.startDate.value > 30 || form.startDate.value < 1 ) )
-        {
-            alert("The reservation start date is out of proper range. Please check again.");
-            form.startDate.focus();
-            return false;
-        }
-
-        if ( form.startMonth.value == 2 ) {
-            if ( form.startDate.value < 1 ) {
-                alert("The reservation start date is out of proper range. Please check again.");
-                form.startDate.focus();
-                return false;
-            }
-        }
+    // TODO:  menu so months are always in proper range
+    if ( ( form.startMonth.value == 0 || form.startMonth.value == 2 || 
+           form.startMonth.value == 4 || form.startMonth.value == 6 || 
+           form.startMonth.value == 7 || form.startMonth.value == 9 || 
+           form.startMonth.value == 11 ) && ( form.startDate.value > 31 ) )
+    {
+        alert("For the month, " + form.startMonth.value + ", the date must be less than 32.");
+        form.startDate.focus();
+        return false;
     }
-    if (!defaultYear || !defaultDate) {
-        if ( isLeapYear(form.startYear.value) ) {
+
+    if ( ( form.startMonth.value == 3 || form.startMonth.value == 5 || 
+           form.startMonth.value == 8 || form.startMonth.value == 10 ) && 
+         ( form.startDate.value > 30 ) )
+    {
+        alert("For the month, " + form.startMonth.value + ", the date must be less than 31.");
+        form.startDate.focus();
+        return false;
+    }
+
+    if ( form.startMonth.value == 1) {
+        if (isLeapYear( form.startYear.value )) {
             if ( form.startDate.value > 29 ) {
-                alert("The reservation start date is out of proper range. Please check again.");
+                alert("For the month of February in a leap year, the date must be less than 30.");
                 form.startDate.focus();
                 return false;
             }
         }
-        else {
-            if ( form.startDate.value > 28 ) {
-                alert("The reservation start date is out of proper range. Please check again.");
-                form.startDate.focus();
-                return false;
-            }
+        else if (form.startDate.value > 28) {
+            alert("For the month of February in a non-leap year, the date must be less than 29.");
+            form.startDate.focus();
+            return false;
         }
     }
-   reservationDate = new Date(form.startYear.value, form.startMonth.value,
-                                form.startDate.value, form.startHour.value,
-                                form.startMinute.value, 0, 0);
+    reservationDate = new Date(form.startYear.value, form.startMonth.value,
+                               form.startDate.value, form.startHour.value,
+                               form.startMinute.value, 0, 0);
     // convert local time to milliseconds since epoch
     var startTime = reservationDate.getTime();
 
@@ -297,8 +269,6 @@ function checkDateFields(form) {
     var endTime = startTime + durationMilliseconds;
     form.startTime.value = startTime;
     form.endTime.value = endTime;
-    // for human (as opposed to Javascript) consumption
-    form.startMonth.value = parseInt(form.startMonth.value) + 1;
     return true;
 }
 

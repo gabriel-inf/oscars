@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="scheduler" default="all">
+
+    <property name="build.home" value="../.." />
+    <property name="build.classes" value="${build.home}/build/WEB-INF/classes" />
+    <property name="sched.home" value="." />
+    <property name="version" value="0.9" />
+
+    <path id="compile.path">
+        <pathelement location="${build.classes}" />
+    </path>
+
+    <target name="all" depends="scheduler" description="Do it all" />
+
+    <target name="clean" description="Delete main build directory">
+        <delete dir="${sched.home}/classes" />
+        <delete dir="${sched.home}/lib" />
+        <delete failonerror="false">
+            <fileset dir="${sched.home}" includes="LSPScheduler.jar" />
+        </delete>
+        <delete dir="${sched.home}/classes" />
+    </target>
+
+    <target name="prepare" description="Create build directoy and copy in files">
+        <mkdir dir="${sched.home}/classes"/>
+        <copy todir="lib">
+            <fileset dir="${build.home}/lib" includes="hibernate3.jar, log4j-1.2.13.jar"/>
+        </copy>
+    </target>
+
+    <target name="compile" description="Compile Java sources" depends="prepare">
+        <javac srcdir="." includes="LSPScheduler.java" destdir="${sched.home}/classes" classpathref="compile.path">
+            <classpath>
+                <fileset dir="${build.home}/lib" includes="**/*.jar"/>
+                <fileset dir="${build.home}/build/WEB-INF/classes" includes="**/*.jar" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="scheduler" description="Create Scheduler.jar file" depends="compile" >
+        <jar destfile="LSPScheduler.jar">
+            <!-- Tweak the manifest *to do* the right thing -->
+            <manifest>
+                  <attribute name="Main-Class" value="LSPScheduler"/>
+                  <attribute name="Class-Path" value="lib/hibernate3.jar lib/log4j-1.2.13.jar"/>
+            </manifest>
+            <fileset dir="${build.classes}" includes="**/*.class" />
+            <fileset dir="${sched.home}/classes"  includes="*.class" />
+            <fileset dir="${build.home}" includes="lib/hibernate3.jar, lib/log4j-1.2.13.jar"/>
+        </jar>
+    </target>
+
+</project>
+
+

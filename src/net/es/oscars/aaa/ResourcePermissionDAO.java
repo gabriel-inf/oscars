@@ -10,6 +10,13 @@ import net.es.oscars.database.GenericHibernateDAO;
 public class ResourcePermissionDAO
     extends GenericHibernateDAO<ResourcePermission, Integer> {
 
+    String dbname;
+
+    public ResourcePermissionDAO(String dbname) {
+        this.setDatabase(dbname);
+        this.dbname = dbname;
+    }
+
     /**
      * Removes a resourcepermission, given a resource and permission name. 
      * @param resourceName A String with the resource name.
@@ -21,23 +28,23 @@ public class ResourcePermissionDAO
                   throws AAAException {
         String status = null;
 
-        ResourceDAO resourceDAO = new ResourceDAO();
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
         Resource resource = (Resource) resourceDAO.queryByParam(
                                              "resourceName", resourceName);
 
-        PermissionDAO permissionDAO = new PermissionDAO();
+        PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
         Permission permission = (Permission) permissionDAO.queryByParam(
                                              "permissionName", permissionName);
 
         String hsql = "from Resourcepermission " + 
                       "where resourceId = :resourceId and " +
-                      "permissionID = :permissionId";
+                      "permissionId = :permissionId";
         ResourcePermission rp = (ResourcePermission) this.getSession().createQuery(hsql)
                       .setInteger("resourceId", resource.getId())
                       .setInteger("permissionId", permission.getId())
                       .setMaxResults(1)
                       .uniqueResult();
-        this.makeTransient(rp);
+        super.remove(rp);
         return status;
     }
 }

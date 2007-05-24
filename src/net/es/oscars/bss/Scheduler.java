@@ -1,34 +1,44 @@
 package net.es.oscars.bss;
 
 import java.util.*;
+import java.io.*;
+import java.lang.Throwable;
 import javax.mail.MessagingException;
+
+import org.apache.log4j.*;
 import org.hibernate.*;
 
-import net.es.oscars.LogWrapper;
-import net.es.oscars.Notifier;
-import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pss.JnxLSP;
+import net.es.oscars.pss.PSSException;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.database.Initializer;
 
 
 /**
  * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
+ *
+ * This class is only designed to be invoked from a standalone program
  */
 public class Scheduler {
-    private LogWrapper log;
+    private Logger log;
     private PCEManager pceMgr;
     private Notifier notifier;
     private ReservationManager rm;
+    private Properties props;
+    private String dbname;
 
-    public Scheduler() {
-        this.log = new LogWrapper(this.getClass());
-        this.pceMgr = new PCEManager();
+    public Scheduler(String dbname) {
+        this.log = Logger.getLogger(this.getClass());
+        this.pceMgr = new PCEManager(dbname);
         this.notifier = new Notifier();
-        this.rm = new ReservationManager();
+        this.rm = new ReservationManager(dbname);
+        this.dbname = dbname;
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        this.props = propHandler.getPropertyGroup("pss", true);
     }
 
     /**
@@ -43,28 +53,26 @@ public class Scheduler {
 
         List<Reservation> reservations = null;
 
-        Session session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-
-        ReservationDAO dao = new ReservationDAO();
-
-        dao.setSession(session);
-
-        reservations = dao.pendingReservations(timeInterval);
-        for (Reservation r: reservations) {
-            // build hash map and call PSS to schedule LSP
-            this.configurePSS(r, "LSP_SETUP");
-            Integer id = r.getId().intValue();
-            dao.updateStatus(id, "ACTIVE");
-            String notification = this.pendingReservationMessage(r);
-            String subject = "Circuit set up";
-            /*
-            try {
-                this.notifier.sendMessage(subject, notification);
-            } catch (javax.mail.MessagingException e) {
-                throw new BSSException(e.getMessage());
+        try {
+            ReservationDAO dao = new ReservationDAO(this.dbname);
+            reservations = dao.pendingReservations(timeInterval);
+            for (Reservation resv: reservations) {
+                // build hash map and call PSS to schedule LSP
+                this.configurePSS(resv, "LSP_SETUP");
+                resv.setStatus("ACTIVE");
+                dao.update(resv);
+                this.log.info("pendingReservations: " + resv.toString());
+                String notification = this.pendingReservationMessage(resv);
+                String subject = "Circuit set up";
+                // this.notifier.sendMessage(subject, notification);
             }
-            */
+        } catch (BSSException ex) {
+            // log and rethrow
+            this.log.error("pendingReservations.BSSException: " +
+                    ex.getMessage());
+            throw new BSSException(ex.getMessage());
+        //} catch (javax.mail.MessagingException ex) {
+            //throw new BSSException(ex.getMessage());
         }
         return reservations;
     }
@@ -80,27 +88,39 @@ public class Scheduler {
             throws BSSException {
 
         List<Reservation> reservations = null;
+        String prevStatus = null;
+        String newStatus = null;
 
-        ReservationDAO dao = new ReservationDAO();
-        Session session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        dao.setSession(session);
-        reservations = dao.expiredReservations(timeInterval);
-
-        for (Reservation r: reservations) {
-            // build hash map and call PSS to schedule LSP
-            this.configurePSS(r, "LSP_TEARDOWN");
-            Integer id = r.getId().intValue();
-            dao.updateStatus(id, "FINISHED");
-            String notification = this.expiredReservationMessage(r);
-            String subject = "Circuit torn down";
-            /*
-            try {
-                this.notifier.sendMessage(subject, notification);
-            } catch (javax.mail.MessagingException e) {
-                throw new BSSException(e.getMessage());
+        try {
+            ReservationDAO dao = new ReservationDAO(this.dbname);
+            reservations = dao.expiredReservations(timeInterval);
+            for (Reservation resv: reservations) {
+                // build hash map and call PSS to schedule LSP
+                this.configurePSS(resv, "LSP_TEARDOWN");
+                prevStatus = resv.getStatus();
+                if (!prevStatus.equals("PRECANCEL")) {
+                    newStatus = "FINISHED";
+                } else {
+                    newStatus = "CANCELLED";
+                    // set end time to cancel time
+                    // useful in case reservation was persistent
+                   long millis = System.currentTimeMillis();
+                   resv.setEndTime(millis);
+                }
+                resv.setStatus(newStatus);
+                dao.update(resv);
+                this.log.info("expiredReservations: " + resv.toString());
+                String notification = this.expiredReservationMessage(resv);
+                String subject = "Circuit torn down";
+                // this.notifier.sendMessage(subject, notification);
             }
-            */
+        } catch (BSSException ex) {
+            // log and rethrow
+            this.log.error("expiredReservations.BSSException: " +
+                    ex.getMessage());
+            throw new BSSException(ex.getMessage());
+        //} catch (javax.mail.MessagingException ex) {
+            //throw new BSSException(ex.getMessage());
         }
         return reservations;
     }
@@ -117,123 +137,110 @@ public class Scheduler {
     private void configurePSS(Reservation resv, String opstring)
             throws BSSException {
 
-        IpaddrDAO ipaddrDAO = null;
         Map<String,String> lspInfo = null;
-        List<Ipaddr> hops = null;
-        Path path = null;
+        // only used if an explicit path was given
+        List<String> hops = null;
+        Utils utils = new Utils(this.dbname);
+        String lspFrom = null;
+        String lspTo = null;
 
-        Session session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
         JnxLSP jnxLsp = new JnxLSP();
-        ipaddrDAO = new IpaddrDAO();
-        ipaddrDAO.setSession(session);
-        path = resv.getPath();
-        String ingressLoopback = this.getLoopback(path, "ingress");
-        String egressLoopback = this.getLoopback(path, "egress");
-        // Egress loopback allowed to be non-MPLS
-        if (egressLoopback == null) {
-            hops = this.pceMgr.getIpaddrs(path);
-            egressLoopback = hops.get(hops.size()-1).getIp();
-        }
+        String srcIP = this.rm.getIpAddress(resv.getSrcHost());
+        String destIP = this.rm.getIpAddress(resv.getDestHost());
 
+        // get local path
+        PathElem pathElem = resv.getPath().getPathElem();
+        // find ingress and egress IP's
+        while (pathElem != null) {
+            if (pathElem.getDescription() != null) {
+                if (pathElem.getDescription().equals("ingress")) {
+                    lspFrom = pathElem.getIpaddr().getIP();
+                } else if (pathElem.getDescription().equals("egress")) {
+                    lspTo = pathElem.getIpaddr().getIP();
+                }
+            }
+            pathElem = pathElem.getNextElem();
+        }
+        if (lspFrom == null) {
+            throw new BSSException("no ingress loopback in local path");
+        }
+        if (lspTo == null) {
+            throw new BSSException("no egress loopback in local path");
+        }
         // Create an LSP object.
         lspInfo = new HashMap<String, String>();
-        lspInfo.put("user_var_name_user_var", "oscars_" + resv.getId());
-        lspInfo.put("user_var_lsp_from_user_var", ingressLoopback);
-        lspInfo.put("user_var_lsp_to_user_var", egressLoopback);
-        lspInfo.put("user_var_bandwidth_user_var", Long.toString(resv.getBandwidth()));
-        lspInfo.put("user_var_lsp_class-of-service_user_var", resv.getLspClass());
-        lspInfo.put("user_var_policer_burst-size-limit_user_var", Long.toString(resv.getBurstLimit()));
-
-
-        InetAddress srcAddr = null;
-        InetAddress dstAddr = null;
-        try { 
-            srcAddr = InetAddress.getByName( resv.getSrcHost() );
-            dstAddr = InetAddress.getByName( resv.getDestHost() );
-        } catch  ( UnknownHostException e) {
-            System.out.println("Unknown host " + resv.getSrcHost() + " or " + 
-                    resv.getDestHost());
-        }
-/*
-        lspInfo.put("user_var_source-address_user_var", resv.getSrcHost());
-        lspInfo.put("user_var_destination-address_user_var", resv.getDestHost());
-*/
-        lspInfo.put("user_var_source-address_user_var", srcAddr.getHostAddress());
-        lspInfo.put("user_var_destination-address_user_var", dstAddr.getHostAddress());
+        lspInfo.put("name", "oscars_" + resv.getId());
+        lspInfo.put("from", lspFrom);
+        lspInfo.put("to", lspTo);
+        lspInfo.put("bandwidth", Long.toString(resv.getBandwidth()));
+        lspInfo.put("lsp_class-of-service", resv.getLspClass());
+        lspInfo.put("policer_burst-size-limit",
+                Long.toString(resv.getBurstLimit()));
+        lspInfo.put("source-address", srcIP);
+        lspInfo.put("destination-address", destIP);
 
         Integer intParam = resv.getSrcPort();
         if (intParam != null) {
-            lspInfo.put("user_var_source-port_user_var", Integer.toString(intParam));
+            lspInfo.put("source-port", Integer.toString(intParam));
         }
         intParam = resv.getSrcPort();
         if (intParam != null) {
-            lspInfo.put("user_var_destination-port_user_var", Integer.toString(intParam));
+            lspInfo.put("destination-port", Integer.toString(intParam));
         }
         String param = resv.getDscp();
         if (param != null) {
-            lspInfo.put("user_var_dscp_user_var", param);
-        } else {
-            lspInfo.put("user_var_dscp_user_var", "4");
+            lspInfo.put("dscp", param);
         }
         param = resv.getProtocol();
         if (param != null) {
-            lspInfo.put("user_var_protocol_user_var", param);
+            lspInfo.put("protocol", param);
         }
         param = resv.getDescription();
         if (param != null) {
-            lspInfo.put("user_var_lsp_description_user_var", param);
+            lspInfo.put("lsp_description", param);
         } else {
-            lspInfo.put("user_var_lsp_description_user_var", "no description provided");
+            lspInfo.put("lsp_description", "no description provided");
         }
 
-        // TODO:  check values
-        lspInfo.put("user", "jason");
-        lspInfo.put("host", "dev-m20-rt1.es.net");
-        String keyfile = System.getenv("CATALINA_HOME") + "/shared/oscars.conf//server/pss_key";
+        lspInfo.put("login", this.props.getProperty("login"));
+        // TODO:  error checking
+        lspInfo.put("router", utils.getHostName(lspFrom));
+        String keyfile = System.getenv("CATALINA_HOME") +
+                             "/shared/oscars.conf/server/oscars.key";
         lspInfo.put("keyfile", keyfile);
-        lspInfo.put("passphrase", "passphrase");
+        lspInfo.put("passphrase", this.props.getProperty("passphrase"));
 
-        lspInfo.put("user_var_lsp_setup-priority_user_var", "4");
-        lspInfo.put("user_var_lsp_reservation-priority_user_var", "4");
-        lspInfo.put("user_var_external_interface_filter_user_var",
-                    "external-interface-inbound-inet.0-filter");
-        lspInfo.put("user_var_firewall_filter_marker_user_var", 
-                    "oscars-filters-start");
+        lspInfo.put("lsp_setup-priority",
+             this.props.getProperty("lsp_setup-priority"));
+        lspInfo.put("lsp_reservation-priority",
+             this.props.getProperty("lsp_reservation-priority"));
+        lspInfo.put("internal_interface_filter",
+             this.props.getProperty("internal_interface_filter"));
+        lspInfo.put("external_interface_filter",
+             this.props.getProperty("external_interface_filter"));
+        lspInfo.put("firewall_filter_marker", 
+             this.props.getProperty("firewall_filter_marker"));
+
+        // Additional information from the template will be used if
+        // an explicit path was given.
+        if (resv.getPath().isExplicit()) {
+            hops = new ArrayList<String>();
+            while (pathElem != null) {
+                hops.add(pathElem.getIpaddr().getIP());
+                pathElem = pathElem.getNextElem();
+            }
+        }
 
         // call PSS to schedule LSP
-        this.log.info("configurePSS." + opstring + ".start", resv.toString());
-        if (opstring.equals("LSP_SETUP")) {
-            jnxLsp.setupLSP(lspInfo);
-        } else {
-            jnxLsp.teardownLSP(lspInfo);
-        }
-        this.log.info("configurePSS." + opstring + ".finish", lspInfo.toString());
-    }
-
-    /**
-     * Gets loopback IP, given beginning path instance, and loopback type
-     * @param path beginning path instance
-     * @param loopbackType string, either "ingress" or "egress"
-     * @return ingressLoopback string with the ingress loopback IP, if any 
-     */
-    public String getLoopback(Path path, String loopbackType) {
-
-        Ipaddr ipaddr = null;
-
-        Session session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        IpaddrDAO ipaddrDAO = new IpaddrDAO();
-        ipaddrDAO.setSession(session);
-        while (path != null) {
-            String addressType = path.getAddressType();
-            if (loopbackType.equals(addressType)) {
-                ipaddr = path.getIpaddr();
-                return ipaddr.getIp();
+        try {
+            if (opstring.equals("LSP_SETUP")) {
+                jnxLsp.setupLSP(lspInfo, hops);
+            } else {
+                jnxLsp.teardownLSP(lspInfo, null);
             }
-            path = path.getNextPath();
+        } catch (PSSException ex) {
+            throw new BSSException(ex.getMessage());
         }
-        return null;
     }
 
     /*
@@ -247,12 +254,8 @@ public class Scheduler {
      * @return a String describing the pending reservation
      */
     public String pendingReservationMessage(Reservation resv) {
-        String msg = "";
 
-        this.rm.setSession();
-        msg += "Reservation tag: " + this.rm.toTag(resv) + "\n";
-        //msg += "Path set up time: " + resv.getLspConfigTime() + "\n";
-        msg += "Reservation status: " + resv.getStatus() + "\n";
+        String msg = "Reservation: " + resv.toString() + "\n";
         return msg;
     }
 
@@ -262,61 +265,8 @@ public class Scheduler {
      * @return a String describing the expired reservation
      */
     public String expiredReservationMessage(Reservation resv) {
-        String msg = "";
 
-        this.rm.setSession();
-        msg += "Reservation tag: " + this.rm.toTag(resv) + "\n";
-        //msg += "Path tear down time: " + resv.getLspConfigTime() + "\n";
-        msg += "Reservation status: " + resv.getStatus() + "\n";
+        String msg = "Reservation: " + resv.toString() + "\n";
         return msg;
-    }
-    
-    /**
-     * Returns a list of all pending reservation in given time interval
-     * @param timeInterval an integer with the time window to check 
-     * @return response a list of reservations that are pending
-     */
-    public List<Reservation> listPendingReservations(int timeInterval) 
-            throws BSSException {
-        Session session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-
-        ReservationDAO dao = new ReservationDAO();
-
-        dao.setSession(session);
-
-		return dao.pendingReservations(timeInterval);
-    }
-    
-    /**
-     * Returns a list of all expired  reservation in given time interval
-     * @param timeInterval an integer with the time window to check 
-     * @return response a list of reservations that have expired
-     */
-    public List<Reservation> listExpiredReservations(int timeInterval) 
-            throws BSSException {
-        Session session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-
-        ReservationDAO dao = new ReservationDAO();
-
-        dao.setSession(session);
-
-		return dao.expiredReservations(timeInterval);
-    }
-    
-    /**
-     * Update reservation status
-     * @param id Integer id of reservation
-     * @param status status string to change reservation
-     */
-    public void updateReservationStatus(Integer id, String status) throws BSSException{
-    	Session session = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-
-        ReservationDAO dao = new ReservationDAO();
-
-        dao.setSession(session);
-    	dao.updateStatus(id, status);
     }
 }

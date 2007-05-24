@@ -1,13 +1,14 @@
 package net.es.oscars.pss;
 
 import org.testng.annotations.*;
-import static org.testng.AssertJUnit.*;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.log4j.*;
+
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.BSSException;
 
 
 /**
@@ -16,66 +17,72 @@ import net.es.oscars.bss.BSSException;
  */
 @Test(groups={ "pss" })
 public class JnxLSPTest {
-    private Properties props;
-    private JnxLSP jlsp;
-    private HashMap<String, String> testHM;
+    private Properties testProps;
+    private JnxLSP jnxLSP;
+    private Map<String, String> commonHm;
+    private Logger log;
 
   @BeforeClass
     protected void setUpClass() {
+        this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.pss", true);
-        this.jlsp = new JnxLSP();
-        this.testHM = build_hash();
+        this.testProps = propHandler.getPropertyGroup("test.pss", true);
+        propHandler = new PropHandler("oscars.properties");
+        // fill in name/value pairs common to all tests
+        Properties props = propHandler.getPropertyGroup("pss", true);
+        this.commonHm = new HashMap<String,String>();
+        String keyfile = System.getenv("CATALINA_HOME") +
+                "/shared/oscars.conf/server/oscars.key";
+        this.commonHm.put("keyfile", keyfile);
+        this.commonHm.put("router", this.testProps.getProperty("router"));
+        this.commonHm.put("source-address",
+                this.testProps.getProperty("source-address"));
+        this.commonHm.put("destination-address",
+                this.testProps.getProperty("destination-address"));
+        this.commonHm.put("from", this.testProps.getProperty("from"));
+        this.commonHm.put("to", this.testProps.getProperty("to"));
+        this.commonHm.put("bandwidth",
+                this.testProps.getProperty("bandwidth"));
+
+        this.commonHm.put("login", props.getProperty("login"));
+        // to distinguish tests
+        this.commonHm.put("name", props.getProperty("login") + "1000000");
+        this.commonHm.put("passphrase", props.getProperty("passphrase"));
+        this.commonHm.put("firewall_filter_marker",
+                props.getProperty("firewall_filter_marker"));
+        this.commonHm.put("internal_interface_filter",
+                props.getProperty("internal_interface_filter"));
+        this.commonHm.put("external_interface_filter",
+                props.getProperty("external_interface_filter"));
+        this.commonHm.put("lsp_class-of-service",
+                props.getProperty("lsp_class-of-service"));
+        this.commonHm.put("dscp", props.getProperty("dscp"));
+        this.commonHm.put("policer_burst-size-limit",
+                props.getProperty("policer_burst-size-limit"));
+        this.commonHm.put("lsp_setup-priority",
+                props.getProperty("lsp_setup-priority"));
+        this.commonHm.put("lsp_reservation-priority",
+                props.getProperty("lsp_reservation-priority"));
+        this.jnxLSP = new JnxLSP();
     }
 
-    public void testSetupLSP() {
-        boolean ret = false;
-        try {
-            ret = this.jlsp.setupLSP(this.testHM);
-        } catch (BSSException ex) {
-            fail("JnxLSP.SetupLSP: " + ex.getMessage());
-        }
-        assert ret = true;
+  @Test
+    public void setupLSP() throws PSSException {
+
+        Map<String,String> hm =
+            new HashMap<String,String>(this.commonHm);
+
+        hm.put("lsp_description", "testSetupLSP");
+        assert this.jnxLSP.setupLSP(hm, null);
     }
 
-    public void testTearDownLSP() {
-    
-        boolean ret = false;
-        try {
-            ret = this.jlsp.teardownLSP(this.testHM);
-        } catch (BSSException ex) {
-            fail("JnxLSP.TearDownLSP: " + ex.getMessage());
-        }
-        assert ret == true;
-    }
+  @Test
+    public void tearDownLSP() throws PSSException {
 
-    public HashMap<String,String> build_hash() {
-        HashMap<String,String> hm = new HashMap<String,String>();
-
-        hm.put("user", this.props.getProperty("user"));
-        hm.put("passphrase",this.props.getProperty("passphrase"));
-        String keyfile = System.getenv("CATALINA_HOME") + "/shared/oscars.conf/server/pss_key";
-        hm.put("keyfile", keyfile);
-        hm.put("host", this.props.getProperty("host"));
-        hm.put("user", this.props.getProperty("user"));
-        hm.put("user_var_name_user_var","zippy");
-        hm.put("user_var_lsp_from_user_var","172.16.1.1");
-        hm.put("user_var_lsp_to_user_var","172.16.2.2");
-        hm.put("user_var_bandwidth_user_var","100000");
-        hm.put("user_var_lsp_class-of-service_user_var","4");
-        hm.put("user_var_lsp_setup-priority_user_var","4");
-        hm.put("user_var_lsp_reservation-priority_user_var","4");
-        hm.put("user_var_lsp_description_user_var","test");
-        hm.put("user_var_policer_burst-size-limit_user_var","10000000");
-        hm.put("user_var_external_interface_filter_user_var","external-interface-inbound-inet.0-filter");
-        hm.put("user_var_internal_interface_filter_user_var","internal-interface-inbound-inet.0-filter");
-        hm.put("user_var_source-address_user_var","172.16.1.1");
-        hm.put("user_var_destination-address_user_var","172.16.2.2");
-        hm.put("user_var_dscp_user_var","4");
-        hm.put("user_var_protocol_user_var","tcp");
-//        hm.put("user_var_source-port_user_var","5555");
-//        hm.put("user_var_destination-port_user_var","6666");
-        hm.put("user_var_firewall_filter_marker_user_var","oscars-filters-start");
-        return hm;
+        // if a hash value is unused in connecting to the router, or
+        // in the template, it is ignored
+        Map<String,String> hm =
+            new HashMap<String,String>(this.commonHm);
+        assert this.jnxLSP.teardownLSP(hm, null);
     }
 }

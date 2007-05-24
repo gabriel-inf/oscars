@@ -3,21 +3,22 @@ package net.es.oscars.servlets;
 import java.util.Date;
 import java.io.PrintWriter;
 
-import net.es.oscars.bss.ReservationManager;
+import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.Utils;
 
 public class ReservationDetails {
 
     public void
-        contentSection(PrintWriter out, Reservation resv,
-                       ReservationManager rm, String userName) {
+        contentSection(PrintWriter out, Reservation resv, String userName) {
 
+        TypeConverter tc = new TypeConverter();
         Long longParam = null;
         Integer intParam = null;
         String strParam = null;
         Long ms = null;
 
-        String tag = rm.toTag(resv);
+        String tag = tc.getReservationTag(resv);
         out.println("<content>");
         out.println("<p><strong>Reservation Details</strong></p>");
         out.println("<p>To return to the reservations list, click on the ");
@@ -51,8 +52,10 @@ public class ReservationDetails {
                     "</td></tr>");
         out.println("<tr><td>User</td><td>" + resv.getLogin() +
                     "</td></tr>");
+        String sanitized = resv.getDescription().replace("<", "");
+        String sanitized2 = sanitized.replace(">", "");
         out.println("<tr><td>Description</td><td>" +
-                    resv.getDescription() + "</td></tr>");
+                    sanitized2 + "</td></tr>");
 
         out.println("<tr><td>Start time</td><td class='dt'>");
         ms = resv.getStartTime();
@@ -107,7 +110,8 @@ public class ReservationDetails {
             out.println("<tr><td>Class</td><td>" +
                     resv.getLspClass() + "</td></tr>");
         }
-        String path = rm.pathToString(resv, "host");
+        Utils utils = new Utils("bss");  // FIX
+        String path = utils.pathToString(resv.getPath());
         if (path != null) {
             out.println("<tr><td>Routers in path</td><td>" +
                         path + "</td></tr>");

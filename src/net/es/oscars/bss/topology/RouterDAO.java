@@ -12,42 +12,17 @@ import net.es.oscars.database.GenericHibernateDAO;
  */
 public class RouterDAO extends GenericHibernateDAO<Router, Integer> {
 
-    /**
-     * Inserts a row into the routers table.
-     *
-     * @param router a Router instance to be persisted
-     */
-    public void create(Router router) {
-        this.makePersistent(router);
-    }
-
-    /**
-     * Retrieves all routers.  For now just calls the generic findAll.
-     *
-     * @return routers A list of router instances
-     */
-    public List<Router> list() {
-
-        List<Router> routers = this.findAll();
-        return routers;
-    }
-
-    /**
-     * Deletes a row from the routers table.
-     *
-     * @param router a Router instance to remove from the database
-     */
-    public void remove(Router router) {
-        this.makeTransient(router);
+    public RouterDAO(String dbname) {
+        this.setDatabase(dbname);
     }
 
     /**
      * Returns the router having an interface with this IP address.
-     * @param ipaddr String containing IP address of router.
+     * @param ip String containing IP address of router.
      * @return A Router instance.
      * @throws BSSException.
      */
-    public Router fromIp(String ipaddr) {
+    public Router fromIp(String ip) {
         String sql = "select * from routers r " +
             "inner join interfaces i on r.id = i.routerId " +
             "inner join ipaddrs ip on i.id = ip.interfaceId";
@@ -55,9 +30,36 @@ public class RouterDAO extends GenericHibernateDAO<Router, Integer> {
         sql += " where ip.ip = ?";
         Router router = (Router) this.getSession().createSQLQuery(sql)
                                         .addEntity(Router.class)
-                                        .setString(0, ipaddr)
+                                        .setString(0, ip)
                                         .setMaxResults(1)
                                         .uniqueResult();
         return router;
+    }
+
+    public void invalidateAll() {
+        List<Router> routers = this.list();
+        for (Router r: routers) {
+            r.setValid(false);
+            this.update(r);
+        }
+    }
+
+    public void removeAllInvalid() {
+        String sql = "select * from routers where valid = false";
+        List<Router> routers = (List<Router>) this.getSession().createSQLQuery(sql)
+                                        .addEntity(Router.class)
+                                        .list();
+        for (Router r: routers) {
+            this.remove(r);
+        }
+    }
+
+    public void validate(String routerName) {
+        Router router = this.queryByParam("name", routerName);
+        // do nothing if doesn't exist
+        if (router != null) {
+            router.setValid(true);
+            this.update(router);
+        }
     }
 }

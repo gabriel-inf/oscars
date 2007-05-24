@@ -1,60 +1,38 @@
 package net.es.oscars.bss;
 
 import java.util.*;
+import org.apache.log4j.*;
 
 import org.hibernate.*;
 
-import net.es.oscars.LogWrapper;
 import net.es.oscars.database.GenericHibernateDAO;
 import net.es.oscars.bss.topology.*;
 
 
 /**
- * ReservationDAO is the data access object for the oscars.reservations table.
+ * ReservationDAO is the data access object for
+ * the bss.reservations table.
  *
  * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
  */
-public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
-    private LogWrapper log;
+public class ReservationDAO
+    extends GenericHibernateDAO<Reservation, Integer> {
 
-    public ReservationDAO () {
-        this.log = new LogWrapper(this.getClass());
+    private Logger log;
+    private String dbname;
+
+    public ReservationDAO(String dbname) {
+        this.log = Logger.getLogger(this.getClass());
+        this.setDatabase(dbname);
+        this.dbname = dbname;
     }
-
-    /**
-     * Creates a reservation.
-     *
-     * @param reservation a reservation to be persisted
-     * @throws BSSException
-     */
-    public void create(Reservation reservation) throws BSSException {
-        this.makePersistent(reservation);
-    }
-
-
-    /**
-     * Changes the status of a reservation to indicate it is cancelled.
-     *
-     * @param tag tag a unique id for a reservation across domains
-     * @return a string with the new reservation status
-     * @throws BSSException
-     */
-    public String cancel(String tag) throws BSSException {
-
-        // TODO:  ensure unprivileged user can't cancel another's reservation
-        String[] strArray = tag.split("-");
-        // TODO:  FIX
-        Integer id = Integer.valueOf(strArray[1]);
-        return this.updateStatus(id, "PRECANCEL");
-    }
-
 
     /**
      * Finds a reservation, given its tag.
      *
      * @param tag a string uniquely identifying a reservation across domains
      * @param authorized a boolean indicating whether a user can view all
-     *     of a reservation's fields
+     *     of a reservation's fields:  TODO:  use
      * @return reservation found, if any
      * @throws BSSException
      */
@@ -64,8 +42,6 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
         String[] strArray = tag.split("-");
         // TODO:  FIX
         Integer id = Integer.valueOf(strArray[1]);
-        // NOTE:  calling method must call pathDAO.toString() to get path
-        // from Reservation bean's pathId
         Reservation reservation = this.findById(id, false);
         return reservation;
     }
@@ -90,14 +66,14 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
         if (login == null) { return null; }
         // if not authorized, can only view individual reservations
         if (!authorized) {
-            this.log.info("list", "individual: " + login);
+            this.log.info("list, individual: " + login);
             String hsql = "from Reservation r where r.login = :login " +
                           "order by r.startTime desc";
             reservations =  this.getSession().createQuery(hsql)
                                    .setString("login", login)
                                    .list();
         } else {
-            this.log.info("list", "all");
+            this.log.info("list, all");
             String hsql = "from Reservation r order by r.startTime desc";
             reservations = this.getSession().createQuery(hsql).list();
         }
@@ -106,16 +82,15 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
 
 
     /**
-     * Retrieves the list of all currently pending and active reservations.
+     * Retrieves the list of all pending and active reservations that
+     * are within the given time interval.
      *
      * @param startTime proposed reservation start time
      * @param endTime proposed reservation end time
      * @return list of all pending and active reservations
-     * @throws BSSException
      */
     public List<Reservation>
-        getActiveReservations(Long startTime, Long endTime)
-                 throws BSSException {
+            overlappingReservations(Long startTime, Long endTime) {
 
         List<Reservation> reservations = null;
         // Get reservations with times overlapping that of the reservationi
@@ -131,53 +106,14 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
         return reservations;
     }
 
-    /**
-     * Updates reservation status.
-     *     Used to mark as active, finished, or cancelled.
-     *
-     * @param id reservation id
-     * @param status a string with the proposed new status
-     * @return a string containing the new status
-     * @throws BSSException
-     */
-    public String updateStatus(Integer id, String status) 
-                  throws BSSException {
-
-        // TODO:  Figure out what this did:  was update method in Perl
-        /*
-        if (!resv.get("lspStatus")) {
-            resv.put("lspStatus", "Successful configuration");
-            status = this.updateStatus(resv.tag, status);
-        } else { status = this.updateStatus(resv.get("tag"), "failed"); }
-        */
-        Reservation r = this.findById(id, false);
-
-        /* If the previous state was PRECANCEL, mark it now as CANCELLED.
-         If the previous state was PENDING, and it is to be CANCELLED, mark it
-         as CANCELLED instead of PRECANCEL.  The latter is used by 
-         expiredReservations as one of the conditions to attempt to
-         tear down a circuit. */
-        String prevStatus = r.getStatus();
-        if (prevStatus.equals("PRECANCEL") || (prevStatus.equals("PENDING") &&
-                status.equals("PRECANCEL"))) { 
-            r.setStatus("CANCELLED");
-        } else {
-            r.setStatus(status);
-        }
-        this.makePersistent(r);
-        return r.getStatus();
-    }
-
     /** 
-     * Finds pending OSCARS reservations.  Calls the PSS to setup a
-     *     label-switched path.
+     * Finds pending OSCARS reservations which now should become
+     * active.
      *
      * @param timeInterval an int to add to the current time
      * @return list of pending reservations
-     * @throws BSSException
      */
-    protected List<Reservation> pendingReservations(int timeInterval)
-            throws BSSException { 
+    public List<Reservation> pendingReservations(int timeInterval) {
 
         List<Reservation> reservations = null;
         long millis = 0;
@@ -193,15 +129,12 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
     }
 
     /** 
-     * Finds expired OSCARS reservations.  Calls the PSS to teear down
-     *     the label-switched path.
+     * Finds current OSCARS reservations which now should be expired.
      *
      * @param timeInterval An int to add to the current time
      * @return list of expired reservations
-     * @throws BSSException
      */
-    protected List<Reservation> expiredReservations(int timeInterval)
-            throws BSSException { 
+    public List<Reservation> expiredReservations(int timeInterval) {
 
         List<Reservation> reservations = null;
         long millis = 0;
@@ -212,6 +145,25 @@ public class ReservationDAO extends GenericHibernateDAO<Reservation, Integer> {
         reservations = this.getSession().createQuery(hsql)
                               .setLong("endTime", millis)
                               .list();
+        return reservations;
+    }
+
+    /**
+     * Retrieves a list of all reservations with the given status.
+     *
+     * @param status string with reservation status
+     * @return list of all reservations with the given status
+     */
+    public List<Reservation> statusReservations(String status) {
+
+        List<Reservation> reservations = null;
+        // Get reservations with times overlapping that of the reservationi
+        // request.
+        String hsql = "from Reservation r " +
+                      "where r.status = :status";
+        reservations = this.getSession().createQuery(hsql)
+                                        .setString("status", status)
+                                        .list();
         return reservations;
     }
 }
