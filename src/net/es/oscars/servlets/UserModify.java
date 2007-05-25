@@ -34,7 +34,6 @@ public class UserModify extends HttpServlet {
         if (userName == null) { return; }
 
         mgr = new UserManager("aaa");
-        mgr.setSession();
         String profileName = request.getParameter("profileName");
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();

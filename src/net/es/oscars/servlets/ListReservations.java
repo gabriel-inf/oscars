@@ -25,7 +25,6 @@ public class ListReservations extends HttpServlet {
         List<Reservation> reservations = null;
 
         ReservationManager rm = new ReservationManager("bss");
-        rm.setSession();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
 
@@ -68,7 +67,6 @@ public class ListReservations extends HttpServlet {
         boolean authorized = false;
 
         UserManager mgr = new UserManager("aaa");
-        mgr.setSession();
         if (mgr.verifyAuthorized(login, "Reservations", "manage")) {
             authorized = true;
         }

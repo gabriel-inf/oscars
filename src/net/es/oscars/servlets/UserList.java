@@ -41,7 +41,6 @@ public class UserList extends HttpServlet {
         List<User> users = null;
 
         UserManager mgr = new UserManager("aaa");
-        mgr.setSession();
         users = mgr.list();
         this.outputContent(out, users);
     }

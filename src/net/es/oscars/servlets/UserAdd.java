@@ -23,7 +23,6 @@ public class UserAdd extends HttpServlet {
         Session aaa;
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager("aaa");
-        mgr.setSession();
         User newUser = null;
         Utils utils = new Utils();
 

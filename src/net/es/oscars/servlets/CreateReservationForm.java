@@ -49,7 +49,6 @@ public class CreateReservationForm extends HttpServlet {
                        String userName) {
 
         UserManager mgr = new UserManager("aaa");
-        mgr.setSession();
         out.println("<content>");
         out.println("<form method='post' action='' onsubmit=\"" +
                     "return submitForm(this, 'CreateReservation');\">");

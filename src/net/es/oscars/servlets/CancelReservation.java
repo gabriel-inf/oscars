@@ -23,7 +23,6 @@ public class CancelReservation extends HttpServlet {
         String reply = null;
 
         ReservationManager rm = new ReservationManager("bss");
-        rm.setSession();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         ReservationDetails detailsOutput = new ReservationDetails();

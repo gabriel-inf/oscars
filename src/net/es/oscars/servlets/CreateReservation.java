@@ -22,7 +22,6 @@ public class CreateReservation extends HttpServlet {
 
         Forwarder forwarder = new Forwarder();
         ReservationManager rm = new ReservationManager("bss");
-        rm.setSession();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();

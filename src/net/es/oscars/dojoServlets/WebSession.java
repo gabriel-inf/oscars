@@ -77,7 +77,6 @@ public class WebSession extends HttpServlet {
 
         PrintWriter out = response.getWriter();
 
-        this.mgr.setSession();
         String userName = request.getParameter("userName");
         response.setContentType("text/xml");
         // NOTE:  Be careful to distinguish between Hibernate Sessions and

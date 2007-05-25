@@ -145,7 +145,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ResTag params = request.getQueryReservation();
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.userMgr.setSession();
         aaa.beginTransaction();
         boolean authorized = this.userMgr.verifyAuthorized(login,
                                                     "Reservations", "manage");
@@ -186,7 +185,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         bss.beginTransaction();
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.userMgr.setSession();
         aaa.beginTransaction();
         boolean authorized = this.userMgr.verifyAuthorized(login,
                                                      "Reservations", "manage");
@@ -382,7 +380,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        this.userMgr.setSession();
         aaa.beginTransaction();
         
         // lookup up using input DN first

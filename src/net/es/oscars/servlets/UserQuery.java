@@ -24,7 +24,6 @@ public class UserQuery extends HttpServlet {
 
         UserSession userSession = new UserSession();
         UserManager mgr = new UserManager("aaa");
-        mgr.setSession();
         UserDetails userDetails = new UserDetails();
         List<Institution> institutions = null;
         Utils utils = new Utils();

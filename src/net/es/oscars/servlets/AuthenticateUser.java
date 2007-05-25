@@ -52,10 +52,8 @@ public class AuthenticateUser extends HttpServlet {
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         UserManager mgr = new UserManager("aaa");
-        mgr.setSession();
         ListReservations lister = new ListReservations();
         ReservationManager rm = new ReservationManager("bss");
-        rm.setSession();
 
         out = response.getWriter();
         String userName = request.getParameter("userName");

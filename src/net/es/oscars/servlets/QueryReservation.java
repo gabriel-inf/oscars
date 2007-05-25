@@ -21,7 +21,6 @@ public class QueryReservation extends HttpServlet {
 
         Reservation reservation = null;
         ReservationManager rm = new ReservationManager("bss");
-        rm.setSession();
         ReservationDetails detailsOutput = new ReservationDetails();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();

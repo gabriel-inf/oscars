@@ -8,8 +8,8 @@ import org.hibernate.*;
 import org.hibernate.criterion.*;
 
 /**
- * GenericHibernateDAO, an abstract class, is from the Hibernate web site:
- * http://www.hibernate.org/328.html.  It is subclassed by all OSCARS
+ * GenericHibernateDAO, an abstract class, is adapted from section 16.2.2 of
+ * Java Persistence with Hibernate.  It is subclassed by all OSCARS
  * DAO classes.
  *
  * @author christian(at)hibernate.org
@@ -20,6 +20,7 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
 
     private Class<T> persistentClass;
     private Session session;
+    private String dbName;
 
     public GenericHibernateDAO() {
         this.persistentClass = (Class<T>) ((ParameterizedType) getClass()
@@ -27,17 +28,21 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
                                 .getActualTypeArguments()[0];
     }
 
-    public void setSession(Session s) { this.session = s; }
+    public void setDatabase(String dbName) {
+        this.dbName = dbName;
+    }
 
-    public Session getSession() {
-        if (session == null)
-            throw new IllegalStateException(
-                    "Session has not been set on DAO before usage");
+    protected Session getSession() {
+        if (session == null) {
+            session = HibernateUtil.getSessionFactory(this.dbName)
+                                   .getCurrentSession();
+        }
         return session;
     }
 
     public Class<T> getPersistentClass() { return persistentClass; }
 
+  @SuppressWarnings("unchecked")
     public T findById(ID id, boolean lock) {
         T entity;
         if (lock)
@@ -49,8 +54,10 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
         return entity;
     }
 
+  @SuppressWarnings("unchecked")
     public List<T> list() { return findByCriteria(); }
 
+  @SuppressWarnings("unchecked")
     public List<T> findByExample(T exampleInstance, String[] excludeProperty) {
         Criteria crit = getSession().createCriteria(getPersistentClass());
         Example example =  Example.create(exampleInstance);
@@ -61,6 +68,7 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
         return crit.list();
     }
 
+  @SuppressWarnings("unchecked")
     public void create(T entity) {
         getSession().saveOrUpdate(entity);
     }
@@ -83,6 +91,7 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
     * @param paramValue An Object with parameter value
     * @return An instance T of the associated persistent class.
     */
+  @SuppressWarnings("unchecked")
     public T queryByParam(String paramName, Object paramValue) {
         String hsql = "from " + this.persistentClass.getName() +
                                 " where " + paramName + " = :" + paramName; 
@@ -95,6 +104,7 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
     /**
      * Use this inside subclasses as convenience method.
      */
+  @SuppressWarnings("unchecked")
     protected List<T> findByCriteria(Criterion... criterion) {
         Criteria crit = getSession().createCriteria(getPersistentClass());
         for (Criterion c : criterion) {
