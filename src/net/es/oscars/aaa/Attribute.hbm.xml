@@ -29,9 +29,7 @@
         </meta>    
     </property>
 
-    <property name="description" />
-
-    <property name="updateTime" />
+    <property name="attrType" />
 
     <!-- Associations -->
 

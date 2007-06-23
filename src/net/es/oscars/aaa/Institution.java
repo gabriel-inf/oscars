@@ -4,13 +4,13 @@ import java.util.Set;
 import java.io.Serializable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import net.es.oscars.BeanUtils;
+import net.es.oscars.database.HibernateBean;
 
 /**
  * Institution is adapted from a Middlegen class automatically generated 
  * from the schema for the aaa.institutions table.
  */
-public class Institution extends BeanUtils implements Serializable {
+public class Institution extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4149;

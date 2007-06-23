@@ -24,11 +24,11 @@ public class PCEManagerTest {
 
   @BeforeClass
     protected void setUpClass() {
-        this.dbname = "bss";
+        this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
         this.pceMgr = new PCEManager(this.dbname);
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.pathfinder", true);
+        this.props = propHandler.getPropertyGroup("test.common", true);
     }
 
   @Test
@@ -46,8 +46,8 @@ public class PCEManagerTest {
         CommonPath retPath = null;
         this.sf.getCurrentSession().beginTransaction();
         try {
-            retPath = this.pceMgr.findPath(srcHost, destHost, ingressRouterIP,
-                                           egressRouterIP, reqPath);
+            this.pceMgr.findPath(srcHost, destHost, ingressRouterIP,
+                                 egressRouterIP, reqPath);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());

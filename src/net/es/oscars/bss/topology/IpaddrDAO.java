@@ -36,24 +36,24 @@ public class IpaddrDAO extends GenericHibernateDAO<Ipaddr,Integer> {
     }
 
     /**
-     * Gets trace or loopback IP address, if any, associated with router, given
-     *     routerName. 
-     * @param routerName string containing name of router
+     * Gets trace or loopback IP address, if any, associated with node, given
+     *     nodeName. 
+     * @param nodeName string containing name of node
      * @param description string containing type of address to look for
      * @return string with the IP address of the desired type, if any
      */
-    public String getIpType(String routerName, String description) {
+    public String getIpType(String nodeName, String description) {
 
-        // given router name, get address if any
+        // given node name, get address if any
         String sql = "select * from ipaddrs ip " +
-            "inner join interfaces i on i.id = ip.interfaceId " +
-            "inner join routers r on r.id = i.routerId " +
-            "where r.name = ? and ip.description = ? " +
+            "inner join ports p on p.id = ip.portId " +
+            "inner join nodes n on n.id = p.nodeId " +
+            "where n.name = ? and ip.description = ? " +
             "and ip.valid = true";
 
         Ipaddr ipaddrObj = (Ipaddr) this.getSession().createSQLQuery(sql)
                                 .addEntity(Ipaddr.class)
-                                .setString(0, routerName)
+                                .setString(0, nodeName)
                                 .setString(1, description)
                                 .setMaxResults(1)
                                 .uniqueResult();

@@ -11,6 +11,7 @@ import org.apache.log4j.*;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.UserManager;
+import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
@@ -53,7 +54,6 @@ public class AuthenticateUser extends HttpServlet {
         Utils utils = new Utils();
         UserManager mgr = new UserManager("aaa");
         ListReservations lister = new ListReservations();
-        ReservationManager rm = new ReservationManager("bss");
 
         out = response.getWriter();
         String userName = request.getParameter("userName");
@@ -68,30 +68,47 @@ public class AuthenticateUser extends HttpServlet {
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
-        }
+       }
         // used to indicate which tabbed pages can be displayed (some require
         // authorization)
         tabParams.put("Info", "1");
         tabParams.put("CreateReservationForm", "1");;
         tabParams.put("ListReservations", "1");
         tabParams.put("Logout", "1");
-        if (mgr.verifyAuthorized(userName, "Users", "manage")) {
+
+        boolean allUsers= false;
+        AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
+        if (authVal == AuthValue.ALLUSERS)  { 
             tabParams.put("UserList", "1");
             //tabParams.put("ResourceList", "1");
-            //tabParams.put("AuthorizationList", "1");
+            //tabParams.put("AuthorizationList", "1");           
+        } else if (authVal == AuthValue.SELFONLY){
+            tabParams.put("UserQuery", "1");
+        } else  if (authVal == AuthValue.DENIED) {
+            /*  no list permission, does he have query permission */
+            authVal = mgr.checkAccess(userName, "Users", "query");
+            if (authVal != AuthValue.DENIED) {
+                tabParams.put("UserQuery","1");
+            }  
+            /* else {
+                utils.handleFailure(out, "no permission to list users", aaa, null);
+                return;
+            } */
         }
-        else { tabParams.put("UserQuery", "1"); }
         userSession.setCookie("userName", userName, response);
         userSession.setCookie("tabName", "ListReservations", response);
-
+  
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         // first page that comes up is list of reservations
-        reservations = lister.getReservations(out, rm, userName);
-        if (reservations == null) {
-            String msg = "Error in getting reservations";
-            utils.handleFailure(out, msg, aaa, bss);
+
+        reservations = lister.getReservations(out, userName);
+         if (reservations == null) {
+             /* status has already been set
+            String msg = "Error in getting reservations"; */
+             aaa.getTransaction().rollback();
+             bss.getTransaction().rollback();           
             return;
         }
 
@@ -104,7 +121,7 @@ public class AuthenticateUser extends HttpServlet {
         // clear information section
         out.println("<info> </info>");
         // output initial page with list of reservations
-        lister.contentSection(out, reservations, rm, userName);
+        lister.contentSection(out, reservations,  userName);
         out.println("</xml>");
         aaa.getTransaction().commit();
         bss.getTransaction().commit();

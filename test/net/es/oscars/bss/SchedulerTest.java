@@ -17,6 +17,7 @@ import net.es.oscars.database.HibernateUtil;
  */
 @Test(groups={ "bss" })
 public class SchedulerTest {
+    private final int TIME_INTERVAL = 20;  // 20 seconds
     private Properties props;
     private SessionFactory sf;
     private String dbname;
@@ -24,7 +25,7 @@ public class SchedulerTest {
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss", true);
+        this.props = propHandler.getPropertyGroup("test.common", true);
         this.dbname = dbname;
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
@@ -33,10 +34,9 @@ public class SchedulerTest {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
-        Integer timeInterval = Integer.valueOf(this.props.getProperty("timeInterval"));
         Scheduler scheduler = new Scheduler(this.dbname);
         try {
-            reservations = scheduler.pendingReservations(timeInterval);
+            reservations = scheduler.pendingReservations(TIME_INTERVAL);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -48,11 +48,9 @@ public class SchedulerTest {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
-        Integer timeInterval =
-            Integer.valueOf(this.props.getProperty("timeInterval"));
         Scheduler scheduler = new Scheduler(this.dbname);
         try {
-            reservations = scheduler.expiredReservations(timeInterval);
+            reservations = scheduler.expiredReservations(TIME_INTERVAL);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

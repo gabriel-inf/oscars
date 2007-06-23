@@ -2,7 +2,7 @@ package net.es.oscars.pathfinder.dragon;
 
 import java.io.Serializable;
 
-import net.es.oscars.BeanUtils;
+import net.es.oscars.database.HibernateBean;
 import net.es.oscars.bss.topology.*;
 
 
@@ -10,7 +10,7 @@ import net.es.oscars.bss.topology.*;
  * DragonLocalIdMap is adapted from a Middlegen class automatically generated 
  * from the schema for the topology.ipaddrs table.
  */
-public class DragonLocalIdMap extends BeanUtils implements Serializable {
+public class DragonLocalIdMap extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;

@@ -49,15 +49,17 @@ public class Forwarder extends Client {
         this.log.debug("setup.finish: " + url);
     }
 
-    public CreateReply create(Reservation resv, CommonPath reqPath) 
+    public CreateReply create(Reservation resv) 
             throws  InterdomainException {
 
         CreateReply createReply = null;
-        String url = null;
 
-        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
-            url = resv.getPath().getNextDomain().getUrl();
+        CommonPath reqPath = resv.getCommonPath();
+        if (reqPath == null) {
+           throw new InterdomainException(
+                  "no path provided to forwarder create");
         }
+        String url = reqPath.getUrl();
         if (url == null) { return null; }
         this.log.info("create.start forward to  " + url);
         ForwardReply reply = this.forward("createReservation", resv, url,
@@ -161,7 +163,6 @@ public class Forwarder extends Client {
         resCont.setBandwidth( bandwidth.intValue());
         resCont.setProtocol(resv.getProtocol());
         resCont.setDescription(resv.getDescription());
-        resCont.setCreateRouteDirection("FORWARD");
         // TODO - maybe we should set ingress router or srcHost for next hop
         // equal to egress router.
         ExplicitPath explicitPath =

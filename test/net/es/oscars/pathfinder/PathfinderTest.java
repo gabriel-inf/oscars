@@ -25,6 +25,6 @@ public class PathfinderTest {
         this.sf = HibernateUtil.getSessionFactory("bss");
         this.pf = new Pathfinder();
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.pathfinder", true);
+        this.props = propHandler.getPropertyGroup("test.common", true);
     }
 }

@@ -11,17 +11,17 @@ import net.es.oscars.bss.BSSException;
 
 public class TopologyFiles {
     private Logger log;
-    private List<Router> routersList;
+    private List<Node> nodeList;
 
     public TopologyFiles() {
         this.log = Logger.getLogger(this.getClass());
-        this.routersList = new ArrayList<Router>();
+        this.nodeList = new ArrayList<Node>();
     }
 
     // construct what the db should look like based
     // on the *.out snmp files
 
-    public List<Router> constructTopology(String dirName)
+    public List<Node> constructTopology(String dirName)
             throws FileNotFoundException, IOException {
 
         String[] dataFileList = null;
@@ -37,20 +37,20 @@ public class TopologyFiles {
 
         for (String fname: dataFileList) {
             lastSnapshot = this.findLastSnapshot(dirName + "/" + fname);
-            this.updateRouter(dirName, fname, lastSnapshot);
+            this.updateNode(dirName, fname, lastSnapshot);
         }
-        return this.routersList;
+        return this.nodeList;
     }
 
     /**
-     * Finds line number of last snapshot of router information.
+     * Finds line number of last snapshot of node information.
      * @param fname A String containing the name of the output file.
      * @return lastSnapshotLine An int with the line number of the last
-     *     router information snapshot.
+     *     node information snapshot.
      * @throws FileNotFoundException
      * @throws IOException
      *
-     * An output file has a number of snapshots of router info at given times
+     * An output file has a number of snapshots of node info at given times
      * in the current day.  The sections are delineated by a line containing
      * "sysUpTimeInstance".  The last snapshot is the only one used.  The
      * return value contains the line number of the first line containing
@@ -86,10 +86,10 @@ public class TopologyFiles {
     }
 
     /**
-     * Reads data for one snmp output file (one per router)
+     * Reads data for one snmp output file (one per node)
      *
      * @param fname A String containing the name of the output file.
-     * @param lastSnapshot An int with the line number of the last router info
+     * @param lastSnapshot An int with the line number of the last node info
      *     snapshot.  Only the last snapshot is processed.
      * @throws FileNotFoundException
      * @throws IOException
@@ -109,14 +109,14 @@ public class TopologyFiles {
      * 1117523019    ifHighSpeed.116              0
      * 1117523019    ipAdEntIfIndex.127.0.0.1     116
      *
-     * NOTE:  A better method of getting router information would be
+     * NOTE:  A better method of getting node information would be
      *        desirable.
      */
-    private void updateRouter(String dname, String fname, int lastSnapshot)
+    private void updateNode(String dname, String fname, int lastSnapshot)
             throws FileNotFoundException, IOException {
 
-        Map<String,Interface> xfaces = new HashMap<String,Interface>();
-        Interface xface = null;
+        Map<String,Port> ports = new HashMap<String,Port>();
+        Port port = null;
         Matcher matcher = null;
         Matcher oscarsMatcher = null;
         Matcher wanMatcher = null;
@@ -131,23 +131,23 @@ public class TopologyFiles {
         int lineNumber = 0;
         boolean valid = false;
 
-        this.log.debug("updateRouter.start reading file: " + fname);
+        this.log.debug("updateNode.start reading file: " + fname);
 
-        Router router = new Router();
+        Node node = new Node();
         String rname = fname.substring(0,fname.length()-4);
-        router.setName(rname);
-        // create set to hold interfaces
-        router.setInterfaces(new HashSet<Interface>());
-        this.routersList.add(router);
+        node.setName(rname);
+        // create set to hold ports
+        node.setPorts(new HashSet<Port>());
+        this.nodeList.add(node);
 
         // if empty file
         if (lastSnapshot == -1) {
-            this.log.debug("file for router " + rname + " is empty");
-            router.setValid(false);
+            this.log.debug("file for node " + rname + " is empty");
+            node.setValid(false);
             return;
         }
 
-        router.setValid(true);
+        node.setValid(true);
         Pattern pattern = Pattern.compile("([\\w]*)\\.{1}(.*)");
         Pattern oscarsPattern = Pattern.compile("134\\.55\\.75\\..*");
         Pattern wanPattern = Pattern.compile("134\\.55\\..*");
@@ -176,45 +176,53 @@ public class TopologyFiles {
 
             snmpVar = matcher.group(1);
             snmpValue = matcher.group(2);
-            // new Interface created for every line in this section
+            // new Port created for every line in this section
             // note that sections are expected in thie order
             // TODO:  less fragile
 
             if (snmpVar.equals("ifDescr")) {
-                xface = new Interface();
-                xface.setDescription(dataString);
-                xface.setValid(true);
-                xface.setSnmpIndex(Integer.parseInt(snmpValue.trim()));
+                port = new Port();
+                port.setDescription(dataString);
+                port.setValid(true);
+                port.setSnmpIndex(Integer.parseInt(snmpValue.trim()));
                 // create set to hold Ipaddrs
-                xface.setIpaddrs(new HashSet<Ipaddr>());
-                xfaces.put(snmpValue, xface);
+                port.setIpaddrs(new HashSet<Ipaddr>());
+                ports.put(snmpValue, port);
 
             } else if (snmpVar.equals("ifAlias")) {
-                xface = xfaces.get(snmpValue);
-                xface.setAlias(dataString);
+                port = ports.get(snmpValue);
+                port.setAlias(dataString);
             } else if (snmpVar.equals("ifSpeed")) {
-                xface = xfaces.get(snmpValue);
+                port = ports.get(snmpValue);
                 speed = Long.parseLong(dataString);
                 if (speed == 0) { 
-                    xface.setSpeed(speed);
+                    port.setMaximumCapacity(speed);
+                    port.setMaximumReservableCapacity(
+                        Long.valueOf((long)(port.getMaximumCapacity() / 2.0)));
                     continue; 
                 }
                 // note this may be overwritten in ifHighSpeed section
-                xface.setSpeed(speed);
+                port.setMaximumCapacity(speed);
+                port.setMaximumReservableCapacity(
+                        Long.valueOf((long)(port.getMaximumCapacity() / 2.0)));
             } else if (snmpVar.equals("ifHighSpeed")) {
                 highSpeed = Long.parseLong(dataString);
-                xface = xfaces.get(snmpValue);
+                port = ports.get(snmpValue);
                 if (highSpeed == 0) { 
-                    xface.setSpeed(highSpeed);
+                    port.setMaximumCapacity(highSpeed);
+                    port.setMaximumReservableCapacity(
+                        Long.valueOf((long)(port.getMaximumCapacity() / 2.0)));
                     continue; 
                 }
-                speed = xface.getSpeed();
+                speed = port.getMaximumCapacity();
                 if (speed < (highSpeed * 1000000)) {
-                    xface.setSpeed(highSpeed * 1000000);
+                    port.setMaximumCapacity(highSpeed * 1000000);
+                    port.setMaximumReservableCapacity(
+                        Long.valueOf((long)(port.getMaximumCapacity() / 2.0)));
                 }
             } else if (snmpVar.equals("ipAdEntIfIndex")) {
                 Ipaddr ipaddr = new Ipaddr();
-                xface = xfaces.get(dataString);
+                port = ports.get(dataString);
 
                 oscarsMatcher = oscarsPattern.matcher(snmpValue);
                 if (oscarsMatcher.matches()) {
@@ -227,16 +235,16 @@ public class TopologyFiles {
                 }
                 ipaddr.setIP(snmpValue);
                 ipaddr.setValid(true);
-                // add to the interface's set of ipaddrs
-                xface.addIpaddr(ipaddr);
+                // add to the ports's set of ipaddrs
+                port.addIpaddr(ipaddr);
             }
         }
         in.close();
         // need to do here so equality check is better;
         // set can't have duplicates
-        for (Interface xf: xfaces.values()) {
-            router.addInterface(xf);
+        for (Port p: ports.values()) {
+            node.addPort(p);
         }
-        this.log.debug("updateRouter.finish router: " + router.getName());
+        this.log.debug("updateNode.finish node: " + node.getName());
     }
 }

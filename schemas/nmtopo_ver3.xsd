@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ##############################################################
+  
+  File: 	nmtopo_ver3.rnc - Schema to describe network elements
+  Version: 	$Id$
+  Purpose: 	This file lays out some major network topologies
+                used in measurement.  
+  Reference:	http://books.xmlschemata.org/relaxng/page2.html
+  			
+  ##############################################################
+-->
+<!--
+  ##############################################################
+  Namespace definitions
+  ##############################################################
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://ggf.org/ns/nmwg/topology/base/3.0/" xmlns:nmtl3="http://ggf.org/ns/nmwg/topology/l3/3.0/" xmlns:nmtl4="http://ggf.org/ns/nmwg/topology/l4/3.0/" xmlns:CtrlPlane="http://ogf.org/schema/nm/topology/CtrlPlane/20070611/" xmlns:nmwgtopo3="http://ggf.org/ns/nmwg/topology/base/3.0/" xmlns:nmtl2="http://ggf.org/ns/nmwg/topology/l2/3.0/">
+  <xs:import namespace="http://ggf.org/ns/nmwg/topology/l2/3.0/" schemaLocation="nmtopo-l2.xsd"/>
+  <xs:import namespace="http://ggf.org/ns/nmwg/topology/l3/3.0/" schemaLocation="nmtopo-l3.xsd"/>
+  <xs:import namespace="http://ggf.org/ns/nmwg/topology/l4/3.0/" schemaLocation="nmtopo-l4.xsd"/>
+  <xs:import namespace="http://ogf.org/schema/nm/topology/CtrlPlane/20070611/" schemaLocation="nmtopo-ctrlp.xsd"/>
+  <xs:element name="interface" type="nmwgtopo3:BaseInterfaceContent"/>
+  <xs:complexType name="BaseInterfaceContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="nmwgtopo3:type"/>
+      <xs:element ref="nmwgtopo3:hostName"/>
+      <xs:element ref="nmwgtopo3:ifName"/>
+      <xs:element ref="nmwgtopo3:ifDescription"/>
+      <xs:element ref="nmwgtopo3:ifIndex"/>
+      <xs:element ref="nmwgtopo3:capacity"/>
+      <xs:element ref="nmwgtopo3:name"/>
+    </xs:choice>
+    <xs:attribute name="interfaceIdRef" type="xs:string"/>
+    <xs:attribute name="nodeIdRef" type="xs:string"/>
+  </xs:complexType>
+  <xs:element name="type" type="xs:string"/>
+  <xs:element name="hostName" type="xs:string"/>
+  <xs:element name="ifName" type="xs:string"/>
+  <xs:element name="ifDescription" type="xs:string"/>
+  <xs:element name="ifIndex" type="xs:string"/>
+  <xs:element name="capacity" type="xs:string"/>
+  <xs:element name="name">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="type" type="xs:string"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="link" type="nmwgtopo3:BaseLinkContent"/>
+  <xs:complexType name="BaseLinkContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="nmwgtopo3:index"/>
+      <xs:element ref="nmwgtopo3:type"/>
+      <xs:element ref="nmwgtopo3:name"/>
+      <xs:element ref="nmwgtopo3:globalName"/>
+      <xs:choice>
+        <xs:element ref="nmwgtopo3:interface"/>
+        <xs:element ref="nmtl2:interface"/>
+        <xs:group ref="nmtl3:L3Interface"/>
+      </xs:choice>
+      <xs:choice>
+        <xs:element ref="nmwgtopo3:link"/>
+        <xs:element ref="nmtl2:link"/>
+        <xs:element ref="nmtl3:link"/>
+      </xs:choice>
+      <xs:element ref="nmwgtopo3:node"/>
+    </xs:choice>
+    <xs:attribute name="linkIdRef" type="xs:string"/>
+  </xs:complexType>
+  <xs:element name="index" type="xs:string"/>
+  <xs:element name="globalName">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="type" type="xs:string"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="network" type="nmwgtopo3:BaseNetworkContent"/>
+  <xs:complexType name="BaseNetworkContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="nmwgtopo3:name"/>
+      <xs:element ref="nmwgtopo3:type"/>
+      <xs:choice>
+        <xs:element ref="nmwgtopo3:interface"/>
+        <xs:element ref="nmtl2:interface"/>
+        <xs:group ref="nmtl3:L3Interface"/>
+      </xs:choice>
+      <xs:choice>
+        <xs:element ref="nmwgtopo3:link"/>
+        <xs:element ref="nmtl2:link"/>
+        <xs:element ref="nmtl3:link"/>
+      </xs:choice>
+      <xs:element ref="nmwgtopo3:node"/>
+    </xs:choice>
+    <xs:attribute name="networkIdRef" type="xs:string"/>
+  </xs:complexType>
+  <xs:element name="node" type="nmwgtopo3:NodeContent"/>
+  <xs:complexType name="NodeContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:group ref="nmwgtopo3:BaseRole"/>
+      <xs:element ref="nmwgtopo3:name"/>
+      <xs:element ref="nmwgtopo3:type"/>
+      <xs:element ref="nmwgtopo3:hostName"/>
+      <xs:element ref="nmwgtopo3:description"/>
+      <xs:element ref="nmwgtopo3:cpu"/>
+      <xs:element ref="nmwgtopo3:operSys"/>
+      <xs:element ref="nmwgtopo3:location"/>
+      <xs:element ref="nmwgtopo3:institution"/>
+      <xs:element ref="nmwgtopo3:country"/>
+      <xs:element ref="nmwgtopo3:city"/>
+      <xs:element ref="nmwgtopo3:latitude"/>
+      <xs:element ref="nmwgtopo3:longitude"/>
+      <xs:choice>
+        <xs:element ref="nmwgtopo3:interface"/>
+        <xs:element ref="nmtl2:interface"/>
+        <xs:group ref="nmtl3:L3Interface"/>
+      </xs:choice>
+    </xs:choice>
+    <xs:attribute name="nodeIdRef" type="xs:string"/>
+    <xs:attributeGroup ref="nmwgtopo3:BaseRole"/>
+  </xs:complexType>
+  <xs:element name="description" type="xs:string"/>
+  <xs:element name="cpu" type="xs:string"/>
+  <xs:element name="operSys" type="xs:string"/>
+  <xs:element name="location" type="nmwgtopo3:LocationContent"/>
+  <xs:element name="institution" type="xs:string"/>
+  <xs:element name="country" type="xs:string"/>
+  <xs:element name="city" type="xs:string"/>
+  <xs:element name="latitude" type="xs:float"/>
+  <xs:element name="longitude" type="xs:float"/>
+  <xs:complexType name="LocationContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="nmwgtopo3:institution"/>
+      <xs:element ref="nmwgtopo3:country"/>
+      <xs:element ref="nmwgtopo3:zipcode"/>
+      <xs:element ref="nmwgtopo3:state"/>
+      <xs:element ref="nmwgtopo3:city"/>
+      <xs:element ref="nmwgtopo3:streetAddress"/>
+      <xs:element ref="nmwgtopo3:floor"/>
+      <xs:element ref="nmwgtopo3:room"/>
+      <xs:element ref="nmwgtopo3:cage"/>
+      <xs:element ref="nmwgtopo3:rack"/>
+      <xs:element ref="nmwgtopo3:shelf"/>
+      <xs:element ref="nmwgtopo3:latitude"/>
+      <xs:element ref="nmwgtopo3:longitude"/>
+    </xs:choice>
+  </xs:complexType>
+  <xs:element name="zipcode" type="xs:integer"/>
+  <xs:element name="state" type="xs:string"/>
+  <xs:element name="streetAddress" type="xs:string"/>
+  <xs:element name="floor" type="xs:string"/>
+  <xs:element name="room" type="xs:string"/>
+  <xs:element name="cage" type="xs:string"/>
+  <xs:element name="rack" type="xs:string"/>
+  <xs:element name="shelf" type="xs:string"/>
+  <xs:element name="path" type="nmwgtopo3:BasePathContent"/>
+  <xs:complexType name="BasePathContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element ref="nmwgtopo3:link"/>
+      <xs:element ref="nmtl2:link"/>
+      <xs:element ref="nmtl3:link"/>
+    </xs:choice>
+    <xs:attribute name="pathIdRef" type="xs:string"/>
+  </xs:complexType>
+  <xs:attributeGroup name="BaseAddress">
+    <xs:attribute name="value" type="xs:string"/>
+    <xs:attribute name="type" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:group name="BaseRole">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="role" type="xs:string"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="BaseRole">
+    <xs:attribute name="role" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="BaseNodeIdRef">
+    <xs:attribute name="nodeIdRef" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="BaseInterfaceIdRef">
+    <xs:attribute name="interfaceIdRef" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="BaseLinkIdRef">
+    <xs:attribute name="linkIdRef" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="BasePathIdRef">
+    <xs:attribute name="pathIdRef" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="BaseNetworkIdRef">
+    <xs:attribute name="networkIdRef" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:group name="role">
+    <xs:sequence>
+      <xs:element name="role">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="src"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="role1">
+    <xs:sequence>
+      <xs:element name="role">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="dst"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="role2">
+    <xs:sequence>
+      <xs:element name="role" type="xs:string"/>
+    </xs:sequence>
+  </xs:group>
+</xs:schema>

@@ -10,10 +10,9 @@ import net.es.oscars.bss.topology.*;
  * This class is intended to be subclassed by NARBPathfinder and
  * TraceroutePathfinder.
  *
- * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
+ * @author David Robertson (dwrobertson@lbl.gov), Andrew Lake (alake@internet2.edu)
  */
 public class Pathfinder {
-    protected String nextHop;   // TODO:  FIX use of global.
     private Logger log;
     private String dbname;
 
@@ -22,128 +21,55 @@ public class Pathfinder {
     }
 
     /**
-     * Returns next hop past local domain.
+     * Converts list of hops to list of CommonPathElem instances, and
+     * marks hops that are local.
      *
-     * @return nextHop string with next hop (global)
-     */
-    public String nextExternalHop() {
-        return this.nextHop;
-    }
-
-    /**
-     * Returns path with hops that are in the local domain, given a list
-     * of hops.  Also sets nextHop to the first hop past the local domain.
-     *
-     * @param hops list of strings containing IP addresses
-     * @param ingressIP string with address of ingress IP
-     * @param egressIP string with address of egress IP
-     * @return returns start of path containing only local hops
+     * @param hops list of strings representing hops
+     * @return pathElems list of CommonPathElem instances
      * @throws PathfinderException
      */
-    public List<CommonPathElem> pathFromHops(List<String> hops,
-                             String ingressIP, String egressIP)
+    protected List<CommonPathElem> pathFromHops(List<String> hops)
             throws PathfinderException {
 
-        List<CommonPathElem> path = new ArrayList<CommonPathElem>();
-        CommonPathElem pathElem = null;
+        List<CommonPathElem> pathElems = new ArrayList<CommonPathElem>();
+        CommonPathElem prevElem = null;
+        boolean hopFound = false;
+        boolean egressFound = false;
 
         this.log.info("pathFromHops.start");
-        // fill in PathElem elements
-        for (String hop: hops) {
-            pathElem = new CommonPathElem();
-            // assuming strict if given series of hops
-            pathElem.setLoose(false);
-            if (hop == ingressIP) {
-                pathElem.setDescription("ingress");
-            } else if (hop == egressIP) {
-                pathElem.setDescription("egress");
-            }
-            pathElem.setIP(hop);
-            path.add(pathElem);
-        }
-        this.log.info("pathFromHops.finish");
-        return path;
-    }
-
-    /**
-     * Returns path with hops that are in the local domain, given the start of
-     * a path.  Also sets nextHop to the first hop past the local domain.
-     *
-     * @param path list containing elems to check
-     * @return list of elements containing only local hops
-     * @throws PathfinderException
-     */
-    public List<CommonPathElem> getLocalPath(List<CommonPathElem> path)
-            throws PathfinderException {
-
-        CommonPathElem pathElem = null;
-        CommonPathElem localPathElem = null;
-        List<CommonPathElem> localPath = new ArrayList<CommonPathElem>();
-        boolean hopFound = false;
-        String hop = null;
-
-        for (int i = 0; i < path.size(); i++) {
-            pathElem = path.get(i);
-            hop = pathElem.getIP();
-            if (this.isLocalHop(hop)) {
-                //copy path element
-                localPathElem = new CommonPathElem();
-                localPathElem.setIP(hop);
-                localPathElem.setLoose(pathElem.isLoose());
-                localPathElem.setDescription(pathElem.getDescription());
-                localPath.add(localPathElem);
-                this.log.info("getLocalPath, local: " + hop);
-                hopFound = true;
-            } else if (hopFound) {
-                this.log.info("getLocalPath, not local: " + hop);
-                this.nextHop = hop;
-                break;
-            }
-        }
-        // throw error if no local path found
-        if (localPath == null) { 
-            throw new PathfinderException(
-                "No local hops found in path");
-        }
-        this.setIngressLoopback(localPath);
-        this.setEgressLoopback(localPath);
-        return localPath;
-    }
-    
-    /**
-     * Returns list of hops that are in the local domain, given a list of hops
-     * as strings.  Also sets nextHop to the first hop past the local domain.
-     *
-     * @param hops List of Strings representing hops
-     * @return returns list of strings representing only hops within the domain
-     * @throws PathfinderException
-     */
-    public List<String> getLocalHops(List<String> hops)
-            throws PathfinderException {
-
-        ArrayList<String> localHops = new ArrayList<String>();
-        boolean hopFound = false;
-        
-        this.log.info("getLocalHops.start");
         // get hops with loopbacks 
         for (String hop: hops)  {
+            CommonPathElem pathElem = new CommonPathElem();
             if (this.isLocalHop(hop)) {
-                localHops.add(hop);
-                this.log.info("getLocalHops, local: " + hop);
+                // TODO:  is this correct
+                pathElem.setLoose(true);
+                // Scheduler will also check second hop if first does not
+                // have loopback.  I'm not fixing the error checking at
+                // this point unless it looks like the Cisco fix doesn't work.
+                if (!hopFound) {
+                    pathElem.setDescription("ingress");
+                } else {
+                    pathElem.setDescription("local");
+                }
                 hopFound = true;
+                this.log.info("pathFromHops, local: " + hop);
             } else if (hopFound) {
-                this.log.info("getLocalHops, not local: " + hop);
-                this.nextHop = hop;
-                break;
+                if ((prevElem != null) && !egressFound) {
+                    prevElem.setDescription("egress");
+                    egressFound = true;
+                }
+                this.log.info("pathFromHops, not local: " + hop);
             }
+            pathElem.setIP(hop);
+            pathElems.add(pathElem);
+            prevElem = pathElem;
         }
         // throw error if no local path found
-        if (localHops.size() == 0) { 
-            throw new PathfinderException(
-                "No local hops found in path");
+        if (!hopFound) { 
+            throw new PathfinderException("No local hops found in path");
         }
-        this.log.info("getLocalHops.finish");
-        return localHops;
+        this.log.info("pathFromHops.finish");
+        return pathElems;
     }
 
     
@@ -152,25 +78,25 @@ public class Pathfinder {
     }
 
     /**
-     * Get loopback, if any, for given router.  This is probably not the
+     * Get loopback, if any, for given node.  This is probably not the
      * right place for db operations.
      *
-     * @param string with router IP
-     * @return string with router's loopback, if any
+     * @param string with node IP
+     * @return string with node's loopback, if any
      */
     protected String getLoopback(String ip) {
 
-        Router router = null;
+        Node node = null;
         String loopbackIP = null;
 
-        RouterDAO routerDAO = new RouterDAO(this.dbname);
+        NodeDAO nodeDAO = new NodeDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
 
-        router = routerDAO.fromIp(ip);
-        if ((router != null) && (router.getName() != null)) {
-            loopbackIP = ipaddrDAO.getIpType(router.getName(), "wan-loopback");
+        node = nodeDAO.fromIp(ip);
+        if ((node != null) && (node.getName() != null)) {
+            loopbackIP = ipaddrDAO.getIpType(node.getName(), "wan-loopback");
             if (loopbackIP == null) {
-                loopbackIP = ipaddrDAO.getIpType(router.getName(),
+                loopbackIP = ipaddrDAO.getIpType(node.getName(),
                                                  "oscars-loopback");
             }
         }
@@ -181,31 +107,31 @@ public class Pathfinder {
      * Determines whether hop is potentially part of path by seeing if
      * it has an associated primary loopback.
      *
-     * @param string with router IP
+     * @param string with node IP
      * @return boolean with whether has a loopback
      */
-    public boolean isLocalHop(String ip) {
+    protected boolean isLocalHop(String ip) {
         return this.getLoopback(ip) != null;
     }
 
     /**
-     * Get OSCARS loopback, if any, for given router.  This is probably not
+     * Get OSCARS loopback, if any, for given node.  This is probably not
      * the right place for db operations.
      *
-     * @param string with router IP
-     * @return string with router's  OSCARS loopback, if any
+     * @param string with node IP
+     * @return string with node's  OSCARS loopback, if any
      */
     protected String getOSCARSLoopback(String ip) {
 
-        Router router = null;
+        Node node = null;
         String loopbackIP = null;
 
-        RouterDAO routerDAO = new RouterDAO(this.dbname);
+        NodeDAO nodeDAO = new NodeDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
 
-        router = routerDAO.fromIp(ip);
-        if ((router != null) && (router.getName() != null)) {
-            loopbackIP = ipaddrDAO.getIpType(router.getName(),
+        node = nodeDAO.fromIp(ip);
+        if ((node != null) && (node.getName() != null)) {
+            loopbackIP = ipaddrDAO.getIpType(node.getName(),
                                              "oscars-loopback");
         }
         return loopbackIP;
@@ -230,59 +156,5 @@ public class Pathfinder {
             }
         }
         return null;
-    }
-
-    /**
-     * Sets ingress loopback IP, given start of path.
-     *
-     * @param path list of elems in path
-     * @throws PathfinderException
-     */
-    private void setIngressLoopback(List<CommonPathElem> path)
-            throws PathfinderException {
-
-        String loopbackIP = null;
-
-        if (path == null) {
-            throw new PathfinderException(
-                    "null path given when setting ingress loopback");
-        }
-        for (int i = 0; i < path.size(); i++) {
-            String hop = path.get(i).getIP();
-            loopbackIP = this.getOSCARSLoopback(hop);
-            if (loopbackIP != null) {
-                path.get(i).setDescription("ingress");
-                break;
-            }
-        }
-        if (loopbackIP == null) {
-            throw new PathfinderException(
-                "No ingress OSCARS loopback found in path");
-        }
-    }
-
-    /**
-     * Sets egress loopback IP, given start of path.  Currently
-     * hard-wired to last element in path.
-     *
-     * @param path list of elems in path
-     * @throws PathfinderException
-     */
-    private void setEgressLoopback(List<CommonPathElem> path)
-            throws PathfinderException {
-
-        String loopbackIP = null;
-
-        if (path == null) {
-            throw new PathfinderException(
-                    "null path given when setting egress loopback");
-        }
-        String hop = path.get(path.size()-1).getIP();
-        loopbackIP = this.getLoopback(hop);
-        if (loopbackIP == null) {
-            throw new PathfinderException(
-                "No  egress loopback found for path");
-        }
-        path.get(path.size()-1).setDescription("egress");
     }
 }

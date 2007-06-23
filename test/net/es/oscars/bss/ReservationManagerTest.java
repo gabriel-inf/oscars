@@ -19,6 +19,11 @@ import net.es.oscars.pathfinder.*;
  */
 @Test(groups={ "bss" })
 public class ReservationManagerTest {
+    private final Long BANDWIDTH = 25000000L;   // 25 Mbps
+    private final Long BURST_LIMIT = 10000000L; // 10 Mbps
+    private final int DURATION = 240000;       // 4 minutes 
+    private final String PROTOCOL = "UDP";
+    private final String LSP_CLASS = "4";
     private ReservationManager rm;
     private Properties props;
     private SessionFactory sf;
@@ -28,8 +33,8 @@ public class ReservationManagerTest {
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss", true);
-        this.dbname = "bss";
+        this.props = propHandler.getPropertyGroup("test.common", true);
+        this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(dbname);
         this.rm = new ReservationManager(this.dbname);
         this.tc = new TypeConverter();
@@ -45,29 +50,26 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        resv.setSrcHost(this.props.getProperty("sourceHostName"));
-        resv.setDestHost(this.props.getProperty("destHostName"));
+        resv.setSrcHost(this.props.getProperty("sourceHostIP"));
+        resv.setDestHost(this.props.getProperty("destHostIP"));
 
         millis = System.currentTimeMillis();
         resv.setStartTime(millis);
         resv.setCreatedTime(millis);
-        millis += 240 * 1000;
+        millis += DURATION;
         resv.setEndTime(millis);
 
-        bandwidth = Long.parseLong(this.props.getProperty("bandwidth"));
-        bandwidth *= 1000000;
-        resv.setBandwidth(bandwidth);
-        resv.setBurstLimit(
-                Long.parseLong(this.props.getProperty("burstLimit")));
+        resv.setBandwidth(BANDWIDTH);
+        resv.setBurstLimit(BURST_LIMIT);
         // description is unique, so can use it to access reservation in
         // other tests
         resv.setDescription(this.props.getProperty("description"));
-        resv.setProtocol(this.props.getProperty("protocol"));
-        resv.setLspClass(this.props.getProperty("lspClass"));
+        resv.setProtocol(PROTOCOL);
+        resv.setLspClass(LSP_CLASS);
         String account = this.props.getProperty("login");
 
         try {
-            url = this.rm.create(resv, account, null, null, null);
+            url = this.rm.create(resv, account, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -85,7 +87,8 @@ public class ReservationManagerTest {
         String description = this.props.getProperty("description");
         Reservation testResv = dao.queryByParam("description", description);
         try {
-            reservation = this.rm.query(this.tc.getReservationTag(testResv), true);
+            reservation = this.rm.query(this.tc.getReservationTag(testResv),
+                                        testResv.getLogin(), true);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -138,7 +141,8 @@ public class ReservationManagerTest {
         String description = this.props.getProperty("description");
         Reservation resv = dao.queryByParam("description", description);
         try {
-            this.rm.cancel(this.tc.getReservationTag(resv), resv.getLogin());
+            this.rm.cancel(this.tc.getReservationTag(resv), resv.getLogin(),
+                           true);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

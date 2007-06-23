@@ -143,12 +143,13 @@ public class Scheduler {
         Utils utils = new Utils(this.dbname);
         String lspFrom = null;
         String lspTo = null;
+        Integer vlanTag = null;
 
         JnxLSP jnxLsp = new JnxLSP();
         String srcIP = this.rm.getIpAddress(resv.getSrcHost());
         String destIP = this.rm.getIpAddress(resv.getDestHost());
 
-        // get local path
+        // get path
         PathElem pathElem = resv.getPath().getPathElem();
         // find ingress and egress IP's
         while (pathElem != null) {
@@ -162,10 +163,10 @@ public class Scheduler {
             pathElem = pathElem.getNextElem();
         }
         if (lspFrom == null) {
-            throw new BSSException("no ingress loopback in local path");
+            throw new BSSException("no ingress loopback in path");
         }
         if (lspTo == null) {
-            throw new BSSException("no egress loopback in local path");
+            throw new BSSException("no egress loopback in path");
         }
         // Create an LSP object.
         lspInfo = new HashMap<String, String>();
@@ -179,11 +180,11 @@ public class Scheduler {
         lspInfo.put("source-address", srcIP);
         lspInfo.put("destination-address", destIP);
 
-        Integer intParam = resv.getSrcPort();
+        Integer intParam = resv.getSrcIpPort();
         if (intParam != null) {
             lspInfo.put("source-port", Integer.toString(intParam));
         }
-        intParam = resv.getSrcPort();
+        intParam = resv.getSrcIpPort();
         if (intParam != null) {
             lspInfo.put("destination-port", Integer.toString(intParam));
         }
@@ -200,6 +201,10 @@ public class Scheduler {
             lspInfo.put("lsp_description", param);
         } else {
             lspInfo.put("lsp_description", "no description provided");
+        }
+        Vlan vlan = resv.getPath().getVlan();
+        if (vlan != null) {
+            lspInfo.put("vlanTag", vlan.getVlanTag());
         }
 
         lspInfo.put("login", this.props.getProperty("login"));
@@ -236,7 +241,7 @@ public class Scheduler {
             if (opstring.equals("LSP_SETUP")) {
                 jnxLsp.setupLSP(lspInfo, hops);
             } else {
-                jnxLsp.teardownLSP(lspInfo, null);
+                jnxLsp.teardownLSP(lspInfo);
             }
         } catch (PSSException ex) {
             throw new BSSException(ex.getMessage());

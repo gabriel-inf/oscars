@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     destHost            TEXT NOT NULL,
       -- the following are optional fields
         -- source and destination ports
-    srcPort             SMALLINT UNSIGNED,
-    destPort            SMALLINT UNSIGNED,
+    srcIpPort           SMALLINT UNSIGNED,
+    destIpPort          SMALLINT UNSIGNED,
         -- differentiated services code point
     dscp                TEXT,
         -- protocol used (0-255, or a protocol string, such as udp)
@@ -36,32 +36,60 @@ PRIMARY KEY (id)
 
 -- topology section
 
--- table for router description
-CREATE TABLE IF NOT EXISTS routers (
+-- table for node description
+CREATE TABLE IF NOT EXISTS nodes (
     id                  INT NOT NULL AUTO_INCREMENT,
     valid               BOOLEAN NOT NULL,
     name                TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
--- table for interface description
+-- table for port description
 -- would need trigger updating paths if changed
-CREATE TABLE IF NOT EXISTS interfaces (
+CREATE TABLE IF NOT EXISTS ports (
     id                  INT NOT NULL AUTO_INCREMENT,
     valid               BOOLEAN NOT NULL,
         -- SNMP index
     snmpId              INT NOT NULL,
-        -- bandwidth in bps
-    speed               BIGINT UNSIGNED,
+        -- logical name
+    name                TEXT,
+        -- maximum bandwidth in bps
+    maximumCapacity     BIGINT UNSIGNED,
+        -- maximum available use
+    maximumReservableCapacity  BIGINT UNSIGNED,
+        -- granularity of requestable bandwidth
+    granularity         BIGINT unsigned,
         -- description
     description         TEXT,
     alias               TEXT,
-        -- key of corresponding router in routers table
-    routerId            INT NOT NULL,
+        -- key of corresponding node in nodes table
+    nodeId            INT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
--- table for router interface ip addresses
+-- table for link description
+CREATE TABLE IF NOT EXISTS links (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    valid               BOOLEAN NOT NULL,
+        -- SNMP index
+    snmpId              INT NOT NULL,
+        -- logical name
+    name                TEXT,
+        -- maximum bandwidth in bps
+    maximumCapacity     BIGINT UNSIGNED,
+        -- maximum available use
+    maximumReservableCapacity  BIGINT UNSIGNED,
+        -- granularity of requestable bandwidth
+    granularity         BIGINT unsigned,
+        -- description
+    description         TEXT,
+    alias               TEXT,
+        -- key of corresponding port in ports table
+    portId            INT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;
+
+-- table for ip addresses
 CREATE TABLE IF NOT EXISTS ipaddrs (
     id                  INT NOT NULL AUTO_INCREMENT,
     valid               BOOLEAN NOT NULL,
@@ -69,8 +97,8 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
     IP                  TEXT NOT NULL,
         -- description (currently loopback, traceAddress, or NULL)
     description         TEXT,
-        -- key of corresponding interface in interfaces table
-    interfaceId         INT NOT NULL,
+        -- key of corresponding port in ports table
+    portId         INT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -113,19 +141,24 @@ CREATE TABLE IF NOT EXISTS domains (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
--- Table that associates outside hops with domains
-CREATE TABLE IF NOT EXISTS peerIpaddrs (
+-- Table that associates outside hops with domains and stores
+-- info only needed at edges
+CREATE TABLE IF NOT EXISTS edgeInfos (
     id		INT NOT NULL AUTO_INCREMENT,
-    domainId	INT NOT NULL,
-    ip		TEXT NOT NULL,
+    externalIP	TEXT NOT NULL,
+    localType   TEXT,
+    localValue  TEXT,
+    -- needs to be populated with bgpinfo tool
+    ipaddrId    INT,                    -- foreign key
+    domainId	INT NOT NULL,           -- foreign key
     PRIMARY KEY(id)
 ) type = MyISAM;
 
--- Table holding associations between vlans and a specific router.
+-- Table holding associations between vlans and a specific port.
 CREATE TABLE IF NOT EXISTS vlans (
     id                  INT NOT NULL AUTO_INCREMENT,
     vlanTag             INT NOT NULL,
-    routerId            INT NOT NULL,    -- foreign key
+    portId         INT NOT NULL,    -- foreign key
 PRIMARY KEY (id)
 ) type = MyISAM;
 

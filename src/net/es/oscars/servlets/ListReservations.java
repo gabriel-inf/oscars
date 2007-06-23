@@ -14,7 +14,8 @@ import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.bss.BSSException;
-
+import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.UserManager.AuthValue;
 
 public class ListReservations extends HttpServlet {
 
@@ -24,7 +25,7 @@ public class ListReservations extends HttpServlet {
 
         List<Reservation> reservations = null;
 
-        ReservationManager rm = new ReservationManager("bss");
+
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
 
@@ -38,16 +39,19 @@ public class ListReservations extends HttpServlet {
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
-        reservations = this.getReservations(out, rm, userName);
+        reservations = this.getReservations(out, userName);
         if (reservations == null) {
+            /* the status has already been reported in getReservations
             String msg = "Error in getting reservations";
-            utils.handleFailure(out, msg, null, bss);
+            */
+            aaa.getTransaction().rollback();
+            bss.getTransaction().rollback();
             return;
         }
         out.println("<xml>");
         out.println("<status>Successfully retrieved reservations</status>");
         utils.tabSection(out, request, response, "ListReservations");
-        this.contentSection(out, reservations, rm, userName);
+        this.contentSection(out, reservations, userName);
         out.println("</xml>");
         aaa.getTransaction().commit();
         bss.getTransaction().commit();
@@ -60,22 +64,36 @@ public class ListReservations extends HttpServlet {
         this.doGet(request, response);
     }
 
+    /**
+     *  GetReservations returns either all reservations or just the reservations
+     *  for this user, depending on his permissions
+     *  called by this servlet and AuthenticateUser which brings up  a default
+     *  page of reservations listing when a user logs in.
+     *  
+     * @param out PrintWriter used to report errors on the status line
+     * @param rm
+     * @param login
+     * @return
+     */
     public List<Reservation>
-        getReservations(PrintWriter out, ReservationManager rm, String login) {
+        getReservations(PrintWriter out, String login)  {
 
+        ReservationManager rm = new ReservationManager("bss");
         List<Reservation> reservations = null;
-        boolean authorized = false;
+        boolean allUsers = false;
+        Utils utils = new Utils();
 
         UserManager mgr = new UserManager("aaa");
-        if (mgr.verifyAuthorized(login, "Reservations", "manage")) {
-            authorized = true;
+        AuthValue authVal = mgr.checkAccess(login, "Reservations", "list");
+        if (authVal == AuthValue.DENIED) {
+            utils.handleFailure(out, "no permission to list Reservations",  null, null);
+            return null;
         }
+        if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
         try {
-            reservations = rm.list(login, authorized);
+            reservations = rm.list(login, allUsers);
         } catch (BSSException e) {
-            out.println("<xml><status>");
-            out.println(e.getMessage());
-            out.println("</status></xml>");
+            utils.handleFailure(out, e.getMessage(),  null, null);
             return null;
         }
         return reservations;
@@ -83,7 +101,7 @@ public class ListReservations extends HttpServlet {
 
     public void
         contentSection(PrintWriter out, List<Reservation> reservations,
-                       ReservationManager rm, String login) {
+                        String login) {
 
         TypeConverter tc = new TypeConverter();
         InetAddress inetAddress = null;

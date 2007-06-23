@@ -41,24 +41,24 @@ public class ReservationManager {
     }
 
     /**
-     * Creates the local portion of a reservation, given a partially filled in
-     *     reservation instance and additional parameters.
+     * Creates the reservation, given a partially filled in reservation
+     * instance and additional parameters.
      *
      * @param resv reservation instance modified in place
      * @param login string with login name
-     * @param ingressRouterIP string with address of ingress router
-     * @param egressRouterIP string with address of egress router
+     * @param ingressNodeIP string with address of ingress node
+     * @param egressNodeIP string with address of egress node
      * @return string with URL of next domain manager, if any
      * @throws BSSException
      */
     public String create(Reservation resv, String login,
-                         String ingressRouter, String egressRouter,
-                         CommonPath reqPath) 
+                         String ingressNode, String egressNode)
             throws  BSSException {
 
         ParamValidator paramValidator = new ParamValidator();
-        String ingressRouterIP = null;
-        String egressRouterIP = null;
+        String ingressNodeIP = null;
+        String egressNodeIP = null;
+        CommonPath commonPath = resv.getCommonPath();
 
         this.log.info("create.start");
         // login is checked in validate so set it here
@@ -66,7 +66,7 @@ public class ReservationManager {
 
         // so far just validation for create
         StringBuilder errorMsg =
-                paramValidator.validate(resv, ingressRouter, egressRouter);
+                paramValidator.validate(resv, ingressNode, egressNode);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
@@ -79,14 +79,13 @@ public class ReservationManager {
         }
         resv.setStatus("PENDING");
         resv.setBurstLimit(10000000L);
-        if (ingressRouter != null) {
-            ingressRouterIP = this.getIpAddress(ingressRouter);
+        if (ingressNode != null) {
+            ingressNodeIP = this.getIpAddress(ingressNode);
         }
-        if (egressRouter != null) {
-            egressRouterIP = this.getIpAddress(egressRouter);
+        if (egressNode != null) {
+            egressNodeIP = this.getIpAddress(egressNode);
         }
-        Path path =
-                this.getPath(resv, ingressRouterIP, egressRouterIP, reqPath);
+        Path path = this.getPath(resv, ingressNodeIP, egressNodeIP, commonPath);
         // check to make sure the path is not already in the database
         resv.setPath(this.checkPath(path));
         long millis = System.currentTimeMillis();
@@ -127,16 +126,22 @@ public class ReservationManager {
      * @return reservation with cancellation status
      * @throws BSSException 
      */
-    public Reservation cancel(String tag, String login) throws BSSException {
+    public Reservation cancel(String tag, String login, boolean allUsers) throws BSSException {
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String newStatus = null;
         
-        this.log.info("cancel.start: " + tag);
-        Reservation resv = dao.query(tag, true);
+        this.log.info("cancel.start: " + tag + " login: " + login + " allUsers is " + allUsers);
+
+        Reservation resv = dao.query(tag);
         if (resv == null) {
             throw new BSSException(
                 "No current reservation with tag: " + tag);
+        }
+        if (!allUsers) {
+            if  (!resv.getLogin().equals(login)) { 
+                throw new BSSException ("cancel reservation: permission denied");
+            }
         }
         String prevStatus = resv.getStatus();
         if (prevStatus.equals("FINISHED")) {
@@ -165,6 +170,7 @@ public class ReservationManager {
 
     /**
      * Handles final status of cancellation after possible forwarding.
+     * Assume that permission exists or we would not have got this far
      *
      * @param resv Reservation instance
      * @param status string with final cancel status (TODO:  use)
@@ -194,42 +200,49 @@ public class ReservationManager {
      *     corresponding reservation instance.
      *
      * @param tag string with reservation tag
-     * @param authorized boolean indicating user can view all reservations
+     * @param login string with login name of the caller
+     * @param allUsers boolean indicating user can view reservations for all users
      * @return resv corresponding reservation instance, if any
      * @throws BSSException 
      */
-    public Reservation query(String tag, boolean authorized)
+    public Reservation query(String tag, String login, boolean allUsers)
             throws BSSException {
 
         Reservation resv = null;
 
-        this.log.info("query.start: " + tag);
+        this.log.info("query.start: " + tag + " login: " + login + " allUsers is " + allUsers);
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        resv = dao.query(tag, authorized);
+        resv = dao.query(tag);
         if (resv == null) {
             throw new BSSException("Reservation not found: " + tag);
+        }
+        if (!allUsers) {
+            this.log.debug("reservation login is " + resv.getLogin());
+            if  (!resv.getLogin().equals(login)) { 
+                throw new BSSException ("query reservation: permission denied");
+            }
         }
         this.log.info("query.finish: " + resv.toString());
         return resv;
     } 
 
     /**
-     * Lists all reservations if authorized; otherwise only lists the
+     * Lists all reservations if allUsers is true; otherwise only lists the
      *     corresponding user's reservations.
      *
      * @param login string with user's login name
-     * @param authorized boolean setting whether can view all reservations
+     * @param allUsers boolean setting whether can view reservations for all users
      * @return reservations list of rseervations
      * @throws BSSException 
      */
-    public List<Reservation> list(String login, boolean authorized)
+    public List<Reservation> list(String login, boolean allUsers)
             throws BSSException {
 
         List<Reservation> reservations = null;
 
         this.log.info("list.start, login: " + login);
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        reservations = dao.list(login, authorized);
+        reservations = dao.list(login, allUsers);
         this.log.info("list.finish, success");
         return reservations;
     }
@@ -238,34 +251,35 @@ public class ReservationManager {
      * Finds path between source and destination, checks to make sure
      * it wouldn't violate policy, and then finds the next domain, if any.
      */
-    public Path getPath(Reservation resv, String ingressRouterIP,
-                        String egressRouterIP, CommonPath reqPath)
+    public Path getPath(Reservation resv, String ingressNodeIP,
+                        String egressNodeIP, CommonPath commonPath)
             throws BSSException {
 
-        CommonPath commonPath = null;
+        if (commonPath == null) {
+            throw new BSSException("No path provided to reservation manager");
+        }
 
         try {
-            commonPath =
-                this.pceMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
-                                     ingressRouterIP, egressRouterIP,
-                                     reqPath);
+            this.pceMgr.findPath(resv.getSrcHost(), resv.getDestHost(),
+                                 ingressNodeIP, egressNodeIP,
+                                 commonPath);
         } catch (PathfinderException ex) {
             throw new BSSException(ex.getMessage());
         }
         // only occurs if testing only a portion of the system
-        if (commonPath == null) { return null; }
+        if (commonPath.getElems() == null) { return null; }
 
         Long bandwidth = resv.getBandwidth();
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations =
                 dao.overlappingReservations(resv.getStartTime(),
                                             resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, commonPath.getElems(),
+        this.policyMgr.checkOversubscribed(reservations, commonPath,
                                            bandwidth);
         String url = null;
         Domain nextDomain = null;
-        // path is local at this point
-        String nextExternalHop = this.pceMgr.nextExternalHop();
+        // get next external hop (first past egress) from the complete path
+        String nextExternalHop = this.getNextExternalHop(commonPath);
         if (nextExternalHop != null){
             nextDomain = this.domainDAO.getNextDomain(nextExternalHop);
             if (nextDomain != null) {
@@ -273,13 +287,11 @@ public class ReservationManager {
                           nextDomain.getUrl());
                 url = nextDomain.getUrl();
             } else {
-               // throw new BSSException("Can't find domain url for nextExernalHop");
-                this.log.warn("Can't find domain url for nextExternalHop. Hop is: " +  nextExternalHop);
+                this.log.warn(
+                        "Can't find domain url for nextExternalHop. Hop is: " +
+                        nextExternalHop);
             }
         }
-        // indicate whether path is explicit
-        if (reqPath != null) { commonPath.setExplicit(true); }
-        else { commonPath.setExplicit(false); }
         commonPath.setUrl(url);
         // needed for upstream classes
         resv.setCommonPath(commonPath);
@@ -301,7 +313,7 @@ public class ReservationManager {
         Path existingPath = null;
         boolean samePath = false;
 
-        this.log.info("getPath.start");
+        this.log.info("checkPath.start");
         PathDAO pathDAO = new PathDAO(this.dbname);
         PathElem pathElem = path.getPathElem();
         // since cascading, these will be complete paths starting with
@@ -320,17 +332,17 @@ public class ReservationManager {
             }
         }
         if (existingPath == null) {
-            this.log.info("getPath.finish, new path");
+            this.log.info("checkPath.finish, new path");
             return path;
         } else {
-            this.log.info("getPath.finish, old path");
+            this.log.info("checkPath.finish, old path");
             return existingPath;
         }
     }
     
     /**
-     * Converts path in common format (no db keys) into form suitable
-     * for database manipulation.
+     * Converts complete path in common format (no db keys) into
+     * local path, in form suitable for database manipulation.
      *
      * @param commonPath path in common format
      * @param nextDomain domain instance with information about next domain
@@ -340,38 +352,72 @@ public class ReservationManager {
 
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = null;
-        List<PathElem> pathList = new ArrayList<PathElem>();
+        String description = null;
+        List<PathElem> pathElems = new ArrayList<PathElem>();
 
         Path path = new Path();
-        path.setVlanId(commonPath.getVlanId());
+        if (commonPath.getVlanTag() != null) {
+            Vlan vlan = new Vlan();
+            // TODO:  port association
+            vlan.setVlanTag(commonPath.getVlanTag());
+            path.setVlan(vlan);
+        }
         path.setExplicit(commonPath.isExplicit());
         path.setNextDomain(nextDomain);
-        List<CommonPathElem> elems = commonPath.getElems();
-        // path is local at this point
-        for (int i = 0; i < elems.size(); i++) {
-            CommonPathElem commonPathElem = elems.get(i);
+        List<CommonPathElem> commonElems = commonPath.getElems();
+        // this is the complete path
+        for (int i = 0; i < commonElems.size(); i++) {
+            CommonPathElem commonPathElem = commonElems.get(i);
+            description = commonPathElem.getDescription();
+            // can't store non-local addresses
+            if (description == null) {
+                continue;
+            }
             PathElem pathElem = new PathElem();
             pathElem.setLoose(commonPathElem.isLoose());
-            pathElem.setDescription(commonPathElem.getDescription());
+            pathElem.setDescription(description);
             ipaddr = ipaddrDAO.getIpaddr(commonPathElem.getIP(), true);
             pathElem.setIpaddr(ipaddr);
-            pathList.add(pathElem);
+            pathElems.add(pathElem);
         }
-        for (int i = 0; i < pathList.size()-1; i++) {
-            pathList.get(i).setNextElem(pathList.get(i+1));
+        for (int i = 0; i < pathElems.size()-1; i++) {
+            pathElems.get(i).setNextElem(pathElems.get(i+1));
         }
         // set start to first element
-        path.setPathElem(pathList.get(0));
+        path.setPathElem(pathElems.get(0));
         return path;
     }
 
     /**
-     * Returns path that includes both local and interdomain hops
+     * Given a CommonPath instance with the complete path, find the
+     * first hop outside the local domain.
      *
-     * @return path that includes both local and interdomain hops
+     * @param path CommonPath instance containing complete path
+     * @return ip string with IP of next hop
      */
-    public List<CommonPathElem> getCompletePath() {
-        return this.pceMgr.getCompletePath();
+    public String getNextExternalHop(CommonPath path) {
+
+        String nextHop = null;
+        String description = null;
+        boolean hopFound = false;
+
+        this.log.info("getNextExternalHop.start");
+        List<CommonPathElem> pathElems = path.getElems();
+        for (int i = 0; i < pathElems.size(); i++) {
+            CommonPathElem pathElem = pathElems.get(i);
+            description = pathElem.getDescription();
+            // if not local
+            if (description == null) {
+                if (hopFound) {
+                    nextHop = pathElem.getIP();
+                    break;
+                }
+            } else {
+                hopFound = true;
+            }
+        }
+        this.log.info("getNextExternalHop.end");
+        return nextHop;
     }
 
     /**

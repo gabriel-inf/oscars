@@ -31,16 +31,13 @@ public class ReservationDAO
      * Finds a reservation, given its tag.
      *
      * @param tag a string uniquely identifying a reservation across domains
-     * @param authorized a boolean indicating whether a user can view all
-     *     of a reservation's fields:  TODO:  use
      * @return reservation found, if any
      * @throws BSSException
      */
-    public Reservation query(String tag, boolean authorized)
+    public Reservation query(String tag)
         throws BSSException {
 
         String[] strArray = tag.split("-");
-        // TODO:  FIX
         Integer id = Integer.valueOf(strArray[1]);
         Reservation reservation = this.findById(id, false);
         return reservation;
@@ -48,24 +45,24 @@ public class ReservationDAO
 
 
     /**
-     * Lists all reservations if authorized; otherwise, list only
+     * Lists all reservations if allUsers; otherwise, list only
      *     reservations owned by that particular user.
      *     Note that GenericHibernateDAO has Criteria based methods for
      *     doing lists, but they are less clear to someone used to SQL.
      *
      * @param login a string identifier for a user
-     * @param authorized boolean indicating can view all reservations
+     * @param allUsers boolean indicating can view all reservations
      * @return a list of reservations.
      * @throws BSSException
      */
-    public List<Reservation> list(String login, boolean authorized)
+    public List<Reservation> list(String login, boolean allUsers)
             throws BSSException {
         List<Reservation> reservations = null;
 
         // must provide user name
         if (login == null) { return null; }
-        // if not authorized, can only view individual reservations
-        if (!authorized) {
+        // if not allUsers, can only view individual reservations
+        if (!allUsers) {
             this.log.info("list, individual: " + login);
             String hsql = "from Reservation r where r.login = :login " +
                           "order by r.startTime desc";

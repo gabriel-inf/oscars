@@ -4,15 +4,15 @@ import java.util.Map;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import net.es.oscars.bss.topology.Interface;
+import net.es.oscars.bss.topology.Port;
 
 /**
  * Class that performs server side validation for reservation parameters.
  */
 public class ParamValidator {
 
-    public StringBuilder validate(Reservation resv, String ingressRouter,
-                                  String egressRouter) {
+    public StringBuilder validate(Reservation resv, String ingressNode,
+                                  String egressNode) {
 
         StringBuilder sb = new StringBuilder();
         if (resv == null) 
@@ -32,8 +32,8 @@ public class ParamValidator {
         sb.append(this.checkDscp(resv));
         sb.append(this.checkProtocol(resv));
         sb.append(this.checkDescription(resv));
-        sb.append(this.checkIngress(resv, ingressRouter));
-        sb.append(this.checkEgress(resv, egressRouter));
+        sb.append(this.checkIngress(resv, ingressNode));
+        sb.append(this.checkEgress(resv, egressNode));
         return sb;
     }
 
@@ -123,9 +123,9 @@ public class ParamValidator {
     /**
      * @param resv A Reservation instance
      */ 
-    private String checkSrcPort(Reservation resv) {
+    private String checkSrcIpPort(Reservation resv) {
 
-        Integer port = resv.getSrcPort();
+        Integer port = resv.getSrcIpPort();
         if (port == null) { return ""; }
         if ((port < 1024) || (port > 65535)) {
             return("Illegal source port specified: " + port + ".  \n");
@@ -136,9 +136,9 @@ public class ParamValidator {
     /**
      * @param resv A Reservation instance
      */ 
-    private String checkDestPort(Reservation resv) {
+    private String checkDestIpPort(Reservation resv) {
 
-        Integer port = resv.getDestPort();
+        Integer port = resv.getDestIpPort();
         if (port == null) { return ""; }
         if ((port < 1024) || (port > 65535)) {
             return ("Illegal destination port specified: " + port + ".  \n");
@@ -216,42 +216,42 @@ public class ParamValidator {
         return "";
     }
 
-    private String checkIngress(Reservation resv, String ingressRouter) {
+    private String checkIngress(Reservation resv, String ingressNode) {
 
-        if (ingressRouter == null) { return ""; }
+        if (ingressNode == null) { return ""; }
         String userName = resv.getLogin();
         if (userName.equals("dtyu@bnl.gov") ||
                 userName.equals("wenji@fnal.gov")) {
-            if (!ingressRouter.equals("chi-sl-sdn1")) {
+            if (!ingressNode.equals("chi-sl-sdn1")) {
                 return("Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Ingress loopback' field.  \n");
             }
         }
         // check to make sure host exists
         InetAddress addr = null;
         try {
-            addr = InetAddress.getByName(ingressRouter);
+            addr = InetAddress.getByName(ingressNode);
         } catch (UnknownHostException ex) {
-            return "Ingress router " + ingressRouter + " does not exist";
+            return "Ingress node " + ingressNode + " does not exist";
         }
         return "";
     }
 
-    private String checkEgress(Reservation resv, String egressRouter) {
+    private String checkEgress(Reservation resv, String egressNode) {
 
-        if (egressRouter == null) { return ""; }
+        if (egressNode == null) { return ""; }
         String userName = resv.getLogin();
         if (userName.equals("dtyu@bnl.gov") ||
                 userName.equals("wenji@fnal.gov")) {
-            if (!egressRouter.equals("chi-sl-sdn1")) {
+            if (!egressNode.equals("chi-sl-sdn1")) {
                 return("Only 'chi-sl-sdn1', or a blank value, is permissible in the 'Egress loopback' field.  \n");
             }
         }
         // check to make sure host exists
         InetAddress addr = null;
         try {
-            addr = InetAddress.getByName(egressRouter);
+            addr = InetAddress.getByName(egressNode);
         } catch (UnknownHostException ex) {
-            return "Egress router " + egressRouter + " does not exist";
+            return "Egress node " + egressNode + " does not exist";
         }
         return "";
     }

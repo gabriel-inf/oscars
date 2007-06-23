@@ -73,14 +73,16 @@ public class QueryReservationClient extends ExampleClient {
     }
 
     public void outputResponse(ResDetails response) {
-        System.out.println("Tag: " + response.getTag());
-        System.out.println("Status: " + response.getStatus().toString());
-        System.out.println("Source host: " + response.getSrcHost());
-        System.out.println("Destination host: " + response.getDestHost());
+        System.out.println("Tag: " + response.getInfo().getTag());
+        System.out.println("Status: " +
+                response.getInfo().getStatus().toString());
+        System.out.println("Source host: " + response.getInfo().getSrcHost());
+        System.out.println("Destination host: " +
+                response.getInfo().getDestHost());
         System.out.println("Start time: "
-                + new Date(response.getStartTime()).toString());
+                + new Date(response.getInfo().getStartTime()).toString());
         System.out.println("End time: "
-                + new Date(response.getEndTime()).toString());
+                + new Date(response.getInfo().getEndTime()).toString());
         System.out.println("Bandwidth: "
                 + Integer.toString(response.getBandwidth()));
         System.out.println("Burst limit: "

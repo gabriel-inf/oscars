@@ -23,5 +23,39 @@
     </servlet-mapping>
 
     <!-- Security section -->
+    <!-- from http://jakarta.apache.org/cactus/writing/howto_security.html -->
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>SecurityRestriction</web-resource-name>
+            <description>Protect OSCARS server</description>
+	    <url-pattern>/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>OSCARS user role</description>
+            <role-name>user</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+            <transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <!-- note that we only allow SSL connections -->
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/login.html</form-login-page>
+            <form-error-page>/fail_login.html</form-error-page>
+        </form-login-config>
+    </login-config>
+
+    <security-role>
+        <description>OSCARS user role</description>
+        <role-name>user</role-name>
+    </security-role>
+
+<!-- End security section -->
 
 </web-app>

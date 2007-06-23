@@ -10,14 +10,11 @@ import java.util.List;
 public interface PCE {
 
     List<CommonPathElem> findPath(String srcHost, String destHost,
-                        String ingressRouterIP,
-                        String egressRouterIP)
+                        String ingressNodeIP,
+                        String egressNodeIP)
         throws PathfinderException;
 
-    List<CommonPathElem> findPath(List<CommonPathElem> reqPath)
+    // changes elements in place
+    void findPath(CommonPath path)
         throws PathfinderException;
-
-    String nextExternalHop();
-    
-    List<CommonPathElem> getCompletePath();
 }

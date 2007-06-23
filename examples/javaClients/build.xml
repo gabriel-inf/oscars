@@ -1,12 +1,13 @@
 <project name="javaClients" default="compile" basedir=".">
 
+<property environment="env" />
 <property name="build" location="../../build/examples" />
 <property name="lib" location="../../lib" />
 <property name="repo" location="./repo" />
 <property name="src" location="../../src" />
-<property name="private" location="../../conf/private/client" />
-<property name="public" location="../../conf/public" />
-<property name="public.client" location="../../conf/public/client" />
+<property name="private" location="${env.DOMAIN_HOME}/client" />
+<property name="public" location="../../conf" />
+<property name="public.client" location="../../conf/client" />
 <property name="url"
           value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
 
@@ -125,7 +126,6 @@
 
 <target name="clean" description="Delete old build directory">
     <delete dir="${build}" />
-    <delete dir="${repo}" />
 </target>
 
 </project>

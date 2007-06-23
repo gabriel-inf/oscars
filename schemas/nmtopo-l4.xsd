@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ##############################################################
+  
+  File: 	nmtopo_l4.rnc - Layer 4 Network entities
+                            
+  Version: 	$Id$
+  Purpose: 	The schema represents entities at the Layer 4 or
+     		Transport layer
+            
+  Reference:	http://books.xmlschemata.org/relaxng/page2.html
+  			
+  ##############################################################
+-->
+<!--
+  ##############################################################
+  Namespace definitions
+  ##############################################################
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://ggf.org/ns/nmwg/topology/l4/3.0/" xmlns:nmtl3="http://ggf.org/ns/nmwg/topology/l3/3.0/" xmlns:nmtl4="http://ggf.org/ns/nmwg/topology/l4/3.0/" xmlns:CtrlPlane="http://ogf.org/schema/nm/topology/CtrlPlane/20070611/" xmlns:nmwgtopo3="http://ggf.org/ns/nmwg/topology/base/3.0/" xmlns:nmtl2="http://ggf.org/ns/nmwg/topology/l2/3.0/">
+  <xs:import namespace="http://ggf.org/ns/nmwg/topology/base/3.0/" schemaLocation="nmtopo_ver3.xsd"/>
+  <xs:import namespace="http://ggf.org/ns/nmwg/topology/l2/3.0/" schemaLocation="nmtopo-l2.xsd"/>
+  <xs:import namespace="http://ggf.org/ns/nmwg/topology/l3/3.0/" schemaLocation="nmtopo-l3.xsd"/>
+  <xs:import namespace="http://ogf.org/schema/nm/topology/CtrlPlane/20070611/" schemaLocation="nmtopo-ctrlp.xsd"/>
+  <xs:element name="endPointPair" type="nmtl4:EndpointPairContent"/>
+  <xs:complexType name="EndpointPairContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="endPoint">
+        <xs:complexType>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="nmwgtopo3:role"/>
+            <xs:choice>
+              <xs:element ref="nmtl4:address"/>
+              <xs:element ref="nmtl3:interface"/>
+            </xs:choice>
+          </xs:choice>
+          <xs:attribute name="port" type="xs:int"/>
+          <xs:attribute name="protocol" type="xs:string"/>
+          <xs:attribute name="role">
+            <xs:simpleType>
+              <xs:restriction base="xs:token">
+                <xs:enumeration value="src"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="endPoint">
+        <xs:complexType>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:group ref="nmwgtopo3:role1"/>
+            <xs:choice>
+              <xs:element ref="nmtl4:address"/>
+              <xs:element ref="nmtl3:interface"/>
+            </xs:choice>
+          </xs:choice>
+          <xs:attribute name="port" type="xs:int"/>
+          <xs:attribute name="protocol" type="xs:string"/>
+          <xs:attribute name="role">
+            <xs:simpleType>
+              <xs:restriction base="xs:token">
+                <xs:enumeration value="dst"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:element name="address">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="nmtl4:L4Address"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="Endpoint">
+    <xs:sequence>
+      <xs:element name="endPoint" type="nmtl4:EndpointContent"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:complexType name="EndpointContent">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:group ref="nmtl4:L4Role"/>
+      <xs:choice>
+        <xs:element ref="nmtl4:address"/>
+        <xs:element ref="nmtl3:interface"/>
+      </xs:choice>
+    </xs:choice>
+    <xs:attribute name="port" type="xs:int"/>
+    <xs:attribute name="protocol" type="xs:string"/>
+    <xs:attribute name="index" type="xs:string"/>
+    <xs:attributeGroup ref="nmtl4:L4Role"/>
+  </xs:complexType>
+  <xs:element name="path" type="nmtl4:PathContent"/>
+  <xs:complexType name="PathContent">
+    <xs:group minOccurs="0" maxOccurs="unbounded" ref="nmtl4:Endpoint"/>
+    <xs:attribute name="pathIdRef" type="xs:string"/>
+  </xs:complexType>
+  <xs:attributeGroup name="L4Address">
+    <xs:attribute name="value" type="xs:string"/>
+    <xs:attribute name="type" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:group name="L4Role">
+    <xs:sequence>
+      <xs:group minOccurs="0" ref="nmwgtopo3:role2"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="L4Role">
+    <xs:attribute name="role" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="PathIdRef">
+    <xs:attribute name="pathIdRef" use="required" type="xs:string"/>
+  </xs:attributeGroup>
+</xs:schema>

@@ -22,7 +22,7 @@ public class JnxTracerouteTest {
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.pathfinder", true);
+        this.props = propHandler.getPropertyGroup("test.common", true);
     }
 
   @Test

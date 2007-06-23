@@ -69,7 +69,11 @@ public class UserMethods {
         }
         this.convertParams(request, user);
 
-        this.mgr.update(user);
+        /* TODO fix the second param to update
+         * it should be true if a  new password was given
+         * and false otherwise
+         */
+        this.mgr.update(user,false);
         institutions = this.mgr.getInstitutions();
         return null;
     }

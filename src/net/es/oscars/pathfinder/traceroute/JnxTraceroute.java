@@ -79,7 +79,7 @@ public class JnxTraceroute {
         String errInfo = tracerouteError.readLine();
         if (errInfo != null )
         {
-        	this.log.warn("error stream: " + errInfo );
+        	//this.log.warn("error stream: " + errInfo );
         	if ( errPattern.matcher(errInfo).matches())
         	{
                 tracerouteOuput.close();
@@ -90,7 +90,7 @@ public class JnxTraceroute {
     	
         // parse the results
         while ((hopInfo = tracerouteOuput.readLine()) != null) {
-        	this.log.debug("hop: " + hopInfo);
+        	  this.log.debug("hop: " + hopInfo);
        
             this.rawHopData.add(hopInfo);
 

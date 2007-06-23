@@ -224,86 +224,215 @@
                             
 
                         /**
-                        * field for IngressRouterIP
+                        * field for IngressNodeIP
                         */
 
-                        protected java.lang.String localIngressRouterIP ;
+                        protected java.lang.String localIngressNodeIP ;
                         
                            /*  This tracker boolean wil be used to detect whether the user called the set method
                           *   for this attribute. It will be used to determine whether to include this field
                            *   in the serialized XML
                            */
-                           protected boolean localIngressRouterIPTracker = false ;
+                           protected boolean localIngressNodeIPTracker = false ;
                            
 
                            /**
                            * Auto generated getter method
                            * @return java.lang.String
                            */
-                           public  java.lang.String getIngressRouterIP(){
-                               return localIngressRouterIP;
+                           public  java.lang.String getIngressNodeIP(){
+                               return localIngressNodeIP;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param IngressRouterIP
+                               * @param param IngressNodeIP
                                */
-                               public void setIngressRouterIP(java.lang.String param){
+                               public void setIngressNodeIP(java.lang.String param){
                             
                                        if (param != null){
                                           //update the setting tracker
-                                          localIngressRouterIPTracker = true;
+                                          localIngressNodeIPTracker = true;
                                        } else {
-                                          localIngressRouterIPTracker = false;
+                                          localIngressNodeIPTracker = false;
                                               
                                        }
                                    
-                                    this.localIngressRouterIP=param;
+                                    this.localIngressNodeIP=param;
                             
 
                                }
                             
 
                         /**
-                        * field for EgressRouterIP
+                        * field for EgressNodeIP
                         */
 
-                        protected java.lang.String localEgressRouterIP ;
+                        protected java.lang.String localEgressNodeIP ;
                         
                            /*  This tracker boolean wil be used to detect whether the user called the set method
                           *   for this attribute. It will be used to determine whether to include this field
                            *   in the serialized XML
                            */
-                           protected boolean localEgressRouterIPTracker = false ;
+                           protected boolean localEgressNodeIPTracker = false ;
                            
 
                            /**
                            * Auto generated getter method
                            * @return java.lang.String
                            */
-                           public  java.lang.String getEgressRouterIP(){
-                               return localEgressRouterIP;
+                           public  java.lang.String getEgressNodeIP(){
+                               return localEgressNodeIP;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param EgressRouterIP
+                               * @param param EgressNodeIP
                                */
-                               public void setEgressRouterIP(java.lang.String param){
+                               public void setEgressNodeIP(java.lang.String param){
                             
                                        if (param != null){
                                           //update the setting tracker
-                                          localEgressRouterIPTracker = true;
+                                          localEgressNodeIPTracker = true;
                                        } else {
-                                          localEgressRouterIPTracker = false;
+                                          localEgressNodeIPTracker = false;
                                               
                                        }
                                    
-                                    this.localEgressRouterIP=param;
+                                    this.localEgressNodeIP=param;
+                            
+
+                               }
+                            
+
+                        /**
+                        * field for Vtag
+                        */
+
+                        protected java.lang.String localVtag ;
+                        
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localVtagTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return java.lang.String
+                           */
+                           public  java.lang.String getVtag(){
+                               return localVtag;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param Vtag
+                               */
+                               public void setVtag(java.lang.String param){
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localVtagTracker = true;
+                                       } else {
+                                          localVtagTracker = false;
+                                              
+                                       }
+                                   
+                                    this.localVtag=param;
+                            
+
+                               }
+                            
+
+                        /**
+                        * field for SrcPortId
+                        */
+
+                        protected net.es.oscars.wsdlTypes.PortID localSrcPortId ;
+                        
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localSrcPortIdTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return net.es.oscars.wsdlTypes.PortID
+                           */
+                           public  net.es.oscars.wsdlTypes.PortID getSrcPortId(){
+                               return localSrcPortId;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param SrcPortId
+                               */
+                               public void setSrcPortId(net.es.oscars.wsdlTypes.PortID param){
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localSrcPortIdTracker = true;
+                                       } else {
+                                          localSrcPortIdTracker = false;
+                                              
+                                       }
+                                   
+                                    this.localSrcPortId=param;
+                            
+
+                               }
+                            
+
+                        /**
+                        * field for DestPortId
+                        */
+
+                        protected net.es.oscars.wsdlTypes.PortID localDestPortId ;
+                        
+                           /*  This tracker boolean wil be used to detect whether the user called the set method
+                          *   for this attribute. It will be used to determine whether to include this field
+                           *   in the serialized XML
+                           */
+                           protected boolean localDestPortIdTracker = false ;
+                           
+
+                           /**
+                           * Auto generated getter method
+                           * @return net.es.oscars.wsdlTypes.PortID
+                           */
+                           public  net.es.oscars.wsdlTypes.PortID getDestPortId(){
+                               return localDestPortId;
+                           }
+
+                           
+                        
+                            /**
+                               * Auto generated setter method
+                               * @param param DestPortId
+                               */
+                               public void setDestPortId(net.es.oscars.wsdlTypes.PortID param){
+                            
+                                       if (param != null){
+                                          //update the setting tracker
+                                          localDestPortIdTracker = true;
+                                       } else {
+                                          localDestPortIdTracker = false;
+                                              
+                                       }
+                                   
+                                    this.localDestPortId=param;
                             
 
                                }
@@ -353,35 +482,6 @@
                             
 
                         /**
-                        * field for CreateRouteDirection
-                        */
-
-                        protected java.lang.String localCreateRouteDirection ;
-                        
-
-                           /**
-                           * Auto generated getter method
-                           * @return java.lang.String
-                           */
-                           public  java.lang.String getCreateRouteDirection(){
-                               return localCreateRouteDirection;
-                           }
-
-                           
-                        
-                            /**
-                               * Auto generated setter method
-                               * @param param CreateRouteDirection
-                               */
-                               public void setCreateRouteDirection(java.lang.String param){
-                            
-                                    this.localCreateRouteDirection=param;
-                            
-
-                               }
-                            
-
-                        /**
                         * field for Protocol
                         */
 
@@ -425,76 +525,76 @@
                             
 
                         /**
-                        * field for SrcPort
+                        * field for SrcIpPort
                         */
 
-                        protected int localSrcPort ;
+                        protected int localSrcIpPort ;
                         
                            /*  This tracker boolean wil be used to detect whether the user called the set method
                           *   for this attribute. It will be used to determine whether to include this field
                            *   in the serialized XML
                            */
-                           protected boolean localSrcPortTracker = false ;
+                           protected boolean localSrcIpPortTracker = false ;
                            
 
                            /**
                            * Auto generated getter method
                            * @return int
                            */
-                           public  int getSrcPort(){
-                               return localSrcPort;
+                           public  int getSrcIpPort(){
+                               return localSrcIpPort;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param SrcPort
+                               * @param param SrcIpPort
                                */
-                               public void setSrcPort(int param){
+                               public void setSrcIpPort(int param){
                             
                                        // setting primitive attribute tracker to true
-                                       localSrcPortTracker = true;
+                                       localSrcIpPortTracker = true;
                                    
-                                    this.localSrcPort=param;
+                                    this.localSrcIpPort=param;
                             
 
                                }
                             
 
                         /**
-                        * field for DestPort
+                        * field for DestIpPort
                         */
 
-                        protected int localDestPort ;
+                        protected int localDestIpPort ;
                         
                            /*  This tracker boolean wil be used to detect whether the user called the set method
                           *   for this attribute. It will be used to determine whether to include this field
                            *   in the serialized XML
                            */
-                           protected boolean localDestPortTracker = false ;
+                           protected boolean localDestIpPortTracker = false ;
                            
 
                            /**
                            * Auto generated getter method
                            * @return int
                            */
-                           public  int getDestPort(){
-                               return localDestPort;
+                           public  int getDestIpPort(){
+                               return localDestIpPort;
                            }
 
                            
                         
                             /**
                                * Auto generated setter method
-                               * @param param DestPort
+                               * @param param DestIpPort
                                */
-                               public void setDestPort(int param){
+                               public void setDestIpPort(int param){
                             
                                        // setting primitive attribute tracker to true
-                                       localDestPortTracker = true;
+                                       localDestIpPortTracker = true;
                                    
-                                    this.localDestPort=param;
+                                    this.localDestIpPort=param;
                             
 
                                }
@@ -768,7 +868,7 @@
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                              if (localIngressRouterIPTracker){
+                              if (localIngressNodeIPTracker){
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -776,33 +876,33 @@
                                         if (prefix == null) {
                                             prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
 
-                                            xmlWriter.writeStartElement(prefix,"ingressRouterIP", namespace);
+                                            xmlWriter.writeStartElement(prefix,"ingressNodeIP", namespace);
                                             xmlWriter.writeNamespace(prefix, namespace);
                                             xmlWriter.setPrefix(prefix, namespace);
 
                                         } else {
-                                            xmlWriter.writeStartElement(namespace,"ingressRouterIP");
+                                            xmlWriter.writeStartElement(namespace,"ingressNodeIP");
                                         }
 
                                     } else {
-                                        xmlWriter.writeStartElement("ingressRouterIP");
+                                        xmlWriter.writeStartElement("ingressNodeIP");
                                     }
                                 
 
-                                          if (localIngressRouterIP==null){
+                                          if (localIngressNodeIP==null){
                                               // write the nil attribute
                                               
-                                                     throw new RuntimeException("ingressRouterIP cannot be null!!");
+                                                     throw new RuntimeException("ingressNodeIP cannot be null!!");
                                                   
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(localIngressRouterIP);
+                                                   xmlWriter.writeCharacters(localIngressNodeIP);
                                             
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             } if (localEgressRouterIPTracker){
+                             } if (localEgressNodeIPTracker){
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -810,74 +910,88 @@
                                         if (prefix == null) {
                                             prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
 
-                                            xmlWriter.writeStartElement(prefix,"egressRouterIP", namespace);
+                                            xmlWriter.writeStartElement(prefix,"egressNodeIP", namespace);
                                             xmlWriter.writeNamespace(prefix, namespace);
                                             xmlWriter.setPrefix(prefix, namespace);
 
                                         } else {
-                                            xmlWriter.writeStartElement(namespace,"egressRouterIP");
+                                            xmlWriter.writeStartElement(namespace,"egressNodeIP");
                                         }
 
                                     } else {
-                                        xmlWriter.writeStartElement("egressRouterIP");
+                                        xmlWriter.writeStartElement("egressNodeIP");
                                     }
                                 
 
-                                          if (localEgressRouterIP==null){
+                                          if (localEgressNodeIP==null){
                                               // write the nil attribute
                                               
-                                                     throw new RuntimeException("egressRouterIP cannot be null!!");
+                                                     throw new RuntimeException("egressNodeIP cannot be null!!");
                                                   
                                           }else{
 
                                         
-                                                   xmlWriter.writeCharacters(localEgressRouterIP);
+                                                   xmlWriter.writeCharacters(localEgressNodeIP);
                                             
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             } if (localReqPathTracker){
+                             } if (localVtagTracker){
+                                    namespace = "http://oscars.es.net/OSCARS";
+                                    if (! namespace.equals("")) {
+                                        prefix = xmlWriter.getPrefix(namespace);
+
+                                        if (prefix == null) {
+                                            prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
+
+                                            xmlWriter.writeStartElement(prefix,"vtag", namespace);
+                                            xmlWriter.writeNamespace(prefix, namespace);
+                                            xmlWriter.setPrefix(prefix, namespace);
+
+                                        } else {
+                                            xmlWriter.writeStartElement(namespace,"vtag");
+                                        }
+
+                                    } else {
+                                        xmlWriter.writeStartElement("vtag");
+                                    }
+                                
+
+                                          if (localVtag==null){
+                                              // write the nil attribute
+                                              
+                                                     throw new RuntimeException("vtag cannot be null!!");
+                                                  
+                                          }else{
+
+                                        
+                                                   xmlWriter.writeCharacters(localVtag);
+                                            
+                                          }
+                                    
+                                   xmlWriter.writeEndElement();
+                             } if (localSrcPortIdTracker){
+                                    if (localSrcPortId==null){
+                                         throw new RuntimeException("srcPortId cannot be null!!");
+                                    }
+                                   localSrcPortId.getOMDataSource(
+                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","srcPortId"),
+                                       factory).serialize(xmlWriter);
+                                } if (localDestPortIdTracker){
+                                    if (localDestPortId==null){
+                                         throw new RuntimeException("destPortId cannot be null!!");
+                                    }
+                                   localDestPortId.getOMDataSource(
+                                       new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","destPortId"),
+                                       factory).serialize(xmlWriter);
+                                } if (localReqPathTracker){
                                     if (localReqPath==null){
                                          throw new RuntimeException("reqPath cannot be null!!");
                                     }
                                    localReqPath.getOMDataSource(
                                        new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","reqPath"),
                                        factory).serialize(xmlWriter);
-                                }
-                                    namespace = "http://oscars.es.net/OSCARS";
-                                    if (! namespace.equals("")) {
-                                        prefix = xmlWriter.getPrefix(namespace);
-
-                                        if (prefix == null) {
-                                            prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
-
-                                            xmlWriter.writeStartElement(prefix,"createRouteDirection", namespace);
-                                            xmlWriter.writeNamespace(prefix, namespace);
-                                            xmlWriter.setPrefix(prefix, namespace);
-
-                                        } else {
-                                            xmlWriter.writeStartElement(namespace,"createRouteDirection");
-                                        }
-
-                                    } else {
-                                        xmlWriter.writeStartElement("createRouteDirection");
-                                    }
-                                
-
-                                          if (localCreateRouteDirection==null){
-                                              // write the nil attribute
-                                              
-                                                     throw new RuntimeException("createRouteDirection cannot be null!!");
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(localCreateRouteDirection);
-                                            
-                                          }
-                                    
-                                   xmlWriter.writeEndElement();
-                              if (localProtocolTracker){
+                                } if (localProtocolTracker){
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -911,7 +1025,7 @@
                                           }
                                     
                                    xmlWriter.writeEndElement();
-                             } if (localSrcPortTracker){
+                             } if (localSrcIpPortTracker){
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -919,22 +1033,22 @@
                                         if (prefix == null) {
                                             prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
 
-                                            xmlWriter.writeStartElement(prefix,"srcPort", namespace);
+                                            xmlWriter.writeStartElement(prefix,"srcIpPort", namespace);
                                             xmlWriter.writeNamespace(prefix, namespace);
                                             xmlWriter.setPrefix(prefix, namespace);
 
                                         } else {
-                                            xmlWriter.writeStartElement(namespace,"srcPort");
+                                            xmlWriter.writeStartElement(namespace,"srcIpPort");
                                         }
 
                                     } else {
-                                        xmlWriter.writeStartElement("srcPort");
+                                        xmlWriter.writeStartElement("srcIpPort");
                                     }
                                 
-                                       xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localSrcPort));
+                                       xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localSrcIpPort));
                                     
                                    xmlWriter.writeEndElement();
-                             } if (localDestPortTracker){
+                             } if (localDestIpPortTracker){
                                     namespace = "http://oscars.es.net/OSCARS";
                                     if (! namespace.equals("")) {
                                         prefix = xmlWriter.getPrefix(namespace);
@@ -942,19 +1056,19 @@
                                         if (prefix == null) {
                                             prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
 
-                                            xmlWriter.writeStartElement(prefix,"destPort", namespace);
+                                            xmlWriter.writeStartElement(prefix,"destIpPort", namespace);
                                             xmlWriter.writeNamespace(prefix, namespace);
                                             xmlWriter.setPrefix(prefix, namespace);
 
                                         } else {
-                                            xmlWriter.writeStartElement(namespace,"destPort");
+                                            xmlWriter.writeStartElement(namespace,"destIpPort");
                                         }
 
                                     } else {
-                                        xmlWriter.writeStartElement("destPort");
+                                        xmlWriter.writeStartElement("destIpPort");
                                     }
                                 
-                                       xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localDestPort));
+                                       xmlWriter.writeCharacters(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localDestIpPort));
                                     
                                    xmlWriter.writeEndElement();
                              }
@@ -1090,25 +1204,52 @@
                                         } else {
                                            throw new RuntimeException("description cannot be null!!");
                                         }
-                                     if (localIngressRouterIPTracker){
+                                     if (localIngressNodeIPTracker){
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "ingressRouterIP"));
+                                                                      "ingressNodeIP"));
                             
-                                        if (localIngressRouterIP != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localIngressRouterIP));
+                                        if (localIngressNodeIP != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localIngressNodeIP));
                                         } else {
-                                           throw new RuntimeException("ingressRouterIP cannot be null!!");
+                                           throw new RuntimeException("ingressNodeIP cannot be null!!");
                                         }
-                                    } if (localEgressRouterIPTracker){
+                                    } if (localEgressNodeIPTracker){
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "egressRouterIP"));
+                                                                      "egressNodeIP"));
                             
-                                        if (localEgressRouterIP != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEgressRouterIP));
+                                        if (localEgressNodeIP != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localEgressNodeIP));
                                         } else {
-                                           throw new RuntimeException("egressRouterIP cannot be null!!");
+                                           throw new RuntimeException("egressNodeIP cannot be null!!");
                                         }
-                                    } if (localReqPathTracker){
+                                    } if (localVtagTracker){
+                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                                      "vtag"));
+                            
+                                        if (localVtag != null){
+                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localVtag));
+                                        } else {
+                                           throw new RuntimeException("vtag cannot be null!!");
+                                        }
+                                    } if (localSrcPortIdTracker){
+                            elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                                      "srcPortId"));
+                            
+                            
+                                    if (localSrcPortId==null){
+                                         throw new RuntimeException("srcPortId cannot be null!!");
+                                    }
+                                    elementList.add(localSrcPortId);
+                                } if (localDestPortIdTracker){
+                            elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
+                                                                      "destPortId"));
+                            
+                            
+                                    if (localDestPortId==null){
+                                         throw new RuntimeException("destPortId cannot be null!!");
+                                    }
+                                    elementList.add(localDestPortId);
+                                } if (localReqPathTracker){
                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                       "reqPath"));
                             
@@ -1117,16 +1258,7 @@
                                          throw new RuntimeException("reqPath cannot be null!!");
                                     }
                                     elementList.add(localReqPath);
-                                }
-                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "createRouteDirection"));
-                            
-                                        if (localCreateRouteDirection != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localCreateRouteDirection));
-                                        } else {
-                                           throw new RuntimeException("createRouteDirection cannot be null!!");
-                                        }
-                                     if (localProtocolTracker){
+                                } if (localProtocolTracker){
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
                                                                       "protocol"));
                             
@@ -1135,18 +1267,18 @@
                                         } else {
                                            throw new RuntimeException("protocol cannot be null!!");
                                         }
-                                    } if (localSrcPortTracker){
+                                    } if (localSrcIpPortTracker){
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "srcPort"));
+                                                                      "srcIpPort"));
                             
                                 elementList.add(
-                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localSrcPort));
-                            } if (localDestPortTracker){
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localSrcIpPort));
+                            } if (localDestIpPortTracker){
                              elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "destPort"));
+                                                                      "destIpPort"));
                             
                                 elementList.add(
-                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localDestPort));
+                                   org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localDestIpPort));
                             }
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
@@ -1343,11 +1475,11 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","ingressRouterIP").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","ingressNodeIP").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setIngressRouterIP(
+                                              object.setIngressNodeIP(
                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
                                               
                                         reader.next();
@@ -1357,13 +1489,49 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","egressRouterIP").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","egressNodeIP").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setEgressRouterIP(
+                                              object.setEgressNodeIP(
                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
                                               
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                            
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","vtag").equals(reader.getName())){
+                                
+                                    java.lang.String content = reader.getElementText();
+                                    
+                                              object.setVtag(
+                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
+                                              
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                            
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","srcPortId").equals(reader.getName())){
+                                
+                                        object.setSrcPortId(net.es.oscars.wsdlTypes.PortID.Factory.parse(reader));
+                                      
+                                        reader.next();
+                                    
+                              }  // End of if for expected property start element
+                            
+                                    
+                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
+                                
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","destPortId").equals(reader.getName())){
+                                
+                                        object.setDestPortId(net.es.oscars.wsdlTypes.PortID.Factory.parse(reader));
+                                      
                                         reader.next();
                                     
                               }  // End of if for expected property start element
@@ -1382,25 +1550,6 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","createRouteDirection").equals(reader.getName())){
-                                
-                                    java.lang.String content = reader.getElementText();
-                                    
-                                              object.setCreateRouteDirection(
-                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                              
-                                        reader.next();
-                                    
-                              }  // End of if for expected property start element
-                            
-                                else{
-                                    // A start element we are not expecting indicates an invalid parameter was passed
-                                    throw new java.lang.RuntimeException("Unexpected subelement " + reader.getLocalName());
-                                }
-                            
-                                    
-                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
-                                
                                     if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","protocol").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
@@ -1415,11 +1564,11 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","srcPort").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","srcIpPort").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setSrcPort(
+                                              object.setSrcIpPort(
                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToInt(content));
                                               
                                         reader.next();
@@ -1429,11 +1578,11 @@
                                     
                                     while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
                                 
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","destPort").equals(reader.getName())){
+                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","destIpPort").equals(reader.getName())){
                                 
                                     java.lang.String content = reader.getElementText();
                                     
-                                              object.setDestPort(
+                                              object.setDestIpPort(
                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToInt(content));
                                               
                                         reader.next();

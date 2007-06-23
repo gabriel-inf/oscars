@@ -2,14 +2,18 @@ package net.es.oscars.bss.topology;
 
 import java.util.Set;
 import java.io.Serializable;
+
+import org.hibernate.Hibernate;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import net.es.oscars.BeanUtils;
+import net.es.oscars.database.HibernateBean;
 
 /**
  * PathElem is the Hibernate bean for the bss.pathElems table.
  */
-public class PathElem extends BeanUtils implements Serializable {
+public class PathElem extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
@@ -74,6 +78,32 @@ public class PathElem extends BeanUtils implements Serializable {
      */ 
     public void setIpaddr(Ipaddr ipaddr) { this.ipaddr = ipaddr; }
 
+
+    // need to override superclass because dealing with transient
+    // instances as well
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        Class thisClass = Hibernate.getClass(this);
+        if (o == null || thisClass != Hibernate.getClass(o)) {
+            return false;
+        }
+        PathElem castOther = (PathElem) o;
+        // if both of these have been saved to the database
+        if ((this.getId() != null) &&
+            (castOther.getId() != null)) {
+            return new EqualsBuilder()
+                .append(this.getId(), castOther.getId())
+                .isEquals();
+        } else {
+            // decided not to check nextElem; could lead to redundant
+            // checks
+            return new EqualsBuilder()
+                .append(this.isLoose(), castOther.isLoose())
+                .append(this.getIpaddr(), castOther.getIpaddr())
+                .append(this.getDescription(), castOther.getDescription())
+                .isEquals();
+        }
+    }
 
     public String toString() {
         return new ToStringBuilder(this)

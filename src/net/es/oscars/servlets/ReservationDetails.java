@@ -86,12 +86,12 @@ public class ReservationDetails {
                     resv.getSrcHost() + "</td></tr>");
         out.println("<tr><td>Destination</td><td>" +
                     resv.getDestHost() + "</td></tr>");
-        intParam = resv.getSrcPort();
+        intParam = resv.getSrcIpPort();
         if (intParam != null) {
             out.println("<tr><td>Source port</td><td>" +
                         intParam + "</td></tr>");
         }
-        intParam = resv.getDestPort();
+        intParam = resv.getDestIpPort();
         if (intParam != null) {
             out.println("<tr><td>Destination port</td><td>" +
                         intParam + "</td></tr>");
@@ -113,7 +113,7 @@ public class ReservationDetails {
         Utils utils = new Utils("bss");  // FIX
         String path = utils.pathToString(resv.getPath());
         if (path != null) {
-            out.println("<tr><td>Routers in path</td><td>" +
+            out.println("<tr><td>Nodes in path</td><td>" +
                         path + "</td></tr>");
         }
 

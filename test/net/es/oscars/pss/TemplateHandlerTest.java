@@ -20,6 +20,7 @@ import net.es.oscars.PropHandler;
  */
 @Test(groups={ "pss", "xml" })
 public class TemplateHandlerTest {
+    private final String BANDWIDTH = "10000000"; // 10 Mbps
     private Properties testProps;
     private TemplateHandler th;
     private Map<String,String> commonHm;
@@ -31,7 +32,7 @@ public class TemplateHandlerTest {
     protected void setUpClass() {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("test.properties");
-        this.testProps = propHandler.getPropertyGroup("test.pss", true);
+        this.testProps = propHandler.getPropertyGroup("test.common", true);
         propHandler = new PropHandler("oscars.properties");
         // fill in name/value pairs common to all tests
         Properties props = propHandler.getPropertyGroup("pss", true);
@@ -52,13 +53,12 @@ public class TemplateHandlerTest {
         this.commonHm.put("firewall_filter_marker",
                 props.getProperty("firewall_filter_marker"));
         this.commonHm.put("source-address",
-                this.testProps.getProperty("source-address"));
+                this.testProps.getProperty("srcHost"));
         this.commonHm.put("destination-address",
-                this.testProps.getProperty("destination-address"));
-        this.commonHm.put("from", this.testProps.getProperty("from"));
-        this.commonHm.put("to", this.testProps.getProperty("to"));
-        this.commonHm.put("bandwidth",
-                this.testProps.getProperty("bandwidth"));
+                this.testProps.getProperty("destHost"));
+        this.commonHm.put("from", this.testProps.getProperty("ingressRouter"));
+        this.commonHm.put("to", this.testProps.getProperty("egressRouter"));
+        this.commonHm.put("bandwidth", BANDWIDTH);
 
         this.setupFileName = System.getenv("CATALINA_HOME") +
                                  "/shared/oscars.conf/server/" +

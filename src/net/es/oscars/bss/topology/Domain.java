@@ -1,15 +1,18 @@
 package net.es.oscars.bss.topology;
 
 import java.io.Serializable;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
-import net.es.oscars.BeanUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.hibernate.Hibernate;
+
+import net.es.oscars.database.HibernateBean;
 
 /**
  * Domain is adapted from a Middlegen class automatically generated 
  * from the schema for the bss.domains table.
  */
-public class Domain extends BeanUtils implements Serializable {
+public class Domain extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
@@ -86,6 +89,32 @@ public class Domain extends BeanUtils implements Serializable {
      */ 
     public void setLocal(boolean local) { this.local = local; }
 
+
+    // need to override superclass because dealing with transient
+    // instances as well
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        Class thisClass = Hibernate.getClass(this);
+        if (o == null || thisClass != Hibernate.getClass(o)) {
+            return false;
+        }
+        Domain castOther = (Domain) o;
+        // if both of these have been saved to the database
+        if ((this.getId() != null) &&
+            (castOther.getId() != null)) {
+            return new EqualsBuilder()
+                .append(this.getId(), castOther.getId())
+                .isEquals();
+        } else {
+            return new EqualsBuilder()
+                .append(this.getName(), castOther.getName())
+                .append(this.getAbbrev(), castOther.getAbbrev())
+                .append(this.getUrl(), castOther.getUrl())
+                .append(this.getAsNum(), castOther.getAsNum())
+                .append(this.isLocal(), castOther.isLocal())
+                .isEquals();
+        }
+    }
 
     public String toString() {
         return new ToStringBuilder(this)

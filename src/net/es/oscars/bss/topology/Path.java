@@ -3,13 +3,16 @@ package net.es.oscars.bss.topology;
 import java.util.Set;
 import java.io.Serializable;
 
-import net.es.oscars.BeanUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.hibernate.Hibernate;
+
+import net.es.oscars.database.HibernateBean;
 import net.es.oscars.bss.Reservation;
 
 /**
  * Path is the Hibernate bean for the bss.Paths table.
  */
-public class Path extends BeanUtils implements Serializable {
+public class Path extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
@@ -21,7 +24,7 @@ public class Path extends BeanUtils implements Serializable {
     private PathElem pathElem;
 
     /** nullable persistent field */
-    private Integer vlanId;
+    private Vlan vlan;
 
     /** nullable persistent field */
     private Domain nextDomain;
@@ -54,15 +57,15 @@ public class Path extends BeanUtils implements Serializable {
 
 
     /**
-     * @return vlan An Integer with the reservation's associated vlan
+     * @return vlan the reservation's associated vlan with tag, if any
      */ 
-    public Integer getVlanId() { return this.vlanId; }
+    public Vlan getVlan() { return this.vlan; }
 
     /**
-     * @param vlan An Integer with the reservation's desired vlan
+     * @param vlan the reservation's associated vlan with tag, if any
      */ 
-    public void setVlanId(Integer vlan) {
-        this.vlanId = vlan;
+    public void setVlan(Vlan vlan) {
+        this.vlan = vlan;
     }
 
 
@@ -90,6 +93,31 @@ public class Path extends BeanUtils implements Serializable {
      */ 
     public void setNextDomain(Domain domain) { this.nextDomain = domain; }
 
+
+    // need to override superclass because dealing with transient
+    // instances as well
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        Class thisClass = Hibernate.getClass(this);
+        if (o == null || thisClass != Hibernate.getClass(o)) {
+            return false;
+        }
+        Path castOther = (Path) o;
+        // if both of these have been saved to the database
+        if ((this.getId() != null) &&
+            (castOther.getId() != null)) {
+            return new EqualsBuilder()
+                .append(this.getId(), castOther.getId())
+                .isEquals();
+        } else {
+            return new EqualsBuilder()
+                .append(this.isExplicit(), castOther.isExplicit())
+                .append(this.getPathElem(), castOther.getPathElem())
+                .append(this.getNextDomain(), castOther.getNextDomain())
+                .append(this.getVlan(), castOther.getVlan())
+                .isEquals();
+        }
+    }
 
     public String toString() {
         StringBuilder sb = new StringBuilder();

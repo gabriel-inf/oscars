@@ -5,9 +5,11 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
+import net.es.oscars.aaa.AAAException;
 
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.UserManager;
+import net.es.oscars.aaa.UserManager.AuthValue;
 
 public class CreateReservationForm extends HttpServlet {
 
@@ -22,10 +24,17 @@ public class CreateReservationForm extends HttpServlet {
         response.setContentType("text/xml");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
+        UserManager mgr = new UserManager("aaa");
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
-        Session bss = 
+        AuthValue authVal = mgr.checkModResAccess(userName,
+                "Reservations", "create", 0, 0, false );
+        if (authVal == AuthValue.DENIED ) {
+            utils.handleFailure(out, "No permission granted to create a reservation" , aaa, null);
+            return;
+        }
+        Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         out.println("<xml>");
@@ -66,7 +75,10 @@ public class CreateReservationForm extends HttpServlet {
             "time zone is your local time zone.</p>");
 
         //if (returnParams.get("loopbacksAllowed") != null) {
-        if (mgr.verifyAuthorized(userName, "Reservations", "manage")) {
+        // check to see if user may specify path elements
+        AuthValue authVal = mgr.checkModResAccess(userName,
+                "Reservations", "create", 0, 0, true );
+        if  (authVal != AuthValue.DENIED ) {
             out.println("<p><strong>WARNING</strong>:  Entering a value in " +
             "a red-outlined field may change default routing behavior for " +
             "the selected flow.</p>");
@@ -111,7 +123,7 @@ public class CreateReservationForm extends HttpServlet {
         out.println("<td>(For our records)</td></tr>");
 
         //if (returnParams.get("loopbacksAllowed") != null) {
-        if (mgr.verifyAuthorized(userName, "Reservations", "manage")) {
+        if (authVal != AuthValue.DENIED) {
             out.println("<tr>");
             out.println("<td>Ingress loopback</td>");
             out.println("<td class='warning'>");
@@ -127,12 +139,13 @@ public class CreateReservationForm extends HttpServlet {
             out.println("<td>(Host name or IP address)</td>");
             out.println("</tr>");
         }
-        //if (returnParams.get("persistentAllowed") != null) {
+        /*if (returnParams.get("persistentAllowed") != null) {
         if (mgr.verifyAuthorized(userName, "Reservations", "persistent")) {
             out.println("<tr><td>Persistent reservation</td>");
             out.println("<td><input type='checkbox' name='persistent' size='8' value='0'></input></td>");
             out.println("<td>Doesn't expire until explicitly cancelled.</td></tr>");
         }
+        */
         out.println("<tr><td>Year</td>");
         out.println("<td><input type='text' name='startYear' maxlength='4' size='40'></input></td>");
         out.println("<td id='oyear'> </td></tr>");

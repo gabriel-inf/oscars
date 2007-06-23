@@ -27,11 +27,11 @@ public class TraceroutePathfinderTest {
     protected void setUpClass() {
         // database needed for read-only transactions involving loopbacks
         // at some point using a cache would be better
-        this.dbname = "bss";
+        this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
         this.pf = new TraceroutePathfinder(this.dbname);
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.pathfinder", true);
+        this.props = propHandler.getPropertyGroup("test.common", true);
     }
 
   @Test

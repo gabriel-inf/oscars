@@ -1,0 +1,31 @@
+<Server port="6005" shutdown="SHUTDOWN">
+ 
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" />
+  <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.storeconfig.StoreConfigLifecycleListener"/>
+ 
+  <Service name="Catalina">
+ 
+    <!-- Define a non-SSL HTTP/1.1 Connector for testing only -->
+    <Connector port="9191" maxHttpHeaderSize="8192"
+               maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+               enableLookups="false" redirectPort="8443" acceptCount="100"
+               connectionTimeout="20000" disableUploadTimeout="true" />
+ 
+    <!-- remove this line when deploy -->
+    <DefaultContext reloadable="true" />
+
+    <Engine name="Catalina" defaultHost="localhost">
+        <Realm className="org.apache.catalina.realm.JDBCRealm" debug="1"
+            driverName="com.mysql.jdbc.Driver"
+            connectionURL="jdbc:mysql:///aaa"
+	    connectionName="DOMAIN_SPECIFIC" connectionPassword="DOMAIN_SPECIFIC" />
+
+        <Host name="localhost" appBase="webapps"
+            unpackWARs="true" autoDeploy="true"
+            xmlValidation="false" xmlNamespaceAware="false">
+        </Host>
+    </Engine>
+  </Service>
+</Server>

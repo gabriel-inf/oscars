@@ -6,26 +6,37 @@ import javax.servlet.http.*;
 
 import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.Institution;
+import net.es.oscars.aaa.UserManager;
+import net.es.oscars.aaa.UserManager.AuthValue;
 
 
 public class UserDetails {
 
     public void
-        contentSection(PrintWriter out, User user, User requester,
+        contentSection(PrintWriter out, User user, boolean modifyAllowed,
                        List<Institution> insts, String servletName) {
 
         String nextPage = null;
         String header = null;
         String submitValue = null;
-
+        String passwordClass = "'SOAP'";
+    
         if (servletName.equals("UserAddForm")) {
             nextPage = "UserAdd";
             header = "Add a new user";
             submitValue = "Add";
-        } else {
+            passwordClass="'required'";
+        } else if (servletName.equals("UserModify") || modifyAllowed) {
             nextPage = "UserModify";
             header = "Editing profile for user: " + user.getLogin();
             submitValue = "Modify Profile";
+        } else { // servletName = UserQuery and modifyAllowed is false
+            nextPage = "UserModify";
+            header = "Profile for user: " + user.getLogin();
+            submitValue = "View Profile";
+            /* TODO - David says this button should not appear if the user cannot'
+             * add or modify the profile
+             */
         }
 
         out.println("<content>");
@@ -50,6 +61,7 @@ public class UserDetails {
         out.println("<td>Password (Enter twice)</td>");
         strParam = user.getPassword();
         out.println("<td>");
+        //out.println("<input class="+ passwordClass + "type='password' " +
         out.println("<input class='required' type='password' " +
                         "name='password' size='40'");
         if (strParam != null) { out.println(" value='********'"); }
@@ -57,9 +69,10 @@ public class UserDetails {
         out.println("</tr>");
         out.println("<tr>");
         out.println("<td>Password Confirmation</td>");
+        //out.println("<td><input class=" + passwordClass + " type='password' " +
         out.println("<td><input class='required' type='password' " +
                     "name='passwordConfirmation' size='40'");
-        if (strParam != null) { out.println(" value='********'"); }
+       if (strParam != null) { out.println(" value='********'"); }
         out.println("></input></td>");
         out.println("</tr>");
 
@@ -71,6 +84,7 @@ public class UserDetails {
                 "name='firstName' size='40' value='" + strParam + "'></input>");
         out.println("</td>");
         out.println("</tr>");
+        
         out.println("<tr>");
         out.println("<td>Last Name</td>");
         out.println("<td>");
@@ -79,7 +93,28 @@ public class UserDetails {
         out.println("<input class='required' type='text' name='lastName' " + 
                     "size='40' value='" + strParam + "'></input>");
         out.println("</td>");
+        out.println("</tr>");      
+        
+        out.println("<tr>");
+        out.println("<td>X.509 subject name</td>");
+        out.println("<td>");
+        strParam = user.getCertSubject();
+        if (strParam == null) { strParam = ""; }
+        out.println("<input class='SOAP' type='text' name='certSubject' " + 
+                    "size='40' value='" + strParam + "'></input>");
+        out.println("</td>");
         out.println("</tr>");
+        
+        out.println("<tr>");
+        out.println("<td>X.509 issuer name</td>");
+        out.println("<td>");
+        strParam = user.getCertIssuer();
+        if (strParam == null) { strParam = ""; }
+        out.println("<input class='SOAP' type='text' name='certIssuer' " + 
+                    "size='40' value='" + strParam + "'></input>");
+        out.println("</td>");
+        out.println("</tr>");
+        
         out.println("<tr>");
         this.outputInstitutionMenu(out, insts, user);
 

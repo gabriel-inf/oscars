@@ -53,8 +53,12 @@ public class JnxLSP {
             LSPConnection conn = new LSPConnection();
             conn.createSSHConnection(hm);
             String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/oscars.conf/server/" +
-                this.props.getProperty("setupFile");
+                "/shared/oscars.conf/server/";
+            if (hm.get("vlanTag") == null) {
+                fname += this.props.getProperty("setupFile");
+            } else {
+                fname += this.props.getProperty("setupVpnFile");
+            }
             this.configureLSP(hm, hops, fname, conn.out);
             this.readResponse(conn.in);
             conn.shutDown();
@@ -75,7 +79,7 @@ public class JnxLSP {
      * @return boolean indicating success
      * @throws PSSException
      */
-    public boolean teardownLSP(Map<String,String> hm, List<String> hops) 
+    public boolean teardownLSP(Map<String,String> hm) 
             throws PSSException {
 
         this.log.info("teardownLSP.start");
@@ -85,7 +89,7 @@ public class JnxLSP {
             String fname =  System.getenv("CATALINA_HOME") +
                 "/shared/oscars.conf/server/" +
                 this.props.getProperty("teardownFile");
-            this.configureLSP(hm, hops, fname, conn.out);
+            this.configureLSP(hm, null, fname, conn.out);
             this.readResponse(conn.in);
             conn.shutDown();
         } catch (IOException ex) {

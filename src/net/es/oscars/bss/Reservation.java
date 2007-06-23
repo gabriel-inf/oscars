@@ -3,7 +3,7 @@ package net.es.oscars.bss;
 import java.io.Serializable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import net.es.oscars.BeanUtils;
+import net.es.oscars.database.HibernateBean;
 import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.Domain;
 import net.es.oscars.pathfinder.CommonPath;
@@ -11,7 +11,7 @@ import net.es.oscars.pathfinder.CommonPath;
 /**
  * Reservation is the Hibernate bean for for the bss.reservations table.
  */
-public class Reservation extends BeanUtils implements Serializable {
+public class Reservation extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4099;
@@ -47,10 +47,10 @@ public class Reservation extends BeanUtils implements Serializable {
     private String destHost;
 
     /** nullable persistent field */
-    private Integer srcPort;
+    private Integer srcIpPort;
 
     /** nullable persistent field */
-    private Integer destPort;
+    private Integer destIpPort;
 
     /** nullable persistent field */
     private String dscp;
@@ -187,25 +187,25 @@ public class Reservation extends BeanUtils implements Serializable {
 
 
     /**
-     * @return srcPort An Integer with the reservation's source port
+     * @return srcIpPort An Integer with the reservation's source port
      */ 
-    public Integer getSrcPort() { return this.srcPort; }
+    public Integer getSrcIpPort() { return this.srcIpPort; }
 
     /**
-     * @param srcPort An Integer with the reservation's source port
+     * @param srcIpPort An Integer with the reservation's source port
      */ 
-    public void setSrcPort(Integer srcPort) { this.srcPort = srcPort; }
+    public void setSrcIpPort(Integer srcIpPort) { this.srcIpPort = srcIpPort; }
 
 
     /**
-     * @return destPort An Integer with the reservation's destination port
+     * @return destIpPort An Integer with the reservation's destination port
      */ 
-    public Integer getDestPort() { return this.destPort; }
+    public Integer getDestIpPort() { return this.destIpPort; }
 
     /**
-     * @param destPort An Integer with the reservation's destination port
+     * @param destIpPort An Integer with the reservation's destination port
      */ 
-    public void setDestPort(Integer destPort) { this.destPort = destPort; }
+    public void setDestIpPort(Integer destIpPort) { this.destIpPort = destIpPort; }
 
 
     /**

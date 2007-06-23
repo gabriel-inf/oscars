@@ -15,7 +15,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "aaa" })
+@Test(groups={ "aaa", "permission" }, dependsOnGroups={ "create" })
 public class PermissionTest {
     private Properties props;
     private SessionFactory sf;
@@ -25,23 +25,26 @@ public class PermissionTest {
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-        this.dbname = "aaa";
+        this.dbname = "testaaa";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
 
+  @Test
     public void permissionQuery() {
-        PermissionDAO dao = new PermissionDAO(this.dbname);
+        PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
         this.sf.getCurrentSession().beginTransaction();
-        Permission permission = (Permission) dao.queryByParam("name",
+        Permission permission =
+                (Permission) permissionDAO.queryByParam("name",
                                     this.props.getProperty("permissionName"));
         this.sf.getCurrentSession().getTransaction().commit();
         assert permission != null;
     }
 
+  @Test
     public void permissionList() {
-        PermissionDAO dao = new PermissionDAO(this.dbname);
+        PermissionDAO permissionDAO = new PermissionDAO(this.dbname);
         this.sf.getCurrentSession().beginTransaction();
-        List<Permission> perms = dao.list();
+        List<Permission> perms = permissionDAO.list();
         this.sf.getCurrentSession().getTransaction().commit();
         assert !perms.isEmpty();
     }

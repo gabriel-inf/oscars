@@ -15,7 +15,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss/topology" })
+@Test(groups={ "bss/topology", "domain" }, dependsOnGroups={ "create" })
 public class DomainTest {
     private Properties props;
     private SessionFactory sf;
@@ -24,11 +24,12 @@ public class DomainTest {
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss.topology", true);
-        this.dbname = "bss";
+        this.props = propHandler.getPropertyGroup("test.common", true);
+        this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
+  @Test
     public void domainQuery() {
         this.sf.getCurrentSession().beginTransaction();
         DomainDAO dao = new DomainDAO(this.dbname);
@@ -38,6 +39,7 @@ public class DomainTest {
         assert domain != null;
     }
 
+  @Test
     public void domainList() {
         this.sf.getCurrentSession().beginTransaction();
         DomainDAO dao = new DomainDAO(this.dbname);

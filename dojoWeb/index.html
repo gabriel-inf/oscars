@@ -47,12 +47,26 @@
         </tr>
     </table>
 
-    <!-- other tabs added after successful login, and removed upon logout -->
     <div id="mainTabContainer" dojoType="TabContainer"
 	 doLayout="false" selectedChild="sessionPane">
-    <div id="sessionPane" dojoType="ContentPane" label="Login"
-         loadingMessage="Loading login form..." href="login.html"
+    <div id="sessionPane" dojoType="ContentPane" label="Session"
+         loadingMessage="Loading session form..." href="forms/session.html"
          onload="javascript:submitForm();">
+    </div>
+    <div id="listReservationsPane" dojoType="ContentPane" label="Reservations"
+         href="forms/listReservations.html">
+    </div>
+    <div id="reservationPane" dojoType="ContentPane" label="Reservation Details"
+         href="forms/reservation.html">
+    </div>
+    <div id="createReservationPane" dojoType="ContentPane"
+         label="Create Reservation" href="forms/createReservation.html">
+    </div>
+    <div id="userListPane" dojoType="ContentPane" label="Users"
+         href="forms/userList.html">
+    </div>
+    <div id="userPane" dojoType="ContentPane" label="User Details"
+         href="forms/user.html">
     </div>
     </div>
 

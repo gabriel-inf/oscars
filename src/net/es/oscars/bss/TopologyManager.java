@@ -16,14 +16,14 @@ import net.es.oscars.pathfinder.CommonPathElem;
  * This class contains methods to update the topology database, given
  * possibly new topology information.  To do so, it must
  *
- * 1) Mark all existing routers, interfaces, and ipaddrs as invalid.  Trying
- *    to determine the equivalency of router, interface, and ipaddr information
+ * 1) Mark all existing nodes, ports, and ipaddrs as invalid.  Trying
+ *    to determine the equivalency of node, port, and ipaddr information
  *    in the current and new topology would be too time-consuming at this
  *    point.
  *
- * 2) Save the new topology information in the database.  New routers that were
- *    marked invalid as part of generating the router list are not saved.  In
- *    that case, all information associated with the current router is marked
+ * 2) Save the new topology information in the database.  New nodes that were
+ *    marked invalid as part of generating the node list are not saved.  In
+ *    that case, all information associated with the current node is marked
  *    as valid again.
  *
  * 3) Recalculate the paths for all pending reservations.  If a path then
@@ -35,7 +35,7 @@ import net.es.oscars.pathfinder.CommonPathElem;
  *    is marked invalid, and the old path remains associated with the
  *    reservation.
  *
- * 5) Remove all invalidated router and interface rows.  Remove all invalidated
+ * 5) Remove all invalidated node and port rows.  Remove all invalidated
  *    ipaddrs that are not part of any reservation's path.  Remove all paths
  *    that are no longer associated with any reservation.
  *
@@ -62,7 +62,7 @@ public class TopologyManager {
         this.utils = new Utils(this.dbname);
     }
 
-    public void updateDb(List<Router> newRouters) {
+    public void updateDb(List<Node> newNodes) {
 
         this.log.info("updateDb.start");
         this.sf.getCurrentSession().beginTransaction();
@@ -75,7 +75,7 @@ public class TopologyManager {
 
             // step 2
             this.log.info("saving new topology information");
-            this.save(newRouters);
+            this.save(newNodes);
             this.log.info("finished saving new topology information");
 
             // step 3
@@ -105,33 +105,33 @@ public class TopologyManager {
     }
 
     /** Reads existing topology information from the database, and marks
-     *  each current router, interface, and ipaddr as invalid. 
+     *  each current node, port, and ipaddr as invalid. 
      */
     private void invalidateCurrentInfo() {
-        RouterDAO routerDAO = new RouterDAO(this.dbname);
-        routerDAO.invalidateAll();
-        InterfaceDAO xfaceDAO = new InterfaceDAO(this.dbname);
-        xfaceDAO.invalidateAll();
+        NodeDAO nodeDAO = new NodeDAO(this.dbname);
+        nodeDAO.invalidateAll();
+        PortDAO portDAO = new PortDAO(this.dbname);
+        portDAO.invalidateAll();
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         ipaddrDAO.invalidateAll();
     }
 
     /**
-     * Saves router list to database. Saving the routers also saves the
-     * interfaces and ipaddrs via associations.
+     * Saves node list to database. Saving the nodes also saves the
+     * ports and ipaddrs via associations.
      *
-     * @param routers list of routers to save
+     * @param nodes list of nodes to save
      */
-    private void save(List<Router> newRouters) {
+    private void save(List<Node> newNodes) {
 
-        RouterDAO routerDAO = new RouterDAO(this.dbname);
-        for (Router r: newRouters) {
-            if (r.isValid()) {
-                routerDAO.create(r);
+        NodeDAO nodeDAO = new NodeDAO(this.dbname);
+        for (Node n: newNodes) {
+            if (n.isValid()) {
+                nodeDAO.create(n);
             } else {
-                // mark the current router valid again, if one corresponds
-                // to the new router
-                routerDAO.validate(r.getName());
+                // mark the current node valid again, if one corresponds
+                // to the new node
+                nodeDAO.validate(n.getName());
             }
         }
     }
@@ -149,8 +149,8 @@ public class TopologyManager {
      */
     private void recalculatePaths(String status) throws BSSException {
 
-        String ingressRouterIP = null;
-        String egressRouterIP = null;
+        String ingressNodeIP = null;
+        String egressNodeIP = null;
         CommonPath reqPath = null;
         Path path = null;
 
@@ -166,9 +166,9 @@ public class TopologyManager {
             while (pathElem != null) {
                 if (pathElem.getDescription() != null) {
                     if (pathElem.getDescription().equals("ingress")) {
-                        ingressRouterIP = pathElem.getIpaddr().getIP();
+                        ingressNodeIP = pathElem.getIpaddr().getIP();
                     } else if (pathElem.getDescription().equals("egress")) {
-                        egressRouterIP = pathElem.getIpaddr().getIP();
+                        egressNodeIP = pathElem.getIpaddr().getIP();
                     }
                 }
                 pathElem = pathElem.getNextElem();
@@ -176,15 +176,15 @@ public class TopologyManager {
             // This should never happen.  However, the semantics of
             // using these are different than in the original
             // reservation creation, where they can be null.
-            if ((ingressRouterIP == null) || (egressRouterIP == null)) {
+            if ((ingressNodeIP == null) || (egressNodeIP == null)) {
                 r.setStatus("INVALIDATED");
                 dao.update(r);
                 continue;
             }
             try {
                 // finds path and checks for oversubscription
-                path = this.rm.getPath(r, ingressRouterIP,
-                                       egressRouterIP, reqPath);
+                path = this.rm.getPath(r, ingressNodeIP,
+                                       egressNodeIP, reqPath);
             } catch (BSSException e) {
                 r.setStatus("INVALIDATED");
                 dao.update(r);
@@ -209,11 +209,11 @@ public class TopologyManager {
      */
     private void clean() {
         this.log.info("clean.start");
-        this.log.info("removing invalidated routers");
-        // remove routers and associated interfaces
-        RouterDAO routerDAO = new RouterDAO(this.dbname);
-        routerDAO.removeAllInvalid();
-        this.log.info("finished removing invalidated routers");
+        this.log.info("removing invalidated nodes");
+        // remove nodes and associated ports
+        NodeDAO nodeDAO = new NodeDAO(this.dbname);
+        nodeDAO.removeAllInvalid();
+        this.log.info("finished removing invalidated nodes");
 
         // remove any path that is not part of a reservation
         this.log.info("removing paths that are no longer in use");

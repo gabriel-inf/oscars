@@ -31,7 +31,7 @@ public class LSPConnection {
     private Session session;
     private Channel channel;
     private SSLSocketFactory sslsf;
-    private Logger log;
+    private org.apache.log4j.Logger log;
 
     public LSPConnection() {
         this.session = null;
@@ -39,7 +39,7 @@ public class LSPConnection {
         this.in = null;
         this.out = null;
         this.sslsf = null;
-        this.log = Logger.getLogger(this.getClass());
+        this.log = org.apache.log4j.Logger.getLogger(this.getClass());
     }
 
     /**

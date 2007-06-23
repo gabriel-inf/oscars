@@ -25,8 +25,6 @@
 
     <property name="explicit" />
 
-    <property name="vlanId" />
-
     <!-- Associations -->
 
     <many-to-one name="pathElem" column="pathElemId"
@@ -35,6 +33,9 @@
 
     <many-to-one name="nextDomain" column="nextDomainId"
 	    class="net.es.oscars.bss.topology.Domain" not-null="false" />
+
+    <many-to-one name="vlan" column="vlanId"
+	    class="net.es.oscars.bss.topology.Vlan" not-null="false" />
 
     <set name="reservations" inverse="true" cascade="all, delete-orphan">
         <key column="pathId" />

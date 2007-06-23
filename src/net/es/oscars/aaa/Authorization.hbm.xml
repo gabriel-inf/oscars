@@ -13,7 +13,7 @@
 
 <class name="net.es.oscars.aaa.Authorization" table="authorizations">
     <meta attribute="class-description" inherit="false">
-       @hibernate.class table="authorizations"
+       @hibernate.class table="Authorizations"
     </meta>
 
     <id name="id">
@@ -27,7 +27,7 @@
 
     <property name="updateTime" />
 
-    <property name="userId" not-null="true">
+    <property name="attrId" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
@@ -44,6 +44,10 @@
            @hibernate.property not-null="true"
         </meta>    
     </property>
+    
+    <property name="constraintName"/> 
+    
+    <property name="constraintValue"/> 
 
     <!-- Associations -->
 

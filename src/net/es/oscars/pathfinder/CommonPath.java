@@ -11,10 +11,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 public class CommonPath {
 
-    private List<CommonPathElem> elems;
-    private Integer vlanId;
-    private String url;
-    private Boolean explicit;
+    private List<CommonPathElem> elems;    // list of hops
+    private String vlanTag;         // layer 2 only
+    private EdgeInfo srcEdgeInfo;   // layer 2 only
+    private EdgeInfo destEdgeInfo;  // layer 2 only
+    private String url;             // domain controller location
+    private Boolean explicit;       // whether path explicitly given
 
     /** default constructor */
     public CommonPath() { }
@@ -33,13 +35,39 @@ public class CommonPath {
     /**
      * @return vlan An Integer with the reservation's associated vlan
      */ 
-    public Integer getVlanId() { return this.vlanId; }
+    public String getVlanTag() { return this.vlanTag; }
 
     /**
      * @param vlan An Integer with the reservation's desired vlan
      */ 
-    public void setVlanId(Integer vlan) {
-        this.vlanId = vlan;
+    public void setVlanTag(String vlanTag) {
+        this.vlanTag = vlanTag;
+    }
+
+
+    /**
+     * @return srcEdgeInfo an EdgeInfo instance (only used in layer 2)
+     */ 
+    public EdgeInfo getSrcEdgeInfo() { return this.srcEdgeInfo; }
+
+    /**
+     * @param srcEdgeInfo an EdgeInfo instance for the source (only for layer 2)
+     */ 
+    public void setSrcEdgeInfo(EdgeInfo srcEdgeInfo) {
+        this.srcEdgeInfo = srcEdgeInfo;
+    }
+
+
+    /**
+     * @return destEdgeInfo an EdgeInfo instance (only used in layer 2)
+     */ 
+    public EdgeInfo getDestEdgeInfo() { return this.destEdgeInfo; }
+
+    /**
+     * @param destEdgeInfo an EdgeInfo instance for the destination (layer 2)
+     */ 
+    public void setDestEdgeInfo(EdgeInfo destEdgeInfo) {
+        this.destEdgeInfo = destEdgeInfo;
     }
 
 

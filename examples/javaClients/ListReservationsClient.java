@@ -49,15 +49,15 @@ public class ListReservationsClient extends ExampleClient {
     }
 
     public void outputResponse(ListReply response) {
-        ResInfoContent[] resInfo;
-        if ((response != null) && (resInfo = response.getResInfo()) != null) {
-            for (int i = 0; i < resInfo.length; i++) {
-                System.out.println("Tag: " + resInfo[i].getTag());
-                System.out.println("Source host: " + resInfo[i].getSrcHost());
+        ResSummary[] summaries;
+        if ((response != null) && (summaries = response.getResInfo()) != null) {
+            for (int i = 0; i < summaries.length; i++) {
+                System.out.println("Tag: " + summaries[i].getTag());
+                System.out.println("Source host: " + summaries[i].getSrcHost());
                 System.out.println("Destination host: "
-                        + resInfo[i].getDestHost());
+                        + summaries[i].getDestHost());
                 System.out.println("Status: "
-                        + resInfo[i].getStatus().toString());
+                        + summaries[i].getStatus().toString());
                 System.out.println(" ");
             }
         } else {

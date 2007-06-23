@@ -2,6 +2,7 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
@@ -11,6 +12,7 @@ import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.UserManager.AuthValue;
 
 
 public class UserModify extends HttpServlet {
@@ -20,10 +22,12 @@ public class UserModify extends HttpServlet {
             throws IOException, ServletException {
 
         UserManager mgr = null;
-        UserAdd adder = null;
+        //UserAdd adder = null;
         UserDetails userDetails = null;
         User user = null;
-        User requester = null;
+        //User requester = null;
+        boolean self = false; // is user modifying own profile
+        boolean setPassword = false; 
         List<Institution> institutions = null;
 
         UserSession userSession = new UserSession();
@@ -38,24 +42,45 @@ public class UserModify extends HttpServlet {
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
-        // if admin is modifying the profile
-        if (profileName != userName) { requester = mgr.query(userName); }
+        
+        if (profileName != null) { // get here by clicking on a name in the users list
+            if (profileName.equals(userName)) { 
+                self =true; 
+            } else {
+                self = false;
+            }
+        } else { // profileName is null - not sure how we get here -mrt
+            profileName = userName;
+            self = false;
+        }
+        AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
+        
+        if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
+              user= mgr.query(profileName);
+         } else {
+            utils.handleFailure(out,"no permission modify users", aaa,null);
+            return;
+        }
 
-        user = mgr.query(profileName);
         if (user == null) {
             String msg = "User " + profileName + " does not exist";
             utils.handleFailure(out, msg, aaa, null);
         }
-        this.convertParams(out, request, user);
-        String password = user.getPassword();
-        String confirmationPassword =
-            request.getParameter("passwordConfirmation");
 
         try {
+            this.convertParams(out, request, user);
+            String password = request.getParameter("password");
+            String confirmationPassword =
+            request.getParameter("passwordConfirmation");
+
             // handle password modification if necessary
-            user.setPassword(
-                    this.checkPassword(password, confirmationPassword));
-            mgr.update(user);
+            // checkpassword will return null, if password is  not to be changed
+            String newPassword = utils.checkPassword(password, confirmationPassword);
+            if (newPassword != null) {
+                user.setPassword(newPassword);
+                setPassword = true;
+            }
+            mgr.update(user,setPassword);
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
@@ -63,9 +88,9 @@ public class UserModify extends HttpServlet {
         institutions = mgr.getInstitutions();
         userDetails = new UserDetails();
         out.println("<xml>");
-        out.println("<status>User profile</status>");
+        out.println("<status>User profile successfully modified</status>");
         utils.tabSection(out, request, response, "UserList");
-        userDetails.contentSection(out, user, requester, institutions,
+        userDetails.contentSection(out, user, true, institutions,
                                    "UserModify");
         out.println("</xml>");
         aaa.getTransaction().commit();
@@ -79,18 +104,23 @@ public class UserModify extends HttpServlet {
     }
 
     public void convertParams(PrintWriter out, HttpServletRequest request,
-                              User user) {
+                              User user) 
+        throws AAAException {
 
         String strParam = null;
+        String DN = null;
+        Utils utils = new Utils();
 
         strParam = request.getParameter("certIssuer");
+        if (strParam != null) {  DN = utils.checkDN(strParam);   }
         // allow setting existent non-required field to null
-        if ((strParam != null) || (user.getCertIssuer() != null)) {
-            user.setCertIssuer(strParam);
+        if ((DN != null) || (user.getCertIssuer() != null)) {
+            user.setCertIssuer(DN);
         }
-        strParam = request.getParameter("certSubject");
-        if ((strParam != null) || (user.getCertSubject() != null)) {
-            user.setCertSubject(strParam);
+         strParam = request.getParameter("certSubject");
+        if (strParam != null) {  DN = utils.checkDN(strParam);   }
+        if ((DN != null) || (user.getCertSubject() != null)) {
+            user.setCertSubject(DN);
         }
         strParam = request.getParameter("lastName");
         if (strParam != null) { user.setLastName(strParam); }
@@ -100,8 +130,6 @@ public class UserModify extends HttpServlet {
         if (strParam != null) { user.setEmailPrimary(strParam); }
         strParam = request.getParameter("phonePrimary");
         if (strParam != null) { user.setPhonePrimary(strParam); }
-        strParam = request.getParameter("password");
-        if (strParam != null) { user.setPassword(strParam); }
         strParam = request.getParameter("description");
         if ((strParam != null) || (user.getDescription() != null)) {
             user.setDescription(strParam);
@@ -120,27 +148,5 @@ public class UserModify extends HttpServlet {
         }
     }
 
-    /**
-     * Checks for proper confirmation of password change. 
-     *
-     * @param password  A string with the desired password
-     * @param confirmationPassword  A string with the confirmation password
-     */
-    public String checkPassword(String password, String confirmationPassword)
-            throws AAAException {
-
-        // If the password needs to be updated, make sure there is a
-        // confirmation password, and that it matches the given password.
-        if ((password != null) && (!password.equals("")) &&
-                (!password.equals("********"))) {
-           if (confirmationPassword == null) {
-                throw new AAAException(
-                    "Cannot update password without confirmation password");
-            } else if (!confirmationPassword.equals(password)) {
-                throw new AAAException(
-                     "Password and password confirmation do not match");
-            }
-        }
-        return password;
-    }
+ 
 }

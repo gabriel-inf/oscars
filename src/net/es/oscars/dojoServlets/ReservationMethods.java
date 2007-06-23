@@ -21,12 +21,14 @@ public class ReservationMethods {
         this.rm = new ReservationManager("bss");
     }
 
-    public Reservation query(HttpServletRequest request)
+    public Reservation query(HttpServletRequest request, String userName)
             throws IOException, ServletException, BSSException {
         //TODO may want to query the remote component, if any
 
         String tag = request.getParameter("tag");
-        return this.rm.query(tag, true);
+        //TODO  get the userName
+       // call checkAccess to get the allUsers value
+        return this.rm.query(tag, userName, true);
     }
 
     public void create(HttpServletRequest request, String userName)
@@ -44,11 +46,11 @@ public class ReservationMethods {
         
         //TODO: Add support for new path element
         String url = this.rm.create(resv, userName, ingressRouterIP,
-                                    egressRouterIP, null);
+                                    egressRouterIP);
         if (url != null) {
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
-            forwarder.create(resv, null);
+            forwarder.create(resv);
         }
     }
 
@@ -58,7 +60,8 @@ public class ReservationMethods {
         Forwarder forwarder = new Forwarder();
         
         String tag = request.getParameter("tag");
-        Reservation reservation = this.rm.cancel(tag, userName);
+        // TODO call checkAccess to get the allUsers value
+        Reservation reservation = this.rm.cancel(tag, userName,true);
         String remoteStatus = forwarder.cancel(reservation);
         return reservation;
     }
@@ -66,9 +69,10 @@ public class ReservationMethods {
     public List<Reservation> list(HttpServletRequest request, String login) 
             throws BSSException {
 
-        boolean authorized = true;
+        boolean allUsers = true;
+        //TODO call checkAccess to get allUsers value
 
-        List<Reservation> reservations = this.rm.list(login, authorized);
+        List<Reservation> reservations = this.rm.list(login, allUsers);
         if (reservations == null) {
             return null;
         }
@@ -98,16 +102,16 @@ public class ReservationMethods {
         resv.setSrcHost(request.getParameter("srcHost"));
         strParam = request.getParameter("srcPort");
         if (strParam != null) {
-            resv.setSrcPort(Integer.valueOf(strParam));
+            resv.setSrcIpPort(Integer.valueOf(strParam));
         } else {
-            resv.setSrcPort(null);
+            resv.setSrcIpPort(null);
         }
         resv.setDestHost(request.getParameter("destHost"));
         strParam = request.getParameter("destPort");
         if (strParam != null) {
-            resv.setDestPort(Integer.valueOf(strParam));
+            resv.setDestIpPort(Integer.valueOf(strParam));
         } else {
-            resv.setDestPort(null);
+            resv.setDestIpPort(null);
         }
 
         strParam = request.getParameter("bandwidth");

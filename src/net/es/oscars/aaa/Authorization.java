@@ -3,13 +3,13 @@ package net.es.oscars.aaa;
 import java.io.Serializable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import net.es.oscars.BeanUtils;
+import net.es.oscars.database.HibernateBean;
 
 /**
- * Authorization is adapted from a Middlegen class automatically generated 
+ *  is adapted from a Middlegen class automatically generated 
  * from the schema for the aaa.authorizations table.
  */
-public class Authorization extends BeanUtils implements Serializable {
+public class Authorization extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4149;
@@ -21,13 +21,19 @@ public class Authorization extends BeanUtils implements Serializable {
     private Long updateTime;
 
     /** persistent field */
-    private int userId;
+    private int attrId;
 
     /** persistent field */
     private int resourceId;
 
     /** persistent field */
     private int permissionId;
+    
+    /** nullable persistent field */
+    private String constraintName;
+    
+    /** nullable persistent field */
+    private Integer constraintValue;
 
     /** default constructor */
     public Authorization() { }
@@ -57,14 +63,14 @@ public class Authorization extends BeanUtils implements Serializable {
 
 
     /**
-     * @return userId An Integer containing a user table row primary key
+     * @return attrId An Integer containing a user table row primary key
      */ 
-    public int getUserId() { return this.userId; }
+    public int getAttrId() { return this.attrId; }
 
     /**
-     * @param userId An Integer containing a user table row primary key
+     * @param attrId An Integer containing a user table row primary key
      */ 
-    public void setUserId(int userId) { this.userId = userId; }
+    public void setAttrId(int attrId) { this.attrId = attrId; }
 
 
     /**
@@ -92,9 +98,35 @@ public class Authorization extends BeanUtils implements Serializable {
         this.permissionId = permissionId;
     }
 
+    /**
+     * @return constraintName A String corresponding to a constraint for this authorization
+     */ 
+    public String getConstraintName() { return this.constraintName; }
+
+    /**
+     * @param constraintName A String corresponding to a constraint value for this authorization
+     */ 
+    public void setConstraintName(String constraintName ) { this.constraintName = constraintName; }
+
+    /**
+     * @return constraintValue A String corresponding to a constraintValue for this authorization
+     */ 
+    public Integer getConstraintValue() { return this.constraintValue; }
+
+    /**
+     * @param constraintValue A String corresponding to a constraint for this authorization
+     */ 
+    public void setConstraintValue(Integer constraintValue ) { this.constraintValue = constraintValue; }
+
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
+            .append("attrId", getAttrId())
+            .append("resourceId",getResourceId())
+            .append("permissionId", getPermissionId())
+            .append("ConstraintName",getConstraintName())
+            .append("ConstraintValue",getConstraintValue())
             .toString();
     }
 }

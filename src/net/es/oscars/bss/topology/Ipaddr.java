@@ -1,16 +1,18 @@
 package net.es.oscars.bss.topology;
 
 import java.io.Serializable;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.hibernate.Hibernate;
 
-import net.es.oscars.BeanUtils;
+import net.es.oscars.database.HibernateBean;
 
 /**
  * Ipaddr is adapted from a Middlegen class automatically generated 
  * from the schema for the bss.ipaddrs table.
  */
-public class Ipaddr extends BeanUtils implements Serializable {
+public class Ipaddr extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
@@ -25,7 +27,7 @@ public class Ipaddr extends BeanUtils implements Serializable {
     private String description;
 
     /** persistent field */
-    private Interface xface;
+    private Port port;
 
     /** default constructor */
     public Ipaddr() { }
@@ -67,15 +69,15 @@ public class Ipaddr extends BeanUtils implements Serializable {
 
 
     /**
-     * @return xface interface instance (association used)
+     * @return port port instance (association used)
      */ 
-    public Interface getInterface() { return this.xface; }
+    public Port getPort() { return this.port; }
 
     /**
-     * @param xface an interface instance (association used)
+     * @param port a port instance (association used)
      */ 
-    public void setInterface(Interface xface) {
-        this.xface = xface;
+    public void setPort(Port port) {
+        this.port = port;
     }
 
 
@@ -83,13 +85,13 @@ public class Ipaddr extends BeanUtils implements Serializable {
     // instances as well
     public boolean equals(Object o) {
         if (this == o) { return true; }
-        Class thisClass = getClass();
-        if (o == null || thisClass != o.getClass()) {
+        Class thisClass = Hibernate.getClass(this);
+        if (o == null || thisClass != Hibernate.getClass(o)) {
             return false;
         }
         Ipaddr castOther = (Ipaddr) o;
-        // if one of these has been saved to the database
-        if ((this.getId() != null) ||
+        // if both of these have been saved to the database
+        if ((this.getId() != null) &&
             (castOther.getId() != null)) {
             return new EqualsBuilder()
                 .append(this.getId(), castOther.getId())
@@ -99,7 +101,7 @@ public class Ipaddr extends BeanUtils implements Serializable {
                 .append(this.isValid(), castOther.isValid())
                 .append(this.getIP(), castOther.getIP())
                 .append(this.getDescription(), castOther.getDescription())
-                .append(this.getInterface(), castOther.getInterface())
+                .append(this.getPort(), castOther.getPort())
                 .isEquals();
         }
     }

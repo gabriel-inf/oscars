@@ -11,6 +11,7 @@ import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.UserManager.AuthValue;
 
 
 public class UserAddForm extends HttpServlet {
@@ -34,12 +35,17 @@ public class UserAddForm extends HttpServlet {
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
+        AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
+        if (authVal != AuthValue.ALLUSERS) {
+            utils.handleFailure(out, "not allowed to add a new user", aaa, null);
+            return;
+        }
         institutions = mgr.getInstitutions();
 
         out.println("<xml>");
         out.println("<status>Add user form</status>");
         utils.tabSection(out, request, response, "UserList");
-        userDetails.contentSection(out, user, null, institutions,
+        userDetails.contentSection(out, user, true, institutions,
                                   "UserAddForm");
         out.println("</xml>");
         aaa.getTransaction().commit();

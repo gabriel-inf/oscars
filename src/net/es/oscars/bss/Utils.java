@@ -33,52 +33,38 @@ public class Utils {
     public boolean isDuplicate(Path firstPath, Path secondPath) {
 
         this.log.info("isDuplicate.start");
-        if (firstPath.isExplicit() != secondPath.isExplicit()) {
-            this.log.info("one path is explicit, one is not");
+        if (!firstPath.equals(secondPath)) {
+            this.log.info("one path's fields are different");
             return false;
         }
-        if (firstPath.getVlanId() != secondPath.getVlanId()) {
-            this.log.info("two VLAN ids are different");
-            return false;
-        }
-        // tests database identity or both being null
-        if (firstPath.getNextDomain() != secondPath.getNextDomain()) {
-            this.log.info("two domains are different");
-            return false;
-        }
-        if ((firstPath.getNextDomain() != null) &&
-                (secondPath.getNextDomain() != null)) {
-            if (firstPath.getNextDomain().getUrl() !=
-                secondPath.getNextDomain().getUrl()) {
-                this.log.info("two url's are different");
-                return false;
-            }
-        }
-        // build string representations of the two paths to check
-        // for equality
-        StringBuilder secondSb = new StringBuilder();
+        // first check that paths are the same length
+        int firstCtr = 0;
         PathElem pathElem = firstPath.getPathElem();
         while (pathElem != null) {
-            secondSb.append(String.valueOf(pathElem.isLoose()));
-            secondSb.append(pathElem.getDescription());
-            secondSb.append(pathElem.getIpaddr().getIP());
-            secondSb.append(pathElem.getIpaddr().isValid());
+            firstCtr++;
             pathElem = pathElem.getNextElem();
         }
-        StringBuilder firstSb = new StringBuilder();
+        int secondCtr = 0;
         pathElem = secondPath.getPathElem();
         while (pathElem != null) {
-            firstSb.append(String.valueOf(pathElem.isLoose()));
-            firstSb.append(pathElem.getDescription());
-            firstSb.append(pathElem.getIpaddr().getIP());
-            firstSb.append(pathElem.getIpaddr().isValid());
+            secondCtr++;
             pathElem = pathElem.getNextElem();
         }
-        //this.log.info(firstSb.toString());
-        //this.log.info(secondSb.toString());
-        if (!firstSb.toString().equals(secondSb.toString())) {
-            this.log.info("two paths are different");
-            return false;
+        if (firstCtr != secondCtr) {
+           this.log.info("two paths have different lengths");
+           return false;
+        } 
+        // now that know paths are the same length,
+        // check each element of the two paths for equality
+        pathElem = firstPath.getPathElem();
+        PathElem secondPathElem = secondPath.getPathElem();
+        while (pathElem != null) {
+            if (!pathElem.equals(secondPathElem)) {
+                this.log.info("two paths are different");
+                return false;
+            }
+            pathElem = pathElem.getNextElem();
+            secondPathElem = secondPathElem.getNextElem();
         }
         this.log.info("isDuplicate.finish true");
         return true;

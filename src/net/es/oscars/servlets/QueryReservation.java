@@ -8,6 +8,9 @@ import javax.servlet.http.*;
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.UserManager;
+import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
@@ -19,8 +22,10 @@ public class QueryReservation extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+        boolean allUsers = false;
         Reservation reservation = null;
         ReservationManager rm = new ReservationManager("bss");
+        UserManager userMgr = new UserManager("aaa");
         ReservationDetails detailsOutput = new ReservationDetails();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
@@ -29,13 +34,22 @@ public class QueryReservation extends HttpServlet {
         response.setContentType("text/xml");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
-
+        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        aaa.beginTransaction();
+         AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "query");
+         if (authVal == AuthValue.DENIED) {
+             utils.handleFailure(out, "no permission to query Reservations",  aaa, null);
+             return;
+         }
+         if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
+         aaa.getTransaction().commit();
+         
         String tag = request.getParameter("tag");
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reservation = rm.query(tag, true);
+            reservation = rm.query(tag, userName, allUsers);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;

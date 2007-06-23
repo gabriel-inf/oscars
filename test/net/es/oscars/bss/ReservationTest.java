@@ -18,6 +18,11 @@ import net.es.oscars.database.HibernateUtil;
  */
 @Test(groups={ "abss" })
 public class ReservationTest {
+    private final Long BANDWIDTH = 25000000L;   // 25 Mbps
+    private final Long BURST_LIMIT = 10000000L; // 10 Mbps
+    private final int DURATION = 240000;       // 4 minutes 
+    private final String PROTOCOL = "UDP";
+    private final String LSP_CLASS = "4";
     private Properties props;
     private SessionFactory sf;
     private String dbname;
@@ -26,8 +31,8 @@ public class ReservationTest {
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss", true);
-        this.dbname = "bss";
+        this.props = propHandler.getPropertyGroup("test.common", true);
+        this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
         this.tc = new TypeConverter();
     }
@@ -42,25 +47,22 @@ public class ReservationTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        resv.setSrcHost(this.props.getProperty("sourceHostName"));
-        resv.setDestHost(this.props.getProperty("destHostName"));
+        resv.setSrcHost(this.props.getProperty("sourceHostIP"));
+        resv.setDestHost(this.props.getProperty("destHostIP"));
 
         millis = System.currentTimeMillis();
         resv.setStartTime(millis);
         resv.setCreatedTime(millis);
-        millis += 240 * 1000;
+        millis += DURATION;
         resv.setEndTime(millis);
 
-        bandwidth = Long.parseLong(this.props.getProperty("bandwidth"));
-        bandwidth *= 1000000;
-        resv.setBandwidth(bandwidth);
-        resv.setBurstLimit(
-                Long.parseLong(this.props.getProperty("burstLimit")));
+        resv.setBandwidth(BANDWIDTH);
+        resv.setBurstLimit(BURST_LIMIT);
         // description is unique, so can use it to access reservation in
         // other tests
         resv.setDescription(this.props.getProperty("description"));
-        resv.setProtocol(this.props.getProperty("protocol"));
-        resv.setLspClass(this.props.getProperty("lspClass"));
+        resv.setProtocol(PROTOCOL);
+        resv.setLspClass(LSP_CLASS);
         resv.setLogin(this.props.getProperty("login"));
 
         dao.create(resv);
@@ -77,7 +79,7 @@ public class ReservationTest {
         Reservation testResv = dao.queryByParam("description", description);
         try {
             reservation =
-                dao.query(this.tc.getReservationTag(testResv), true);
+                dao.query(this.tc.getReservationTag(testResv));
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

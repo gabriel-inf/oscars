@@ -36,7 +36,7 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
     }
 
      /**
-     * Finds next domain by looking up first hop in peerIpaddr table
+     * Finds next domain by looking up first hop in edgeInfo table
      *
      * @param nextHop string with IP address of next hop
      * @return Domain an instance associated with the next domain, if any
@@ -44,13 +44,13 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
      */
     public Domain getNextDomain(String nextHop) throws BSSException {
 
-        PeerIpaddrDAO peerDAO = new PeerIpaddrDAO(this.dbname);
+        EdgeInfoDAO edgeInfoDAO = new EdgeInfoDAO(this.dbname);
         Domain nextDomain = null;
 
         this.log.info("getNextDomain.nextHop: " + nextHop);
        
         if (nextHop != null) {
-            nextDomain = peerDAO.getDomain(nextHop);
+            nextDomain = edgeInfoDAO.getDomain(nextHop);
             if (nextDomain != null) {
                 this.log.info("getNextDomain.nextDomain: " +
                               nextDomain.getAsNum()+"");

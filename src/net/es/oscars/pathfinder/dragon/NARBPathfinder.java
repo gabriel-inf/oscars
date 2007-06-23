@@ -19,10 +19,10 @@ import edu.internet2.hopi.dragon.narb.ws.client.NARBFaultMessageException;
 /**
  * NARBPathfinder that uses NARB to calculate path
  *
+ * @author Andrew Lake (alake@internet2.edu), David Robertson (dwrobertson@lbl.gov)
  */
 public class NARBPathfinder extends Pathfinder implements PCE {
     private Properties props;
-    private List<CommonPathElem> completePath;
     private Logger log;
     
     /**
@@ -33,145 +33,120 @@ public class NARBPathfinder extends Pathfinder implements PCE {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("narb", true);
-        this.completePath = null;
         super.setDatabase(dbname);
     }
 
 
     /**
      * Finds path from source to destination using the NARB web service
-     * interface, taking into account ingress and egress routers if
+     * interface, taking into account ingress and egress nodes if
      * specified by user.
      *
      * @param srcHost string with address of source host
      * @param destHost string with address of destination host
-     * @param ingressRouterIP string with address of ingress router, if any
-     * @param egressRouterIP string with address of egress router, if any
-     * @return hops A list of elements containing IP addresses
+     * @param ingressNodeIP string with address of ingress node, if any
+     * @param egressNodeIP string with address of egress node, if any
+     * @return pathElems a list of elements containing IP addresses
      * @throws PathfinderException
      */
     public List<CommonPathElem> findPath(String srcHost, String destHost,
-                         String ingressRouterIP, String egressRouterIP)
+                         String ingressNodeIP, String egressNodeIP)
             throws PathfinderException {
             
-        List<String> localHops = null;
-
+        if (srcHost == null) {
+            throw new PathfinderException( "no source for path given");
+        }
+        if (destHost == null) {
+            throw new PathfinderException( "no destination for path given");
+        }
         // ask NARB to calculate path
         List<String> hops =
-            this.findNARBPath(srcHost, destHost, ingressRouterIP,
-                              egressRouterIP);
-        localHops = this.getLocalHops(hops);    // get local path
-        this.completePathFromHops(hops);             // store complete path
-        // ingress and egress are loopbacks corresponding to first and last
-        // hops
-        String ingressLoopback = this.getOSCARSLoopback(localHops.get(0));
-        if (ingressLoopback == null) {
-            throw new PathfinderException("No ingress loopback found in path");
-        }
-        String egressLoopback =
-            this.getOSCARSLoopback(localHops.get(localHops.size()-1));
-        List<CommonPathElem> path =
-            this.pathFromHops(localHops, ingressLoopback, egressLoopback);
-        return path;
+            this.findNARBPath(srcHost, destHost, ingressNodeIP,
+                              egressNodeIP);
+        List<CommonPathElem> pathElems = this.pathFromHops(hops);
+        return pathElems;
     }
     
     /**
-     * Gets local hops given an explicit path from source to destination..
+     * Expands loose hops and finds hops that are in the local domain, given a
+     * path containing a list of addresses.
      *
-     * @param reqPath list of CommonPathElem with explicit path
-     * @return hops A list of elements containing IP addresses
+     * @param path CommonPath instance containing hops of entire path
      * @throws PathfinderException
      */
-    public List<CommonPathElem> findPath(List<CommonPathElem> reqPath)
-            throws PathfinderException {
-            
-        List<CommonPathElem> localPath =
-                this.getLocalPath(reqPath); // get path in local domain
-        this.setCompletePath(reqPath);      // store complete path
-        return localPath;
-    }
-    
-    /**
-     * Returns list of hops that are in the local domain, given an
-     * list. Also sets nextHop to the first hop past the local domain.
-     *
-     * @param reqPath list of CommonPathElem containing hops of entire path
-     * @return returns list of strings representing only hops within the domain
-     */
-    public List<String> findLocalHops(List<CommonPathElem> reqPath)
-            throws PathfinderException{
+    public void findPath(CommonPath path) throws PathfinderException{
 
         List<String> localHops = new ArrayList<String>();
         List<String> hops = new ArrayList<String>();
         boolean hopFound = false;
 
-        // parse hops
-        CommonPathElem prevHop = null;
+        List<CommonPathElem> pathElems = path.getElems();
+        
+        /* Expand local hops */
+        CommonPathElem prevPathElem = null;
         String ip = null;
         String prevIp = null;
-        for (int i = 0; i < reqPath.size(); i++) {
-            CommonPathElem hop = reqPath.get(i);
-            ip = hop.getIP();
-            if (!this.isLocalHop(ip)) {
-                if (hopFound) {
-                    this.log.info("nextHop: " + ip);
-                    this.nextHop = ip;
-                    break;
-                }else{
-                    continue;   /* continue until local hop found */
-                }
-            }
-            this.log.info("localHop: " + ip);
-            hopFound = true;
+        for (int i = 0; i < pathElems.size(); i++) {
+            CommonPathElem pathElem = pathElems.get(i);
+            ip = pathElem.getIP();
 
-            // expand hops
-            if (prevHop != null) {
-                prevIp = prevHop.getIP();
-                if (hop.isLoose() || prevHop.isLoose()) {
-                    String src = this.getLoopback(prevIp);
-                    String dst = this.getLoopback(ip);
-                    List<String> expandedHops = null;
-                        
-                    // expand path
-                    if (src.equals(dst)) { //if interfaces on same router
-                        expandedHops = new ArrayList<String>();
-                        expandedHops.add(prevIp);
-                        expandedHops.add(ip);
-                    } else {
-                        expandedHops = this.findNARBPath(src, dst, null, null);
-                        // make sure outgoing interface is added to list
-                        if (!expandedHops.get(expandedHops.size() - 1).equals(ip)) {
+            if (this.isLocalHop(ip)) {
+                this.log.info("localHop: " + ip);
+                hopFound = true;
+    
+                // expand hops
+                if (prevPathElem != null) {
+                    prevIp = prevPathElem.getIP();
+                    if (pathElem.isLoose() || prevPathElem.isLoose()) {
+                        String src = this.getLoopback(prevIp);
+                        String dst = this.getLoopback(ip);
+                        List<String> expandedHops = null;
+                            
+                        // expand path
+                        if (src.equals(dst)) { //if interfaces on same node
+                            expandedHops = new ArrayList<String>();
+                            expandedHops.add(prevIp);
                             expandedHops.add(ip);
+                        } else {
+                            expandedHops = this.findNARBPath(src, dst, null, null);
+                            // make sure outgoing interface is added to list
+                            if (!expandedHops.get(expandedHops.size() - 1).equals(ip)) {
+                                expandedHops.add(ip);
+                            }
                         }
+                        // check edges to ensure correct incoming interface is used
+                        if (localHops.isEmpty() && (!expandedHops.isEmpty()) &&
+                                (!expandedHops.get(0).equals(prevIp))) {
+                            // add hop if incoming interface not included in list
+                            expandedHops.add(0, prevIp);
+    
+                        } else if ((!localHops.isEmpty()) && 
+                                localHops.get(localHops.size() - 1).equals(expandedHops.get(0))) {
+                            // remove first hop if already in the list
+                            expandedHops.remove(0);
+                        }
+                        // append expanded path to list
+                        for (String expandedHop : expandedHops) {
+                            localHops.add(expandedHop);
+                        }
+                    } else {
+                        // check if in database
+                        //TODO: Assumes that if ip exists locally it has link to previous hop
+                        localHops.add(ip);
+                        pathElem.setDescription("local");
                     }
-                    // check edges to ensure correct incoming interface is used
-                    if (localHops.isEmpty() && (!expandedHops.isEmpty()) &&
-                            (!expandedHops.get(0).equals(prevIp))) {
-                        // add hop if incoming interface not included in list
-                        expandedHops.add(0, prevIp);
-
-                    } else if ((!localHops.isEmpty()) && 
-                            localHops.get(localHops.size() - 1).equals(expandedHops.get(0))) {
-                        // remove first hop if already in the list
-                        expandedHops.remove(0);
-                    }
-                    // append expanded path to list
-                    for (String expandedHop : expandedHops) {
-                        localHops.add(expandedHop);
-                    }
-                } else {
-                    // check if in database
-                    //TODO: Assumes that if ip exists locally it has link to previous hop
-                    localHops.add(ip);
                 }
+                prevPathElem = pathElem;
+            }else if (hopFound) {
+                break;
             }
-            prevHop = hop;
         }
+        
+        /* Return error if no local hops found */
         if (localHops.isEmpty()) {
             throw new PathfinderException(
                 "No local hops found in path");
         }
-        return localHops;
     }
 
 
@@ -236,43 +211,5 @@ public class NARBPathfinder extends Pathfinder implements PCE {
             throw new PathfinderException(e.getFaultMessage().getMsg());
         }
         return hops;
-    }
-    
-    /**
-     * Set complete path to passed value
-     *
-     * @param path list of CommonPathElem to set
-     */
-    public void setCompletePath(List<CommonPathElem> path){
-        this.completePath = path;
-    }
-    
-    /**
-     * Given a list of hops as strings, converts it to a path,
-     * and store in completePath
-     * @param hops list of hop IP addresses as strings
-     */
-    public void completePathFromHops(List<String> hops) {
-
-        List<CommonPathElem> paths = new ArrayList<CommonPathElem>();
-        CommonPathElem h = null;
-
-        for (String hop : hops) {
-            h = new CommonPathElem();
-            h.setLoose(true);  //TODO: allow this to be configed
-            h.setIP(hop);
-            paths.add(h);
-        }
-        this.setCompletePath(paths);
-    }
-    
-     /**
-     * Returns path that includes both local and interdomain hops. 
-     * Hops used are from previous findPath call.
-     *
-     * @return path that includes both local and interdomain hops
-     */
-    public List<CommonPathElem> getCompletePath() {
-        return this.completePath;
     }
 }

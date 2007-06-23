@@ -16,7 +16,7 @@ import net.es.oscars.aaa.AAAException;
 public class WebSession extends HttpServlet {
     private UserManager mgr;
 
-    // This is only be called once.
+    // This is only called the first time this servlet is called.
     public void init() throws ServletException {
         Logger log = Logger.getLogger(this.getClass());
         log.info("init.start");
@@ -28,7 +28,7 @@ public class WebSession extends HttpServlet {
         log.info("init.end");
     }
 
-    // This is only be called once.
+    // This is only be called once, when Tomcat stops.
     public void destroy() {
         Logger log = Logger.getLogger(this.getClass());
         log.info("destroy.start");
@@ -40,29 +40,31 @@ public class WebSession extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
 
-        HttpSession httpSession = null;
         Utils utils = new Utils();
+        Logger log = Logger.getLogger(this.getClass());
 
-        // when using login method, a new HttpSession is created
-        if (request.getParameter("login") == null) {
-            httpSession = request.getSession(false);
-            if (httpSession == null) {
-                // TODO:  dialog box automatically brought up if
-                // session expired?
-                utils.handleError(response, HttpServletResponse.SC_FORBIDDEN,
-                                  "Session expired.  Please log in again.");
-                return;
-            }
+        log.info("doGet.start");
+        HttpSession httpSession = request.getSession(false);
+        // first time
+        if (httpSession == null) {
+            httpSession = request.getSession();
+            // for now, set HTTP session to expire after 8 hours
+            httpSession.setMaxInactiveInterval(3600 * 8);
+        } else {
+            // TODO:  handle session expired
+            //utils.handleError(response, HttpServletResponse.SC_FORBIDDEN,
+                              //"Session expired.  Please log in again.");
+            ;
         }
+        log.info(request.getParameter("logout"));
         this.mgr = new UserManager("aaa");
         // Get method to call from submit button name.  All servlet
         // requests are dispatched from here.  Depends on submit buttons
         // be named properly.
-        if (request.getParameter("login") != null) {
-            this.login(request, response, utils);
-        } else if (request.getParameter("logout") != null) {
+        if (request.getParameter("logout") != null) {
             this.logout(request, response);
         }
+        log.info("doGet.finish");
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -71,39 +73,12 @@ public class WebSession extends HttpServlet {
         this.doGet(request, response);
     }
 
-    public void login(HttpServletRequest request,
-                      HttpServletResponse response, Utils utils)
-            throws IOException, ServletException {
-
-        PrintWriter out = response.getWriter();
-
-        String userName = request.getParameter("userName");
-        response.setContentType("text/xml");
-        // NOTE:  Be careful to distinguish between Hibernate Sessions and
-        //        HTTP Sessions.  Latter uses HttpSession class.
-        Session aaa = 
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        aaa.beginTransaction();
-        try {
-            String unused =
-                this.mgr.verifyLogin(userName, request.getParameter("password"));
-        } catch (AAAException e) {
-            aaa.getTransaction().rollback();
-            //utils.handleError(response, HttpServletResponse.SC_FORBIDDEN,
-                              //e.getMessage());
-            //return;
-        }
-        //aaa.getTransaction().commit();
-        HttpSession httpSession = request.getSession(true);
-        // for now, set HTTP session to expire after 8 hours
-        httpSession.setMaxInactiveInterval(3600 * 8);
-    }
 
     public void logout(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        HttpSession httpSession = request.getSession(false);
+        HttpSession httpSession = request.getSession();
         httpSession.invalidate();
-        response.sendRedirect("/OSCARS/index.html");
+        response.sendRedirect("/OSCARSDojo/");
     }
 }

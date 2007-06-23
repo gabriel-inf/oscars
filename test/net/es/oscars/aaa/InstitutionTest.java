@@ -15,7 +15,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "aaa" })
+@Test(groups={ "aaa", "institution" })
 public class InstitutionTest {
     private Properties props;
     private SessionFactory sf;
@@ -25,17 +25,17 @@ public class InstitutionTest {
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-        this.dbname = "aaa";
+        this.dbname = "testaaa";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
 
   @Test
     public void institutionQuery() {
+        InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
         this.sf.getCurrentSession().beginTransaction();
-        InstitutionDAO dao = new InstitutionDAO(this.dbname);
-        Institution institution = (Institution)
-            dao.queryByParam("name",
-                             this.props.getProperty("institutionName"));
+        Institution institution =
+                (Institution) institutionDAO.queryByParam("name",
+                                   this.props.getProperty("institutionName"));
         this.sf.getCurrentSession().getTransaction().commit();
         assert institution != null;
     }
@@ -43,8 +43,8 @@ public class InstitutionTest {
   @Test
     public void institutionList() {
         this.sf.getCurrentSession().beginTransaction();
-        InstitutionDAO dao = new InstitutionDAO(this.dbname);
-        List<Institution> institutions = dao.list();
+        InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
+        List<Institution> institutions = institutionDAO.list();
         this.sf.getCurrentSession().getTransaction().commit();
         assert !institutions.isEmpty();
     }

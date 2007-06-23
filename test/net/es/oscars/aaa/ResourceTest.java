@@ -15,7 +15,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "aaa" })
+@Test(groups={ "aaa", "resource" }, dependsOnGroups={ "create" })
 public class ResourceTest {
     private Properties props;
     private SessionFactory sf;
@@ -25,25 +25,27 @@ public class ResourceTest {
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.aaa", true);
-        this.dbname = "aaa";
+        this.dbname = "testaaa";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
+  @Test
     public void resourceQuery() {
         String rname = "Users";
 
-        ResourceDAO dao = new ResourceDAO(this.dbname);
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
         this.sf.getCurrentSession().beginTransaction();
-        Resource resource = (Resource) dao.queryByParam("name",
+        Resource resource = (Resource) resourceDAO.queryByParam("name",
                                      this.props.getProperty("resourceName"));
         this.sf.getCurrentSession().getTransaction().commit();
         assert resource != null;
     }
 
+  @Test
     public void resourceList() {
-        ResourceDAO dao = new ResourceDAO(this.dbname);
+        ResourceDAO resourceDAO = new ResourceDAO(this.dbname);
         this.sf.getCurrentSession().beginTransaction();
-        List<Resource> resources = dao.list();
+        List<Resource> resources = resourceDAO.list();
         this.sf.getCurrentSession().getTransaction().commit();
         assert !resources.isEmpty();
     }

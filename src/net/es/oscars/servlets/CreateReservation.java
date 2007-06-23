@@ -6,11 +6,17 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
 
+import org.apache.log4j.*;
+
+import net.es.oscars.oscars.AAAFaultMessageException;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.aaa.UserManager;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.pathfinder.CommonPath;
 import net.es.oscars.interdomain.*;
 
 
@@ -20,6 +26,8 @@ public class CreateReservation extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+        Logger log = Logger.getLogger(this.getClass());
+        log.info("CreateReservation.start");
         Forwarder forwarder = new Forwarder();
         ReservationManager rm = new ReservationManager("bss");
         UserSession userSession = new UserSession();
@@ -32,20 +40,45 @@ public class CreateReservation extends HttpServlet {
         if (userName == null) { return; }
 
         Reservation resv = this.toReservation(out, userName, request);
-        String ingressRouter = request.getParameter("ingressRouter");
-        String egressRouter = request.getParameter("egressRouter");
-
+        String ingressNode = request.getParameter("ingressRouter");
+        String egressNode = request.getParameter("egressRouter");
+        
+        Session aaa =
+            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        aaa.beginTransaction();
+        UserManager userMgr = new UserManager("aaa");
+        // Check to see if user can create this  reservation
+        // bandwidth limits are stored in megaBits
+        int  reqBandwidth =  (int)(resv.getBandwidth()/1000000);
+        // convert from milli-seconds to minutes
+        int  reqDuration = (int)(resv.getEndTime() - resv.getStartTime())/6000;
+        boolean specifyPE = false;
+        if (ingressNode != null || egressNode != null ||
+                      resv.getCommonPath().getElems() != null )  {
+            specifyPE = true;
+        }
+        AuthValue authVal = userMgr.checkModResAccess(userName,
+                                                     "Reservations", "create", reqBandwidth, reqDuration, specifyPE);
+        if (authVal == AuthValue.DENIED ) {
+                    utils.handleFailure(out,"createReservation permission denied", aaa, null);
+                    return;
+          }
+        aaa.getTransaction().commit();
+        
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
             // url returned, if not null, indicates location of next domain
             // manager
-            String url = rm.create(resv, userName, ingressRouter, egressRouter,
-                                   null);
+            log.info("to create");
+            String url = rm.create(resv, userName, ingressNode,
+                                   egressNode);
+            log.info("past create");
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
-            forwarder.create(resv, null);
+            forwarder.create(resv);
+            log.info("past forwarder create");
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;
@@ -57,11 +90,14 @@ public class CreateReservation extends HttpServlet {
         // reservation was modified in place by ReservationManager create
         // and Forwarder create; now store it in the db
         try {
+            log.info("to store");
             rm.store(resv);
+            log.info("past store");
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;
         }
+        log.info("to page creation");
         TypeConverter tc = new TypeConverter();
         out.println("<xml>");
         out.println("<status>Created reservation with tag " +
@@ -70,6 +106,7 @@ public class CreateReservation extends HttpServlet {
         detailsOutput.contentSection(out, resv, userName);
         out.println("</xml>");
         bss.getTransaction().commit();
+        log.info("CreateReservation.end");
     }
 
     public void 
@@ -101,26 +138,28 @@ public class CreateReservation extends HttpServlet {
         resv.setSrcHost(request.getParameter("srcHost"));
         strParam = request.getParameter("srcPort");
         if (strParam != null) {
-            resv.setSrcPort(Integer.valueOf(strParam));
+            resv.setSrcIpPort(Integer.valueOf(strParam));
         } else {
-            resv.setSrcPort(null);
+            resv.setSrcIpPort(null);
         }
         resv.setDestHost(request.getParameter("destHost"));
         strParam = request.getParameter("destPort");
         if (strParam != null) {
-            resv.setDestPort(Integer.valueOf(strParam));
+            resv.setDestIpPort(Integer.valueOf(strParam));
         } else {
-            resv.setDestPort(null);
+            resv.setDestIpPort(null);
         }
 
         strParam = request.getParameter("bandwidth");
         bandwidth = (strParam != null) ?  Long.valueOf(strParam.trim()) * 1000000L :
                                           null;
         resv.setBandwidth(bandwidth);
-
         resv.setProtocol(request.getParameter("protocol"));
         resv.setDscp(request.getParameter("dscp"));
         resv.setDescription(request.getParameter("description"));
+        CommonPath path = new CommonPath();
+        path.setExplicit(false);
+        resv.setCommonPath(path);
         return resv;
     }
 }

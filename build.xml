@@ -7,34 +7,35 @@
 
 <!-- properties section for main targets ********************************** -->
 
+<property environment="env" />
 <property name="app.name" value="oscars" />
 <property name="app.version" value="0.5-dev" />
-<property  name="catalina.home" value="/usr/local/jakarta-tomcat5.5" />
+<property name="domain.home" value="${env.DOMAIN_HOME}" />
+<property name="catalina.home" value="${env.CATALINA_HOME}" />
 <property name="webapp.home" value="${catalina.home}/webapps" />
 <property name="webservice.home"
           value="${webapp.home}/axis2/WEB-INF/services" />
 
 <property name="build.home" value="build" />
 <property name="build.classes" value="${build.home}/WEB-INF/classes" />
-<property name="build.lib" value="${build.home}/WEB-INF/lib" />
+<property name="build.lib" value="lib" />
+<property name="build.axis2.lib" value="lib/axis2" />
+<property name="build.dragon.lib" value="lib/dragon" />
 
 <target name="all" depends="clean, compile"
         description="Recompile all source" />
 
 <!-- parent directories automatically created -->
 <target name="prepare">
-    <mkdir dir="${build.classes}" />
     <copy todir="${build.classes}">
         <fileset dir="src" includes="**/*.hbm.xml" />
-        <fileset dir="conf/public/server"
+        <fileset dir="conf/server"
                  includes="*.cfg.xml, log4j.properties,sec-server*" />
-        <!-- <fileset dir="conf/public/client" includes="sec-client*" /> -->
+        <!-- <fileset dir="conf/client" includes="sec-client*" /> -->
     </copy>
-    <mkdir dir="${build.lib}" />
-    <copy todir="${build.lib}" flatten="true">
-        <fileset dir="lib"  includes="**/*.jar" excludes="wss4j-1.5.1.jar" />
-        <!-- wss4j.jar must be in tomcat/shared/lib for the forwarding code
-             to work.  It does not need to be in the aar -->
+    <!-- Note that Axis2 must already be deployed -->
+    <copy todir="lib/axis2">
+        <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" />
     </copy>
 </target>
 
@@ -49,15 +50,17 @@ material.
 Adding a -t switch generates a Junit test in test/ne/es/oscars/service
 Adding a -sd switch generates resources/services.xml -->
 
-<target name="wsdl2java">
+<target name="wsdl2java" depends="prepare">
     <delete failonerror="false">
         <fileset dir="resources" includes="services.xml" />
     </delete>
     <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
-        <classpath> <fileset dir="lib" includes="**/*.jar" />
+        <classpath>
+            <fileset dir="${build.lib}" includes="*.jar" />
+            <fileset dir="${build.axis2.lib}" includes="*.jar" />
         </classpath>
         <arg value="-uri" />
-        <arg file="conf/public/server/OSCARS.wsdl" />
+        <arg file="conf/server/OSCARS.wsdl" />
         <arg value="--server-side" />
         <arg value="--serverside-interface" />
         <arg value="--sync" />
@@ -74,7 +77,7 @@ Adding a -sd switch generates resources/services.xml -->
     <echo>
   ***
   **** Changes to resources/services.xml must be merged with
-  **** conf/public/server/services.xml
+  **** conf/server/services.xml
   ****
    </echo>
 </target>
@@ -87,7 +90,9 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
            destdir="${build.classes}" 
            debug="true" debuglevel="lines,vars,source">
         <classpath>
-            <fileset dir="lib" includes="**/*.jar" />
+            <fileset dir="${build.lib}" includes="*.jar" />
+            <fileset dir="${build.axis2.lib}" includes="*.jar" />
+            <fileset dir="${build.dragon.lib}" includes="*.jar" />
         </classpath>
     </javac>
 </target>
@@ -97,13 +102,16 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <javadoc destdir="docs/api" author="true">
         <packageset dir="src"  includes="**/*" />
         <classpath>
-            <fileset dir="lib" includes="**/*.jar" />
+            <fileset dir="${build.lib}" includes="*.jar" />
         </classpath>
     </javadoc>
 </target>
 
-<target name="clean" description="Delete main build directory">
-    <delete dir="${build.home}" />
+<target name="clean" description="Empty build's classes and libs directories">
+    <delete>
+        <fileset dir="${build.classes}" includes="**/*" />
+    </delete>
+    <delete dir="${test.classes}" />
 </target>
 
 <target name="docs.clean" description="Delete web/docs directory">
@@ -117,7 +125,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <fileset dir="${build.classes}" includes="**/*"
                  excludes="**/servlets/**/*" />
         <fileset dir="${build.lib}/.." includes="lib/*.jar" />
-        <metainf dir="conf/public/server"
+        <metainf dir="conf/server"
                  includes="*.wsdl, *.xsd, services.xml" />
     </jar>
 </target>
@@ -146,7 +154,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <classes dir="${build.classes}" includes="**/*"
                  excludes="**/oscars/OSCARSSk*.class, **/oscars/OSCARSM*.class,
                            **/oscars/ReservationAdapter.class" />
-	<lib dir="lib" includes="*.jar" />
+        <lib dir="lib" includes="*.jar" />
     </war>
 </target>
 
@@ -180,12 +188,11 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 
 <!-- deployment section *************************************************** -->
 
-<property name="catalina.home" value="/usr/local/jakarta-tomcat5.5" />
-
+<!-- Note that this requires that Axis2 has already been deployed. -->
 <target name="deploylibs"
         description="copy all libraries used by the aar and war to shared/lib">
     <copy todir="${catalina.home}/shared/lib">
-        <fileset dir="lib/axis2" includes="*.jar" />
+        <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" />
     </copy>
 </target>
 
@@ -195,19 +202,19 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <mkdir dir="${catalina.home}/shared/oscars.conf/server" />
     <mkdir dir="${catalina.home}/shared/oscars.conf/axis2.repo/modules" />
     <copy todir="${catalina.home}/shared/oscars.conf/axis2.repo">
-        <fileset dir="conf/public/client/"
+        <fileset dir="conf/client/"
                  includes="axis2.xml, ssl-keystore.jks" />
     </copy>
     <!-- the following files need to be in the classpath of the server -->
     <copy todir="${catalina.home}/shared/classes/repo">
-        <fileset dir="conf/private/server" includes="sec-client.*" />
+        <fileset dir="${domain.home}/server" includes="sec-client.*" />
     </copy>
-    <copy file="conf/public/rampart-1.1.mar"
+    <copy file="conf/rampart-1.1.mar"
           todir="${catalina.home}/shared/oscars.conf/axis2.repo/modules" />
     <copy todir="${catalina.home}/shared/oscars.conf/server">
-        <fileset dir="conf/private/server/"
+        <fileset dir="${domain.home}/server/"
                  includes="*key, oscars.properties, test.properties" />
-        <fileset dir="conf/public/server/" includes="*Template*" />
+        <fileset dir="conf/server/" includes="*Template*" />
     </copy>
     <chmod dir="${catalina.home}/shared/oscars.conf/server" perm="600"
            includes="*key" />
@@ -241,7 +248,10 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 <property name="test.classes" value="build/test" />
 
 <path id="test.compile.path">
-    <fileset dir="lib" includes="*.jar, axis2/*.jar" />
+    <fileset dir="${build.lib}" includes="*.jar" />
+    <fileset dir="${build.axis2.lib}" includes="*.jar" />
+    <fileset dir="${build.dragon.lib}" includes="*.jar" />
+    <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" />
     <pathelement location="${build.classes}" />
 </path>
 
@@ -254,23 +264,27 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <delete dir="${test.classes}" />
 </target>
 
+<!-- delays until the jar's in its path are actually in the right place -->
+<target name="startupTestNG" depends="prepare">
+    <taskdef name="testng" classpathref="test.path"
+             classname="org.testng.TestNGAntTask" />
+</target>
+
 <target name="test.prepare"> <mkdir dir="${test.classes}" /> </target>
 
 <target name="test.compile" depends="compile, test.prepare"
         description="Compile all test cases">
     <javac srcdir="test" destdir="${test.classes}"
+           debug="true" debuglevel="lines,vars,source"
            classpathref="test.compile.path" />
 </target>
 
-<taskdef name="testng" classpathref="test.path"
-         classname="org.testng.TestNGAntTask" />
-
-<target name="testcomp" if="t">
+<target name="testcomp" if="t" depends="startupTestNG">
     <property name="groups" value="${t}, initdb" />
     <property name="testsuite" value="${t}.suite" />
 </target>
 
-<target name="testall" unless="t">
+<target name="testall" unless="t" depends="startupTestNG">
     <property name="groups" value=".*" />
     <property name="testsuite" value="all.suite" />
 </target>

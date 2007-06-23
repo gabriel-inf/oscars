@@ -26,45 +26,43 @@ public class PCEManager {
 
     /**
      * Finds path from source to destination, taking into account ingress
-     * and egress routers if specified by user.
+     * and egress nodes if specified by user.  Sets information, such
+     * as local hops in path, and ingress and egress nodes if not given.
      *
      * @param srcHost string with address of source host
      * @param destHost string with address of destination host
-     * @param ingressRouterIP string with address of ingress router, if any
-     * @param egressRouterIP string with address of egress router, if any
-     * @param reqPath CommonPath instance, may be null
-     * @return path a CommonPath instance
+     * @param ingressNodeIP string with address of ingress node, if any
+     * @param egressNodeIP string with address of egress node, if any
+     * @param path CommonPath instance to fill in
      * @throws PathfinderException
      */
-    public CommonPath findPath(String srcHost, String destHost,
-                         String ingressRouterIP, String egressRouterIP,
-                         CommonPath reqPath)
+    public void findPath(String srcHost, String destHost,
+                         String ingressNodeIP, String egressNodeIP,
+                         CommonPath path)
             throws PathfinderException {
 
-        CommonPath path = null;
-        List<CommonPathElem> elems = null;
+        List<CommonPathElem> pathElems = null;
 
-        this.log.info("findPath.start");
-        if (reqPath != null) {
-             this.log.debug("findPath-reqPath not null: " + reqPath.toString());
+        this.log.info("PCEManager.findPath.start");
+        if (path.getElems() != null) {
+             this.log.debug("findPath, explicit path given: " +
+                             path.toString());
         }
         String pathMethod = this.getPathMethod();
         this.log.info("pathfinder method is " + pathMethod);
-        if (pathMethod == null) { return null; }
+        if (pathMethod == null) { return; }
         this.pathfinder = 
             new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
-        if (reqPath == null) {
-            elems = this.pathfinder.findPath(srcHost, destHost,
-                                        ingressRouterIP, egressRouterIP);
-            path = new CommonPath();
-            path.setElems(elems);
+        // find complete path
+        if (path.getElems() == null) {
+            pathElems = this.pathfinder.findPath(srcHost, destHost,
+                                             ingressNodeIP, egressNodeIP);
+            path.setElems(pathElems);
         } else {
-            elems = this.pathfinder.findPath(reqPath.getElems());
-            path = new CommonPath();
-            path.setVlanId(reqPath.getVlanId());
-            path.setElems(elems);
+            // change given path elements in place
+            this.pathfinder.findPath(path);
         }
-        return path;
+        this.log.info("PCEManager.findPath.end");
     }
 
     /**
@@ -87,30 +85,14 @@ public class PCEManager {
 
         String pathMethod = props.getProperty("pathMethod");
         if (pathMethod == null) {
-            throw new PathfinderException("No path computation method specified in oscars.properties.");
+            throw new PathfinderException(
+                "No path computation method specified in oscars.properties.");
         }
         if (!pathMethod.equals("traceroute") && !pathMethod.equals("narb")) {
-            throw new PathfinderException("Path computation method specified in oscars.properties must be either traceroute or narb.");
+            throw new PathfinderException(
+                "Path computation method specified in oscars.properties " +
+                "must be either traceroute or narb.");
         }
         return pathMethod;
-    }
-
-    /**
-     * Gets next hop past this domain.
-     * Called only by bss.ReservationManager in its create method.
-     * @return string with next hop
-     */
-    public String nextExternalHop() {
-        return this.pathfinder.nextExternalHop();
-    }
-
-     /**
-     * Returns path that includes both local and interdomain hops
-     * Called by bss.ReservationManager.getCompletePath.
-     *
-     * @return path that includes both local and interdomain hops
-     */
-    public List<CommonPathElem> getCompletePath(){
-        return this.pathfinder.getCompletePath();
     }
 }

@@ -25,24 +25,23 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
 
     /**
      * Finds path from source to destination, taking into account ingress
-     * and egress routers if specified by user.
+     * and egress nodes if specified by user.
      *
      * @param srcHost string with address of source host
      * @param destHost string with address of destination host
-     * @param ingressRouterIP string with address of ingress router, if any
-     * @param egressRouterIP string with address of egress router, if any
+     * @param ingressNodeIP string with address of ingress node, if any
+     * @param egressNodeIP string with address of egress node, if any
      * @return hops A list of elements containing the hops
      * @throws PathfinderException
      */
     public List<CommonPathElem> findPath(String srcHost, String destHost,
-                                String ingressRouterIP, String egressRouterIP)
+                                String ingressNodeIP, String egressNodeIP)
             throws PathfinderException {
 
-        List<CommonPathElem> path = null;
         List<String> hops = null;
-        List<String> localHops = null;
         List<String> reverseHops = null;
-        List<String> forwardHops = new ArrayList<String>();
+        List<String> previousHops = new ArrayList<String>();
+        List<String> laterHops = null;
         String finalIngressIP = null;
 
         this.log.debug("findPath.start");
@@ -52,23 +51,28 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         if (destHost == null) {
             throw new PathfinderException( "no destination for path given");
         }
-        if (ingressRouterIP != null) {
-            // make sure the given ingress router has an OSCARS loopback
-            finalIngressIP = this.getOSCARSLoopback(ingressRouterIP);
+        if (ingressNodeIP != null) {
+            // make sure the given ingress node has an OSCARS loopback
+            finalIngressIP = this.getOSCARSLoopback(ingressNodeIP);
             if (finalIngressIP == null) {
                 throw new PathfinderException(
-                    "given ingress router " + ingressRouterIP +
+                    "given ingress node " + ingressNodeIP +
                     " does not have an OSCARS loopback");
             }
-
+            // since storing complete path, need hops before ingress
+            reverseHops = this.reversePath(ingressNodeIP, srcHost);
+            // go in forward direction for later addition to the path
+            for (int i=reverseHops.size()-1; i >= 0; i--) {
+                previousHops.add(reverseHops.get(i));
+            }
         // else if the ingress is not given, find it by doing a reverse path
         } else {
-            reverseHops = this.reversePath(egressRouterIP, srcHost);
+            reverseHops = this.reversePath(egressNodeIP, srcHost);
             // go in forward direction to get Juniper ingress
             for (int i=reverseHops.size()-1; i >= 0; i--) {
-                forwardHops.add(reverseHops.get(i));
+                previousHops.add(reverseHops.get(i));
             }
-            finalIngressIP = this.getIngressLoopback(forwardHops);
+            finalIngressIP = this.getIngressLoopback(previousHops);
             if (finalIngressIP == null) {
                 throw new PathfinderException("path between src and host " +
                     "does not contain an OSCARS loopback");
@@ -76,85 +80,173 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
 
         }
         // if no explicit egress, just find path from ingress to destination
-        if (egressRouterIP == null) {
+        if (egressNodeIP == null) {
             hops = this.traceroute(finalIngressIP, destHost);
-            // get local hops from this last path, and next external hop
-            // as a side effect
-            localHops = this.getLocalHops(hops);
-            if (localHops.size() == 1) {
-                throw new PathfinderException("no hops past local path: ");
-            }
-            egressRouterIP = localHops.get(localHops.size()-1);
         } else {
-            // make sure the given egress router is in the database
-            if (!this.isLocalHop(egressRouterIP)) {
+            // make sure the given egress node is in the database
+            if (!this.isLocalHop(egressNodeIP)) {
                 throw new PathfinderException(
-                    "given egress router is not in the database");
+                    "given egress node is not in the database");
             }
             // get hops from egress to destHost (to get next hop)
-            List<String> laterHops = this.traceroute(egressRouterIP,
-                                                     destHost);
+            laterHops = this.traceroute(egressNodeIP, destHost);
             if (laterHops.size() == 1) {
-                throw new PathfinderException("no hops past egress router: " +
-                                              egressRouterIP);
+                throw new PathfinderException("no hops past egress node: " +
+                                              egressNodeIP);
             }
-            this.nextHop = laterHops.get(1);
-            // get local path
-            localHops = this.traceroute(finalIngressIP, egressRouterIP);
+            // get interior path
+            hops = this.traceroute(finalIngressIP, egressNodeIP);
         }
-        path = this.pathFromHops(localHops, finalIngressIP, egressRouterIP);
+        List<String> completeHops = this.stitch(previousHops, hops, laterHops);
+        List<CommonPathElem> path = this.pathFromHops(completeHops);
+        this.log.debug("findPath.End");
         return path;
     }
 
     /**
-     * Returns list of hops that are in the local domain, given a list.
-     * Note that at this point it must be a complete path, and all hops must be
-     * strict.  (The dragon component allows loose hops.)  Also, sets nextHop
-     * to the first hop past the local domain.
+     * Marks hops that are in the local domain, given a path.
      *
-     * @param reqPath list of CommonPathElem containing hops of entire path
-     * @return list of elements representing only hops within the domain
+     * @param path CommonPath instance containing hops of complete path
      * @throws PathfinderException
      */
-    public List<CommonPathElem> findPath(List<CommonPathElem> reqPath)
+    public void findPath(CommonPath path)
             throws PathfinderException {
 
         this.log.debug("findPath.explicitPath.start");
+        List<CommonPathElem> pathElems = path.getElems();
         // check for errors
-        if (reqPath ==  null) {
+        if (pathElems ==  null) {
             throw new PathfinderException(
                     "null explicit path provided to traceroute component");
         }
-        List<CommonPathElem> localPath = this.getLocalPath(reqPath);
-        for (int i=0; i < localPath.size(); i++) {
-            if (localPath.get(i).isLoose()) {
+        this.setLocalHops(path);
+        for (int i=0; i < pathElems.size(); i++) {
+            CommonPathElem pathElem = pathElems.get(i);
+            if ((pathElem.getDescription() != null) && pathElem.isLoose()) {
                 throw new PathfinderException("traceroute component " +
-                    "does not currently accept loose hops");
+                    "does not currently accept loose local hops");
             }
         }
         this.log.debug("findPath.explicitPath.finish");
-        return localPath;
     }
 
     /**
+     * Given sections of a traceroute, eliminate duplicates and build complete
+     * list of hops.  Some of the sections may be null.  Note that there are
+     * some redundant checks between this and pathFromHops for locality to
+     * the domain.  The check requires a database query.  Caching the IP addresses
+     * from the database in a data structure would improve performance.
+     *
+     * @param previousHops list of addresses that are prior to the ingress
+     * @param hops list of addresses from the ingress onwards
+     * @param laterHops list of addresses further on than the egress
+     * @return completeHops list of addresses from source to destination
+     */
+    private List<String> stitch(List<String> previousHops, List<String> hops,
+                                List<String> laterHops) {
+
+        this.log.info("stitch.start");
+        List<String> completeHops = new ArrayList<String>();
+        for (String hop: previousHops) {
+            if (!this.isLocalHop(hop)) {
+                this.log.debug("previous: " + hop);
+                completeHops.add(hop);
+            }
+        }
+        for (String hop: hops) {
+            if (this.isLocalHop(hop)) {
+                this.log.debug("local hop: " + hop);
+                completeHops.add(hop);
+            } else if (laterHops == null) {
+                completeHops.add(hop);
+                this.log.debug("non-local hop: " + hop);
+            }
+        }
+        if (laterHops != null) {
+            for (String hop: laterHops) {
+                if (!this.isLocalHop(hop)) {
+                    this.log.debug("non-local later hop: " + hop);
+                    completeHops.add(hop);
+                }
+            }
+        }
+        this.log.info("stitch.end");
+        return completeHops;
+    }
+
+    /**
+     * Given a path, indicates which hops are in the local domain.
+     *
+     * @param path CommonPath instance with list containing hops to check
+     * @return list of elements containing only local hops
+     * @throws PathfinderException
+     */
+    private void setLocalHops(CommonPath path)
+        throws PathfinderException {
+
+        List<CommonPathElem> pathElems = path.getElems();
+        CommonPathElem pathElem = null;
+        CommonPathElem prevElem = null;
+        boolean hopFound = false;
+        boolean ingressFound = false;
+        boolean egressFound = false;
+        String hop = null;
+
+        for (int i = 0; i < pathElems.size(); i++) {
+            pathElem = pathElems.get(i);
+            hop = pathElem.getIP();
+            if (this.isLocalHop(hop)) {
+                // set description
+                if (hopFound) {
+                    pathElem.setDescription("local");
+                } else {
+                    pathElem.setDescription("ingress");
+                    ingressFound = true;
+                }
+                hopFound = true;
+                this.log.info("setLocalHops, local: " + hop);
+            } else if (hopFound && !egressFound) {
+                if (prevElem != null) {
+                    prevElem.setDescription("egress");
+                }
+                egressFound = true;
+            }
+            prevElem = pathElem;
+        }
+        // throw error if no local path found
+        if (!hopFound) { 
+            throw new PathfinderException(
+                "No local hops found for specified path");
+        }
+        if (!ingressFound) {
+            throw new PathfinderException(
+                "No ingress loopback found for specified path");
+        }
+        if ((pathElems.size() > 1) && !egressFound) {
+            throw new PathfinderException(
+                "No egress loopback found for specified path");
+        }
+    }
+    
+    /**
      * Performs reverse traceroute to source.
      *
-     * @param egressRouterIP string with egress router, if any
+     * @param egressNodeIP string with egress node, if any
      * @param srcHost string with IP address of source host
      * @return hops list of strings with addresses in path
      * @throws PathfinderException
      */
-    private List<String> reversePath(String egressRouterIP, String srcHost)
+    private List<String> reversePath(String egressNodeIP, String srcHost)
             throws PathfinderException {
 
         String src = null;
         List<String> hops = null;
 
-        // use egress router, if given, as the source of the traceroute
-        if (egressRouterIP != null) {
-            src = egressRouterIP;
+        // use egress node, if given, as the source of the traceroute
+        if (egressNodeIP != null) {
+            src = egressNodeIP;
 
-        } else { // otherwise use default router as source
+        } else { // otherwise use default node as source
             src = this.props.getProperty("jnxSource");
         }
         // run the reverse traceroute to the reservation source
@@ -188,18 +280,5 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         // prepend source to path
         hops.add(0, pathSrc);
         return hops;
-    }
-    
-    /**
-     * Returns path that includes both local and interdomain hops.
-     * Used mainly in forwarding requests. Since passing a traceroute path
-     * would mean passing all strict hops essentially, just return null for
-     * now.  NOTE that this means getCompletePath cannot be called
-     * by ReservationAdapter.  TODO:  FIX
-     *
-     * @return list of elements representing only hops within the domain
-     */
-    public List<CommonPathElem> getCompletePath(){
-        return null;
     }
 }

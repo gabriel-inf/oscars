@@ -11,26 +11,31 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.aaa.UserAttribute" 
-        table="userAttributes" >
+<class name="net.es.oscars.aaa.UserAttribute" table="userAttributes">
     <meta attribute="class-description" inherit="false">
-        @hibernate.class table="userAttributes"
+       @hibernate.class table="userAttributes"
     </meta>
 
-    <composite-id name="comp_id"
-        class="net.es.oscars.aaa.UserAttributePK">
-
-        <meta attribute="field-description" inherit="false">
+    <id name="id">
+        <meta attribute="field-description">
            @hibernate.id generator-class="identity"
         </meta>
-	<key-property name="userId" />
-	<key-property name="attributeId" />
-    </composite-id>    
+        <generator class="identity" />
+    </id>
 
+    <property name="userId" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
 
+  <property name="attributeId" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+  
     <!-- Associations -->
-    <!-- derived association(s) for compound key -->
-    <!-- end of derived association(s) -->
 
 </class>
 </hibernate-mapping>

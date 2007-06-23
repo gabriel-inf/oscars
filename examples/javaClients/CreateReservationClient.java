@@ -95,17 +95,14 @@ public class CreateReservationClient extends ExampleClient {
                 Integer.toString(content.getBandwidth()));
         if (arg != null) { content.setBandwidth(Integer.parseInt(arg)); }
 
-        arg = Args.getArg(br, "Route direction",
-                content.getCreateRouteDirection());
-        if (arg != null) { content.setCreateRouteDirection(arg); }
         arg = Args.getArg(br, "Protocol", "");
         if (arg != null) { content.setProtocol(arg); }
         arg = Args.getArg(br, "Description", content.getDescription());
         if (arg != null) { content.setDescription(arg); }
-        arg = Args.getArg(br, "Ingress router", "");
-        if (!arg.equals("")) { content.setIngressRouterIP(arg); }
-        arg = Args.getArg(br, "Egress router", "");
-        if (!arg.equals("")) { content.setEgressRouterIP(arg); }
+        arg = Args.getArg(br, "Ingress node", "");
+        if (!arg.equals("")) { content.setIngressNodeIP(arg); }
+        arg = Args.getArg(br, "Egress node", "");
+        if (!arg.equals("")) { content.setEgressNodeIP(arg); }
         arg=Args.getArg(br, "RequestedPath: input dotted ipAddrs separated by spaces", "");
         if (!arg.equals("")) {
             String ipaddr[] = arg.split(" ");
@@ -129,7 +126,7 @@ public class CreateReservationClient extends ExampleClient {
             explicitPath.setHops(hopList);
             content.setReqPath(explicitPath);
             arg = Args.getArg(br, "VLAN Tag", "");
-            if (!arg.equals("")) { explicitPath.setVtag(arg); }
+            if (!arg.equals("")) { content.setVtag(arg); }
         }
         return content;
     }
@@ -155,8 +152,6 @@ public class CreateReservationClient extends ExampleClient {
         content.setDestHost(props.getProperty("destHostName",""));
         content.setBandwidth(
                 Integer.parseInt(props.getProperty("bandwidth","10")));
-        content.setCreateRouteDirection(
-                props.getProperty("routeDirection","FORWARD"));
         content.setBurstLimit(
                 Integer.parseInt(props.getProperty("burstLimit","10000")));
         return content;

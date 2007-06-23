@@ -49,49 +49,6 @@
                                }
                             
 
-                        /**
-                        * field for Vtag
-                        */
-
-                        protected java.lang.String localVtag ;
-                        
-                           /*  This tracker boolean wil be used to detect whether the user called the set method
-                          *   for this attribute. It will be used to determine whether to include this field
-                           *   in the serialized XML
-                           */
-                           protected boolean localVtagTracker = false ;
-                           
-
-                           /**
-                           * Auto generated getter method
-                           * @return java.lang.String
-                           */
-                           public  java.lang.String getVtag(){
-                               return localVtag;
-                           }
-
-                           
-                        
-                            /**
-                               * Auto generated setter method
-                               * @param param Vtag
-                               */
-                               public void setVtag(java.lang.String param){
-                            
-                                       if (param != null){
-                                          //update the setting tracker
-                                          localVtagTracker = true;
-                                       } else {
-                                          localVtagTracker = false;
-                                              
-                                       }
-                                   
-                                    this.localVtag=param;
-                            
-
-                               }
-                            
-
      /**
      * isReaderMTOMAware
      * @return true if the reader supports MTOM
@@ -173,41 +130,7 @@
                                    localHops.getOMDataSource(
                                        new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","hops"),
                                        factory).serialize(xmlWriter);
-                                 if (localVtagTracker){
-                                    namespace = "http://oscars.es.net/OSCARS";
-                                    if (! namespace.equals("")) {
-                                        prefix = xmlWriter.getPrefix(namespace);
-
-                                        if (prefix == null) {
-                                            prefix = org.apache.axis2.databinding.utils.BeanUtil.getUniquePrefix();
-
-                                            xmlWriter.writeStartElement(prefix,"vtag", namespace);
-                                            xmlWriter.writeNamespace(prefix, namespace);
-                                            xmlWriter.setPrefix(prefix, namespace);
-
-                                        } else {
-                                            xmlWriter.writeStartElement(namespace,"vtag");
-                                        }
-
-                                    } else {
-                                        xmlWriter.writeStartElement("vtag");
-                                    }
                                 
-
-                                          if (localVtag==null){
-                                              // write the nil attribute
-                                              
-                                                     throw new RuntimeException("vtag cannot be null!!");
-                                                  
-                                          }else{
-
-                                        
-                                                   xmlWriter.writeCharacters(localVtag);
-                                            
-                                          }
-                                    
-                                   xmlWriter.writeEndElement();
-                             }
                    
                xmlWriter.writeEndElement();
             
@@ -298,16 +221,7 @@
                                          throw new RuntimeException("hops cannot be null!!");
                                     }
                                     elementList.add(localHops);
-                                 if (localVtagTracker){
-                             elementList.add(new javax.xml.namespace.QName("http://oscars.es.net/OSCARS",
-                                                                      "vtag"));
-                            
-                                        if (localVtag != null){
-                                            elementList.add(org.apache.axis2.databinding.utils.ConverterUtil.convertToString(localVtag));
-                                        } else {
-                                           throw new RuntimeException("vtag cannot be null!!");
-                                        }
-                                    }
+                                
 
                 return new org.apache.axis2.databinding.utils.reader.ADBXMLStreamReaderImpl(qName, elementList.toArray(), attribList.toArray());
             
@@ -382,20 +296,6 @@
                                     // A start element we are not expecting indicates an invalid parameter was passed
                                     throw new java.lang.RuntimeException("Unexpected subelement " + reader.getLocalName());
                                 }
-                            
-                                    
-                                    while (!reader.isStartElement() && !reader.isEndElement()) reader.next();
-                                
-                                    if (reader.isStartElement() && new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","vtag").equals(reader.getName())){
-                                
-                                    java.lang.String content = reader.getElementText();
-                                    
-                                              object.setVtag(
-                                        org.apache.axis2.databinding.utils.ConverterUtil.convertToString(content));
-                                              
-                                        reader.next();
-                                    
-                              }  // End of if for expected property start element
                               
                             while (!reader.isStartElement() && !reader.isEndElement())
                                 reader.next();

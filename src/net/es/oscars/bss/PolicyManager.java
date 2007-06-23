@@ -4,6 +4,7 @@ import java.util.*;
 import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.pathfinder.CommonPath;
 import net.es.oscars.pathfinder.CommonPathElem;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
@@ -24,53 +25,53 @@ public class PolicyManager {
 
     /**
      * Checks whether adding this reservation would cause oversubscription
-     *     on an interface.
+     *     on a port.
      *
      * @param activeReservations existing reservations
-     * @param path a list of CommonPathElem's to check for oversubscription
+     * @param path CommonPath instance to check for oversubscription
      * @param bandwidth Long with the desired bandwidth
      * @throws BSSException
      */
     public void checkOversubscribed(
-               List<Reservation> activeReservations, List<CommonPathElem> path,
+               List<Reservation> activeReservations, CommonPath path,
                Long bandwidth)
             throws BSSException {
 
         List<Ipaddr> ipaddrs = null;
-        Map<Interface,Long> xfaceSums = new HashMap<Interface,Long>();
-        Interface ipaddrXface = null;
+        Map<Port,Long> portSums = new HashMap<Port,Long>();
+        Port ipaddrXface = null;
         double maxUtilization = 0.0;
-        double maxPercentUtilization = 0.0;
 
+        this.log.info("checkOversubscribed.start");
         ipaddrs = this.getIpaddrs(path);
         // initialize sums to requested bandwidth for each link in path
         for (Ipaddr ipaddr: ipaddrs) {
-            ipaddrXface = ipaddr.getInterface();
-            xfaceSums.put(ipaddrXface, bandwidth);
+            ipaddrXface = ipaddr.getPort();
+            portSums.put(ipaddrXface, bandwidth);
         }
         for (Reservation resv: activeReservations) {
             ipaddrs = this.getIpaddrs(resv.getPath());
-            this.addPathBandwidths(resv.getBandwidth(), ipaddrs, xfaceSums);
+            this.addPathBandwidths(resv.getBandwidth(), ipaddrs, portSums);
         }
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("reservation", true);
-        maxPercentUtilization = Double.valueOf(props.getProperty("maxPercentUtilization"));
 
-        // now for each of those interface instances
-        for (Interface xface: xfaceSums.keySet()) {
-            Long speed = xface.getSpeed();
-            // speed will be 0 for ingress or egress router
-            if ((speed == null) || (speed == 0)) {
+        // now for each of those port instances
+        for (Port port: portSums.keySet()) {
+            Long maximumCapacity = port.getMaximumCapacity();
+            // maximumCapacity will be 0 for ingress or egress node
+            if ((maximumCapacity == null) || (maximumCapacity == 0)) {
                 continue; 
             }
 
-            maxUtilization = xface.getSpeed() * maxPercentUtilization;
-            if (((Long)xfaceSums.get(xface)) > maxUtilization) {
+            if (((Long)portSums.get(port)) > port.getMaximumReservableCapacity()) {
                 throw new BSSException(
-                      "Router (" + xface.getRouter().getName() + ") oversubscribed:  " + xfaceSums.get(xface) +
-                      " bps > " + maxUtilization + " bps");
+                      "Node (" + port.getNode().getName() +
+                      ") oversubscribed:  " + portSums.get(port) +
+                      " bps > " + port.getMaximumReservableCapacity() + " bps");
             }
         }
+        this.log.info("checkOversubscribed.end");
     }
 
     /**
@@ -79,24 +80,24 @@ public class PolicyManager {
      *
      * @param bandwidth the bandwidth for an active or pending reservation
      * @param ipaddrs a list of ipaddr instances in the reservation's path
-     * @param xfaceSums a mapping from interfaces to the current sum of
+     * @param portSums a mapping from ports to the current sum of
      *                  bandwidths for all reservations utilizing that link
      * @throws BSSException
      */
     public void addPathBandwidths(Long bandwidth, List<Ipaddr> ipaddrs,
-                 Map<Interface,Long> xfaceSums) throws BSSException {
+                 Map<Port,Long> portSums) throws BSSException {
 
-        Interface xface = null;
+        Port port = null;
 
         for (Ipaddr ipaddr: ipaddrs) {
-            xface = ipaddr.getInterface();
-            if (!xface.isValid() || (xface.getSpeed() <= 0)) {
+            port = ipaddr.getPort();
+            if (!port.isValid() || (port.getMaximumCapacity() <= 0)) {
                 continue;
             }
-            // if not in xfaceSums, not part of requested path
-            Long totalBandwidth = xfaceSums.get(xface);
+            // if not in portSums, not part of requested path
+            Long totalBandwidth = portSums.get(port);
             if (totalBandwidth != null) {
-                xfaceSums.put(xface, bandwidth + totalBandwidth);
+                portSums.put(port, bandwidth + totalBandwidth);
             }
         }
     }
@@ -104,7 +105,7 @@ public class PolicyManager {
     /**
      * Gets list of ipaddr instances given a start of a path.
      *
-     * @param path start of a path to check
+     * @param path Path instance containing start of path
      * @return ipaddrs list of ipaddr instances
      */
     private List<Ipaddr> getIpaddrs(Path path) {
@@ -121,18 +122,24 @@ public class PolicyManager {
     /**
      * Gets list of ipaddr instances given a list of common path elements.
      *
-     * @param path list of elements
+     * @param path CommonPath instance containing path to check
      * @return ipaddrs list of ipaddr instances
      */
-    private List<Ipaddr> getIpaddrs(List<CommonPathElem> path) {
+    private List<Ipaddr> getIpaddrs(CommonPath path) {
 
+        this.log.info("getIpaddrs.start");
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        List<CommonPathElem> pathElems = path.getElems();
         List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
-        // TODO:  error checking, assumes local
-        for (int i = 0; i < path.size(); i++) {
-            Ipaddr ipaddr = ipaddrDAO.getIpaddr(path.get(i).getIP(), true);
-            ipaddrs.add(ipaddr);
+        for (int i = 0; i < pathElems.size(); i++) {
+            CommonPathElem pathElem = pathElems.get(i);
+            // don't test non-local addresses
+            if (pathElem.getDescription() != null) {
+                Ipaddr ipaddr = ipaddrDAO.getIpaddr(pathElem.getIP(), true);
+                ipaddrs.add(ipaddr);
+            }
         }
+        this.log.info("getIpaddrs.end");
         return ipaddrs;
     }
 }

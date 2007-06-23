@@ -18,15 +18,15 @@ public class DBTests {
         System.err.println("setUpDB");
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
-        dbnames.add("aaa");
-        dbnames.add("bss");
+        dbnames.add("testaaa");
+        dbnames.add("testbss");
         initializer.initDatabase(dbnames);
     }
 
   @AfterSuite
     public void teardownDB() {
         System.err.println("tearDownDB");
-        HibernateUtil.closeSessionFactory("aaa");
-        HibernateUtil.closeSessionFactory("bss");
+        HibernateUtil.closeSessionFactory("testaaa");
+        HibernateUtil.closeSessionFactory("testbss");
     }
 }

@@ -15,7 +15,7 @@ import net.es.oscars.bss.BSSException;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "notyet", "path" }, dependsOnGroups={ "ipaddr" })
+@Test(groups={ "notyet", "path" }, dependsOnGroups={ "create" })
 public class PathTest {
     private Properties props;
     private SessionFactory sf;
@@ -25,9 +25,9 @@ public class PathTest {
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.bss.topology", true);
+        this.props = propHandler.getPropertyGroup("test.common", true);
         this.hops = new ArrayList<String>();
-        this.dbname = "bss";
+        this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
@@ -66,7 +66,7 @@ public class PathTest {
         PathDAO dao = new PathDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = (Ipaddr) ipaddrDAO.queryByParam("description",
-                                 this.props.getProperty("pathDescription"));
+                                 "test suite");
         Path path = (Path) dao.queryByParam("ipaddrId", ipaddr.getId()); 
         this.sf.getCurrentSession().getTransaction().commit();
         assert path != null;
@@ -87,7 +87,7 @@ public class PathTest {
         PathDAO dao = new PathDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = (Ipaddr) ipaddrDAO.queryByParam("description",
-                                 this.props.getProperty("pathDescription"));
+                                 "test suite");
         Path path = dao.queryByParam("ipaddrId", ipaddr.getId());
         dao.remove(path);
         // remove ipaddr's set up for creating test path

@@ -17,6 +17,7 @@ import net.es.oscars.PropHandler;
  */
 @Test(groups={ "pss" })
 public class JnxLSPTest {
+    private final String BANDWIDTH = "10000000"; // 10 Mbps
     private Properties testProps;
     private JnxLSP jnxLSP;
     private Map<String, String> commonHm;
@@ -26,7 +27,7 @@ public class JnxLSPTest {
     protected void setUpClass() {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("test.properties");
-        this.testProps = propHandler.getPropertyGroup("test.pss", true);
+        this.testProps = propHandler.getPropertyGroup("test.common", true);
         propHandler = new PropHandler("oscars.properties");
         // fill in name/value pairs common to all tests
         Properties props = propHandler.getPropertyGroup("pss", true);
@@ -34,15 +35,14 @@ public class JnxLSPTest {
         String keyfile = System.getenv("CATALINA_HOME") +
                 "/shared/oscars.conf/server/oscars.key";
         this.commonHm.put("keyfile", keyfile);
-        this.commonHm.put("router", this.testProps.getProperty("router"));
+        this.commonHm.put("router", this.testProps.getProperty("ingressRouter"));
         this.commonHm.put("source-address",
-                this.testProps.getProperty("source-address"));
+                this.testProps.getProperty("srcHost"));
         this.commonHm.put("destination-address",
-                this.testProps.getProperty("destination-address"));
-        this.commonHm.put("from", this.testProps.getProperty("from"));
-        this.commonHm.put("to", this.testProps.getProperty("to"));
-        this.commonHm.put("bandwidth",
-                this.testProps.getProperty("bandwidth"));
+                this.testProps.getProperty("destHost"));
+        this.commonHm.put("from", this.testProps.getProperty("ingressRouter"));
+        this.commonHm.put("to", this.testProps.getProperty("egressRouter"));
+        this.commonHm.put("bandwidth", BANDWIDTH);
 
         this.commonHm.put("login", props.getProperty("login"));
         // to distinguish tests
@@ -83,6 +83,6 @@ public class JnxLSPTest {
         // in the template, it is ignored
         Map<String,String> hm =
             new HashMap<String,String>(this.commonHm);
-        assert this.jnxLSP.teardownLSP(hm, null);
+        assert this.jnxLSP.teardownLSP(hm);
     }
 }

@@ -25,7 +25,7 @@
                         * This was an Array!
                         */
 
-                        protected net.es.oscars.wsdlTypes.ResInfoContent[] localResInfo ;
+                        protected net.es.oscars.wsdlTypes.ResSummary[] localResInfo ;
                         
                            /*  This tracker boolean wil be used to detect whether the user called the set method
                           *   for this attribute. It will be used to determine whether to include this field
@@ -36,9 +36,9 @@
 
                            /**
                            * Auto generated getter method
-                           * @return net.es.oscars.wsdlTypes.ResInfoContent[]
+                           * @return net.es.oscars.wsdlTypes.ResSummary[]
                            */
-                           public  net.es.oscars.wsdlTypes.ResInfoContent[] getResInfo(){
+                           public  net.es.oscars.wsdlTypes.ResSummary[] getResInfo(){
                                return localResInfo;
                            }
 
@@ -50,7 +50,7 @@
                               /**
                                * validate the array for ResInfo
                                */
-                              protected void validateResInfo(net.es.oscars.wsdlTypes.ResInfoContent[] param){
+                              protected void validateResInfo(net.es.oscars.wsdlTypes.ResSummary[] param){
                              
                               }
 
@@ -59,7 +59,7 @@
                               * Auto generated setter method
                               * @param param ResInfo
                               */
-                              public void setResInfo(net.es.oscars.wsdlTypes.ResInfoContent[] param){
+                              public void setResInfo(net.es.oscars.wsdlTypes.ResSummary[] param){
                               
                                    validateResInfo(param);
 
@@ -79,11 +79,11 @@
                              
                              /**
                              * Auto generated add method for the array for convenience
-                             * @param param net.es.oscars.wsdlTypes.ResInfoContent
+                             * @param param net.es.oscars.wsdlTypes.ResSummary
                              */
-                             public void addResInfo(net.es.oscars.wsdlTypes.ResInfoContent param){
+                             public void addResInfo(net.es.oscars.wsdlTypes.ResSummary param){
                                    if (localResInfo == null){
-                                   localResInfo = new net.es.oscars.wsdlTypes.ResInfoContent[]{};
+                                   localResInfo = new net.es.oscars.wsdlTypes.ResSummary[]{};
                                    }
 
                             
@@ -95,8 +95,8 @@
                             org.apache.axis2.databinding.utils.ConverterUtil.toList(localResInfo);
                                list.add(param);
                                this.localResInfo =
-                             (net.es.oscars.wsdlTypes.ResInfoContent[])list.toArray(
-                            new net.es.oscars.wsdlTypes.ResInfoContent[list.size()]);
+                             (net.es.oscars.wsdlTypes.ResSummary[])list.toArray(
+                            new net.es.oscars.wsdlTypes.ResSummary[list.size()]);
 
                              }
                              
@@ -367,7 +367,7 @@
                                     
                                     
                                     // Process the array and step past its final element's end.
-                                    list1.add(net.es.oscars.wsdlTypes.ResInfoContent.Factory.parse(reader));
+                                    list1.add(net.es.oscars.wsdlTypes.ResSummary.Factory.parse(reader));
                                             
                                             //loop until we find a start element that is not part of this array
                                             boolean loopDone1 = false;
@@ -385,7 +385,7 @@
                                                     loopDone1 = true;
                                                 } else {
                                                     if (new javax.xml.namespace.QName("http://oscars.es.net/OSCARS","resInfo").equals(reader.getName())){
-                                                        list1.add(net.es.oscars.wsdlTypes.ResInfoContent.Factory.parse(reader));
+                                                        list1.add(net.es.oscars.wsdlTypes.ResSummary.Factory.parse(reader));
                                                         
                                                     }else{
                                                         loopDone1 = true;
@@ -394,9 +394,9 @@
                                             }
                                             // call the converter utility  to convert and set the array
                                             
-                                                    object.setResInfo((net.es.oscars.wsdlTypes.ResInfoContent[])
+                                                    object.setResInfo((net.es.oscars.wsdlTypes.ResSummary[])
                                                         org.apache.axis2.databinding.utils.ConverterUtil.convertToArray(
-                                                            net.es.oscars.wsdlTypes.ResInfoContent.class,
+                                                            net.es.oscars.wsdlTypes.ResSummary.class,
                                                             list1));
                                                 
                               }  // End of if for expected property start element

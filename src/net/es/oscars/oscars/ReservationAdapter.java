@@ -48,14 +48,13 @@ public class ReservationAdapter {
  
         Reservation resv = this.tc.contentToReservation(params);
         this.log.info("create.params: " + resv.toString());
-        CommonPath reqPath = this.tc.explicitPathToPath(params.getReqPath());
         Forwarder forwarder = new Forwarder();
-        String url = this.rm.create(resv, login, params.getIngressRouterIP(),
-                                    params.getEgressRouterIP(), reqPath);
+        String url = this.rm.create(resv, login, params.getIngressNodeIP(),
+                                    params.getEgressNodeIP());
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and handles the response
         this.log.debug("create, to forward");
-        CreateReply forwardReply = forwarder.create(resv, reqPath);
+        CreateReply forwardReply = forwarder.create(resv);
         // persist to db
         this.rm.store(resv);
 
@@ -63,7 +62,7 @@ public class ReservationAdapter {
         CreateReply reply = this.tc.reservationToReply(resv);
         if (forwardReply != null && forwardReply.getPath() != null) {
             // Add remote hops to returned explicitPath
-            this.AddHops(reply.getPath(), forwardReply.getPath());
+            this.addHops(reply.getPath(), forwardReply.getPath());
             this.log.debug("complete path has " +
                            reply.getPath().getHops().getHop().length + "hops");
         }
@@ -74,10 +73,11 @@ public class ReservationAdapter {
     /**
      * @param params ResTag instance with with request params.
      * @param login String with user's login name
+     * @param allUsers boolean true if user can cancel other user's reservations
      * @return ResStatus reply CancelReservationResponse
      * @throws BSSException 
      */
-    public String cancel(ResTag params, String login) 
+    public String cancel(ResTag params, String login, boolean allUsers) 
             throws BSSException, InterdomainException  {
 
         Reservation resv = null;
@@ -86,7 +86,7 @@ public class ReservationAdapter {
         
         String tag = params.getTag();
         this.log.info("cancel.start: " + tag);
-        resv = this.rm.cancel(tag, login);
+        resv = this.rm.cancel(tag, login, allUsers);
         this.log.info("cancel.finish " +
                       "tag: " + tag + ", status: "  + resv.getStatus());
         // checks whether next domain should be contacted, forwards to
@@ -99,11 +99,11 @@ public class ReservationAdapter {
 
     /**
      * @param params ResTag instance with with request params.
-     * @param authorized boolean indicating user can view all reservations
+     * @param allUsers boolean indicating user can view all reservations
      * @return reply ResDetails instance encapsulating library reply.
      * @throws BSSException 
      */
-    public ResDetails query(ResTag params, boolean authorized)
+    public ResDetails query(ResTag params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;
@@ -111,7 +111,7 @@ public class ReservationAdapter {
 
         String tag = params.getTag();
         this.log.info("query.start: " + tag);
-        resv = this.rm.query(tag, authorized);
+        resv = this.rm.query(tag, login, allUsers);
         ResDetails reply = this.tc.reservationToDetails(resv);
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and returns the response
@@ -120,7 +120,7 @@ public class ReservationAdapter {
         this.log.debug("query, to toReply");
         if (forwardReply != null && forwardReply.getPath() != null) {
             // Add remote hops to returned explicitPath
-            this.AddHops(reply.getPath(), forwardReply.getPath());
+            this.addHops(reply.getPath(), forwardReply.getPath());
             this.log.debug("complete path has " +
                            reply.getPath().getHops().getHop().length + "hops");
         }
@@ -130,18 +130,18 @@ public class ReservationAdapter {
 
     /**
      * @param login String with user's login name
-     * @param authorized boolean indicating if user can view all reservations
+     * @param allUsers boolean indicating if user can view all reservations
      * @return reply ListReply encapsulating library reply.
      * @throws BSSException 
      */
-    public ListReply list(String login, boolean authorized)
+    public ListReply list(String login, boolean allUsers)
             throws BSSException {
 
         ListReply reply = null;
         List<Reservation> reservations = null;
 
         this.log.info("list.start");
-        reservations = this.rm.list(login, authorized);
+        reservations = this.rm.list(login, allUsers);
         reply = this.tc.reservationToListReply(reservations);
         this.log.info("list.finish: " + reply.toString());
         return reply;
@@ -154,7 +154,7 @@ public class ReservationAdapter {
      * @param remotePath - the path returned from forward.create reservation
      * 
      */
-    private void AddHops(ExplicitPath localPath, ExplicitPath remotePath) {
+    private void addHops(ExplicitPath localPath, ExplicitPath remotePath) {
 
         HopList localHops = localPath.getHops();
         Hop remoteHops[] = remotePath.getHops().getHop();       

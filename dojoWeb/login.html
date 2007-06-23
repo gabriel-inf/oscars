@@ -1,29 +1,55 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <script type="text/javascript">
-        dojo.require("dojo.widget.Form");
-    </script>
+    <title>On-demand Secure Circuits and Advance Reservation System</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="Author" content="David Robertson" />
+
 </head>
 
 <body>
-<p>
-An <a href="/OSCARS/docs">OSCARS</a> login and password are required to
-access this system.  To log in, or to request an account, click on the
-corresponding buttons.</p>
+    <table id="pagetitle">
+        <tr>
+            <td>
+          <h1>On-demand Secure Circuits and Advance Reservation System</h1>
+            </td>
+        </tr>
+    </table>
 
-<p><strong>NOTE</strong>: OSCARS is now using the
-<a href="http://dojotoolkit.org">Dojo</a> Javascript library.
-Please report any problems that you might encounter to
-<a href="mailto:DWRobertson@lbl.gov">David Robertson</a>.
-</p>
+An OSCARS login and password are required to access this system.</p>
 
-<form id="userLoginForm" dojoType="Form" method="POST"
-      action="servlet/WebSession">
-    <input type="submit" name="login" value="Log into OSCARS" />
-    <!--
-    <input type="submit" name="requestAcct" value="Request account" />
-    -->
+<form method="POST" action="j_security_check">
+<table>
+    <tr>
+        <td>
+            <label for="User">User:  </label>
+	</td>
+	<td>
+            <input type="text" name="j_username" id="User" />
+        </td>
+    </tr>
+    <tr>
+	<td>
+	    <label for="Password">Password:  </label>
+	</td>
+	<td>
+            <input type="password" name="j_password" id="Password" />
+	</td>
+    </tr>
+</table>
+<p><input type="submit" value="Login" /></p>
 </form>
 
+<hr />
+<br />
+
+    <p>
+        <a href="http://www.es.net/">ESnet</a> |
+        <a href="http://www.lbl.gov/">Berkeley Lab</a> |
+        <a href="http://www.lbl.gov/Disclaimers.html">Notice to Users</a>
+    </p>
+    <p><strong>Contacts:</strong>
+        <a href="mailto:chin@es.net">Chin Guok</a>, 
+        <a href="mailto:DWRobertson@lbl.gov">David Robertson</a>
+    </p>
 </body>
 </html>

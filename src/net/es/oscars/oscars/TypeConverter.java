@@ -15,6 +15,7 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.CommonPath;
 import net.es.oscars.pathfinder.CommonPathElem;
+import net.es.oscars.pathfinder.EdgeInfo;
 import net.es.oscars.wsdlTypes.*;
 
 /**
@@ -56,13 +57,34 @@ public class TypeConverter {
 
         resv.setDescription(params.getDescription());
         resv.setProtocol(params.getProtocol());
-        if (params.getSrcPort() != 0) {
-            resv.setSrcPort(params.getSrcPort());
+        if (params.getSrcIpPort() != 0) {
+            resv.setSrcIpPort(params.getSrcIpPort());
         }
-        if (params.getDestPort() != 0) {
-            resv.setDestPort(params.getDestPort());
+        if (params.getDestIpPort() != 0) {
+            resv.setDestIpPort(params.getDestIpPort());
         }
         CommonPath path = this.explicitPathToPath(params.getReqPath());
+        if (path == null) {
+            path = new CommonPath();
+            path.setExplicit(false);
+        } else {
+            path.setExplicit(true);
+        }
+        path.setVlanTag(params.getVtag());
+        PortID srcPortId = params.getSrcPortId();
+        if (srcPortId != null) {
+            EdgeInfo srcEdgeInfo = new EdgeInfo();
+            srcEdgeInfo.setPortType(srcPortId.getType());
+            srcEdgeInfo.setPortValue(srcPortId.getValue());
+            path.setSrcEdgeInfo(srcEdgeInfo);
+        }
+        PortID destPortId = params.getDestPortId();
+        if (destPortId != null) {
+            EdgeInfo destEdgeInfo = new EdgeInfo();
+            destEdgeInfo.setPortType(destPortId.getType());
+            destEdgeInfo.setPortValue(destPortId.getValue());
+            path.setDestEdgeInfo(destEdgeInfo);
+        }
         resv.setCommonPath(path);
         return resv;
     }
@@ -93,18 +115,24 @@ public class TypeConverter {
 
         this.log.debug("toDetails start");
         ResDetails reply = new ResDetails();
+        ResSummary summary = new ResSummary();
         reply.setPath(this.pathToExplicitPath(resv.getPath()));
-        reply.setTag(this.getReservationTag(resv));
-        reply.setStatus(resv.getStatus());
-        reply.setSrcHost(resv.getSrcHost());
-        reply.setDestHost(resv.getDestHost());
+        Vlan vlan = resv.getPath().getVlan();
+        if (vlan != null) {
+            reply.setVtag(vlan.getVlanTag());
+        }
+        summary.setTag(this.getReservationTag(resv));
+        summary.setStatus(resv.getStatus());
+        summary.setSrcHost(resv.getSrcHost());
+        summary.setDestHost(resv.getDestHost());
+        summary.setStartTime(resv.getStartTime());
+        summary.setEndTime(resv.getEndTime());
+        reply.setInfo(summary);
         // make sure that protocol is in upper case to match WSDL
         if (resv.getProtocol() != null) {
             reply.setProtocol(resv.getProtocol().toUpperCase());
         }
 
-        reply.setStartTime(resv.getStartTime());
-        reply.setEndTime(resv.getEndTime());
         reply.setCreateTime(resv.getCreatedTime());
 
         int bandwidth = resv.getBandwidth().intValue();
@@ -113,11 +141,11 @@ public class TypeConverter {
         reply.setBurstLimit(burstLimit);
         reply.setResClass(resv.getLspClass());
         reply.setDescription(resv.getDescription());
-        if (resv.getSrcPort() != null) {
-            reply.setSrcPort(resv.getSrcPort());
+        if (resv.getSrcIpPort() != null) {
+            reply.setSrcIpPort(resv.getSrcIpPort());
         }
-        if (resv.getDestPort() != null) {
-            reply.setDestPort(resv.getDestPort());
+        if (resv.getDestIpPort() != null) {
+            reply.setDestIpPort(resv.getDestIpPort());
         }
         this.log.debug("toDetails finish");
         return reply;
@@ -141,21 +169,21 @@ public class TypeConverter {
         int listLength = reservations.size();
         this.log.info("toListReply.reservationsSize: " +
                                                  Integer.toString(listLength));
-        ResInfoContent[] contents = new ResInfoContent[listLength];
+        ResSummary[] summaries = new ResSummary[listLength];
         for (Reservation resv: reservations) {
-            ResInfoContent content = new ResInfoContent();
-            content.setTag(this.getReservationTag(resv));
-            content.setStatus(resv.getStatus());
-            content.setSrcHost(resv.getSrcHost());
-            content.setDestHost(resv.getDestHost());
+            ResSummary summary = new ResSummary();
+            summary.setTag(this.getReservationTag(resv));
+            summary.setStatus(resv.getStatus());
+            summary.setSrcHost(resv.getSrcHost());
+            summary.setDestHost(resv.getDestHost());
 
-            content.setStartTime(resv.getStartTime());
-            content.setEndTime(resv.getEndTime());
+            summary.setStartTime(resv.getStartTime());
+            summary.setEndTime(resv.getEndTime());
 
-            contents[ctr] = content;
+            summaries[ctr] = summary;
             ctr++;
         }
-        reply.setResInfo(contents);
+        reply.setResInfo(summaries);
         return reply;
     }
     
@@ -181,12 +209,6 @@ public class TypeConverter {
             pathElem = pathElem.getNextElem();
         }
         explicitPath.setHops(hList);
-        if (path.getVlanId() != null) {
-            explicitPath.setVtag(Integer.toString(path.getVlanId()));
-        } else {
-            /* TODO: figure out a vlan tag */
-            explicitPath.setVtag(" ");
-        }
         this.log.debug("pathToExplicitPath finish");
         return explicitPath;
     }
@@ -199,25 +221,27 @@ public class TypeConverter {
      */
     public ExplicitPath commonPathToExplicitPath(CommonPath path) {
 
+        this.log.debug("commonPathToExplicitPath.start");
         List<CommonPathElem> elems = path.getElems();
         ExplicitPath explicitPath =
             new net.es.oscars.wsdlTypes.ExplicitPath();
         HopList hList = new HopList();
     
         for (int i=0; i < elems.size(); i++) {
-            Hop hop = new Hop();
             CommonPathElem pathElem = elems.get(i);
+            // Don't forward interior addresses.  Ingress
+            // and egress elements have different description.
+            String description = pathElem.getDescription();
+            if ((description != null) && description.equals("local")) {
+                continue;
+            }
+            Hop hop = new Hop();
             hop.setLoose(pathElem.isLoose());
             hop.setValue(pathElem.getIP());
             hList.addHop(hop);
+            this.log.debug("hop: " + pathElem.getIP());
         }
         explicitPath.setHops(hList);
-        if (path.getVlanId() != null) {
-            explicitPath.setVtag(Integer.toString(path.getVlanId()));
-        } else {
-            /* TODO: figure out a vlan tag */
-            explicitPath.setVtag(" ");
-        }
         this.log.debug("commonPathToExplicitPath finish");
         return explicitPath;
     }
@@ -252,9 +276,6 @@ public class TypeConverter {
                 pathElem.setIP(hop[i].getValue());
                 elems.add(pathElem);
             }
-        }
-        if (explicitPath.getVtag() != null) {
-            path.setVlanId(Integer.parseInt(explicitPath.getVtag()));
         }
         path.setElems(elems);
         return path;
