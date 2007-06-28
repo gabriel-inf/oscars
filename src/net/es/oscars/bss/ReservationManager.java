@@ -73,10 +73,6 @@ public class ReservationManager {
 
         this.log.info("create.validated");
         resv.setLspClass("4");
-        // this may actually be optional
-        if (resv.getDscp() == null) {
-            resv.setDscp("4");
-        }
         resv.setStatus("PENDING");
         resv.setBurstLimit(10000000L);
         if (ingressNode != null) {

@@ -172,7 +172,7 @@ function checkDateFields(form) {
     }
 
     if ( isBlank(form.startMonth.value) ) {
-        form.startMonth.value = localDate.getMonth();
+        form.startMonth.value = localDate.getMonth() + 1;
     }
     else {
         if (!(isNumeric(form.startMonth.value))) {
@@ -222,19 +222,18 @@ function checkDateFields(form) {
         durationMilliseconds = form.durationHour.value * 3600000;
     }
 
-    // TODO:  menu so months are always in proper range
-    if ( ( form.startMonth.value == 0 || form.startMonth.value == 2 || 
-           form.startMonth.value == 4 || form.startMonth.value == 6 || 
-           form.startMonth.value == 7 || form.startMonth.value == 9 || 
-           form.startMonth.value == 11 ) && ( form.startDate.value > 31 ) )
+    if ( ( form.startMonth.value == 1 || form.startMonth.value == 3 || 
+           form.startMonth.value == 5 || form.startMonth.value == 7 || 
+           form.startMonth.value == 8 || form.startMonth.value == 10 || 
+           form.startMonth.value == 12 ) && ( form.startDate.value > 31 ) )
     {
         alert("For the month, " + form.startMonth.value + ", the date must be less than 32.");
         form.startDate.focus();
         return false;
     }
 
-    if ( ( form.startMonth.value == 3 || form.startMonth.value == 5 || 
-           form.startMonth.value == 8 || form.startMonth.value == 10 ) && 
+    if ( ( form.startMonth.value == 4 || form.startMonth.value == 6 || 
+           form.startMonth.value == 9 || form.startMonth.value == 11 ) && 
          ( form.startDate.value > 30 ) )
     {
         alert("For the month, " + form.startMonth.value + ", the date must be less than 31.");
@@ -242,7 +241,7 @@ function checkDateFields(form) {
         return false;
     }
 
-    if ( form.startMonth.value == 1) {
+    if ( form.startMonth.value == 2) {
         if (isLeapYear( form.startYear.value )) {
             if ( form.startDate.value > 29 ) {
                 alert("For the month of February in a leap year, the date must be less than 30.");
@@ -256,7 +255,7 @@ function checkDateFields(form) {
             return false;
         }
     }
-    reservationDate = new Date(form.startYear.value, form.startMonth.value,
+    reservationDate = new Date(form.startYear.value, form.startMonth.value - 1,
                                form.startDate.value, form.startHour.value,
                                form.startMinute.value, 0, 0);
     // convert local time to milliseconds since epoch

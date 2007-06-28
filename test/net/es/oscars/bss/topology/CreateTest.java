@@ -77,6 +77,7 @@ public class CreateTest {
         port.setValid(true);
         port.setSnmpIndex(0);
         port.setMaximumCapacity(10000000L);
+        port.setMaximumReservableCapacity(5000000L);
         port.setDescription("test suite");
         port.setNode(node);
         dao.create(port);

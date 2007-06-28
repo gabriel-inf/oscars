@@ -1,10 +1,9 @@
 /*
 common.js:      Javascript functions for form submission
-Last modified:  November 16, 2006
+Last modified:  Februrary 27, 2007
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
-
 
 /* List of functions:
 submitForm(form, methodName, params)
@@ -234,10 +233,10 @@ function outputDefaults(responseDom) {
         node = elems[e].childNodes[0];
         var id = elems[e].getAttribute('id');
         if (id == 'oyear') {
-            node.data = localDate.getYear() + 1900;  // Javascript weirdness
+            node.data = localDate.getFullYear();
         }
         else if (id == 'omonth') {
-            node.data = (localDate.getMonth()+1) + " (1-12)";
+            node.data = localDate.getMonth() + 1 + " (1-12)";
         }
         else if (id == 'odate') {
             node.data = localDate.getDate() + " (1-31)";

@@ -51,8 +51,8 @@ public class TopologyUpdater {
         this.log.info("dryrun: " + dryrun);
         this.log.info("directory: " + directoryName);
 
-        // routers have associations with interfaces and ipaddrs tabble
-        List<Router> newRouters = null;
+        // nodes have associations with interfaces and ipaddrs tabble
+        List<Node> newNodes = null;
 
         TopologyFiles newFiles = new TopologyFiles();
         TopologyManager topoMgr = new TopologyManager("bss");
@@ -60,8 +60,8 @@ public class TopologyUpdater {
         this.log.info("creating new topology in memory");
         try {
             // create a new topology in memory from list of files associated
-            // with each router
-            newRouters = newFiles.constructTopology(directoryName);
+            // with each node
+            newNodes = newFiles.constructTopology(directoryName);
             this.log.info("new topology in memory created");
         } catch (Exception e) {
             this.log.error("Unknown exception: " + e.getMessage());
@@ -70,11 +70,11 @@ public class TopologyUpdater {
             System.exit(1);
         }
         /*
-        for (Router router: newRouters) {
-            this.log.info("name: " + router.getName());
-            Set<Interface> xfaces = (Set<Interface>) router.getInterfaces();
-            for (Interface xface: xfaces) {
-                String description = xface.getDescription();
+        for (Node node: newNodes) {
+            this.log.info("name: " + node.getName());
+            Set<Port> ports = (Set<Port>) node.getPorts();
+            for (Port port: ports) {
+                String description = port.getDescription();
                 if (description != null) {
                     this.log.info(description);
                 } else {
@@ -88,7 +88,7 @@ public class TopologyUpdater {
             System.exit(1);
         }
         this.log.info("updating database");
-        topoMgr.updateDb(newRouters);
+        topoMgr.updateDb(newNodes);
         this.log.info("TopologyUpdater finished: new topology in place");
     }
 }

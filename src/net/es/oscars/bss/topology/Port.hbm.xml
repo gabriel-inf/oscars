@@ -37,15 +37,28 @@
 
     <property name="name" />
 
-    <property name="maximumCapacity" />
+    <property name="maximumCapacity" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
 
-    <property name="maximumReservableCapacity" />
+    <property name="maximumReservableCapacity" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
 
     <property name="granularity" />
 
-    <property name="description" />
+    <property name="description" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
 
     <property name="alias" />
+
 
     <!-- Associations -->
 

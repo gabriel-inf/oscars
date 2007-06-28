@@ -8,10 +8,11 @@
 <!-- properties section for main targets ********************************** -->
 
 <property environment="env" />
+<property name="domain.home" value="${env.DOMAIN_HOME}" />
+<property file="${domain.home}/ant.properties" />
+<property name="catalina.home" value="${env.CATALINA_HOME}" />
 <property name="app.name" value="oscars" />
 <property name="app.version" value="0.5-dev" />
-<property name="domain.home" value="${env.DOMAIN_HOME}" />
-<property name="catalina.home" value="${env.CATALINA_HOME}" />
 <property name="webapp.home" value="${catalina.home}/webapps" />
 <property name="webservice.home"
           value="${webapp.home}/axis2/WEB-INF/services" />
@@ -22,20 +23,36 @@
 <property name="build.axis2.lib" value="lib/axis2" />
 <property name="build.dragon.lib" value="lib/dragon" />
 
+<property name="tomcat.loc" value="${catalina.home}/common/lib" />
+<property name="axis2.loc" value="${webapp.home}/axis2/WEB-INF/lib" />
+<available file="${axis2.loc}" property="axis2.local" />
+<available file="${tomcat.loc}" property="tomcat.local" />
+
 <target name="all" depends="clean, compile"
         description="Recompile all source" />
 
+<target name="axis2LocalCopy" if="axis2.local">
+    <copy todir="lib/axis2">
+        <fileset dir="${axis2.loc}" includes="*.jar" />
+    </copy>
+</target>
+
+<target name="tomcatLocalCopy" if="tomcat.local">
+    <copy todir="lib">
+        <fileset dir="${tomcat.loc}" includes="servlet-api.jar" />
+    </copy>
+</target>
+
 <!-- parent directories automatically created -->
-<target name="prepare">
+<target name="prepare" depends="axis2LocalCopy, tomcatLocalCopy">
+    <!-- a bit of a kludge -->
+    <available file="lib/axis2/axis2-kernel-1.1.1.jar" property="axis2.found" />
+    <fail unless="axis2.found" message="Ant scp is inherently insecure in that it either echoes the passphrase as it is being input, or requires the passphrase to be stored on the disk somewhere.  Please scp all jar's from CATALINA_HOME/webapps/axis2/WEB-INF/lib to lib/axis2 from a machine where Axis2 is installed." />
     <copy todir="${build.classes}">
         <fileset dir="src" includes="**/*.hbm.xml" />
         <fileset dir="conf/server"
                  includes="*.cfg.xml, log4j.properties,sec-server*" />
         <!-- <fileset dir="conf/client" includes="sec-client*" /> -->
-    </copy>
-    <!-- Note that Axis2 must already be deployed -->
-    <copy todir="lib/axis2">
-        <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" />
     </copy>
 </target>
 

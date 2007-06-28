@@ -54,13 +54,13 @@ CREATE TABLE IF NOT EXISTS ports (
         -- logical name
     name                TEXT,
         -- maximum bandwidth in bps
-    maximumCapacity     BIGINT UNSIGNED,
+    maximumCapacity     BIGINT UNSIGNED NOT NULL,
         -- maximum available use
-    maximumReservableCapacity  BIGINT UNSIGNED,
+    maximumReservableCapacity  BIGINT UNSIGNED NOT NULL,
         -- granularity of requestable bandwidth
     granularity         BIGINT unsigned,
         -- description
-    description         TEXT,
+    description         TEXT NOT NULL,
     alias               TEXT,
         -- key of corresponding node in nodes table
     nodeId            INT NOT NULL,
@@ -76,13 +76,13 @@ CREATE TABLE IF NOT EXISTS links (
         -- logical name
     name                TEXT,
         -- maximum bandwidth in bps
-    maximumCapacity     BIGINT UNSIGNED,
+    maximumCapacity     BIGINT UNSIGNED NOT NULL,
         -- maximum available use
-    maximumReservableCapacity  BIGINT UNSIGNED,
+    maximumReservableCapacity  BIGINT UNSIGNED NOT NULL,
         -- granularity of requestable bandwidth
     granularity         BIGINT unsigned,
         -- description
-    description         TEXT,
+    description         TEXT NOT NULL,
     alias               TEXT,
         -- key of corresponding port in ports table
     portId            INT NOT NULL,

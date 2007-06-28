@@ -27,16 +27,16 @@ public class Link extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private String name;
 
-    /** nullable persistent field */
+    /** persistent field */
     private Long maximumCapacity;
 
-    /** nullable persistent field */
+    /** persistent field */
     private Long maximumReservableCapacity;
 
     /** nullable persistent field */
     private Long granularity;
 
-    /** nullable persistent field */
+    /** persistent field */
     private String description;
 
     /** nullable persistent field */
