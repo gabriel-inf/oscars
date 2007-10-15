@@ -47,13 +47,13 @@ public class CancelReservation extends HttpServlet {
         if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
         aaa.getTransaction().commit();
         
-        String tag = request.getParameter("tag");
+        String gri = request.getParameter("gri");
         
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reservation = rm.cancel(tag, userName, allUsers);
+            reservation = rm.cancel(gri, userName, allUsers);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;

@@ -23,20 +23,22 @@
         <generator class="identity" />
     </id>
 
-    <property name="loose" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
     <property name="description" />
+
+    <property name="linkDescr" />
 
     <!-- Associations -->
 
-    <many-to-one name="ipaddr" column="ipaddrId"
-	    class="net.es.oscars.bss.topology.Ipaddr" not-null="true" />
+    <many-to-one name="link" column="linkId"
+	    class="net.es.oscars.bss.topology.Link" not-null="true" />
 
-    <many-to-one name="nextElem" cascade="all" column="nextId" />
+    <!-- this is how Hibernate does a self-referential one-to-one
+         relationship -->
+    <many-to-one name="nextElem" cascade="all" column="nextId"
+	   unique="true" />
+
+    <one-to-one name="path" class="net.es.oscars.bss.topology.Path"
+	    property-ref="pathElem" />
 
 </class>
 </hibernate-mapping>

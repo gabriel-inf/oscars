@@ -23,6 +23,9 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
+import java.util.Properties;
+import net.es.oscars.PropHandler;
+import java.io.FileInputStream;
 
 /**
  * Class PWCallback
@@ -54,7 +57,16 @@ public class PWCallback implements CallbackHandler {
 
     public void handle(Callback[] callbacks)
             throws IOException, UnsupportedCallbackException {
-
+        Properties props = new Properties();
+        String propKeyPass = null;
+        try {
+            FileInputStream in = new FileInputStream("repo/sec-client.properties");
+            props.load(in);
+            propKeyPass = props.getProperty(
+                            "net.es.oscars.client.security.PWCallback.keypass");
+            in.close();
+        }catch (IOException e) {}
+        
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof WSPasswordCallback) {
                 WSPasswordCallback pc = (WSPasswordCallback) callbacks[i];
@@ -89,9 +101,11 @@ public class PWCallback implements CallbackHandler {
                  */
                 if (pc.getUsage() == WSPasswordCallback.KEY_NAME) {
                     pc.setKey(key);
+                }else if(propKeyPass != null){
+                    pc.setPassword(propKeyPass);
                 } else if(pc.getIdentifer().equals("alice")) {
                     pc.setPassword("password");
-               } else if(pc.getIdentifer().equals("jason")) {
+                } else if(pc.getIdentifer().equals("jason")) {
                     pc.setPassword("password");
                 } else if(pc.getIdentifer().equals("bob")) {
                     pc.setPassword("password");

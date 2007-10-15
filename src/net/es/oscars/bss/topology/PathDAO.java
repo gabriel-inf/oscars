@@ -19,20 +19,20 @@ public class PathDAO extends GenericHibernateDAO<Path, Integer> {
     }
 
     /**
-     * Retrieves a list of paths starting with the given IP address.
+     * Retrieves a list of paths starting with the given link.
      *
-     * @param ip String with starting IP address
-     * @return list of paths starting with the IP address
+     * @param link starting link in path
+     * @return list of paths starting with that link
      */
-    public List<Path> getPaths(String ip) {
+    public List<Path> getPaths(Link link) {
         String sql = "select * from paths p " +
                      "inner join pathElems pe on p.pathElemId = pe.id " +
-                     "inner join ipaddrs ip on pe.ipaddrId = ip.id " +
-                     "where ip.ip = ?";
+                     "inner join links l on pe.linkId = l.id " +
+                     "where l.id = ?";
         List<Path> paths =
                (List<Path>) this.getSession().createSQLQuery(sql)
                                              .addEntity(Path.class)
-                                             .setString(0, ip)
+                                             .setInteger(0, link.getId())
                                              .list();
         return paths;
     }

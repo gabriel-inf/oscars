@@ -16,59 +16,22 @@ public class IpaddrDAO extends GenericHibernateDAO<Ipaddr,Integer> {
     }
 
     /**
-     * Gets ipaddr instance, given IP address and what type of validity.
-     * @param ip string containing IP address
-     * @param valid boolean indicating whether to look for valid IP
-     * @return ipaddr valid Ipaddr instance
+     * Gets valid Ipaddr instance associated with given link.
+     *
+     * @param link Link instance associated with a path
+     * @return ipaddrObj Ipaddr instance
      */
-    public Ipaddr getIpaddr(String ip, boolean valid) {
+    public Ipaddr fromLink(Link link) {
 
         String sql = "select * from ipaddrs ip " +
-            "where ip.IP = ? and ip.valid = ?";
+            "inner join links l on l.id = ip.linkId " +
+            "where l.id = ? and ip.valid = true";
 
         Ipaddr ipaddrObj = (Ipaddr) this.getSession().createSQLQuery(sql)
                                 .addEntity(Ipaddr.class)
-                                .setString(0, ip)
-                                .setBoolean(1, valid)
+                                .setInteger(0, link.getId())
                                 .setMaxResults(1)
                                 .uniqueResult();
         return ipaddrObj;
-    }
-
-    /**
-     * Gets trace or loopback IP address, if any, associated with node, given
-     *     nodeName. 
-     * @param nodeName string containing name of node
-     * @param description string containing type of address to look for
-     * @return string with the IP address of the desired type, if any
-     */
-    public String getIpType(String nodeName, String description) {
-
-        // given node name, get address if any
-        String sql = "select * from ipaddrs ip " +
-            "inner join ports p on p.id = ip.portId " +
-            "inner join nodes n on n.id = p.nodeId " +
-            "where n.name = ? and ip.description = ? " +
-            "and ip.valid = true";
-
-        Ipaddr ipaddrObj = (Ipaddr) this.getSession().createSQLQuery(sql)
-                                .addEntity(Ipaddr.class)
-                                .setString(0, nodeName)
-                                .setString(1, description)
-                                .setMaxResults(1)
-                                .uniqueResult();
-        //
-        // if the lookup fails, return null, else return the IP
-        if (ipaddrObj == null) { return null; }
-        else
-            return ipaddrObj.getIP();
-    }
-
-    public void invalidateAll() {
-        List<Ipaddr> ipaddrs = this.list();
-        for (Ipaddr ipaddr: ipaddrs) {
-            ipaddr.setValid(false);
-            this.update(ipaddr);
-        }
     }
 }

@@ -15,18 +15,17 @@ import net.es.oscars.bss.BSSException;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "notyet", "path" }, dependsOnGroups={ "create" })
+/* @Test(groups={ "bss/topology", "path" }, dependsOnGroups={ "create" }) */
+@Test(groups={ "broken" })
 public class PathTest {
     private Properties props;
     private SessionFactory sf;
     private String dbname;
-    private ArrayList<String> hops;
 
   @BeforeClass
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.common", true);
-        this.hops = new ArrayList<String>();
         this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
@@ -39,20 +38,34 @@ public class PathTest {
         path.setExplicit(false);
 
         PathElem pathElem0 = new PathElem();
-        pathElem0.setLoose(false);
         pathElem0.setDescription("ingress");
         Ipaddr ipaddr0 = new Ipaddr();
         ipaddr0.setValid(true);
-        ipaddr0.setIP(this.props.getProperty("hop0"));
-        pathElem0.setIpaddr(ipaddr0);
+        String hop0 = this.props.getProperty("hop0");
+        ipaddr0.setIP(hop0);
+        Link link = new Link();
+        link.setValid(true);
+        link.setSnmpIndex(0);
+        link.setCapacity(10000000L);
+        link.setMaximumReservableCapacity(5000000L);
+        link.setTopologyIdent("test suite");
+        ipaddr0.setLink(link);
+        pathElem0.setLink(link);
 
         PathElem pathElem6 = new PathElem();
-        pathElem6.setLoose(false);
         pathElem6.setDescription("egress");
         Ipaddr ipaddr6 = new Ipaddr();
         ipaddr6.setValid(true);
-        ipaddr6.setIP(this.props.getProperty("hop6"));
-        pathElem6.setIpaddr(ipaddr6);
+        String hop6 = this.props.getProperty("hop6");
+        ipaddr6.setIP(hop6);
+        Link link6 = new Link();
+        link6.setValid(true);
+        link6.setSnmpIndex(1);
+        link6.setCapacity(10000000L);
+        link6.setMaximumReservableCapacity(5000000L);
+        link6.setTopologyIdent("test suite6");
+        ipaddr6.setLink(link6);
+        pathElem6.setLink(link6);
 
         path.setPathElem(pathElem0);
         pathDAO.create(path);
@@ -64,10 +77,10 @@ public class PathTest {
     public void pathQuery() {
         this.sf.getCurrentSession().beginTransaction();
         PathDAO dao = new PathDAO(this.dbname);
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-        Ipaddr ipaddr = (Ipaddr) ipaddrDAO.queryByParam("description",
-                                 "test suite");
-        Path path = (Path) dao.queryByParam("ipaddrId", ipaddr.getId()); 
+        PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
+        PathElem pathElem = (PathElem) pathElemDAO.queryByParam("description",
+                                 "ingress");
+        Path path = (Path) dao.queryByParam("pathElemId", pathElem.getId()); 
         this.sf.getCurrentSession().getTransaction().commit();
         assert path != null;
     }
@@ -85,16 +98,11 @@ public class PathTest {
     public void pathRemove() {
         this.sf.getCurrentSession().beginTransaction();
         PathDAO dao = new PathDAO(this.dbname);
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-        Ipaddr ipaddr = (Ipaddr) ipaddrDAO.queryByParam("description",
-                                 "test suite");
-        Path path = dao.queryByParam("ipaddrId", ipaddr.getId());
+        PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
+        PathElem pathElem = (PathElem) pathElemDAO.queryByParam("description",
+                                 "ingress");
+        Path path = (Path) dao.queryByParam("pathElemId", pathElem.getId()); 
         dao.remove(path);
-        // remove ipaddr's set up for creating test path
-        for (String hop: this.hops) {
-            ipaddr = (Ipaddr) ipaddrDAO.queryByParam("IP", hop);
-            ipaddrDAO.remove(ipaddr);
-        }
         this.sf.getCurrentSession().getTransaction().commit();
     }
 }

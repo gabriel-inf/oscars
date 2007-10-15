@@ -48,7 +48,7 @@ esnet
 </pre>
 
 <p>The files in client and server are copied over from the oscars repository
-from conf/templates and filled in with domain-specific values.</p>
+from conf/examples and filled in with domain-specific values.</p>
 
 <p>The domain directory was inserted in the path to have a string that will
 appear in all paths, used in setting up the Subversion post-commit hook.
@@ -108,32 +108,32 @@ HEAD if omitted. In our examples the M defaults to the HEAD.</p>
 <p>3a. For example, to merge the entire branch:</p>
 
 <pre>
-    % svn merge https://oscars-test.es.net/repos/oscars/branches/java/@4691 \
-                https://oscars-test.es.net/repos/oscars/branches/java/
+    % svn merge https://oscars.es.net/repos/oscars/branches/java/@4691 \
+                https://oscars.es.net/repos/oscars/branches/java/
 </pre>
 
 <p>3b. To merge just the files in the docs directory:</p>
 
 <pre>
     % cd docs
-    % svn merge https://oscars-test.es.net/repos/oscars/branches/java/docs/@4691 \
-                https://oscars-test.es.net/repos/oscars/branches/java/docs/
+    % svn merge https://oscars.es.net/repos/oscars/branches/java/docs/@4691 \
+                https://oscars.es.net/repos/oscars/branches/java/docs/
 </pre>
 
 <p>4.  For complicated merges, do a dry run, and save the resulting list.
 It may be long and you may need it to find conflicts.</p>
 
 <pre>
-    % svn merge --dry-run https://oscars-test.es.net/repos/oscars/branches/java/@4691 \
-            https://oscars-test.es.net/repos/oscars/branches/java/ > ~/svn.list
+    % svn merge --dry-run https://oscars.es.net/repos/oscars/branches/java/@4691 \
+            https://oscars.es.net/repos/oscars/branches/java/ > ~/svn.list
 </pre>
 
 <p>5. To do the actual merge from the branch (in this case branches/java) to
 your working directory:</p>
 
 <pre>
-    % svn merge https://oscars-test.es.net/repos/oscars/branches/java/@4691 \
-                https://oscars-test.es.net/repos/oscars/branches/java/
+    % svn merge https://oscars.es.net/repos/oscars/branches/java/@4691 \
+                https://oscars.es.net/repos/oscars/branches/java/
 </pre>
 
 <p>Note that no changes have been made to the repository yet.</p>

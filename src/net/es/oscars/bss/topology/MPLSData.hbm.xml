@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+    
+<hibernate-mapping>
+
+<class name="net.es.oscars.bss.topology.MPLSData" table="mplsData">
+    <meta attribute="class-description" inherit="false">
+       @hibernate.class table="mplsData"
+    </meta>
+
+    <id name="id">
+        <meta attribute="field-description">
+           @hibernate.id generator-class="identity"
+        </meta>
+        <generator class="identity" />
+    </id>
+
+    <property name="burstLimit" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <property name="lspClass" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <!-- Associations -->
+
+    <many-to-one name="path" column="pathId"
+	    class="net.es.oscars.bss.topology.Path" cascade="save-update"
+	    not-null="true" unique="true" />
+
+</class>
+</hibernate-mapping>

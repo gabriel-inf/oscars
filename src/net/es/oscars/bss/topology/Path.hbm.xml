@@ -24,23 +24,29 @@
     </id>
 
     <property name="explicit" />
-
+    
+    <property name="pathSetupMode" />
+    
     <!-- Associations -->
 
     <many-to-one name="pathElem" column="pathElemId"
 	    class="net.es.oscars.bss.topology.PathElem" cascade="all"
-	    not-null="true" />
+	    not-null="true" unique="true" />
 
     <many-to-one name="nextDomain" column="nextDomainId"
 	    class="net.es.oscars.bss.topology.Domain" not-null="false" />
 
-    <many-to-one name="vlan" column="vlanId"
-	    class="net.es.oscars.bss.topology.Vlan" not-null="false" />
+    <one-to-one name="reservation" class="net.es.oscars.bss.Reservation"
+	    property-ref="path" />
 
-    <set name="reservations" inverse="true" cascade="all, delete-orphan">
-        <key column="pathId" />
-        <one-to-many class="net.es.oscars.bss.Reservation" />
-    </set>
+    <one-to-one name="layer2Data" class="net.es.oscars.bss.topology.Layer2Data"
+	    property-ref="path" />
+
+    <one-to-one name="layer3Data" class="net.es.oscars.bss.topology.Layer3Data"
+	    property-ref="path" />
+
+    <one-to-one name="mplsData" class="net.es.oscars.bss.topology.MPLSData"
+	    property-ref="path" />
 
 </class>
 </hibernate-mapping>

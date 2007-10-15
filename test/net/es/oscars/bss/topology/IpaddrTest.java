@@ -49,13 +49,4 @@ public class IpaddrTest {
         assert !ipaddrs.isEmpty();
     }
 
-  @Test
-    public void ipaddrGetIpType() {
-        this.sf.getCurrentSession().beginTransaction();
-        IpaddrDAO dao = new IpaddrDAO(this.dbname);
-        String ipType =
-            dao.getIpType("test", "test suite");
-        this.sf.getCurrentSession().getTransaction().commit();
-        assert ipType != null;
-    }
 }

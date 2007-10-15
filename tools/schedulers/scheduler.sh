@@ -13,20 +13,15 @@ do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
 
-AXIS2_CLASSPATH=""
-for f in ../../lib/axis2/*.jar
-do
-    AXIS2_CLASSPATH="$AXIS2_CLASSPATH":$f
-done
-
-CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
+CLASSPATH=../../lib/axis2/jaxen-1.1.1.jar:../../lib/axis2/commons-logging-1.1.jar:../../lib/axis2/log4j-1.2.14.jar:../../lib/axis2/mail-1.4.jar:$OSCARS_CLASSPATH
 CLASSPATH=$CLASSPATH:../../build/WEB-INF/classes
 CLASSPATH=$CLASSPATH:.
 
 export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
-javac `pwd`/LSPScheduler.java
-java -Djava.net.preferIPv4Stack=true LSPScheduler $*
+javac `pwd`/PathScheduler.java
+#java -Dlog4j.debug=true -Djava.net.preferIPv4Stack=true PathScheduler $*
+java -Djava.net.preferIPv4Stack=true PathScheduler $*
 
 exit 1

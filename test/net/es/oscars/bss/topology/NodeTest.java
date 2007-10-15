@@ -32,8 +32,8 @@ public class NodeTest {
     public void nodeQuery() {
         this.sf.getCurrentSession().beginTransaction();
         NodeDAO dao = new NodeDAO(this.dbname);
-        String nodeName = "test";
-        Node node = (Node) dao.queryByParam("name", nodeName);
+        String topologyIdent = "test suite";
+        Node node = (Node) dao.queryByParam("topologyIdent", topologyIdent);
         this.sf.getCurrentSession().getTransaction().commit();
         assert node != null;
     }

@@ -2,6 +2,9 @@ package net.es.oscars.pathfinder;
 
 import java.util.List;
 
+import net.es.oscars.wsdlTypes.PathInfo;
+
+
 /**
  * PCE is the interface implemented by the path computation element.
  *
@@ -9,12 +12,6 @@ import java.util.List;
  */
 public interface PCE {
 
-    List<CommonPathElem> findPath(String srcHost, String destHost,
-                        String ingressNodeIP,
-                        String egressNodeIP)
-        throws PathfinderException;
-
-    // changes elements in place
-    void findPath(CommonPath path)
+    boolean findPath(PathInfo pathInfo)
         throws PathfinderException;
 }

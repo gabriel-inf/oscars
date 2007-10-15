@@ -26,7 +26,7 @@ public class HibernateUtil {
      *     to set the classLoader in order for it to find the .xml files.
      *
      * @param CL classloader for the calling class
-     * @param list of db names to build session factories for
+     * @param dbnames list of db names to build session factories for
      */
     public static void initSessionFactories(ClassLoader CL,
                                             List<String> dbnames) {

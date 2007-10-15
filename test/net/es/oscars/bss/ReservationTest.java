@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
-import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.bss.topology.*;
 
 
 /**
@@ -16,7 +16,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "abss" })
+@Test(groups={ "broken" })
 public class ReservationTest {
     private final Long BANDWIDTH = 25000000L;   // 25 Mbps
     private final Long BURST_LIMIT = 10000000L; // 10 Mbps
@@ -26,7 +26,6 @@ public class ReservationTest {
     private Properties props;
     private SessionFactory sf;
     private String dbname;
-    private TypeConverter tc;
 
   @BeforeClass
     protected void setUpClass() {
@@ -34,12 +33,14 @@ public class ReservationTest {
         this.props = propHandler.getPropertyGroup("test.common", true);
         this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
-        this.tc = new TypeConverter();
     }
 
   @Test
     public void testReservationCreate() throws BSSException {
         Reservation resv = new Reservation();
+        Path path = new Path();
+        Layer3Data layer3Data = new Layer3Data();
+        MPLSData mplsData = new MPLSData();
         Long millis = 0L;
         Long bandwidth = 0L;
         String url = null;
@@ -47,8 +48,8 @@ public class ReservationTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        resv.setSrcHost(this.props.getProperty("sourceHostIP"));
-        resv.setDestHost(this.props.getProperty("destHostIP"));
+        layer3Data.setSrcHost(this.props.getProperty("sourceHostIP"));
+        layer3Data.setDestHost(this.props.getProperty("destHostIP"));
 
         millis = System.currentTimeMillis();
         resv.setStartTime(millis);
@@ -57,14 +58,17 @@ public class ReservationTest {
         resv.setEndTime(millis);
 
         resv.setBandwidth(BANDWIDTH);
-        resv.setBurstLimit(BURST_LIMIT);
+        mplsData.setBurstLimit(BURST_LIMIT);
         // description is unique, so can use it to access reservation in
         // other tests
         resv.setDescription(this.props.getProperty("description"));
-        resv.setProtocol(PROTOCOL);
-        resv.setLspClass(LSP_CLASS);
+        layer3Data.setProtocol(PROTOCOL);
+        mplsData.setLspClass(LSP_CLASS);
         resv.setLogin(this.props.getProperty("login"));
 
+        layer3Data.setPath(path);
+        mplsData.setPath(path);
+        resv.setPath(path);
         dao.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();
     }
@@ -79,7 +83,7 @@ public class ReservationTest {
         Reservation testResv = dao.queryByParam("description", description);
         try {
             reservation =
-                dao.query(this.tc.getReservationTag(testResv));
+                dao.query(testResv.getGlobalReservationId());
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

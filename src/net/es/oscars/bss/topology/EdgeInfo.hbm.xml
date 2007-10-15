@@ -29,9 +29,6 @@
         </meta>    
     </property>
 
-    <property name="localType" />
-    <property name="localValue" />
-
     <!-- Associations -->
 
     <many-to-one name="ipaddr" column="ipaddrId"

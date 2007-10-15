@@ -1,9 +1,10 @@
-import java.util.*;
+import net.es.oscars.bss.TopologyManager;
+import net.es.oscars.bss.topology.*;
 
 import org.apache.log4j.*;
 
-import net.es.oscars.bss.TopologyManager;
-import net.es.oscars.bss.topology.*;
+import java.util.*;
+
 
 /**
  * This class updates the topology database.  It reads all files in the given
@@ -12,7 +13,6 @@ import net.es.oscars.bss.topology.*;
  *   topology, while keeping old path info usable.
  */
 public class TopologyUpdater {
-
     private Logger log;
 
     public static void main(String[] argv) {
@@ -21,7 +21,6 @@ public class TopologyUpdater {
     }
 
     public void update(String[] argv) {
-
         String usage = "updatedb [-v] [-d] -f /path/to/files";
         int optind;
 
@@ -31,6 +30,7 @@ public class TopologyUpdater {
         // for now
         this.log = Logger.getLogger(this.getClass());
         this.log.info("TopologyUpdater starting");
+
         for (optind = 0; optind < argv.length; optind++) {
             if (argv[optind].equals("-d")) {
                 dryrun = "active";
@@ -44,10 +44,12 @@ public class TopologyUpdater {
                 break;
             }
         }
+
         if (directoryName == null) {
             System.out.println(usage);
             System.exit(1);
         }
+
         this.log.info("dryrun: " + dryrun);
         this.log.info("directory: " + directoryName);
 
@@ -58,6 +60,7 @@ public class TopologyUpdater {
         TopologyManager topoMgr = new TopologyManager("bss");
 
         this.log.info("creating new topology in memory");
+
         try {
             // create a new topology in memory from list of files associated
             // with each node
@@ -69,24 +72,26 @@ public class TopologyUpdater {
             e.printStackTrace();
             System.exit(1);
         }
+
         /*
-        for (Node node: newNodes) {
-            this.log.info("name: " + node.getName());
-            Set<Port> ports = (Set<Port>) node.getPorts();
-            for (Port port: ports) {
-                String description = port.getDescription();
-                if (description != null) {
-                    this.log.info(description);
-                } else {
-                    this.log.info("null");
-                }
-            }
-        }
-        */
+           for (Node node: newNodes) {
+               this.log.info("name: " + node.getName());
+               Set<Port> ports = (Set<Port>) node.getPorts();
+               for (Port port: ports) {
+                   String description = port.getDescription();
+                   if (description != null) {
+                       this.log.info(description);
+                   } else {
+                       this.log.info("null");
+                   }
+               }
+           }
+         */
         if (dryrun != null) {
             this.log.info("dryrun.finish");
             System.exit(1);
         }
+
         this.log.info("updating database");
         topoMgr.updateDb(newNodes);
         this.log.info("TopologyUpdater finished: new topology in place");

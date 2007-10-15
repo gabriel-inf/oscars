@@ -1,6 +1,6 @@
 package net.es.oscars.pathfinder;
 
-import net.es.oscars.pathfinder.dragon.NARBPathfinder;
+import net.es.oscars.pathfinder.dragon.TERCEPathfinder;
 import net.es.oscars.pathfinder.traceroute.TraceroutePathfinder;
 
 /**
@@ -21,8 +21,8 @@ public class PathfinderFactory {
         // only two choices at the moment
         if (pathMethod.equals("traceroute")) {
             return new TraceroutePathfinder(dbname);
-        } else if (pathMethod.equals("narb")) {
-            return new NARBPathfinder(dbname);
+        } else if (pathMethod.equals("terce")) {
+            return new TERCEPathfinder(dbname);
         }
         return null;
     }

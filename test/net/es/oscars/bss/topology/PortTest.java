@@ -34,9 +34,9 @@ public class PortTest {
     public void portQuery() {
         this.sf.getCurrentSession().beginTransaction();
         PortDAO dao = new PortDAO(this.dbname);
-        String description = "test suite";
+        String topologyIdent = "test suite";
         Port port = (Port)
-            dao.queryByParam("description", description);
+            dao.queryByParam("topologyIdent", topologyIdent);
         this.sf.getCurrentSession().getTransaction().commit();
         assert port != null;
     }

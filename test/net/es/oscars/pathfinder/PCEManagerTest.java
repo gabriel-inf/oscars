@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
+import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
-import net.es.oscars.pathfinder.CommonPath;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -38,16 +38,14 @@ public class PCEManagerTest {
 
   @Test
     public void testFindPath() throws PathfinderException {
-        String srcHost = this.props.getProperty("srcHost");
-        String destHost = this.props.getProperty("destHost");
-        String ingressRouterIP = null;
-        String egressRouterIP = null;
-        CommonPath reqPath = null;
-        CommonPath retPath = null;
+        PathInfo pathInfo = new PathInfo();
+        Layer3Info layer3Info = new Layer3Info();
+        layer3Info.setSrcHost(this.props.getProperty("srcHost"));
+        layer3Info.setDestHost(this.props.getProperty("destHost"));
+        pathInfo.setLayer3Info(layer3Info);
         this.sf.getCurrentSession().beginTransaction();
         try {
-            this.pceMgr.findPath(srcHost, destHost, ingressRouterIP,
-                                 egressRouterIP, reqPath);
+            boolean isExplicit = this.pceMgr.findPath(pathInfo);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());

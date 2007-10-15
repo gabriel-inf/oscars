@@ -35,9 +35,13 @@
         </meta>    
     </property>
 
-    <property name="name" />
+    <property name="topologyIdent" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
 
-    <property name="maximumCapacity" not-null="true">
+    <property name="capacity" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
@@ -49,9 +53,15 @@
         </meta>    
     </property>
 
+    <property name="minimumReservableCapacity" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
     <property name="granularity" />
 
-    <property name="description" not-null="true">
+    <property name="unreservedCapacity" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
@@ -65,9 +75,9 @@
     <many-to-one name="node" column="nodeId"
 	    class="net.es.oscars.bss.topology.Node" not-null="true" />
 
-    <set name="ipaddrs" inverse="true" cascade="save-update">
+    <set name="links" inverse="true" cascade="all, delete-orphan">
         <key column="portId" />
-        <one-to-many class="net.es.oscars.bss.topology.Ipaddr" />
+        <one-to-many class="net.es.oscars.bss.topology.Link" />
     </set>
 
 

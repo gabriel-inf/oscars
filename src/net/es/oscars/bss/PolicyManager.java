@@ -3,11 +3,13 @@ package net.es.oscars.bss;
 import java.util.*;
 import org.apache.log4j.*;
 
-import net.es.oscars.PropHandler;
-import net.es.oscars.pathfinder.CommonPath;
-import net.es.oscars.pathfinder.CommonPathElem;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.oscars.TypeConverter;
 
 /**
  * This class contains methods for handling reservation setup policy
@@ -28,118 +30,281 @@ public class PolicyManager {
      *     on a port.
      *
      * @param activeReservations existing reservations
-     * @param path CommonPath instance to check for oversubscription
-     * @param bandwidth Long with the desired bandwidth
+     * @param pathInfo PathInfo instance to check for oversubscription
+     * @param newReservation new reservation instance
      * @throws BSSException
      */
     public void checkOversubscribed(
-               List<Reservation> activeReservations, CommonPath path,
-               Long bandwidth)
+               List<Reservation> activeReservations,
+               PathInfo pathInfo, Reservation newReservation)
             throws BSSException {
 
-        List<Ipaddr> ipaddrs = null;
-        Map<Port,Long> portSums = new HashMap<Port,Long>();
-        Port ipaddrXface = null;
-        double maxUtilization = 0.0;
-
         this.log.info("checkOversubscribed.start");
-        ipaddrs = this.getIpaddrs(path);
-        // initialize sums to requested bandwidth for each link in path
-        for (Ipaddr ipaddr: ipaddrs) {
-            ipaddrXface = ipaddr.getPort();
-            portSums.put(ipaddrXface, bandwidth);
-        }
+        List<IntervalAggregator> aggrs =  null;
+        
+        /* Create a hash with each link as the key, and the intervals it
+         is in use as the value. Initialize with links from the new path 
+         and set the first interval to the reservation time */
+        Map<Link,List<IntervalAggregator>> links =
+            this.initLinks(pathInfo, newReservation.getStartTime(),
+                          newReservation.getEndTime(),
+                          newReservation.getBandwidth());
+                          
+        /* Insert into links the intervals that old reservations are using a 
+        link during the new reservation*/
         for (Reservation resv: activeReservations) {
-            ipaddrs = this.getIpaddrs(resv.getPath());
-            this.addPathBandwidths(resv.getBandwidth(), ipaddrs, portSums);
+            this.getMatchingLinks(links, resv, newReservation, pathInfo);
         }
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("reservation", true);
-
-        // now for each of those port instances
-        for (Port port: portSums.keySet()) {
-            Long maximumCapacity = port.getMaximumCapacity();
-            // maximumCapacity will be 0 for ingress or egress node
-            if ((maximumCapacity == null) || (maximumCapacity == 0)) {
-                continue; 
+        
+        /* Go through each link in the path and check for oversubscription */
+        for (Link link: links.keySet()) {
+            // TODO:  handling where link capacity would be less
+        	Port port = link.getPort();
+        	if (port == null) {
+                throw new BSSException("hop in path does NOT have an " +
+                        "associated physical interface: ["+TopologyUtil.getFQTI(link)+"]");
+        	}
+            Long maximumReservableCapacity = port.getMaximumReservableCapacity();
+            if (maximumReservableCapacity == 0) {
+                throw new BSSException("hop in path has maximum reservable capacity = 0: ["+TopologyUtil.getFQTI(link)+"]");            	
             }
-
-            if (((Long)portSums.get(port)) > port.getMaximumReservableCapacity()) {
+            aggrs = links.get(link);
+            IntervalAggregator newAgg = aggrs.get(0);
+            // get full list of segments for first (new) reservation
+            // adding segments for each pending or active reservation's in turn
+            for (int i=1; i < aggrs.size(); i++) {
+                newAgg.add(aggrs.get(i).getIntervals());
+            }
+            Long capacitySum = newAgg.getMax();
+            if (capacitySum > maximumReservableCapacity) {
                 throw new BSSException(
-                      "Node (" + port.getNode().getName() +
-                      ") oversubscribed:  " + portSums.get(port) +
-                      " bps > " + port.getMaximumReservableCapacity() + " bps");
+                  "Node (" + link.getPort().getNode().getTopologyIdent() +
+                  ") oversubscribed:  " + capacitySum +
+                  " bps > " + maximumReservableCapacity + " bps");
             }
         }
         this.log.info("checkOversubscribed.end");
     }
 
     /**
-     * Add a current reservation's bandwidth to a running total of all
-     * links that are in the requested path.
+     * Retrieves links given a PathInfo instance.
+     * Path contains series of link id's.
      *
-     * @param bandwidth the bandwidth for an active or pending reservation
-     * @param ipaddrs a list of ipaddr instances in the reservation's path
-     * @param portSums a mapping from ports to the current sum of
-     *                  bandwidths for all reservations utilizing that link
+     * @param pathInfo PathInfo instance containing path
+     * @param startTime start time for the new reservation
+     * @param endTime end time for the new reservation
+     * @param capacity capacity requested
+     * @return links map with initial Link instances as keys
+     */
+    private Map<Link,List<IntervalAggregator>>
+        initLinks(PathInfo pathInfo, Long startTime, Long endTime,
+                  Long capacity)
+            throws BSSException {
+
+        this.log.info("initLinks.start");
+        Map<Link,List<IntervalAggregator>> links =
+                new HashMap<Link,List<IntervalAggregator>>();
+        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        
+        if (ctrlPlanePath == null) {
+            throw new BSSException("no path provided to initLinks");
+        }
+        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        this.log.info("to loop, list with length " + hops.length);
+        for (int i = 0; i < hops.length; i++) {
+            this.log.info(hops[i].getLinkIdRef());
+            String[] componentList = hops[i].getLinkIdRef().split(":");
+            if (componentList.length == 7) {
+                if (domainDAO.isLocal(componentList[3])) {
+	                this.log.info("local: " + hops[i].getLinkIdRef());
+	                Link link = domainDAO.getFullyQualifiedLink(componentList);
+	                if (link == null) {
+	                    throw new BSSException("unable to find link with id " +
+	                                           hops[i].getLinkIdRef());
+	                }
+	                // initialize aggregator array for link
+	                List<IntervalAggregator> aggrs =
+	                        new ArrayList<IntervalAggregator>();
+	                // intervals are the same in this case
+	                aggrs.add(new IntervalAggregator(startTime, endTime,
+	                                         startTime, endTime, capacity));
+	                // initialize the vlan range if a layer 2 link
+	                if (layer2Info != null) {
+	                    L2SwitchingCapabilityData l2scData = 
+	                        link.getL2SwitchingCapabilityData();  
+	                    if (l2scData != null) {
+	                        this.initL2scLink(l2scData, layer2Info);
+	                    }
+	                }
+	                links.put(link, aggrs);
+                } else {
+	                this.log.info("not local: " + hops[i].getLinkIdRef());
+                }
+            }
+        }
+        this.log.info("initLinks.end");
+        return links;
+    }
+    
+    /**
+     * Add to list of Link instances matching links in the new reservation.
+     *
+     * @param links map structure containing lists of matching links
+     * @param path Path instance containing links
+     * @return links list of link instances
      * @throws BSSException
      */
-    public void addPathBandwidths(Long bandwidth, List<Ipaddr> ipaddrs,
-                 Map<Port,Long> portSums) throws BSSException {
+    private void getMatchingLinks(Map<Link,List<IntervalAggregator>> links,
+                                  Reservation resv, Reservation newResv, 
+                                  PathInfo pathInfo) throws BSSException{
 
-        Port port = null;
+        Link link = null;
 
-        for (Ipaddr ipaddr: ipaddrs) {
-            port = ipaddr.getPort();
-            if (!port.isValid() || (port.getMaximumCapacity() <= 0)) {
-                continue;
-            }
-            // if not in portSums, not part of requested path
-            Long totalBandwidth = portSums.get(port);
-            if (totalBandwidth != null) {
-                portSums.put(port, bandwidth + totalBandwidth);
-            }
+        // get start of path
+        PathElem pathElem = resv.getPath().getPathElem();
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        DomainDAO domainDAO = new DomainDAO("bss");
+        String[] srcComponentList = layer2Info.getSrcEndpoint().split(":");
+        String[] destComponentList = layer2Info.getDestEndpoint().split(":");
+        Link srcLink = domainDAO.getFullyQualifiedLink(srcComponentList);
+        Link destLink = domainDAO.getFullyQualifiedLink(destComponentList);
+        boolean srcTagged = layer2Info.getSrcVtag().getTagged();
+        boolean destTagged = layer2Info.getDestVtag().getTagged();
+        String sameUserGRI = null;
+        if(resv.getLogin().equals(newResv.getLogin())){
+            sameUserGRI = resv.getGlobalReservationId();   
         }
-    }
-
-    /**
-     * Gets list of ipaddr instances given a start of a path.
-     *
-     * @param path Path instance containing start of path
-     * @return ipaddrs list of ipaddr instances
-     */
-    private List<Ipaddr> getIpaddrs(Path path) {
-
-        List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
-        PathElem pathElem = path.getPathElem();
+         
         while (pathElem != null) {
-            ipaddrs.add(pathElem.getIpaddr());
+            link = pathElem.getLink();
+            if (links.containsKey(link)) {
+                // update bandwidth resources
+                links.get(link).add(
+                    new IntervalAggregator(resv.getStartTime(),
+                        resv.getEndTime(), newResv.getStartTime(),
+                        newResv.getEndTime(), resv.getBandwidth()));
+                
+                // update l2sc resources if layer 2
+                if (layer2Info != null) {
+                    
+                    L2SwitchingCapabilityData l2scData = 
+                        link.getL2SwitchingCapabilityData();
+                    if(srcLink == link && (!srcTagged)){
+                        throw new BSSException("Cannot use untagged VLAN on" +             
+                                                " source at requested time.");
+                    }else if(destLink == link && (!destTagged)){
+                        throw new BSSException("Cannot use untagged VLAN on" +             
+                                                " dest at requested time.");
+                    }else if (l2scData != null) {
+                        this.updateL2scResources(pathElem.getLinkDescr(), 
+                                                 layer2Info, sameUserGRI);
+                    }
+                }
+            }
             pathElem = pathElem.getNextElem();
         }
-        return ipaddrs;
     }
-
+    
     /**
-     * Gets list of ipaddr instances given a list of common path elements.
+     * Initialize the available VLAN tags by merging request VLANs
+     * with the static list of possible VLANS on a link.
      *
-     * @param path CommonPath instance containing path to check
-     * @return ipaddrs list of ipaddr instances
+     * @param l2scData the L2SwitchingCapabilityData of a link
+     * @param layer2Info layer2 parameters of a reservation
+     * @throws BSSException
      */
-    private List<Ipaddr> getIpaddrs(CommonPath path) {
-
-        this.log.info("getIpaddrs.start");
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-        List<CommonPathElem> pathElems = path.getElems();
-        List<Ipaddr> ipaddrs = new ArrayList<Ipaddr>();
-        for (int i = 0; i < pathElems.size(); i++) {
-            CommonPathElem pathElem = pathElems.get(i);
-            // don't test non-local addresses
-            if (pathElem.getDescription() != null) {
-                Ipaddr ipaddr = ipaddrDAO.getIpaddr(pathElem.getIP(), true);
-                ipaddrs.add(ipaddr);
+    public void initL2scLink(L2SwitchingCapabilityData l2scData, 
+                             Layer2Info layer2Info) throws BSSException {
+        VlanTag vtag = layer2Info.getSrcVtag();
+        VlanTag vtag2 = layer2Info.getDestVtag();
+        TypeConverter tc = new TypeConverter();                     
+        byte[] vtagMask;
+        byte[] availVtagMask = tc.rangeStringToMask(
+                                l2scData.getVlanRangeAvailability());
+        DomainDAO domainDAO = new DomainDAO("bss");
+        String[] srcComponentList = layer2Info.getSrcEndpoint().split(":");
+        String[] destComponentList = layer2Info.getDestEndpoint().split(":");
+        Link srcLink = domainDAO.getFullyQualifiedLink(srcComponentList);
+        Link destLink = domainDAO.getFullyQualifiedLink(destComponentList);
+        Link currLink = l2scData.getLink();            
+            
+        if (vtag == null) {
+            vtag = new VlanTag();
+            vtag.setString("2-4094");
+            vtag.setTagged(true);
+            vtag2 = new VlanTag();
+            vtag2.setTagged(true);
+        }else if (vtag.getString().equals("any")) {
+            vtag.setString("2-4094");
+        }
+        
+        /* Check if link allows untagged VLAN */
+        byte canBeUntagged = (byte) ((availVtagMask[0] & 255) >> 7);
+        if(currLink == srcLink && (!vtag.getTagged()) && 
+            canBeUntagged != 1){
+            throw new BSSException("Specified source endpoint " +
+                                        "cannot be untagged");
+        }else if(currLink == destLink && (!vtag2.getTagged()) && 
+                    canBeUntagged != 1){
+            throw new BSSException("Specified destination endpoint" +
+                                        " cannot be untagged");
+        }
+        
+        vtagMask = tc.rangeStringToMask(vtag.getString());
+        for (int i = 0; i < vtagMask.length; i++) {
+            vtagMask[i] &= availVtagMask[i];
+        }
+        
+        vtag.setString(tc.maskToRangeString(vtagMask));
+        vtag2.setString(vtag.getString());
+        layer2Info.setSrcVtag(vtag);
+        layer2Info.setDestVtag(vtag2);
+        
+        if (vtag.getString().equals("")) {
+           throw new BSSException("VLAN not available along the path. " + 
+                                  "Please try a different VLAN tag.");            
+        }
+    }
+    
+    /**
+     * Update l2sc resource information based on a given link description.
+     * This is the method that removes VLANS because of time conflicts. 
+     *
+     * @param l2scData the L2SwitchingCapabilityData of a link
+     * @param layer2Info layer2 parameters of a reservation
+     * @throws BSSException
+     */
+    public void updateL2scResources(String linkDescr, Layer2Info layer2Info, 
+                                    String sameUserGRI) 
+                                    throws BSSException{
+        VlanTag vtag = layer2Info.getSrcVtag();
+        String vtagRange = vtag.getString();
+        TypeConverter tc = new TypeConverter();                     
+        byte[] vtagMask = tc.rangeStringToMask(vtagRange);
+        int usedVtag = Integer.parseInt(linkDescr);
+        if(usedVtag < 0){
+            throw new BSSException("No VLAN tags available along path.");    
+        }else{
+            vtagMask[usedVtag/8] &= (byte) ~(1 << (7 - (usedVtag % 8)));
+        }
+        
+        vtag.setString(tc.maskToRangeString(vtagMask));
+        layer2Info.setSrcVtag(vtag);
+        layer2Info.getDestVtag().setString(vtag.getString());
+        
+        if (vtag.getString().equals("")) {
+            if(sameUserGRI != null){
+                throw new BSSException("GRI: " + sameUserGRI + "\nLast VLAN" +           
+                    " in range in use by a reservation you previously placed"); 
+            }else{
+                throw new BSSException("VLAN tag unavailable in specified " +
+                 "range. If no VLAN range was specified then there are no " +
+                 "available vlans along the path.");       
             }
         }
-        this.log.info("getIpaddrs.end");
-        return ipaddrs;
+        
+        //this.log.info("New Vtag Range: " + layer2Info.getVtag());
     }
 }

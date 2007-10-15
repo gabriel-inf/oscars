@@ -9,7 +9,7 @@ USE aaa;
 CREATE TABLE IF NOT EXISTS users (
     id                  INT NOT NULL AUTO_INCREMENT,
     login               TEXT NOT NULL,
-    certificate         TEXT,
+    certIssuer          TEXT,
     certSubject         TEXT,
     lastName            TEXT NOT NULL,
     firstName           TEXT NOT NULL,

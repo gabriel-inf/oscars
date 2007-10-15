@@ -4,8 +4,8 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.*;
 
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
+import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
 
@@ -20,9 +20,9 @@ public class ListReservationsClient extends ExampleClient {
         try {
             ListReservationsClient cl = new ListReservationsClient();
             cl.list(args, true);
-        } catch (AAAFaultMessageException e1) {
+        } catch (AAAFaultMessage e1) {
             System.out
-                    .println("AAAFaultMessageException from listReservations");
+                    .println("AAAFaultMessage from listReservations");
             System.out.println(e1.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e1) {
             System.out
@@ -37,7 +37,7 @@ public class ListReservationsClient extends ExampleClient {
     }
 
     public ListReply list(String[] args, boolean isInteractive)
-            throws AAAFaultMessageException, BSSFaultMessageException,
+            throws AAAFaultMessage, BSSFaultMessage,
             java.rmi.RemoteException, Exception {
 
         super.init(args, isInteractive);
@@ -49,15 +49,25 @@ public class ListReservationsClient extends ExampleClient {
     }
 
     public void outputResponse(ListReply response) {
-        ResSummary[] summaries;
-        if ((response != null) && (summaries = response.getResInfo()) != null) {
-            for (int i = 0; i < summaries.length; i++) {
-                System.out.println("Tag: " + summaries[i].getTag());
-                System.out.println("Source host: " + summaries[i].getSrcHost());
-                System.out.println("Destination host: "
-                        + summaries[i].getDestHost());
+        ResDetails[] resList;
+        if ((response != null) && (resList = response.getResDetails()) != null) {
+            for (int i = 0; i < resList.length; i++) {
+                System.out.println("GRI: " + resList[i].getGlobalReservationId());
+                System.out.println("Login: " + resList[i].getLogin());
                 System.out.println("Status: "
-                        + summaries[i].getStatus().toString());
+                        + resList[i].getStatus().toString());
+                PathInfo pathInfo = resList[i].getPathInfo();
+                if (pathInfo == null) {
+                    System.err.println("No path for this reservation. ");
+                    continue;
+                }
+                Layer3Info layer3Info = pathInfo.getLayer3Info();
+                if (layer3Info != null) {
+                    System.out.println("Source host: " +
+                            layer3Info.getSrcHost());
+                    System.out.println("Destination host: " +
+                            layer3Info.getDestHost());
+                }
                 System.out.println(" ");
             }
         } else {

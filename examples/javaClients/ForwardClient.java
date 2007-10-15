@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
+import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
 
@@ -26,13 +26,13 @@ public class ForwardClient extends ExampleClient {
             ;
         }
         /*
-        } catch (AAAFaultMessageException e1) {
+        } catch (AAAFaultMessage e1) {
             System.out.println(
-                    "AAAFaultMessageException from forward");
+                    "AAAFaultMessage from forward");
             System.out.println(e1.getFaultMessage().getMsg());
-        } catch (BSSFaultMessageException e1) {
+        } catch (BSSFaultMessage e1) {
             System.out.println(
-                    "BSSFaultMessageException from forward");
+                    "BSSFaultMessage from forward");
             System.out.println(e1.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e1) {
             System.out.println(
@@ -107,13 +107,13 @@ public class ForwardClient extends ExampleClient {
             operation = Args.getArg(br, "Operation: create, cancel, " +
                                         "query, or list.  Type quit to exit.");
         }
-        } catch (AAAFaultMessageException e1) {
+        } catch (AAAFaultMessage e1) {
     	    System.out.println(
-                    "AAAFaultMessageException from queryReservation");
+                    "AAAFaultMessage from queryReservation");
             System.out.println(e1.getFaultMessage().getMsg());
-        } catch (BSSFaultMessageException e1) {
+        } catch (BSSFaultMessage e1) {
             System.out.println(
-                    "BSSFaultMessageException from queryReservation");
+                    "BSSFaultMessage from queryReservation");
             System.out.println(e1.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e1) {
             System.out.println(

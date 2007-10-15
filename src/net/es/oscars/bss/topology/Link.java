@@ -1,16 +1,19 @@
 package net.es.oscars.bss.topology;
 
-import java.util.Set;
-import java.io.Serializable;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.hibernate.Hibernate;
-
 import net.es.oscars.database.HibernateBean;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import org.hibernate.Hibernate;
+
+import java.io.Serializable;
+
+import java.util.Set;
+
+
 /**
- * Link is adapted from a Middlegen class automatically generated 
+ * Link is adapted from a Middlegen class automatically generated
  * from the schema for the bss.ports table.
  */
 public class Link extends HibernateBean implements Serializable {
@@ -24,139 +27,224 @@ public class Link extends HibernateBean implements Serializable {
     /** persistent field */
     private int snmpIndex;
 
+    /** persistent field */
+    private String topologyIdent;
+
     /** nullable persistent field */
-    private String name;
+    private String trafficEngineeringMetric;
 
-    /** persistent field */
-    private Long maximumCapacity;
+    /** nullable persistent field */
+    private Long capacity;
 
-    /** persistent field */
+    /** nullable persistent field */
     private Long maximumReservableCapacity;
+
+    /** nullable persistent field */
+    private Long minimumReservableCapacity;
 
     /** nullable persistent field */
     private Long granularity;
 
-    /** persistent field */
-    private String description;
+    /** nullable persistent field */
+    private Long unreservedCapacity;
 
     /** nullable persistent field */
     private String alias;
 
+    /** nullable persistent field */
+    private Link remoteLink;
+
     /** persistent field */
     private Port port;
-
     private Set ipaddrs;
+    private L2SwitchingCapabilityData l2SwitchingCapabilityData;
 
     /** default constructor */
-    public Link() { }
+    public Link() {
+    }
 
     /**
-     * @return valid a boolean indicating whether port is still valid
-     */ 
-    public boolean isValid() { return this.valid; }
+     * @return valid a boolean indicating whether link is still valid
+     */
+    public boolean isValid() {
+        return this.valid;
+    }
 
     /**
-     * @param valid a boolean indicating whether port is still valid
-     */ 
-    public void setValid(boolean valid) { this.valid = valid; }
-
+     * @param valid a boolean indicating whether link is still valid
+     */
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
 
     /**
      * @return snmpIndex a SNMP index from ifrefpoll
-     */ 
-    public int getSnmpIndex() { return this.snmpIndex; }
+     */
+    public int getSnmpIndex() {
+        return this.snmpIndex;
+    }
 
     /**
      * @param snmpIndex a SNMP index
-     */ 
-    public void setSnmpIndex(int snmpIndex) { this.snmpIndex = snmpIndex; }
-
-
-    /**
-     * @return maximumCapacity a long with the port's maximum bandwidth
-     */ 
-    public Long getMaximumCapacity() { return this.maximumCapacity; }
-
-    /**
-     * @param maximumCapacity a long with the port's maximum bandwidth
-     */ 
-    public void setMaximumCapacity(Long maximumCapacity) {
-        this.maximumCapacity = maximumCapacity;
+     */
+    public void setSnmpIndex(int snmpIndex) {
+        this.snmpIndex = snmpIndex;
     }
 
+    /**
+     * @return topologyIdent a string with the link's logical name
+     */
+    public String getTopologyIdent() {
+        return this.topologyIdent;
+    }
+
+    /**
+     * @param topologyIdent a string with the link's logical name
+     */
+    public void setTopologyIdent(String topologyIdent) {
+        this.topologyIdent = topologyIdent;
+    }
+
+    /**
+     * @return a string with the link's trafficEngineeringMetric
+     */
+    public String getTrafficEngineeringMetric() {
+        return this.trafficEngineeringMetric;
+    }
+
+    /**
+     * @param trafficEngineeringMetric a string with the te metric
+     */
+    public void setTrafficEngineeringMetric(String trafficEngineeringMetric) {
+        this.trafficEngineeringMetric = trafficEngineeringMetric;
+    }
+
+    /**
+     * @return capacity a long with the link's maximum bandwidth
+     */
+    public Long getCapacity() {
+        return this.capacity;
+    }
+
+    /**
+     * @param capacity a long with the link's maximum bandwidth
+     */
+    public void setCapacity(Long capacity) {
+        this.capacity = capacity;
+    }
 
     /**
      * @return maximumReservableCapacity Long with the maximum utilization
-     */ 
+     */
     public Long getMaximumReservableCapacity() {
         return this.maximumReservableCapacity;
     }
 
     /**
      * @param maximumReservableCapacity Long with the maximum utilization
-     */ 
+     */
     public void setMaximumReservableCapacity(Long maximumReservableCapacity) {
         this.maximumReservableCapacity = maximumReservableCapacity;
     }
 
+    /**
+     * @return minimumReservableCapacity Long with the minimum utilization
+     */
+    public Long getMinimumReservableCapacity() {
+        return this.minimumReservableCapacity;
+    }
+
+    /**
+     * @param minimumReservableCapacity Long with the minimum utilization
+     */
+    public void setMinimumReservableCapacity(Long minimumReservableCapacity) {
+        this.minimumReservableCapacity = minimumReservableCapacity;
+    }
 
     /**
      * @return granularity increment of bandwidth that can be requested
-     */ 
-    public Long getGranularity() { return this.granularity; }
+     */
+    public Long getGranularity() {
+        return this.granularity;
+    }
 
     /**
      * @param granularity increment of bandwidth that can be requested
-     */ 
-    public void setGranularity(Long granularity) { this.granularity = granularity; }
-
-
-    /**
-     * @return description a string with the port's description
-     */ 
-    public String getDescription() { return this.description; }
-
-    /**
-     * @param description a string with the port's description
-     */ 
-    public void setDescription(String description) {
-        this.description = description;
+     */
+    public void setGranularity(Long granularity) {
+        this.granularity = granularity;
     }
 
-
     /**
-     * @return name a string with the port's logical name
-     */ 
-    public String getName() { return this.name; }
-
-    /**
-     * @param name a string with the port's logical name
-     */ 
-    public void setName(String name) {
-        this.name = name;
+     * @return unreservedCapacity Long with the bandwidth available
+     */
+    public Long getUnreservedCapacity() {
+        return this.unreservedCapacity;
     }
 
+    /**
+     * @param unreservedCapacity Long with the bandwidth available
+     */
+    public void setUnreservedCapacity(Long unreservedCapacity) {
+        this.unreservedCapacity = unreservedCapacity;
+    }
 
     /**
-     * @return alias a string with the port's alias
-     */ 
-    public String getAlias() { return this.alias; }
+     * @return alias a string with the link's alias
+     */
+    public String getAlias() {
+        return this.alias;
+    }
 
     /**
-     * @param alias a string with the port's alias
-     */ 
-    public void setAlias(String alias) { this.alias = alias; }
+     * @param alias a string with the link's alias
+     */
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 
+    /**
+     * @return remoteLink Link instance with the other side of the connection
+     */
+    public Link getRemoteLink() {
+        return this.remoteLink;
+    }
+
+    /**
+     * @param remoteLink Link instance with the other side of the connection
+     */
+    public void setRemoteLink(Link remoteLink) {
+        this.remoteLink = remoteLink;
+    }
 
     /**
      * @return port a Port instance (uses association)
-     */ 
-    public Port getPort() { return this.port; }
+     */
+    public Port getPort() {
+        return this.port;
+    }
 
     /**
      * @param port a Port instance (uses association)
-     */ 
-    public void setPort(Port port) { this.port = port; }
+     */
+    public void setPort(Port port) {
+        this.port = port;
+    }
+
+    /**
+     * @return l2SwitchingCapabilityData an optional L2SwitchingCapabilityData instance
+     */
+    public L2SwitchingCapabilityData getL2SwitchingCapabilityData() {
+        return this.l2SwitchingCapabilityData;
+    }
+
+    /**
+     * @param l2SwitchingCapabilityData an optional L2SwitchingCapabilityData instance
+     */
+    public void setL2SwitchingCapabilityData(
+        L2SwitchingCapabilityData l2SwitchingCapabilityData) {
+        this.l2SwitchingCapabilityData = l2SwitchingCapabilityData;
+    }
 
     public void setIpaddrs(Set ipaddrs) {
         this.ipaddrs = ipaddrs;
@@ -166,42 +254,56 @@ public class Link extends HibernateBean implements Serializable {
         return this.ipaddrs;
     }
 
-    public void addIpaddr(Ipaddr ipaddr) {
-        //ipaddr.setLink(this);
-        //this.ipaddrs.add(ipaddr);
+    public boolean addIpaddr(Ipaddr ipaddr) {
+        boolean added = this.ipaddrs.add(ipaddr);
+
+        if (added) {
+            ipaddr.setLink(this);
+        }
+
+        return added;
     }
 
+    public void removeIpaddr(Ipaddr ipaddr) {
+        this.ipaddrs.remove(ipaddr);
+    }
 
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {
-        if (this == o) { return true; }
+        if (this == o) {
+            return true;
+        }
+
         Class thisClass = Hibernate.getClass(this);
-        if (o == null || thisClass != Hibernate.getClass(o)) {
+
+        if ((o == null) || (thisClass != Hibernate.getClass(o))) {
             return false;
         }
+
         Link castOther = (Link) o;
+
         // if both of these have been saved to the database
-        if ((this.getId() != null) &&
-            (castOther.getId() != null)) {
-            return new EqualsBuilder()
-                .append(this.getId(), castOther.getId())
-                .isEquals();
+        if ((this.getId() != null) && (castOther.getId() != null)) {
+            return new EqualsBuilder().append(this.getId(), castOther.getId())
+                                      .isEquals();
         } else {
-            return new EqualsBuilder()
-                .append(this.isValid(), castOther.isValid())
-                .append(this.getSnmpIndex(), castOther.getSnmpIndex())
-                .append(this.getMaximumCapacity(), castOther.getMaximumCapacity())
-                .append(this.getDescription(), castOther.getDescription())
-                .append(this.getAlias(), castOther.getAlias())
-                .append(this.getPort(), castOther.getPort())
-                .isEquals();
+            // used in updating the topology database; only these fields
+            // are important in determining equality
+        	/*
+            return new EqualsBuilder().append(this.getSnmpIndex(),
+                castOther.getSnmpIndex())
+                                      .append(this.getPort(),
+                castOther.getPort()).isEquals();
+			*/
+            return new EqualsBuilder().append(this.getTopologyIdent(),
+                    castOther.getTopologyIdent())
+                                          .append(this.getPort(),
+                    castOther.getPort()).isEquals();
         }
     }
 
     public String toString() {
-        return new ToStringBuilder(this)
-            .append("id", getId())
-            .toString();
+        return new ToStringBuilder(this).append("id", getId()).toString();
     }
 }

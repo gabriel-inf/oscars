@@ -23,12 +23,6 @@ public class EdgeInfo extends HibernateBean implements Serializable {
     /** persistent field */
     private Domain domain;
 
-    /** nullable persistent field */
-    private String localType;
-
-    /** nullable persistent field */
-    private String localValue;
-
     /** default constructor */
     public EdgeInfo() { }
 
@@ -55,32 +49,6 @@ public class EdgeInfo extends HibernateBean implements Serializable {
      */ 
     public void setExternalIP(String externalIP) {
         this.externalIP = externalIP;
-    }
-
-
-    /**
-     * @return localType a string with the local id's type
-     */ 
-    public String getLocalType() { return this.localType; }
-
-    /**
-     * @param localType a string with the local id's type
-     */ 
-    public void setLocalType(String localType) {
-        this.localType = localType;
-    }
-
-
-    /**
-     * @return localValue a string with the local id's value
-     */ 
-    public String getLocalValue() { return this.localValue; }
-
-    /**
-     * @param localValue a string with the local id's value
-     */ 
-    public void setLocalValue(String localValue) {
-        this.localValue = localValue;
     }
 
 

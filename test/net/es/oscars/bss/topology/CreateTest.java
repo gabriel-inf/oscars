@@ -34,13 +34,13 @@ public class CreateTest {
         Domain domain2 = new Domain();
         domain1.setName(this.props.getProperty("domainName"));
         domain1.setAbbrev(this.props.getProperty("abbrev"));
-        domain1.setAsNum(Integer.parseInt(this.props.getProperty("asNum").trim()));
+        domain1.setTopologyIdent(this.props.getProperty("asNum").trim());
         domain1.setUrl(this.props.getProperty("url"));
         domain1.setLocal(true);
 
         domain2.setName("test");
         domain2.setAbbrev("test");
-        domain2.setAsNum(0);
+        domain2.setTopologyIdent("test suite");
         domain2.setUrl("test");
         domain2.setLocal(false);
         DomainDAO domainDAO = new DomainDAO(this.dbname);
@@ -52,33 +52,51 @@ public class CreateTest {
         assert domain2.getId() != null;
     }
 
-        
   @Test(dependsOnMethods={ "domainCreate" })
     public void nodeCreate() {
         this.sf.getCurrentSession().beginTransaction();
         NodeDAO dao = new NodeDAO(this.dbname);
         Node node = new Node();
         node.setValid(true);
-        node.setName("test");
+        node.setTopologyIdent("test suite");
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        Domain domain = domainDAO.queryByParam("topologyIdent", "test suite");
+        node.setDomain(domain);
         dao.create(node);
         this.sf.getCurrentSession().getTransaction().commit();
         assert node != null;
     }
 
   @Test(dependsOnMethods={ "nodeCreate" })
+    public void nodeAddressCreate() {
+        this.sf.getCurrentSession().beginTransaction();
+        NodeAddressDAO dao = new NodeAddressDAO(this.dbname);
+        NodeAddress nodeAddress = new NodeAddress();
+        nodeAddress.setAddress("test suite");
+        NodeDAO nodeDAO = new NodeDAO(this.dbname);
+        Node node = nodeDAO.queryByParam("topologyIdent", "test suite");
+        nodeAddress.setNode(node);
+        dao.create(nodeAddress);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert nodeAddress != null;
+    }
+
+  @Test(dependsOnMethods={ "nodeCreate" })
     public void portCreate() {
         this.sf.getCurrentSession().beginTransaction();
         PortDAO dao = new PortDAO(this.dbname);
-        String nodeName = "test";
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
-        Node node = nodeDAO.queryByParam("name", nodeName);
+        Node node = nodeDAO.queryByParam("topologyIdent", "test suite");
 
         Port port = new Port();
         port.setValid(true);
         port.setSnmpIndex(0);
-        port.setMaximumCapacity(10000000L);
+        port.setTopologyIdent("test suite");
+        port.setCapacity(10000000L);
         port.setMaximumReservableCapacity(5000000L);
-        port.setDescription("test suite");
+        port.setMinimumReservableCapacity(1000000L);
+        port.setGranularity(1000000L);
+        port.setUnreservedCapacity(5000000L);
         port.setNode(node);
         dao.create(port);
         this.sf.getCurrentSession().getTransaction().commit();
@@ -86,17 +104,35 @@ public class CreateTest {
     }
 
   @Test(dependsOnMethods={ "portCreate" })
+    public void linkCreate() {
+        this.sf.getCurrentSession().beginTransaction();
+        LinkDAO dao = new LinkDAO(this.dbname);
+        PortDAO portDAO = new PortDAO(this.dbname);
+        Port port = portDAO.queryByParam("topologyIdent", "test suite");
+
+        Link link = new Link();
+        link.setValid(true);
+        link.setSnmpIndex(0);
+        link.setCapacity(10000000L);
+        link.setMaximumReservableCapacity(5000000L);
+        link.setTopologyIdent("test suite");
+        link.setPort(port);
+        dao.create(link);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert link != null;
+    }
+
+  @Test(dependsOnMethods={ "linkCreate" })
     public void ipaddrCreate() {
         this.sf.getCurrentSession().beginTransaction();
         IpaddrDAO dao = new IpaddrDAO(this.dbname);
         Ipaddr ipaddr = new Ipaddr();
         ipaddr.setValid(true);
         ipaddr.setIP(this.props.getProperty("ingressNode"));
-        ipaddr.setDescription("test suite");
-        PortDAO portDAO = new PortDAO(this.dbname);
-        Port port = (Port)
-            portDAO.queryByParam("description", "test suite");
-        ipaddr.setPort(port);
+        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        Link link = (Link)
+            linkDAO.queryByParam("topologyIdent", "test suite");
+        ipaddr.setLink(link);
         dao.create(ipaddr);
         this.sf.getCurrentSession().getTransaction().commit();
         assert ipaddr != null;

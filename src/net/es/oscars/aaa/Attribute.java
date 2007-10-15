@@ -6,17 +6,17 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import net.es.oscars.database.HibernateBean;
 
 /**
- * Attribute is adapted from a Middlegen class automatically generated 
- * from the schema for the aaa.permissions table.
+ * Attribute is the Hibernate bean associated with the aaa.attributes
+ * table.
  */
 public class Attribute extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
-    private static final long serialVersionUID = 5025;
+    private static final long serialVersionUID = 4149;
 
     /** persistent field */
     private String name;
-    
+
     /** nullable persistent field */
     private String attrType;
 
@@ -24,31 +24,32 @@ public class Attribute extends HibernateBean implements Serializable {
     public Attribute() { }
 
     /**
-     * @return name A String with the attribute name
+     * @return name a string with the attribute name
      */ 
     public String getName() { return this.name; }
 
     /**
-     * @param name A String with the attribute name
+     * @param name A string with the attribute name
      */ 
     public void setName(String name) { this.name = name; }
 
+
     /**
-     * @return name A String with the attribute type
+     * @return attrType a string with the attribute type
      */ 
     public String getAttrType() { return this.attrType; }
 
     /**
-     * @param name A String with the attribute type
+     * @param attrType a string with the attribute type
      */ 
-    public void setAttrType(String name) { this.name = attrType; }
+    public void setAttrType(String attrType) {
+        this.attrType = attrType;
+    }
 
 
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
-            .append("name", this.getName())
-            .append("attrType",this.getAttrType())
             .toString();
     }
 }

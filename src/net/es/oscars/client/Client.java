@@ -14,8 +14,8 @@ import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;
 
 import net.es.oscars.oscars.OSCARSStub;
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
+import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.security.KeyManagement;
 
@@ -54,20 +54,20 @@ public class Client {
     /**
      * Makes call to server to cancel a reservation.
      *
-     * @param rt a ResTag instance containing the reservation's unique tag
+     * @param gri a GlobalReservationId instance with reservation's unique id 
      * @return a string with the reservation's status
-     * @throws AAAFaultMessageException
-     * @throws BSSFaultMessageException
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
      * @throws java.rmi.RemoteException
      */
-    public String cancelReservation(ResTag rt) 
-            throws AAAFaultMessageException, java.rmi.RemoteException,
+    public String cancelReservation(GlobalReservationId gri) 
+            throws AAAFaultMessage, java.rmi.RemoteException,
                   Exception {
 
         CancelReservation canRes = null;
         CancelReservationResponse rs = new CancelReservationResponse();
         canRes = new CancelReservation();
-        canRes.setCancelReservation(rt);
+        canRes.setCancelReservation(gri);
         rs = this.stub.cancelReservation(canRes);
         return rs.getCancelReservationResponse();
     }
@@ -76,13 +76,13 @@ public class Client {
      * Makes call to server to create a reservation.
      *
      * @param resRequest a ResCreateContent with reservation parameters
-     * @return crr a CreateReply instance with the reservation's tag and status
-     * @throws AAAFaultMessageException
-     * @throws BSSFaultMessageException
+     * @return crr a CreateReply instance with the reservation's GRI and status
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
      * @throws java.rmi.RemoteException
      */
     public CreateReply createReservation(ResCreateContent resRequest)
-           throws AAAFaultMessageException, java.rmi.RemoteException,
+           throws AAAFaultMessage, java.rmi.RemoteException,
                   Exception {
 
         CreateReply crr =  null; 
@@ -99,12 +99,12 @@ public class Client {
      * Makes call to server to get list of reservations.
      *
      * @return response a ListReply instance with summaries of each reservation
-     * @throws AAAFaultMessageException
-     * @throws BSSFaultMessageException
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
      * @throws java.rmi.RemoteException
      */
     public ListReply listReservations()
-           throws AAAFaultMessageException, BSSFaultMessageException,java.rmi.RemoteException
+           throws AAAFaultMessage, BSSFaultMessage,java.rmi.RemoteException
     {
 
         ListReservations listRes = new ListReservations();
@@ -117,23 +117,134 @@ public class Client {
     }
 
     /**
-     * Makes call to server to get a reservation's details, given its tag.
+     * Makes call to server to get a reservation's details, given its GRI.
      *
-     * @param rt a ResTag instance containing the reservation's unique tag
+     * @param gri a GlobalReservationId instance with reservation's unique id
      * @return a ResDetails instance containing the reservations tag and status
-     * @throws AAAFaultMessageException
-     * @throws BSSFaultMessageException
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
      * @throws java.rmi.RemoteException
       */
-    public ResDetails queryReservation(ResTag rt)
-           throws AAAFaultMessageException, java.rmi.RemoteException,
+    public ResDetails queryReservation(GlobalReservationId gri)
+           throws AAAFaultMessage, java.rmi.RemoteException,
               Exception {
 
         QueryReservation queryRes = new QueryReservation();
-        queryRes.setQueryReservation(rt);
+        queryRes.setQueryReservation(gri);
         QueryReservationResponse qrr = this.stub.queryReservation(queryRes);
         ResDetails qreply = qrr.getQueryReservationResponse();
         return qreply;
+    }
+    
+    /**
+     * Makes call to server to get a global view of domain's topology
+     *
+     * @param request a getNetworkTopology request containing th request type
+     * @return a GetNetworkTopologyResponseContent instance containing the topology data
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
+     * @throws java.rmi.RemoteException
+     */
+    public GetTopologyResponseContent getNetworkTopology(
+        GetTopologyContent request) throws AAAFaultMessage,
+        java.rmi.RemoteException, Exception {
+
+        GetNetworkTopology getTopo = new GetNetworkTopology();
+        getTopo.setGetNetworkTopology(request);
+        GetNetworkTopologyResponse topo = this.stub.getNetworkTopology(getTopo);
+        GetTopologyResponseContent response = topo.getGetNetworkTopologyResponse();
+        return response;
+    }
+    
+    /**
+     * Tells the server to update its topology
+     *
+     * @param request a initiateTopologyPull request containing the request type
+     * @return a InitiateTopologyPullResponseContent instance containing the result
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
+     * @throws java.rmi.RemoteException
+     */
+    public InitiateTopologyPullResponseContent initiateTopologyPull(
+           InitiateTopologyPullContent request) throws AAAFaultMessage, 
+           java.rmi.RemoteException, Exception {
+
+        InitiateTopologyPull initTopoPull = new InitiateTopologyPull();
+        initTopoPull.setInitiateTopologyPull(request);
+        InitiateTopologyPullResponse initResult = 
+            this.stub.initiateTopologyPull(initTopoPull);
+        InitiateTopologyPullResponseContent response = 
+            initResult.getInitiateTopologyPullResponse();
+        return response;
+    }
+    
+    /**
+     * Signals that a previously made reservation should be created
+     *
+     * @param request a createPath request containing the reservation to be built
+     * @return the response received from the request
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
+     * @throws java.rmi.RemoteException
+     */
+    public CreatePathResponseContent createPath(
+           CreatePathContent request) throws AAAFaultMessage, 
+           java.rmi.RemoteException, Exception {
+
+        CreatePath cpath = new CreatePath();
+        cpath.setCreatePath(request);
+        CreatePathResponse createResult = 
+            this.stub.createPath(cpath);
+        CreatePathResponseContent response = 
+            createResult.getCreatePathResponse();
+            
+        return response;
+    }
+    
+    /**
+     * Verifies that a previously setup path is still active
+     *
+     * @param request a refreshPath request
+     * @return the response received from the request
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
+     * @throws java.rmi.RemoteException
+     */
+    public RefreshPathResponseContent refreshPath(
+           RefreshPathContent request) throws AAAFaultMessage, 
+           java.rmi.RemoteException, Exception {
+
+        RefreshPath rpath = new RefreshPath();
+        rpath.setRefreshPath(request);
+        RefreshPathResponse refreshResult = 
+            this.stub.refreshPath(rpath);
+        RefreshPathResponseContent response = 
+            refreshResult.getRefreshPathResponse();
+            
+        return response;
+    }
+    
+    /**
+     * Tearsdown a previously setup path
+     *
+     * @param request a teardownPath request
+     * @return the response received from the request
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
+     * @throws java.rmi.RemoteException
+     */
+    public TeardownPathResponseContent teardownPath(
+           TeardownPathContent request) throws AAAFaultMessage, 
+           java.rmi.RemoteException, Exception {
+
+        TeardownPath tpath = new TeardownPath();
+        tpath.setTeardownPath(request);
+        TeardownPathResponse teardownResult = 
+            this.stub.teardownPath(tpath);
+        TeardownPathResponseContent response = 
+            teardownResult.getTeardownPathResponse();
+            
+        return response;
     }
  
     /**
@@ -142,12 +253,12 @@ public class Client {
      *
      * @param fwd a Forward object
      * @return response a ForwardReply object
-     * @throws AAAFaultMessageException
-     * @throws BSSFaultMessageException
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
      * @throws java.rmi.RemoteException
      */
     public ForwardReply forward(Forward fwd)
-           throws AAAFaultMessageException, BSSFaultMessageException,
+           throws AAAFaultMessage, BSSFaultMessage,
                   java.rmi.RemoteException {
 
         ForwardReply freply = null;

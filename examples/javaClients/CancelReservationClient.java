@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.rmi.RemoteException;
 
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
+import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
 
@@ -22,13 +22,13 @@ public class CancelReservationClient extends ExampleClient {
         try {
             CancelReservationClient cl = new CancelReservationClient();
             cl.cancel(args, true);
-        } catch (AAAFaultMessageException e) {
+        } catch (AAAFaultMessage e) {
             System.out.println(
-                    "AAAFaultMessageException from cancelReservation");
+                    "AAAFaultMessage from cancelReservation");
             System.out.println(e.getFaultMessage().getMsg());
-        } catch (BSSFaultMessageException e) {
+        } catch (BSSFaultMessage e) {
             System.out.println(
-                    "BSSFaultMessageException from cancelReservation");
+                    "BSSFaultMessage from cancelReservation");
             System.out.println(e.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e) {
             System.out.println(
@@ -42,19 +42,19 @@ public class CancelReservationClient extends ExampleClient {
     }
 
     public String cancel(String[] args, boolean isInteractive)
-            throws AAAFaultMessageException, BSSFaultMessageException,
+            throws AAAFaultMessage, BSSFaultMessage,
                    java.rmi.RemoteException, Exception {
 
         super.init(args, isInteractive);
-        ResTag rt = this.readParams(isInteractive);
+        GlobalReservationId rt = this.readParams(isInteractive);
         // make the call to the server
         String response = this.getClient().cancelReservation(rt);
         this.outputResponse(response);
         return response;
     }
 
-    public ResTag readParams(boolean isInteractive) {
-        ResTag rt = new ResTag();
+    public GlobalReservationId readParams(boolean isInteractive) {
+        GlobalReservationId rt = new GlobalReservationId();
 
         Properties props = this.getProperties();
 		    try {
@@ -62,9 +62,9 @@ public class CancelReservationClient extends ExampleClient {
             if (isInteractive) {
 			          BufferedReader br =
                     new BufferedReader(new InputStreamReader(System.in));
-                rt.setTag(Args.getArg(br, "Tag of reservation to cancel"));
+                rt.setGri(Args.getArg(br, "GRI of reservation to cancel"));
             } else {
-                rt.setTag(props.getProperty("tag"));
+                rt.setGri(props.getProperty("tag"));
             }
         } catch (IOException ioe) {
             System.out.println("IO error reading input");

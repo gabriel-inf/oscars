@@ -4,6 +4,9 @@ import java.util.*;
 
 import org.apache.log4j.*;
 
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+
 import net.es.oscars.database.GenericHibernateDAO;
 import net.es.oscars.bss.BSSException;
 
@@ -34,28 +37,157 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
                                          .setMaxResults(1)
                                          .uniqueResult();
     }
+    
+    /**
+     * Retrieves domain given a topology identifier
+     *
+     * @param topologyIdent the topology identifier of a domain
+     * @return a domain instance
+     */
+    public Domain fromTopologyIdent(String topologyIdent) {
+        String hsql = "from Domain where topologyIdent=?";
+        return (Domain) this.getSession().createQuery(hsql)
+                                         .setString(0, topologyIdent)
+                                         .setMaxResults(1)
+                                         .uniqueResult();
+    }
 
      /**
      * Finds next domain by looking up first hop in edgeInfo table
      *
-     * @param nextHop string with IP address of next hop
+     * @param nextHop CtrlPlaneHopContent with next hop past local domain
      * @return Domain an instance associated with the next domain, if any
      * @throws BSSException
      */
-    public Domain getNextDomain(String nextHop) throws BSSException {
+    public Domain getNextDomain(CtrlPlaneHopContent nextHop)
+            throws BSSException {
 
         EdgeInfoDAO edgeInfoDAO = new EdgeInfoDAO(this.dbname);
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         Domain nextDomain = null;
 
-        this.log.info("getNextDomain.nextHop: " + nextHop);
-       
-        if (nextHop != null) {
-            nextDomain = edgeInfoDAO.getDomain(nextHop);
-            if (nextDomain != null) {
-                this.log.info("getNextDomain.nextDomain: " +
-                              nextDomain.getAsNum()+"");
-            }
+        this.log.info("getNextDomain.start: " + nextHop.getLinkIdRef());
+        String[] componentList = nextHop.getLinkIdRef().split(":");
+        
+        if (componentList.length != 7) {
+            throw new BSSException("Hop " + nextHop.getLinkIdRef() + " must" +
+                " be in format urn:ogf:network:domainId:nodeId:portId:linkId");
+        }
+        
+        // check if topologyIdent maps to known domain
+        nextDomain = this.fromTopologyIdent(componentList[3]);
+        if (nextDomain != null) {
+            return nextDomain;
+        }
+        
+        if (!componentList[3].equals("other")) {
+            return null;
+        }
+        // IP address for lookup is last item
+        String ip = componentList[6];
+        nextDomain = edgeInfoDAO.getDomain(ip);
+        if (nextDomain != null) {
+            this.log.info("getNextDomain.nextDomain: " +
+                          nextDomain.getTopologyIdent());
         }
         return nextDomain;
+    }
+
+    /**
+     * Given a domain topology id, checks to see if it is the local domain.
+     *
+     * @param topologyIdent a string with the topology id
+     * @return boolean indicating whether this is a local domain
+     */
+    public boolean isLocal(String topologyIdent) {
+    	String domainTopoId = topologyIdent.replaceAll("domain=", "");
+        Domain domain = this.queryByParam("topologyIdent", domainTopoId);
+        if (domain == null) {
+            return false;
+        }
+        return domain.isLocal();
+    }
+
+    /**
+     * Converts topology identifier to IP address.
+     *
+     * @param hopId string with topology identifier
+     * @return string with IP address
+     */
+     public String convertTopologyIdentifier(String topologyIdent) {
+         String ip = null;
+         String[] componentList = topologyIdent.split(":");
+         // TODO:  error checking
+         Link link = this.getFullyQualifiedLink(componentList);
+         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+         Ipaddr ipaddr = ipaddrDAO.fromLink(link);
+         return ipaddr.getIP();
+     }
+
+    /**
+     * Given a fully qualified domainId:nodeId:portId:linkId, find the
+     * corresponding link in the database.
+     *
+     * @param componentList string with all elements of name
+     * @return Link unique Link instance
+     */
+    public Link getFullyQualifiedLink(String[] componentList) {
+        String sql = "select * from links l " +
+            "inner join ports p on p.id = l.portId " +
+            "inner join nodes n on n.id = p.nodeId " +
+            "inner join domains d on d.id = n.domainId " +
+            "where l.topologyIdent = ? and p.topologyIdent = ? " +
+            "and n.topologyIdent = ? and d.topologyIdent = ? ";
+        Link link = null;
+        if(componentList.length == 7) {
+        	String linkTopoId = componentList[6].replaceAll("link=", "");
+        	String portTopoId = componentList[5].replaceAll("port=", "");
+        	String nodeTopoId = componentList[4].replaceAll("node=", "");
+        	String domainTopoId = componentList[3].replaceAll("domain=", "");
+            link = (Link) this.getSession().createSQLQuery(sql)
+                          .addEntity(Link.class)
+                          .setString(0, linkTopoId)
+                          .setString(1, portTopoId)
+                          .setString(2, nodeTopoId)
+                          .setString(3, domainTopoId)
+                          .setMaxResults(1)
+                          .uniqueResult();
+        }
+        
+        return link;
+    }
+
+    /**
+     * Given a domain identifier and an IP address, generate a full
+     * topology identifier.
+     *
+     * @param domainIdent string with domain identifier
+     * @param hop string with IP address
+     * @return fqn full topology identifier (domain:node:port:link)
+     */
+    public String setFullyQualifiedLink(String domainIdent, String hop) {
+        String fqn = null;
+
+        if (domainIdent.equals("other")) {
+            // TODO:  better solution
+            fqn = "urn:ogf:network:other:other:other:" + hop;
+            return fqn;
+        }
+        String sql = "select * from links l " +
+            "inner join ipaddrs ip on l.id = ip.linkId " +
+            "where ip.IP = ?";
+        Link link = (Link) this.getSession().createSQLQuery(sql)
+                      .addEntity(Link.class)
+                      .setString(0, hop)
+                      .setMaxResults(1)
+                      .uniqueResult();
+        Port port = link.getPort();
+        Node node = port.getNode();
+        Domain domain = node.getDomain();
+        fqn = "urn:ogf:network:" + domain.getTopologyIdent() + ":" +
+                     node.getTopologyIdent() + ":" +
+                     port.getTopologyIdent() + ":" +
+                     link.getTopologyIdent();
+        return fqn;
     }
 }

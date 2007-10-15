@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.wsdlTypes.PathInfo;
 
 
 /**
@@ -25,44 +26,24 @@ public class PCEManager {
     }
 
     /**
-     * Finds path from source to destination, taking into account ingress
-     * and egress nodes if specified by user.  Sets information, such
-     * as local hops in path, and ingress and egress nodes if not given.
+     * Finds path from source to destination, taking into account information,
+     * if specified by user.  Sets information, such
+     * as local hops in path.
      *
-     * @param srcHost string with address of source host
-     * @param destHost string with address of destination host
-     * @param ingressNodeIP string with address of ingress node, if any
-     * @param egressNodeIP string with address of egress node, if any
-     * @param path CommonPath instance to fill in
+     * @param pathInfo instance containing layer 2 or layer 3 information
      * @throws PathfinderException
      */
-    public void findPath(String srcHost, String destHost,
-                         String ingressNodeIP, String egressNodeIP,
-                         CommonPath path)
-            throws PathfinderException {
-
-        List<CommonPathElem> pathElems = null;
+    public boolean findPath(PathInfo pathInfo) throws PathfinderException {
 
         this.log.info("PCEManager.findPath.start");
-        if (path.getElems() != null) {
-             this.log.debug("findPath, explicit path given: " +
-                             path.toString());
-        }
         String pathMethod = this.getPathMethod();
         this.log.info("pathfinder method is " + pathMethod);
-        if (pathMethod == null) { return; }
+        if (pathMethod == null) { return false; }
         this.pathfinder = 
             new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
-        // find complete path
-        if (path.getElems() == null) {
-            pathElems = this.pathfinder.findPath(srcHost, destHost,
-                                             ingressNodeIP, egressNodeIP);
-            path.setElems(pathElems);
-        } else {
-            // change given path elements in place
-            this.pathfinder.findPath(path);
-        }
+        boolean isExplicit = this.pathfinder.findPath(pathInfo);
         this.log.info("PCEManager.findPath.end");
+        return isExplicit;
     }
 
     /**
@@ -88,10 +69,10 @@ public class PCEManager {
             throw new PathfinderException(
                 "No path computation method specified in oscars.properties.");
         }
-        if (!pathMethod.equals("traceroute") && !pathMethod.equals("narb")) {
+        if (!pathMethod.equals("traceroute") && !pathMethod.equals("terce")) {
             throw new PathfinderException(
                 "Path computation method specified in oscars.properties " +
-                "must be either traceroute or narb.");
+                "must be either traceroute or terce.");
         }
         return pathMethod;
     }

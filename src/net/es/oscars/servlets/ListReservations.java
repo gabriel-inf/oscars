@@ -8,14 +8,15 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
 
-import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
-import net.es.oscars.aaa.UserManager;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager.AuthValue;
+import net.es.oscars.bss.topology.Layer2Data;
+import net.es.oscars.bss.topology.Layer3Data;
 
 public class ListReservations extends HttpServlet {
 
@@ -71,9 +72,8 @@ public class ListReservations extends HttpServlet {
      *  page of reservations listing when a user logs in.
      *  
      * @param out PrintWriter used to report errors on the status line
-     * @param rm
-     * @param login
-     * @return
+     * @param login string with login name of user
+     * @return list of Reservation instances
      */
     public List<Reservation>
         getReservations(PrintWriter out, String login)  {
@@ -103,17 +103,16 @@ public class ListReservations extends HttpServlet {
         contentSection(PrintWriter out, List<Reservation> reservations,
                         String login) {
 
-        TypeConverter tc = new TypeConverter();
         InetAddress inetAddress = null;
-        String tag = "";
-        String srcHost = null;
+        String gri = "";
+        String source = null;
         String hostName = null;
-        String destHost = null;
+        String destination = null;
 
         out.println("<content>");
         out.println("<p>Click on a column header to sort by that column. " +
             "Times given are in the time zone of the browser.  Click on " +
-            "the Reservation Tag link to view detailed information about " +
+            "the Reservation GRI link to view detailed information about " +
             "the reservation.</p>");
         out.println("<p><form method='post' action='' onsubmit=\"" +
             "return submitForm(this, 'ListReservations');\">");
@@ -122,38 +121,48 @@ public class ListReservations extends HttpServlet {
 
         out.println("<table cellspacing='0' width='90%' class='sortable'>");
         out.println("<thead>");
-        out.println("<tr><td>Tag</td><td>Start Time</td><td>End Time</td><td>Status</td>");
+        out.println("<tr><td>GRI</td><td>User</td><td>Start Time</td><td>End Time</td><td>Status</td>");
         out.println("<td>Origin</td><td>Destination</td>");
         out.println("</tr></thead> <tbody>");
         for (Reservation resv: reservations) {
-            tag = tc.getReservationTag(resv);
+            gri = resv.getGlobalReservationId();
+            Layer3Data layer3Data = resv.getPath().getLayer3Data();
+            Layer2Data layer2Data = resv.getPath().getLayer2Data();
             out.println("<tr>");
             out.println("<td>");
             out.println("<a href='#' " +
-                "onclick=\"return newSection('QueryReservation', 'tag=" +
-                         tag + "');\">" +
-                tag + "</a>");
+                "onclick=\"return newSection('QueryReservation', 'gri=" +
+                         gri + "');\">" +
+                gri + "</a>");
             out.println("</td>");
+            out.println("<td>" + resv.getLogin() + "</td>");
             out.println("<td name='startTime' class='dt'>" +
                          resv.getStartTime() + "</td>");
             out.println("<td name='endTime' class='dt'>" +
                          resv.getEndTime() + "</td>");
             out.println("<td>" + resv.getStatus() + "</td>");
-            srcHost = resv.getSrcHost();
-            try {
-                inetAddress = InetAddress.getByName(srcHost);
-                hostName = inetAddress.getHostName();
-                out.println("<td>" + hostName + "</td>");
-            } catch (UnknownHostException e) {
-                out.println("<td>" + srcHost + "</td>");
-            }
-            destHost = resv.getDestHost();
-            try {
-                inetAddress = InetAddress.getByName(destHost);
-                hostName = inetAddress.getHostName();
-                out.println("<td>" + hostName + "</td>");
-            } catch (UnknownHostException e) {
-                out.println("<td>" + destHost + "</td>");
+            if (layer2Data != null) {
+                source = layer2Data.getSrcEndpoint();
+                out.println("<td>" + source + "</td>");
+                destination = layer2Data.getDestEndpoint();
+                out.println("<td>" + destination + "</td>");
+            } else if (layer3Data != null) {
+                source = layer3Data.getSrcHost();
+                try {
+                    inetAddress = InetAddress.getByName(source);
+                    hostName = inetAddress.getHostName();
+                    out.println("<td>" + hostName + "</td>");
+                } catch (UnknownHostException e) {
+                    out.println("<td>" + source + "</td>");
+                }
+                destination = layer3Data.getDestHost();
+                try {
+                    inetAddress = InetAddress.getByName(destination);
+                    hostName = inetAddress.getHostName();
+                    out.println("<td>" + hostName + "</td>");
+                } catch (UnknownHostException e) {
+                    out.println("<td>" + destination + "</td>");
+                }
             }
             out.println("</tr>");
         }

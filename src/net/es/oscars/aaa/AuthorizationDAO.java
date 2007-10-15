@@ -27,7 +27,7 @@ public class AuthorizationDAO
     /**
      * Deletes a row containing an authorization triple.
      *
-     * @param userId int with primary key of user
+     * @param attrId int with primary key of attribute
      * @param resourceId int with primary key of resource
      * @param permissionId int with primary key of permission
      * @throws AAAException.
@@ -142,7 +142,7 @@ public class AuthorizationDAO
      * Retrieves authorization, if any, based on presence of corresponding
      *     triplet in authorizations table.
      *
-     * @param userId int with primary key of user
+     * @param attrId int with primary key of attribute
      * @param resourceId int with primary key of resource
      * @param permissionId int with primary key of permission
      * @return auths - list of the associated authorization instances, if any
@@ -168,7 +168,7 @@ public class AuthorizationDAO
      * Retrieves authorization, if any, based on presence of corresponding
      *    four-tuple in authorizations table.
      *
-     * @param userId int with primary key of user
+     * @param attrId int with primary key of attribute
      * @param resourceId int with primary key of resource
      * @param permissionId int with primary key of permission
      * @param constraintName - String with name of constraint, could be null

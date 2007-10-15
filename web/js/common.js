@@ -232,20 +232,18 @@ function outputDefaults(responseDom) {
         if (!elems[e].hasAttribute('id')) { continue; }
         node = elems[e].childNodes[0];
         var id = elems[e].getAttribute('id');
-        if (id == 'oyear') {
-            node.data = localDate.getFullYear();
+        if (id == 'odate') {
+            var userMonth = localDate.getMonth() + 1;
+            node.data = localDate.getFullYear() + "-" + 
+                        userMonth + "-" +
+                        localDate.getDate();
         }
-        else if (id == 'omonth') {
-            node.data = localDate.getMonth() + 1 + " (1-12)";
-        }
-        else if (id == 'odate') {
-            node.data = localDate.getDate() + " (1-31)";
-        }
-        else if (id == 'ohour') {
-            node.data = localDate.getHours() + " (0-23)";
-        }
-        else if (id == 'ominute') {
-            node.data = localDate.getMinutes() + " (0-59)";
+        else if (id == 'otime') {
+            var minutes = localDate.getMinutes();
+            if (minutes < 10) {
+                minutes = "0" + minutes;
+            }
+            node.data = localDate.getHours() + ":" + minutes;
         }
     }
 }

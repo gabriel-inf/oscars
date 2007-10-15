@@ -17,13 +17,13 @@
         <generator class="identity" />
     </id>
 
-    <property name="name" not-null="true">
+    <property name="topologyIdent" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
     </property>
 
-    <property name="abbrev" not-null="true">
+    <property name="name" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
@@ -35,7 +35,7 @@
         </meta>    
     </property>
 
-    <property name="asNum" not-null="true">
+    <property name="abbrev" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
@@ -48,6 +48,16 @@
     </property>
 
     <!-- Associations -->
+
+    <set name="nodes" inverse="true" cascade="all, delete-orphan">
+        <key column="domainId" />
+        <one-to-many class="net.es.oscars.bss.topology.Node" />
+    </set>
+
+    <set name="paths" inverse="true" cascade="all, delete-orphan">
+        <key column="nextDomain" />
+        <one-to-many class="net.es.oscars.bss.topology.Path" />
+    </set>
 
 </class>
 </hibernate-mapping>

@@ -8,11 +8,10 @@ import org.apache.axis2.AxisFault;
 
 import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.TypeConverter;
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
-import net.es.oscars.pathfinder.CommonPath;
+import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.*;
 
@@ -49,23 +48,24 @@ public class Forwarder extends Client {
         this.log.debug("setup.finish: " + url);
     }
 
-    public CreateReply create(Reservation resv) 
-            throws  InterdomainException {
+    public CreateReply create(Reservation resv, PathInfo pathInfo)
+            throws InterdomainException {
 
         CreateReply createReply = null;
-
-        CommonPath reqPath = resv.getCommonPath();
-        if (reqPath == null) {
+        Path path = resv.getPath();
+        if (path == null) {
            throw new InterdomainException(
                   "no path provided to forwarder create");
         }
-        String url = reqPath.getUrl();
-        if (url == null) { return null; }
+        Domain nextDomain = path.getNextDomain();
+        if (nextDomain == null) { return null; }
+        String url = nextDomain.getUrl();
         this.log.info("create.start forward to  " + url);
-        ForwardReply reply = this.forward("createReservation", resv, url,
-                                          reqPath);
+        ForwardReply reply =
+            this.forward("createReservation", resv, pathInfo, url);
         createReply = reply.getCreateReservation();
-        this.log.info("create.finish remote tag is: " + createReply.getTag());
+        this.log.info("create.finish GRI is: " +
+                      createReply.getGlobalReservationId());
         return createReply;
     }
 
@@ -78,27 +78,63 @@ public class Forwarder extends Client {
         }
         if (url == null) { return null; }
         this.log.info("query forward to " + url);
-        ForwardReply reply = this.forward("queryReservation", resv, url, null);
+        ForwardReply reply = this.forward("queryReservation", resv, null, url);
         return reply.getQueryReservation();
     }
 
-    public String cancel(Reservation resv)
-            throws InterdomainException {
+    public String cancel(Reservation resv) throws InterdomainException {
         
         String url = null;
-
         if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
             url = resv.getPath().getNextDomain().getUrl();
         }
         if (url == null) { return null; }
         this.log.info("cancel start forward to: " + url);
-        ForwardReply reply = this.forward("cancelReservation", resv, url,
-                                          null);
+        ForwardReply reply = this.forward("cancelReservation", resv, null, url);
         return reply.getCancelReservation();
     }
+    
+    public CreatePathResponseContent createPath(Reservation resv) 
+            throws InterdomainException {
+        
+        String url = null;
+        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
+            url = resv.getPath().getNextDomain().getUrl();
+        }
+        if (url == null) { return null; }
+        this.log.info("createPath forward to: " + url);
+        ForwardReply reply = this.forward("createPath", resv, null, url);
+        return reply.getCreatePath();
+    }
+    
+    public RefreshPathResponseContent refreshPath(Reservation resv) 
+            throws InterdomainException {
+        
+        String url = null;
+        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
+            url = resv.getPath().getNextDomain().getUrl();
+        }
+        if (url == null) { return null; }
+        this.log.info("refreshPath forward to: " + url);
+        ForwardReply reply = this.forward("refreshPath", resv, null, url);
+        return reply.getRefreshPath();
+    }
+    
+    public TeardownPathResponseContent teardownPath(Reservation resv) 
+            throws InterdomainException {
+        
+        String url = null;
+        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
+            url = resv.getPath().getNextDomain().getUrl();
+        }
+        if (url == null) { return null; }
+        this.log.info("teardownPath forward to: " + url);
+        ForwardReply reply = this.forward("teardownPath", resv, null, url);
+        return reply.getTeardownPath();
+    }
 
-    public ForwardReply forward(String operation, Reservation resv, String url,
-                                CommonPath reqPath)
+    public ForwardReply forward(String operation, Reservation resv,
+                                PathInfo pathInfo, String url)
             throws InterdomainException {
 
         this.log.debug("forward.start:  to " + url);
@@ -113,18 +149,30 @@ public class Forwarder extends Client {
         try {
             if (operation.equals("createReservation")) {
                 forPayload.setCreateReservation(
-                        toCreateRequest(resv, reqPath));
+                        toCreateRequest(resv, pathInfo));
 
             } else if (operation.equals("cancelReservation")) {
-                ResTag rt = new ResTag();
-                rt.setTag(this.tc.getReservationTag(resv));
+                GlobalReservationId rt = new GlobalReservationId();
+                rt.setGri(resv.getGlobalReservationId());
                 forPayload.setCancelReservation(rt);
 
             } else if (operation.equals("queryReservation")) {
-                ResTag rt = new ResTag();
-                rt.setTag(this.tc.getReservationTag(resv));
+                GlobalReservationId rt = new GlobalReservationId();
+                rt.setGri(resv.getGlobalReservationId());
                 forPayload.setQueryReservation(rt);
  
+            } else if (operation.equals("createPath")) {
+                CreatePathContent cp = new CreatePathContent();
+                cp.setGlobalReservationId(resv.getGlobalReservationId());
+                forPayload.setCreatePath(cp);
+            } else if (operation.equals("refreshPath")) {
+                RefreshPathContent rp = new RefreshPathContent();
+                rp.setGlobalReservationId(resv.getGlobalReservationId());
+                forPayload.setRefreshPath(rp);
+            } else if (operation.equals("teardownPath")) {
+                TeardownPathContent tp = new TeardownPathContent();
+                tp.setGlobalReservationId(resv.getGlobalReservationId());
+                forPayload.setTeardownPath(tp);
             }
             fwd.setPayload(forPayload);
             this.log.debug("forward.payloadSender: " + fwd.getPayloadSender());
@@ -135,13 +183,13 @@ public class Forwarder extends Client {
             e.printStackTrace();
             throw new InterdomainException("failed to reach remote domain:" +
                                             url + e.getMessage());
-        } catch (AAAFaultMessageException e) {
-            this.log.error("forward.AAAFaultMessageException: " +
+        } catch (AAAFaultMessage e) {
+            this.log.error("forward.AAAFaultMessage: " +
                                              e.getMessage());
             throw new InterdomainException("AAAFaultMessage from :" +
                                             url + e.getMessage());
-        } catch (BSSFaultMessageException e) {
-            this.log.error ("forward.BSSFaultMessageException: " +
+        } catch (BSSFaultMessage e) {
+            this.log.error ("forward.BSSFaultMessage: " +
                                             e.getMessage());
             throw new InterdomainException("BSSFaultMessage from :" +
                                             url +  e.getMessage());
@@ -149,25 +197,25 @@ public class Forwarder extends Client {
     }
     
     public ResCreateContent toCreateRequest(Reservation resv,
-                                            CommonPath reqPath) {
+                                            PathInfo pathInfo) {
 
         long millis = -1;
         ResCreateContent resCont = new ResCreateContent();
-
-        resCont.setSrcHost(resv.getSrcHost());
-        resCont.setDestHost(resv.getDestHost());
+        
+        /* default pathSetupMode between domains is user-xml */
+        String pathSetupMode = pathInfo.getPathSetupMode();
+        if(pathSetupMode == null || pathSetupMode.equals("domain")){
+            pathInfo.setPathSetupMode("user-xml");
+        }
+        
         resCont.setStartTime(resv.getStartTime());
         resCont.setEndTime(resv.getEndTime());
         /* output bandwidth is in bytes, input is in Mbytes */
         Long bandwidth = resv.getBandwidth()/1000000;
         resCont.setBandwidth( bandwidth.intValue());
-        resCont.setProtocol(resv.getProtocol());
         resCont.setDescription(resv.getDescription());
-        // TODO - maybe we should set ingress router or srcHost for next hop
-        // equal to egress router.
-        ExplicitPath explicitPath =
-            this.tc.commonPathToExplicitPath(reqPath);
-        resCont.setReqPath(explicitPath);
+        resCont.setGlobalReservationId(resv.getGlobalReservationId());
+        resCont.setPathInfo(pathInfo);
         return resCont;
     }
 }

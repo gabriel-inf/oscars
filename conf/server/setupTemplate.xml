@@ -34,17 +34,20 @@
           <!-- Note that this is an optional section, used when an
           explicit path is given.  In this case, the specification of the
           path element must be referenced by the <primary> label in the
-          above section.  The <path-list> element is filled in with a list
-          of hop addresses retrieved from the reservation.  Each hop has
-          a corresponding <name> element, and is added programmatically. -->
+          above section.  Each hop in the path is enclosed within a <name>
+          element within a <path-list> element.  These elements are added
+          programmatically. -->
           <path optional="yes">
              <name><user-var>name</user-var></name>
+             <!--
              <path-list>
-               <!-- <name><user-var>hop1-addr</user-var></name>
-                     ...
-	            <name><user-var>hopN-addr</user-var></name>
-		-->
+                 <name><user-var>hop1-addr</user-var></name>
              </path-list>
+             ...
+             <path-list>
+                 <name><user-var>hopN-addr</user-var></name>
+             </path-list>
+             -->
           </path>
         </mpls>
       </protocols>

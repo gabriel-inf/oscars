@@ -11,6 +11,9 @@
             <label-switched-path delete="delete">
                 <name><user-var>name</user-var></name>
             </label-switched-path>
+            <path delete="delete">
+                <name><user-var>name</user-var></name>
+            </path>
         </mpls>
       </protocols>
       <firewall>

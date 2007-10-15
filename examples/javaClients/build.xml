@@ -7,7 +7,6 @@
 <property name="src" location="../../src" />
 <property name="private" location="${env.DOMAIN_HOME}/client" />
 <property name="public" location="../../conf" />
-<property name="public.client" location="../../conf/client" />
 <property name="url"
           value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
 
@@ -23,28 +22,42 @@
     <available property="private.exists" file="${private}" />
 </target>
 
+<target name="checkaxis">
+    <available property="axis2.xml.exists" file="${repo}/axis2.xml" />
+</target>
+
 <target name="copyprivate" depends="checkprivate" if="private.exists">
     <!-- Copy private material to repo -->
     <copy todir="${repo}" >
-        <fileset dir="${private}" includes="*.*" />
+        <fileset dir="${private}" includes="*.*" excludes="axis2.xml" />
+    </copy>
+</target>
+
+<target name="copyaxis" depends="checkaxis" unless="axis2.xml.exists">
+    <!-- Copy axis2.xml to repo if not already there -->
+    <copy todir="${repo}" >
+        <fileset dir="${private}" includes="axis2.xml" />
     </copy>
 </target>
 
 <target name="prepare">
     <mkdir dir="${repo}/modules" />
     <mkdir dir="${build}/classes" />
-    <!-- Copy public material to repo -->
     <copy todir="${repo}">
-        <fileset dir="${public.client}" includes="*.*" />
+        <fileset dir="${private}" includes="*.*" />
     </copy>
+    <copy todir="${repo}">
+        <fileset dir="${public}/client" includes="log4j.properties" />
+    </copy>
+    <!-- Copy public material to repo -->
     <copy todir="${repo}/modules">
-        <fileset dir="${public}" includes="*rampart-1.1*.mar" />
+        <fileset dir="${public}" includes="*rampart-1.3*.mar" />
     </copy>
 
 </target>
 
 <target name="compile-stubs" depends="prepare">
-    <javac srcdir="${src}" destdir="${build}/classes">
+    <javac srcdir="${src}" destdir="${build}/classes" debug="true" debuglevel="lines,vars,source">
         <classpath refid="client.path" />
         <include name="net/es/oscars/oscars/OSCARSStub.java" />
         <include name="net/es/oscars/oscars/*FaultMessageException.java" />
@@ -56,7 +69,7 @@
      </javac>
 </target>
 
-<target name ="compile" depends="copyprivate, compile-stubs">
+<target name ="compile" depends="copyprivate, copyaxis, compile-stubs">
     <javac classpathref="client.path" srcdir="." destdir="${build}/classes" />
     <!-- Copy application resources -->
     <copy  todir="${build}/classes">
@@ -122,6 +135,12 @@
         <arg value="https://oscars-dev.es.net:9090/axis2/services/OSCARS" />
         <arg value="false" />
     </java>
+</target>
+
+<target name="jar" description="Create jar with example classs" depends="compile">
+    <jar destfile="../../build/OSCARS-client-examples.jar">
+         <fileset dir="${build}/classes" includes="*.class" excludes="InitiateTopologyPullClient.class"/>
+    </jar>
 </target>
 
 <target name="clean" description="Delete old build directory">

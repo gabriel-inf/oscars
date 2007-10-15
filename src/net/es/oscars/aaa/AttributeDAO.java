@@ -13,18 +13,14 @@ public class AttributeDAO extends GenericHibernateDAO<Attribute, Integer> {
     public AttributeDAO(String dbname) {
         this.setDatabase(dbname);
     }
-    
-    /* given and attribute id, return the attribute name
+
+    /* Given an attribute id, return the attribute name
      * 
-     * @param attrId  - attribute id
-     * @returns String name of attribute
+     * @param attrId  int with attribute id
+     * @returns a string with name of attribute
      */
     public String getAttributeName(int attrId) {
         Attribute attr = super.findById(attrId, false);
         return attr.getName();
     }
 }
-    
-    
-    
- 

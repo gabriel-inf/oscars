@@ -28,18 +28,17 @@ public class ReservationDAO
     }
 
     /**
-     * Finds a reservation, given its tag.
+     * Finds a reservation, given its global reservation id.
      *
-     * @param tag a string uniquely identifying a reservation across domains
+     * @param gri a string uniquely identifying a reservation across domains
      * @return reservation found, if any
      * @throws BSSException
      */
-    public Reservation query(String tag)
+    public Reservation query(String gri)
         throws BSSException {
 
-        String[] strArray = tag.split("-");
-        Integer id = Integer.valueOf(strArray[1]);
-        Reservation reservation = this.findById(id, false);
+        Reservation reservation = this.queryByParam("globalReservationId",
+                                                     gri);
         return reservation;
     }
 
@@ -90,12 +89,13 @@ public class ReservationDAO
             overlappingReservations(Long startTime, Long endTime) {
 
         List<Reservation> reservations = null;
-        // Get reservations with times overlapping that of the reservationi
+        // Get reservations with times overlapping that of the reservation
         // request.
         String hsql = "from Reservation r " +
-                      "where r.endTime >= :endTime and " +
-                      "r.startTime <= :startTime and " +
-                      "(r.status = 'PENDING' or r.status = 'ACTIVE')";
+            "where ((r.startTime <= :startTime and r.endTime >= :startTime) or " +
+            "(r.startTime <= :endTime and r.endTime >= :endTime) or " +
+            "(r.startTime >= :startTime and r.endTime <= :endTime)) " +
+            "and (r.status = 'PENDING' or r.status = 'ACTIVE')";
         reservations = this.getSession().createQuery(hsql)
                                         .setLong("startTime", startTime)
                                         .setLong("endTime", endTime)
@@ -162,5 +162,23 @@ public class ReservationDAO
                                         .setString("status", status)
                                         .list();
         return reservations;
+    }
+    
+    /**
+     * Retrives reservation given the global reservation ID (GRI) and login
+     *
+     * @param gri global reservation id of entry to retrieve
+     * @param login user's login that made the reservation
+     * @return the reservation matching the given parameters
+     */
+    public Reservation queryByGRIAndLogin(String gri, String login){
+        String hsql = "from Reservation r " +
+                      "where r.globalReservationId = ? and r.login = ?";
+        Reservation resv = (Reservation) this.getSession().createQuery(hsql)
+                                        .setString(0, gri)
+                                        .setString(1, login)
+                                        .uniqueResult();
+                                        
+        return resv;
     }
 }

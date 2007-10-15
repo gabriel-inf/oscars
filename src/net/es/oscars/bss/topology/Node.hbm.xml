@@ -29,7 +29,7 @@
         </meta>    
     </property>
 
-    <property name="name" not-null="true">
+    <property name="topologyIdent" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
@@ -37,10 +37,17 @@
 
     <!-- Associations -->
 
+    <many-to-one name="domain" column="domainId"
+	    class="net.es.oscars.bss.topology.Domain" not-null="true" />
+
     <set name="ports" inverse="true" cascade="all, delete-orphan">
         <key column="nodeId" />
         <one-to-many class="net.es.oscars.bss.topology.Port" />
     </set>
+
+    <one-to-one name="nodeAddress"
+	    class="net.es.oscars.bss.topology.NodeAddress"
+	    property-ref="node" />
 
 </class>
 </hibernate-mapping>

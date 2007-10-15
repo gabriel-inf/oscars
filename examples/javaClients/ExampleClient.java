@@ -3,15 +3,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.*;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import org.apache.axis2.AxisFault;
 
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+
 import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
 import net.es.oscars.client.Client;
 
 /**
@@ -79,30 +78,16 @@ public class ExampleClient {
         return this.client;
     }
 
-    public void outputHops(ExplicitPath path) {
+    public void outputHops(CtrlPlanePathContent path) {
         System.out.println("Path is:");
-        HopList hList = path.getHops();
-        Hop hop[] = hList.getHop();
-        for (int i = 0; i < hop.length; i++) {
-            String ip = hop[i].getValue();
-            System.out.println("\t" + this.getHostName(ip) + "\t" + ip);
+        CtrlPlaneHopContent[] hops = path.getHop();
+        for (int i = 0; i < hops.length; i++) {
+            // What is passed back depends on what layer information is
+            // associated with a reservation.  This will be a topology
+            // identifier for layer 2, and an IPv4 or IPv6 address for
+            // layer 3.
+            String hopId = hops[i].getLinkIdRef();
+            System.out.println("\t" + hopId);
         }
-    }
-
-    public String getHostName(String hop) {
-        InetAddress addr = null;
-        String hostName = null;
-
-        try {
-            addr = InetAddress.getByName(hop);
-            hostName = addr.getCanonicalHostName();
-        } catch (UnknownHostException ex) {
-            System.out.println("Unknown host: " + hop);
-        }
-        // non-fatal error
-        if (hostName == null) {
-            hostName = hop;
-        }
-        return hostName;
     }
 }

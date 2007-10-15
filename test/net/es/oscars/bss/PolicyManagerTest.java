@@ -14,7 +14,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss" })
+@Test(groups={ "unwritten" })
 public class PolicyManagerTest {
     private Properties props;
     private SessionFactory sf;

@@ -312,22 +312,22 @@ public class UserManager {
     }   
     /**
      * Checks to make sure that that user has the permission to use the
-     *     resource by checking for the corresponding triplet in the
+     *     resource by checking for the corresponding quadtuplet in the
      *     authorizations table. This method is only called for
      *     createReservation, so the constraints of interest are max-bandwidth,
-     *     max-duration and specify-path-constraints
+     *     max-duration, specify-path-constraints, and specify-gri
      *
      * @param userName a string with the login name of the user
      * @param resourceName a string identifying a resource
      * @param permissionName a string identifying a permission
-     * @param reqBandWidth int with bandwidth requested
+     * @param reqBandwidth int with bandwidth requested
      * @param reqDuration int with reservation duration, -1 means persistant
      * @param specPathElems boolean, true means pathElements have been input
      * @return one of DENIED, SELFONLY, ALLUSERS
      */
     public AuthValue checkModResAccess(String userName, String resourceName,
             String permissionName, int reqBandwidth, int reqDuration, 
-                                   boolean specPathElems) {
+                                   boolean specPathElems, boolean specGRI) {
 
         List<Authorization> auths = null;
         AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
@@ -335,6 +335,7 @@ public class UserManager {
         boolean bandwidthAllowed = false;
         boolean durationAllowed = false;
         boolean specifyPE = false;
+        boolean specifyGRI = false;
         AuthValue retVal = AuthValue.DENIED;
          
         this.log.info("checkModResAccess.start");
@@ -365,9 +366,9 @@ public class UserManager {
                     bandwidthAllowed = true;
                     durationAllowed = true;
                 } else if (auth.getConstraintName().equals("max-bandwidth")) {
-                    this.log.debug("Allowed bandwidth; " +
+                    this.log.debug("Allowed bandwidth: " +
                                    auth.getConstraintValue() +
-                                   "requested bandwidth: " + reqBandwidth);
+                                   ", requested bandwidth: " + reqBandwidth);
                     if (reqBandwidth <= auth.getConstraintValue() ) {
                         // found an authorization that allows the bandwidth
                         bandwidthAllowed = true;
@@ -375,7 +376,7 @@ public class UserManager {
                 } else if (auth.getConstraintName().equals("max-duration")) {
                     this.log.debug("Allowed duration: " +
                                    auth.getConstraintValue() +
-                                   "requested duration: " + reqDuration);
+                                   ", requested duration: " + reqDuration);
                     if (reqDuration <= auth.getConstraintValue()) {
                         // found an authorization that allows the duration
                         durationAllowed = true;
@@ -385,7 +386,11 @@ public class UserManager {
                     if (auth.getConstraintValue() == 1) {
                         specifyPE = true;
                     }
-                } else if (auth.getConstraintName().equals("all-users")){
+                } else if (auth.getConstraintName().equals("specify-gri")){
+                    if (auth.getConstraintValue() == 1) {
+                        specifyGRI = true;
+                    }
+                }else if (auth.getConstraintName().equals("all-users")){
                     if (auth.getConstraintValue() == 0) {
                         retVal = AuthValue.SELFONLY;
                     } else { retVal = AuthValue.ALLUSERS; }
@@ -401,6 +406,11 @@ public class UserManager {
             this.log.info("denied, not permitted to specify path");
             retVal = AuthValue.DENIED; 
         }
+        if (specGRI && !specifyGRI) {
+            this.log.info("denied, not permitted to specify GRI");
+            retVal = AuthValue.DENIED; 
+        }
+        
         this.log.info("checkModResAccess.finish: " + retVal);
         return retVal;
     }   

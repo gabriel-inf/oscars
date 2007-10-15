@@ -4,6 +4,7 @@ import java.util.Set;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.hibernate.Hibernate;
 
 import net.es.oscars.database.HibernateBean;
@@ -19,17 +20,23 @@ public class Path extends HibernateBean implements Serializable {
 
     /** persistent field */
     private boolean explicit;
-
+    
+    /** persistent field */
+    private String pathSetupMode;
+    
     /** persistent field */
     private PathElem pathElem;
-
-    /** nullable persistent field */
-    private Vlan vlan;
-
+    
     /** nullable persistent field */
     private Domain nextDomain;
 
-    private Set reservations;
+    private Reservation reservation;
+
+    private Layer2Data layer2Data;
+    
+    private Layer3Data layer3Data;
+    
+    private MPLSData mplsData;
 
     /** default constructor */
     public Path() { }
@@ -43,8 +50,7 @@ public class Path extends HibernateBean implements Serializable {
      * @param pathElem the first path element (uses association)
      */ 
     public void setPathElem(PathElem pathElem) { this.pathElem = pathElem; }
-
-
+    
     /**
      * @return explicit boolean indicating whether this path was explicitly set
      */ 
@@ -56,32 +62,37 @@ public class Path extends HibernateBean implements Serializable {
     public void setExplicit(boolean explicit) { this.explicit = explicit; }
 
 
-    /**
-     * @return vlan the reservation's associated vlan with tag, if any
-     */ 
-    public Vlan getVlan() { return this.vlan; }
-
-    /**
-     * @param vlan the reservation's associated vlan with tag, if any
-     */ 
-    public void setVlan(Vlan vlan) {
-        this.vlan = vlan;
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
     }
 
-
-    public void setReservations(Set reservations) {
-        this.reservations = reservations;
+    public Reservation getReservation() {
+        return this.reservation;
     }
 
-    public Set getReservations() {
-        return this.reservations;
+    public void setLayer2Data(Layer2Data layer2Data) {
+        this.layer2Data = layer2Data;
     }
 
-    public void addReservation(Reservation resv) {
-        resv.setPath(this);
-        this.reservations.add(resv);
+    public Layer2Data getLayer2Data() {
+        return this.layer2Data;
     }
 
+    public void setLayer3Data(Layer3Data layer3Data) {
+        this.layer3Data = layer3Data;
+    }
+
+    public Layer3Data getLayer3Data() {
+        return this.layer3Data;
+    }
+
+    public void setMplsData(MPLSData mplsData) {
+        this.mplsData = mplsData;
+    }
+
+    public MPLSData getMplsData() {
+        return this.mplsData;
+    }
 
     /**
      * @return path starting path instance associated with reservation
@@ -89,10 +100,21 @@ public class Path extends HibernateBean implements Serializable {
     public Domain getNextDomain() { return this.nextDomain; }
 
     /**
-     * @param path path instance to associate with this reservation
+     * @param domain Domain instance to associate with this reservation
      */ 
     public void setNextDomain(Domain domain) { this.nextDomain = domain; }
+    
+    /**
+     * @return the way this reservation will be setup.
+     */ 
+    public String getPathSetupMode() { return this.pathSetupMode; }
 
+    /**
+     * @param pathSetupMode the way this reservation will be setup.
+     */ 
+    public void setPathSetupMode(String pathSetupMode) { 
+        this.pathSetupMode = pathSetupMode; 
+    }
 
     // need to override superclass because dealing with transient
     // instances as well
@@ -114,19 +136,15 @@ public class Path extends HibernateBean implements Serializable {
                 .append(this.isExplicit(), castOther.isExplicit())
                 .append(this.getPathElem(), castOther.getPathElem())
                 .append(this.getNextDomain(), castOther.getNextDomain())
-                .append(this.getVlan(), castOther.getVlan())
                 .isEquals();
         }
     }
 
+    // string representation is layer and client dependent; done
+    // in bss/Utils.java
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        PathElem pathElem  = this.getPathElem();
-        while (pathElem != null) {
-            sb.append(pathElem.getIpaddr().getIP() + ", ");
-            pathElem = pathElem.getNextElem();
-        }
-        String pathStr = sb.toString();
-        return pathStr.substring(0, pathStr.length() - 2);
+        return new ToStringBuilder(this)
+            .append("id", getId())
+            .toString();
     }
 }

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+    
+<hibernate-mapping>
+
+<class name="net.es.oscars.bss.topology.Layer3Data" table="layer3Data">
+    <meta attribute="class-description" inherit="false">
+       @hibernate.class table="layer3Data"
+    </meta>
+
+    <id name="id">
+        <meta attribute="field-description">
+           @hibernate.id generator-class="identity"
+        </meta>
+        <generator class="identity" />
+    </id>
+
+    <property name="srcHost" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <property name="destHost" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>
+
+    <property name="srcIpPort" />
+
+    <property name="destIpPort" />
+
+    <property name="protocol" />
+
+    <property name="dscp" />
+
+    <!-- Associations -->
+
+    <many-to-one name="path" column="pathId"
+	    class="net.es.oscars.bss.topology.Path" cascade="save-update"
+	    not-null="true" unique="true" />
+
+</class>
+</hibernate-mapping>

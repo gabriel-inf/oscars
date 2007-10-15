@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+
+import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
@@ -25,13 +28,13 @@ public class CreateReservationClient extends ExampleClient {
         try {
             CreateReservationClient cl = new CreateReservationClient();
             cl.create(args, true);
-        } catch (AAAFaultMessageException e) {
+        } catch (AAAFaultMessage e) {
             System.out.println(
-                    "AAAFaultMessageException from createReservation");
+                    "AAAFaultMessage from createReservation");
             System.out.println(e.getFaultMessage().getMsg());
-        } catch (BSSFaultMessageException e) {
+        } catch (BSSFaultMessage e) {
             System.out.println(
-                    "BSSFaultMessageException from createReservation");
+                    "BSSFaultMessage from createReservation");
             System.out.println(e.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e) {
             System.out.println(
@@ -46,7 +49,7 @@ public class CreateReservationClient extends ExampleClient {
     }
 
     public CreateReply create(String[] args, boolean isInteractive)
-            throws AAAFaultMessageException, BSSFaultMessageException,
+            throws AAAFaultMessage, BSSFaultMessage,
                    java.rmi.RemoteException, Exception {
 
         ResCreateContent content = null;
@@ -75,59 +78,89 @@ public class CreateReservationClient extends ExampleClient {
         content = this.readProperties();
         if (!isInteractive) { return content; }
 
+        // TODO:  better handling in readParams and readProperties
+        PathInfo pathInfo = content.getPathInfo();
+        CtrlPlanePathContent path = pathInfo.getPath();
         // if prompting for parameters
         BufferedReader br =
                 new BufferedReader(new InputStreamReader(System.in));
-        arg = Args.getArg(br, "Source host",content.getSrcHost());
-        if (arg != null) { content.setSrcHost(arg); }
-        arg = Args.getArg(br, "Destination host", content.getDestHost());
-        if (arg != null) { content.setDestHost(arg); }
-        arg = Args.getArg(br, "Duration (hours)", "0.06");
-        if (arg == null) {
-            System.out.println("Duration must be provided");
-            System.exit(1);
-        }
-        this.setTimes(content, arg);
-        arg = Args.getArg(br, "Burst limit",
-                Integer.toString(content.getBurstLimit()));
-        if (arg != null) { content.setBurstLimit(Integer.parseInt(arg)); }
-        arg = Args.getArg(br, "Bandwidth",
-                Integer.toString(content.getBandwidth()));
-        if (arg != null) { content.setBandwidth(Integer.parseInt(arg)); }
-
-        arg = Args.getArg(br, "Protocol", "");
-        if (arg != null) { content.setProtocol(arg); }
-        arg = Args.getArg(br, "Description", content.getDescription());
-        if (arg != null) { content.setDescription(arg); }
-        arg = Args.getArg(br, "Ingress node", "");
-        if (!arg.equals("")) { content.setIngressNodeIP(arg); }
-        arg = Args.getArg(br, "Egress node", "");
-        if (!arg.equals("")) { content.setEgressNodeIP(arg); }
-        arg=Args.getArg(br, "RequestedPath: input dotted ipAddrs separated by spaces", "");
-        if (!arg.equals("")) {
-            String ipaddr[] = arg.split(" ");
-            ExplicitPath explicitPath = new ExplicitPath();
-            HopList hopList = new HopList();
-            for (int i = 0; i < ipaddr.length; i++){
-               Hop hop = new Hop();
-               // r ight now this is all traceroutePathfinder accepts
-               hop.setLoose(false);
-               if ( ipaddr[i].indexOf('.') != -1) {
-                   hop.setType("ipv4");
-               } else if (ipaddr[i].indexOf(':')!= -1){
-                   hop.setType("ipv6");                 
-               } else {
-                   System.out.println("Path must be either dotted ipv4 addres or : separated ipv6 addresses");
-                   System.exit (1);
-               }
-               hop.setValue(ipaddr[i]);
-               hopList.addHop(hop);
+ 
+        arg = Args.getArg(br, "Request Type (l2 or l3)", "l3");
+        
+        if(arg.equals("l2")){
+            Layer2Info layer2Info = pathInfo.getLayer2Info();
+            
+            pathInfo.setLayer3Info(null);
+            pathInfo.setMplsInfo(null);
+            
+            arg = Args.getArg(br, "Source Endpoint", layer2Info.getSrcEndpoint());
+            if (arg != null){ layer2Info.setSrcEndpoint(arg); }
+            
+            arg = Args.getArg(br, "Destination Endpoint", layer2Info.getDestEndpoint());
+            if (arg != null){ layer2Info.setDestEndpoint(arg); }
+            
+            arg = Args.getArg(br, "VLAN Tag (Source and Destination)", layer2Info.getSrcVtag().getString());
+            if (arg != null){
+                VlanTag srcVtag = layer2Info.getSrcVtag();
+                VlanTag destVtag = layer2Info.getDestVtag();
+                srcVtag.setString(arg);
+                destVtag.setString(arg);
+                arg = Args.getArg(br, "Tag source port?", srcVtag.getTagged()+"");
+                srcVtag.setTagged(arg.equals("true"));
+                arg = Args.getArg(br, "Tag destination port?", destVtag.getTagged()+"");
+                destVtag.setTagged(arg.equals("true"));
+                layer2Info.setSrcVtag(srcVtag); 
+                layer2Info.setDestVtag(destVtag); 
             }
-            explicitPath.setHops(hopList);
-            content.setReqPath(explicitPath);
-            arg = Args.getArg(br, "VLAN Tag", "");
-            if (!arg.equals("")) { content.setVtag(arg); }
+            
+        }else if(arg.equals("l3")){
+            Layer3Info layer3Info = pathInfo.getLayer3Info();
+            MplsInfo mplsInfo = pathInfo.getMplsInfo(); 
+            pathInfo.setLayer2Info(null);
+            arg = Args.getArg(br, "Source host", layer3Info.getSrcHost());
+            if (arg != null) { layer3Info.setSrcHost(arg); }
+            arg = Args.getArg(br, "Destination host", layer3Info.getDestHost());
+            if (arg != null) { layer3Info.setDestHost(arg); }         
+            arg = Args.getArg(br, "Burst limit",
+                    Integer.toString(mplsInfo.getBurstLimit()));
+            if (arg != null) { mplsInfo.setBurstLimit(Integer.parseInt(arg)); }     
+            arg = Args.getArg(br, "Protocol", "");
+            if (!arg.equals("")) { layer3Info.setProtocol(arg); }
         }
+        
+        /* Common parameters */
+        arg = Args.getArg(br, "Duration (hours)", "0.06");
+            if (arg == null) {
+                System.out.println("Duration must be provided");
+                System.exit(1);
+            }
+        this.setTimes(content, arg);
+            
+        arg = Args.getArg(br, "Bandwidth",
+                    Integer.toString(content.getBandwidth()));
+            if (arg != null) { content.setBandwidth(Integer.parseInt(arg)); }
+        arg = Args.getArg(br, "Description", content.getDescription());
+            if (arg != null) { content.setDescription(arg); }
+        arg = Args.getArg(br, "Path Setup Mode", pathInfo.getPathSetupMode());
+            if (arg != null) { pathInfo.setPathSetupMode(arg); }
+            
+        arg =
+            Args.getLines(br, "Path: if present, ips or topo ids ended by two new lines");
+        if (!arg.equals("")) {
+            path = new CtrlPlanePathContent();
+            path.setId("userPath");//id doesn't matter in this context
+            String hops[] = arg.split(" ");
+            for (int i = 0; i < hops.length; i++){
+               CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+               // these can currently be either topology identifiers
+               // or IP addresses
+               hop.setId(i + "");
+               hop.setLinkIdRef(hops[i]);
+               path.addHop(hop);
+            }
+            pathInfo.setPath(path);
+        }
+
         return content;
     }
 
@@ -135,8 +168,16 @@ public class CreateReservationClient extends ExampleClient {
         ResCreateContent content = new ResCreateContent();
 
         Properties props = new Properties();
-        String propFileName =  System.getenv("OSCARS_HOME") +
-        "/examples/javaClients/reservation.properties";
+        String oscars_home = System.getenv("OSCARS_HOME");
+        String propFileName =  "";
+        if(oscars_home == null || oscars_home.equals("")){
+           propFileName ="reservation.properties"; 
+        }else{
+            propFileName =  System.getenv("OSCARS_HOME") +
+                "/examples/javaClients/reservation.properties";
+        }
+        System.out.println(propFileName);
+        
         try {
             FileInputStream in = new FileInputStream(propFileName);
             props.load(in);
@@ -147,22 +188,45 @@ public class CreateReservationClient extends ExampleClient {
                                propFileName);
         }
    
+        PathInfo pathInfo = new PathInfo();
+        Layer3Info layer3Info = new Layer3Info();
+        Layer2Info layer2Info = new Layer2Info();
+        
+        MplsInfo mplsInfo = new MplsInfo();
         content.setDescription(props.getProperty("description",""));
-        content.setSrcHost(props.getProperty("sourceHostName",""));
-        content.setDestHost(props.getProperty("destHostName",""));
+        layer2Info.setSrcEndpoint(props.getProperty("sourceEndpoint",""));
+        layer2Info.setDestEndpoint(props.getProperty("destEndpoint",""));
+        VlanTag srcVtag = new VlanTag();
+        srcVtag.setString(props.getProperty("vtag",""));
+        srcVtag.setTagged(true);        
+        layer2Info.setSrcVtag(srcVtag);
+        VlanTag destVtag = new VlanTag();
+        destVtag.setString(props.getProperty("vtag",""));
+        destVtag.setTagged(true);  
+        layer2Info.setDestVtag(destVtag);
+        layer3Info.setSrcHost(props.getProperty("sourceHostName",""));
+        layer3Info.setDestHost(props.getProperty("destHostName",""));
+        // Axis2 bug workaround
+        layer3Info.setSrcIpPort(0);
+        layer3Info.setDestIpPort(0);
         content.setBandwidth(
                 Integer.parseInt(props.getProperty("bandwidth","10")));
-        content.setBurstLimit(
+        mplsInfo.setBurstLimit(
                 Integer.parseInt(props.getProperty("burstLimit","10000")));
+        pathInfo.setPathSetupMode(props.getProperty("pathSetupMode",""));
+        pathInfo.setLayer3Info(layer3Info);
+        pathInfo.setLayer2Info(layer2Info);
+        pathInfo.setMplsInfo(mplsInfo);
+        content.setPathInfo(pathInfo);
         return content;
     }
 
     public void outputResponse(CreateReply response) {
-
-        System.out.println("Tag: " + response.getTag());
+        System.out.println("GRI: " + response.getGlobalReservationId());
         System.out.println("Status: " + response.getStatus().toString());
-        if (response.getPath() != null){
-            this.outputHops(response.getPath());
+        if ((response.getPathInfo() != null) &&
+            (response.getPathInfo().getLayer3Info() != null)) {
+            this.outputHops(response.getPathInfo().getPath());
         }
     }
 

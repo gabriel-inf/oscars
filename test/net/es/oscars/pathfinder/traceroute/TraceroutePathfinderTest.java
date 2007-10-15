@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+
 import net.es.oscars.PropHandler;
+import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.pathfinder.CommonPathElem;
 import net.es.oscars.pathfinder.PathfinderException;
 
 /**
@@ -36,77 +39,77 @@ public class TraceroutePathfinderTest {
 
   @Test
     public void testFindPath1() throws PathfinderException {
-        String srcHost = this.props.getProperty("srcHost");
-        String destHost = this.props.getProperty("destHost");
-        String ingressRouterIP = null;
-        String egressRouterIP = null;
-        List<CommonPathElem> pathElems = null;
+        PathInfo pathInfo = new PathInfo();
+        Layer3Info layer3Info = new Layer3Info();
+        layer3Info.setSrcHost(this.props.getProperty("srcHost"));
+        layer3Info.setDestHost(this.props.getProperty("destHost"));
+        pathInfo.setLayer3Info(layer3Info);
         this.sf.getCurrentSession().beginTransaction();
         try {
-            pathElems = this.pf.findPath(srcHost, destHost, ingressRouterIP,
-                                    egressRouterIP);
+            boolean isExplict = this.pf.findPath(pathInfo);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
         }
         this.sf.getCurrentSession().getTransaction().commit();
-        assert pathElems != null;
+        assert pathInfo.getPath() != null;
     }
 
   @Test
     public void testFindPath2() throws PathfinderException {
-        String srcHost = this.props.getProperty("srcHost");
-        String destHost = this.props.getProperty("destHost");
-        String ingressRouterIP = this.props.getProperty("ingressRouter");
-        String egressRouterIP = null;
-        List<CommonPathElem> pathElems = null;
+        PathInfo pathInfo = new PathInfo();
+        Layer3Info layer3Info = new Layer3Info();
+        layer3Info.setSrcHost(this.props.getProperty("srcHost"));
+        layer3Info.setDestHost(this.props.getProperty("destHost"));
+        //layer3Info.setIngressNodeIP(this.props.getProperty("ingressNode"));
+        pathInfo.setLayer3Info(layer3Info);
         this.sf.getCurrentSession().beginTransaction();
         try {
-            pathElems = this.pf.findPath(srcHost, destHost, ingressRouterIP,
-                                    egressRouterIP);
+            boolean isExplicit = this.pf.findPath(pathInfo);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
         }
         this.sf.getCurrentSession().getTransaction().commit();
-        assert pathElems != null;
+        assert pathInfo.getPath() != null;
     }
 
   @Test
     public void testFindPath3() throws PathfinderException {
-        String srcHost = this.props.getProperty("srcHost");
-        String destHost = this.props.getProperty("destHost");
-        String ingressRouterIP = null;
-        String egressRouterIP = this.props.getProperty("egressRouter");
-        List<CommonPathElem> pathElems = null;
+        PathInfo pathInfo = new PathInfo();
+        Layer3Info layer3Info = new Layer3Info();
+        layer3Info.setSrcHost(this.props.getProperty("srcHost"));
+        layer3Info.setDestHost(this.props.getProperty("destHost"));
+        //layer3Info.setEgressNodeIP(this.props.getProperty("egressNode"));
+        pathInfo.setLayer3Info(layer3Info);
         this.sf.getCurrentSession().beginTransaction();
         try {
-            pathElems = this.pf.findPath(srcHost, destHost, ingressRouterIP,
-                                    egressRouterIP);
+            boolean isExplicit = this.pf.findPath(pathInfo);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
         }
         this.sf.getCurrentSession().getTransaction().commit();
-        assert pathElems != null;
+        assert pathInfo.getPath() != null;
     }
 
   @Test
     public void testFindPath4() throws PathfinderException {
-        String srcHost = this.props.getProperty("srcHost");
-        String destHost = this.props.getProperty("destHost");
-        String ingressRouterIP = this.props.getProperty("ingressRouter");
-        String egressRouterIP = this.props.getProperty("egressRouter");
-        List<CommonPathElem> pathElems = null;
+        PathInfo pathInfo = new PathInfo();
+        Layer3Info layer3Info = new Layer3Info();
+        layer3Info.setSrcHost(this.props.getProperty("srcHost"));
+        layer3Info.setDestHost(this.props.getProperty("destHost"));
+        //layer3Info.setIngressNodeIP(this.props.getProperty("ingressNode"));
+        //layer3Info.setEgressNodeIP(this.props.getProperty("egressNode"));
+        pathInfo.setLayer3Info(layer3Info);
         this.sf.getCurrentSession().beginTransaction();
         try {
-            pathElems = this.pf.findPath(srcHost, destHost, ingressRouterIP,
-                                    egressRouterIP);
+            boolean isExplicit = this.pf.findPath(pathInfo);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
         }
         this.sf.getCurrentSession().getTransaction().commit();
-        assert pathElems != null;
+        assert pathInfo.getPath() != null;
     }
 }

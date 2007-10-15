@@ -5,8 +5,11 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Date;
 
-import net.es.oscars.oscars.AAAFaultMessageException;
-import net.es.oscars.oscars.BSSFaultMessageException;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+
+import net.es.oscars.oscars.AAAFaultMessage;
+import net.es.oscars.oscars.BSSFaultMessage;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.client.Client;
 
@@ -21,13 +24,13 @@ public class QueryReservationClient extends ExampleClient {
         try {
             QueryReservationClient cl = new QueryReservationClient();
             cl.query(args, true);
-        } catch (AAAFaultMessageException e1) {
+        } catch (AAAFaultMessage e1) {
             System.out
-                    .println("AAAFaultMessageException from queryReservation");
+                    .println("AAAFaultMessage from queryReservation");
             System.out.println(e1.getFaultMessage().getMsg());
-        } catch (BSSFaultMessageException e1) {
+        } catch (BSSFaultMessage e1) {
             System.out
-                    .println("BSSFaultMessageException from queryReservation");
+                    .println("BSSFaultMessage from queryReservation");
             System.out.println(e1.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e1) {
             System.out
@@ -42,28 +45,28 @@ public class QueryReservationClient extends ExampleClient {
     }
 
     public ResDetails query(String[] args, boolean isInteractive)
-            throws AAAFaultMessageException, BSSFaultMessageException,
+            throws AAAFaultMessage, BSSFaultMessage,
             java.rmi.RemoteException, Exception {
 
         super.init(args, isInteractive);
-        ResTag rt = this.readParams(isInteractive);
+        GlobalReservationId rt = this.readParams(isInteractive);
         // make the call to the server
         ResDetails response = this.getClient().queryReservation(rt);
         this.outputResponse(response);
         return response;
     }
 
-    public ResTag readParams(boolean isInteractive) {
-        ResTag rt = new ResTag();
+    public GlobalReservationId readParams(boolean isInteractive) {
+        GlobalReservationId rt = new GlobalReservationId();
 
         // Prompt for input parameters specific to query
         try {
             if (isInteractive) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(
                         System.in));
-                rt.setTag(Args.getArg(br, "Tag of reservation to query"));
+                rt.setGri(Args.getArg(br, "GRI of reservation to query"));
             } else {
-                rt.setTag(this.getProperties().getProperty("tag"));
+                rt.setGri(this.getProperties().getProperty("tag"));
             }
         } catch (IOException ioe) {
             System.out.println("IO error reading query input");
@@ -73,27 +76,42 @@ public class QueryReservationClient extends ExampleClient {
     }
 
     public void outputResponse(ResDetails response) {
-        System.out.println("Tag: " + response.getInfo().getTag());
+        System.out.println("GRI: " + response.getGlobalReservationId());
         System.out.println("Status: " +
-                response.getInfo().getStatus().toString());
-        System.out.println("Source host: " + response.getInfo().getSrcHost());
-        System.out.println("Destination host: " +
-                response.getInfo().getDestHost());
+                response.getStatus().toString());
+        System.out.println("Login: " + response.getLogin());
         System.out.println("Start time: "
-                + new Date(response.getInfo().getStartTime()).toString());
+                + new Date(response.getStartTime()).toString());
         System.out.println("End time: "
-                + new Date(response.getInfo().getEndTime()).toString());
+                + new Date(response.getEndTime()).toString());
         System.out.println("Bandwidth: "
                 + Integer.toString(response.getBandwidth()));
-        System.out.println("Burst limit: "
-                + Integer.toString(response.getBurstLimit()));
-        if (response.getProtocol() != null) {
-            System.out
-                    .println("Protocol: " + response.getProtocol().toString());
-        }
         System.out.println("Description: " + response.getDescription());
-        if (response.getPath() != null) {
-            this.outputHops(response.getPath());
+        PathInfo pathInfo = response.getPathInfo();
+        if (pathInfo == null) {
+            System.err.println("No path information in response");
+            return;
+        } 
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
+        if (layer3Info != null) {
+            System.out.println("Source host: " + layer3Info.getSrcHost());
+            System.out.println("Destination host: " +
+                               layer3Info.getDestHost());
+            if (layer3Info.getProtocol() != null) {
+                System.out.println("Protocol: " +
+                        layer3Info.getProtocol().toString());
+            }
+            CtrlPlanePathContent path = pathInfo.getPath();
+            if (path != null) {
+                this.outputHops(path);
+            }
+        }
+        MplsInfo mplsInfo = pathInfo.getMplsInfo();
+        if (mplsInfo != null) {
+            if (mplsInfo.getBurstLimit() != 0) {
+                System.out.println("Burst limit: "
+                    + Integer.toString(mplsInfo.getBurstLimit()));
+            }
         }
         System.out.println(" ");
     }

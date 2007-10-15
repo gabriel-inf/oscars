@@ -1,0 +1,32 @@
+configure terminal
+
+policy-map **resv-id**
+  class class-default
+   police cir **bandwidth**
+     conform-action transmit
+     exceed-action drop
+     violate-action drop
+!
+pseudowire-class **resv-id**
+ encapsulation mpls
+ preferred-path interface Tunnel**resv-num** disable-fallback
+!
+interface Tunnel**resv-num**
+ description **resv-id**
+ ip unnumbered Loopback0
+ tunnel destination **lsp_to**
+ tunnel mode mpls traffic-eng
+ tunnel mpls traffic-eng priority **lsp_setup-priority** **lsp_reservation-priority**
+ tunnel mpls traffic-eng path-option 100 explicit name **resv-id**
+!
+interface **port**.**vlan-id**
+ description **resv-id**:**bandwidth**:oscars-l2circuit:show:circuit-intercloud
+ encapsulation dot1Q **vlan-id**
+ xconnect **egress-rtr-loopback** **vlan-id** encapsulation mpls pw-class **resv-id**
+ service-policy input **resv-id**
+!
+ip explicit-path name **resv-id** enable
+ next-address **explicit-hop**
+!
+
+end

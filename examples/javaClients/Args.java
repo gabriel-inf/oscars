@@ -24,7 +24,22 @@ public class Args {
         System.out.print(prompt + ": [" + def.trim() +"] ");
         System.out.flush();
         inarg = br.readLine().trim();
-        if (inarg == null || inarg.equals("")) { inarg = def.trim(); }
+        if (inarg.equals("")) { inarg = def.trim(); }
         return inarg;
+    }
+
+    static public String getLines(BufferedReader br, String prompt)
+            throws IOException {
+
+        String inarg = "";
+        String output = "";
+        System.out.print(prompt + ": ");
+        System.out.flush();
+        inarg = br.readLine().trim();
+        while (!inarg.equals("")) {
+            output += inarg.trim() + " ";
+            inarg = br.readLine();
+        }
+        return output.trim();
     }
 }

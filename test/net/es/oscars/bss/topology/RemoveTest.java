@@ -10,11 +10,11 @@ import net.es.oscars.database.HibernateUtil;
 
 /**
  * This class tests removal of BSS topology database entries, including the use of 
- * associations between Node, Port, and Ipaddr.
+ * associations between Node, Port, Link, and Ipaddr.
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss/topology", "remove" }, dependsOnGroups={ "ipaddr", "port", "node", "domain" })
+@Test(groups={ "bss/topology", "remove" }, dependsOnGroups={ "ipaddr", "link", "port", "node", "domain" })
 public class RemoveTest {
     private Properties props;
     private SessionFactory sf;
@@ -32,50 +32,72 @@ public class RemoveTest {
     public void domainRemove() {
         this.sf.getCurrentSession().beginTransaction();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
-        // remove one of the institutions
+        // remove one of the domains
         Domain domain2 =
-                (Domain) domainDAO.queryByParam("name", "test");
+                (Domain) domainDAO.queryByParam("topologyIdent", "test suite");
         domainDAO.remove(domain2);
-        domain2 = (Domain) domainDAO.queryByParam("name", "test");
         this.sf.getCurrentSession().getTransaction().commit();
-        assert domain2 == null;
     }
 
   @Test(dependsOnMethods={ "domainRemove" })
     public void nodeRemove() {
         this.sf.getCurrentSession().beginTransaction();
-        String nodeName = "test";
+        String topologyIdent = "test suite";
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
-        Node node = (Node) nodeDAO.queryByParam("name", nodeName);
+        Node node = (Node) nodeDAO.queryByParam("topologyIdent", topologyIdent);
         nodeDAO.remove(node);
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
   @Test(dependsOnMethods={ "nodeRemove" })
+    public void cascadingDeletedNodeAddress() {
+        this.sf.getCurrentSession().beginTransaction();
+        String address = "test suite";
+        NodeAddressDAO nodeAddressDAO = new NodeAddressDAO(this.dbname);
+        NodeAddress nodeAddress = (NodeAddress)
+            nodeAddressDAO.queryByParam("address", address);
+        this.sf.getCurrentSession().getTransaction().commit();
+        // if cascading delete works with node testRemove, this will
+        // be null
+        assert nodeAddress == null;
+    }
+
+  @Test(dependsOnMethods={ "nodeRemove" })
     public void cascadingDeletedPort() {
         this.sf.getCurrentSession().beginTransaction();
-        String description = "test suite";
+        String topologyIdent = "test suite";
         PortDAO portDAO = new PortDAO(this.dbname);
         Port port = (Port)
-            portDAO.queryByParam("description", description);
+            portDAO.queryByParam("topologyIdent", topologyIdent);
         this.sf.getCurrentSession().getTransaction().commit();
         // if cascading delete works with node testRemove, this will
         // be null
         assert port == null;
     }
 
-  // done here now that no longer needed
-  // note that deletion is not cascaded anymore for ipaddrs
   @Test(dependsOnMethods={ "nodeRemove" })
-    public void ipaddrRemove() {
+    public void cascadingDeletedLink() {
+        this.sf.getCurrentSession().beginTransaction();
+        String topologyIdent = "test suite";
+        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        Link link = (Link)
+            linkDAO.queryByParam("topologyIdent", topologyIdent);
+        this.sf.getCurrentSession().getTransaction().commit();
+        // if cascading delete works with node testRemove, this will
+        // be null
+        assert link == null;
+    }
+
+  @Test(dependsOnMethods={ "nodeRemove" })
+    public void cascadingDeletedIpaddr() {
         this.sf.getCurrentSession().beginTransaction();
         String description = "test suite";
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-        Ipaddr ipaddr =
-            (Ipaddr) ipaddrDAO.queryByParam("description", description);
-        ipaddrDAO.remove(ipaddr);
-        ipaddr = (Ipaddr) ipaddrDAO.queryByParam("description", description);
-        assert ipaddr == null;
+        Ipaddr ipaddr = (Ipaddr)
+            ipaddrDAO.queryByParam("description", description);
         this.sf.getCurrentSession().getTransaction().commit();
+        // if cascading delete works with node testRemove, this will
+        // be null
+        assert ipaddr == null;
     }
 }

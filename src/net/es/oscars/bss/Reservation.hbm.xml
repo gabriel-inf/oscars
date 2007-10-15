@@ -22,7 +22,7 @@
         </meta>
         <generator class="identity" />
     </id>
-
+    
     <property name="startTime" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
@@ -47,12 +47,6 @@
         </meta>    
     </property>
 
-    <property name="burstLimit" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
     <property name="login" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
@@ -65,39 +59,15 @@
         </meta>    
     </property>
 
-    <property name="lspClass" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
-    <property name="srcHost" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
-    <property name="destHost" not-null="true">
-        <meta attribute="field-description">
-           @hibernate.property not-null="true"
-        </meta>    
-    </property>
-
-    <property name="srcIpPort" />
-
-    <property name="destIpPort" />
-
-    <property name="dscp" />
-
-    <property name="protocol" />
-
     <property name="description" />
+    
+    <property name="globalReservationId" />
 
     <!-- Associations -->
 
     <many-to-one name="path" column="pathId"
 	    class="net.es.oscars.bss.topology.Path" cascade="save-update"
-	    not-null="true" />
+	    not-null="true" unique="true" />
 
 </class>
 </hibernate-mapping>

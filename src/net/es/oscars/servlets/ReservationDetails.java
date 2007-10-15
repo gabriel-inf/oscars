@@ -3,22 +3,24 @@ package net.es.oscars.servlets;
 import java.util.Date;
 import java.io.PrintWriter;
 
-import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.Utils;
+import net.es.oscars.bss.topology.*;
 
 public class ReservationDetails {
 
     public void
         contentSection(PrintWriter out, Reservation resv, String userName) {
 
-        TypeConverter tc = new TypeConverter();
         Long longParam = null;
         Integer intParam = null;
         String strParam = null;
         Long ms = null;
 
-        String tag = tc.getReservationTag(resv);
+        String gri = resv.getGlobalReservationId();
+        Layer2Data layer2Data = resv.getPath().getLayer2Data();
+        Layer3Data layer3Data = resv.getPath().getLayer3Data();
+        MPLSData mplsData = resv.getPath().getMplsData();
         out.println("<content>");
         out.println("<p><strong>Reservation Details</strong></p>");
         out.println("<p>To return to the reservations list, click on the ");
@@ -30,8 +32,8 @@ public class ReservationDetails {
             String cancelSubmitStr = "return submitForm(this, 'CancelReservation');";
             out.println("<form method='post' action='' " +
                         "onsubmit=\"" + cancelSubmitStr + "\">");
-            out.println("<input type='hidden' class='SOAP' name='tag' " +
-                        "value='" + tag + "'></input>");
+            out.println("<input type='hidden' class='SOAP' name='gri' " +
+                        "value='" + gri + "'></input>");
             out.println("<input type='submit' value='CANCEL'></input>");
             out.println("</form>");
         }
@@ -39,8 +41,8 @@ public class ReservationDetails {
         String refreshSubmitStr = "return submitForm(this, 'QueryReservation');";
         out.println("<form method='post' action='' " +
                     "onsubmit=\"" + refreshSubmitStr + "\">");
-        out.println("<input type='hidden' class='SOAP' name='tag' " +
-                    "value='" + tag + "'></input>");
+        out.println("<input type='hidden' class='SOAP' name='gri' " +
+                    "value='" + gri + "'></input>");
         out.println("<input type='submit' value='Refresh'>");
         out.println("</input>");
         out.println("</form>");
@@ -48,7 +50,7 @@ public class ReservationDetails {
         out.println("<table width='90%' class='sortable'>");
         out.println("<thead><tr><td>Attribute</td><td>Value</td></tr></thead>");
         out.println("<tbody>");
-        out.println("<tr><td>Tag</td><td>" + tag +
+        out.println("<tr><td>GRI</td><td>" + gri +
                     "</td></tr>");
         out.println("<tr><td>User</td><td>" + resv.getLogin() +
                     "</td></tr>");
@@ -75,42 +77,51 @@ public class ReservationDetails {
 
         out.println("<tr><td>Bandwidth</td><td>" +
                     resv.getBandwidth() + "</td></tr>");
-        longParam = resv.getBurstLimit();
-        if (longParam != null) {
-            out.println("<tr><td>Burst limit</td><td>" +
-                        longParam + "</td></tr>");
-        }
         out.println("<tr><td>Status</td><td>" +
                     resv.getStatus() + "</td></tr>");
-        out.println("<tr><td>Source</td><td>" +
-                    resv.getSrcHost() + "</td></tr>");
-        out.println("<tr><td>Destination</td><td>" +
-                    resv.getDestHost() + "</td></tr>");
-        intParam = resv.getSrcIpPort();
-        if (intParam != null) {
-            out.println("<tr><td>Source port</td><td>" +
-                        intParam + "</td></tr>");
+        if (layer2Data != null) {
+            out.println("<tr><td>Source</td><td>" +
+                        layer2Data.getSrcEndpoint() + "</td></tr>");
+            out.println("<tr><td>Destination</td><td>" +
+                        layer2Data.getDestEndpoint() + "</td></tr>");
+        } else if (layer3Data != null) {
+            out.println("<tr><td>Source</td><td>" +
+                        layer3Data.getSrcHost() + "</td></tr>");
+            out.println("<tr><td>Destination</td><td>" +
+                        layer3Data.getDestHost() + "</td></tr>");
+            intParam = layer3Data.getSrcIpPort();
+            if (intParam != null) {
+                out.println("<tr><td>Source port</td><td>" +
+                            intParam + "</td></tr>");
+            }
+            intParam = layer3Data.getDestIpPort();
+            if (intParam != null) {
+                out.println("<tr><td>Destination port</td><td>" +
+                            intParam + "</td></tr>");
+            }
+            strParam = layer3Data.getProtocol();
+            if (strParam != null) {
+                out.println("<tr><td>Protocol</td><td>" +
+                            strParam + "</td></tr>");
+            }
+            strParam = layer3Data.getDscp();
+            if (strParam !=  null) {
+                out.println("<tr><td>DSCP</td><td>" +
+                            strParam + "</td></tr>");
+            }
         }
-        intParam = resv.getDestIpPort();
-        if (intParam != null) {
-            out.println("<tr><td>Destination port</td><td>" +
-                        intParam + "</td></tr>");
+        if (mplsData != null) {
+            longParam = mplsData.getBurstLimit();
+            if (longParam != null) {
+                out.println("<tr><td>Burst limit</td><td>" +
+                            longParam + "</td></tr>");
+            }
+            if (mplsData.getLspClass() != null) {
+                out.println("<tr><td>Class</td><td>" +
+                            mplsData.getLspClass() + "</td></tr>");
+            }
         }
-        strParam = resv.getProtocol();
-        if (strParam != null) {
-            out.println("<tr><td>Protocol</td><td>" +
-                        strParam + "</td></tr>");
-        }
-        strParam = resv.getDscp();
-        if (strParam !=  null) {
-            out.println("<tr><td>DSCP</td><td>" +
-                        strParam + "</td></tr>");
-        }
-        if (resv.getLspClass() != null) {
-            out.println("<tr><td>Class</td><td>" +
-                    resv.getLspClass() + "</td></tr>");
-        }
-        Utils utils = new Utils("bss");  // FIX
+        Utils utils = new Utils("bss");
         String path = utils.pathToString(resv.getPath());
         if (path != null) {
             out.println("<tr><td>Nodes in path</td><td>" +

@@ -14,12 +14,22 @@ public class LinkDAO extends GenericHibernateDAO<Link, Integer> {
     public LinkDAO(String dbname) {
         this.setDatabase(dbname);
     }
-
-    public void invalidateAll() {
-        List<Link> links = this.list();
-        for (Link link: links) {
-            link.setValid(false);
-            this.update(link);
-        }
+    
+    /**
+     * Returns a link given a topology identifier and the parent port.
+     *
+     * @param topologyIdent the topology identifier (NOT fully quialified)
+     * @param port the parent port of the link
+     * @param a Link instance iwth the given topologyIdent and parent port
+     */
+    public Link fromTopologyIdent(String topologyIdent, Port port){
+        String hsql = "from Link "+
+            "where port = ? AND topologyIdent = ?";
+        
+         return (Link) this.getSession().createQuery(hsql)
+                                         .setEntity(0, port)
+                                         .setString(1, topologyIdent)
+                                         .setMaxResults(1)
+                                         .uniqueResult();
     }
 }

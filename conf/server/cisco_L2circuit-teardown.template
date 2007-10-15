@@ -1,0 +1,14 @@
+configure terminal
+
+no policy-map **resv-id**
+!
+no pseudowire-class **resv-id**
+!
+no interface Tunnel**resv-num**
+!
+no interface **port**.**vlan-id**
+!
+no ip explicit-path name **resv-id** enable
+!
+
+end

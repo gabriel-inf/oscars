@@ -15,7 +15,15 @@ public class EdgeInfoDAO extends GenericHibernateDAO<EdgeInfo,Integer> {
         this.setDatabase(dbname);
     }
 
+     /**
+     * Finds next domain by looking up first hop in edgeInfo table
+     *
+     * @param ip String with IP address of first hop past local domain
+     * @return Domain an instance associated with the next domain, if any
+     * @throws BSSException
+     */
     public Domain getDomain(String ip){
+        // TODO:  alternative field in edgeInfos for lookup
         String sql = "SELECT * FROM edgeInfos WHERE externalIP = ?";
         EdgeInfo edgeAddress =
                (EdgeInfo) this.getSession().createSQLQuery(sql)

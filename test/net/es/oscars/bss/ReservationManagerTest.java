@@ -6,10 +6,14 @@ import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
-import net.es.oscars.oscars.TypeConverter;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+
+import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.bss.topology.*;
 
 
 /**
@@ -17,10 +21,10 @@ import net.es.oscars.pathfinder.*;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss" })
+@Test(groups={ "broken" })
 public class ReservationManagerTest {
     private final Long BANDWIDTH = 25000000L;   // 25 Mbps
-    private final Long BURST_LIMIT = 10000000L; // 10 Mbps
+    private final int BURST_LIMIT = 10000000; // 10 Mbps
     private final int DURATION = 240000;       // 4 minutes 
     private final String PROTOCOL = "UDP";
     private final String LSP_CLASS = "4";
@@ -28,7 +32,6 @@ public class ReservationManagerTest {
     private Properties props;
     private SessionFactory sf;
     private String dbname;
-    private TypeConverter tc;
 
   @BeforeClass
     protected void setUpClass() {
@@ -37,12 +40,15 @@ public class ReservationManagerTest {
         this.dbname = "testbss";
         this.sf = HibernateUtil.getSessionFactory(dbname);
         this.rm = new ReservationManager(this.dbname);
-        this.tc = new TypeConverter();
     }
 
   @Test
     public void testCreate() throws BSSException {
         Reservation resv = new Reservation();
+        PathInfo pathInfo = new PathInfo();
+        CtrlPlanePathContent path = new CtrlPlanePathContent();
+        Layer3Info layer3Info = new Layer3Info();
+        MplsInfo mplsInfo = new MplsInfo();
         Long millis = 0L;
         Long bandwidth = 0L;
         String url = null;
@@ -50,8 +56,8 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        resv.setSrcHost(this.props.getProperty("sourceHostIP"));
-        resv.setDestHost(this.props.getProperty("destHostIP"));
+        layer3Info.setSrcHost(this.props.getProperty("sourceHostIP"));
+        layer3Info.setDestHost(this.props.getProperty("destHostIP"));
 
         millis = System.currentTimeMillis();
         resv.setStartTime(millis);
@@ -60,16 +66,19 @@ public class ReservationManagerTest {
         resv.setEndTime(millis);
 
         resv.setBandwidth(BANDWIDTH);
-        resv.setBurstLimit(BURST_LIMIT);
+        mplsInfo.setBurstLimit(BURST_LIMIT);
         // description is unique, so can use it to access reservation in
         // other tests
         resv.setDescription(this.props.getProperty("description"));
-        resv.setProtocol(PROTOCOL);
-        resv.setLspClass(LSP_CLASS);
+        layer3Info.setProtocol(PROTOCOL);
+        mplsInfo.setLspClass(LSP_CLASS);
         String account = this.props.getProperty("login");
+        pathInfo.setLayer3Info(layer3Info);
+        pathInfo.setMplsInfo(mplsInfo);
+        pathInfo.setPath(path);
 
         try {
-            url = this.rm.create(resv, account, null, null);
+            this.rm.create(resv, account, pathInfo);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -87,16 +96,16 @@ public class ReservationManagerTest {
         String description = this.props.getProperty("description");
         Reservation testResv = dao.queryByParam("description", description);
         try {
-            reservation = this.rm.query(this.tc.getReservationTag(testResv),
+            reservation = this.rm.query(testResv.getGlobalReservationId(),
                                         testResv.getLogin(), true);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
         }
-        String testTag = this.tc.getReservationTag(reservation);
-        String newTag = this.tc.getReservationTag(testResv);
+        String testGri = reservation.getGlobalReservationId();
+        String newGri = testResv.getGlobalReservationId();
         this.sf.getCurrentSession().getTransaction().commit();
-        assert testTag.equals(newTag);
+        assert testGri.equals(newGri);
     }
 
   @Test(dependsOnMethods={ "testCreate" })
@@ -141,7 +150,7 @@ public class ReservationManagerTest {
         String description = this.props.getProperty("description");
         Reservation resv = dao.queryByParam("description", description);
         try {
-            this.rm.cancel(this.tc.getReservationTag(resv), resv.getLogin(),
+            this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
                            true);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();

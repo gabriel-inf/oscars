@@ -18,31 +18,22 @@ public class PathElem extends HibernateBean implements Serializable {
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
 
-    /** persistent field */
-    private boolean loose;
-
     /** nullable persistent field */
     private String description;
-
+    
+    /** nullable persistent field */
+    private String linkDescr;
+    
     /** persistent field */
-    private Ipaddr ipaddr;
+    private Link link;
 
     /** nullable persistent field */
     private PathElem nextElem;
 
+    private Path path;
+
     /** default constructor */
     public PathElem() { }
-
-    /**
-     * @return loose a boolean indicating whether this entry is loose or strict
-     */ 
-    public boolean isLoose() { return this.loose; }
-
-    /**
-     * @param loose a boolean indicating whether this entry is loose or strict
-     */ 
-    public void setLoose(boolean loose) { this.loose = loose; }
-
 
     /**
      * @return description a string with this path element's description
@@ -58,6 +49,19 @@ public class PathElem extends HibernateBean implements Serializable {
 
 
     /**
+     * @return linkDescr a string with the associated link's description
+     */ 
+    public String getLinkDescr() { return this.linkDescr; }
+
+    /**
+     * @return linkDescr a string with the associated link's description
+     */ 
+    public void setLinkDescr(String linkDescr) {
+        this.linkDescr = linkDescr;
+    }
+
+
+    /**
      * @return nextElem the next path element (uses association)
      */ 
     public PathElem getNextElem() { return this.nextElem; }
@@ -66,17 +70,28 @@ public class PathElem extends HibernateBean implements Serializable {
      * @param nextElem the next path element (uses association)
      */ 
     public void setNextElem(PathElem nextElem) { this.nextElem = nextElem; }
+    
+    /**
+     * @return link link instance associated with this path element
+     */ 
+    public Link getLink() { return this.link; }
+
+    /**
+     * @param link link instance associated with this path element
+     */ 
+    public void setLink(Link link) { this.link = link; }
 
 
     /**
-     * @return ipaddr ipaddr instance associated with this path element
+     * @return path return path associated with this path element;
+     *              null except for first element in path
      */ 
-    public Ipaddr getIpaddr() { return this.ipaddr; }
+    public Path getPath() { return this.path; }
 
     /**
-     * @param ipaddr ipaddr instance associated with this path element
+     * @param path path instance associated with this path element
      */ 
-    public void setIpaddr(Ipaddr ipaddr) { this.ipaddr = ipaddr; }
+    public void setPath(Path path) { this.path = path; }
 
 
     // need to override superclass because dealing with transient
@@ -95,11 +110,10 @@ public class PathElem extends HibernateBean implements Serializable {
                 .append(this.getId(), castOther.getId())
                 .isEquals();
         } else {
-            // decided not to check nextElem; could lead to redundant
-            // checks
+            // decided not to check nextElem; would lead to checking
+            // entire remaining path for each element in path
             return new EqualsBuilder()
-                .append(this.isLoose(), castOther.isLoose())
-                .append(this.getIpaddr(), castOther.getIpaddr())
+                .append(this.getLink(), castOther.getLink())
                 .append(this.getDescription(), castOther.getDescription())
                 .isEquals();
         }

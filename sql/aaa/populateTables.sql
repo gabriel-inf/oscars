@@ -63,6 +63,7 @@ INSERT INTO attributes VALUES(NULL, "OSCARS-user", "group");
 INSERT INTO attributes VALUES(NULL, "OSCARS-engineer", "group");
 INSERT INTO attributes VALUES(NULL, "OSCARS-developer", "group");
 INSERT INTO attributes VALUES(NULL, "OSCARS-administrator", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-service", "group");
 -- INSERT INTO attributes VALUES(NULL, "user-mary ", "user");
 
 
@@ -76,7 +77,7 @@ CREATE TABLE IF NOT EXISTS userAttributes (
 ) type=MyISAM;
 
 INSERT INTO userAttributes VALUES(NULL,
-        (select id from users where login = "mrthompson@lbl.gov"), 
+	(select id from users where login = "mrthompson@lbl.gov"), 
         (select id from attributes where name="OSCARS-user"));
 INSERT INTO userAttributes VALUES(NULL,
         (select id from users where login = "mrthompson@lbl.gov"), 
@@ -96,6 +97,12 @@ INSERT INTO userAttributes VALUES(NULL,
 INSERT INTO userAttributes VALUES(NULL,
         (select id from users where login = "chin@es.net"), 
         (select id from attributes where name="OSCARS-administrator"));
+INSERT INTO userAttributes VALUES(NULL,
+	(select id from users where login = "oscars.es.net"), 
+        (select id from attributes where name="OSCARS-user"));
+INSERT INTO userAttributes VALUES(NULL,
+	(select id from users where login = "oscars.es.net"), 
+        (select id from attributes where name="OSCARS-service"));
 
         
 -- populate permissions table
@@ -116,6 +123,8 @@ INSERT INTO permissions VALUES(NULL, "modify",
             "change or delete a user or reservation", NULL);
 INSERT INTO permissions VALUES(NULL, "create",
             "create a user or reservation", NULL);
+INSERT INTO permissions VALUES(NULL, "signal",
+            "signal a previously placed reservation", NULL);
 
 
 -- populate authorizations table
@@ -168,6 +177,11 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
      "max-duration", 60);    
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-user"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="signal"),
+     NULL, NULL); 
 -- super-user authorizations for BSS operations
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
@@ -188,7 +202,12 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="create"),
-     "specify-path-elements", 1);   
+     "specify-path-elements", 1);  
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-engineer"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="signal"),
+     NULL, NULL); 
 -- developer authorizations add the ability to list and
 -- query all reservations
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
@@ -222,6 +241,27 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="users"),
      (select id from permissions where name="modify"),
      "all-users", 1);
+-- additional service user authorizations
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="domains"),
+     (select id from permissions where name="query"),
+     "all-users", 1);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="domains"),
+     (select id from permissions where name="modify"),
+     "all-users", 1);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="create"),
+     "specify-gri", 1);   
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="signal"),
+     NULL, NULL); 
 -- INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      -- (select id from attributes where name="user-mary"),
      -- (select id from resources where name="reservations"),
