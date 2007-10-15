@@ -82,10 +82,10 @@ public class JnxLSP implements PSS {
                 // see if has an OSCARS loopback
                 if (pathElem.getDescription().equals("ingress")) {
                     fromLink = pathElem.getLink();
+                    ipaddr = ipaddrDAO.queryByParam("linkId", fromLink.getId());
                     try {
-                        lspFrom = this.utils.getLoopback(
-                            fromLink.getPort().getNode().getTopologyIdent(),
-                            "Juniper");
+                        lspFrom = this.utils.getLoopback(ipaddr.getIP(),
+                                                         "Juniper");
                     } catch (PathfinderException e) {
                         throw new PSSException(e.getMessage());
                     }

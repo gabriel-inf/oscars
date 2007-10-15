@@ -138,7 +138,6 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         List<String> reverseHops = null;
         List<String> previousHops = new ArrayList<String>();
         List<String> laterHops = null;
-        String ingressIP = null;
         String loopbackIP = null;
         CtrlPlanePathContent ctrlPlanePath = null;
 
@@ -183,19 +182,20 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
             for (int i=reverseHops.size()-1; i >= 0; i--) {
                 previousHops.add(reverseHops.get(i));
             }
-            ingressIP = ingressNodeIP;
         // else if the ingress is not given, find it by doing a reverse path
         } else {
+            // if first argument is null, default router is used
             reverseHops = this.reversePath(egressNodeIP, srcHost);
             // go in forward direction to get Juniper ingress
-            for (int i=reverseHops.size()-1; i >= 0; i--) {
+            // don't include egress address in forward path
+            for (int i=reverseHops.size()-1; i >= 1; i--) {
                 previousHops.add(reverseHops.get(i));
             }
             // make sure this path contains a Juniper router
             for (String hop: previousHops) {
-                this.log.info(hop);
                 loopbackIP = this.utils.getLoopback(hop, "Juniper");
                 if (loopbackIP != null) {
+                    ingressNodeIP = hop;
                     break;
                 }
             }
@@ -203,25 +203,19 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
                 throw new PathfinderException("path between src and host " +
                     "does not contain a Juniper router");
             }
-
         }
         // if no explicit egress, just find path from ingress to destination
         if (egressNodeIP == null) {
-            hops = this.traceroute(loopbackIP, destHost);
-            // don't store loopback in path
-            hops.set(0, ingressIP);
+            hops = this.traceroute(ingressNodeIP, destHost);
         } else {
             // get hops from egress to destHost (to get next hop)
-            String egressLoopback = this.utils.getLoopback(egressNodeIP, null);
-            laterHops = this.traceroute(egressLoopback, destHost);
-            laterHops.set(0, egressNodeIP);
+            laterHops = this.traceroute(egressNodeIP, destHost);
             if (laterHops.size() == 1) {
                 throw new PathfinderException("no hops past egress node: " +
                                               egressNodeIP);
             }
             // get interior path
-            hops = this.traceroute(loopbackIP, egressNodeIP);
-            hops.set(0, ingressIP);
+            hops = this.traceroute(ingressNodeIP, egressNodeIP);
         }
         List<String> completeHops = this.stitch(previousHops, hops, laterHops);
         ctrlPlanePath = this.pathFromHops(completeHops);
@@ -340,7 +334,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
             }
         }
         for (String hop: hops) {
-            if (ipaddrDAO.queryByParam("IP", hop) == null) {
+            if (ipaddrDAO.queryByParam("IP", hop) != null) {
                 this.log.debug("local hop: " + hop);
                 completeHops.add(hop);
             } else if (laterHops == null) {

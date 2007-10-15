@@ -326,6 +326,7 @@ public class ReservationManager {
 
         this.log.info("convertPath.start");
         DomainDAO domainDAO = new DomainDAO(this.dbname);
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         LinkDAO linkDAO =  new LinkDAO(this.dbname);
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         Layer3Info layer3Info = pathInfo.getLayer3Info();
@@ -361,9 +362,15 @@ public class ReservationManager {
                      !domainDAO.isLocal(componentList[3])) {
                 continue;
             }
+            link = domainDAO.getFullyQualifiedLink(componentList);
+            if (link == null) {
+                this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
+            	throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]"); 
+            } else {
+            	this.log.info("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
+            }
             PathElem pathElem = new PathElem();
             if (!foundIngress) {
-                Link testLink = pathElem.getLink();
                 if (layer2Info != null) {
                     pathElem.setDescription("ingress");
                     foundIngress = true;
@@ -371,11 +378,17 @@ public class ReservationManager {
                     // layer 3 currently requires a Juniper ingress
                     net.es.oscars.pathfinder.Utils utils =
                         new net.es.oscars.pathfinder.Utils(this.dbname);
+                    // assumes one to one relationship
+                    Ipaddr ipaddr =
+                        ipaddrDAO.queryByParam("linkId", link.getId());
+                    if (ipaddr == null) {
+                        throw new BSSException(
+                            "no IP address associated with link " +
+                             link.getId());
+                    }
                     try {
-                        String ip = null;
-                    	ip = utils.getLoopback(
-                            testLink.getPort().getNode().getTopologyIdent(),
-                            "Juniper");
+                    	String ip =
+                            utils.getLoopback(ipaddr.getIP(), "Juniper");
                         if (ip != null) {
                             pathElem.setDescription("ingress");
                             foundIngress = true;
@@ -384,13 +397,6 @@ public class ReservationManager {
                         throw new BSSException(e.getMessage());
                     }
                 }
-            }
-            link = domainDAO.getFullyQualifiedLink(componentList);
-            if (link == null) {
-                this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
-            	throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]"); 
-            } else {
-            	this.log.info("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
             }
             pathElem.setLink(link);
             //set VLAN tag if layer2 request and l2sc link

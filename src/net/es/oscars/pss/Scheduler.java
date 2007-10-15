@@ -49,7 +49,7 @@ public class Scheduler {
             for (Reservation resv: reservations) {
                 // call PSS to schedule LSP
                 String pathSetupMode = resv.getPath().getPathSetupMode();
-                if(pathSetupMode.equals("domain")){
+                if(pathSetupMode.equals("user-xml")){
                     String status = this.pathSetupManager.create(resv);
                     dao.update(resv);
                     this.log.info("pendingReservations: " + resv.toString());
