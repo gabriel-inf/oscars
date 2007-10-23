@@ -252,7 +252,10 @@ public class JnxLSP implements PSS {
         }
         // Create an LSP object.
         Map<String,String> lspInfo = new HashMap<String, String>();
-        lspInfo.put("name", "oscars_" + resv.getGlobalReservationId());
+        String circuitStr = "oscars_" + resv.getGlobalReservationId();
+        // "." is illegal character in name parameter
+        String circuitName = circuitStr.replaceAll("\\.", "_");
+        lspInfo.put("name", circuitName);
         lspInfo.put("internal_interface_filter",
              this.props.getProperty("internal_interface_filter"));
         lspInfo.put("external_interface_filter",
