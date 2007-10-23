@@ -37,6 +37,12 @@ public class PCEManager {
 
         this.log.info("PCEManager.findPath.start");
         String pathMethod = this.getPathMethod();
+        // TODO:  better method; override traceroute method for now if
+        // ERO is given
+        if (pathMethod.equals("traceroute") &&
+            (pathInfo.getPath() != null)) {
+            pathMethod = "overlay";
+        }
         this.log.info("pathfinder method is " + pathMethod);
         if (pathMethod == null) { return false; }
         this.pathfinder = 

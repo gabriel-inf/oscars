@@ -45,8 +45,8 @@ public class ReservationAdapter {
             throws BSSException, InterdomainException {
 
         this.log.info("create.start");
+        this.logCreateParams(params);
         Reservation resv = this.tc.contentToReservation(params);
-        this.log.info("create.params: " + resv.toString());
         Forwarder forwarder = new Forwarder();
         PathInfo pathInfo = params.getPathInfo();
         this.rm.create(resv, login, pathInfo);
@@ -169,5 +169,72 @@ public class ReservationAdapter {
         this.log.debug("added " + remoteHops.length +
                        " remote hops to path");
         this.log.debug("complete path has " + localHops.length + " hops");
+    }
+
+    /**
+     * Logs all incoming reservation creation parameters that are not
+     * null before conversion.  XSD schema enforces not-null parameters.
+     * 
+     * @param params ResCreateContent instance with with request params.
+     */
+    public void logCreateParams(ResCreateContent params)  {
+
+        this.log.info("logCreateParams.start");
+        if (params.getGlobalReservationId() != null) {
+            this.log.info("GRI: " + params.getGlobalReservationId());
+        }
+        this.log.info("startTime: " + params.getStartTime());
+        this.log.info("end time: " + params.getEndTime());
+        this.log.info("bandwidth: " + params.getBandwidth());
+        this.log.info("description: " + params.getDescription());
+        PathInfo pathInfo = params.getPathInfo();
+        this.log.info("path setup mode: " + pathInfo.getPathSetupMode());
+        CtrlPlanePathContent path = pathInfo.getPath();
+        if (path != null) {
+            this.log.info("using ERO");
+            CtrlPlaneHopContent[] hops = path.getHop();
+            for (int i=0; i < hops.length; i++) {
+                this.log.info("hop: " + hops[i].getLinkIdRef());
+            }
+        }
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        if (layer2Info != null) {
+            this.log.info("setting up a layer 2 reservation");
+            if (layer2Info.getSrcVtag() != null) {
+                this.log.info("src VLAN tag: " + layer2Info.getSrcVtag());
+            }
+            if (layer2Info.getDestVtag() != null) {
+                this.log.info("dest VLAN tag: " + layer2Info.getDestVtag());
+            }
+            this.log.info("source endpoint: " + layer2Info.getSrcEndpoint());
+            this.log.info("dest endpoint: " + layer2Info.getDestEndpoint());
+        }
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
+        if (layer3Info != null) {
+            this.log.info("setting up a layer 3 reservation");
+            this.log.info("source host: " + layer3Info.getSrcHost());
+            this.log.info("dest host: " + layer3Info.getDestHost());
+            if (layer3Info.getProtocol() != null) {
+                this.log.info("protocol: " +  layer3Info.getProtocol());
+            }
+            if (layer3Info.getSrcIpPort() != 0) {
+                this.log.info("src IP port: " +  layer3Info.getSrcIpPort());
+            }
+            if (layer3Info.getDestIpPort() != 0) {
+                this.log.info("dest IP port: " +  layer3Info.getDestIpPort());
+            }
+            if (layer3Info.getDscp() != null) {
+                this.log.info("dscp: " +  layer3Info.getDscp());
+            }
+        }
+        MplsInfo mplsInfo = pathInfo.getMplsInfo();
+        if (mplsInfo != null) {
+            this.log.info("using MPLS information");
+            this.log.info("burst limit: " + mplsInfo.getBurstLimit());
+            if (mplsInfo.getLspClass() != null) {
+                this.log.info("LSP class: " + mplsInfo.getLspClass());
+            }
+        }
+        this.log.info("logCreateParams.finish");
     }
 }

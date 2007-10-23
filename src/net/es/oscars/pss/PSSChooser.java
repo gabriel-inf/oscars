@@ -36,23 +36,9 @@ public class PSSChooser implements PSS {
 
         Link ingressLink = this.getIngress(resv);
         try {
-        	
-            // String nodeName = ingressLink.getPort().getNode().getTopologyIdent();
-            Port ingressPort = ingressLink.getPort();
-            if (ingressPort == null) {
-            	throw new PSSException("Could not find port for ingress link");
-            }
-            
-            Node ingressNode = ingressPort.getNode();
-            if (ingressNode == null) {
-            	throw new PSSException("Could not find node for ingress link");
-            }
-            NodeAddress ingressNodeAddress = ingressNode.getNodeAddress();
-            if (ingressNodeAddress == null) {
-            	throw new PSSException("Could not find node address for ingress link");
-            }
-            String nodeAddress = ingressNodeAddress.getAddress(); 
-
+            // db enforces not-null
+            String nodeAddress =
+                ingressLink.getPort().getNode().getNodeAddress().getAddress();
             this.log.info("Querying router type using SNMP for node address: ["+nodeAddress+"]");
 
             SNMP snmp = new SNMP();

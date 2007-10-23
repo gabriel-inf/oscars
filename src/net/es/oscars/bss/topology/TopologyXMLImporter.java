@@ -256,6 +256,8 @@ public class TopologyXMLImporter {
         String linkTopoIdent = "";
 
         Iterator linkXMLIterator = portXML.getChildren("link", ns).iterator();
+        
+       boolean addedStar = false;
 
         while (linkXMLIterator.hasNext()) {
             Element linkXML = (Element) linkXMLIterator.next();
@@ -278,6 +280,10 @@ public class TopologyXMLImporter {
             linkTopoIdent = TopologyUtil.getLSTI(linkId, "Link");
             linkDB.setTopologyIdent(linkTopoIdent);
             linkDB.setAlias(linkTopoIdent);
+            
+            if (linkTopoIdent.equals("*")) {
+            	addedStar = true;
+            }
 
             // TODO: these are ZERO right now; how do we get this info?
             //String strCapacity = linkXML.getChild("capacity", this.ns).getValue();
@@ -305,6 +311,17 @@ public class TopologyXMLImporter {
             this.parseLinkIPAddress(linkDB, ipAddress);
             this.parseRemoteLink(linkXML, linkDB);
             this.parseLinkSwcap(linkXML, linkDB);
+            portDB.addLink(linkDB);
+        }
+        if (!addedStar) {
+            Link linkDB = TopologyUtil.initLink(portDB);
+            linkDB.setTopologyIdent("*");
+            linkDB.setAlias("*");
+            linkDB.setCapacity(portDB.getCapacity());
+            linkDB.setUnreservedCapacity(portDB.getUnreservedCapacity()); // TODO: who handles this?
+            linkDB.setMaximumReservableCapacity(portDB.getMaximumReservableCapacity());
+            linkDB.setMinimumReservableCapacity(portDB.getMinimumReservableCapacity());
+            linkDB.setGranularity(portDB.getGranularity());
             portDB.addLink(linkDB);
         }
     }

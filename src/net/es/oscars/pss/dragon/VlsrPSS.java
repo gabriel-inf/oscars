@@ -191,7 +191,8 @@ public class VlsrPSS implements PSS{
         if(ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
             
             /* Delete local-id if ingress and egress not the same */
-            if(!telnetAddress.equals(telnetAddressDest)){
+            if(!(telnetAddress.equals(telnetAddressDest) && 
+                ingLocalId.getNumber() == egrLocalId.getNumber())){
                 csa.deleteLocalId(ingLocalId);
             }
          

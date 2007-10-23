@@ -62,7 +62,7 @@ public class TypeConverter {
         resv.setEndTime(params.getEndTime());
         Long bandwidth = new Long(
                 Long.valueOf((long)params.getBandwidth() * 1000000L));
-	resv.setBandwidth(bandwidth);
+        resv.setBandwidth(bandwidth);
         resv.setDescription(params.getDescription());
         resv.setGlobalReservationId(params.getGlobalReservationId());
         

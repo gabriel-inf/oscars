@@ -112,7 +112,6 @@ public class PolicyManager {
         }
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
-        this.log.info("to loop, list with length " + hops.length);
         for (int i = 0; i < hops.length; i++) {
             this.log.info(hops[i].getLinkIdRef());
             String[] componentList = hops[i].getLinkIdRef().split(":");
@@ -161,17 +160,25 @@ public class PolicyManager {
                                   PathInfo pathInfo) throws BSSException{
 
         Link link = null;
+        String[] srcComponentList = null;
+        String[] destComponentList = null;
+        Link srcLink = null;
+        Link destLink = null;
+        boolean srcTagged = false;
+        boolean destTagged = false;
 
         // get start of path
         PathElem pathElem = resv.getPath().getPathElem();
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
         DomainDAO domainDAO = new DomainDAO("bss");
-        String[] srcComponentList = layer2Info.getSrcEndpoint().split(":");
-        String[] destComponentList = layer2Info.getDestEndpoint().split(":");
-        Link srcLink = domainDAO.getFullyQualifiedLink(srcComponentList);
-        Link destLink = domainDAO.getFullyQualifiedLink(destComponentList);
-        boolean srcTagged = layer2Info.getSrcVtag().getTagged();
-        boolean destTagged = layer2Info.getDestVtag().getTagged();
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        if (layer2Info != null) {
+            srcComponentList = layer2Info.getSrcEndpoint().split(":");
+            destComponentList = layer2Info.getDestEndpoint().split(":");
+            srcLink = domainDAO.getFullyQualifiedLink(srcComponentList);
+            destLink = domainDAO.getFullyQualifiedLink(destComponentList);
+            srcTagged = layer2Info.getSrcVtag().getTagged();
+            destTagged = layer2Info.getDestVtag().getTagged();
+        }
         String sameUserGRI = null;
         if(resv.getLogin().equals(newResv.getLogin())){
             sameUserGRI = resv.getGlobalReservationId();   

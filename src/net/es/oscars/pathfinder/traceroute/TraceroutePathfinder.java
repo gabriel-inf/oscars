@@ -14,10 +14,8 @@ import net.es.oscars.pathfinder.*;
 import net.es.oscars.bss.topology.*;
 
 /**
- * TraceroutePathfinder performs traceroutes to find path from
- * source to destination within the local domain.  It operates at
- * layer 3.  TODO: also handles explicit paths which may be layer 2.  Separate
- * out in that case.
+ * TraceroutePathfinder performs traceroutes to find a layer 3 path from
+ * source to destination within the local domain.
  */
 public class TraceroutePathfinder extends Pathfinder implements PCE {
     private Logger log;
@@ -33,139 +31,26 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
     }
 
     /**
-     * Finds path from source to destination, taking into account ingress
-     * and egress nodes if specified by user.
+     * Using traceroute, finds path from source to destination.
      *
+     * @param pathInfo PathInfo instance containing source and destination
+     * @return boolean indicating ERO was not used
      * @throws PathfinderException
      */
     public boolean findPath(PathInfo pathInfo) throws PathfinderException {
 
-        String ingressNodeId = null;
-        String egressNodeId = null;
-
-        this.log.debug("findPath.start");
-        CtrlPlanePathContent path = pathInfo.getPath();
-        if (path != null) {
-            DomainDAO domainDAO = new DomainDAO(this.dbname);
-            CtrlPlaneHopContent[] ctrlPlaneHops = path.getHop();
-            // if an ERO, not just ingress and/or egress
-            if (ctrlPlaneHops.length > 2) {
-               this.log.info("handling explicit route object");
-               this.handleExplicitRouteObject(pathInfo);
-               return true;
-            // handle case where only ingress, egress, or both given
-            } else if (ctrlPlaneHops.length == 2) {
-                this.log.info("handling just ingress and egress");
-                // convert to IP if necessary
-                ingressNodeId = ctrlPlaneHops[0].getLinkIdRef();
-                if (TopologyUtil.isTopologyIdentifier(ingressNodeId)) {
-                    ingressNodeId = TopologyUtil.getLocalForm(ingressNodeId);
-                    ingressNodeId =
-                        domainDAO.convertTopologyIdentifier(ingressNodeId);
-                // at this point, has to be a DNS name, an IPv4 address,
-                // or an IPv6 address
-                } else {
-                    ingressNodeId = this.utils.getIP(ingressNodeId);
-                }
-                egressNodeId = ctrlPlaneHops[1].getLinkIdRef();
-                if (TopologyUtil.isTopologyIdentifier(egressNodeId)) {
-                    egressNodeId = TopologyUtil.getLocalForm(egressNodeId);
-                    egressNodeId =
-                        domainDAO.convertTopologyIdentifier(egressNodeId);
-                } else {
-                    egressNodeId = this.utils.getIP(egressNodeId);
-                }
-            }
-        }
-        this.traceroutePath(pathInfo, ingressNodeId, egressNodeId);
-        this.log.debug("findPath.End");
-        return false;
-    }
-
-    /**
-     * Handles an explicit route object that may or may not contain
-     * hops internal to this domain.  TODO:  put in a separate class.
-     * Currently handles only layer 2 ERO's.
-     *
-     * @param ero CtrlPlanePathContent instance with complete path
-     * @throws PathfinderException
-     */
-    private void handleExplicitRouteObject(PathInfo pathInfo)
-            throws PathfinderException {
-
-        boolean isTopologyId = false;
-        int numHops = 0;
-
-        this.log.debug("handleExplicitRouteObject.start");
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        Domain domain = domainDAO.getLocalDomain();
-        CtrlPlanePathContent ero = pathInfo.getPath();
-        CtrlPlaneHopContent[] hops = ero.getHop();
-        // only need IP addresses at this point in case only loose hops
-        for (int i=0; i < hops.length; i++) {
-            CtrlPlaneHopContent ctrlPlaneHop = hops[i];
-            String hopId = ctrlPlaneHop.getLinkIdRef();
-            this.log.debug("hop id (original):["+hopId+"]");
-            hopId = TopologyUtil.getLocalForm(hopId);
-            this.log.debug("hop id (local):["+hopId+"]");
-            String[] componentList = hopId.split(":");
-            if (domainDAO.isLocal(componentList[3])) {
-                numHops++;
-            }
-            // reset id ref to local topology identifier
-            ctrlPlaneHop.setLinkIdRef(hopId);
-            // make schema validator happy
-            ctrlPlaneHop.setId(hopId);
-        }
-        // throw error if no local path found
-        if (numHops == 0) { 
-            throw new PathfinderException("No local hops given in ERO");
-        }
-        this.log.debug("handleExplicitRouteObject.finish");
-    }
-
-    /**
-     * Using traceroute, finds path from source to destination, taking into
-     * account ingress and egress nodes if specified by user.
-     *
-     * @throws PathfinderException
-     */
-    private void traceroutePath(PathInfo pathInfo, String ingressNodeIP,
-                                String egressNodeIP)
-            throws PathfinderException {
-
         List<String> hops = null;
         List<String> reverseHops = null;
         List<String> previousHops = new ArrayList<String>();
-        List<String> laterHops = null;
         String loopbackIP = null;
+        String ingressNodeIP = null;
         CtrlPlanePathContent ctrlPlanePath = null;
 
-        this.log.debug("traceroutePath.start");
-        if (ingressNodeIP != null) {
-            // check ingress, if given, for validity
-            this.checkIngress(ingressNodeIP);
-        }
-        if (egressNodeIP != null) {
-            // check egress, if given, for validity
-            this.checkEgress(egressNodeIP);
-        }
+        this.log.debug("findPath.start");
         Layer3Info layer3Info = pathInfo.getLayer3Info();
-        // layer 3 path will have complete path from source to destination;
-        // stopgap for layer 2 testing only, where only have loose hops
-        if ((layer3Info == null) &&
-                (ingressNodeIP != null) && (egressNodeIP != null)) {
-            // get interior path
-            loopbackIP = this.utils.getLoopback(ingressNodeIP, null);
-            hops = this.traceroute(loopbackIP, egressNodeIP);
-            // TODO:  fix traceroute
-            hops.set(0, ingressNodeIP);
-            ctrlPlanePath = this.pathFromHops(hops);
-            pathInfo.setPath(ctrlPlanePath);
-            return;
-        }
         if (layer3Info == null) {
-            throw new PathfinderException("No layer 3 information provided");
+            throw new PathfinderException(
+                    "No layer 3 information provided for traceroute");
         }
         String srcHost = layer3Info.getSrcHost();
         if (srcHost == null) {
@@ -175,95 +60,34 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         if (destHost == null) {
             throw new PathfinderException( "no destination for path given");
         }
-        if (ingressNodeIP != null) {
-            // since storing complete path, need hops before ingress
-            reverseHops = this.reversePath(ingressNodeIP, srcHost);
-            // go in forward direction for later addition to the path
-            for (int i=reverseHops.size()-1; i >= 0; i--) {
-                previousHops.add(reverseHops.get(i));
-            }
-        // else if the ingress is not given, find it by doing a reverse path
-        } else {
-            // if first argument is null, default router is used
-            reverseHops = this.reversePath(egressNodeIP, srcHost);
-            // go in forward direction to get Juniper ingress
-            // don't include egress address in forward path
-            for (int i=reverseHops.size()-1; i >= 1; i--) {
-                previousHops.add(reverseHops.get(i));
-            }
-            // make sure this path contains a Juniper router
-            for (String hop: previousHops) {
-                loopbackIP = this.utils.getLoopback(hop, "Juniper");
-                if (loopbackIP != null) {
-                    ingressNodeIP = hop;
-                    break;
-                }
-            }
-            if (loopbackIP == null) {
-                throw new PathfinderException("path between src and host " +
-                    "does not contain a Juniper router");
+        String defaultRouter = this.props.getProperty("jnxSource");
+        // run the reverse traceroute to the reservation source
+        reverseHops = this.traceroute(defaultRouter, srcHost);
+        // go in forward direction to get Juniper ingress
+        // don't include egress address in forward path
+        for (int i=reverseHops.size()-1; i >= 1; i--) {
+            previousHops.add(reverseHops.get(i));
+        }
+        // make sure this path contains a Juniper router (temporary)
+        for (String hop: previousHops) {
+            loopbackIP = this.utils.getLoopback(hop, "Juniper");
+            if (loopbackIP != null) {
+                ingressNodeIP = hop;
+                break;
             }
         }
-        // if no explicit egress, just find path from ingress to destination
-        if (egressNodeIP == null) {
-            hops = this.traceroute(ingressNodeIP, destHost);
-        } else {
-            // get hops from egress to destHost (to get next hop)
-            laterHops = this.traceroute(egressNodeIP, destHost);
-            if (laterHops.size() == 1) {
-                throw new PathfinderException("no hops past egress node: " +
-                                              egressNodeIP);
-            }
-            // get interior path
-            hops = this.traceroute(ingressNodeIP, egressNodeIP);
+        if (loopbackIP == null) {
+            throw new PathfinderException("path between src and host " +
+                "does not contain a Juniper router");
         }
-        List<String> completeHops = this.stitch(previousHops, hops, laterHops);
+        // find path from ingress to destination
+        hops = this.traceroute(ingressNodeIP, destHost);
+        List<String> completeHops = this.stitch(previousHops, hops);
         ctrlPlanePath = this.pathFromHops(completeHops);
         pathInfo.setPath(ctrlPlanePath);
         this.log.debug("findPath.End");
+        return false;
     }
-
-    /**
-     * Checks ingress, if given, for validity.  It must be associated with
-     * a Juniper router for now.
-     *
-     * @param ingressNodeIP string with IP of ingress to check
-     */
-    private void checkIngress(String ingressNodeIP) throws PathfinderException {
-
-        String loopbackIP = null;
-        // if not placeholder allowing only one of ingress or egress to
-        // be set
-        if (!ingressNodeIP.equals("*")) {
-             // make sure the given ingress node is a Juniper router
-             loopbackIP =
-                     this.utils.getLoopback(ingressNodeIP, "Juniper");
-             if (loopbackIP == null) {
-                 throw new PathfinderException("given ingress node " +
-                         ingressNodeIP + " is not a Juniper router");
-             }
-        }
-    }
-
-    /**
-     * Checks egress, if given, for validity.  It must be associated with
-     * a node that has a wan-loopback.
-     *
-     * @param egressNodeIP string with IP of egress to check
-     */
-    private void checkEgress(String egressNodeIP) throws PathfinderException {
-
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-        // if not placeholder
-        if (!egressNodeIP.equals("*")) {
-            // make sure the given egress node is in the database
-            if (ipaddrDAO.queryByParam("IP", egressNodeIP) == null) {
-                 throw new PathfinderException("given egress node: " +
-                     egressNodeIP + " is not in the database");
-            }
-        }
-    }
-
 
     /**
      * Converts list of hops to Axis2 data structure, and
@@ -318,11 +142,9 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      *
      * @param previousHops list of addresses that are prior to the ingress
      * @param hops list of addresses from the ingress onwards
-     * @param laterHops list of addresses further on than the egress
      * @return completeHops list of addresses from source to destination
      */
-    private List<String> stitch(List<String> previousHops, List<String> hops,
-                                List<String> laterHops) {
+    private List<String> stitch(List<String> previousHops, List<String> hops) {
 
         this.log.debug("stitch.start");
         List<String> completeHops = new ArrayList<String>();
@@ -337,49 +159,15 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
             if (ipaddrDAO.queryByParam("IP", hop) != null) {
                 this.log.debug("local hop: " + hop);
                 completeHops.add(hop);
-            } else if (laterHops == null) {
+            } else {
                 completeHops.add(hop);
                 this.log.debug("non-local hop: " + hop);
-            }
-        }
-        if (laterHops != null) {
-            for (String hop: laterHops) {
-                if (ipaddrDAO.queryByParam("IP", hop) == null) {
-                    this.log.debug("non-local later hop: " + hop);
-                    completeHops.add(hop);
-                }
             }
         }
         this.log.debug("stitch.end");
         return completeHops;
     }
     
-    /**
-     * Performs reverse traceroute to source.
-     *
-     * @param egressNodeIP string with egress node, if any
-     * @param srcHost string with IP address of source host
-     * @return hops list of strings with addresses in path
-     * @throws PathfinderException
-     */
-    private List<String> reversePath(String egressNodeIP, String srcHost)
-            throws PathfinderException {
-
-        String src = null;
-        List<String> hops = null;
-
-        // use egress node, if given, as the source of the traceroute
-        if (egressNodeIP != null) {
-            src = egressNodeIP;
-
-        } else { // otherwise use default node as source
-            src = this.props.getProperty("jnxSource");
-        }
-        // run the reverse traceroute to the reservation source
-        hops = traceroute(src, srcHost);
-        return hops;
-    }
-
     /**
      * Performs traceroute.
      *

@@ -331,7 +331,7 @@ public class TopologyUtil {
     	
     	topoIdent = topoIdent.trim();
     	
-    	System.out.println("looking at: ["+topoIdent+"]");
+//    	System.out.println("looking at: ["+topoIdent+"]");
 
     	
     	Hashtable<String, String> regexps = new Hashtable<String, String>();
@@ -385,6 +385,12 @@ public class TopologyUtil {
 
 //    	TODO: make a class for the results?
     	Hashtable<String, String> result = new Hashtable<String, String>();
+    	
+    	if (topoIdent == null || topoIdent.equals("")) {
+    		result.put("type", "empty");
+    		return result;
+    	}
+    	
     	String fqti = null;
     	String addressType = "";
 

@@ -12,6 +12,7 @@ import net.es.oscars.Notifier;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationDAO;
+import net.es.oscars.interdomain.InterdomainException;
 
 /**
  * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
@@ -39,7 +40,7 @@ public class Scheduler {
      * @throws PSSException
      */
     public List<Reservation> pendingReservations(Integer timeInterval) 
-            throws PSSException {
+            throws PSSException, InterdomainException {
 
         List<Reservation> reservations = null;
 
@@ -48,15 +49,16 @@ public class Scheduler {
             reservations = dao.pendingReservations(timeInterval);
             for (Reservation resv: reservations) {
                 // call PSS to schedule LSP
+                this.log.info(resv.getGlobalReservationId());
                 String pathSetupMode = resv.getPath().getPathSetupMode();
-                if(pathSetupMode.equals("domain")){
-                    String status = this.pathSetupManager.create(resv);
+                this.log.info("pendingReservations: " + resv.toString());
+                if (pathSetupMode.equals("domain")) {
+                    String status = this.pathSetupManager.create(resv, true);
                     dao.update(resv);
-                    this.log.info("pendingReservations: " + resv.toString());
                     String notification = this.pendingReservationMessage(resv);
                     String subject = "Circuit set up";
                     // this.notifier.sendMessage(subject, notification);
-                 }
+                }
             }
         } catch (PSSException ex) {
             // log and rethrow
@@ -89,7 +91,7 @@ public class Scheduler {
             for (Reservation resv: reservations) {
                 // call PSS to tear down LSP
                 prevStatus = resv.getStatus();
-                String status = this.pathSetupManager.teardown(resv);
+                String status = this.pathSetupManager.teardown(resv, false);
                 if (status.equals("CANCELLED")) {
                     // set end time to cancel time
                     // useful in case reservation was persistent

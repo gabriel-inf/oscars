@@ -20,13 +20,11 @@ import net.es.oscars.database.HibernateUtil;
 public class PathSetupAdapter{
     private Logger log;
     private PathSetupManager pm;
-    private Forwarder forwarder;
     
     /** Constructor */
     public PathSetupAdapter() {
         this.log = Logger.getLogger(this.getClass());
         this.pm = new PathSetupManager("bss");
-        this.forwarder = new Forwarder();
     }
     
     /**
@@ -75,32 +73,15 @@ public class PathSetupAdapter{
             "end time has been reached.");
         }
         
-        /* Forward to next domain */
-        CreatePathResponseContent forwardReply = 
-            this.forwarder.createPath(resv);
-        if(forwardReply == null){
-            this.log.info("last domain in signaling path");
-        }else if(!forwardReply.getStatus().equals("ACTIVE")){
-            String errMsg = "forwardReply returned an unrecognized status: " +         
-                forwardReply.getStatus();
-            this.log.error(errMsg);
-            throw new PSSException(errMsg);
-        }
-        
-        /* Setup path in this domain */
+        /* Start signaling and setup path */
         try{     
-            status = this.pm.create(resv);
+            status = this.pm.create(resv, true);
             response.setStatus(status);
             response.setGlobalReservationId(gri);
-        } catch(Exception e) {
-            this.log.error("Error setting up local path for reservation, gri: [" +
-                gri + "] Sending teardownPath.");
-            
-            this.log.error("error was: "+e.getMessage());
-            this.forwardTeardown(resv, e.getMessage());
-
-            throw new PSSException("Path cannot be created, error setting up path.");
-
+        }catch(PSSException e) {
+            throw e;
+        }catch(InterdomainException e) {
+            throw e;
         }finally{
             bss.getTransaction().commit();
         }
@@ -129,8 +110,6 @@ public class PathSetupAdapter{
             RefreshPathResponseContent();
         String gri = params.getGlobalReservationId();
         String status = null;
-        boolean stillActive = false;
-        String errorMsg = null;
         
         this.log.info("refresh.start"); 
         
@@ -151,54 +130,19 @@ public class PathSetupAdapter{
             "Reservation is not active. Please run createPath first.");
         }
         
-        /* Refresh path in this domain */
+        /* Refresh path */
         try{
-            status = this.pm.refresh(resv);
+            status = this.pm.refresh(resv, true);
             response.setStatus(status);
             response.setGlobalReservationId(gri);
-            stillActive = true;
-        }catch(Exception e){
-            this.log.error("Reservation " + gri + " path failure. " + 
-                "Sending teardownPath. Reason: " + e.getMessage());
-            errorMsg = "A path failure has occurred. The path is no " +
-                "longer active. Reason: " + e.getMessage();
+        }catch(PSSException e){
+            throw e;
+        }catch(InterdomainException e){
+            throw e;
+        }finally{
+                //make sure status gets updated
+                bss.getTransaction().commit();
         }
-        
-        /* Forward to next domain */
-        if(stillActive){
-            try{
-                RefreshPathResponseContent forwardReply = 
-                    this.forwarder.refreshPath(resv);
-                if(forwardReply == null){
-                    this.log.info("last domain in signaling path");
-                }else if(!forwardReply.getStatus().equals("ACTIVE")){
-                    String errMsg = "forwardReply returned an unrecognized status: " +         
-                        forwardReply.getStatus();
-                    this.log.error(errMsg);
-                    throw new PSSException(errMsg);
-                }
-             }catch(PSSException e){
-                /* teardown local path if doesn't refresh in current domain */
-                this.pm.teardown(resv);
-                throw e;
-             }catch(InterdomainException e){
-                /* teardown local path if doesn't refresh in current domain */
-                this.pm.teardown(resv);
-                throw e;
-             }finally{
-                //make sure status gets updated
-                bss.getTransaction().commit();
-            }
-         }else{
-            try{
-                this.forwardTeardown(resv, errorMsg);
-            }catch(PSSException e){
-                throw e;
-            }finally{
-                //make sure status gets updated
-                bss.getTransaction().commit();
-            }
-         }
         
         this.log.info("refresh.end"); 
         
@@ -248,21 +192,9 @@ public class PathSetupAdapter{
         
         /* Teardown path in this domain */
         try{
-            status = this.pm.teardown(resv);
+            status = this.pm.teardown(resv, true);
             response.setStatus(status);
             response.setGlobalReservationId(gri);
-        }catch(PSSException e){
-            //still want to forward if error occurs
-            this.log.error("Unable to teardown path for " + 
-                gri + ". Reason: " + e.getMessage() +
-                ". Proceeding with forward.");
-            errorMsg = "Error tearing down local path. Reason: " + 
-                e.getMessage();
-        }
-        
-        /* Forward to next domain */
-        try{
-            this.forwardTeardown(resv, errorMsg);
         }catch(PSSException e){
             throw e;
         }finally{
@@ -273,48 +205,6 @@ public class PathSetupAdapter{
         this.log.info("teardown.end"); 
         
         return response;
-    }
-    
-    /**
-     * Private method used by create, refresh, and teardown to forward 
-     * teardownPath messages. Called when there is a failure or when a
-     * teardownPath request needs to forward a message.
-     *
-     * @param resv the reservation to teardown
-     * @param errorMsg any existing error messages 
-     * @throws PSSException
-     */
-    private void forwardTeardown(Reservation resv, String errorMsg) 
-            throws PSSException{
-        String gri = resv.getGlobalReservationId();
-        
-        try{
-            TeardownPathResponseContent forwardReply = 
-                this.forwarder.teardownPath(resv);
-            if(forwardReply == null){
-                this.log.info("last domain in signaling path");
-            }else if(!forwardReply.getStatus().equals("PENDING")){
-                String errMsg = "forwardReply returned an unrecognized status: " +         
-                    forwardReply.getStatus();
-                this.log.error(errMsg);
-                throw new PSSException(errMsg);
-            }  
-         }catch(Exception e){
-            /* check for forward error */
-            if(errorMsg != null){
-                errorMsg = "Multiple Exceptions for " + gri + 
-                ":\n\nLocal Exception: " + errorMsg + "\n\nRemote Exception: ";
-            }
-            errorMsg += e.getMessage();
-            this.log.error("Forward error for " + gri + ": " + e.getMessage());
-         }
-        
-        /* Since exception may occur remotely or locally throw both here */
-        if(errorMsg != null){
-            throw new PSSException(errorMsg);
-        }
-        
-        return;
     }
    
 }

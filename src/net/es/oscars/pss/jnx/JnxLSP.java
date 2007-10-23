@@ -91,8 +91,8 @@ public class JnxLSP implements PSS {
                     }
                 } else if (pathElem.getDescription().equals("egress")) {
                     link = pathElem.getLink();
-                    lspTo = this.utils.getIP(
-                            link.getPort().getNode().getTopologyIdent());
+                    lspTo =
+                        link.getPort().getNode().getNodeAddress().getAddress();
                 }
             }
             pathElem = pathElem.getNextElem();
@@ -108,7 +108,10 @@ public class JnxLSP implements PSS {
         Layer3Data layer3Data = path.getLayer3Data();
         // Create an LSP object.
         lspInfo = new HashMap<String, String>();
-        lspInfo.put("name", "oscars_" + resv.getGlobalReservationId());
+        String circuitStr = "oscars_" + resv.getGlobalReservationId();
+        // "." is illegal character in name parameter
+        String circuitName = circuitStr.replaceAll("\\.", "_");
+        lspInfo.put("name", circuitName);
         lspInfo.put("from", lspFrom);
         lspInfo.put("to", lspTo);
         lspInfo.put("bandwidth", Long.toString(resv.getBandwidth()));
@@ -178,7 +181,15 @@ public class JnxLSP implements PSS {
             pathElem = path.getPathElem();
             while (pathElem != null) {
                 link = pathElem.getLink();
-                ipaddr = ipaddrDAO.fromLink(link);
+                // this gets everything but ingress and egress, which we don't
+                // want
+                if (pathElem.getDescription() == null) {
+                    ipaddr = ipaddrDAO.fromLink(link);
+                    if (ipaddr == null) {
+                        throw new PSSException(
+                            "link in path doesn't have an associated IP");
+                    }
+                }
                 hops.add(ipaddr.getIP());
                 pathElem = pathElem.getNextElem();
             }
@@ -261,7 +272,7 @@ public class JnxLSP implements PSS {
      */
      private void setupLogin(Map<String,String> hm, Link link) {
         hm.put("login", this.props.getProperty("login"));
-        hm.put("router", link.getPort().getNode().getTopologyIdent());
+        hm.put("router", link.getPort().getNode().getNodeAddress().getAddress());
         String keyfile = System.getenv("CATALINA_HOME") +
                              "/shared/oscars.conf/server/oscars.key";
         hm.put("keyfile", keyfile);
@@ -372,14 +383,9 @@ public class JnxLSP implements PSS {
      * Shows example setting up of a DOM to request information from a router.
      * The ouputted document looks like:
      *
-     *    <?xml version="1.0" encoding="us-ascii"?>
-     *    <junoscript version="1.0" release="7.3">
-     *       <rpc>
      *           <get-chassis-inventory>
      *               <detail />
      *           </get-chassis-inventory>
-     *       </rpc>
-     *     </junoscript>
      *
      * @param out output stream
      * @param operation
@@ -430,6 +436,7 @@ public class JnxLSP implements PSS {
         XMLOutputter outputter = new XMLOutputter();
         Format format = outputter.getFormat();
         format.setLineSeparator("\n");
+        format.setOmitDeclaration(true);
         outputter.setFormat(format);
         // log, and then send to router
         String logOutput = outputter.outputString(doc);

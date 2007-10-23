@@ -42,7 +42,7 @@ public class LSP implements PSS {
      * @throws PSSException
      */
     public String createPath(Reservation resv) throws PSSException {
-    	this.log.info("create.start");
+        this.log.info("create.start");
 
         Map<String,String> lspInfo = null;
         // only used if an explicit path was given
@@ -58,10 +58,9 @@ public class LSP implements PSS {
         Ipaddr ipaddr = null;
         String vlanTag = null;
 
+        // note that null checks are not necessary where database enforces
+        // that a field is not null
         Path path = resv.getPath();
-        if (path == null) {
-            throw new PSSException("Reservation path is null!");
-        }
         Layer2Data layer2Data = path.getLayer2Data();
         // just handling layer 2 for Cisco's
         if (layer2Data == null) {
@@ -72,89 +71,46 @@ public class LSP implements PSS {
             throw new PSSException(
                     "Cisco configuration currently requires an explicit path");
         }
-        
-        
-        PathElem firstInternalPathElem = null;
-        PathElem lastInternalPathElem = null;
-        boolean justGotIngress = false;
-        boolean isInternal = false;
-
         PathElem pathElem = path.getPathElem();
+        PathElem ingressPathElem = null;
+        PathElem lastXfacePathElem = null;
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
-        // find ingress and egress IP's and get info for both directions
+        // find ingress and egress IP's and get loopback info for both directions
         while (pathElem != null) {
             if (pathElem.getDescription() != null) {
                 // not an ingress or egress unless already checked at
                 // reservation time
                 if (pathElem.getDescription().equals("ingress")) {
+                    ingressPathElem = pathElem;
                     ingressLink = pathElem.getLink();
-                    if (ingressLink == null) {
-                        throw new PSSException("Ingress link is null!");
-                    }
                     // assume just one VLAN for now
                     vlanTag = pathElem.getLinkDescr();
+/*
+                    if (vlanTag == null) {
+                        throw new PSSException("VLAN tag is null!");
+                    }
+*/
+                    // temporary, to test rest of template
+                    vlanTag = "3552";
                     // find ingress loopback
-
-                    Port ingressPort = ingressLink.getPort();
-                    if (ingressPort == null) {
-                        throw new PSSException("Ingress port is null!");
-                    }
-                    Node ingressNode = ingressPort.getNode();
-                    if (ingressNode == null) {
-                        throw new PSSException("Ingress node is null!");
-                    }
-                    NodeAddress ingressNodeAddress = ingressNode.getNodeAddress();
-                    if (ingressNodeAddress == null) {
-                        throw new PSSException("Ingress node address is null!");
-                    }
+                    NodeAddress ingressNodeAddress =
+                        ingressLink.getPort().getNode().getNodeAddress();
                     String ingressAddr = ingressNodeAddress.getAddress();
-                    
                     ingressRtrLoopback = this.utils.getIP(ingressAddr);
-                    justGotIngress = true;
-                    isInternal = true;
-                    
                 } else if (pathElem.getDescription().equals("egress")) {
                     egressLink = pathElem.getLink();
-                    if (egressLink == null) {
-                        throw new PSSException("Egress link is null!");
-                    }
-
-                    // find egress loopback
-                    Port egressPort = egressLink.getPort();
-                    if (egressPort == null) {
-                        throw new PSSException("Egress port is null!");
-                    }
-                    Node egressNode = egressPort.getNode();
-                    if (egressNode == null) {
-                        throw new PSSException("Egress node is null!");
-                    }
-                    NodeAddress egressNodeAddress = egressNode.getNodeAddress();
-                    if (egressNodeAddress == null) {
-                        throw new PSSException("Egress node address is null!");
-                    }
+                    NodeAddress egressNodeAddress =
+                        egressLink.getPort().getNode().getNodeAddress();
                     String egressAddr = egressNodeAddress.getAddress();
-
                     egressRtrLoopback = this.utils.getIP(egressAddr);
-                    isInternal = false;
-                                        
                 }
+            } else {
+                // used in finding next to last interface
+                lastXfacePathElem = pathElem;
             }
-            if (justGotIngress) {
-            	justGotIngress = false;
-            	firstInternalPathElem = pathElem;
-            }
-            if (!isInternal) {
-            	justGotIngress = false;
-            	lastInternalPathElem = pathElem;
-            }
-            
             pathElem = pathElem.getNextElem();
         }
-        
-        
-        
-        this.log.info("got info from database");
         if (ingressRtrLoopback == null) {
             throw new PSSException("no ingress loopback in path");
         }
@@ -162,35 +118,33 @@ public class LSP implements PSS {
             throw new PSSException("no egress loopback in path");
         }
         
-        
         // Create an LSP object.
         lspInfo = new HashMap<String, String>();
-        String gri = resv.getGlobalReservationId();
-        lspInfo.put("resv-id", "oscars_" + gri);
+        String circuitStr = "oscars_" + resv.getGlobalReservationId();
+        // "." is illegal character in parameter
+        String circuitName = circuitStr.replaceAll("\\.", "_");
+        lspInfo.put("resv-id", circuitName);
         
-        String[] columns = gri.split("-");
+        String[] columns = circuitName.split("-");
         if (columns.length != 2) {
-        	throw new PSSException("Couldn't parse GRI! ["+gri+"]");
+            throw new PSSException("Couldn't parse GRI! ["+circuitName+"]");
         }
-
         int resvNum = Integer.parseInt(columns[1].trim());
-
         
-        // get link associated with physical interface
-        /*
-        ipaddr = ipaddrDAO.fromLink(ingressLink);
+        // get IP associated with physical interface before egress
+        ipaddr = ipaddrDAO.fromLink(lastXfacePathElem.getLink());
         if (ipaddr != null) {
-        	lspFrom = ipaddr.getIP();
+            lspFwdTo = ipaddr.getIP();
         } else {
-        	lspFrom = "UNKNOWN IP";
-        	this.log.error("Ingress port has no IP in DB");
-//            throw new PSSException("Ingress port has no IP in DB!");
+            throw new PSSException("Egress port has no IP in DB!");
         }
-        */
         // wrap at 65534 (65535 reserved for test)
         resvNum = resvNum % 65534;
         lspInfo.put("resv-num", Integer.toString(resvNum));
         lspInfo.put("port", ingressLink.getPort().getTopologyIdent());
+        // used for login, not template
+        lspInfo.put("router",
+            ingressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("lsp_to", lspFwdTo);
         lspInfo.put("egress-rtr-loopback", egressRtrLoopback);
         lspInfo.put("bandwidth", Long.toString(resv.getBandwidth()));
@@ -199,32 +153,23 @@ public class LSP implements PSS {
              this.props.getProperty("lsp_setup-priority"));
         lspInfo.put("lsp_reservation-priority",
              this.props.getProperty("lsp_reservation-priority"));
-
-        this.log.info("Filled in main template"); 
-
+        this.log.info("Filled in hash map for setup template"); 
         
         hops = new ArrayList<String>();
         // reset to beginning
         pathElem = path.getPathElem();
         while (pathElem != null) {
             link = pathElem.getLink();
-
-            if (link == null) {
-                throw new PSSException("Link was null for a hop!");
+            // this gets everything except the ingress and egress, which we
+            // don't want
+            if (pathElem.getDescription() ==  null) {
+                ipaddr = ipaddrDAO.fromLink(link);
+                if (ipaddr == null) {
+                    throw new PSSException(
+                            "No IP for link: ["+TopologyUtil.getFQTI(link)+"]");
+                }
+                hops.add(ipaddr.getIP());
             }
-            
-            if (pathElem.getDescription().equals("ingress")) {
-		        // hops.add(ingressRtrLoopback);
-            } else if (pathElem.getDescription().equals("egress")) {
-		        // hops.add(egressRtrLoopback);
-            } else {
-		        ipaddr = ipaddrDAO.fromLink(link);
-		        if (ipaddr == null) {
-		        	throw new PSSException("No IP for link: ["+TopologyUtil.getFQTI(link)+"]");
-		        }
-		        hops.add(ipaddr.getIP());
-            }
-	        
             pathElem = pathElem.getNextElem();
         }
         this.log.info("Set up path hops addresses"); 
@@ -235,7 +180,17 @@ public class LSP implements PSS {
         this.log.info("Forward LSP done"); 
         
         // reverse direction
+        // get IP associated with first in-facing physical interface
+        ipaddr = ipaddrDAO.fromLink(ingressPathElem.getNextElem().getLink());
+        if (ipaddr != null) {
+            lspRevTo = ipaddr.getIP();
+        } else {
+          throw new PSSException("Egress port has no IP in DB!");
+        }
         lspInfo.put("port", egressLink.getPort().getTopologyIdent());
+        // used for login, not template
+        lspInfo.put("router",
+            egressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("lsp_to", lspRevTo);
         lspInfo.put("egress-rtr-loopback", ingressRtrLoopback);
         ArrayList<String> reverseHops = new ArrayList<String>();
@@ -244,11 +199,8 @@ public class LSP implements PSS {
         }
         this.setupLSP(lspInfo, reverseHops);
         this.log.info("Reverse LSP done"); 
-        
-        
-//      TODO:  login information
         resv.setStatus("ACTIVE");
-    	this.log.info("create.end");
+        this.log.info("create.end");
         return resv.getStatus();
     }
 
@@ -292,20 +244,30 @@ public class LSP implements PSS {
             }
             pathElem = pathElem.getNextElem();
         }
+        // TODO:  temporary fix
+        vlanTag = "3552";
         // Create an LSP object.
         Map<String,String> lspInfo = new HashMap<String, String>();
         String newStatus = null;
-        String gri = resv.getGlobalReservationId();
-        lspInfo.put("resv-id", "oscars_" + gri);
-        String[] idComponents = gri.split("-");
-        lspInfo.put("resv-num", idComponents[0] + idComponents[1]);
+        String circuitStr = "oscars_" + resv.getGlobalReservationId();
+        // "." is illegal character in resv-id parameter
+        String circuitName = circuitStr.replaceAll("\\.", "_");
+        String[] columns = circuitName.split("-");
+        if (columns.length != 2) {
+            throw new PSSException("Couldn't parse GRI! ["+circuitName+"]");
+        }
+        int resvNum = Integer.parseInt(columns[1].trim());
+        // wrap at 65534 (65535 reserved for test)
+        resvNum = resvNum % 65534;
+        
         // forward direction
+        lspInfo.put("resv-id", circuitName);
+        lspInfo.put("resv-num", Integer.toString(resvNum));
         lspInfo.put("port", ingressLink.getPort().getTopologyIdent());
         lspInfo.put("vlan-id", vlanTag);
         this.teardownLSP(lspInfo);
         // reverse direction
         lspInfo.put("port", egressLink.getPort().getTopologyIdent());
-        // TODO:  login information
         this.teardownLSP(lspInfo);
         String prevStatus = resv.getStatus();
         if (!prevStatus.equals("PRECANCEL")) {
@@ -330,11 +292,6 @@ public class LSP implements PSS {
 
         this.log.info("setupLSP.start");
         try {
-            // this allows testing the template without trying to configure
-            // a router
-            if (this.props.getProperty("allowLSP").equals("1")) {
-                // TODO
-            }
             String fname =  System.getenv("CATALINA_HOME") +
                 "/shared/oscars.conf/server/";
             fname += this.props.getProperty("setupFile");
@@ -348,7 +305,7 @@ public class LSP implements PSS {
     }
 
     /**
-     * Tears down an LSP circuit.  TODO:  using RANCID
+     * Tears down an LSP circuit.
      *
      * @param hm A hash map with configuration values
      * @return boolean indicating success
@@ -359,10 +316,7 @@ public class LSP implements PSS {
 
         this.log.info("teardownLSP.start");
         try {
-            if (this.props.getProperty("allowLSP").equals("1")) {
-                // TODO
-            }
-            String fname =  System.getenv("CATALINA_HOME") +
+            String fname = System.getenv("CATALINA_HOME") +
                 "/shared/oscars.conf/server/" +
                 this.props.getProperty("teardownFile");
             this.configureLSP(hm, null, fname);
@@ -392,7 +346,7 @@ public class LSP implements PSS {
     }
 
     /**
-     * Configure an LSP. Sends the template using RANCID to the server (TODO).
+     * Configure an LSP. Sends the template using RANCID to the server.
      *
      * @param hm hash map of info from reservation and OSCARS' configuration
      * @param hops a list of hops only used if explicit path was given
@@ -404,7 +358,6 @@ public class LSP implements PSS {
                                  String fname)
             throws IOException, PSSException {
 
-        // if (conn != null) { out = conn.out; }
         StringBuilder sb = new StringBuilder();
 
         this.log.info("configureLSP.start");
@@ -416,8 +369,39 @@ public class LSP implements PSS {
 
         // log, and then send to router
         this.log.info("\n" + filledTemplate);
-        // TODO:  RANCID
-        // TODO:  get status
+        // this allows testing the template without trying to configure
+        // a router
+        if (!this.props.getProperty("allowLSP").equals("1")) {
+            return true;
+        }
+        // create a temporary file for use by RANCID
+        String outputName =  "/tmp/" + hm.get("resv-id");
+        File tmpFile = new File(outputName);
+        BufferedWriter outputStream = 
+            new BufferedWriter(new FileWriter(tmpFile));
+        // write template to temporary file
+        outputStream.write(filledTemplate);
+        outputStream.close();
+        String cmd = "clogin -x " + outputName + " " + hm.get("router");
+        Process p = Runtime.getRuntime().exec(cmd);
+        BufferedReader cmdOutput = 
+            new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader cmdError =
+            new BufferedReader(new InputStreamReader(p.getErrorStream()));
+        String errInfo = cmdError.readLine();
+        if (errInfo != null ) {
+            this.log.warn("RANCID error: " + errInfo );
+            throw new PSSException("RANCID error: " + errInfo);
+        }
+        String outputInfo = cmdOutput.readLine();
+        // TODO:  RANCID status check given output of command
+        if (outputInfo != null) {
+            this.log.info(outputInfo);
+        }
+        cmdOutput.close();
+        cmdError.close();
+        // delete temporary file
+        tmpFile.delete();
         this.log.info("configureLSP.end");
         return true;
     }

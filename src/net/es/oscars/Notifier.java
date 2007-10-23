@@ -21,9 +21,10 @@ public class Notifier {
     public Notifier() {
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("mail", true);
+        // not ideal; exception will be thrown in sendMessage if null
+        this.webmaster = this.props.getProperty("webmaster");
         // fill props with any information
-        this.session = Session.getDefaultInstance(props, null);
-        this.webmaster = "dwrobertson@lbl.gov";
+        this.session = Session.getDefaultInstance(this.props, null);
         this.sysadmins = new ArrayList<String>();
         this.sysadmins.add(this.webmaster);
     }
