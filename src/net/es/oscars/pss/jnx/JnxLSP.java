@@ -440,7 +440,6 @@ public class JnxLSP implements PSS {
         XMLOutputter outputter = new XMLOutputter();
         Format format = outputter.getFormat();
         format.setLineSeparator("\n");
-        format.setOmitDeclaration(true);
         outputter.setFormat(format);
         // log, and then send to router
         String logOutput = outputter.outputString(doc);
