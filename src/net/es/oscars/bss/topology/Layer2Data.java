@@ -21,9 +21,6 @@ public class Layer2Data extends HibernateBean implements Serializable {
     /** persistent field */
     private String destEndpoint;
 
-    /** persistent field */
-    private Path path;
-
     /** default constructor */
     public Layer2Data() { }
 
@@ -52,18 +49,6 @@ public class Layer2Data extends HibernateBean implements Serializable {
     public void setDestEndpoint(String destEndpoint) {
         this.destEndpoint = destEndpoint;
     }
-
-
-    /**
-     * @return path starting path instance associated with reservation
-     */ 
-    public Path getPath() { return this.path; }
-
-    /**
-     * @param path path instance to associate with this reservation
-     */ 
-    public void setPath(Path path) { this.path = path; }
-
 
     // need to override superclass because dealing with transient
     // instances as well

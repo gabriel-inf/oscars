@@ -126,6 +126,11 @@ CREATE TABLE IF NOT EXISTS paths (
     nextDomainId        INT,           -- optional foreign key
         -- first element in path
     pathElemId          INT NOT NULL UNIQUE,  -- foreign key
+        -- couldn't get Hibernate optional one-to-one associations
+        -- working correctly
+    layer2DataId        INT UNIQUE,    -- optional foreign key
+    layer3DataId        INT UNIQUE,    -- optional foreign key
+    mplsDataId          INT UNIQUE,    -- optional foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -148,7 +153,6 @@ CREATE TABLE IF NOT EXISTS layer2Data (
     id                  INT NOT NULL AUTO_INCREMENT,
     srcEndpoint         TEXT NOT NULL,
     destEndpoint        TEXT NOT NULL,
-    pathId              INT NOT NULL UNIQUE,  -- foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -165,7 +169,6 @@ CREATE TABLE IF NOT EXISTS layer3Data (
     protocol            TEXT,
         -- differentiated services code point
     dscp                TEXT,
-    pathId              INT NOT NULL UNIQUE,  -- foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
 
@@ -175,7 +178,6 @@ CREATE TABLE IF NOT EXISTS mplsData (
         -- in bps
     burstLimit         BIGINT UNSIGNED NOT NULL,
     lspClass           TEXT NOT NULL,
-    pathId             INT NOT NULL UNIQUE,   -- foreign key
     PRIMARY KEY (id)
 ) type=MyISAM;
 

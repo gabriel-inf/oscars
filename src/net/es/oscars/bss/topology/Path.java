@@ -30,13 +30,16 @@ public class Path extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private Domain nextDomain;
 
-    private Reservation reservation;
-
+    /** nullable persistent field */
     private Layer2Data layer2Data;
     
+    /** nullable persistent field */
     private Layer3Data layer3Data;
     
+    /** nullable persistent field */
     private MPLSData mplsData;
+
+    private Reservation reservation;
 
     /** default constructor */
     public Path() { }

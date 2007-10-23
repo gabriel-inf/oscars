@@ -5,7 +5,8 @@
     
 <hibernate-mapping>
 
-<class name="net.es.oscars.bss.topology.MPLSData" table="mplsData">
+<class name="net.es.oscars.bss.topology.MPLSData" table="mplsData"
+                                                  lazy="false">
     <meta attribute="class-description" inherit="false">
        @hibernate.class table="mplsData"
     </meta>
@@ -30,10 +31,6 @@
     </property>
 
     <!-- Associations -->
-
-    <many-to-one name="path" column="pathId"
-	    class="net.es.oscars.bss.topology.Path" cascade="save-update"
-	    not-null="true" unique="true" />
 
 </class>
 </hibernate-mapping>

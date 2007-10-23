@@ -34,6 +34,7 @@ public class PSSChooser implements PSS {
     public String createPath(Reservation resv) throws PSSException {
         String sysDescr = null;
 
+        this.log.info("createPath.start");
         Link ingressLink = this.getIngress(resv);
         try {
             // db enforces not-null

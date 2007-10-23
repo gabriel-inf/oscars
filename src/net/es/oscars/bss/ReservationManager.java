@@ -433,7 +433,6 @@ public class ReservationManager {
             dbLayer2Data.setSrcEndpoint(layer2Info.getSrcEndpoint());
             dbLayer2Data.setDestEndpoint(layer2Info.getDestEndpoint());
             path.setLayer2Data(dbLayer2Data);
-            dbLayer2Data.setPath(path);
         } else if (layer3Info != null) {
             Layer3Data dbLayer3Data = new Layer3Data();
             dbLayer3Data.setSrcHost(layer3Info.getSrcHost());
@@ -443,7 +442,6 @@ public class ReservationManager {
             dbLayer3Data.setProtocol(layer3Info.getProtocol());
             dbLayer3Data.setDscp(layer3Info.getDscp());
             path.setLayer3Data(dbLayer3Data);
-            dbLayer3Data.setPath(path);
         }
         MplsInfo mplsInfo = pathInfo.getMplsInfo();
         if (mplsInfo != null) {
@@ -453,7 +451,6 @@ public class ReservationManager {
             dbMplsData.setBurstLimit(burstLimit);
             dbMplsData.setLspClass(mplsInfo.getLspClass());
             path.setMplsData(dbMplsData);
-            dbMplsData.setPath(path);
         }
         this.log.debug("convertPath.end");
         return path;
@@ -588,14 +585,17 @@ public class ReservationManager {
         int srcTagged = srcVtag.getTagged() ? 1 : -1;
         int destTagged = destVtag.getTagged() ? 1 : -1;
         
-        if(link == srcLink){
+        if (link == srcLink) {
             int vtagValue = Integer.parseInt(srcVtag.getString());
             pathElem.setLinkDescr((vtagValue * srcTagged) + "");
-        }else if(link == destLink){
+            this.log.info("linkId: " + link.getId() + ", srcLink: " + vtagValue * srcTagged);
+        } else if(link == destLink) {
             int vtagValue = Integer.parseInt(destVtag.getString());
             pathElem.setLinkDescr((vtagValue * destTagged) + "");
-        }else{
+            this.log.info("linkId: " + link.getId() + ", destLink: " + vtagValue * srcTagged);
+        } else {
             pathElem.setLinkDescr(srcVtag.getString());
+            this.log.info("linkId: " + link.getId() + ", internalLink: " + srcVtag.getString());
         }
      }
     
@@ -638,9 +638,11 @@ public class ReservationManager {
                                     PathInfo pathInfo){
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         
-        if(layer2Info != null && forwardReply != null && 
+        if (layer2Info != null && forwardReply != null && 
             forwardReply.getPathInfo() != null && 
-            forwardReply.getPathInfo().getLayer2Info() != null){
+            forwardReply.getPathInfo().getLayer2Info() != null) {
+
+            this.log.info("setting up vtags");
             DomainDAO domainDAO = new DomainDAO(this.dbname);
             String[] srcComponentList = layer2Info.getSrcEndpoint().split(":");
             String[] destComponentList = 
@@ -649,20 +651,38 @@ public class ReservationManager {
             Link destLink = domainDAO.getFullyQualifiedLink(destComponentList);
             VlanTag srcVtag = forwardReply.getPathInfo().getLayer2Info().getSrcVtag();
             VlanTag destVtag = forwardReply.getPathInfo().getLayer2Info().getDestVtag();
+            this.log.info("src vtag: " + srcVtag);
+            this.log.info("dest vtag: " + destVtag);
             layer2Info.setSrcVtag(srcVtag);
             layer2Info.setDestVtag(destVtag);
             
             /* update VLANs */
             Path path = resv.getPath();
             PathElem pathElem = path.getPathElem();
-            while(pathElem != null){
+            while (pathElem != null) {
                 if(pathElem.getLink().getL2SwitchingCapabilityData() != null){
+                    this.log.info(pathElem.getLink().getTopologyIdent());
                     //TODO: Support VLAN mapping
                     this.setL2LinkDescr(pathElem, srcLink, destLink, 
                                             pathElem.getLink(), layer2Info);
+                } else {
+                    this.log.info("no switching capability data for: " + pathElem.getLink().getTopologyIdent());
                 }
-                
                 pathElem = pathElem.getNextElem();
+            }
+        } else {
+            this.log.info("not setting up vtags");
+            if (layer2Info == null) {
+                this.log.info("because no layer 2 info");
+            }
+            if (forwardReply == null) {
+                this.log.info("because no forwardReply");
+            } else if (forwardReply.getPathInfo() == null) {
+                this.log.info("because no forwardReply.getPathInfo");
+            } else if (forwardReply.getPathInfo().getLayer2Info() == null) {
+                this.log.info("because no forwardReply.getPathInfo().getLayer2Info()");
+            } else {
+                this.log.info("unknown error");
             }
         }
     }

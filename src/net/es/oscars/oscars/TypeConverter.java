@@ -203,8 +203,7 @@ public class TypeConverter {
     public Layer2Info pathToLayer2Info(Path path) {
         Layer2DataDAO layer2DataDAO = new Layer2DataDAO("bss");
         // database type
-        Layer2Data layer2Data =
-            layer2DataDAO.queryByParam("pathId", path.getId());
+        Layer2Data layer2Data = path.getLayer2Data();
         if (layer2Data == null) {
             return null;
         }
@@ -223,8 +222,7 @@ public class TypeConverter {
 
         Layer3DataDAO layer3DataDAO = new Layer3DataDAO("bss");
         // database type
-        Layer3Data layer3Data =
-            layer3DataDAO.queryByParam("pathId", path.getId());
+        Layer3Data layer3Data = path.getLayer3Data();
         if (layer3Data == null) {
             return null;
         }
@@ -253,8 +251,7 @@ public class TypeConverter {
 
         MPLSDataDAO MPLSDataDAO = new MPLSDataDAO("bss");
         // database type
-        MPLSData mplsData =
-            MPLSDataDAO.queryByParam("pathId", path.getId());
+        MPLSData mplsData = path.getMplsData();
         if (mplsData == null) {
             return null;
         }

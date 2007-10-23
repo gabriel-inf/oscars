@@ -66,9 +66,11 @@ public class JnxLSP implements PSS {
         Ipaddr ipaddr = null;
 
         Path path = resv.getPath();
+        this.log.info("path id: " + path.getId());
         // temporary for unavailable layer 2 handling; TODO:  FIX
         Layer2Data layer2Data = path.getLayer2Data();
         if (layer2Data != null) {
+            this.log.info("problem: layer 2 path with Juniper");
             resv.setStatus("ACTIVE");
             return "ACTIVE";
         }
@@ -104,8 +106,10 @@ public class JnxLSP implements PSS {
             throw new PSSException("no egress loopback in path");
         }
         MPLSData mplsData = path.getMplsData();
-        // Layer2Data layer2Data = path.getLayer2Data();
         Layer3Data layer3Data = path.getLayer3Data();
+        if (layer3Data == null) {
+            this.log.info("problem: no layer 3 path for Juniper");
+        }
         // Create an LSP object.
         lspInfo = new HashMap<String, String>();
         String circuitStr = "oscars_" + resv.getGlobalReservationId();

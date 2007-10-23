@@ -16,7 +16,7 @@
        @hibernate.class table="paths"
     </meta>
 
-    <id name="id">
+    <id name="id" column="id">
         <meta attribute="field-description">
            @hibernate.id generator-class="identity"
         </meta>
@@ -39,14 +39,20 @@
     <one-to-one name="reservation" class="net.es.oscars.bss.Reservation"
 	    property-ref="path" />
 
-    <one-to-one name="layer2Data" class="net.es.oscars.bss.topology.Layer2Data"
-	    property-ref="path" />
+    <!-- The following are for optional associations
+         between paths and layer-specific data -->
 
-    <one-to-one name="layer3Data" class="net.es.oscars.bss.topology.Layer3Data"
-	    property-ref="path" />
+    <many-to-one name="layer2Data" column="layer2DataId"
+	    class="net.es.oscars.bss.topology.Layer2Data" cascade="save-update"
+	    unique="true" />
 
-    <one-to-one name="mplsData" class="net.es.oscars.bss.topology.MPLSData"
-	    property-ref="path" />
+    <many-to-one name="layer3Data" column="layer3DataId"
+	    class="net.es.oscars.bss.topology.Layer3Data" cascade="save-update"
+	    unique="true" />
+
+    <many-to-one name="mplsData" column="mplsDataId"
+	    class="net.es.oscars.bss.topology.MPLSData" cascade="save-update"
+	    unique="true" />
 
 </class>
 </hibernate-mapping>

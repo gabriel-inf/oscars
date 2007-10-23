@@ -57,6 +57,7 @@ public class PathSetupManager{
         
         /* Forward to next domain */
         if(doForward){
+            this.log.info("thinks forwarding, calling createPath");
             CreatePathResponseContent forwardReply = 
                 this.forwarder.createPath(resv);
             if(forwardReply == null){
@@ -71,6 +72,7 @@ public class PathSetupManager{
         
         /* Create path */
         try{     
+            this.log.info("past forwarding, trying regular createPath");
             status = this.pss.createPath(resv);
         } catch(Exception e) {
             this.log.error("Error setting up local path for reservation, gri: [" +
