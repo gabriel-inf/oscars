@@ -11,7 +11,7 @@ import org.apache.axis2.AxisFault;
 public class TopologyPuller extends Client{
     /**
      * Constructor that sets the URL to an initial value. It also loads 
-     * configuration files from CATALINA_HOME/shared/oscars.conf/axis2.repo
+     * configuration files from CATALINA_HOME/shared/classes/repo
      * The URL may be changed using setUrl so that a client does not have to
      * be reinitialized when making requests to multiple locations
      *
@@ -23,7 +23,7 @@ public class TopologyPuller extends Client{
         if (!catalinaHome.endsWith("/")) {
             catalinaHome += "/";
         }
-        String repo = catalinaHome + "shared/oscars.conf/axis2.repo/";
+        String repo = catalinaHome + "shared/classes/repo/";
         
         System.setProperty("axis2.xml", repo + "axis2.xml");
         

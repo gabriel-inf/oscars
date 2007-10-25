@@ -61,9 +61,9 @@ public class PSSChooser implements PSS {
             LSP lsp = new LSP(this.dbname);
             return lsp.createPath(resv);
         }
-        // TODO:  better status
-        resv.setStatus("CANCELLED");
-        return "CANCELLED";
+        // this should never happen
+        resv.setStatus("FAILED");
+        return "FAILED";
     }
 
     /**
@@ -102,9 +102,9 @@ public class PSSChooser implements PSS {
             LSP lsp = new LSP(this.dbname);
             return lsp.teardownPath(resv);
         }
-        // TODO:  better status
-        resv.setStatus("CANCELLED");
-        return "CANCELLED";
+        // this should never happen
+        resv.setStatus("FAILED");
+        return "FAILED";
     }
 
     private Link getIngress(Reservation resv) throws PSSException {

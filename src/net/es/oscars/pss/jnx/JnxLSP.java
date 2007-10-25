@@ -281,7 +281,7 @@ public class JnxLSP implements PSS {
         hm.put("login", this.props.getProperty("login"));
         hm.put("router", link.getPort().getNode().getNodeAddress().getAddress());
         String keyfile = System.getenv("CATALINA_HOME") +
-                             "/shared/oscars.conf/server/oscars.key";
+                             "/shared/classes/server/oscars.key";
         hm.put("keyfile", keyfile);
         hm.put("passphrase", this.props.getProperty("passphrase"));
     }
@@ -308,7 +308,7 @@ public class JnxLSP implements PSS {
                 conn.createSSHConnection(hm);
             }
             String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/oscars.conf/server/";
+                "/shared/classes/server/";
             if (hm.get("vlanTag") == null) {
                 fname += this.props.getProperty("setupFile");
             } else {
@@ -347,7 +347,7 @@ public class JnxLSP implements PSS {
                 conn.createSSHConnection(hm);
             }
             String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/oscars.conf/server/" +
+                "/shared/classes/server/" +
                 this.props.getProperty("teardownFile");
             this.configureLSP(hm, null, fname, conn);
             if (conn != null) {

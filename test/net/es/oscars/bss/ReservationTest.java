@@ -65,9 +65,6 @@ public class ReservationTest {
         layer3Data.setProtocol(PROTOCOL);
         mplsData.setLspClass(LSP_CLASS);
         resv.setLogin(this.props.getProperty("login"));
-
-        layer3Data.setPath(path);
-        mplsData.setPath(path);
         resv.setPath(path);
         dao.create(resv);
         this.sf.getCurrentSession().getTransaction().commit();

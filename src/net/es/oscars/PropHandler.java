@@ -15,7 +15,7 @@ public class PropHandler {
 
     public PropHandler(String fname) {
         this.propertiesFile = System.getenv("CATALINA_HOME") +
-            "/shared/oscars.conf/server/" + fname;
+            "/shared/classes/server/" + fname;
     }
 
     /**

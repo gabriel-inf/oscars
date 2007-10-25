@@ -9,6 +9,7 @@ import org.hibernate.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.interdomain.InterdomainException;
 
 /**
  * This class tests methods in Scheduler.java called by SOAP, as well as
@@ -31,31 +32,23 @@ public class SchedulerTest {
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
-    public void testPendingReservations() throws PSSException {
+    public void testPendingReservations()
+            throws PSSException, InterdomainException, Exception {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
         Scheduler scheduler = new Scheduler(this.dbname);
-        try {
-            reservations = scheduler.pendingReservations(TIME_INTERVAL);
-        } catch (PSSException ex) {
-            this.sf.getCurrentSession().getTransaction().rollback();
-            throw ex;
-        }
+        reservations = scheduler.pendingReservations(TIME_INTERVAL);
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
-    public void testExpiredReservations() throws PSSException {
+    public void testExpiredReservations()
+            throws PSSException, Exception {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
         Scheduler scheduler = new Scheduler(this.dbname);
-        try {
-            reservations = scheduler.expiredReservations(TIME_INTERVAL);
-        } catch (PSSException ex) {
-            this.sf.getCurrentSession().getTransaction().rollback();
-            throw ex;
-        }
+        reservations = scheduler.expiredReservations(TIME_INTERVAL);
         this.sf.getCurrentSession().getTransaction().commit();
     }
 }

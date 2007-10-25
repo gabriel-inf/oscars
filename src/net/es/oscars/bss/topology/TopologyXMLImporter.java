@@ -301,6 +301,12 @@ public class TopologyXMLImporter {
             // String strGranularity = linkXML.getChild("granularity", this.ns).getValue();
             String strGranularity = "0";
             Long granularity = TopologyUtil.understandBandwidth(strGranularity);
+            
+            String trafficEngineeringMetric; 
+        	if (linkXML.getChild("trafficEngineeringMetric", ns) != null) {
+        		trafficEngineeringMetric = linkXML.getChild("trafficEngineeringMetric", ns).getValue();
+                linkDB.setTrafficEngineeringMetric(trafficEngineeringMetric);
+        	}
 
             linkDB.setCapacity(capacity);
             linkDB.setUnreservedCapacity(capacity); // TODO: who handles this?
@@ -311,17 +317,6 @@ public class TopologyXMLImporter {
             this.parseLinkIPAddress(linkDB, ipAddress);
             this.parseRemoteLink(linkXML, linkDB);
             this.parseLinkSwcap(linkXML, linkDB);
-            portDB.addLink(linkDB);
-        }
-        if (!addedStar) {
-            Link linkDB = TopologyUtil.initLink(portDB);
-            linkDB.setTopologyIdent("*");
-            linkDB.setAlias("*");
-            linkDB.setCapacity(portDB.getCapacity());
-            linkDB.setUnreservedCapacity(portDB.getUnreservedCapacity()); // TODO: who handles this?
-            linkDB.setMaximumReservableCapacity(portDB.getMaximumReservableCapacity());
-            linkDB.setMinimumReservableCapacity(portDB.getMinimumReservableCapacity());
-            linkDB.setGranularity(portDB.getGranularity());
             portDB.addLink(linkDB);
         }
     }

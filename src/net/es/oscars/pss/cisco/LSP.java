@@ -293,7 +293,7 @@ public class LSP implements PSS {
         this.log.info("setupLSP.start");
         try {
             String fname =  System.getenv("CATALINA_HOME") +
-                "/shared/oscars.conf/server/";
+                "/shared/classes/server/";
             fname += this.props.getProperty("setupFile");
             this.log.info("Filename: ["+fname+"]");
             this.configureLSP(hm, hops, fname);
@@ -317,7 +317,7 @@ public class LSP implements PSS {
         this.log.info("teardownLSP.start");
         try {
             String fname = System.getenv("CATALINA_HOME") +
-                "/shared/oscars.conf/server/" +
+                "/shared/classes/server/" +
                 this.props.getProperty("teardownFile");
             this.configureLSP(hm, null, fname);
         } catch (IOException ex) {

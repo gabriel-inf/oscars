@@ -86,7 +86,12 @@ public class TopologyXMLExporter {
     protected Document createXML(String query) {
         String domTopoIdent = query; // TODO: how will queries look like?
         Element topoXML = new Element("topology", this.ns);
-        topoXML.setAttribute("id", "ESnet topology"); // TODO: specify this
+        topoXML.setAttribute("id", "OSCARS topology"); // TODO: specify this
+        
+        Element idcXML = new Element("idcId", this.ns);
+        
+        idcXML.addContent("placeholder"); // TODO: how do we determine this?
+        topoXML.addContent(idcXML);
 
         Document doc = new Document(topoXML);
         Element domXML;

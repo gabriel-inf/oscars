@@ -2,10 +2,14 @@
 
 <project name="scheduler" default="all">
 
+    <property environment="env" />
     <property name="build.home" value="../.." />
     <property name="build.classes" value="${build.home}/build/WEB-INF/classes" />
     <property name="sched.home" value="." />
     <property name="version" value="0.9" />
+    <property name="private" location="${env.DOMAIN_HOME}/client" />
+    <property name="public" location="../../conf" />
+    <property name="repo" location="repo" />
 
     <path id="compile.path">
         <pathelement location="${build.classes}" />
@@ -26,6 +30,20 @@
         <mkdir dir="${sched.home}/classes"/>
         <copy todir="lib">
             <fileset dir="${build.home}/lib" includes="hibernate3.jar, log4j-1.2.13.jar"/>
+        </copy>
+    </target>
+
+    <target name="setupRepo">
+        <mkdir dir="${repo}/modules" />
+        <copy todir="${repo}">
+            <fileset dir="${private}" includes="*.*" />
+        </copy>
+        <copy todir="${repo}">
+            <fileset dir="${public}/client" includes="log4j.properties" />
+        </copy>
+        <!-- Copy public material to repo -->
+        <copy todir="${repo}/modules">
+            <fileset dir="${public}" includes="*rampart-1.3*.mar" />
         </copy>
     </target>
 

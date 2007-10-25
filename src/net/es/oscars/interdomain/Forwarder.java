@@ -36,7 +36,7 @@ public class Forwarder extends Client {
         if (!catalinaHome.endsWith("/")) {
             catalinaHome += "/";
         }
-        String repo = catalinaHome + "shared/oscars.conf/axis2.repo/";
+        String repo = catalinaHome + "shared/classes/repo/";
         System.setProperty("axis2.xml", repo + "axis2.xml");
         try {
             super.setUp(true, url, repo, repo + "axis2.xml");

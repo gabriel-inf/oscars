@@ -442,7 +442,9 @@ public class TopologyManager {
             }
         }
 
+        
         Iterator newLinkIt = newPort.getLinks().iterator();
+        
 
         // Now, create new ports / update existing
         while (newLinkIt.hasNext()) {
@@ -492,6 +494,7 @@ public class TopologyManager {
                 oldLink.setMaximumReservableCapacity(newLink.getMaximumReservableCapacity());
                 oldLink.setMinimumReservableCapacity(newLink.getMinimumReservableCapacity());
                 oldLink.setAlias(newLink.getAlias());
+                oldLink.setTrafficEngineeringMetric(newLink.getTrafficEngineeringMetric());
 
                 oldLink.setValid(true);
             	
@@ -520,6 +523,8 @@ public class TopologyManager {
                 this.invalidateLink(oldLinkMap.get(key));
             }
         }
+        
+        
 
         this.log.debug("mergeLinks.end");
     }

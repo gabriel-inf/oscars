@@ -75,6 +75,12 @@ public class TopologyXMLFileReader {
      */
     protected Document loadFile(String fName) throws JDOMException, IOException {
         Document doc = null;
+        
+        File xsdFile = new File( this.getXsdFilename());
+        if (!xsdFile.exists()) {
+        	throw new IOException("XSD file not found!");
+        }
+        
         SAXBuilder sb = new SAXBuilder("org.apache.xerces.parsers.SAXParser",
                 true);
 

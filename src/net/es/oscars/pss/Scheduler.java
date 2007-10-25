@@ -9,7 +9,6 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.Notifier;
-import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationDAO;
 import net.es.oscars.interdomain.InterdomainException;
@@ -38,18 +37,19 @@ public class Scheduler {
      * @param timeInterval an integer with the time window to check 
      * @return response the list of reservation that are pending
      * @throws PSSException
+     * @throws InterdomainException
+     * @throws Exception
      */
     public List<Reservation> pendingReservations(Integer timeInterval) 
-            throws PSSException, InterdomainException {
+            throws PSSException, InterdomainException, Exception {
 
         List<Reservation> reservations = null;
 
-        try {
-            ReservationDAO dao = new ReservationDAO(this.dbname);
-            reservations = dao.pendingReservations(timeInterval);
-            for (Reservation resv: reservations) {
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        reservations = dao.pendingReservations(timeInterval);
+        for (Reservation resv: reservations) {
+            try {
                 // call PSS to schedule LSP
-                this.log.info(resv.getGlobalReservationId());
                 String pathSetupMode = resv.getPath().getPathSetupMode();
                 this.log.info("pendingReservations: " + resv.toString());
                 if (pathSetupMode.equals("domain")) {
@@ -59,14 +59,36 @@ public class Scheduler {
                     String subject = "Circuit set up";
                     // this.notifier.sendMessage(subject, notification);
                 }
+            } catch (PSSException ex) {
+                // set to FAILED, log and rethrow
+                resv.setStatus("FAILED");
+                long millis = System.currentTimeMillis();
+                resv.setEndTime(millis);
+                this.log.error("Reservation set up of " +
+                         resv.getGlobalReservationId() +
+                        "failed with " + ex.getMessage());
+                throw new PSSException(ex.getMessage());
+            } catch (InterdomainException ex) {
+                // set to FAILED, log and rethrow
+                resv.setStatus("FAILED");
+                long millis = System.currentTimeMillis();
+                resv.setEndTime(millis);
+                this.log.error("Reservation set up of " +
+                         resv.getGlobalReservationId() +
+                        "failed with " + ex.getMessage());
+                throw new InterdomainException(ex.getMessage());
+            } catch (Exception ex) {
+                // set to FAILED, log and rethrow
+                resv.setStatus("FAILED");
+                long millis = System.currentTimeMillis();
+                resv.setEndTime(millis);
+                this.log.error("Reservation set up of " +
+                         resv.getGlobalReservationId() +
+                        "failed with " + ex.getMessage());
+                throw new Exception(ex.getMessage());
+            //} catch (javax.mail.MessagingException ex) {
+                //throw new PSSException(ex.getMessage());
             }
-        } catch (PSSException ex) {
-            // log and rethrow
-            this.log.error("pendingReservations.PSSException: " +
-                    ex.getMessage());
-            throw new PSSException(ex.getMessage());
-        //} catch (javax.mail.MessagingException ex) {
-            //throw new BSSException(ex.getMessage());
         }
         return reservations;
     }
@@ -77,18 +99,19 @@ public class Scheduler {
      * @param timeInterval an integer with the time window to check 
      * @return response a list of reservations that have expired
      * @throws PSSException
+     * @throws Exception
      */
     public List<Reservation> expiredReservations(Integer timeInterval) 
-            throws PSSException {
+            throws PSSException, Exception {
 
         List<Reservation> reservations = null;
         String prevStatus = null;
         String newStatus = null;
 
-        try {
-            ReservationDAO dao = new ReservationDAO(this.dbname);
-            reservations = dao.expiredReservations(timeInterval);
-            for (Reservation resv: reservations) {
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        reservations = dao.expiredReservations(timeInterval);
+        for (Reservation resv: reservations) {
+            try {
                 // call PSS to tear down LSP
                 prevStatus = resv.getStatus();
                 String status = this.pathSetupManager.teardown(resv, false);
@@ -103,14 +126,27 @@ public class Scheduler {
                 String notification = this.expiredReservationMessage(resv);
                 String subject = "Circuit torn down";
                 // this.notifier.sendMessage(subject, notification);
+            } catch (PSSException ex) {
+                // set to FAILED, log and rethrow
+                resv.setStatus("FAILED");
+                long millis = System.currentTimeMillis();
+                resv.setEndTime(millis);
+                this.log.error("Reservation set up of " +
+                         resv.getGlobalReservationId() +
+                        "failed with " + ex.getMessage());
+                throw new PSSException(ex.getMessage());
+            } catch (Exception ex) {
+                // set to FAILED, log and rethrow
+                resv.setStatus("FAILED");
+                long millis = System.currentTimeMillis();
+                resv.setEndTime(millis);
+                this.log.error("Reservation set up of " +
+                         resv.getGlobalReservationId() +
+                        "failed with " + ex.getMessage());
+                throw new Exception(ex.getMessage());
+            //} catch (javax.mail.MessagingException ex) {
+                //throw new PSSException(ex.getMessage());
             }
-        } catch (PSSException ex) {
-            // log and rethrow
-            this.log.error("expiredReservations.PSSException: " +
-                    ex.getMessage());
-            throw new PSSException(ex.getMessage());
-        //} catch (javax.mail.MessagingException ex) {
-            //throw new BSSException(ex.getMessage());
         }
         return reservations;
     }

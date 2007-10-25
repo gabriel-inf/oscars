@@ -405,6 +405,12 @@ public class ReservationManager {
                 link.getL2SwitchingCapabilityData() != null &&
                 nextDomain == null){
                 this.setL2LinkDescr(pathElem, srcLink, destLink, link,  layer2Info);
+            } else if (nextDomain != null) {
+            	this.log.info("next domain is NOT NULL, not setting up VLAN tags now");
+            } else if (link.getL2SwitchingCapabilityData() == null) {
+            	this.log.info("L2 switching capability data is NULL, can't set up VLAN tags ");
+            } else if (layer2Info == null) {
+            	this.log.info("layer 2 info is NULL");
             }
             pathElems.add(pathElem);
             lastElem = pathElem;
@@ -620,8 +626,10 @@ public class ReservationManager {
                     
                     layer2Info.getSrcVtag().setString(vtag);
                     layer2Info.getDestVtag().setString(vtag);
+                    
                     found = true;
-                    break;
+                    return;
+                    // break;  // no need to break..
                 }
             }
         }
@@ -660,7 +668,7 @@ public class ReservationManager {
             Path path = resv.getPath();
             PathElem pathElem = path.getPathElem();
             while (pathElem != null) {
-                if(pathElem.getLink().getL2SwitchingCapabilityData() != null){
+                if (pathElem.getLink().getL2SwitchingCapabilityData() != null){
                     this.log.info(pathElem.getLink().getTopologyIdent());
                     //TODO: Support VLAN mapping
                     this.setL2LinkDescr(pathElem, srcLink, destLink, 

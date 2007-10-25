@@ -9,6 +9,7 @@ import net.es.oscars.database.Initializer;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.pss.Scheduler;
 import net.es.oscars.pss.PSSException;
+import net.es.oscars.interdomain.InterdomainException;
 
 /**
  * @author Jason Lee (jrlee@lbl.gov), David Robertson (dwrobertson@lbl.gov)
@@ -33,7 +34,6 @@ public class PathScheduler {
                 shutdownHook(); 
             }
         };
-
         Scheduler sched = new Scheduler("bss");
         Runtime.getRuntime().addShutdownHook (runtimeHookThread);
         try {
@@ -60,14 +60,13 @@ public class PathScheduler {
             resList = scheduler.expiredReservations(0);
             resList = scheduler.pendingReservations(reservationInterval);
         } catch (PSSException e) {
-            session.getTransaction().rollback();
-            // exit on a PSS exception
-            System.exit(1);
+            // Exception logged in Scheduler class.
+            // Don't do a rollback because want failed status of
+            // reservation to be committed.
+        } catch (InterdomainException ex ) {
+            // ditto
         } catch (Exception ex ) {
-            // any exception likely to be fatal
-            ex.printStackTrace();
-            session.getTransaction().rollback();
-            System.exit(1);
+            // ditto
         }
         session.getTransaction().commit();
     }

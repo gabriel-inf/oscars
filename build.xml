@@ -228,25 +228,23 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar"/>
         </copy>
     </target>
-    <target name="setupServer" description="populate the oscars.conf directory">
-        <mkdir dir="${catalina.home}/shared/oscars.conf/axis2.repo"/>
-        <mkdir dir="${catalina.home}/shared/classes/repo"/>
-        <mkdir dir="${catalina.home}/shared/oscars.conf/server"/>
-        <mkdir dir="${catalina.home}/shared/oscars.conf/axis2.repo/modules"/>
-        <copy todir="${catalina.home}/shared/oscars.conf/axis2.repo">
+    <target name="setupServer" description="populate the shared/classes directory">
+        <mkdir dir="${catalina.home}/shared/classes/server"/>
+        <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
+        <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${domain.home}/client/" includes="axis2.xml, ssl-keystore.jks"/>
         </copy>
         <!-- the following files need to be in the classpath of the server -->
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${domain.home}/server" includes="sec-client.*"/>
         </copy>
-        <copy file="conf/rampart-1.3.mar" todir="${catalina.home}/shared/oscars.conf/axis2.repo/modules"/>
-        <copy file="conf/server/axis2.log4j.properties" tofile="${catalina.home}/webapps/axis2/WEB-INF/classes/log4j.properties"/>
-        <copy todir="${catalina.home}/shared/oscars.conf/server">
+        <copy file="conf/rampart-1.3.mar" todir="${catalina.home}/shared/classes/repo/modules"/>
+        <copy file="conf/server/axis2.log4j.properties" tofile="${catalina.home}/shared/classes/log4j.properties"/>
+        <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties"/>
             <fileset dir="conf/server/" includes="*Template*, *.template"/>
         </copy>
-        <chmod dir="${catalina.home}/shared/oscars.conf/server" perm="600" includes="*key"/>
+        <chmod dir="${catalina.home}/shared/classes/server" perm="600" includes="*key"/>
     </target>
     <target name="deployaar" description="copy OSCARS.aar to axis2 services directory" depends="aar, setupServer, deploylibs">
         <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}"/>
