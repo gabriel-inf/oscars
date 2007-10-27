@@ -41,6 +41,9 @@ public class Reservation extends HibernateBean implements Serializable {
     /** persistent field */
     private Path path;
     
+    /** persistent field */
+    private Token token;
+    
     /** default constructor */
     public Reservation() { }
 
@@ -150,6 +153,16 @@ public class Reservation extends HibernateBean implements Serializable {
      * @param path path instance to associate with this reservation
      */ 
     public void setPath(Path path) { this.path = path; }
+    
+    /**
+     * @return token instance associated with reservation
+     */ 
+    public Token getToken() { return this.token; }
+
+    /**
+     * @param token token instance to associate with this reservation
+     */ 
+    public void setToken(Token token) { this.token = token; }
 
 
     public String toString() {

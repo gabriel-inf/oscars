@@ -8,6 +8,9 @@ import javax.mail.MessagingException;
 
 import org.apache.log4j.*;
 
+import org.aaaarch.gaaapi.tvs.TokenBuilder;
+import org.aaaarch.gaaapi.tvs.TokenKey;
+
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
@@ -119,6 +122,10 @@ public class ReservationManager {
         if (resv.getPath().getMplsData() != null) {
             MPLSDataDAO mplsDataDAO = new MPLSDataDAO(this.dbname);
             mplsDataDAO.create(resv.getPath().getMplsData());
+        }
+        if(resv.getToken() != null){
+            TokenDAO tokenDAO = new TokenDAO("bss");
+            tokenDAO.create(resv.getToken());
         }
         try {
             String subject = "Reservation has been entered into the system";
@@ -643,10 +650,16 @@ public class ReservationManager {
      * @pathInfo reservation path information
      */
     public void finalizeResv(CreateReply forwardReply, Reservation resv,                                     
-                                    PathInfo pathInfo){
+                             PathInfo pathInfo) throws BSSException{
         Layer2Info layer2Info = pathInfo.getLayer2Info();
+        String pathSetupMode = pathInfo.getPathSetupMode();
         
-        if (layer2Info != null && forwardReply != null && 
+        //Create token if user signaled
+        if(pathSetupMode == null || pathSetupMode.equals("user-xml")){
+            this.generateToken(forwardReply, resv);
+        }
+        
+        if(layer2Info != null && forwardReply != null && 
             forwardReply.getPathInfo() != null && 
             forwardReply.getPathInfo().getLayer2Info() != null) {
 
@@ -693,5 +706,39 @@ public class ReservationManager {
                 this.log.info("unknown error");
             }
         }
+    }
+    
+    /** 
+     * Creates a token if the last domain or sets the token returned from
+     * the forward reply.
+     *
+     * @param forwardReply response from forward request
+     * @param resv reservation to be stored in database
+     */
+    private void generateToken(CreateReply forwardReply, Reservation resv)
+                    throws BSSException{
+        Token token = new Token();
+        
+        if(forwardReply == null){
+            //Generate token
+            String gri = resv.getGlobalReservationId();
+            byte[] tokenKey = null;
+			String tokenValue = null;
+			try{
+			    tokenKey = TokenKey.generateTokenKey(gri);
+			    tokenValue = TokenBuilder.getXMLTokenValue(gri, tokenKey);
+			    this.log.info("token=" + tokenValue);
+			}catch(Exception e){
+			    this.log.error("Token building error: " + e.getMessage());
+			     throw new BSSException("Token building error: " + 
+			        e.getMessage());
+			}
+			token.setValue(tokenValue);
+        }else{
+            token.setValue(forwardReply.getToken());
+        }
+        
+        resv.setToken(token);
+        token.setReservation(resv);
     }
 }

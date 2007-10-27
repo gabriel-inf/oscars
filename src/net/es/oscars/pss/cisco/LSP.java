@@ -86,13 +86,9 @@ public class LSP implements PSS {
                     ingressLink = pathElem.getLink();
                     // assume just one VLAN for now
                     vlanTag = pathElem.getLinkDescr();
-/*
                     if (vlanTag == null) {
                         throw new PSSException("VLAN tag is null!");
                     }
-*/
-                    // temporary, to test rest of template
-                    vlanTag = "3552";
                     // find ingress loopback
                     NodeAddress ingressNodeAddress =
                         ingressLink.getPort().getNode().getNodeAddress();
@@ -118,7 +114,7 @@ public class LSP implements PSS {
             throw new PSSException("no egress loopback in path");
         }
         
-        // Create an LSP object.
+        // Fill in parameters for setting up LSP circuit.
         lspInfo = new HashMap<String, String>();
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in parameter
@@ -142,7 +138,7 @@ public class LSP implements PSS {
         resvNum = resvNum % 65534;
         lspInfo.put("resv-num", Integer.toString(resvNum));
         lspInfo.put("port", ingressLink.getPort().getTopologyIdent());
-        // used for login, not template
+        // router to send configuration command to (forward direction)
         lspInfo.put("router",
             ingressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("lsp_to", lspFwdTo);
@@ -188,7 +184,6 @@ public class LSP implements PSS {
           throw new PSSException("Egress port has no IP in DB!");
         }
         lspInfo.put("port", egressLink.getPort().getTopologyIdent());
-        // used for login, not template
         lspInfo.put("router",
             egressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("lsp_to", lspRevTo);
@@ -205,13 +200,40 @@ public class LSP implements PSS {
     }
 
     /**
-     * Verifies LSP is still active: TODO
+     * Verifies LSP is still active.
      *
      * @param resv the reservation whose path will be refreshed
      * @throws PSSException
      */
     public String refreshPath(Reservation resv) throws PSSException {
-        return "ACTIVE";
+
+        Link ingressLink = null;
+        boolean active = false;
+
+        Map<String,String> hm = null;
+        String circuitStr = "oscars_" + resv.getGlobalReservationId();
+        // "." is illegal character in resv-id parameter
+        String circuitName = circuitStr.replaceAll("\\.", "_");
+        hm.put("resv-id", circuitName);
+        PathElem pathElem = resv.getPath().getPathElem();
+        while (pathElem != null) {
+            if (pathElem.getDescription() != null) {
+                if (pathElem.getDescription().equals("ingress")) {
+                    ingressLink = pathElem.getLink();
+                    break;
+                }
+            }
+            pathElem = pathElem.getNextElem();
+        }
+        String routerName =
+            ingressLink.getPort().getNode().getNodeAddress().getAddress();
+        hm.put("router", routerName);
+        try {
+            active = this.statusLSP(hm);
+        } catch (IOException ex) {
+            throw new PSSException(ex.getMessage());
+        }
+        return active ? "ACTIVE" : "FAILED";
     }
 
     /**
@@ -225,6 +247,7 @@ public class LSP implements PSS {
         Link ingressLink = null;
         Link egressLink = null;
         String vlanTag = null;
+        String newStatus = null;
 
         Path path = resv.getPath();
         PathElem pathElem = path.getPathElem();
@@ -244,11 +267,8 @@ public class LSP implements PSS {
             }
             pathElem = pathElem.getNextElem();
         }
-        // TODO:  temporary fix
-        vlanTag = "3552";
-        // Create an LSP object.
+        // Set up parameters for tearing down an LSP circuit.
         Map<String,String> lspInfo = new HashMap<String, String>();
-        String newStatus = null;
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
@@ -261,12 +281,17 @@ public class LSP implements PSS {
         resvNum = resvNum % 65534;
         
         // forward direction
+        // router to send configuration command to
+        lspInfo.put("router",
+            ingressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("resv-id", circuitName);
         lspInfo.put("resv-num", Integer.toString(resvNum));
         lspInfo.put("port", ingressLink.getPort().getTopologyIdent());
         lspInfo.put("vlan-id", vlanTag);
         this.teardownLSP(lspInfo);
         // reverse direction
+        lspInfo.put("router",
+            egressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("port", egressLink.getPort().getTopologyIdent());
         this.teardownLSP(lspInfo);
         String prevStatus = resv.getStatus();
@@ -284,11 +309,12 @@ public class LSP implements PSS {
      *
      * @param hm a hash map with configuration values
      * @param hops a list of hops only used if explicit path was given
-     * @return boolean indicating success
      * @throws PSSException
      */
-    public boolean setupLSP(Map<String,String> hm, List<String> hops)
+    public void setupLSP(Map<String,String> hm, List<String> hops)
             throws PSSException {
+
+        boolean active = false;
 
         this.log.info("setupLSP.start");
         try {
@@ -297,22 +323,26 @@ public class LSP implements PSS {
             fname += this.props.getProperty("setupFile");
             this.log.info("Filename: ["+fname+"]");
             this.configureLSP(hm, hops, fname);
+            active = this.statusLSP(hm);
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
         }
+        if (!active) {
+            throw new PSSException("circuit setup for " + 
+                                   hm.get("resv-id") + " failed");
+        }
         this.log.info("setupLSP.finish");
-        return true;
     }
 
     /**
      * Tears down an LSP circuit.
      *
      * @param hm A hash map with configuration values
-     * @return boolean indicating success
      * @throws PSSException
      */
-    public boolean teardownLSP(Map<String,String> hm) 
-            throws PSSException {
+    public void teardownLSP(Map<String,String> hm) throws PSSException {
+
+        boolean active = false;
 
         this.log.info("teardownLSP.start");
         try {
@@ -320,29 +350,37 @@ public class LSP implements PSS {
                 "/shared/classes/server/" +
                 this.props.getProperty("teardownFile");
             this.configureLSP(hm, null, fname);
+            active = this.statusLSP(hm);
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
         }
+        if (active) {
+            throw new PSSException("circuit teardown for " + 
+                                   hm.get("resv-id") + " failed");
+        }
         this.log.info("teardownLSP.finish");
-        return true;
     }
 
     /** 
      * Gets the LSP status on a Cisco router.
      *
-     * @param hm a hash map with configuration values
-     * @return an int, with value -1 if NA (e.g not found), 0 if down, 1 if up
+     * @param hm hash map with configuration parameters
+     * @return boolean indicating whether the circuit is up or down
      * @throws IOException
      * @throws PSSException
      */
-    private int statusLSP(Map<String,String> hm)
+    private boolean statusLSP(Map<String,String> hm)
             throws IOException, PSSException {
 
-        int status = -1;
-
         this.log.info("statusLSP.start");
+        String configCmd = "show mpls traffic-eng tunnels name " +
+                           hm.get("resv-id");
+        if (!this.props.getProperty("allowLSP").equals("1")) {
+            return true;
+        }
+        boolean active = this.sendCommand(configCmd, hm, "connection is up");
         this.log.info("statusLSP.finish");
-        return status;
+        return active;
     }
 
     /**
@@ -374,15 +412,39 @@ public class LSP implements PSS {
         if (!this.props.getProperty("allowLSP").equals("1")) {
             return true;
         }
+        boolean success = this.sendCommand(filledTemplate, hm, null);
+        this.log.info("configureLSP.end");
+        return true;
+    }
+
+    /**
+     * Sends a command using RANCID to the server, and gets back output.
+     *
+     * @param cmdStr string with command to send to router
+     * @param hm hash map of info from reservation and OSCARS' configuration
+     * @param requiredOutput string with required output, if any
+     * @param status boolean indicating whether required output was present
+     * @throws PSSException
+     */
+    private boolean sendCommand(String cmdStr, Map<String,String> hm,
+                             String requiredOutput)
+            throws IOException, PSSException {
+
+        boolean status = false ;
+
+        if (requiredOutput == null) {
+            status = true;
+        }
         // create a temporary file for use by RANCID
-        String outputName =  "/tmp/" + hm.get("resv-id");
-        File tmpFile = new File(outputName);
+        String fname =  "/tmp/" + hm.get("resv-id");
+        File tmpFile = new File(fname);
         BufferedWriter outputStream = 
             new BufferedWriter(new FileWriter(tmpFile));
-        // write template to temporary file
-        outputStream.write(filledTemplate);
+        // write command to temporary file
+        outputStream.write(cmdStr);
         outputStream.close();
-        String cmd = "clogin -x " + outputName + " " + hm.get("router");
+        String cmd = "clogin -x " + fname + " " + hm.get("router");
+        this.log.info(cmd);
         Process p = Runtime.getRuntime().exec(cmd);
         BufferedReader cmdOutput = 
             new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -390,19 +452,24 @@ public class LSP implements PSS {
             new BufferedReader(new InputStreamReader(p.getErrorStream()));
         String errInfo = cmdError.readLine();
         if (errInfo != null ) {
-            this.log.warn("RANCID error: " + errInfo );
-            throw new PSSException("RANCID error: " + errInfo);
+            this.log.warn("RANCID command error: " + errInfo );
+            cmdOutput.close();
+            cmdError.close();
+            throw new PSSException("RANCID commnd error: " + errInfo);
         }
-        String outputInfo = cmdOutput.readLine();
-        // TODO:  RANCID status check given output of command
-        if (outputInfo != null) {
-            this.log.info(outputInfo);
+        String outputLine = null;
+        while ((outputLine = cmdOutput.readLine()) != null) {
+            this.log.info("output: " + outputLine);
+            if (requiredOutput != null) {
+                if (outputLine.contains(requiredOutput)) {
+                    status = true;
+                }
+            }
         }
         cmdOutput.close();
         cmdError.close();
         // delete temporary file
         tmpFile.delete();
-        this.log.info("configureLSP.end");
-        return true;
+        return status;
     }
 }

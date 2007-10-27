@@ -44,6 +44,7 @@ public class PathSetupAdapter{
         CreatePathResponseContent response = new CreatePathResponseContent();
         String gri = params.getGlobalReservationId();
         String status = null;
+        String tokenValue = params.getToken();
         Long currTime = System.currentTimeMillis();
         
         this.log.info("create.start");  
@@ -56,9 +57,14 @@ public class PathSetupAdapter{
         
         /* Retrieve reservation */
         Reservation resv = resvDAO.queryByGRIAndLogin(gri, login); 
-        if (resv == null) {
+        if (resv == null && tokenValue != null) {
+            resv = this.validateToken(tokenValue, gri);
+        }else if (resv == null) {
             throw new PSSException("No reservations match request");
-        } else if (resv.getPath().getPathSetupMode() == null) {
+        }
+        
+        /* Check reservation parameters to make sure it can be created */
+        if (resv.getPath().getPathSetupMode() == null) {
             throw new PSSException("Path setup mode is null");
         } else if (!resv.getPath().getPathSetupMode().equals("user-xml")) {
             throw new PSSException("Path setup mode is not user-xml");
@@ -110,6 +116,7 @@ public class PathSetupAdapter{
             RefreshPathResponseContent();
         String gri = params.getGlobalReservationId();
         String status = null;
+        String tokenValue = params.getToken();
         
         this.log.info("refresh.start"); 
         
@@ -121,8 +128,15 @@ public class PathSetupAdapter{
         String errorMessage = null;
         
         /* Retrieve reservation */
-        Reservation resv = resvDAO.queryByGRIAndLogin(gri, login); 
-        if(resv == null || resv.getPath().getPathSetupMode() == null ||
+        Reservation resv = resvDAO.queryByGRIAndLogin(gri, login);
+        if (resv == null && tokenValue != null) {
+            resv = this.validateToken(tokenValue, gri);
+        }else if (resv == null) {
+            throw new PSSException("No reservations match request");
+        }
+        
+        /* Check reservation parameters */
+        if(resv.getPath().getPathSetupMode() == null ||
             (!resv.getPath().getPathSetupMode().equals("user-xml")) ){
             throw new PSSException("No reservations match request");
         }else if(!resv.getStatus().equals("ACTIVE")){
@@ -169,6 +183,7 @@ public class PathSetupAdapter{
         TeardownPathResponseContent response = new 
             TeardownPathResponseContent();
         String gri = params.getGlobalReservationId();
+        String tokenValue = params.getToken();
         String status = null;
         String errorMsg = null;
         
@@ -182,7 +197,14 @@ public class PathSetupAdapter{
         
         /* Retrieve reservation */
         Reservation resv = resvDAO.queryByGRIAndLogin(gri, login); 
-        if(resv == null || resv.getPath().getPathSetupMode() == null ||
+        if (resv == null && tokenValue != null) {
+            resv = this.validateToken(tokenValue, gri);
+        }else if (resv == null) {
+            throw new PSSException("No reservations match request");
+        }
+        
+        /* Check reservation parameters */
+        if(resv.getPath().getPathSetupMode() == null ||
             (!resv.getPath().getPathSetupMode().equals("user-xml")) ){
             throw new PSSException("No reservations match request");
         }else if(!resv.getStatus().equals("ACTIVE")){
@@ -205,6 +227,38 @@ public class PathSetupAdapter{
         this.log.info("teardown.end"); 
         
         return response;
+    }
+    
+    /**
+     * Retrieves a reservation by token. throws an exception if not found
+     *
+     * @param tokenValue the value of the token to use in lookup
+     * @return the matching reservation
+     * @throws PSSException
+     */
+    private Reservation validateToken(String tokenValue, String gri) 
+            throws PSSException{
+        TokenDAO tokenDAO = new TokenDAO("bss");
+        Token token = tokenDAO.fromValue(tokenValue);
+        Reservation resv = null;
+        
+        /* Check token value */
+        this.log.info("token received");
+        if(token == null){
+            this.log.error("unrecognized token");
+            throw new PSSException("Unrecognized token specified.");
+        }
+        
+        /* Check GRI */
+        resv = token.getReservation();
+        if(!resv.getGlobalReservationId().equals(gri)){
+            this.log.error("token and GRI do not match");
+            throw new PSSException("Token and GRI do not match");
+        }
+        this.log.info("token matched");
+        
+        return token.getReservation();
+        
     }
    
 }

@@ -18,9 +18,10 @@ public class ReservationDetails {
         Long ms = null;
 
         String gri = resv.getGlobalReservationId();
-        Layer2Data layer2Data = resv.getPath().getLayer2Data();
-        Layer3Data layer3Data = resv.getPath().getLayer3Data();
-        MPLSData mplsData = resv.getPath().getMplsData();
+        Path path = resv.getPath();
+        Layer2Data layer2Data = path.getLayer2Data();
+        Layer3Data layer3Data = path.getLayer3Data();
+        MPLSData mplsData = path.getMplsData();
         out.println("<content>");
         out.println("<p><strong>Reservation Details</strong></p>");
         out.println("<p>To return to the reservations list, click on the ");
@@ -84,6 +85,26 @@ public class ReservationDetails {
                         layer2Data.getSrcEndpoint() + "</td></tr>");
             out.println("<tr><td>Destination</td><td>" +
                         layer2Data.getDestEndpoint() + "</td></tr>");
+            // get VLAN tag
+            String vlanTag = null;
+            PathElem pathElem = path.getPathElem();
+            while (pathElem != null) {
+                if (pathElem.getDescription() != null) {
+                    if (pathElem.getDescription().equals("ingress")) {
+                        // assume just one VLAN for now
+                        vlanTag = pathElem.getLinkDescr();
+                        break;
+                    }
+                }
+                pathElem = pathElem.getNextElem();
+            }
+            if (vlanTag != null) {
+                out.println("<tr><td>VLAN</td><td>" +
+                            vlanTag + "</td></tr>");
+            } else {
+                out.println("<tr><td>VLAN</td><td>" +
+                            "Warning: No VLAN tag present</td></tr>");
+            }
         } else if (layer3Data != null) {
             out.println("<tr><td>Source</td><td>" +
                         layer3Data.getSrcHost() + "</td></tr>");
@@ -122,10 +143,10 @@ public class ReservationDetails {
             }
         }
         Utils utils = new Utils("bss");
-        String path = utils.pathToString(resv.getPath());
-        if (path != null) {
+        String pathStr = utils.pathToString(path);
+        if (pathStr != null) {
             out.println("<tr><td>Nodes in path</td><td>" +
-                        path + "</td></tr>");
+                        pathStr + "</td></tr>");
         }
 
         out.println("</tbody></table>");

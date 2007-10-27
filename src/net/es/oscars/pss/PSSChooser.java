@@ -26,15 +26,100 @@ public class PSSChooser implements PSS {
     }
 
     /**
-     * Chooses which sort of configuration for circuit setup
+     * Chooses which sort of configuration to use for circuit setup, and
+     * then attempts to set up the circuit.
      *
      * @param resv a reservation instance
+     * @return status string with status of circuit set up
      * @throws PSSException
      */
     public String createPath(Reservation resv) throws PSSException {
-        String sysDescr = null;
+
+        String status = null;
 
         this.log.info("createPath.start");
+        String sysDescr = this.getRouterType(resv);
+        if (sysDescr.contains("Juniper")) {
+            this.log.info("Creating Juniper-style path");
+            JnxLSP jnxLSP = new JnxLSP(this.dbname);
+            status = jnxLSP.createPath(resv);
+        } else if (sysDescr.contains("Cisco")) {
+            this.log.info("Creating Cisco-style path");
+            LSP lsp = new LSP(this.dbname);
+            status = lsp.createPath(resv);
+        } else {
+            throw new PSSException(
+                "unable to perform circuit set up for router of type " +
+                 sysDescr);
+        }
+        return status;
+    }
+
+    /**
+     * Chooses which sort of configuration to use for circuit refresh, and
+     * then attempts to refresh circuit (see if it is still up).
+     *
+     * @param resv the reservation whose path will be refreshed
+     * @return status string with status of refresh (active or failed)
+     * @throws PSSException
+     */
+    public String refreshPath(Reservation resv) throws PSSException {
+
+        String status = null;
+
+        String sysDescr = this.getRouterType(resv);
+        if (sysDescr.contains("Juniper")) {
+            JnxLSP jnxLSP = new JnxLSP(this.dbname);
+            status = jnxLSP.refreshPath(resv);
+        } else if (sysDescr.contains("Cisco")) {
+            LSP lsp = new LSP(this.dbname);
+            status = lsp.refreshPath(resv);
+        } else {
+            throw new PSSException(
+                "unable to perform circuit refresh for router of type " +
+                 sysDescr);
+        }
+        return status;
+    }
+
+    /**
+     * Chooses which sort of configuration to use for circuit teardown, and
+     * then attempts to tear down the circuit.
+     *
+     * @param resv a reservation instance
+     * @return status string with status of tear down
+     * @throws PSSException
+     */
+    public String teardownPath(Reservation resv) throws PSSException {
+
+        String status = null;
+
+        String sysDescr = this.getRouterType(resv);
+        if (sysDescr.contains("Juniper")) {
+            JnxLSP jnxLSP = new JnxLSP(this.dbname);
+            status = jnxLSP.teardownPath(resv);
+        } else if (sysDescr.contains("Cisco")) {
+            LSP lsp = new LSP(this.dbname);
+            status = lsp.teardownPath(resv);
+        } else {
+            throw new PSSException(
+                "unable to perform circuit teardown for router of type " +
+                 sysDescr);
+        }
+        return status;
+    }
+
+    /**
+     * Determines whether the initial router is a Juniper or Cisco.
+     *
+     * @param resv the reservation whose path contains the initial router
+     * @param sysDescr string with router type, if successful
+     * @throws PSSException
+     */
+    private String getRouterType(Reservation resv) throws PSSException {
+
+        String sysDescr = null;
+
         Link ingressLink = this.getIngress(resv);
         try {
             // db enforces not-null
@@ -46,67 +131,25 @@ public class PSSChooser implements PSS {
             snmp.initializeSession(nodeAddress);
             sysDescr = snmp.queryRouterType();
             snmp.closeSession();
-            this.log.info("Got sysdescr: ["+sysDescr+"]");
 
         } catch (IOException e) {
         	this.log.error("Error querying router type using SNMP: ["+e.getMessage()+"]");
             throw new PSSException(e.getMessage());
         }
-        if (sysDescr.contains("Juniper")) {
-            this.log.info("Creating Juniper-style path");
-            JnxLSP jnxLSP = new JnxLSP(this.dbname);
-            return jnxLSP.createPath(resv);
-        } else if (sysDescr.contains("Cisco")) {
-            this.log.info("Creating Cisco-style path");
-            LSP lsp = new LSP(this.dbname);
-            return lsp.createPath(resv);
+        if (sysDescr == null) {
+            throw new PSSException("Unable to determine router type");
         }
-        // this should never happen
-        resv.setStatus("FAILED");
-        return "FAILED";
+        this.log.info("Got sysdescr: ["+sysDescr+"]");
+        return sysDescr;
     }
 
     /**
-     * Verifies LSP is still active: TODO
+     * Gets ingress link given a reservation with an associated path.
      *
-     * @param resv the reservation whose path will be refreshed
+     * @param resv the reservation containing the path
+     * @return ingressLink ingress link in path, if any
      * @throws PSSException
      */
-    public String refreshPath(Reservation resv) throws PSSException {
-        return "ACTIVE";
-    }
-
-    /**
-     * Formats reservation parameters for circuit teardown.
-     *
-     * @param resv a reservation instance
-     * @throws PSSException
-     */
-    public String teardownPath(Reservation resv) throws PSSException {
-        String sysDescr = null;
-
-        Link ingressLink = this.getIngress(resv);
-        try {
-            SNMP snmp = new SNMP();
-            snmp.initializeSession(
-                            ingressLink.getPort().getNode().getTopologyIdent());
-            sysDescr = snmp.queryRouterType();
-            snmp.closeSession();
-        } catch (IOException e) {
-            throw new PSSException(e.getMessage());
-        }
-        if (sysDescr.contains("Juniper")) {
-            JnxLSP jnxLSP = new JnxLSP(this.dbname);
-            return jnxLSP.teardownPath(resv);
-        } else if (sysDescr.contains("Cisco")) {
-            LSP lsp = new LSP(this.dbname);
-            return lsp.teardownPath(resv);
-        }
-        // this should never happen
-        resv.setStatus("FAILED");
-        return "FAILED";
-    }
-
     private Link getIngress(Reservation resv) throws PSSException {
         Link ingressLink = null;
 
@@ -129,7 +172,7 @@ public class PSSChooser implements PSS {
             pathElem = pathElem.getNextElem();
         }
         if (ingressLink == null) {
-        	this.log.error("Could not find ingress link!");
+            this.log.error("Could not find ingress link!");
             throw new PSSException("Could not find ingress link!");
         }
         return ingressLink;

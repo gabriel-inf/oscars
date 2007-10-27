@@ -12,7 +12,7 @@ url=$2
 
 if [  $# -lt 2  ]
  then
-    echo "run.sh createReservation|signal url [request-specific-params]"
+    echo "run.sh createReservation|signal|list|query|cancel [url] [request-specific-params]"
 elif [ $1 == "createReservation" ] && [ $# -eq 2 ] && [ $2 != "-help" ]
  then
     echo $2
@@ -23,6 +23,16 @@ elif [  $1 == "createReservation"  ]
 elif [ $1 == "signal"  ]
  then    
     java -cp $OSCARS_CLASSPATH SignalClient repo $url $3 $4
+elif [ $1 == "query"  ]
+ then    
+    java -cp $OSCARS_CLASSPATH QueryReservationCLI $*
+elif [ $1 == "list"  ]
+ then    
+    java -cp $OSCARS_CLASSPATH ListReservationCLI $*
+elif [ $1 == "cancel"  ]
+ then    
+    java -cp $OSCARS_CLASSPATH CancelReservationCLI $*
 else
-    echo "Please specify 'createReservation' or 'signal'"
+    echo "Please specify 'createReservation', 'signal', 'list', 'query', or 'cancel'"
 fi
+

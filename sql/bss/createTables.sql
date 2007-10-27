@@ -210,3 +210,14 @@ CREATE TABLE IF NOT EXISTS edgeInfos (
     PRIMARY KEY(id)
 ) type = MyISAM;
 
+--
+-- Table fo signaling tokens
+--
+CREATE TABLE IF NOT EXISTS tokens (
+  id                 INT NOT NULL AUTO_INCREMENT,
+  reservationId      INT NOT NULL,
+  value              TEXT NOT NULL,
+  PRIMARY KEY  (id)
+) type = MyISAM;
+
+

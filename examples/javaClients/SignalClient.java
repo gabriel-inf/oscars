@@ -10,10 +10,11 @@ public class SignalClient extends Client{
         SignalClient signalClient = new SignalClient();
         String signalType = "all";
         boolean isAll = true;
+        String token = null;
         
         if(args.length < 4){
             System.out.println("Invalid number of parameters");
-            System.out.println("Form: java SignalClient repo url gri refreshes [all|create|refresh|teardown]");
+            System.out.println("Form: java SignalClient repo url gri refreshes [all|create|refresh|teardown] [token]");
             System.exit(1);
         }else if(args.length >= 5){
             signalType = args[4];
@@ -23,12 +24,19 @@ public class SignalClient extends Client{
         String url = args[1];
         int refreshIntervals = Integer.parseInt(args[3]);
         
+        if(args.length == 6){
+            token = args[5];
+        }
+        
         CreatePathContent createRequest = new CreatePathContent();
         createRequest.setGlobalReservationId(args[2]);
+        createRequest.setToken(token);
         RefreshPathContent refreshRequest = new RefreshPathContent();
         refreshRequest.setGlobalReservationId(args[2]);
+        refreshRequest.setToken(token);
         TeardownPathContent teardownRequest = new TeardownPathContent();
         teardownRequest.setGlobalReservationId(args[2]);
+        teardownRequest.setToken(token);
         try{
             signalClient.setUp(true, url, repo);
             

@@ -224,7 +224,13 @@ public class CreateReservationClient extends ExampleClient {
     public void outputResponse(CreateReply response) {
         System.out.println("GRI: " + response.getGlobalReservationId());
         System.out.println("Status: " + response.getStatus().toString());
-        if ((response.getPathInfo() != null) &&
+        
+        String token = response.getToken();
+        if(token != null){
+            System.out.println("Token: " + token);
+        }
+
+	if ((response.getPathInfo() != null) &&
             (response.getPathInfo().getLayer3Info() != null)) {
             this.outputHops(response.getPathInfo().getPath());
         }

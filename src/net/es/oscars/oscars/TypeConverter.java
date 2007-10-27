@@ -17,6 +17,7 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.Token;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.wsdlTypes.*;
@@ -77,8 +78,14 @@ public class TypeConverter {
      */
     public CreateReply reservationToReply(Reservation resv) {
         CreateReply reply = new CreateReply();
+        Token token = resv.getToken();
+        
         reply.setGlobalReservationId(resv.getGlobalReservationId());
-        reply.setToken("unimplemented yet");
+        if(token != null){
+            reply.setToken(token.getValue());
+        }else{
+            reply.setToken("none");
+        }
         reply.setStatus(resv.getStatus());
         return reply;
     }
@@ -207,10 +214,28 @@ public class TypeConverter {
         if (layer2Data == null) {
             return null;
         }
+        
         // Axis2 type
         Layer2Info layer2Info = new Layer2Info();
         layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
         layer2Info.setDestEndpoint(layer2Data.getDestEndpoint());
+        
+        /* TODO: Coordinate between domains to determine if src and dest
+            are tagged or untagged. Also assumes vlan is the same along 
+            entire path. */
+        PathElem elem = path.getPathElem();
+        while(elem != null){
+            String vlanNum = elem.getLinkDescr();
+            if(vlanNum != null){
+                VlanTag vtag = new VlanTag();
+                vtag.setString(Math.abs(Integer.parseInt(vlanNum)) + "");
+                layer2Info.setSrcVtag(vtag);
+                layer2Info.setDestVtag(vtag);
+                break;
+            }
+            
+            elem = elem.getNextElem();
+        }
         return layer2Info;
     }
 
