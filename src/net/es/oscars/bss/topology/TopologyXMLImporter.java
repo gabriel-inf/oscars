@@ -257,8 +257,6 @@ public class TopologyXMLImporter {
 
         Iterator linkXMLIterator = portXML.getChildren("link", ns).iterator();
         
-       boolean addedStar = false;
-
         while (linkXMLIterator.hasNext()) {
             Element linkXML = (Element) linkXMLIterator.next();
 
@@ -281,26 +279,37 @@ public class TopologyXMLImporter {
             linkDB.setTopologyIdent(linkTopoIdent);
             linkDB.setAlias(linkTopoIdent);
             
-            if (linkTopoIdent.equals("*")) {
-            	addedStar = true;
+            Element capXML = linkXML.getChild("capacity", this.ns);
+            Long capacity;
+            if (capXML != null) {
+                capacity = TopologyUtil.understandBandwidth(capXML.getValue());
+            } else {
+            	capacity = portDB.getCapacity();
             }
 
-            // TODO: these are ZERO right now; how do we get this info?
-            //String strCapacity = linkXML.getChild("capacity", this.ns).getValue();
-            String strCapacity = "0";
-            Long capacity = TopologyUtil.understandBandwidth(strCapacity);
+            Element maxRCapXML = linkXML.getChild("maximumReservableCapacity", this.ns);
+            Long maxRCapacity;
+            if (maxRCapXML != null) {
+            	maxRCapacity = TopologyUtil.understandBandwidth(maxRCapXML.getValue());
+            } else {
+        		maxRCapacity = portDB.getMaximumReservableCapacity();
+        	}
 
-            // String strMaxRCapacity = linkXML.getChild("maximumReservableCapacity", this.ns).getValue();
-            String strMaxRCapacity = "0";
-            Long maxRCapacity = TopologyUtil.understandBandwidth(strMaxRCapacity);
+            Element minRCapXML = linkXML.getChild("minimumReservableCapacity", this.ns);
+            Long minRCapacity;
+            if (minRCapXML != null) {
+            	minRCapacity = TopologyUtil.understandBandwidth(minRCapXML.getValue());
+            } else {
+        		minRCapacity = portDB.getMinimumReservableCapacity();
+        	}
 
-            //String strMinRCapacity = linkXML.getChild("minimumReservableCapacity", this.ns).getValue();
-            String strMinRCapacity = "0";
-            Long minRCapacity = TopologyUtil.understandBandwidth(strMinRCapacity);
-
-            // String strGranularity = linkXML.getChild("granularity", this.ns).getValue();
-            String strGranularity = "0";
-            Long granularity = TopologyUtil.understandBandwidth(strGranularity);
+            Element granXML = linkXML.getChild("granularity", this.ns);
+            Long granularity;
+            if (granXML != null) {
+            	granularity = TopologyUtil.understandBandwidth(granXML.getValue());
+            } else {
+            	granularity = portDB.getGranularity();
+        	}
             
             String trafficEngineeringMetric; 
         	if (linkXML.getChild("trafficEngineeringMetric", ns) != null) {
