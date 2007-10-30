@@ -55,6 +55,7 @@ public class CheckTopoIds {
             	Hashtable<String, String> result = TopologyUtil.parseTopoIdent(line);
             	String type = result.get("type");
             	System.out.print("identifier: ["+line+"] ");
+            	String dbIds = "     db ids: ";
             	boolean found = false;
             	if (type != null && (type.equals("link") || type.equals("port") || type.equals("node") || type.equals("domain")) ) {
 
@@ -63,41 +64,52 @@ public class CheckTopoIds {
             		if (dom == null) {
             			System.out.println("... (type:["+type+"]) domain not found in DB");
             		} else if ( type.equals("link") || type.equals("port") || type.equals("node") ) {
+            			dbIds += " d:[" + dom.getId().toString()+ "]";
             		
 	            		String nodeId = result.get("nodeId");
 	            		Node node = nodeDAO.fromTopologyIdent(nodeId, dom);
 	            		if (node == null) {
 	            			System.out.println("... (type:["+type+"]) node not found in DB");
 	            		} else if ( type.equals("link") || type.equals("port")) {
-	            			
+	            			dbIds += " n:[" + node.getId().toString()+ "]";
 	            		
 		            		String portId = result.get("portId");
 		            		Port port = portDAO.fromTopologyIdent(portId, node);
 		            		if (port == null) {
 		            			System.out.println("...  (type:["+type+"]) port not found in DB");
 		            		} else if ( type.equals("link") ) {
+		            			dbIds += " p:[" + port.getId().toString()+ "]";
 			            		String linkId = result.get("linkId");
 			            		Link link = linkDAO.fromTopologyIdent(linkId, port);
 			            		if (link == null) {
 			            			System.out.println("... (type:["+type+"]) link not found in DB");
 			            		} else {
 			            			found = true;
+			            			dbIds += " l:[" + link.getId().toString()+ "]";
+			            			L2SwitchingCapabilityData l2data = link.getL2SwitchingCapabilityData();
+			            			if (l2data == null) {
+			            				dbIds += "no l2swcap data";
+			            			}
 			            		}
 		            		} else {
 		            			found = true;
+		            			dbIds += " p:[" + port.getId().toString()+ "]";
 		            		}
 	            		} else {
 	            			found = true;
+	            			dbIds += " n:[" + node.getId().toString()+ "]";
 	            		}
             		} else {
+            			dbIds += " d:[" + dom.getId().toString()+ "]";
             			found = true;
             		}
 	        		if (found) {
-	        			System.out.println("... (type:["+type+"]) all entries found in DB"); 
+	        			System.out.println("... (type:["+type+"]) all entries found in DB" ); 
 	        		}
 	        	} else {
 	        		System.out.println("... wrong type: ["+type+"]");
 	        	}
+    			System.out.println(dbIds);
             }
         	
         } catch (IOException ex) {

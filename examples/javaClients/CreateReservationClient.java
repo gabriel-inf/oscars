@@ -56,7 +56,7 @@ public class CreateReservationClient extends ExampleClient {
 
         super.init(args, isInteractive);
         try {
-            content = this.readParams(isInteractive);
+            content = this.readParams(args, isInteractive);
         } catch (IOException ioe) {
             System.out.println("IO error reading input");
             System.exit(1);
@@ -67,16 +67,18 @@ public class CreateReservationClient extends ExampleClient {
         return response;
     }
 
-    public ResCreateContent readParams(boolean isInteractive)
+    public ResCreateContent readParams(String[] args, boolean isInteractive)
             throws IOException {
 
+                
         ResCreateContent content = new ResCreateContent();
         String arg = null;
+        
 
         // used for defaults for standalone client, and as only input
         // for automated tests
-        content = this.readProperties();
-        if (!isInteractive) { return content; }
+        content = this.readProperties(args);
+        if (!isInteractive || args.length > 3) { return content; }
 
         // TODO:  better handling in readParams and readProperties
         PathInfo pathInfo = content.getPathInfo();
@@ -164,33 +166,54 @@ public class CreateReservationClient extends ExampleClient {
         return content;
     }
 
-    public ResCreateContent readProperties() {
+    public ResCreateContent readProperties(String[] args) {
+    	
+    	
+    	
         ResCreateContent content = new ResCreateContent();
 
         Properties props = new Properties();
         String oscars_home = System.getenv("OSCARS_HOME");
         String propFileName =  "";
-        if(oscars_home == null || oscars_home.equals("")){
+        String reqType = "";
+        
+        for(int i = 0; i < args.length; i++){
+        	if (args[i].equals("-pf")) {
+        		propFileName = args[i+1];
+        	} else if (args[i].equals("-l2")) {
+        		reqType = "L2";
+        		System.out.println("L2 request");
+        	} else if (args[i].equals("-l3")) {
+        		reqType = "L3";
+        		System.out.println("L3 request");
+        	}
+        	
+        }
+
+        if (!propFileName.equals("")) {
+        	// do nothing, user set it through CLI
+        } else if(oscars_home == null || oscars_home.equals("")){
            propFileName ="reservation.properties"; 
-        }else{
+        } else {
             propFileName =  System.getenv("OSCARS_HOME") +
                 "/examples/javaClients/reservation.properties";
         }
-        System.out.println(propFileName);
+        
+        System.out.println("Properties file: "+propFileName);
         
         try {
             FileInputStream in = new FileInputStream(propFileName);
             props.load(in);
             in.close();
-        }
-        catch (IOException e) {
-            System.out.println(" no default properties file " +
+        } catch (IOException e) {
+            System.out.println(" Properties file not found: " +
                                propFileName);
         }
    
         PathInfo pathInfo = new PathInfo();
         Layer3Info layer3Info = new Layer3Info();
         Layer2Info layer2Info = new Layer2Info();
+                
         
         MplsInfo mplsInfo = new MplsInfo();
         content.setDescription(props.getProperty("description",""));
@@ -214,9 +237,38 @@ public class CreateReservationClient extends ExampleClient {
         mplsInfo.setBurstLimit(
                 Integer.parseInt(props.getProperty("burstLimit","10000")));
         pathInfo.setPathSetupMode(props.getProperty("pathSetupMode",""));
-        pathInfo.setLayer3Info(layer3Info);
-        pathInfo.setLayer2Info(layer2Info);
-        pathInfo.setMplsInfo(mplsInfo);
+        if (reqType.equals("")) {
+        	pathInfo.setLayer3Info(layer3Info);
+        	pathInfo.setLayer2Info(layer2Info);
+            pathInfo.setMplsInfo(mplsInfo);
+        } else if (reqType.equals("L2")) {
+        	pathInfo.setLayer2Info(layer2Info);
+        	pathInfo.setLayer3Info(null);
+            pathInfo.setMplsInfo(null);
+        } else if (reqType.equals("L3")) {
+        	pathInfo.setLayer2Info(null);
+        	pathInfo.setLayer3Info(layer3Info);
+            pathInfo.setMplsInfo(mplsInfo);
+        }
+        
+        CtrlPlanePathContent path = new CtrlPlanePathContent();
+        path.setId("userPath");//id doesn't matter in this context
+        boolean hasEro = false;
+        for (int i = 0; i <10; i++) {
+        	String propName = "ero_"+Integer.toString(i);
+        	String hopId = props.getProperty(propName);
+        	if (hopId != null) {
+        		hasEro = true;
+                CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+                hop.setId(i + "");
+                hop.setLinkIdRef(hopId);
+                path.addHop(hop);
+        	}
+        }
+        if (hasEro) {
+        	pathInfo.setPath(path);
+        }
+        
         content.setPathInfo(pathInfo);
         return content;
     }

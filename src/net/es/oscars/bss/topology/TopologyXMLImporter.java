@@ -406,6 +406,7 @@ public class TopologyXMLImporter {
         }
 
         if (found) {
+            addrDB.setValid(true);
             return;
         } else {
             addrDB = new Ipaddr();

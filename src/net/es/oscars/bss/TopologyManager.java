@@ -683,6 +683,7 @@ public class TopologyManager {
                 }
 
                 newIpaddr.setIP(newIP);
+                newIpaddr.setValid(true);
                 ipaddrDAO.create(newIpaddr);
             } else {
                 this.log.debug("  Updating ipaddr (!): [" + newIP + "]");
