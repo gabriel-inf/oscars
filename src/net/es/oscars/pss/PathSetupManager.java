@@ -212,8 +212,8 @@ public class PathSetupManager{
                 this.forwarder.teardownPath(resv);
             if(forwardReply == null){
                 this.log.info("last domain in signaling path");
-            }else if((!forwardReply.getStatus().equals("PENDING")) ||
-                        (!!forwardReply.getStatus().equals("FINISHED"))){
+            }else if((!forwardReply.getStatus().equals("PENDING")) &&
+                        (!forwardReply.getStatus().equals("FINISHED"))){
                 String errMsg = "forwardReply returned an unrecognized status: " +         
                     forwardReply.getStatus();
                 this.log.error(errMsg);

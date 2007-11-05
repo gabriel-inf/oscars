@@ -100,10 +100,13 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
                     "topology identifiers");
             }
             this.log.debug("hop id (original):["+hopId+"]");
-            hopId = TopologyUtil.getLocalForm(hopId);
+
+            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopId);
+            hopId = parseResults.get("compact");
+            String domainId = parseResults.get("domainId");
+            
             this.log.debug("hop id (local):["+hopId+"]");
-            String[] componentList = hopId.split(":");
-            if (domainDAO.isLocal(componentList[3])) {
+            if (domainDAO.isLocal(domainId)) {
                 numHops++;
             }
             // reset id ref to local topology identifier

@@ -8,6 +8,7 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
 import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.bss.topology.PSLookupClient;
 
 /**
  * Class that performs server side validation for reservation parameters.
@@ -28,8 +29,8 @@ public class ParamValidator {
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         if (layer2Info != null) {
             sb.append(this.checkVtag(layer2Info));
-            sb.append(this.checkSrcEndpoint(layer2Info));
-            sb.append(this.checkDestEndpoint(layer2Info));
+            sb.append(this.checkL2Endpoint(layer2Info, false));
+            sb.append(this.checkL2Endpoint(layer2Info, true));
         }
         Layer3Info layer3Info = pathInfo.getLayer3Info();
         if (layer3Info != null) {
@@ -187,17 +188,41 @@ public class ParamValidator {
     /**
      * @param layer2Info A Layer2Info instance (layer 2 specific)
      */ 
-    private String checkSrcEndpoint(Layer2Info layer2Info) {
-
-        return "";
-    }
-
-    /**
-
-     * @param layer2Info A Layer2Info instance (layer 2 specific)
-     */ 
-    private String checkDestEndpoint(Layer2Info layer2Info) {
-
+    private String checkL2Endpoint(Layer2Info layer2Info, boolean isDest) {
+        String urn = null;
+        String endpoint = null;
+        
+        if(isDest){
+            endpoint = layer2Info.getDestEndpoint();
+        }else{
+            endpoint = layer2Info.getSrcEndpoint();
+        }   
+        
+        /* If URN do no further checking */
+        if((endpoint.matches("^urn:ogf:network:.*"))){
+            return "";
+        }
+        
+        /* Lookup name via perfSONAR Lookup Service */
+        PSLookupClient lsClient = new PSLookupClient();
+        try{
+            urn = lsClient.lookup(endpoint);
+        }catch(BSSException e){
+            return e.getMessage();
+        }
+        
+        /* Print error if no match in LS */
+        if(urn == null){
+            return "Unable to lookup endpoint " + endpoint + ". Please " +
+                "specify a valid URN or a name registered in a " + 
+                "perfSONAR Lookup Service";
+        }
+        
+        if(isDest){
+            layer2Info.setDestEndpoint(urn);
+        }else{
+            layer2Info.setSrcEndpoint(urn);
+        }
         return "";
     }
 

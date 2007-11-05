@@ -391,6 +391,7 @@ public class TopologyUtil {
     		return result;
     	}
     	
+    	String compactForm = null;
     	String fqti = null;
     	String addressType = "";
 
@@ -419,17 +420,23 @@ public class TopologyUtil {
 
     	if (matched.equals("domain")) {
     		fqti = "urn:ogf:network:domain="+domainId;
+    		compactForm = "urn:ogf:network:"+domainId;
+    	  	result.put("compact", compactForm);
     	  	result.put("type", "domain");
     	  	result.put("fqti", fqti);
     	  	result.put("domainId", domainId);
     	} else if (matched.equals("node")) {
     		fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId;
+    		compactForm = "urn:ogf:network:"+domainId+":"+nodeId;
+    	  	result.put("compact", compactForm);
       	  	result.put("type", "node");
     	  	result.put("fqti", fqti);
     	  	result.put("domainId", domainId);
     	  	result.put("nodeId", nodeId);
     	} else if (matched.equals("port")) {
     		fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId;
+    		compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId;
+    	  	result.put("compact", compactForm);
 			result.put("type", "port");
 			result.put("fqti", fqti);
     	  	result.put("domainId", domainId);
@@ -437,6 +444,8 @@ public class TopologyUtil {
     	  	result.put("portId", portId);
     	} else if (matched.equals("link")) {
     		fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId+":link="+linkId;
+    		compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId+":"+linkId;
+    	  	result.put("compact", compactForm);
 			result.put("type", "link");
 			result.put("fqti", fqti);
     	  	result.put("domainId", domainId);
@@ -465,33 +474,4 @@ public class TopologyUtil {
         // TODO:  test for fully qualified link in new format
         return false;
     }
-
-    /**
-     * Convert possibly external format of topology id to local form
-     *
-     * @param inTopologyId string with topology id in either format
-     * @return localTopologyId string with topology id in local format
-     */
-     public static String getLocalForm(String inTopologyId) {
-         // if doesn't contain an "=", not in external format
-         if (!inTopologyId.contains("=")) {
-             return inTopologyId;
-         }
-         StringBuilder sb = new StringBuilder();
-         String[] componentList = inTopologyId.split(":");
-         sb.append(componentList[0] + ":");
-         sb.append(componentList[1] + ":");
-         sb.append(componentList[2] + ":");
-         for (int i=3; i < 7; i++) {
-             String[] componentPortions = componentList[i].split("=");
-             if (componentPortions.length == 1) {
-                 sb.append(componentList[i] + ":");
-             } else if (componentPortions.length == 2) {
-                 sb.append(componentPortions[1] + ":");
-             }
-             // TODO:  right place for error checking
-         }
-         return sb.toString();
-     }
- 
 }

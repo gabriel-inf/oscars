@@ -66,7 +66,7 @@
     <!-- Associations -->
 
     <many-to-one name="path" column="pathId"
-	    class="net.es.oscars.bss.topology.Path" cascade="save-update"
+	    class="net.es.oscars.bss.topology.Path" cascade="all"
 	    not-null="true" unique="true" />
 	    
 	<one-to-one name="token"

@@ -79,14 +79,20 @@ public class VlsrPSS implements PSS{
         /* Initialize LSP */
         DragonLSP lsp = new DragonLSP(ingress, ingLocalId, egress,
                                             egrLocalId, null, 0);
-        lsp.setLSPName(resv.getGlobalReservationId());
+        String gri = resv.getGlobalReservationId();
+        lsp.setLSPName(gri);
         
         /* Set layer specific params */
         if(layer2Data != null){
             String bandwidth = this.prepareL2Bandwidth(resv.getBandwidth());
             lsp.setBandwidth(bandwidth);
-            int vtag = 
-                Math.abs(Integer.parseInt(path.getPathElem().getLinkDescr()));
+            int vtag = Integer.parseInt(path.getPathElem().getLinkDescr());
+            if(vtag < 0 && 
+                ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE)){
+                vtag = -1;
+            }else{
+                vtag = Math.abs(vtag);
+            }
             lsp.setVTAG(vtag);
             lsp.setSrcLocalID(ingLocalId);
             lsp.setDstLocalID(egrLocalId);
@@ -223,24 +229,50 @@ public class VlsrPSS implements PSS{
                 csa.getError());
         }
         
-        /* Check lsp after a few seconds */
-        if(lsp.getBandwidth().equals(DragonLSP.BANDWIDTH_10G)){
-	    try{
-                Thread.sleep(60000);
-             }catch(Exception e){throw new PSSException("Could not sleep to wait for circuit");}
-            lsp = csa.getLSPByName(resv.getGlobalReservationId());
-            if(lsp == null ||
-                (!lsp.getStatus().equals(DragonLSP.STATUS_INSERVICE))){
-                this.log.error("LSP " + resv.getGlobalReservationId() + 
-                     " failed. Status: " + lsp.getStatus());
-                resv.setStatus("ERROR");
+        /* Check lsp every few seconds */
+        for(int i = 1; i <= 12; i++){
+            String status = null;
+            lsp = csa.getLSPByName(gri);
+            
+            /* Verify LSP still exists */
+            if(lsp == null){
+                this.log.error("LSP " + gri + " failed. Status: LSP could not" +                     
+                    " be found");
+                resv.setStatus("Failed");
                 if(ingressSshSess != null){
                     ingressSshSess.disconnect();
                 }
-                throw new PSSException("Path failure occured. LSP status is " + 
-                                        lsp.getStatus());
+                throw new PSSException("Path failure occured.");
             }
-         }
+            
+            /* Check if LSP status */
+            status = lsp.getStatus();
+            if(status.equals(DragonLSP.STATUS_INSERVICE)){
+                this.log.info(gri + " is IN SERVICE");
+                break;
+            }else if(!status.equals(DragonLSP.STATUS_COMMIT) || i == 12){
+                this.log.error("Path setup failed. Status=" + lsp.getStatus());
+                resv.setStatus("Failed");
+                if(ingressSshSess != null){
+                    ingressSshSess.disconnect();
+                }
+                if(csa.teardownLSP(gri)){
+                    this.log.info("Deleted " + gri + " LSP after error");
+                }else{
+                    this.log.error("Unable to delete LSP after error: " + 
+                        csa.getError());
+                }
+                throw new PSSException("LSP creation failed. There may be" + 
+                    "an error in the underlying network.");
+            }
+            
+            /* Sleep for 5 seconds */
+            try{
+                Thread.sleep(5000);
+            }catch(Exception e){
+                throw new PSSException("Could not sleep to wait for circuit");
+            }
+        }
         
         /* Remove port forwarding */
         if(sshPortForward != null && sshPortForward.equals("1")){
@@ -276,6 +308,7 @@ public class VlsrPSS implements PSS{
         String telnetAddress = this.findTelnetAddress(ingressLink);
         int port = this.findTelnetPort();
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
+        String gri = resv.getGlobalReservationId();
         Session sshSession = null;
         
         /* Initialize ssh client */
@@ -308,18 +341,21 @@ public class VlsrPSS implements PSS{
         this.log.info("logging into " + telnetAddress);
         csa.setPromptPattern(".*vlsr.*[>#]");
         if(csa.login(telnetAddress, port, password)){
-            lsp = csa.getLSPByName(resv.getGlobalReservationId());
+            lsp = csa.getLSPByName(gri);
             if(lsp == null ||
                 (!lsp.getStatus().equals(DragonLSP.STATUS_INSERVICE))){
-                this.log.error("LSP " + resv.getGlobalReservationId() + 
-                    " failed. Status: " + lsp.getStatus());
-                resv.setStatus("ERROR");
+                this.log.error("LSP " + gri + " failed. Status: " + 
+                    lsp.getStatus());
+                resv.setStatus("Failed");
                 throw new PSSException("Path failure occured. LSP status is " + 
                                         lsp.getStatus());
             }
         }else{
             this.log.error("unable to login to " + telnetAddress + 
                 ": " + csa.getError());
+            if(sshSession != null){
+                sshSession.disconnect();
+             }
             throw new PSSException("Unable to reach ingress VLSR");
         }
         
@@ -390,13 +426,19 @@ public class VlsrPSS implements PSS{
             }else{
                 this.log.error("unable to teardown LSP " + gri
                     + ": " + csa.getError());
-                resv.setStatus("ERROR");
+                resv.setStatus("FAILED");
+                if(sshSession != null){
+                    sshSession.disconnect();
+                }
                 throw new PSSException("Unable to teardown LSP: " + 
                     csa.getError());
             }
         }else{
             this.log.error("unable to login to " + telnetAddress
                 + ": " + csa.getError());
+             if(sshSession != null){
+                sshSession.disconnect();
+             }
             throw new PSSException("Unable to reach ingress VLSR");
         }
         

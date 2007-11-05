@@ -125,7 +125,16 @@ public class LSP implements PSS {
         if (columns.length != 2) {
             throw new PSSException("Couldn't parse GRI! ["+circuitName+"]");
         }
-        int resvNum = Integer.parseInt(columns[1].trim());
+        double resvNumTmp;
+        try {
+        	resvNumTmp = Double.parseDouble(columns[1].trim());
+        } catch (NumberFormatException ex) {
+        	this.log.error("Invalid number format for GRI numerical part"+ex.getMessage());
+        	throw ex;
+        }
+        // wrap at 65534 (65535 reserved for test)
+        int resvNum = (int) resvNumTmp % 65534;
+        String resvNumForTpt = Integer.toString(resvNum);
         
         // get IP associated with physical interface before egress
         ipaddr = ipaddrDAO.fromLink(lastXfacePathElem.getLink());
@@ -135,12 +144,15 @@ public class LSP implements PSS {
             throw new PSSException("Egress port has no IP in DB!");
         }
         // wrap at 65534 (65535 reserved for test)
-        resvNum = resvNum % 65534;
-        lspInfo.put("resv-num", Integer.toString(resvNum));
+
+        
+        this.log.info("Reservation number after cleanup is: "+resvNumForTpt+ " initially: "+columns[1]);
+        
+        
+        lspInfo.put("resv-num", resvNumForTpt);
         lspInfo.put("port", ingressLink.getPort().getTopologyIdent());
         // router to send configuration command to (forward direction)
-        lspInfo.put("router",
-            ingressLink.getPort().getNode().getNodeAddress().getAddress());
+        lspInfo.put("router", ingressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("lsp_to", lspFwdTo);
         lspInfo.put("egress-rtr-loopback", egressRtrLoopback);
         lspInfo.put("bandwidth", Long.toString(resv.getBandwidth()));
@@ -276,16 +288,25 @@ public class LSP implements PSS {
         if (columns.length != 2) {
             throw new PSSException("Couldn't parse GRI! ["+circuitName+"]");
         }
-        int resvNum = Integer.parseInt(columns[1].trim());
+        double resvNumTmp;
+        try {
+        	resvNumTmp = Double.parseDouble(columns[1].trim());
+        } catch (NumberFormatException ex) {
+        	this.log.error("Invalid number format for GRI numerical part"+ex.getMessage());
+        	throw ex;
+        }
+
         // wrap at 65534 (65535 reserved for test)
-        resvNum = resvNum % 65534;
+        int resvNum = (int) resvNumTmp % 65534;
+        String resvNumForTpt = Integer.toString(resvNum);
         
+        this.log.info("Reservation number after cleanup is: "+resvNumForTpt+ " initially: "+columns[1]);
+
         // forward direction
         // router to send configuration command to
-        lspInfo.put("router",
-            ingressLink.getPort().getNode().getNodeAddress().getAddress());
+        lspInfo.put("router", ingressLink.getPort().getNode().getNodeAddress().getAddress());
         lspInfo.put("resv-id", circuitName);
-        lspInfo.put("resv-num", Integer.toString(resvNum));
+        lspInfo.put("resv-num", resvNumForTpt);
         lspInfo.put("port", ingressLink.getPort().getTopologyIdent());
         lspInfo.put("vlan-id", vlanTag);
         this.teardownLSP(lspInfo);

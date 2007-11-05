@@ -53,21 +53,13 @@ public class PathScheduler {
         Session session =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         session.beginTransaction();
-        try {
-            // Check for expired reservations first, so reservations aren't
-            // set up, and then torn down again if they're already in the past.
-            // Look for stuff that *is* expired as of now (0)
-            resList = scheduler.expiredReservations(0);
-            resList = scheduler.pendingReservations(reservationInterval);
-        } catch (PSSException e) {
-            // Exception logged in Scheduler class.
-            // Don't do a rollback because want failed status of
-            // reservation to be committed.
-        } catch (InterdomainException ex ) {
-            // ditto
-        } catch (Exception ex ) {
-            // ditto
-        }
+        // Check for expired reservations first, so reservations aren't
+        // set up, and then torn down again if they're already in the past.
+        // Look for stuff that *is* expired as of now (0)
+        resList = scheduler.expiredReservations(0);
+        resList = scheduler.pendingReservations(reservationInterval);
+        // Any exception is caught and logged in the Scheduler class.
+        // It is not rethrown, but the reservation is marked as FAILED
         session.getTransaction().commit();
     }
 

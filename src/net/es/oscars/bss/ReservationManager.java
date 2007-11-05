@@ -339,11 +339,8 @@ public class ReservationManager {
         Layer3Info layer3Info = pathInfo.getLayer3Info();
         String pathSetupMode = pathInfo.getPathSetupMode();
         if (layer2Info != null) {
-            String[] srcComponentList = layer2Info.getSrcEndpoint().split(":");
-            String[] destComponentList =
-                layer2Info.getDestEndpoint().split(":");
-            srcLink = domainDAO.getFullyQualifiedLink(srcComponentList);
-            destLink = domainDAO.getFullyQualifiedLink(destComponentList);
+            srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
+            destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
         }
         Path path = new Path();
         path.setNextDomain(nextDomain);
@@ -363,13 +360,16 @@ public class ReservationManager {
         path.setPathSetupMode(pathSetupMode);
         
         for (int i = 0; i < hops.length; i++) {
-            String[] componentList = hops[i].getLinkIdRef().split(":");
+            String hopTopoId = hops[i].getLinkIdRef();
+            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            String hopType = parseResults.get("type");
+            String domainId = parseResults.get("domainId");
+            
             // can't store non-local addresses
-            if ((componentList.length != 7) ||
-                     !domainDAO.isLocal(componentList[3])) {
+            if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {
                 continue;
             }
-            link = domainDAO.getFullyQualifiedLink(componentList);
+            link = domainDAO.getFullyQualifiedLink(hopTopoId);
             if (link == null) {
                 this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
             	throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]"); 
@@ -392,6 +392,10 @@ public class ReservationManager {
                         throw new BSSException(
                             "no IP address associated with link " +
                              link.getId());
+                    } else if (!ipaddr.isValid()) {
+                        throw new BSSException(
+                                "IP address associated with link " +
+                                 link.getId() + " is not valid");
                     }
                     try {
                     	String ip =
@@ -483,6 +487,7 @@ public class ReservationManager {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         CtrlPlanePathContent pathCopy = new CtrlPlanePathContent();
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
+        CtrlPlaneHopContent hopCopy = null;
         
         if (ctrlPlanePath == null) {
             return null;
@@ -492,26 +497,39 @@ public class ReservationManager {
         
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
+            hopCopy = new CtrlPlaneHopContent();
             if (!exclude) {
-                pathCopy.addHop(hops[i]);
+                hopCopy.setId(hops[i].getLinkIdRef());
+                hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
+                pathCopy.addHop(hopCopy);
                 continue;
             }
-            String[] componentList = hops[i].getLinkIdRef().split(":");
-            if (componentList.length == 7 &&         
-                domainDAO.isLocal(componentList[3])) {
+
+            String hopTopoId = hops[i].getLinkIdRef();
+            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            String hopType = parseResults.get("type");
+            String domainId = parseResults.get("domainId");
+            
+            if (hopType.equals("link") &&  domainDAO.isLocal(domainId)) {
                 // add ingress
                 if (!edgeFound) {
-                    pathCopy.addHop(hops[i]);
+                    hopCopy.setId(hops[i].getLinkIdRef());
+                    hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
+                    pathCopy.addHop(hopCopy);
                     edgeFound = true;
                 }
                 prevHop = hops[i];
                 continue;
             } else if (edgeFound) {
                 // add egress
-                pathCopy.addHop(prevHop);
+                hopCopy.setId(prevHop.getLinkIdRef());
+                hopCopy.setLinkIdRef(prevHop.getLinkIdRef());
+                pathCopy.addHop(hopCopy);
                 edgeFound = false;
             }
-            pathCopy.addHop(hops[i]);
+            hopCopy.setId(hops[i].getLinkIdRef());
+            hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
+            pathCopy.addHop(hopCopy);
             prevHop = hops[i];
         }
         return pathCopy;
@@ -534,8 +552,12 @@ public class ReservationManager {
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
-            String[] componentList = hops[i].getLinkIdRef().split(":");
-            if (componentList.length != 7 || !domainDAO.isLocal(componentList[3])) {
+
+        	String hopTopoId = hops[i].getLinkIdRef();
+            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            String hopType = parseResults.get("type");
+            String domainId = parseResults.get("domainId");
+            if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {
                 if (hopFound) {
                     nextHop = hops[i];
                     break;
@@ -665,11 +687,9 @@ public class ReservationManager {
 
             this.log.info("setting up vtags");
             DomainDAO domainDAO = new DomainDAO(this.dbname);
-            String[] srcComponentList = layer2Info.getSrcEndpoint().split(":");
-            String[] destComponentList = 
-                layer2Info.getDestEndpoint().split(":");
-            Link srcLink = domainDAO.getFullyQualifiedLink(srcComponentList);
-            Link destLink = domainDAO.getFullyQualifiedLink(destComponentList);
+            Link srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
+            Link destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
+            
             VlanTag srcVtag = forwardReply.getPathInfo().getLayer2Info().getSrcVtag();
             VlanTag destVtag = forwardReply.getPathInfo().getLayer2Info().getDestVtag();
             this.log.info("src vtag: " + srcVtag);

@@ -46,6 +46,7 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
      */
     public Domain fromTopologyIdent(String topologyIdent) {
         String hsql = "from Domain where topologyIdent=?";
+        topologyIdent = topologyIdent.replaceAll("domain=", "");
         return (Domain) this.getSession().createQuery(hsql)
                                          .setString(0, topologyIdent)
                                          .setMaxResults(1)
@@ -124,36 +125,72 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
          return ipaddr.getIP();
      }
 
+
     /**
-     * Given a fully qualified domainId:nodeId:portId:linkId, find the
+     * Given a String[] containing urn:ogf:network:domainId:nodeId:portId:linkId, find the
      * corresponding link in the database.
      *
      * @param componentList string with all elements of name
      * @return Link unique Link instance
      */
     public Link getFullyQualifiedLink(String[] componentList) {
-        String sql = "select * from links l " +
-            "inner join ports p on p.id = l.portId " +
-            "inner join nodes n on n.id = p.nodeId " +
-            "inner join domains d on d.id = n.domainId " +
-            "where l.topologyIdent = ? and p.topologyIdent = ? " +
-            "and n.topologyIdent = ? and d.topologyIdent = ? ";
-        Link link = null;
+    	Link link = null;
         if(componentList.length == 7) {
         	String linkTopoId = componentList[6].replaceAll("link=", "");
         	String portTopoId = componentList[5].replaceAll("port=", "");
         	String nodeTopoId = componentList[4].replaceAll("node=", "");
         	String domainTopoId = componentList[3].replaceAll("domain=", "");
-            link = (Link) this.getSession().createSQLQuery(sql)
-                          .addEntity(Link.class)
-                          .setString(0, linkTopoId)
-                          .setString(1, portTopoId)
-                          .setString(2, nodeTopoId)
-                          .setString(3, domainTopoId)
-                          .setMaxResults(1)
-                          .uniqueResult();
+        	link = this.getFullyQualifiedLink(domainTopoId, nodeTopoId, portTopoId, linkTopoId);
         }
         
+        return link;
+    }
+     /**
+      * Given a fully qualified linkId, find the
+      * corresponding link in the database.
+      *
+      * @param linkFullTopoId string with the fully qualified link id
+      * @return Link unique Link instance
+      */
+    public Link getFullyQualifiedLink(String linkFullTopoId) {
+    	Link link = null;
+        Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(linkFullTopoId);
+        String type = parseResults.get("type");
+        String domainId = parseResults.get("domainId");
+        String nodeId = parseResults.get("nodeId");
+        String portId = parseResults.get("portId");
+        String linkId = parseResults.get("linkId");
+        if (type.equals("link")) {
+        	link = this.getFullyQualifiedLink(domainId, nodeId, portId, linkId); 
+        }
+        return link;
+    }
+    /**
+     * Given domain, node, port and link locally scoped topology identifiers, 
+     * find the corresponding link in the database.
+     *
+     * @param domainTopoId the domain topology identifier
+     * @param nodeTopoId the node topology identifier
+     * @param portTopoId the port topology identifier
+     * @param linkTopoId the link topology identifier
+     * @return Link unique Link instance
+     */ 
+    public Link getFullyQualifiedLink(String domainTopoId, String nodeTopoId, String portTopoId, String linkTopoId) {
+        String sql = "select * from links l " +
+        "inner join ports p on p.id = l.portId " +
+        "inner join nodes n on n.id = p.nodeId " +
+        "inner join domains d on d.id = n.domainId " +
+        "where l.topologyIdent = ? and p.topologyIdent = ? " +
+        "and n.topologyIdent = ? and d.topologyIdent = ? ";
+	    Link link = null;
+	    link = (Link) this.getSession().createSQLQuery(sql)
+	    .addEntity(Link.class)
+	    .setString(0, linkTopoId)
+	    .setString(1, portTopoId)
+	    .setString(2, nodeTopoId)
+	    .setString(3, domainTopoId)
+	    .setMaxResults(1)
+	    .uniqueResult();
         return link;
     }
 
@@ -175,7 +212,7 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
         }
         String sql = "select * from links l " +
             "inner join ipaddrs ip on l.id = ip.linkId " +
-            "where ip.IP = ?";
+            "where ip.IP = ? AND ip.valid = 1";
         Link link = (Link) this.getSession().createSQLQuery(sql)
                       .addEntity(Link.class)
                       .setString(0, hop)

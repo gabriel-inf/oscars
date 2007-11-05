@@ -36,12 +36,8 @@ public class Scheduler {
      *
      * @param timeInterval an integer with the time window to check 
      * @return response the list of reservation that are pending
-     * @throws PSSException
-     * @throws InterdomainException
-     * @throws Exception
      */
-    public List<Reservation> pendingReservations(Integer timeInterval) 
-            throws PSSException, InterdomainException, Exception {
+    public List<Reservation> pendingReservations(Integer timeInterval)  {
 
         List<Reservation> reservations = null;
 
@@ -67,7 +63,6 @@ public class Scheduler {
                 this.log.error("Reservation set up of " +
                          resv.getGlobalReservationId() +
                         "failed with " + ex.getMessage());
-                throw new PSSException(ex.getMessage());
             } catch (InterdomainException ex) {
                 // set to FAILED, log and rethrow
                 resv.setStatus("FAILED");
@@ -76,7 +71,6 @@ public class Scheduler {
                 this.log.error("Reservation set up of " +
                          resv.getGlobalReservationId() +
                         "failed with " + ex.getMessage());
-                throw new InterdomainException(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, log and rethrow
                 resv.setStatus("FAILED");
@@ -85,9 +79,7 @@ public class Scheduler {
                 this.log.error("Reservation set up of " +
                          resv.getGlobalReservationId() +
                         "failed with " + ex.getMessage());
-                throw new Exception(ex.getMessage());
             //} catch (javax.mail.MessagingException ex) {
-                //throw new PSSException(ex.getMessage());
             }
         }
         return reservations;
@@ -101,8 +93,7 @@ public class Scheduler {
      * @throws PSSException
      * @throws Exception
      */
-    public List<Reservation> expiredReservations(Integer timeInterval) 
-            throws PSSException, Exception {
+    public List<Reservation> expiredReservations(Integer timeInterval) {
 
         List<Reservation> reservations = null;
         String prevStatus = null;
@@ -134,7 +125,6 @@ public class Scheduler {
                 this.log.error("Reservation set up of " +
                          resv.getGlobalReservationId() +
                         "failed with " + ex.getMessage());
-                throw new PSSException(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, log and rethrow
                 resv.setStatus("FAILED");
@@ -143,9 +133,7 @@ public class Scheduler {
                 this.log.error("Reservation set up of " +
                          resv.getGlobalReservationId() +
                         "failed with " + ex.getMessage());
-                throw new Exception(ex.getMessage());
             //} catch (javax.mail.MessagingException ex) {
-                //throw new PSSException(ex.getMessage());
             }
         }
         return reservations;

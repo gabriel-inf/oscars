@@ -28,7 +28,7 @@ public class NodeDAO extends GenericHibernateDAO<Node, Integer> {
             "inner join links l on p.id = l.portId " +
             "inner join ipaddrs ip on l.id = ip.linkId";
 
-        sql += " where ip.ip = ?";
+        sql += " where ip.ip = ? and ip.valid = 1";
         Node node = (Node) this.getSession().createSQLQuery(sql)
                                         .addEntity(Node.class)
                                         .setString(0, ip)

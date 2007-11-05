@@ -114,11 +114,15 @@ public class PolicyManager {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         for (int i = 0; i < hops.length; i++) {
             this.log.info(hops[i].getLinkIdRef());
-            String[] componentList = hops[i].getLinkIdRef().split(":");
-            if (componentList.length == 7) {
-                if (domainDAO.isLocal(componentList[3])) {
-	                this.log.info("local: " + hops[i].getLinkIdRef());
-	                Link link = domainDAO.getFullyQualifiedLink(componentList);
+            String hopTopoId = hops[i].getLinkIdRef();
+            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            String hopType = parseResults.get("type");
+            String domainId = parseResults.get("domainId");
+            
+            if (hopType.equals("link")) {
+                if (domainDAO.isLocal(domainId)) {
+	                this.log.info("local: " + hopTopoId);
+	                Link link = domainDAO.getFullyQualifiedLink(hopTopoId);
 	                if (link == null) {
 	                    throw new BSSException("unable to find link with id " +
 	                                           hops[i].getLinkIdRef());
@@ -141,6 +145,8 @@ public class PolicyManager {
                 } else {
 	                this.log.info("not local: " + hops[i].getLinkIdRef());
                 }
+            } else {
+                this.log.info("unknown type: "+hopType+"for hop: " + hopTopoId);
             }
         }
         this.log.info("initLinks.end");

@@ -68,6 +68,7 @@ public class ForwardClient extends ExampleClient {
                 forPayload.setContentType(operation + "Reservations");
             } else {forPayload.setContentType(operation + "Reservation"); }
 
+            /*
             if (operation.equals("create")) {
                 CreateReservationClient createRes =
                     new CreateReservationClient();
@@ -77,6 +78,8 @@ public class ForwardClient extends ExampleClient {
                 createRes.outputResponse(reply.getCreateReservation());
                 
             } else if (operation.equals("cancel")) {
+            */
+            if (operation.equals("cancel")) {
                 CancelReservationClient canRes=
                     new CancelReservationClient();
                 forPayload.setCancelReservation( canRes.readParams(isInteractive));
