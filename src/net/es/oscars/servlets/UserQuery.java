@@ -21,8 +21,7 @@ public class UserQuery extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
-        User user = null;
-        User requester = null;
+        User targetUser = null;
         boolean self =  false; // is query about the current user
         boolean modifyAllowed = false;
 
@@ -42,37 +41,20 @@ public class UserQuery extends HttpServlet {
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
 
-        /*
-         // if user is modifying their own profile, and is coming in from
-        // tab navigation
-        // I don't see how anyone gets here -mrt
-        if (profileName == null)  {
-            self = true;
-            user = mgr.query(userName);
-        } else {
-        // if admin is modifying any user's profile, including their own
-            // get here by clicking on a name in the users list
-           // requester = mgr.query(userName);
-            user = mgr.query(profileName);
-            if (userName.equals(profileName)) {
-                self = true;
-            }
-        }
-        */
         if (profileName != null) { // get here by clicking on a name in the users list
             if (profileName.equals(userName)) { 
                 self =true; 
             } else {
                 self = false;
             }
-        } else { // profileName is null - not sure how we get here -mrt
+        } else { // profileName is null - get here by clicking on tab navigation
             profileName = userName;
-            self = false;
+            self=true;
         }
         AuthValue authVal = mgr.checkAccess(userName, "Users", "query");
         
         if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
-              user= mgr.query(profileName);
+              targetUser= mgr.query(profileName);
          } else {
             utils.handleFailure(out,"no permission to query users", aaa,null);
             return;
@@ -91,7 +73,7 @@ public class UserQuery extends HttpServlet {
         out.println("<xml>");
         out.println("<status>User profile</status>");
         utils.tabSection(out, request, response, "UserList");
-        userDetails.contentSection(out, user, modifyAllowed, institutions, 
+        userDetails.contentSection(out, targetUser, modifyAllowed, institutions, 
                                    "UserQuery");
         out.println("</xml>");
         aaa.getTransaction().commit();
