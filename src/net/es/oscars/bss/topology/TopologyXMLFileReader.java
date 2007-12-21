@@ -23,13 +23,15 @@ public class TopologyXMLFileReader {
     private Properties props;
     private String nsUri;
     private String xsdFilename = "";
+    private String dbname;
 
 
     /**
      * Constructor initializes logging, local parameters
      */
-    public TopologyXMLFileReader() {
+    public TopologyXMLFileReader(String dbname) {
         this.log = Logger.getLogger(this.getClass());
+        this.dbname = dbname;
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("topo", true);
@@ -62,7 +64,7 @@ public class TopologyXMLFileReader {
             return;
         }
 
-        TopologyXMLImporter importer = new TopologyXMLImporter();
+        TopologyXMLImporter importer = new TopologyXMLImporter(this.dbname);
 
         importer.importXML(doc, "merge");
     }

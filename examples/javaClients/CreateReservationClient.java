@@ -148,8 +148,10 @@ public class CreateReservationClient {
             layer2Info = new Layer2Info();
         } else {
             layer3Info = new Layer3Info();
-            mplsInfo = new MplsInfo();
         }
+        // for layer 2, this will only be used if the router configured is
+        // a Juniper
+        mplsInfo = new MplsInfo();
         content.setDescription(props.getProperty("description",""));
         param = props.getProperty("duration").trim();
         if (param == null) {
@@ -200,9 +202,9 @@ public class CreateReservationClient {
             // Axis2 bug workaround
             layer3Info.setSrcIpPort(0);
             layer3Info.setDestIpPort(0);
-            mplsInfo.setBurstLimit(
-                    Integer.parseInt(props.getProperty("burstLimit","10000")));
         }
+        mplsInfo.setBurstLimit(
+                Integer.parseInt(props.getProperty("burstLimit","10000")));
         content.setBandwidth(
                 Integer.parseInt(props.getProperty("bandwidth","10")));
         pathInfo.setPathSetupMode(props.getProperty("pathSetupMode", "domain"));
@@ -210,8 +212,8 @@ public class CreateReservationClient {
             pathInfo.setLayer2Info(layer2Info);
         } else {
             pathInfo.setLayer3Info(layer3Info);
-            pathInfo.setMplsInfo(mplsInfo);
         }
+        pathInfo.setMplsInfo(mplsInfo);
         CtrlPlanePathContent path = new CtrlPlanePathContent();
         path.setId("userPath");//id doesn't matter in this context
         boolean hasEro = false;
@@ -280,17 +282,17 @@ public class CreateReservationClient {
                 layer2Info.setDestVtag(destVtag); 
             }
         } else if (layer3Info != null) {
-            MplsInfo mplsInfo = pathInfo.getMplsInfo();
             arg = Args.getArg(br, "Source host", layer3Info.getSrcHost());
             if (arg != null) { layer3Info.setSrcHost(arg); }
             arg = Args.getArg(br, "Destination host", layer3Info.getDestHost());
             if (arg != null) { layer3Info.setDestHost(arg); }         
-            arg = Args.getArg(br, "Burst limit",
-                    Integer.toString(mplsInfo.getBurstLimit()));
-            if (arg != null) { mplsInfo.setBurstLimit(Integer.parseInt(arg)); }     
             arg = Args.getArg(br, "Protocol", "");
             if (!arg.equals("")) { layer3Info.setProtocol(arg); }
         }
+        MplsInfo mplsInfo = pathInfo.getMplsInfo();
+        arg = Args.getArg(br, "Burst limit",
+                Integer.toString(mplsInfo.getBurstLimit()));
+        if (arg != null) { mplsInfo.setBurstLimit(Integer.parseInt(arg)); }     
         
         /* Common parameters */
         // TODO:  get default from properties

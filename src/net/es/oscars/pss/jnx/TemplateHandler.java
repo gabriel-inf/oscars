@@ -77,28 +77,44 @@ public class TemplateHandler {
             throws PSSException {
 
         Parent parent = null;
+        Map<Element,String> parentMap = new HashMap<Element,String>();
 
         for (Iterator i = list.iterator(); i.hasNext();) {
             Element e = (Element) i.next();
-            String txt = e.getText();
             Element parentElement = e.getParentElement();
-            // Remove this element, and set parent text to
-            // replacement text, if any.  This assumes that
-            // the parent, has this element as its only child.
-            // TODO:  more error-checking.
-            e.detach();
-            Attribute a = parentElement.getAttribute("optional");
-            if (hm.containsKey(txt)) {
-                parentElement.setText(hm.get(txt));
-                parentElement.removeAttribute("optional");
-            } else {
-                if ((a != null) && (!a.getValue().equals("yes"))) {
-                    throw new PSSException("required user var: " + txt +
-                                           "is not present");
+            parentMap.put(parentElement, null);
+        }
+        // Note that order of parent elements is not important.
+        // TODO:  more error-checking.
+        for (Element p: parentMap.keySet()) {
+            StringBuilder sb = new StringBuilder();
+            List children = p.getChildren();
+            Attribute a = p.getAttribute("optional");
+            // replace all text of user-var's, add text of all txt's
+            for (Iterator c = children.iterator(); c.hasNext();) {
+                Element child = (Element) c.next();
+                String txt = child.getText();
+                if (child.getName().equals("txt")) {
+                    sb.append(txt);
+                } else if (hm.containsKey(txt)) {
+                    sb.append(hm.get(txt));
+                } else {
+                    // TODO not a fatal error if user-var not present; sometimes
+                    // it should be.  Needs some work.
+                    if ((a != null) && (!a.getValue().equals("yes"))) {
+                        throw new PSSException("required user var: " + txt +
+                                               " is not present");
+                    }
                 }
-                // If get to here, remove the parent element as well,
-                // since it should be empty in this case.
-                parentElement.detach();
+            }
+            if (sb.length() == 0) {
+                // Remove the parent element.
+                p.detach();
+            } else {
+                // NOTE WELL:  this overwrites all current children of parent.
+                // Detaching a child explicitly, results in an exception.
+                p.setText(sb.toString());
+                p.removeAttribute("optional");
             }
         }
     }
@@ -163,13 +179,21 @@ public class TemplateHandler {
         } else {
             primaryElement.removeAttribute("optional");
             pathElement.removeAttribute("optional");
-            // for each hop, add
+            // for each layer 2 hop, add
+            // <path-list><name>hop</name><strict /></path-list>
+            //     under the path element
+            // for each layer 3 hop, add
             // <path-list><name>hop</name></path-list> under the path element
             for (String hop: hops) {
                 Element pathList = new Element("path-list");
                 Element name = new Element("name");
                 name.setText(hop);
                 pathList.addContent(name);
+                // if layer 2
+                if (hm.containsKey("vlan_id")) {
+                    Element strictElem = new Element("strict");
+                    pathList.addContent(strictElem);
+                }
                 pathElement.addContent(pathList);
             }
         }

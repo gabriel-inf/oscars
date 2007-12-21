@@ -175,7 +175,7 @@ public class PolicyManager {
 
         // get start of path
         PathElem pathElem = resv.getPath().getPathElem();
-        DomainDAO domainDAO = new DomainDAO("bss");
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         if (layer2Info != null) {
             srcComponentList = layer2Info.getSrcEndpoint().split(":");
@@ -236,7 +236,7 @@ public class PolicyManager {
         byte[] vtagMask;
         byte[] availVtagMask = tc.rangeStringToMask(
                                 l2scData.getVlanRangeAvailability());
-        DomainDAO domainDAO = new DomainDAO("bss");
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
         String[] srcComponentList = layer2Info.getSrcEndpoint().split(":");
         String[] destComponentList = layer2Info.getDestEndpoint().split(":");
         Link srcLink = domainDAO.getFullyQualifiedLink(srcComponentList);

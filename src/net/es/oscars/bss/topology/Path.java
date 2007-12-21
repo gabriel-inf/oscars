@@ -1,6 +1,7 @@
 package net.es.oscars.bss.topology;
 
 import java.util.Set;
+import java.util.List;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -141,6 +142,22 @@ public class Path extends HibernateBean implements Serializable {
                 .append(this.getNextDomain(), castOther.getNextDomain())
                 .isEquals();
         }
+    }
+    
+    public boolean containsAnyOf(List<Link> links) {
+    	PathElem pe = this.getPathElem();
+    	for (Link link : links) {
+	    	if (pe.getLink().equals(link)) {
+	    		return true;
+	    	} 
+			while (pe.getNextElem() != null) {
+				pe = pe.getNextElem();
+		    	if (pe.getLink().equals(link)) {
+		    		return true;
+		    	} 
+	    	}
+    	}
+    	return false;
     }
 
     // string representation is layer and client dependent; done

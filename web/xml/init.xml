@@ -5,18 +5,21 @@
     <table id="pagetitle">
       <tr>
         <td>
-        <a href="http://www.internet2.edu/">
-          <img src="images/internet2_logo.png" width="73" height="58" 
-               border="0" alt="Internet2 logo" title="Internet 2" /></a>
+        <img src="images/internet2_logo.png" width="73" height="58" 
+               border="0" alt="Internet2 logo" title="Internet 2" />
         </td>
         <td>
-        <a href="http://www.es.net/">
-          <img src="images/ESnetLogo.png" width="77" height="58" 
-               border="0" alt="ESnet Logo" title="ESnet" /></a>
+        <img src="images/ESnetLogo.png" width="77" height="58" 
+               border="0" alt="ESnet Logo" title="ESnet" />
         </td>
         <td>
-          <h1>On-demand Secure Circuits and Advance Reservation System</h1>
-          <div>In collaboration with the <a href="http://www.internet2.edu">Internet2</a> BRUW Project</div>
+            <h1>On-demand Secure Circuits and Advance Reservation System</h1>
+	    <div>A collaboration between
+                <a href="http://www.es.net/" target="_blank">ESnet</a>,
+                <a href="http://www.internet2.edu/" target="_blank">Internet2</a>,
+                <a href="http://www.dante.net/" target="_blank">DANTE</a>, and
+                <a href="http://www.east.isi.edu/" target="_blank">ISI East</a>
+            </div>
         </td>
       </tr>
     </table>
@@ -55,9 +58,10 @@
 <info>
 <div class="info">
 
-<p>Sign in via your
-<a href="/OSCARS/docs">OSCARS</a>
-login and password to access this system.  To obtain an account or request more 
+<p>Sign in via your OSCARS login and password to access this system.
+To find out about OSCARS and how it works, go to the
+<a href="/OSCARS/docs/">documentation</a>.
+To obtain an account or request more 
 information, email one of the contacts below.</p>
 
 </div>
@@ -65,10 +69,10 @@ information, email one of the contacts below.</p>
 
 <notices>
     <p>
-        <a href="/OSCARS/docs">Documentation</a> |
-        <a href="http://www.es.net/">ESnet</a> |
-        <a href="http://www.lbl.gov/">Berkeley Lab</a> |
-        <a href="http://www.lbl.gov/Disclaimers.html">Notice to Users</a>
+        <a href="/OSCARS/docs" target="_blank">Documentation</a> |
+        <a href="http://www.es.net/" target="_blank">ESnet</a> |
+        <a href="http://www.lbl.gov/" target="_blank">Berkeley Lab</a> |
+        <a href="http://www.lbl.gov/Disclaimers.html" target="_blank">Notice to Users</a>
     </p>
     <p><strong>Contacts:</strong>
         <a href="mailto:chin@es.net">Chin Guok</a>, 

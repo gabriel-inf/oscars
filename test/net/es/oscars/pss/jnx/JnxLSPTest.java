@@ -18,10 +18,10 @@ import net.es.oscars.pss.PSSException;
  */
 @Test(groups={ "pss.jnx" })
 public class JnxLSPTest {
-    private final String BANDWIDTH = "10000000"; // 10 Mbps
     private Properties testProps;
     private JnxLSP jnxLSP;
-    private Map<String, String> commonHm;
+    private Map<String, String> l2HashMap;
+    private Map<String, String> l3HashMap;
     private Logger log;
 
   @BeforeClass
@@ -32,58 +32,75 @@ public class JnxLSPTest {
         propHandler = new PropHandler("oscars.properties");
         // fill in name/value pairs common to all tests
         Properties oscarsProps = propHandler.getPropertyGroup("pss.jnx", true);
-        this.commonHm = new HashMap<String,String>();
+        // layer 3 parameters
+        this.l3HashMap = new HashMap<String,String>();
         String keyfile = System.getenv("CATALINA_HOME") +
                 "/shared/oscars.conf/server/oscars.key";
-        this.commonHm.put("keyfile", keyfile);
-        this.commonHm.put("router", this.testProps.getProperty("ingressRouter"));
-        this.commonHm.put("source-address",
+        this.l3HashMap.put("keyfile", keyfile);
+        this.l3HashMap.put("router", this.testProps.getProperty("ingressRouter"));
+        this.l3HashMap.put("source-address",
                 this.testProps.getProperty("srcHost"));
-        this.commonHm.put("destination-address",
+        this.l3HashMap.put("destination-address",
                 this.testProps.getProperty("destHost"));
-        this.commonHm.put("from", this.testProps.getProperty("ingressRouter"));
-        this.commonHm.put("to", this.testProps.getProperty("egressRouter"));
-        this.commonHm.put("bandwidth", BANDWIDTH);
+        this.l3HashMap.put("from", this.testProps.getProperty("ingressRouter"));
+        this.l3HashMap.put("to", this.testProps.getProperty("egressRouter"));
+        this.l3HashMap.put("bandwidth", CommonParams.getBandwidth());
 
-        this.commonHm.put("login", oscarsProps.getProperty("login"));
+        this.l3HashMap.put("login", oscarsProps.getProperty("login"));
         // to distinguish tests
-        this.commonHm.put("name", oscarsProps.getProperty("login") + "1000000");
-        this.commonHm.put("passphrase", oscarsProps.getProperty("passphrase"));
-        this.commonHm.put("firewall_filter_marker",
+        this.l3HashMap.put("name", oscarsProps.getProperty("login") + "1000000");
+        this.l3HashMap.put("passphrase", oscarsProps.getProperty("passphrase"));
+        this.l3HashMap.put("firewall_filter_marker",
                 oscarsProps.getProperty("firewall_filter_marker"));
-        this.commonHm.put("internal_interface_filter",
+        this.l3HashMap.put("internal_interface_filter",
                 oscarsProps.getProperty("internal_interface_filter"));
-        this.commonHm.put("external_interface_filter",
+        this.l3HashMap.put("external_interface_filter",
                 oscarsProps.getProperty("external_interface_filter"));
-        this.commonHm.put("lsp_class-of-service",
+        this.l3HashMap.put("lsp_class-of-service",
                 oscarsProps.getProperty("lsp_class-of-service"));
-        this.commonHm.put("dscp", oscarsProps.getProperty("dscp"));
-        this.commonHm.put("policer_burst-size-limit",
+        this.l3HashMap.put("dscp", oscarsProps.getProperty("dscp"));
+        this.l3HashMap.put("policer_burst-size-limit",
                 oscarsProps.getProperty("policer_burst-size-limit"));
-        this.commonHm.put("lsp_setup-priority",
+        this.l3HashMap.put("lsp_setup-priority",
                 oscarsProps.getProperty("lsp_setup-priority"));
-        this.commonHm.put("lsp_reservation-priority",
+        this.l3HashMap.put("lsp_reservation-priority",
                 oscarsProps.getProperty("lsp_reservation-priority"));
-        this.jnxLSP = new JnxLSP("bss");
+        this.jnxLSP = new JnxLSP("testbss");
+        this.jnxLSP.setConfigurable(false);
     }
 
   @Test
-    public void setupLSP() throws PSSException {
-
-        Map<String,String> hm =
-            new HashMap<String,String>(this.commonHm);
-
-        hm.put("lsp_description", "testSetupLSP");
-        assert this.jnxLSP.setupLSP(hm, null);
+    public void allowedTest() {
+        String hostsProp = this.testProps.getProperty("allowedHosts");
+        Map<String,String> hostsMap = new HashMap<String,String>();
+        String[] allowedHosts = hostsProp.split(", ");
+        for (int i=0; i < allowedHosts.length; i++) {
+            hostsMap.put(allowedHosts[i], null);
+        }
+        String thisHost = System.getenv("HOST");
+        assert hostsMap.containsKey(thisHost);
+        String usersProp = this.testProps.getProperty("allowedUsers");
+        Map<String,String> usersMap = new HashMap<String,String>();
+        String[] allowedUsers = usersProp.split(", ");
+        for (int i=0; i < allowedUsers.length; i++) {
+            usersMap.put(allowedUsers[i], null);
+        }
+        String thisUser = System.getenv("USER");
+        assert usersMap.containsKey(thisUser);
     }
 
-  @Test
-    public void tearDownLSP() throws PSSException {
+  @Test(dependsOnMethods={ "allowedTest" })
+    public void createForwardPath() throws PSSException {
+        assert true;
+    }
 
-        // if a hash value is unused in connecting to the router, or
-        // in the template, it is ignored
-        Map<String,String> hm =
-            new HashMap<String,String>(this.commonHm);
-        assert this.jnxLSP.teardownLSP(hm);
+  @Test(dependsOnMethods={ "allowedTest" })
+    public void refreshPath() throws PSSException {
+        assert true;
+    }
+
+  @Test(dependsOnMethods={ "allowedTest" })
+    public void teardownForwardPath() throws PSSException {
+        assert true;
     }
 }

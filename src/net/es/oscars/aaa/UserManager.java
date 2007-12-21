@@ -16,7 +16,7 @@ public class UserManager {
     private Logger log;
     private String salt;
     private String dbname;
-    private List<UserAttribute> userAttrs = null;
+    private List<UserAttribute> userAttrs = null; // set by checkAccess, checkModResAccess
     private int resourceId;
     private int permissionId;
     
@@ -35,15 +35,28 @@ public class UserManager {
      */
     public void create(User user, String institutionName)
             throws AAAException {
+
+        this.create(user, institutionName, null);
+    }
+
+    /** Creates a system user.
+     *
+     * @param user a user instance containing user parameters
+     * @param institutionName a string with the new user's affiliation
+     * @param roles a list of attributes for the user
+     */
+    public void create(User user, String institutionName, List<Integer> roles)
+            throws AAAException {
+
         User currentUser = null;
 
         this.log.info("create.start: " + user.getLogin());
-        this.log.info("create.institution: " + institutionName);
+        this.log.debug("create.institution: " + institutionName);
 
         String userName = user.getLogin();
         UserDAO userDAO = new UserDAO(this.dbname);
         currentUser = userDAO.query(userName);
-        this.log.info("create.userName: " + userName);
+        this.log.debug("create.userName: " + userName);
         // check whether this entity is already in the database
         if (currentUser != null) {
             throw new AAAException("User " + userName + " already exists.");
@@ -57,6 +70,17 @@ public class UserManager {
         user.setPassword(encryptedPwd);
 
         userDAO.create(user);
+        // add any attributes for this user to the UserAttributes table
+        if (roles != null) {
+            int UserId = user.getId();
+            UserAttributeDAO uaDAO = new UserAttributeDAO(this.dbname);  
+            for (int attrID : roles) {
+                UserAttribute ua = new UserAttribute();
+                ua.setUserId(UserId);
+                ua.setAttributeId(attrID);
+                uaDAO.create(ua);
+            }
+        }
         this.log.info("create.finish: " + user.getLogin());
     }
 
@@ -107,7 +131,7 @@ public class UserManager {
     }
 
     /**
-     * Removes a reservation system user.
+     * Removes a reservation system user and all their attributes
      *
      * @param userName a string with the user's login name
      */
@@ -115,11 +139,15 @@ public class UserManager {
 
         this.log.info("remove.start: " + userName);
         UserDAO userDAO = new UserDAO(this.dbname);
+        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
+        
         User user = userDAO.query(userName); // check to make sure user exists
         if (user == null) {
             throw new AAAException("Cannot remove user " + userName +
                                    ". The user does not exist.");
         }
+        int userId = user.getId();
+        userAttrDAO.removeAllAttributes(userId);
         userDAO.remove(user);
         this.log.info("remove.finish: " + userName);
     }
@@ -192,9 +220,11 @@ public class UserManager {
      *
      * @param userName a string with the user's login name
      * @param password a string with the user's password
+     * @param sessionName a string with session name to set if auth successful
      * @return a string with the login name if verification was successful
      */
-    public String verifyLogin(String userName, String password)
+    public String verifyLogin(String userName, String password,
+                              String sessionName)
             throws AAAException {
 
         User user = null;
@@ -228,8 +258,65 @@ public class UserManager {
              throw new AAAException(
                      "verifyLogin: no attributes for user " +userName + ".");
         }
+        user.setCookieHash(sessionName);
+        userDAO.update(user);
         this.log.debug("verifyLogin.end: " + userName);
         return userName;
+    }
+    
+    /**
+     * Checks session cookie for validity.
+     *
+     * @param userName string with user's login name
+     * @param sessionName string with session cookie value
+     * @return boolean indicating whether cookie is valid
+     */
+    public boolean validSession(String userName, String sessionName) {
+        UserDAO userDAO = new UserDAO(this.dbname);
+        boolean valid = userDAO.validSession(userName, sessionName);
+        return valid;
+    }
+
+    /* return a list of the user's attributes
+     * 
+     * @returns a list of the attribute names for user associated with 
+     *     manager instance
+     */
+    public List <String> getAttrNames () {
+        this.log.debug("getAttrNames: start");
+        ArrayList <String> attrNames = new ArrayList<String>();
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        if (this.userAttrs != null){
+            for (UserAttribute ua : this.userAttrs){
+                attrNames.add(attrDAO.getAttributeName(ua.getAttributeId()));
+            }   
+        }
+        this.log.debug("getAttrNames: finish");
+        return attrNames;
+    }
+
+    /* return a list of the user's attributes
+     * 
+     * @param userlogin string containing a user login name
+     * @returns a list of the attribute names for this  user
+     */
+    public List <String> getAttrNames (String targetUser) {
+        this.log.debug("getAttrNames: start");
+        ArrayList <String> attrNames = new ArrayList<String>();
+        AttributeDAO attrDAO = new AttributeDAO(this.dbname);
+        UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
+        UserDAO userDAO = new UserDAO(this.dbname);
+
+        User user = userDAO.query(targetUser);
+        if (user == null) { return attrNames; }
+        this.userAttrs = userAttrDAO.getAttributesByUser(user.getId());
+        if (this.userAttrs != null) {
+            for (UserAttribute ua : this.userAttrs) {
+                attrNames.add(attrDAO.getAttributeName(ua.getAttributeId()));
+            }   
+        }
+        this.log.debug("getAttrNames: finish");
+        return attrNames;
     }
 
 
@@ -256,6 +343,7 @@ public class UserManager {
         AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
         UserAttribute currentAttr = null;
         AuthValue retVal =null;
+        String retValSt = "DENIED";
          
         this.log.info("checkAccess.start");
         if (!this.getIds(userName, resourceName, permissionName)) {
@@ -268,13 +356,15 @@ public class UserManager {
         Iterator attrIter = this.userAttrs.iterator();
         while (attrIter.hasNext()) {
             currentAttr = (UserAttribute) attrIter.next();
+            /*
             this.log.debug("attrId: " + currentAttr.getAttributeId() +
                            ", resourceId: " + this.resourceId +
                            ", permissionId: " + this.permissionId);
+            */
             auths = authDAO.query(currentAttr.getAttributeId(),
                                   this.resourceId, this.permissionId);
             if (auths.isEmpty()) { 
-                this.log.debug("attrId:  no authorization" );
+                //this.log.debug("attrId:  no authorization" );
                 continue;
             } 
             Iterator authItr = auths.iterator();
@@ -284,19 +374,22 @@ public class UserManager {
                 if (auth.getConstraintName() == null) {
                     // found an authorization with no constraints,
                     // user is allowed for self only
-                    this.log.debug("attrId: authorized with no constraint");
+                    //this.log.debug("attrId: authorized with no constraint");
                     retVal =  AuthValue.SELFONLY;
+                    retValSt = "SELFONLY";
                 } else if (auth.getConstraintName().equals("all-users")) {
                     if (auth.getConstraintValue() ==
                             AuthValue.ALLUSERS.ordinal()) {
                         // found an authorization with allUsers allowed,
                         // user is allowed
-                        this.log.info("checkAccess.finish: ALLUSERS access");
+                        this.log.debug("checkAccess:finish ALLUSERS access");
                         return AuthValue.ALLUSERS;
                     } else {
-                        // found a contrained authorization, remember it
+                        // found a constrained authorization, remember it
                         // and see if we can do better
+                        this.log.debug("checkAccess SELFONLY access");
                         retVal = AuthValue.SELFONLY;
+                        retValSt = "SELFONLY";
                     }
                 }
             } // end of all authorizations for this attribute
@@ -306,8 +399,9 @@ public class UserManager {
                           ", permission " + permissionName +
                           ", resource " + resourceName);
             retVal = AuthValue.DENIED;
+            retValSt = "DENIED";
         }
-        this.log.info("checkAccess.finish: " + retVal);
+        this.log.info("checkAccess.finish: " + retValSt + " access");
         return retVal;
     }   
     /**
@@ -332,8 +426,9 @@ public class UserManager {
         List<Authorization> auths = null;
         AuthorizationDAO authDAO = new AuthorizationDAO(this.dbname);
         UserAttribute currentAttr = null;
-        boolean bandwidthAllowed = false;
-        boolean durationAllowed = false;
+        // set default values
+        boolean bandwidthAllowed = true;
+        boolean durationAllowed = true;
         boolean specifyPE = false;
         boolean specifyGRI = false;
         AuthValue retVal = AuthValue.DENIED;
@@ -348,8 +443,10 @@ public class UserManager {
         Iterator attrIter = this.userAttrs.iterator();
         while (attrIter.hasNext()) {
             currentAttr = (UserAttribute) attrIter.next();
+            /*
             this.log.debug("looking up authorization for attrId: " +
                            currentAttr.getAttributeId());
+            */
             auths = authDAO.query(currentAttr.getAttributeId(),
                                   this.resourceId, this.permissionId);
             if (auths.isEmpty()) {                   
@@ -363,23 +460,21 @@ public class UserManager {
                 // no constraint
                 if (auth.getConstraintName() == null) {
                     retVal = AuthValue.SELFONLY;
-                    bandwidthAllowed = true;
-                    durationAllowed = true;
                 } else if (auth.getConstraintName().equals("max-bandwidth")) {
                     this.log.debug("Allowed bandwidth: " +
                                    auth.getConstraintValue() +
                                    ", requested bandwidth: " + reqBandwidth);
-                    if (reqBandwidth <= auth.getConstraintValue() ) {
+                    if (reqBandwidth > auth.getConstraintValue() ) {
                         // found an authorization that allows the bandwidth
-                        bandwidthAllowed = true;
+                        bandwidthAllowed = false;
                     }
                 } else if (auth.getConstraintName().equals("max-duration")) {
                     this.log.debug("Allowed duration: " +
                                    auth.getConstraintValue() +
                                    ", requested duration: " + reqDuration);
-                    if (reqDuration <= auth.getConstraintValue()) {
+                    if (reqDuration > auth.getConstraintValue()) {
                         // found an authorization that allows the duration
-                        durationAllowed = true;
+                        durationAllowed = false;
                     }
                 } else if (auth.getConstraintName().equals(
                                                     "specify-path-elements")) {
@@ -452,8 +547,10 @@ public class UserManager {
         // get list of  attributes for this user
         UserAttributeDAO userAttrDAO = new UserAttributeDAO(this.dbname);
         this.userAttrs = userAttrDAO.getAttributesByUser(user.getId());
+        /*
         this.log.info("getIds: userId, " + user.getId() + " permissionId, " +
                       this.permissionId + " resourceId, " + this.resourceId);
+        */
         if (this.userAttrs.isEmpty())  {
             this.log.info("getIds: userAttrs is empty");
             return false;

@@ -96,9 +96,8 @@ public class ForwardClient extends ExampleClient {
                 
             } else if (operation.equals("list")) {
                 ListReservationsClient listRes = new ListReservationsClient();
-                EmptyArg ea = new EmptyArg();
-                ea.setMsg("");
-                forPayload.setListReservations(ea);
+                
+                forPayload.setListReservations(listRes.readParams(isInteractive));
                 fwd.setPayload(forPayload);
                 ForwardReply reply = this.getClient().forward(fwd);
                 listRes.outputResponse(reply.getListReservations());

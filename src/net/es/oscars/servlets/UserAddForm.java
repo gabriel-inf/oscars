@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import org.apache.log4j.Logger;
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
@@ -26,6 +28,9 @@ public class UserAddForm extends HttpServlet {
         UserDetails userDetails = new UserDetails();
         Utils utils = new Utils();
         List<Institution> institutions = null;
+        List<String> attrNames = new ArrayList<String>();
+        Logger log = Logger.getLogger(this.getClass());
+        log.debug("UserAddForm: start");
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/xml");
@@ -45,10 +50,11 @@ public class UserAddForm extends HttpServlet {
         out.println("<xml>");
         out.println("<status>Add user form</status>");
         utils.tabSection(out, request, response, "UserList");
-        userDetails.contentSection(out, user, true, institutions,
-                                  "UserAddForm");
+        userDetails.contentSection(out, user, true, (authVal == AuthValue.ALLUSERS),
+        	institutions,attrNames,"UserAddForm");
         out.println("</xml>");
         aaa.getTransaction().commit();
+        log.debug("UserAddForm: finish");      
     }
 
     public void

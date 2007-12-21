@@ -64,17 +64,29 @@ function submitForm( form, methodName, params ) {
         if (!valid) { return false; }
     } 
     if (!params) { params = ''; }
+   
     if (form.elements) {
         var formElements = form.elements;
         var numElements = form.elements.length;
+        // remove unchecked roles
+        if (form.roles) {
+        	for (i=0; i<form.roles.length; i++){
+	        	if (form.roles[i].checked != true) {
+	      	    	form.roles[i].value='';
+	      	    }
+	      	}
+		}
+
         for (var e=0; e < numElements; e++) {
-            if (formElements[e].value && formElements[e].name &&
-                    (formElements[e].className == 'SOAP' ||
-                    formElements[e].className == 'required')) {
-                params +=
-                   formElements[e].name + '=' + formElements[e].value + '&';
-            }
+   
+            if (formElements[e].value && formElements[e].name) {
+                if (formElements[e].className == 'SOAP' || formElements[e].className == 'required') {
+                        params +=  formElements[e].name + '=' + formElements[e].value + '&';
+                }
+             }         
         }
+  
+ 
     }
 
     // adapted from http://www.devx.com/DevX/Tip/17500

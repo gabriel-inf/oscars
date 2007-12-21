@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
@@ -13,6 +15,7 @@ import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.aaa.UserManager;
+import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.bss.topology.Layer2Data;
@@ -80,18 +83,31 @@ public class ListReservations extends HttpServlet {
 
         ReservationManager rm = new ReservationManager("bss");
         List<Reservation> reservations = null;
+        List<String> logins = new ArrayList<String>();
         boolean allUsers = false;
         Utils utils = new Utils();
+        Logger log = Logger.getLogger(this.getClass());
 
         UserManager mgr = new UserManager("aaa");
+        List<User> users = mgr.list();
         AuthValue authVal = mgr.checkAccess(login, "Reservations", "list");
         if (authVal == AuthValue.DENIED) {
             utils.handleFailure(out, "no permission to list Reservations",  null, null);
             return null;
         }
-        if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
+        if (authVal == AuthValue.ALLUSERS) { allUsers=true; }
+        if (allUsers) {
+            for (User user: users) {
+                if (user.getLogin() != null) {
+                    logins.add(user.getLogin());
+                }
+            }
+        } else {
+            logins.add(login);
+        }
         try {
-            reservations = rm.list(login, allUsers);
+            // TODO:  other criteria
+            reservations = rm.list(login, logins, null, null, null, null);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);
             return null;

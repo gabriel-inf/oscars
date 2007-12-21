@@ -23,9 +23,9 @@ public class PSSFactory{
             ;
         } else if (pssType.equals("dragon")) {
             return new VlsrPSS();
-        } else if (pssType.equals("esnet")) {
+        } else if (pssType.equals("vendor")) {
             // this class chooses between configuring Cisco's or Juniper's
-            return new PSSChooser(dbname);
+            return new VendorPSSFactory(dbname);
         } else if (pssType.equals("stub")) {
             return new StubPSS();
         }

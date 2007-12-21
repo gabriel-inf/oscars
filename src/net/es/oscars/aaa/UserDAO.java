@@ -40,6 +40,25 @@ public class UserDAO extends GenericHibernateDAO<User, Integer> {
     }
 
     /**
+     * Checks session cookie for validity.
+     *
+     * @param userName string with user's login name
+     * @param sessionName string with session cookie value
+     * @return boolean indicating whether cookie is valid
+     */
+    public boolean validSession(String userName, String sessionName) {
+
+        String hsql = "from User " +
+            "where login = ? and cookieHash = ?";
+        User user = (User) this.getSession().createQuery(hsql)
+                                            .setString(0, userName)
+                                            .setString(1, sessionName)
+                                            .setMaxResults(1)
+                                            .uniqueResult();
+        return user != null ? true : false;
+    }
+
+    /**
      * Currently a noop.
      */
     public boolean isAuthenticated(String userName) {

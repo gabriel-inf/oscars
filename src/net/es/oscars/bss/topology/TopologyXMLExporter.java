@@ -24,12 +24,14 @@ public class TopologyXMLExporter {
     private Namespace ns;
     private String nsUri;
     private String nsPrefix;
+    private String dbname;
 
     /**
      * Constructor initializes logging and local properties
      */
-    public TopologyXMLExporter() {
+    public TopologyXMLExporter(String dbname) {
         this.log = Logger.getLogger(this.getClass());
+        this.dbname = dbname;
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("topo", true);
@@ -56,11 +58,8 @@ public class TopologyXMLExporter {
      * @return The topology JDOM Document object
      */
     public Document getTopology(String query) {
-        Initializer initializer = new Initializer();
-        List<String> dbnames = new ArrayList<String>();
-        dbnames.add("bss");
-        initializer.initDatabase(dbnames);
-        this.ses = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+    	
+        this.ses = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
 
         Transaction tx = this.ses.beginTransaction();
 

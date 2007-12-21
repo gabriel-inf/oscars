@@ -1,17 +1,10 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-    <script type="text/javascript">
-        dojo.require("dojo.widget.Form");
-    </script>
-</head>
-
-<body>
+<html>
 
 <p>Click on a column header to sort by that column. Times given are in the
 time zone of the browser.  Click on the Reservation Tag link to view detailed
 information about a reservation.</p>
 
-<p><form id="listReservationsForm" dojoType="Form" method="POST" action="servlet/UserSession">
+<p><form id="reservationsForm" method="POST" action="servlet/Reservations">
     <input type="submit" name="refreshReservations" value="Refresh" />
 </form></p>
 
@@ -51,5 +44,4 @@ information about a reservation.</p>
     </tbody>
 -->
 </table>
-</body>
 </html>

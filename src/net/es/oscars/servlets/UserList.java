@@ -5,21 +5,27 @@ import java.util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import org.apache.log4j.Logger;
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager.AuthValue;
 
 
 public class UserList extends HttpServlet {
-
+    private Logger log;
+    
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
             throws IOException, ServletException {
+
+
+	this.log = Logger.getLogger(this.getClass());
+	this.log.debug("userList:start");
 
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
@@ -30,22 +36,7 @@ public class UserList extends HttpServlet {
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();     
-        
-        /*
-        List<User> users = null;
-        UserManager mgr = new UserManager("aaa");
- 
-                
-        AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
-        if (authVal == AuthValue.ALLUSERS) {
-            users = mgr.list();
-        } else if (authVal== AuthValue.SELFONLY) {
-            users= (List<User>) mgr.query(userName);
-        } else {
-            utils.handleFailure(out,"no permission to list users", aaa,null);
-            return;
-        }
-        */
+    
         out.println("<xml>");
         try {
             this.outputList(out, userName);
@@ -57,6 +48,7 @@ public class UserList extends HttpServlet {
         utils.tabSection(out, request, response, "UserList");
         out.println("</xml>");
         aaa.getTransaction().commit();
+	this.log.debug("userList:finish");
     }
 
     /**
@@ -64,7 +56,7 @@ public class UserList extends HttpServlet {
      *  prints out the users to the response xml page
      *  
      * @param out PrintWriter connected to response page
-     * @param userName String containing name of user making requestt
+     * @param userName String containing name of user making request
      * @throws AAAException
      */
     public void outputList(PrintWriter out, String userName) 
@@ -72,7 +64,7 @@ public class UserList extends HttpServlet {
 
         List<User> users = null;
         UserManager mgr = new UserManager("aaa");
-        Utils utils = new Utils();
+        //Utils utils = new Utils();
         
         AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
         if (authVal == AuthValue.ALLUSERS) {
@@ -102,7 +94,7 @@ public class UserList extends HttpServlet {
      *  called from UserList and UserRemove
      *  
      * @param out PrintWriter that writes to the output html page
-     * @param users llist of all users
+     * @param users list of all users
      * @param authVal if set to  ALLUSERS the user has permission to modify all users and
      *                gets to see the UserAdd button.
      */
@@ -142,7 +134,7 @@ public class UserList extends HttpServlet {
  */
   /*
     *  This could be tweaked to not allow a reference to the user profile
-    *  or the delete page if the user does not have permision. As it is now the
+    *  or the delete page if the user does not have permission. As it is now the
     *  user will get an error when he tries to follow a link for which he has  no
     *  permission. However, as it is, it is easier for a user to what permissions are 
     *  needed for the query and delete user operations.
@@ -153,7 +145,17 @@ public class UserList extends HttpServlet {
                     "'profileName=" + user.getLogin() + "');";
         String removeHrefStr = "return newSection('UserRemove', " +
                     "'profileName=" + user.getLogin() + "');";
-        String institutionName = user.getInstitution().getName();
+        String institutionName; 
+        
+        /* if an unknown institution id is found in the users table an exception is thrown
+         * in hibernate.gclib generated code
+         */
+        try {
+            institutionName = user.getInstitution().getName();
+        } catch (org.hibernate.ObjectNotFoundException e) {
+            institutionName = "unknown";
+        }
+        
         out.println("<tr>");
         out.println("<td><a href='#' ");
         out.println("onclick=\"" + profileHrefStr + "\"> " +

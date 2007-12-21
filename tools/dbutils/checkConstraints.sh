@@ -27,7 +27,7 @@ export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
 # start up logging to file
-javac `pwd`/ImportFlatFile.java
-java -Djava.net.preferIPv4Stack=true ImportFlatFile $*
+javac `pwd`/CheckConstraints.java
+java -Djava.net.preferIPv4Stack=true CheckConstraints $*
 
 exit 1

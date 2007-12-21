@@ -1,73 +1,65 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
+  <head>
     <title>On-demand Secure Circuits and Advance Reservation System</title>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="Author" content="David Robertson" />
-
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
-
+    <style type="text/css">
+        @import "lib/dojo/dijit/themes/tundra/tundra.css";
+        @import "lib/dojo/dojo/resources/dojo.css";
+        @import "css/main.css";
+    </style>
+    <script type="text/javascript" src="lib/dojo/dojo/dojo.js"
+            djConfig="parseOnLoad: true"></script>
+    <script type="text/javascript">dojo.registerModulePath("js", "../../../js")
+    </script>
+    <script type="text/javascript">dojo.require("js.Form");</script>
     <script type="text/javascript">
-        var djConfig = {isDebug: true,debugContainerId: "dojoDebug" };
+	dojo.require("dojo.parser");
+        dojo.require("dijit.layout.TabContainer");
+        dojo.require("dijit.layout.ContentPane");
+        dojo.require("dijit.form.Button");
+	dojo.require("dijit.form.TextBox");
+	dojo.require("dijit.form.Textarea");
+	dojo.require("dijit.form.DateTextBox");
+	dojo.require("dijit.form.TimeTextBox");
     </script>
-    <script type="text/javascript" src="dojo/dojo.js"></script>
-    <script type="text/javascript" src="js/Form.js"></script>
-    <script type="text/javascript" src="js/DigitalClock.js"></script>
-    <script type="text/javascript">dojo.registerModulePath("js", "../js")
-    </script>
-    <script type="text/javascript">
-        dojo.require("dojo.debug.console");
-        dojo.require("dojo.event.*");
-        dojo.require("dojo.io.*");
-        dojo.require("dojo.widget.*");
-        dojo.require("dojo.widget.TabContainer");
-        dojo.require("dojo.widget.ContentPane");
-        dojo.require("dojo.widget.Form");
-        dojo.require("dojo.widget.Button");
-    </script>
-    <script type="text/javascript">dojo.addOnLoad(initClock);</script>
-</head>
-
-<body>
+  </head>
+  <body class="tundra">
     <table id="pagetitle">
-        <tr>
-		<td>
-                <a href="http://www.internet2.edu/">
-                  <img src="images/internet2_logo.png" width="73" height="58" 
-                   border="0" alt="Internet2 logo" title="Internet 2" /></a>
-            </td>
-            <td>
-                <a href="http://www.es.net/">
-                  <img src="images/ESnetLogo.png" width="77" height="58" 
-                   border="0" alt="ESnet Logo" title="ESnet" /></a>
-            </td>
-            <td>
-          <h1>On-demand Secure Circuits and Advance Reservation System</h1>
-	  <div id="clock">&nbsp;</div>
-            </td>
-        </tr>
+      <tr>
+        <td>
+        <img src="images/internet2_logo.png" width="73" height="58" 
+               border="0" alt="Internet2 logo" title="Internet 2" />
+        </td>
+        <td>
+        <img src="images/ESnetLogo.png" width="77" height="58" 
+               border="0" alt="ESnet Logo" title="ESnet" />
+        </td>
+        <td>
+            <h1>On-demand Secure Circuits and Advance Reservation System</h1>
+	    <div>A collaboration between
+                <a href="http://www.es.net/" target="_blank">ESnet</a>,
+                <a href="http://www.internet2.edu/" target="_blank">Internet2</a>,
+                <a href="http://www.dante.net/" target="_blank">DANTE</a>, and
+                <a href="http://www.east.isi.edu/" target="_blank">ISI East</a>
+            </div>
+        </td>
+      </tr>
     </table>
 
-    <div id="mainTabContainer" dojoType="TabContainer"
-	 doLayout="false" selectedChild="sessionPane">
-    <div id="sessionPane" dojoType="ContentPane" label="Session"
-         loadingMessage="Loading session form..." href="forms/session.html"
-         onload="javascript:submitForm();">
+    <div id="mainTabContainer" dojoType="dijit.layout.TabContainer" doLayout="false">
+
+    <div id="sessionPane" dojoType="dijit.layout.ContentPane" title="Session"
+	    href="forms/session.html" selected="true">
     </div>
-    <div id="listReservationsPane" dojoType="ContentPane" label="Reservations"
-         href="forms/listReservations.html">
+    <div id="reservationsPane" dojoType="dijit.layout.ContentPane"
+	    title="Reservations" href="forms/reservations.html">
     </div>
-    <div id="reservationPane" dojoType="ContentPane" label="Reservation Details"
-         href="forms/reservation.html">
+    <div id="createReservationPane" dojoType="dijit.layout.ContentPane"
+         title="Create Reservation" href="forms/createReservation.html">
     </div>
-    <div id="createReservationPane" dojoType="ContentPane"
-         label="Create Reservation" href="forms/createReservation.html">
+    <div id="usersPane" dojoType="dijit.layout.ContentPane" title="Users"
+         href="forms/users.html">
     </div>
-    <div id="userListPane" dojoType="ContentPane" label="Users"
-         href="forms/userList.html">
-    </div>
-    <div id="userPane" dojoType="ContentPane" label="User Details"
-         href="forms/user.html">
-    </div>
+
     </div>
 
     <p>

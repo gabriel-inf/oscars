@@ -16,6 +16,7 @@ public class Notifier {
     private Session session;
     private Properties props;
     private String webmaster;
+    private String localhostname;
     private List<String> sysadmins;
 
     public Notifier() {
@@ -27,10 +28,25 @@ public class Notifier {
         this.session = Session.getDefaultInstance(this.props, null);
         this.sysadmins = new ArrayList<String>();
         this.sysadmins.add(this.webmaster);
+        String recipientList = this.props.getProperty("recipients");
+        if (recipientList != null) {
+            recipientList = recipientList.trim();
+            String[] recipients = recipientList.split(":");
+            for (String recipient: recipients) {
+                this.sysadmins.add(recipient);
+            }
+        }
+        try {
+        	java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();	
+        	this.localhostname = localMachine.getHostName();
+        } catch (java.net.UnknownHostException uhe) {
+        	this.localhostname = "host: unknown";
+        }
     }
 
     public void sendMessage(String subject, String notification)
             throws javax.mail.MessagingException {
+    	subject += " ("+this.localhostname+")";
         // Define message
         MimeMessage message = new MimeMessage(this.session);
         message.setFrom(new InternetAddress(this.webmaster));

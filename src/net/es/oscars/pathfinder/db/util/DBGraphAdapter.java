@@ -37,7 +37,7 @@ public class DBGraphAdapter {
   
     }
     
-    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph() {
+    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth) {
     	DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
@@ -67,12 +67,16 @@ public class DBGraphAdapter {
             Iterator portIt = node.getPorts().iterator();
             while (portIt.hasNext()) {
             	Port port = (Port) portIt.next();
-            	while (!port.isValid()) {
-            		port = (Port) portIt.next();
-            	}
+            	if (!port.isValid()) {
+            		continue;
+            	} 
+            	if (bandwidth > 0 && port.getCapacity() < bandwidth) {
+            		continue;
+                }
             	
             	String portFQTI = TopologyUtil.getFQTI(port);
 //            	System.out.println(portFQTI);
+                
 
             	g.addVertex(portFQTI);
             	edge = g.addEdge(nodeFQTI, portFQTI);
@@ -105,13 +109,6 @@ public class DBGraphAdapter {
                 			if (link.getTrafficEngineeringMetric() != null) {
                 				edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
                 			}
-                			
-                			// horrible esnet hack!
-                			if (edgeWeight < 10d) {
-                				edgeWeight = 1000000d;
-                			}
-                		
-//	                		System.out.println(remLinkFQTI);
 	                		
 	                		g.addVertex(remLinkFQTI);
 	                		
@@ -119,12 +116,6 @@ public class DBGraphAdapter {
 	                    	if (edge != null) {
                     	        g.setEdgeWeight(edge, edgeWeight);
                 			}
-/*	                        
-	                        edge = g.addEdge(remLinkFQTI, linkFQTI);
-	                    	if (edge != null) {
-	                    		g.setEdgeWeight(edge, 10d);
-	                    	}
-	                    	*/
                 		}
                 	}
 
@@ -143,7 +134,7 @@ public class DBGraphAdapter {
     double parseTEM(String trafficEngineeringMetric) {
     	double weight = 0d;
     	String[] elems = trafficEngineeringMetric.split(":");
-    	if (elems[0].trim().equals("ospf_cost")) {
+    	if (elems[0].trim().equals("weight")) {
     		weight = new Double(elems[1].trim()).doubleValue();
     	}
     	return weight;

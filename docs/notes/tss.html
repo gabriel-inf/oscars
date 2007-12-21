@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>TSS component notes</title>
+</head>
+<body>
+<h1>TSS component notes</h1>
+
+<h2>Overview</h2>
+
+<p>The TSS component deals with network topology database exchange 
+between interdomain controllers. IDCs need to exchange topology
+information to facilitate interdomain pathfinding. The TSS subsystem
+is responsible for passing out local topology information, and for
+importing topology information from other IDCs.</p>
+<p> Currently OSCARS supports these operations on two different 
+implementations of the topology database:</p>
+<ul>
+<li>Local SQL/Hibernate topology DB</li>
+<li>Remote topology web service (TERCE)</li>
+</ul>
+<p>The OSCARS administrator can choose which method of topology exchange 
+database (TEDB) they want to use at configuration time.</p>
+<p>Moreover, OSCARS developers with different needs may develop their 
+own TEDB implementation by creating a new class that implements 
+the TEDB java interface.</p>
+
+<h2>Configuration</h2>
+<p>The admin must choose which TEDB method they want to run by configuring the 
+OSCARS server through oscars.properties. The relevant property is 
+tedb.tedbMethod. Valid values are:</p>
+<ul>
+<li><b>terce</b> for the interface to TERCE</li>
+<li><b>oscars</b> for the local Hibernate DB</li>
+</ul>
+
+<p>In both those cases the administrator must initialize the topology 
+database accordingly. </p>
+
+<h2>Development</h2>
+<p>To develop a new TEDB method, the developer should implement the 
+net.es.oscars.tss.TEDB interface. Then a short name for the method must 
+be chosen (in addition to "oscars" and "terce"), and TEDBFactory must 
+be modified to load the appropriate class when the tedb.tedbMethod 
+property has that value. </p>
+
+
+</body>
+</html>

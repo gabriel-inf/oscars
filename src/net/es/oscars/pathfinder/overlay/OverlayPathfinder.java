@@ -25,11 +25,11 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
     private Utils utils;
 
     public OverlayPathfinder(String dbname) {
+        super(dbname);
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("overlay", true);
         this.utils = new Utils(dbname);
-        super.setDatabase(dbname);
     }
 
     /**

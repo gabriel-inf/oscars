@@ -3,12 +3,10 @@ package net.es.oscars.bss.topology;
 import org.testng.annotations.*;
 
 import java.util.List;
-import java.util.Properties;
 import org.hibernate.*;
 
-import net.es.oscars.PropHandler;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.database.HibernateUtil;
-
 
 /**
  * This class tests access to the edgeInfos table, which requires a working
@@ -16,18 +14,14 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-/* @Test(groups={ "bss/topology", "edgeInfo" }, dependsOnGroups={ "create" }) */
-@Test(groups={ "broken" })
+@Test(groups={ "bss.topology", "edgeInfo" }, dependsOnGroups={ "create" })
 public class EdgeInfoTest {
-    private Properties props;
     private SessionFactory sf;
     private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.common", true);
-        this.dbname = "testbss";
+        this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
@@ -35,9 +29,11 @@ public class EdgeInfoTest {
     public void edgeInfoQuery() {
         this.sf.getCurrentSession().beginTransaction();
         EdgeInfoDAO dao = new EdgeInfoDAO(this.dbname);
-        String description = "test suite";
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        Ipaddr ipaddr = (Ipaddr)
+            ipaddrDAO.queryByParam("IP", CommonParams.getIpAddress());
         EdgeInfo edgeInfo = (EdgeInfo)
-            dao.queryByParam("description", description);
+            dao.queryByParam("ipaddrId", ipaddr.getId());
         this.sf.getCurrentSession().getTransaction().commit();
         assert edgeInfo != null;
     }

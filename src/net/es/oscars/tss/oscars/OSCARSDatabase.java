@@ -28,6 +28,7 @@ public class OSCARSDatabase implements TEDB {
     private Namespace ns;
     private String nsUri;
     private String nsPrefix;
+    private String dbname;
 
     /** 
     * Constructor that initializes properties & logging
@@ -36,6 +37,7 @@ public class OSCARSDatabase implements TEDB {
     public OSCARSDatabase() {
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("topo", true);
+        this.dbname = "bss";
         this.log = Logger.getLogger(this.getClass());
         this.setNsUri(this.props.getProperty("nsuri"));
         this.setNsPrefix(this.props.getProperty("nsprefix"));
@@ -100,7 +102,7 @@ public class OSCARSDatabase implements TEDB {
 
         this.log.info("selectNetworkTopology("+type+").start");
 
-        TopologyXMLExporter exporter = new TopologyXMLExporter();
+        TopologyXMLExporter exporter = new TopologyXMLExporter(this.dbname);
 
         Document doc = exporter.getTopology();
         Namespace ns = this.ns;

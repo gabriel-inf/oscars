@@ -31,7 +31,9 @@ public class Utils {
 
         Ipaddr ipaddr = null;
         String nodeName = null;
+        String param = null;
 
+        // TODO:  more null checks may be necessary
         StringBuilder sb = new StringBuilder();
         PathElem pathElem  = path.getPathElem();
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
@@ -39,15 +41,13 @@ public class Utils {
             Link link = pathElem.getLink();
             // if layer 2, send back topology identifier
             if (path.getLayer2Data() != null) {
-                Port port = link.getPort();
-                Node node = port.getNode();
-                Domain domain = node.getDomain();
-                String fqn = "urn:ogf:network:" +
-                     domain.getTopologyIdent() + ":" +
-                     node.getTopologyIdent() + ":" +
-                     port.getTopologyIdent() + ":" +
-                     link.getTopologyIdent();
-                sb.append(fqn + ", ");
+            	String fqti = TopologyUtil.getFQTI(link);
+                sb.append(fqti + ", ");
+                param = pathElem.getDescription();
+                if (param != null) {
+                    sb.append("desc: ["+pathElem.getDescription()+"] ");
+                }
+                sb.append("VLAN: ["+pathElem.getLinkDescr()+"] ");
             // otherwise, send back host name/IP address pair
             } else {
                 nodeName = link.getPort().getNode().getTopologyIdent();
@@ -58,5 +58,30 @@ public class Utils {
         }
         String pathStr = sb.toString();
         return pathStr.substring(0, pathStr.length() - 2);
+    }
+    
+    /** 
+     * String joiner
+     * @param s a Collection of objects to join (uses toString())
+     * @param delimiter the delimiter
+     * @param quote a string to prefix each object with (null for none)
+     * @param unquote a string to postfix each object with (null for none) 
+     * @return joined the objects, quoted & unquoted, joined by the delimiter
+     */
+    public static String join(Collection s, String delimiter, String quote, String unquote) {
+    	if (s == null || s.isEmpty()) {
+    		return "";
+    	}
+        StringBuffer buffer = new StringBuffer();
+        Iterator iter = s.iterator();
+        while (iter.hasNext()) {
+    		buffer.append(quote);
+    		buffer.append(iter.next());
+    		buffer.append(unquote);
+            if (iter.hasNext()) {
+                buffer.append(delimiter);
+            }
+        }
+        return buffer.toString();
     }
 }

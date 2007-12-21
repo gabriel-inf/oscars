@@ -41,12 +41,68 @@ public class ListReservationsClient extends ExampleClient {
             java.rmi.RemoteException, Exception {
 
         super.init(args, isInteractive);
+        ListRequest listReq = this.readParams(isInteractive);
 
         // make the call to the server
-        ListReply response = this.getClient().listReservations();
+        ListReply response = this.getClient().listReservations(listReq);
         this.outputResponse(response);
         return response;
     }
+    
+    public ListRequest readParams(boolean isInteractive) {
+        ListRequest listReq = new ListRequest();
+
+        // Prompt for input parameters specific to query
+        try {
+        	String linkId = "";
+        	String[] statuses;
+        	String strResults = "";
+        	String strOffset = "";
+        	
+            if (isInteractive) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                System.out.print("Statuses (comma separated, blank for all): ");
+                String statusesInput = br.readLine().trim();
+                statuses = statusesInput.split(",");
+                System.out.print("Input a link topoId to only get reservations affecting that: ");
+                linkId = br.readLine().trim();
+                System.out.print("Number of results (default 10): ");
+                strResults = br.readLine().trim();
+                System.out.print("Offset (default 0): ");
+                strOffset = br.readLine().trim();
+            } else {
+            	String statusesInput = this.getProperties().getProperty("statuses").trim();
+                statuses = statusesInput.split(",");
+                linkId = this.getProperties().getProperty("linkId");
+            }
+
+            Integer resRequested = 10;
+            Integer resOffset = 0;
+            
+            try {
+            	resRequested = Integer.parseInt(strResults);
+            } catch (Exception ex) { }
+            
+            try {
+            	resOffset = Integer.parseInt(strOffset);
+            } catch (Exception ex) { }
+            
+            listReq.setResRequested(resRequested);
+            listReq.setResOffset(resOffset);
+            
+            for (String status: statuses) {
+            	listReq.addResStatus(status.trim());
+            }                
+            if (!linkId.equals("")) {
+            	listReq.addLinkId(linkId.trim());
+            }
+        } catch (IOException ioe) {
+            System.out.println("IO error reading query input");
+            System.exit(1);
+        }
+        return listReq;
+    }
+
 
     public void outputResponse(ListReply response) {
         ResDetails[] resList;

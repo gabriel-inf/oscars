@@ -1,13 +1,5 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-    <script type="text/javascript">
-        dojo.require("dojo.widget.Form");
-    </script>
-</head>
-
-<body>
-    <!-- target = UserAddForm -->
-    <form id="userListForm" dojoType="Form" method="POST" action="servlet/UserSession">
+<html>
+    <form id="usersForm" method="POST" action="servlet/Users">
         <p>Click on the user's last name to view detailed user information.</p>
 	<p><input type="submit" name="userAdd" value="Add user" /></p>
         <table id="UserList-table" cellspacing="0" width="90%">
@@ -19,7 +11,6 @@
 		<!-- for (User user: users) printUser(user) -->
 	</tbody></table>
     </form>
-</body>
 </html>
 
 

@@ -14,8 +14,7 @@ import  org.apache.log4j.*;;
     extends GenericHibernateDAO<UserAttribute, Integer> {
 
     private String dbname;
-    private Logger log;
-
+ 
     /**
      * Constructor
      * 
@@ -24,7 +23,6 @@ import  org.apache.log4j.*;;
     public UserAttributeDAO(String dbname) {
         this.setDatabase(dbname);
         this.dbname = dbname;
-        this.log = Logger.getLogger(this.getClass());
     }
     
     /**
@@ -43,6 +41,22 @@ import  org.apache.log4j.*;;
         return userAttrs;
    
  }
+    /**
+     * Removes all the attributes for a user, used when deleting a user
+     * 
+     * @param userId the id of the user whose attributes are to be removed
+     * 
+     */
+    public void removeAllAttributes(int userId) {
+
+	List<UserAttribute> userAttrs = getAttributesByUser(userId);
+	if (userAttrs != null) {
+	    for (UserAttribute ua: userAttrs){
+		super.remove(ua);
+	    }
+	}
+	
+    }
      /**
       * Removes a userAttribute, given a user and attribute name. 
       * @param login A String with the user login name.
@@ -72,7 +86,26 @@ import  org.apache.log4j.*;;
                        .uniqueResult();
          super.remove(rp);
          return status;
-     }
+     }    
+     
+     /**
+      * Removes a userAttribute, given a user id and attribute id. 
+      * @param login A int with the userId.
+      * @param attributeName A String with the attribute name.
+
+      */
+     public void remove(int userId, int attrId) {
+      
+         String hsql = "from UserAttribute " + 
+                       "where userId = :userId and " +
+                       "attributeId = :attributeId";
+         UserAttribute rp = (UserAttribute) this.getSession().createQuery(hsql)
+                       .setInteger("userId", userId)
+                       .setInteger("attributeId", attrId)
+                       .setMaxResults(1)
+                       .uniqueResult();
+         super.remove(rp);
+    }
 }
     
     

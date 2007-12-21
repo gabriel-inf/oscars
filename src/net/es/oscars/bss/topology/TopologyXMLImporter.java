@@ -38,12 +38,14 @@ public class TopologyXMLImporter {
     private String nsUri;
     private String nsPrefix;
     
+    private String dbname;
+    
     private TopologyManager topoManager;
 
     /**
      * Constructor initializes logging and local properties
      */
-    public TopologyXMLImporter() {
+    public TopologyXMLImporter(String dbname) {
         this.log = Logger.getLogger(this.getClass());
 
         PropHandler propHandler = new PropHandler("oscars.properties");
@@ -55,8 +57,9 @@ public class TopologyXMLImporter {
         this.setRootTopoId(this.props.getProperty("roottopoid").trim());
 
         this.ns = Namespace.getNamespace(this.getNsPrefix(), this.getNsUri());
+        this.dbname = dbname;
         
-        this.topoManager = new TopologyManager("bss");
+        this.topoManager = new TopologyManager(this.dbname);
     }
     
     

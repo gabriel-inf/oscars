@@ -3,12 +3,10 @@ package net.es.oscars.bss.topology;
 import org.testng.annotations.*;
 
 import java.util.List;
-import java.util.Properties;
 import org.hibernate.*;
 
-import net.es.oscars.PropHandler;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.database.HibernateUtil;
-
 
 /**
  * This class tests access to the ports table, which requires a working
@@ -16,17 +14,14 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss/topology", "port" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss.topology", "port" }, dependsOnGroups={ "create" })
 public class PortTest {
-    private Properties props;
     private SessionFactory sf;
     private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.common", true);
-        this.dbname = "testbss";
+        this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
@@ -34,9 +29,8 @@ public class PortTest {
     public void portQuery() {
         this.sf.getCurrentSession().beginTransaction();
         PortDAO dao = new PortDAO(this.dbname);
-        String topologyIdent = "test suite";
         Port port = (Port)
-            dao.queryByParam("topologyIdent", topologyIdent);
+            dao.queryByParam("topologyIdent", CommonParams.getIdentifier());
         this.sf.getCurrentSession().getTransaction().commit();
         assert port != null;
     }

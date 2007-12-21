@@ -5,25 +5,27 @@ import org.testng.annotations.*;
 import java.util.Properties;
 import javax.mail.*;
 
+@Test(groups={ "core" })
 public class NotifierTest {
+    private Notifier notifier;
 
-  @Test(groups={ "core" })
-    public void notifierConstructor() {
-        Notifier notifier = new Notifier();
-        assert notifier != null;
+  @BeforeClass
+    public void setUpClass() {
+        this.notifier = new Notifier();
     }
 
-  @Test(groups={ "core" })
+  @Test
     public void getWebmaster() {
-        Notifier notifier = new Notifier();
-        assert notifier.getWebmaster() != null;
+        assert this.notifier.getWebmaster() != null;
     }
 
-  @Test(groups={ "broken" })
-    public void sendMessage() throws MessagingException {
-        Notifier notifier = new Notifier();
+  // This test is ordinarily disabled to avoid a sea of notification
+  // messages.
+  @Test(enabled=false)
+    public void sendMessage()
+            throws MessagingException, UnsupportedOperationException {
         String subject = "This is a test of email notifications.\n";
         String notification = "This is a test.\n";
-        notifier.sendMessage(subject, notification);
+        this.notifier.sendMessage(subject, notification);
     }
 }

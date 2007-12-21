@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.util.List;
 import javax.servlet.http.*;
 
+import org.apache.log4j.Logger;
+
 import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.Institution;
 import net.es.oscars.aaa.UserManager;
@@ -11,16 +13,31 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 
 
 public class UserDetails {
-
+    private Logger log;
+    /**
+     * writes out the user details form used by add,query and modify user profile
+     * 
+     * @param out  the output stream
+     * @param user the user whose information is being displayed 
+     * @param modifyAllowed - true if the  user displaying this information has 
+     *                        permission to modify it
+     * @param modifyRights true if the  user displaying this information has 
+     *                     permission to modify the target user's attributes
+     * @param insts list of all institutions (a constant?)
+     * @param attrNames all the attributes of the target user
+     * @param servletName name of the servlet that is calling this method
+     */
     public void
         contentSection(PrintWriter out, User user, boolean modifyAllowed,
-                       List<Institution> insts, String servletName) {
+                       boolean modifyRights, List<Institution> insts,
+                       List<String> attrNames, String servletName) {
 
         String nextPage = null;
         String header = null;
         String submitValue = null;
         String passwordClass = "'SOAP'";
-    
+        this.log = Logger.getLogger(this.getClass());
+        this.log.debug("contentSection: start");
         if (servletName.equals("UserAddForm")) {
             nextPage = "UserAdd";
             header = "Add a new user";
@@ -37,6 +54,12 @@ public class UserDetails {
             /* TODO - David says this button should not appear if the user cannot'
              * add or modify the profile
              */
+        } 
+        if (attrNames == null) {
+            this.log.debug("contentSection: attrNames is null");
+        }
+        if (attrNames.isEmpty()) {
+            this.log.debug("contentSection: attrNames is empty");
         }
 
         out.println("<content>");
@@ -52,6 +75,7 @@ public class UserDetails {
         out.println("<tr>");
         out.println("<td>Login Name</td>");
         String strParam = user.getLogin();
+        if (strParam == null) { strParam = ""; }
         out.println("<td><input class='required' type='text' ");
         out.println("name='profileName' size='40' value='" +
                      strParam + "'></input></td>");
@@ -119,6 +143,9 @@ public class UserDetails {
         this.outputInstitutionMenu(out, insts, user);
 
         out.println("<tr>");
+        this.outputRoleList(out,attrNames,modifyRights);
+        
+        out.println("<tr>");
         out.println("<td valign='top'>Personal Description</td>");
         out.println("<td>");
         out.println("<input class='SOAP' type='text' name='description' " +
@@ -166,6 +193,7 @@ public class UserDetails {
         out.println("</tr>");
         out.println("</tbody></table></form>");
         out.println("</content>");
+        this.log.debug("contentSection: finish");
     }
 
     public void
@@ -195,4 +223,57 @@ public class UserDetails {
         out.println("</td>");
         out.println("</tr>");
     }
+    
+    public void outputRoleList(PrintWriter out, List<String> attrNames,
+                               boolean modify) {
+
+        // this.log.debug("outputRoleList: start");
+        if (modify) {
+            out.println("<td>Choose role(s)</td>");
+            out.println("<td align='left'>");
+            if (attrNames.contains("OSCARS-user")) {
+                out.println("<input class='SOAP' type='checkbox'  checked='checked' name='roles' value='OSCARS-user' /> User - make reservations");
+            } else {
+                out.println("<input class='SOAP' type='checkbox'  name='roles' value='OSCARS-user' /> User - make reservations");
+            }
+            out.println("</td></tr>");
+            out.println("<tr><td>*</td><td align='left'>");
+            if (attrNames.contains("OSCARS-engineer")) {
+                out.println("<input class='SOAP' type='checkbox'  checked='checked' name='roles' value='OSCARS-engineer' /> Engineer - manage all reservations");
+            } else {
+                out.println("<input class='SOAP' type='checkbox'  name='roles' value='OSCARS-engineer' /> Engineer - manage all reservations");
+            }
+            out.println("</td></tr>");
+            out.println("<tr><td>*</td><td align='left'>");
+            if (attrNames.contains("OSCARS-administrator")){
+                out.println("<input class='SOAP' type='checkbox' checked='checked' name='roles' value='OSCARS-administrator ' /> Administrator - manage all users");
+            } else {
+                out.println("<input class='SOAP' type='checkbox' name='roles' value='OSCARS-administrator' /> Administrator - manage all users");
+            }
+            out.println("</td></tr>");
+            out.println("<tr><td>Define new role</td>");
+            out.println("<td>");
+            out.println("<input class='SOAP' type='text' name='newRole' size='40' />");
+            out.println("</td></tr>");
+        } else {  // user may not modify attributes
+            out.println("<td>Roles</td><td>---</td></tr>");
+            if (attrNames.contains("OSCARS-user")) {
+                out.println("<tr><td>*</td><td align='left'>");
+                out.println("User - can make reservations");  
+                out.println("</td></tr>");
+            }
+            if (attrNames.contains("OSCARS-engineer")) {
+                out.println("<tr><td>*</td><td align='left'>");
+                out.println("Engineer - can manage all reservations");
+                out.println("</td></tr>");
+            }
+            if (attrNames.contains("OSCARS-administrator")){
+                out.println("<tr><td>*</td><td align='left'>");
+                out.println("Administrator - can manage all users");
+                out.println("</td></tr>");
+            }
+        }
+        // this.log.debug("outputRoleList: finish");
+    }
 }
+

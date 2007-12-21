@@ -14,7 +14,7 @@ import net.es.oscars.pathfinder.PathfinderException;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "pathfinder", "traceroute" })
+@Test(groups={ "pathfinder.traceroute" })
 public class JnxTracerouteTest {
 
     private Properties props;

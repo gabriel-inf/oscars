@@ -14,11 +14,8 @@ public class Pathfinder {
     private Logger log;
     protected String dbname;
 
-    public Pathfinder() {
+    public Pathfinder(String dbname) {
         this.log = Logger.getLogger(this.getClass());
-    }
-
-    protected void setDatabase(String dbname) {
         this.dbname = dbname;
     }
 }

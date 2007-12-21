@@ -15,7 +15,7 @@ public class PropHandlerTest {
 
     public void getProperty() {
         PropHandler propHandler = new PropHandler("test.properties");
-        Properties props = propHandler.getPropertyGroup("test.bss", true);
+        Properties props = propHandler.getPropertyGroup("test.common", true);
         assert props.getProperty("domainName") != null;
     }
 }

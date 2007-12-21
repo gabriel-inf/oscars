@@ -1,18 +1,9 @@
 /*
 CSS for Web pages
-Last modified: February 9, 2007
+Last modified: December 18, 2007
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang (dapi@umich.edu)
 */
-
-body {
-    font-family: sans-serif;
-    background: #fff;
-    color: #000;
-    text-align: left;
-    margin-left: 2%;
-    margin-right: 2%;
-}
 
 p.notice {
     font-weight: bold;
@@ -57,24 +48,6 @@ td {
 }
 
 
-body .dojoTabContainer {
-    margin: 0.1em;
-}
-
-body .dojoTabPane {
-    padding: 0.6em;
-}
-
-body .dojoButton {
-    margin: 10px;
-    border: 1px solid #335;
-}
-
-/* needed for IE to not be too small */
-body .dojoButtonContent {
-    font-size: medium;
-}
-
 #clock {
     color: #0000bb;
     margin: 1.0em 0.2em;
@@ -87,4 +60,8 @@ body .dojoButtonContent {
     color: gray;
     margin: 1em;
     padding: 1em;
+}
+
+.dijitTabPaneWrapper {
+    clear: both;
 }

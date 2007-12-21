@@ -5,7 +5,7 @@ import org.testng.annotations.*;
 import java.util.*;
 import org.hibernate.*;
 
-import net.es.oscars.PropHandler;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.database.HibernateUtil;
 
 /**
@@ -14,17 +14,14 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss/topology", "node" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss.topology", "node" }, dependsOnGroups={ "create" })
 public class NodeTest {
-    private Properties props;
     private SessionFactory sf;
     private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.common", true);
-        this.dbname = "testbss";
+        this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
@@ -32,8 +29,8 @@ public class NodeTest {
     public void nodeQuery() {
         this.sf.getCurrentSession().beginTransaction();
         NodeDAO dao = new NodeDAO(this.dbname);
-        String topologyIdent = "test suite";
-        Node node = (Node) dao.queryByParam("topologyIdent", topologyIdent);
+        Node node = (Node) dao.queryByParam("topologyIdent", 
+                                            CommonParams.getIdentifier());
         this.sf.getCurrentSession().getTransaction().commit();
         assert node != null;
     }
@@ -45,14 +42,5 @@ public class NodeTest {
         List<Node> nodes = dao.list();
         this.sf.getCurrentSession().getTransaction().commit();
         assert !nodes.isEmpty();
-    }
-
-  @Test
-    public void nodeFromIp() {
-        this.sf.getCurrentSession().beginTransaction();
-        NodeDAO dao = new NodeDAO(this.dbname);
-        Node node = dao.fromIp(this.props.getProperty("ingressNode"));
-        this.sf.getCurrentSession().getTransaction().commit();
-        assert node != null;
     }
 }

@@ -10,15 +10,18 @@ package net.es.oscars.oscars;
 
 import java.util.*;
 import java.io.IOException;
+import javax.mail.MessagingException;
 
 import org.apache.log4j.*;
 
+import net.es.oscars.Notifier;
 import org.ogf.schema.network.topology.ctrlplane._20070626.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.bss.topology.Link;
 import net.es.oscars.wsdlTypes.*;
 
 /**
@@ -28,11 +31,15 @@ public class ReservationAdapter {
     private Logger log;
     private ReservationManager rm;
     private TypeConverter tc;
+    private Notifier notifier;
+    private String dbname;
 
     public ReservationAdapter() {
         this.log = Logger.getLogger(this.getClass());
+        this.dbname = "bss";
         this.rm = new ReservationManager("bss");
         this.tc = new TypeConverter();
+        this.notifier = new Notifier();
     }
 
     /**
@@ -49,27 +56,50 @@ public class ReservationAdapter {
         Reservation resv = this.tc.contentToReservation(params);
         Forwarder forwarder = new Forwarder();
         PathInfo pathInfo = params.getPathInfo();
-        this.rm.create(resv, login, pathInfo);
-        // checks whether next domain should be contacted, forwards to
-        // the next domain if necessary, and handles the response
-        this.log.debug("create, to forward");
-        CreateReply forwardReply = forwarder.create(resv, pathInfo);
-        this.rm.finalizeResv(forwardReply, resv, pathInfo);
-        // persist to db
-        this.rm.store(resv);
+        CreateReply forwardReply = null;
+        CreateReply reply = null;
+        try {
+            this.rm.create(resv, login, pathInfo);
+            // checks whether next domain should be contacted, forwards to
+            // the next domain if necessary, and handles the response
+            this.log.debug("create, to forward");
+            forwardReply = forwarder.create(resv, pathInfo);
+            this.rm.finalizeResv(forwardReply, resv, pathInfo);
+            // persist to db
+            this.rm.store(resv);
 
-        this.log.debug("create, to toReply");
-        CreateReply reply = this.tc.reservationToReply(resv);
-        if (pathInfo.getLayer3Info() != null && forwardReply != null && forwardReply.getPathInfo() != null) {
-            // Add remote hops to returned explicitPath
-            this.addHops(reply.getPathInfo(), forwardReply.getPathInfo());
+            this.log.debug("create, to toReply");
+            reply = this.tc.reservationToReply(resv);
+            if (pathInfo.getLayer3Info() != null && forwardReply != null && forwardReply.getPathInfo() != null) {
+                // Add remote hops to returned explicitPath
+                this.addHops(reply.getPathInfo(), forwardReply.getPathInfo());
+            }
+            // set to input argument, which possibly has been modified during
+            // reservation creation
+            pathInfo.getPath().setId("unimplemented");
+            this.tc.clientConvert(pathInfo);
+            reply.setPathInfo(pathInfo);
+            String subject = "Reservation " + resv.getGlobalReservationId() +
+                             " scheduling through API succeeded";
+            String notification = "Reservation scheduling succeeded.\n" +
+                                  resv.toString("bss") + "\n";
+            try {
+                this.notifier.sendMessage(subject, notification);
+            } catch (javax.mail.MessagingException ex) {
+                this.log.info("create.mail.exception: " + ex.getMessage());
+            } catch (UnsupportedOperationException ex) {
+                this.log.info("create.mail.unsupported: " + ex.getMessage());
+            }
+        } catch (BSSException e) {
+            // send notification in all cases
+            this.sendFailureNotification(resv, e.getMessage());
+            throw new BSSException(e.getMessage());
+        } catch (InterdomainException e) {
+            // send notification in all cases
+            this.sendFailureNotification(resv, e.getMessage());
+            throw new InterdomainException(e.getMessage());
         }
-        // set to input argument, which possibly has been modified during
-        // reservation creation
-        pathInfo.getPath().setId("unimplemented");
-        this.tc.clientConvert(pathInfo);
-        reply.setPathInfo(pathInfo);
-        this.log.info("create.finish: " + resv.toString());
+        this.log.info("create.finish: " + resv.toString("bss"));
         return reply;
     }
 
@@ -131,19 +161,77 @@ public class ReservationAdapter {
 
     /**
      * @param login String with user's login name
-     * @param allUsers boolean indicating if user can view all reservations
+     *
+     * @param loginIds a list of user logins. If not null or empty, results will
+     * only include reservations submitted by these specific users. If null / empty
+     * results will include reservations by all users.
+     *
+     * @param request the listRequest received by OSCARSSkeleton. Includes an array
+     *  of reservation statuses. a list of topology identifiers, start and end times,
+     *  number of reservations requested, and offset of first reservation to return.
+     *
+     * If statuses is not empty, results will only include reservations with one of these statuses.
+     * If null / empty, results will include reservations with any status.
+     *
+     * If topology identifiers is not null / empty, results will only
+     * include reservations whose path includes at least one of the links.
+     * If null / empty, results will include reservations with any path.
+     *
+     * startTime is the start of the time window to look in; null for everything before the endTime
+     *
+     * endTime is the end of the time window to look in; null for everything after the startTime,
+     * leave both start and endTime null to disregard time
+     *
      * @return reply ListReply encapsulating library reply.
-     * @throws BSSException 
+     * @throws BSSException
      */
-    public ListReply list(String login, boolean allUsers)
-            throws BSSException {
-
+    public ListReply list(String login, List<String> loginIds,
+        ListRequest request) throws BSSException {
         ListReply reply = null;
         List<Reservation> reservations = null;
-
+        ArrayList<Link> inLinks = new ArrayList<Link>();
+        ArrayList<String> statuses = new ArrayList<String>();
+        
         this.log.info("list.start");
-        reservations = this.rm.list(login, allUsers);
-        reply = this.tc.reservationToListReply(reservations);
+        String[] linkIds = request.getLinkId(); 
+        String[] resStatuses = request.getResStatus(); 
+
+        
+        if (linkIds != null && linkIds.length > 0 ) {
+	        for (String s : linkIds) {
+	        	if (s != null && !s.trim().equals("")) {
+	        		Link link = null;
+	        		try {
+	        			link = TopologyUtil.getLink(s.trim(), this.dbname);
+		        		inLinks.add(link);
+	        		} catch (BSSException ex) {
+	        			this.log.error("Could not get link for string: ["+s.trim()+"], error: ["+ex.getMessage()+"]");
+	        		}
+	        	}
+	        }
+		}
+        
+        if (resStatuses != null && resStatuses.length > 0 ) {
+	        for (String s : request.getResStatus()) {
+	        	if (s != null && !s.trim().equals("")) {
+	        		statuses.add(s.trim());
+	        	}
+	        }
+        }
+       
+        Long startTime = null;
+        Long endTime = null;
+        ListRequestSequence_type0 tmp;
+        tmp = request.getListRequestSequence_type0();
+        if (tmp != null) {
+        	startTime = tmp.getStartTime();
+        	endTime = tmp.getEndTime();
+        }
+        
+        reservations = this.rm.list(login, loginIds, statuses, inLinks, startTime, endTime);
+        
+        reply = this.tc.reservationToListReply(reservations,
+                request.getResRequested(), request.getResOffset());
         this.log.info("list.finish: " + reply.toString());
         return reply;
     }
@@ -236,5 +324,28 @@ public class ReservationAdapter {
             }
         }
         this.log.info("logCreateParams.finish");
+    }
+
+    private void sendFailureNotification(Reservation resv, String errMsg) {
+
+        String subject = "";
+        String notification = "";
+        // ugly, but notifies in all cases.  Have to be careful if creation
+        // did not get too far.
+        if (resv == null) {
+            subject += "Reservation scheduling through API entirely failed";
+            notification += "Reservation scheduling entirely failed with " + errMsg;
+        } else if (resv.getGlobalReservationId() != null) {
+            subject += "Reservation " + resv.getGlobalReservationId() + " failed";
+            notification = "Reservation scheduling through API failed with " +
+                            errMsg + "\n" + resv.toString("bss") + "\n";
+        }
+        try {
+            this.notifier.sendMessage(subject, notification);
+        } catch (javax.mail.MessagingException ex) {
+            this.log.info("create.mail.exception: " + ex.getMessage());
+        } catch (UnsupportedOperationException ex) {
+            this.log.info("create.mail.unsupported: " + ex.getMessage());
+        }
     }
 }

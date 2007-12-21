@@ -63,15 +63,11 @@ public class TopologyManager {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
 
-        List<String> dbnames = new ArrayList<String>();
-        dbnames.add(this.dbname);
 
         
         this.rm = new ReservationManager(this.dbname);
         this.utils = new Utils(this.dbname);
 
-        Initializer initializer = new Initializer();
-        initializer.initDatabase(dbnames);
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
         
 

@@ -3,10 +3,9 @@ package net.es.oscars.bss.topology;
 import org.testng.annotations.*;
 
 import java.util.List;
-import java.util.Properties;
 import org.hibernate.*;
 
-import net.es.oscars.PropHandler;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.database.HibernateUtil;
 
 
@@ -16,18 +15,14 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-/* @Test(groups={ "bss/topology", "layer3Data" }, dependsOnGroups={ "create" }) */
-@Test(groups={ "broken" })
+@Test(groups={ "bss.topology", "layer3Data" }, dependsOnGroups={ "create" })
 public class Layer3DataTest {
-    private Properties props;
     private SessionFactory sf;
     private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.common", true);
-        this.dbname = "testbss";
+        this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
@@ -35,9 +30,8 @@ public class Layer3DataTest {
     public void  layer3DataQuery() {
         this.sf.getCurrentSession().beginTransaction();
         Layer3DataDAO dao = new Layer3DataDAO(this.dbname);
-        String description = "test suite";
         Layer3Data layer3Data = (Layer3Data)
-            dao.queryByParam("description", description);
+            dao.queryByParam("srcHost", CommonParams.getSrcHost());
         this.sf.getCurrentSession().getTransaction().commit();
         assert layer3Data != null;
     }

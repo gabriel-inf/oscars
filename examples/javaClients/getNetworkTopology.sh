@@ -9,4 +9,4 @@ oscars) url="https://oscars.es.net/axis2/services/OSCARS";;
 jra3) url="https://srv2.lon.uk.geant2.net:8443/Interdomain/services/OSCARS";;
 esac
 fi
-java -Daxis2.xml=repo/axis2.xml GetNetworkTopologyClient repo $url
+java -Daxis2.xml=repo/axis2.xml -Djava.net.preferIPv4Stack=true GetNetworkTopologyClient repo $url

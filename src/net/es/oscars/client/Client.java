@@ -46,7 +46,7 @@ public class Client {
         this.stub = new OSCARSStub(this.configContext, url); 
         ServiceClient sc = this.stub._getServiceClient();
         Options opts = sc.getOptions();
-        opts.setTimeOutInMilliSeconds(120000); // set to 2 minutes
+        opts.setTimeOutInMilliSeconds(300000); // set to 5 minutes
         sc.setOptions(opts);
         this.stub._setServiceClient(sc);
     }
@@ -98,19 +98,18 @@ public class Client {
     /**
      * Makes call to server to get list of reservations.
      *
+     * @param listReq the reservation list request object
      * @return response a ListReply instance with summaries of each reservation
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      * @throws java.rmi.RemoteException
      */
-    public ListReply listReservations()
+    public ListReply listReservations(ListRequest listReq)
            throws AAAFaultMessage, BSSFaultMessage,java.rmi.RemoteException
     {
 
         ListReservations listRes = new ListReservations();
-        EmptyArg ea = new EmptyArg();
-        ea.setMsg("");
-        listRes.setListReservations(ea);
+        listRes.setListReservations(listReq);
         ListReservationsResponse lrr = this.stub.listReservations(listRes);
         ListReply listReply = lrr.getListReservationsResponse();
         return listReply;

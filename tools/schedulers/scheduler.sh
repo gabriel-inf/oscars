@@ -31,6 +31,25 @@ export CLASSPATH=$CLASSPATH
 
 javac `pwd`/PathScheduler.java
 #java -Dlog4j.debug=true -Djava.net.preferIPv4Stack=true PathScheduler $*
+
+
+
+myname=`basename $0`
+LOCKFILE=/tmp/lock.$myname
+# Loop until we get a lock:
+until (umask 222; echo $$ >$LOCKFILE) 2>/dev/null   # test & set
+do
+   # Optional message - show lockfile owner and creation time:
+   set x `ls -l $LOCKFILE`
+   echo "Already running scheduler! Lockfile: [$LOCKFILE]. Ctrl-C to exit."
+
+   sleep 5
+done
+
+# Do whatever we need exclusive access to do...
+
 java -Dlog4j.configuration=file://$CATALINA_HOME/webapps/OSCARS/WEB-INF/classes/log4j.properties -Djava.net.preferIPv4Stack=true -Dcatalina.home=$CATALINA_HOME PathScheduler $*
+
+rm -f $LOCKFILE            # unlock
 
 exit 1

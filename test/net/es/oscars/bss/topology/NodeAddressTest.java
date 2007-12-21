@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.Properties;
 import org.hibernate.*;
 
-import net.es.oscars.PropHandler;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.database.HibernateUtil;
-
 
 /**
  * This class tests access to the nodeAddresses table, which requires a working
@@ -16,17 +15,14 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss/topology", "nodeAddress" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss.topology", "nodeAddress" }, dependsOnGroups={ "create" })
 public class NodeAddressTest {
-    private Properties props;
     private SessionFactory sf;
     private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        PropHandler propHandler = new PropHandler("test.properties");
-        this.props = propHandler.getPropertyGroup("test.common", true);
-        this.dbname = "testbss";
+        this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
         
@@ -34,9 +30,8 @@ public class NodeAddressTest {
     public void nodeAddressQuery() {
         this.sf.getCurrentSession().beginTransaction();
         NodeAddressDAO dao = new NodeAddressDAO(this.dbname);
-        String address = "test suite";
         NodeAddress nodeAddress = (NodeAddress)
-            dao.queryByParam("address", address);
+            dao.queryByParam("address", CommonParams.getIdentifier());
         this.sf.getCurrentSession().getTransaction().commit();
         assert nodeAddress != null;
     }

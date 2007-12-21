@@ -125,7 +125,54 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
          return ipaddr.getIP();
      }
 
+     /**
+      * Given a fully qualified portId, find the
+      * corresponding port in the database.
+      *
+      * @param portFullTopoId string with the fully qualified port id
+      * @return Port unique port instance
+      */
+    public Port getFullyQualifiedPort(String portFullTopoId) {
+    	Port port = null;
+        Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(portFullTopoId);
+        String type = parseResults.get("type");
+        String domainId = parseResults.get("domainId");
+        String nodeId = parseResults.get("nodeId");
+        String portId = parseResults.get("portId");
+        if (type.equals("port")) {
+        	port = this.getFullyQualifiedPort(domainId, nodeId, portId); 
+        }
+        return port;
+    }
 
+    /**
+     * Given domain, node and port locally scoped topology identifiers, 
+     * find the corresponding port in the database.
+     *
+     * @param domainTopoId the domain topology identifier
+     * @param nodeTopoId the node topology identifier
+     * @param portTopoId the port topology identifier
+     * @return Port unique Port instance
+     */ 
+    public Port getFullyQualifiedPort(String domainTopoId, String nodeTopoId, String portTopoId) {
+        String sql = "select * from ports p " +
+        "inner join nodes n on n.id = p.nodeId " +
+        "inner join domains d on d.id = n.domainId " +
+        "where p.topologyIdent = ? " +
+        "and n.topologyIdent = ? and d.topologyIdent = ? ";
+	    Port port = null;
+	    port = (Port) this.getSession().createSQLQuery(sql)
+	    .addEntity(Port.class)
+	    .setString(0, portTopoId)
+	    .setString(1, nodeTopoId)
+	    .setString(2, domainTopoId)
+	    .setMaxResults(1)
+	    .uniqueResult();
+        return port;
+    }
+
+     
+     
     /**
      * Given a String[] containing urn:ogf:network:domainId:nodeId:portId:linkId, find the
      * corresponding link in the database.

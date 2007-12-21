@@ -19,11 +19,13 @@ public class PathfinderTest {
     private Properties props;
     private SessionFactory sf;
     private Pathfinder pf;
+    private String dbname;
 
   @BeforeClass
     protected void setUpClass() {
-        this.sf = HibernateUtil.getSessionFactory("bss");
-        this.pf = new Pathfinder();
+        this.dbname = "testbss";
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
+        this.pf = new Pathfinder(this.dbname);
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.common", true);
     }

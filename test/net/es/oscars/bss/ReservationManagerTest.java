@@ -2,13 +2,14 @@ package net.es.oscars.bss;
 
 import org.testng.annotations.*;
 
-import java.util.List;
+import java.util.*;
 import java.util.Properties;
 import org.hibernate.*;
 
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
+import net.es.oscars.GlobalParams;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
@@ -21,6 +22,7 @@ import net.es.oscars.bss.topology.*;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
+// @Test(groups={ "bss" })
 @Test(groups={ "broken" })
 public class ReservationManagerTest {
     private final Long BANDWIDTH = 25000000L;   // 25 Mbps
@@ -37,7 +39,7 @@ public class ReservationManagerTest {
     protected void setUpClass() {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.common", true);
-        this.dbname = "testbss";
+        this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(dbname);
         this.rm = new ReservationManager(this.dbname);
     }
@@ -69,7 +71,7 @@ public class ReservationManagerTest {
         mplsInfo.setBurstLimit(BURST_LIMIT);
         // description is unique, so can use it to access reservation in
         // other tests
-        resv.setDescription(this.props.getProperty("description"));
+        resv.setDescription(CommonParams.getReservationDescription());
         layer3Info.setProtocol(PROTOCOL);
         mplsInfo.setLspClass(LSP_CLASS);
         String account = this.props.getProperty("login");
@@ -93,7 +95,7 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        String description = this.props.getProperty("description");
+        String description = CommonParams.getReservationDescription();
         Reservation testResv = dao.queryByParam("description", description);
         try {
             reservation = this.rm.query(testResv.getGlobalReservationId(),
@@ -114,8 +116,12 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
+        List<String> logins = new ArrayList<String>();
+        String login = this.props.getProperty("login");
+        logins.add(login);
         try {
-            reservations = this.rm.list(this.props.getProperty("login"), true);
+            reservations = this.rm.list(login, logins, null, null,
+                                        null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -130,9 +136,11 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
+        List<String> logins = new ArrayList<String>();
         String login = this.props.getProperty("login");
+        logins.add(login);
         try {
-            reservations = this.rm.list(login, false);
+            reservations = this.rm.list(login, logins, null, null, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -147,7 +155,7 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        String description = this.props.getProperty("description");
+        String description = CommonParams.getReservationDescription();
         Reservation resv = dao.queryByParam("description", description);
         try {
             this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),

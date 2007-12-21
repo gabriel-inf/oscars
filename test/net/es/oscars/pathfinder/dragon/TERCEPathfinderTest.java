@@ -12,9 +12,9 @@ import net.es.oscars.database.HibernateUtil;
 /**
  * This class tests methods in TERCEPathfinder.java.
  *
- * @author Andrew Lake, David Robertson (dwrobertson@lbl.gov)
+ * @author Andrew Lake (alake@internet2.edu)
  */
-@Test(groups={ "pathfinder", "terce" })
+@Test(groups={ "pathfinder.dragon" })
 public class TERCEPathfinderTest {
     private Properties props;
     private SessionFactory sf;

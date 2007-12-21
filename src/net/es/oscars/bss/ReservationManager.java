@@ -1,7 +1,7 @@
 package net.es.oscars.bss;
 
 import java.util.*;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.mail.MessagingException;
@@ -15,6 +15,7 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
 import net.es.oscars.Notifier;
+import net.es.oscars.PropHandler;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
@@ -34,10 +35,12 @@ public class ReservationManager {
     private PolicyManager policyMgr;
     private TypeConverter tc;
     private String dbname;
+    private ReservationLogger rsvLogger; 
 
     /** Constructor. */
     public ReservationManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
+        this.rsvLogger = new ReservationLogger(this.log);
         this.notifier = new Notifier();
         this.pceMgr = new PCEManager(dbname);
         this.policyMgr = new PolicyManager(dbname);
@@ -64,10 +67,11 @@ public class ReservationManager {
         resv.setLogin(login);
         
         //set GRI if none specified
-        if(resv.getGlobalReservationId() == null){
+        if (resv.getGlobalReservationId() == null){
             String gri = this.generateGRI();
             resv.setGlobalReservationId(gri);
         }
+        this.rsvLogger.redirect(resv.getGlobalReservationId());
         
         // so far just validation for create
         StringBuilder errorMsg =
@@ -81,6 +85,8 @@ public class ReservationManager {
         // save complete copy of original path for forwarding
         // for layer 2
         CtrlPlanePathContent pathCopy = this.copyPath(pathInfo, false);
+        
+        
         // this modifies the path to include internal hops with layer 2,
         // and finds the complete path with traceroute
         Path path = this.getPath(resv, pathInfo);
@@ -93,10 +99,14 @@ public class ReservationManager {
             pathCopy = this.copyPath(pathInfo, true);
         }else if (pathCopy == null && pathInfo.getLayer2Info() != null) {
             pathCopy = this.copyPath(pathInfo, true);
+            for(CtrlPlaneHopContent hopd : pathCopy.getHop()){
+                System.out.println("HOP: " + hopd.getLinkIdRef());
+            }
         }
         
         pathInfo.setPath(pathCopy);
         this.log.info("create.finish"); 
+        this.rsvLogger.stop();
     }
 
     /**
@@ -105,6 +115,7 @@ public class ReservationManager {
      * @param resv Reservation instance to persist
      */
     public void store(Reservation resv) throws BSSException {
+        this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("store.start");
         // store it in the database
         ReservationDAO dao = new ReservationDAO(this.dbname);
@@ -124,20 +135,11 @@ public class ReservationManager {
             mplsDataDAO.create(resv.getPath().getMplsData());
         }
         if(resv.getToken() != null){
-            TokenDAO tokenDAO = new TokenDAO("bss");
+            TokenDAO tokenDAO = new TokenDAO(this.dbname);
             tokenDAO.create(resv.getToken());
         }
-        try {
-            String subject = "Reservation has been entered into the system";
-            String msg = "Reservation: " + resv.toString() + "\n";
-            this.notifier.sendMessage(subject, msg);
-        } catch (javax.mail.MessagingException ex) {
-            this.log.info("create.mail.exception: " + ex.getMessage());
-            // throw new BSSException(ex.getMessage());
-        } catch (UnsupportedOperationException ex) {
-            this.log.info("create.mail.unsupported: " + ex.getMessage());
-        }
         this.log.info("store.finish");
+        this.rsvLogger.stop();
     }
 
     /**
@@ -152,6 +154,7 @@ public class ReservationManager {
     public Reservation cancel(String gri, String login, boolean allUsers)
             throws BSSException {
 
+        this.rsvLogger.redirect(gri);
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String newStatus = null;
         
@@ -188,7 +191,8 @@ public class ReservationManager {
         // note that this is not persisted until any forward domains
         // are also contacted
         resv.setStatus(newStatus);
-        this.log.info("cancel.finish: " + resv.toString());
+        this.log.info("cancel.finish: " + resv.getGlobalReservationId());
+        this.rsvLogger.stop();
         return resv;
     }
 
@@ -203,11 +207,13 @@ public class ReservationManager {
     public void finalizeCancel(Reservation resv, String status) 
             throws BSSException {
 
+    	this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("finalizeCancel.start");
         String gri = resv.getGlobalReservationId();
 
-        String subject = "Reservation successfully cancelled";
-        String msg = "Reservation: " + resv.toString() + "\n";
+        String subject = "Reservation " + resv.getGlobalReservationId() +
+                         "cancelled";
+        String msg = "Reservation cancelled.\n" + resv.toString(this.dbname) + "\n";
         try {
             this.notifier.sendMessage(subject, msg);
         } catch (javax.mail.MessagingException ex) {
@@ -215,7 +221,9 @@ public class ReservationManager {
         } catch (UnsupportedOperationException ex) {
             this.log.info("cancel.mail.unsupported: " + ex.getMessage());
         }
-        this.log.info("finalizeCancel.finish: " + resv.toString());
+        this.log.info("finalizeCancel.finish: " +
+                      resv.getGlobalReservationId());
+        this.rsvLogger.stop();
     }
 
 
@@ -246,28 +254,44 @@ public class ReservationManager {
                 throw new BSSException ("query reservation: permission denied");
             }
         }
-        this.log.info("query.finish: " + resv.toString());
+        this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
     } 
 
-    /**
-     * Lists all reservations if allUsers is true; otherwise only lists the
-     *     corresponding user's reservations.
+   /**
+     * @param login String with user's login name
      *
-     * @param login string with user's login name
-     * @param allUsers boolean setting whether can view reservations for all users
+     * @param loginIds a list of user logins. If not null or empty, results will
+     * only include reservations submitted by these specific users. If null / empty
+     * results will include reservations by all users.
+     *
+     * @param statuses a list of reservation statuses. If not null or empty,
+     * results will only include reservations with one of these statuses.
+     * If null / empty, results will include reservations with any status.
+     *
+     * @param links a list of links. If not null / empty, results will only
+     * include reservations whose path includes at least one of the links.
+     * If null / empty, results will include reservations with any path.
+     *
+     * @param startTime the start of the time window to look in; null for everything before the endTime
+     *
+     * @param endTime the end of the time window to look in; null for everything after the startTime,
+     * leave both start and endTime null to disregard time
+     *
      * @return reservations list of reservations
-     * @throws BSSException 
+     * @throws BSSException
      */
-    public List<Reservation> list(String login, boolean allUsers)
-            throws BSSException {
-
+    public List<Reservation> list(String login, List<String> loginIds,
+        List<String> statuses, List<Link> links, Long startTime, Long endTime)
+        throws BSSException {
         List<Reservation> reservations = null;
 
         this.log.info("list.start, login: " + login);
+
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        reservations = dao.list(login, allUsers);
+        reservations = dao.list(loginIds, statuses, links, startTime, endTime);
         this.log.info("list.finish, success");
+
         return reservations;
     }
 
@@ -323,6 +347,7 @@ public class ReservationManager {
      */
     public Path convertPath(PathInfo pathInfo, Domain nextDomain)
             throws BSSException {
+    	
 
         Link link = null;
         Link srcLink = null;
@@ -330,7 +355,10 @@ public class ReservationManager {
         String description = null;
         boolean foundIngress = false;
         PathElem lastElem = null;
+        
+    	ArrayList<String> linksList = new ArrayList<String>();
 
+        
         this.log.info("convertPath.start");
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
@@ -365,16 +393,27 @@ public class ReservationManager {
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
             
+            
             // can't store non-local addresses
             if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {
                 continue;
             }
+            
+            
+            // check for duplicate hops in our local portion of the path
+            String fqti = parseResults.get("fqti");
+            if (linksList.contains(fqti)) {
+            	throw new BSSException("Duplicate hop in path: ["+fqti+"]");
+            } else {
+            	linksList.add(fqti);
+            }
+
             link = domainDAO.getFullyQualifiedLink(hopTopoId);
             if (link == null) {
                 this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
             	throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]"); 
             } else {
-            	this.log.info("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
+            	this.log.debug("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
             }
             PathElem pathElem = new PathElem();
             if (!foundIngress) {
@@ -487,7 +526,6 @@ public class ReservationManager {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         CtrlPlanePathContent pathCopy = new CtrlPlanePathContent();
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-        CtrlPlaneHopContent hopCopy = null;
         
         if (ctrlPlanePath == null) {
             return null;
@@ -497,7 +535,7 @@ public class ReservationManager {
         
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
-            hopCopy = new CtrlPlaneHopContent();
+            CtrlPlaneHopContent hopCopy = new CtrlPlaneHopContent();
             if (!exclude) {
                 hopCopy.setId(hops[i].getLinkIdRef());
                 hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
@@ -522,9 +560,10 @@ public class ReservationManager {
                 continue;
             } else if (edgeFound) {
                 // add egress
-                hopCopy.setId(prevHop.getLinkIdRef());
-                hopCopy.setLinkIdRef(prevHop.getLinkIdRef());
-                pathCopy.addHop(hopCopy);
+                CtrlPlaneHopContent hopCopy2 = new CtrlPlaneHopContent();
+                hopCopy2.setId(prevHop.getLinkIdRef());
+                hopCopy2.setLinkIdRef(prevHop.getLinkIdRef());
+                pathCopy.addHop(hopCopy2);
                 edgeFound = false;
             }
             hopCopy.setId(hops[i].getLinkIdRef());
@@ -728,6 +767,7 @@ public class ReservationManager {
         }
     }
     
+    
     /** 
      * Creates a token if the last domain or sets the token returned from
      * the forward reply.
@@ -754,6 +794,8 @@ public class ReservationManager {
 			        e.getMessage());
 			}
 			token.setValue(tokenValue);
+        }else if(forwardReply.getToken() == null){
+            return;
         }else{
             token.setValue(forwardReply.getToken());
         }

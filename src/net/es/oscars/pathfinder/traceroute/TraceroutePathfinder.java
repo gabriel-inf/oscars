@@ -23,11 +23,11 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
     private Utils utils;
 
     public TraceroutePathfinder(String dbname) {
+        super(dbname);
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("traceroute", true);
         this.utils = new Utils(dbname);
-        super.setDatabase(dbname);
     }
 
     /**

@@ -10,4 +10,4 @@ oscars) url="https://oscars.es.net/axis2/services/OSCARS";;
 esac
 fi
 echo $url
-java -Daxis2.xml=repo/axis2.xml SignalClient repo $url $2 $3 $4 $5 $6
+java -Daxis2.xml=repo/axis2.xml -Djava.net.preferIPv4Stack=true SignalClient repo $url $2 $3 $4 $5 $6

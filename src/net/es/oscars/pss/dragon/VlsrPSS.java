@@ -41,6 +41,9 @@ public class VlsrPSS implements PSS{
         DragonCSA csa = new DragonCSA();
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
+        String promptPattern = this.props.getProperty("promptPattern");
+        String hasNarbStr = this.props.getProperty("hasNarb");
+        boolean hasNarb = ((hasNarbStr == null) || hasNarbStr.equals("1"));
         String sshPortForward = this.props.getProperty("ssh.portForward");
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
@@ -48,16 +51,17 @@ public class VlsrPSS implements PSS{
         Layer2Data layer2Data = path.getLayer2Data();
         Link ingressLink = path.getPathElem().getLink();
         Link egressLink= this.getEgressLink(path);
-        int ingressLinkDescr = 
-            Integer.parseInt(path.getPathElem().getLinkDescr());
-        int egressLinkDescr= Integer.parseInt(this.getEgressLinkDescr(path));
+        int ingressLinkDescr = this.getLinkDescr(path, true);
+        int egressLinkDescr = this.getLinkDescr(path, true);
+
+        
         String ingressPortTopoId = ingressLink.getPort().getTopologyIdent();
         String egressPortTopoId = egressLink.getPort().getTopologyIdent();
         
         String telnetAddress = this.findTelnetAddress(ingressLink);
         String telnetAddressDest = this.findTelnetAddress(egressLink);
-        int port = this.findTelnetPort();
-        int portDest = this.findTelnetPort();
+        int port = this.findTelnetPort(sshPortForward);
+        int portDest = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         Session ingressSshSess = null;
         Session egressSshSess = null;
@@ -70,9 +74,9 @@ public class VlsrPSS implements PSS{
         
         /* Get source and destination local ID */
         DragonLocalID ingLocalId = this.linkToLocalId(ingressLink, 
-                                                        ingressLinkDescr);
+                                                        ingressLinkDescr, hasNarb, true);
         DragonLocalID egrLocalId = this.linkToLocalId(egressLink, 
-                                                        egressLinkDescr);
+                                                        egressLinkDescr, hasNarb, false);
         int ingLocalIdIface = this.intefaceToLocalIdNum(ingressPortTopoId);
         int egrLocalIdIface = this.intefaceToLocalIdNum(egressPortTopoId);
         
@@ -86,13 +90,15 @@ public class VlsrPSS implements PSS{
         if(layer2Data != null){
             String bandwidth = this.prepareL2Bandwidth(resv.getBandwidth());
             lsp.setBandwidth(bandwidth);
-            int vtag = Integer.parseInt(path.getPathElem().getLinkDescr());
-            if(vtag < 0 && 
+            int vtag = 0;
+            
+            if(ingressLinkDescr < 0 && 
                 ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE)){
                 vtag = -1;
             }else{
-                vtag = Math.abs(vtag);
+                vtag = Math.abs(ingressLinkDescr);
             }
+            
             lsp.setVTAG(vtag);
             lsp.setSrcLocalID(ingLocalId);
             lsp.setDstLocalID(egrLocalId);
@@ -105,7 +111,10 @@ public class VlsrPSS implements PSS{
         }
         
         /* Initialize the CSA */
-        csa.setPromptPattern(".*vlsr.*[>#]");
+        if(promptPattern == null){
+            promptPattern = "vlsr";
+        }
+        csa.setPromptPattern(".*" + promptPattern + ".*[>#]");
         
         /* Initialize ssh client */
         try{
@@ -118,7 +127,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Create egress local id unless a subnet interface*/
-        if(egrLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
+        if(hasNarb && egrLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
             /* Create egress ssh tunnel */
             if(sshPortForward != null && sshPortForward.equals("1")){
                 try{
@@ -137,7 +146,6 @@ public class VlsrPSS implements PSS{
             
             /* Log into egress VLSR */
             this.log.info("logging into dstVLSR " + telnetAddressDest + " " + portDest);
-    
             if(!csa.login(telnetAddressDest, portDest, password)){
                 this.log.error("unable to login to dest VLSR " + lsp.getLSPName()
                         + ": " + csa.getError());
@@ -194,7 +202,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Create ingress local-id */
-        if(ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
+        if(hasNarb && ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
             
             /* Delete local-id if ingress and egress not the same */
             if(!(telnetAddress.equals(telnetAddressDest) && 
@@ -238,7 +246,7 @@ public class VlsrPSS implements PSS{
             if(lsp == null){
                 this.log.error("LSP " + gri + " failed. Status: LSP could not" +                     
                     " be found");
-                resv.setStatus("Failed");
+                resv.setStatus("FAILED");
                 if(ingressSshSess != null){
                     ingressSshSess.disconnect();
                 }
@@ -252,16 +260,19 @@ public class VlsrPSS implements PSS{
                 break;
             }else if(!status.equals(DragonLSP.STATUS_COMMIT) || i == 12){
                 this.log.error("Path setup failed. Status=" + lsp.getStatus());
-                resv.setStatus("Failed");
-                if(ingressSshSess != null){
-                    ingressSshSess.disconnect();
-                }
+                resv.setStatus("FAILED");
+                
                 if(csa.teardownLSP(gri)){
                     this.log.info("Deleted " + gri + " LSP after error");
                 }else{
                     this.log.error("Unable to delete LSP after error: " + 
                         csa.getError());
                 }
+                
+                if(ingressSshSess != null){
+                    ingressSshSess.disconnect();
+                }
+                
                 throw new PSSException("LSP creation failed. There may be" + 
                     "an error in the underlying network.");
             }
@@ -303,10 +314,11 @@ public class VlsrPSS implements PSS{
         String sshPortForward = this.props.getProperty("ssh.portForward");
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
+        String promptPattern = this.props.getProperty("promptPattern");
         Path path = resv.getPath();
         Link ingressLink = path.getPathElem().getLink(); 
         String telnetAddress = this.findTelnetAddress(ingressLink);
-        int port = this.findTelnetPort();
+        int port = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         String gri = resv.getGlobalReservationId();
         Session sshSession = null;
@@ -338,15 +350,19 @@ public class VlsrPSS implements PSS{
         }
         
         /* Refresh LSP */
-        this.log.info("logging into " + telnetAddress);
-        csa.setPromptPattern(".*vlsr.*[>#]");
+        if(promptPattern == null){
+            promptPattern = "vlsr";
+        }
+        csa.setPromptPattern(".*" + promptPattern + ".*[>#]");
+        
+        this.log.info("logging into VLSR " + telnetAddress + " " + port);
         if(csa.login(telnetAddress, port, password)){
             lsp = csa.getLSPByName(gri);
             if(lsp == null ||
                 (!lsp.getStatus().equals(DragonLSP.STATUS_INSERVICE))){
                 this.log.error("LSP " + gri + " failed. Status: " + 
                     lsp.getStatus());
-                resv.setStatus("Failed");
+                resv.setStatus("FAILED");
                 throw new PSSException("Path failure occured. LSP status is " + 
                                         lsp.getStatus());
             }
@@ -383,11 +399,12 @@ public class VlsrPSS implements PSS{
         String sshPortForward = this.props.getProperty("ssh.portForward");
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
+        String promptPattern = this.props.getProperty("promptPattern");
         Path path = resv.getPath();
         Link ingressLink = path.getPathElem().getLink();  
         String gri = resv.getGlobalReservationId();
         String telnetAddress = this.findTelnetAddress(ingressLink);
-        int port = this.findTelnetPort();
+        int port = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         Session sshSession = null;
         String prevStatus = resv.getStatus();
@@ -419,7 +436,12 @@ public class VlsrPSS implements PSS{
         }
         
         /* Teardown LSP */
-        csa.setPromptPattern(".*vlsr.*[>#]");
+        if(promptPattern == null){
+            promptPattern = "vlsr";
+        }
+        csa.setPromptPattern(".*" + promptPattern + ".*[>#]");
+        
+        this.log.info("logging into VLSR " + telnetAddress + " " + port);
         if(csa.login(telnetAddress, port, password)){
             if(csa.teardownLSP(gri)){
                 this.log.info("tore down lsp " + gri);
@@ -483,23 +505,30 @@ public class VlsrPSS implements PSS{
     }
     
     /**
-     * Private utility method for retrieving the last hop linkDescr
+     * Private utility method for retrieving the first or last hop linkDescr
      * in a stored path.
      *
-     * @param path the path from which the egress will be retrieved
-     * @return the egress link
+     * @param path the path from which the ingress or egress will be retrieved
+     * @param isIngress true if ingress should be selected, false if egress
+     * @return the ingress or egress link description as an int
      *
      */
-    private String getEgressLinkDescr(Path path){
+    private int getLinkDescr(Path path, boolean isIngress){
         PathElem elem = path.getPathElem();
         PathElem prevElem = null;
+        String linkDescr = elem.getLinkDescr();
         
-        while(elem != null){
+        while((!isIngress) && elem != null){
             prevElem = elem;
+            linkDescr = prevElem.getLinkDescr();
             elem = elem.getNextElem();
         }
         
-        return prevElem.getLinkDescr();
+        if(linkDescr == null){
+            return -1;
+        }else{
+            return Integer.parseInt(linkDescr);
+        }
     }
     
     /**
@@ -531,7 +560,7 @@ public class VlsrPSS implements PSS{
      * @param tagged boolean that is true if local id is tagged
      *
      */
-    private DragonLocalID linkToLocalId(Link link, int vtag) 
+    private DragonLocalID linkToLocalId(Link link, int vtag, boolean hasNarb, boolean isIngress)
         throws PSSException{
         String portTopoId = link.getPort().getTopologyIdent();
         boolean tagged = (vtag >= 0);
@@ -539,7 +568,15 @@ public class VlsrPSS implements PSS{
         int number = 0;
         
         /* Get Type */
-        if(portTopoId.split("-").length == 2){
+        if(!hasNarb && isIngress){
+            this.log.info("lsp-id local-id");
+            number = vtag;
+            type = DragonLocalID.LSP_ID;
+        }else if(!hasNarb){
+            this.log.info("tunnel-id local-id");
+            number = vtag;
+            type = DragonLocalID.TUNNEL_ID;
+        }else if(portTopoId.split("-").length == 2){
             this.log.info("subnet-interface local-id");
             type = DragonLocalID.SUBNET_INTERFACE;
             number = this.intefaceToLocalIdNum(portTopoId);
@@ -594,49 +631,48 @@ public class VlsrPSS implements PSS{
      * @return String value of given bandwidth understood by VLSR CLI
      */
     private String prepareL2Bandwidth(Long bw) throws PSSException{
-        long bw100 =  (long)bw.longValue()/(100 * 1000000);
         String bwString = null;
         
-        if(bw100 <= 1){
+        if(bw <= 100000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_100M;
-        }else if(bw <= 150000000){
+        }else if(bw <= 150000000L){
             //special case of 150M
             bwString = DragonLSP.BANDWIDTH_ETHERNET_150M;
-        }else if(bw100 <= 2){
+        }else if(bw <= 200000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_200M;
-        }else if(bw100 <= 3){
+        }else if(bw <= 300000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_300M;
-        }else if(bw100 <= 4){
+        }else if(bw <= 400000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_400M;
-        }else if(bw100 <= 5){
+        }else if(bw <= 500000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_500M;
-        }else if(bw100 <= 6){
+        }else if(bw <= 600000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_600M;
-        }else if(bw100 <= 7){
+        }else if(bw <= 700000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_700M;
-        }else if(bw100 <= 8){
+        }else if(bw <= 800000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_800M;
-        }else if(bw100 <= 9){
+        }else if(bw <= 900000000L){
             bwString = DragonLSP.BANDWIDTH_ETHERNET_900M;
-        }else if(bw100 <= 10){
+        }else if(bw <= 1000000000L){
             bwString = DragonLSP.BANDWIDTH_GIGE;
-        }else if(bw100 <= 20){
+        }else if(bw <= 2000000000L){
             bwString = DragonLSP.BANDWIDTH_2GIGE;
-        }else if(bw100 <= 30){
+        }else if(bw <= 3000000000L){
             bwString = DragonLSP.BANDWIDTH_3GIGE;
-        }else if(bw100 <= 40){
+        }else if(bw <= 4000000000L){
             bwString = DragonLSP.BANDWIDTH_4GIGE;
-        }else if(bw100 <= 50){
+        }else if(bw <= 5000000000L){
             bwString = DragonLSP.BANDWIDTH_5GIGE;
-        }else if(bw100 <= 60){
+        }else if(bw <= 6000000000L){
             bwString = DragonLSP.BANDWIDTH_6GIGE;
-        }else if(bw100 <= 70){
+        }else if(bw <= 7000000000L){
             bwString = DragonLSP.BANDWIDTH_7GIGE;
-        }else if(bw100 <= 80){
+        }else if(bw <= 8000000000L){
             bwString = DragonLSP.BANDWIDTH_8GIGE;
-        }else if(bw100 <= 90){
+        }else if(bw <= 9000000000L){
             bwString = DragonLSP.BANDWIDTH_9GIGE;
-        }else if(bw100 <= 100){
+        }else if(bw <= 10000000000L){
             bwString = DragonLSP.BANDWIDTH_10G;
         }else{
             throw new PSSException("Unsupported bandwidth value");
@@ -676,11 +712,13 @@ public class VlsrPSS implements PSS{
      * @return string of port used to access VLSR CLI
      * @throws PSSException
      */
-    private int findTelnetPort() throws PSSException{
-        int port = Integer.parseInt(this.props.getProperty("remotePort"));
-        String portProp = this.props.getProperty("localPort");
-        if(portProp != null){
-            port = Integer.parseInt(portProp);
+    private int findTelnetPort(String sshPortForward) throws PSSException{
+        int port = 0;
+        if(sshPortForward != null && sshPortForward.equals("1")){
+            Random rand = new Random(System.currentTimeMillis());
+            port = 49152 + rand.nextInt(16383);
+        }else{
+            port = Integer.parseInt(this.props.getProperty("remotePort"));
         }
         
         return port;

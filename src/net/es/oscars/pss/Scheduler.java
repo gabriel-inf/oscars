@@ -40,46 +40,66 @@ public class Scheduler {
     public List<Reservation> pendingReservations(Integer timeInterval)  {
 
         List<Reservation> reservations = null;
+        boolean success = false;
+        boolean badSetup = false;
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.pendingReservations(timeInterval);
         for (Reservation resv: reservations) {
+            String subject = "Circuit set up for " +
+                             resv.getGlobalReservationId();
+            String notification = "Circuit set up for reservation ";
             try {
                 // call PSS to schedule LSP
                 String pathSetupMode = resv.getPath().getPathSetupMode();
-                this.log.info("pendingReservations: " + resv.toString());
+                this.log.info("pendingReservation: " +
+                              resv.getGlobalReservationId());
                 if (pathSetupMode.equals("domain")) {
                     String status = this.pathSetupManager.create(resv, true);
                     dao.update(resv);
-                    String notification = this.pendingReservationMessage(resv);
-                    String subject = "Circuit set up";
-                    // this.notifier.sendMessage(subject, notification);
+                    success = true;
                 }
+                subject += " succeeded";
+                notification += "succeeded.\n" + resv.toString(this.dbname) + "\n";
             } catch (PSSException ex) {
-                // set to FAILED, log and rethrow
+                // set to FAILED, and log
                 resv.setStatus("FAILED");
                 long millis = System.currentTimeMillis();
                 resv.setEndTime(millis);
-                this.log.error("Reservation set up of " +
-                         resv.getGlobalReservationId() +
-                        "failed with " + ex.getMessage());
+                badSetup = true;
+                subject += " failed";
+                notification += "failed with " + ex.getMessage() +
+                                "\n" + resv.toString(this.dbname) + "\n";
+                this.log.error(notification);
             } catch (InterdomainException ex) {
-                // set to FAILED, log and rethrow
+                // set to FAILED, and log
                 resv.setStatus("FAILED");
                 long millis = System.currentTimeMillis();
                 resv.setEndTime(millis);
-                this.log.error("Reservation set up of " +
-                         resv.getGlobalReservationId() +
-                        "failed with " + ex.getMessage());
+                badSetup = true;
+                subject += " failed";
+                notification += "failed with " + ex.getMessage() +
+                                "\n" + resv.toString(this.dbname) + "\n";
+                this.log.error(notification);
             } catch (Exception ex) {
-                // set to FAILED, log and rethrow
+                // set to FAILED, and log
                 resv.setStatus("FAILED");
                 long millis = System.currentTimeMillis();
                 resv.setEndTime(millis);
-                this.log.error("Reservation set up of " +
-                         resv.getGlobalReservationId() +
-                        "failed with " + ex.getMessage());
-            //} catch (javax.mail.MessagingException ex) {
+                badSetup = true;
+                subject += " failed";
+                notification += "failed with " + ex.getMessage() +
+                                "\n" + resv.toString(this.dbname) + "\n";
+                this.log.error(notification);
+            }
+            try {
+                if (success || badSetup) {
+                    this.notifier.sendMessage(subject, notification);
+                }
+            } catch (javax.mail.MessagingException ex) {
+                this.log.info("create.mail.exception: " + ex.getMessage());
+            } catch (UnsupportedOperationException ex) {
+                this.log.info("create.mail.unsupported: " + ex.getMessage());
             }
         }
         return reservations;
@@ -90,8 +110,6 @@ public class Scheduler {
      *
      * @param timeInterval an integer with the time window to check 
      * @return response a list of reservations that have expired
-     * @throws PSSException
-     * @throws Exception
      */
     public List<Reservation> expiredReservations(Integer timeInterval) {
 
@@ -102,9 +120,19 @@ public class Scheduler {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.expiredReservations(timeInterval);
         for (Reservation resv: reservations) {
+            String subject = "Circuit teardown for " +
+                             resv.getGlobalReservationId();
+            String notification = "Circuit tear down for reservation ";
             try {
                 // call PSS to tear down LSP
                 prevStatus = resv.getStatus();
+                // this should only happen due to a failed interdomain
+                // communication
+                if (prevStatus.equals("PENDING")) {
+                    String errMsg = "pending reservation " +
+                        "expired without ever having been set up";
+                    throw new PSSException(errMsg);
+                }
                 String status = this.pathSetupManager.teardown(resv, false);
                 if (status.equals("CANCELLED")) {
                     // set end time to cancel time
@@ -113,56 +141,36 @@ public class Scheduler {
                    resv.setEndTime(millis);
                 }
                 dao.update(resv);
-                this.log.info("expiredReservations: " + resv.toString());
-                String notification = this.expiredReservationMessage(resv);
-                String subject = "Circuit torn down";
-                // this.notifier.sendMessage(subject, notification);
+                this.log.info("expiredReservation: " +
+                              resv.getGlobalReservationId());
+                subject += " succeeded";
+                notification += "succeeded.\n" + resv.toString(this.dbname) + "\n";
             } catch (PSSException ex) {
-                // set to FAILED, log and rethrow
+                // set to FAILED, and log
                 resv.setStatus("FAILED");
                 long millis = System.currentTimeMillis();
                 resv.setEndTime(millis);
-                this.log.error("Reservation set up of " +
-                         resv.getGlobalReservationId() +
-                        "failed with " + ex.getMessage());
+                subject += " failed";
+                notification += "failed with " + ex.getMessage() +
+                                "\n" + resv.toString(this.dbname) + "\n";
+                this.log.error(notification);
             } catch (Exception ex) {
-                // set to FAILED, log and rethrow
+                // set to FAILED, and log
                 resv.setStatus("FAILED");
                 long millis = System.currentTimeMillis();
                 resv.setEndTime(millis);
-                this.log.error("Reservation set up of " +
-                         resv.getGlobalReservationId() +
-                        "failed with " + ex.getMessage());
-            //} catch (javax.mail.MessagingException ex) {
+                subject += " failed";
+                notification += "failed with " + ex.getMessage() +
+                                "\n" + resv.toString(this.dbname) + "\n";
+            }
+            try {
+                this.notifier.sendMessage(subject, notification);
+            } catch (javax.mail.MessagingException ex) {
+                this.log.info("create.mail.exception: " + ex.getMessage());
+            } catch (UnsupportedOperationException ex) {
+                this.log.info("create.mail.unsupported: " + ex.getMessage());
             }
         }
         return reservations;
-    }
-
-    /*
-     * Notification message methods.  For lack of a better pattern at the
-     * moment.  Configuration with unordered properties was not a solution.
-     */
-
-    /**
-     * Returns a description of the pending reservation suitable for email.
-     * @param resv a reservation instance
-     * @return a String describing the pending reservation
-     */
-    public String pendingReservationMessage(Reservation resv) {
-
-        String msg = "Reservation: " + resv.toString() + "\n";
-        return msg;
-    }
-
-    /**
-     * Returns a description of the expired reservation suitable for email.
-     * @param resv a reservation instance
-     * @return a String describing the expired reservation
-     */
-    public String expiredReservationMessage(Reservation resv) {
-
-        String msg = "Reservation: " + resv.toString() + "\n";
-        return msg;
     }
 }

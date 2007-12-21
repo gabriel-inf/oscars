@@ -8,6 +8,7 @@ import net.es.oscars.client.Client;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.wsdlTypes.Layer2Info;
 import net.es.oscars.wsdlTypes.Layer3Info;
+import net.es.oscars.wsdlTypes.ListRequest;
 import net.es.oscars.wsdlTypes.ListReply;
 import net.es.oscars.wsdlTypes.MplsInfo;
 import net.es.oscars.wsdlTypes.PathInfo;
@@ -17,33 +18,40 @@ import net.es.oscars.wsdlTypes.ResDetails;
 public class ListReservationCLI {
 	private String url;
 	private String repo;
-	private boolean onlyActive;
+	private String status;
 	
-	public void readArgs(String[] args){
+	public ListRequest readArgs(String[] args){
 		/* Set request parameters */
-		this.onlyActive = false;
+		this.status = null;
 		try{
 	        for(int i = 0; i < args.length; i++){
 	        	if(args[i].equals("-url")){
 	        		this.url = args[i+1];
 	        	}else if(args[i].equals("-repo")){
 	        		this.repo = args[i+1];
-	        	}else if(args[i].equals("-active")){
-	        		this.onlyActive = true;
+	        	}else if(args[i].equals("-status")){
+	        		this.status = args[i+1];
 	        	}else if(args[i].equals("-help")){
 	        		this.printHelp();
 	        		System.exit(0);
 	        	}
 	        }
-		}catch(Exception e){
+		} catch(Exception e){
 			System.out.println("Error: " + e.getMessage());
 			this.printHelp();
 		}
+		
 		
 		if(this.url==null || this.repo==null){
 			this.printHelp();
 			System.exit(0);
 		}
+		ListRequest listReq = new ListRequest();
+		if (this.status != null) {
+			listReq.addResStatus(this.status);
+		}
+		
+		return listReq;
 	}
 	
 	public String getUrl(){
@@ -60,12 +68,8 @@ public class ListReservationCLI {
          Layer2Info layer2Info = pathInfo.getLayer2Info();
          Layer3Info layer3Info = pathInfo.getLayer3Info();
          MplsInfo mplsInfo = pathInfo.getMplsInfo();
-         
-         if(this.onlyActive && (!response.getStatus().equals("ACTIVE"))){
-        	 return;
-         }
-         
-         /* Print repsponse information */ 
+                  
+         /* Print response information */ 
          System.out.println("GRI: " + response.getGlobalReservationId()); 
          System.out.println("Login: " + response.getLogin()); 
          System.out.println("Status: " + response.getStatus()); 
@@ -103,7 +107,7 @@ public class ListReservationCLI {
 		 System.out.println("\t-help\t displays this message.");
 		 System.out.println("\t-url\t required. the url of the IDC.");
 		 System.out.println("\t-repo\t required. the location of the repo directory");
-		 System.out.println("\t-active\t optional. indicates that only active reservations should be printed");
+		 System.out.println("\t-status STATUS\t optional. indicates that only reservations of a certain STATUS should be retrieved");
 	}
 	
 	public static void main(String[] args){ 
@@ -117,8 +121,9 @@ public class ListReservationCLI {
         /* Initialize client instance */ 
         try {
 			oscarsClient.setUp(true, url, repo);
+			ListRequest listReq = cli.readArgs(args);
 			/* Send Request */ 
-            ListReply response = oscarsClient.listReservations();
+            ListReply response = oscarsClient.listReservations(listReq);
             ResDetails[] details = response.getResDetails();
             
             for(int i = 0; i < details.length; i++){

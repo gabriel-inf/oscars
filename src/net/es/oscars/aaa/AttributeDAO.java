@@ -1,8 +1,7 @@
 package net.es.oscars.aaa;
 
-import java.util.*;
-
 import net.es.oscars.database.GenericHibernateDAO;
+import net.es.oscars.aaa.AAAException;
 
 /** AttributeDAO is the data access object for the aaa.attributes table.
  *
@@ -18,9 +17,29 @@ public class AttributeDAO extends GenericHibernateDAO<Attribute, Integer> {
      * 
      * @param attrId  int with attribute id
      * @returns a string with name of attribute
+     * 
+     * This is currently only called by AuthorizationDAO.listAuthByUser 
      */
-    public String getAttributeName(int attrId) {
+    public String getAttributeName(int attrId)  {
         Attribute attr = super.findById(attrId, false);
-        return attr.getName();
+        if (attr != null ) {
+           return attr.getName();
+        } else {
+            return "unknown attribute";
+        }
+    }
+    
+    /* given an attribute name, return the attribute id
+     * 
+     * @param attrName string name of the attribute
+     * @returns an Integer containing the attribute id
+     */
+    public Integer getAttributeId(String attrName) throws AAAException {
+	Attribute attr = super.queryByParam("name", attrName);
+	if (attr != null ) {
+	    return attr.getId();
+	} else {
+	    throw new AAAException ("No attribute with name "+ attrName);
+	}
     }
 }

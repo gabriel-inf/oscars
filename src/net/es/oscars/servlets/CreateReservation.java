@@ -1,5 +1,18 @@
 package net.es.oscars.servlets;
 
+import java.io.*;
+import java.util.*;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.mail.MessagingException;
+
+import org.apache.log4j.*;
+import org.hibernate.*;
+
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.bss.BSSException;
@@ -9,20 +22,7 @@ import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.*;
-
-import org.apache.log4j.*;
-
-import org.hibernate.*;
-
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
-
-import java.io.*;
-
-import java.util.*;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
+import net.es.oscars.Notifier;
 
 
 public class CreateReservation extends HttpServlet {
@@ -31,6 +31,7 @@ public class CreateReservation extends HttpServlet {
         Logger log = Logger.getLogger(this.getClass());
         log.info("CreateReservation.start");
 
+        Notifier notifier = new Notifier();
         TypeConverter tc = new TypeConverter();
         Forwarder forwarder = new Forwarder();
         ReservationManager rm = new ReservationManager("bss");
@@ -42,10 +43,7 @@ public class CreateReservation extends HttpServlet {
         response.setContentType("text/xml");
 
         String userName = userSession.checkSession(out, request);
-
-        if (userName == null) {
-            return;
-        }
+        if (userName == null) { return; }
 
         Reservation resv = this.toReservation(userName, request);
         PathInfo pathInfo = this.handlePath(request);
@@ -88,27 +86,30 @@ public class CreateReservation extends HttpServlet {
             rm.create(resv, userName, pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
-            forwarder.create(resv, pathInfo);
-        } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(), null, bss);
-
-            return;
-        } catch (Exception e) {
-            // use this so we can find NullExceptions
-            utils.handleFailure(out, e.toString(), null, bss);
-
-            return;
-        }
-
-        // reservation was modified in place by ReservationManager create
-        // and Forwarder create; now store it in the db
-        try {
+            CreateReply forwardReply = forwarder.create(resv, pathInfo);
+            rm.finalizeResv(forwardReply, resv, pathInfo);
             log.info("to store");
             rm.store(resv);
             log.info("past store");
+            String subject = "Reservation " + resv.getGlobalReservationId() +
+                             " scheduling through browser succeeded";
+            String notification = "Reservation scheduling through browser succeeded.\n" +
+                                  resv.toString("bss") + "\n";
+            try {
+                notifier.sendMessage(subject, notification);
+            } catch (javax.mail.MessagingException ex) {
+                ;  // swallow for now
+            } catch (UnsupportedOperationException ex) {
+                ;
+            }
         } catch (BSSException e) {
+            this.sendFailureNotification(notifier, resv, e.getMessage());
             utils.handleFailure(out, e.getMessage(), null, bss);
-
+            return;
+        } catch (Exception e) {
+            // use this so we can find NullExceptions
+            this.sendFailureNotification(notifier, resv, e.getMessage());
+            utils.handleFailure(out, e.toString(), null, bss);
             return;
         }
 
@@ -240,5 +241,29 @@ public class CreateReservation extends HttpServlet {
         pathInfo.setMplsInfo(mplsInfo);
 
         return pathInfo;
+    }
+
+    private void sendFailureNotification(Notifier notifier, Reservation resv,
+                                         String errMsg) {
+
+        String subject = "";
+        String notification = "";
+        // ugly, but notifies in all cases.  Have to be careful if creation
+        // did not get too far.
+        if (resv == null) {
+            subject += "Reservation scheduling entirely failed";
+            notification += "Reservation scheduling through browser entirely failed";
+        } else if (resv.getGlobalReservationId() != null) {
+            subject += "Reservation " + resv.getGlobalReservationId() + " failed";
+            notification = "Scheduling reservation through browser failed with" +
+                            errMsg + "\n" + resv.toString("bss") + "\n";
+        }
+        try {
+            notifier.sendMessage(subject, notification);
+        } catch (javax.mail.MessagingException ex) {
+            ;  // swallow exception for now
+        } catch (UnsupportedOperationException ex) {
+            ;
+        }
     }
 }

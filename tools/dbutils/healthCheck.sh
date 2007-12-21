@@ -27,6 +27,6 @@ export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
 javac `pwd`/HealthCheck.java
-java HealthCheck $*
+java -Djava.net.preferIPv4Stack=true HealthCheck $*
 
 exit 1

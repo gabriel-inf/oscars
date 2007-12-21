@@ -12,6 +12,7 @@ package net.es.oscars.oscars;
 
 import java.util.*;
 import java.security.Principal;
+import java.security.cert.X509Certificate;
 
 import org.apache.axis2.context.*;
 import org.apache.ws.security.handler.*;
@@ -220,7 +221,10 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     }
 
     /**
-     * @param request currently always empty
+     * @param request optionally contains, status of desired reservations
+     *     start and/or end time, linkIds, number of reservations to be
+     *     returned at one time, the offset of the first reservation to be
+     *     returned.
      * @return response ListReservationsResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
@@ -229,7 +233,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throws AAAFaultMessage, BSSFaultMessage {
 
         ListReply reply = null;
-        boolean allUsers = false;  
+        ArrayList<String> loginIds = null; 
         String login = this.checkUser();
 
         Session bss =
@@ -245,11 +249,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             case DENIED: 
                    throw new AAAFaultMessage(
                            "listReservations: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers =  true; break;
+            case SELFONLY: loginIds = new ArrayList<String>();
+        	           loginIds.add(login); break;
+            case ALLUSERS: /* leave loginIds =null this implies that 
+                              all users are wanted */  break;
         }
         try {
-            reply = this.adapter.list(login, allUsers);
+            reply = this.adapter.list(login, loginIds,
+                        request.getListReservations());
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("listReservations: " + e.getMessage());
@@ -661,25 +668,31 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     // An encryption or timestamp action does not have an
                     // associated principal. Only Signature and UsernameToken
                     // actions return a principal.
-                    if ((eResult.getAction() == WSConstants.SIGN) ||
-                        (eResult.getAction() == WSConstants.UT)) {
-                        this.log.debug("setOperationContext.getSecurityInfo, " +
-                                       "Principal's name: " +
-                                       eResult.getPrincipal().getName());
-                        this.setCertSubject(
-                                eResult.getCertificate().getSubjectDN());
-                        this.setCertIssuer(
-                                eResult.getCertificate().getIssuerDN());
-                    } else if (eResult.getAction() == WSConstants.ENCR) {
-                        // Encryption action returns what ?
-                    } else if (eResult.getAction() == WSConstants.TS) {
-                        // Timestamp action returns a Timestamp
-                        //System.out.println("Timestamp created: " +
-                                       //eResult.getTimestamp().getCreated());
-                        //System.out.println("Timestamp expires: " +
-                        //eResult.getTimestamp().getExpires());
-                    } 
+                    if ((((java.lang.Integer) eResult.get(
+                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.SIGN) ||
+                        (((java.lang.Integer) eResult.get(
+                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.UT)) {
+                    this.log.debug("setOperationContext.getSecurityInfo, " +
+                        "Principal's name: " +
+                        ((Principal) eResult.get(
+                            WSSecurityEngineResult.TAG_PRINCIPAL)).getName());
+                    this.setCertSubject(((X509Certificate) eResult.get(
+                            WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getSubjectDN());
+                    this.setCertIssuer(((X509Certificate) eResult.get(
+                            WSSecurityEngineResult.TAG_X509_CERTIFICATE)).getIssuerDN());
+                } else if (((java.lang.Integer) eResult.get(
+                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.ENCR) {
+                    // Encryption action returns what ?
+                } else if (((java.lang.Integer) eResult.get(
+                            WSSecurityEngineResult.TAG_ACTION)).intValue() == WSConstants.TS) {
+                    // Timestamp action returns a Timestamp
+                    //System.out.println("Timestamp created: " +
+                    //eResult.getTimestamp().getCreated());
+                    //System.out.println("Timestamp expires: " +
+                    //eResult.getTimestamp().getExpires());
                 }
+            }
+ 
             }
         } catch (Exception e) {
             this.log.error("setOperationContext.exception: " + e.getMessage());

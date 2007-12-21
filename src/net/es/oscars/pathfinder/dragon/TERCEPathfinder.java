@@ -11,7 +11,8 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.DomainDAO;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
-
+import org.apache.axis2.context.ConfigurationContext;
+import org.apache.axis2.context.ConfigurationContextFactory;
 import org.apache.log4j.*;
  
 import edu.internet2.hopi.dragon.terce.ws.types.rce.*;
@@ -31,10 +32,10 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
      *
      */
     public TERCEPathfinder(String dbname) {
+        super(dbname);
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("terce", true);
-        super.setDatabase(dbname);
     }
     
     /**
@@ -162,7 +163,14 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         /* Calculate path */
         try {
             this.log.info("terce.start");
-            terce = new TERCEStub(terceURL);
+            String repo = System.getenv("CATALINA_HOME");
+		    repo += (repo.endsWith("/") ? "" :"/");
+		    repo += "shared/classes/terce.conf/repo/";
+            System.setProperty("axis2.xml", repo + "axis2.xml");
+            ConfigurationContext configContext =
+                ConfigurationContextFactory
+                .createConfigurationContextFromFileSystem(repo, null);
+            terce = new TERCEStub(configContext, terceURL);
                    
             /* Format Request */
             request.setSrcEndpoint(src);
@@ -210,7 +218,7 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         if(componentList.length != 7){
             return false;
         }
-        DomainDAO domainDAO = new DomainDAO("bss");
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
         return domainDAO.isLocal(componentList[3]);
         
     }

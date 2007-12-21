@@ -1,4 +1,5 @@
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.database.Initializer;
 
 import org.jdom.*;
 import org.jdom.output.*;
@@ -15,7 +16,6 @@ import java.util.*;
  */
 public class ExportXML {
     public static void main(String[] argv) {
-        TopologyXMLExporter exporter = new TopologyXMLExporter();
 
         String usage = "Usage:\nexportXML.sh [urn-of-domain]";
         String urn = "";
@@ -30,6 +30,15 @@ public class ExportXML {
                 System.exit(1);
             }
         }
+        
+        List<String> dbnames = new ArrayList<String>();
+        dbnames.add("bss");
+
+        Initializer initializer = new Initializer();
+        initializer.initDatabase(dbnames);
+
+        TopologyXMLExporter exporter = new TopologyXMLExporter("bss");
+        
         Document doc = exporter.getTopology(urn);
 
         try {

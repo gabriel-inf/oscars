@@ -28,10 +28,10 @@ public class DBPathfinder extends Pathfinder implements PCE {
      *
      */
     public DBPathfinder(String dbname) {
+        super(dbname);
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("dbpath", true);
-        super.setDatabase(dbname);
     }
     
     /**

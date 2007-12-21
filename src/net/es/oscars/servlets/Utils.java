@@ -2,11 +2,14 @@ package net.es.oscars.servlets;
 
 import java.io.PrintWriter;
 import javax.servlet.http.*;
+import java.util.*;
 
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.database.HibernateUtil;
+//import net.es.oscars.aaa.UserManager;
+//import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.AttributeDAO;
 
+import org.apache.log4j.Logger;
 import org.hibernate.*;
 
 public class Utils {
@@ -91,5 +94,38 @@ public class Utils {
         }       
         dn = dn.substring(1);
         return dn;
+    }
+    /* Get the role names from a request and translate them to
+     *   a list of AttributeIds
+     *   
+     *   @param request 
+     */
+    public ArrayList <Integer> convertRoles (String roles[]) {
+
+	ArrayList <Integer> addRoles = new ArrayList<Integer>();
+	Logger log = Logger.getLogger(this.getClass());
+	String dbname="aaa";
+	AttributeDAO attrDAO = new AttributeDAO(dbname);
+	if (roles != null && roles.length > 0) {
+	    String st;
+	    for (String s : roles) {
+		log.debug("role is " + s);
+		if (s != null && !s.trim().equals("")) {
+		    st=s.trim();
+		    try {
+			Integer attrId = attrDAO.getAttributeId(st);
+			// roles seems to contain two copies of each value -mrt
+			if ( ! addRoles.contains(attrId)) {
+			    log.info("adding "+ attrId);
+			    addRoles.add(attrId); }
+		    } catch (AAAException ex) {
+			log.error("Unknown attribute: ["+st+"]");
+		    } catch (Exception e) {
+			log.error("exception " + e.getMessage());
+		    }
+		}
+	    }
+	}
+	return addRoles;
     }
 }

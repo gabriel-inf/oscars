@@ -20,11 +20,13 @@ public class ReservationDAO
 
     private Logger log;
     private String dbname;
+    private List<Reservation> reservations;
 
     public ReservationDAO(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.setDatabase(dbname);
         this.dbname = dbname;
+        this.reservations = new ArrayList<Reservation>();
     }
 
     /**
@@ -37,43 +39,94 @@ public class ReservationDAO
     public Reservation query(String gri)
         throws BSSException {
 
-        Reservation reservation = this.queryByParam("globalReservationId",
-                                                     gri);
+        Reservation reservation = this.queryByParam("globalReservationId", gri);
         return reservation;
     }
 
 
     /**
-     * Lists all reservations if allUsers; otherwise, list only
-     *     reservations owned by that particular user.
-     *     Note that GenericHibernateDAO has Criteria based methods for
-     *     doing lists, but they are less clear to someone used to SQL.
+     * Lists reservations 
      *
-     * @param login a string identifier for a user
-     * @param allUsers boolean indicating can view all reservations
+     * @param logins a list of user logins. If not null or empty, results will
+     * only include reservations submitted by these specific users. If null / empty 
+     * results will include reservations by all users.
+     * 
+     * @param statuses a list of reservation statuses. If not null or empty, 
+     * results wil only include reservations with one of these statuses. 
+     * If null / empty, results will include reservations with any status.
+     * 
+     * @param links a list of links. If not null / empty, results will only
+     * include reservations whose path includes at least one of the links. 
+     * If null / empty, results will include reservations with any path.
+     * 
+     * @param startTime the start of the time window to look in; null for everything before the endTime
+     *  
+     * @param endTime the end of the time window to look in; null for everything after the startTime, 
+     * leave both start and endTime null to disregard time 
+     *  
      * @return a list of reservations.
      * @throws BSSException
      */
-    public List<Reservation> list(String login, boolean allUsers)
-            throws BSSException {
-        List<Reservation> reservations = null;
-
-        // must provide user name
-        if (login == null) { return null; }
-        // if not allUsers, can only view individual reservations
-        if (!allUsers) {
-            this.log.info("list, individual: " + login);
-            String hsql = "from Reservation r where r.login = :login " +
-                          "order by r.startTime desc";
-            reservations =  this.getSession().createQuery(hsql)
-                                   .setString("login", login)
-                                   .list();
-        } else {
-            this.log.info("list, all");
-            String hsql = "from Reservation r order by r.startTime desc";
-            reservations = this.getSession().createQuery(hsql).list();
+    @SuppressWarnings("unchecked")
+    public List<Reservation> list(List<String> logins, List<String> statuses, List<Link> links, Long startTime, Long endTime) 
+    		throws BSSException {
+    	this.log.info("list.start");
+    	this.reservations = new ArrayList<Reservation>();
+    	ArrayList<String> criteria = new ArrayList<String>(); 
+    	String loginQ = null;
+    	if (logins != null && !logins.isEmpty()) {
+    		loginQ = "r.login IN ("+Utils.join(logins, ",", "'", "'")+") ";
+    		criteria.add(loginQ);
+    	}
+    	
+    	String statusQ = null;
+    	if (statuses != null && !statuses.isEmpty()) {
+    		statusQ = "r.status IN ("+Utils.join(statuses, ",", "'", "'")+") ";
+    		criteria.add(statusQ);
+    	}
+    	
+    	String startQ = null;
+    	if (startTime != null) {
+    		startQ = "(r.endTime >= :startTime) ";
+    		criteria.add(startQ);
+    	}
+    	String endQ = null;
+    	if (endTime != null) {
+    		endQ = "(r.startTime <= :endTime) ";
+    		criteria.add(endQ);
+    	}
+    	
+        String hsql = "from Reservation r";
+        if (!criteria.isEmpty()) {
+        	hsql += " where " +Utils.join(criteria, " and ", "(", ")");
         }
-        return reservations;
+        
+        this.log.debug("HSQL is: ["+hsql+"]");
+        
+        Query query = this.getSession().createQuery(hsql);
+        if (startTime != null) {
+            query.setLong("startTime", startTime);
+        }
+        if (endTime != null) {
+            query.setLong("endTime", endTime);
+        }
+		this.reservations = query.list();
+		
+    	if (links != null && !links.isEmpty()) {
+    		ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
+	    	for (Reservation rsv : this.reservations) {
+	    		if (!rsv.getPath().containsAnyOf(links)) {
+	    	    	this.log.debug("not returning: " + rsv.getGlobalReservationId());
+	    			removeThese.add(rsv);
+	    		} 
+	    	}
+	    	for (Reservation rsv : removeThese) {
+	    		this.reservations.remove(rsv);
+	    	}
+    	}
+
+    	this.log.info("list.finish");
+    	return this.reservations;
     }
 
 
@@ -85,10 +138,11 @@ public class ReservationDAO
      * @param endTime proposed reservation end time
      * @return list of all pending and active reservations
      */
+    @SuppressWarnings("unchecked")
     public List<Reservation>
             overlappingReservations(Long startTime, Long endTime) {
 
-        List<Reservation> reservations = null;
+        this.reservations = null;
         // Get reservations with times overlapping that of the reservation
         // request.
         String hsql = "from Reservation r " +
@@ -96,11 +150,11 @@ public class ReservationDAO
             "(r.startTime <= :endTime and r.endTime >= :endTime) or " +
             "(r.startTime >= :startTime and r.endTime <= :endTime)) " +
             "and (r.status = 'PENDING' or r.status = 'ACTIVE')";
-        reservations = this.getSession().createQuery(hsql)
+        this.reservations = this.getSession().createQuery(hsql)
                                         .setLong("startTime", startTime)
                                         .setLong("endTime", endTime)
                                         .list();
-        return reservations;
+        return this.reservations;
     }
 
     /** 
@@ -110,19 +164,20 @@ public class ReservationDAO
      * @param timeInterval an int to add to the current time
      * @return list of pending reservations
      */
+    @SuppressWarnings("unchecked")
     public List<Reservation> pendingReservations(int timeInterval) {
 
-        List<Reservation> reservations = null;
+        this.reservations = null;
         long millis = 0;
 
         millis = System.currentTimeMillis() + timeInterval * 1000;
         String hsql = "from Reservation where status = :status " +
                       "and startTime < :startTime";
-        reservations = this.getSession().createQuery(hsql)
+        this.reservations = this.getSession().createQuery(hsql)
                               .setString("status", "PENDING")
                               .setLong("startTime", millis)
                               .list();
-        return reservations;
+        return this.reservations;
     }
 
     /** 
@@ -131,18 +186,20 @@ public class ReservationDAO
      * @param timeInterval An int to add to the current time
      * @return list of expired reservations
      */
+    @SuppressWarnings("unchecked")
     public List<Reservation> expiredReservations(int timeInterval) {
 
-        List<Reservation> reservations = null;
+        this.reservations = null;
         long millis = 0;
 
         millis = System.currentTimeMillis() + timeInterval * 1000;
-        String hsql = "from Reservation where (status = 'ACTIVE' and " +
+        String hsql = "from Reservation where " +
+                      "((status = 'ACTIVE' or status= 'PENDING') and " +
                       "endTime < :endTime) or (status = 'PRECANCEL')";
-        reservations = this.getSession().createQuery(hsql)
+        this.reservations = this.getSession().createQuery(hsql)
                               .setLong("endTime", millis)
                               .list();
-        return reservations;
+        return this.reservations;
     }
 
     /**
@@ -151,18 +208,36 @@ public class ReservationDAO
      * @param status string with reservation status
      * @return list of all reservations with the given status
      */
+    @SuppressWarnings("unchecked")
     public List<Reservation> statusReservations(String status) {
 
-        List<Reservation> reservations = null;
+        this.reservations = null;
         // Get reservations with times overlapping that of the reservationi
         // request.
         String hsql = "from Reservation r " +
                       "where r.status = :status";
-        reservations = this.getSession().createQuery(hsql)
+        this.reservations = this.getSession().createQuery(hsql)
                                         .setString("status", status)
                                         .list();
-        return reservations;
+        return this.reservations;
     }
+
+    
+    
+    /**
+     * This function is meant to be called after a list() and should
+     * return the number of reservations fitting the search criteria. 
+     * 
+     * @return how many reservations are in the result set
+     *
+     */
+    public int resultsNum() {
+    	if (this.reservations == null) {
+    		return 0;
+    	}
+    	return this.reservations.size();
+    }
+
     
     /**
      * Retrives reservation given the global reservation ID (GRI) and login

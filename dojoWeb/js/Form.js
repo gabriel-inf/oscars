@@ -1,35 +1,20 @@
 /*
-Form.js:        Javascript form handling
-Last modified:  May 28, 2007
+Form.js:        Javascript form callback handling
+Last modified:  December 13, 2007
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
-submitForm()
-handleReply(type, data, evt)
-handleError(type, evt)
+handleReply(data, ioArgs)
+handleError(data, ioArgs)
 */
 
 dojo.provide("js.Form");
 
-function submitForm() {
-    var x = new dojo.io.FormBind({
-    formNode: document.forms[0],
-    load: handleReply,
-    error: handleError });
+js.Form.handleReply = function (data, ioArgs) {
+    console.log(data);
 }
 
-
-function handleReply(type, data, http) {
-    dojo.debug(http["responseText"]);
-}
-
-
-function handleError(type, evt) {
-    var msg = evt["message"];
-    // The message has non-useful information in it for the user.
-    // The servlet inserts a series of *'s in the message so that
-    // the non-helpful info can be parsed out.
-    var lastIndex = msg.lastIndexOf("*");
-    dojo.debug(msg.substring(lastIndex+2, msg.length));
+js.Form.handleError = function (data, ioArgs) {
+    console.error("error");
 }

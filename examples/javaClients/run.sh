@@ -16,22 +16,22 @@ if [  $# -lt 2  ]
 elif [ $1 == "createReservation" ] && [ $# -eq 2 ] && [ $2 != "-help" ]
  then
     echo $2
-    java -cp $OSCARS_CLASSPATH CreateReservationClient repo $url
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationClient repo $url
 elif [  $1 == "createReservation"  ]
  then
-    java -cp $OSCARS_CLASSPATH CreateReservationCLI $*
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationCLI $*
 elif [ $1 == "signal"  ]
  then    
-    java -cp $OSCARS_CLASSPATH SignalClient repo $url $3 $4
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true SignalClient repo $url $3 $4
 elif [ $1 == "query"  ]
  then    
-    java -cp $OSCARS_CLASSPATH QueryReservationCLI $*
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true QueryReservationCLI $*
 elif [ $1 == "list"  ]
  then    
-    java -cp $OSCARS_CLASSPATH ListReservationCLI $*
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true ListReservationCLI $*
 elif [ $1 == "cancel"  ]
  then    
-    java -cp $OSCARS_CLASSPATH CancelReservationCLI $*
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CancelReservationCLI $*
 else
     echo "Please specify 'createReservation', 'signal', 'list', 'query', or 'cancel'"
 fi

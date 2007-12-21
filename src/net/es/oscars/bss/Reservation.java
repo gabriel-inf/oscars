@@ -1,10 +1,13 @@
 package net.es.oscars.bss;
 
 import java.io.Serializable;
+import java.util.*;
+import java.text.DateFormat;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import net.es.oscars.database.HibernateBean;
-import net.es.oscars.bss.topology.Path;
+import net.es.oscars.bss.topology.*;
 
 /**
  * Reservation is the Hibernate bean for for the bss.reservations table.
@@ -168,11 +171,106 @@ public class Reservation extends HibernateBean implements Serializable {
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
-            .append("startTime", getStartTime())
-            .append("endTime", getEndTime())
-            .append("bandwidth", getBandwidth())
-            .append("login", getLogin())
-            .append("status", getStatus())
             .toString();
+    }
+
+    public String toString(String dbname) {
+        StringBuilder sb = new StringBuilder();
+        String strParam = null;
+
+        // this may be called from methods where the reservation has
+        // not been completely set up, so more null checks are
+        // necessary here
+        if (this.getGlobalReservationId() != null) {
+            sb.append("\nGRI: " + this.getGlobalReservationId() + "\n");
+        }
+        strParam = this.getDescription();
+        if (strParam != null) {
+            sb.append("description: " + strParam + "\n");
+        }
+        if (this.getLogin() != null) {
+            sb.append("login: " + this.getLogin() + "\n");
+        }
+        Long tm = this.getStartTime();
+        DateFormat df = DateFormat.getInstance();
+        df.setTimeZone(TimeZone.getTimeZone("GMT"));
+        if (tm != null) {
+            Date date = new Date(tm);
+            sb.append("start time: " + df.format(date) + " UTC\n");
+        }
+        tm = this.getEndTime();
+        if (tm != null) {
+            Date date = new Date(tm);
+            sb.append("end time: " + df.format(date) + " UTC\n");
+        }
+        if (this.getBandwidth() != null) {
+            sb.append("bandwidth: " + this.getBandwidth() + "\n");
+        }
+       
+        Path path= this.getPath();
+        if (path == null) {
+            return sb.toString();
+        }
+        if (path.getPathSetupMode() != null) {
+            sb.append("path setup mode: " + path.getPathSetupMode() + "\n");
+        }
+        Layer2Data layer2Data = path.getLayer2Data();
+        if (layer2Data != null) {
+            sb.append("layer: 2\n");
+            if (layer2Data.getSrcEndpoint() != null) {
+                sb.append("source endpoint: " +
+                      layer2Data.getSrcEndpoint() + "\n");
+            }
+            if (layer2Data.getDestEndpoint() != null) {
+                sb.append("dest endpoint: " +
+                          layer2Data.getDestEndpoint() + "\n");
+            }
+            PathElem pathElem = path.getPathElem();
+            if (pathElem != null) {
+                String linkDescr = pathElem.getLinkDescr();
+                if (linkDescr != null) {
+                    sb.append("VLAN tag: " + linkDescr + "\n");
+                }
+            }
+        }
+        Layer3Data layer3Data = path.getLayer3Data();
+        if (layer3Data != null) {
+            sb.append("layer: 3\n");
+            if (layer3Data.getSrcHost() != null) {
+                sb.append("source host: " + layer3Data.getSrcHost() + "\n");
+            }
+            if (layer3Data.getDestHost() != null) {
+                sb.append("dest host: " + layer3Data.getDestHost() + "\n");
+            }
+            if (layer3Data.getProtocol() != null) {
+                sb.append("protocol: " + layer3Data.getProtocol() + "\n");
+            }
+            if ((layer3Data.getSrcIpPort() != null) &&
+                (layer3Data.getSrcIpPort() != 0)) {
+                sb.append("src IP port: " + layer3Data.getSrcIpPort() + "\n");
+            }
+            if ((layer3Data.getDestIpPort() != null) &&
+                (layer3Data.getDestIpPort() != 0)) {
+                sb.append("dest IP port: " +
+                          layer3Data.getDestIpPort() + "\n");
+            }
+            if (layer3Data.getDscp() != null) {
+                sb.append("dscp: " +  layer3Data.getDscp() + "\n");
+            }
+        }
+        MPLSData mplsData = path.getMplsData();
+        if (mplsData != null) {
+            if (mplsData.getBurstLimit() != null) {
+                sb.append("burst limit: " + mplsData.getBurstLimit() + "\n");
+            }
+            if (mplsData.getLspClass() != null) {
+                sb.append("LSP class: " + mplsData.getLspClass() + "\n");
+            }
+        }
+        sb.append("local hops: \n\n");
+        Utils utils = new Utils(dbname);
+        sb.append(utils.pathToString(path));
+        sb.append("\n");
+        return sb.toString();
     }
 }

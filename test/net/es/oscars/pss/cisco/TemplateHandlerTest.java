@@ -16,7 +16,8 @@ import net.es.oscars.pss.PSSException;
  * This class tests loading/saving to/from the domains table.
  *
  */
-@Test(groups={ "pss.cisco" })
+//@Test(groups={ "pss.cisco, xml" })
+@Test(groups={ "pss.cisco, foo" })
 public class TemplateHandlerTest {
     private final String BANDWIDTH = "10000000"; // 10 Mbps
     private Properties testProps;

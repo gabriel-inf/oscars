@@ -9,5 +9,5 @@ oscars) url="https://oscars.es.net/axis2/services/OSCARS";;
 hopi) url="https://hopibruw.internet2.edu:8443/axis2/services/OSCARS";;
 esac
 fi
-java -Daxis2.xml=repo/axis2.xml ListReservationsClient repo $url
+java -Daxis2.xml=repo/axis2.xml -Djava.net.preferIPv4Stack=true ListReservationsClient repo $url
 

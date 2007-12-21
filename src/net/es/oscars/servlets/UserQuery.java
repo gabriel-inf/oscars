@@ -5,6 +5,8 @@ import java.util.*;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import org.apache.log4j.Logger;
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
@@ -16,10 +18,16 @@ import net.es.oscars.aaa.AAAException;
 
 
 public class UserQuery extends HttpServlet {
-
+    private Logger log;
+    private String dbname;
+    
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
             throws IOException, ServletException {
+
+	this.log = Logger.getLogger(this.getClass());
+	this.dbname = "aaa";
+	this.log.debug("userQuery:start");
 
         User targetUser = null;
         boolean self =  false; // is query about the current user
@@ -29,6 +37,7 @@ public class UserQuery extends HttpServlet {
         UserManager mgr = new UserManager("aaa");
         UserDetails userDetails = new UserDetails();
         List<Institution> institutions = null;
+        List<String> attrNames = new ArrayList<String>();
         Utils utils = new Utils();
 
         PrintWriter out = response.getWriter();
@@ -63,6 +72,8 @@ public class UserQuery extends HttpServlet {
          *     used by conentSection to set the action on submit
          */
        authVal = mgr.checkAccess(userName, "Users", "modify");
+       if (self) {attrNames = mgr.getAttrNames();}
+       else {attrNames = mgr.getAttrNames(profileName);}
         
         if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
               modifyAllowed = true;
@@ -73,10 +84,11 @@ public class UserQuery extends HttpServlet {
         out.println("<xml>");
         out.println("<status>User profile</status>");
         utils.tabSection(out, request, response, "UserList");
-        userDetails.contentSection(out, targetUser, modifyAllowed, institutions, 
-                                   "UserQuery");
+        userDetails.contentSection(out, targetUser, modifyAllowed, (authVal == AuthValue.ALLUSERS),
+        	institutions, attrNames,"UserQuery");
         out.println("</xml>");
         aaa.getTransaction().commit();
+	this.log.debug("userQuery:finish");
     }
 
     public void doPost(HttpServletRequest request,

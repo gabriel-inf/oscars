@@ -5,7 +5,8 @@ import org.apache.log4j.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.wsdlTypes.*; 
+import net.es.oscars.Notifier;
 
 /**
  * PathSetupManager handles all direct interaction with the PSS module. 
@@ -20,17 +21,21 @@ public class PathSetupManager{
     private Properties props;
     private PSS pss;
     private Forwarder forwarder;
-    
+    private ReservationLogger rsvLogger; 
+    private Notifier notifier;
+ 
     /** Constructor. */
     public PathSetupManager(String dbname) {
         PropHandler propHandler = new PropHandler("oscars.properties");
         PSSFactory pssFactory = new PSSFactory();
         
+        this.notifier = new Notifier();
         this.forwarder = new Forwarder();
         this.props = propHandler.getPropertyGroup("pss", true);
         this.pss =
             pssFactory.createPSS(this.props.getProperty("method"), dbname);
         this.log = Logger.getLogger(this.getClass());
+        this.rsvLogger = new ReservationLogger(this.log);
         this.log.info("PSS type is:["+this.props.getProperty("method")+"]");
         this.dbname = dbname;
     }
@@ -44,7 +49,8 @@ public class PathSetupManager{
      * @throws PSSException
      */
     public String create(Reservation resv, boolean doForward) throws PSSException, 
-                    InterdomainException{
+                    InterdomainException {
+    	this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("create.start");
         String status = null;
         String gri = resv.getGlobalReservationId();
@@ -82,10 +88,9 @@ public class PathSetupManager{
             this.forwardTeardown(resv, e.getMessage());
 
             throw new PSSException("Path cannot be created, error setting up path.");
-
         }
-        
         this.log.info("create.end");
+        this.rsvLogger.stop();
         return status;
     }
     
@@ -103,6 +108,7 @@ public class PathSetupManager{
         boolean stillActive = false;
         String errorMsg = null;
         String gri = resv.getGlobalReservationId();
+    	this.rsvLogger.redirect(resv.getGlobalReservationId());
         
         /* Check reservation */
         if(this.pss == null){
@@ -146,6 +152,7 @@ public class PathSetupManager{
             this.forwardTeardown(resv, errorMsg);
          }
         
+        this.rsvLogger.stop();
         return status;
     }
     
@@ -159,9 +166,11 @@ public class PathSetupManager{
      */
     public String teardown(Reservation resv, boolean doForward) 
                     throws PSSException{ 
+        String prevStatus = resv.getStatus();
         String status = null;
         String errorMsg = null;
         String gri = resv.getGlobalReservationId();
+    	this.rsvLogger.redirect(resv.getGlobalReservationId());
         
         /* Check reservation */
         if(this.pss == null){
@@ -180,17 +189,15 @@ public class PathSetupManager{
             if(!doForward){
                 throw e;
             }
-            
             errorMsg = "Error tearing down local path. Reason: " + 
                     e.getMessage();
         }
         
         /* Forward to next domain */
-        if(doForward){
+        if(doForward && (!prevStatus.equals("PRECANCEL"))){
             this.forwardTeardown(resv, errorMsg);
         }
-        
-        
+        this.rsvLogger.stop();
         return status;
     }
     

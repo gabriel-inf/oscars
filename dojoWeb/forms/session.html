@@ -1,48 +1,61 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-    <script type="text/javascript">
-        dojo.require("dojo.widget.Form");
-    </script>
-</head>
+<html>
+    <form id="AuthenticateUser" method="post"> 
+        <table>
+          <tr>
+            <th>User Name:</th>
+	    <td><input type="text" dojoType="dijit.form.TextBox"
+		       name="userName" size="28" /></td>
+          </tr>
+          <tr>
+            <th>Password:</th>
+            <td>
+              <input type="password" name="password" size="28" />
+            </td>
+          </tr>
+        </table>
+	<button dojoType="dijit.form.Button" id="login">
+          LOGIN 
+          <script type="dojo/method" event="onClick">
+              dojo.xhrPost({
+              url: 'servlet/AuthenticateUser',
+	      load: js.Form.handleReply,
+	      error: js.Form.handleError,
+	      form: AuthenticateUser
+              });
+          </script>
+        </button>
+    </form>
 
-<body>
-    <p>Navigation tab functionality is as follows:</p>
+    <div id="sessionMessage">
+    <p>Sign in via your OSCARS login and password to access this system.
+    To find out about OSCARS and how it works, go to the
+    <a href="/OSCARS/docs/">documentation</a>.
+    To obtain an account or request more 
+    information, email one of the contacts below.</p>
+    </div>
+
+    <p>Basic OSCARS functionality is as follows:</p>
 
     <ul>
     <li>
-        Clicking on the Reservations tab will list all current reservations.
-    </li>
-    <li>
-    Choosing a particular reservation from that list will bring up that
-    reservation's details under the ReservationDetails tab.
+    Clicking on the Reservations tab will bring up a tree listing all
+    selected reservations.  Expanding an item in that tree will bring up
+    a reservation's details.
     </li>
     <li>
     Clicking on the Create Reservation tab will bring up a form to create a
     reservation.
     </li>
     <li>
-    Clicking on the Users tab brings up a list of all current users.
-    </li>
-    <li>
-    Choosing a particular user from that list brings up the User Details tab,
-    allowing modification of a user's profile.
-    </li>
-    </ul>
+    Clicking on the Users tab brings up a tree of OSCARS user-related
+    information.
+    Expanding a particular user from that list brings up that user's details.
+    You currently need OSCARS admin privileges to view other users' information.
     <p>
-    To log out, return to this tab, and click on the corresponding button.
+    To log out, click on the logout button in the toolbar above the tabs.
     </p>
 
-<p><strong>NOTE</strong>: OSCARS is now using the
-<a href="http://dojotoolkit.org">Dojo</a> Javascript library.
-Please report any problems that you might encounter to
-<a href="mailto:DWRobertson@lbl.gov">David Robertson</a>.
-</p>
+    <p>More documentation can be found by clicking on the link at the bottom
+    of this page.</p>
 
-    <form id="userLogoutForm" dojoType="Form" method="POST"
-                                              action="servlet/WebSession">
-        <div>
-            <input type="submit" name="logout" value="Log out of OSCARS" />
-        </div>
-    </form>
-</body>
 </html>

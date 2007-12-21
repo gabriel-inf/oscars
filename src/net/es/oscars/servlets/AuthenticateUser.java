@@ -47,6 +47,7 @@ public class AuthenticateUser extends HttpServlet {
 
         PrintWriter out = null;
         List<Reservation> reservations = null;
+        String userLogin = null;
 
         NavigationBar tabs = new NavigationBar();
         Map<String,String> tabParams = new HashMap<String,String>();
@@ -57,14 +58,17 @@ public class AuthenticateUser extends HttpServlet {
 
         out = response.getWriter();
         String userName = request.getParameter("userName");
+        Random generator = new Random();
+        int r = generator.nextInt();
+        String sessionName = String.valueOf(r);
         response.setContentType("text/xml");
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
         try {
             String unused =
-                mgr.verifyLogin(userName,
-                                        request.getParameter("password"));
+                mgr.verifyLogin(userName, request.getParameter("password"),
+                                sessionName);
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
@@ -96,6 +100,7 @@ public class AuthenticateUser extends HttpServlet {
             } */
         }
         userSession.setCookie("userName", userName, response);
+        userSession.setCookie("sessionName", sessionName, response);
         userSession.setCookie("tabName", "ListReservations", response);
   
         Session bss = 
