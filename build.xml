@@ -360,6 +360,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="test" depends="test.compile, testpkg, testESnet, testI2">
         <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/OSCARS/test" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
+	    <jvmarg value="-Dcatalina.home=${catalina.home}"/>
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
     </target>
