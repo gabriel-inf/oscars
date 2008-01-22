@@ -177,7 +177,7 @@ function checkReservation(form) {
 
 // Reference: http://javascript.internet.com/forms/val-date.html
 function checkDateFields(form) {
-    var durationMilliseconds = 240000;
+    var durationSeconds = 240;
 
     var localDate = new Date();
     var userMonth = localDate.getMonth() + 1;
@@ -282,15 +282,15 @@ function checkDateFields(form) {
             form.durationHour.focus();
             return false;
         }
-        durationMilliseconds = form.durationHour.value * 3600000;
+        durationSeconds = form.durationHour.value * 3600;
     }
 
     reservationDate = new Date(dOfYFields[0], userMonth - 1,
                                dOfYFields[2], timeFields[0],
                                timeFields[1], 0, 0);
-    // convert local time to milliseconds since epoch
-    var startTime = reservationDate.getTime();
-    var endTime = startTime + durationMilliseconds;
+    // convert local time to seconds since epoch
+    var startTime = reservationDate.getTime()/1000;
+    var endTime = startTime + durationSeconds;
     form.startTime.value = startTime;
     form.endTime.value = endTime;
     return true;

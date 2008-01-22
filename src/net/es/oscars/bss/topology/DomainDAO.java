@@ -46,11 +46,32 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
      */
     public Domain fromTopologyIdent(String topologyIdent) {
         String hsql = "from Domain where topologyIdent=?";
-        topologyIdent = topologyIdent.replaceAll("domain=", "");
-        return (Domain) this.getSession().createQuery(hsql)
-                                         .setString(0, topologyIdent)
-                                         .setMaxResults(1)
-                                         .uniqueResult();
+        if (topologyIdent == null) {
+        	this.log.error("Null topology ident!");
+        	return null;
+        } 
+        	
+        
+        topologyIdent = topologyIdent.replaceAll("domain=", "").trim();
+        
+        if (topologyIdent == "") {
+        	this.log.error("Empty topology ident!");
+        	return null;
+        }
+        
+        Domain dom = null; 
+        
+        dom = (Domain) this.getSession().createQuery(hsql)
+		        .setString(0, topologyIdent)
+		        .setMaxResults(1)
+		        .uniqueResult();
+        
+        if (dom == null) {
+        	this.log.error("Could not find domain for topology ident ["+topologyIdent+"]");
+        }
+        
+        return dom; 
+        
     }
 
      /**
@@ -112,7 +133,7 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
     /**
      * Converts topology identifier to IP address.
      *
-     * @param hopId string with topology identifier
+     * @param topologyIdent String with topology identifier
      * @return string with IP address
      */
      public String convertTopologyIdentifier(String topologyIdent) {

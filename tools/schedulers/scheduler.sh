@@ -5,10 +5,6 @@ cwd=`pwd`
 progname="$0"
 curdir=`dirname "$progname"`
 
-#Set environment variables
-CATALINA_HOME=/usr/local/tomcat
-AXIS2_HOME=/usr/local/tomcat/webapps/axis2/WEB-INF
-
 # update classpath
 OSCARS_CLASSPATH=""
 # TODO:  better solution
@@ -18,7 +14,7 @@ do
 done
 
 # TODO:  better solution
-for f in $AXIS2_HOME/lib/*.jar
+for f in ../../lib/axis2/*.jar
 do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done

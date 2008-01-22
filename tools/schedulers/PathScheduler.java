@@ -18,7 +18,7 @@ import net.es.oscars.interdomain.InterdomainException;
 public class PathScheduler {
 
     // time in seconds to look into the future for reservations
-    private static final Integer reservationInterval = 300;
+    private static final Integer reservationInterval = 0;
 
     // shutdown hook delay time in seconds
     private static final int shutdownTime = 2;     

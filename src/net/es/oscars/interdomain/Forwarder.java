@@ -202,10 +202,10 @@ public class Forwarder extends Client {
         long millis = -1;
         ResCreateContent resCont = new ResCreateContent();
         
-        /* default pathSetupMode between domains is user-xml */
+        /* default pathSetupMode between domains is signal-xml */
         String pathSetupMode = pathInfo.getPathSetupMode();
-        if(pathSetupMode == null || pathSetupMode.equals("domain")){
-            pathInfo.setPathSetupMode("user-xml");
+        if(pathSetupMode == null || pathSetupMode.equals("timer-automatic")){
+            pathInfo.setPathSetupMode("signal-xml");
         }
         
         resCont.setStartTime(resv.getStartTime());

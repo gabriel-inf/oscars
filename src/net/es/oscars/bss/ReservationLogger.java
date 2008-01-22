@@ -66,7 +66,6 @@ public class ReservationLogger {
         	this.appender = null;
         	return;
         }
-        
         if (this.appender == null) {
 	        this.appender = new FileAppender();
 	        PatternLayout layout = new PatternLayout();
@@ -74,6 +73,7 @@ public class ReservationLogger {
 	        this.appender.setLayout(layout);
 	        this.appender.setFile( rsvLogDir+"/"+gri+".log");
 	        this.appender.activateOptions();  
+	        this.appender.setThreshold(Level.DEBUG);
 	        this.log.addAppender( this.appender );
         }
     }

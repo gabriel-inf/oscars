@@ -108,8 +108,8 @@ public class AuthenticateUser extends HttpServlet {
         bss.beginTransaction();
         // first page that comes up is list of reservations
 
-        reservations = lister.getReservations(out, userName);
-         if (reservations == null) {
+        reservations = lister.getReservations(out, request, userName);
+        if (reservations == null) {
              /* status has already been set
             String msg = "Error in getting reservations"; */
              aaa.getTransaction().rollback();
@@ -126,7 +126,7 @@ public class AuthenticateUser extends HttpServlet {
         // clear information section
         out.println("<info> </info>");
         // output initial page with list of reservations
-        lister.contentSection(out, reservations,  userName);
+        lister.contentSection(out, request, response, reservations, userName);
         out.println("</xml>");
         aaa.getTransaction().commit();
         bss.getTransaction().commit();

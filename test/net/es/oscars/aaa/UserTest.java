@@ -58,7 +58,7 @@ public class UserTest {
         try {
             userName =
                 mgr.verifyLogin(this.props.getProperty("login"),
-                                    password);
+                                password, "unused");
         } catch (AAAException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

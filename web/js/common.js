@@ -70,30 +70,39 @@ function submitForm( form, methodName, params ) {
         var numElements = form.elements.length;
         // remove unchecked roles
         if (form.roles) {
-        	for (i=0; i<form.roles.length; i++){
-	        	if (form.roles[i].checked != true) {
-	      	    	form.roles[i].value='';
-	      	    }
-	      	}
-		}
+            for (var i=0; i < form.roles.length; i++){
+                if (form.roles[i].checked != true) {
+                    form.roles[i].value='';
+                }
+            }
+        }
 
         for (var e=0; e < numElements; e++) {
-   
-            if (formElements[e].value && formElements[e].name) {
+            var foundMultiple = false;
+            if (formElements[e].type != null) {
+                if (formElements[e].type == "select-multiple") {
+                    foundMultiple = true;
+                    for (var i=0; i < formElements[e].options.length; i++) {
+                        if (formElements[e].options[i].selected) {
+                            params += formElements[e].name + '=' +
+                                formElements[e].options[i].value + '&';
+                        }
+                    }
+                }
+            }
+            if (!foundMultiple && formElements[e].value &&
+                                  formElements[e].name) {
                 if (formElements[e].className == 'SOAP' || formElements[e].className == 'required') {
                         params +=  formElements[e].name + '=' + formElements[e].value + '&';
                 }
              }         
         }
-  
- 
     }
 
     // adapted from http://www.devx.com/DevX/Tip/17500
     var xmlhttp = new XMLHttpRequest();
     var url = 'servlet/' + methodName;
 
-    if (params) { url += '?' + params; }
     xmlhttp.open('POST', url, false);
     xmlhttp.setRequestHeader('Content-Type',
                              'application/x-www-form-urlencoded');
@@ -217,7 +226,7 @@ function initClock() {
     setInterval(function() { updateClock(clock); }, 60000);
 }
 
-// Takes epoch milliseconds and formats using dateTimeStr
+// Takes epoch seconds and formats using dateTimeStr
 function convertTimes(responseDom) {
     var elems = responseDom.getElementsByTagName('td');
 
@@ -227,7 +236,7 @@ function convertTimes(responseDom) {
         if (elems[e].hasAttribute('class') && 
             elems[e].getAttribute('class') == 'dt') {
             var intDt = node.data / 1;
-            var dt = new Date(intDt);
+            var dt = new Date(intDt*1000);
             var formattedStr = dateTimeStr(dt);
             node.data = formattedStr;
         }

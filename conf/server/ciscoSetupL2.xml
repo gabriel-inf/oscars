@@ -9,9 +9,9 @@ policy-map **resv-id**
 !
 pseudowire-class **resv-id**
  encapsulation mpls
- preferred-path interface Tunnel**resv-num** disable-fallback
+ preferred-path interface Tunnel**vlan-id** disable-fallback
 !
-interface Tunnel**resv-num**
+interface Tunnel**vlan-id**
  description **resv-id**
  ip unnumbered Loopback0
  tunnel destination **lsp_to**

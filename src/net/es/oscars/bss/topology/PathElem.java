@@ -54,7 +54,7 @@ public class PathElem extends HibernateBean implements Serializable {
     public String getLinkDescr() { return this.linkDescr; }
 
     /**
-     * @return linkDescr a string with the associated link's description
+     * @param linkDescr a string with the associated link's description
      */ 
     public void setLinkDescr(String linkDescr) {
         this.linkDescr = linkDescr;

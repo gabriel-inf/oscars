@@ -5,8 +5,8 @@ url=$1
 if [  $# -eq 1  ]
  then
 case $1 in
-oscars-dev) url="https://oscars-dev.es.net:9090/axis2/services/OSCARS";;
-oscars) url="https://oscars.es.net/axis2/services/OSCARS";;
+oscars-devint) url="https://oscars-devint.es.net:9090/axis2/services/OSCARS";;
+oscars-devext) url="https://oscars-devext.es.net/axis2/services/OSCARS";;
 esac
 fi
 echo $url

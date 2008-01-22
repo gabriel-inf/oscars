@@ -42,7 +42,7 @@ public class Token extends HibernateBean implements Serializable {
     public Reservation getReservation() { return this.reservation; }
 
     /**
-     * @param node a Node instance (uses association)
+     * @param reservation sets the reservation 
      */ 
     public void setReservation(Reservation reservation) { 
         this.reservation = reservation; 

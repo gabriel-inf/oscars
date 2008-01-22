@@ -5,6 +5,7 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import org.hibernate.*;
+import net.sf.json.*;
 
 import org.apache.log4j.*;
 
@@ -45,17 +46,17 @@ public class AuthenticateUser extends HttpServlet {
 
         PrintWriter out = null;
 
-        Map<String,String> tabParams = new HashMap<String,String>();
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         UserManager mgr = new UserManager("aaa");
+        Logger log = Logger.getLogger(this.getClass());
 
         out = response.getWriter();
         String userName = request.getParameter("userName");
         Random generator = new Random();
         int r = generator.nextInt();
         String sessionName = String.valueOf(r);
-        response.setContentType("text/xml");
+        response.setContentType("text/json-comment-filtered");
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
@@ -66,40 +67,33 @@ public class AuthenticateUser extends HttpServlet {
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
-       }
-        // used to indicate which tabbed pages can be displayed (some require
-        // authorization)
-        tabParams.put("Info", "1");
-        tabParams.put("CreateReservationForm", "1");;
-        tabParams.put("ListReservations", "1");
-        tabParams.put("Logout", "1");
+        }
+        // Used to indicate if tabbed pages requiring authorization can
+        // be displayed.  Note that some tabs may be displayed by default
+        // before login that don't allow actual use.
+        Map authorizedTabs = new HashMap();
 
         boolean allUsers= false;
         AuthValue authVal = mgr.checkAccess(userName, "Users", "list");
         if (authVal == AuthValue.ALLUSERS)  { 
-            tabParams.put("UserList", "1");
-            //tabParams.put("ResourceList", "1");
-            //tabParams.put("AuthorizationList", "1");           
-        } else if (authVal == AuthValue.SELFONLY){
-            tabParams.put("UserQuery", "1");
-        } else  if (authVal == AuthValue.DENIED) {
-            /*  no list permission, does he have query permission */
-            authVal = mgr.checkAccess(userName, "Users", "query");
-            if (authVal != AuthValue.DENIED) {
-                tabParams.put("UserQuery","1");
-            }  
-            /* else {
-                utils.handleFailure(out, "no permission to list users", aaa, null);
-                return;
-            } */
+            authorizedTabs.put("usersPane", Boolean.TRUE);
+            //authorizedTabs.put("resourcesPane", Boolean.TRUE);
+            //authorizedTabs.put("authorizationsPane", Boolean.TRUE);           
+        }
+        authVal = mgr.checkAccess(userName, "Users", "modify");
+        if (authVal == AuthValue.ALLUSERS)  { 
+            authorizedTabs.put("userAddPane", Boolean.TRUE);
         }
         userSession.setCookie("userName", userName, response);
-  
-        out.println("<xml>");
-        // output status
-        out.println("<status>" + userName + " signed in.  Use tabs " +
-                    "to navigate to different pages.</status>");
-        out.println("</xml>");
+        userSession.setCookie("sessionName", sessionName, response);
+        Map outputMap = new HashMap();
+        outputMap.put("method", "AuthenticateUser");
+        outputMap.put("authorizedTabs", authorizedTabs);
+        outputMap.put("success", Boolean.TRUE);
+        outputMap.put("status", userName + " signed in.  Use tabs " +
+                    "to navigate to different pages.");
+        JSONObject jsonObject = JSONObject.fromObject(outputMap);
+        out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
     }
 

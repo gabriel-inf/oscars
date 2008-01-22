@@ -1,6 +1,6 @@
 /*
 DigitalClock.js:        Prints out current date and time.
-Last modified:  April 8, 2007
+Last modified:  December 18, 2007
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -9,13 +9,13 @@ initClock()
 updateClock()
 */
 
-dojo.provide("js.DigitalClock");
+dojo.provide("oscars.DigitalClock");
 
 monthName = ['January', 'February', 'March', 'April', 'May',
    'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // Outputs datetime with format: July 1, 2005 13:00.
-function updateClock(clock) {
+oscars.DigitalClock.updateClock = function (clock) {
     var localDate = new Date();
     var currentMonth = localDate.getMonth();
     var formattedDt = monthName[currentMonth] + " " + localDate.getDate() +
@@ -29,9 +29,9 @@ function updateClock(clock) {
 }
 
 // Init and updateClock are adapted from the DHTML Utopia book.
-function initClock() {
+oscars.DigitalClock.initClock = function () {
     var clock = document.getElementById('clock');
 
-    updateClock(clock);
-    setInterval(function() { updateClock(clock); }, 60000);
+    oscars.DigitalClock.updateClock(clock);
+    setInterval(function() { oscars.DigitalClock.updateClock(clock); }, 60000);
 }

@@ -72,7 +72,7 @@ public class CreateReservationCLI {
 	        		if(layer3Info == null){layer3Info = new Layer3Info();}
 	        		layer3Info.setDestHost(args[i+1]);
 	        	}else if(args[i].equals("-pathsetup")){
-	        		pathInfo.setPathSetupMode("user-xml"); 
+	        		pathInfo.setPathSetupMode(args[i+1]); 
 	        	}else if(args[i].equals("-start")){
 	        		long start = Long.parseLong(args[i+1]);
 	        		request.setStartTime(start); 
@@ -154,7 +154,7 @@ public class CreateReservationCLI {
 		 System.out.println("\t-help\t displays this message.");
 		 System.out.println("\t-url\t required. the url of the IDC.");
 		 System.out.println("\t-repo\t required. the location of the repo directory");
-		 System.out.println("\t-pathsetup\t required. the method used to setup the reserved path. (user-xml or domain)");
+		 System.out.println("\t-pathsetup\t required. the method used to setup the reserved path. (signal-xml or timer-automatic)");
 		 System.out.println("\t-start\t required. the start time of this reservation as a UNIX timestamp");
 		 System.out.println("\t-end\t required. the end time of this reservation as a UNIX timestamp");
 		 System.out.println("\t-bwidth\t required. the amount of bandwidth for this reservation.");

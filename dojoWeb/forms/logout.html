@@ -1,33 +1,24 @@
 <html>
-    <form id="AuthenticateUser" method="post"> 
-        <table>
-          <tr>
-            <th>User Name:</th>
-	    <td><input type="text" dojoType="dijit.form.TextBox"
-		       name="userName" size="28" /></td>
-          </tr>
-          <tr>
-            <th>Password:</th>
-            <td>
-              <input type="password" name="password" size="28" />
-            </td>
-          </tr>
-        </table>
-	<button dojoType="dijit.form.Button" id="login">
-          LOGIN 
+    <br />
+    <form id="UserLogout" method="post"> 
+	<button dojoType="dijit.form.Button" id="logout">
+          LOGOUT 
           <script type="dojo/method" event="onClick">
               dojo.xhrPost({
-              url: 'servlet/AuthenticateUser',
-	      load: js.Form.handleReply,
-	      error: js.Form.handleError,
-	      form: AuthenticateUser
+              url: 'servlet/UserLogout',
+	      handleAs: "json-comment-filtered",
+	      load: oscarsForm.handleReply,
+	      error: oscarsForm.handleError,
+	      form: dojo.byId("UserLogout")
               });
           </script>
         </button>
     </form>
 
-    <div id="sessionMessage">
-    <p>Sign in via your OSCARS login and password to access this system.
+    <p>You are currently logged in to OSCARS. Return to this tab and click on the
+    LOGOUT button to exit.
+    </p>
+
     To find out about OSCARS and how it works, go to the
     <a href="/OSCARS/docs/">documentation</a>.
     To obtain an account or request more 
@@ -51,9 +42,8 @@
     information.
     Expanding a particular user from that list brings up that user's details.
     You currently need OSCARS admin privileges to view other users' information.
-    <p>
-    To log out, click on the logout button in the toolbar above the tabs.
-    </p>
+    </li>
+    </ul>
 
     <p>More documentation can be found by clicking on the link at the bottom
     of this page.</p>

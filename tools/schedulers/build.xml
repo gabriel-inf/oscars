@@ -29,9 +29,11 @@
     <target name="prepare" description="Create build directoy and copy in files">
         <mkdir dir="${sched.home}/classes"/>
         <copy todir="lib">
-            <fileset dir="${build.home}/lib" includes="hibernate3.jar, log4j-1.2.13.jar"/>
+            <fileset dir="${build.home}/lib" includes="hibernate3.jar"/>
+            <fileset dir="${build.home}/lib/axis2" includes="log4j-1.2.14.jar"/>
         </copy>
     </target>
+
 
     <target name="setupRepo">
         <mkdir dir="${repo}/modules" />

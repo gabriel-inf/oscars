@@ -22,7 +22,7 @@ elif [  $1 == "createReservation"  ]
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationCLI $*
 elif [ $1 == "signal"  ]
  then    
-    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true SignalClient repo $url $3 $4
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true SignalClient repo $url $3 $4 $5 $6
 elif [ $1 == "query"  ]
  then    
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true QueryReservationCLI $*

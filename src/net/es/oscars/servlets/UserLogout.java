@@ -10,6 +10,8 @@ public class UserLogout extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
+        UserSession userSession = new UserSession();
+        userSession.expireCookie("statusList", "", response);
         response.sendRedirect("/OSCARS/index.html");
     }
 

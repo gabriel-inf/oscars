@@ -17,9 +17,17 @@
         <servlet-name>AuthenticateUser</servlet-name>
         <servlet-class>net.es.oscars.dojoServlets.AuthenticateUser</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>UserLogout</servlet-name>
+        <servlet-class>net.es.oscars.dojoServlets.UserLogout</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AuthenticateUser</servlet-name>
         <url-pattern>/servlet/AuthenticateUser</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserLogout</servlet-name>
+        <url-pattern>/servlet/UserLogout</url-pattern>
     </servlet-mapping>
 
 </web-app>

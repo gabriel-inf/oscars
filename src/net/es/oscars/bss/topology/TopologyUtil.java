@@ -15,7 +15,7 @@ import net.es.oscars.bss.*;
 public class TopologyUtil {
     /**
      * This will initialize a Domain object with all the required
-     * fields filled in with placeholder data, and return it.
+     * fields filled in with place holder data, and return it.
      * @return the new Domain object
      */
     public static Domain initDomain() {
@@ -32,7 +32,7 @@ public class TopologyUtil {
 
     /**
      * This will initialize a Node object with all the required
-     * fields filled in with placeholder data, and return it.
+     * fields filled in with place holder data, and return it.
      * It will also associate it with its parent Domain object.
      * @param domDB the parent Domain
      * @return the new Node object
@@ -49,7 +49,7 @@ public class TopologyUtil {
 
     /**
      * This will initialize a NodeAddress object with all the required
-     * fields filled in with placeholder data, and return it.
+     * fields filled in with place holder data, and return it.
      * It will also associate it with its parent Node object.
      * @param nodeDB the parent Node
      * @return the new NodeAddress bject
@@ -64,7 +64,7 @@ public class TopologyUtil {
 
     /**
      * This will initialize a Port object with all the required
-     * fields filled in with placeholder data, and return it.
+     * fields filled in with place holder data, and return it.
      * It will also associate it with its parent Node object.
      * @param nodeDB the parent Node
      * @return the new Port object
@@ -89,7 +89,7 @@ public class TopologyUtil {
 
     /**
      * This will initialize a Link object with all the required
-     * fields filled in with placeholder data, and return it.
+     * fields filled in with place holder data, and return it.
      * It will also associate it with its parent Port object.
      * @param portDB the parent Port
      * @return the new Link object
@@ -119,8 +119,9 @@ public class TopologyUtil {
     /**
      * Constructs the local topology identifier from a fully qualified
      * one
-     * @param domDB the domain object
-     * @return the topology identifier
+     * @param topoId String containing a fully qualified topology identifier
+     * @param objType String containing one of: Domain,Node,Port,Link
+     * @return String containing a local topology identifier
      */
     public static String getLSTI(String topoId, String objType) {
         String prefix = "urn:ogf:network:";

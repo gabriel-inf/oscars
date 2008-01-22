@@ -57,7 +57,7 @@ public class JnxTraceroute {
         // remove subnet mask if necessary,  e.g. 10.0.0.0/8 => 10.0.0.0
         dst = dst.replaceAll("/\\d*", "");
         String jnxKey = System.getenv("CATALINA_HOME") +
-                        "/shared/oscars.conf/server/oscars.key";
+                        "/shared/classes/server/oscars.key";
 
         // prepare traceroute command
         cmd = "ssh -x -a -i " + jnxKey + " -l " + 

@@ -205,7 +205,7 @@ public class VlsrPSS implements PSS{
         if(hasNarb && ingLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
             
             /* Delete local-id if ingress and egress not the same */
-            if(!(telnetAddress.equals(telnetAddressDest) && 
+            if(!(ingress.getHostAddress().equals(egress.getHostAddress()) && 
                 ingLocalId.getNumber() == egrLocalId.getNumber())){
                 csa.deleteLocalId(ingLocalId);
             }
@@ -470,7 +470,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Set the status of reservation */
-        long currTime = System.currentTimeMillis();
+        long currTime = System.currentTimeMillis()/1000;
         if(prevStatus.equals("PRECANCEL")){
             resv.setStatus("CANCELLED");
         }else if(currTime >= resv.getEndTime()){

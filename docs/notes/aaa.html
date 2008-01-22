@@ -1,119 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head><title>AAA Component Notes</title></head>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>AAA Component Notes</title>
+  <style type="text/css">
+body {
+margin-left: 7%;
+margin-right: 5%;
+}
+  </style>
+</head>
 <body>
 <h1>AAA Component Notes</h1>
+The Authentication, Authorization and Accounting component is
+responsible authenticating a requestor against the list of registered
+users and for providing the methods to check that this user is allowed
+to perform the actions that are requested. It also<span
+ style="font-weight: bold;">&nbsp; </span>provides the methods for
+managing users and their attributes. At this point it does no
+accounting. The authorization policy that is being implemented is
+described in <a href="AuthorizationPolicy.html">Authorization Policy</a>.<span
+ style="font-weight: bold;"><br>
+</span>
 <h2>External interfaces</h2>
-<b>Web<br></b>
-     User connects to https://oscars.es.net/OSCARS/ and sees a login page.<br>
-     Logs in with oscars login name e.g. mrthompson@lbl.gov and password<br>
-     Receives two cookies, one named userName with a value of mrthompson@lbl.gov
-       and one named tabName which starts out as ListReservations and changes to UserList, CreateReservationFor, Logout 
-       depending on  the last tab viewed. <b>This will be changed so the user only gets a reference to the cookies.</b>
-   <pre>    
-    servlets.UserSession
-          String checkSession(PrintWriter out, HttpServletRequest request) - 
-               returns the userName from the cookie or an xml status message
-          void setCookie(String cookieName, String cookieValue,
-            HttpServletResponse response)
-         String getCookie(String cookieName, HttpServletRequest request) 
-         	called by servlets.UserSession.checkSession
-         	               servlets.Utils.tabSection
-         If there is a cookie named "userName" , returns the value of the cookie which is the user's login name
-         Otherwise returns null. 
-
-    </pre>
- <br><b>API</b><br>
-     All  messages are digitally signed by an X.509 priviate key and the corresponding certificate is
-     included in the message. To do this set the signatureKeyIdentifier to DirectReference in the client side axis2.xml 
-     file. Other message creators may do it differently but the request message should include a wsse:Security element 
-     in the header which  inlcudes
-     a wsse:BinarySecurityToken that contains the base64-encoded certificate. This element is referenced
-     by the wsse:SecurityTokenReference element in the ds:KeyInfo in the ds:Signature. <br>
-     (note: wsse==http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd
-     ds==http://www.w3.org/2000/09/xmldsig#)
-     <p>
-     For each message the axis2 rampart module verifies the signature on the message using the
-     enclosed certificate. It also validates the certificate as being signed by one of the trust anchors (CAs)
-     stored in its keystore. So far we trust the DOEGrids CA and the OASIS interop CA. Once the message has been
-     validated the corresponding method: create,cancel,list,query in OSCARSSkeleton is called. Each method starts
-     out with a checkUser call which first calls setOperationContext  <br>
- <pre>   
-     oscars.OSCARSSkeleton
-     private void  setOperationContext() - called by checkUser
-          extracts the users DN and issuers DN from the message context  which are then 
-          stored in private variables within the OSCARSSkeleton.
-     String checkUser() 
-          Calls set OperationContext and checks that a certificate was found. This should only  fail if
-          the axis2/rampart configuration is wrong.
-          Then calls userManager.loginFromDN to check if the DN is entered in the user table and to get the 
-          login name which is used for subsequent authorization.
- </pre>
+<b>Web<br>
+</b> User connects to https://oscars.es.net/OSCARS/ and sees a login
+page.<br>
+Logs in with oscars login name e.g. mrthompson@lbl.gov and password<br>
+If the name is found in the users table and the password is correct, he
+receives two cookies, one named userName that contains a hash that
+indexes this user in the user table and one named tabName which is used
+to determine what tabs will be displayed on the next web page the user
+sees.
+<br>
+<pre>    servlets.UserSession<br><br>            String checkSession(PrintWriter out, HttpServletRequest request) - <br>	 	if there is userName cookie in the request, returns the userName from the cookie.<br>		Otherwise returns an xml error message.<br><br>             void setCookie(String cookieName, String cookieValue, HttpServletResponse response)<br>		includes the cookie in the servlet repsonse.<br><br>             String getCookie(String cookieName, HttpServletRequest request)<br>         	called by servlets.UserSession.checkSession and servlets.Utils.tabSection<br>         	If there is a cookie named "userName", uses the value of the cookie to determine user's login name<br>         	Otherwise returns null. <br></pre>
+<br>
+<b>API</b><br>
+All messages are digitally signed by an X.509 priviate key and the
+corresponding certificate is included in the message. To do this set
+the signatureKeyIdentifier to DirectReference in the client side
+axis2.xml file. Other message creators may do it differently but the
+request message should include a wsse:Security element in the header
+which inlcudes a wsse:BinarySecurityToken that contains the
+base64-encoded certificate. This element is referenced by the
+wsse:SecurityTokenReference element in the ds:KeyInfo in the
+ds:Signature. <br>
+(note:
+wsse==http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd
+ds==http://www.w3.org/2000/09/xmldsig#)
+<p> For each message the axis2 rampart module verifies the signature on
+the message using the enclosed certificate. It also validates the
+certificate as being signed by one of the trust anchors (CAs) stored in
+its keystore. So far we trust the DOEGrids CA, the ESnet Root CA 1, the
+ESnet SSL Server Certificates CA, the DCS Test CA, the JRA3_Prototype
+CA,
+the nortel CA, and the OASIS interop CA.
+Once the message has been validated the corresponding method:
+create,cancel,list,query in OSCARSSkeleton is called. Each method
+starts out with a checkUser call which first calls setOperationContext <br>
+</p>
+<pre>   <br>     oscars.OSCARSSkeleton<br><br>     	private void  setOperationContext() - called by checkUser<br>          extracts the users DN and issuers DN from the message context  which are then <br>          stored in private variables within the OSCARSSkeleton.<br><br>     	String checkUser() <br>          Calls set OperationContext and checks that a certificate was found. This should only  fail if<br>          the axis2/rampart configuration is wrong.<br>          Then calls userManager.loginFromDN to check if the DN is entered in the user table and to get the <br>          login name which is used for subsequent authorization.<br> </pre>
 <h2>Internal interfaces:</h2>
-<pre>
-aaa/UserManager
-       String LoginFromDN(String DN)   -called from OSCARSSkeleton.checkUser
-       		uses UserDAO to lookup DN and return login name
-       String verifyLogin(String userName, String password)  - called from servlets.AuthenticateUser.doGet
-       		user UserDAO to see if user is already authenticate
-       		if not looks up login Name
-       		looks up enrypted password and compares to input password
-       	boolean verifyAuthorized(String userName, String resourceName,
-                                    String permissionName) {
-                          called by
-                            servlets.CreateReservationForm.contentSection
-                            servlets.AuthenticateUser.doGet
-                            servlets.ListReservations.getReservations
-                            OSCARSSkeleton.listReservations
-                            OSCARSSkeleton.queryReservations
-                 verifies that this user has the specified permission to the specified resource
-                 gets userid, resourceid and permissionid from the appropropriate tables
-                 queries authorization table based the the userid, resourceid and permissionid tuple.
-       	also contains the methods to create, query, list and delete users.
-     
-     </pre>    	
- <h2>Internal Data Structures</h2>
- <pre>
-       	UserManger
-       	   	private LogWrapper log;
-     		private String salt;
-    		Session session;  From HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-    		
-     	aaa.User
-    	    contains all the items in the user table  with get and set methods
-    	    adapted from a Middlegen class automatically generated 
-    	    
-               	private Integer id;   	      /** identifier field */
-    		private String login;    /** persistent field */
-    		private String certificate;    /** nullable persistent field */
-    		private String certSubject;    /** nullable persistent field */
-    		private String lastName;     /** persistent field */
-    		private String firstName;   /** persistent field */
-    		private String emailPrimary;   /** persistent field */
-    		private String phonePrimary;   /** persistent field */
-    		private String password;    /** nullable persistent field */
-    		private String description;    /** nullable persistent field */
-    		private String emailSecondary;    /** nullable persistent field */
-    		private String phoneSecondary;    /** nullable persistent field */
-    		private String status;    /** nullable persistent field */
-    		private String activationKey;    /** nullable persistent field */
-    		private Long lastActiveTime;    /** nullable persistent field */
-    		private Long registerTime;    /** nullable persistent field */
-    		private Institution institution;    /** persistent field */
-    	    
-    aaa.Authorization
-        adapted from a Middlegen class automatically generated 
-        May not be called by anybody
-        contains the items from the authorization table with get and set methods
-    		
-   aaa.Resource
-        adapted from an Middlegen class automatically generated 
-        May not be called by anybody
-        contains the items from the authorization table with get and set methods
-     
- aaa.Permissions
-        adapted from an Middlegen class automatically generated 
-        May not be called by anybody
-        contains the items from the perissions table with get and set methods
-     </pre>
-       	</body>
-</html>    
+<pre>aaa/UserManager<br>       String LoginFromDN(String DN)   -called from OSCARSSkeleton.checkUser<br>       		uses UserDAO to lookup DN and return login name<br><br>       String verifyLogin(String userName, String password)  - called from servlets.AuthenticateUser.doGet<br>       		user UserDAO to see if user is already authenticate<br>       		if not looks up login Name<br>       		looks up enrypted password and compares to input password<br><br>       	AuthValue checkAccess(String userName, String resourceName,<br>                                    String permissionName)<br>                          called by<br>                            servlets(AuthenticateUser,CancelReservations,QueryReservations,ListReservations,<br>				UserAdd,userAddForm,UserModify,UserQuery,UserRemove)<br>                            OSCARSSkeleton.listReservations,queryReservations,cancelReservation,<br>				createPath,refreshPath,teardownPath,<br>                            	getNetworkTopology,initiateTopologyPull,<br>                 verifies that this user has the specified permission to the specified resource<br>                 gets userid, resourceid and permissionid from the appropropriate tables<br>                 queries authorization table based the the userid, resourceid and permissionid tuple.<br><br>	AuthValue checkModResAccess(String userName, String resourceName, String permissionName,<br>		int reqBandwidth, int reqDuration, boolean specPathElems, boolean specGRI)<br>			  called by<br>                            servlets(CreateReservationForm,createReservation,createReservationform)<br>			    OSCARSSkelton.createReservation<br><br>       	also contains the methods to create, query, list and delete users.<br>     <br>     </pre>
+<h2>Internal Data Structures</h2>
+<pre>       	UserManger<br>       	   	private LogWrapper log;<br>     		private String salt;<br>    		Session session;  From HibernateUtil.getSessionFactory("aaa").getCurrentSession();<br>    		<br>     	aaa.User<br>    	    contains all the items in the user table  with get and set methods<br>    	    adapted from a Middlegen class automatically generated <br>    	    <br>               	private Integer id;   	      /** identifier field */<br>    		private String login;    /** persistent field */<br>    		private String certificate;    /** nullable persistent field */<br>    		private String certSubject;    /** nullable persistent field */<br>    		private String lastName;     /** persistent field */<br>    		private String firstName;   /** persistent field */<br>    		private String emailPrimary;   /** persistent field */<br>    		private String phonePrimary;   /** persistent field */<br>    		private String password;    /** nullable persistent field */<br>    		private String description;    /** nullable persistent field */<br>    		private String emailSecondary;    /** nullable persistent field */<br>    		private String phoneSecondary;    /** nullable persistent field */<br>    		private String status;    /** nullable persistent field */<br>    		private String activationKey;    /** nullable persistent field */<br>    		private Long lastActiveTime;    /** nullable persistent field */<br>    		private Long registerTime;    /** nullable persistent field */<br>    		private Institution institution;    /** persistent field */<br>    	    <br>     aaa.Authorization<br>        adapted from a Middlegen class automatically generated <br>        contains the items from the authorization table with get and set methods<br>    		<br>     aaa.Resource<br>        adapted from an Middlegen class automatically generated <br>        contains the items from the authorization table with get and set methods<br>     <br>     aaa.Permissions<br>        adapted from an Middlegen class automatically generated <br>        contains the items from the permissions table with get and set methods<br>     </pre>
+</body>
+</html>

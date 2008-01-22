@@ -45,7 +45,7 @@ public class PathSetupAdapter{
         String gri = params.getGlobalReservationId();
         String status = null;
         String tokenValue = params.getToken();
-        Long currTime = System.currentTimeMillis();
+        Long currTime = System.currentTimeMillis()/1000;
         
         this.log.info("create.start");  
         
@@ -66,8 +66,8 @@ public class PathSetupAdapter{
         /* Check reservation parameters to make sure it can be created */
         if (resv.getPath().getPathSetupMode() == null) {
             throw new PSSException("Path setup mode is null");
-        } else if (!resv.getPath().getPathSetupMode().equals("user-xml")) {
-            throw new PSSException("Path setup mode is not user-xml");
+        } else if (!resv.getPath().getPathSetupMode().equals("signal-xml")) {
+            throw new PSSException("Path setup mode is not signal-xml");
         } else if(!resv.getStatus().equals("PENDING")){
             throw new PSSException("Path cannot be created. " + 
             "Invalid reservation specified.");
@@ -137,7 +137,7 @@ public class PathSetupAdapter{
         
         /* Check reservation parameters */
         if(resv.getPath().getPathSetupMode() == null ||
-            (!resv.getPath().getPathSetupMode().equals("user-xml")) ){
+            (!resv.getPath().getPathSetupMode().equals("signal-xml")) ){
             throw new PSSException("No reservations match request");
         }else if(!resv.getStatus().equals("ACTIVE")){
             throw new PSSException("Path cannot be refreshed. " + 
@@ -205,7 +205,7 @@ public class PathSetupAdapter{
         
         /* Check reservation parameters */
         if(resv.getPath().getPathSetupMode() == null ||
-            (!resv.getPath().getPathSetupMode().equals("user-xml")) ){
+            (!resv.getPath().getPathSetupMode().equals("signal-xml")) ){
             throw new PSSException("No reservations match request");
         }else if(!resv.getStatus().equals("ACTIVE")){
             throw new PSSException("Cannot teardown path. " + 

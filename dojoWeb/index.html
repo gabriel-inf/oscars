@@ -8,9 +8,10 @@
     </style>
     <script type="text/javascript" src="lib/dojo/dojo/dojo.js"
             djConfig="parseOnLoad: true"></script>
-    <script type="text/javascript">dojo.registerModulePath("js", "../../../js")
+    <script type="text/javascript">dojo.registerModulePath("oscars", "../../../oscars")
     </script>
-    <script type="text/javascript">dojo.require("js.Form");</script>
+    <script type="text/javascript">dojo.require("oscars.Form");</script>
+    <script type="text/javascript">dojo.require("oscars.DigitalClock");</script>
     <script type="text/javascript">
 	dojo.require("dojo.parser");
         dojo.require("dijit.layout.TabContainer");
@@ -20,6 +21,12 @@
 	dojo.require("dijit.form.Textarea");
 	dojo.require("dijit.form.DateTextBox");
 	dojo.require("dijit.form.TimeTextBox");
+	dojo.require("dijit.form.NumberTextBox");
+	dojo.require("dijit.form.ValidationTextBox");
+    </script>
+    <script type="text/javascript">
+        dojo.addOnLoad(oscars.DigitalClock.initClock);
+	var oscarsForm = new oscars.Form();
     </script>
   </head>
   <body class="tundra">
@@ -28,8 +35,6 @@
         <td>
         <img src="images/internet2_logo.png" width="73" height="58" 
                border="0" alt="Internet2 logo" title="Internet 2" />
-        </td>
-        <td>
         <img src="images/ESnetLogo.png" width="77" height="58" 
                border="0" alt="ESnet Logo" title="ESnet" />
         </td>
@@ -43,21 +48,30 @@
             </div>
         </td>
       </tr>
+      <tr>
+          <td>
+	    <div id="clock">&nbsp;</div>
+	  </td>
+	  <td>
+            <div id="oscarsStatus" class="success">Log in to OSCARS.</div>
+	  </td>
+      </tr>
     </table>
 
     <div id="mainTabContainer" dojoType="dijit.layout.TabContainer" doLayout="false">
 
-    <div id="sessionPane" dojoType="dijit.layout.ContentPane" title="Session"
-	    href="forms/session.html" selected="true">
-    </div>
     <div id="reservationsPane" dojoType="dijit.layout.ContentPane"
 	    title="Reservations" href="forms/reservations.html">
     </div>
     <div id="createReservationPane" dojoType="dijit.layout.ContentPane"
-         title="Create Reservation" href="forms/createReservation.html">
+	    title="Create Reservation" href="forms/createReservation.html"
+	    refreshOnShow="true">
     </div>
-    <div id="usersPane" dojoType="dijit.layout.ContentPane" title="Users"
-         href="forms/users.html">
+    <div id="userDetailsPane" dojoType="dijit.layout.ContentPane" title="User Profile"
+         href="forms/user.html">
+    </div>
+    <div id="sessionPane" dojoType="dijit.layout.ContentPane" title="Login/Logout"
+	    href="forms/login.html" selected="true">
     </div>
 
     </div>

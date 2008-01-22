@@ -13,7 +13,7 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
-
+import net.es.oscars.interdomain.*;
 
 
 public class CancelReservation extends HttpServlet {
@@ -31,7 +31,8 @@ public class CancelReservation extends HttpServlet {
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         ReservationDetails detailsOutput = new ReservationDetails();
-
+        Forwarder forwarder = new Forwarder();
+        
         PrintWriter out = response.getWriter();
         response.setContentType("text/xml");
         String userName = userSession.checkSession(out, request);
@@ -53,9 +54,14 @@ public class CancelReservation extends HttpServlet {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reservation = rm.cancel(gri, userName, allUsers);
+        	reservation = rm.cancel(gri, userName, allUsers);
+            String remoteStatus = forwarder.cancel(reservation);
+            rm.finalizeCancel(reservation, remoteStatus);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
+            return;
+        } catch (InterdomainException ex) {
+            utils.handleFailure(out, ex.getMessage(), null, bss);
             return;
         }
         out.println("<xml>");

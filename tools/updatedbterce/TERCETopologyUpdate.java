@@ -499,7 +499,7 @@ public class TERCETopologyUpdate{
         }catch(RemoteException e){
             e.printStackTrace();
         }catch(TEDBFaultMessage e){
-            e.printStackTrace();
+            System.out.println(e.getFaultMessage().getMsg());
         }catch(BSSException e){
             e.printStackTrace();
         }

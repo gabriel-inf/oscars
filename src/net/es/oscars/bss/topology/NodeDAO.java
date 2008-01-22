@@ -42,7 +42,7 @@ public class NodeDAO extends GenericHibernateDAO<Node, Integer> {
      *
      * @param topologyIdent the topology identifier (NOT fully quialified)
      * @param domain the parent domain of the node
-     * @param a Node instance iwth the given topologyIdent and parent domain
+     * @return a Node instance with the given topologyIdent and parent domain
      */
     public Node fromTopologyIdent(String topologyIdent, Domain domain){
         String hsql = "from Node "+

@@ -23,6 +23,11 @@ td {
     padding: 0;
 }
 
+.success {
+    border: 3px solid #0a0;
+    padding: 0;
+}
+
 .warning {
     border: 3px solid #d00;
     padding: 0;

@@ -73,7 +73,7 @@ public class Utils {
     /**
      * Checks to see whether router is of a specified type using an SNMP query.
      *
-     * @param ip string with router name
+     * @param routerName string with router name
      * @param description string that sysDescr must contain
      * @throws IOException
      * @throws PSSException

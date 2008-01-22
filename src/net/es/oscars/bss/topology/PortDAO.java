@@ -18,9 +18,9 @@ public class PortDAO extends GenericHibernateDAO<Port, Integer> {
     /**
      * Returns a port given a topology identifier and the parent domain.
      *
-     * @param topologyIdent the topology identifier (NOT fully quialified)
+     * @param topologyIdent the topology identifier (NOT fully qualified)
      * @param node the parent node of the port
-     * @param a Port instance iwth the given topologyIdent and parent node
+     * @return a Port instance with the given topologyIdent and parent node
      */
     public Port fromTopologyIdent(String topologyIdent, Node node){
         String hsql = "from Port "+

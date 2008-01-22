@@ -81,9 +81,9 @@ public class QueryReservationClient extends ExampleClient {
                 response.getStatus().toString());
         System.out.println("Login: " + response.getLogin());
         System.out.println("Start time: "
-                + new Date(response.getStartTime()).toString());
+                + new Date(response.getStartTime()*1000).toString());
         System.out.println("End time: "
-                + new Date(response.getEndTime()).toString());
+                + new Date(response.getEndTime()*1000).toString());
         System.out.println("Bandwidth: "
                 + Integer.toString(response.getBandwidth()));
         System.out.println("Description: " + response.getDescription());

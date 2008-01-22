@@ -132,6 +132,20 @@ public class CreateReservationForm extends HttpServlet {
         out.println("</input>");
         out.println("</td>");
         out.println("<td>tag, or range, e.g. 3000-3100</td></tr>");
+        out.println("<tr><td>Source Port</td>");
+        out.println("<td><select name='tagSrcPort' class='SOAP'>");
+        out.println("<option value='1'>Tagged</option>");
+        out.println("<option value='0'>Untagged</option>");
+        out.println("</select>");
+        out.println("</td>");
+        out.println("<td></td></tr>");
+        out.println("<tr><td>Destination Port</td>");
+        out.println("<td><select name='tagDestPort' class='SOAP'>");
+        out.println("<option value='1'>Tagged</option>");
+        out.println("<option value='0'>Untagged</option>");
+        out.println("</select>");
+        out.println("</td>");
+        out.println("<td></td></tr>");
 
         out.println("<tr><td colspan='3'>Layer 3 parameters</td></tr>");
         out.println("<tr><td>Source port</td>");

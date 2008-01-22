@@ -19,10 +19,12 @@ public class ListReservationCLI {
 	private String url;
 	private String repo;
 	private String status;
+	private int numResults;
 	
 	public ListRequest readArgs(String[] args){
 		/* Set request parameters */
 		this.status = null;
+		this.numResults = 10;
 		try{
 	        for(int i = 0; i < args.length; i++){
 	        	if(args[i].equals("-url")){
@@ -31,6 +33,9 @@ public class ListReservationCLI {
 	        		this.repo = args[i+1];
 	        	}else if(args[i].equals("-status")){
 	        		this.status = args[i+1];
+	        	}else if(args[i].equals("-numresults")){
+	        	    int n = Integer.parseInt(args[i+1]);
+	        		this.numResults = n;
 	        	}else if(args[i].equals("-help")){
 	        		this.printHelp();
 	        		System.exit(0);
@@ -41,7 +46,6 @@ public class ListReservationCLI {
 			this.printHelp();
 		}
 		
-		
 		if(this.url==null || this.repo==null){
 			this.printHelp();
 			System.exit(0);
@@ -50,6 +54,8 @@ public class ListReservationCLI {
 		if (this.status != null) {
 			listReq.addResStatus(this.status);
 		}
+		
+		listReq.setResRequested(this.numResults);
 		
 		return listReq;
 	}
@@ -114,21 +120,24 @@ public class ListReservationCLI {
         /* Initialize Values */ 
 	 	ListReservationCLI cli = new ListReservationCLI();
         Client oscarsClient = new Client(); 
-        cli.readArgs(args);
+        ListRequest listReq = cli.readArgs(args);
         String url = cli.getUrl(); 
-        String repo = cli.getRepo(); 
+        String repo = cli.getRepo();
 
         /* Initialize client instance */ 
         try {
 			oscarsClient.setUp(true, url, repo);
-			ListRequest listReq = cli.readArgs(args);
+			
 			/* Send Request */ 
             ListReply response = oscarsClient.listReservations(listReq);
             ResDetails[] details = response.getResDetails();
+            int numResults = response.getTotalResults();
             
-            for(int i = 0; i < details.length; i++){
+            for(int i = 0; details != null && i < details.length; i++){
             	cli.printResDetails(details[i]);
             }
+            
+            System.out.println(numResults + " reservations match request.");
 		} catch (AxisFault e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

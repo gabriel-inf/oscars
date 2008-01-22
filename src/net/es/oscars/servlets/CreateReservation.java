@@ -195,18 +195,31 @@ public class CreateReservation extends HttpServlet {
         }
 
         String vlanTag = request.getParameter("vlanTag");
-
+        String tagSrcPort = request.getParameter("tagSrcPort");
+        String tagDestPort = request.getParameter("tagDestPort");
+        
+        //Set default to tagged if tagSrcPort and tagDestPort unspecified
+        if(tagSrcPort == null){
+            tagSrcPort = "1";
+        }
+        if(tagDestPort == null){
+            tagDestPort = "1";
+        }
+        
         // TODO:  layer 2 parameters trump layer 3 parameters for now, until
         // handle in Javascript
         if (vlanTag != null) {
             Layer2Info layer2Info = new Layer2Info();
-            VlanTag vtagObject = new VlanTag();
-            vtagObject.setString(vlanTag);
-            vtagObject.setTagged(true);
+            VlanTag srcVtagObject = new VlanTag();
+            VlanTag destVtagObject = new VlanTag();
+            srcVtagObject.setString(vlanTag);
+            destVtagObject.setString(vlanTag);
+            srcVtagObject.setTagged(tagSrcPort.equals("1"));
+            destVtagObject.setTagged(tagDestPort.equals("1"));
             layer2Info.setSrcEndpoint(request.getParameter("source"));
             layer2Info.setDestEndpoint(request.getParameter("destination"));
-            layer2Info.setSrcVtag(vtagObject);
-            layer2Info.setDestVtag(vtagObject);
+            layer2Info.setSrcVtag(srcVtagObject);
+            layer2Info.setDestVtag(destVtagObject);
             pathInfo.setLayer2Info(layer2Info);
 
             return pathInfo;

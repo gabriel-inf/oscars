@@ -29,7 +29,6 @@ public class ListReservations extends HttpServlet {
 
         List<Reservation> reservations = null;
 
-
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
 
@@ -43,7 +42,7 @@ public class ListReservations extends HttpServlet {
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
-        reservations = this.getReservations(out, userName);
+        reservations = this.getReservations(out, request, userName);
         if (reservations == null) {
             /* the status has already been reported in getReservations
             String msg = "Error in getting reservations";
@@ -55,7 +54,7 @@ public class ListReservations extends HttpServlet {
         out.println("<xml>");
         out.println("<status>Successfully retrieved reservations</status>");
         utils.tabSection(out, request, response, "ListReservations");
-        this.contentSection(out, reservations, userName);
+        this.contentSection(out, request, response, reservations, userName);
         out.println("</xml>");
         aaa.getTransaction().commit();
         bss.getTransaction().commit();
@@ -79,14 +78,16 @@ public class ListReservations extends HttpServlet {
      * @return list of Reservation instances
      */
     public List<Reservation>
-        getReservations(PrintWriter out, String login)  {
+        getReservations(PrintWriter out, HttpServletRequest request,
+                        String login)  {
 
         ReservationManager rm = new ReservationManager("bss");
+        UserSession userSession = new UserSession();
         List<Reservation> reservations = null;
-        List<String> logins = new ArrayList<String>();
+        List<String> logins = null;
+        List<String> statuses = this.getStatuses(request, userSession);
         boolean allUsers = false;
         Utils utils = new Utils();
-        Logger log = Logger.getLogger(this.getClass());
 
         UserManager mgr = new UserManager("aaa");
         List<User> users = mgr.list();
@@ -96,18 +97,13 @@ public class ListReservations extends HttpServlet {
             return null;
         }
         if (authVal == AuthValue.ALLUSERS) { allUsers=true; }
-        if (allUsers) {
-            for (User user: users) {
-                if (user.getLogin() != null) {
-                    logins.add(user.getLogin());
-                }
-            }
-        } else {
+        if (!allUsers) {
+            logins = new ArrayList<String>();
             logins.add(login);
         }
         try {
             // TODO:  other criteria
-            reservations = rm.list(login, logins, null, null, null, null);
+            reservations = rm.list(login, logins, statuses, null, null, null);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);
             return null;
@@ -116,8 +112,9 @@ public class ListReservations extends HttpServlet {
     }
 
     public void
-        contentSection(PrintWriter out, List<Reservation> reservations,
-                        String login) {
+        contentSection(PrintWriter out, HttpServletRequest request,
+                       HttpServletResponse response,
+                       List<Reservation> reservations, String login) {
 
         InetAddress inetAddress = null;
         String gri = "";
@@ -125,6 +122,7 @@ public class ListReservations extends HttpServlet {
         String hostName = null;
         String destination = null;
 
+        UserSession userSession = new UserSession();
         out.println("<content>");
         out.println("<p>Click on a column header to sort by that column. " +
             "Times given are in the time zone of the browser.  Click on " +
@@ -132,7 +130,15 @@ public class ListReservations extends HttpServlet {
             "the reservation.</p>");
         out.println("<p><form method='post' action='' onsubmit=\"" +
             "return submitForm(this, 'ListReservations');\">");
-        out.println("<input type='submit' value='Refresh'></input>");
+        out.println("<table cellspacing='0' width='30%'>");
+        out.println("<tbody>");
+        out.println("<tr>");
+        out.println("<td><input type='submit' value='Refresh'></input></td>");
+        List<String> statuses = this.getStatuses(request, userSession);
+        this.outputStatusMenu(out, statuses);
+        out.println("</tr>");
+        out.println("</tbody>");
+        out.println("</table>");
         out.println("</form></p>");
 
         out.println("<table cellspacing='0' width='90%' class='sortable'>");
@@ -184,5 +190,65 @@ public class ListReservations extends HttpServlet {
         }
         out.println("</tbody></table>");
         out.println("</content>");
+        String cookieValue = "";
+        for (String status: statuses) {
+            cookieValue += status + " ";
+        }
+        cookieValue.trim();
+        userSession.setCookie("statusList", cookieValue, response);
+    }
+
+    public  List<String> getStatuses(HttpServletRequest request,
+                                     UserSession userSession) {
+
+        List<String> statuses = new ArrayList<String>();
+      	String paramStatuses[] = request.getParameterValues("statuses");
+        // if coming in from tab
+        if ((paramStatuses == null) || (paramStatuses.length == 0)) {
+            String statusList = userSession.getCookie("statusList", request);
+            if (statusList != null) {
+                String[] statusCookies = statusList.split(" ");
+                for (int i=0; i < statusCookies.length; i++) {
+                    statuses.add(statusCookies[i]);
+                }
+            // first time
+            } else {
+                statuses.add("ACTIVE");
+                statuses.add("PENDING");
+            }
+        // else if refreshing with possibly new menu selections
+        } else {
+            for (int i=0 ; i < paramStatuses.length; i++) {
+                statuses.add(paramStatuses[i]);
+            }
+        }
+        return statuses;
+    }
+
+    public void
+        outputStatusMenu(PrintWriter out, List<String> statuses) {
+
+        List<String> fullStatuses = new ArrayList<String>();
+        Map<String,String> selectedStatuses = new HashMap<String,String>();
+        for (String status: statuses) {
+            selectedStatuses.put(status, null);
+        }
+        fullStatuses.add("ACTIVE");
+        fullStatuses.add("PENDING");
+        fullStatuses.add("FINISHED");
+        fullStatuses.add("CANCELLED");
+        fullStatuses.add("FAILED");
+        fullStatuses.add("INVALIDATED");
+        out.println("<td>Statuses</td>");
+        out.println("<td><select class='required' name='statuses' multiple='multiple'>");
+        for (String fullStatus: fullStatuses) {
+            out.println("<option value='" + fullStatus + "' ");
+            if (selectedStatuses.containsKey(fullStatus)) {
+                out.println("selected='selected'");
+            }
+            out.println(">" + fullStatus + "</option>" );
+        }
+        out.println("</select>");
+        out.println("</td>");
     }
 }

@@ -57,8 +57,8 @@ public class DBGraphAdapter {
         Iterator nodeIt = dom.getNodes().iterator();
         while (nodeIt.hasNext()) {
         	Node node = (Node) nodeIt.next();
-        	while (!node.isValid()) {
-        		node = (Node) nodeIt.next();
+        	if (!node.isValid()) {
+        		continue;
         	}
         	String nodeFQTI = TopologyUtil.getFQTI(node);
 //        	System.out.println(nodeFQTI);
@@ -88,8 +88,8 @@ public class DBGraphAdapter {
             	Iterator linkIt = port.getLinks().iterator();
                 while (linkIt.hasNext()) {
                 	Link link = (Link) linkIt.next();
-                	while (!link.isValid()) {
-                		link = (Link) linkIt.next();
+                	if (!link.isValid()) {
+                		continue;
                 	}
                    	String linkFQTI = TopologyUtil.getFQTI(link);
 //                	System.out.println(linkFQTI);

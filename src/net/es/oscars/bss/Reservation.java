@@ -52,7 +52,7 @@ public class Reservation extends HibernateBean implements Serializable {
 
 
     /**
-     * @return startTime A Long with the reservation start time in epoch ms
+     * @return startTime A Long with the reservation start time (Unix time)
      */ 
     public Long getStartTime() { return this.startTime; }
 
@@ -191,14 +191,14 @@ public class Reservation extends HibernateBean implements Serializable {
         if (this.getLogin() != null) {
             sb.append("login: " + this.getLogin() + "\n");
         }
-        Long tm = this.getStartTime();
+        Long tm = this.getStartTime() * 1000L;
         DateFormat df = DateFormat.getInstance();
         df.setTimeZone(TimeZone.getTimeZone("GMT"));
         if (tm != null) {
             Date date = new Date(tm);
             sb.append("start time: " + df.format(date) + " UTC\n");
         }
-        tm = this.getEndTime();
+        tm = this.getEndTime() * 1000L;
         if (tm != null) {
             Date date = new Date(tm);
             sb.append("end time: " + df.format(date) + " UTC\n");

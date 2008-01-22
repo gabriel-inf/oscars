@@ -7,11 +7,8 @@ Click on the boxes associated with the start and end date and times to set
 the reservation time slot.  The time slot defaults to
  now, and now + 5 minutes, respectively.</p>
 
-<!-- TODO: only filled in if user authorized -->
 <div id="authorizedWarning">
-<p>WARNING: Entering a value in a red-outlined field may change default
-routing behavior for the selected flow.
-</p>
+    &nbsp;
 </div>
 
     <table>
@@ -28,7 +25,11 @@ routing behavior for the selected flow.
                 <td>Source</td>
                 <td class="required">
                     <input type="text" name="srcHost"
-                        dojoType="dijit.form.TextBox" />
+		    dojoType="dijit.form.ValidationTextBox"
+		regExp="[\w]+"
+		promptMessage="Enter the source of the circuit"
+	        invalidMessage="You must enter the source of the circuit"
+		   required="true" />
                 </td>
                 <td>( Host name or IP address[:port] )</td>
             </tr>
@@ -36,15 +37,23 @@ routing behavior for the selected flow.
                 <td>Destination</td>
                 <td class="required">
                     <input type="text" name="destHost"
-                        dojoType="dijit.form.TextBox" />
+		    dojoType="dijit.form.ValidationTextBox" 
+		regExp="[\w]+"
+		promptMessage="Enter the destination of the circuit"
+	        invalidMessage="You must enter the destination of the circuit"
+		    required="true" />
                 </td>
                 <td>( Host name or IP address[:port] )</td>
             </tr>
             <tr>
                 <td>Bandwidth (Mbps)</td>
                 <td class="required">
-                    <input type="text" name="bandwidth" maxlength="7"
-                        dojoType="dijit.form.TextBox" />
+                    <input type="text" name="bandwidth" maxLength="7"
+		    dojoType="dijit.form.NumberTextBox"
+		    constraints="{min:10,max:10000,places:0}"
+		    promptMessage="Enter a value between 10 and 10000"
+		    required="true"
+		   invalidMessage="Invalid bandwidth." />
                 </td>
                 <td>( 10-10000 )</td>
             </tr>
@@ -52,35 +61,33 @@ routing behavior for the selected flow.
                 <td>Purpose of reservation</td>
                 <td class="required">
                     <input type="text" name="description"
-                        dojoType="dijit.form.TextBox" />
+		    dojoType="dijit.form.ValidationTextBox"
+		regExp="[\w]+"
+		promptMessage="Please enter the purpose for this reservation"
+	        invalidMessage="You must enter the purpose for this reservation"
+		   required="true" />
                 </td>
                 <td>( For our records )</td>
             </tr>
 
-            <!-- TODO:  div filled in only if authorized -->
             <div id="authorizedPath">
-            <tr>
-                <td>Path</td>
-                <td class="warning">
-		<!-- TODO:  need width style here -->
-                <textarea name="explicitPath"
-			dojoType="dijit.form.Textarea">
-		</textarea>
-                </td>
-                <td>(series of hops)</td>
-            </tr>
+                &nbsp;
             </div>
             <tr><td>Start date</td>
                 <td><input dojoType="dijit.form.DateTextBox" name="startDate" /></td>
+		<td id="startDateDefault">&nbsp;</td>
             </tr>
             <tr><td>Start time</td>
                 <td><input dojoType="dijit.form.TimeTextBox" name="startTime" /></td>
+		<td id="startTimeDefault">&nbsp;</td>
             </tr>
             <tr><td>End date</td>
                 <td><input dojoType="dijit.form.DateTextBox" name="endDate" /></td>
+		<td id="endDateDefault">&nbsp;</td>
             </tr>
             <tr><td>End time</td>
                 <td><input dojoType="dijit.form.TimeTextBox" name="endTime" /></td>
+		<td id="endTimeDefault">&nbsp;</td>
             </tr>
 
         <tr><td colspan="3"> </td></tr>

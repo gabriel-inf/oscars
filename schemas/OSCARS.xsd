@@ -297,9 +297,9 @@
     
     <xsd:simpleType name="pathSetupType">
         <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="user-xml" />
-            <xsd:enumeration value="user-rsvp" />
-            <xsd:enumeration value="domain" />
+            <xsd:enumeration value="signal-xml" />
+            <xsd:enumeration value="signal-rsvp" />
+            <xsd:enumeration value="timer-automatic" />
         </xsd:restriction>
     </xsd:simpleType>
     

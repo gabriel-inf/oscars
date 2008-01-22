@@ -10,15 +10,8 @@ import org.apache.log4j.Logger;
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.User;
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.Institution;
-import net.es.oscars.aaa.AAAException;
+import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.aaa.AttributeDAO;
-import net.es.oscars.aaa.Attribute;
-import net.es.oscars.aaa.UserAttributeDAO;
-import net.es.oscars.aaa.UserAttribute;
 
 
 public class UserModify extends HttpServlet {
@@ -29,9 +22,9 @@ public class UserModify extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 	
-	this.log = Logger.getLogger(this.getClass());
-	this.dbname = "aaa";
-	this.log.debug("userModify:start");
+        this.log = Logger.getLogger(this.getClass());
+        this.dbname = "aaa";
+        this.log.debug("userModify:start");
 	
         UserManager mgr = null;
         //UserAdd adder = null;
@@ -103,50 +96,50 @@ public class UserModify extends HttpServlet {
             
             // see if any attributes need to be added or removed
             if (authVal == AuthValue.ALLUSERS) {
-		String roles[] = request.getParameterValues("roles");
-		ArrayList<Integer> newRoles = null;
-		if (roles == null) {
-		    log.info("AddUser: roles = null");
-		    newRoles = new ArrayList<Integer>();
-		} else {
-		    this.log.info("number of roles input is " + roles.length);
-		    newRoles = utils.convertRoles(roles);
-		}
-		ArrayList<Integer> curRoles = new ArrayList<Integer>();
-		for (String s : attrNames) {
-		    curRoles.add(attrDAO.getAttributeId(s));
-		}
-		/*
-		 * form only sets OSCARS-user (1), OSCARS-engineer (2) or
-		 * OSCARS-administrator (4) so we need to compare those three
-		 * values between the new and current.
-		 */
-		int atId[] = { 1, 2, 4 };
-		for (int i : atId) {
-		    if (newRoles.contains(i) && !curRoles.contains(i)) {
-			this.log.debug("add attrId " + i);
-			this.addUserAttribute(i, userId);
-		    }
-		    if (!newRoles.contains(i) && curRoles.contains(i)) {
-			this.log.debug("delete attrId " + i);
-			UserAttributeDAO userAttrDAO = new UserAttributeDAO(
-				this.dbname);
-			userAttrDAO.remove(userId, i);
-		    }
-		}
-		String newRole = request.getParameter("newRole");
-		if (newRole != null) {
-		    Attribute newAttr = new Attribute();
-		    newAttr.setName(newRole);
-		    attrDAO.create(newAttr);
-		    try {
-			this.addUserAttribute(attrDAO.getAttributeId(newRole),
-				userId);
-		    } catch (AAAException ex) {
-			this.log.error("oops,no id was assigned by create");
-		    }
-		}
-	    }             
+                String roles[] = request.getParameterValues("roles");
+                ArrayList<Integer> newRoles = null;
+                if (roles == null) {
+                    log.info("AddUser: roles = null");
+                    newRoles = new ArrayList<Integer>();
+                } else {
+                    this.log.info("number of roles input is " + roles.length);
+                    newRoles = utils.convertRoles(roles);
+                }
+                ArrayList<Integer> curRoles = new ArrayList<Integer>();
+                for (String s : attrNames) {
+                    curRoles.add(attrDAO.getAttributeId(s));
+                }
+                /*
+                 * form only sets OSCARS-user (1), OSCARS-engineer (2) or
+                 * OSCARS-administrator (4) so we need to compare those three
+                 * values between the new and current.
+                 */
+                 int atId[] = { 1, 2, 4 };
+                 for (int i : atId) {
+                     if (newRoles.contains(i) && !curRoles.contains(i)) {
+                         this.log.debug("add attrId " + i);
+                         this.addUserAttribute(i, userId);
+                     }
+                     if (!newRoles.contains(i) && curRoles.contains(i)) {
+                         this.log.debug("delete attrId " + i);
+                         UserAttributeDAO userAttrDAO = new UserAttributeDAO(
+                                                                 this.dbname);
+                         userAttrDAO.remove(userId, i);
+                     }
+                 }
+                 String newRole = request.getParameter("newRole");
+		             if (newRole != null) {
+		                 Attribute newAttr = new Attribute();
+		                 newAttr.setName(newRole);
+		                 attrDAO.create(newAttr);
+		                 try {
+			                   this.addUserAttribute(attrDAO.getAttributeId(newRole),
+				                                       userId);
+		                 } catch (AAAException ex) {
+			                   this.log.error("oops,no id was assigned by create");
+                     }
+                 }
+             }             
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
@@ -190,6 +183,15 @@ public class UserModify extends HttpServlet {
         String DN = null;
         Utils utils = new Utils();
 
+        strParam = request.getParameter("institutionName");
+        if (strParam != null) {
+            InstitutionDAO institutionDAO = new InstitutionDAO(this.dbname);
+            Institution institution =
+                institutionDAO.queryByParam("name", strParam);
+            if (institution != null) {
+                user.setInstitution(institution);
+            }
+        }
         strParam = request.getParameter("certIssuer");
         if (strParam != null) {  DN = utils.checkDN(strParam);   }
         // allow setting existent non-required field to null

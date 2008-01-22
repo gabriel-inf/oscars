@@ -827,11 +827,19 @@ public class TopologyManager {
                     if (pathElem.getDescription().equals("ingress")) {
                         link = pathElem.getLink();
                         ipaddr = ipaddrDAO.fromLink(link);
-                        ingressNodeIP = ipaddr.getIP();
+                        if (ipaddr != null) {
+                        	ingressNodeIP = ipaddr.getIP();
+                        } else {
+                        	ingressNodeIP = null;
+                        }
                     } else if (pathElem.getDescription().equals("egress")) {
                         link = pathElem.getLink();
                         ipaddr = ipaddrDAO.fromLink(link);
-                        egressNodeIP = ipaddr.getIP();
+                        if (ipaddr != null) {
+                        	egressNodeIP = ipaddr.getIP();
+	                    } else {
+	                    	egressNodeIP = null;
+	                    }
                     }
                 }
 

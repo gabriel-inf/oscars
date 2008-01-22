@@ -59,9 +59,9 @@ import  org.apache.log4j.*;;
     }
      /**
       * Removes a userAttribute, given a user and attribute name. 
-      * @param login A String with the user login name.
-      * @param attributeName A String with the attribute name.
-      * @return status A string with deletion status.
+      * @param login String with the user login name.
+      * @param attributeName String with the attribute name.
+      * @return status String with deletion status.
       * @throws AAAException.
       */
      public String remove(String login, String attributeName)
@@ -90,8 +90,8 @@ import  org.apache.log4j.*;;
      
      /**
       * Removes a userAttribute, given a user id and attribute id. 
-      * @param login A int with the userId.
-      * @param attributeName A String with the attribute name.
+      * @param userId int containing the userId.
+      * @param attrId int containing the attribute id.
 
       */
      public void remove(int userId, int attrId) {

@@ -2,6 +2,7 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.pathfinder.db.util.*;
+import net.es.oscars.pathfinder.db.MultiPathFinder;
 
 import java.io.*;
 import java.util.*;
@@ -19,6 +20,7 @@ public class DBPFClient {
 	private static DomainDAO domDAO;
 	
     public static void main(String[] argv) {
+    	String start, end;
         String usage = "Usage:\ndbPfClient.sh\n"; 
         
         DBGraphAdapter dbga = new DBGraphAdapter("bss");
@@ -33,21 +35,29 @@ public class DBPFClient {
 
         domDAO = new DomainDAO("bss");
 
-        Long bandwidth = 10000000000L;
-        
+//        Long bandwidth = 10 000 000 000L;
+        Long bandwidth = 1000000000L;
         //Long bandwidth = 0L;
         
         System.out.println("Requested bandwidth is: "+bandwidth.toString());
-        
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth);
+  
+        start = "urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet7/1:*";
+        end = "urn:ogf:network:es.net:chic-sdn1:TenGigabitEthernet4/1:*";
 
-        String start;
-        String end;
+        doPf(start, end, graph);
+        
+        
+
+    }
+    
+    private static void doPf(String start, String end, DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph) {
+        start = TopologyUtil.parseTopoIdent(start).get("fqti");
+        end   = TopologyUtil.parseTopoIdent(end).get("fqti");
+
         DijkstraShortestPath sp;
         Iterator peIt;
 
-        start = "urn:ogf:network:domain=es.net:node=aofa-cr1:port=xe-7/0/0:link=*";
-        end = "urn:ogf:network:domain=es.net:node=sunn-sdn1:port=TenGigabitEthernet2/1:link=*";
         sp = new DijkstraShortestPath(graph, start, end);
         peIt = sp.getPathEdgeList().iterator();
         while (peIt.hasNext()) {
@@ -56,36 +66,6 @@ public class DBPFClient {
         }
         
         System.out.println("\n\n");
-        
-        start = "urn:ogf:network:domain=es.net:node=chic-sdn1:port=TenGigabitEthernet7/3:link=*";
-        end = "urn:ogf:network:domain=es.net:node=chi-sl-mr1:port=TenGigabitEthernet4/3:link=*";
-        sp = new DijkstraShortestPath(graph, start, end);
-        peIt = sp.getPathEdgeList().iterator();
-        while (peIt.hasNext()) {
-        	DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();  
-        	printEdge(edge.toString(), graph.getEdgeWeight(edge));
-        }
-        
-        System.out.println("\n\n");
-        start = "urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*";
-        end = "urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet1/3:link=*";
-        sp = new DijkstraShortestPath(graph, start, end);
-        peIt = sp.getPathEdgeList().iterator();
-        while (peIt.hasNext()) {
-        	DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();  
-        	printEdge(edge.toString(), graph.getEdgeWeight(edge));
-        }
-        
-        System.out.println("\n\n");
-        start = "urn:ogf:network:domain=es.net:node=snll-mr1:port=TenGigabitEthernet2/1:link=TenGigabitEthernet2/1.1103";
-        end = "urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet1/3:link=*";
-        sp = new DijkstraShortestPath(graph, start, end);
-        peIt = sp.getPathEdgeList().iterator();
-        while (peIt.hasNext()) {
-        	DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();  
-        	printEdge(edge.toString(), graph.getEdgeWeight(edge));
-        }
-
     }
     
     

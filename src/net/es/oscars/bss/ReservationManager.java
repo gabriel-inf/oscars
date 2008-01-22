@@ -91,8 +91,8 @@ public class ReservationManager {
         // and finds the complete path with traceroute
         Path path = this.getPath(resv, pathInfo);
         resv.setPath(path);
-        long millis = System.currentTimeMillis();
-        resv.setCreatedTime(millis);
+        long seconds = System.currentTimeMillis()/1000;
+        resv.setCreatedTime(seconds);
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops
         if (pathInfo.getLayer3Info() != null) {
@@ -381,9 +381,9 @@ public class ReservationManager {
             this.chooseVlanTag(layer2Info);
         }
         
-        // set pathSetupMode, default to domain
+        // set pathSetupMode, default to timer-automatic
         if (pathSetupMode == null) {
-            pathSetupMode = "domain";
+            pathSetupMode = "timer-automatic";
         }
         path.setPathSetupMode(pathSetupMode);
         
@@ -708,7 +708,7 @@ public class ReservationManager {
      *
      * @param forwardReply response from forward request
      * @param resv reservation to be stored in database
-     * @pathInfo reservation path information
+     * @param pathInfo reservation path information
      */
     public void finalizeResv(CreateReply forwardReply, Reservation resv,                                     
                              PathInfo pathInfo) throws BSSException{
@@ -716,7 +716,7 @@ public class ReservationManager {
         String pathSetupMode = pathInfo.getPathSetupMode();
         
         //Create token if user signaled
-        if(pathSetupMode == null || pathSetupMode.equals("user-xml")){
+        if(pathSetupMode == null || pathSetupMode.equals("signal-xml")){
             this.generateToken(forwardReply, resv);
         }
         

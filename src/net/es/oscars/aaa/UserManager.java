@@ -319,7 +319,17 @@ public class UserManager {
         return attrNames;
     }
 
-
+    /**
+     * Authorization values returned by checkAccess. <br>
+     * DENIED means the requested action is not allowed<br>
+     * ALLUSERS means the requested action is allowed on objects that belong
+     *     to any user<br>
+     * SELFONLY  means the requested action is allowed only on objects that
+     *      belong to the requester.
+     *      
+     * @author mrt
+     *
+     */
     public enum AuthValue { DENIED, ALLUSERS, SELFONLY };
     
    

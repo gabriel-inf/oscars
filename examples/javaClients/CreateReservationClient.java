@@ -204,10 +204,10 @@ public class CreateReservationClient {
             layer3Info.setDestIpPort(0);
         }
         mplsInfo.setBurstLimit(
-                Integer.parseInt(props.getProperty("burstLimit","10000")));
+                Integer.parseInt(props.getProperty("burstLimit","10000000")));
         content.setBandwidth(
                 Integer.parseInt(props.getProperty("bandwidth","10")));
-        pathInfo.setPathSetupMode(props.getProperty("pathSetupMode", "domain"));
+        pathInfo.setPathSetupMode(props.getProperty("pathSetupMode", "timer-automatic"));
         if (layer.equals("2")) {
             pathInfo.setLayer2Info(layer2Info);
         } else {
@@ -333,20 +333,20 @@ public class CreateReservationClient {
         Long startTime;
         Long endTime;
         
-        startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis()/1000;
         content.setStartTime(startTime);
 
         double dseconds = Double.valueOf(duration) * 3600.0;
         long seconds = (long)dseconds;
            
-        endTime = startTime + (seconds * 1000);
+        endTime = startTime + seconds;
         content.setEndTime(endTime);
-        // format for printing
-        Date date = new Date(startTime);
+        // format for printing (have to convert back to milliseconds)
+        Date date = new Date(startTime*1000);
         System.out.println("Start time: " +
                 DateFormat.getDateTimeInstance(
                     DateFormat.LONG, DateFormat.LONG).format(date));
-        date = new Date(endTime);
+        date = new Date(endTime*1000);
         System.out.println("End time: " + 
                 DateFormat.getDateTimeInstance(
                     DateFormat.LONG, DateFormat.LONG).format(date));

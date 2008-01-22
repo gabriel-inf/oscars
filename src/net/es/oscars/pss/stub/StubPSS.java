@@ -58,7 +58,7 @@ public class StubPSS implements PSS{
         this.log.info("vlsr.teardown.start");
         
         String prevStatus = resv.getStatus();
-        long currTime = System.currentTimeMillis();
+        long currTime = System.currentTimeMillis()/1000;
         
         /* Set the status of reservation */
         if(prevStatus.equals("PRECANCEL")){

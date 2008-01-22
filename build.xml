@@ -47,14 +47,6 @@
         <copy todir="${build.lib}">
             <fileset dir="${build.dragon.lib}" includes="*.jar"/>
         </copy>
-        <!-- populate domain.home -->
-        <copy todir="${domain.home}">
-            <fileset dir="conf/examples" excludes="server/oscars.properties, server/sec-server.jks"/>
-        </copy>
-        <!-- copy oscars.properties -->
-        <copy todir="${domain.home}/server">
-            <fileset dir="conf/examples-dragon/server" includes="oscars.properties, sec-server.jks"/>
-        </copy>
     </target>
     <target name="initMaven">
         <path id="maven.classpath">
@@ -166,6 +158,17 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             </classpath>
         </javac>
     </target>
+    <!-- **** Document targets -->
+    <!-- generate and copy the api docs files -->
+    <available property="apiDocs.present" file="docs/api"/>
+    <target name="populateApiDocs" unless="apiDocs.present">
+        <antcall target="docs"/>
+    </target>
+    <!-- generate and copy the client api docs files -->
+    <available property="clientDocs.present" file="docs/client-api"/>
+    <target name="populateClientDocs" unless="clientDocs.present">
+        <antcall target="clientdocs"/>
+    </target>
     <target name="docs">
         <mkdir dir="docs/api"/>
         <javadoc destdir="docs/api" author="true">
@@ -187,14 +190,25 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             </classpath>
         </javadoc>
     </target>
+    <target name="copydocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
+        <mkdir dir="web/docs"/>
+        <copy todir="web/docs">
+            <fileset dir="docs" excludes="papers/*"/>
+        </copy>
+        <copy todir="web/docs/papers">
+            <fileset dir="docs/papers" includes="*.pdf"/>
+        </copy>
+    </target>
     <target name="clean" description="Empty build's classes and libs directories">
         <delete>
             <fileset dir="${build.classes}" includes="**/*"/>
         </delete>
         <delete dir="${test.classes}"/>
     </target>
-    <target name="docs.clean" description="Delete web/docs directory">
+    <target name="docs.clean" description="Delete web/docs directory and the generated api docs">
         <delete dir="web/docs"/>
+        <delete dir="docs/api"/>
+        <delete dir="docs/client-api"/>
     </target>
     <!-- OSCARS.aar file, gets copied into container-specific location.  For
 Tomcat, this is webapps/axis2/WEB-INF/services -->
@@ -226,17 +240,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </zip>
     </target>
     <!-- WBUI section ***************************************************** -->
-    <available property="docs.present" file="web/docs"/>
-    <!-- TODO: also needs to be done if top-level docs have changed -->
-    <target name="copydocs" description="copy documentation for use in warfile">
-        <mkdir dir="web/docs"/>
-        <copy todir="web/docs">
-            <fileset dir="docs" excludes="papers/*"/>
-        </copy>
-        <copy todir="web/docs/papers">
-            <fileset dir="docs/papers" includes="*.pdf"/>
-        </copy>
-    </target>
     <target name="wbui" description="Build war file for deploy" depends="compile, copydocs">
         <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml"/>
@@ -272,6 +275,9 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${domain.home}/client/" includes="axis2.xml, ssl-keystore.jks"/>
         </copy>
+        <echo>
+    	**** Be sure to edit shared/classes/repo/axis2.xml for this host **** 
+    	</echo>
         <!-- the following files need to be in the classpath of the server -->
         <copy todir="${catalina.home}/shared/classes/repo">
             <fileset dir="${domain.home}/server" includes="sec-client.*"/>
@@ -282,10 +288,11 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties"/>
             <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
-        <chmod dir="${catalina.home}/shared/classes/server" perm="600" includes="*key"/>
+        <chmod dir="${catalina.home}/shared/classes/server" perm="600" includes="*key, oscars.properties"/>
     </target>
     <target name="deployaar" description="copy OSCARS.aar to axis2 services directory" depends="aar, setupServer, deploylibs">
         <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}"/>
+        <!-- not sure the next line is necessary as I  just corrected WEB_INF to WEB-INF  mrt -->
         <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
         <!-- these jars need to be in shared/lib to avoid classNotFound
          errors ... mrt/3/27 -->
@@ -360,13 +367,23 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="terceRemoteCopy" depends="initMaven">
         <artifact:dependencies>
             <dependency groupId="terce" artifactId="terce-ws" version="0.1" type="aar"/>
-            <dependency groupId="terce" artifactId="static-terce-config" version="0.1" type="tar"/>
+            <dependency groupId="terce" artifactId="static-terce-config" version="0.2" type="tar"/>
             <localRepository refid="local.repository"/>
             <remoteRepository refid="remote.repository.i2"/>
         </artifact:dependencies>
         <copy file="${maven.repo}/terce/terce-ws/0.1/terce-ws-0.1.aar" todir="${catalina.home}/webapps/axis2/WEB-INF/services"/>
         <untar src="${maven.repo}/terce/static-terce-config/0.1/static-terce-config-0.1.tar" dest="${catalina.home}/shared/classes" overwrite="false"/>
     </target>
+    <target name="initdragon" depends="terceRemoteCopy">
+        <!-- populate domain.home -->
+        <copy todir="${domain.home}">
+            <fileset dir="conf/examples" excludes="server/oscars.properties, server/sec-server.jks"/>
+        </copy>
+        <!-- copy oscars.properties -->
+        <copy todir="${domain.home}/server">
+            <fileset dir="conf/examples-dragon/server" includes="oscars.properties, sec-server.jks"/>
+        </copy>
+    </target>
     <target name="dragon" depends="prepareDragon,prepare,compile,aar"/>
-    <target name="deploydragon" depends="dragon,terceRemoteCopy,deployaar,setupServer"/>
+    <target name="deploydragon" depends="dragon,deployaar"/>
 </project>

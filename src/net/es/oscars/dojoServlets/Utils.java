@@ -4,39 +4,26 @@ import java.io.PrintWriter;
 import javax.servlet.http.*;
 import java.util.*;
 
-//import net.es.oscars.aaa.UserManager;
-//import net.es.oscars.database.HibernateUtil;
+import org.apache.log4j.Logger;
+import org.hibernate.*;
+import net.sf.json.*;
+
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.AttributeDAO;
 
-import org.apache.log4j.Logger;
-import org.hibernate.*;
 
 public class Utils {
-
-    public void tabSection(PrintWriter out, HttpServletRequest request,
-                           HttpServletResponse response, String tabName) {
-
-        UserSession userSession = new UserSession();
-        String previousTab = userSession.getCookie("tabName", request);
-        if (previousTab == null) { previousTab = ""; }
-        if (!previousTab.equals(tabName)) {
-            userSession.setCookie("tabName", tabName, response);
-        }
-        out.println("<tabs>");
-        out.println("<active>" + tabName + "</active>");
-        out.println("<previous>" + previousTab + "</previous>");
-        out.println("</tabs>");
-    }
 
     public void handleFailure(PrintWriter out, String message, Session aaa,
                               Session bss) {
 
         if (aaa != null) { aaa.getTransaction().rollback(); }
         if (bss != null) { bss.getTransaction().rollback(); }
-        out.println("<xml><status>");
-        out.println(message);
-        out.println("</status></xml>");
+        Map errorMap = new HashMap();
+        errorMap.put("success", Boolean.FALSE);
+        errorMap.put("status", message);
+        JSONObject jsonObject = JSONObject.fromObject(errorMap);
+        out.println("/* " + jsonObject + " */");
         return;
     }
     
@@ -90,11 +77,12 @@ public class Utils {
         /* otherwise reverse the order */
         String dn = " " + dnElems[0];
         for (int i = 1; i < dnElems.length; i++) {
-                dn = dnElems[i] + "," + dn;
+            dn = dnElems[i] + "," + dn;
         }       
         dn = dn.substring(1);
         return dn;
     }
+
     /* Get the role names from a request and translate them to
      *   a list of AttributeIds
      *   
@@ -102,30 +90,31 @@ public class Utils {
      */
     public ArrayList <Integer> convertRoles (String roles[]) {
 
-	ArrayList <Integer> addRoles = new ArrayList<Integer>();
-	Logger log = Logger.getLogger(this.getClass());
-	String dbname="aaa";
-	AttributeDAO attrDAO = new AttributeDAO(dbname);
-	if (roles != null && roles.length > 0) {
-	    String st;
-	    for (String s : roles) {
-		log.debug("role is " + s);
-		if (s != null && !s.trim().equals("")) {
-		    st=s.trim();
-		    try {
-			Integer attrId = attrDAO.getAttributeId(st);
-			// roles seems to contain two copies of each value -mrt
-			if ( ! addRoles.contains(attrId)) {
-			    log.info("adding "+ attrId);
-			    addRoles.add(attrId); }
-		    } catch (AAAException ex) {
-			log.error("Unknown attribute: ["+st+"]");
-		    } catch (Exception e) {
-			log.error("exception " + e.getMessage());
-		    }
-		}
-	    }
-	}
-	return addRoles;
+        ArrayList <Integer> addRoles = new ArrayList<Integer>();
+        Logger log = Logger.getLogger(this.getClass());
+        String dbname="aaa";
+        AttributeDAO attrDAO = new AttributeDAO(dbname);
+        if (roles != null && roles.length > 0) {
+            String st;
+            for (String s : roles) {
+                log.debug("role is " + s);
+                if (s != null && !s.trim().equals("")) {
+                    st=s.trim();
+                    try {
+                        Integer attrId = attrDAO.getAttributeId(st);
+                        // roles seems to contain two copies of each value -mrt
+                        if (!addRoles.contains(attrId)) {
+                            log.info("adding "+ attrId);
+                            addRoles.add(attrId);
+                        }
+                    } catch (AAAException ex) {
+                        log.error("Unknown attribute: ["+st+"]");
+                    } catch (Exception e) {
+                        log.error("exception " + e.getMessage());
+                    }
+                }
+            }
+        }
+        return addRoles;
     }
 }

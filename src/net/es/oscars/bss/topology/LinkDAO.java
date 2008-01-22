@@ -20,7 +20,7 @@ public class LinkDAO extends GenericHibernateDAO<Link, Integer> {
      *
      * @param topologyIdent the topology identifier (NOT fully quialified)
      * @param port the parent port of the link
-     * @param a Link instance iwth the given topologyIdent and parent port
+     * @return a Link instance with the given topologyIdent and parent port
      */
     public Link fromTopologyIdent(String topologyIdent, Port port){
         String hsql = "from Link "+

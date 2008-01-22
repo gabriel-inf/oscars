@@ -49,18 +49,16 @@ public class UserSession {
     public void setCookie(String cookieName, String cookieValue,
             HttpServletResponse response) {
 
-        String sentCookieName = null;
+        Cookie cookie = this.handleCookie(cookieName, cookieValue);
+        cookie.setMaxAge(60*60*8); // expire after 8 hours
+        response.addCookie(cookie);
+    }
 
-        // special cases to handle less obvious cookie names being used
-        if (cookieName.equals("userName")) {
-            sentCookieName = this.userCookieName;
-        } else if (cookieName.equals("sessionName")) {
-            sentCookieName = this.sessionCookieName;
-        } else {
-            sentCookieName = cookieName;
-        }
-        Cookie cookie = new Cookie(sentCookieName, cookieValue);
-        cookie.setMaxAge(60*60*8); // 8 hours
+    public void expireCookie(String cookieName, String cookieValue,
+            HttpServletResponse response) {
+
+        Cookie cookie = this.handleCookie(cookieName, cookieValue);
+        cookie.setMaxAge(0); // remove cookie
         response.addCookie(cookie);
     }
 
@@ -85,5 +83,22 @@ public class UserSession {
             }
         }
         return null;
+    }
+
+    private Cookie handleCookie(String cookieName, String cookieValue) {
+
+        String sentCookieName = null;
+
+        // special cases to handle less obvious cookie names being used
+        if (cookieName.equals("userName")) {
+            sentCookieName = this.userCookieName;
+        } else if (cookieName.equals("sessionName")) {
+            sentCookieName = this.sessionCookieName;
+        } else {
+            sentCookieName = cookieName;
+        }
+        Cookie cookie = new Cookie(sentCookieName, cookieValue);
+        cookie.setSecure(true);
+        return cookie;
     }
 }

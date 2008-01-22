@@ -168,14 +168,14 @@ public class ReservationDAO
     public List<Reservation> pendingReservations(int timeInterval) {
 
         this.reservations = null;
-        long millis = 0;
+        long seconds = 0;
 
-        millis = System.currentTimeMillis() + timeInterval * 1000;
+        seconds = System.currentTimeMillis()/1000 + timeInterval;
         String hsql = "from Reservation where status = :status " +
                       "and startTime < :startTime";
         this.reservations = this.getSession().createQuery(hsql)
                               .setString("status", "PENDING")
-                              .setLong("startTime", millis)
+                              .setLong("startTime", seconds)
                               .list();
         return this.reservations;
     }
@@ -190,14 +190,14 @@ public class ReservationDAO
     public List<Reservation> expiredReservations(int timeInterval) {
 
         this.reservations = null;
-        long millis = 0;
+        long seconds = 0;
 
-        millis = System.currentTimeMillis() + timeInterval * 1000;
+        seconds = System.currentTimeMillis()/1000 + timeInterval;
         String hsql = "from Reservation where " +
                       "((status = 'ACTIVE' or status= 'PENDING') and " +
                       "endTime < :endTime) or (status = 'PRECANCEL')";
         this.reservations = this.getSession().createQuery(hsql)
-                              .setLong("endTime", millis)
+                              .setLong("endTime", seconds)
                               .list();
         return this.reservations;
     }
