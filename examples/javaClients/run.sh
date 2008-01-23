@@ -13,10 +13,9 @@ url=$2
 if [  $# -lt 2  ]
  then
     echo "run.sh createReservation|signal|list|query|cancel [url] [request-specific-params]"
-elif [ $1 == "createReservation" ] && [ $# -eq 2 ] && [ $2 != "-help" ]
+elif [ $1 == "createReservation" ] && [ $2 == "-pf" ]
  then
-    echo $2
-    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationClient repo $url
+    java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationClient $*
 elif [  $1 == "createReservation"  ]
  then
     java -cp $OSCARS_CLASSPATH -Djava.net.preferIPv4Stack=true CreateReservationCLI $*
