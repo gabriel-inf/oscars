@@ -6,6 +6,7 @@ import javax.mail.internet.*;
 
 import net.es.oscars.aaa.AAAException;
 
+
 /**
  * Notifier handles sending email to sys admins and users upon important
  * events, such as reservation creation.
