@@ -7,13 +7,15 @@
         @import "css/main.css";
     </style>
     <script type="text/javascript" src="lib/dojo/dojo/dojo.js"
-            djConfig="parseOnLoad: true"></script>
+	    djConfig="parseOnLoad: true, preventBackButtonFix: false",
+	    dojoIframeHistoryUrl: "lib/dojo/resources/iframe_history.html"></script>
     <script type="text/javascript">dojo.registerModulePath("oscars", "../../../oscars")
     </script>
     <script type="text/javascript">dojo.require("oscars.Form");</script>
     <script type="text/javascript">dojo.require("oscars.DigitalClock");</script>
     <script type="text/javascript">
 	dojo.require("dojo.parser");
+	dojo.require("dojo.back");
         dojo.require("dijit.layout.TabContainer");
         dojo.require("dijit.layout.ContentPane");
         dojo.require("dijit.form.Button");
@@ -26,7 +28,15 @@
     </script>
     <script type="text/javascript">
         dojo.addOnLoad(oscars.DigitalClock.initClock);
-	var oscarsForm = new oscars.Form();
+	dojo.addOnLoad(function(){
+	    var w =dijit.byId("mainTabContainer");
+            dojo.connect(w, "selectChild", oscars.Form.stateChanged);
+	});
+	dojo.addOnLoad(function(){
+	    var w =dijit.byId("sessionPane");
+            dojo.connect(w, "setHref", oscars.Form.hrefChanged);
+	});
+        dojo.addOnLoad(oscars.Form.initState); 
     </script>
   </head>
   <body class="tundra">
@@ -58,8 +68,7 @@
       </tr>
     </table>
 
-    <div id="mainTabContainer" dojoType="dijit.layout.TabContainer" doLayout="false">
-
+    <div id="mainTabContainer" dojoType="dijit.layout.TabContainer" doLayout="false"> 
     <div id="reservationsPane" dojoType="dijit.layout.ContentPane"
 	    title="Reservations" href="forms/reservations.html">
     </div>

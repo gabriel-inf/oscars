@@ -1,6 +1,6 @@
 /*
 Form.js:        Javascript form callback handling
-Last modified:  January 18, 2008
+Last modified:  January 23, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -11,11 +11,7 @@ handleError(responseObject, ioArgs)
 
 dojo.provide("oscars.Form");
 
-oscars.Form = function() {
-    this.placeholder = false;
-}
-
-oscars.Form.prototype.handleReply = function (responseObject, ioArgs) {
+oscars.Form.handleReply = function (responseObject, ioArgs) {
     var status = responseObject.status;
     var mainTabContainer = dijit.byId("mainTabContainer");
     var oscarsStatus = dojo.byId("oscarsStatus");
@@ -63,10 +59,43 @@ oscars.Form.prototype.handleReply = function (responseObject, ioArgs) {
 	if (dijit.byId("userAddPane") != null) {
             mainTabContainer.removeChild(dijit.byId("userAddPane"));
 	}
-        //mainTabContainer.selectChild(sessionPane);
     }
 }
 
-oscars.Form.prototype.handleError = function (responseObject, ioArgs) {
+oscars.Form.handleError = function (responseObject, ioArgs) {
+}
+
+oscars.Form.initState = function() {
+    var state = {
+        back: function() { console.log("Back was clicked!"); },
+        forward: function() { console.log("Forward was clicked!"); },
+        changeUrl: "login",
+    };
+    dojo.back.setInitialState(state);
+}
+
+oscars.Form.stateChanged = function(contentPane) {
+	console.log("state changed");
+        var state = {
+            back: function() {
+                console.log("Back was clicked! ");
+            },
+            forward: function() {
+                console.log("Forward was clicked! ");
+            },
+            changeUrl: contentPane.id,
+        };
+        dojo.back.addToHistory(state);
+}
+
+oscars.Form.hrefChanged = function(newUrl) {
+	console.log("href changed");
+	console.log(newUrl);
+        var state = {
+            back: function() { console.log("Back was clicked!"); },
+            forward: function() { console.log("Forward was clicked!"); },
+            changeUrl: newUrl,
+	};
+	dojo.back.addToHistory(state);
 }
 
