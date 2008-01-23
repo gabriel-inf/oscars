@@ -207,6 +207,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
     </target>
     <target name="docs.clean" description="Delete web/docs directory and the generated api docs">
         <delete dir="web/docs"/>
+	<delete dir="dojoWeb/docs"/>
         <delete dir="docs/api"/>
         <delete dir="docs/client-api"/>
     </target>
@@ -255,7 +256,16 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="${dojo}" includes="dojo/**/*, dijit/**/*, util/**/*"/>
         </copy>
     </target>
-    <target name="dojo" description="Build war file, dojo version, for deploy" depends="compile, copydojo">
+    <target name="copydojodocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
+        <mkdir dir="dojoWeb/docs"/>
+        <copy todir="dojoWeb/docs">
+            <fileset dir="docs" excludes="papers/*"/>
+        </copy>
+        <copy todir="dojoWeb/docs/papers">
+            <fileset dir="docs/papers" includes="*.pdf"/>
+        </copy>
+    </target>
+    <target name="dojo" description="Build war file, dojo version, for deploy" depends="compile, copydojo, copydojodocs">
         <war destfile="OSCARSDojo.war" webxml="dojoWeb/WEB-INF/web.xml">
             <fileset dir="dojoWeb" includes="**/*" excludes="WEB-INF/web.xml"/>
             <classes dir="${build.classes}" includes="**/*" excludes="**/oscars/OSCARSSk*.class, **/oscars/OSCARSM*.class,                            **/oscars/ReservationAdapter.class"/>
