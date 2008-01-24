@@ -1,0 +1,166 @@
+<html>
+<body>
+
+<h2>Notes on using Subversion</h2>
+
+<h3>Setting up the domain-specific repository</h3>
+
+<p>Each domain needs to set up a repository for domain-specific and private
+information.  For Subversion, the following example shows how to set up a
+repository accessible via Apache.  It would need to be filled in and placed
+in httpd.conf:</p>
+
+<pre>
+<Location /esnet>
+    DAV svn
+    SVNPath /path/to/repo
+    AuthzSVNAccessFile /path/to/svn-access-file
+    Require valid-user
+    AuthType Basic
+    AuthName "Domain-specific and private information"
+    AuthUserFile /path/to/svn-auth-file        
+</Location>
+</pre>
+
+<p>The following is an example svn-access-file:</p>
+
+<pre>
+[groups]
+oscars_developers = chin, davidr
+oscars_user = oscars
+
+[esnet:/]
+@oscars_developers = rw
+@oscars_user = r
+</pre>
+
+<p>For ESnet, esnet is the name of the repository.  It has the following
+file structure:</p>
+
+<pre>
+esnet
+    domain
+        branches
+        tags
+        trunk
+            client
+            server
+</pre>
+
+<p>The files in client and server are copied over from the oscars repository
+from conf/examples and filled in with domain-specific values.</p>
+
+<p>The domain directory was inserted in the path to have a string that will
+appear in all paths, used in setting up the Subversion post-commit hook.
+Following is the post-commit hook used for ESnet (note that the svnnotify
+setup is actually all one line):</p>
+
+<pre>
+#!/bin/sh
+
+REPOS="$1"
+REV="$2"
+
+/usr/local/bin/svnnotify -r $REV -C -d -H HTML::ColorDiff -p $REPOS \ 
+    --subject-prefix OSCARS_ESnet_Commit: --to-regex-map 'dwrobertson@lbl.gov \
+    chin@es.net'=\^domain --reply-to dwrobertson@lbl.gov \
+    --svnlook=/usr/local/bin/svnlook > /tmp/xxx-svnlog 2>&1
+echo $1 >> /tmp/xxx-svnlog
+echo $2 >> /tmp/xxx-svnlog
+</pre>
+
+<h3>Merging revisions from a branch into the trunk</h3>
+
+<p>
+You may want to merge all the changes on the branch or just the changes within
+a single directory. There does not seem to be a way to just merge a single file.
+</p>
+
+<p>1. Make sure you have a clean copy of the trunk, or at least the directory in
+which your changes reside.</p>
+
+<pre>
+    % cd <Trunk Working Directory> or subdirectory
+    % svn status
+</pre>
+
+<p>should show nothing. e.g no <filename>.</p>
+    
+<p>2. Check when the last revision to the trunk/directory was made:</p>
+
+<pre>
+   % svn info
+</pre>
+
+<p>returns trunkrevnumber as "Last Changed Rev".</p>
+
+<p>3. The svn merge command we are using is</p>
+
+<pre>
+    % svn merge sourceURL1[@N] sourceURL2[@M] [WCPATH]
+</pre>
+
+<p>The source URLs are specified at revisions N and M.  These are the two
+sources to be compared.  The differences are merged into the WCPATH which is
+your trunk working directory and defaults to ".".  The revisions default to
+HEAD if omitted. In our examples the M defaults to the HEAD.</p>
+
+<p>3a. For example, to merge the entire branch:</p>
+
+<pre>
+    % svn merge https://oscars.es.net/repos/oscars/branches/java/@4691 \
+                https://oscars.es.net/repos/oscars/branches/java/
+</pre>
+
+<p>3b. To merge just the files in the docs directory:</p>
+
+<pre>
+    % cd docs
+    % svn merge https://oscars.es.net/repos/oscars/branches/java/docs/@4691 \
+                https://oscars.es.net/repos/oscars/branches/java/docs/
+</pre>
+
+<p>4.  For complicated merges, do a dry run, and save the resulting list.
+It may be long and you may need it to find conflicts.</p>
+
+<pre>
+    % svn merge --dry-run https://oscars.es.net/repos/oscars/branches/java/@4691 \
+            https://oscars.es.net/repos/oscars/branches/java/ > ~/svn.list
+</pre>
+
+<p>5. To do the actual merge from the branch (in this case branches/java) to
+your working directory:</p>
+
+<pre>
+    % svn merge https://oscars.es.net/repos/oscars/branches/java/@4691 \
+                https://oscars.es.net/repos/oscars/branches/java/
+</pre>
+
+<p>Note that no changes have been made to the repository yet.</p>
+
+<p>6. Check for any conflicts, these will be marked by a 'C' before the
+filename.  In this example, validator.js has a conflict that we will have to
+manually resolve:</p>
+
+<pre>
+    U    web/index.html
+    C    web/js/validator.js
+</pre>
+
+<p>After resolving this conflict do:</p>
+
+<pre>
+    % svn resolved web/js/validator.js
+</pre>
+
+<p>Then, test with a deploy of the aar and war files on the server.</p>
+
+
+<p>7.  Commit the changes in the working copy of the trunk:</p>
+
+<pre>
+    % svn commit
+</pre>
+
+</body>
+</html>
