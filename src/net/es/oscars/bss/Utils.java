@@ -37,27 +37,32 @@ public class Utils {
         StringBuilder sb = new StringBuilder();
         PathElem pathElem  = path.getPathElem();
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        int i = 0;
         while (pathElem != null) {
             Link link = pathElem.getLink();
+            if(i != 0){
+                sb.append(", ");
+            }
             // if layer 2, send back topology identifier
             if (path.getLayer2Data() != null) {
             	String fqti = TopologyUtil.getFQTI(link);
-                sb.append(fqti + ", ");
+                sb.append(fqti);
                 param = pathElem.getDescription();
                 if (param != null) {
-                    sb.append("desc: ["+pathElem.getDescription()+"] ");
+                    sb.append(", desc: ["+pathElem.getDescription()+"]");
                 }
-                sb.append("VLAN: ["+pathElem.getLinkDescr()+"] ");
+                sb.append(", VLAN: ["+pathElem.getLinkDescr()+"]");
             // otherwise, send back host name/IP address pair
             } else {
                 nodeName = link.getPort().getNode().getTopologyIdent();
                 ipaddr = ipaddrDAO.fromLink(link);
-                sb.append(nodeName + ": " + ipaddr.getIP() + ", ");
+                sb.append(nodeName + ": " + ipaddr.getIP());
             }
             pathElem = pathElem.getNextElem();
+            i++;
         }
         String pathStr = sb.toString();
-        return pathStr.substring(0, pathStr.length() - 2);
+        return pathStr;
     }
     
     /** 
