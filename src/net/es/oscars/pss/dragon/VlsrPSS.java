@@ -44,7 +44,8 @@ public class VlsrPSS implements PSS{
         String promptPattern = this.props.getProperty("promptPattern");
         String hasNarbStr = this.props.getProperty("hasNarb");
         boolean hasNarb = ((hasNarbStr == null) || hasNarbStr.equals("1"));
-        String sshPortForward = this.props.getProperty("ssh.portForward");
+        String sshPortForwardStr = this.props.getProperty("ssh.portForward");
+        boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         Path path = resv.getPath();
@@ -118,7 +119,7 @@ public class VlsrPSS implements PSS{
         
         /* Initialize ssh client */
         try{
-            if(sshKey != null){
+            if(sshPortForward){
                 jsch.addIdentity(sshKey);
              }
         }catch(JSchException e){
@@ -129,7 +130,7 @@ public class VlsrPSS implements PSS{
         /* Create egress local id unless a subnet interface*/
         if(hasNarb && egrLocalId.getType() != DragonLocalID.SUBNET_INTERFACE){
             /* Create egress ssh tunnel */
-            if(sshPortForward != null && sshPortForward.equals("1")){
+            if(sshPortForward){
                 try{
                     String sshAddress = this.findSshAddress(egressLink);
                     egressSshSess = jsch.getSession(sshUser, sshAddress, 22);
@@ -166,7 +167,7 @@ public class VlsrPSS implements PSS{
             }
     
             /* Remove port forwarding */
-            if(sshPortForward != null && sshPortForward.equals("1")){
+            if(sshPortForward){
                 egressSshSess.disconnect();
             }
             
@@ -175,7 +176,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Create ingress ssh tunnel */
-        if(sshPortForward != null && sshPortForward.equals("1")){
+        if(sshPortForward){
             try{
                 String sshAddress = this.findSshAddress(ingressLink);
                 ingressSshSess = jsch.getSession(sshUser, sshAddress, 22);
@@ -273,7 +274,7 @@ public class VlsrPSS implements PSS{
                     ingressSshSess.disconnect();
                 }
                 
-                throw new PSSException("LSP creation failed. There may be" + 
+                throw new PSSException("LSP creation failed. There may be " + 
                     "an error in the underlying network.");
             }
             
@@ -286,7 +287,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Remove port forwarding */
-        if(sshPortForward != null && sshPortForward.equals("1")){
+        if(sshPortForward){
             ingressSshSess.disconnect();
         }
         
@@ -311,7 +312,8 @@ public class VlsrPSS implements PSS{
         DragonLSP lsp = null;
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
-        String sshPortForward = this.props.getProperty("ssh.portForward");
+        String sshPortForwardStr = this.props.getProperty("ssh.portForward");
+        boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         String promptPattern = this.props.getProperty("promptPattern");
@@ -325,7 +327,7 @@ public class VlsrPSS implements PSS{
         
         /* Initialize ssh client */
         try{
-            if(sshKey != null){
+            if(sshPortForward){
                 jsch.addIdentity(sshKey);
              }
         }catch(JSchException e){
@@ -334,7 +336,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Create  ssh tunnel */
-        if(sshPortForward != null && sshPortForward.equals("1")){
+        if(sshPortForward){
             try{
                 String sshAddress = this.findSshAddress(ingressLink);
                 sshSession = jsch.getSession(sshUser, sshAddress, 22);
@@ -376,7 +378,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Remove port forwarding */
-        if(sshPortForward != null && sshPortForward.equals("1")){
+        if(sshPortForward){
             sshSession.disconnect();
         }
        
@@ -396,7 +398,8 @@ public class VlsrPSS implements PSS{
         DragonCSA csa = new DragonCSA();
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
-        String sshPortForward = this.props.getProperty("ssh.portForward");
+        String sshPortForwardStr = this.props.getProperty("ssh.portForward");
+        boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
         String promptPattern = this.props.getProperty("promptPattern");
@@ -411,7 +414,7 @@ public class VlsrPSS implements PSS{
         
         /* Initialize ssh client */
         try{
-            if(sshKey != null){
+            if(sshPortForward){
                 jsch.addIdentity(sshKey);
             }
         }catch(JSchException e){
@@ -419,8 +422,8 @@ public class VlsrPSS implements PSS{
             throw new PSSException(e.getMessage());
         }
         
-        /* Create  ssh tunnel */
-        if(sshPortForward != null && sshPortForward.equals("1")){
+        /* Create ssh tunnel */
+        if(sshPortForward){
             try{
                 String sshAddress = this.findSshAddress(ingressLink);
                 sshSession = jsch.getSession(sshUser, sshAddress, 22);
@@ -465,7 +468,7 @@ public class VlsrPSS implements PSS{
         }
         
         /* Remove port forwarding */
-        if(sshPortForward != null && sshPortForward.equals("1")){
+        if(sshPortForward){
             sshSession.disconnect();
         }
         
@@ -712,9 +715,9 @@ public class VlsrPSS implements PSS{
      * @return string of port used to access VLSR CLI
      * @throws PSSException
      */
-    private int findTelnetPort(String sshPortForward) throws PSSException{
+    private int findTelnetPort(boolean sshPortForward) throws PSSException{
         int port = 0;
-        if(sshPortForward != null && sshPortForward.equals("1")){
+        if(sshPortForward){
             Random rand = new Random(System.currentTimeMillis());
             port = 49152 + rand.nextInt(16383);
         }else{
