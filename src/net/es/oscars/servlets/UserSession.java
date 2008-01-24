@@ -15,12 +15,15 @@ public class UserSession {
 
     private String userCookieName;
     private String sessionCookieName;
+    private boolean secureCookie;
 
     public  UserSession() {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("aaa", true);
         this.userCookieName = props.getProperty("userName");
         this.sessionCookieName = props.getProperty("sessionName");
+        this.secureCookie = 
+            props.getProperty("secureCookie").equals("1") ? true : false;
     }
 
     public String checkSession(PrintWriter out, HttpServletRequest request) {
@@ -98,7 +101,8 @@ public class UserSession {
             sentCookieName = cookieName;
         }
         Cookie cookie = new Cookie(sentCookieName, cookieValue);
-        cookie.setSecure(true);
+        // whether has to go over SSL
+        cookie.setSecure(this.secureCookie);
         return cookie;
     }
 }
