@@ -4,8 +4,8 @@
         <table>
           <tr>
             <th>User Name:</th>
-	    <td><input type="text" dojoType="dijit.form.TextBox"
-		       name="userName" size="28" /></td>
+            <td><input type="text" dojoType="dijit.form.TextBox"
+                 name="userName" size="28" /></td>
           </tr>
           <tr>
             <th>Password:</th>
@@ -14,15 +14,15 @@
             </td>
           </tr>
         </table>
-	<button dojoType="dijit.form.Button" id="login">
+        <button dojoType="dijit.form.Button" id="login">
           LOGIN 
           <script type="dojo/method" event="onClick">
               dojo.xhrPost({
-              url: 'servlet/AuthenticateUser',
-	      handleAs: "json-comment-filtered",
-	      load: oscars.Form.handleReply,
-	      error: oscars.Form.handleError,
-	      form: dojo.byId("AuthenticateUser")
+                  url: 'servlet/AuthenticateUser',
+                  handleAs: "json-comment-filtered",
+                  load: oscars.Form.handleReply,
+                  error: oscars.Form.handleError,
+                  form: dojo.byId("AuthenticateUser")
               });
           </script>
         </button>

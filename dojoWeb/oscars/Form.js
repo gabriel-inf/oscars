@@ -19,7 +19,7 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     if (responseObject.success) {
         oscarsStatus.className = "success";
     } else {
-        oscarsStatus.className = "warning";
+        oscarsStatus.className = "failure";
     }
     if (responseObject.method == "AuthenticateUser") {
         var sessionPane = dijit.byId("sessionPane");
@@ -28,24 +28,24 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         }
         if (responseObject.authorizedTabs != null) {
             if (responseObject.authorizedTabs["usersPane"]) {
-		var usersPaneTab = dijit.byId("usersPane");
-		if (usersPaneTab == null) {
+                var usersPaneTab = dijit.byId("usersPane");
+                if (usersPaneTab == null) {
                     usersPaneTab = new dijit.layout.ContentPane(
                         {title:'User List', id: 'usersPane'},
                         dojo.doc.createElement('div'));
                         usersPaneTab.setHref("forms/users.html");
-		}
+                }
                 mainTabContainer.addChild(usersPaneTab, 2);
                 usersPaneTab.startup();
             }
             if (responseObject.authorizedTabs["userAddPane"]) {
-		var userAddPaneTab = dijit.byId("userAddPane");
-		if (userAddPaneTab == null) {
+                var userAddPaneTab = dijit.byId("userAddPane");
+                if (userAddPaneTab == null) {
                     userAddPaneTab = new dijit.layout.ContentPane(
                         {title:'Add User', id: 'userAddPane'},
                         dojo.doc.createElement('div'));
                     userAddPaneTab.setHref("forms/userAdd.html");
-		}
+                }
                 mainTabContainer.addChild(userAddPaneTab, 3);
                 userAddPaneTab.startup();
             }
@@ -53,12 +53,12 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     } else if (responseObject.method == "UserLogout") {
         var sessionPane = dijit.byId("sessionPane");
         sessionPane.setHref("forms/login.html");
-	if (dijit.byId("usersPane") != null) {
+        if (dijit.byId("usersPane") != null) {
             mainTabContainer.removeChild(dijit.byId("usersPane"));
-	}
-	if (dijit.byId("userAddPane") != null) {
+        }
+        if (dijit.byId("userAddPane") != null) {
             mainTabContainer.removeChild(dijit.byId("userAddPane"));
-	}
+        }
     }
 }
 
@@ -74,28 +74,27 @@ oscars.Form.initState = function() {
     dojo.back.setInitialState(state);
 }
 
-oscars.Form.stateChanged = function(contentPane) {
-	console.log("state changed");
-        var state = {
-            back: function() {
-                console.log("Back was clicked! ");
-            },
-            forward: function() {
-                console.log("Forward was clicked! ");
-            },
-            changeUrl: contentPane.id,
-        };
-        dojo.back.addToHistory(state);
+oscars.Form.selectedChanged = function(contentPane) {
+    // start of back/forward button functionality
+    var state = {
+        back: function() {
+            console.log("Back was clicked! ");
+        },
+        forward: function() {
+            console.log("Forward was clicked! ");
+        },
+        changeUrl: contentPane.id,
+    };
+    dojo.back.addToHistory(state);
 }
 
 oscars.Form.hrefChanged = function(newUrl) {
-	console.log("href changed");
-	console.log(newUrl);
-        var state = {
-            back: function() { console.log("Back was clicked!"); },
-            forward: function() { console.log("Forward was clicked!"); },
-            changeUrl: newUrl,
-	};
-	dojo.back.addToHistory(state);
+    // start of back/forward button functionality
+    var state = {
+        back: function() { console.log("Back was clicked!"); },
+        forward: function() { console.log("Forward was clicked!"); },
+        changeUrl: newUrl,
+    };
+    dojo.back.addToHistory(state);
 }
 

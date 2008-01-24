@@ -11,113 +11,118 @@ the reservation time slot.  The time slot defaults to
     &nbsp;
 </div>
 
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    <input type="submit" name="createReservation" value="Reserve bandwidth" />
-                </td>
-                <td>
-                    <input type="reset" value="Reset form fields"></input>
-                </td>
-            </tr>
-            <tr>
-                <td>Source</td>
-                <td class="required">
-                    <input type="text" name="srcHost"
-		    dojoType="dijit.form.ValidationTextBox"
-		regExp="[\w]+"
-		promptMessage="Enter the source of the circuit"
-	        invalidMessage="You must enter the source of the circuit"
-		   required="true" />
-                </td>
-                <td>( Host name or IP address[:port] )</td>
-            </tr>
-            <tr>
-                <td>Destination</td>
-                <td class="required">
-                    <input type="text" name="destHost"
-		    dojoType="dijit.form.ValidationTextBox" 
-		regExp="[\w]+"
-		promptMessage="Enter the destination of the circuit"
-	        invalidMessage="You must enter the destination of the circuit"
-		    required="true" />
-                </td>
-                <td>( Host name or IP address[:port] )</td>
-            </tr>
-            <tr>
-                <td>Bandwidth (Mbps)</td>
-                <td class="required">
-                    <input type="text" name="bandwidth" maxLength="7"
-		    dojoType="dijit.form.NumberTextBox"
-		    constraints="{min:10,max:10000,places:0}"
-		    promptMessage="Enter a value between 10 and 10000"
-		    required="true"
-		   invalidMessage="Invalid bandwidth." />
-                </td>
-                <td>( 10-10000 )</td>
-            </tr>
-            <tr>
-                <td>Purpose of reservation</td>
-                <td class="required">
-                    <input type="text" name="description"
-		    dojoType="dijit.form.ValidationTextBox"
-		regExp="[\w]+"
-		promptMessage="Please enter the purpose for this reservation"
-	        invalidMessage="You must enter the purpose for this reservation"
-		   required="true" />
-                </td>
-                <td>( For our records )</td>
-            </tr>
+<table>
+  <tbody>
+  <tr>
+    <td>
+      <input type="submit" name="createReservation" value="Reserve bandwidth" />
+    </td>
+    <td>
+      <input type="reset" value="Reset form fields"></input>
+    </td>
+  </tr>
+  <tr>
+    <td>Source</td>
+    <td class="required">
+      <input type="text" name="srcHost"
+             dojoType="dijit.form.ValidationTextBox"
+             regExp="[\w]+"
+             promptMessage="Enter the source of the circuit"
+             invalidMessage="You must enter the source of the circuit"
+             required="true" />
+    </td>
+    <td>( Host name or IP address[:port] )</td>
+  </tr>
+  <tr>
+    <td>Destination</td>
+    <td class="required">
+      <input type="text" name="destHost"
+             dojoType="dijit.form.ValidationTextBox" 
+             regExp="[\w]+"
+             promptMessage="Enter the destination of the circuit"
+             invalidMessage="You must enter the destination of the circuit"
+             required="true" />
+    </td>
+    <td>( Host name or IP address[:port] )</td>
+  </tr>
+  <tr>
+    <td>Bandwidth (Mbps)</td>
+    <td class="required">
+      <input type="text" name="bandwidth" maxLength="7"
+           dojoType="dijit.form.NumberTextBox"
+           constraints="{min:10,max:10000,places:0}"
+           promptMessage="Enter a value between 10 and 10000"
+           required="true"
+           invalidMessage="Invalid bandwidth." />
+     </td>
+     <td>( 10-10000 )</td>
+  </tr>
+  <tr>
+    <td>Purpose of reservation</td>
+    <td class="required">
+       <input type="text" name="description"
+              dojoType="dijit.form.ValidationTextBox"
+              regExp="[\w]+"
+              promptMessage="Please enter the purpose for this reservation"
+              invalidMessage="You must enter the purpose for this reservation"
+              required="true" />
+    </td>
+    <td>( For our records )</td>
+  </tr>
 
-            <div id="authorizedPath">
-                &nbsp;
-            </div>
-            <tr><td>Start date</td>
-                <td><input dojoType="dijit.form.DateTextBox" name="startDate" /></td>
-		<td id="startDateDefault">&nbsp;</td>
-            </tr>
-            <tr><td>Start time</td>
-                <td><input dojoType="dijit.form.TimeTextBox" name="startTime" /></td>
-		<td id="startTimeDefault">&nbsp;</td>
-            </tr>
-            <tr><td>End date</td>
-                <td><input dojoType="dijit.form.DateTextBox" name="endDate" /></td>
-		<td id="endDateDefault">&nbsp;</td>
-            </tr>
-            <tr><td>End time</td>
-                <td><input dojoType="dijit.form.TimeTextBox" name="endTime" /></td>
-		<td id="endTimeDefault">&nbsp;</td>
-            </tr>
+  <div id="authorizedPath">&nbsp;</div>
+  <tr>
+    <td>Start date</td>
+    <td><input dojoType="dijit.form.DateTextBox" name="startDate" /></td>
+    <td id="startDateDefault">&nbsp;</td>
+  </tr>
+  <tr><td>Start time</td>
+    <td><input dojoType="dijit.form.TimeTextBox" name="startTime" /></td>
+    <td id="startTimeDefault">&nbsp;</td>
+  </tr>
+  <tr><td>End date</td>
+    <td><input dojoType="dijit.form.DateTextBox" name="endDate" /></td>
+    <td id="endDateDefault">&nbsp;</td>
+  </tr>
+  <tr><td>End time</td>
+    <td><input dojoType="dijit.form.TimeTextBox" name="endTime" /></td>
+    <td id="endTimeDefault">&nbsp;</td>
+  </tr>
 
-        <tr><td colspan="3"> </td></tr>
-	<tr><td colspan="3"><strong>Layer 2 parameters</strong></td></tr>
-        <tr><td>VLAN</td>
-        <td><input type="text" dojoType="dijit.form.TextBox" name="vlanTag">
+  <tr><td colspan="3"> </td></tr>
+  <tr><td colspan="3"><strong>Layer 2 parameters</strong></td></tr>
+  <tr><td>VLAN</td>
+    <td>
+      <input type="text" dojoType="dijit.form.TextBox" name="vlanTag"></input>
+    </td>
+    <td>tag, or range, e.g. 3000-3100</td></tr>
+
+  <tr><td colspan="3"> </td></tr>
+  <tr><td colspan="3"><strong>Layer 3 parameters</strong></td></tr>
+  <tr><td>Source port</td>
+    <td><input type="text" dojoType="dijit.form.TextBox" name="srcPort"
+               maxlength="5" >
         </input>
-        </td>
-        <td>tag, or range, e.g. 3000-3100</td></tr>
-
-        <tr><td colspan="3"> </td></tr>
-	<tr><td colspan="3"><strong>Layer 3 parameters</strong></td></tr>
-        <tr><td>Source port</td>
-        <td><input type="text" dojoType="dijit.form.TextBox" name="srcPort" maxlength="5" >
-        </input>
-        </td>
-        <td>(1024-65535)</td></tr>
-        <tr><td>Destination port</td>
-        <td><input type="text" dojoType="dijit.form.TextBox" name="destPort" maxlength="5" >
+    </td>
+    <td>(1024-65535)</td></tr>
+  <tr><td>Destination port</td>
+    <td><input type="text" dojoType="dijit.form.TextBox" name="destPort"
+               maxlength="5" >
+    </input></td>
+    <td>(1024-65535)</td>
+  </tr>
+  <tr><td>Protocol</td>
+    <td><input type="text" dojoType="dijit.form.TextBox" name="protocol">
         </input></td>
-        <td>(1024-65535)</td></tr>
-        <tr><td>Protocol</td>
-        <td><input type="text" dojoType="dijit.form.TextBox" name="protocol" ></input></td>
         <td>(0-255, or string)</td></tr>
-        <tr><td>Differentiated service code point</td>
-	<td><input type="text" dojoType="dijit.form.TextBox" name="dscp" maxlength="2">
-        </input></td>
-        <td>(0-63)</td></tr>
+  <tr><td>Differentiated service code point</td>
+    <td><input type="text" dojoType="dijit.form.TextBox" name="dscp"
+                maxlength="2">
+    </input></td>
+    <td>(0-63)</td>
+  </tr>
 
-        </tbody>
+</tbody>
         </table>
     </form>
 </html>

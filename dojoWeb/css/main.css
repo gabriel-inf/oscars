@@ -19,20 +19,25 @@ td {
 }
 
 .required {
-    border: 3px solid #0a0;
+    border: 2px solid #0a0;
+    padding: 0;
+}
+
+
+.warning {
+    border: 2px solid #d00;
     padding: 0;
 }
 
 .success {
-    border: 3px solid #0a0;
-    padding: 0;
+    border: 2px solid #0a0;
+    padding: 0.2em;
 }
 
-.warning {
-    border: 3px solid #d00;
-    padding: 0;
+.failure {
+    border: 2px solid #d00;
+    padding: 0.2em;
 }
-
 
 /* settings for title section of Web page */
 #pagetitle {

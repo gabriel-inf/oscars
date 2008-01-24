@@ -1,15 +1,15 @@
 <html>
     <br />
     <form id="UserLogout" method="post"> 
-	<button dojoType="dijit.form.Button" id="logout">
+        <button dojoType="dijit.form.Button" id="logout">
           LOGOUT 
           <script type="dojo/method" event="onClick">
               dojo.xhrPost({
-              url: 'servlet/UserLogout',
-	      handleAs: "json-comment-filtered",
-	      load: oscars.Form.handleReply,
-	      error: oscars.Form.handleError,
-	      form: dojo.byId("UserLogout")
+                  url: 'servlet/UserLogout',
+                  handleAs: "json-comment-filtered",
+                  load: oscars.Form.handleReply,
+                  error: oscars.Form.handleError,
+                  form: dojo.byId("UserLogout")
               });
           </script>
         </button>
