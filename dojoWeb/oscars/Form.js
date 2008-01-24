@@ -1,6 +1,6 @@
 /*
 Form.js:        Javascript form callback handling
-Last modified:  January 23, 2008
+Last modified:  January 24, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -26,6 +26,34 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             if (responseObject.success) {
             sessionPane.setHref("forms/logout.html");
         }
+        var reservationsPaneTab = dijit.byId("reservationsPane");
+        if (reservationsPaneTab == null) {
+            reservationsPaneTab = new dijit.layout.ContentPane(
+                {title:'Reservations', id: 'reservationsPane'},
+                 dojo.doc.createElement('div'));
+                 reservationsPaneTab.setHref("forms/reservations.html");
+       }
+        mainTabContainer.addChild(reservationsPaneTab, 0);
+        reservationsPaneTab.startup();
+        var createReservationPaneTab = dijit.byId("createReservationPane");
+        if (createReservationPaneTab == null) {
+            createReservationPaneTab = new dijit.layout.ContentPane(
+                {title:'Create Reservation', id: 'createReservationPane',
+                 refreshOnShow: true},
+                 dojo.doc.createElement('div'));
+                 createReservationPaneTab.setHref("forms/createReservation.html");
+        }
+        mainTabContainer.addChild(createReservationPaneTab, 1);
+        createReservationPaneTab.startup();
+        var userDetailsPaneTab = dijit.byId("userDetailsPane");
+        if (userDetailsPaneTab == null) {
+            userDetailsPaneTab = new dijit.layout.ContentPane(
+                        {title:'User Profile', id: 'userDetailsPane'},
+                        dojo.doc.createElement('div'));
+                        userDetailsPaneTab.setHref("forms/user.html");
+        }
+        mainTabContainer.addChild(userDetailsPaneTab, 2);
+        userDetailsPaneTab.startup();
         if (responseObject.authorizedTabs != null) {
             if (responseObject.authorizedTabs["usersPane"]) {
                 var usersPaneTab = dijit.byId("usersPane");
@@ -53,11 +81,20 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     } else if (responseObject.method == "UserLogout") {
         var sessionPane = dijit.byId("sessionPane");
         sessionPane.setHref("forms/login.html");
+        if (dijit.byId("reservationsPane") != null) {
+            mainTabContainer.removeChild(dijit.byId("reservationsPane"));
+        }
+        if (dijit.byId("createReservationPane") != null) {
+            mainTabContainer.removeChild(dijit.byId("createReservationPane"));
+        }
         if (dijit.byId("usersPane") != null) {
             mainTabContainer.removeChild(dijit.byId("usersPane"));
         }
         if (dijit.byId("userAddPane") != null) {
             mainTabContainer.removeChild(dijit.byId("userAddPane"));
+        }
+        if (dijit.byId("userDetailsPane") != null) {
+            mainTabContainer.removeChild(dijit.byId("userDetailsPane"));
         }
     }
 }
@@ -75,6 +112,11 @@ oscars.Form.initState = function() {
 }
 
 oscars.Form.selectedChanged = function(contentPane) {
+    if (contentPane.id == "userDetailsPane") {
+        var sessionPane = dijit.byId("sessionPane");
+        // TODO:  doesn't exist until pane loaded
+        var profileInput = dijit.byId("profileName");
+    }
     // start of back/forward button functionality
     var state = {
         back: function() {

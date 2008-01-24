@@ -29,6 +29,20 @@
         dojo.require("dijit.form.ValidationTextBox");
     </script>
     <script type="text/javascript">
+        dojo.declare("OSCARSState", null, {
+            constructor: function(args, node){
+                dojo.mixin(this, args);
+            },
+            name: "",
+            setLogin: function(loginName){
+                this.name=loginName;
+            },
+            getLogin: function() {
+                return this.name;
+            }
+        });
+    </script>
+    <script type="text/javascript">
         dojo.addOnLoad(oscars.DigitalClock.initClock);
         dojo.addOnLoad(function(){
             var w =dijit.byId("mainTabContainer");
@@ -70,17 +84,8 @@
       </tr>
     </table>
 
+    <div dojoType="OSCARSState" name="bar" jsId="oscarsState">
     <div id="mainTabContainer" dojoType="dijit.layout.TabContainer" doLayout="false"> 
-    <div id="reservationsPane" dojoType="dijit.layout.ContentPane"
-         title="Reservations" href="forms/reservations.html">
-    </div>
-    <div id="createReservationPane" dojoType="dijit.layout.ContentPane"
-         title="Create Reservation" href="forms/createReservation.html"
-         refreshOnShow="true">
-    </div>
-    <div id="userDetailsPane" dojoType="dijit.layout.ContentPane" title="User Profile"
-         href="forms/user.html">
-    </div>
     <div id="sessionPane" dojoType="dijit.layout.ContentPane" title="Login/Logout"
          href="forms/login.html" selected="true">
     </div>

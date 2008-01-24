@@ -45,7 +45,7 @@
              regExp="[\w]+" required="true"
              promptMessage="Enter the first name"
              invalidMessage="You must enter the first name"
-                       value="" />
+             value="" />
     </td>
   </tr>
   <tr>
@@ -60,25 +60,34 @@
     </td>
   </tr>
   <tr>
-    <td>Organization</td>
-        <!--
-        <td><select class="required" name="institutionName">
-        userInstitution = user.getInstitution()
-        userInstitution != null
-            institutionName = userInstitution.getName()
-        } else
-            institutionName = "Energy Sciences Network"
-        }
-        for (Institution i: insts)
-            <option value="i.getName()"
-            if (i.getName().equals(institutionName))
-                selected="selected"
-            > i.getName() </option>
-        }
-        </select>
-        </td>
-        -->
+    <td>X.509 subject name</td>
+    <td class="required">
+      <input type="text" name="certSubject" id="certSubject"
+             dojoType="dijit.form.ValidationTextBox"
+             regExp="[\w]+" required="true"
+             promptMessage="Enter the certificate subject"
+             invalidMessage="You must enter the certificate subject"
+             value="" />
+    </td>
   </tr>
+  <tr>
+    <td>X.509 issuer name</td>
+    <td class="required">
+      <input type="text" name="certIssuer" id="certIssuer"
+             dojoType="dijit.form.ValidationTextBox"
+             regExp="[\w]+" required="true"
+             promptMessage="Enter the issuer of the certificate"
+             invalidMessage="You must enter the issuer of the certificate"
+             value="" />
+    </td>
+  </tr>
+  <tr>
+    <td>Organization</td>
+    <td>
+        <div id="institutionMenuDiv" />
+    </td>
+  </tr>
+  <div id="roleListDiv" />
   <tr>
     <td valign="top">Personal Description</td>
     <td>
