@@ -238,6 +238,13 @@ public class UserDetails {
             }
             out.println("</td></tr>");
             out.println("<tr><td>*</td><td align='left'>");
+            if (attrNames.contains("OSCARS-service")) {
+                out.println("<input class='SOAP' type='checkbox'  checked='checked' name='roles' value='OSCARS-service' /> Service - make reservations and view topology");
+            } else {
+                out.println("<input class='SOAP' type='checkbox'  name='roles' value='OSCARS-service' /> Service - make reservations and view topology");
+            }
+            out.println("</td></tr>");
+            out.println("<tr><td>*</td><td align='left'>");
             if (attrNames.contains("OSCARS-engineer")) {
                 out.println("<input class='SOAP' type='checkbox'  checked='checked' name='roles' value='OSCARS-engineer' /> Engineer - manage all reservations");
             } else {

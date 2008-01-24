@@ -110,21 +110,24 @@ public class UserModify extends HttpServlet {
                     curRoles.add(attrDAO.getAttributeId(s));
                 }
                 /*
-                 * form only sets OSCARS-user (1), OSCARS-engineer (2) or
-                 * OSCARS-administrator (4) so we need to compare those three
+                 * form only sets OSCARS-user, OSCRAS-service, OSCARS-engineer
+                 * or OSCARS-administrator so we need to compare those three
                  * values between the new and current.
                  */
-                 int atId[] = { 1, 2, 4 };
-                 for (int i : atId) {
-                     if (newRoles.contains(i) && !curRoles.contains(i)) {
-                         this.log.debug("add attrId " + i);
-                         this.addUserAttribute(i, userId);
+                 for (Integer newRoleItem : newRoles) {
+                     int intNewRoleItem = newRoleItem.intValue();
+                     if (!curRoles.contains(intNewRoleItem)) {
+                         this.log.debug("add attrId " + intNewRoleItem);
+                         this.addUserAttribute(intNewRoleItem, userId);
                      }
-                     if (!newRoles.contains(i) && curRoles.contains(i)) {
-                         this.log.debug("delete attrId " + i);
+                 }
+                 for (Integer curRoleItem : curRoles){
+                    int intCurRoleItem  = curRoleItem.intValue();
+                    if (!newRoles.contains(intCurRoleItem)) {
+                         this.log.debug("delete attrId " + intCurRoleItem);
                          UserAttributeDAO userAttrDAO = new UserAttributeDAO(
                                                                  this.dbname);
-                         userAttrDAO.remove(userId, i);
+                         userAttrDAO.remove(userId, intCurRoleItem);
                      }
                  }
                  String newRole = request.getParameter("newRole");
