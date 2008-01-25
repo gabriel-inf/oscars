@@ -15,13 +15,13 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     var status = responseObject.status;
     var mainTabContainer = dijit.byId("mainTabContainer");
     var oscarsStatus = dojo.byId("oscarsStatus");
-    oscarsStatus.innerHTML = responseObject.status;
     if (responseObject.success) {
         oscarsStatus.className = "success";
     } else {
         oscarsStatus.className = "failure";
     }
     if (responseObject.method == "AuthenticateUser") {
+        oscarsStatus.innerHTML = responseObject.status;
         var sessionPane = dijit.byId("sessionPane");
         if (responseObject.success) {
             var userNameInput = dojo.byId("userName");
@@ -80,6 +80,7 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             }
         }
     } else if (responseObject.method == "UserLogout") {
+        var oscarsStatus = dojo.byId("oscarsStatus");
         var sessionPane = dijit.byId("sessionPane");
         sessionPane.setHref("forms/login.html");
         if (dijit.byId("reservationsPane") != null) {
@@ -97,10 +98,28 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         if (dijit.byId("userDetailsPane") != null) {
             mainTabContainer.removeChild(dijit.byId("userDetailsPane"));
         }
+    // called when tab instantiated, so don't update status here
+    } else if (responseObject.method == "UserQuery") {
+        oscars.Form.applyParams(responseObject);
     }
 }
 
-oscars.Form.handleError = function (responseObject, ioArgs) {
+oscars.Form.handleError = function(responseObject, ioArgs) {
+}
+
+oscars.Form.applyParams = function(responseObject) {
+    for (var param in responseObject) {
+        var w = dojo.byId(param);
+        // NOTE:  have to be careful with widget id's on page
+        //        can't have id's of method or success
+        if (w == null) {
+            continue;
+        } else if (param.match(/Div$/i) != null) {
+            w.innerHTML = responseObject[param];
+        } else {
+            w.value = responseObject[param];
+        }   
+    }
 }
 
 oscars.Form.initState = function() {
@@ -114,9 +133,11 @@ oscars.Form.initState = function() {
 
 oscars.Form.selectedChanged = function(contentPane) {
     if (contentPane.id == "userDetailsPane") {
-        var sessionPane = dijit.byId("sessionPane");
-        // TODO:  doesn't exist until pane loaded
-        var profileInput = dijit.byId("profileName");
+        var oscarsStatus = dojo.byId("oscarsStatus");
+        var w = dojo.byId("userDetailsLogin");
+        if (w != null) {
+            oscarsStatus.innerHTML = "Profile for " + w.value;
+        }
     }
     // start of back/forward button functionality
     var state = {

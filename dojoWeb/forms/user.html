@@ -1,7 +1,26 @@
 <html>
+<head>
+    <script type="text/javascript>
+        dojo.addOnLoad(function(){
+            var w = dojo.byId("userDetailsLogin");
+            w.value= oscarsState.login;
+            console.log(w.value);
+        });
+        dojo.addOnLoad(function(){
+            dojo.xhrPost({
+                url: 'servlet/UserQuery',
+                handleAs: "json-comment-filtered",
+                load: oscars.Form.handleReply,
+                error: oscars.Form.handleError,
+                form: dojo.byId("userDetailsForm")
+            });
+        });
+    </script>
+</head>
 
 <p>Required fields are outlined in green.</p>
 <form id="userDetailsForm" method="POST" action="servlet/UserDetails">
+  <input type="hidden" name="login" id="userDetailsLogin" />
   <input type="submit" name="userModify" value="Modify" />
   <table>
   <tbody>

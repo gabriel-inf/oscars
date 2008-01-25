@@ -18,12 +18,20 @@
         <servlet-class>net.es.oscars.dojoServlets.AuthenticateUser</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>UserQuery</servlet-name>
+        <servlet-class>net.es.oscars.dojoServlets.UserQuery</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>UserLogout</servlet-name>
         <servlet-class>net.es.oscars.dojoServlets.UserLogout</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>AuthenticateUser</servlet-name>
         <url-pattern>/servlet/AuthenticateUser</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserQuery</servlet-name>
+        <url-pattern>/servlet/UserQuery</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>UserLogout</servlet-name>
