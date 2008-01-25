@@ -23,59 +23,60 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     }
     if (responseObject.method == "AuthenticateUser") {
         var sessionPane = dijit.byId("sessionPane");
-            if (responseObject.success) {
+        if (responseObject.success) {
+            var userNameInput = dojo.byId("userName");
+            oscarsState.login = userNameInput.value;
             sessionPane.setHref("forms/logout.html");
-        }
-        var reservationsPaneTab = dijit.byId("reservationsPane");
-        if (reservationsPaneTab == null) {
-            reservationsPaneTab = new dijit.layout.ContentPane(
-                {title:'Reservations', id: 'reservationsPane'},
-                 dojo.doc.createElement('div'));
-                 reservationsPaneTab.setHref("forms/reservations.html");
-       }
-        mainTabContainer.addChild(reservationsPaneTab, 0);
-        reservationsPaneTab.startup();
-        var createReservationPaneTab = dijit.byId("createReservationPane");
-        if (createReservationPaneTab == null) {
-            createReservationPaneTab = new dijit.layout.ContentPane(
-                {title:'Create Reservation', id: 'createReservationPane',
-                 refreshOnShow: true},
+            var reservationsPaneTab = dijit.byId("reservationsPane");
+            if (reservationsPaneTab == null) {
+                reservationsPaneTab = new dojox.layout.ContentPane(
+                  {title:'Reservations', id: 'reservationsPane'},
+                   dojo.doc.createElement('div'));
+                   reservationsPaneTab.setHref("forms/reservations.html");
+            }
+            mainTabContainer.addChild(reservationsPaneTab, 0);
+            reservationsPaneTab.startup();
+            var createReservationPaneTab = dijit.byId("createReservationPane");
+            if (createReservationPaneTab == null) {
+              createReservationPaneTab = new dojox.layout.ContentPane(
+                {title:'Create Reservation', id: 'createReservationPane'},
                  dojo.doc.createElement('div'));
                  createReservationPaneTab.setHref("forms/createReservation.html");
-        }
-        mainTabContainer.addChild(createReservationPaneTab, 1);
-        createReservationPaneTab.startup();
-        var userDetailsPaneTab = dijit.byId("userDetailsPane");
-        if (userDetailsPaneTab == null) {
-            userDetailsPaneTab = new dijit.layout.ContentPane(
-                        {title:'User Profile', id: 'userDetailsPane'},
-                        dojo.doc.createElement('div'));
-                        userDetailsPaneTab.setHref("forms/user.html");
-        }
-        mainTabContainer.addChild(userDetailsPaneTab, 2);
-        userDetailsPaneTab.startup();
-        if (responseObject.authorizedTabs != null) {
-            if (responseObject.authorizedTabs["usersPane"]) {
-                var usersPaneTab = dijit.byId("usersPane");
-                if (usersPaneTab == null) {
-                    usersPaneTab = new dijit.layout.ContentPane(
-                        {title:'User List', id: 'usersPane'},
-                        dojo.doc.createElement('div'));
-                        usersPaneTab.setHref("forms/users.html");
-                }
-                mainTabContainer.addChild(usersPaneTab, 2);
-                usersPaneTab.startup();
             }
-            if (responseObject.authorizedTabs["userAddPane"]) {
-                var userAddPaneTab = dijit.byId("userAddPane");
-                if (userAddPaneTab == null) {
-                    userAddPaneTab = new dijit.layout.ContentPane(
-                        {title:'Add User', id: 'userAddPane'},
-                        dojo.doc.createElement('div'));
-                    userAddPaneTab.setHref("forms/userAdd.html");
+            mainTabContainer.addChild(createReservationPaneTab, 1);
+            createReservationPaneTab.startup();
+            var userDetailsPaneTab = dijit.byId("userDetailsPane");
+            if (userDetailsPaneTab == null) {
+                userDetailsPaneTab = new dojox.layout.ContentPane(
+                 {title:'User Profile', id: 'userDetailsPane'},
+                  dojo.doc.createElement('div'));
+                userDetailsPaneTab.setHref("forms/user.html");
+            }
+            mainTabContainer.addChild(userDetailsPaneTab, 2);
+            userDetailsPaneTab.startup();
+            if (responseObject.authorizedTabs != null) {
+                if (responseObject.authorizedTabs["usersPane"]) {
+                    var usersPaneTab = dijit.byId("usersPane");
+                    if (usersPaneTab == null) {
+                        usersPaneTab = new dojox.layout.ContentPane(
+                          {title:'User List', id: 'usersPane'},
+                           dojo.doc.createElement('div'));
+                        usersPaneTab.setHref("forms/users.html");
+                    }
+                    mainTabContainer.addChild(usersPaneTab, 2);
+                    usersPaneTab.startup();
                 }
-                mainTabContainer.addChild(userAddPaneTab, 3);
-                userAddPaneTab.startup();
+                if (responseObject.authorizedTabs["userAddPane"]) {
+                    var userAddPaneTab = dijit.byId("userAddPane");
+                    if (userAddPaneTab == null) {
+                        userAddPaneTab = new dojox.layout.ContentPane(
+                          {title:'Add User', id: 'userAddPane'},
+                          dojo.doc.createElement('div'));
+                        userAddPaneTab.setHref("forms/userAdd.html");
+                    }
+                    mainTabContainer.addChild(userAddPaneTab, 3);
+                    userAddPaneTab.startup();
+                }
             }
         }
     } else if (responseObject.method == "UserLogout") {

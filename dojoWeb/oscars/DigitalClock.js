@@ -17,6 +17,7 @@ monthName = ['January', 'February', 'March', 'April', 'May',
 // Outputs datetime with format: July 1, 2005 13:00.
 oscars.DigitalClock.updateClock = function (clock) {
     var localDate = new Date();
+    oscarsState.ms = localDate.getTime();
     var currentMonth = localDate.getMonth();
     var formattedDt = monthName[currentMonth] + " " + localDate.getDate() +
                    ", " + localDate.getFullYear() + " ";
@@ -34,4 +35,47 @@ oscars.DigitalClock.initClock = function () {
 
     oscars.DigitalClock.updateClock(clock);
     setInterval(function() { oscars.DigitalClock.updateClock(clock); }, 60000);
+}
+
+// sets default times on create reservation form
+oscars.DigitalClock.updateDefaultClocks =
+  function(startDateDefault, startTimeDefault, endDateDefault, endTimeDefault) {
+    // TODO:  FIX, won't be in sync with main clock part of the time
+    var localDate = new Date(oscarsState.ms);
+    var currentMonth = localDate.getMonth();
+    var formattedDt = currentMonth + 1 + "-" + localDate.getDate() +
+                   "-" + localDate.getFullYear();
+
+    digits = localDate.getHours();
+    formattedTime = (digits > 9 ? '' : '0') + digits + ':';
+    digits = localDate.getMinutes();
+    formattedTime += (digits > 9 ? '' : '0') + digits;
+    startDateDefault.innerHTML = formattedDt;
+    startTimeDefault.innerHTML = formattedTime;
+    // get default end time
+    var endDate = new Date(oscarsState.ms + 60*4*1000);
+    currentMonth = endDate.getMonth();
+    formattedDt = currentMonth + 1 + "-" + endDate.getDate() +
+                   "-" + endDate.getFullYear();
+    digits = endDate.getHours();
+    formattedTime = (digits > 9 ? '' : '0') + digits + ':';
+    digits = endDate.getMinutes();
+    formattedTime += (digits > 9 ? '' : '0') + digits;
+    endDateDefault.innerHTML = formattedDt;
+    endTimeDefault.innerHTML = formattedTime;
+}
+
+oscars.DigitalClock.initDefaultClocks = function () {
+    var startDateDefault = document.getElementById('startDateDefault');
+    var startTimeDefault = document.getElementById('startTimeDefault');
+    var endDateDefault = document.getElementById('endDateDefault');
+    var endTimeDefault = document.getElementById('endTimeDefault');
+
+    oscars.DigitalClock.updateDefaultClocks(
+        startDateDefault, startTimeDefault, endDateDefault, endTimeDefault);
+    setInterval(
+        function() {
+            oscars.DigitalClock.updateDefaultClocks(
+                startDateDefault, startTimeDefault,
+                endDateDefault, endTimeDefault); }, 60000);
 }

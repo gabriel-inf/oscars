@@ -19,7 +19,7 @@
         dojo.require("dojo.parser");
         dojo.require("dojo.back");
         dojo.require("dijit.layout.TabContainer");
-        dojo.require("dijit.layout.ContentPane");
+        dojo.require("dojox.layout.ContentPane");
         dojo.require("dijit.form.Button");
         dojo.require("dijit.form.TextBox");
         dojo.require("dijit.form.Textarea");
@@ -33,13 +33,8 @@
             constructor: function(args, node){
                 dojo.mixin(this, args);
             },
-            name: "",
-            setLogin: function(loginName){
-                this.name=loginName;
-            },
-            getLogin: function() {
-                return this.name;
-            }
+            login: "",
+            ms: 0,
         });
     </script>
     <script type="text/javascript">
@@ -84,9 +79,9 @@
       </tr>
     </table>
 
-    <div dojoType="OSCARSState" name="bar" jsId="oscarsState">
+    <div dojoType="OSCARSState" jsId="oscarsState">
     <div id="mainTabContainer" dojoType="dijit.layout.TabContainer" doLayout="false"> 
-    <div id="sessionPane" dojoType="dijit.layout.ContentPane" title="Login/Logout"
+    <div id="sessionPane" dojoType="dojox.layout.ContentPane" title="Login/Logout"
          href="forms/login.html" selected="true">
     </div>
 
