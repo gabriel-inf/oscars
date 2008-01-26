@@ -23,7 +23,6 @@ td {
     padding: 0;
 }
 
-
 .warning {
     border: 2px solid #d00;
     padding: 0;
@@ -71,11 +70,15 @@ td {
     margin: 0.1em 0.5em;
 }
 
+#mainTabContainer {
+    margin: 0.0em 0.5em;
+}
+
 .dijitTabPaneWrapper {
     clear: both;
     padding: 0.0em 0.5em;
 }
 
-#mainTabContainer {
-    margin: 0.0em 0.5em;
+.dijitTextBox {
+    width: 100%;
 }

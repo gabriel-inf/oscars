@@ -20,8 +20,8 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     } else {
         oscarsStatus.className = "failure";
     }
+    oscarsStatus.innerHTML = responseObject.status;
     if (responseObject.method == "AuthenticateUser") {
-        oscarsStatus.innerHTML = responseObject.status;
         var sessionPane = dijit.byId("sessionPane");
         if (responseObject.success) {
             var userNameInput = dojo.byId("userName");
@@ -50,7 +50,6 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                 userDetailsPaneTab = new dojox.layout.ContentPane(
                  {title:'User Profile', id: 'userDetailsPane'},
                   dojo.doc.createElement('div'));
-                userDetailsPaneTab.setHref("forms/user.html");
             }
             mainTabContainer.addChild(userDetailsPaneTab, 2);
             userDetailsPaneTab.startup();
@@ -80,7 +79,6 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             }
         }
     } else if (responseObject.method == "UserLogout") {
-        var oscarsStatus = dojo.byId("oscarsStatus");
         var sessionPane = dijit.byId("sessionPane");
         sessionPane.setHref("forms/login.html");
         if (dijit.byId("reservationsPane") != null) {
@@ -98,7 +96,6 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         if (dijit.byId("userDetailsPane") != null) {
             mainTabContainer.removeChild(dijit.byId("userDetailsPane"));
         }
-    // called when tab instantiated, so don't update status here
     } else if (responseObject.method == "UserQuery") {
         oscars.Form.applyParams(responseObject);
     }
@@ -109,15 +106,28 @@ oscars.Form.handleError = function(responseObject, ioArgs) {
 
 oscars.Form.applyParams = function(responseObject) {
     for (var param in responseObject) {
-        var w = dojo.byId(param);
         // NOTE:  have to be careful with widget id's on page
-        //        can't have id's of method or success
-        if (w == null) {
+        //        e.g. can't have id's of method, success, or status
+        var n = dojo.byId(param);
+        if (param.match(/Checkboxes$/i) != null) {
+            for (var cb in responseObject[param]) {
+                // get check box
+                var w = dijit.byId(cb);
+                if (w != null) {
+                    // true or false
+                    if (responseObject[param][cb]) {
+                        w.setChecked(true);
+                    } else {
+                        w.setChecked(false);
+                    }
+                }
+            }
+        } else if (n == null) {
             continue;
         } else if (param.match(/Div$/i) != null) {
-            w.innerHTML = responseObject[param];
+            n.innerHTML = responseObject[param];
         } else {
-            w.value = responseObject[param];
+            n.value = responseObject[param];
         }   
     }
 }
@@ -133,10 +143,10 @@ oscars.Form.initState = function() {
 
 oscars.Form.selectedChanged = function(contentPane) {
     if (contentPane.id == "userDetailsPane") {
-        var oscarsStatus = dojo.byId("oscarsStatus");
-        var w = dojo.byId("userDetailsLogin");
-        if (w != null) {
-            oscarsStatus.innerHTML = "Profile for " + w.value;
+        var n = dojo.byId("userDetailsLogin");
+        // only do first time
+        if (n == null) {
+            contentPane.setHref("forms/user.html");
         }
     }
     // start of back/forward button functionality

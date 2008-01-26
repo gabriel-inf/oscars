@@ -75,7 +75,7 @@ public class UserDetails {
            outputMap.put("certIssuer", strParam);
         }
         this.outputInstitutionMenu(outputMap, insts, user);
-        this.outputRoleList(outputMap, attrNames, modifyRights);
+        this.outputRoleMap(outputMap, attrNames, modifyRights);
         
         strParam = user.getDescription();
         if (strParam != null) {
@@ -127,60 +127,31 @@ public class UserDetails {
         outputMap.put("institutionMenuDiv", sb.toString());
     }
     
-    public void outputRoleList(Map outputMap, List<String> attrNames,
+    public void outputRoleMap(Map outputMap, List<String> attrNames,
                                boolean modify) {
 
-        StringBuilder sb = new StringBuilder();
-
-        this.log.debug("outputRoleList: start");
-        sb.append("<tr>");
-        sb.append("<td>Choose role(s)</td>");
-        sb.append("<td align = 'left'>");
-        if (modify) {
-            if (attrNames.contains("OSCARS-user")) {
-                sb.append("<input type='checkbox'  checked='checked' name='roles' value='OSCARS-user' /> User - make reservations");
-            } else {
-                sb.append("<input type='checkbox'  name='roles' value='OSCARS-user' /> User - make reservations");
-            }
-            sb.append("</td></tr>");
-            sb.append("<tr><td>*</td><td align='left'>");
-            if (attrNames.contains("OSCARS-engineer")) {
-                sb.append("<input type='checkbox'  checked='checked' name='roles' value='OSCARS-engineer' /> Engineer - manage all reservations");
-            } else {
-                sb.append("<input type='checkbox'  name='roles' value='OSCARS-engineer' /> Engineer - manage all reservations");
-            }
-            sb.append("</td></tr>");
-            sb.append("<tr><td>*</td><td align='left'>");
-            if (attrNames.contains("OSCARS-administrator")){
-                sb.append("<input type='checkbox' checked='checked' name='roles' value='OSCARS-administrator ' /> Administrator - manage all users");
-            } else {
-                sb.append("<input type='checkbox' name='roles' value='OSCARS-administrator' /> Administrator - manage all users");
-            }
-            sb.append("</td></tr>");
-            sb.append("<tr><td>Define new role</td>");
-            sb.append("<td>");
-            sb.append("<input type='text' name='newRole' size='40' />");
-            sb.append("</td></tr>");
-        } else {  // user may not modify attributes
-            sb.append("<td>Roles</td><td>---</td></tr>");
-            if (attrNames.contains("OSCARS-user")) {
-                sb.append("<tr><td>*</td><td align='left'>");
-                sb.append("User - can make reservations");  
-                sb.append("</td></tr>");
-            }
-            if (attrNames.contains("OSCARS-engineer")) {
-                sb.append("<tr><td>*</td><td align='left'>");
-                sb.append("Engineer - can manage all reservations");
-                sb.append("</td></tr>");
-            }
-            if (attrNames.contains("OSCARS-administrator")){
-                sb.append("<tr><td>*</td><td align='left'>");
-                sb.append("Administrator - can manage all users");
-                sb.append("</td></tr>");
-            }
+        Map roleMap = new HashMap<String,String>();
+        if (attrNames.contains("OSCARS-user")) {
+            roleMap.put("oscarsUserRole", Boolean.TRUE);
+        } else {
+            roleMap.put("oscarsUserRole", Boolean.FALSE);
         }
-        outputMap.put("roleListDiv", sb.toString());
-        this.log.debug("outputRoleList: finish");
+        if (attrNames.contains("OSCARS-engineer")) {
+            roleMap.put("engineerUserRole", Boolean.TRUE);
+        } else {
+            roleMap.put("engineerUserRole", Boolean.FALSE);
+        }
+        if (attrNames.contains("OSCARS-administrator")){
+            roleMap.put("adminUserRole", Boolean.TRUE);
+        } else {
+            roleMap.put("adminUserRole", Boolean.FALSE);
+        }
+        if (modify) {
+            roleMap.put("roleModify", Boolean.TRUE);
+        } else {
+            roleMap.put("roleModify", Boolean.FALSE);
+        }
+        outputMap.put("roleCheckboxes", roleMap);
     }
 }
 

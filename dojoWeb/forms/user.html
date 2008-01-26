@@ -4,7 +4,6 @@
         dojo.addOnLoad(function(){
             var w = dojo.byId("userDetailsLogin");
             w.value= oscarsState.login;
-            console.log(w.value);
         });
         dojo.addOnLoad(function(){
             dojo.xhrPost({
@@ -39,7 +38,7 @@
     <td>Password (Enter twice)</td>
     <td class="required">
       <input type="password" name="password" id="password"
-             dojoType="dijit.form.ValidationTextBox" regExp="[\w]+"
+             dojoType="dijit.form.ValidationTextBox" regExp="[\w*]+"
              required="true"
              promptMessage="Enter an account password"
              invalidMessage="You must enter an account password" />
@@ -51,7 +50,7 @@
       <input type="password"
              name="passwordConfirmation" id="passwordConfirmation"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             regExp="[\w*]+" required="true"
              promptMessage="Reconfirm the account password"
              invalidMessage="You must reconfirm the account password" />
     </td>
@@ -80,7 +79,7 @@
   </tr>
   <tr>
     <td>X.509 subject name</td>
-    <td class="required">
+    <td>
       <input type="text" name="certSubject" id="certSubject"
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
@@ -91,7 +90,7 @@
   </tr>
   <tr>
     <td>X.509 issuer name</td>
-    <td class="required">
+    <td>
       <input type="text" name="certIssuer" id="certIssuer"
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
@@ -106,9 +105,35 @@
         <div id="institutionMenuDiv" />
     </td>
   </tr>
-  <div id="roleListDiv" />
   <tr>
-    <td valign="top">Personal Description</td>
+    <td>Choose Roles</td>
+    <td>
+      <input name="roles" id="oscarsUserRole"
+        dojoType="dijit.form.CheckBox"
+        type="checkbox" />
+      <label for="oscarsUserRole">User - make reservations</label>
+    </td>
+  </tr>
+  <tr>
+    <td>*</td>
+    <td>
+      <input name="roles" id="engineerUserRole"
+        dojoType="dijit.form.CheckBox"
+        type="checkbox" />
+      <label for="engineerUserRole">Engineer - manage all reservations</label>
+    </td>
+  </tr>
+  <tr>
+    <td>*</td>
+    <td>
+      <input name="roles" id="adminUserRole"
+        dojoType="dijit.form.CheckBox"
+        type="checkbox" />
+      <label for="adminUserRole">Administrator - manage all users</label>
+    </td>
+  </tr>
+  <tr>
+    <td>Personal Description</td>
     <td>
        <input name="description" id="description"
               dojoType="dijit.form.TextBox"

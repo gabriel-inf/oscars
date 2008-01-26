@@ -83,7 +83,7 @@ public class UserQuery extends HttpServlet {
         }
         institutions = mgr.getInstitutions();
         Map outputMap = new HashMap();
-        outputMap.put("status", "Profile for " + profileName);
+        outputMap.put("status", "Profile for user " + profileName);
         userDetails.contentSection(
                 outputMap, targetUser, modifyAllowed,
                 (authVal == AuthValue.ALLUSERS),
