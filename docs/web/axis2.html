@@ -4,42 +4,58 @@
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
   <title>Axis2 Usage Notes</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
 <body>
+<!--#include virtual="header.html" -->
+<br>
+<div id="topBar" class="topBar" style="height: 2.2em;">
+<div class="topBarDiv" style="float: left; margin-top: 0.5em;"> &nbsp;
+<!--
+<script language="JavaScript">
+function showBreadcrumbsEllipsis()
+{
+document.getElementById('breadcrumbsEllipsis').style.display = 'none';
+document.getElementById('breadcrumbsExpansion').style.display = 'inline';
+}
+</script>--><a
+ href="index.html">home</a> &gt; <a href="dependencies.html">Dependencies
+&gt; Intalling Axis2</a>
+</div>
+</div>
 <h2>Axis2 Usage Notes</h2>
-
 <h3>How to install or upgrade Axis2 + rampart.mar</h3>
 <span style="font-weight: bold; font-style: italic;">To Build<br>
 <br>
 </span>The OSCARS code uses the the WSSE functionality provided by the
 ramapart.mar to digitally sign and verify SOAP messages. So when you
-install axist2 you must include the rampart.mar.<br>
+install axis2 you must include the rampart.mar.<br>
 <br>
 Download the axis2 distribution from http://ws.apache.org/axis2 and the
 rampart module from
-http://ws.apache.org/axis2/modules/rampart/1_1/security-module.html.&nbsp;
+http://ws.apache.org/axis2/modules/rampart/1_3/security-module.html.&nbsp;
 <br>
 Extract the zip files and follow the instructions in the
-README.txt&nbsp; in the rampart-1.1.zip file to copy the required
+README.txt&nbsp; in the rampart-1.3.directory to copy the required
 libraries to
 the main "lib" dir of Axis2. <br>
-In conf/axis2.xml engage rampart, change change <span
- style="font-style: italic;">DrillDownToRootCause </span>to true and
-change <span style="font-style: italic;">sendStackTraceDetails</span>
-to true<br>
-Then build an axis2.war file that includes
-rampart.war<br>
 <br>
-You should then copy all the axis2 jar files into OSCARS/lib/axis2 and
-the rampart jar files into OSCARS/lib. <br>
+Then in your axis2 build area edit conf/axis2.xml engage rampart and if
+you want a better chance at
+debugging errors change <span style="font-style: italic;">DrillDownToRootCause
+</span>to true and <span style="font-style: italic;">sendStackTraceDetails</span>
+to true. The last time I built, I also need to comment out the excludes
+of axis2-adb-codegen*.jar, axis2-codegen*.jar and jibx-bind*.jar from
+the depends target in the axis2 webapp directory, as they are needed
+when rampart is invoked.
+Then build an axis2.war file that will include
+rampart.mar<br>
 <br>
-Now move aside the src/net/es/osccars//{oscars,wsdlTypes} directories
-and run ant wsdl2jJava. We have hand edited the OSCARSSkeleton.java,
-AAAFaultMessageExcpetion and BSSFaultMessageException, so you need to
-replace the newely genertated files with the old ones, making sure
-that none of the interfaces changed.<br>
-<br>
-Clean and rebuild the OSCARS compile tree and OSCARS.aar.<br>
+You should then copy all the axis2 jar files into OSCARS/lib/axis2 in
+your OSCARS
+build area. <br>
 <br>
 <span style="font-weight: bold; font-style: italic;">To Install<br>
 </span>Shutdown tomcat; <br>
@@ -55,5 +71,6 @@ Copy the saved log4j.properties back into
 webapps/axis2/WEB-INF/classes/log4j.properties<br>
 Restart Tomcat.<br>
 <br>
+<!--#include virtual="footer.html" -->
 </body>
 </html>

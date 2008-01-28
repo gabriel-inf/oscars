@@ -4,15 +4,13 @@
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
   <title>OSCARS Message Security</title>
-  <style type="text/css">
-body {
-margin-left: 7%;
-margin-right: 5%;
-}
-</style>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
 
 <body>
+<!--#include virtual="header.html" -->
 <h2>OSCARS Message Security</h2>
 <h3>Overview</h3>
 The OSCARS Web pages and Web Services are run within a Tomcat container which uses SSL connections
@@ -149,8 +147,8 @@ the configuration information is kept in properties files.
    Needs trustedCertEnties and oscars-dev keyEntry, (not distributed outside
    of LBL in domain/client/sec-client.jks). The ant task "setupServer" will create a repo directory
    with the necessary axis2.xml, sec-client.properties, sec-client.jks 
-and ssl-keystore.jks in ${catalina.home}/shared/classes/repo
-   directory.
-  
+   and ssl-keystore.jks in ${catalina.home}/shared/classes/repo
+   directory. <br>
+ <!--#include virtual="footer.html" --> 
 </body>
 </html>	

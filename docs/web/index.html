@@ -2,29 +2,12 @@
 <html>
 <head>
   <title>OSCARS</title>
-  <base href="/docs/web">
+  <base href="/docs">
   <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
-<!-- <link rel="stylesheet" href="styleSheets/I2main.css" type="text/css"> -->
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
 <body>
-<table style="background-color: rgb(240, 240, 240);" align="center">
-  <tbody>
-    <tr>
-      <td> <a href="http://www.internet2.edu/"> <img
- src="images/internet2_logo.png" alt="Internet2 logo" title="Internet 2"
- border="0" height="58" width="73"></a> </td>
-      <td>
-      <p class="pagetitle">OSCARS</p>
-      <h2>On-Demand Secure Circuits and Advance Reservation System</h2>
-      <h3 style="text-align: center;">Version 0.2</h3>
-      </td>
-      <td> <a href="http://www.es.net/"> <img
- src="images/ESnetLogo.png" alt="ESnet Logo" title="ESnet" border="0"
- height="58" width="77"></a> </td>
-    </tr>
-  </tbody>
-</table>
+<!--#include virtual="header.html" -->
 <br>
 <div id="topBar" class="topBar" style="height: 2.2em;">
 <div class="topBarDiv" style="float: left; margin-top: 0.5em;"> &nbsp;
@@ -40,9 +23,8 @@
 <table cellpadding="10" width="90%">
   <tbody>
     <tr>
-      <td rowspan="3" valign="top">
- <!--#include virtual="sideMenu.html" -->
-<br>
+      <td rowspan="3" valign="top"><!--#include virtual="sideMenu.html" -->
+      <br>
       </td>
       <td>
       <h2>Overview</h2>
@@ -56,7 +38,21 @@ Sciences Network</a>
 infrastructure. The On-Demand Secure Circuits and Advance
 Reservation System (OSCARS) project prototypes one such new service:
 dynamically provisioned, guaranteed bandwidth secure circuits both
-within ESnet, and between ESnet and other network domains. </div>
+within ESnet, and between ESnet and other network domains. 
+<br><br>
+OSCARS is funded out of the DOE Office of Science. The official
+<a href="http://www.es.net/OSCARS/">project</a> page has links to the
+original proposal, a project summary, and presentations on OSCARS.
+Based on the original proposal, <a href="specs/fspec.html">functional</a>
+and <a href="specs/dspec.html">design</a> specifications were written
+to formalize the plans for the implementation. The original
+implementation
+was based on the <a href="https://wiki.internet2.edu/confluence/display/CPD/OSCARS+and+BRUW">Internet2 BRUW project</a>.
+Since then, the two projects have merged and share a common code base.
+<br><br>
+A <a href="papers/gridnets.pdf">GridNets 2006 paper</a> goes into
+the details of OSCARS as of August 2006.
+</div>
       </td>
     </tr>
     <tr>
