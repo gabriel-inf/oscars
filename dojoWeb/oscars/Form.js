@@ -41,7 +41,6 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
               createReservationPaneTab = new dojox.layout.ContentPane(
                 {title:'Create Reservation', id: 'createReservationPane'},
                  dojo.doc.createElement('div'));
-                 createReservationPaneTab.setHref("forms/createReservation.html");
             }
             mainTabContainer.addChild(createReservationPaneTab, 1);
             createReservationPaneTab.startup();
@@ -96,7 +95,8 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         if (dijit.byId("userDetailsPane") != null) {
             mainTabContainer.removeChild(dijit.byId("userDetailsPane"));
         }
-    } else if (responseObject.method == "UserQuery") {
+    } else if ((responseObject.method == "CreateReservationForm") ||
+                (responseObject.method == "UserQuery")) {
         oscars.Form.applyParams(responseObject);
     }
 }
@@ -104,28 +104,50 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
 oscars.Form.handleError = function(responseObject, ioArgs) {
 }
 
+// NOTE:  Depends on naming  convention agreements between client and server.
+// Parameter names ending with Checkboxes, Display and Div are treated
+// differently than other names, which are treated as widget ids.  Note that
+// widget id's of "method", "status", and "succeed" will mess things up, since
+// they are parameter names used by handleReply.
 oscars.Form.applyParams = function(responseObject) {
     for (var param in responseObject) {
-        // NOTE:  have to be careful with widget id's on page
-        //        e.g. can't have id's of method, success, or status
         var n = dojo.byId(param);
+        // if info for a group of checkboxes
         if (param.match(/Checkboxes$/i) != null) {
+            var disabled = false;
+            // first search to see if checkboxes can be modified
+            for (var cb in responseObject[param]) {
+                if (cb == "modify") {
+                    if (!responseObject[param][cb]) {
+                        disabled = true;
+                        break;
+                    }
+                }
+            }
+            // set checkbox attributes
             for (var cb in responseObject[param]) {
                 // get check box
                 var w = dijit.byId(cb);
                 if (w != null) {
-                    // true or false
                     if (responseObject[param][cb]) {
                         w.setChecked(true);
                     } else {
                         w.setChecked(false);
                     }
+                    w.setDisabled(disabled);
                 }
+            }
+        } else if (param.match(/Display$/i) != null) {
+            if (n != null) {
+                n.style.display= responseObject[param] ? "" : "none";
             }
         } else if (n == null) {
             continue;
+        // if info to replace div section with; must be existing div with that
+        // id
         } else if (param.match(/Div$/i) != null) {
             n.innerHTML = responseObject[param];
+        // set widget value
         } else {
             n.value = responseObject[param];
         }   
@@ -147,6 +169,12 @@ oscars.Form.selectedChanged = function(contentPane) {
         // only do first time
         if (n == null) {
             contentPane.setHref("forms/user.html");
+        }
+    } else if (contentPane.id == "createReservationPane") {
+        var n = dojo.byId("reservationLogin");
+        // only do first time
+        if (n == null) {
+            contentPane.setHref("forms/createReservation.html");
         }
     }
     // start of back/forward button functionality

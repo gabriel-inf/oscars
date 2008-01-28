@@ -2,10 +2,26 @@
 <head>
     <script type="text/javascript>
         dojo.addOnLoad(oscars.DigitalClock.initDefaultClocks);
+        dojo.addOnLoad(function(){
+            var w = dojo.byId("reservationLogin");
+            w.value= oscarsState.login;
+        });
+        dojo.addOnLoad(function(){
+            dojo.xhrPost({
+                url: 'servlet/CreateReservationForm',
+                handleAs: "json-comment-filtered",
+                load: oscars.Form.handleReply,
+                error: oscars.Form.handleError,
+                form: dojo.byId("createReservationForm")
+            });
+        });
     </script>
 </head>
 
 <form id="createReservationForm" method="POST" action="servlet/CreateReservation">
+
+<!-- currently just used to load form once -->
+<input type="hidden" name="login" id="reservationLogin" />
 
 <p>Required inputs are bordered in green.  Ranges or types of valid
 entries are given in parentheses after the default values, if any.
@@ -13,8 +29,12 @@ Click on the boxes associated with the start and end date and times to set
 the reservation time slot.  The time slot defaults to
  now, and now + 5 minutes, respectively.</p>
 
-<div id="authorizedWarning">
-    &nbsp;
+<!-- NOTE:  there will be flicker if user is authorized.  Would need to
+            create everything programmatically to avoid. -->
+<div id="authorizedWarningDisplay" style="display: none">
+<p>WARNING: Entering a value in a red-outlined field may change default
+routing behavior for the selected flow.
+</p>
 </div>
 
 <table>
@@ -76,7 +96,16 @@ the reservation time slot.  The time slot defaults to
     <td>( For our records )</td>
   </tr>
 
-  <div id="authorizedPath">&nbsp;</div>
+    <tr id="authorizedPathDisplay" style="display:none">
+      <td>Path</td>
+      <td class="warning">
+        <textarea name="explicitPath" id="explicitPath"
+                  dojoType="dijit.form.Textarea">
+        </textarea>
+      </td>
+      <td>(series of hops)</td>
+    </tr>
+
   <tr>
     <td>Start date</td>
     <td><input dojoType="dijit.form.DateTextBox" name="startDate" /></td>

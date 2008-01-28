@@ -130,7 +130,7 @@ public class UserDetails {
     public void outputRoleMap(Map outputMap, List<String> attrNames,
                                boolean modify) {
 
-        Map roleMap = new HashMap<String,String>();
+        Map roleMap = new HashMap();
         if (attrNames.contains("OSCARS-user")) {
             roleMap.put("oscarsUserRole", Boolean.TRUE);
         } else {
@@ -147,9 +147,9 @@ public class UserDetails {
             roleMap.put("adminUserRole", Boolean.FALSE);
         }
         if (modify) {
-            roleMap.put("roleModify", Boolean.TRUE);
+            roleMap.put("modify", Boolean.TRUE);
         } else {
-            roleMap.put("roleModify", Boolean.FALSE);
+            roleMap.put("modify", Boolean.FALSE);
         }
         outputMap.put("roleCheckboxes", roleMap);
     }

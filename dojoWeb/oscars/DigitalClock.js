@@ -43,8 +43,8 @@ oscars.DigitalClock.updateDefaultClocks =
     // TODO:  FIX, won't be in sync with main clock part of the time
     var localDate = new Date(oscarsState.ms);
     var currentMonth = localDate.getMonth();
-    var formattedDt = currentMonth + 1 + "-" + localDate.getDate() +
-                   "-" + localDate.getFullYear();
+    var formattedDt = currentMonth + 1 + "/" + localDate.getDate() +
+                   "/" + localDate.getFullYear();
 
     digits = localDate.getHours();
     formattedTime = (digits > 9 ? '' : '0') + digits + ':';
@@ -55,8 +55,8 @@ oscars.DigitalClock.updateDefaultClocks =
     // get default end time
     var endDate = new Date(oscarsState.ms + 60*4*1000);
     currentMonth = endDate.getMonth();
-    formattedDt = currentMonth + 1 + "-" + endDate.getDate() +
-                   "-" + endDate.getFullYear();
+    formattedDt = currentMonth + 1 + "/" + endDate.getDate() +
+                   "/" + endDate.getFullYear();
     digits = endDate.getHours();
     formattedTime = (digits > 9 ? '' : '0') + digits + ':';
     digits = endDate.getMinutes();
