@@ -137,7 +137,12 @@ public class ListReservations extends HttpServlet {
         out.println("<td><input type='submit' value='Refresh'></input></td>");
         List<String> statuses = this.getStatuses(request, userSession);
         this.outputStatusMenu(out, statuses);
-        out.println("<td>Description: <input type=\"text\" name=\"description\"/></td>");
+
+        String description = request.getParameter("description"); //save description from last request
+        if (description == null) {
+        	description = "";
+        }
+        out.println("<td>Description: <input type='text' name='description' value='"+description+"'/></td>");
         out.println("</tr>");
         out.println("</tbody>");
         out.println("</table>");
