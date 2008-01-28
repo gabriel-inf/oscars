@@ -103,7 +103,7 @@ public class ListReservations extends HttpServlet {
         }
         try {
             // TODO:  other criteria
-            reservations = rm.list(login, logins, statuses, null, null, null);
+            reservations = rm.list(login, logins, statuses, null, null, null, null);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);
             return null;
@@ -240,7 +240,7 @@ public class ListReservations extends HttpServlet {
         fullStatuses.add("FAILED");
         fullStatuses.add("INVALIDATED");
         out.println("<td>Statuses</td>");
-        out.println("<td><select class='required' name='statuses' multiple='multiple'>");
+        out.println("<td><seislect class='required' name='statuses' multiple='multiple'>");
         for (String fullStatus: fullStatuses) {
             out.println("<option value='" + fullStatus + "' ");
             if (selectedStatuses.containsKey(fullStatus)) {
