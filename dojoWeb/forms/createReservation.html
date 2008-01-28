@@ -131,6 +131,22 @@ routing behavior for the selected flow.
       <input type="text" dojoType="dijit.form.TextBox" name="vlanTag"></input>
     </td>
     <td>tag, or range, e.g. 3000-3100</td></tr>
+  <tr><td>Source Port</td>
+    <td colspan="2">
+      <select name="srcPortTag">
+        <option value="Tagged" selected="selected">Tagged</option>
+        <option value="Untagged">Untagged</option>
+      </select>
+    </td>
+  </tr>
+  <tr><td>Destination Port</td>
+    <td colspan="2">
+      <select name="destinationPortTag">
+        <option value="Tagged" selected="selected">Tagged</option>
+        <option value="Untagged">Untagged</option>
+      </select>
+    </td>
+  </tr>
 
   <tr><td colspan="3"> </td></tr>
   <tr><td colspan="3"><strong>Layer 3 parameters</strong></td></tr>

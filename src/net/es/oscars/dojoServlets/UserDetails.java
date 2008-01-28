@@ -146,6 +146,11 @@ public class UserDetails {
         } else {
             roleMap.put("adminUserRole", Boolean.FALSE);
         }
+        if (attrNames.contains("OSCARS-service")) {
+            roleMap.put("serviceUserRole", Boolean.TRUE);
+        } else {
+            roleMap.put("serviceUserRole", Boolean.FALSE);
+        }
         if (modify) {
             roleMap.put("modify", Boolean.TRUE);
         } else {
