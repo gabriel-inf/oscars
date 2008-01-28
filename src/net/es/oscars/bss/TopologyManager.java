@@ -1,6 +1,7 @@
 package net.es.oscars.bss;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.Notifier;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
@@ -52,6 +53,7 @@ public class TopologyManager {
     private Utils utils;
     private Properties props;
     private String localDomain;
+    private Notifier notifier;
 
     private HashMap<String, Domain> dbDomainMap;
     private HashMap<String, Node> dbNodeMap; 
@@ -62,8 +64,7 @@ public class TopologyManager {
     public TopologyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
-
-
+        this.notifier = new Notifier();
         
         this.rm = new ReservationManager(this.dbname);
         this.utils = new Utils(this.dbname);
@@ -846,10 +847,17 @@ public class TopologyManager {
                 pathElem = pathElem.getNextElem();
             }
 
+            String subject = "Reservation " + r.getGlobalReservationId() +
+                             "invalidated";
+
             // This should never happen.  However, the semantics of
             // using these are different than in the original
             // reservation creation, where they can be null.
             if ((ingressNodeIP == null) || (egressNodeIP == null)) {
+                String msg = "Reservation invalidated due to null " +
+                             "ingress/egress IP.\n" +
+                              r.toString(this.dbname) + "\n";
+                this.sendMessage(subject, msg);
                 r.setStatus("INVALIDATED");
                 this.log.warn("INVALIDATED request due to null ingress/egress IP: " +r.getGlobalReservationId() );
 
@@ -867,6 +875,9 @@ public class TopologyManager {
                 // finds path and checks for oversubscription
                 path = this.rm.getPath(r, pathInfo);
             } catch (BSSException e) {
+                String msg = "Reservation invalidated due to oversubscription.\n " +
+                              r.toString(this.dbname) + "\n";
+                this.sendMessage(subject, msg);
                 r.setStatus("INVALIDATED");
                 this.log.warn("INVALIDATED request due to oversubscription: " +r.getGlobalReservationId() );
                 dao.update(r);
@@ -879,6 +890,9 @@ public class TopologyManager {
                 dao.update(r);
             } else if (status.equals("ACTIVE")) {
                 if (!this.isDuplicate(oldPath, path)) {
+                    String msg = "Reservation invalidated due to changed path.\n" +
+                                  r.toString(this.dbname) + "\n";
+                    this.sendMessage(subject, msg);
                     r.setStatus("INVALIDATED");
                     this.log.warn("INVALIDATED request due to changed path: " +r.getGlobalReservationId() );
                     dao.update(r);
@@ -1123,5 +1137,15 @@ public class TopologyManager {
      */
     public void setLocalDomain(String domainId) {
         this.localDomain = domainId;
+    }
+
+    private void sendMessage(String subject, String msg) {
+        try {
+            this.notifier.sendMessage(subject, msg);
+        } catch (javax.mail.MessagingException ex) {
+            this.log.warn("invalidated.mail.exception: " + ex.getMessage());
+        } catch (UnsupportedOperationException ex) {
+            this.log.warn("invalidated.mail.unsupported: " + ex.getMessage());
+        }
     }
 }
