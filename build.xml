@@ -193,8 +193,12 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <target name="copydocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
         <mkdir dir="web/docs"/>
         <copy todir="web/docs">
-            <fileset dir="docs" excludes="papers/*"/>
+            <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
+        	<fileset dir="conf/server" includes="OSCARS.*"/>
         </copy>
+        <copy todir="web/docs">
+             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
+         </copy>
         <copy todir="web/docs/papers">
             <fileset dir="docs/papers" includes="*.pdf"/>
         </copy>
