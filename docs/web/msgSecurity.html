@@ -35,7 +35,12 @@ to an adjacent domain. Thus on an OSCARS server host there will be both server a
 <p>
 Since all of the code is in Java, the private keys and certificates are kept in Java keystore files, and 
 the configuration information is kept in properties files.
-
+<p>
+Most of the configuration and keystore files contain information that is private to a domain
+or user. The source code available from our <a href="subversion.html">code repository</a> includes
+samples of these files in the conf/examples directory. They will allow the user alice with a
+certificate from the OASIS Interop Test CA to contact the server.You will need to edit these files
+to add the host and server certificates and user keys from your own site.
 <h3>Configuration Files</h3>
 <ul>
    <li><b>axis2.xml</b> Used by OSCARS client. <br>
