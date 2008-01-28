@@ -851,6 +851,8 @@ public class TopologyManager {
             // reservation creation, where they can be null.
             if ((ingressNodeIP == null) || (egressNodeIP == null)) {
                 r.setStatus("INVALIDATED");
+                this.log.warn("INVALIDATED request due to null ingress/egress IP: " +r.getGlobalReservationId() );
+
                 dao.update(r);
 
                 continue;
@@ -866,6 +868,7 @@ public class TopologyManager {
                 path = this.rm.getPath(r, pathInfo);
             } catch (BSSException e) {
                 r.setStatus("INVALIDATED");
+                this.log.warn("INVALIDATED request due to oversubscription: " +r.getGlobalReservationId() );
                 dao.update(r);
 
                 continue;
@@ -877,6 +880,7 @@ public class TopologyManager {
             } else if (status.equals("ACTIVE")) {
                 if (!this.isDuplicate(oldPath, path)) {
                     r.setStatus("INVALIDATED");
+                    this.log.warn("INVALIDATED request due to changed path: " +r.getGlobalReservationId() );
                     dao.update(r);
                 }
             }
