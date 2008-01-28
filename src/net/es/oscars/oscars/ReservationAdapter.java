@@ -227,8 +227,8 @@ public class ReservationAdapter {
         	startTime = tmp.getStartTime();
         	endTime = tmp.getEndTime();
         }
-        
-        reservations = this.rm.list(login, loginIds, statuses, inLinks, startTime, endTime);
+        String description = request.getDescription();
+        reservations = this.rm.list(login, loginIds, statuses, description, inLinks, startTime, endTime);
         
         reply = this.tc.reservationToListReply(reservations,
                 request.getResRequested(), request.getResOffset());

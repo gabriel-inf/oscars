@@ -58,6 +58,7 @@ public class ListReservationsClient extends ExampleClient {
         	String[] statuses;
         	String strResults = "";
         	String strOffset = "";
+        	String description = "";
         	
             if (isInteractive) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -66,6 +67,8 @@ public class ListReservationsClient extends ExampleClient {
                 statuses = statusesInput.split(",");
                 System.out.print("Input a link topoId to only get reservations affecting that: ");
                 linkId = br.readLine().trim();
+                System.out.print("Input a string to only get reservations with that as part of the description: ");
+                description = br.readLine().trim();
                 System.out.print("Number of results (default 10): ");
                 strResults = br.readLine().trim();
                 System.out.print("Offset (default 0): ");
@@ -96,6 +99,10 @@ public class ListReservationsClient extends ExampleClient {
             if (!linkId.equals("")) {
             	listReq.addLinkId(linkId.trim());
             }
+            if (!description.equals("")) {
+            	listReq.setDescription(description);
+            }
+            
         } catch (IOException ioe) {
             System.out.println("IO error reading query input");
             System.exit(1);

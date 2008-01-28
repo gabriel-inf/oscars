@@ -68,7 +68,7 @@ public class ReservationDAO
      * @throws BSSException
      */
     @SuppressWarnings("unchecked")
-    public List<Reservation> list(List<String> logins, List<String> statuses, List<Link> links, Long startTime, Long endTime) 
+    public List<Reservation> list(List<String> logins, List<String> statuses, String description, List<Link> links, Long startTime, Long endTime) 
     		throws BSSException {
     	this.log.info("list.start");
     	this.reservations = new ArrayList<Reservation>();
@@ -83,6 +83,12 @@ public class ReservationDAO
     	if (statuses != null && !statuses.isEmpty()) {
     		statusQ = "r.status IN ("+Utils.join(statuses, ",", "'", "'")+") ";
     		criteria.add(statusQ);
+    	}
+    	
+    	String descriptionQ = null;
+    	if (description != null) {
+    		descriptionQ = "r.description LIKE '%:description%'";
+    		criteria.add(descriptionQ);
     	}
     	
     	String startQ = null;
@@ -110,6 +116,11 @@ public class ReservationDAO
         if (endTime != null) {
             query.setLong("endTime", endTime);
         }
+
+        if (description != null) {
+            query.setString("description", description);
+        }
+
 		this.reservations = query.list();
 		
     	if (links != null && !links.isEmpty()) {

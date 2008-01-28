@@ -282,14 +282,14 @@ public class ReservationManager {
      * @throws BSSException
      */
     public List<Reservation> list(String login, List<String> loginIds,
-        List<String> statuses, List<Link> links, Long startTime, Long endTime)
+        List<String> statuses, String description, List<Link> links, Long startTime, Long endTime)
         throws BSSException {
         List<Reservation> reservations = null;
 
         this.log.info("list.start, login: " + login);
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        reservations = dao.list(loginIds, statuses, links, startTime, endTime);
+        reservations = dao.list(loginIds, statuses, description, links, startTime, endTime);
         this.log.info("list.finish, success");
 
         return reservations;

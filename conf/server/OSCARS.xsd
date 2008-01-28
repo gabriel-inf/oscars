@@ -199,6 +199,8 @@
               <xsd:element name="startTime" type="xsd:long" />
               <xsd:element name="endTime" type="xsd:long" /> 
            </xsd:sequence>
+           <xsd:element name="description" type="xsd:string"
+                   maxOccurs="1" minOccurs="0" />
            <xsd:element name="linkId" type="xsd:string"
                    maxOccurs="unbounded" minOccurs="0" />
            <xsd:element name="resRequested" type="xsd:int"
