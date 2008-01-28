@@ -86,7 +86,7 @@ public class ListReservations extends HttpServlet {
         List<Reservation> reservations = null;
         List<String> logins = null;
         List<String> statuses = this.getStatuses(request, userSession);
-        String description = request.getParameter("description");
+        String description = this.getDescription(request, userSession);
         boolean allUsers = false;
         Utils utils = new Utils();
 
@@ -138,10 +138,8 @@ public class ListReservations extends HttpServlet {
         List<String> statuses = this.getStatuses(request, userSession);
         this.outputStatusMenu(out, statuses);
 
-        String description = request.getParameter("description"); //save description from last request
-        if (description == null) {
-        	description = "";
-        }
+        String description = this.getDescription(request, userSession); 
+        
         out.println("<td>Description: <input type='text' name='description' value='"+description+"'/></td>");
         out.println("</tr>");
         out.println("</tbody>");
@@ -203,6 +201,17 @@ public class ListReservations extends HttpServlet {
         }
         cookieValue.trim();
         userSession.setCookie("statusList", cookieValue, response);
+        
+        userSession.setCookie("description", description, response);
+    }
+    
+    public String getDescription(HttpServletRequest request, UserSession userSession) {
+    	String description = null;
+    	description = request.getParameter("description"); 
+    	if (description == null) {
+    		description = "";
+    	}
+    	return description;
     }
 
     public  List<String> getStatuses(HttpServletRequest request,
