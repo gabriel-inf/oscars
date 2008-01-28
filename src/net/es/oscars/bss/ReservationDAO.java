@@ -87,7 +87,7 @@ public class ReservationDAO
     	
     	String descriptionQ = null;
     	if (description != null) {
-    		descriptionQ = "r.description LIKE '%:description%'";
+    		descriptionQ = "r.description LIKE '%"+description+"%'";
     		criteria.add(descriptionQ);
     	}
     	
@@ -117,9 +117,6 @@ public class ReservationDAO
             query.setLong("endTime", endTime);
         }
 
-        if (description != null) {
-            query.setString("description", description);
-        }
 
 		this.reservations = query.list();
 		
