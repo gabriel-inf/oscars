@@ -13,6 +13,13 @@
 
 <h2>Installation</h2>
 
+<ul>
+<li><b>Rampart isn't working for me. I get: java.lang.NoClassDefFoundError: org/apache/axis2/wsdl/codegen/extension/ModulePolicyExtension.</b> <br />
+Check whether all axis2 libraries are deployed correctly. The axis2 1.3 war does 
+NOT include axis2-codegen. You'll need to manually copy axis2-codegen-1.3.jar to 
+CATALINA_HOME/webapps/axis2/WEB-INF/lib/ , then try again. </li>
+</ul>
+
 <h2>Configuration</h2>
 
 <h2>Maintenance</h2>
