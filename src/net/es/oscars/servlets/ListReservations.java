@@ -140,7 +140,7 @@ public class ListReservations extends HttpServlet {
 
         String description = this.getDescription(request, userSession); 
         
-        out.println("<td>Description: <input type='text' name='description' value='"+description+"'/></td>");
+        out.println("<td>Description: <input type='text' class='SOAP' name='description' value='"+description+"'></input></td>");
         out.println("</tr>");
         out.println("</tbody>");
         out.println("</table>");
