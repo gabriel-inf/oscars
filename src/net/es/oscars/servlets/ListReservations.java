@@ -211,8 +211,8 @@ public class ListReservations extends HttpServlet {
     	if (description == null) {
     		
             description = userSession.getCookie("description", request);
-            String paramStatuses[] = request.getParameterValues("statuses"); 
-            if (description == null || paramStatuses != null) {
+            List<String> statuses = this.getStatuses(request, userSession); 
+            if (description == null || !statuses.isEmpty() ) {
         		description = "";
             }
     	}
