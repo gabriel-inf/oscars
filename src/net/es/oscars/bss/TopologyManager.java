@@ -850,22 +850,6 @@ public class TopologyManager {
             String subject = "Reservation " + r.getGlobalReservationId() +
                              "invalidated";
 
-            // This should never happen.  However, the semantics of
-            // using these are different than in the original
-            // reservation creation, where they can be null.
-            if ((ingressNodeIP == null) || (egressNodeIP == null)) {
-                String msg = "Reservation invalidated due to null " +
-                             "ingress/egress IP.\n" +
-                              r.toString(this.dbname) + "\n";
-                this.sendMessage(subject, msg);
-                r.setStatus("INVALIDATED");
-                this.log.warn("INVALIDATED request due to null ingress/egress IP: " +r.getGlobalReservationId() );
-
-                dao.update(r);
-
-                continue;
-            }
-
             //TODO:  build layer-specific info from old path in database
             //       assuming only the hops have the possibility of changing
             PathInfo pathInfo = new PathInfo();
