@@ -26,9 +26,9 @@ public class UserQuery extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
-	this.log = Logger.getLogger(this.getClass());
-	this.dbname = "aaa";
-	this.log.debug("userQuery:start");
+        this.log = Logger.getLogger(this.getClass());
+        this.dbname = "aaa";
+        this.log.debug("userQuery:start");
 
         User targetUser = null;
         boolean self =  false; // is query about the current user
@@ -87,13 +87,13 @@ public class UserQuery extends HttpServlet {
         userDetails.contentSection(
                 outputMap, targetUser, modifyAllowed,
                 (authVal == AuthValue.ALLUSERS),
-        	      institutions, attrNames);
+                institutions, attrNames);
         outputMap.put("method", "UserQuery");
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
-	      this.log.debug("userQuery:finish");
+        this.log.debug("userQuery:finish");
     }
 
     public void doPost(HttpServletRequest request,

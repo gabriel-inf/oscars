@@ -20,7 +20,20 @@
 <p>Required fields are outlined in green.</p>
 <form id="userDetailsForm" method="POST" action="servlet/UserDetails">
   <input type="hidden" name="login" id="userDetailsLogin" />
-  <input type="submit" name="userModify" value="Modify" />
+
+  <button dojoType="dijit.form.Button" id="userModify">
+     Modify 
+     <script type="dojo/method" event="onClick">
+        dojo.xhrPost({
+          url: 'servlet/UserModify',
+          handleAs: "json-comment-filtered",
+          load: oscars.Form.handleReply,
+          error: oscars.Form.handleError,
+          form: dojo.byId("userDetailsForm")
+        });
+    </script>
+  </button>
+
   <table>
   <tbody>
   <tr>
@@ -38,7 +51,7 @@
     <td>Password (Enter twice)</td>
     <td class="required">
       <input type="password" name="password" id="password"
-             dojoType="dijit.form.ValidationTextBox" regExp="[\w*]+"
+             dojoType="dijit.form.ValidationTextBox"
              required="true"
              promptMessage="Enter an account password"
              invalidMessage="You must enter an account password" />
@@ -50,7 +63,7 @@
       <input type="password"
              name="passwordConfirmation" id="passwordConfirmation"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w*]+" required="true"
+             required="true"
              promptMessage="Reconfirm the account password"
              invalidMessage="You must reconfirm the account password" />
     </td>
@@ -108,8 +121,9 @@
   <tr>
     <td>Choose Roles</td>
     <td>
-      <input name="roles" id="oscarsUserRole"
+       <input name="roles" id="oscarsUserRole"
         dojoType="dijit.form.CheckBox"
+        value="OSCARS-user"
         type="checkbox" />
       <label for="oscarsUserRole">User - make reservations</label>
     </td>
@@ -119,6 +133,7 @@
     <td>
       <input name="roles" id="engineerUserRole"
         dojoType="dijit.form.CheckBox"
+        value="OSCARS-engineer"
         type="checkbox" />
       <label for="engineerUserRole">Engineer - manage all reservations</label>
     </td>
@@ -128,6 +143,7 @@
     <td>
       <input name="roles" id="adminUserRole"
         dojoType="dijit.form.CheckBox"
+        value="OSCARS-administrator"
         type="checkbox" />
       <label for="adminUserRole">Administrator - manage all users</label>
     </td>
@@ -137,6 +153,7 @@
     <td>
       <input name="roles" id="serviceUserRole"
         dojoType="dijit.form.CheckBox"
+        value="OSCARS-service"
         type="checkbox" />
       <label for="serviceUserRole">Service - make reservations and view topology</label>
     </td>

@@ -102,7 +102,6 @@ public class Utils {
                     st=s.trim();
                     try {
                         Integer attrId = attrDAO.getAttributeId(st);
-                        // roles seems to contain two copies of each value -mrt
                         if (!addRoles.contains(attrId)) {
                             log.info("adding "+ attrId);
                             addRoles.add(attrId);
