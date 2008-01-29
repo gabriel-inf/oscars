@@ -209,8 +209,10 @@ public class ListReservations extends HttpServlet {
     	String description = null;
     	description = request.getParameter("description"); 
     	if (description == null) {
+    		
             description = userSession.getCookie("description", request);
-            if (description == null) {
+            String paramStatuses[] = request.getParameterValues("statuses"); 
+            if (description == null || paramStatuses != null) {
         		description = "";
             }
     	}
