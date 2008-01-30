@@ -71,13 +71,14 @@ public class UserQuery extends HttpServlet {
         /* check to see if user has modify permission for this user
          *     used by conentSection to set the action on submit
          */
-       authVal = mgr.checkAccess(userName, "Users", "modify");
-       if (self) {attrNames = mgr.getAttrNames();}
-       else {attrNames = mgr.getAttrNames(profileName);}
+        authVal = mgr.checkAccess(userName, "Users", "modify");
+        if (self) {attrNames = mgr.getAttrNames();}
+        else {attrNames = mgr.getAttrNames(profileName);}
         
-        if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
-              modifyAllowed = true;
-         } else {
+        if ((authVal == AuthValue.ALLUSERS) ||
+            (self && (authVal == AuthValue.SELFONLY))) {
+            modifyAllowed = true;
+        } else {
             modifyAllowed = false;;
         }
         institutions = mgr.getInstitutions();

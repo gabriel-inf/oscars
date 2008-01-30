@@ -34,6 +34,10 @@
         <servlet-class>net.es.oscars.dojoServlets.UserAddForm</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>UserAdd</servlet-name>
+        <servlet-class>net.es.oscars.dojoServlets.UserAdd</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>UserLogout</servlet-name>
         <servlet-class>net.es.oscars.dojoServlets.UserLogout</servlet-class>
     </servlet>
@@ -56,6 +60,10 @@
     <servlet-mapping>
         <servlet-name>UserAddForm</servlet-name>
         <url-pattern>/servlet/UserAddForm</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserAdd</servlet-name>
+        <url-pattern>/servlet/UserAdd</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>UserLogout</servlet-name>

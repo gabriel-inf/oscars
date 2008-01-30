@@ -41,7 +41,7 @@
     <td class="required">
         <input type="text" name="profileName" id="profileName"
                dojoType="dijit.form.ValidationTextBox"
-               regExp="[\w]" required="true"
+               regExp="[\w]+" required="true"
                promptMessage="Enter a login name"
                invalidMessage="You must enter a login name"
                value="" />
@@ -95,7 +95,7 @@
     <td>
       <input type="text" name="certSubject" id="certSubject"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             regExp="[\w]+"
              promptMessage="Enter the certificate subject"
              invalidMessage="You must enter the certificate subject"
              value="" />
@@ -106,7 +106,7 @@
     <td>
       <input type="text" name="certIssuer" id="certIssuer"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             regExp="[\w]+"
              promptMessage="Enter the issuer of the certificate"
              invalidMessage="You must enter the issuer of the certificate"
              value="" />
@@ -172,7 +172,7 @@
     <td class="required">
       <input name="emailPrimary" id="emailPrimary"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             regExp="[\w]+@[\w\.]+" required="true"
              promptMessage="Enter the primary email address"
              invalidMessage="You must enter the primary email address"
              value="" />
@@ -182,8 +182,10 @@
     <td>E-mail (Secondary)</td>
     <td>
       <input name="emailSecondary" id="emailSecondary"
-             dojoType="dijit.form.TextBox"
+             dojoType="dijit.form.ValidationTextBox"
+             regExp="[\w]+@[\w\.]+"
              promptMessage="Enter a secondary email address"
+             invalidMessage="You must enter a valid secondary email address"
              value="" />
     </td>
   </tr>
@@ -192,7 +194,7 @@
     <td class="required">
       <input name="phonePrimary" id="phonePrimary"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             regExp="[\d-]+" required="true"
              promptMessage="Enter the primary phone number"
              invalidMessage="You must enter the primary phone number"
              value="" />
@@ -202,8 +204,10 @@
     <td>Phone Number (Secondary)</td>
     <td>
       <input name="phoneSecondary" id="phoneSecondary"
-             dojoType="dijit.form.TextBox"
+             dojoType="dijit.form.ValidationTextBox"
+             regExp="[\d-]+"
              promptMessage="Enter a secondary phone number"
+             invalidMessage="You must enter a valid phone number"
              value="" />
     </td>
   </tr>
