@@ -1,28 +1,65 @@
 <html>
+<head>
+    <script type="text/javascript>
+        dojo.addOnLoad(function(){
+            var w = dojo.byId("addingUserLogin");
+            w.value= oscarsState.login;
+        });
+        dojo.addOnLoad(function(){
+            dojo.xhrPost({
+                url: 'servlet/UserAddForm',
+                handleAs: "json-comment-filtered",
+                load: oscars.Form.handleReply,
+                error: oscars.Form.handleError,
+                form: dojo.byId("userAddForm")
+            });
+        });
+    </script>
+</head>
 
 <p>Required fields are outlined in green.</p>
-<form id="userAddForm" method="POST" action="servlet/UserAdd">
-  <input type="submit" name="userAdd" value="Add" />
+<form id="userAddForm" method="POST">
+  <input type="hidden" name="login" id="addingUserLogin" />
+
   <table>
   <tbody>
   <tr>
+    <td>
+      <button dojoType="dijit.form.Button" id="userAdd">
+         Add User 
+         <script type="dojo/method" event="onClick">
+            dojo.xhrPost({
+              url: 'servlet/UserAdd',
+              handleAs: "json-comment-filtered",
+              load: oscars.Form.handleReply,
+              error: oscars.Form.handleError,
+              form: dojo.byId("userAddForm")
+            });
+        </script>
+      </button>
+    </td>
+    <td>
+      <input type="reset" value="Reset form fields"</input>
+    </td>
+  </tr>
+
+  <tr>
     <td>Login Name</td>
     <td class="required">
-       <input type="text" name="newProfileName"
-              id="newProfileName"
-              dojoType="dijit.form.ValidationTextBox"
-              regExp="[\w]" required="true"
-              promptMessage="Enter a login name"
-              invalidMessage="You must enter a login name"
-              value="" />
+        <input type="text" name="profileName" id="newProfileName"
+               dojoType="dijit.form.ValidationTextBox"
+               regExp="[\w]" required="true"
+               promptMessage="Enter a login name"
+               invalidMessage="You must enter a login name"
+               value="" />
     </td>
   </tr>
   <tr>
     <td>Password (Enter twice)</td>
     <td class="required">
-      <input type="password" name="newPassword" id="newPassword"
+      <input type="password" name="password" id="newPassword"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             required="true"
              promptMessage="Enter an account password"
              invalidMessage="You must enter an account password" />
     </td>
@@ -31,9 +68,9 @@
     <td>Password Confirmation</td>
     <td class="required">
       <input type="password"
-             name="newPasswordConfirmation" id="newPasswordConfirmation"
+             name="passwordConfirmation" id="newPasswordConfirmation"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+" required="true"
+             required="true"
              promptMessage="Reconfirm the account password"
              invalidMessage="You must reconfirm the account password" />
     </td>
@@ -41,7 +78,7 @@
   <tr>
     <td>First Name</td>
     <td class="required">
-      <input type="text" name="newFirstName" id="newFirstName"
+      <input type="text" name="firstName" id="newFirstName"
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
              promptMessage="Enter the first name"
@@ -52,7 +89,7 @@
   <tr>
     <td>Last Name</td>
     <td class="required">
-      <input type="text" name="newLastName" id="newLastName"
+      <input type="text" name="lastName" id="newLastName"
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
              promptMessage="Enter the last name"
@@ -61,39 +98,86 @@
     </td>
   </tr>
   <tr>
-
-    <td>Organization</td>
-        <!--
-        <td><select class="required" name="institutionName">
-        userInstitution = user.getInstitution()
-        userInstitution != null
-            institutionName = userInstitution.getName()
-        } else
-            institutionName = "Energy Sciences Network"
-        }
-        for (Institution i: insts)
-            <option value="i.getName()"
-            if (i.getName().equals(institutionName))
-                selected="selected"
-            > i.getName() </option>
-        }
-        </select>
-        </td>
-        -->
+    <td>X.509 subject name</td>
+    <td>
+      <input type="text" name="certSubject" id="newCertSubject"
+             dojoType="dijit.form.ValidationTextBox"
+             regExp="[\w]+" required="true"
+             promptMessage="Enter the certificate subject"
+             invalidMessage="You must enter the certificate subject"
+             value="" />
+    </td>
   </tr>
   <tr>
-    <td valign="top">Personal Description</td>
+    <td>X.509 issuer name</td>
     <td>
-      <input name="newDescription" id="newDescription"
-             dojoType="dijit.form.TextBox"
-             promptMessage="Enter a personal description"
+      <input type="text" name="certIssuer" id="newCertIssuer"
+             dojoType="dijit.form.ValidationTextBox"
+             regExp="[\w]+" required="true"
+             promptMessage="Enter the issuer of the certificate"
+             invalidMessage="You must enter the issuer of the certificate"
              value="" />
+    </td>
+  </tr>
+  <tr>
+    <td>Organization</td>
+    <td>
+        <div id="newInstitutionMenuDiv" />
+    </td>
+  </tr>
+  <tr>
+    <td>Choose Roles</td>
+    <td>
+       <input name="roles" id="newOscarsUserRole"
+        dojoType="dijit.form.CheckBox"
+        value="OSCARS-user"
+        type="checkbox" />
+      <label for="oscarsUserRole">User - make reservations</label>
+    </td>
+  </tr>
+  <tr>
+    <td>*</td>
+    <td>
+      <input name="roles" id="newEngineerUserRole"
+        dojoType="dijit.form.CheckBox"
+        value="OSCARS-engineer"
+        type="checkbox" />
+      <label for="engineerUserRole">Engineer - manage all reservations</label>
+    </td>
+  </tr>
+  <tr>
+    <td>*</td>
+    <td>
+      <input name="roles" id="newAdminUserRole"
+        dojoType="dijit.form.CheckBox"
+        value="OSCARS-administrator"
+        type="checkbox" />
+      <label for="adminUserRole">Administrator - manage all users</label>
+    </td>
+  </tr>
+  <tr>
+    <td>*</td>
+    <td>
+      <input name="roles" id="newServiceUserRole"
+        dojoType="dijit.form.CheckBox"
+        value="OSCARS-service"
+        type="checkbox" />
+      <label for="serviceUserRole">Service - make reservations and view topology</label>
+    </td>
+  </tr>
+  <tr>
+    <td>Personal Description</td>
+    <td>
+       <input name="description" id="newDescription"
+              dojoType="dijit.form.TextBox"
+              promptMessage="Enter a personal description"
+              value="" />
     </td>
   </tr>
   <tr>
     <td>E-mail (Primary)</td>
     <td class="required">
-      <input name="newEmailPrimary" id="newEmailPrimary"
+      <input name="emailPrimary" id="newEmailPrimary"
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
              promptMessage="Enter the primary email address"
@@ -104,7 +188,7 @@
   <tr>
     <td>E-mail (Secondary)</td>
     <td>
-      <input name="newEmailSecondary" id="newEmailSecondary"
+      <input name="emailSecondary" id="newEmailSecondary"
              dojoType="dijit.form.TextBox"
              promptMessage="Enter a secondary email address"
              value="" />
@@ -113,7 +197,7 @@
   <tr>
     <td>Phone Number (Primary)</td>
     <td class="required">
-      <input name="newPhonePrimary" id="newPhonePrimary"
+      <input name="phonePrimary" id="newPhonePrimary"
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
              promptMessage="Enter the primary phone number"
@@ -124,13 +208,13 @@
   <tr>
     <td>Phone Number (Secondary)</td>
     <td>
-      <input name="newPhoneSecondary" id="newPhoneSecondary"
+      <input name="phoneSecondary" id="newPhoneSecondary"
              dojoType="dijit.form.TextBox"
              promptMessage="Enter a secondary phone number"
              value="" />
     </td>
   </tr>
   </tbody>
-</table>
+  </table>
 </form>
 </html>

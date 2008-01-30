@@ -70,7 +70,6 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                         userAddPaneTab = new dojox.layout.ContentPane(
                           {title:'Add User', id: 'userAddPane'},
                           dojo.doc.createElement('div'));
-                        userAddPaneTab.setHref("forms/userAdd.html");
                     }
                     mainTabContainer.addChild(userAddPaneTab, 3);
                     userAddPaneTab.startup();
@@ -96,7 +95,8 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             mainTabContainer.removeChild(dijit.byId("userDetailsPane"));
         }
     } else if ((responseObject.method == "CreateReservationForm") ||
-                (responseObject.method == "UserQuery")) {
+                (responseObject.method == "UserQuery") ||
+                (responseObject.method == "UserAddForm")) {
         oscars.Form.applyParams(responseObject);
     }
 }
@@ -187,6 +187,10 @@ oscars.Form.selectedChanged = function(contentPane) {
     } else if (contentPane.id == "userAddPane") {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Add a user";
+        }
+        var n = dojo.byId("addingUserLogin");
+        if (n == null) {
+            contentPane.setHref("forms/userAdd.html");
         }
     } else if (contentPane.id == "userDetailsPane") {
         // TODO:  FIX when coming in from user list when it is implemented

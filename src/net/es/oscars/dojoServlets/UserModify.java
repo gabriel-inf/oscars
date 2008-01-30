@@ -28,8 +28,6 @@ public class UserModify extends HttpServlet {
         this.log.info("userModify:start");
 
         UserManager mgr = null;
-        //UserAdd adder = null;
-        UserDetails userDetails = null;
         User user = null;
         int userId;
         //User requester = null;
