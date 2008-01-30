@@ -164,17 +164,44 @@ oscars.Form.initState = function() {
 }
 
 oscars.Form.selectedChanged = function(contentPane) {
-    if (contentPane.id == "userDetailsPane") {
+    var oscarsStatus = dojo.byId("oscarsStatus");
+    // if not currently in error state, change status to reflect current tab
+    var changeStatus = oscarsStatus.className == "success" ? true : false;
+    if (contentPane.id == "reservationsPane") {
+        if (changeStatus) {
+            oscarsStatus.innerHTML = "Reservations list";
+        }
+    } else if (contentPane.id == "createReservationPane") {
+        if (changeStatus) {
+            oscarsStatus.innerHTML = "Reservation creation form";
+        }
+        var n = dojo.byId("reservationLogin");
+        // only do first time
+        if (n == null) {
+            contentPane.setHref("forms/createReservation.html");
+        }
+    } else if (contentPane.id == "usersPane") {
+        if (changeStatus) {
+            oscarsStatus.innerHTML = "Users list";
+        }
+    } else if (contentPane.id == "userAddPane") {
+        if (changeStatus) {
+            oscarsStatus.innerHTML = "Add a user";
+        }
+    } else if (contentPane.id == "userDetailsPane") {
+        // TODO:  FIX when coming in from user list when it is implemented
+        if (changeStatus) {
+            oscarsStatus.innerHTML = "Profile for user " + oscarsState.login;
+        }
         var n = dojo.byId("userDetailsLogin");
         // only do first time
         if (n == null) {
             contentPane.setHref("forms/user.html");
         }
-    } else if (contentPane.id == "createReservationPane") {
-        var n = dojo.byId("reservationLogin");
-        // only do first time
-        if (n == null) {
-            contentPane.setHref("forms/createReservation.html");
+    } else if (contentPane.id == "sessionPane") {
+        if (changeStatus) {
+            oscarsStatus.innerHTML = "User " + oscarsState.login +
+                                     " logged in";
         }
     }
     // start of back/forward button functionality
