@@ -47,7 +47,6 @@ public class UserAddForm extends HttpServlet {
         Map outputMap = new HashMap();
         outputMap.put("status", "Add a user");
         this.outputInstitutionMenu(outputMap, institutions);
-        this.outputRoleMap(outputMap);
         outputMap.put("method", "UserAddForm");
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
@@ -81,16 +80,5 @@ public class UserAddForm extends HttpServlet {
         }
         sb.append("</select>");
         outputMap.put("newInstitutionMenuDiv", sb.toString());
-    }
-    
-    public void outputRoleMap(Map outputMap) {
-
-        Map roleMap = new HashMap();
-        roleMap.put("newOscarsUserRole", Boolean.FALSE);
-        roleMap.put("newEngineerUserRole", Boolean.FALSE);
-        roleMap.put("newAdminUserRole", Boolean.FALSE);
-        roleMap.put("newServiceUserRole", Boolean.FALSE);
-        roleMap.put("modify", Boolean.TRUE);
-        outputMap.put("roleCheckboxes", roleMap);
     }
 }

@@ -1,12 +1,12 @@
 /*
-DigitalClock.js:        Prints out current date and time.
-Last modified:  December 18, 2007
+DigitalClock.js:        Prints out current date and time in various places.
+Last modified:  January 31, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
 initClock()
-updateClock()
+updateClocks()
 */
 
 dojo.provide("oscars.DigitalClock");
@@ -14,49 +14,39 @@ dojo.provide("oscars.DigitalClock");
 monthName = ['January', 'February', 'March', 'April', 'May',
    'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-// Outputs datetime with format: July 1, 2005 13:00.
-oscars.DigitalClock.updateClock = function (clock) {
+// Outputs datetime with format: July 1, 2005 13:00 in main clock.
+// Updates default times on create reservation form page
+oscars.DigitalClock.updateClocks = function (clock) {
     var localDate = new Date();
-    oscarsState.ms = localDate.getTime();
-    var currentMonth = localDate.getMonth();
-    var formattedDt = monthName[currentMonth] + " " + localDate.getDate() +
-                   ", " + localDate.getFullYear() + " ";
+    var ms = localDate.getTime();
+    var year = localDate.getFullYear().toString();
+    var month = localDate.getMonth();
+    var formattedDt = monthName[month] + " " + localDate.getDate() +
+                   ", " + year + " ";
 
     digits = localDate.getHours();
-    formattedDt += (digits > 9 ? '' : '0') + digits + ':';
-    digits = localDate.getMinutes();
-    formattedDt += (digits > 9 ? '' : '0') + digits;
-    clock.innerHTML = formattedDt;
-}
-
-// Init and updateClock are adapted from the DHTML Utopia book.
-oscars.DigitalClock.initClock = function () {
-    var clock = document.getElementById('clock');
-
-    oscars.DigitalClock.updateClock(clock);
-    setInterval(function() { oscars.DigitalClock.updateClock(clock); }, 60000);
-}
-
-// sets default times on create reservation form
-oscars.DigitalClock.updateDefaultClocks =
-  function(startDateDefault, startTimeDefault, endDateDefault, endTimeDefault) {
-    // TODO:  FIX, won't be in sync with main clock part of the time
-    var localDate = new Date(oscarsState.ms);
-    var currentMonth = localDate.getMonth();
-    var formattedDt = currentMonth + 1 + "/" + localDate.getDate() +
-                   "/" + localDate.getFullYear();
-
-    digits = localDate.getHours();
-    formattedTime = (digits > 9 ? '' : '0') + digits + ':';
+    var formattedTime = (digits > 9 ? '' : '0') + digits + ':';
     digits = localDate.getMinutes();
     formattedTime += (digits > 9 ? '' : '0') + digits;
+    clock.innerHTML = formattedDt + formattedTime;
+    // update default times on create reservation form
+    var startDateDefault = dojo.byId('startDateDefault');
+    // page not loaded yet
+    if (startDateDefault == null) {
+        return;
+    }
+    var startTimeDefault = dojo.byId('startTimeDefault');
+    formattedDt = month + 1 + "/" + localDate.getDate() +
+                   "/" + year.substring(2);
     startDateDefault.innerHTML = formattedDt;
     startTimeDefault.innerHTML = formattedTime;
-    // get default end time
-    var endDate = new Date(oscarsState.ms + 60*4*1000);
-    currentMonth = endDate.getMonth();
-    formattedDt = currentMonth + 1 + "/" + endDate.getDate() +
-                   "/" + endDate.getFullYear();
+    var endDateDefault = dojo.byId('endDateDefault');
+    var endTimeDefault = dojo.byId('endTimeDefault');
+    // get default end time (4 minutes in future)
+    var endDate = new Date(ms + 60*4*1000);
+    year = endDate.getFullYear().toString();
+    month = endDate.getMonth();
+    formattedDt = month + 1 + "/" + endDate.getDate() + "/" + year.substring(2);
     digits = endDate.getHours();
     formattedTime = (digits > 9 ? '' : '0') + digits + ':';
     digits = endDate.getMinutes();
@@ -65,17 +55,11 @@ oscars.DigitalClock.updateDefaultClocks =
     endTimeDefault.innerHTML = formattedTime;
 }
 
-oscars.DigitalClock.initDefaultClocks = function () {
-    var startDateDefault = document.getElementById('startDateDefault');
-    var startTimeDefault = document.getElementById('startTimeDefault');
-    var endDateDefault = document.getElementById('endDateDefault');
-    var endTimeDefault = document.getElementById('endTimeDefault');
+// Init and updateClocks are adapted from the DHTML Utopia book.
+oscars.DigitalClock.initClock = function () {
+    var clock = dojo.byId('clock');
 
-    oscars.DigitalClock.updateDefaultClocks(
-        startDateDefault, startTimeDefault, endDateDefault, endTimeDefault);
-    setInterval(
-        function() {
-            oscars.DigitalClock.updateDefaultClocks(
-                startDateDefault, startTimeDefault,
-                endDateDefault, endTimeDefault); }, 60000);
+    oscars.DigitalClock.updateClocks(clock);
+    setInterval(function() { oscars.DigitalClock.updateClocks(clock); }, 60000);
 }
+

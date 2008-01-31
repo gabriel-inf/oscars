@@ -22,6 +22,10 @@
         <servlet-class>net.es.oscars.dojoServlets.CreateReservationForm</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>CreateReservation</servlet-name>
+        <servlet-class>net.es.oscars.dojoServlets.CreateReservation</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>UserQuery</servlet-name>
         <servlet-class>net.es.oscars.dojoServlets.UserQuery</servlet-class>
     </servlet>
@@ -48,6 +52,10 @@
     <servlet-mapping>
         <servlet-name>CreateReservationForm</servlet-name>
         <url-pattern>/servlet/CreateReservationForm</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateReservation</servlet-name>
+        <url-pattern>/servlet/CreateReservation</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>UserQuery</servlet-name>

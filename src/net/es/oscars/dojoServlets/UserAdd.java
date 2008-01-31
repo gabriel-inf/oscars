@@ -111,13 +111,13 @@ public class UserAdd extends HttpServlet {
         User user = new User();
         user.setLogin(userName);
         strParam = request.getParameter("certIssuer");
-        if ((strParam != null) && (strParam != "")) {
+        if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = utils.checkDN(strParam);
         }
         else { DN = ""; }
         user.setCertIssuer(DN);
         strParam = request.getParameter("certSubject");
-        if ((strParam != null) && (strParam != "")) {
+        if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = utils.checkDN(strParam);
         }
         else { DN = ""; }

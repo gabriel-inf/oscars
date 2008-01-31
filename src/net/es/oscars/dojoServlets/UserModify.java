@@ -195,7 +195,7 @@ public class UserModify extends HttpServlet {
         }
         strParam = request.getParameter("certIssuer");
         this.log.info("certIssuer: " + strParam);
-        if ((strParam != null) && (strParam != "")) {
+        if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = utils.checkDN(strParam);
         }
         // allow setting existent non-required field to null
@@ -204,7 +204,7 @@ public class UserModify extends HttpServlet {
         }
         strParam = request.getParameter("certSubject");
         this.log.info("certSubject: " + strParam);
-        if ((strParam != null) && (strParam != "")) {
+        if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = utils.checkDN(strParam);
         }
         if ((DN != null) || (user.getCertSubject() != null)) {

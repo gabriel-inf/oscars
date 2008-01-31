@@ -1,7 +1,6 @@
 <html>
 <head>
     <script type="text/javascript>
-        dojo.addOnLoad(oscars.DigitalClock.initDefaultClocks);
         dojo.addOnLoad(function(){
             var w = dojo.byId("reservationLogin");
             w.value= oscarsState.login;
@@ -18,22 +17,25 @@
     </script>
 </head>
 
-<form id="createReservationForm" method="POST" action="servlet/CreateReservation">
+<form id="createReservationForm" method="POST">
 
 <!-- currently just used to load form once -->
 <input type="hidden" name="login" id="reservationLogin" />
+<input type="hidden" name="startSeconds" id="startSeconds" />
+<input type="hidden" name="endSeconds" id="endSeconds" />
 
 <p>Required inputs are bordered in green.  Ranges or types of valid
 entries are given in parentheses after the default values, if any.
 Click on the boxes associated with the start and end date and times to set
 the reservation time slot.  The time slot defaults to
- now, and now + 5 minutes, respectively.</p>
+now, and now + 4 minutes, respectively.</p>
 
 <!-- NOTE:  there will be flicker if user is authorized.  Would need to
             create everything programmatically to avoid. -->
 <div id="authorizedWarningDisplay" style="display: none">
 <p>WARNING: Entering a value in a red-outlined field may change default
-routing behavior for the selected flow.
+routing behavior for the selected flow.  Note that the path field will expand
+to the number of lines occurring in the hops list.
 </p>
 </div>
 
@@ -41,7 +43,19 @@ routing behavior for the selected flow.
   <tbody>
   <tr>
     <td>
-      <input type="submit" name="createReservation" value="Reserve bandwidth" />
+      <button dojoType="dijit.form.Button" id="createReservation">
+         Create Reservation
+         <script type="dojo/method" event="onClick">
+            oscars.Form.convertDateTimes();
+            dojo.xhrPost({
+              url: 'servlet/CreateReservation',
+              handleAs: "json-comment-filtered",
+              load: oscars.Form.handleReply,
+              error: oscars.Form.handleError,
+              form: dojo.byId("createReservationForm")
+            });
+        </script>
+      </button>
     </td>
     <td>
       <input type="reset" value="Reset form fields"></input>
@@ -50,9 +64,9 @@ routing behavior for the selected flow.
   <tr>
     <td>Source</td>
     <td class="required">
-      <input type="text" name="srcHost"
+      <input type="text" name="source"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+"
+             regExp="[\w\.]+"
              promptMessage="Enter the source of the circuit"
              invalidMessage="You must enter the source of the circuit"
              required="true" />
@@ -62,9 +76,9 @@ routing behavior for the selected flow.
   <tr>
     <td>Destination</td>
     <td class="required">
-      <input type="text" name="destHost"
+      <input type="text" name="destination"
              dojoType="dijit.form.ValidationTextBox" 
-             regExp="[\w]+"
+             regExp="[\w\.]+"
              promptMessage="Enter the destination of the circuit"
              invalidMessage="You must enter the destination of the circuit"
              required="true" />
@@ -74,7 +88,7 @@ routing behavior for the selected flow.
   <tr>
     <td>Bandwidth (Mbps)</td>
     <td class="required">
-      <input type="text" name="bandwidth" maxLength="7"
+      <input type="text" name="bandwidth" id="bandwidth"
            dojoType="dijit.form.NumberTextBox"
            constraints="{min:10,max:10000,places:0}"
            promptMessage="Enter a value between 10 and 10000"
@@ -88,7 +102,7 @@ routing behavior for the selected flow.
     <td class="required">
        <input type="text" name="description"
               dojoType="dijit.form.ValidationTextBox"
-              regExp="[\w]+"
+              regExp="[\w\s]+"
               promptMessage="Please enter the purpose for this reservation"
               invalidMessage="You must enter the purpose for this reservation"
               required="true" />
@@ -108,20 +122,34 @@ routing behavior for the selected flow.
 
   <tr>
     <td>Start date</td>
-    <td><input dojoType="dijit.form.DateTextBox" name="startDate" /></td>
-    <td id="startDateDefault">&nbsp;</td>
+    <td><input dojoType="dijit.form.DateTextBox" name="startDate"
+               id="startDate" />
+    </td>
+    <td id="startDateDefault">MM/DD/YY</td>
   </tr>
+  <!-- TimeTextBox is beta as of 1.0.2 and does not include all documented
+       features.  It doesn't allow very fine grained control, and doesn't
+       send the browser's time zone by default in the time.  The dojo.date
+       modules that could change this default behavior are rather opaque to
+       me. -->
   <tr><td>Start time</td>
-    <td><input dojoType="dijit.form.TimeTextBox" name="startTime" /></td>
-    <td id="startTimeDefault">&nbsp;</td>
+      <td><input dojoType="dijit.form.ValidationTextBox" id="startTime"
+             regExp="[0-2]?[\d]:[0-5][\d]"
+             promptMessage="Enter the start time in format HH:MM"
+             invalidMessage="Invalid format:  use HH:MM" /></td>
+    <td id="startTimeDefault">HH:MM</td>
   </tr>
   <tr><td>End date</td>
-    <td><input dojoType="dijit.form.DateTextBox" name="endDate" /></td>
-    <td id="endDateDefault">&nbsp;</td>
+    <td><input dojoType="dijit.form.DateTextBox" name="endDate"
+               id="endDate" /></td>
+    <td id="endDateDefault">MM/DD/YY</td>
   </tr>
   <tr><td>End time</td>
-    <td><input dojoType="dijit.form.TimeTextBox" name="endTime" /></td>
-    <td id="endTimeDefault">&nbsp;</td>
+    <td><input dojoType="dijit.form.ValidationTextBox" id="endTime"
+             regExp="[0-2]?[\d]:[0-5][\d]"
+             promptMessage="Enter the end time in format HH:MM"
+             invalidMessage="Invalid format:  use HH:MM" /></td>
+    <td id="endTimeDefault">HH:MM</td>
   </tr>
 
   <tr><td colspan="3"> </td></tr>
@@ -133,7 +161,7 @@ routing behavior for the selected flow.
     <td>tag, or range, e.g. 3000-3100</td></tr>
   <tr><td>Source Port</td>
     <td colspan="2">
-      <select name="srcPortTag">
+      <select name="tagSrcPort">
         <option value="Tagged" selected="selected">Tagged</option>
         <option value="Untagged">Untagged</option>
       </select>
@@ -141,7 +169,7 @@ routing behavior for the selected flow.
   </tr>
   <tr><td>Destination Port</td>
     <td colspan="2">
-      <select name="destinationPortTag">
+      <select name="tagDestPort">
         <option value="Tagged" selected="selected">Tagged</option>
         <option value="Untagged">Untagged</option>
       </select>
@@ -174,6 +202,6 @@ routing behavior for the selected flow.
   </tr>
 
 </tbody>
-        </table>
-    </form>
+</table>
+</form>
 </html>

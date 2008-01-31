@@ -231,3 +231,29 @@ oscars.Form.hrefChanged = function(newUrl) {
     dojo.back.addToHistory(state);
 }
 
+oscars.Form.convertDateTimes = function() {
+    var startDate = dijit.byId("startDate");
+    if (startDate.getDisplayedValue() != null) {
+        console.log(startDate.getDisplayedValue());
+    } else {
+        console.log("need to fill in startDate");
+    }
+    var startTime = dijit.byId("startTime");
+    if (startTime.getValue() != null) {
+        console.log(startTime.getValue());
+    } else {
+        console.log("need to fill in startTime");
+    }
+    var endDate = dijit.byId("endDate");
+    if (endDate.getDisplayedValue() != null) {
+        console.log(endDate.getDisplayedValue());
+    } else {
+        console.log("need to fill in endDate");
+    }
+    var endTime = dijit.byId("endTime");
+    if (endTime.getValue() != null) {
+        console.log(endTime.getValue());
+    } else {
+        console.log("need to fill in endTime");
+    }
+}
