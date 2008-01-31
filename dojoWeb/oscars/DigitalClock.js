@@ -63,3 +63,45 @@ oscars.DigitalClock.initClock = function () {
     setInterval(function() { oscars.DigitalClock.updateClocks(clock); }, 60000);
 }
 
+oscars.DigitalClock.convertDateTime = function(jsDate, dateId, timeId) {
+    var year = null;
+    var month = null;
+    var day = null;
+    var hour = null;
+    var minute = null;
+    var dateWidget = dijit.byId(dateId);
+    var timeWidget = dijit.byId(timeId);
+    if  ((dateWidget.getDisplayedValue() == null) ||
+         (dateWidget.getDisplayedValue() == "")) {
+        year = jsDate.getFullYear();
+        month = jsDate.getMonth();
+        day = jsDate.getDate();
+        dateWidget.setValue(jsDate);
+    } else {
+        year = jsDate.getFullYear();
+        var fields = dateWidget.getDisplayedValue().split("/");
+        var fullYear = jsDate.getFullYear().toString();
+        year = fullYear.substring(0,2) + fields[2];
+        month = fields[0]-1;
+        day = fields[1];
+    }
+    // if day of year filled in, but time isn't, use current time
+    if ((timeWidget.getValue() == null) ||
+        (timeWidget.getValue() == "")) {
+        hour = jsDate.getHours();
+        minute = jsDate.getMinutes();
+        if (minute >= 10) {
+            timeWidget.setValue(hour + ":" + minute);
+        } else {
+            timeWidget.setValue(hour + ":0" + minute);
+        }
+    } else {
+        var fields = timeWidget.getValue().split(":");
+        hour = fields[0];
+        minute = fields[1];
+    }
+    console.log("year: " + year + ", month: " + month + ", day: " + day + ", hour: " + hour + ", minute: " + minute);
+    var finalDate = new Date(year, month, day, hour, minute, 0, 0);
+    var seconds = finalDate.getTime()/1000;
+    return seconds;
+}

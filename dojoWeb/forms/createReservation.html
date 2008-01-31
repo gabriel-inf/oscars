@@ -21,8 +21,8 @@
 
 <!-- currently just used to load form once -->
 <input type="hidden" name="login" id="reservationLogin" />
-<input type="hidden" name="startSeconds" id="startSeconds" />
-<input type="hidden" name="endSeconds" id="endSeconds" />
+<input type="hidden" name="startSeconds" id="hiddenStartSeconds" />
+<input type="hidden" name="endSeconds" id="hiddenEndSeconds" />
 
 <p>Required inputs are bordered in green.  Ranges or types of valid
 entries are given in parentheses after the default values, if any.
@@ -46,14 +46,16 @@ to the number of lines occurring in the hops list.
       <button dojoType="dijit.form.Button" id="createReservation">
          Create Reservation
          <script type="dojo/method" event="onClick">
-            oscars.Form.convertDateTimes();
-            dojo.xhrPost({
-              url: 'servlet/CreateReservation',
-              handleAs: "json-comment-filtered",
-              load: oscars.Form.handleReply,
-              error: oscars.Form.handleError,
-              form: dojo.byId("createReservationForm")
-            });
+            var legal = oscars.Form.checkDateTimes();
+            if (legal) {
+                dojo.xhrPost({
+                  url: 'servlet/CreateReservation',
+                  handleAs: "json-comment-filtered",
+                  load: oscars.Form.handleReply,
+                  error: oscars.Form.handleError,
+                  form: dojo.byId("createReservationForm")
+                });
+            }
         </script>
       </button>
     </td>
@@ -100,7 +102,7 @@ to the number of lines occurring in the hops list.
   <tr>
     <td>Purpose of reservation</td>
     <td class="required">
-       <input type="text" name="description"
+       <input type="text" name="description" id="reservationDescription"
               dojoType="dijit.form.ValidationTextBox"
               regExp="[\w\s]+"
               promptMessage="Please enter the purpose for this reservation"
@@ -133,7 +135,8 @@ to the number of lines occurring in the hops list.
        modules that could change this default behavior are rather opaque to
        me. -->
   <tr><td>Start time</td>
-      <td><input dojoType="dijit.form.ValidationTextBox" id="startTime"
+      <td><input dojoType="dijit.form.ValidationTextBox" name="startTime"
+             id="startTime"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the start time in format HH:MM"
              invalidMessage="Invalid format:  use HH:MM" /></td>
@@ -145,7 +148,8 @@ to the number of lines occurring in the hops list.
     <td id="endDateDefault">MM/DD/YY</td>
   </tr>
   <tr><td>End time</td>
-    <td><input dojoType="dijit.form.ValidationTextBox" id="endTime"
+    <td><input dojoType="dijit.form.ValidationTextBox" name="endTime"
+             id="endTime"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the end time in format HH:MM"
              invalidMessage="Invalid format:  use HH:MM" /></td>
