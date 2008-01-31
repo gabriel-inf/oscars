@@ -239,12 +239,26 @@ oscars.Form.checkDateTimes = function() {
     var endDate = new Date(startSeconds*1000 + 60*4*1000);
     var endSeconds =
         oscars.DigitalClock.convertDateTime(endDate, "endDate", "endTime");
+    // additional checks for legality
+    var msg = null;
+    // check for start time more than four minutes in the past
+    if (startSeconds < (currentDate.getTime()/1000 - 240)) {
+        msg = "Start time is more than four minutes in the past";
+    } else if (startSeconds > endSeconds) {
+        msg = "End time is before start time";
+    } else if (startSeconds == endSeconds) {
+        msg = "End time is the same as start time";
+    }
+    if (msg != null) {
+        var oscarsStatus = dojo.byId("oscarsStatus");
+        oscarsStatus.className = "failure";
+        oscarsStatus.innerHTML = msg;
+        return false;
+    }
     var startSecondsN = dojo.byId("hiddenStartSeconds");
     // set hidden field value, which is what servlet uses
     startSecondsN.value = startSeconds;
-    console.log(startSeconds);
     var endSecondsN = dojo.byId("hiddenEndSeconds");
     endSecondsN.value = endSeconds;
-    console.log(endSeconds);
     return true;
 }

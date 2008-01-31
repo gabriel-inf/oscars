@@ -48,7 +48,7 @@ public class CreateReservation extends HttpServlet {
         if (userName == null) { return; }
 
         Reservation resv = this.toReservation(userName, request);
-        //PathInfo pathInfo = this.handlePath(request);
+        PathInfo pathInfo = this.handlePath(request);
 
         Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
@@ -62,10 +62,9 @@ public class CreateReservation extends HttpServlet {
         // convert from milli-seconds to minutes
         int reqDuration = (int) (resv.getEndTime() - resv.getStartTime()) / 6000;
         boolean specifyPath = false;
-        String strParam = request.getParameter("explicitPath");
 
+        String strParam = request.getParameter("explicitPath");
         if ((strParam != null) && (!strParam.trim().equals(""))) {
-            this.log.info("explicit path is not null");
             specifyPath = true;
         }
 
@@ -81,12 +80,48 @@ public class CreateReservation extends HttpServlet {
 
         aaa.getTransaction().commit();
 
+        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        bss.beginTransaction();
+
+        try {
+            // url returned, if not null, indicates location of next domain
+            // manager
+            rm.create(resv, userName, pathInfo);
+            // checks whether next domain should be contacted, forwards to
+            // the next domain if necessary, and handles the response
+            CreateReply forwardReply = forwarder.create(resv, pathInfo);
+            rm.finalizeResv(forwardReply, resv, pathInfo);
+            rm.store(resv);
+            String subject = "Reservation " + resv.getGlobalReservationId() +
+                             " scheduling through browser succeeded";
+            String notification = "Reservation scheduling through browser succeeded.\n" +
+                                  resv.toString("bss") + "\n";
+            try {
+                notifier.sendMessage(subject, notification);
+            } catch (javax.mail.MessagingException ex) {
+                ;  // swallow for now
+            } catch (UnsupportedOperationException ex) {
+                ;
+            }
+        } catch (BSSException e) {
+            this.sendFailureNotification(notifier, resv, e.getMessage());
+            utils.handleFailure(out, e.getMessage(), null, bss);
+            return;
+        } catch (Exception e) {
+            // use this so we can find NullExceptions
+            this.sendFailureNotification(notifier, resv, e.getMessage());
+            utils.handleFailure(out, e.toString(), null, bss);
+            return;
+        }
+
         Map outputMap = new HashMap();
-        outputMap.put("status", "Reservation parameter test");
+        outputMap.put("status", "Created reservation with GRI " +
+            resv.getGlobalReservationId());
         outputMap.put("method", "CreateReservation");
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
+        bss.getTransaction().commit();
         this.log.info("CreateReservation.end");
     }
 
@@ -94,6 +129,7 @@ public class CreateReservation extends HttpServlet {
         throws IOException, ServletException {
         this.doGet(request, response);
     }
+
 
     public Reservation toReservation(String userName, HttpServletRequest request) {
         String strParam = null;
@@ -121,13 +157,7 @@ public class CreateReservation extends HttpServlet {
             ? (Long.valueOf(strParam.trim()) * 1000000L) : 0L;
         resv.setBandwidth(bandwidth);
         strParam = request.getParameter("description");
-        if (strParam != null) {
-            this.log.info("description: " + strParam);
-        } else {
-            this.log.info("description is null");
-        }
         resv.setDescription(request.getParameter("description"));
-
         return resv;
     }
 
@@ -171,7 +201,9 @@ public class CreateReservation extends HttpServlet {
 
         String vlanTag = request.getParameter("vlanTag");
         String tagSrcPort = request.getParameter("tagSrcPort");
+        this.log.info("tagSrcPort: " + tagSrcPort);
         String tagDestPort = request.getParameter("tagDestPort");
+        this.log.info("tagDestPort: " + tagDestPort);
         
         //Set default to tagged if tagSrcPort and tagDestPort unspecified
         if(tagSrcPort == null){
@@ -189,8 +221,10 @@ public class CreateReservation extends HttpServlet {
             VlanTag destVtagObject = new VlanTag();
             srcVtagObject.setString(vlanTag);
             destVtagObject.setString(vlanTag);
-            srcVtagObject.setTagged(tagSrcPort.equals("1"));
-            destVtagObject.setTagged(tagDestPort.equals("1"));
+            boolean tagged = tagSrcPort.equals("Tagged");
+            srcVtagObject.setTagged(tagged);
+            tagged = tagDestPort.equals("Tagged");
+            destVtagObject.setTagged(tagged);
             layer2Info.setSrcEndpoint(request.getParameter("source"));
             layer2Info.setDestEndpoint(request.getParameter("destination"));
             layer2Info.setSrcVtag(srcVtagObject);

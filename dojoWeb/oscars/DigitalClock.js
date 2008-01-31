@@ -100,7 +100,7 @@ oscars.DigitalClock.convertDateTime = function(jsDate, dateId, timeId) {
         hour = fields[0];
         minute = fields[1];
     }
-    console.log("year: " + year + ", month: " + month + ", day: " + day + ", hour: " + hour + ", minute: " + minute);
+    //console.log("year: " + year + ", month: " + month + ", day: " + day + ", hour: " + hour + ", minute: " + minute);
     var finalDate = new Date(year, month, day, hour, minute, 0, 0);
     var seconds = finalDate.getTime()/1000;
     return seconds;
