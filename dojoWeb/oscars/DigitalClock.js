@@ -24,10 +24,9 @@ oscars.DigitalClock.updateClocks = function (clock) {
     var formattedDt = monthName[month] + " " + localDate.getDate() +
                    ", " + year + " ";
 
-    digits = localDate.getHours();
-    var formattedTime = (digits > 9 ? '' : '0') + digits + ':';
-    digits = localDate.getMinutes();
-    formattedTime += (digits > 9 ? '' : '0') + digits;
+    var formattedTime = localDate.getHours() + ":";
+    var minute = localDate.getMinutes();
+    formattedTime += (minute > 9 ? '' : '0') + minute;
     clock.innerHTML = formattedDt + formattedTime;
     // update default times on create reservation form
     var startDateDefault = dojo.byId('startDateDefault');
@@ -47,10 +46,9 @@ oscars.DigitalClock.updateClocks = function (clock) {
     year = endDate.getFullYear().toString();
     month = endDate.getMonth();
     formattedDt = month + 1 + "/" + endDate.getDate() + "/" + year.substring(2);
-    digits = endDate.getHours();
-    formattedTime = (digits > 9 ? '' : '0') + digits + ':';
-    digits = endDate.getMinutes();
-    formattedTime += (digits > 9 ? '' : '0') + digits;
+    formattedTime = endDate.getHours() + ":";
+    minute = endDate.getMinutes();
+    formattedTime += (minute > 9 ? '' : '0') + minute;
     endDateDefault.innerHTML = formattedDt;
     endTimeDefault.innerHTML = formattedTime;
 }
@@ -61,6 +59,19 @@ oscars.DigitalClock.initClock = function () {
 
     oscars.DigitalClock.updateClocks(clock);
     setInterval(function() { oscars.DigitalClock.updateClocks(clock); }, 60000);
+}
+
+// Outputs datetime with format: 1/1/2007 13:00, given seconds since epoch.
+oscars.DigitalClock.convertFromSeconds = function(seconds) {
+    var jsDate = new Date(seconds*1000);
+    var year = jsDate.getFullYear();
+    var month = jsDate.getMonth() + 1;
+    var day = jsDate.getDate();
+    var hour = jsDate.getHours();
+    var minute = jsDate.getMinutes();
+    var formattedDt = month + "/" + day + "/" + year + " " + hour;
+    formattedDt += (minute > 9 ? ':' : ':0') + minute;
+    return formattedDt;
 }
 
 oscars.DigitalClock.convertDateTime = function(jsDate, dateId, timeId) {

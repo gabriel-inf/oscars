@@ -212,7 +212,7 @@ public class UserQuery extends HttpServlet {
             sb.append(">" + i.getName() + "</option>" );
         }
         sb.append("</select>");
-        outputMap.put("institutionMenuDiv", sb.toString());
+        outputMap.put("institutionMenuReplace", sb.toString());
     }
     
     public void outputRoleMap(Map outputMap, List<String> attrNames,

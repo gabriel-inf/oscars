@@ -27,6 +27,7 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             var userNameInput = dojo.byId("userName");
             oscarsState.login = userNameInput.value;
             sessionPane.setHref("forms/logout.html");
+
             var reservationsPaneTab = dijit.byId("reservationsPane");
             if (reservationsPaneTab == null) {
                 reservationsPaneTab = new dojox.layout.ContentPane(
@@ -36,22 +37,36 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             }
             mainTabContainer.addChild(reservationsPaneTab, 0);
             reservationsPaneTab.startup();
+
+            var reservationDetailsPaneTab =
+                dijit.byId("reservationDetailsPane");
+            if (reservationDetailsPaneTab == null) {
+              reservationDetailsPaneTab = new dojox.layout.ContentPane(
+                {title:'Reservation Details', id: 'reservationDetailsPane'},
+                 dojo.doc.createElement('div'));
+                   reservationDetailsPaneTab.setHref("forms/reservation.html");
+            }
+            mainTabContainer.addChild(reservationDetailsPaneTab, 1);
+            reservationDetailsPaneTab.startup();
+
             var createReservationPaneTab = dijit.byId("createReservationPane");
             if (createReservationPaneTab == null) {
               createReservationPaneTab = new dojox.layout.ContentPane(
                 {title:'Create Reservation', id: 'createReservationPane'},
                  dojo.doc.createElement('div'));
             }
-            mainTabContainer.addChild(createReservationPaneTab, 1);
+            mainTabContainer.addChild(createReservationPaneTab, 2);
             createReservationPaneTab.startup();
+
             var userDetailsPaneTab = dijit.byId("userDetailsPane");
             if (userDetailsPaneTab == null) {
                 userDetailsPaneTab = new dojox.layout.ContentPane(
                  {title:'User Profile', id: 'userDetailsPane'},
                   dojo.doc.createElement('div'));
             }
-            mainTabContainer.addChild(userDetailsPaneTab, 2);
+            mainTabContainer.addChild(userDetailsPaneTab, 3);
             userDetailsPaneTab.startup();
+
             if (responseObject.authorizedTabs != null) {
                 if (responseObject.authorizedTabs["usersPane"]) {
                     var usersPaneTab = dijit.byId("usersPane");
@@ -61,7 +76,7 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                            dojo.doc.createElement('div'));
                         usersPaneTab.setHref("forms/users.html");
                     }
-                    mainTabContainer.addChild(usersPaneTab, 2);
+                    mainTabContainer.addChild(usersPaneTab, 3);
                     usersPaneTab.startup();
                 }
                 if (responseObject.authorizedTabs["userAddPane"]) {
@@ -71,7 +86,7 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                           {title:'Add User', id: 'userAddPane'},
                           dojo.doc.createElement('div'));
                     }
-                    mainTabContainer.addChild(userAddPaneTab, 3);
+                    mainTabContainer.addChild(userAddPaneTab, 4);
                     userAddPaneTab.startup();
                 }
             }
@@ -85,6 +100,9 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         if (dijit.byId("createReservationPane") != null) {
             mainTabContainer.removeChild(dijit.byId("createReservationPane"));
         }
+        if (dijit.byId("reservationDetailsPane") != null) {
+            mainTabContainer.removeChild(dijit.byId("reservationDetailsPane"));
+        }
         if (dijit.byId("usersPane") != null) {
             mainTabContainer.removeChild(dijit.byId("usersPane"));
         }
@@ -96,8 +114,13 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         }
     } else if ((responseObject.method == "CreateReservationForm") ||
                 (responseObject.method == "UserQuery") ||
-                (responseObject.method == "UserAddForm")) {
+                (responseObject.method == "UserAddForm") ||
+                (responseObject.method == "QueryReservation")) {
         oscars.Form.applyParams(responseObject);
+    }
+    if (responseObject.method == "QueryReservation") {
+        // for displaying only layer 2 or layer 3 fields
+        oscars.Form.hideParams(responseObject, "reservationDetailsForm");
     }
 }
 
@@ -105,7 +128,7 @@ oscars.Form.handleError = function(responseObject, ioArgs) {
 }
 
 // NOTE:  Depends on naming  convention agreements between client and server.
-// Parameter names ending with Checkboxes, Display and Div are treated
+// Parameter names ending with Checkboxes, Display and Replace are treated
 // differently than other names, which are treated as widget ids.  Note that
 // widget id's of "method", "status", and "succeed" will mess things up, since
 // they are parameter names used by handleReply.
@@ -141,17 +164,27 @@ oscars.Form.applyParams = function(responseObject) {
             if (n != null) {
                 n.style.display= responseObject[param] ? "" : "none";
             }
+        } else if (param.match(/TimeConvert$/i) != null) {
+            if (n != null) {
+                n.innerHTML = oscars.DigitalClock.convertFromSeconds(
+                                                        responseObject[param]);
+            }
         } else if (n == null) {
             continue;
         // if info to replace div section with; must be existing div with that
         // id
-        } else if (param.match(/Div$/i) != null) {
+        } else if (param.match(/Replace$/i) != null) {
             n.innerHTML = responseObject[param];
         // set widget value
         } else {
             n.value = responseObject[param];
         }   
     }
+}
+
+oscars.Form.hideParams = function(responseObject, formId) {
+    var w = dijit.byId(formId);
+    // TODO
 }
 
 oscars.Form.initState = function() {

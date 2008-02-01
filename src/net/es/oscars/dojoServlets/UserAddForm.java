@@ -79,6 +79,6 @@ public class UserAddForm extends HttpServlet {
             sb.append(">" + i.getName() + "</option>" );
         }
         sb.append("</select>");
-        outputMap.put("newInstitutionMenuDiv", sb.toString());
+        outputMap.put("newInstitutionMenuReplace", sb.toString());
     }
 }
