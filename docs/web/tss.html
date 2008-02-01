@@ -10,12 +10,17 @@
 </head>
 <body>
 <!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt;
+Components &gt; <a href="tss.html">Topology Exchange</a>
+</div>
+</div>
 <h1>TSS component notes</h1>
 
 <h2>Overview</h2>
 
 <p>The TSS component deals with network topology database exchange 
-between interdomain controllers. IDCs need to exchange topology
+between interdomain controllers (<i>IDC</i>). IDCs need to exchange topology
 information to facilitate interdomain pathfinding. The TSS subsystem
 is responsible for passing out local topology information, and for
 importing topology information from other IDCs.</p>
@@ -26,7 +31,7 @@ implementations of the topology database:</p>
 <li>Remote topology web service (TERCE)</li>
 </ul>
 <p>The OSCARS administrator can choose which method of topology exchange 
-database (TEDB) they want to use at configuration time.</p>
+database (<i>TEDB</i>) they want to use at configuration time.</p>
 <p>Moreover, OSCARS developers with different needs may develop their 
 own TEDB implementation by creating a new class that implements 
 the TEDB java interface.</p>

@@ -9,10 +9,18 @@
 </head>
 <body>
 <!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt;
+Components &gt; <a href="pathfinder.html">Pathfinder</a>
+</div>
+</div>
 <h1>Pathfinder component notes</h1>
 <h2>Overview</h2>
-<p>The pathfinder component deals with 
-.</p>
+<p>The pathfinder component takes a requested path from the user and finds the actual path
+through the network that can be used to realize the suggested path. The input path may simply 
+consist of the source and destination hosts, or it may specify edge routers of the various 
+domains which it will traverse, or it may be a fully specified path. 
+ </p>
 <p> Currently OSCARS implements the following pathfinding solutions:</p>
 <ul>
 <li>Overlay Pathfinder</li>
@@ -38,7 +46,7 @@ for more details.</p>
 <h3>Traceroute Pathfinder</h3>
 <p>Traceroute pathfinding will use IP traceroute from the ingress to the 
 egress to do pathfinding. It is most useful when the policy for path 
-creation between any two points in the network coicides with the
+creation between any two points in the network coincides with the
 IP routing policy.</p>
 <h3>Topology database graph Pathfinder</h3>
 <p>This method will try to find the least-cost path from the ingress to

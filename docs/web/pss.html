@@ -10,6 +10,11 @@
 </head>
 <body>
 <!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt;
+Components &gt; <a href="psshtml">Path Setup</a>
+</div>
+</div>
 <h1>PSS component notes</h1>
 
 <h2>Overview</h2>
@@ -30,7 +35,7 @@ methods:</p>
 to harvest required information. Currently this is used to detect 
 whether a device is a Cisco or a Juniper, which helps OSCARS
 decide what sort of CLI commands to send.</p>
-<p>It is expected that OSCARS developerw will expand and adapt the 
+<p>It is expected that OSCARS developers will expand and adapt the 
 PSS component to support more vendor devices or third-party network 
 management applications.</p>
 
@@ -40,7 +45,7 @@ relevant property is pss.method, and valid values are:</p>
 <ul>
 <li><b>dragon</b> to use the DRAGON VLSR subsystem</li>
 <li><b>esnet</b> to use either Cisco or Juniper-specific CLI commands</li>
-<li><b>stub</b> to not actuall perform any changes to the network; used in testing</li>
+<li><b>stub</b> to not actually perform any changes to the network; used in testing</li>
 </ul>
 
 <h2>Development</h2>

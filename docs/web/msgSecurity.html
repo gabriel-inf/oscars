@@ -8,152 +8,214 @@
   <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
-
 <body>
 <!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp;
+<a href="index.html">home</a> &gt; <a href="msgSecurity.html">Message
+Security</a>
+</div>
+</div>
 <h2>OSCARS Message Security</h2>
 <h3>Overview</h3>
-The OSCARS Web pages and Web Services are run within a Tomcat container which uses SSL connections
-to encrypt all messages. The OSCARS Web Service interface is run as an axis2 service within the
-Tomcat container that has message signing implemented by the Rampart software. The SSL connection assures
-the user that he is connecting to a legitimate OSCARS server, and encrypts all data that passes between 
-the client and the server. The message signing assures the OSCARS service that the request came from
-an authenticated user that can be matched against its list of authorized users. Signed messages are required 
-rather than SSL client authentication, because there may be more than one host machine between the client
-and the OSCARS service. Signed messages assure end-to-end authentication, where SSL does only point-to-point
+The OSCARS Web pages and Web Services are run within a Tomcat container
+which uses SSL connections
+to encrypt all messages. The OSCARS Web Service interface is run as an
+axis2 service within the
+Tomcat container that has message signing implemented by the Rampart
+software. The SSL connection assures
+the user that he is connecting to a legitimate OSCARS server, and
+encrypts all data that passes between the client and the server. The
+message signing assures the OSCARS service that the request came from
+an authenticated user that can be matched against its list of
+authorized users. Signed messages are required rather than SSL client
+authentication, because there may be more than one host machine between
+the client
+and the OSCARS service. Signed messages assure end-to-end
+authentication, where SSL does only point-to-point
 authentication.
-<p>
-The client needs to have access to a private key and its matching X509 certificate for message signing,
-and the the X509 certificate chain of the server that it is contacting. The Tomcat server needs access 
-to a private key and X509 certificate to identify itself to the client and to encrypt the SSL connection.
-The OSCARS service needs the X509 certificate of the CA (Certificate Authority)  that issued the user certificate
+<p>The client needs to have access to a private key and its matching
+X509 certificate for message signing,
+and the the X509 certificate chain of the server that it is contacting.
+The Tomcat server needs access to a private key and X509 certificate to
+identify itself to the client and to encrypt the SSL connection.
+The OSCARS service needs the X509 certificate of the CA (Certificate
+Authority) that issued the user certificate
 in order to authenticate the message signature.
-<p>
-There is an additional complication presented by the interdomain architecture. The OSCARS server and OSCARS
-scheduler in each domain will also act as a client when information about a reservation needs to be forwarded
-to an adjacent domain. Thus on an OSCARS server host there will be both server and client configurations.
-<p>
-Since all of the code is in Java, the private keys and certificates are kept in Java keystore files, and 
-the configuration information is kept in properties files.
-<p>
-Most of the configuration and keystore files contain information that is private to a domain
-or user. The source code available from our <a href="subversion.html">code repository</a> includes
-samples of these files in the conf/examples directory. They will allow the user alice with a
-certificate from the OASIS Interop Test CA to contact the server.You will need to edit these files
-to add the host and server certificates and user keys from your own site.
+</p>
+<p>There is an additional complication presented by the interdomain
+architecture. The OSCARS server and OSCARS
+scheduler in each domain will also act as a client when information
+about a reservation needs to be forwarded
+to an adjacent domain. Thus on an OSCARS server host there will be both
+server and client configurations.
+</p>
+<p>Since all of the code is in Java, the private keys and certificates
+are kept in Java keystore files, and the configuration information is
+kept in properties files.
+</p>
+<p>Most of the configuration and keystore files contain information
+that is private to a domain
+or user. The source code available from our <a href="subversion.html">code
+repository</a> includes
+samples of these files in the conf/examples directory. They will allow
+the user alice with a
+certificate from the OASIS Interop Test CA to contact the server.You
+will need to edit these files
+to add the host and server certificates and user keys from your own
+site.
+</p>
 <h3>Configuration Files</h3>
 <ul>
-   <li><b>axis2.xml</b> Used by OSCARS client. <br>
-      Names the security properties file (sec-client.properties); the user
-      who will sign the message; specifies that outflow messages are to be signed
-      and time stamped and that inflow messages are to be time stamped. This file is found by
-      setting the -Daxis2.xml=&lt;pathname&gt; Java option, or programatically by a 
-      System.setProperty("axis2.xml",&lt;pathname&gt; ). The pathname must be on the classpath. An absolute 
-      pathname does not seem to work.<p>
-      
-   <li><b>services.xml</b> Used by OSCARS service. <br>
-     Names the security.properties file to use on
-     the server side (sec-server.properties). Specifies that inflow messages are signed
-     and time stamped and outflow messages are time stamped. Found in the oscars.aar file 
-     in META-INF/services.xml.<p>
-     
-   <li><b>sec-client.properties </b> Used by OSCARS client. <br>
-     Contains the name and password of the keystore that the client uses when signing a message. 
-     Its name is specified in axis2.xml.
-     This file must be on the classpath of the client.
-     <p>   
-   <li><b>sec-server.properties </b> Used by OSCARS service. <br>
-     Contains the name and password of the keystore that the server will use to verify signed messages.
-     Its name is specified in services.xml. This file must be on the services's classpath.
-     (it is put in the classes file of OSCARS.aar)
-     <p>
-   <li><b>repo/sec-client.properties </b> Used by the OSCARS service when it is acting as
-     a client when forwarding a request to an adjacent domain. <br>
-     Contains the name and password of the keystore 
-     used when signing a forwarded message. The messages are signed by the server credential: 
-     oscars-dev.es.net or oscars-test.es.net. The name of this file is specified in 
-     $CATALINA_HOME/shared/classes/repo/axis2.xml). This file must be on the classpath of the server.
-     It is also used by the scheduler when contacting an adjacent domain to instantiate the routing request.
-     The ant setupServer task will put it in $CATALINA_HOME/shared/classes/repo.
-     <p>
-   </ul>
+  <li><b>axis2.xml</b> Used by OSCARS client. <br>
+Names the security properties file (sec-client.properties); the user
+who will sign the message; specifies that <span
+ style="font-style: italic;">outflow messages</span> are to be signed
+and time stamped and that <span style="font-style: italic;">inflow
+messages</span> are to be time stamped. This file is found by setting
+the -Daxis2.xml=&lt;pathname&gt; Java option, or programatically by a
+System.setProperty("axis2.xml",&lt;pathname&gt; ). The pathname must be
+on the classpath. An absolute pathname does not seem to work.
+    <p> </p>
+  </li>
+  <li><b>services.xml</b> Used by OSCARS service. <br>
+Names the security.properties file to use on the server side
+(sec-server.properties). Specifies that <span
+ style="font-style: italic;">inflow messages</span> are signed and time
+stamped and <span style="font-style: italic;">outflow messages</span>
+are time stamped. Found in the oscars.aar file in META-INF/services.xml.
+    <p> </p>
+  </li>
+  <li><b>sec-client.properties </b> Used by OSCARS client. <br>
+Contains the name and password of the keystore that the client uses
+when signing a message. Its name is specified in axis2.xml. This file
+must be on the classpath of the client.
+    <p> </p>
+  </li>
+  <li><b>sec-server.properties </b> Used by OSCARS service. <br>
+Contains the name and password of the keystore that the server will use
+to verify signed messages. Its name is specified in services.xml. This
+file must be on the services's classpath. (it is put in the classes
+file of OSCARS.aar)
+    <p> </p>
+  </li>
+  <li><b>repo/sec-client.properties </b> Used by the OSCARS service
+when it is acting as a client when forwarding a request to an adjacent
+domain. <br>
+Contains the name and password of the keystore used when signing a
+forwarded message. The messages are signed by the server credential:
+oscars-dev.es.net or oscars-test.es.net. The name of this file is
+specified in $CATALINA_HOME/shared/classes/repo/axis2.xml). This file
+must be on the classpath of the server. It is also used by the
+scheduler when contacting an adjacent domain to instantiate the routing
+request. The ant setupServer task will put it in
+$CATALINA_HOME/shared/classes/repo.
+    <p> </p>
+  </li>
+</ul>
 <h3> Keystore files</h3>
 <ul>
-   <li><b>sec-client.jks</b> Used by OSCARS client. <br>
-     Contains a key entry for the client that is signing the message and 
-     trusted cert entries for any trusted CAs, e.g. any CAs in the chain that signed the users 
-     certificate. File is named in sec-client.properties. Must be on the classpath.
-     <p>
-    <li><b>sec-server.jks</b> Used by OSCARS service. <br>
-     Contains the trusted cert entries for any trusted CAs, e.g. any CAs in the chain that signed the users 
-     certificate. File is named in sec-server.properties. Must be on the classpath.
-     <p>   
-   <li><b>ssl-keystore.jks</b>- used by the OSCARS client  when establishing an ssl connection to a Tomcat
-   	 server. <br>
-   	  It needs to contain trustedCert entries for the server and its issuer chain. e.g. 
-   	 oscars-dev.es.net or oscars.es.net, "ESnet SSL Server Certificates" and "ESnet Root CA 1"
-     Location hard-coded into KeyManagement.java as 
-     	System.setProperty("javax.net.ssl.trustStore",repo +"/ssl-keystore.jks");
-     where repo is an input string to setKeyStore(String repo). 
-     <p>     
-    <li><b>/root/.keystore</b> Used by the Tomcat server. <br>
-      The keystore used by the Tomcat server when accepting the ssl
-      connection. The name is specified in $CATALINA_HOME/conf/server.xml as the keystoreFile.
-      It must contain a keyEntry for the server with the alias Tomcat e.g. oscars-dev.es.net 
-      and trustedCert entries for the issuers of that certificate.
-      <p>
- </ul>
- <h3> Class Files </h3>
- <ul>
-    <li><b>net/es/oscars/client/security/PWCallback.java</b>Called by  org.apache.rampart.handler.WSDoAllSender.processMessage
+  <li><b>sec-client.jks</b> Used by OSCARS client. <br>
+Contains a <span style="font-style: italic;">keyEntry</span> for the
+client that is signing the message and <span
+ style="font-style: italic;">trustedCertEntries</span> for any trusted
+CAs, e.g. any CAs in the chain that signed the users certificate. File
+is named in <code>sec-client.properties</code>. Must be on the
+classpath.
+    <p> </p>
+  </li>
+  <li><b>sec-server.jks</b> Used by OSCARS service. <br>
+Contains the <span style="font-style: italic;">trustedCertEtries</span>
+for any trusted CAs, e.g. any CAs in the chain that signed the users
+certificate. File is named in <code>sec-server.properties</code>. Must
+be on the classpath.
+    <p> </p>
+  </li>
+  <li><b>ssl-keystore.jks</b>- used by the OSCARS client when
+establishing an ssl connection to a Tomcat server. It needs to contain <span
+ style="font-style: italic;">trustedCertEntries</span> for the server
+and its issuer chain. e.g. oscars-dev.es.net or oscars.es.net, "ESnet
+SSL Server Certificates" and "ESnet Root CA 1" Location hard-coded into
+    <code>KeyManagement.java</code> as <code>System.setProperty("javax.net.ssl.trustStore",repo
++"/ssl-keystore.jks")</code>; where repo is an input string to <code>setKeyStore(String
+repo)</code>.
+    <p> </p>
+  </li>
+  <li><b>/root/.keystore</b> Used by the Tomcat server. <br>
+The keystore used by the Tomcat server when accepting the ssl
+connection. The name is specified in <code>$CATALINA_HOME/conf/server.xml</code>
+as the keystoreFile. It must contain a <span
+ style="font-style: italic;">keyEntry</span> for the server with the
+alias Tomcat e.g. oscars-dev.es.net and <span
+ style="font-style: italic;">trustedCertEntries </span>for the issuers
+of that certificate.
+    <p> </p>
+  </li>
+</ul>
+<h3> Class Files </h3>
+<ul>
+  <li><b>net/es/oscars/client/security/PWCallback.java</b> Called by <code>org.apache.rampart.handler.WSDoAllSender.processMessage</code>.
     <br>
-     contains the password for the keys in  sec-client.jks.  Must be on classpath.
-    <p>
-    <li><b>net/es/oscars/client/security/KeyManagement.java</b>setKeyStore Called by Client.setup and Forwarder.setup <br>
-      Sets the name and the password for the client-side ssl-keystore.jks file.
+Contains the password for the keys in <code>sec-client.jks</code>.
+Must be on classpath.
+    <p> </p>
+  </li>
+  <li><b>net/es/oscars/client/security/KeyManagement.java</b>&nbsp;
+setKeyStore called by Client.setup and Forwarder.setup <br>
+Sets the name and the password for the client-side <code>ssl-keystore.jks</code>
+file.
+  </li>
 </ul>
 <h3>Client side</h3>
-   Needs an axis2.xml file to generate signed messages.
-   <p>
-   Needs  sec-client.properties to define the keystore file and password.
-   <p>
-   Needs sec-client.jks with the keyEntry for the user who will be signing messages.
-       For the user this should be a file with just the trustedCertEntries to
-       which the user adds his key/cert. see <a href="exampleClients.html">exampleClients.html</a> for instructions on
-       how to do this.
-       <p>
-   Needs ssl-keystore.jks to hold the trustedCert entries for the ssl connection to the Tomcat server.
-   <i>The name and the password for this file are hard-coded into net.es.oscars.client.security.
-        KeyManagement.</i>
-   <p>
-   The default ant task in examples/javaClients/build.xml will create and populate a repo directory 
-   with all these pieces. The user may want to edit the axis2.xml to chose a different user to sign the message
-   and may want to add additional keyEntries to sec-client.jks. Any edited files should be copied to someplace safe
-   since the repo directory is purged and recreated each time ant is run.
-
-
+Needs an <code>axis2.xml</code> file to generate signed messages.
+<p> Needs <code>sec-client.properties</code> to define the keystore
+file and password. </p>
+<p> Needs <code>sec-client.jks</code> with the <span
+ style="font-style: italic;">keyEntry</span> for the user who will be
+signing messages. For the user this should be a file with just the <span
+ style="font-style: italic;">trustedCertEntries</span> to which the
+user adds his key/cert. see <a href="exampleClients.html">exampleClients.html</a>
+for instructions on how to do this. </p>
+<p> Needs <code>ssl-keystore.jks</code> to hold the <span
+ style="font-style: italic;">trustedCertEntries</span> for the ssl
+connection to the Tomcat server. <i>The name and the password for this
+file are hard-coded into </i><code>net.es.oscars.client.security.
+KeyManagement.</code> </p>
+<p> The default ant task in examples/javaClients/build.xml will create
+and populate a repo directory with all these pieces. The user may want
+to edit the <code>axis2.xml</code> to chose a different user to sign
+the message and may want to add additional <span
+ style="font-style: italic;">keyEntries</span> to <code>sec-client.jks</code>.
+</p>
 <h3>Server side</h3>
-  OSCARS needs the properties and keystore referenced in OSCARS.aar:META-INF/services.xml.<br>
-  Services.xml comes from conf/server/services.xml. The properties and 
-  keystore files are installed at the top level OSCARS.aar and are domain specific. The ones for esnet
-  are checked into https://oscars.es.net/esnet/domain. The ant target "prepare" will copy them from 
-  $DOMAIN_HOME/server into build/WEB-INF where they will be input to the OSCARS.aar. Examples of these
-  files can be found in examples/server.
-  The server keystore only needs trustedCertEntires since response messages are
-     not signed.
-<p>
-  Tomcat needs the keystore referenced in ${catalina.home}/conf/server.xml to do server-side ssl. <br>
-  If no keystoreFile entry is specified in the https connector  element of server.xml, the file ~/.keystore is used.<br>
-  If no keystorePass entry is specified the password is "changeit".<br>
-  On oscars-dev keystoreFile element of the Connector for port 9090  is /root/.keystore. The keystore 
-  contains a keyEntry for the oscars-dev  cert/key  with alias tomcat and the trustedcert entries for that key.
-  
-  <h3>Server acting as client, e.g when forwarding request to next Domain</h3>
-   Needs trustedCertEnties and oscars-dev keyEntry, (not distributed outside
-   of LBL in domain/client/sec-client.jks). The ant task "setupServer" will create a repo directory
-   with the necessary axis2.xml, sec-client.properties, sec-client.jks 
-   and ssl-keystore.jks in ${catalina.home}/shared/classes/repo
-   directory. <br>
- <!--#include virtual="footer.html" --> 
+OSCARS needs the properties and keystore referenced in <code>OSCARS.aar:META-INF/services.xml</code>.<br>
+<code> Services.xml</code> comes from <code>conf/server/services.xml</code>.
+The properties and keystore files are installed at the top level
+OSCARS.aar and are domain specific. The ones for ESnet are checked into
+https://oscars.es.net/esnet/domain. The ant target "prepare" will copy
+them from <code>$DOMAIN_HOME/server </code>into <code>build/WEB-INF</code>
+where they will be input to the <code>OSCARS.aar</code>. Examples of
+these files can be found in <code>examples/server</code>. The server
+keystore only needs <span style="font-style: italic;">trustedCertEntires</span>
+since response messages are not signed.
+<p> Tomcat needs the keystore referenced in<code>
+${catalina.home}/conf/server.xml</code> to do server-side ssl. <br>
+If no keystoreFile entry is specified in the https connector element of
+<code>server.xml</code>, the file <code>~/.keystore</code> is used. If
+no keystorePass entry is specified the password is "changeit".<br>
+On the oscars servers the keystoreFile element is specified as
+/root/.keystore. The keystore contains a <span
+ style="font-style: italic;">keyEntry</span> for the oscars-dev
+cert/key with alias tomcat and the <span style="font-style: italic;">trustedCertEntries</span>
+for the CAs in its certificate chain. </p>
+<h3>Server acting as client, e.g when forwarding request to next Domain</h3>
+Needs <span style="font-style: italic;">trustedCertEnties</span> and
+oscars-service <span style="font-style: italic;">keyEntry</span>, (not
+distributed outside of LBL in <code>domain/client/sec-client.jks</code>).
+The ant task "<span style="font-style: italic;">setupServer</span>"
+will create a repo directory with the necessary <code>axis2.xml,
+sec-client.properties, sec-client.jks</code> and <code>ssl-keystore.jks</code>
+in <code>${catalina.home}/shared/classes/repo</code> directory. <br>
+<!--#include virtual="footer.html" -->
 </body>
-</html>	
+</html>

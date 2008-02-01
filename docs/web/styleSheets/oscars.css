@@ -7,8 +7,8 @@ body, p, td, table, tr, .bodytext, .stepfield {
 	font-weight: normal
 }
 body { background-color: #FFFFFF;
-	margin: 2%;
-	padding: 10px;
+	margin-left: 5%;
+	margin-right: 5%;
 	text-align: left;
  }
  
@@ -51,18 +51,6 @@ h3 {
 	margin: 10px 0px 4px 0px;
 }
 
-.breadcrumbs {
-    background-color: #f0f0f0;
- 	border-color: #3c78b5;
-	border-width: 1px 0px 1px 0px;
-	border-style: solid;
-    font-size: 11px;
-    padding: 3px 0px 3px 0px;
-}
-
-.navmenu {
-    border: 1px solid #ccc;
-}
 
 .pagetitle {
 	font-size: 18pt;
@@ -78,7 +66,12 @@ h3 {
  font-size: 100%;
  width: 11em;
  }
-.content { padding: 5px 5px 5px 10px; font : small Verdana, Helvetica, sans-serif;  font-size : 90%; }
+.content { 
+	margin-left: 20px;
+    padding: 5px 5px 5px 10px;
+    font : small Verdana, Helvetica, sans-serif;  
+    font-size : 90%; 
+    }
 
 .frame { margin: 0px 0px 0px 0px; font-size: 90%; }
 .frame .content { margin: 0px; }
@@ -96,14 +89,27 @@ h3 {
 }
 
 /* styles for links in the top bar */
-.topBarDiv a:link {color: #ffffff;}
+.topBarDiv a {
+	color: #ffffff;
+	text-decoration: none;
+}
+.topBarDiv a:hover {
+	color: #2277cc;
+	background-color: #ddd;}
+/*
 .topBarDiv a:visited {color: #ffffff;}
 .topBarDiv a:active {color: #ffffff;}
 
-/* .topBarDiv a:hover {color: #ffffff;} */
-.topBarDiv {color: #ffffff;}
+*/
+.topBarDiv {
+	color: #ffffff;
+    float: left; 
+    margin-top: .1em
+  }
 
 .topBar {
     background-color: #2277cc;
+    align: center;
+    height: 1.5em;
 }
 
