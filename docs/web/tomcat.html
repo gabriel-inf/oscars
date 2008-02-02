@@ -8,27 +8,14 @@
 </head>
 <body>
 <!--#include virtual="header.html" -->
-<br>
-<div id="topBar" class="topBar" style="height: 2.2em;">
-<div class="topBarDiv" style="float: left; margin-top: 0.5em;"> &nbsp;
-
-<!--  
-<script language="JavaScript">
-function showBreadcrumbsEllipsis()
-{
-document.getElementById('breadcrumbsEllipsis').style.display = 'none';
-document.getElementById('breadcrumbsExpansion').style.display = 'inline';
-}
-</script>
--->
- 
+<div id="topBar" class="topBar" >
+<div class="topBarDiv" > &nbsp;
 <a  href="index.html">home</a> &gt; <a href="dependencies.html">Dependencies</a>
-&gt; Intalling Tomcat</a>
-
+&gt; <a href="tomcat.html">Tomcat/Axis2 configuration</a>
 </div>
 </div>
 <h2>Tomcat Configuration</h2>
-<h3><big style="font-weight: bold;">$CATALINA_HOME/conf</big></h3>
+<h3>$CATALINA_HOME/conf</h3>
 <ul>
   <li> server.xml - defines standalone Tomcat server - service name is
 Catalina <br>
@@ -60,7 +47,7 @@ We added common/classes/log4j.properties and common/lib/log4j.jar in
 order to get Tomcat to do log4j. By default it just uses commons
 logging. The logging by the oscars.war and oscars.aar pick up defaults
 from this
-file, e.g the root.catagory log. <br>
+file, e.g the root.category log. <br>
 <h3>$CATALINA_HOME/shared</h3>
 Contains classes and libraries shared by all the webapps but not the
 Tomcat server. This has been where we have put files that can't seem to
@@ -104,7 +91,7 @@ repo/sec-client.jks </li>
       <li>test.properties </li>
     </ul>
   </li>
-  <li> lib&nbsp; contains the axis2 and rampart jars.<br>
+  <li> lib contains the axis2 and rampart jars.<br>
   </li>
 </ul>
 <h3>$CATALINA_HOME/webapps</h3>
@@ -113,7 +100,7 @@ OSCARS.war and
 axis2.war. When a war file is put in this directory it will be
 automatically deployed by the Tomcat server and its contents will be
 extracted into a directory with the name of the war. <br>
-Every tomcat webapp has a WEB-INF/web.xml that defines the service name
+Every Tomcat webapp has a WEB-INF/web.xml that defines the service name
 and methods.
 <h3>$CATALINA_HOME/bin - startup scripts</h3>
 <ul>
@@ -204,7 +191,7 @@ or can be set programatically by <br>
 Where <b>repo</b> is a directory on the classpath that contains a
 conf/axis2.xml file.<br>
   <br>
-The repo directory also conatins: <li><b>sec-client.properties</b>
+The repo directory also contains: <li><b>sec-client.properties</b>
 contains:
     <ul>
       <li>org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin

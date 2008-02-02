@@ -1,72 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    <title>OSCARS Database Notes</title>
-    <base href="/docs">
-    <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
-    <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+  <title>OSCARS Database Notes</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
 <body>
 <!--#include virtual="header.html" -->
-<h2>Database Notes</h2>
-
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="dependencies.html">Dependencies</a> &gt; <a href="database.html">Database</a>
+</div>
+</div>
+<h2>Database Use</h2>
 <h3>Overview</h3>
-
-<p>We are currently using Hibernate 3.2 to persist data objects.  Hibernate hides a multitude of details
-at the JDBC level, including conversion of data types in queries and result sets, and transaction handling.
-In addition, from the <a href="http://www.hibernate.org">Hibernate</a> Web page:</p>
-
+<p>We are currently using Hibernate 3.2 to persist data objects.
+Hibernate hides a multitude of details
+at the JDBC level, including conversion of data types in queries and
+result sets, and transaction handling.
+In addition, from the <a href="http://www.hibernate.org">Hibernate</a>
+Web page:</p>
 <quote>
-"Hibernate is a powerful, high performance object/relational persistence and query service. Hibernate lets you
-develop persistent classes following object-oriented idiom - including association, inheritance, polymorphism,
+"Hibernate is a powerful, high performance object/relational
+persistence and query service. Hibernate lets you
+develop persistent classes following object-oriented idiom - including
+association, inheritance, polymorphism,
 composition, and collections."
 </quote>
-
-<p>The underlying database server is 
-<a href="http://dev.mysql.com">MySQL</a>.  Currently we are using version 5.0.
+<p>The underlying database server is <a href="http://dev.mysql.com">MySQL</a>.
+Currently we are using version 5.0.
 The MySQL server is set up to only accept connections from the
-machine it is running on, for security reasons.  It depends on the presence of a Web server on the
-same machine to forward requests to it.  All requests are authenticated and authorized via the AAA
+machine it is running on, for security reasons. It depends on the
+presence of a Web server on the
+same machine to forward requests to it. All requests are authenticated
+and authorized via the AAA
 before being passed on to Hibernate and the database.</p>
-
 <h3>Database schema set up and population</h3>
-
-<p>OSCARS makes use of two databases, one for the AAA named "aaa", and one for the BSS, pathfinder, and
-PSS, named "bss".  The Hibernate configuration necessary is contained in conf/public/server, in the
-files aaa.cfg.xml and bss.cfg.xml, respectively.  These are copied to the appropriate place in the
+<p>OSCARS makes use of two databases,
+one for the AAA named "<span style="font-style: italic;">aaa</span>",
+and one for the BSS, pathfinder, PSS and
+TSS, named "<span style="font-style: italic;">bss</span>". The
+Hibernate configuration information for these databases is in <code>conf/server</code>,
+in the
+files <code>aaa.cfg.xml</code> and <code>bss.cfg.xml</code>,
+respectively. These are copied to the appropriate place in the
 classpath as part of the build process.
 </p>
-
-<p>The scripts to create the necessary tables in the aaa and bss databases are contained in
-sql/aaa/aaa.sql and sql/bss/bss.sql, respectively.  sql/aaa/populateTables.sql is a sample script
+<p>The scripts to create the necessary tables in the aaa and bss
+databases are contained in
+<code>sql/aaa/createTables.sql</code> and <code>sql/bss/createTables.sql</code>,
+respectively. <code>sql/aaa/populateTables.sql</code> is a sample
+script
 setting up default attributes, resources, and permissions.</p>
-
-<p>The program to populate the bss database with the network topology is located in
-tools/updatedb/TopologyUpdater.java.  It depends on the presence of a directory with previously gathered
-information about each router in the topology, which was gained using SNMP queries.  Currently the
-format of the files in that directory is ESnet-specific.</p>
-
+<p>The program to populate the bss database with the network topology
+for ESNet is located in
+<code>tools/updatedb/TopologyUpdater.java</code>. It depends on the
+presence of a directory with previously gathered
+information about each router in the topology, which was gained using
+SNMP queries. Currently the
+format of the files in that directory is ESnet-specific.<br>
+</p>
+<p>There is a similar program in <code>tools/updatedbterce/TERCETopologyUpdate.java</code>
+that will populate the bss database from the TERCE web service.<br>
+</p>
 <h3>Test databases</h3>
-
-<p>Separate test databases, testaaa and testbss, are set up for unit tests.  Make sure that they are created as well as the aaa and bss databases (TODO:  script).  They are repopulated as necessary
-each time before a test suite executes.  Their Hibernate configuration files are in the
-conf/public/server directory, testaaa.cfg.xml and testbss.cfg.xml.  These are identical to the
+<p>Separate test databases, <span style="font-style: italic;">testaaa</span>
+and <span style="font-style: italic;">testbss</span>, are set up for
+unit tests. Make sure that they are created as well as the aaa and bss
+databases. The createTables scripts in <code>sql/aaa</code> and <code>sql/bss</code>
+can be used for this if the <code>use aaa;</code> and <code>use bss;</code>
+statements are changed to <code>use testaaa;</code> and <code>use
+testbss;</code>. They are repopulated as necessary
+each time a test suite executes. Their Hibernate configuration
+files are in the
+<code>conf/server</code> directory, <code>testaaa.cfg.xml </code>and <code>testbss.cfg.xml</code>.
+These are identical to the
 production configuration files except for the names of the databases.</p>
-
 <h3>Object/relational mapping</h3>
-
-<p>Each table in the database has a corresponding Java bean.  The mapping is defined in the Hibernate
-configuration files mentioned above.  There is also a Hibernate configuration file that maps each field
-in the table to a bean property, with a suffix of ".hbm.xml", located in the same directory as the bean.</p>
-
+<p>Each table in the database has a corresponding Java bean. The
+mapping is defined in the Hibernate
+configuration files mentioned above. There is also a Hibernate
+configuration file that maps each field
+in the table to a bean property, with a suffix of ".hbm.xml", located
+in the same directory as the bean.</p>
 <p>OSCARS makes extensive use of the
-<a href="http://www.hibernate.org/328.html">DAO</a> (data-access object) design pattern.
-Each bean, for example Router.java, has an associated DAO object, in this case RouterDAO.java,
-that performs low-level CRUD (create, retrieve, update, delete) operations.  Each DAO object sub-classes
-src/net/es/oscars/database/GenericHibernateDAO.java.
-
+<a href="http://www.hibernate.org/328.html">DAO</a> (data-access
+object) design pattern.
+Each bean, for example <code>Router.java</code>, has an associated DAO
+object, in this case <code>RouterDAO.java,</code>
+that performs low-level CRUD (create, retrieve, update, delete)
+operations. Each DAO object sub-classes
+<code>src/net/es/oscars/database/GenericHibernateDAO.java</code>.
+</p>
 <h3>Useful MySQL commands</h3>
-
-<p><em>show status</em> at a MySQL prompt will show the status of a number of variables.</p>
+<p><code>mysql -u &lt;username&gt; -p</code>&nbsp;&nbsp; prompts for a
+password and starts mysql</p>
+<p>At the MySQL prompt:</p>
+<p><code>show status;</code>&nbsp;
+shows the status of a number of variables.<br>
+<code>show databases;</code> &nbsp;shows what databases are available<br>
+<code>connect &lt;database&gt;;</code> &nbsp;connects you to the
+specified database<br>
+<code>show tables;</code> &nbsp;shows all the tables in the database<br>
+<code>describe &lt;table&gt;;</code> &nbsp;shows the fields of the
+specified table<br>
+<code>select * from &lt;table&gt;;</code> &nbsp;shows all the rows of
+the specified table.<br>
+</p>
+<p>For the rest of the iceberg see <a href="http://dev.mysql.com/doc/">MySQL
+documentation</a>.<br>
+</p>
 <!--#include virtual="footer.html" -->
 </body>
 </html>
