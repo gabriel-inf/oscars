@@ -191,6 +191,9 @@ public class Reservation extends HibernateBean implements Serializable {
         if (this.getLogin() != null) {
             sb.append("login: " + this.getLogin() + "\n");
         }
+        if (this.getStatus() != null) {
+            sb.append("status: " + this.getStatus() + "\n");
+        }
         Long tm = this.getStartTime() * 1000L;
         DateFormat df = DateFormat.getInstance();
         df.setTimeZone(TimeZone.getTimeZone("GMT"));
