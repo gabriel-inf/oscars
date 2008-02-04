@@ -194,11 +194,11 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
         <mkdir dir="web/docs"/>
         <copy todir="web/docs">
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
-        	<fileset dir="conf/server" includes="OSCARS.*"/>
+            <fileset dir="conf/server" includes="OSCARS.*"/>
         </copy>
         <copy todir="web/docs">
-             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
-         </copy>
+            <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
+        </copy>
         <copy todir="web/docs/papers">
             <fileset dir="docs/papers" includes="*.pdf"/>
         </copy>
@@ -257,7 +257,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <available property="dojo.present" file="dojoWeb/lib/dojo"/>
     <target name="copydojo" unless="dojo.present" description="copy necessary Dojo material from /usr/local/src">
         <copy todir="dojoWeb/lib/dojo">
-            <fileset dir="${dojo}" includes="dojo/**/*, dijit/**/*, util/**/*"/>
+            <fileset dir="${dojo}" includes="dojo/**/*, dijit/**/*, dojox/**/*, util/**/*"/>
         </copy>
     </target>
     <target name="copydojodocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
