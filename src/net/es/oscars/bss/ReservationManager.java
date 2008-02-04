@@ -212,7 +212,7 @@ public class ReservationManager {
         String gri = resv.getGlobalReservationId();
 
         String subject = "Reservation " + resv.getGlobalReservationId() +
-                         "cancelled";
+                         " cancelled";
         String msg = "Reservation cancelled.\n" + resv.toString(this.dbname) + "\n";
         try {
             this.notifier.sendMessage(subject, msg);

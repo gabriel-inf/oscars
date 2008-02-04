@@ -64,8 +64,6 @@ public class Scheduler {
             } catch (PSSException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                long seconds = System.currentTimeMillis()/1000;
-                resv.setEndTime(seconds);
                 badSetup = true;
                 subject += " failed";
                 notification += "failed with " + ex.getMessage() +
@@ -74,8 +72,6 @@ public class Scheduler {
             } catch (InterdomainException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                long seconds = System.currentTimeMillis()/1000;
-                resv.setEndTime(seconds);
                 badSetup = true;
                 subject += " failed";
                 notification += "failed with " + ex.getMessage() +
@@ -84,8 +80,6 @@ public class Scheduler {
             } catch (Exception ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                long seconds = System.currentTimeMillis()/1000;
-                resv.setEndTime(seconds);
                 badSetup = true;
                 subject += " failed";
                 notification += "failed with " + ex.getMessage() +
@@ -133,23 +127,21 @@ public class Scheduler {
                         "expired without ever having been set up";
                     throw new PSSException(errMsg);
                 }
-                String status = this.pathSetupManager.teardown(resv, false);
-                if (status.equals("CANCELLED")) {
-                    // set end time to cancel time
-                    // useful in case reservation was persistent
-                   long seconds = System.currentTimeMillis()/1000;
-                   resv.setEndTime(seconds);
-                }
                 dao.update(resv);
                 this.log.info("expiredReservation: " +
                               resv.getGlobalReservationId());
-                subject += " succeeded";
-                notification += "succeeded.\n" + resv.toString(this.dbname) + "\n";
+                String status = this.pathSetupManager.teardown(resv, false);
+                if (status.equals("CANCELLED")) {
+                    subject += " because of cancellation";
+                    notification += "occurred because of cancellation.\n";
+                } else {
+                    subject += " succeeded";
+                    notification += "succeeded.\n";
+               }
+                notification += resv.toString(this.dbname) + "\n";
             } catch (PSSException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                long seconds = System.currentTimeMillis()/1000;
-                resv.setEndTime(seconds);
                 subject += " failed";
                 notification += "failed with " + ex.getMessage() +
                                 "\n" + resv.toString(this.dbname) + "\n";
@@ -157,8 +149,6 @@ public class Scheduler {
             } catch (Exception ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                long seconds = System.currentTimeMillis()/1000;
-                resv.setEndTime(seconds);
                 subject += " failed";
                 notification += "failed with " + ex.getMessage() +
                                 "\n" + resv.toString(this.dbname) + "\n";
