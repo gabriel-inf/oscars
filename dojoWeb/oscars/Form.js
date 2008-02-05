@@ -74,7 +74,6 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                         usersPaneTab = new dojox.layout.ContentPane(
                           {title:'User List', id: 'usersPane'},
                            dojo.doc.createElement('div'));
-                        usersPaneTab.setHref("forms/users.html");
                     }
                     mainTabContainer.addChild(usersPaneTab, 3);
                     usersPaneTab.startup();
@@ -216,6 +215,11 @@ oscars.Form.selectedChanged = function(contentPane) {
     } else if (contentPane.id == "usersPane") {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Users list";
+        }
+        var n = dojo.byId("usersLogin");
+        // only do first time
+        if (n == null) {
+            contentPane.setHref("forms/users.html");
         }
     } else if (contentPane.id == "userAddPane") {
         if (changeStatus) {

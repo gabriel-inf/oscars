@@ -1,35 +1,44 @@
 <html>
-<form id="usersForm" method="POST" action="servlet/UserList">
+<head>
+<script type="text/javascript">
+    var userView = {
+      cells: [[
+         {name: 'Login', field: "login", width: "15em"},
+         {name: 'Last Name', field: "lastName", width: "11em"},
+         {name: 'First Name', field: "firstName", width: "10em"},
+         {name: 'Organization', field: "organization", width: "22em"},
+         {name: 'Phone', field: "phone", width: "11em"}
+      ]]
+    };
+    var userLayout = [ userView ];
+</script>
+<script type="text/javascript">
+    dojo.addOnLoad(function(){
+        var w = dojo.byId("usersLogin");
+        w.value= oscarsState.login;
+    });
+    dojo.addOnLoad(function(){
+        // TODO:  figure out how to update, connect select events
+        var n = dojo.byId("userGrid");
+    });
+</script>
+</head>
 
 <p>Click on the user's last name to view detailed user information.</p>
-<table id="UserList-table" cellspacing="0" width="90%">
-<thead>
-  <tr>
-    <td>Last Name</td><td>First Name</td><td>Login Name</td>
-    <td>Organization</td><td>Phone</td><td>Action</td></tr>
-</thead>
-<tbody>
-<!-- for (User user: users) printUser(user) -->
-</tbody></table>
+<form id="usersList" method="POST">
+  <input type="hidden" name="login" id="usersLogin" />
 </form>
+
+<div class="heading">User List</div>
+<br/>
+<div id="userStore" dojoType="dojo.data.ItemFileReadStore"
+    jsId="userStore" url="servlet/UserList">
+</div>
+<div id="userModel" dojoType="dojox.grid.data.DojoData" jsId="userModel"
+     rowsPerPage="20" store="userStore" query="{ login: '*' }">
+</div>
+<div id="userGrid" dojoType="dojox.Grid" model="userModel" jsId="thisUserGrid"
+     structure="userLayout">
+</div>
+
 </html>
-
-
-<!-- 
-        String profileHrefStr = return newSection('UserQuery',
-                    'profileName=user.getLogin()')
-        String removeHrefStr = return newSection('UserRemove',
-                    'profileName=user.getLogin()')
-        <tr>
-            <td>
-                <a href="#" onclick="profileHrefStr"> user.getLastName() </a>
-            </td>
-
-        <td> user.getFirstName() </td> <td> user.getLogin() </td>
-        <td> user.getInstitution().getName() </td>
-        <td> user.getPhonePrimary() </td>
-	<td>
-		<a href="#" onclick=" removeHrefStr ">DELETE</a>
-	</td>
-        </tr>
--->
