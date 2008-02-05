@@ -86,6 +86,7 @@ Adding a -sd switch generates resources/services.xml -->
             <fileset dir="resources" includes="services.xml"/>
         </delete>
         <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <jvmarg value="-Daxis2.jalopy=false"/>
             <classpath>
                 <fileset dir="${build.lib}" includes="*.jar"/>
                 <fileset dir="${build.axis2.lib}" includes="*.jar"/>
