@@ -98,7 +98,6 @@ public class PathScheduler {
     private static void shutdownHook() {
         Logger log = Logger.getLogger("PathScheduler");
         log.info("*** SCHEDULER SHUTDOWN beginning ***");
-        Initializer initializer = new Initializer();
         long t0 = System.currentTimeMillis();
         while (true) 
         {
