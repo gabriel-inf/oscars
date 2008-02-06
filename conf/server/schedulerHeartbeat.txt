@@ -1,0 +1,3 @@
+The scheduler resets the last modified time of this file on each cycle.
+The last modified time of this file will be monitored by nagios to
+check that the scheduler is running normally.

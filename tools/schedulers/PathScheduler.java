@@ -2,8 +2,10 @@ import java.util.*;
 import java.io.*;
 import java.lang.Throwable;
 
+import org.apache.log4j.*;
 import org.hibernate.*;
 
+import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.bss.Reservation;
@@ -23,8 +25,28 @@ public class PathScheduler {
     // shutdown hook delay time in seconds
     private static final int shutdownTime = 2;     
 
+    // shutdown lock held while pending and expired reservations are handled
+    private static Object shutdownLock;
+
     public static void main (String[] args) {
 
+        Logger log = Logger.getLogger("PathScheduler");
+        log.info("*** SCHEDULER STARTUP ***");
+        shutdownLock = new Object();
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("pss", true);
+        String fname = System.getenv("CATALINA_HOME") +
+            "/shared/classes/server/";
+        fname += props.getProperty("schedulerHeartbeat");
+        File heartbeatFile = new File(fname);
+        if (!heartbeatFile.exists()) {
+            System.err.println(
+                    "*** NO HEARTBEAT FILE.  Have you run ant setupServer ***");
+            log.error("*** NO HEARTBEAT FILE.  Have you run ant setupServer ***");
+            System.exit(0);
+        }
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
         dbnames.add("bss");
@@ -38,12 +60,22 @@ public class PathScheduler {
         Runtime.getRuntime().addShutdownHook (runtimeHookThread);
         try {
             while (true) {
-                checkReservations(sched);
+                long ms = System.currentTimeMillis();
+                if (!heartbeatFile.setLastModified(ms)) {
+                    log.error("*** UNABLE TO SET HEARTBEAT ***");
+                    System.exit(0);
+                }
+                // attempt to avoid shutdown until all pending and expired
+                // reservations in current cycle are handled
+                synchronized(shutdownLock) {
+                    checkReservations(sched);
+                }
                 // sleep for 30 seconds
                 Thread.sleep (30000);
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace(pw);
+            log.error(sw.toString());
         }
     }
 
@@ -64,6 +96,9 @@ public class PathScheduler {
     }
 
     private static void shutdownHook() {
+        Logger log = Logger.getLogger("PathScheduler");
+        log.info("*** SCHEDULER SHUTDOWN beginning ***");
+        Initializer initializer = new Initializer();
         long t0 = System.currentTimeMillis();
         while (true) 
         {
@@ -73,9 +108,15 @@ public class PathScheduler {
                 break; 
             }
 
+            // NOTE that the scheduler may not shut down cleanly if the
+            // system goes down, since checkReservations may take a number
+            // of seconds.  Use kill -2
             if (System.currentTimeMillis() - t0 > shutdownTime*1000) 
-                break;
+                synchronized(shutdownLock) {
+                    break;
+                }
         }
+        log.info("*** SCHEDULER SHUTDOWN ending ***");
     }
 
     /* close down the standard IO ports we are a daemon */

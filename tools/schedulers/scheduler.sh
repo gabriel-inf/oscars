@@ -44,6 +44,9 @@ do
 done
 
 # Do whatever we need exclusive access to do...
+# Note that we need to explicitly give the log4j.properties location or the
+# wrong one is used.  This somewhat bad solution depends on the war file being
+# deployed.
 
 java -Dlog4j.configuration=file://$CATALINA_HOME/webapps/OSCARS/WEB-INF/classes/log4j.properties -Djava.net.preferIPv4Stack=true -Dcatalina.home=$CATALINA_HOME PathScheduler $*
 
