@@ -387,8 +387,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <localRepository refid="local.repository"/>
             <remoteRepository refid="remote.repository.i2"/>
         </artifact:dependencies>
-        <copy file="${maven.repo}/terce/terce-ws/0.1/terce-ws-0.1.aar" todir="${catalina.home}/webapps/axis2/WEB-INF/services"/>
-        <untar src="${maven.repo}/terce/static-terce-config/0.1/static-terce-config-0.1.tar" dest="${catalina.home}/shared/classes" overwrite="false"/>
+        <copy file="${maven.repo}/terce/terce-ws/0.2/terce-ws-0.2.aar" todir="${catalina.home}/webapps/axis2/WEB-INF/services"/>
+        <untar src="${maven.repo}/terce/static-terce-config/0.2/static-terce-config-0.2.tar" dest="${catalina.home}/shared/classes" overwrite="false"/>
     </target>
     <target name="initdragon" depends="terceRemoteCopy">
         <!-- populate domain.home -->
