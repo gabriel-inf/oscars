@@ -5,7 +5,6 @@ import java.lang.Throwable;
 import org.apache.log4j.*;
 import org.hibernate.*;
 
-import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.bss.Reservation;
@@ -33,20 +32,26 @@ public class PathScheduler {
         Logger log = Logger.getLogger("PathScheduler");
         log.info("*** SCHEDULER STARTUP ***");
         shutdownLock = new Object();
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        Properties props = propHandler.getPropertyGroup("pss", true);
-        String fname = System.getenv("CATALINA_HOME") +
-            "/shared/classes/server/";
-        fname += props.getProperty("schedulerHeartbeat");
-        File heartbeatFile = new File(fname);
-        if (!heartbeatFile.exists()) {
-            System.err.println(
-                    "*** NO HEARTBEAT FILE.  Have you run ant setupServer ***");
-            log.error("*** NO HEARTBEAT FILE.  Have you run ant setupServer ***");
-            System.exit(0);
-        }
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
+        String fname = "/tmp/schedulerHeartbeat.txt";
+        File heartbeatFile = new File(fname);
+        if (!heartbeatFile.exists()) {
+            try {
+              FileWriter outFile = new FileWriter(fname);
+              PrintWriter out = new PrintWriter(outFile);
+              out.println(
+                "The scheduler resets the last modified time of this file on " +
+                " each cycle. The last modified time of this file will be " +
+                " monitored by nagios to check that the scheduler is " +
+                "running normally.");
+              out.close();
+            } catch (IOException e) {
+                e.printStackTrace(pw);
+                log.error(sw.toString());
+                System.exit(0);
+            }
+        }
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
         dbnames.add("bss");

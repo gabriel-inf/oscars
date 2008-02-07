@@ -301,7 +301,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy file="conf/server/axis2.log4j.properties" tofile="${catalina.home}/shared/classes/log4j.properties"/>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties"/>
-            <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR*, *.txt "/>
+            <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
         <chmod dir="${catalina.home}/shared/classes/server" perm="600" includes="*key, oscars.properties"/>
     </target>
