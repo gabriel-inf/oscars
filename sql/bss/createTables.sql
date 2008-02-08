@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS edgeInfos (
 ) type = MyISAM;
 
 --
--- Table fo signaling tokens
+-- Table for signaling tokens
 --
 CREATE TABLE IF NOT EXISTS tokens (
   id                 INT NOT NULL AUTO_INCREMENT,
@@ -220,4 +220,33 @@ CREATE TABLE IF NOT EXISTS tokens (
   PRIMARY KEY  (id)
 ) type = MyISAM;
 
+--
+-- Table for history entries
+--
+CREATE TABLE `history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `reservationId` int(11) NOT NULL,
+  `traceId` text NOT NULL,
+  `description` text NOT NULL,
+  `operationType` text NOT NULL,
+  `operationTime` bigint(20) unsigned NOT NULL,
+  `result` text NOT NULL,
+  `receivedFrom` text,
+  `forwardedTo` text,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM
+
+--
+-- Table for scheduler job entries
+--
+CREATE TABLE `jobs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `reservationId` int(11) NOT NULL,
+  `operation` text NOT NULL,
+  `scheduledTime` bigint(20) unsigned NOT NULL,
+  `actualTime` bigint(20) unsigned DEFAULT NULL,
+  `result` text NOT NULL,
+  `done` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM
 
