@@ -36,6 +36,9 @@
         <property name="cache.provider_class">
                   org.hibernate.cache.HashtableCacheProvider</property>
 
+        <mapping resource="net/es/oscars/bss/History.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/Job.hbm.xml"/>
+
         <mapping resource="net/es/oscars/bss/Reservation.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/IdSequence.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/Token.hbm.xml"/>
