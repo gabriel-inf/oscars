@@ -4,7 +4,6 @@ import java.util.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import javax.mail.MessagingException;
 
 import org.apache.log4j.*;
 
@@ -14,12 +13,12 @@ import org.aaaarch.gaaapi.tvs.TokenKey;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
-import net.es.oscars.Notifier;
 import net.es.oscars.PropHandler;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.notify.*;
 
 
 /**
@@ -30,7 +29,7 @@ import net.es.oscars.pathfinder.*;
  */
 public class ReservationManager {
     private Logger log;
-    private Notifier notifier;
+    private NotifyInitializer notifier;
     private PCEManager pceMgr;
     private PolicyManager policyMgr;
     private TypeConverter tc;
@@ -41,11 +40,20 @@ public class ReservationManager {
     public ReservationManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.rsvLogger = new ReservationLogger(this.log);
-        this.notifier = new Notifier();
         this.pceMgr = new PCEManager(dbname);
         this.policyMgr = new PolicyManager(dbname);
         this.tc = new TypeConverter();
         this.dbname = dbname;
+        this.notifier = new NotifyInitializer();
+        try {
+            this.notifier.init();
+        } catch (NotifyException ex) {
+            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
+            // TODO:  ReservationAdapter, ReservationManager, etc. will
+            // have init methods that throw exceptions that will not be
+            // ignored it NotifyInitializer cannot be created.  Don't
+            // want exceptions in constructor
+        }
     }
 
     /**
@@ -211,16 +219,15 @@ public class ReservationManager {
         this.log.info("finalizeCancel.start");
         String gri = resv.getGlobalReservationId();
 
-        String subject = "Reservation " + resv.getGlobalReservationId() +
-                         " cancelled";
-        String msg = "Reservation cancelled.\n" + resv.toString(this.dbname) + "\n";
-        try {
-            this.notifier.sendMessage(subject, msg);
-        } catch (javax.mail.MessagingException ex) {
-            this.log.info("cancel.mail.exception: " + ex.getMessage());
-        } catch (UnsupportedOperationException ex) {
-            this.log.info("cancel.mail.unsupported: " + ex.getMessage());
-        }
+        Map<String,String> messageInfo = new HashMap<String,String>();
+        messageInfo.put("subject",
+                "Reservation " + resv.getGlobalReservationId() + " cancelled");
+        messageInfo.put("body",
+            "Reservation cancelled.\n" + resv.toString(this.dbname));
+        messageInfo.put("alertLine", resv.getDescription());
+        NotifierSource observable = this.notifier.getSource();
+        Object obj = (Object) messageInfo;
+        observable.eventOccured(obj);
         this.log.info("finalizeCancel.finish: " +
                       resv.getGlobalReservationId());
         this.rsvLogger.stop();

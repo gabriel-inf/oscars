@@ -6,7 +6,7 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.bss.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.wsdlTypes.*; 
-import net.es.oscars.Notifier;
+import net.es.oscars.notify.*;
 
 /**
  * PathSetupManager handles all direct interaction with the PSS module. 
@@ -22,14 +22,23 @@ public class PathSetupManager{
     private PSS pss;
     private Forwarder forwarder;
     private ReservationLogger rsvLogger; 
-    private Notifier notifier;
+    private NotifyInitializer notifier;
  
     /** Constructor. */
     public PathSetupManager(String dbname) {
         PropHandler propHandler = new PropHandler("oscars.properties");
         PSSFactory pssFactory = new PSSFactory();
         
-        this.notifier = new Notifier();
+        this.notifier = new NotifyInitializer();
+        try {
+            this.notifier.init();
+        } catch (NotifyException ex) {
+            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
+            // TODO:  ReservationAdapter, ReservationManager, etc. will
+            // have init methods that throw exceptions that will not be
+            // ignored it NotifyInitializer cannot be created.  Don't
+            // want exceptions in constructor
+        }
         this.forwarder = new Forwarder();
         this.props = propHandler.getPropertyGroup("pss", true);
         this.pss =
@@ -50,7 +59,7 @@ public class PathSetupManager{
      */
     public String create(Reservation resv, boolean doForward) throws PSSException, 
                     InterdomainException {
-    	this.rsvLogger.redirect(resv.getGlobalReservationId());
+        this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("create.start");
         String status = null;
         String gri = resv.getGlobalReservationId();
@@ -108,7 +117,7 @@ public class PathSetupManager{
         boolean stillActive = false;
         String errorMsg = null;
         String gri = resv.getGlobalReservationId();
-    	this.rsvLogger.redirect(resv.getGlobalReservationId());
+        this.rsvLogger.redirect(resv.getGlobalReservationId());
         
         /* Check reservation */
         if(this.pss == null){
@@ -170,7 +179,7 @@ public class PathSetupManager{
         String status = null;
         String errorMsg = null;
         String gri = resv.getGlobalReservationId();
-    	this.rsvLogger.redirect(resv.getGlobalReservationId());
+        this.rsvLogger.redirect(resv.getGlobalReservationId());
         
         /* Check reservation */
         if(this.pss == null){

@@ -49,8 +49,7 @@ public class UserList extends HttpServlet {
         outputMap.put("method", "UserList");
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
-        out.println(jsonObject);
-        this.log.info(jsonObject.toString());
+        out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
         this.log.debug("userList:finish");
     }

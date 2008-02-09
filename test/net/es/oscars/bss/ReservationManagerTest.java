@@ -121,7 +121,7 @@ public class ReservationManagerTest {
         logins.add(login);
         try {
             reservations = this.rm.list(login, logins, null, null,
-                                        null, null);
+                                        null, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -140,7 +140,8 @@ public class ReservationManagerTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = this.rm.list(login, logins, null, null, null, null);
+            reservations = this.rm.list(login, logins, null, null, null, null,
+                                        null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

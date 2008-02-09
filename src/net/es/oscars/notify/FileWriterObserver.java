@@ -20,16 +20,15 @@ public class FileWriterObserver implements Observer {
     }
 
     public void update (Observable obj, Object arg) {
-		BufferedWriter out = null;
-		try {
-			// obviously do different stuff here
-			out = new BufferedWriter( new FileWriter( "/tmp/fileToWrite.txt"));
-			out.write(arg.toString());
-			out.flush();
-			
-		} catch (IOException e){
-			// do something
-		}
+        BufferedWriter out = null;
+        try {
+            // obviously do different stuff here
+            out = new BufferedWriter( new FileWriter( "/tmp/fileToWrite.txt"));
+            out.write(arg.toString());
+            out.flush();
 
+        } catch (IOException e) {
+            // do something
+        }
     }
 }

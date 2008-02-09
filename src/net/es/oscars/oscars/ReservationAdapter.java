@@ -10,12 +10,11 @@ package net.es.oscars.oscars;
 
 import java.util.*;
 import java.io.IOException;
-import javax.mail.MessagingException;
 
 import org.apache.log4j.*;
-
-import net.es.oscars.Notifier;
 import org.ogf.schema.network.topology.ctrlplane._20070626.*;
+
+import net.es.oscars.notify.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
@@ -31,7 +30,7 @@ public class ReservationAdapter {
     private Logger log;
     private ReservationManager rm;
     private TypeConverter tc;
-    private Notifier notifier;
+    private NotifyInitializer notifier;
     private String dbname;
 
     public ReservationAdapter() {
@@ -39,7 +38,16 @@ public class ReservationAdapter {
         this.dbname = "bss";
         this.rm = new ReservationManager("bss");
         this.tc = new TypeConverter();
-        this.notifier = new Notifier();
+        this.notifier = new NotifyInitializer();
+        try {
+            this.notifier.init();
+        } catch (NotifyException ex) {
+            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
+            // TODO:  ReservationAdapter, ReservationManager, etc. will
+            // have init methods that throw exceptions that will not be
+            // ignored it NotifyInitializer cannot be created.  Don't
+            // want exceptions in constructor
+        }
     }
 
     /**
@@ -79,17 +87,16 @@ public class ReservationAdapter {
             pathInfo.getPath().setId("unimplemented");
             this.tc.clientConvert(pathInfo);
             reply.setPathInfo(pathInfo);
-            String subject = "Reservation " + resv.getGlobalReservationId() +
-                             " scheduling through API succeeded";
-            String notification = "Reservation scheduling succeeded.\n" +
-                                  resv.toString("bss") + "\n";
-            try {
-                this.notifier.sendMessage(subject, notification);
-            } catch (javax.mail.MessagingException ex) {
-                this.log.info("create.mail.exception: " + ex.getMessage());
-            } catch (UnsupportedOperationException ex) {
-                this.log.info("create.mail.unsupported: " + ex.getMessage());
-            }
+            Map<String,String> messageInfo = new HashMap<String,String>();
+            messageInfo.put("subject", 
+                            "Reservation " + resv.getGlobalReservationId() +
+                             " scheduling through API succeeded");
+            messageInfo.put("body", "Reservation scheduling succeeded.\n" +
+                                  resv.toString("bss"));
+            messageInfo.put("alertLine", resv.getDescription());
+            NotifierSource observable = this.notifier.getSource();
+            Object obj = (Object) messageInfo;
+            observable.eventOccured(obj);
         } catch (BSSException e) {
             // send notification in all cases
             this.sendFailureNotification(resv, e.getMessage());
@@ -328,24 +335,24 @@ public class ReservationAdapter {
 
     private void sendFailureNotification(Reservation resv, String errMsg) {
 
-        String subject = "";
-        String notification = "";
         // ugly, but notifies in all cases.  Have to be careful if creation
         // did not get too far.
+        Map<String,String> messageInfo = new HashMap<String,String>();
         if (resv == null) {
-            subject += "Reservation scheduling through API entirely failed";
-            notification += "Reservation scheduling entirely failed with " + errMsg;
+            messageInfo.put("subject", 
+                "Reservation scheduling through API entirely failed");
+            messageInfo.put("body",
+                "Reservation scheduling entirely failed with " + errMsg);
         } else if (resv.getGlobalReservationId() != null) {
-            subject += "Reservation " + resv.getGlobalReservationId() + " failed";
-            notification = "Reservation scheduling through API failed with " +
-                            errMsg + "\n" + resv.toString("bss") + "\n";
+            messageInfo.put("subject",
+                "Reservation " + resv.getGlobalReservationId() + " failed");
+            messageInfo.put("body",
+                "Reservation scheduling through API failed with " +
+                 errMsg + "\n" + resv.toString("bss"));
+            messageInfo.put("alertLine", resv.getDescription());
         }
-        try {
-            this.notifier.sendMessage(subject, notification);
-        } catch (javax.mail.MessagingException ex) {
-            this.log.info("create.mail.exception: " + ex.getMessage());
-        } catch (UnsupportedOperationException ex) {
-            this.log.info("create.mail.unsupported: " + ex.getMessage());
-        }
+        NotifierSource observable = this.notifier.getSource();
+        Object obj = (Object) messageInfo;
+        observable.eventOccured(obj);
     }
 }

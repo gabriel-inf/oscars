@@ -3,15 +3,14 @@ package net.es.oscars.pss;
 import java.util.*;
 import java.io.*;
 import java.lang.Throwable;
-import javax.mail.MessagingException;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
 
-import net.es.oscars.Notifier;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationDAO;
 import net.es.oscars.interdomain.InterdomainException;
+import net.es.oscars.notify.*;
 
 /**
  * @author David Robertson (dwrobertson@lbl.gov), Jason Lee (jrlee@lbl.gov)
@@ -20,14 +19,23 @@ import net.es.oscars.interdomain.InterdomainException;
  */
 public class Scheduler {
     private Logger log;
-    private Notifier notifier;
+    private NotifyInitializer notifier;
     private String dbname;
     private PathSetupManager pathSetupManager;
 
     public Scheduler(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.pathSetupManager = new PathSetupManager(dbname);
-        this.notifier = new Notifier();
+        this.notifier = new NotifyInitializer();
+        try {
+            this.notifier.init();
+        } catch (NotifyException ex) {
+            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
+            // TODO:  ReservationAdapter, ReservationManager, etc. will
+            // have init methods that throw exceptions that will not be
+            // ignored it NotifyInitializer cannot be created.  Don't
+            // want exceptions in constructor
+        }
         this.dbname = dbname;
     }
 
@@ -86,14 +94,14 @@ public class Scheduler {
                                 "\n" + resv.toString(this.dbname) + "\n";
                 this.log.error(notification);
             }
-            try {
-                if (success || badSetup) {
-                    this.notifier.sendMessage(subject, notification);
-                }
-            } catch (javax.mail.MessagingException ex) {
-                this.log.info("create.mail.exception: " + ex.getMessage());
-            } catch (UnsupportedOperationException ex) {
-                this.log.info("create.mail.unsupported: " + ex.getMessage());
+            if (success || badSetup) {
+                Map<String,String> messageInfo = new HashMap<String,String>();
+                messageInfo.put("subject", subject);
+                messageInfo.put("body", notification);
+                messageInfo.put("alertLine", resv.getDescription());
+                NotifierSource observable = this.notifier.getSource();
+                Object obj = (Object) messageInfo;
+                observable.eventOccured(obj);
             }
             dao.update(resv);
         }
@@ -153,13 +161,13 @@ public class Scheduler {
                 notification += "failed with " + ex.getMessage() +
                                 "\n" + resv.toString(this.dbname) + "\n";
             }
-            try {
-                this.notifier.sendMessage(subject, notification);
-            } catch (javax.mail.MessagingException ex) {
-                this.log.info("create.mail.exception: " + ex.getMessage());
-            } catch (UnsupportedOperationException ex) {
-                this.log.info("create.mail.unsupported: " + ex.getMessage());
-            }
+            Map<String,String> messageInfo = new HashMap<String,String>();
+            messageInfo.put("subject", subject);
+            messageInfo.put("body", notification);
+            messageInfo.put("alertLine", resv.getDescription());
+            NotifierSource observable = this.notifier.getSource();
+            Object obj = (Object) messageInfo;
+            observable.eventOccured(obj);
             dao.update(resv);
         }
         return reservations;

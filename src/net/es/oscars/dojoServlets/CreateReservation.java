@@ -23,18 +23,28 @@ import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.Notifier;
+import net.es.oscars.notify.*;
 
 
 public class CreateReservation extends HttpServlet {
     private Logger log;
+    private NotifyInitializer notifier;
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("CreateReservation.start");
 
-        Notifier notifier = new Notifier();
+        this.notifier = new NotifyInitializer();
+        try {
+            this.notifier.init();
+        } catch (NotifyException ex) {
+            log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
+            // TODO:  ReservationAdapter, ReservationManager, etc. will
+            // have init methods that throw exceptions that will not be
+            // ignored it NotifyInitializer cannot be created.  Don't
+            // want exceptions in constructor
+        }
         TypeConverter tc = new TypeConverter();
         Forwarder forwarder = new Forwarder();
         ReservationManager rm = new ReservationManager("bss");
@@ -92,24 +102,24 @@ public class CreateReservation extends HttpServlet {
             CreateReply forwardReply = forwarder.create(resv, pathInfo);
             rm.finalizeResv(forwardReply, resv, pathInfo);
             rm.store(resv);
-            String subject = "Reservation " + resv.getGlobalReservationId() +
-                             " scheduling through browser succeeded";
-            String notification = "Reservation scheduling through browser succeeded.\n" +
-                                  resv.toString("bss") + "\n";
-            try {
-                notifier.sendMessage(subject, notification);
-            } catch (javax.mail.MessagingException ex) {
-                ;  // swallow for now
-            } catch (UnsupportedOperationException ex) {
-                ;
-            }
+            Map<String,String> messageInfo = new HashMap<String,String>();
+            messageInfo.put("subject",
+                "Reservation " + resv.getGlobalReservationId() +
+                " scheduling through browser succeeded");
+            messageInfo.put("body",
+                "Reservation scheduling through browser succeeded.\n" +
+                 resv.toString("bss") + "\n");
+            messageInfo.put("alertLine", resv.getDescription());
+            NotifierSource observable = this.notifier.getSource();
+            Object obj = (Object) messageInfo;
+            observable.eventOccured(obj);
         } catch (BSSException e) {
-            this.sendFailureNotification(notifier, resv, e.getMessage());
+            this.sendFailureNotification(resv, e.getMessage());
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;
         } catch (Exception e) {
             // use this so we can find NullExceptions
-            this.sendFailureNotification(notifier, resv, e.getMessage());
+            this.sendFailureNotification(resv, e.getMessage());
             utils.handleFailure(out, e.toString(), null, bss);
             return;
         }
@@ -265,27 +275,26 @@ public class CreateReservation extends HttpServlet {
         return pathInfo;
     }
 
-    private void sendFailureNotification(Notifier notifier, Reservation resv,
-                                         String errMsg) {
+    private void sendFailureNotification(Reservation resv, String errMsg) {
 
-        String subject = "";
-        String notification = "";
         // ugly, but notifies in all cases.  Have to be careful if creation
         // did not get too far.
+        Map<String,String> messageInfo = new HashMap<String,String>();
         if (resv == null) {
-            subject += "Reservation scheduling entirely failed";
-            notification += "Reservation scheduling through browser entirely failed";
+            messageInfo.put("subject",
+                "Reservation scheduling entirely failed");
+            messageInfo.put("body",
+                "Reservation scheduling through browser entirely failed");
         } else if (resv.getGlobalReservationId() != null) {
-            subject += "Reservation " + resv.getGlobalReservationId() + " failed";
-            notification = "Scheduling reservation through browser failed with" +
-                            errMsg + "\n" + resv.toString("bss") + "\n";
+            messageInfo.put("subject", 
+                "Reservation " + resv.getGlobalReservationId() + " failed");
+            messageInfo.put("body",
+                    "Scheduling reservation through browser failed with" +
+                            errMsg + "\n" + resv.toString("bss"));
+            messageInfo.put("alertLine", resv.getDescription());
         }
-        try {
-            notifier.sendMessage(subject, notification);
-        } catch (javax.mail.MessagingException ex) {
-            ;  // swallow exception for now
-        } catch (UnsupportedOperationException ex) {
-            ;
-        }
+        NotifierSource observable = this.notifier.getSource();
+        Object obj = (Object) messageInfo;
+        observable.eventOccured(obj);
     }
 }

@@ -1,23 +1,20 @@
 package net.es.oscars.bss;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.*;
+
+import org.apache.log4j.*;
+import org.hibernate.*;
+import org.hibernate.criterion.*;
+
 import net.es.oscars.PropHandler;
-import net.es.oscars.Notifier;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.PathInfo;
-
-import org.apache.log4j.*;
-
-import org.hibernate.*;
-
-import org.hibernate.criterion.*;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.*;
-
+import net.es.oscars.notify.*;
 
 /**
  * This class contains methods to update the topology database, given
@@ -53,7 +50,7 @@ public class TopologyManager {
     private Utils utils;
     private Properties props;
     private String localDomain;
-    private Notifier notifier;
+    private NotifyInitializer notifier;
 
     private HashMap<String, Domain> dbDomainMap;
     private HashMap<String, Node> dbNodeMap; 
@@ -64,7 +61,16 @@ public class TopologyManager {
     public TopologyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
-        this.notifier = new Notifier();
+        this.notifier = new NotifyInitializer();
+        try {
+            this.notifier.init();
+        } catch (NotifyException ex) {
+            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
+            // TODO:  ReservationAdapter, ReservationManager, etc. will
+            // have init methods that throw exceptions that will not be
+            // ignored it NotifyInitializer cannot be created.  Don't
+            // want exceptions in constructor
+        }
         
         this.rm = new ReservationManager(this.dbname);
         this.utils = new Utils(this.dbname);
@@ -861,7 +867,7 @@ public class TopologyManager {
             } catch (BSSException e) {
                 String msg = "Reservation invalidated due to oversubscription.\n " +
                               r.toString(this.dbname) + "\n";
-                this.sendMessage(subject, msg);
+                this.sendMessage(subject, msg, r);
                 r.setStatus("INVALIDATED");
                 this.log.warn("INVALIDATED request due to oversubscription: " +r.getGlobalReservationId() );
                 dao.update(r);
@@ -876,7 +882,7 @@ public class TopologyManager {
                 if (!this.isDuplicate(oldPath, path)) {
                     String msg = "Reservation invalidated due to changed path.\n" +
                                   r.toString(this.dbname) + "\n";
-                    this.sendMessage(subject, msg);
+                    this.sendMessage(subject, msg, r);
                     r.setStatus("INVALIDATED");
                     this.log.warn("INVALIDATED request due to changed path: " +r.getGlobalReservationId() );
                     dao.update(r);
@@ -1123,13 +1129,13 @@ public class TopologyManager {
         this.localDomain = domainId;
     }
 
-    private void sendMessage(String subject, String msg) {
-        try {
-            this.notifier.sendMessage(subject, msg);
-        } catch (javax.mail.MessagingException ex) {
-            this.log.warn("invalidated.mail.exception: " + ex.getMessage());
-        } catch (UnsupportedOperationException ex) {
-            this.log.warn("invalidated.mail.unsupported: " + ex.getMessage());
-        }
+    private void sendMessage(String subject, String msg, Reservation resv) {
+        Map<String,String> messageInfo = new HashMap<String,String>();
+        messageInfo.put("subject", subject);
+        messageInfo.put("body", msg);
+        messageInfo.put("alertLine", resv.getDescription());
+        NotifierSource observable = this.notifier.getSource();
+        Object obj = (Object) messageInfo;
+        observable.eventOccured(obj);
     }
 }
