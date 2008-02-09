@@ -55,8 +55,8 @@ public class Scheduler {
                 this.log.info("pendingReservation: " +
                               resv.getGlobalReservationId());
                 if (pathSetupMode.equals("timer-automatic")) {
+                    // resv set to proper status inside dragon, cisco, or jnx
                     String status = this.pathSetupManager.create(resv, true);
-                    dao.update(resv);
                     success = true;
                 }
                 subject += " succeeded";
@@ -95,6 +95,7 @@ public class Scheduler {
             } catch (UnsupportedOperationException ex) {
                 this.log.info("create.mail.unsupported: " + ex.getMessage());
             }
+            dao.update(resv);
         }
         return reservations;
     }
@@ -127,7 +128,6 @@ public class Scheduler {
                         "expired without ever having been set up";
                     throw new PSSException(errMsg);
                 }
-                dao.update(resv);
                 this.log.info("expiredReservation: " +
                               resv.getGlobalReservationId());
                 String status = this.pathSetupManager.teardown(resv, false);
@@ -160,6 +160,7 @@ public class Scheduler {
             } catch (UnsupportedOperationException ex) {
                 this.log.info("create.mail.unsupported: " + ex.getMessage());
             }
+            dao.update(resv);
         }
         return reservations;
     }

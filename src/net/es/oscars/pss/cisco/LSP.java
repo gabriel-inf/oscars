@@ -184,7 +184,16 @@ public class LSP {
         }
         active = this.statusLSP();
         if (!active) {
-            resv.setStatus("FAILED");
+            // try one more time a minute later
+            try {
+                Thread.sleep(60000);
+            } catch (Exception ex) {
+                throw new PSSException(ex.getMessage());
+            }
+            active = this.statusLSP();
+            if (!active) {
+                resv.setStatus("FAILED");
+            }
         }
         return resv.getStatus();
     }
