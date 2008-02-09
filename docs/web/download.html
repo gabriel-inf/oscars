@@ -9,16 +9,44 @@
 <body>
 <!--#include virtual="header.html" -->
 <div id="topBar" class="topBar">
-<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt;
- <a href="download.html">Download</a>
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="download.html">Download</a>
 </div>
 </div>
 <h1>OSCARS Software Downloads</h1>
-(under construction)<br>
 <br>
 <h2>Checkout from SVN repository</h2>
+<p>
+The url for the OSCARS releases subdirectory is
+https://oscars.es.net:/repos/oscars/releases.
+</p>
+<p>To see the list of all available releases:</p>
+<p style="margin-left: 40px;"><code> svn list
+https://oscars.es.net:/repos/oscars/releases</code></p>
+<p>To download a specific release, for example release 2.0:</p>
+<div style="margin-left: 40px;"><code> mkdir release-0.2</code><br>
+<code>cd release-0.2</code><br>
+<code>snv co
+https://oscars.es.net:/repos/oscars/releases/dcn-suite-oscars-0.2 .</code><br>
+</div>
+<p>
+To see the list of all branches:<br>
+</p>
+<div style="margin-left: 40px;"><code> svn list
+https://oscars.es.net:/repos/oscars/branches<br>
+<br>
+</code></div>
+Access to the repository is limited to registered users. If you want
+access to the code please contact <a href="mailto:dwrobertson@lbl.gov">
+David
+Robertson</a>
+<p></p>
 <h2>Download TAR file</h2>
 <br>
+We plan to make tar file releases available starting at the next
+release.<br>
 <!--#include virtual="footer.html" -->
+<br>
+<br>
 </body>
 </html>

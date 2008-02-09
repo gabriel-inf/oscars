@@ -10,17 +10,42 @@
 </head>
 <body>
 <!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv">&nbsp;&nbsp; <a href="index.html">home
+</a> &gt;&nbsp;<a href="faq.html">FAQ</a><br>
+</div>
+</div>
 <h1>OSCARS FAQ</h1>
-<h2>Installation</h2>
+<h3>Table of Contents</h3>
+<a href="#Installation">Installation</a><br>
+<div style="margin-left: 40px;"><a href="RampartLoad">Rampart fails to
+load</a><br>
+</div>
+<a href="#Maintenance">Maintenance</a><br>
+<div style="margin-left: 40px;"><a href="#CodeChanges">Code changes
+don't show up after a deploy</a><br>
+<a href="#BackupDatabases">How to back up data bases</a><br>
+<br>
+</div>
+<br>
+<h2><a name="Installation"></a>Installation</h2>
 <ul>
-  <li><b>Axis2 and Rampart</b> <br>
-To make Axis2 use Rampart, place conf/rampart-1.3.mar in
-CATALINA_HOME/webapps/axis2/WEB-INF/modules/
-Odds are that this will not work first time. This is because the axis2
+  <li><b><a name="RampartLoad"></a>I installed the rampart.mar file in
+webapps/axis2/WEB_INF/modules and get the following error on startup: <br>
+    </b></li>
+  <li><b>&nbsp;</b></li>
+  <li><code>[ERROR] The rampart-1.3.mar module, which is not valid,
+caused org.apache.rampart.Rampart<br>
+org.apache.axis2.deployment.DeploymentException:
+org.apache.rampart.Rampart</code><br>
+  </li>
+  <li><br>
+  </li>
+  <li>This is because the axis2
 1.3 default .war does NOT include some libraries Rampart needs. And,
 due to Axis2's special classloaders, placing those libraries in the
-Tomcat shared library folder won't work. Locate the following files:
-    <pre>From Axis2 1.3, these .jars under lib: <br>	axis2-codegen-1.3.jar, <br>	axis-adb-codegen.jar, <br>	jibx-bind-1.1.5.jar<br>	<br>From rampart-1.3, all the .jars under lib:<br>	bcprov-jdk15-132.jar    <br>	opensaml-1.1.jar     <br>	rampart-core-1.3.jar    <br>	rampart-trust-1.3.jar   <br>	rampart-policy-1.3.jar  <br>	wss4j-1.5.3.jar<br>	xmlsec-1.4.0.jar		<br></pre>
+Tomcat shared library folder won't work. Locate the following files: <br>
+    <pre>From rampart-1.3, all the .jars under lib:<br>	bcprov-jdk15-132.jar    <br>	opensaml-1.1.jar     <br>	rampart-core-1.3.jar    <br>	rampart-trust-1.3.jar   <br>	rampart-policy-1.3.jar  <br>	wss4j-1.5.3.jar<br>	xmlsec-1.4.0.jar		<br></pre>
 Copy all the above to CATALINA_HOME/webapps/axis2/WEB-INF/lib/ , and
 restart Tomcat.
 Rampart should work now.</li>
@@ -28,9 +53,9 @@ Rampart should work now.</li>
   <hr style="width: 75%; height: 2px;"> <li>Alternatively build an
 axis2.war file that contains rampart.</li>
   <ul>
-    <li>Download the axis2 1.3 and rampart 1.3 packages from Apache and
+    <li>Download the axis2 1.3 standard binary distribution and the
+rampart 1.3 packages from Apache and
 unzip them in a common directory.</li>
-    <br>
     <br>
     <li>Set the AXIS2_HOME environment variable to the directory in
 which axis2 was put.</li>
@@ -42,7 +67,7 @@ jars to axis2 lib.</li>
     <li>In the axis2-1.3/webapp directory, edit the create.war target
 in
 build.xml to remove the lines:
-      <pre>     &lt;exclude name="axis2-adb-codegen*.jar"<br>     &lt;exclude name="axis2-codegen*.jar"/&gt;<br>     &lt;exclude name="jibx-bind*.jar"/&gt;</pre>
+      <pre>     &lt;exclude name="axis2-adb-codegen*.jar"/&gt;<br>     &lt;exclude name="axis2-codegen*.jar"/&gt;<br>     &lt;exclude name="jibx-bind*.jar"/&gt;</pre>
     </li>
     <li>Then run ant to create an axis2.war file that includes rampart
 and its required classes.</li>
@@ -52,23 +77,25 @@ and its required classes.</li>
     </li>
   </ul>
 </ul>
-<h2>Configuration</h2>
-<h2>Maintenance</h2>
+<h2><a name="Configuration"></a>Configuration</h2>
+<h2><a name="Maintenance"></a>Maintenance</h2>
 <ul>
-  <li><b>I ran ant deployall to compile and deploy a new version of the
+  <li><b><a name="CodeChanges"></a>I ran ant deployall to compile and
+deploy a new version of the
 code, but my changes aren't showing! What's wrong?</b><br>
 Remember to shut down Tomcat and kill -2 the scheduler process before
 deploying, then
 start them again. </li>
-  <li><b>I want to back up OSCARS. How do I do this?</b><br>
+  <li><b><a name="BackupDatabases"></a>I want to back up OSCARS. How do
+I do this?</b><br>
 First, stop Tomcat and the scheduler process. Then, back up the bss and
 aaa
 MySQL databases with your favourite MySQL backup tool like mysqldump. </li>
 </ul>
-<h2>Security</h2>
-<h2>Web Interface</h2>
-<h2>Web Service</h2>
-<h2>Error messages</h2>
+<h2><a name="Security"></a>Security</h2>
+<h2><a name="Web_Interface"></a>Web Interface</h2>
+<h2><a name="Web_Service"></a>Web Service</h2>
+<h2><a name="Error_messages"></a>Error messages</h2>
 <!--#include virtual="footer.html" -->
 </body>
 </html>

@@ -23,8 +23,8 @@ The OSCARS source code is kept in an SVN repository at&nbsp;<a
 There are three main subdirectories of the source tree:
 <dl style="margin-left: 40px;">
   <dt><span style="font-weight: bold;">releases</span> </dt>
-  <dd>Contains
-snaphots of the official releases.</dd>
+  <dd>Contains the official release branches.<br>
+  </dd>
   <dt><span style="font-weight: bold;">branches</span> </dt>
   <dd>Contains
 stable branches for internal releases and release candidates. This
@@ -35,9 +35,10 @@ also contain branches for new features that are not complete yet.</dd>
 complete development work is checked in to
 the trunk. </dd>
 </dl>
-The contents of a release branch will not change. If critical bug fixes
-are needed between major releases a release with a new minor number
-will be made. <br>
+The contents of the branches in the releases directory will not change.
+If critical bug fixes
+are needed between releases an internal release branch (aka
+micro-release) will be created in the branches directory.<br>
 <br>
 The internal release and release candidate branches may have bug fixes
 or critical features added that do not affect the compatibility with
@@ -119,7 +120,7 @@ files.
 <ul>
   <li><span style="font-weight: bold;">${DOMAIN_HOME}/server </span>:
 sec-server.jks, sec-server.properties, sec-client.jks,
-sec-client.properties, oscars,key, pss.key,oscars,properties,
+sec-client.properties, oscars.key, pss.key,oscars,properties,
 test.properties</li>
   <li><span style="font-weight: bold;">${DOMAIN_HOME}/client:</span>
 axis2.xml, ssl-keystore.jks</li>

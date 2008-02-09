@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>BSS component</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt;
+Components &gt; <a href="bss.html">BSS</a>
+</div>
+</div>
+<h1>Bandwidth Scheduling Subcomponent</h1>
+<h2>Overview</h2>
+<br>
+The bandwidth scheduling component is the top level component that
+schedules a reservation. It parses the createReservation request,
+checks with the&nbsp;<a href="aaa.html">authorization component</a>
+that the user has permission to make the reservation and then hands the
+requested path to the <a href="pathfinder.html">pathfinder component</a>
+to determine the actual path through the network that will be used. It
+then checks to see if the required resources are available during the
+requested time interval. If so, it holds those resources and creates a
+Global Reservation Identifier (GRI) which will be used to identify the
+reservation in each of the domains that it may traverse. If the end
+point of the path is not in the local domain, the BSS forwards the
+createReservation request to the next domain.&nbsp; If the reservation
+is able to sucessfully hold all the resources it needs across all the
+downstream domains, the local resources are scheduled and the
+reservation is entered into the BSS's reservation table.<br>
+<br>
+<h2>Details</h2>
+<br>
+The createReservation message contains the path that is to be reserved,
+the amount of bandwidth to be reserved, the start time for the
+reservation, the duration, the burst limit, the purpose of the
+reservation and if coming from another domain, the global reservation
+identifier. See the <a href="wsdl.files">OSCARS wsdl files</a> for the
+precise type of each of these parameters. The input path definition is
+very flexible. It can mostly simply be the source and destination host
+IP addresses, or can include ingress and egress points for each domain,
+or even the hops within domains. It is referred to as a unconfirmed
+loose hop path (ULP). At the end of the reservation process a confirmed
+loose hop (CLP) is returned to the user where it has been verified that
+an acutal path with the requested bandwidth can be made through these
+hops.&nbsp; The way the hops are expressed depends on the layer (2 or
+3) that is being specified and how the domains specify their
+topologies. see <a href="tss.html">topology exchange</a>.&nbsp; <br>
+<br>
+<br>
+</body>
+</html>
