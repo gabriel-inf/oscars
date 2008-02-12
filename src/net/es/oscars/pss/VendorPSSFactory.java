@@ -98,6 +98,15 @@ public class VendorPSSFactory implements PSS {
         // currently only Cisco status gathering works
         if (ciscoLSP != null) {
             active = ciscoLSP.statusLSP();
+            if (!active) {
+                // try one more time a minute later
+                try {
+                    Thread.sleep(60000);
+                } catch (Exception ex) {
+                    throw new PSSException(ex.getMessage());
+                }
+                active = ciscoLSP.statusLSP();
+            }
         } else {
             //active = jnxLSP.statusLSP();
             active = true;
