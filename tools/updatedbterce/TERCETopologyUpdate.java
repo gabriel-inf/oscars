@@ -85,12 +85,21 @@ public class TERCETopologyUpdate{
             if(d.getId().equals(localDomainId)){
                 this.log.info("local domain found: " + localDomainId);
                 CtrlPlaneNodeContent[] nodes = d.getNode();
+                if(nodes == null){
+					    continue;
+				}
 				for(CtrlPlaneNodeContent n : nodes){
 					Node dbNode = this.prepareNodeforDB(n, localDomain, bss);
 					CtrlPlanePortContent[] ports = n.getPort();
+					if(ports == null){
+					    continue;
+					}
 					for(CtrlPlanePortContent p : ports){
 						Port dbPort = this.preparePortforDB(p, dbNode, bss);
 						CtrlPlaneLinkContent[] links = p.getLink();
+						if(links == null){
+					        continue;
+					    }
                         for(CtrlPlaneLinkContent l : links){
                             Link dbLink = this.prepareLinkforDB(l, dbPort, bss);
                         }
