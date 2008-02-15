@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import org.hibernate.*;
 
 import net.es.oscars.database.HibernateUtil;
@@ -22,13 +22,34 @@ import net.es.oscars.bss.topology.Layer2Data;
 import net.es.oscars.bss.topology.Layer3Data;
 
 public class ListReservations extends HttpServlet {
+    private boolean tryStatusCookie;
 
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+        
+        this.tryStatusCookie = true;
+        this.handleList(request, response);
+    }
+
+    public void
+        doPost(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        this.tryStatusCookie = false;
+        this.handleList(request, response);
+    }
+
+    // for special case for first page
+    public void setTryStatusCookie(boolean status) {
+        this.tryStatusCookie = status;
+    }
+
+    public void
+        handleList(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
 
         List<Reservation> reservations = null;
-
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
 
@@ -60,13 +81,6 @@ public class ListReservations extends HttpServlet {
         bss.getTransaction().commit();
     }
 
-    public void
-        doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-
-        this.doGet(request, response);
-    }
-
     /**
      *  GetReservations returns either all reservations or just the reservations
      *  for this user, depending on his permissions
@@ -85,8 +99,8 @@ public class ListReservations extends HttpServlet {
         UserSession userSession = new UserSession();
         List<Reservation> reservations = null;
         List<String> logins = null;
-        List<String> statuses = this.getStatuses(request, userSession);
         String description = this.getDescription(request, userSession);
+        List<String> statuses = this.getStatuses(request, userSession);
         boolean allUsers = false;
         Utils utils = new Utils();
 
@@ -131,16 +145,45 @@ public class ListReservations extends HttpServlet {
             "the reservation.</p>");
         out.println("<p><form method='post' action='' onsubmit=\"" +
             "return submitForm(this, 'ListReservations');\">");
-        out.println("<table cellspacing='0' width='30%'>");
+        out.println("<input type='hidden' class='SOAP' name='startTimeSeconds'>" +
+                    "</input>");
+        out.println("<input type='hidden' class='SOAP' name='endTimeSeconds'>" +
+                    "</input>");
+        out.println("<table cellspacing='0' width='80%'>");
         out.println("<tbody>");
         out.println("<tr>");
-        out.println("<td><input type='submit' value='Refresh'></input></td>");
+        out.println("<td><input type='submit' value='Refresh'></input>");
+        out.println("</td>");
+        String description = this.getDescription(request, userSession); 
         List<String> statuses = this.getStatuses(request, userSession);
         this.outputStatusMenu(out, statuses);
 
-        String description = this.getDescription(request, userSession); 
-        
-        out.println("<td>Description: <input type='text' class='SOAP' name='description' value='"+description+"'></input></td>");
+        out.println("<td>Description: <input type='text' class='SOAP' name='description' size='35' value='"+description+"'></input></td>");
+
+        out.println("<td>");
+        out.println("<input type='reset' value='Reset form fields'></input>");
+        out.println("</td>");
+        out.println("</tr>");
+        out.println("<tr>");
+        out.println("<td>Start date: ");
+        out.println("<input type='text' name='startDateSearch' size='16'></input>");
+        out.println("YYYY-MM-DD");
+        out.println("</td>");
+        out.println("<td>Start time: ");
+        out.println("<input type='text' name='startTimeSearch' size='10'></input>");
+        out.println("HH:MM");
+        out.println("</td>");
+        out.println("<td>End date: ");
+        out.println("<input type='text' name='endDateSearch' size='16'></input>");
+        out.println("YYYY-MM-DD");
+        out.println("</td>");
+        out.println("<td>End time: ");
+        out.println("<input type='text' name='endTimeSearch' size='10'></input>");
+        out.println("HH:MM");
+        out.println("</td>");
+        out.println("<td>Links: ");
+        out.println("<textarea class='SOAP' name='links' rows='2' cols='46'> </textarea>");
+        out.println("</td>");
         out.println("</tr>");
         out.println("</tbody>");
         out.println("</table>");
@@ -205,41 +248,54 @@ public class ListReservations extends HttpServlet {
         userSession.setCookie("description", description, response);
     }
     
-    public String getDescription(HttpServletRequest request, UserSession userSession) {
-    	String description = null;
-    	description = request.getParameter("description"); 
-    	if (description == null) {
-    		
+    public String getDescription(HttpServletRequest request,
+                                 UserSession userSession) {
+
+        String description = null;
+        description = request.getParameter("description"); 
+        if (description == null) {
             description = userSession.getCookie("description", request);
-            List<String> statuses = this.getStatuses(request, userSession); 
-            if (description == null || !statuses.isEmpty() ) {
-        		description = "";
+            if (description == null) {
+                description = "";
             }
-    	}
-    	return description;
+        }
+        return description;
     }
 
     public  List<String> getStatuses(HttpServletRequest request,
                                      UserSession userSession) {
 
+        Logger log = Logger.getLogger(this.getClass());
         List<String> statuses = new ArrayList<String>();
-      	String paramStatuses[] = request.getParameterValues("statuses");
-        // if coming in from tab
-        if ((paramStatuses == null) || (paramStatuses.length == 0)) {
+        String paramStatuses[] = request.getParameterValues("statuses");
+        // if coming in from tab, or first page
+        if (this.tryStatusCookie) {
             String statusList = userSession.getCookie("statusList", request);
             if (statusList != null) {
+                log.info("using cookie");
+                // otherwise messes up SQL query
+                if (statusList.equals("")) {
+                    return statuses;
+                }
                 String[] statusCookies = statusList.split(" ");
                 for (int i=0; i < statusCookies.length; i++) {
+                    log.info(statusCookies[i]);
                     statuses.add(statusCookies[i]);
                 }
             // first time
             } else {
+                log.info("first page");
                 statuses.add("ACTIVE");
                 statuses.add("PENDING");
             }
         // else if refreshing with possibly new menu selections
         } else {
+            log.info("not coming in from tab");
+            if (paramStatuses == null) {
+                return statuses;
+            }
             for (int i=0 ; i < paramStatuses.length; i++) {
+                log.info(paramStatuses[i]);
                 statuses.add(paramStatuses[i]);
             }
         }
@@ -261,8 +317,8 @@ public class ListReservations extends HttpServlet {
         fullStatuses.add("CANCELLED");
         fullStatuses.add("FAILED");
         fullStatuses.add("INVALIDATED");
-        out.println("<td>Statuses</td>");
-        out.println("<td><select class='required' name='statuses' multiple='multiple'>");
+        out.println("<td>Statuses: ");
+        out.println("<select class='required' name='statuses' multiple='multiple'>");
         for (String fullStatus: fullStatuses) {
             out.println("<option value='" + fullStatus + "' ");
             if (selectedStatuses.containsKey(fullStatus)) {

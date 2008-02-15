@@ -24,9 +24,9 @@ public class UserAdd extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
-	this.log = Logger.getLogger(this.getClass());
-	this.dbname = "aaa";
-	this.log.debug("userAdd:start");
+        this.log = Logger.getLogger(this.getClass());
+        this.dbname = "aaa";
+        this.log.debug("userAdd:start");
 
         //List<User> users = null;
         UserList ulist = null;
@@ -54,23 +54,23 @@ public class UserAdd extends HttpServlet {
                         (profileName != userName)) {
                 newUser = this.toUser(out, profileName, request);
                 
-        	String roles[] = request.getParameterValues("roles");
-        	if (roles == null ){ 
-        	    this.log.debug("AddUser: roles = null");
-        	    addRoles = new ArrayList<Integer>();
-        	} else {
-        	    this.log.debug("number of roles input is "+roles.length);
-        	    addRoles = utils.convertRoles(roles);
-        	}
+                String roles[] = request.getParameterValues("roles");
+                if (roles == null ){ 
+                    this.log.debug("AddUser: roles = null");
+                    addRoles = new ArrayList<Integer>();
+                } else {
+                    this.log.debug("number of roles input is "+roles.length);
+                    addRoles = utils.convertRoles(roles);
+                }
                 newRole = request.getParameter("newRole");
                 if (newRole != null) {
                     Attribute newAttr = new Attribute();
                     newAttr.setName(newRole);
                     attrDAO.create(newAttr); 
                     try {
-                	 addRoles.add(attrDAO.getAttributeId(newRole));
+                        addRoles.add(attrDAO.getAttributeId(newRole));
                     } catch (AAAException ex) {
-                	this.log.error("oops,no id was assigned by create");
+                        this.log.error("oops,no id was assigned by create");
                     }
                 }
                 mgr.create(newUser, request.getParameter("institutionName"), addRoles);  

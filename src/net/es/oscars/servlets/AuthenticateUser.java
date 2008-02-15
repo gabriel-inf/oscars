@@ -108,6 +108,7 @@ public class AuthenticateUser extends HttpServlet {
         bss.beginTransaction();
         // first page that comes up is list of reservations
 
+        lister.setTryStatusCookie(true); // special case for status menu
         reservations = lister.getReservations(out, request, userName);
         if (reservations == null) {
              /* status has already been set
