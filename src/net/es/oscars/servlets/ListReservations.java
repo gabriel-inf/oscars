@@ -272,31 +272,23 @@ public class ListReservations extends HttpServlet {
         if (this.tryStatusCookie) {
             String statusList = userSession.getCookie("statusList", request);
             if (statusList != null) {
-                log.info("using cookie");
-                // otherwise messes up SQL query
-                if (statusList.equals("")) {
-                    return statuses;
-                }
-                String[] statusCookies = statusList.split(" ");
+                String[] statusCookies = statusList.trim().split(" ");
                 for (int i=0; i < statusCookies.length; i++) {
-                    log.info(statusCookies[i]);
                     statuses.add(statusCookies[i]);
                 }
             // first time
             } else {
-                log.info("first page");
                 statuses.add("ACTIVE");
                 statuses.add("PENDING");
             }
         // else if refreshing with possibly new menu selections
         } else {
-            log.info("not coming in from tab");
             if (paramStatuses == null) {
-                return statuses;
-            }
-            for (int i=0 ; i < paramStatuses.length; i++) {
-                log.info(paramStatuses[i]);
-                statuses.add(paramStatuses[i]);
+                statuses.add("");
+            } else {
+                for (int i=0 ; i < paramStatuses.length; i++) {
+                    statuses.add(paramStatuses[i]);
+                }
             }
         }
         return statuses;
