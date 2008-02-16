@@ -18,11 +18,11 @@ import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.bss.topology.Layer2Data;
-import net.es.oscars.bss.topology.Layer3Data;
+import net.es.oscars.bss.topology.*;
 
 public class ListReservations extends HttpServlet {
     private boolean tryStatusCookie;
+    private String dbname;
 
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
@@ -49,6 +49,7 @@ public class ListReservations extends HttpServlet {
         handleList(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+	      this.dbname = "bss";
         List<Reservation> reservations = null;
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
@@ -99,8 +100,9 @@ public class ListReservations extends HttpServlet {
         UserSession userSession = new UserSession();
         List<Reservation> reservations = null;
         List<String> logins = null;
-        String description = this.getDescription(request, userSession);
         List<String> statuses = this.getStatuses(request, userSession);
+        String description = this.getDescription(request, userSession);
+        List<Link> inLinks = this.getLinks(request, userSession);
         boolean allUsers = false;
         Utils utils = new Utils();
 
@@ -117,8 +119,9 @@ public class ListReservations extends HttpServlet {
             logins.add(login);
         }
         try {
-            // TODO:  other criteria
-            reservations = rm.list(login, logins, statuses, description, null, null, null);
+            // TODO:  start and end time
+            reservations = rm.list(login, logins, statuses, description,
+                                   inLinks, null, null);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);
             return null;
@@ -154,8 +157,8 @@ public class ListReservations extends HttpServlet {
         out.println("<tr>");
         out.println("<td><input type='submit' value='Refresh'></input>");
         out.println("</td>");
-        String description = this.getDescription(request, userSession); 
         List<String> statuses = this.getStatuses(request, userSession);
+        String description = this.getDescription(request, userSession); 
         this.outputStatusMenu(out, statuses);
 
         out.println("<td>Description: <input type='text' class='SOAP' name='description' size='35' value='"+description+"'></input></td>");
@@ -182,7 +185,10 @@ public class ListReservations extends HttpServlet {
         out.println("HH:MM");
         out.println("</td>");
         out.println("<td>Links: ");
-        out.println("<textarea class='SOAP' name='links' rows='2' cols='46'> </textarea>");
+        out.println("<textarea class='SOAP' name='linkIds' rows='2' cols='46'>");
+        // has to have at least a space
+        out.println(this.getLinkIds(request, userSession));
+        out.println("</textarea>");
         out.println("</td>");
         out.println("</tr>");
         out.println("</tbody>");
@@ -244,10 +250,51 @@ public class ListReservations extends HttpServlet {
         }
         cookieValue.trim();
         userSession.setCookie("statusList", cookieValue, response);
-        
         userSession.setCookie("description", description, response);
+        userSession.setCookie("linkIds",
+                this.getLinkIds(request, userSession).trim(), response);
     }
     
+    public String getLinkIds(HttpServletRequest request,
+                             UserSession userSession) {
+
+        String linkList = request.getParameter("linkIds");
+        if (linkList == null) {
+            linkList = userSession.getCookie("linkIds", request);
+            // space needed for text area
+            if (linkList == null) {
+                linkList = " ";
+            }
+        }
+        return linkList;
+    }
+
+    public List<Link> getLinks(HttpServletRequest request,
+                               UserSession userSession) {
+
+        Logger log = Logger.getLogger(this.getClass());
+        List<Link> inLinks = new ArrayList<Link>();
+        String linkList = this.getLinkIds(request, userSession).trim();
+        if (linkList.equals("")) {
+            return inLinks;
+        }
+        String[] linkIds = linkList.trim().split(" ");
+        if (linkIds.length > 0) {
+            for (String s : linkIds) {
+                if (s != null && !s.trim().equals("")) {
+                    Link link = null;
+                    try {
+                        link = TopologyUtil.getLink(s.trim(), this.dbname);
+                        inLinks.add(link);
+                    } catch (BSSException ex) {
+	        			        log.error("Could not get link for string: ["+s.trim()+"], error: ["+ex.getMessage()+"]");
+                    }
+                }
+            }
+        }
+        return inLinks;
+    }
+
     public String getDescription(HttpServletRequest request,
                                  UserSession userSession) {
 

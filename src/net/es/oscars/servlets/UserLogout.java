@@ -13,6 +13,7 @@ public class UserLogout extends HttpServlet {
         UserSession userSession = new UserSession();
         userSession.expireCookie("statusList", "", response);
         userSession.expireCookie("description", "", response);
+        userSession.expireCookie("linkIds", "", response);
         response.sendRedirect("/OSCARS/index.html");
     }
 
