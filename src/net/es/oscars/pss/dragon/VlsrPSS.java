@@ -48,6 +48,7 @@ public class VlsrPSS implements PSS{
         boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String sshUser = this.props.getProperty("ssh.user");
         String sshKey = this.props.getProperty("ssh.key");
+        
         Path path = resv.getPath();
         Layer2Data layer2Data = path.getLayer2Data();
         Link ingressLink = path.getPathElem().getLink();
@@ -55,7 +56,6 @@ public class VlsrPSS implements PSS{
         int ingressLinkDescr = this.getLinkDescr(path, true);
         int egressLinkDescr = this.getLinkDescr(path, true);
 
-        
         String ingressPortTopoId = ingressLink.getPort().getTopologyIdent();
         String egressPortTopoId = egressLink.getPort().getTopologyIdent();
         
@@ -78,8 +78,10 @@ public class VlsrPSS implements PSS{
                                                         ingressLinkDescr, hasNarb, true);
         DragonLocalID egrLocalId = this.linkToLocalId(egressLink, 
                                                         egressLinkDescr, hasNarb, false);
-        int ingLocalIdIface = this.intefaceToLocalIdNum(ingressPortTopoId);
-        int egrLocalIdIface = this.intefaceToLocalIdNum(egressPortTopoId);
+        int ingLocalIdIface = this.intefaceToLocalIdNum(ingressPortTopoId, 
+                                (!ingLocalId.getType().equals(DragonLocalID.TAGGED_PORT_GROUP)));
+        int egrLocalIdIface = this.intefaceToLocalIdNum(egressPortTopoId, 
+                                (!egrLocalId.getType().equals(DragonLocalID.TAGGED_PORT_GROUP)));
         
         /* Initialize LSP */
         DragonLSP lsp = new DragonLSP(ingress, ingLocalId, egress,
@@ -579,10 +581,10 @@ public class VlsrPSS implements PSS{
             this.log.info("tunnel-id local-id");
             number = vtag;
             type = DragonLocalID.TUNNEL_ID;
-        }else if(portTopoId.split("-").length == 2){
+        }else if(portTopoId.indexOf('S') == 0){
             this.log.info("subnet-interface local-id");
             type = DragonLocalID.SUBNET_INTERFACE;
-            number = this.intefaceToLocalIdNum(portTopoId);
+            number = Integer.parseInt(portTopoId.substring(1));
             this.log.info("local-id value " + number);
         }else if(tagged){
             this.log.info("tagged local-id");
@@ -591,7 +593,7 @@ public class VlsrPSS implements PSS{
         }else{
             this.log.info("untagged local-id");
             /* Get number */
-            number = this.intefaceToLocalIdNum(portTopoId);
+            number = this.intefaceToLocalIdNum(portTopoId, false);
             type = DragonLocalID.UNTAGGED_PORT;
         }
         return new DragonLocalID(number, type);
@@ -601,23 +603,24 @@ public class VlsrPSS implements PSS{
      * Converts a port ID to a number useable by a local ID
      *
      * @param portTopoId the id to convert
+     * @param matchAny if false, will throw an exception unless port-id a valid ethernet port id
      * @returns converted number
      * @throws PSSExcepion
      */
-    private int intefaceToLocalIdNum(String portTopoId) throws PSSException{
+    private int intefaceToLocalIdNum(String portTopoId, boolean matchAny) throws PSSException{
         String[] componentList = portTopoId.split("-");
         int number = 0;
         
         if(componentList.length == 1){
             number = Integer.parseInt(componentList[0]);
-        }else if(componentList.length == 2){
-            number = (Integer.parseInt(componentList[1]) << 8) + 255;
         }else if(componentList.length == 3){
             int k = Integer.parseInt(componentList[0]);
             int m = Integer.parseInt(componentList[1]);
             int n = Integer.parseInt(componentList[2]);
             
             number = (k << 12) + (m << 8) + n;
+        }else if(matchAny){
+            number = -1;
         }else{
             throw new PSSException("Port ID must be in form L or K-M-N where" + 
             " L = (K << 12) + (M << 8) + N");
