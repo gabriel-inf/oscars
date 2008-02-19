@@ -39,7 +39,6 @@
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
             <fileset dir="conf/server" includes="*.cfg.xml, log4j.properties"/>
-            <fileset dir="${domain.home}/server" includes="sec-server*"/>
         </copy>
     </target>
     <target name="prepareDragon">
@@ -300,7 +299,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy file="conf/rampart-1.3.mar" todir="${catalina.home}/shared/classes/repo/modules"/>
         <copy file="conf/server/axis2.log4j.properties" tofile="${catalina.home}/shared/classes/log4j.properties"/>
         <copy todir="${catalina.home}/shared/classes/server">
-            <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties"/>
+            <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties, sec-server*"/>
             <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
         <chmod dir="${catalina.home}/shared/classes/server" perm="600" includes="*key, oscars.properties"/>

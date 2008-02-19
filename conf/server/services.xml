@@ -13,7 +13,7 @@
 <parameter name="InflowSecurity">
    <action>
        <items>Timestamp Signature</items>
-       <signaturePropFile>sec-server.properties</signaturePropFile>
+       <signaturePropFile>server/sec-server.properties</signaturePropFile>
    </action>
 </parameter>
 
