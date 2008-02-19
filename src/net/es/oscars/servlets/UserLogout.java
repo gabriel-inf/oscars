@@ -14,6 +14,12 @@ public class UserLogout extends HttpServlet {
         userSession.expireCookie("statusList", "", response);
         userSession.expireCookie("description", "", response);
         userSession.expireCookie("linkIds", "", response);
+        userSession.expireCookie("startDateSearch", "", response);
+        userSession.expireCookie("startTimeSearch", "", response);
+        userSession.expireCookie("endDateSearch", "", response);
+        userSession.expireCookie("endTimeSearch", "", response);
+        userSession.expireCookie("startTimeSeconds", "", response);
+        userSession.expireCookie("endTimeSeconds", "", response);
         response.sendRedirect("/OSCARS/index.html");
     }
 

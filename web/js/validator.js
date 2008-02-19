@@ -1,6 +1,6 @@
 /*
 validator.js:      Javascript functions for form validation
-Last modified:  August 24, 2007
+Last modified:  February 19, 2008
 David Robertson (dwrobertson@lbl.gov)
 Soo-yeon Hwang  (dapi@umich.edu)
 */
@@ -20,6 +20,7 @@ isBlank(str)
 var validateParams = {
     'AuthenticateUser' : checkLogin,
     'CreateReservation' : checkReservation,
+    'ListReservations' : checkListReservations,
     'UserModify' : checkProfileModification,
     'UserAdd' : checkAddUser
 }
@@ -181,68 +182,13 @@ function checkDateFields(form) {
 
     var localDate = new Date();
     var userMonth = localDate.getMonth() + 1;
-    var dateArray = new Array();
     if (isBlank(form.startDofY.value)) {
         form.startDofY.value = localDate.getFullYear() + "-" +
                                userMonth + "-" + localDate.getDate();
     }
     var dOfYFields = form.startDofY.value.split("-");
-    if (!(isNumeric(dOfYFields[0]))) {
-        alert("The start year entered is " + dOfYFields[0] +
-              ".  This is not a number.");
-        form.startDofY.focus();
+    if (!checkDateOfYearFields(form.startDofY, dOfYFields)) {
         return false;
-    }
-    if (dOfYFields[0].length != 4) {
-        alert("The start year entered is " + dOfYFields[0] +
-              ".  It must be four digits, e.g. 2007.");
-        form.startDofY.focus();
-        return false;
-    }
-    if (!(isNumeric(userMonth.toString()))) {
-        alert("The start month entered is " + userMonth +
-              ".  This is not a number.");
-        form.startDofY.focus();
-        return false;
-    }
-    if (!(isNumeric(dOfYFields[2]))) {
-        alert("The start date entered is " + dOfYFields[2] +
-              ".  This is not a number.");
-        form.startDofY.focus();
-        return false;
-    }
-    if ((userMonth == 1 || userMonth == 3 || userMonth == 5 ||
-         userMonth == 7 || userMonth == 8 || userMonth == 10 || 
-         userMonth == 12) && (dOfYFields[2] > 31))
-    {
-        alert("For the month, " + userMonth +
-              ", the date must be less than 32.");
-        form.startDofY.focus();
-        return false;
-    }
-    if ((userMonth == 4 || userMonth == 6 || userMonth == 9 ||
-         userMonth == 11) && (dOfYFields[2] > 30))
-    {
-        alert("For the month, " + userMonth +
-              ", the date must be less than 31.");
-        form.startDofY.focus();
-        return false;
-    }
-    if (userMonth == 2) {
-        if (isLeapYear(dOfYFields[0])) {
-            if (dOfYFields[2] > 29) {
-                alert("For the month of February in a leap year, " +
-                      "the date must be less than 30.");
-                form.startDofY.focus();
-                return false;
-            }
-        }
-        else if (dOfYFields[2] > 28) {
-            alert("For the month of February in a non-leap year, " +
-                  "the date must be less than 29.");
-            form.startDofY.focus();
-            return false;
-        }
     }
 
     if (isBlank(form.startHourMinute.value)) {
@@ -250,31 +196,9 @@ function checkDateFields(form) {
                                      localDate.getMinutes();
     }
     var timeFields = form.startHourMinute.value.split(":");
-    if (!(isNumeric(timeFields[0]))) {
-        alert("The start hour entered is " + timeFields[0] +
-              ".  This is not a number.");
-        form.startHourMinute.focus();
+    if (!checkTimeFields(form.startHourMinute, timeFields)) {
         return false;
     }
-    if (timeFields[0] < 0 || timeFields[0] > 23) {
-        alert("The start hour entered is " + timeFields[0] +
-              ".  It must be between 0 and 23, inclusive.");
-        form.startHourMinute.focus();
-        return false;
-    }
-    if (!(isNumeric(timeFields[1]))) {
-        alert("The start minute entered is " + timeFields[1] +
-              ".  This is not a number.");
-        form.startHourMinute.focus();
-        return false;
-    }
-    if (timeFields[1] < 0 || timeFields[1] > 59) {
-        alert("The start minute entered is " + timeFields[1] +
-              ".  It must be between 0 and 59, inclusive.");
-        form.startHourMinute.focus();
-        return false;
-    }
-
     if (!isBlank(form.durationHour.value)) {
         if (!(isNumeric(form.durationHour.value))) {
             alert("The duration hour entered is " + form.durationHour.value +
@@ -285,7 +209,7 @@ function checkDateFields(form) {
         durationSeconds = form.durationHour.value * 3600;
     }
 
-    reservationDate = new Date(dOfYFields[0], userMonth - 1,
+    reservationDate = new Date(dOfYFields[0], dOfYFields[1] - 1,
                                dOfYFields[2], timeFields[0],
                                timeFields[1], 0, 0);
     // convert local time to seconds since epoch
@@ -296,6 +220,161 @@ function checkDateFields(form) {
     return true;
 }
 
+
+function checkListReservations(form) {
+
+    var localDate = new Date();
+    var userMonth = localDate.getMonth() + 1;
+    // don't do anything if both blank
+    if (!(isBlank(form.startDateSearch.value) && 
+          isBlank(form.startTimeSearch.value))) {
+        if (isBlank(form.startDateSearch.value)) {
+            form.startDateSearch.value = localDate.getFullYear() + "-" +
+                                   userMonth + "-" + localDate.getDate();
+        }
+        if (isBlank(form.startTimeSearch.value)) {
+            form.startTimeSearch.value = "00:00";
+        }
+        var dOfYFields = form.startDateSearch.value.split("-");
+        if (!checkDateOfYearFields(form.startDateSearch, dOfYFields)) {
+            return false;
+        }
+        var timeFields = form.startTimeSearch.value.split(":");
+        if (!checkTimeFields(form.startTimeSearch, timeFields)) {
+            return false;
+        }
+        var searchDate = new Date(dOfYFields[0], dOfYFields[1] - 1,
+                                  dOfYFields[2], timeFields[0],
+                                  timeFields[1], 0, 0);
+        // convert local time to seconds since epoch
+        form.startTimeSeconds.value = searchDate.getTime()/1000;
+    } else {
+        form.startTimeSeconds.value = null;
+    }
+    // don't do anything if both blank
+    if (!(isBlank(form.endDateSearch.value) && 
+          isBlank(form.endTimeSearch.value))) {
+        if (isBlank(form.endDateSearch.value)) {
+            form.endDateSearch.value = localDate.getFullYear() + "-" +
+                                   userMonth + "-" + localDate.getDate();
+        }
+        if (isBlank(form.endTimeSearch.value)) {
+            form.endTimeSearch.value = "00:00";
+        }
+        var dOfYFields = form.endDateSearch.value.split("-");
+        if (!checkDateOfYearFields(form.endDateSearch, dOfYFields)) {
+            return false;
+        }
+        var timeFields = form.endTimeSearch.value.split(":");
+        if (!checkTimeFields(form.endTimeSearch, timeFields)) {
+            return false;
+        }
+        var searchDate = new Date(dOfYFields[0], dOfYFields[1] - 1,
+                                  dOfYFields[2], timeFields[0],
+                                  timeFields[1], 0, 0);
+        // convert local time to seconds since epoch
+        form.endTimeSeconds.value = searchDate.getTime()/1000;
+    } else {
+        form.endTimeSeconds.value = null;
+    }
+    return true;
+}
+
+
+function checkDateOfYearFields(formParam, dOfYFields) {
+    if (!(isNumeric(dOfYFields[0]))) {
+        alert("The start year entered is " + dOfYFields[0] +
+              ".  This is not a number.");
+        formParam.focus();
+        return false;
+    }
+    if (dOfYFields[0].length != 4) {
+        alert("The start year entered is " + dOfYFields[0] +
+              ".  It must be four digits, e.g. 2007.");
+        formParam.focus();
+        return false;
+    }
+    if (!(isNumeric(dOfYFields[1].toString()))) {
+        alert("The start month entered is " + dOfYFields[1] +
+              ".  This is not a number.");
+        formParam.focus();
+        return false;
+    }
+    if (!(isNumeric(dOfYFields[2]))) {
+        alert("The start date entered is " + dOfYFields[2] +
+              ".  This is not a number.");
+        formParam.focus();
+        return false;
+    }
+    if ((dOfYFields[1] < 1) || (dOfYFields[1] > 12)) {
+        alert("The month entered is " + dOfYFields[1] +
+              ".  It must be between 1 and 12, inclusive.");
+        formParam.focus();
+        return false;
+    }
+    if ((dOfYFields[1] == 1 || dOfYFields[1] == 3 || dOfYFields[1] == 5 ||
+         dOfYFields[1] == 7 || dOfYFields[1] == 8 || dOfYFields[1] == 10 || 
+         dOfYFields[1] == 12) && (dOfYFields[2] > 31))
+    {
+        alert("For the month, " + dOfYFields[1] +
+              ", the date must be less than 32.");
+        formParam.focus();
+        return false;
+    }
+    if ((dOfYFields[1] == 4 || dOfYFields[1] == 6 || dOfYFields[1] == 9 ||
+         dOfYFields[1] == 11) && (dOfYFields[2] > 30))
+    {
+        alert("For the month, " + dOfYFields[1] +
+              ", the date must be less than 31.");
+        formParam.focus();
+        return false;
+    }
+    if (dOfYFields[1] == 2) {
+        if (isLeapYear(dOfYFields[0])) {
+            if (dOfYFields[2] > 29) {
+                alert("For the month of February in a leap year, " +
+                      "the date must be less than 30.");
+                formParam.focus();
+                return false;
+            }
+        }
+        else if (dOfYFields[2] > 28) {
+            alert("For the month of February in a non-leap year, " +
+                  "the date must be less than 29.");
+            formParam.focus();
+            return false;
+        }
+    }
+    return true;
+}
+
+function checkTimeFields(formParam, timeFields) {
+    if (!(isNumeric(timeFields[0]))) {
+        alert("The start hour entered is " + timeFields[0] +
+              ".  This is not a number.");
+        formParam.focus();
+        return false;
+    }
+    if (timeFields[0] < 0 || timeFields[0] > 23) {
+        alert("The start hour entered is " + timeFields[0] +
+              ".  It must be between 0 and 23, inclusive.");
+        formParam.focus();
+        return false;
+    }
+    if (!(isNumeric(timeFields[1]))) {
+        alert("The start minute entered is " + timeFields[1] +
+              ".  This is not a number.");
+        formParam.focus();
+        return false;
+    }
+    if (timeFields[1] < 0 || timeFields[1] > 59) {
+        alert("The start minute entered is " + timeFields[1] +
+              ".  It must be between 0 and 59, inclusive.");
+        formParam.focus();
+        return false;
+    }
+    return true;
+}
 
 // Checks validity of user profile form.
 function checkProfileModification(form) {

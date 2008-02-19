@@ -21,14 +21,14 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.bss.topology.*;
 
 public class ListReservations extends HttpServlet {
-    private boolean tryStatusCookie;
+    private boolean tryCookie;
     private String dbname;
 
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         
-        this.tryStatusCookie = true;
+        this.tryCookie = true;
         this.handleList(request, response);
     }
 
@@ -36,13 +36,12 @@ public class ListReservations extends HttpServlet {
         doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        this.tryStatusCookie = false;
+        this.tryCookie = false;
         this.handleList(request, response);
     }
 
-    // for special case for first page
-    public void setTryStatusCookie(boolean status) {
-        this.tryStatusCookie = status;
+    public void setTryCookie(boolean status) {
+        this.tryCookie = status;
     }
 
     public void
@@ -96,6 +95,9 @@ public class ListReservations extends HttpServlet {
         getReservations(PrintWriter out, HttpServletRequest request,
                         String login)  {
 
+        Long startTimeSeconds = null;
+        Long endTimeSeconds = null;
+
         ReservationManager rm = new ReservationManager("bss");
         UserSession userSession = new UserSession();
         List<Reservation> reservations = null;
@@ -103,6 +105,16 @@ public class ListReservations extends HttpServlet {
         List<String> statuses = this.getStatuses(request, userSession);
         String description = this.getDescription(request, userSession);
         List<Link> inLinks = this.getLinks(request, userSession);
+        String startTimeStr =
+            this.getTimeField(request, userSession, "startTimeSeconds");
+        String endTimeStr =
+            this.getTimeField(request, userSession, "endTimeSeconds");
+        if (!startTimeStr.equals("")) {
+            startTimeSeconds = Long.valueOf(startTimeStr.trim());
+        }
+        if (!endTimeStr.equals("")) {
+            endTimeSeconds = Long.valueOf(endTimeStr.trim());
+        }
         boolean allUsers = false;
         Utils utils = new Utils();
 
@@ -119,9 +131,8 @@ public class ListReservations extends HttpServlet {
             logins.add(login);
         }
         try {
-            // TODO:  start and end time
             reservations = rm.list(login, logins, statuses, description,
-                                   inLinks, null, null);
+                                   inLinks, startTimeSeconds, endTimeSeconds);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);
             return null;
@@ -140,7 +151,12 @@ public class ListReservations extends HttpServlet {
         String hostName = null;
         String destination = null;
 
+        Logger log = Logger.getLogger(this.getClass());
         UserSession userSession = new UserSession();
+        String startTimeSeconds =
+            this.getTimeField(request, userSession, "startTimeSeconds");
+        String endTimeSeconds =
+            this.getTimeField(request, userSession, "endTimeSeconds");
         out.println("<content>");
         out.println("<p>Click on a column header to sort by that column. " +
             "Times given are in the time zone of the browser.  Click on " +
@@ -148,10 +164,12 @@ public class ListReservations extends HttpServlet {
             "the reservation.</p>");
         out.println("<p><form method='post' action='' onsubmit=\"" +
             "return submitForm(this, 'ListReservations');\">");
-        out.println("<input type='hidden' class='SOAP' name='startTimeSeconds'>" +
-                    "</input>");
-        out.println("<input type='hidden' class='SOAP' name='endTimeSeconds'>" +
-                    "</input>");
+        out.println("<input type='hidden' class='SOAP' ");
+        out.println("name='startTimeSeconds' ");
+        out.println("value='" + startTimeSeconds + "'></input>");
+        out.println("<input type='hidden' class='SOAP' ");
+        out.println("name='endTimeSeconds' ");
+        out.println("value='" + endTimeSeconds + "'></input>");
         out.println("<table cellspacing='0' width='80%'>");
         out.println("<tbody>");
         out.println("<tr>");
@@ -159,6 +177,14 @@ public class ListReservations extends HttpServlet {
         out.println("</td>");
         List<String> statuses = this.getStatuses(request, userSession);
         String description = this.getDescription(request, userSession); 
+        String startDate =
+            this.getTimeField(request, userSession, "startDateSearch");
+        String startTime =
+            this.getTimeField(request, userSession, "startTimeSearch");
+        String endDate =
+            this.getTimeField(request, userSession, "endDateSearch");
+        String endTime =
+            this.getTimeField(request, userSession, "endTimeSearch");
         this.outputStatusMenu(out, statuses);
 
         out.println("<td>Description: <input type='text' class='SOAP' name='description' size='35' value='"+description+"'></input></td>");
@@ -169,19 +195,23 @@ public class ListReservations extends HttpServlet {
         out.println("</tr>");
         out.println("<tr>");
         out.println("<td>Start date: ");
-        out.println("<input type='text' name='startDateSearch' size='16'></input>");
+        out.println("<input type='text' class='SOAP' name='startDateSearch' size='16' ");
+        out.println("value='" + startDate + "'></input>");
         out.println("YYYY-MM-DD");
         out.println("</td>");
         out.println("<td>Start time: ");
-        out.println("<input type='text' name='startTimeSearch' size='10'></input>");
+        out.println("<input type='text' class='SOAP' name='startTimeSearch' size='10' ");
+        out.println("value='" + startTime + "'></input>");
         out.println("HH:MM");
         out.println("</td>");
         out.println("<td>End date: ");
-        out.println("<input type='text' name='endDateSearch' size='16'></input>");
+        out.println("<input type='text' class='SOAP' name='endDateSearch' size='16' ");
+        out.println("value='" + endDate + "'></input>");
         out.println("YYYY-MM-DD");
         out.println("</td>");
         out.println("<td>End time: ");
-        out.println("<input type='text' name='endTimeSearch' size='10'></input>");
+        out.println("<input type='text' class='SOAP' name='endTimeSearch' size='10' ");
+        out.println("value='" + endTime + "'></input>");
         out.println("HH:MM");
         out.println("</td>");
         out.println("<td>Links: ");
@@ -247,14 +277,44 @@ public class ListReservations extends HttpServlet {
         String cookieValue = "";
         for (String status: statuses) {
             cookieValue += status + " ";
+            log.info("setting cookie status: " + status);
         }
         cookieValue.trim();
         userSession.setCookie("statusList", cookieValue, response);
         userSession.setCookie("description", description, response);
         userSession.setCookie("linkIds",
                 this.getLinkIds(request, userSession).trim(), response);
+        userSession.setCookie("startDateSearch", startDate, response);
+        userSession.setCookie("startTimeSearch", startTime, response);
+        userSession.setCookie("endDateSearch", endDate, response);
+        userSession.setCookie("endTimeSearch", endTime, response);
+        userSession.setCookie("startTimeSeconds", startTimeSeconds, response);
+        userSession.setCookie("endTimeSeconds", endTimeSeconds, response);
     }
     
+    public String getTimeField(HttpServletRequest request,
+                               UserSession userSession, String fieldName) {
+
+        Logger log = Logger.getLogger(this.getClass());
+        // depends on cookie and parameter having same name
+        String timeField = request.getParameter(fieldName);
+        if (timeField == null) {
+            if (this.tryCookie) {
+                timeField = userSession.getCookie(fieldName, request);
+            }
+            if (timeField == null) {
+                timeField = "";
+            }
+        }
+        if (timeField.equals("")) {
+            log.info("no time field for " + fieldName);
+        } else {
+            log.info(fieldName + ": " + timeField);
+        }
+        timeField = timeField.trim();
+        return timeField;
+    }
+
     public String getLinkIds(HttpServletRequest request,
                              UserSession userSession) {
 
@@ -316,7 +376,8 @@ public class ListReservations extends HttpServlet {
         List<String> statuses = new ArrayList<String>();
         String paramStatuses[] = request.getParameterValues("statuses");
         // if coming in from tab, or first page
-        if (this.tryStatusCookie) {
+        if (this.tryCookie) {
+            log.info("trying cookie for statuses");
             String statusList = userSession.getCookie("statusList", request);
             if (statusList != null) {
                 String[] statusCookies = statusList.trim().split(" ");
@@ -325,6 +386,7 @@ public class ListReservations extends HttpServlet {
                 }
             // first time
             } else {
+                log.info("first time for statuses");
                 statuses.add("ACTIVE");
                 statuses.add("PENDING");
             }
@@ -334,6 +396,7 @@ public class ListReservations extends HttpServlet {
                 statuses.add("");
             } else {
                 for (int i=0 ; i < paramStatuses.length; i++) {
+                    log.info("parameter status: " + paramStatuses[i]);
                     statuses.add(paramStatuses[i]);
                 }
             }
