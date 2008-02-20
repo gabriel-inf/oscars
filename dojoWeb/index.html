@@ -8,8 +8,7 @@
         @import "css/main.css";
     </style>
     <script type="text/javascript" src="lib/dojo/dojo/dojo.js"
-            djConfig="parseOnLoad: true, preventBackButtonFix: false",
-            dojoIframeHistoryUrl: "lib/dojo/resources/iframe_history.html">
+            djConfig="parseOnLoad: true, preventBackButtonFix: false">
     </script>
     <script type="text/javascript">
         dojo.registerModulePath("oscars", "../../../oscars")
@@ -39,7 +38,7 @@
                 dojo.mixin(this, args);
             },
             login: "",
-            ms: 0,
+            userGridInitialized: false,
         });
     </script>
     <script type="text/javascript">

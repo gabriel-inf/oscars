@@ -74,6 +74,7 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                         usersPaneTab = new dojox.layout.ContentPane(
                           {title:'User List', id: 'usersPane'},
                            dojo.doc.createElement('div'));
+                        usersPaneTab.setHref("forms/users.html");
                     }
                     mainTabContainer.addChild(usersPaneTab, 3);
                     usersPaneTab.startup();
@@ -190,7 +191,6 @@ oscars.Form.initState = function() {
     var state = {
         back: function() { console.log("Back was clicked!"); },
         forward: function() { console.log("Forward was clicked!"); },
-        changeUrl: "login",
     };
     dojo.back.setInitialState(state);
 }
@@ -216,10 +216,13 @@ oscars.Form.selectedChanged = function(contentPane) {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Users list";
         }
-        var n = dojo.byId("usersLogin");
-        // only do first time
-        if (n == null) {
-            contentPane.setHref("forms/users.html");
+        var userGrid = dijit.byId("userGrid");
+        // The current implementation of grids is buggy.
+        // This should not be necessary.
+        if ((userGrid != null) && (!oscarsState.userGridInitialized)) {
+            oscars.Form.refreshUserGrid();
+            dojo.connect(userGrid, "onRowClick", oscars.Form.onRowSelect);
+            oscarsState.userGridInitialized = true;
         }
     } else if (contentPane.id == "userAddPane") {
         if (changeStatus) {
@@ -253,9 +256,24 @@ oscars.Form.selectedChanged = function(contentPane) {
         forward: function() {
             console.log("Forward was clicked! ");
         },
-        changeUrl: contentPane.id,
     };
     dojo.back.addToHistory(state);
+}
+
+oscars.Form.refreshUserGrid = function() {
+    var userGrid = dijit.byId("userGrid");
+    var newStore = new dojo.data.ItemFileReadStore(
+                      {url: 'servlet/UserList'});
+    var newModel = new dojox.grid.data.DojoData(
+                      null, newStore,
+                      {query: {login: '*'}, clientSort: true});
+    userGrid.setModel(newModel);
+    userGrid.refresh();
+}
+
+oscars.Form.onRowSelect = function(evt) {
+    var userGrid = dijit.byId("userGrid");
+    console.log(userGrid.model.getDatum(evt.rowIndex,1));
 }
 
 oscars.Form.hrefChanged = function(newUrl) {
@@ -263,7 +281,6 @@ oscars.Form.hrefChanged = function(newUrl) {
     var state = {
         back: function() { console.log("Back was clicked!"); },
         forward: function() { console.log("Forward was clicked!"); },
-        changeUrl: newUrl,
     };
     dojo.back.addToHistory(state);
 }
