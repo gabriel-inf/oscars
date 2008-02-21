@@ -3,16 +3,19 @@
 <script type="text/javascript">
     var resvView = {
       cells: [[
-         {name: 'GRI', field: "gri", width: "9em"},
-         {name: 'User', field: "login", width: "11em"},
-         {name: 'Start Time', field: "startTime", width: "11em"},
-         {name: 'End Time', field: "endTime", width: "11em"},
-         {name: 'Status', field: "status", width: "9em"},
-         {name: 'Origin', field: "origin", width: "28"},
-         {name: 'Destination', field: "destination", width: "28"}
+         {name: 'GRI', width: "9em"},
+         {name: 'User', width: "11em"},
+         {name: 'Start Time', width: "11em"},
+         {name: 'End Time', width: "11em"},
+         {name: 'Status', width: "9em"},
+         {name: 'Origin', width: "28em"},
+         {name: 'Destination', width: "28em"}
       ]]
     };
     var resvLayout = [ resvView ];
+    var data = [["filler0", "filler1", "filler2", "filler3", "filler4",
+                 "filler5", "filler6"]];
+    var model = new dojox.grid.data.Table(null, data);
 </script>
 </head>
 
@@ -33,13 +36,19 @@ information about a reservation.</p>
   <button dojoType="dijit.form.Button" id="refreshReservationList">
      Refresh 
      <script type="dojo/method" event="onClick">
-        oscars.Form.refreshResvGrid();
+        dojo.xhrPost({
+            url: 'servlet/ListReservations',
+            handleAs: "json-comment-filtered",
+            load: oscars.Form.handleReply,
+            error: oscars.Form.handleError,
+            form: dojo.byId("reservationListForm")
+        });
     </script>
   </button>
   </td>
 
   <td>Statuses:
-  <select name="statuses" multiple="multiple">
+  <select name="statuses" multiple="true">
       <option value="ACTIVE" selected="selected">ACTIVE</option>
       <option value="PENDING" selected="selected">PENDING</option>
       <option value="FINISHED">FINISHED</option>
@@ -91,17 +100,7 @@ information about a reservation.</p>
 
 <br/>
 
-<!-- store and model declarations need to have the correct syntax, but the
-     declarations themselves are not currently sufficient -->
-<div id="reservationStore" dojoType="dojo.data.ItemFileReadStore"
-    jsId="reservationStore" url="servlet/ListReservations">
-</div>
-<div id="reservationModel" dojoType="dojox.grid.data.DojoData"
-     jsId="reservationModel"
-     rowsPerPage="20" store="reservationStore" query="{ gri: '*' }">
-</div>
-<div id="resvGrid" dojoType="dojox.Grid" model="reservationModel"
-     jsId="thisReservationGrid" structure="resvLayout">
+<div id="resvGrid" dojoType="dojox.Grid" model="model" structure="resvLayout">
 </div>
 
 </html>

@@ -28,8 +28,6 @@ public class ListReservations extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        Logger log = Logger.getLogger(this.getClass());
-        log.info("listReservations.start");
 	      this.dbname = "bss";
         List<Reservation> reservations = null;
         UserSession userSession = new UserSession();
@@ -46,14 +44,8 @@ public class ListReservations extends HttpServlet {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         Map outputMap = new HashMap();
-        log.info("to getReservations");
         reservations = this.getReservations(out, request, userName);
-        if (reservations == null) {
-            log.info("reservations is null");
-        }
-        log.info("to outputReservations");
         this.outputReservations(outputMap, reservations, request);
-        log.info("past outputReservations");
         outputMap.put("status", "Reservations list");
         outputMap.put("method", "ListReservations");
         outputMap.put("success", Boolean.TRUE);
@@ -93,10 +85,10 @@ public class ListReservations extends HttpServlet {
         List<Link> inLinks = this.getLinks(request);
         String startTimeStr = request.getParameter("startTimeSeconds");
         String endTimeStr = request.getParameter("endTimeSeconds");
-        if (startTimeStr != null) {
+        if ((startTimeStr != null) && !startTimeStr.equals("")) {
             startTimeSeconds = Long.valueOf(startTimeStr.trim());
         }
-        if (endTimeStr != null) {
+        if ((endTimeStr != null) && !endTimeStr.equals("")) {
             endTimeSeconds = Long.valueOf(endTimeStr.trim());
         }
         boolean allUsers = false;
@@ -135,46 +127,44 @@ public class ListReservations extends HttpServlet {
         String hostName = null;
         String destination = null;
 
-        Logger log = Logger.getLogger(this.getClass());
         List<String> statuses = this.getStatuses(request);
-        long seconds = System.currentTimeMillis()/1000;
-        outputMap.put("timestamp", seconds);
-        ArrayList<HashMap<String,String>> resvList =
-            new ArrayList<HashMap<String,String>>();
+        ArrayList resvList = new ArrayList();
         for (Reservation resv: reservations) {
-            HashMap<String,String> resvMap = new HashMap<String,String>();
+            ArrayList resvEntry = new ArrayList();
             gri = resv.getGlobalReservationId();
             Layer3Data layer3Data = resv.getPath().getLayer3Data();
             Layer2Data layer2Data = resv.getPath().getLayer2Data();
-            resvMap.put("gri", gri);
-            resvMap.put("login", resv.getLogin());
-            resvMap.put("startTime", resv.getStartTime().toString());
-            resvMap.put("endTime", resv.getEndTime().toString());
-            resvMap.put("status", resv.getStatus());
+            resvEntry.add(gri);
+            resvEntry.add(resv.getLogin());
+            // TODO:  need to do time conversions on the server instead of
+            // the client for this
+            resvEntry.add(resv.getStartTime().toString());
+            resvEntry.add(resv.getEndTime().toString());
+            resvEntry.add(resv.getStatus());
             if (layer2Data != null) {
-                resvMap.put("origin", layer2Data.getSrcEndpoint());
-                resvMap.put("destination", layer2Data.getDestEndpoint());
+                resvEntry.add(layer2Data.getSrcEndpoint());
+                resvEntry.add(layer2Data.getDestEndpoint());
             } else if (layer3Data != null) {
                 source = layer3Data.getSrcHost();
                 try {
                     inetAddress = InetAddress.getByName(source);
                     hostName = inetAddress.getHostName();
-                    resvMap.put("origin", hostName);
+                    resvEntry.add(hostName);
                 } catch (UnknownHostException e) {
-                    resvMap.put("origin", source);
+                    resvEntry.add(source);
                 }
                 destination = layer3Data.getDestHost();
                 try {
                     inetAddress = InetAddress.getByName(destination);
                     hostName = inetAddress.getHostName();
-                    resvMap.put("destination", hostName);
+                    resvEntry.add(hostName);
                 } catch (UnknownHostException e) {
-                    resvMap.put("destination", destination);
+                    resvEntry.add(destination);
                 }
             }
-            resvList.add(resvMap);
+            resvList.add(resvEntry);
         }
-        outputMap.put("items", resvList);
+        outputMap.put("resvData", resvList);
     }
     
     public String getLinkIds(HttpServletRequest request) {
@@ -214,7 +204,7 @@ public class ListReservations extends HttpServlet {
 
     public String getDescription(HttpServletRequest request) {
 
-        String description = request.getParameter("description"); 
+        String description = request.getParameter("resvDescription"); 
         if (description == null) {
             description = "";
         }
@@ -223,15 +213,12 @@ public class ListReservations extends HttpServlet {
 
     public  List<String> getStatuses(HttpServletRequest request) {
 
-        Logger log = Logger.getLogger(this.getClass());
         List<String> statuses = new ArrayList<String>();
         String paramStatuses[] = request.getParameterValues("statuses");
         if (paramStatuses == null) {
-            log.info("statuses is null");
             statuses.add("");
         } else {
             for (int i=0 ; i < paramStatuses.length; i++) {
-                log.info("parameter status: " + paramStatuses[i]);
                 statuses.add(paramStatuses[i]);
             }
         }

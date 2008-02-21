@@ -128,6 +128,12 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         oscars.Form.refreshUserGrid();
         var usersPaneTab = dijit.byId("usersPane");
         mainTabContainer.selectChild(usersPaneTab);
+    } else if (responseObject.method == "ListReservations") {
+        var resvGrid = dijit.byId("resvGrid");
+        var newModel =
+            new dojox.grid.data.Table(null, responseObject.resvData);
+        console.log(newModel.getRowCount());
+        resvGrid.setModel(newModel);
     }
     if (responseObject.method == "QueryReservation") {
         // for displaying only layer 2 or layer 3 fields
@@ -216,12 +222,14 @@ oscars.Form.selectedChanged = function(contentPane) {
             oscarsStatus.innerHTML = "Reservations list";
         }
         var resvGrid = dijit.byId("resvGrid");
-        // The current implementation of grids is buggy.
-        // This should not be necessary.
         if ((resvGrid != null) && (!oscarsState.resvGridInitialized)) {
-            console.log("refreshGrid called");
-            oscars.Form.refreshResvGrid();
-            dojo.connect(resvGrid, "onRowClick", oscars.Form.onResvRowSelect);
+            dojo.xhrPost({
+                url: 'servlet/ListReservations',
+                handleAs: "json-comment-filtered",
+                load: oscars.Form.handleReply,
+                error: oscars.Form.handleError,
+                form: dojo.byId("reservationListForm")
+            });
             oscarsState.resvGridInitialized = true;
         }
     } else if (contentPane.id == "createReservationPane") {
@@ -304,17 +312,6 @@ oscars.Form.onUserRowSelect = function(evt) {
     });
     // set tab to user details
     mainTabContainer.selectChild(userDetailsPaneTab);
-}
-
-oscars.Form.refreshResvGrid = function() {
-    var resvGrid = dijit.byId("resvGrid");
-    var newStore = new dojo.data.ItemFileReadStore(
-                      {url: 'servlet/ListReservations'});
-    var newModel = new dojox.grid.data.DojoData(
-                      null, newStore,
-                      {query: {gri: '*'}, clientSort: true});
-    resvGrid.setModel(newModel);
-    resvGrid.refresh();
 }
 
 oscars.Form.onResvRowSelect = function(evt) {
