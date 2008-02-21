@@ -215,6 +215,15 @@ oscars.Form.selectedChanged = function(contentPane) {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Reservations list";
         }
+        var resvGrid = dijit.byId("resvGrid");
+        // The current implementation of grids is buggy.
+        // This should not be necessary.
+        if ((resvGrid != null) && (!oscarsState.resvGridInitialized)) {
+            console.log("refreshGrid called");
+            oscars.Form.refreshResvGrid();
+            dojo.connect(resvGrid, "onRowClick", oscars.Form.onResvRowSelect);
+            oscarsState.resvGridInitialized = true;
+        }
     } else if (contentPane.id == "createReservationPane") {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Reservation creation form";
@@ -295,6 +304,37 @@ oscars.Form.onUserRowSelect = function(evt) {
     });
     // set tab to user details
     mainTabContainer.selectChild(userDetailsPaneTab);
+}
+
+oscars.Form.refreshResvGrid = function() {
+    var resvGrid = dijit.byId("resvGrid");
+    var newStore = new dojo.data.ItemFileReadStore(
+                      {url: 'servlet/ListReservations'});
+    var newModel = new dojox.grid.data.DojoData(
+                      null, newStore,
+                      {query: {gri: '*'}, clientSort: true});
+    resvGrid.setModel(newModel);
+    resvGrid.refresh();
+}
+
+oscars.Form.onResvRowSelect = function(evt) {
+    var mainTabContainer = dijit.byId("mainTabContainer");
+    var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
+    var resvGrid = dijit.byId("resvGrid");
+    // get reservation's GRI
+    var gri = resvGrid.model.getDatum(evt.rowIndex,1);
+    var formParam = dojo.byId("reservationDetailsForm");
+    formParam.gri.value = gri;
+    // get reservation details
+    dojo.xhrPost({
+        url: 'servlet/QueryReservation',
+        handleAs: "json-comment-filtered",
+        load: oscars.Form.handleReply,
+        error: oscars.Form.handleError,
+        form: dojo.byId("reservationDetailsForm")
+    });
+    // set tab to user details
+    mainTabContainer.selectChild(resvDetailsPaneTab);
 }
 
 oscars.Form.hrefChanged = function(newUrl) {

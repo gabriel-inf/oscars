@@ -34,6 +34,10 @@
         <servlet-class>net.es.oscars.dojoServlets.CancelReservation</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>ListReservations</servlet-name>
+        <servlet-class>net.es.oscars.dojoServlets.ListReservations</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>UserQuery</servlet-name>
         <servlet-class>net.es.oscars.dojoServlets.UserQuery</servlet-class>
     </servlet>
@@ -80,6 +84,10 @@
     <servlet-mapping>
         <servlet-name>CancelReservation</servlet-name>
         <url-pattern>/servlet/CancelReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ListReservations</servlet-name>
+        <url-pattern>/servlet/ListReservations</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>UserQuery</servlet-name>
