@@ -264,6 +264,7 @@
     <xsd:complexType name="pathInfo">
         <xsd:sequence>
             <xsd:element name="pathSetupMode" type="xsd:string" minOccurs="1" />
+            <xsd:element name="pathType" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="path" type="ctrlp:CtrlPlanePathContent"
                          maxOccurs="1" minOccurs="0" />
             <xsd:element name="layer2Info" type="tns:layer2Info" maxOccurs="1" minOccurs="0" />
