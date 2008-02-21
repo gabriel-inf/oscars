@@ -50,6 +50,7 @@ public class UserModify extends HttpServlet {
             HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
         aaa.beginTransaction();
         
+        Map outputMap = new HashMap();
         if (profileName != null) { // get here by clicking on a name in the users list
             if (profileName.equals(userName)) { 
                 self =true; 
@@ -59,6 +60,12 @@ public class UserModify extends HttpServlet {
         } else { // profileName is null - clicked on userProfile nav tab
             profileName = userName;
             self = true;
+        }
+        // just in case renamed to oneself
+        if (!self) {
+            outputMap.put("userDeleteDisplay", Boolean.TRUE);
+        } else {
+            outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
         if (self) {attrNames = mgr.getAttrNames();}
@@ -146,7 +153,6 @@ public class UserModify extends HttpServlet {
             utils.handleFailure(out, e.getMessage(), aaa, null);
             return;
         }
-        Map outputMap = new HashMap();
         outputMap.put("status", "Profile for user " +
                                 profileName + " successfully modified");
         // user may have changed his own attributes

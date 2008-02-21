@@ -45,20 +45,29 @@ public class UserQuery extends HttpServlet {
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
 
-        String profileName = request.getParameter("login");
+        String profileName = request.getParameter("profileName");
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
 
-        if (profileName != null) { // get here by clicking on a name in the users list
+        // get here by clicking on a name in the users list
+        if ((profileName != null) && !profileName.equals("")) {
+            this.log.info("profileName: " + profileName);
             if (profileName.equals(userName)) { 
                 self =true; 
             } else {
                 self = false;
             }
         } else { // profileName is null - get here by clicking on tab navigation
+            this.log.info("profileName is null, using " + userName);
             profileName = userName;
             self=true;
+        }
+        Map outputMap = new HashMap();
+        if (!self) {
+            outputMap.put("userDeleteDisplay", Boolean.TRUE);
+        } else {
+            outputMap.put("userDeleteDisplay", Boolean.FALSE);
         }
         AuthValue authVal = mgr.checkAccess(userName, "Users", "query");
         
@@ -82,7 +91,6 @@ public class UserQuery extends HttpServlet {
             modifyAllowed = false;;
         }
         institutions = mgr.getInstitutions();
-        Map outputMap = new HashMap();
         outputMap.put("status", "Profile for user " + profileName);
         this.contentSection(
                 outputMap, targetUser, modifyAllowed,

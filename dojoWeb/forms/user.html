@@ -2,10 +2,6 @@
 <head>
     <script type="text/javascript>
         dojo.addOnLoad(function(){
-            var w = dojo.byId("userDetailsLogin");
-            w.value= oscarsState.login;
-        });
-        dojo.addOnLoad(function(){
             dojo.xhrPost({
                 url: 'servlet/UserQuery',
                 handleAs: "json-comment-filtered",
@@ -19,8 +15,10 @@
 
 <p>Required fields are outlined in green.</p>
 <form id="userDetailsForm" method="POST">
-  <input type="hidden" name="login" id="userDetailsLogin" />
 
+  <table>
+  <tr>
+  <td>
   <button dojoType="dijit.form.Button" id="userModify">
      Modify 
      <script type="dojo/method" event="onClick">
@@ -33,6 +31,28 @@
         });
     </script>
   </button>
+  </td>
+
+  <td>
+  <!-- id'd this way to be able to toggle its display based on whether
+       profile is oneself or not -->
+  <div id="userDeleteDisplay" style="display:none">
+     <button dojoType="dijit.form.Button" id="userDelete">
+       Delete 
+       <script type="dojo/method" event="onClick">
+        dojo.xhrPost({
+          url: 'servlet/UserRemove',
+          handleAs: "json-comment-filtered",
+          load: oscars.Form.handleReply,
+          error: oscars.Form.handleError,
+          form: dojo.byId("userDetailsForm")
+        });
+      </script>
+    </button>
+  </div>
+  </td>
+  </tr>
+  </table>
 
   <table>
   <tbody>
@@ -43,8 +63,7 @@
                dojoType="dijit.form.ValidationTextBox"
                regExp="[\w]+" required="true"
                promptMessage="Enter a login name"
-               invalidMessage="You must enter a login name"
-               value="" />
+               invalidMessage="You must enter a login name" />
     </td>
   </tr>
   <tr>
@@ -75,8 +94,7 @@
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
              promptMessage="Enter the first name"
-             invalidMessage="You must enter the first name"
-             value="" />
+             invalidMessage="You must enter the first name" />
     </td>
   </tr>
   <tr>
@@ -86,19 +104,17 @@
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+" required="true"
              promptMessage="Enter the last name"
-             invalidMessage="You must enter the last name"
-             value="" />
+             invalidMessage="You must enter the last name" />
     </td>
   </tr>
   <tr>
+    <!-- unsure at this point what a good regular expression would be;
+         various forms -->
     <td>X.509 subject name</td>
     <td>
       <input type="text" name="certSubject" id="certSubject"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+"
-             promptMessage="Enter the certificate subject"
-             invalidMessage="You must enter the certificate subject"
-             value="" />
+             promptMessage="Enter the certificate subject" />
     </td>
   </tr>
   <tr>
@@ -106,10 +122,7 @@
     <td>
       <input type="text" name="certIssuer" id="certIssuer"
              dojoType="dijit.form.ValidationTextBox"
-             regExp="[\w]+"
-             promptMessage="Enter the issuer of the certificate"
-             invalidMessage="You must enter the issuer of the certificate"
-             value="" />
+             promptMessage="Enter the issuer of the certificate" />
     </td>
   </tr>
   <tr>
@@ -163,8 +176,7 @@
     <td>
        <input name="description" id="description"
               dojoType="dijit.form.TextBox"
-              promptMessage="Enter a personal description"
-              value="" />
+              promptMessage="Enter a personal description" />
     </td>
   </tr>
   <tr>
@@ -174,8 +186,7 @@
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+@[\w\.]+" required="true"
              promptMessage="Enter the primary email address"
-             invalidMessage="You must enter the primary email address"
-             value="" />
+             invalidMessage="You must enter the primary email address" />
     </td>
   </tr>
   <tr>
@@ -185,8 +196,7 @@
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\w]+@[\w\.]+"
              promptMessage="Enter a secondary email address"
-             invalidMessage="You must enter a valid secondary email address"
-             value="" />
+             invalidMessage="You must enter a valid secondary email address" />
     </td>
   </tr>
   <tr>
@@ -196,8 +206,7 @@
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\d-]+" required="true"
              promptMessage="Enter the primary phone number"
-             invalidMessage="You must enter the primary phone number"
-             value="" />
+             invalidMessage="You must enter the primary phone number" />
     </td>
   </tr>
   <tr>
@@ -207,8 +216,7 @@
              dojoType="dijit.form.ValidationTextBox"
              regExp="[\d-]+"
              promptMessage="Enter a secondary phone number"
-             invalidMessage="You must enter a valid phone number"
-             value="" />
+             invalidMessage="You must enter a valid phone number" />
     </td>
   </tr>
   </tbody>

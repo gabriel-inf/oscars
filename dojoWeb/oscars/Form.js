@@ -1,6 +1,6 @@
 /*
 Form.js:        Javascript form callback handling
-Last modified:  January 24, 2008
+Last modified:  February 20, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -11,6 +11,7 @@ handleError(responseObject, ioArgs)
 
 dojo.provide("oscars.Form");
 
+// handles all servlet replies
 oscars.Form.handleReply = function (responseObject, ioArgs) {
     var status = responseObject.status;
     var mainTabContainer = dijit.byId("mainTabContainer");
@@ -63,6 +64,7 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                 userDetailsPaneTab = new dojox.layout.ContentPane(
                  {title:'User Profile', id: 'userDetailsPane'},
                   dojo.doc.createElement('div'));
+                userDetailsPaneTab.setHref("forms/user.html");
             }
             mainTabContainer.addChild(userDetailsPaneTab, 3);
             userDetailsPaneTab.startup();
@@ -114,9 +116,18 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         }
     } else if ((responseObject.method == "CreateReservationForm") ||
                 (responseObject.method == "UserQuery") ||
+                (responseObject.method == "UserModify") ||
                 (responseObject.method == "UserAddForm") ||
                 (responseObject.method == "QueryReservation")) {
+        // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
+    } else if ((responseObject.method == "UserRemove") ||
+                (responseObject.method == "UserAdd")) {
+        // after adding or removing a user, refresh the user list and
+        // display that tab
+        oscars.Form.refreshUserGrid();
+        var usersPaneTab = dijit.byId("usersPane");
+        mainTabContainer.selectChild(usersPaneTab);
     }
     if (responseObject.method == "QueryReservation") {
         // for displaying only layer 2 or layer 3 fields
@@ -195,6 +206,7 @@ oscars.Form.initState = function() {
     dojo.back.setInitialState(state);
 }
 
+// take action based on which tab was clicked on
 oscars.Form.selectedChanged = function(contentPane) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     // if not currently in error state, change status to reflect current tab
@@ -221,7 +233,7 @@ oscars.Form.selectedChanged = function(contentPane) {
         // This should not be necessary.
         if ((userGrid != null) && (!oscarsState.userGridInitialized)) {
             oscars.Form.refreshUserGrid();
-            dojo.connect(userGrid, "onRowClick", oscars.Form.onRowSelect);
+            dojo.connect(userGrid, "onRowClick", oscars.Form.onUserRowSelect);
             oscarsState.userGridInitialized = true;
         }
     } else if (contentPane.id == "userAddPane") {
@@ -233,14 +245,8 @@ oscars.Form.selectedChanged = function(contentPane) {
             contentPane.setHref("forms/userAdd.html");
         }
     } else if (contentPane.id == "userDetailsPane") {
-        // TODO:  FIX when coming in from user list when it is implemented
         if (changeStatus) {
             oscarsStatus.innerHTML = "Profile for user " + oscarsState.login;
-        }
-        var n = dojo.byId("userDetailsLogin");
-        // only do first time
-        if (n == null) {
-            contentPane.setHref("forms/user.html");
         }
     } else if (contentPane.id == "sessionPane") {
         if (changeStatus) {
@@ -271,9 +277,24 @@ oscars.Form.refreshUserGrid = function() {
     userGrid.refresh();
 }
 
-oscars.Form.onRowSelect = function(evt) {
+oscars.Form.onUserRowSelect = function(evt) {
+    var mainTabContainer = dijit.byId("mainTabContainer");
+    var userDetailsPaneTab = dijit.byId("userDetailsPane");
     var userGrid = dijit.byId("userGrid");
-    console.log(userGrid.model.getDatum(evt.rowIndex,1));
+    // get user name
+    var profileName = userGrid.model.getDatum(evt.rowIndex,1);
+    var formParam = dojo.byId("userDetailsForm");
+    formParam.profileName.value = profileName;
+    // get user details
+    dojo.xhrPost({
+        url: 'servlet/UserQuery',
+        handleAs: "json-comment-filtered",
+        load: oscars.Form.handleReply,
+        error: oscars.Form.handleError,
+        form: dojo.byId("userDetailsForm")
+    });
+    // set tab to user details
+    mainTabContainer.selectChild(userDetailsPaneTab);
 }
 
 oscars.Form.hrefChanged = function(newUrl) {

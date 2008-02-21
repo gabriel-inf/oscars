@@ -73,6 +73,8 @@ public class UserAdd extends HttpServlet {
                 mgr.create(newUser, request.getParameter("institutionName"),
                            addRoles);  
             }  else {
+                // this also makes sure won't list users either if don't
+                // have permission
                 utils.handleFailure(out, "not allowed to add a new user", aaa, null);
                 return;
             }

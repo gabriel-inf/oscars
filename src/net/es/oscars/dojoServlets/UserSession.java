@@ -6,6 +6,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.hibernate.*;
+import net.sf.json.*;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
@@ -27,9 +28,6 @@ public class UserSession {
         String userName = this.getCookie(this.userCookieName, request);
         String sessionName = this.getCookie(this.sessionCookieName, request);
         if ((userName == null) || (sessionName == null)) {
-            out.println("<xml><status>");
-            out.println("No session has been established");
-            out.println("</status></xml>");
             userName = null;
         }
         Session aaa =
@@ -37,12 +35,17 @@ public class UserSession {
         aaa.beginTransaction();
         UserManager userMgr = new UserManager("aaa");
         if (!userMgr.validSession(userName, sessionName)) {
-            out.println("<xml><status>");
-            out.println("No session has been established");
-            out.println("</status></xml>");
             userName = null;
         }
         aaa.getTransaction().commit();
+        // servlet returns immediately in this case
+        if (userName == null) {
+            Map errorMap = new HashMap();
+            errorMap.put("success", Boolean.FALSE);
+            errorMap.put("status", "No session has been established");
+            JSONObject jsonObject = JSONObject.fromObject(errorMap);
+            out.println("/* " + jsonObject + " */");
+        }
         return userName;
     }
 

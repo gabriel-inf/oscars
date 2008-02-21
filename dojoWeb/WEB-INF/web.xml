@@ -50,6 +50,10 @@
         <servlet-class>net.es.oscars.dojoServlets.UserAdd</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>UserRemove</servlet-name>
+        <servlet-class>net.es.oscars.dojoServlets.UserRemove</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>UserList</servlet-name>
         <servlet-class>net.es.oscars.dojoServlets.UserList</servlet-class>
     </servlet>
@@ -92,6 +96,10 @@
     <servlet-mapping>
         <servlet-name>UserAdd</servlet-name>
         <url-pattern>/servlet/UserAdd</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserRemove</servlet-name>
+        <url-pattern>/servlet/UserRemove</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>UserList</servlet-name>
