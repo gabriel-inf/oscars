@@ -130,10 +130,16 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         mainTabContainer.selectChild(usersPaneTab);
     } else if (responseObject.method == "ListReservations") {
         var resvGrid = dijit.byId("resvGrid");
-        var newModel =
-            new dojox.grid.data.Table(null, responseObject.resvData);
-        console.log(newModel.getRowCount());
-        resvGrid.setModel(newModel);
+        var model = resvGrid.model;
+        // convert seconds to datetime format before displaying
+        oscars.Form.convertReservationTimes(responseObject.resvData);
+        model.setData(responseObject.resvData);
+        // workaround for bug where doesn't show up on first setData
+        if (oscarsState.resvGridInitialized == 1) {
+            model.setData(responseObject.resvData);
+            oscarsState.resvGridInitialized = 2;
+        }
+        console.log(model.getRowCount());
     }
     if (responseObject.method == "QueryReservation") {
         // for displaying only layer 2 or layer 3 fields
@@ -222,7 +228,9 @@ oscars.Form.selectedChanged = function(contentPane) {
             oscarsStatus.innerHTML = "Reservations list";
         }
         var resvGrid = dijit.byId("resvGrid");
-        if ((resvGrid != null) && (!oscarsState.resvGridInitialized)) {
+        if ((resvGrid != null) && (oscarsState.resvGridInitialized == 0)) {
+            oscarsState.resvGridInitialized = 1;
+            dojo.connect(resvGrid, "onRowClick", oscars.Form.onResvRowSelect);
             dojo.xhrPost({
                 url: 'servlet/ListReservations',
                 handleAs: "json-comment-filtered",
@@ -230,7 +238,6 @@ oscars.Form.selectedChanged = function(contentPane) {
                 error: oscars.Form.handleError,
                 form: dojo.byId("reservationListForm")
             });
-            oscarsState.resvGridInitialized = true;
         }
     } else if (contentPane.id == "createReservationPane") {
         if (changeStatus) {
@@ -299,7 +306,7 @@ oscars.Form.onUserRowSelect = function(evt) {
     var userDetailsPaneTab = dijit.byId("userDetailsPane");
     var userGrid = dijit.byId("userGrid");
     // get user name
-    var profileName = userGrid.model.getDatum(evt.rowIndex,1);
+    var profileName = userGrid.model.getDatum(evt.rowIndex, 1);
     var formParam = dojo.byId("userDetailsForm");
     formParam.profileName.value = profileName;
     // get user details
@@ -318,8 +325,9 @@ oscars.Form.onResvRowSelect = function(evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
     var resvGrid = dijit.byId("resvGrid");
-    // get reservation's GRI
-    var gri = resvGrid.model.getDatum(evt.rowIndex,1);
+    // get reservation's GRI; data in row starts at 0 unlike with
+    // ItemFileReadStore
+    var gri = resvGrid.model.getDatum(evt.rowIndex, 0);
     var formParam = dojo.byId("reservationDetailsForm");
     formParam.gri.value = gri;
     // get reservation details
@@ -343,6 +351,8 @@ oscars.Form.hrefChanged = function(newUrl) {
     dojo.back.addToHistory(state);
 }
 
+// check create reservation form's start and end date and time's, and
+// converts hidden form fields to seconds
 oscars.Form.checkDateTimes = function() {
     var currentDate = new Date();
     var startSeconds =
@@ -373,4 +383,13 @@ oscars.Form.checkDateTimes = function() {
     var endSecondsN = dojo.byId("hiddenEndSeconds");
     endSecondsN.value = endSeconds;
     return true;
+}
+
+// convert seconds in incoming reservations list to date and time
+oscars.Form.convertReservationTimes = function(data) {
+    for (var i=0; i < data.length; i++) {
+        // these fields are in seconds
+        data[i][2] = oscars.DigitalClock.convertFromSeconds(data[i][2]);
+        data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
+    }
 }

@@ -3,19 +3,18 @@
 <script type="text/javascript">
     var resvView = {
       cells: [[
-         {name: 'GRI', width: "9em"},
-         {name: 'User', width: "11em"},
-         {name: 'Start Time', width: "11em"},
-         {name: 'End Time', width: "11em"},
-         {name: 'Status', width: "9em"},
-         {name: 'Origin', width: "28em"},
-         {name: 'Destination', width: "28em"}
+         {name: 'GRI', width: "16em"},
+         {name: 'User', width: "18em"},
+         {name: 'Start Time', width: "10em"},
+         {name: 'End Time', width: "10em"},
+         {name: 'Status', width: "34"},
+       ],
+       [
+         {name: 'Origin', colSpan:"3", width: "44"},
+         {name: 'Destination', colSpan:"2", width: "44"}
       ]]
     };
     var resvLayout = [ resvView ];
-    var data = [["filler0", "filler1", "filler2", "filler3", "filler4",
-                 "filler5", "filler6"]];
-    var model = new dojox.grid.data.Table(null, data);
 </script>
 </head>
 
@@ -100,7 +99,7 @@ information about a reservation.</p>
 
 <br/>
 
-<div id="resvGrid" dojoType="dojox.Grid" model="model" structure="resvLayout">
+<div id="resvGrid" dojoType="dojox.Grid" structure="resvLayout">
 </div>
 
 </html>

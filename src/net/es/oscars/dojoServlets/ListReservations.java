@@ -136,8 +136,8 @@ public class ListReservations extends HttpServlet {
             Layer2Data layer2Data = resv.getPath().getLayer2Data();
             resvEntry.add(gri);
             resvEntry.add(resv.getLogin());
-            // TODO:  need to do time conversions on the server instead of
-            // the client for this
+            // entries are converted on the fly to standard date and time
+            // format before the model's data is set
             resvEntry.add(resv.getStartTime().toString());
             resvEntry.add(resv.getEndTime().toString());
             resvEntry.add(resv.getStatus());
