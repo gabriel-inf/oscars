@@ -61,7 +61,6 @@ public class CreateReservation extends HttpServlet {
         try {
             pathInfo = this.handlePath(request);
         } catch (BSSException e) {
-            this.sendFailureNotification(resv, e.getMessage());
             utils.handleFailure(out, e.getMessage(), null, null);
             return;
         }
