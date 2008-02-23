@@ -236,7 +236,7 @@ public class CreateReservation extends HttpServlet {
             tagged = tagDestPort.equals("Tagged");
             destVtagObject.setTagged(tagged);
             strParam = request.getParameter("source").trim();
-            layer2Info.setSrcEndpoint(request.getParameter(strParam));
+            layer2Info.setSrcEndpoint(strParam);
             strParam = request.getParameter("destination").trim();
             layer2Info.setDestEndpoint(strParam);
             layer2Info.setSrcVtag(srcVtagObject);
