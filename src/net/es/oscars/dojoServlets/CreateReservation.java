@@ -125,6 +125,7 @@ public class CreateReservation extends HttpServlet {
         }
 
         Map outputMap = new HashMap();
+        outputMap.put("gri", resv.getGlobalReservationId());
         outputMap.put("status", "Created reservation with GRI " +
             resv.getGlobalReservationId());
         outputMap.put("method", "CreateReservation");
@@ -182,6 +183,7 @@ public class CreateReservation extends HttpServlet {
 
         PathInfo pathInfo = new PathInfo();
         String explicitPath = request.getParameter("explicitPath");
+        String strParam = null;
 
         if ((explicitPath != null) && !explicitPath.trim().equals("")) {
             this.log.info("explicit path: " + explicitPath);
@@ -233,9 +235,10 @@ public class CreateReservation extends HttpServlet {
             srcVtagObject.setTagged(tagged);
             tagged = tagDestPort.equals("Tagged");
             destVtagObject.setTagged(tagged);
-            // required by client, so always filled in
-            layer2Info.setSrcEndpoint(request.getParameter("source"));
-            layer2Info.setDestEndpoint(request.getParameter("destination"));
+            strParam = request.getParameter("source").trim();
+            layer2Info.setSrcEndpoint(request.getParameter(strParam));
+            strParam = request.getParameter("destination").trim();
+            layer2Info.setDestEndpoint(strParam);
             layer2Info.setSrcVtag(srcVtagObject);
             layer2Info.setDestVtag(destVtagObject);
             pathInfo.setLayer2Info(layer2Info);
@@ -247,7 +250,7 @@ public class CreateReservation extends HttpServlet {
         layer3Info.setSrcHost(request.getParameter("source"));
         layer3Info.setDestHost(request.getParameter("destination"));
 
-        String strParam = request.getParameter("srcPort");
+        strParam = request.getParameter("srcPort");
 
         if ((strParam != null) && !strParam.trim().equals("")) {
             layer3Info.setSrcIpPort(Integer.valueOf(strParam));

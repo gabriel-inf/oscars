@@ -128,6 +128,24 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         oscars.Form.refreshUserGrid();
         var usersPaneTab = dijit.byId("usersPane");
         mainTabContainer.selectChild(usersPaneTab);
+    } else if (responseObject.method == "CreateReservation") {
+        // transition to reservation details tab on successful creation
+        var formParam = dojo.byId("reservationDetailsForm");
+        formParam.gri.value = responseObject.gri;
+        dojo.xhrPost({
+            url: 'servlet/QueryReservation',
+            handleAs: "json-comment-filtered",
+            load: oscars.Form.handleReply,
+            error: oscars.Form.handleError,
+            form: dojo.byId("reservationDetailsForm")
+        });
+        // set tab to reservation details
+        var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
+        mainTabContainer.selectChild(resvDetailsPaneTab);
+    } else if (responseObject.method == "CancelReservation") {
+        var statusN = dojo.byId("statusReplace");
+        // table cell
+        statusN.innerHTML = "CANCELLED";
     } else if (responseObject.method == "ListReservations") {
         var resvGrid = dijit.byId("resvGrid");
         var model = resvGrid.model;
