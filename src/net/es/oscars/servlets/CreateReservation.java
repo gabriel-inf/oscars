@@ -57,7 +57,14 @@ public class CreateReservation extends HttpServlet {
         if (userName == null) { return; }
 
         Reservation resv = this.toReservation(userName, request);
-        PathInfo pathInfo = this.handlePath(request);
+        PathInfo pathInfo = null;
+        try {
+            pathInfo = this.handlePath(request);
+        } catch (BSSException e) {
+            this.sendFailureNotification(resv, e.getMessage());
+            utils.handleFailure(out, e.getMessage(), null, null);
+            return;
+        }
 
         Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
@@ -172,7 +179,9 @@ public class CreateReservation extends HttpServlet {
      * @param request contains form request parameters
      * @return pathInfo a PathInfo instance with layer 3 information
      */
-    public PathInfo handlePath(HttpServletRequest request) {
+    public PathInfo handlePath(HttpServletRequest request) 
+            throws BSSException {
+
         CtrlPlanePathContent path = null;
         Logger log = Logger.getLogger(this.getClass());
 
@@ -237,10 +246,16 @@ public class CreateReservation extends HttpServlet {
         }
 
         Layer3Info layer3Info = new Layer3Info();
-        layer3Info.setSrcHost(request.getParameter("source"));
+        String strParam = request.getParameter("source");
+        // VLAN id wasn't supplied with layer 2 id
+        if (strParam.startsWith("urn:ogf:network")) {
+            throw new BSSException(
+                    "VLAN tag not supplied for layer 2 reservation");
+        }
+        layer3Info.setSrcHost(strParam);
         layer3Info.setDestHost(request.getParameter("destination"));
 
-        String strParam = request.getParameter("srcPort");
+        strParam = request.getParameter("srcPort");
 
         if (strParam != null) {
             layer3Info.setSrcIpPort(Integer.valueOf(strParam));
