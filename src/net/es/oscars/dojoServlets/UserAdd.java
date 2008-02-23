@@ -60,7 +60,7 @@ public class UserAdd extends HttpServlet {
                     addRoles = utils.convertRoles(roles);
                 }
                 newRole = request.getParameter("newRole");
-                if (newRole != null) {
+                if ((newRole != null) && !newRole.trim().equals("")) {
                     Attribute newAttr = new Attribute();
                     newAttr.setName(newRole);
                     attrDAO.create(newAttr); 
@@ -124,6 +124,7 @@ public class UserAdd extends HttpServlet {
         }
         else { DN = ""; }
         user.setCertSubject(DN);
+        // required fields by client, so always filled in
         user.setLastName(request.getParameter("lastName"));
         user.setFirstName(request.getParameter("firstName"));
         user.setEmailPrimary(request.getParameter("emailPrimary"));
@@ -131,9 +132,11 @@ public class UserAdd extends HttpServlet {
         password = utils.checkPassword(request.getParameter("password"),
                 request.getParameter("passwordConfirmation"));
         user.setPassword(password); 
+        // doesn't matter if blank
         user.setDescription(request.getParameter("description"));
         user.setEmailSecondary(request.getParameter("emailSecondary"));
         user.setPhoneSecondary(request.getParameter("phoneSecondary"));
+        // noops currently
         user.setStatus(request.getParameter("status"));
         user.setActivationKey(request.getParameter("activationKey"));
         return user;

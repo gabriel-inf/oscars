@@ -355,14 +355,16 @@ oscars.Form.hrefChanged = function(newUrl) {
 // converts hidden form fields to seconds
 oscars.Form.checkDateTimes = function() {
     var currentDate = new Date();
+    var msg = null;
     var startSeconds =
         oscars.DigitalClock.convertDateTime(currentDate, "startDate",
-                                                         "startTime");
+                                            "startTime", true);
+    // default is 4 minutes in the future
     var endDate = new Date(startSeconds*1000 + 60*4*1000);
     var endSeconds =
-        oscars.DigitalClock.convertDateTime(endDate, "endDate", "endTime");
+            oscars.DigitalClock.convertDateTime(endDate, "endDate", "endTime",
+                                                true);
     // additional checks for legality
-    var msg = null;
     // check for start time more than four minutes in the past
     if (startSeconds < (currentDate.getTime()/1000 - 240)) {
         msg = "Start time is more than four minutes in the past";
@@ -385,6 +387,36 @@ oscars.Form.checkDateTimes = function() {
     return true;
 }
 
+// sets hidden form fields' seconds values from search date and time
+// constraints in list reservations form
+oscars.Form.convertSearchTimes = function() {
+    var currentDate = new Date();
+    var startSeconds = null;
+    var endSeconds = null;
+    var startDateWidget = dijit.byId("startDateSearch");
+    var startTimeWidget = dijit.byId("startTimeSearch");
+    // don't do anything if both blank
+    if (!(oscars.Form.isBlank(startDateWidget.getDisplayedValue()) &&
+          oscars.Form.isBlank(startTimeWidget.getValue()))) {
+        startSeconds =
+            oscars.DigitalClock.convertDateTime(currentDate, "startDateSearch",
+                                                "startTimeSearch", false);
+    }
+    var endDateWidget = dijit.byId("endDateSearch");
+    var endTimeWidget = dijit.byId("endTimeSearch");
+    if (!(oscars.Form.isBlank(endDateWidget.getDisplayedValue()) &&
+          oscars.Form.isBlank(endTimeWidget.getValue()))) {
+        endSeconds =
+            oscars.DigitalClock.convertDateTime(currentDate, "endDateSearch",
+                                                "endTimeSearch", false);
+    }
+    var startSecondsN = dojo.byId("startTimeSeconds");
+    // set hidden field value, which is what servlet uses
+    startSecondsN.value = startSeconds;
+    var endSecondsN = dojo.byId("endTimeSeconds");
+    endSecondsN.value = endSeconds;
+}
+
 // convert seconds in incoming reservations list to date and time
 oscars.Form.convertReservationTimes = function(data) {
     for (var i=0; i < data.length; i++) {
@@ -392,4 +424,17 @@ oscars.Form.convertReservationTimes = function(data) {
         data[i][2] = oscars.DigitalClock.convertFromSeconds(data[i][2]);
         data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
     }
+}
+
+// From Javascript book, p. 264
+
+oscars.Form.isBlank = function(s) {
+    if (s == null) {
+        return true;
+    }
+    for (var i = 0; i < s.length; i++) {
+        var c = s.charAt(i);
+        if ((c != ' ') && (c != '\n') && (c != '')) return false;
+    }
+    return true;
 }

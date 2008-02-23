@@ -69,8 +69,8 @@ public class CreateReservation extends HttpServlet {
         // bandwidth limits are stored in megaBits
         int reqBandwidth = (int) (resv.getBandwidth() / 1000000);
 
-        // convert from milli-seconds to minutes
-        int reqDuration = (int) (resv.getEndTime() - resv.getStartTime()) / 6000;
+        // convert from seconds to minutes
+        int reqDuration = (int) (resv.getEndTime() - resv.getStartTime()) / 60;
         boolean specifyPath = false;
 
         String strParam = request.getParameter("explicitPath");
@@ -163,7 +163,7 @@ public class CreateReservation extends HttpServlet {
         resv.setEndTime(seconds);
 
         strParam = request.getParameter("bandwidth");
-        bandwidth = (strParam != null)
+        bandwidth = ((strParam != null) && !strParam.trim().equals(""))
             ? (Long.valueOf(strParam.trim()) * 1000000L) : 0L;
         resv.setBandwidth(bandwidth);
         strParam = request.getParameter("description");
@@ -211,21 +211,19 @@ public class CreateReservation extends HttpServlet {
 
         String vlanTag = request.getParameter("vlanTag");
         String tagSrcPort = request.getParameter("tagSrcPort");
-        this.log.info("tagSrcPort: " + tagSrcPort);
         String tagDestPort = request.getParameter("tagDestPort");
-        this.log.info("tagDestPort: " + tagDestPort);
         
         //Set default to tagged if tagSrcPort and tagDestPort unspecified
-        if(tagSrcPort == null){
-            tagSrcPort = "1";
+        if ((tagSrcPort == null) || tagSrcPort.trim().equals("")) {
+            tagSrcPort = "Tagged";
         }
-        if(tagDestPort == null){
-            tagDestPort = "1";
+        if ((tagDestPort == null) || tagDestPort.trim().equals("")) {
+            tagDestPort = "Tagged";
         }
         
         // TODO:  layer 2 parameters trump layer 3 parameters for now, until
         // handle in Javascript
-        if (vlanTag != null) {
+        if ((vlanTag != null) && !vlanTag.trim().equals("")) {
             Layer2Info layer2Info = new Layer2Info();
             VlanTag srcVtagObject = new VlanTag();
             VlanTag destVtagObject = new VlanTag();
@@ -235,6 +233,7 @@ public class CreateReservation extends HttpServlet {
             srcVtagObject.setTagged(tagged);
             tagged = tagDestPort.equals("Tagged");
             destVtagObject.setTagged(tagged);
+            // required by client, so always filled in
             layer2Info.setSrcEndpoint(request.getParameter("source"));
             layer2Info.setDestEndpoint(request.getParameter("destination"));
             layer2Info.setSrcVtag(srcVtagObject);
@@ -250,22 +249,27 @@ public class CreateReservation extends HttpServlet {
 
         String strParam = request.getParameter("srcPort");
 
-        if (strParam != null) {
+        if ((strParam != null) && !strParam.trim().equals("")) {
             layer3Info.setSrcIpPort(Integer.valueOf(strParam));
         } else {
             layer3Info.setSrcIpPort(0);
         }
 
         strParam = request.getParameter("destPort");
-
-        if (strParam != null) {
+        if ((strParam != null) && !strParam.trim().equals("")) {
             layer3Info.setDestIpPort(Integer.valueOf(strParam));
         } else {
             layer3Info.setDestIpPort(0);
         }
 
-        layer3Info.setProtocol(request.getParameter("protocol"));
-        layer3Info.setDscp(request.getParameter("dscp"));
+        strParam = request.getParameter("protocol");
+        if ((strParam != null) && !strParam.trim().equals("")) {
+            layer3Info.setProtocol(strParam);
+        }
+        strParam = request.getParameter("dscp");
+        if ((strParam != null) && !strParam.trim().equals("")) {
+            layer3Info.setDscp(strParam);
+        }
         pathInfo.setLayer3Info(layer3Info);
 
         MplsInfo mplsInfo = new MplsInfo();

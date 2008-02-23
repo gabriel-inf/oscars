@@ -31,10 +31,11 @@ information about a reservation.</p>
 
 <table>
 <tr>
-  <td>
+  <td width="8%">
   <button dojoType="dijit.form.Button" id="refreshReservationList">
      Refresh 
      <script type="dojo/method" event="onClick">
+        oscars.Form.convertSearchTimes();
         dojo.xhrPost({
             url: 'servlet/ListReservations',
             handleAs: "json-comment-filtered",
@@ -46,8 +47,8 @@ information about a reservation.</p>
   </button>
   </td>
 
-  <td>Statuses:
-  <select name="statuses" multiple="true">
+  <td width="12%">Statuses:
+  <select name="statuses" multiple="true" size="3">
       <option value="ACTIVE" selected="selected">ACTIVE</option>
       <option value="PENDING" selected="selected">PENDING</option>
       <option value="FINISHED">FINISHED</option>
@@ -63,16 +64,16 @@ information about a reservation.</p>
        promptMessage="Search by reservation description" />
   </td>
 
-  <td>
-    <input type="reset" value="Reset form fields"></input>
+  <td width="10%">
+    <input type="reset" value="Reset fields"></input>
   </td>
 </tr>
 <tr>
-  <td>Ending after:
+  <td width="8%">Ending after:
     <input dojoType="dijit.form.DateTextBox" name="startDateSearch"
-               id="startDateSearch" />MM/DD/YY</td>
+               id="startDateSearch" />MM/DD/YYYY</td>
 
-  <td>Time:
+  <td width="12%">Time:
     <input dojoType="dijit.form.ValidationTextBox" name="startTimeSearch"
              id="startTimeSearch"
              regExp="[0-2]?[\d]:[0-5][\d]"
@@ -81,17 +82,17 @@ information about a reservation.</p>
 
   <td>Starting before:
     <input dojoType="dijit.form.DateTextBox" name="endDateSearch"
-               id="endDateSearch" />MM/DD/YY</td>
+               id="endDateSearch" />MM/DD/YYYY</td>
 
-  <td>Time:
+  <td width="10%">Time:
     <input dojoType="dijit.form.ValidationTextBox" name="endTimeSearch"
              id="endTimeSearch"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the time portion of the date in format HH:MM"
-             invalidMessage="Invalid format:  use HH:MM" />HH:MM</td>
-  <td>
+             invalidMessage="Invalid format:  use HH:MM" width="10em" />HH:MM</td>
+  <td>Link ids:
     <textarea name="linkIds" id="linkIds" dojoType="dijit.form.Textarea">
-    </textarea>
+    </textarea>Widget will expand vertically
   </td>
 </tr>
 </table>

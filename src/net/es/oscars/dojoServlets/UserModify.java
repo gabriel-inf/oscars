@@ -44,7 +44,6 @@ public class UserModify extends HttpServlet {
         if (userName == null) { return; }
 
         mgr = new UserManager(this.dbname);
-        // TODO:  FIX
         String profileName = request.getParameter("profileName");
         Session aaa = 
             HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
@@ -137,7 +136,7 @@ public class UserModify extends HttpServlet {
                      }
                  }
                  String newRole = request.getParameter("newRole");
-                 if (newRole != null) {
+                 if ((newRole != null) && !newRole.trim().equals("")) {
                      Attribute newAttr = new Attribute();
                      newAttr.setName(newRole);
                      attrDAO.create(newAttr);
@@ -200,7 +199,6 @@ public class UserModify extends HttpServlet {
             }
         }
         strParam = request.getParameter("certIssuer");
-        this.log.info("certIssuer: " + strParam);
         if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = utils.checkDN(strParam);
         }
@@ -209,13 +207,13 @@ public class UserModify extends HttpServlet {
             user.setCertIssuer(DN);
         }
         strParam = request.getParameter("certSubject");
-        this.log.info("certSubject: " + strParam);
         if ((strParam != null) && (!strParam.trim().equals(""))) {
             DN = utils.checkDN(strParam);
         }
         if ((DN != null) || (user.getCertSubject() != null)) {
             user.setCertSubject(DN);
         }
+        // required fields by client
         strParam = request.getParameter("lastName");
         if (strParam != null) { user.setLastName(strParam); }
         strParam = request.getParameter("firstName");
@@ -224,6 +222,7 @@ public class UserModify extends HttpServlet {
         if (strParam != null) { user.setEmailPrimary(strParam); }
         strParam = request.getParameter("phonePrimary");
         if (strParam != null) { user.setPhonePrimary(strParam); }
+        // doesn't matter if blank
         strParam = request.getParameter("description");
         if ((strParam != null) || (user.getDescription() != null)) {
             user.setDescription(strParam);
