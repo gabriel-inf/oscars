@@ -128,6 +128,7 @@ CREATE TABLE IF NOT EXISTS paths (
     pathElemId          INT NOT NULL UNIQUE,  -- foreign key
         -- couldn't get Hibernate optional one-to-one associations
         -- working correctly
+    interPathElemId     INT UNIQUE,    -- optional foreign key
     layer2DataId        INT UNIQUE,    -- optional foreign key
     layer3DataId        INT UNIQUE,    -- optional foreign key
     mplsDataId          INT UNIQUE,    -- optional foreign key

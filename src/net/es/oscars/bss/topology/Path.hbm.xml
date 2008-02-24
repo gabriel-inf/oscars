@@ -32,6 +32,10 @@
     <many-to-one name="pathElem" column="pathElemId"
 	    class="net.es.oscars.bss.topology.PathElem" cascade="all"
 	    not-null="true" unique="true" />
+	
+	<many-to-one name="interPathElem" column="interPathElemId"
+	    class="net.es.oscars.bss.topology.PathElem" cascade="all"
+	    not-null="false" unique="true" />
 
     <many-to-one name="nextDomain" column="nextDomainId"
 	    class="net.es.oscars.bss.topology.Domain" not-null="false" />

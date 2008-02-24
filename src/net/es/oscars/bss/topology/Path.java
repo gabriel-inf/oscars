@@ -28,6 +28,9 @@ public class Path extends HibernateBean implements Serializable {
     /** persistent field */
     private PathElem pathElem;
     
+    /** persistent field */
+    private PathElem interPathElem;
+    
     /** nullable persistent field */
     private Domain nextDomain;
 
@@ -46,14 +49,26 @@ public class Path extends HibernateBean implements Serializable {
     public Path() { }
 
     /**
-     * @return pathElem the first path element (uses association)
+     * @return pathElem the first path element (uses association) in the intradomain path
      */ 
     public PathElem getPathElem() { return this.pathElem; }
 
     /**
-     * @param pathElem the first path element (uses association)
+     * @param pathElem the first path element (uses association) in the intradomain path
      */ 
     public void setPathElem(PathElem pathElem) { this.pathElem = pathElem; }
+    
+    /**
+     * @return the first path element (uses association) in the interdomain path
+     */ 
+    public PathElem getInterPathElem() { return this.interPathElem; }
+
+    /**
+     * @param interPathElem the first path element (uses association) in the interdomain path
+     */ 
+    public void setInterPathElem(PathElem interPathElem){ 
+        this.interPathElem = interPathElem;
+    }
     
     /**
      * @return explicit boolean indicating whether this path was explicitly set
