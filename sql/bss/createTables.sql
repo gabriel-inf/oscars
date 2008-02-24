@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS tokens (
 --
 -- Table for history entries
 --
-CREATE TABLE `history` (
+CREATE TABLE IF NOT EXISTS `history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `reservationId` int(11) NOT NULL,
   `traceId` text NOT NULL,
@@ -235,12 +235,12 @@ CREATE TABLE `history` (
   `receivedFrom` text,
   `forwardedTo` text,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM
+) ENGINE=MyISAM;
 
 --
 -- Table for scheduler job entries
 --
-CREATE TABLE `jobs` (
+CREATE TABLE IF NOT EXISTS `jobs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `reservationId` int(11) NOT NULL,
   `operation` text NOT NULL,
@@ -249,5 +249,19 @@ CREATE TABLE `jobs` (
   `result` text NOT NULL,
   `done` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM
+) ENGINE=MyISAM;
+
+--
+-- Table for static LIDP entries
+--
+CREATE TABLE IF NOT EXISTS staticLIDP (
+  id INT NOT NULL AUTO_INCREMENT,
+  localLinkId INT NOT NULL,
+  destDomainId INT,
+  destNodeId INT,
+  destPortId INT,
+  destLinkId INT,
+  defaultRoute TINYINT(1) DEFAULT 0,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM;
 

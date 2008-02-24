@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+    
+<hibernate-mapping>
+<!-- 
+    Adapted from mapping created by the Middlegen Hibernate plugin 2.1.
+
+    http://boss.bekk.no/boss/middlegen/
+    http://www.hibernate.org/
+-->
+
+<class name="net.es.oscars.bss.topology.StaticLIDP" table="staticLIDP">
+    <meta attribute="class-description" inherit="false">
+       @hibernate.class table="staticLIDP"
+    </meta>
+
+    <id name="id">
+        <meta attribute="field-description">
+           @hibernate.id generator-class="identity"
+        </meta>
+        <generator class="identity" />
+    </id>
+
+    <property name="defaultRoute" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>>
+
+    <!-- Associations -->
+
+    <many-to-one name="localLink" column="localLinkId"
+	    class="net.es.oscars.bss.topology.Link" not-null="true" />
+	    
+    <many-to-one name="destDomain" column="destDomainId"
+	    class="net.es.oscars.bss.topology.Domain" not-null="false" />
+	    
+	<many-to-one name="destNode" column="destNodeId"
+	    class="net.es.oscars.bss.topology.Node" not-null="false" />
+	    
+	<many-to-one name="destPort" column="destPortId"
+	    class="net.es.oscars.bss.topology.Port" not-null="false" />
+	    
+	<many-to-one name="destLink" column="destLinkId"
+	    class="net.es.oscars.bss.topology.Link" not-null="false" />
+
+
+</class>
+</hibernate-mapping>
