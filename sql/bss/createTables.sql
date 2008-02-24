@@ -265,3 +265,13 @@ CREATE TABLE IF NOT EXISTS staticLIDP (
   PRIMARY KEY (id)
 ) ENGINE=MyISAM;
 
+--
+-- Table for static SIDP entries
+--
+CREATE TABLE IF NOT EXISTS staticSIDP (
+  id INT NOT NULL AUTO_INCREMENT,
+  linkId INT NOT NULL,
+  nextHopId INT UNIQUE,
+  description TEXT,
+  PRIMARY KEY (id)
+) ENGINE=MyISAM;
