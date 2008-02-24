@@ -12,6 +12,6 @@ import net.es.oscars.wsdlTypes.PathInfo;
  */
 public interface PCE {
 
-    boolean findPath(PathInfo pathInfo)
+    PathInfo findPath(PathInfo pathInfo)
         throws PathfinderException;
 }

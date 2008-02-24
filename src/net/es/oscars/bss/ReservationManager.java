@@ -309,10 +309,11 @@ public class ReservationManager {
     public Path getPath(Reservation resv, PathInfo pathInfo)
             throws BSSException {
 
-        boolean isExplicit = false;
-
+        boolean isExplicit = (pathInfo.getPath() == null);
+        PathInfo intraPath = null; 
+        
         try {
-            isExplicit = this.pceMgr.findPath(pathInfo);
+            intraPath = this.pceMgr.findPath(pathInfo);
         } catch (PathfinderException ex) {
             throw new BSSException(ex.getMessage());
         }

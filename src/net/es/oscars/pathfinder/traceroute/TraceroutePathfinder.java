@@ -37,7 +37,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      * @return boolean indicating ERO was not used
      * @throws PathfinderException
      */
-    public boolean findPath(PathInfo pathInfo) throws PathfinderException {
+    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException {
 
         List<String> hops = null;
         List<String> reverseHops = null;
@@ -86,7 +86,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         ctrlPlanePath = this.pathFromHops(completeHops);
         pathInfo.setPath(ctrlPlanePath);
         this.log.debug("findPath.End");
-        return false;
+        return pathInfo; //return same path to conform to interface
     }
 
     /**

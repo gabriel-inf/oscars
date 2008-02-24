@@ -31,9 +31,10 @@ public class PCEManager {
      * as local hops in path.
      *
      * @param pathInfo instance containing layer 2 or layer 3 information
+     * @return local path used for resource scheduling
      * @throws PathfinderException
      */
-    public boolean findPath(PathInfo pathInfo) throws PathfinderException {
+    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException {
 
         this.log.info("PCEManager.findPath.start");
         String pathMethod = this.getPathMethod();
@@ -44,12 +45,15 @@ public class PCEManager {
             pathMethod = "overlay";
         }
         this.log.info("pathfinder method is " + pathMethod);
-        if (pathMethod == null) { return false; }
+        if (pathMethod == null) { 
+            throw new PathfinderException("No path computation method set. " + 
+                "Please contact your IDC administrator.");
+        }
         this.pathfinder = 
             new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
-        boolean isExplicit = this.pathfinder.findPath(pathInfo);
+        PathInfo intraPath = this.pathfinder.findPath(pathInfo);
         this.log.info("PCEManager.findPath.end");
-        return isExplicit;
+        return intraPath;
     }
 
     /**

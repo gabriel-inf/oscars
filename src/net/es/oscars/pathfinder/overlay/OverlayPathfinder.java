@@ -40,7 +40,7 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
      * @return boolean indicating ERO used (necessary for interface)
      * @throws PathfinderException
      */
-    public boolean findPath(PathInfo pathInfo) throws PathfinderException {
+    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException {
 
         String ingressNodeId = null;
         String egressNodeId = null;
@@ -69,7 +69,7 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
             }
         }
         this.log.debug("findPath.End");
-        return true;
+        return pathInfo; //return same path to conform to interface
     }
 
     /**

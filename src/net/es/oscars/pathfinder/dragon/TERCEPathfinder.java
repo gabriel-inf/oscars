@@ -42,10 +42,11 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
      * Finds a path given just source and destination or by expanding
      * a path the user explicitly sets
      *
-     * @param pathInfo PathInfo instance containing hops of entire path
+     * @param pathInfo PathInfo instance containing interdomain hops of entire path
+     * @returns intradomain path used for resource scheduling
      * @throws PathfinderException
      */
-    public boolean findPath(PathInfo pathInfo) throws PathfinderException{
+    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException{
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         if(layer2Info == null){
             throw new PathfinderException("Layer 2 path information must be" +
@@ -70,7 +71,7 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
             this.expandLocalPath(pathInfo);   
         }
         
-        return false;  // just for compatibility with interface
+        return pathInfo;  // just for compatibility with interface
     }
 
     /**

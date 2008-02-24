@@ -41,7 +41,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
      * @param pathInfo PathInfo instance containing hops of entire path
      * @throws PathfinderException
      */
-    public boolean findPath(PathInfo pathInfo) throws PathfinderException{
+    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException{
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
         CtrlPlanePathContent localPathForOSCARSDatabase;
         CtrlPlanePathContent pathToForwardToNextDomain;
@@ -56,7 +56,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         }
         
-        return false;  // just for compatibility with interface
+        return pathInfo;  // just for compatibility with interface
     }
 
 }
