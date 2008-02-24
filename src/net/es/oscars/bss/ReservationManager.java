@@ -309,7 +309,7 @@ public class ReservationManager {
     public Path getPath(Reservation resv, PathInfo pathInfo)
             throws BSSException {
 
-        boolean isExplicit = (pathInfo.getPath() == null);
+        boolean isExplicit = (pathInfo.getPath() != null);
         PathInfo intraPath = null; 
         
         try {
