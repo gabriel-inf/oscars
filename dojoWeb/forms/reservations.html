@@ -31,7 +31,7 @@ information about a reservation.</p>
 
 <table>
 <tr>
-  <td width="8%">
+  <td width="14%">
   <button dojoType="dijit.form.Button" id="refreshReservationList">
      Refresh 
      <script type="dojo/method" event="onClick">
@@ -47,7 +47,7 @@ information about a reservation.</p>
   </button>
   </td>
 
-  <td width="12%">Statuses:
+  <td width="10%">Statuses:
   <select name="statuses" multiple="true" size="3">
       <option value="ACTIVE" selected="selected">ACTIVE</option>
       <option value="PENDING" selected="selected">PENDING</option>
@@ -58,42 +58,44 @@ information about a reservation.</p>
   </select>
   </td>
 
-  <td>Description:
-  <input name="resvDescription" id="resvDescription"
-       dojoType="dijit.form.TextBox"
-       promptMessage="Search by reservation description" />
-  </td>
-
-  <td width="10%">
-    <input type="reset" value="Reset fields"></input>
-  </td>
-</tr>
-<tr>
-  <td width="8%">Ending after:
+  <td width="12%">Ending after:
     <input dojoType="dijit.form.DateTextBox" name="startDateSearch"
                id="startDateSearch" />MM/DD/YYYY</td>
 
-  <td width="12%">Time:
+  <td width="9%">Time:
     <input dojoType="dijit.form.ValidationTextBox" name="startTimeSearch"
              id="startTimeSearch"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the time portion of the date in format HH:MM"
              invalidMessage="Invalid format:  use HH:MM" />HH:MM</td>
 
-  <td>Starting before:
+  <td width="12%">Starting before:
     <input dojoType="dijit.form.DateTextBox" name="endDateSearch"
                id="endDateSearch" />MM/DD/YYYY</td>
 
-  <td width="10%">Time:
+  <td width="9%">Time:
     <input dojoType="dijit.form.ValidationTextBox" name="endTimeSearch"
              id="endTimeSearch"
              regExp="[0-2]?[\d]:[0-5][\d]"
              promptMessage="Enter the time portion of the date in format HH:MM"
              invalidMessage="Invalid format:  use HH:MM" width="10em" />HH:MM</td>
-  <td>Link ids:
-    <textarea name="linkIds" id="linkIds" dojoType="dijit.form.Textarea">
+  <td>
+    <input type="reset" value="Reset fields"></input>
+  </td>
+
+</tr>
+<tr>
+  <td colspan="6">Link ids:
+      <textarea name="linkIds" id="linkIds" dojoType="dijit.form.Textarea">
     </textarea>Widget will expand vertically
   </td>
+
+  <td>Description:
+  <input name="resvDescription" id="resvDescription"
+       dojoType="dijit.form.TextBox"
+       promptMessage="Search by reservation description" />
+  </td>
+
 </tr>
 </table>
 </form>

@@ -74,11 +74,13 @@ td {
     margin: 0.0em 0.5em;
 }
 
+/* magic to make content pane be able to have varying sizes */
 .dijitTabPaneWrapper {
     clear: both;
     padding: 0.0em 0.5em;
 }
 
+/* makes outline of required field generally coincide with table cell */
 .dijitTextBox {
     width: 100%;
 }

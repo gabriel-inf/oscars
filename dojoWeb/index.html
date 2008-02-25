@@ -10,14 +10,18 @@
     <script type="text/javascript" src="lib/dojo/dojo/dojo.js"
             djConfig="parseOnLoad: true, preventBackButtonFix: false">
     </script>
+    <!-- register namespace for OSCARS Javascript modules -->
     <script type="text/javascript">
         dojo.registerModulePath("oscars", "../../../oscars")
     </script>
     <script type="text/javascript">dojo.require("oscars.Form");</script>
     <script type="text/javascript">dojo.require("oscars.DigitalClock");</script>
     <script type="text/javascript">
+        <!-- required to parse the widgets -->
         dojo.require("dojo.parser");
+        <!-- required for back and forward buttons to work -->
         dojo.require("dojo.back");
+        <!-- all widgets used in all forms -->
         dojo.require("dojo.data.ItemFileReadStore");
         dojo.require("dijit.layout.TabContainer");
         dojo.require("dijit.form.Button");
@@ -33,6 +37,7 @@
         dojo.require("dojox.grid._data.model");
     </script>
     <script type="text/javascript">
+        <!-- declare Dojo class for OSCARS global state -->
         dojo.declare("OSCARSState", null, {
             constructor: function(args, node){
                 dojo.mixin(this, args);
@@ -43,16 +48,21 @@
         });
     </script>
     <script type="text/javascript">
+        <!-- these are called after login page is finished parsing -->
+        <!-- clock in upper left hand corner of page -->
         dojo.addOnLoad(oscars.DigitalClock.initClock);
+        <!-- add event for clicking on tab -->
         dojo.addOnLoad(function(){
             var w =dijit.byId("mainTabContainer");
             dojo.connect(w, "selectChild", oscars.Form.selectedChanged);
         });
+        <!-- add event for changing URL of content pane -->
         dojo.addOnLoad(function(){
             var w =dijit.byId("sessionPane");
             dojo.connect(w, "setHref", oscars.Form.hrefChanged);
         });
-        dojo.addOnLoad(oscars.Form.initState); 
+        <!-- initialize back/forward button state -->
+        dojo.addOnLoad(oscars.Form.initBackForwardState); 
     </script>
   </head>
   <body class="tundra">
@@ -67,6 +77,8 @@
         <td>
           <h1>On-demand Secure Circuits and Advance Reservation System</h1>
           <div>A collaboration between
+              <!-- going to a different URL within the same tab is currently
+                   not an option -->
               <a href="http://www.es.net/" target="_blank">ESnet</a>,
               <a href="http://www.internet2.edu/" target="_blank">Internet2</a>,
               <a href="http://www.dante.net/" target="_blank">DANTE</a>, and
@@ -76,16 +88,20 @@
       </tr>
       <tr>
         <td>
+            <!-- space for clock -->
             <div id="clock">&nbsp;</div>
         </td>
         <td>
+            <!-- OSCARS status bar -->
             <div id="oscarsStatus" class="success">Log in to OSCARS.</div>
         </td>
       </tr>
     </table>
 
+    <!-- global OSCARS state; note jsId -->
     <div dojoType="OSCARSState" jsId="oscarsState">
     <div id="mainTabContainer" dojoType="dijit.layout.TabContainer" doLayout="false"> 
+    <!-- initial login page -->
     <div id="sessionPane" dojoType="dojox.layout.ContentPane" title="Login/Logout"
          href="forms/login.html" selected="true">
     </div>
