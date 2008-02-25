@@ -95,6 +95,9 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         if (dijit.byId("userDetailsPane") != null) {
             mainTabContainer.closeChild(dijit.byId("userDetailsPane"));
         }
+        // reset global state
+        oscarsState.userGridInitialized = false;
+        oscarsState.resvGridInitialized = 0;
     } else if ((responseObject.method == "CreateReservationForm") ||
                 (responseObject.method == "UserQuery") ||
                 (responseObject.method == "UserModify") ||
