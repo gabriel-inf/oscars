@@ -27,13 +27,13 @@
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
-    </property>>
+    </property>
 
     <property name="defaultRoute" not-null="true">
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
-    </property>>
+    </property>
 
     <!-- Associations -->
 
@@ -61,6 +61,5 @@
     <many-to-one name="routeElem" column="routeElemId"
 	    class="net.es.oscars.bss.topology.RouteElem" cascade="all"
 	    not-null="true" unique="true" />
-
 </class>
 </hibernate-mapping>

@@ -11,9 +11,9 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.bss.topology.StaticSIDP" table="staticSIDP">
+<class name="net.es.oscars.bss.topology.RouteElem" table="routeElems">
     <meta attribute="class-description" inherit="false">
-       @hibernate.class table="staticSIDP"
+       @hibernate.class table="routeElems"
     </meta>
 
     <id name="id">
@@ -29,7 +29,7 @@
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
-    </property>>
+    </property>
 
     <!-- this is how Hibernate does a self-referential one-to-one
          relationship -->
