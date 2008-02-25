@@ -24,16 +24,30 @@
     </id>
 
     <property name="description" />
-
-    <!-- Associations -->
-
-    <many-to-one name="link" column="linkId"
-	    class="net.es.oscars.bss.topology.Link" not-null="true" />
+    
+    <property name="strict" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>>
 
     <!-- this is how Hibernate does a self-referential one-to-one
          relationship -->
     <many-to-one name="nextHop" cascade="all" column="nextHopId"
 	   unique="true" />
+	 
+	 <!-- Associations -->
+	<many-to-one name="domain" column="domainId"
+	    class="net.es.oscars.bss.topology.Domain" not-null="false" />
+	    
+	<many-to-one name="node" column="nodeId"
+	    class="net.es.oscars.bss.topology.Node" not-null="false" />
+	    
+	<many-to-one name="port" column="portId"
+	    class="net.es.oscars.bss.topology.Port" not-null="false" />
+	    
+	<many-to-one name="link" column="linkId"
+	    class="net.es.oscars.bss.topology.Link" not-null="false" />
 
 </class>
 </hibernate-mapping>

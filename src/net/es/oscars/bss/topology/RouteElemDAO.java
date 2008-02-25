@@ -6,14 +6,14 @@ import org.apache.log4j.*;
 import net.es.oscars.database.GenericHibernateDAO;
 
 /**
- * StaticLIDPDAO is the data access object for the bss.staticLIDP table.
+ * RouteElemDAO is the data access object for the bss.routeElems table.
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class StaticLIDPDAO extends GenericHibernateDAO<StaticLIDP, Integer> {
+public class RouteElemDAO extends GenericHibernateDAO<RouteElem, Integer> {
     private Logger log;
     
-    public StaticLIDPDAO(String dbname) {
+    public RouteElemDAO(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.setDatabase(dbname);
     }

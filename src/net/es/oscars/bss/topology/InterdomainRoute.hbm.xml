@@ -11,9 +11,9 @@
     http://www.hibernate.org/
 -->
 
-<class name="net.es.oscars.bss.topology.StaticLIDP" table="staticLIDP">
+<class name="net.es.oscars.bss.topology.InterdomainRoute" table="interdomainRoutes">
     <meta attribute="class-description" inherit="false">
-       @hibernate.class table="staticLIDP"
+       @hibernate.class table="interdomainRoutes"
     </meta>
 
     <id name="id">
@@ -22,6 +22,12 @@
         </meta>
         <generator class="identity" />
     </id>
+    
+    <property name="preference" not-null="true">
+        <meta attribute="field-description">
+           @hibernate.property not-null="true"
+        </meta>    
+    </property>>
 
     <property name="defaultRoute" not-null="true">
         <meta attribute="field-description">
@@ -31,9 +37,15 @@
 
     <!-- Associations -->
 
-    <many-to-one name="localLink" column="localLinkId"
-	    class="net.es.oscars.bss.topology.Link" not-null="true" />
+    <many-to-one name="srcNode" column="srcNodeId"
+	    class="net.es.oscars.bss.topology.Node" not-null="false" />
 	    
+	<many-to-one name="srcPort" column="srcPortId"
+	    class="net.es.oscars.bss.topology.Port" not-null="false" />
+	    
+	<many-to-one name="srcLink" column="srcLinkId"
+	    class="net.es.oscars.bss.topology.Link" not-null="false" />
+	 
     <many-to-one name="destDomain" column="destDomainId"
 	    class="net.es.oscars.bss.topology.Domain" not-null="false" />
 	    
@@ -45,7 +57,10 @@
 	    
 	<many-to-one name="destLink" column="destLinkId"
 	    class="net.es.oscars.bss.topology.Link" not-null="false" />
-
+	    
+    <many-to-one name="routeElem" column="routeElemId"
+	    class="net.es.oscars.bss.topology.RouteElem" cascade="all"
+	    not-null="true" unique="true" />
 
 </class>
 </hibernate-mapping>

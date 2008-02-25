@@ -4,26 +4,35 @@ USE bss;
 ALTER TABLE paths ADD interPathElemId INT UNIQUE AFTER pathElemId;
 
 --
--- Table for static LIDP entries
+-- Table for interdomain routes
 --
-CREATE TABLE IF NOT EXISTS staticLIDP (
+CREATE TABLE IF NOT EXISTS interdomainRoutes (
   id INT NOT NULL AUTO_INCREMENT,
-  localLinkId INT NOT NULL,
+  srcNodeId INT,
+  srcPortId INT,
+  srcLinkId INT,
   destDomainId INT,
   destNodeId INT,
   destPortId INT,
   destLinkId INT,
-  defaultRoute TINYINT(1) DEFAULT 0,
+  routeElemId INT NOT NULL,
+  preference INT NOT NULL DEFAULT 100,
+  defaultRoute BOOLEAN NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=MyISAM;
 
 --
--- Table for static SIDP entries
+-- Table for route elements referenced by a routing table
 --
-CREATE TABLE IF NOT EXISTS staticSIDP (
+CREATE TABLE IF NOT EXISTS routeElems (
   id INT NOT NULL AUTO_INCREMENT,
-  linkId INT NOT NULL,
+  -- one of the following 4 must be populated
+  domainId INT,
+  nodeId INT,
+  portId INT,
+  linkId INT,
   nextHopId INT UNIQUE,
   description TEXT,
+  strict BOOLEAN NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=MyISAM;
