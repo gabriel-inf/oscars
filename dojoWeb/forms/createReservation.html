@@ -24,8 +24,9 @@
 <input type="hidden" name="startSeconds" id="hiddenStartSeconds" />
 <input type="hidden" name="endSeconds" id="hiddenEndSeconds" />
 
-<p>Required inputs are bordered in green.  Ranges or types of valid
-entries are given in parentheses after the default values, if any.
+<p>Required inputs are bordered in green.
+The source and destination can be topology identifiers, host names,
+or IP addresses, depending on the layer used.
 Click on the boxes associated with the start and end dates to bring
 up a calendar widget.  The reservation time slot defaults to
 now, and now + 4 minutes, respectively, if you leave the dates and
@@ -34,16 +35,18 @@ times empty.</p>
 <!-- NOTE:  there will be flicker if user is authorized.  Would need to
             create everything programmatically to avoid. -->
 <div id="authorizedWarningDisplay" style="display: none">
-<p>WARNING: Entering a value in a red-outlined field may change default
-routing behavior for the selected flow.  Note that the path field will expand
+<p>WARNING: Entering a series of hops in the Path field may alter
+routing behavior for the selected flow.  Hops can be topology identifiers,
+host names, or IP addresses, depending on the layer used.
+Note that the path field will expand
 to the number of lines occurring in the hops list.
 </p>
 </div>
 
-<table width="90%">
+<table width="100%">
   <tbody>
   <tr>
-    <td>
+    <td width="15%">
       <button dojoType="dijit.form.Button" id="createReservation">
          Create Reservation
          <script type="dojo/method" event="onClick">
@@ -66,24 +69,29 @@ to the number of lines occurring in the hops list.
   </tr>
   <tr>
     <td>Source</td>
-    <td class="required">
+    <td class="required" colspan="2">
       <input type="text" name="source"
              dojoType="dijit.form.ValidationTextBox"
-             promptMessage="Enter the source of the circuit"
              required="true" />
     </td>
-    <td>( Host name or IP address[:port] )</td>
   </tr>
   <tr>
     <td>Destination</td>
-    <td class="required">
+    <td class="required" colspan="2">
       <input type="text" name="destination"
              dojoType="dijit.form.ValidationTextBox" 
-             promptMessage="Enter the destination of the circuit"
              required="true" />
     </td>
-    <td>( Host name or IP address[:port] )</td>
   </tr>
+    <tr id="authorizedPathDisplay" style="display:none">
+      <td>Path (series of hops)</td>
+      <td class="warning" colspan="2">
+        <textarea name="explicitPath" id="explicitPath"
+                  dojoType="dijit.form.Textarea">
+        </textarea>
+      </td>
+    </tr>
+
   <tr>
     <td>Bandwidth (Mbps)</td>
     <td class="required">
@@ -106,16 +114,6 @@ to the number of lines occurring in the hops list.
     </td>
     <td>( For our records )</td>
   </tr>
-
-    <tr id="authorizedPathDisplay" style="display:none">
-      <td>Path</td>
-      <td class="warning">
-        <textarea name="explicitPath" id="explicitPath"
-                  dojoType="dijit.form.Textarea">
-        </textarea>
-      </td>
-      <td>(series of hops)</td>
-    </tr>
 
   <tr>
     <td>Start date</td>
@@ -193,9 +191,10 @@ to the number of lines occurring in the hops list.
     <td><input type="text" dojoType="dijit.form.TextBox" name="protocol">
         </input></td>
         <td>(0-255, or string)</td></tr>
-  <tr><td>Differentiated service code point</td>
-    <td><input type="text" dojoType="dijit.form.TextBox" name="dscp"
-                maxlength="2">
+  <tr><td>DSCP</td>
+    <td><input dojoType="dijit.form.ValidationTextBox" name="dscp"
+               promptMessage="Enter differentiated service code point"
+               maxlength="2" /></td>
     </input></td>
     <td>(0-63)</td>
   </tr>
