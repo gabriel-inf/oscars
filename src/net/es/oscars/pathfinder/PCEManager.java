@@ -46,8 +46,7 @@ public class PCEManager {
         }
         this.log.info("pathfinder method is " + pathMethod);
         if (pathMethod == null) { 
-            throw new PathfinderException("No path computation method set. " + 
-                "Please contact your IDC administrator.");
+            return null;
         }
         this.pathfinder = 
             new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
