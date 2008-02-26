@@ -48,15 +48,19 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                 (responseObject.method == "UserModify") ||
                 (responseObject.method == "UserAddForm") ||
                 (responseObject.method == "QueryReservation")) {
+        if (responseObject.method == "QueryReservation") {
+            // for displaying only layer 2 or layer 3 fields
+            oscars.Form.hideParams(responseObject, "reservationDetailsForm");
+        }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
     } else if ((responseObject.method == "UserRemove") ||
                 (responseObject.method == "UserAdd")) {
         // after adding or removing a user, refresh the user list and
         // display that tab
-        oscars.Form.refreshUserGrid();
         var usersPaneTab = dijit.byId("usersPane");
         mainTabContainer.selectChild(usersPaneTab);
+        oscars.Form.refreshUserGrid();
     } else if (responseObject.method == "CreateReservation") {
         // transition to reservation details tab on successful creation
         var formParam = dojo.byId("reservationDetailsForm");
@@ -86,10 +90,6 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             model.setData(responseObject.resvData);
             oscarsState.resvGridInitialized = 2;
         }
-    }
-    if (responseObject.method == "QueryReservation") {
-        // for displaying only layer 2 or layer 3 fields
-        oscars.Form.hideParams(responseObject, "reservationDetailsForm");
     }
 }
 

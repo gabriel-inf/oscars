@@ -29,6 +29,21 @@ public class UserDAO extends GenericHibernateDAO<User, Integer> {
     }
 
     /**
+     * Retrieves a list of users in alphabetical order.
+     *
+     * @return list of users
+     */
+    public List<User> list() {
+        String sql = "select * from users " +
+                     "order by login";
+        List<User> users =
+               (List<User>) this.getSession().createSQLQuery(sql)
+                                             .addEntity(User.class)
+                                             .list();
+        return users;
+    }
+
+    /**
      * Makes sure user corresponding to DN has an entry in the db.
      *
      * @param certSubject A string containing the subject from the certificate
