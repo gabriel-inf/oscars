@@ -109,6 +109,25 @@ public class ReservationAdapter {
         this.log.info("create.finish: " + resv.toString("bss"));
         return reply;
     }
+    
+    /**
+     * @param params ModifyResContent instance with with request params.
+     * @param login String with user's login name
+     * @return reply CreateReply encapsulating library reply.
+     * @throws BSSException
+     */
+    /*
+    public ModifyResReply 
+    	modify(ModifyResContent params, String login, boolean allUsers)
+            throws BSSException, InterdomainException {
+    	
+    	ModifyResReply reply = null;
+
+        this.log.info("modify.start");
+        this.log.info("modify.finish");
+        return reply;
+    }
+    */
 
     /**
      * @param params GlobalReservationId instance with with request params.
@@ -143,7 +162,8 @@ public class ReservationAdapter {
      * @return reply ResDetails instance encapsulating library reply.
      * @throws BSSException 
      */
-    public ResDetails query(GlobalReservationId params, String login, boolean allUsers)
+    public ResDetails 
+    	query(GlobalReservationId params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;

@@ -263,7 +263,25 @@ public class ReservationManager {
         }
         this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
-    } 
+    }
+    
+    
+    
+    /**
+     * Modifies the reservation, given a partially filled in reservation
+     * instance and additional parameters.
+     *
+     * @param resv reservation instance modified in place
+     * @param login string with login name
+     * @param pathInfo contains either layer 2 or layer 3 info
+     * @throws BSSException
+     */
+    public void modify(Reservation resv)
+            throws  BSSException {
+
+        this.log.info("modify.start");
+        this.log.info("modify.finish"); 
+    }
 
    /**
      * @param login String with user's login name

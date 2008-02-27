@@ -54,7 +54,16 @@
         <wsdl:part name="queryReservationResponse"
             element="tns:queryReservationResponse" />
     </wsdl:message>
-
+<!--
+    <wsdl:message name="modifyReservation">
+        <wsdl:part name="modifyReservation"
+            element="tns:modifyReservation" />
+    </wsdl:message>
+    <wsdl:message name="modifyReservationResponse">
+        <wsdl:part name="modifyReservationResponse"
+            element="tns:modifyReservationResponse" />
+    </wsdl:message>
+-->
     <wsdl:message name="listReservations">
         <wsdl:part name="listReservations"
             element="tns:listReservations">
@@ -161,6 +170,16 @@
             <wsdl:fault name="BSSErrorException"
                 message="tns:BSSFaultMessage" />
         </wsdl:operation>
+<!--
+        <wsdl:operation name="modifyReservation">
+            <wsdl:input message="tns:modifyReservation" />
+            <wsdl:output message="tns:modifyReservationResponse" />
+            <wsdl:fault name="AAAErrorException"
+                message="tns:AAAFaultMessage" />
+            <wsdl:fault name="BSSErrorException"
+                message="tns:BSSFaultMessage" />
+        </wsdl:operation>
+-->
 
         <wsdl:operation name="listReservations">
             <wsdl:input message="tns:listReservations" />
@@ -305,6 +324,25 @@
                 <soap:fault name="BSSErrorException" use="literal" />
             </wsdl:fault>
         </wsdl:operation>
+<!--
+        <wsdl:operation name="modifyReservation">
+            <soap:operation style="document"
+                soapAction="http://oscars.es.net/OSCARS/modifyReservation" />
+            <wsdl:input>
+                <soap:body use="literal" parts="modifyReservation" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"
+                    parts="modifyReservationResponse" />
+            </wsdl:output>
+            <wsdl:fault name="AAAErrorException">
+                <soap:fault name="AAAErrorException" use="literal" />
+            </wsdl:fault>
+            <wsdl:fault name="BSSErrorException">
+                <soap:fault name="BSSErrorException" use="literal" />
+            </wsdl:fault>
+        </wsdl:operation>
+-->
 
         <wsdl:operation name="getNetworkTopology">
             <soap:operation style="document"
