@@ -223,15 +223,25 @@ public class CreateReservationClient {
             String hopId = props.getProperty(propName);
             if (hopId != null) {
                 hopId = hopId.trim();
+                int hopType = hopId.split(":").length;
                 hasEro = true;
                 CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
                 hop.setId(i + "");
-                hop.setLinkIdRef(hopId);
+                if(hopType == 4){
+                     hop.setDomainIdRef(hopId);
+                }else if(hopType == 5){
+                     hop.setNodeIdRef(hopId);
+                }else if(hopType == 6){
+                     hop.setPortIdRef(hopId);
+                }else{
+                    hop.setLinkIdRef(hopId);
+                }
                 path.addHop(hop);
             }
         }
         if (hasEro) {
             pathInfo.setPath(path);
+            pathInfo.setPathType(props.getProperty("pathType"));
         }
         content.setPathInfo(pathInfo);
         param = props.getProperty("interactive", "0");
