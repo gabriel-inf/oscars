@@ -798,11 +798,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      *
      */
     private void startDbs() {
-    	if (!this.dbsStarted) {
-    		this.bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
-    		this.aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-    		this.dbsStarted = true;
-    	}
+        this.bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        this.aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        this.dbsStarted = true;
     	return;
     }
 }
