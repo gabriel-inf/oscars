@@ -34,7 +34,7 @@ times empty.</p>
 
 <!-- NOTE:  there will be flicker if user is authorized.  Would need to
             create everything programmatically to avoid. -->
-<div id="authorizedWarningDisplay" style="display: none">
+<div id="authorizedWarningDisplay" style="display:none">
 <p>WARNING: Entering a series of hops in the Path field may alter
 routing behavior for the selected flow.  Hops can be topology identifiers,
 host names, or IP addresses, depending on the layer used.
@@ -92,7 +92,6 @@ to the number of lines occurring in the hops list.
       </td>
     </tr>
 
-  <tr>
     <td>Bandwidth (Mbps)</td>
     <td class="required">
       <input type="text" name="bandwidth" id="bandwidth"
@@ -150,13 +149,25 @@ to the number of lines occurring in the hops list.
   </tr>
 
   <tr><td colspan="3"> </td></tr>
-  <tr><td colspan="3"><strong>Layer 2 parameters</strong></td></tr>
-  <tr><td>VLAN</td>
+  <!-- toggles whether layer 2 or layer 3 parameters are displayed -->
+  <tr><td colspan="3">
+      <input dojoType="dijit.form.RadioButton" id="layer2" name="layer"
+             checked="checked" value="layer2" type="radio"
+             onClick="oscars.Form.layerChooser" />
+      <label for="layer2">Use layer 2 parameters</label>
+      <input dojoType="dijit.form.RadioButton" id="layer3" name="layer"
+             value="layer3" type="radio"
+             onClick="oscars.Form.layerChooser" />
+      <label for="layer3">Use layer 3 parameters</label>
+  </td></tr>
+
+  <!-- layer 2 parameters -->
+  <tr class="layer2"><td>VLAN</td>
     <td>
       <input type="text" dojoType="dijit.form.TextBox" name="vlanTag"></input>
     </td>
     <td>tag, or range, e.g. 3000-3100</td></tr>
-  <tr><td>Source Port</td>
+  <tr class="layer2"><td>Source Port</td>
     <td colspan="2">
       <select name="tagSrcPort">
         <option value="Tagged" selected="selected">Tagged</option>
@@ -164,7 +175,7 @@ to the number of lines occurring in the hops list.
       </select>
     </td>
   </tr>
-  <tr><td>Destination Port</td>
+  <tr class="layer2"><td>Destination Port</td>
     <td colspan="2">
       <select name="tagDestPort">
         <option value="Tagged" selected="selected">Tagged</option>
@@ -173,25 +184,24 @@ to the number of lines occurring in the hops list.
     </td>
   </tr>
 
-  <tr><td colspan="3"> </td></tr>
-  <tr><td colspan="3"><strong>Layer 3 parameters</strong></td></tr>
-  <tr><td>Source port</td>
+  <!-- layer 3 parameters -->
+  <tr class="layer3" style="display:none"><td>Source port</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="srcPort"
                maxlength="5" >
         </input>
     </td>
     <td>(1024-65535)</td></tr>
-  <tr><td>Destination port</td>
+  <tr class="layer3" style="display:none"><td>Destination port</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="destPort"
                maxlength="5" >
     </input></td>
     <td>(1024-65535)</td>
   </tr>
-  <tr><td>Protocol</td>
+  <tr class="layer3" style="display:none"><td>Protocol</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="protocol">
         </input></td>
         <td>(0-255, or string)</td></tr>
-  <tr><td>DSCP</td>
+  <tr class="layer3" style="display:none"><td>DSCP</td>
     <td><input dojoType="dijit.form.ValidationTextBox" name="dscp"
                promptMessage="Enter differentiated service code point"
                maxlength="2" /></td>

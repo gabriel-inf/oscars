@@ -345,7 +345,7 @@ oscars.Form.refreshUserGrid = function() {
 }
 
 // select user details based on row select in grid
-oscars.Form.onUserRowSelect = function(evt) {
+oscars.Form.onUserRowSelect = function(/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var userDetailsPaneTab = dijit.byId("userDetailsPane");
     var userGrid = dijit.byId("userGrid");
@@ -368,7 +368,7 @@ oscars.Form.onUserRowSelect = function(evt) {
 // select reservation based on grid row select
 // TODO:  should be based on grid cell select; want to be able to copy
 //        source or destination to link id's search tab
-oscars.Form.onResvRowSelect = function(evt) {
+oscars.Form.onResvRowSelect = function(/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
     var resvGrid = dijit.byId("resvGrid");
@@ -470,6 +470,26 @@ oscars.Form.convertReservationTimes = function(data) {
         // these fields are in seconds
         data[i][2] = oscars.DigitalClock.convertFromSeconds(data[i][2]);
         data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
+    }
+}
+
+oscars.Form.layerChooser = function(/*Event*/ evt) {
+    var layer2Nodes = dojo.query(".layer2");
+    var layer3Nodes = dojo.query(".layer3");
+    if (evt.target.id == "layer2") {
+        for (var i = 0; i < layer2Nodes.length; i++) {
+            layer2Nodes[i].style.display = ""; 
+        }
+        for (var i = 0; i < layer3Nodes.length; i++) {
+            layer3Nodes[i].style.display = "none"; 
+        }
+    } else if (evt.target.id == "layer3") {
+        for (var i = 0; i < layer2Nodes.length; i++) {
+            layer2Nodes[i].style.display = "none"; 
+        }
+        for (var i = 0; i < layer3Nodes.length; i++) {
+            layer3Nodes[i].style.display = ""; 
+        }
     }
 }
 
