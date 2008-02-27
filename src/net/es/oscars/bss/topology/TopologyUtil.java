@@ -13,6 +13,11 @@ import net.es.oscars.bss.*;
  * @author Evangelos Chaniotakis (haniotak@es.net)
  */
 public class TopologyUtil {
+    public final static int DOMAIN_URN = 4;
+    public final static int NODE_URN = 5;
+    public final static int PORT_URN = 6;
+    public final static int LINK_URN = 7;
+    
     /**
      * This will initialize a Domain object with all the required
      * fields filled in with place holder data, and return it.
@@ -601,4 +606,28 @@ public class TopologyUtil {
         // TODO:  test for fully qualified link in new format
         return false;
     }
+    
+    /**
+     * Returns the type (domain, node, port, or link) of the given urn
+     *
+     * @param urn the URN with the type to be determined
+     * @return the type of the URN. corresponds to the constants in this class.
+     */
+     public static int getURNType(String urn){
+        if(urn == null){ 
+            return 0; 
+        }
+        
+        return urn.split(":").length;
+     }
+     
+     /**
+     * Returns the domain id of the given link
+     *
+     * @param urn the URN with the domain id to be extracted
+     * @return the domain ID in the URN
+     */
+     public static String getURNDomainId(String urn){
+        return urn.split(":")[3].replaceAll("domain=", "");
+     }
 }
