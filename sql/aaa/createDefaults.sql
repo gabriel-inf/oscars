@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS institutions (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
-INSERT INTO institutions VALUES(NULL, "Energy Sciences Network");
-INSERT INTO institutions VALUES(NULL, "Internet2");
+INSERT INTO institutions VALUES(1, "Energy Sciences Network");
+INSERT INTO institutions VALUES(2, "Internet2");
 
 -- populate resources table
 
@@ -218,7 +218,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
 
 INSERT INTO users VALUES(NULL, 'oscars-admin', NULL, NULL, 'OSCARS', 'ADMIN', 
     'oscars-admin@nowhere.net', '5555555555','osSyzhoUttaAI', NULL, NULL, NULL, 
-     NULL, NULL, NULL, NULL, 3);
+     NULL, NULL, NULL, NULL, 1);
 
 INSERT INTO userAttributes VALUES(NULL,
 	(select id from users where login = "oscars-admin"), 
