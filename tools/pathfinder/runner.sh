@@ -27,7 +27,7 @@ export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
 # start up logging to file
-javac `pwd`/DBPFClient.java
-java -Djava.net.preferIPv4Stack=true DBPFClient $*
+javac `pwd`/Runner.java
+java -Djava.net.preferIPv4Stack=true Runner $*
 
 exit 1
