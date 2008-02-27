@@ -69,9 +69,12 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         if(interPath == null || interPath.getHop() == null){
             /* Create path with only src and dest in it */
             interPath = new CtrlPlanePathContent();
+            interPath.setId("path-" + System.currentTimeMillis());
             CtrlPlaneHopContent srcHop = new CtrlPlaneHopContent();
             CtrlPlaneHopContent destHop = new CtrlPlaneHopContent();
             
+            srcHop.setId("src");
+            destHop.setId("dest");
             srcHop.setLinkIdRef(src);
             destHop.setLinkIdRef(dest);
             interPath.addHop(srcHop);
@@ -178,6 +181,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
                 break;
             }
             
+            newHop.setId(System.currentTimeMillis() + "-" + i);
             newPath.addHop(newHop);
         }
 
@@ -207,12 +211,14 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             intraPath.addHop(newPath.getHop()[ingressIndex + 1]);
         }else{
             /* sets egress if same as destination */
+            egressHop.setId("dest");
             egressHop.setLinkIdRef(egressURN);
             newPath.addHop(egressHop);
             intraPath.addHop(egressHop);
         }
 
         /* Save new interdomain path */
+        newPath.setId("path-" + System.currentTimeMillis());
         pathInfo.setPath(newPath);
         
         return intraPath;
@@ -361,6 +367,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             lastDomain = TopologyUtil.getURNDomainId(urn);
             lastHopType = TopologyUtil.getURNType(urn);
             
+            hop.setId(System.currentTimeMillis() + "-" + hopCount);
             newPath.addHop(hop);
             route = route.getNextHop();
             hopCount++;
@@ -372,6 +379,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             String remoteLinkURN = this.urnFromLink(nextHopLink);
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
             if(!remoteLinkURN.equals(dest)){
+                hop.setId(System.currentTimeMillis() + "-2");
                 hop.setLinkIdRef(remoteLinkURN);
                 newPath.addHop(hop);
             }
