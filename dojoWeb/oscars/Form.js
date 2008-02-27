@@ -35,7 +35,11 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     } else {
         oscarsStatus.className = "failure";
     }
-    oscarsStatus.innerHTML = responseObject.status;
+    // hack to prevent wrong status message on first page
+    if (!oscarsState.firstPage || (responseObject.method != "UserQuery")) {
+        oscarsStatus.innerHTML = responseObject.status;
+        oscarsState.firstPage = false;
+    }
     if (!responseObject.success) {
         return;
     }
@@ -43,15 +47,15 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         oscars.Form.handleAuthenticateReply(responseObject, mainTabContainer);
     } else if (responseObject.method == "UserLogout") {
         oscars.Form.handleLogout(responseObject, mainTabContainer);
+    } else if (responseObject.method == "QueryReservation") {
+        // for displaying only layer 2 or layer 3 fields
+        oscars.Form.hideParams(responseObject, "reservationDetailsForm");
+        // set parameter values in form from responseObject
+        oscars.Form.applyParams(responseObject);
     } else if ((responseObject.method == "CreateReservationForm") ||
                 (responseObject.method == "UserQuery") ||
                 (responseObject.method == "UserModify") ||
-                (responseObject.method == "UserAddForm") ||
-                (responseObject.method == "QueryReservation")) {
-        if (responseObject.method == "QueryReservation") {
-            // for displaying only layer 2 or layer 3 fields
-            oscars.Form.hideParams(responseObject, "reservationDetailsForm");
-        }
+                (responseObject.method == "UserAddForm")) {
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
     } else if ((responseObject.method == "UserRemove") ||
@@ -93,9 +97,11 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     }
 }
 
-// TODO: not a noop
 oscars.Form.handleError = function(responseObject, ioArgs) {
-    console.dir(responseObject);
+    var oscarsStatus = dojo.byId("oscarsStatus");
+    oscarsStatus.className = "failure";
+    oscarsStatus.innerHTML = responseObject.message +
+          ".  If it is a servlet problem, contact an admin to restart the Web server.";
 }
 
 // handles successful reply from AuthenticateUser servlet
@@ -104,6 +110,7 @@ oscars.Form.handleAuthenticateReply = function(responseObject,
     var sessionPane = dijit.byId("sessionPane");
     var userNameInput = dojo.byId("userName");
     oscarsState.login = userNameInput.value;
+    oscarsState.firstPage = true;
     // reset URL of this content pane
     sessionPane.setHref("forms/logout.html");
 
@@ -142,7 +149,7 @@ oscars.Form.handleAuthenticateReply = function(responseObject,
     // tabs requiring additional authorization
     if (responseObject.authorizedTabs != null) {
         // user list form
-        if (responseObject.authorizedTabs["usersPane"]) {
+        if (responseObject.authorizedTabs.usersPane) {
             var usersPaneTab = new dojox.layout.ContentPane(
                   {title:'User List', id: 'usersPane'},
                    dojo.doc.createElement('div'));
@@ -151,7 +158,7 @@ oscars.Form.handleAuthenticateReply = function(responseObject,
             usersPaneTab.startup();
         }
         // add user form
-        if (responseObject.authorizedTabs["userAddPane"]) {
+        if (responseObject.authorizedTabs.userAddPane) {
             var userAddPaneTab = new dojox.layout.ContentPane(
                   {title:'Add User', id: 'userAddPane'},
                    dojo.doc.createElement('div'));
@@ -198,11 +205,12 @@ oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
 oscars.Form.applyParams = function(responseObject) {
     for (var param in responseObject) {
         var n = dojo.byId(param);
+        var cb = null;
         // if info for a group of checkboxes
         if (param.match(/Checkboxes$/i) != null) {
             var disabled = false;
             // first search to see if checkboxes can be modified
-            for (var cb in responseObject[param]) {
+            for (cb in responseObject[param]) {
                 if (cb == "modify") {
                     if (!responseObject[param][cb]) {
                         disabled = true;
@@ -211,7 +219,7 @@ oscars.Form.applyParams = function(responseObject) {
                 }
             }
             // set checkbox attributes
-            for (var cb in responseObject[param]) {
+            for (cb in responseObject[param]) {
                 // get check box
                 var w = dijit.byId(cb);
                 if (w != null) {
@@ -250,20 +258,12 @@ oscars.Form.hideParams = function(responseObject, formId) {
     // TODO
 }
 
-oscars.Form.initBackForwardState = function() {
-    // initially no state
-    var state = {
-        back: function() {  },
-        forward: function() {  },
-    };
-    dojo.back.setInitialState(state);
-}
-
 // take action based on which tab was clicked on
 oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     // if not currently in error state, change status to reflect current tab
     var changeStatus = oscarsStatus.className == "success" ? true : false;
+    var n = null;
     // selected reservations tab
     if (contentPane.id == "reservationsPane") {
         if (changeStatus) {
@@ -287,7 +287,7 @@ oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Reservation creation form";
         }
-        var n = dojo.byId("reservationLogin");
+        n = dojo.byId("reservationLogin");
         // only do first time
         if (n == null) {
             contentPane.setHref("forms/createReservation.html");
@@ -310,14 +310,9 @@ oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Add a user";
         }
-        var n = dojo.byId("addingUserLogin");
+        n = dojo.byId("addingUserLogin");
         if (n == null) {
             contentPane.setHref("forms/userAdd.html");
-        }
-    // selected user profile tab
-    } else if (contentPane.id == "userDetailsPane") {
-        if (changeStatus) {
-            oscarsStatus.innerHTML = "Profile for user " + oscarsState.login;
         }
     } else if (contentPane.id == "sessionPane") {
         if (changeStatus) {
@@ -332,7 +327,7 @@ oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
         },
         forward: function() {
             console.log("Forward was clicked! ");
-        },
+        }
     };
     dojo.back.addToHistory(state);
 }
@@ -398,7 +393,7 @@ oscars.Form.hrefChanged = function(newUrl) {
     // start of back/forward button functionality
     var state = {
         back: function() { console.log("Back was clicked!"); },
-        forward: function() { console.log("Forward was clicked!"); },
+        forward: function() { console.log("Forward was clicked!"); }
     };
     dojo.back.addToHistory(state);
 }
@@ -487,7 +482,17 @@ oscars.Form.isBlank = function(str) {
     }
     for (var i = 0; i < str.length; i++) {
         var c = str.charAt(i);
-        if ((c != ' ') && (c != '\n') && (c != '')) return false;
+        if ((c != ' ') && (c != '\n') && (c != '')) { return false; }
     }
     return true;
 }
+
+oscars.Form.initBackForwardState = function() {
+    // initially no state
+    var state = {
+        back: function() { },
+        forward: function() { }
+    };
+    dojo.back.setInitialState(state);
+}
+
