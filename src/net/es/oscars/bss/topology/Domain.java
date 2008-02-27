@@ -1,12 +1,12 @@
 package net.es.oscars.bss.topology;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.hibernate.Hibernate;
-
+import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateBean;
 
 /**
@@ -39,6 +39,17 @@ public class Domain extends HibernateBean implements Serializable {
     
     /** default constructor */
     public Domain() { }
+    
+    /** copy constructor */
+    public Domain(Domain domain) {
+    	this.name = domain.getName();
+    	this.abbrev = domain.getAbbrev();
+    	this.local = domain.isLocal();
+    	this.nodes = domain.getNodes();
+    	this.topologyIdent = domain.getTopologyIdent();
+    	this.url = domain.getUrl();
+    	this.paths = domain.getPaths();
+    }
 
     /**
      * @return topologyIdent a string with the topology domain id (currently
@@ -117,7 +128,43 @@ public class Domain extends HibernateBean implements Serializable {
      */ 
     public void setPaths(Set paths) { this.paths = paths; }
 
+    /**
+     * @return list of edge links to other domains
+     */ 
+    public List<Link> getEdgeLinks() {
+    	ArrayList<Link> edgeLinks = new ArrayList<Link>();
+    	Iterator nodeIt;
+    	Iterator portIt;
+    	Iterator linkIt;
+    	nodeIt = this.getNodes().iterator();
+    	while (nodeIt.hasNext()) {
+    		Node n = (Node) nodeIt.next();
+    		portIt = n.getPorts().iterator();
+    		while (portIt.hasNext()) {
+    			Port p = (Port) portIt.next();
+    			linkIt = p.getLinks().iterator();
+    			while (linkIt.hasNext()) {
+    				Link l = (Link) linkIt.next();
+    				Link remLink = l.getRemoteLink();
+    				if (remLink != null) {
+    					Domain remoteDomain = remLink.getPort().getNode().getDomain();
+    					if (!this.equals(remoteDomain)) {
+    						edgeLinks.add(l);
+    					}
+    				}
+    			}
+    		}
+    	}
+		return edgeLinks;
+    	
+    }
     
+    public boolean equalsTopoId(Domain domain) {
+    	String thisFQTI = TopologyUtil.getFQTI(this);
+    	String thatFQTI = TopologyUtil.getFQTI(domain);
+    	return thisFQTI.equals(thatFQTI);
+    }
+
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {

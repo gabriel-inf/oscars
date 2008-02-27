@@ -35,6 +35,14 @@ public class Node extends HibernateBean implements Serializable {
     /** default constructor */
     public Node() {
     }
+    
+    /** copy constructor */
+    public Node(Node node) {
+    	this.valid = node.isValid();
+    	this.topologyIdent = node.getTopologyIdent();
+    	this.domain = node.getDomain();
+    	this.ports = node.getPorts();
+    }
 
     /**
      * @return valid a boolean indicating whether this entry is still valid
@@ -107,6 +115,13 @@ public class Node extends HibernateBean implements Serializable {
     public NodeAddress getNodeAddress() {
         return this.nodeAddress;
     }
+    
+    public boolean equalsTopoId(Node node) {
+    	String thisFQTI = TopologyUtil.getFQTI(this);
+    	String thatFQTI = TopologyUtil.getFQTI(node);
+    	return thisFQTI.equals(thatFQTI);
+    }
+
 
     // need to override superclass because dealing with transient
     // instances as well

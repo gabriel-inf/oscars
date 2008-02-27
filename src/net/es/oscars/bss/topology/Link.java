@@ -268,6 +268,12 @@ public class Link extends HibernateBean implements Serializable {
         this.ipaddrs.remove(ipaddr);
     }
 
+    public boolean equalsTopoId(Link link) {
+    	String thisFQTI = TopologyUtil.getFQTI(this);
+    	String thatFQTI = TopologyUtil.getFQTI(link);
+    	return thisFQTI.equals(thatFQTI);
+    }
+
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {

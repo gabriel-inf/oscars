@@ -55,6 +55,20 @@ public class Port extends HibernateBean implements Serializable {
     /** default constructor */
     public Port() {
     }
+    
+    public Port(Port port) {
+    	this.valid = port.isValid();
+    	this.alias = port.getAlias();
+    	this.capacity = port.getCapacity();
+    	this.granularity = port.getGranularity();
+    	this.maximumReservableCapacity = port.getMaximumReservableCapacity();
+    	this.minimumReservableCapacity = port.getMinimumReservableCapacity();
+    	this.snmpIndex = port.getSnmpIndex();
+    	this.topologyIdent = port.getTopologyIdent();
+    	this.links = port.getLinks();
+    	this.unreservedCapacity = port.getUnreservedCapacity();
+    	this.node = port.getNode();
+    }
 
     /**
      * @return valid a boolean indicating whether port is still valid
@@ -216,6 +230,12 @@ public class Port extends HibernateBean implements Serializable {
 
     public void removeLink(Link link) {
         this.links.remove(link);
+    }
+    
+    public boolean equalsTopoId(Port port) {
+    	String thisFQTI = TopologyUtil.getFQTI(this);
+    	String thatFQTI = TopologyUtil.getFQTI(port);
+    	return thisFQTI.equals(thatFQTI);
     }
 
     // need to override superclass because dealing with transient

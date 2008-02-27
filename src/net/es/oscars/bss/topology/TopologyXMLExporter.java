@@ -72,6 +72,17 @@ public class TopologyXMLExporter {
 
         return doc;
     }
+    
+   public Document getTopology(Topology topology) {
+        this.log.debug("Start");
+
+        Document doc = this.createXML(topology);
+
+        this.log.debug("Done");
+
+        return doc;
+    }
+
 
     /**
      * Internal method that runs the user query and fetches the topology
@@ -105,6 +116,27 @@ public class TopologyXMLExporter {
                               .setString("topoIdent", domTopoIdent).list();
         }
 
+        for (Domain domDB : domains) {
+            domXML = this.exportDomain(domDB);
+            topoXML.addContent(domXML);
+        }
+
+        return doc;
+    }
+    
+    protected Document createXML(Topology topology) {
+        Element topoXML = new Element("topology", this.ns);
+        topoXML.setAttribute("id", "OSCARS topology"); // TODO: specify this
+        
+        Element idcXML = new Element("idcId", this.ns);
+        
+        idcXML.addContent("placeholder"); // TODO: how do we determine this?
+        topoXML.addContent(idcXML);
+
+        Document doc = new Document(topoXML);
+        Element domXML;
+        List<Domain> domains = topology.getDomains();
+        
         for (Domain domDB : domains) {
             domXML = this.exportDomain(domDB);
             topoXML.addContent(domXML);
