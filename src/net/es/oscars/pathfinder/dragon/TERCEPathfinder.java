@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
 import net.es.oscars.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.bss.topology.DomainDAO;
+import net.es.oscars.pathfinder.generic.*;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.apache.axis2.context.ConfigurationContext;
@@ -42,104 +42,22 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
      * Finds a path given just source and destination or by expanding
      * a path the user explicitly sets
      *
-     * @param pathInfo PathInfo instance containing interdomain hops of entire path
-     * @returns intradomain path used for resource scheduling
+     * @param pathInfo PathInfo instance containing interdomain hops
+     * @return intradomain path used for resource scheduling
      * @throws PathfinderException
      */
     public PathInfo findPath(PathInfo pathInfo) throws PathfinderException{
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        if(layer2Info == null){
-            throw new PathfinderException("Layer 2 path information must be" +
-                "provided for TERCE");
-        }
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-        CtrlPlanePathContent localPathForOSCARSDatabase;
-        CtrlPlanePathContent pathToForwardToNextDomain;
-        String src = layer2Info.getSrcEndpoint();
-        String dest = layer2Info.getDestEndpoint();
+        InterdomainPathfinder interPathfinder = new InterdomainPathfinder(this.dbname);
+        PathInfo intraPathInfo = interPathfinder.findPath(pathInfo);
+        CtrlPlaneHopContent[] intraHops = intraPathInfo.getPath().getHop();
+        String src = intraHops[0].getLinkIdRef();
+        String dest = intraHops[1].getLinkIdRef();
+        CtrlPlanePathContent intraPath = this.terce(src, dest);
         
-        if(ctrlPlanePath == null){
-            /* Calculate path that contains strict local hops and 
-            loose interdomain hops */
-            FindPathResponseContent terceResult = this.terce(src, dest);
-            CtrlPlanePathContent path = terceResult.getPath();
-            
-            pathInfo.setPath(path);
-        }else{
-            /* The path stored in the database will be the local hops including 
-            some internal hops we might not share with anyone else */
-            this.expandLocalPath(pathInfo);   
-        }
+        intraPathInfo.setPath(intraPath);
         
-        return pathInfo;  // just for compatibility with interface
+        return intraPathInfo;
     }
-
-    /**
-     * Expands loose hops and finds hops that are in the local domain, given a
-     * path containing a list of addresses.
-     *
-     * @param pathInfo PathInfo instance containing hops of entire path
-     * @throws PathfinderException
-     */
-    public void expandLocalPath(PathInfo pathInfo) 
-            throws PathfinderException{
-
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();  
-        CtrlPlanePathContent localPath = new CtrlPlanePathContent();
-        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
-        CtrlPlaneHopContent prevHop = null;
-        String prevLinkUrn = null;
-        boolean hopFound = false;
-        
-        /* Expand local hops */
-        for (int i = 0; i < hops.length; i++) {
-            CtrlPlaneHopContent hop = hops[i];
-            String linkUrn = hop.getLinkIdRef();
-            if(linkUrn == null){
-                throw new PathfinderException("Unable to parse layer 2 path. " + 
-                "This implementation only supports paths containing links as " + 
-                "hops");
-            }
-            
-            if (this.isLocalLink(linkUrn)) {
-            
-                this.log.info("localHop: " + linkUrn);
-                hopFound = true;
-    
-                if (prevHop != null) {       
-                    CtrlPlanePathContent expandedPath = null;
-                    FindPathResponseContent terceResult = 
-                            this.terce(prevLinkUrn, linkUrn);
-                        
-                    expandedPath = terceResult.getPath();
-                    
-                    /* Append expanded path to local path */
-                    CtrlPlaneHopContent[] expandedHops = expandedPath.getHop();
-                    for (int j = 0; j < expandedHops.length; j++) {
-                        if(j != 0 || localPath.getHop() == null){
-                            localPath.addHop(expandedHops[j]);
-                        }
-                    }
-                }
-                prevHop = hop;
-                prevLinkUrn = linkUrn;
-            }else if (hopFound) {
-                this.log.info("Adding interdomain hop: " + linkUrn);
-                localPath.addHop(hop);
-                //break;
-            }
-        }
-        
-        /* Return error if no local hops found */
-        if (localPath.getHop() == null) {
-            throw new PathfinderException(
-                "No local hops found in path");
-        }
-        
-        pathInfo.setPath(localPath);
-    }  
-    
 
     /**
      * Retrieves path calculation from TERCE
@@ -149,7 +67,7 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
      * @return responseContent list of hops in path
      * @throws PathfinderException
      */
-    public FindPathResponseContent terce(String src, String dest)
+    public CtrlPlanePathContent terce(String src, String dest)
             throws PathfinderException {
 
         String terceURL = this.props.getProperty("url");
@@ -164,6 +82,8 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         /* Calculate path */
         try {
             this.log.info("terce.start");
+            this.log.info("src=" + src);
+            this.log.info("dest=" + dest);
             String repo = System.getenv("CATALINA_HOME");
 		    repo += (repo.endsWith("/") ? "" :"/");
 		    repo += "shared/classes/terce.conf/repo/";
@@ -177,9 +97,6 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
             request.setSrcEndpoint(src);
             request.setDestEndpoint(dest);
             request.setVtag("any");
-            /* setPreferred(true) and setStrict(true) tell the TERCE to return
-               strict hops for the local domain and loose hops for all other
-               domains. */
             request.setPreferred(true);
             request.setStrict(true);
             request.setAllvtags(true);
@@ -204,23 +121,6 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
 			throw new PathfinderException(e.getFaultMessage().getMsg());
 		}
         
-        return responseContent;
-    }
-    
-    /**
-     * Subroutine to determin if a given fully-qualified link ID is local
-     *
-     * @param linkId fully-qualified identifier of link to be tested
-     * @return true if local, false otherwise
-     *
-     */
-    private boolean isLocalLink(String linkId){
-        String[] componentList = linkId.split(":");
-        if(componentList.length != 7){
-            return false;
-        }
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        return domainDAO.isLocal(componentList[3]);
-        
+        return responseContent.getPath();
     }
 }

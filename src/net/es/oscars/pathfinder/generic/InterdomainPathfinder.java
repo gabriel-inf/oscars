@@ -46,7 +46,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * createReservation request.
      *
      * @param pathInfo PathInfo instance containing current set of interdomain hops
-     * @return always return null since it only calculates interdomain path
+     * @return a path containing the ingress and egress of the local domain
      * @throws PathfinderException
      */
     public PathInfo findPath(PathInfo pathInfo) throws PathfinderException{
@@ -55,7 +55,9 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String src = null;
         String dest = null;
-
+        CtrlPlanePathContent intraPath = null;
+        PathInfo intraPathInfo = new PathInfo();
+        
         if(layer2Info != null){
             src = layer2Info.getSrcEndpoint();
             dest = layer2Info.getDestEndpoint();      
@@ -89,7 +91,8 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         
         /* build new LIDP from existing LIDP */
         try{
-            this.buildNewPath(pathInfo);
+            intraPath = this.buildNewPath(pathInfo);
+            intraPathInfo.setPath(intraPath);
         }catch(BSSException e){
             this.reportError(e.getMessage());
         }
@@ -99,17 +102,16 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             this.log.info(pathInfo.getPath().getHop()[i].getLinkIdRef());
         }
         
-        this.reportError("Not ready for primetime");
-        
-        return null;
+        return intraPathInfo;
     }
     
     /**
      * Builds an interdomain path and stores it in the interdomain request
      *
      * @param pathInfo the PathInfo element from a createReservation request
+     * @return a path containing the ingress and egress for this domain
      */
-    private void buildNewPath(PathInfo pathInfo) 
+    private CtrlPlanePathContent buildNewPath(PathInfo pathInfo) 
         throws PathfinderException, BSSException{
         
         CtrlPlanePathContent currPath = pathInfo.getPath();
@@ -117,6 +119,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         CtrlPlaneHopContent[] currHops = currPath.getHop();
         CtrlPlaneHopContent ingressHop = new CtrlPlaneHopContent();
         CtrlPlaneHopContent egressHop = new CtrlPlaneHopContent();
+        CtrlPlanePathContent intraPath = new CtrlPlanePathContent();
         int ingressIndex = -1;
         int currHopIndex = -1;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
@@ -193,21 +196,26 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         }
         ingressHop.setLinkIdRef(ingressURN);
         newPath.addHop(ingressHop);
-
+        intraPath.addHop(ingressHop);
+        
         /* Find egress */
         if(egressURN == null || (!egressURN.equals(currHopURN))){
             RouteElem route = this.lookupRoute(ingressLink, egressURN, 
                                                currHopURN, oneLocalHop);
             newPath = this.addNewRoute(pathInfo, currHopIndex, currHopURN,
                                         route, newPath);
+            intraPath.addHop(newPath.getHop()[ingressIndex + 1]);
         }else{
             /* sets egress if same as destination */
             egressHop.setLinkIdRef(egressURN);
             newPath.addHop(egressHop);
+            intraPath.addHop(egressHop);
         }
 
         /* Save new interdomain path */
         pathInfo.setPath(newPath);
+        
+        return intraPath;
     }
     
     /**
