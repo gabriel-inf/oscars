@@ -297,7 +297,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 	    	<fileset dir="${domain.home}/server" includes="sec-client.*"/>
 	    </copy>
 	    <copy todir="${catalina.home}/shared/classes/server">
-	        <fileset dir="${domain.home}/server/" includes="*key, oscars.properties, test.properties"/>
+	        <fileset dir="${domain.home}/server/" includes="*key, sec-server.*, oscars.properties, test.properties"/>
 	     </copy>
 	</target>
 	<target name="copydefaults"  unless="domain.exists">
@@ -308,7 +308,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
 			<fileset dir="${defaultKeys}/server" includes="sec-client.*"/>
 		</copy>
 	    <copy todir="${catalina.home}/shared/classes/server">
-	        <fileset dir="${defaultKeys}/server/" includes="*key, oscars.properties, test.properties"/>
+	        <fileset dir="${defaultKeys}/server/" includes="*key, sec-server.*, oscars.properties, test.properties"/>
 	     </copy>
 	</target>	
     <target name="setupServer" description="populate the shared/classes directory" 
