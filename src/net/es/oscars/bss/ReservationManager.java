@@ -94,22 +94,19 @@ public class ReservationManager {
         // for layer 2
         CtrlPlanePathContent pathCopy = this.copyPath(pathInfo, false);
         
-        
         // this modifies the path to include internal hops with layer 2,
         // and finds the complete path with traceroute
         Path path = this.getPath(resv, pathInfo);
         resv.setPath(path);
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
+        
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops
         if (pathInfo.getLayer3Info() != null) {
             pathCopy = this.copyPath(pathInfo, true);
         }else if (pathCopy == null && pathInfo.getLayer2Info() != null) {
             pathCopy = this.copyPath(pathInfo, true);
-            for(CtrlPlaneHopContent hopd : pathCopy.getHop()){
-                System.out.println("HOP: " + hopd.getLinkIdRef());
-            }
         }
         
         pathInfo.setPath(pathCopy);
@@ -340,7 +337,7 @@ public class ReservationManager {
         List<Reservation> reservations =
                 dao.overlappingReservations(resv.getStartTime(),
                                             resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, pathInfo,
+        this.policyMgr.checkOversubscribed(reservations, intraPath,
                                            resv);       
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
@@ -358,7 +355,7 @@ public class ReservationManager {
             }
         }
         // convert to form for db
-        Path path = this.convertPath(pathInfo, nextDomain);
+        Path path = this.convertPath(intraPath, pathInfo, nextDomain);
         path.setExplicit(isExplicit);
         return path;
     }
@@ -371,10 +368,9 @@ public class ReservationManager {
      * @param nextDomain domain instance with information about next domain
      * @return path path in database format
      */
-    public Path convertPath(PathInfo pathInfo, Domain nextDomain)
-            throws BSSException {
+    public Path convertPath(PathInfo intraPathInfo, PathInfo interPathInfo,
+        Domain nextDomain) throws BSSException {
     	
-
         Link link = null;
         Link srcLink = null;
         Link destLink = null;
@@ -384,22 +380,21 @@ public class ReservationManager {
         
     	ArrayList<String> linksList = new ArrayList<String>();
 
-        
         this.log.info("convertPath.start");
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         LinkDAO linkDAO =  new LinkDAO(this.dbname);
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        Layer3Info layer3Info = pathInfo.getLayer3Info();
-        String pathSetupMode = pathInfo.getPathSetupMode();
+        Layer2Info layer2Info = interPathInfo.getLayer2Info();
+        Layer3Info layer3Info = interPathInfo.getLayer3Info();
+        String pathSetupMode = interPathInfo.getPathSetupMode();
         if (layer2Info != null) {
             srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
             destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
         }
         Path path = new Path();
         path.setNextDomain(nextDomain);
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-        CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
+        CtrlPlanePathContent intraPath = intraPathInfo.getPath();
+        CtrlPlaneHopContent[] hops = intraPath.getHop();
         List<PathElem> pathElems = new ArrayList<PathElem>();
         
         //  finalize information at layer 2 if last domain
@@ -510,6 +505,21 @@ public class ReservationManager {
             pathElems.get(i).setNextElem(pathElems.get(i+1));
         }
         
+        /* Set interdomain path */
+        if (layer2Info != null && interPathInfo != null){
+            try{
+                PathElem interPathElem = this.convertInterPath(interPathInfo);
+                path.setInterPathElem(interPathElem);
+            }catch(BSSException e){
+                /* Catch error when try to store path with links not in the 
+                   database. Perhaps in the future this will be an error but 
+                   until everyone shares topology we can relax this requirement 
+                 */
+                this.log.info("Unable to store interdomain path. " + 
+                    e.getMessage());
+            }
+        }
+        
         if (layer2Info != null) {
             Layer2Data dbLayer2Data = new Layer2Data();
             dbLayer2Data.setSrcEndpoint(layer2Info.getSrcEndpoint());
@@ -525,7 +535,7 @@ public class ReservationManager {
             dbLayer3Data.setDscp(layer3Info.getDscp());
             path.setLayer3Data(dbLayer3Data);
         }
-        MplsInfo mplsInfo = pathInfo.getMplsInfo();
+        MplsInfo mplsInfo = interPathInfo.getMplsInfo();
         if (mplsInfo != null) {
             MPLSData dbMplsData = new MPLSData();
             Long burstLimit = new Long(
@@ -537,7 +547,34 @@ public class ReservationManager {
         this.log.debug("convertPath.end");
         return path;
     }
-
+    
+    /**
+     * Stores the interdomain path. The interdomain path is stored primarily 
+     * for reporting prurpose so there are not quite as many requirements as
+     * for the intradomain path.
+     *
+     * @param pathInfo the pathInfo element containing the interdomain path
+     * @return first PathElem of interdomain path
+     * @throws BSSException
+     */
+    public PathElem convertInterPath(PathInfo pathInfo) throws BSSException{
+        CtrlPlanePathContent path = pathInfo.getPath();
+        CtrlPlaneHopContent[] hops = path.getHop();
+        PathElem prevPathElem = null;
+        PathElem currPathElem = null;
+        
+        for(int i = (hops.length - 1); i >= 0; i--){
+            String urn = hops[i].getLinkIdRef();
+            Link link = TopologyUtil.getLink(urn, this.dbname);
+            currPathElem = new PathElem();
+            currPathElem.setLink(link);
+            currPathElem.setNextElem(prevPathElem);
+            prevPathElem = currPathElem;
+        }
+        
+        return currPathElem;
+    }
+    
     /**
      * Make a copy of the path.
      * 
