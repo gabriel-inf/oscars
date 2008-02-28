@@ -65,8 +65,6 @@ public class CreateReservationForm extends HttpServlet {
                     "</input>");
         out.println("<input type='hidden' class='SOAP' name='endTime'>" +
                     "</input>");
-        out.println("<input type='submit' value='Reserve bandwidth'></input>");
-        out.println("<input type='reset' value='Reset form fields'></input>");
 
         out.println("<p>Required inputs are bordered in green.  Ranges or " +
             "types of valid entries are given in parentheses after the " +
@@ -85,6 +83,12 @@ public class CreateReservationForm extends HttpServlet {
         }
         out.println("<table>");
         out.println("<tbody>");
+        out.println("<tr>");
+        out.println("<td><input type='submit' value='Reserve bandwidth'></input></td>");
+        out.println("<td><input class='SOAP' type='radio' name='production' value='production'>");
+        out.println("Production circuit</input></td>");
+        out.println("<td><input type='reset' value='Reset form fields'></input></td>");
+        out.println("</tr>");
         out.println("<tr><td>Source</td>");
         out.println("<td class='required'>");
         out.println("<input type='text' class='SOAP' name='source' " +

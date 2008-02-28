@@ -167,7 +167,13 @@ public class CreateReservation extends HttpServlet {
         bandwidth = (strParam != null)
             ? (Long.valueOf(strParam.trim()) * 1000000L) : null;
         resv.setBandwidth(bandwidth);
-        resv.setDescription(request.getParameter("description"));
+        String description = request.getParameter("description");
+        String productionStatus = request.getParameter("production");
+        // if not blank, radio box indicating production circuit was checked
+        if (productionStatus != null) {
+            description = "[PRODUCTION CIRCUIT] " + description;
+        }
+        resv.setDescription(description);
 
         return resv;
     }
