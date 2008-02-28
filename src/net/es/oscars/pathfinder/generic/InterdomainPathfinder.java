@@ -185,9 +185,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         
         /* If strict or local path return local ingress and egress  */
         if(onlyLocal){
-            intraPath = pathInfo.getPath();
-            pathInfo.setPath(null);
-            return intraPath;
+            return pathInfo.getPath();
         }else if(pathType == null || pathType.equals("strict")){
             ingressHop.setLinkIdRef(ingressURN);
             egressHop.setLinkIdRef(egressURN);
