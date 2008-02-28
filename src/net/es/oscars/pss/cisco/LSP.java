@@ -451,6 +451,10 @@ public class LSP {
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
+        // capitalize circuit names for production circuits
+        if (resv.getDescription().contains("PRODUCTION")) {
+            circuitName = circuitName.toUpperCase();
+        }
         String[] columns = circuitName.split("-");
         if (columns.length != 2) {
             throw new PSSException("Couldn't parse GRI! ["+circuitName+"]");
