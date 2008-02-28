@@ -106,7 +106,7 @@ public class TopologyUtil {
         linkDB.setAlias("changeme");
 
         linkDB.setSnmpIndex(1); // we don't have this info
-        linkDB.setTrafficEngineeringMetric("latency"); // what should this be?
+        linkDB.setTrafficEngineeringMetric("10"); // what should this be?
 
         linkDB.setCapacity(0L);
         linkDB.setMaximumReservableCapacity(0L);
