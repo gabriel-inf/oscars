@@ -50,12 +50,11 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * @throws PathfinderException
      */
     public PathInfo findPath(PathInfo pathInfo) throws PathfinderException{
-        String pathType = pathInfo.getPathType();
         CtrlPlanePathContent interPath = pathInfo.getPath();
+        CtrlPlanePathContent intraPath = null;
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String src = null;
         String dest = null;
-        CtrlPlanePathContent intraPath = null;
         PathInfo intraPathInfo = new PathInfo();
         
         if(layer2Info != null){
@@ -81,12 +80,6 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             interPath.addHop(destHop);
             pathInfo.setPathType("loose");
             pathInfo.setPath(interPath);
-        }else if(pathType == null || pathType.equals("strict")){
-            //strict so just use the given path
-            return null;
-        }else if(!pathType.equals("loose")){
-            this.reportError("The path type '" + pathType + "' is " +
-                "unrecognized. Only types 'loose' and 'strict' are valid.");
         }else{
             /* verify the given LIDP is valid */
             this.verifyPath(src, dest, interPath);
@@ -131,6 +124,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         String ingressURN = null;
         String egressURN = null;
         String currHopURN = null;
+        String pathType = pathInfo.getPathType();
         Link ingressLink = null;
         boolean oneLocalHop = false;
         
@@ -181,11 +175,20 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
                 break;
             }
             
-            newHop.setId(System.currentTimeMillis() + "-" + i);
+            newHop.setId("hop");
             newPath.addHop(newHop);
         }
+        
+        /* If strict path return local ingress and egress  */
+        if(pathType == null || pathType.equals("strict")){
+            ingressHop.setLinkIdRef(ingressURN);
+            egressHop.setLinkIdRef(egressURN);
+            intraPath.addHop(ingressHop);
+            intraPath.addHop(egressHop);
+            return intraPath;
+        }
 
-        /* Find ingress */
+        /* If loose path given find ingress... */
         if(ingressURN == null){
             ingressLink = this.findIngressFromPrevEgress(currHopURN, domainDAO);
             ingressURN = this.urnFromLink(ingressLink);     
@@ -202,7 +205,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         newPath.addHop(ingressHop);
         intraPath.addHop(ingressHop);
         
-        /* Find egress */
+        /* ...then find egress */
         if(egressURN == null || (!egressURN.equals(currHopURN))){
             RouteElem route = this.lookupRoute(ingressLink, egressURN, 
                                                currHopURN, oneLocalHop);
@@ -367,7 +370,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             lastDomain = TopologyUtil.getURNDomainId(urn);
             lastHopType = TopologyUtil.getURNType(urn);
             
-            hop.setId(System.currentTimeMillis() + "-" + hopCount);
+            hop.setId("hop");
             newPath.addHop(hop);
             route = route.getNextHop();
             hopCount++;
@@ -379,7 +382,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             String remoteLinkURN = this.urnFromLink(nextHopLink);
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
             if(!remoteLinkURN.equals(dest)){
-                hop.setId(System.currentTimeMillis() + "-2");
+                hop.setId("hop");
                 hop.setLinkIdRef(remoteLinkURN);
                 newPath.addHop(hop);
             }
