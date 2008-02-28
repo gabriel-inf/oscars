@@ -4,7 +4,7 @@ no policy-map **resv-id**
 !
 no pseudowire-class **resv-id**
 !
-no interface Tunnel**resv-num**
+no interface Tunnel**vlan-id**
 !
 no interface **port**.**vlan-id**
 !
