@@ -127,6 +127,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         String pathType = pathInfo.getPathType();
         Link ingressLink = null;
         boolean oneLocalHop = false;
+        boolean onlyLocal = true;
         
         /* Copy each hop until reach egress or the last hop (destination) */
         for(int i = 0; i < currHops.length; i++){
@@ -172,15 +173,22 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
                 ingressFound = true;
                 continue;
             }else if(ingressFound){
+                onlyLocal = false;
                 break;
+            }else{
+                onlyLocal = false;
             }
             
             newHop.setId("hop");
             newPath.addHop(newHop);
         }
         
-        /* If strict path return local ingress and egress  */
-        if(pathType == null || pathType.equals("strict")){
+        /* If strict or local path return local ingress and egress  */
+        if(onlyLocal){
+            intraPath = pathInfo.getPath();
+            pathInfo.setPath(null);
+            return intraPath;
+        }else if(pathType == null || pathType.equals("strict")){
             ingressHop.setLinkIdRef(ingressURN);
             egressHop.setLinkIdRef(egressURN);
             intraPath.addHop(ingressHop);
