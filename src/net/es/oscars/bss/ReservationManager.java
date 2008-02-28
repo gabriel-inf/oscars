@@ -103,6 +103,9 @@ public class ReservationManager {
         
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops
+        // NOTE: This should really be done in internal pathfinders
+        // since interdomain URNS of path may not always just be the same
+        // as the URNS of the local path minus internal hops
         if (pathInfo.getLayer3Info() != null) {
             pathCopy = this.copyPath(pathInfo, true);
         }else if (pathCopy == null && pathInfo.getLayer2Info() != null) {
@@ -505,21 +508,6 @@ public class ReservationManager {
             pathElems.get(i).setNextElem(pathElems.get(i+1));
         }
         
-        /* Set interdomain path */
-        if (layer2Info != null && interPathInfo != null){
-            try{
-                PathElem interPathElem = this.convertInterPath(interPathInfo);
-                path.setInterPathElem(interPathElem);
-            }catch(BSSException e){
-                /* Catch error when try to store path with links not in the 
-                   database. Perhaps in the future this will be an error but 
-                   until everyone shares topology we can relax this requirement 
-                 */
-                this.log.info("Unable to store interdomain path. " + 
-                    e.getMessage());
-            }
-        }
-        
         if (layer2Info != null) {
             Layer2Data dbLayer2Data = new Layer2Data();
             dbLayer2Data.setSrcEndpoint(layer2Info.getSrcEndpoint());
@@ -559,6 +547,7 @@ public class ReservationManager {
      */
     public PathElem convertInterPath(PathInfo pathInfo) throws BSSException{
         CtrlPlanePathContent path = pathInfo.getPath();
+        if(path == null){ return null; }
         CtrlPlaneHopContent[] hops = path.getHop();
         PathElem prevPathElem = null;
         PathElem currPathElem = null;
@@ -613,7 +602,7 @@ public class ReservationManager {
             
             if (hopType.equals("link") &&  domainDAO.isLocal(domainId)) {
                 // add ingress
-                if (!edgeFound) {
+                if (!edgeFound || i == (hops.length - 1)) {
                     hopCopy.setId(hops[i].getLinkIdRef());
                     hopCopy.setLinkIdRef(hops[i].getLinkIdRef());
                     pathCopy.addHop(hopCopy);
@@ -777,6 +766,7 @@ public class ReservationManager {
                              PathInfo pathInfo) throws BSSException{
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String pathSetupMode = pathInfo.getPathSetupMode();
+        Path path = resv.getPath();
         
         //Create token if user signaled
         if(pathSetupMode == null || pathSetupMode.equals("signal-xml")){
@@ -792,15 +782,15 @@ public class ReservationManager {
             Link srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
             Link destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
             
-            VlanTag srcVtag = forwardReply.getPathInfo().getLayer2Info().getSrcVtag();
-            VlanTag destVtag = forwardReply.getPathInfo().getLayer2Info().getDestVtag();
+            PathInfo fwdPathInfo = forwardReply.getPathInfo();
+            VlanTag srcVtag = fwdPathInfo.getLayer2Info().getSrcVtag();
+            VlanTag destVtag = fwdPathInfo.getLayer2Info().getDestVtag();
             this.log.info("src vtag: " + srcVtag);
             this.log.info("dest vtag: " + destVtag);
             layer2Info.setSrcVtag(srcVtag);
             layer2Info.setDestVtag(destVtag);
             
-            /* update VLANs */
-            Path path = resv.getPath();
+            /* update VLANs in intradomain path */ 
             PathElem pathElem = path.getPathElem();
             while (pathElem != null) {
                 if (pathElem.getLink().getL2SwitchingCapabilityData() != null){
@@ -812,6 +802,19 @@ public class ReservationManager {
                     this.log.info("no switching capability data for: " + pathElem.getLink().getTopologyIdent());
                 }
                 pathElem = pathElem.getNextElem();
+            }
+            
+            /* Store interdomain path */
+            try{
+                PathElem interPathElem = this.convertInterPath(fwdPathInfo);
+                path.setInterPathElem(interPathElem);
+            }catch(BSSException e){
+                /* Catch error when try to store path with links not in the 
+                   database. Perhaps in the future this will be an error but 
+                   until everyone shares topology we can relax this requirement 
+                 */
+                this.log.info("Unable to store interdomain path. " + 
+                    e.getMessage());
             }
         } else {
             this.log.info("not setting up vtags");
@@ -826,6 +829,24 @@ public class ReservationManager {
                 this.log.info("because no forwardReply.getPathInfo().getLayer2Info()");
             } else {
                 this.log.info("unknown error");
+            }
+            
+            /* Store version of path in terms of interdomain hops. Still want to do 
+               this even if a local path because the intradomain version may be private.
+               For current implementations the intradomain URNs and interdomain URNs will
+               be the same but that won't be true in the future so we need two versions
+               of every path*/
+            try{
+                
+                PathElem interPathElem = this.convertInterPath(pathInfo);
+                path.setInterPathElem(interPathElem);
+            }catch(BSSException e){
+                /* Catch error when try to store path with links not in the 
+                   database. Perhaps in the future this will be an error but 
+                   until everyone shares topology we can relax this requirement 
+                 */
+                this.log.info("Unable to store interdomain path. " + 
+                    e.getMessage());
             }
         }
     }
