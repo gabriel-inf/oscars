@@ -340,8 +340,8 @@ public class ReservationManager {
         List<Reservation> reservations =
                 dao.overlappingReservations(resv.getStartTime(),
                                             resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, intraPath,
-                                           resv);       
+        this.policyMgr.checkOversubscribed(reservations, pathInfo, 
+                                           intraPath.getPath(), resv);       
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         // get next external hop (first past egress) from the complete path
@@ -734,10 +734,9 @@ public class ReservationManager {
     public void chooseVlanTag(Layer2Info layer2Info) throws BSSException{
         String vtag = layer2Info.getSrcVtag().getString();
         byte[] vtagMask = this.tc.rangeStringToMask(vtag);
-        boolean found = false;
         
         /* Pick first available */
-        for(int i = 0; (!found) && i < vtagMask.length; i++){
+        for(int i = 0;i < vtagMask.length; i++){
             for(int j = 0; vtagMask[i] != 0 && j < 8; j++){
                 byte tag = (byte)(vtagMask[i] & (1 << (7 - j)));
                 if(tag != 0){
@@ -747,9 +746,7 @@ public class ReservationManager {
                     layer2Info.getSrcVtag().setString(vtag);
                     layer2Info.getDestVtag().setString(vtag);
                     
-                    found = true;
                     return;
-                    // break;  // no need to break..
                 }
             }
         }

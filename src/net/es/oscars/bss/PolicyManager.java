@@ -31,12 +31,14 @@ public class PolicyManager {
      *
      * @param activeReservations existing reservations
      * @param pathInfo PathInfo instance to check for oversubscription
+     * @param intraPath the intradomain path containing the links to check
      * @param newReservation new reservation instance
      * @throws BSSException
      */
     public void checkOversubscribed(
                List<Reservation> activeReservations,
-               PathInfo pathInfo, Reservation newReservation)
+               PathInfo pathInfo, CtrlPlanePathContent intraPath,
+               Reservation newReservation)
             throws BSSException {
 
         this.log.info("checkOversubscribed.start");
@@ -46,7 +48,7 @@ public class PolicyManager {
          is in use as the value. Initialize with links from the new path 
          and set the first interval to the reservation time */
         Map<Link,List<IntervalAggregator>> links =
-            this.initLinks(pathInfo, newReservation.getStartTime(),
+            this.initLinks(pathInfo, intraPath, newReservation.getStartTime(),
                           newReservation.getEndTime(),
                           newReservation.getBandwidth());
                           
@@ -90,21 +92,20 @@ public class PolicyManager {
      * Retrieves links given a PathInfo instance.
      * Path contains series of link id's.
      *
-     * @param pathInfo PathInfo instance containing path
+     * @param pathInfo PathInfo instance containing path parameters
+     * @param ctrlPlanePath the intradomain path to with the links to check
      * @param startTime start time for the new reservation
      * @param endTime end time for the new reservation
      * @param capacity capacity requested
      * @return links map with initial Link instances as keys
      */
     private Map<Link,List<IntervalAggregator>>
-        initLinks(PathInfo pathInfo, Long startTime, Long endTime,
-                  Long capacity)
-            throws BSSException {
+        initLinks(PathInfo pathInfo, CtrlPlanePathContent ctrlPlanePath, 
+            Long startTime, Long endTime, Long capacity) throws BSSException {
 
         this.log.info("initLinks.start");
         Map<Link,List<IntervalAggregator>> links =
                 new HashMap<Link,List<IntervalAggregator>>();
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         
         if (ctrlPlanePath == null) {
