@@ -87,7 +87,7 @@ public class ReservationDAO
 
         String descriptionQ = null;
         if (description != null) {
-            descriptionQ = "r.description LIKE '%"+description+"%'";
+            descriptionQ = " (r.description LIKE '%"+description+"%') or (r.globalReservationId LIKE '%"+description+"%' ";
             criteria.add(descriptionQ);
         }
 
