@@ -4,8 +4,8 @@
 # Contact: Evangelos Chaniotakis, haniotak@es.net
 #
 # - What it does:
-# It checks a few things: 
-# 1. Are OSCARS-related processes running locally? PathScheduler and mysql 
+# It checks a few things:
+# 1. Are OSCARS-related processes running locally? PathScheduler and mysql
 # for now, tomcat is only visible as [java] in the process table, which is
 # not very clear.
 # 2. Can we hit the web server over HTTP? We look for both the Axis service
@@ -48,14 +48,19 @@ my $aar_url = 'https://oscars.es.net/axis2/services/OSCARS/';
 # the staleness is in seconds.
 my $tomcat_log = '/usr/local/tomcat/logs/catalina.out';
 my $tomcat_stale = 24*3600;
-my $scheduler_log = '/usr/local/tomcat/logs/scheduler.log';
-my $scheduler_stale = 24*3600;
 my $war_log = '/usr/local/tomcat/logs/oscars.log';
 my $war_stale = 24*3600;
 my $aar_log = '/usr/local/tomcat/logs/oscars-aar.log';
 my $aar_stale = 24*3600;
-my $heartbeat_log = '/tmp/oscars.heartbeat';
-my $heartbeat_stale = 3600;
+my $heartbeat_log = '/tmp/schedulerHeartbeat.txt';
+my $heartbeat_stale = 600;
+
+# Commented this out because scheduler log is updated only when
+# it actually does something. Looking at the heartbeat should
+# be enough.
+#
+# my $scheduler_log = '/usr/local/tomcat/logs/scheduler.log';
+# my $scheduler_stale = 24*3600;
 
 
 # Settings end here
@@ -97,11 +102,14 @@ if ($mtime < $time - $tomcat_stale) {
   my $delta = $time - $mtime;
   $alert_message .= "No updates at file $tomcat_log for $delta seconds!\n";
 }
-($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize, $blocks) = stat($scheduler_log);
-if ($mtime < $time - $scheduler_stale) {
-  my $delta = $time - $mtime;
-  $alert_message .= "No updates at file $scheduler_log for $delta seconds!\n";
-}
+
+# commented scheduler.log test out
+# ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize, $blocks) = stat($scheduler_log);
+# if ($mtime < $time - $scheduler_stale) {
+#   my $delta = $time - $mtime;
+#   $alert_message .= "No updates at file $scheduler_log for $delta seconds!\n";
+# }
+
 ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize, $blocks) = stat($war_log);
 if ($mtime < $time - $war_stale) {
   my $delta = $time - $mtime;
