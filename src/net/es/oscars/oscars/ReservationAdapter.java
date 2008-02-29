@@ -3,7 +3,7 @@
  *
  * All exceptions are passed back to OSCARSSkeleton, which logs them and maps
  * to the ADB classes that support SOAP faults.
- *  
+ *
  * @author David Robertson, Mary Thompson, Jason Lee
  */
 package net.es.oscars.oscars;
@@ -16,12 +16,10 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.*;
 
 import net.es.oscars.notify.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.bss.ReservationManager;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.bss.topology.Link;
 import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.*;
+
 
 /**
  * Acts as intermediary from Axis2 service to OSCARS library and Hibernate.
@@ -56,7 +54,7 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public CreateReply create(ResCreateContent params, String login) 
+    public CreateReply create(ResCreateContent params, String login)
             throws BSSException, InterdomainException {
 
         this.log.info("create.start");
@@ -88,7 +86,7 @@ public class ReservationAdapter {
             this.tc.clientConvert(pathInfo);
             reply.setPathInfo(pathInfo);
             Map<String,String> messageInfo = new HashMap<String,String>();
-            messageInfo.put("subject", 
+            messageInfo.put("subject",
                             "Reservation " + resv.getGlobalReservationId() +
                              " scheduling through API succeeded");
             messageInfo.put("body", "Reservation scheduling succeeded.\n" +
@@ -109,7 +107,7 @@ public class ReservationAdapter {
         this.log.info("create.finish: " + resv.toString("bss"));
         return reply;
     }
-    
+
     /**
      * @param params ModifyResContent instance with with request params.
      * @param login String with user's login name
@@ -117,11 +115,11 @@ public class ReservationAdapter {
      * @throws BSSException
      */
     /*
-    public ModifyResReply 
-    	modify(ModifyResContent params, String login, boolean allUsers)
+    public ModifyResReply
+        modify(ModifyResContent params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
-    	
-    	ModifyResReply reply = null;
+
+        ModifyResReply reply = null;
 
         this.log.info("modify.start");
         this.log.info("modify.finish");
@@ -134,15 +132,15 @@ public class ReservationAdapter {
      * @param login String with user's login name
      * @param allUsers boolean true if user can cancel other user's reservations
      * @return ResStatus reply CancelReservationResponse
-     * @throws BSSException 
+     * @throws BSSException
      */
-    public String cancel(GlobalReservationId params, String login, boolean allUsers) 
+    public String cancel(GlobalReservationId params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;
         Forwarder forwarder = new Forwarder();
         String remoteStatus;
-        
+
         String gri = params.getGri();
         this.log.info("cancel.start: " + gri);
         resv = this.rm.cancel(gri, login, allUsers);
@@ -160,10 +158,10 @@ public class ReservationAdapter {
      * @param params GlobalReservationId instance with with request params.
      * @param allUsers boolean indicating user can view all reservations
      * @return reply ResDetails instance encapsulating library reply.
-     * @throws BSSException 
+     * @throws BSSException
      */
-    public ResDetails 
-    	query(GlobalReservationId params, String login, boolean allUsers)
+    public ResDetails
+        query(GlobalReservationId params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;
@@ -218,45 +216,53 @@ public class ReservationAdapter {
         List<Reservation> reservations = null;
         ArrayList<Link> inLinks = new ArrayList<Link>();
         ArrayList<String> statuses = new ArrayList<String>();
-        
-        this.log.info("list.start");
-        String[] linkIds = request.getLinkId(); 
-        String[] resStatuses = request.getResStatus(); 
+        PSLookupClient lookupClient = new PSLookupClient();
 
-        
+        this.log.info("list.start");
+        String[] linkIds = request.getLinkId();
+        String[] resStatuses = request.getResStatus();
+
+
         if (linkIds != null && linkIds.length > 0 ) {
-	        for (String s : linkIds) {
-	        	if (s != null && !s.trim().equals("")) {
-	        		Link link = null;
-	        		try {
-	        			link = TopologyUtil.getLink(s.trim(), this.dbname);
-		        		inLinks.add(link);
-	        		} catch (BSSException ex) {
-	        			this.log.error("Could not get link for string: ["+s.trim()+"], error: ["+ex.getMessage()+"]");
-	        		}
-	        	}
-	        }
-		}
-        
-        if (resStatuses != null && resStatuses.length > 0 ) {
-	        for (String s : request.getResStatus()) {
-	        	if (s != null && !s.trim().equals("")) {
-	        		statuses.add(s.trim());
-	        	}
-	        }
+            for (String s : linkIds) {
+                s = s.trim();
+                if (s != null && !s.equals("")) {
+                    Link link = null;
+                    try {
+                        String urn = lookupClient.lookup(s);
+                        if (urn != null) {
+                            link = TopologyUtil.getLink(urn, this.dbname);
+                        } else {
+                            link = TopologyUtil.getLink(s, this.dbname);
+                        }
+                        inLinks.add(link);
+
+                    } catch (BSSException ex) {
+                        this.log.error("Could not get link for string: ["+s.trim()+"], error: ["+ex.getMessage()+"]");
+                    }
+                }
+            }
         }
-       
+
+        if (resStatuses != null && resStatuses.length > 0 ) {
+            for (String s : request.getResStatus()) {
+                if (s != null && !s.trim().equals("")) {
+                    statuses.add(s.trim());
+                }
+            }
+        }
+
         Long startTime = null;
         Long endTime = null;
         ListRequestSequence_type0 tmp;
         tmp = request.getListRequestSequence_type0();
         if (tmp != null) {
-        	startTime = tmp.getStartTime();
-        	endTime = tmp.getEndTime();
+            startTime = tmp.getStartTime();
+            endTime = tmp.getEndTime();
         }
         String description = request.getDescription();
         reservations = this.rm.list(login, loginIds, statuses, description, inLinks, startTime, endTime);
-        
+
         reply = this.tc.reservationToListReply(reservations,
                 request.getResRequested(), request.getResOffset());
         this.log.info("list.finish: " + reply.toString());
@@ -268,7 +274,7 @@ public class ReservationAdapter {
      * @param localPathInfo - the path from the local reservation, has the
      *                        remote hops appended to it.
      * @param remotePathInfo - path returned from forward.create reservation
-     * 
+     *
      */
     private void addHops(PathInfo localPathInfo, PathInfo remotePathInfo) {
 
@@ -289,7 +295,7 @@ public class ReservationAdapter {
     /**
      * Logs all incoming reservation creation parameters that are not
      * null before conversion.  XSD schema enforces not-null parameters.
-     * 
+     *
      * @param params ResCreateContent instance with with request params.
      */
     public void logCreateParams(ResCreateContent params)  {
@@ -359,7 +365,7 @@ public class ReservationAdapter {
         // did not get too far.
         Map<String,String> messageInfo = new HashMap<String,String>();
         if (resv == null) {
-            messageInfo.put("subject", 
+            messageInfo.put("subject",
                 "Reservation scheduling through API entirely failed");
             messageInfo.put("body",
                 "Reservation scheduling entirely failed with " + errMsg);
