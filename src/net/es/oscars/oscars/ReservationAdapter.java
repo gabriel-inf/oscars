@@ -214,7 +214,7 @@ public class ReservationAdapter {
         ListRequest request) throws BSSException {
         ListReply reply = null;
         List<Reservation> reservations = null;
-        ArrayList<Link> inLinks = new ArrayList<Link>();
+        ArrayList<net.es.oscars.bss.topology.Link> inLinks = new ArrayList<net.es.oscars.bss.topology.Link>();
         ArrayList<String> statuses = new ArrayList<String>();
         PSLookupClient lookupClient = new PSLookupClient();
 
@@ -227,7 +227,7 @@ public class ReservationAdapter {
             for (String s : linkIds) {
                 s = s.trim();
                 if (s != null && !s.equals("")) {
-                    Link link = null;
+                    net.es.oscars.bss.topology.Link link = null;
                     try {
                         String urn = lookupClient.lookup(s);
                         if (urn != null) {
