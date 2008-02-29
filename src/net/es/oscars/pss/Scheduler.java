@@ -174,6 +174,11 @@ public class Scheduler {
         return reservations;
     }
 
+    /**
+     * Sends notifications for reservations that will expire in the future
+     *
+     * @param timeInterval an integer with the time window to check
+     */
     public void expiringReservations(Integer timeInterval) {
         // Check for reservations expiring in:
         // 1 day

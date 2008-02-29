@@ -96,7 +96,7 @@ public class PathScheduler {
         resList = scheduler.expiredReservations(0);
         resList = scheduler.pendingReservations(reservationInterval);
 
-        // look at expiring reservations in the future
+        // look at reservations expiring in the future
         scheduler.expiringReservations(reservationInterval);
         // Any exception is caught and logged in the Scheduler class.
         // It is not rethrown, but the reservation is marked as FAILED
