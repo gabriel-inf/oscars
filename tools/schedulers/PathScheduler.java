@@ -70,6 +70,7 @@ public class PathScheduler {
                     log.error("*** UNABLE TO SET HEARTBEAT ***");
                     System.exit(0);
                 }
+                log.info("Scheduler starting run");
                 // attempt to avoid shutdown until all pending and expired
                 // reservations in current cycle are handled
                 synchronized(shutdownLock) {
