@@ -22,7 +22,7 @@ public class PathScheduler {
     private static final Integer reservationInterval = 0;
 
     // shutdown hook delay time in seconds
-    private static final int shutdownTime = 2;     
+    private static final int shutdownTime = 2;
 
     // shutdown lock held while pending and expired reservations are handled
     private static Object shutdownLock;
@@ -58,7 +58,7 @@ public class PathScheduler {
         initializer.initDatabase(dbnames);
         Thread runtimeHookThread = new Thread() {
             public void run() {
-                shutdownHook(); 
+                shutdownHook();
             }
         };
         Scheduler sched = new Scheduler("bss");
@@ -95,6 +95,9 @@ public class PathScheduler {
         // Look for stuff that *is* expired as of now (0)
         resList = scheduler.expiredReservations(0);
         resList = scheduler.pendingReservations(reservationInterval);
+
+        // look at expiring reservations in the future
+        scheduler.expiringReservations(reservationInterval);
         // Any exception is caught and logged in the Scheduler class.
         // It is not rethrown, but the reservation is marked as FAILED
         session.getTransaction().commit();
@@ -104,18 +107,18 @@ public class PathScheduler {
         Logger log = Logger.getLogger("PathScheduler");
         log.info("*** SCHEDULER SHUTDOWN beginning ***");
         long t0 = System.currentTimeMillis();
-        while (true) 
+        while (true)
         {
             try {
-                Thread.sleep (500); 
+                Thread.sleep (500);
             } catch (Exception e) {
-                break; 
+                break;
             }
 
             // NOTE that the scheduler may not shut down cleanly if the
             // system goes down, since checkReservations may take a number
             // of seconds.  Use kill -2
-            if (System.currentTimeMillis() - t0 > shutdownTime*1000) 
+            if (System.currentTimeMillis() - t0 > shutdownTime*1000)
                 synchronized(shutdownLock) {
                     break;
                 }

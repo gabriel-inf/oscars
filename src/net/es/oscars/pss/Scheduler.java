@@ -39,10 +39,11 @@ public class Scheduler {
         this.dbname = dbname;
     }
 
+
     /**
      * Handles setting up LSP's.
      *
-     * @param timeInterval an integer with the time window to check 
+     * @param timeInterval an integer with the time window to check
      * @return response the list of reservation that are pending
      */
     public List<Reservation> pendingReservations(Integer timeInterval)  {
@@ -111,7 +112,7 @@ public class Scheduler {
     /**
      * Handles tearing down LSP's.
      *
-     * @param timeInterval an integer with the time window to check 
+     * @param timeInterval an integer with the time window to check
      * @return response a list of reservations that have expired
      */
     public List<Reservation> expiredReservations(Integer timeInterval) {
@@ -172,4 +173,64 @@ public class Scheduler {
         }
         return reservations;
     }
+
+    public void expiringReservations(Integer timeInterval) {
+        // Check for reservations expiring in:
+        // 1 day
+        // 7 days
+        // 30 days
+        // send out a notification each time
+        Integer days_1 = 3600*24;
+        Integer days_7 = 7 * days_1;
+        Integer days_30 = 30 * days_1;
+
+        List<Reservation> reservations = null;
+
+        NotifierSource observable = this.notifier.getSource();
+        Map<String,String> messageInfo = new HashMap<String,String>();
+
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        String subject = "Expiring OSCARS reservation";
+        String body = "";
+
+        // 1 day
+        reservations = dao.expiringReservations(days_1, timeInterval);
+        for (Reservation resv: reservations) {
+            body = "Reservation with GRI: "+resv.getGlobalReservationId()+" expiring in 24 hours.";
+
+            messageInfo.put("subject", subject);
+            messageInfo.put("body", body);
+            messageInfo.put("alertLine", resv.getDescription());
+            Object obj = (Object) messageInfo;
+            observable.eventOccured(obj);
+        }
+
+        // 7 days
+        reservations = dao.expiringReservations(days_7, timeInterval);
+        for (Reservation resv: reservations) {
+            body = "Reservation with GRI: "+resv.getGlobalReservationId()+" expiring in 7 days.";
+
+            messageInfo.put("subject", subject);
+            messageInfo.put("body", body);
+            messageInfo.put("alertLine", resv.getDescription());
+            Object obj = (Object) messageInfo;
+            observable.eventOccured(obj);
+        }
+
+        // 30 days
+        reservations = dao.expiringReservations(days_30, timeInterval);
+        for (Reservation resv: reservations) {
+            body = "Reservation with GRI: "+resv.getGlobalReservationId()+" expiring in 30 days.";
+
+            messageInfo.put("subject", subject);
+            messageInfo.put("body", body);
+            messageInfo.put("alertLine", resv.getDescription());
+            Object obj = (Object) messageInfo;
+            observable.eventOccured(obj);
+        }
+
+
+    }
+
+
 }
