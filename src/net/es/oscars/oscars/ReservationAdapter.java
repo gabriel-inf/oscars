@@ -229,11 +229,11 @@ public class ReservationAdapter {
                 if (s != null && !s.equals("")) {
                     net.es.oscars.bss.topology.Link link = null;
                     try {
-                        String urn = lookupClient.lookup(s);
-                        if (urn != null) {
-                            link = TopologyUtil.getLink(urn, this.dbname);
-                        } else {
+                        if (s.startsWith("urn:ogf:network")) {
                             link = TopologyUtil.getLink(s, this.dbname);
+                        } else {
+                            String urn = lookupClient.lookup(s);
+                            link = TopologyUtil.getLink(urn, this.dbname);
                         }
                         inLinks.add(link);
 
