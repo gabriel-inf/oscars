@@ -267,7 +267,7 @@ public class CreateReservation extends HttpServlet {
             throw new BSSException(
                     "VLAN tag not supplied for layer 2 reservation");
         }
-        layer3Info.setSrcHost(request.getParameter(strParam));
+        layer3Info.setSrcHost(strParam);
         layer3Info.setDestHost(request.getParameter("destination"));
 
         strParam = request.getParameter("srcPort");
