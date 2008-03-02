@@ -111,8 +111,11 @@ oscars.Form.handleAuthenticateReply = function(responseObject,
     var userNameInput = dojo.byId("userName");
     oscarsState.login = userNameInput.value;
     oscarsState.firstPage = true;
-    // reset URL of this content pane
-    sessionPane.setHref("forms/logout.html");
+    // toggle display of login/logout section of page
+    var loginSection = dojo.byId("loginSection");
+    loginSection.style.display = "none"; 
+    var logoutSection = dojo.byId("logoutSection");
+    logoutSection.style.display = ""; 
 
     // programmatically create all tabs that user is authorized for
     // list reservations form
@@ -171,8 +174,11 @@ oscars.Form.handleAuthenticateReply = function(responseObject,
 // handles user logout
 oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
     var sessionPane = dijit.byId("sessionPane");
-    // reset initial page to login form
-    sessionPane.setHref("forms/login.html");
+    // toggle display of login/logout section of page
+    var loginSection = dojo.byId("loginSection");
+    loginSection.style.display = ""; 
+    var logoutSection = dojo.byId("logoutSection");
+    logoutSection.style.display = "none"; 
     // destroy all other tabs
     if (dijit.byId("reservationsPane") != null) {
         mainTabContainer.closeChild(dijit.byId("reservationsPane"));

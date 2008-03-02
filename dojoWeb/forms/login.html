@@ -1,5 +1,6 @@
 <html>
     <br />
+    <div id="loginSection">
     <form id="AuthenticateUser" method="post"> 
         <table>
           <tr>
@@ -33,6 +34,31 @@
     <a href="/OSCARS/docs/" target="_blank">documentation</a>.
     To obtain an account or request more 
     information, email one of the contacts below.</p>
+    </div>
+
+    <div id="logoutSection" style="display:none">
+    <form id="UserLogout" method="post"> 
+        <button dojoType="dijit.form.Button" id="logout">
+          LOGOUT 
+          <script type="dojo/method" event="onClick">
+              dojo.xhrPost({
+                  url: 'servlet/UserLogout',
+                  handleAs: "json-comment-filtered",
+                  load: oscars.Form.handleReply,
+                  error: oscars.Form.handleError,
+                  form: dojo.byId("UserLogout")
+              });
+          </script>
+        </button>
+    </form>
+
+    <p>You are currently logged in to OSCARS. Return to this tab and click on
+    the LOGOUT button to exit.
+    </p>
+    </div>
+
+    <p>NOTE:  Do not use the browser's back or forward button while in this
+    application.</p>
 
     <p>Basic OSCARS functionality is as follows:</p>
 
@@ -53,9 +79,6 @@
     You currently need OSCARS admin privileges to view other users' information.
     </li>
     </ul>
-
-    <p>NOTE:  Do not use the browser's back or forward button while in this
-    application.</p>
 
     <p>More documentation can be found by clicking on the link at the bottom
     of this page.</p>
