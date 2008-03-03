@@ -251,6 +251,10 @@ public class JnxLSP {
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in name parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
+        // capitalize circuit names for production circuits
+        if (resv.getDescription().contains("PRODUCTION")) {
+            circuitName = circuitName.toUpperCase();
+        }
         if (layer2Data != null) {
             this.hm.put("resv-id", circuitName);
             this.hm.put("vlan_id", lspData.getVlanTag());

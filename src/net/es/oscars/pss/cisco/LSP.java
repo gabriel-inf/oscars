@@ -164,6 +164,10 @@ public class LSP {
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
+        // capitalize circuit names for production circuits
+        if (resv.getDescription().contains("PRODUCTION")) {
+            circuitName = circuitName.toUpperCase();
+        }
         if (lspData.getIngressLink() == null) {
             throw new PSSException(
                     "refreshPath called before getting path endpoints");
