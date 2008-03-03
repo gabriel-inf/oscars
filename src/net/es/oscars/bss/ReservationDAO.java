@@ -207,7 +207,7 @@ public class ReservationDAO
 
         String hsql = "from Reservation where " +
                       "((status = 'ACTIVE' or status= 'PENDING') and " +
-                      " (endTime => :periodStart and endTime <= :periodEnd) or (status = 'PRECANCEL')";
+                      " (endTime >= :periodStart and endTime <= :periodEnd)) or (status = 'PRECANCEL')";
         this.reservations = this.getSession().createQuery(hsql)
                               .setLong("periodStart", periodStart)
                               .setLong("periodEnd", periodEnd)
