@@ -2,17 +2,6 @@
 <head>
     <script type="text/javascript>
         dojo.addOnLoad(function(){
-            console.log("user form addOnLoad");
-            var n = dojo.byId("userDetailsForm");
-            if (n == null) {
-                console.log("userDetailsForm is null");
-            } else {
-                console.log("value: " + n.profileName.value);
-            }
-            var w = dijit.byId("profileName");
-            if (w == null) {
-                console.log("profileName is null");
-            }
             dojo.xhrPost({
                 url: 'servlet/UserQuery',
                 handleAs: "json-comment-filtered",

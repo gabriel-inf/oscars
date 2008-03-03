@@ -129,11 +129,11 @@ public class QueryReservation extends HttpServlet {
             outputMap.put("sourceReplace", layer3Data.getSrcHost());
             outputMap.put("destinationReplace", layer3Data.getDestHost());
             intParam = layer3Data.getSrcIpPort();
-            if (intParam != null) {
+            if ((intParam != null) && (intParam != 0)) {
                 outputMap.put("sourcePortReplace", intParam);
             }
             intParam = layer3Data.getDestIpPort();
-            if (intParam != null) {
+            if ((intParam != null) && (intParam != 0)) {
                 outputMap.put("destinationPortReplace", intParam);
             }
             strParam = layer3Data.getProtocol();

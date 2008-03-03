@@ -1,6 +1,6 @@
 /*
 Form.js:        Javascript form callback handling using Dojo functionality
-Last modified:  February 25, 2008
+Last modified:  March 3, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -10,17 +10,18 @@ handleError(responseObject, ioArgs)
 handleAuthenticateReply(responseObject, mainTabContainer)
 handleLogout(responseObject, mainTabContainer)
 applyParams(responseObject)
+layerChooser(evt);
 hideParams(responseObject)
-initBackForwardState()
-selectedChanged(contentPane)
+selectedChanged(contentPaneWidget)
 refreshUserGrid()
-onUserRowSelect()
-onResvRowSelect()
+onUserRowSelect(evt)
+onResvRowSelect(evt)
 hrefChanged(newUrl)
 checkDateTimes()
 convertSearchTimes()
 convertReservationTimes()
 isBlank(str)
+initBackForwardState()
 */
 
 dojo.provide("oscars.Form");
@@ -48,10 +49,10 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
     } else if (responseObject.method == "UserLogout") {
         oscars.Form.handleLogout(responseObject, mainTabContainer);
     } else if (responseObject.method == "QueryReservation") {
-        // for displaying only layer 2 or layer 3 fields
-        oscars.Form.hideParams(responseObject, "reservationDetailsForm");
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
+        // for displaying only layer 2 or layer 3 fields
+        oscars.Form.hideParams(responseObject);
     } else if ((responseObject.method == "CreateReservationForm") ||
                 (responseObject.method == "UserQuery") ||
                 (responseObject.method == "UserModify") ||
@@ -259,9 +260,47 @@ oscars.Form.applyParams = function(responseObject) {
     }
 }
 
-oscars.Form.hideParams = function(responseObject, formId) {
-    var w = dijit.byId(formId);
-    // TODO
+// chooses which input parameters to display in create reservation page
+oscars.Form.layerChooser = function(/*Event*/ evt) {
+    var layer2Nodes = dojo.query(".layer2");
+    var layer3Nodes = dojo.query(".layer3");
+    if (evt.target.id == "layer2") {
+        for (var i = 0; i < layer2Nodes.length; i++) {
+            layer2Nodes[i].style.display = ""; 
+        }
+        for (var i = 0; i < layer3Nodes.length; i++) {
+            layer3Nodes[i].style.display = "none"; 
+        }
+    } else if (evt.target.id == "layer3") {
+        for (var i = 0; i < layer2Nodes.length; i++) {
+            layer2Nodes[i].style.display = "none"; 
+        }
+        for (var i = 0; i < layer3Nodes.length; i++) {
+            layer3Nodes[i].style.display = ""; 
+        }
+    }
+}
+
+// chooses which params to display in reservation details page
+oscars.Form.hideParams = function(responseObject) {
+    var n = dojo.byId("vlanReplace");
+    var layer2Nodes = dojo.query(".layer2Replace");
+    var layer3Nodes = dojo.query(".layer3Replace");
+    if (!oscars.Form.isBlank(n.innerHTML)) {
+        for (var i = 0; i < layer2Nodes.length; i++) {
+            layer2Nodes[i].style.display = ""; 
+        }
+        for (var i = 0; i < layer3Nodes.length; i++) {
+            layer3Nodes[i].style.display = "none"; 
+        }
+    } else {
+        for (var i = 0; i < layer2Nodes.length; i++) {
+            layer2Nodes[i].style.display = "none"; 
+        }
+        for (var i = 0; i < layer3Nodes.length; i++) {
+            layer3Nodes[i].style.display = ""; 
+        }
+    }
 }
 
 // take action based on which tab was clicked on
@@ -297,6 +336,23 @@ oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
         // only do first time
         if (n == null) {
             contentPane.setHref("forms/createReservation.html");
+        }
+    // selected user details tab
+    } else if (contentPane.id == "userDetailsPane") {
+        if (changeStatus) {
+            var n = dojo.byId("userDetailsForm");
+            if (n == null) {
+                console.log("userDetailsForm not instantiated");
+            }
+            if (n != null) {
+                if (oscars.Form.isBlank(n.profileName.value)) {
+                    oscarsStatus.innerHTML = "Profile for user " +
+                                             oscarsState.login;
+                } else {
+                    oscarsStatus.innerHTML = "Profile for user " +
+                                             n.profileName.value;
+                }
+            }
         }
     // selected user list tab
     } else if (contentPane.id == "usersPane") {
@@ -476,26 +532,6 @@ oscars.Form.convertReservationTimes = function(data) {
         // these fields are in seconds
         data[i][2] = oscars.DigitalClock.convertFromSeconds(data[i][2]);
         data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
-    }
-}
-
-oscars.Form.layerChooser = function(/*Event*/ evt) {
-    var layer2Nodes = dojo.query(".layer2");
-    var layer3Nodes = dojo.query(".layer3");
-    if (evt.target.id == "layer2") {
-        for (var i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = ""; 
-        }
-        for (var i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = "none"; 
-        }
-    } else if (evt.target.id == "layer3") {
-        for (var i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = "none"; 
-        }
-        for (var i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = ""; 
-        }
     }
 }
 
