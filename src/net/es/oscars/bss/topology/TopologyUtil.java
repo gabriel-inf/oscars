@@ -628,6 +628,10 @@ public class TopologyUtil {
      * @return the domain ID in the URN
      */
      public static String getURNDomainId(String urn){
-        return urn.split(":")[3].replaceAll("domain=", "");
+        String[] componentList = urn.split(":");
+        if(componentList.length < 4){
+            return null;
+        }
+        return componentList[3].replaceAll("domain=", "");
      }
 }
