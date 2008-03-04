@@ -200,6 +200,11 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
         return query;
     }
     
+    /**
+     * Lists all the entries in the interdomainRoutes table
+     *
+     * @return list of interdomain routes
+     */
     public List<InterdomainRoute> list(){
         String hsql = "from InterdomainRoute";
         return this.getSession().createQuery(hsql).list();
