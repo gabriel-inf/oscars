@@ -21,13 +21,14 @@ done
 
 CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
 CLASSPATH=$CLASSPATH:../../build/WEB-INF/classes
+CLASSPATH=$CLASSPATH:../../build/tools
 CLASSPATH=$CLASSPATH:.
 
 export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
 # start up logging to file
-javac `pwd`/TopologyUpdater.java
+javac `pwd`/TopologyUpdater.java -d ../../build/tools
 java -Djava.net.preferIPv4Stack=true TopologyUpdater $*
 
 exit 1

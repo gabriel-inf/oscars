@@ -21,12 +21,13 @@ done
 
 CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
 CLASSPATH=$CLASSPATH:../../build/WEB-INF/classes
+CLASSPATH=$CLASSPATH:../../build/tools
 CLASSPATH=$CLASSPATH:.
 
 export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
-javac `pwd`/DeleteReservation.java
+javac `pwd`/DeleteReservation.java -d ../../build/tools
 java DeleteReservation $*
 
 exit 1

@@ -21,12 +21,13 @@ done
 
 CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
 CLASSPATH=$CLASSPATH:../../build/WEB-INF/classes
+CLASSPATH=$CLASSPATH:../../build/tools
 CLASSPATH=$CLASSPATH:.
 
 export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
-javac `pwd`/HealthCheck.java
+javac `pwd`/HealthCheck.java -d ../../build/tools
 java -Djava.net.preferIPv4Stack=true HealthCheck $*
 
 exit 1

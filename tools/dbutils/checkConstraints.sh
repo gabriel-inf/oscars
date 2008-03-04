@@ -21,13 +21,14 @@ done
 
 CLASSPATH=$AXIS2_CLASSPATH:$OSCARS_CLASSPATH
 CLASSPATH=$CLASSPATH:../../build/WEB-INF/classes
+CLASSPATH=$CLASSPATH:../../build/tools
 CLASSPATH=$CLASSPATH:.
 
 export CLASSPATH=$CLASSPATH
 #echo CLASSPATH is $CLASSPATH
 
 # start up logging to file
-javac `pwd`/CheckConstraints.java
+javac `pwd`/CheckConstraints.java -d ../../build/tools
 java -Djava.net.preferIPv4Stack=true CheckConstraints $*
 
 exit 1
