@@ -45,7 +45,7 @@ public class PCEManagerTest {
         pathInfo.setLayer3Info(layer3Info);
         this.sf.getCurrentSession().beginTransaction();
         try {
-            boolean isExplicit = this.pceMgr.findPath(pathInfo);
+            PathInfo intraPath = this.pceMgr.findPath(pathInfo);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
