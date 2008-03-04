@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>logging configuration</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="logging.html">Loggin</a>
+</div>
+</div>
+<h2>Configuring Logging</h2>
+Tomcat uses commons-logging out-of-the box, but will use log4j if the
+commons-logging.jar and log4j.jar files are copied to common/lib, and
+there is a log4j.properties file in common/classes. Axis2 defaults to
+use log4j. The OSCARS.aar inherits its logging configuration from
+axis2.&nbsp; The list below shows where each component finds its
+log4j.properties file.<br>
+<br>
+<h3>Tomcat logging</h3>
+<div style="margin-left: 40px;">Uses the file
+${CATALINA_HOME}/common/classes/log4j.properties. The
+commons-logging.jar and log4j.jar
+must be added to common/lib to enable log4j logging. Otherwise, Tomcat
+uses commons-logging. Tomat also uses conf/logging.properties to select
+log levels for various components. The levels are set originally to
+INFO, but may be changed to WARNING or SERVERE to reduce or eliminate
+the manager*.log, localhost*.log, host-manager*.log, admin*.log and
+catalina*.log. Since all messages at the INFO level are logged to
+catalina.out, these other logs are redundant.<br>
+<br>
+The version of this file that is used at ESnet is included in the
+distribution in conf/server/log4j.axis2.properties. The setupServer
+target copies it to ${catalina.home}/common/classes. The deployaar ant
+target copies the same<br>
+file to ${catalina.home}/webapps/axis2/WEB-INF/classes/log4j.properties.</div>
+<br>
+<h3>Axis2 Logging<br>
+</h3>
+<div style="margin-left: 40px;">Uses
+${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/commons-logging.properties
+to select no logging, simple logging or log4j. Uses the file
+${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/log4j.properties.<br>
+</div>
+<br>
+<h3>OSCARS aar logging</h3>
+<div style="margin-left: 40px;">Uses the file
+${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/log4j.properties, not
+the one that is included in OSCARS.aar/classes/log4j.properties.<br>
+</div>
+<br>
+<h3>OSCARS war logging</h3>
+<div style="margin-left: 40px;">Uses the file that is included in
+OSCARS.war at classes/log4.properties. Deployed at
+${CATALINA_HOME}/webapps/OSCARS/WEB-INF/classes/log4j.properties. This
+file is included in the distribution in conf/server/log4j.properties.
+It is sometimes necessary to add log4j.jar to the OSCARS/WEB-INF/lib
+directory to get the logging to the oscars.log file to happen.<br>
+</div>
+<h3>Scheduler logging</h3>
+<div style="margin-left: 40px;">The scheduler is started by the
+tools/scheduler.sh script which sets the location of the logging
+configuration file to
+${CATALINA_HOME}/webapps/OSCARS/WEB-INF/classes/log4j.properties.&nbsp;
+<br>
+</div>
+<br>
+The following log files, all in ${CATALINA_HOME}/logs are of interest:<br>
+<dl>
+  <dt><span style="font-weight: bold;">catalina.out</span> </dt>
+  <dd>the root console log. All messages (except the httpwire and
+reservation ones) are put here as well as in some of the following logs.<br>
+  </dd>
+  <dt><span style="font-weight: bold;">hibernate.log</span> </dt>
+  <dd>has output from the hibernate database modules</dd>
+  <dt><span style="font-weight: bold;">wire.log</span> </dt>
+  <dd>logs what is sent as https messages from the forwarder module</dd>
+  <dt><span style="font-weight: bold;">oscars-aar.log</span> </dt>
+  <dd>log messages from modules running from OSCARS. aar, e.g. process
+that
+started from the web services api</dd>
+  <dt><span style="font-weight: bold;">oscars.log</span> </dt>
+  <dd>log messages from modules running from OSCARS.war, e.g. process
+that started from the WBUI</dd>
+  <dt style="font-weight: bold;">scheduler.log</dt>
+  <dd>log messages from the scheduler process</dd>
+  <dt style="font-weight: bold;">reservations</dt>
+  <dd>a directory holding the log messages&nbsp; from
+bss.ReservationManager for each reservation that has been made.&nbsp;
+The name of this directory is set in oscars.properties as <span
+ style="font-family: courier new,courier,monospace;">logging.rsvlogdir</span>.
+It is read by bss.ReservationLogger which dynmically sets a log
+appender to put the messages in a per/reservation file named by the GRI
+of the reservation.<br>
+  </dd>
+</dl>
+<!--#include virtual="footer.html" -->
+<h3>Formatting conventions</h3>
+<div style="margin-left: 40px;">Most lines are formatted as follows:<br>
+<br>
+%d{ISO8601} [%5p] %c{2} %m%n<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; %d{ISO8601} is date/time in the
+following format&nbsp; 2008-03-04 00:06:38,260<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; %5p is the log level, e.g. DEBUG,INFO in
+a 5 character wide field<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; %c{2} is the last two components of the
+class that is logging the message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; %m is the message that was logged<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; %n is a newline.<br>
+</div>
+<br>
+</body>
+</html>
