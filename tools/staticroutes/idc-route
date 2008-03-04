@@ -1,3 +1,10 @@
 #!/bin/sh
 
-java -jar IDCRouteUtil.jar $*
+# update classpath
+OSCARS_CLASSPATH="."
+for f in lib/*.jar
+do
+    OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
+done
+
+java -cp $OSCARS_CLASSPATH:IDCRouteUtil.jar IDCRouteUtil $*

@@ -25,8 +25,8 @@
     <target name="prepare" description="Create build directoy and copy in files">
         <mkdir dir="${route.home}/classes"/>
         <copy todir="lib">
-            <fileset dir="${build.home}/lib" includes="hibernate3.jar,dom4j-1.6.1.jar,commons-collections-3.2.jar,jta.jar,mysql-connector-java-*.jar,c3p0-0.9.1.jar,cglib-2.1.3.jar,asm.jar,antlr-2.7.6.jar"/>
-            <fileset dir="${build.home}/lib/axis2" includes="log4j-1.2.14.jar,commons-logging-1.1.jar"/>
+            <fileset dir="${build.home}/lib" includes="hibernate3.jar,dom4j-*.jar,commons-collections-*.jar,jta.jar,mysql-connector-java-*.jar,c3p0-*.jar,cglib-*.jar,asm.jar,antlr-*.jar"/>
+            <fileset dir="${build.home}/lib/axis2" includes="log4j-*.jar,commons-logging-*.jar"/>
         </copy>
         <copy todir="classes">
             <fileset dir="${route.home}" includes="log4j.properties" />
@@ -47,7 +47,6 @@
             <!-- Tweak the manifest *to do* the right thing -->
             <manifest>
                   <attribute name="Main-Class" value="IDCRouteUtil"/>
-                  <attribute name="Class-Path" value="lib/hibernate3.jar lib/log4j-1.2.14.jar lib/commons-logging-1.1.jar lib/dom4j-1.6.1.jar lib/commons-collections-3.2.jar lib/jta.jar lib/mysql-connector-java-3.1.13.jar lib/c3p0-0.9.1.jar lib/cglib-2.1.3.jar lib/asm.jar lib/antlr-2.7.6.jar"/>
             </manifest>
             <fileset dir="${build.classes}" includes="**/*.class,**/*.xml" />
             <fileset dir="${route.home}/classes"  includes="*.class,log4j.properties" />
