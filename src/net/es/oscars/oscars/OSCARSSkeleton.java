@@ -53,7 +53,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public OSCARSSkeleton() {
         this.log = Logger.getLogger(this.getClass());
     }
-    
+
 
     /**
      * @param request CreateReservation instance with with request params
@@ -61,17 +61,17 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
     */
-    public CreateReservationResponse 
-    	createReservation(CreateReservation request) 
-    		throws AAAFaultMessage, BSSFaultMessage {
+    public CreateReservationResponse
+        createReservation(CreateReservation request)
+            throws AAAFaultMessage, BSSFaultMessage {
 
         CreateReply reply = null;
         CreateReservationResponse response = new CreateReservationResponse();
         ResCreateContent params = request.getCreateReservation();
         String login = this.checkUser();
-        
+
         this.startDbs();
-        
+
         this.aaa.beginTransaction();
         // Check to see if user can create this  reservation
         int reqBandwidth = params.getBandwidth();
@@ -87,7 +87,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("createReservation: permission denied");
         }
         this.aaa.getTransaction().commit();
-        
+
         this.bss.beginTransaction();
         try {
             reply = this.adapter.create(params, login);
@@ -127,14 +127,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         GlobalReservationId params = request.getCancelReservation();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 this.log.info("denied");
                 throw new AAAFaultMessage("OSCARSSkeleton:cancelReservation: permission denied");
             case SELFONLY: allUsers = false; break;
             case ALLUSERS: allUsers = true; break;
         }
         aaa.getTransaction().commit();
-        
+
         this.bss.beginTransaction();
         try {
             reply = this.adapter.cancel(params, login,allUsers);
@@ -147,7 +147,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             this.log.error("cancelReservation interdomain error: " + e.getMessage());
             throw new BSSFaultMessage("cancelReservation interdomain error " + e.getMessage());
         } catch (Exception e) {
-        	this.bss.getTransaction().rollback();
+            this.bss.getTransaction().rollback();
             this.log.error("cancelReservation caught Exception: " + e.getMessage());
             throw new BSSFaultMessage("cancelReservation: " + e.getMessage());
         }
@@ -163,8 +163,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public QueryReservationResponse 
-    	queryReservation(QueryReservation request)
+    public QueryReservationResponse
+        queryReservation(QueryReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
 
         ResDetails reply = null;
@@ -177,14 +177,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         GlobalReservationId gri = request.getQueryReservation();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "query");
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 throw new AAAFaultMessage("queryReservation: permission denied");
             case SELFONLY: allUsers = false; break;
             case ALLUSERS: allUsers =  true;  break;
         }
         aaa.getTransaction().commit();
 
-        
+
         this.bss.beginTransaction();
         try {
             reply = this.adapter.query(gri, login,allUsers);
@@ -202,20 +202,20 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.bss.getTransaction().commit();
         return response;
     }
-    
+
     /**
      * @param request ModifyReservation instance with with request params
      * @return response ModifyReservationResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
     */
-    /*
-    public ModifyReservationResponse 
-    	modifyReservation(ModifyReservation request)
+
+    public ModifyReservationResponse
+        modifyReservation(ModifyReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
 
-    	ModifyResReply reply = null;
-    	ModifyReservationResponse response = new ModifyReservationResponse();
+        ModifyResReply reply = null;
+        ModifyReservationResponse response = new ModifyReservationResponse();
         ModifyResContent params = request.getModifyReservation();
         String login = this.checkUser();
         boolean allUsers = false;
@@ -224,7 +224,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.aaa.beginTransaction();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 this.log.info("denied");
                 throw new AAAFaultMessage("OSCARSSkeleton:modifyReservation: permission denied");
             case SELFONLY: allUsers = false; break;
@@ -232,7 +232,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         aaa.getTransaction().commit();
 
-        
+
         this.bss.beginTransaction();
 
         try {
@@ -246,18 +246,16 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             this.log.error("modifyReservation interdomain error: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation interdomain error " + e.getMessage());
         } catch (Exception e) {
-        	this.bss.getTransaction().rollback();
+            this.bss.getTransaction().rollback();
             this.log.error("modifyReservation caught Exception: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         }
 
-        
         response.setModifyReservationResponse(reply);
         this.bss.getTransaction().commit();
         return response;
     }
-    */
-    
+
     /**
      * @param request optionally contains, status of desired reservations
      *     start and/or end time, linkIds, number of reservations to be
@@ -267,12 +265,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public ListReservationsResponse 
-    	listReservations(ListReservations request)
+    public ListReservationsResponse
+        listReservations(ListReservations request)
             throws AAAFaultMessage, BSSFaultMessage {
 
         ListReply reply = null;
-        ArrayList<String> loginIds = null; 
+        ArrayList<String> loginIds = null;
         String login = this.checkUser();
 
         this.startDbs();
@@ -281,15 +279,15 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
         this.aaa.getTransaction().commit();
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 throw new AAAFaultMessage( "listReservations: permission denied");
-            case SELFONLY: 
-            	loginIds = new ArrayList<String>();
-        	    loginIds.add(login); 
-        	    break;
-            case ALLUSERS: 
-            	/* leave loginIds = null, implies all users are wanted */  
-            	break;
+            case SELFONLY:
+                loginIds = new ArrayList<String>();
+                loginIds.add(login);
+                break;
+            case ALLUSERS:
+                /* leave loginIds = null, implies all users are wanted */
+                break;
         }
 
         this.bss.beginTransaction();
@@ -305,17 +303,17 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.bss.getTransaction().commit();
         return response;
     }
-    
+
     /**
      * @param request GetNetworkTopology instance with with request params
      * @return response GetNetworkTopologyResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public GetNetworkTopologyResponse 
-    	getNetworkTopology(GetNetworkTopology request)
-        	throws BSSFaultMessage,AAAFaultMessage {
-    	
+    public GetNetworkTopologyResponse
+        getNetworkTopology(GetNetworkTopology request)
+            throws BSSFaultMessage,AAAFaultMessage {
+
         GetTopologyContent requestContent = request.getGetNetworkTopology();
         GetNetworkTopologyResponse response = new GetNetworkTopologyResponse();
         GetTopologyResponseContent responseContent = null;
@@ -323,20 +321,20 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String login = this.checkUser();
         this.startDbs();
         this.aaa.beginTransaction();
-        
+
         /* Check user atributes. Must have query permissions
            on Domains resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "query");
-        this.aaa.getTransaction().commit();        
+        this.aaa.getTransaction().commit();
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 this.log.info("denied");
                 throw new AAAFaultMessage("OSCARSSkeleton:getNetworkTopology: permission denied");
             case SELFONLY: allUsers = false; break;
             case ALLUSERS: allUsers = true; break;
         }
-        
-        
+
+
         this.bss.beginTransaction();
         /* Retrieve topology from TEDB */
         try {
@@ -350,20 +348,20 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("getNetworkTopology: " + e.getMessage());
         }
         this.bss.getTransaction().commit();
-        
+
         return response;
     }
-    
+
     /**
      * @param request InitiateTopologyPull instance with with request params
      * @return response InitiateTopologyPullResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public InitiateTopologyPullResponse 
-    	initiateTopologyPull(InitiateTopologyPull request)
+    public InitiateTopologyPullResponse
+        initiateTopologyPull(InitiateTopologyPull request)
             throws BSSFaultMessage,AAAFaultMessage {
-    	
+
         InitiateTopologyPullContent requestContent = request.getInitiateTopologyPull();
         InitiateTopologyPullResponse response = new InitiateTopologyPullResponse();
         InitiateTopologyPullResponseContent responseContent = null;
@@ -372,19 +370,19 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.startDbs();
         this.aaa.beginTransaction();
 
-        
+
         /* Check user atributes. Must have modify permissions
            on Domains resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "modify");
         this.aaa.getTransaction().commit();
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 this.log.info("denied");
                 throw new AAAFaultMessage("OSCARSSkeleton:initiateTopologyPull: permission denied");
             case SELFONLY: allUsers = false; break;
             case ALLUSERS: allUsers = true; break;
         }
-        
+
         this.bss.beginTransaction();
         /* Pull topology and store in TEDB */
         try{
@@ -398,41 +396,41 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("initiateTopologyPull: " + e.getMessage());
         }
         this.bss.getTransaction().commit();
-        
+
         return response;
     }
-    
+
     /**
      * @param request CreatePath instance with with request params
      * @return response CreatePathResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public CreatePathResponse 
-    	createPath(CreatePath request)
+    public CreatePathResponse
+        createPath(CreatePath request)
             throws BSSFaultMessage,AAAFaultMessage {
-    	
+
         CreatePathContent requestContent = request.getCreatePath();
         CreatePathResponse response = new CreatePathResponse();
         CreatePathResponseContent responseContent = null;
-        
+
         boolean allUsers = false;
         String login = this.checkUser();
         this.startDbs();
         this.aaa.beginTransaction();
-        
+
         /* Check user atributes. Must have signal permissions
            on Reservations resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
-        this.aaa.getTransaction().commit();        
+        this.aaa.getTransaction().commit();
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 this.log.info("denied");
                 throw new AAAFaultMessage("OSCARSSkeleton:createPath: permission denied");
             case SELFONLY: allUsers = false; break;
             case ALLUSERS: allUsers = true; break;
         }
-        
+
         try {
             responseContent = this.pathSetupAdapter.create(requestContent, login);
             response.setCreatePathResponse(responseContent);
@@ -443,41 +441,41 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         } catch(Exception e) {
             throw new AAAFaultMessage("createPath: " + e.getMessage());
         }
-       
+
        return response;
     }
-    
+
     /**
      * @param request RefreshPath instance with with request params
      * @return response RefreshPathResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public RefreshPathResponse 
-    	refreshPath(RefreshPath request)
+    public RefreshPathResponse
+        refreshPath(RefreshPath request)
             throws BSSFaultMessage,AAAFaultMessage {
-    	
+
         RefreshPathContent requestContent = request.getRefreshPath();
         RefreshPathResponse response = new RefreshPathResponse();
         RefreshPathResponseContent responseContent = null;
-        
+
         boolean allUsers = false;
         String login = this.checkUser();
         this.startDbs();
         this.aaa.beginTransaction();
-        
+
         /* Check user atributes. Must have signal permissions
            on Reservations resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
-        this.aaa.getTransaction().commit();        
+        this.aaa.getTransaction().commit();
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 this.log.info("denied");
                 throw new AAAFaultMessage("OSCARSSkeleton:refreshPath: permission denied");
             case SELFONLY: allUsers = false; break;
             case ALLUSERS: allUsers = true; break;
         }
-        
+
         try {
             responseContent = this.pathSetupAdapter.refresh(requestContent, login);
             response.setRefreshPathResponse(responseContent);
@@ -488,41 +486,41 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         } catch (Exception e) {
             throw new AAAFaultMessage("refreshPath: " + e.getMessage());
         }
-       
+
        return response;
     }
-     
+
     /**
      * @param request TeardownPath instance with with request params
      * @return response TeardownPathResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public TeardownPathResponse 
-    	teardownPath(TeardownPath request)
+    public TeardownPathResponse
+        teardownPath(TeardownPath request)
             throws BSSFaultMessage,AAAFaultMessage {
-    	
+
         TeardownPathContent requestContent = request.getTeardownPath();
         TeardownPathResponse response = new TeardownPathResponse();
         TeardownPathResponseContent responseContent = null;
-        
+
         boolean allUsers = false;
         String login = this.checkUser();
         this.startDbs();
         this.aaa.beginTransaction();
-        
+
         /* Check user atributes. Must have signal permissions
            on Reservations resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
-        this.aaa.getTransaction().commit();        
+        this.aaa.getTransaction().commit();
         switch (authVal) {
-            case DENIED: 
+            case DENIED:
                 this.log.info("denied");
                 throw new AAAFaultMessage("OSCARSSkeleton:teardownPath: permission denied");
             case SELFONLY: allUsers = false; break;
             case ALLUSERS: allUsers = true; break;
         }
-        
+
         try{
             responseContent = this.pathSetupAdapter.teardown(requestContent, login);
             response.setTeardownPathResponse(responseContent);
@@ -533,7 +531,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         } catch(Exception e) {
             throw new AAAFaultMessage("teardownPath: " + e.getMessage());
         }
-       
+
        return response;
     }
 
@@ -544,7 +542,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * by the adjacent domain server. At this point we are authorizing access
      * based on that alone. This should be changed to look at the payload
      * sender as well.
-     *  
+     *
      * @param request Forward instance with request params.
      * @return response ForwardResponse encapsulating library reply.
      * @throws AAAFaultMessage
@@ -611,7 +609,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             RefreshPath message = new RefreshPath();
             message.setRefreshPath(forwardPayload.getRefreshPath());
             RefreshPathResponse response = this.refreshPath(message);
-            RefreshPathResponseContent reply = 
+            RefreshPathResponseContent reply =
                 response.getRefreshPathResponse();
             forwardReply.setRefreshPath(reply);
 
@@ -632,10 +630,10 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
     /**
      * Called from the Axis2 framework during initialization of the service.
-     * 
+     *
      * If the service has application scope, this method is called when the
      * system starts up. Otherwise it is called when the first request comes.
-     * 
+     *
      * @param sc
      */
     public void init(ServiceContext sc) {
@@ -672,7 +670,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
     /**
      * Called from checkUser to get the DN out of the message context.
-     * 
+     *
      * @param opContext includes the MessageContext containing the message
      *                  signer
      */
@@ -724,7 +722,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     //eResult.getTimestamp().getExpires());
                 }
             }
- 
+
             }
         } catch (Exception e) {
             this.log.error("setOperationContext.exception: " + e.getMessage());
@@ -737,16 +735,16 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      *  message is entered in the user table.
      *  Also checks to see if there was a certificate in the message, which
      *  should never happen unless the axis2/rampart configuration is incorrect.
-     *  
+     *
      * @return login A string with the login associated with the certSubject
-     * @throws AAAFaultMessage 
+     * @throws AAAFaultMessage
      */
     public String checkUser() throws AAAFaultMessage {
 
         String login = null;
         String[] dnElems = null;
         setOperationContext();
- 
+
         if (this.certSubject == null){
             this.log.error("checkUser: no certSubject found in message");
             AAAFaultMessage AAAErrorEx = new AAAFaultMessage(
@@ -756,14 +754,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         this.startDbs();
         this.aaa.beginTransaction();
-        
+
         // lookup up using input DN first
         String origDN = this.certSubject.getName();
         this.log.debug("checkUser: " + origDN);
         try {
             login = this.userMgr.loginFromDN(origDN);
             if (login == null) {
-                // if that fails try the reverse of the elements in the DN 
+                // if that fails try the reverse of the elements in the DN
                 dnElems = origDN.split(",");
                 String dn = " " + dnElems[0];
                 for (int i = 1; i < dnElems.length; i++) {
@@ -775,14 +773,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                 login = this.userMgr.loginFromDN(dn);
                 if (login == null) {
                     this.log.error("checkUser invalid user: " + origDN);
-                    AAAFaultMessage AAAErrorEx = 
-                    	new AAAFaultMessage("checkUser: invalid user" + origDN);
+                    AAAFaultMessage AAAErrorEx =
+                        new AAAFaultMessage("checkUser: invalid user" + origDN);
                     aaa.getTransaction().rollback();
                     throw AAAErrorEx;
                 }
             }
         } catch (AAAException ex) {
-            this.log.error("checkUser: no attributes for user: " + origDN);              
+            this.log.error("checkUser: no attributes for user: " + origDN);
             AAAFaultMessage AAAErrorEx =
                 new AAAFaultMessage("checkUser: no attributes for user " + origDN + " :  " + ex.getMessage());
             this.aaa.getTransaction().rollback();
@@ -792,7 +790,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.aaa.getTransaction().commit();
         return login;
     }
-    
+
     /**
      * Starts the Hibernate sessions if needed
      *
@@ -801,6 +799,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         this.bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
         this.aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         this.dbsStarted = true;
-    	return;
+        return;
     }
 }

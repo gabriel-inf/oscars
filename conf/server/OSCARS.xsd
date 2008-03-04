@@ -4,9 +4,9 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:tns="http://oscars.es.net/OSCARS"
     xmlns:ctrlp="http://ogf.org/schema/network/topology/ctrlPlane/20070626/">
-    
+
     <xsd:import namespace="http://ogf.org/schema/network/topology/ctrlPlane/20070626/" schemaLocation="nmtopo-ctrlp.xsd"/>
-    
+
     <!-- Element definitions -->
     <xsd:element name="createReservation" type="tns:resCreateContent" />
 
@@ -20,28 +20,32 @@
 
     <xsd:element name="cancelReservationResponse" type="xsd:string" />
 
+    <xsd:element name="modifyReservation" type="tns:modifyResContent" />
+
+    <xsd:element name="modifyReservationResponse" type="tns:modifyResReply" />
+
     <xsd:element name="queryReservation" type="tns:globalReservationId" />
 
     <xsd:element name="queryReservationResponse" type="tns:resDetails" />
-    
+
     <xsd:element name="getNetworkTopology" type="tns:getTopologyContent" />
-    
+
     <xsd:element name="getNetworkTopologyResponse" type="tns:getTopologyResponseContent" />
-    
+
     <xsd:element name="initiateTopologyPull" type="tns:initiateTopologyPullContent" />
-    
+
     <xsd:element name="initiateTopologyPullResponse" type="tns:initiateTopologyPullResponseContent" />
-    
+
     <xsd:element name="createPath" type="tns:createPathContent" />
-    
+
     <xsd:element name="createPathResponse" type="tns:createPathResponseContent" />
-    
+
     <xsd:element name="refreshPath" type="tns:refreshPathContent" />
-    
+
     <xsd:element name="refreshPathResponse" type="tns:refreshPathResponseContent" />
-    
+
     <xsd:element name="teardownPath" type="tns:teardownPathContent" />
-    
+
     <xsd:element name="teardownPathResponse" type="tns:teardownPathResponseContent" />
 
     <xsd:element name="forward">
@@ -70,7 +74,7 @@
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
-    
+
     <xsd:element name="TopologyFault">
         <xsd:complexType>
             <xsd:sequence>
@@ -78,7 +82,7 @@
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
-    
+
     <xsd:element name="SignalFault">
         <xsd:complexType>
             <xsd:sequence>
@@ -108,67 +112,85 @@
                 maxOccurs="1" minOccurs="0" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
+    <xsd:complexType name="modifyResContent">
+        <xsd:sequence>
+            <xsd:element name="globalReservationId" type="xsd:string" maxOccurs="1" minOccurs="1"/>
+            <xsd:element name="startTime" type="xsd:long" />
+            <xsd:element name="endTime" type="xsd:long" />
+            <xsd:element name="bandwidth" type="xsd:int" />
+            <xsd:element name="description" type="xsd:string" />
+            <xsd:element name="pathInfo" type="tns:pathInfo" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="modifyResReply">
+        <xsd:sequence>
+            <xsd:element name="reservation" type="tns:resDetails" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+
     <xsd:complexType name="getTopologyContent">
         <xsd:sequence>
             <xsd:element name="topologyType" type="xsd:string" minOccurs="1" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <xsd:complexType name="getTopologyResponseContent">
         <xsd:sequence>
            <!-- nmwg goes here -->
            <xsd:element ref="ctrlp:topology" minOccurs="1"/>
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <xsd:complexType name="initiateTopologyPullContent">
         <xsd:sequence>
             <xsd:element name="topologyType" type="xsd:string" minOccurs="1" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <xsd:complexType name="initiateTopologyPullResponseContent">
         <xsd:sequence>
             <xsd:element name="resultMsg" type="xsd:string" minOccurs="1" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
      <xsd:complexType name="createPathContent">
         <xsd:sequence>
             <xsd:element name="token" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="globalReservationId" type="xsd:string" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <xsd:complexType name="createPathResponseContent">
         <xsd:sequence>
             <xsd:element name="globalReservationId" type="xsd:string" />
             <xsd:element name="status" type="xsd:string" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <xsd:complexType name="refreshPathContent">
         <xsd:sequence>
             <xsd:element name="token" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="globalReservationId" type="xsd:string" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
    <xsd:complexType name="refreshPathResponseContent">
         <xsd:sequence>
             <xsd:element name="globalReservationId" type="xsd:string" />
             <xsd:element name="status" type="xsd:string" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <xsd:complexType name="teardownPathContent">
         <xsd:sequence>
             <xsd:element name="token" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="globalReservationId" type="xsd:string" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
    <xsd:complexType name="teardownPathResponseContent">
         <xsd:sequence>
             <xsd:element name="globalReservationId" type="xsd:string"/>
@@ -197,16 +219,16 @@
                     maxOccurs="5" minOccurs="0" />
            <xsd:sequence maxOccurs="1" minOccurs="0">
               <xsd:element name="startTime" type="xsd:long" />
-              <xsd:element name="endTime" type="xsd:long" /> 
+              <xsd:element name="endTime" type="xsd:long" />
            </xsd:sequence>
            <xsd:element name="description" type="xsd:string"
                    maxOccurs="1" minOccurs="0" />
            <xsd:element name="linkId" type="xsd:string"
                    maxOccurs="unbounded" minOccurs="0" />
            <xsd:element name="resRequested" type="xsd:int"
-           			minOccurs="0"/>
+                       minOccurs="0"/>
            <xsd:element name="resOffset" type="xsd:int"
-           			minOccurs="0"/>
+                       minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -235,7 +257,7 @@
                 maxOccurs="1" minOccurs="0" />
             <xsd:element name="refreshPath" type="tns:refreshPathContent"
                 maxOccurs="1" minOccurs="0" />
-            <xsd:element name="teardownPath" 
+            <xsd:element name="teardownPath"
                 type="tns:teardownPathContent" maxOccurs="1" minOccurs="0" />
         </xsd:sequence>
     </xsd:complexType>
@@ -255,8 +277,8 @@
                 maxOccurs="1" minOccurs="0" />
             <xsd:element name="refreshPath" type="tns:refreshPathResponseContent"
                 maxOccurs="1" minOccurs="0" />
-            <xsd:element name="teardownPath" 
-                type="tns:teardownPathResponseContent" maxOccurs="1" 
+            <xsd:element name="teardownPath"
+                type="tns:teardownPathResponseContent" maxOccurs="1"
                 minOccurs="0" />
         </xsd:sequence>
     </xsd:complexType>
@@ -292,8 +314,8 @@
             <xsd:element name="destHost" type="xsd:string" />
             <xsd:element name="protocol" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="srcIpPort" type="xsd:int" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="destIpPort" type="xsd:int" maxOccurs="1" minOccurs="0" />  
-            <xsd:element name="dscp" type="xsd:string" maxOccurs="1" minOccurs="0" />  
+            <xsd:element name="destIpPort" type="xsd:int" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="dscp" type="xsd:string" maxOccurs="1" minOccurs="0" />
         </xsd:sequence>
     </xsd:complexType>
 
@@ -305,7 +327,7 @@
                          maxOccurs="1" minOccurs="0" />
         </xsd:sequence>
     </xsd:complexType>
-    
+
     <!-- VLAN tag element -->
     <xsd:complexType name="vlanTag">
          <xsd:simpleContent>
@@ -314,7 +336,7 @@
              </xsd:extension>
          </xsd:simpleContent>
     </xsd:complexType>
-    
+
     <!--  Axis2 1.1.1 doesn't handle enumerations correctly.
     <xsd:simpleType name="portIDTypeType">
         <xsd:restriction base="xsd:string">
@@ -323,7 +345,7 @@
             <xsd:enumeration value="tagged-group" />
         </xsd:restriction>
     </xsd:simpleType>
-    
+
     <xsd:simpleType name="pathSetupType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="signal-xml" />
@@ -331,7 +353,7 @@
             <xsd:enumeration value="timer-automatic" />
         </xsd:restriction>
     </xsd:simpleType>
-    
+
     <xsd:simpleType name="topologyRequestType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="all" />
@@ -342,7 +364,7 @@
             <xsd:enumeration value="topologyDelta" />
         </xsd:restriction>
     </xsd:simpleType>
-    
+
     <xsd:simpleType name="resStatus">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="PENDING" />
@@ -354,14 +376,14 @@
             <xsd:enumeration value="PRECANCEL" />
         </xsd:restriction>
     </xsd:simpleType>
-    
+
     <xsd:simpleType name="resProtocolType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="UDP" />
             <xsd:enumeration value="TCP" />
         </xsd:restriction>
     </xsd:simpleType> -->
-    
+
     <!--  WS1-BP approved way to pass null arguments -->
     <xsd:complexType name="emptyArg">
         <xsd:sequence>

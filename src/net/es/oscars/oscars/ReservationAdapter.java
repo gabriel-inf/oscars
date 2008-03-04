@@ -114,18 +114,18 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    /*
     public ModifyResReply
         modify(ModifyResContent params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
 
         ModifyResReply reply = null;
 
+        // TODO: actually finish this!
+
         this.log.info("modify.start");
         this.log.info("modify.finish");
         return reply;
     }
-    */
 
     /**
      * @param params GlobalReservationId instance with with request params.
