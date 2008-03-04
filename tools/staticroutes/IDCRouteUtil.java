@@ -4,6 +4,7 @@ import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.*;
 
+import org.apache.log4j.*;
 import org.hibernate.*;
 
 /**
@@ -16,6 +17,7 @@ import org.hibernate.*;
 public class IDCRouteUtil {
     private HashMap<String, String> params;
     private String dbname;
+    private Logger log;
     
     /**
      * Constructor that accepts array of command-line parameters
@@ -23,6 +25,7 @@ public class IDCRouteUtil {
      * @param args String array containing command line parameters
      */
     public IDCRouteUtil(String[] args){
+        this.log = Logger.getLogger(this.getClass());
         this.params = new HashMap<String, String>();
         this.dbname = "bss";
         String function = this.parseParams(args);

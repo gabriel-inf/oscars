@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="idcrouteutil" default="all">
+
+    <property environment="env" />
+    <property name="build.home" value="../.." />
+    <property name="build.classes" value="${build.home}/build/WEB-INF/classes" />
+    <property name="route.home" value="." />
+
+    <path id="compile.path">
+        <pathelement location="${build.classes}" />
+    </path>
+
+    <target name="all" depends="routeutil" description="Do it all" />
+
+    <target name="clean" description="Delete main build directory">
+        <delete dir="${route.home}/classes" />
+        <delete dir="${route.home}/lib" />
+        <delete failonerror="false">
+            <fileset dir="${route.home}" includes="IDCRouteUtil.jar" />
+        </delete>
+        <delete dir="${route.home}/classes" />
+    </target>
+
+    <target name="prepare" description="Create build directoy and copy in files">
+        <mkdir dir="${route.home}/classes"/>
+        <copy todir="lib">
+            <fileset dir="${build.home}/lib" includes="hibernate3.jar,dom4j-1.6.1.jar,commons-collections-3.2.jar,jta.jar,mysql-connector-java-*.jar,c3p0-0.9.1.jar,cglib-2.1.3.jar,asm.jar,antlr-2.7.6.jar"/>
+            <fileset dir="${build.home}/lib/axis2" includes="log4j-1.2.14.jar,commons-logging-1.1.jar"/>
+        </copy>
+        <copy todir="classes">
+            <fileset dir="${route.home}" includes="log4j.properties" />
+        </copy>
+    </target>
+    
+    <target name="compile" description="Compile Java sources" depends="prepare">
+        <javac srcdir="." includes="IDCRouteUtil.java" destdir="${route.home}/classes" classpathref="compile.path">
+            <classpath>
+                <fileset dir="${build.home}/lib" includes="**/*.jar"/>
+                <fileset dir="${build.home}/build/WEB-INF/classes" includes="**/*.jar" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="routeutil" description="Create IDCRouteUtil.jar file" depends="compile" >
+        <jar destfile="IDCRouteUtil.jar">
+            <!-- Tweak the manifest *to do* the right thing -->
+            <manifest>
+                  <attribute name="Main-Class" value="IDCRouteUtil"/>
+                  <attribute name="Class-Path" value="lib/hibernate3.jar lib/log4j-1.2.14.jar lib/commons-logging-1.1.jar lib/dom4j-1.6.1.jar lib/commons-collections-3.2.jar lib/jta.jar lib/mysql-connector-java-3.1.13.jar lib/c3p0-0.9.1.jar lib/cglib-2.1.3.jar lib/asm.jar lib/antlr-2.7.6.jar"/>
+            </manifest>
+            <fileset dir="${build.classes}" includes="**/*.class,**/*.xml" />
+            <fileset dir="${route.home}/classes"  includes="*.class,log4j.properties" />
+            <!--
+                <fileset dir="${build.home}" includes="lib/hibernate3.jar, lib/log4j-1.2.13.jar, lib/commons-logging-1.1.jar"/> 
+             -->
+        </jar>
+    </target>
+
+</project>
+
+
