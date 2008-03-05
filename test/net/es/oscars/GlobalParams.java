@@ -14,4 +14,9 @@ public class GlobalParams {
     public static String getReservationTestDBName() {
         return "testbss";
     }
+
+    public static String getExportedTopologyFname() {
+        return "/tmp/exportedTopology.xml";
+    }
+
 }
