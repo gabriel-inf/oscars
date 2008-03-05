@@ -16,45 +16,195 @@ Components &gt; <a href="tss.html">Topology Exchange</a>
 </div>
 </div>
 <h1>TSS component notes</h1>
-
 <h2>Overview</h2>
-
-<p>The TSS component deals with network topology database exchange 
-between interdomain controllers (<i>IDC</i>). IDCs need to exchange topology
+<p>The TSS component deals with network topology database exchange
+between interdomain controllers (<i>IDC</i>). IDCs need to exchange
+topology
 information to facilitate interdomain pathfinding. The TSS subsystem
 is responsible for passing out local topology information, and for
-importing topology information from other IDCs.</p>
-<p> Currently OSCARS supports these operations on two different 
+importing topology information from other IDCs. OSCARS uses the Open
+Grid&nbsp; Forum Network Measurements Working Group (NMWG) control
+plane <a
+ href="http://anonsvn.internet2.edu/svn/nmwg/trunk/nmwg/schema/rnc/topo/nmtopo_ctrlplane.rnc">XML
+schema&nbsp;</a> developed by DICE to describe topology. <br>
+</p>
+<p> Currently OSCARS supports these operations on two different
 implementations of the topology database:</p>
 <ul>
-<li>Local SQL/Hibernate topology DB</li>
-<li>Remote topology web service (TERCE)</li>
+  <li>Local SQL/Hibernate topology DB</li>
+  <li>Remote topology web service (TERCE)</li>
 </ul>
-<p>The OSCARS administrator can choose which method of topology exchange 
-database (<i>TEDB</i>) they want to use at configuration time.</p>
-<p>Moreover, OSCARS developers with different needs may develop their 
-own TEDB implementation by creating a new class that implements 
-the TEDB java interface.</p>
-
+<p>The OSCARS administrator can choose which method of topology
+exchange database (<i>TEDB</i>) they want to use at configuration time.</p>
+<p>Moreover, OSCARS developers with different needs may develop their
+own TEDB implementation by creating a new class that implements the
+TEDB java interface.</p>
 <h2>Configuration</h2>
-<p>The admin must choose which TEDB method they want to run by configuring the 
-OSCARS server through oscars.properties. The relevant property is 
-tedb.tedbMethod. Valid values are:</p>
+<p>The admin must choose which TEDB method they want to run by
+configuring the OSCARS server through oscars.properties. The relevant
+property is tedb.tedbMethod. Valid values are:</p>
 <ul>
-<li><b>terce</b> for the interface to TERCE</li>
-<li><b>oscars</b> for the local Hibernate DB</li>
+  <li><b>terce</b> for the interface to TERCE</li>
+  <li><b>oscars</b> for the local Hibernate DB</li>
 </ul>
-
-<p>In both those cases the administrator must initialize the topology 
+<p>In both those cases the administrator must initialize the topology
 database accordingly. </p>
-
 <h2>Development</h2>
-<p>To develop a new TEDB method, the developer should implement the 
-net.es.oscars.tss.TEDB interface. Then a short name for the method must 
-be chosen (in addition to "oscars" and "terce"), and TEDBFactory must 
-be modified to load the appropriate class when the tedb.tedbMethod 
-property has that value. </p>
-
+<p>To develop a new TEDB method, the developer should implement the
+net.es.oscars.tss.TEDB interface. Then a short name for the method must
+be chosen (in addition to "oscars" and "terce"), and TEDBFactory must
+be modified to load the appropriate class when the tedb.tedbMethod
+property has that value.<br>
+</p>
+<h2>BSS Topology Tables</h2>
+<br>
+OSCARS assumes that you have described your topology in the Open Grid
+Forum (OGF) Network Measurement Working Group (NMWG) control plane
+topology schema. The NMWG topology schema consists of a hierarchy of <span
+ style="font-weight: bold;">domains, nodes, ports,</span> and <span
+ style="font-weight: bold;">links</span>. The table below describes
+each of these elements<br>
+<br>
+<table
+ style="margin-left: auto; margin-right: auto; text-align: left; width: 572px; height: 247px;"
+ border="1" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <th style="vertical-align: top; width: 70px;">Element<br>
+      </th>
+      <th style="vertical-align: top; width: 120px;">Child Element<br>
+      </th>
+      <th style="vertical-align: top;">Description<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 70px;">domain<br>
+      </td>
+      <td style="vertical-align: top; width: 120px;">node<br>
+      </td>
+      <td style="vertical-align: top;">Represents an
+administratively-similar set of devices<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 70px;">node<br>
+      </td>
+      <td style="vertical-align: top; width: 120px;">port<br>
+      </td>
+      <td style="vertical-align: top;">Represents a network device. For
+this installation, it represents a VLSR<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 70px;">port<br>
+      </td>
+      <td style="vertical-align: top; width: 120px;">link<br>
+      </td>
+      <td style="vertical-align: top;">Represent a physical or virtual
+port on the network. Corresponds to a physical port number and/or
+DRAGON local-id for this installation.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 70px;">link<br>
+      </td>
+      <td style="vertical-align: top; width: 120px;"><br>
+      </td>
+      <td style="vertical-align: top;">Represents a connection between
+two ports. For the purposes of this installation, you will likely have
+one port per link.<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The topology identifiers that are used are Uniform Resource Names (URN)
+that contain not only an ID for the element defining it, but also its
+parent elements. This type of identifier is referred to as a
+fully-qualified identifier. These IDs always begin with the prefix
+&#8220;urn:ogf:network:&#8221;. This prefix is followed by a colon-delimited list
+of identifiers appropriate for that hierarchical level. For example, a
+fully-qualified port ID contains a domain ID, a node ID, and the port
+ID. The hierarchical level of each portion is indicated by either a
+&#8220;domain=&#8221;,&#8221;node=&#8221;, &#8220;port=&#8221;, or &#8220;link=&#8221; prefix.Examples of different
+fully-qualified link ID types from the example I2 topology files that
+come with the software are shown below:<br>
+<br>
+<table
+ style="margin-left: auto; margin-right: auto; text-align: left; width: 639px; height: 138px;"
+ border="1" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <th style="vertical-align: top;">Type<br>
+      </th>
+      <th style="vertical-align: top;">Fully-Qualified Identifier<br>
+      </th>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">domain ID<br>
+      </td>
+      <td style="vertical-align: top;">urn:ogf:network:domain=blue.pod.lan<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">node ID<br>
+      </td>
+      <td style="vertical-align: top;">urn:ogf:network:domain=blue.pod.lan:node=vlsr1<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">port ID<br>
+      </td>
+      <td style="vertical-align: top;">urn:ogf:network:domain=blue.pod.lan:node=vlsr1:port=3<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">link ID<br>
+      </td>
+      <td style="vertical-align: top;">urn:ogf:network:domain=blue.pod.lan:node=vlsr1:port=3:link=11.2.1.2<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<p>
+The <span style="font-weight: bold;">domains table</span> contains the
+following information about each domain that we can interact with:<br>
+</p>
+<pre> 	Integer id              /** identifier field */  <br>	String topologyIdent 	/** persistant field */ <br>	String name          	/** persistant field */	<br>	String url           	/** persistant field: of OSCARS service for the domain */<br>	String abbrev        	/** persistant field */ <br>	boolean local         	/** persistant field: is this the local domain */</pre>
+<p>The <span style="font-weight: bold;">nodes table</span> contains
+the following information about each node:
+</p>
+<pre>	Integer id        	/** identifier field */ <br>	boolean valid         	/** persistant field */ <br>	String topologyIdent 	/** persistant field */ <br>	Integer domainId      	/** persistant field: parent domain */</pre>
+<p>The <span style="font-weight: bold;">ports table</span> contains
+the following information for each port
+</p>
+<pre>	Integer id                      /** identifier field */ 	<br>	boolean valid                   /** persistant field */  <br>	Integer snmpIndex               /** persistant field */  <br>	String topologyIdent            /** persistant field */  <br>	Long capacity                  	/** persistant field */  <br>	Long maximumReservableCapacity 	/** persistant field */  <br>	Long minimumReservableCapacity 	/** persistant field */<br>&nbsp;	Long unreservedCapacity        	/** persistant field */   <br>	String alias                   	/** nullable persistent field */ <br>	Integer nodeId                 	/** persistant field: parent node */</pre>
+<p>snmpIndex seems to always be set to 1 and not used.</p>
+<p>The <span style="font-weight: bold;">links table</span> contains
+the following information for each link in
+the local
+domain:
+</p>
+<pre>	Integer id 			/** identifier field */ <br>	boolean valid                   /** persistant field */  <br>	Integer snmpIndex               /** nullable persistent field */ <br>	String topologyIdent            /** persistant field */ <br>	String trafficEngineeringMetric /** nullable persistent field */ <br>	Long capacity                  	/** nullable persistent field */ <br>	Long maximumReservableCapacity 	/** nullable persistent field */<br>	Long minimumReservableCapacity 	/** nullable persistent field */ <br>	Long granularity               	/** nullable persistent field */  <br>	Long unreservedCapacity        	/** nullable persistent field */  <br>	String alias                    /** nullable persistent field */ <br>	Integer remoteLinkId            /** nullable persistent field */ <br>	Integer portId                 	/** persistant field: parent port */ <br></pre>
+Where the topologyIdent is a logical name that identifies the link;
+trafficEngineeringMetric is a description of a traffic metric that may
+be used
+when selecting a path: granularity is the increments at which the
+bandwidth may
+be reserved; remoteLinkId is the link on the other end of the
+connection; and portId is an index into the ports table. If the&nbsp;
+capacity fields are null, the information is taken from the parent
+port. <span style="font-weight: bold;">(?)</span><br>
+<br>
+The <span style="font-weight: bold;">ipaddrs table</span> contains the
+following information:<br>
+<pre>	Integer id              /** identifier field */ <br>	boolean valid  		/** persistant field */ <br>	String IP     		/** persistant field */ <br>	Integer linkId 		/** persistant field */<br>Not sure how this is used. what is the relation between links and ipaddrs.</pre>
+<span style="font-weight: bold;">nodeAddress table</span> - not sure
+how it is used.
+<pre>	Integer id      	/** identifier field */  <br>	String address 		/** persistant field: dotted IP address */ <br>	Integer nodeId  	/** persistant field: corresponding entry in nodes table */ <br><br></pre>
+<br>
+<br>
 <!--#include virtual="footer.html" -->
 </body>
 </html>

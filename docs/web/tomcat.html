@@ -8,16 +8,17 @@
 </head>
 <body>
 <!--#include virtual="header.html" -->
-<div id="topBar" class="topBar" >
-<div class="topBarDiv" > &nbsp;
-<a  href="index.html">home</a> &gt; <a href="dependencies.html">Dependencies</a>
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp;
+<a href="index.html">home</a> &gt; <a href="dependencies.html">Dependencies</a>
 &gt; <a href="tomcat.html">Tomcat/Axis2 configuration</a>
 </div>
 </div>
 <h2>Tomcat Configuration</h2>
 <h3>$CATALINA_HOME/conf</h3>
 <ul>
-  <li> server.xml - defines standalone Tomcat server - service name is
+  <li><span style="font-weight: bold;"> server.xml</span> - defines
+standalone Tomcat server - service name is
 Catalina <br>
   </li>
   <ul>
@@ -32,29 +33,34 @@ https connectors.</li>
 access the connector</li>
     </ul>
   </ul>
-  <li> web.xml- defines default values for servlets for static
+  <li><span style="font-weight: bold;"> web.xml</span> - defines
+default values for servlets for static
 resources, e.g. jsp, We used the sample in the distribution but enabled
 the SSI filter to enable server includes on all html files.</li>
-  <li> context.xml - used distribution sample</li>
-  <li> logging.properties - can be edited to change some logging levels</li>
-  <li> tomcat-users.xml - user names and passwords for access to the
+  <li><span style="font-weight: bold;"> context.xml</span> - Uncomment
+the line&nbsp;&nbsp;&nbsp; &lt;Manager pathname="" /&gt; to not allow
+sessions to be saved between Tomcat restarts.<br>
+  </li>
+  <li><span style="font-weight: bold;"> logging.properties</span> - can
+be edited to change some logging levels</li>
+  <li><span style="font-weight: bold;"> tomcat-users.xml </span>- user
+names and passwords for access to the
 Tomcat administrative web pages</li>
 </ul>
 <h3>$CATALINA_HOME/common</h3>
 Classes and libraries shared by the Tomcat server and all the
 webapps.&nbsp;
-We added common/classes/log4j.properties and common/lib/log4j.jar in
-order to get Tomcat to do log4j. By default it just uses commons
-logging. The logging by the oscars.war and oscars.aar pick up defaults
-from this
-file, e.g the root.category log. <br>
+We added common/classes/log4j.properties and common/lib/log4j.jar and
+commons-logging.jar in
+order to get Tomcat to do log4j logging. By default it just uses
+commons
+logging.
 <h3>$CATALINA_HOME/shared</h3>
 Contains classes and libraries shared by all the webapps but not the
 Tomcat server. This has been where we have put files that can't seem to
 be found from the axis2.war or the OSCARS.aar. Currently the contents
 are:<br>
 <ul>
-  <li>log4j.properties</li>
   <li>classes/repo - files that need to be on the classpath as
 repo/&lt;filename&gt; These are files used when OSCARS is forwarding a
 request, see <a href="#server-client">below</a>
@@ -76,18 +82,12 @@ repo/sec-client.jks </li>
       <li>oscars.properties </li>
       <li>ciscoSetupL2.xml </li>
       <li>ciscoTeardownL2.xml </li>
-      <li>cisco_L2circuit-setup.template </li>
-      <li>cisco_L2circuit-teardown.template </li>
       <li>juniperSetupL2.xml </li>
       <li>juniperSetupL3.xml </li>
       <li>juniperTeardownL2.xml </li>
       <li>juniperTeardownL3.xml </li>
-      <li>pss.key </li>
       <li>test.properties</li>
       <li>perfSONAR-LSQuery.xml </li>
-      <li>setupTemplate.xml </li>
-      <li>setupVpnTemplate.xml </li>
-      <li>teardownTemplate.xml </li>
       <li>test.properties </li>
     </ul>
   </li>
@@ -129,6 +129,13 @@ axis admin)</li>
       <li> defines phase order (added soapMonitor phase)</li>
     </ul>
   </li>
+  <li>$CATALINA_HOME/webapps/axis2/WEB-INF/classes/log4j.properties<br>
+  </li>
+  <ul>
+    <li>Our version is copied from conf/server/axis2.log4j.properties
+by the ant target deployaar. The OSCARS.aar gets it from here and not
+from within OSCARS.aar. </li>
+  </ul>
 </ul>
 <h2><a name="oscars"></a>OSCARS Configuration</h2>
 <h3>Server</h3>

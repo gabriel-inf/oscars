@@ -9,13 +9,26 @@
 <body>
 <!--#include virtual="header.html" -->
 <div id="topBar" class="topBar">
-<div class="topBarDiv" > &nbsp;
+<div class="topBarDiv"> &nbsp;
 <a href="index.html">home</a> &gt; <a href="dependencies.html">Dependencies</a>
 </div>
 </div>
-<table style="margin-top: 10px" cellspacing=0 width="95%">
+<table style="margin-top: 10px;" cellspacing="0" width="95%">
+  <tbody>
     <tr>
-      <td rowspan="3" valign="top"><!--#include virtual="sideMenu.html" -->
+      <td rowspan="3" valign="top">
+      <div class="leftcol" nowrap="nowrap" valign="top" align="left">
+      <div class="frame item">
+      <div class="name">Configuration</div>
+      <div class="content"> <a href="database.html">MySQL tables</a> <a
+ href="tomcat.html">Tomcat</a> <a href="tomcat.html#axis2">Axis2 with
+Rampart</a>
+      <a href="tomcat.html#oscars">OSCARS</a> <a
+ href="msgSecurity.html">Keystores</a>
+      <a href="logging.html">Logging</a> </div>
+      </div>
+      </div>
+      <br>
       </td>
       <td>
       <h2>OSCARS Dependencies</h2>
@@ -57,6 +70,15 @@ communication from a client to the Tomcat server is via https. A
 description of all the necessary keystores and configuration files can
 be found in the <a href="msgSecurity.html">Message Security notes</a>.<br>
       </p>
+      <h3><a href="http://logging.apache.org/log4j/1.2/">Log4j logging</a></h3>
+Both Tomcat and Axis2 can be configured to use Log4j logging. OSCARS
+also uses log4j. The various configuration files that are used are
+explained <a href="logging.html">here</a>.<br>
+      <h3><a href="http://dojotoolkit.org/">Dojo</a></h3>
+The Dojo toolkit is used by the OSCARS web pages. The latest release
+can be downloaded from <a href="http://dojotoolkit.org/downloads">here</a><br>
+      <br>
+      <p> </p>
       <p>A much more complete description of how to install and
 configure all these packages can be found in the <a
  href="DCN-SUITE-OSCARS-INSTALL.pdf">OSCARS-DRAGON Installation Manual</a>.<br>
@@ -64,8 +86,11 @@ configure all these packages can be found in the <a
       </div>
       </td>
     </tr>
-    <tr><td><!--#include virtual="footer.html" -->
-    </td></tr>
+    <tr>
+      <td><!--#include virtual="footer.html" --> <br>
+      </td>
+    </tr>
+  </tbody>
 </table>
 </body>
 </html>

@@ -77,8 +77,8 @@ h3 {
 .frame .content { margin: 0px; }
 
 .item { border: solid 1px #2277cc; background-color: #f0f5ff; }
-.item .name { font-weight: bold; background-color: #2277cc; color: #002244; padding: 5px 5px 5px 10px; } /* ESnet Blue */
-.item .subname { font-weight: bold; background-color: #447799; color: #002244; padding: 3px 5px 3px 10px; } /* ESnet Blue */
+.item .name { font-weight: bold; background-color: #2277cc; color: #ffffff; padding: 5px 5px 5px 10px; } /* ESnet Blue */
+.item .subname { font-weight: bold; background-color: #447799; color: #ffffff; padding: 3px 5px 3px 10px; } /* ESnet Blue */
 .item a:hover { border: solid 1px #aaa; background-color: #ddd; } /* greys */
 .item a {
   text-decoration: none;
