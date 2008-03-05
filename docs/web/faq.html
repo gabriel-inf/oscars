@@ -25,8 +25,18 @@ load</a><br>
 <div style="margin-left: 40px;"><a href="#CodeChanges">Code changes
 don't show up after a deploy</a><br>
 <a href="#BackupDatabases">How to back up data bases</a><br>
+</div>
+<a href="#Configuration">Configuration</a><br>
+<div style="margin-left: 40px;"><a href="#SESSIONS.ser">File not found:
+SESSIONS.ser</a><br>
+</div>
+<a href="#Security">Security</a>
+<br>
+<div style="margin-left: 40px;"><a href="#valid_certification_path">Unable
+to find a valid certification path</a>
 <br>
 </div>
+<br>
 <br>
 <h2><a name="Installation"></a>Installation</h2>
 <ul>
@@ -78,6 +88,27 @@ and its required classes.</li>
   </ul>
 </ul>
 <h2><a name="Configuration"></a>Configuration</h2>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="SESSIONS.ser"></a>File not found: SESSIONS.ser<br>
+<br>
+</span>I get the following error when Tomcat is shut down.<br>
+<br>
+[ERROR] org.apache.catalina.session.ManagerBase -&nbsp; IOException
+while saving persisted sessions: java.io.FileNotFoundException:
+/usr/local/apache-tomcat-5.5.25/work/Catalina/localhost/axis2/SESSIONS.ser
+(No such file or directory)<br>
+java.io.FileNotFoundException:
+/usr/local/apache-tomcat-5.5.25/work/Catalina/localhost/axis2/SESSIONS.ser
+(No such file or directory)<br>
+<br>
+Uncomment out the last line in conf/context.xml<br>
+<br>
+&nbsp;&nbsp;&nbsp; &lt;!-- Uncomment this to disable session
+persistence across Tomcat restarts --&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;Manager pathname="" /&gt;<br>
+</div>
+<br>
+<br>
 <h2><a name="Maintenance"></a>Maintenance</h2>
 <ul>
   <li><b><a name="CodeChanges"></a>I ran ant deployall to compile and
@@ -90,10 +121,14 @@ start them again. </li>
 I do this?</b><br>
 First, stop Tomcat and the scheduler process. Then, back up the bss and
 aaa
-MySQL databases with your favourite MySQL backup tool like mysqldump. </li>
+MySQL databases with your favorite MySQL backup tool like mysqldump. </li>
 </ul>
 <h2><a name="Security"></a>Security</h2>
-&nbsp;&nbsp;&nbsp; I am trying to test the service interface from a
+<div style="margin-left: 40px;">&nbsp;&nbsp; <a
+ name="valid_certification_path"></a><span style="font-weight: bold;">unable
+to find valid certification path to requested target</span> <br>
+<br>
+I am trying to test the service interface from a
 client on the server machine. I am using the server url of
 https://localhost:8443/axis2/services/OSCARS and get the following
 error:<br>
@@ -102,11 +137,24 @@ request: sun.security.validator.ValidatorException: PKIX path building
 failed: sun.security.provider.certpath.SunCertPathBuilderException:
 unable to find valid certification path to requested target<br>
 <br>
-Try using the dotted ip address of the machine instead of localhost.
-e.g 192.168.2.9<br>
-<br>
-<br>
-<br>
+If you configure your server to listen on an http port as well as https
+you can test it using plain http. See conf/server.xml to configure the
+ports on which Tomcat is listening.</div>
+<p style="margin-left: 40px;">
+For SSL to work, the CN in the certificate that is in Tomcat's keystore
+(defined
+in conf/server.xml) must match the name of the host on which Tomcat is
+running
+and the certificate of the issuer of that certificate must be in the
+client's
+repo/ssl-keystore.jks. If you are using a self-signed certificate for
+Tomcat
+that certificate must be in repo/ssl-keystore.jks. You can use keytool
+to export
+the certificate from Tomcat's keystore and import it into the client
+ssl-keystore.
+Use keytool -help to tell you how to do this. <br>
+</p>
 <h2><a name="Web_Interface"></a>Web Interface</h2>
 <h2><a name="Web_Service"></a>Web Service</h2>
 <h2><a name="Error_messages"></a>Error messages</h2>
