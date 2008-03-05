@@ -9,6 +9,7 @@ import org.hibernate.Hibernate;
 
 import java.io.Serializable;
 
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -55,19 +56,37 @@ public class Port extends HibernateBean implements Serializable {
     /** default constructor */
     public Port() {
     }
-    
+    /** initializing constructor */
+    public Port(Node nodeDB, boolean init) {
+        if (!init) {
+            return;
+        }
+
+        this.setValid(true);
+        this.setTopologyIdent("changeme");
+        this.setCapacity(0L);
+        this.setMaximumReservableCapacity(0L);
+        this.setMinimumReservableCapacity(0L);
+        this.setUnreservedCapacity(0L);
+        this.setGranularity(0L);
+        this.setAlias("changeme");
+        this.setSnmpIndex(1);
+        this.setLinks(new HashSet());
+        this.setNode(nodeDB);
+    }
+
     public Port(Port port) {
-    	this.valid = port.isValid();
-    	this.alias = port.getAlias();
-    	this.capacity = port.getCapacity();
-    	this.granularity = port.getGranularity();
-    	this.maximumReservableCapacity = port.getMaximumReservableCapacity();
-    	this.minimumReservableCapacity = port.getMinimumReservableCapacity();
-    	this.snmpIndex = port.getSnmpIndex();
-    	this.topologyIdent = port.getTopologyIdent();
-    	this.links = port.getLinks();
-    	this.unreservedCapacity = port.getUnreservedCapacity();
-    	this.node = port.getNode();
+        this.valid = port.isValid();
+        this.alias = port.getAlias();
+        this.capacity = port.getCapacity();
+        this.granularity = port.getGranularity();
+        this.maximumReservableCapacity = port.getMaximumReservableCapacity();
+        this.minimumReservableCapacity = port.getMinimumReservableCapacity();
+        this.snmpIndex = port.getSnmpIndex();
+        this.topologyIdent = port.getTopologyIdent();
+        this.links = port.getLinks();
+        this.unreservedCapacity = port.getUnreservedCapacity();
+        this.node = port.getNode();
     }
 
     /**
@@ -231,11 +250,22 @@ public class Port extends HibernateBean implements Serializable {
     public void removeLink(Link link) {
         this.links.remove(link);
     }
-    
+
     public boolean equalsTopoId(Port port) {
-    	String thisFQTI = TopologyUtil.getFQTI(this);
-    	String thatFQTI = TopologyUtil.getFQTI(port);
-    	return thisFQTI.equals(thatFQTI);
+        String thisFQTI = this.getFQTI();
+        String thatFQTI = port.getFQTI();
+        return thisFQTI.equals(thatFQTI);
+    }
+
+    /**
+     * Constructs the fully qualified topology identifier
+     * @return the topology identifier
+     */
+    public String getFQTI() {
+        String parentFqti = this.getNode().getFQTI();
+        String topoId = TopologyUtil.getLSTI(this.getTopologyIdent(), "Port");
+
+        return (parentFqti + ":port=" + topoId);
     }
 
     // need to override superclass because dealing with transient
@@ -260,7 +290,7 @@ public class Port extends HibernateBean implements Serializable {
         } else {
             // used in updating the topology database; only these fields
             // are important in determining equality
-        	/*
+            /*
             return new EqualsBuilder().append(this.getSnmpIndex(),
                 castOther.getSnmpIndex())
                                       .append(this.getNode(),

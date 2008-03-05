@@ -9,7 +9,7 @@ import org.hibernate.*;
 
 /**
  * Allows users to view, add and delete routes to the static routing
- * database. Specifically, the table it affects are the interdomainRoutes 
+ * database. Specifically, the table it affects are the interdomainRoutes
  * and routeElems tables.
  *
  * @author Andrew Lake (alake@internet2.edu)
@@ -18,7 +18,7 @@ public class IDCRouteUtil {
     private HashMap<String, String> params;
     private String dbname;
     private Logger log;
-    
+
     /**
      * Constructor that accepts array of command-line parameters
      *
@@ -29,7 +29,7 @@ public class IDCRouteUtil {
         this.params = new HashMap<String, String>();
         this.dbname = "bss";
         String function = this.parseParams(args);
-        
+
         if(function.equals("add")){
             this.addRoute();
         }else if(function.equals("del")){
@@ -38,7 +38,7 @@ public class IDCRouteUtil {
             this.showRoutes();
         }
     }
-    
+
     /**
      * Parses parameters from the command line and stores them in a globally
      * undertood hash. Also returns the function (show, add, or del) the user
@@ -52,11 +52,11 @@ public class IDCRouteUtil {
         String function = null;
         int start = 0;
         function = "show";
-        
+
         if(args == null || args.length < 1){
             return function;
         }
-        
+
         if(args[0].equals("add") || args[0].equals("del")){
             start = 1;
             function = args[0];
@@ -64,19 +64,19 @@ public class IDCRouteUtil {
             this.printHelp();
             System.exit(0);
         }
-        
+
         for(int i = start; i < args.length; i++){
             String arg = args[i];
-            
-            if(state.equals("source") || state.equals("dest") || 
+
+            if(state.equals("source") || state.equals("dest") ||
                 state.equals("egress") || state.equals("id")){
                 params.put(state, arg);
                 state = "";
-            }else if(state.equals("") && (arg.equals("-source") || 
-                     arg.equals("-dest") || arg.equals("-egress") || 
+            }else if(state.equals("") && (arg.equals("-source") ||
+                     arg.equals("-dest") || arg.equals("-egress") ||
                      arg.equals("-id"))){
                 state = arg.replaceAll("^-", "");
-            }else if(state.equals("") && arg.equals("-multi") || 
+            }else if(state.equals("") && arg.equals("-multi") ||
                      arg.equals("-loose") || arg.equals("-default") ||
                      arg.equals("-detail")){
                 String key = arg.replaceAll("^-", "");
@@ -89,16 +89,16 @@ public class IDCRouteUtil {
                 System.exit(0);
             }
         }
-        
+
         if(!state.equals("")){
-            System.err.println("You did not specify a value for the \"" + 
+            System.err.println("You did not specify a value for the \"" +
                                args[args.length -1] + "\" option");
             System.exit(0);
         }
-        
+
         return function;
     }
-    
+
     /**
      * Adds new routes to the database
      */
@@ -108,11 +108,11 @@ public class IDCRouteUtil {
         String srcURN = params.get("source");
         String destURN = params.get("dest");
         String file = params.get("file");
-        boolean hasMulti = (params.containsKey("multi") && 
+        boolean hasMulti = (params.containsKey("multi") &&
                          params.get("multi").equals("1"));
-        boolean isDefault = (params.containsKey("default") && 
+        boolean isDefault = (params.containsKey("default") &&
                          params.get("default").equals("1"));
-        boolean isLoose = (params.containsKey("loose") && 
+        boolean isLoose = (params.containsKey("loose") &&
                          params.get("loose").equals("1"));
         Node srcNode = null;
         Port srcPort = null;
@@ -123,19 +123,19 @@ public class IDCRouteUtil {
         Link destLink = null;
         Link egressLink = null;
         ArrayList<String> hops = new ArrayList<String>();
-        
+
         /* Validate parameters */
         if(egressURN == null && file == null && (!hasMulti)){
             System.err.println("You must specify the -egress or -multi option");
             System.exit(0);
         }
-        
+
         if(srcURN == null && destURN == null && (!isDefault)){
             System.err.println("You must specify the -source, -dest, and/or " +
                                "-default option");
             System.exit(0);
         }
-        
+
         /* Init database */
         Initializer initializer = new Initializer();
         ArrayList<String> dbnames = new ArrayList<String>();
@@ -144,7 +144,7 @@ public class IDCRouteUtil {
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
-        
+
         DomainDAO domainDAO = new DomainDAO("bss");
 
         /* Get source */
@@ -158,7 +158,7 @@ public class IDCRouteUtil {
                                    "source of a createReservation request)");
                 System.exit(0);
             }
-            
+
             try{
                 if(urnType == TopologyUtil.NODE_URN){
                     strURNType = "node ";
@@ -175,7 +175,7 @@ public class IDCRouteUtil {
                     System.exit(0);
                 }
             }catch(BSSException e){
-                System.err.println("Could not find the specified source" + 
+                System.err.println("Could not find the specified source" +
                                     strURNType + "URN " + srcURN + " in the " +
                                     "database. You should verify that you " +
                                     "entered the URN correctly and that " +
@@ -184,32 +184,32 @@ public class IDCRouteUtil {
                 System.exit(0);
             }
         }
-        
+
         /* Get destination */
         if(destURN != null){
-            URNElements urnElems = this.prepareEntry(destURN, destDomain, 
+            URNElements urnElems = this.prepareEntry(destURN, destDomain,
                                       destNode, destPort, destLink, bss);
             destDomain = urnElems.domain;
             destNode = urnElems.node;
             destPort = urnElems.port;
             destLink = urnElems.link;
-            if(destDomain == null && destNode == null && 
+            if(destDomain == null && destNode == null &&
                destPort == null && destLink == null){
                 System.err.println("Invalid destination URN given.");
                 System.exit(0);
             }
         }
-        
+
         /* Get egress link */
         if(egressURN != null){
             hops.add(egressURN);
         }
-        
+
         /* Get any hops past egress */
         if(hasMulti){
             hops = this.processMulti(hops, isLoose);
         }
-        
+
         int hopCount = 0;
         RouteElem elem = null;
         RouteElem prevElem = null;
@@ -221,12 +221,12 @@ public class IDCRouteUtil {
             Port port = null;
             Link link = null;
             String domainId = TopologyUtil.getURNDomainId(hop);
-            
+
             if(domainId == null){
                 System.err.println("Invalid URN provided.");
                 System.exit(0);
             }
-            
+
             /* Handle egress link */
             if(hopCount == (hops.size() - 1)){
                 if(!domainDAO.isLocal(domainId)){
@@ -258,7 +258,7 @@ public class IDCRouteUtil {
                     System.exit(0);
                 }
             }
-            
+
             elem.setDomain(domain);
             elem.setNode(node);
             elem.setPort(port);
@@ -266,11 +266,11 @@ public class IDCRouteUtil {
             elem.setStrict(!isLoose);
             elem.setNextHop(prevElem);
             bss.save(elem);
-            
+
             prevElem = elem;
             hopCount++;
         }
-        
+
         /* save entry */
         route.setSrcNode(srcNode);
         route.setSrcPort(srcPort);
@@ -283,11 +283,11 @@ public class IDCRouteUtil {
         route.setPreference(100);
         route.setDefaultRoute(isDefault);
         bss.save(route);
-        
+
         bss.getTransaction().commit();
         System.out.println("Route added.");
     }
-    
+
     /**
      * Deletes routes from the database
      */
@@ -295,7 +295,7 @@ public class IDCRouteUtil {
         String idStr = params.get("id");
         int id = -1;
         Scanner in = new Scanner(System.in);
-        
+
         if(idStr == null){
             this.showRoutes();
             System.out.print("Please enter the id of the route to delete: ");
@@ -308,7 +308,7 @@ public class IDCRouteUtil {
                 System.exit(0);
             }
         }
-        
+
         /* Init database */
         Initializer initializer = new Initializer();
         ArrayList<String> dbnames = new ArrayList<String>();
@@ -323,7 +323,7 @@ public class IDCRouteUtil {
             System.err.println("There is no route with that id.");
             System.exit(0);
         }
-        
+
         /* Verify delete */
         System.out.print("Are you sure you want to delete the route with id " +
                           id + "? (y/n) ");
@@ -332,7 +332,7 @@ public class IDCRouteUtil {
             System.out.println("Route NOT deleted.");
             System.exit(0);
         }
-        
+
         InterdomainRoute route = routes.get(id-1);
         RouteElem routeElem = route.getRouteElem();
         bss.delete(route);
@@ -341,12 +341,12 @@ public class IDCRouteUtil {
             bss.delete(routeElem);
             routeElem = nextRouteElem;
         }
-        
+
         bss.getTransaction().commit();
         System.out.println("Route deleted.");
-        
+
     }
-    
+
     /**
      * Prints routes currently in the database. The level of detail printed
      * depends of the paramters stored in the global hash.
@@ -360,7 +360,7 @@ public class IDCRouteUtil {
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
-        boolean showDetail = (params.containsKey("detail") && 
+        boolean showDetail = (params.containsKey("detail") &&
                          params.get("detail").equals("1"));
         InterdomainRouteDAO interDAO = new InterdomainRouteDAO(this.dbname);
         List<InterdomainRoute> routes = interDAO.list();
@@ -371,30 +371,30 @@ public class IDCRouteUtil {
         int strictWidth = 6;
         int multiWidth = 5;
         int id = 1;
-        ArrayList<HashMap<String,String>> fields = 
+        ArrayList<HashMap<String,String>> fields =
             new ArrayList<HashMap<String,String>>();
         String idParam = params.get("id");
         int start = 0;
         int end = routes.size();
-        
+
         /* Get ID if given */
         if(idParam != null){
             try{
-                id = Integer.parseInt(idParam);        
+                id = Integer.parseInt(idParam);
             }catch(Exception e){
                 System.err.println("The provided ID is not an integer.");
                 System.exit(0);
             }
-            
+
             if(id > routes.size() || id < 1){
                 System.err.println("No route with id " + id + " exists.");
                 System.exit(0);
             }
-            
+
             start = id - 1;
             end = id;
         }
-        
+
         /* Build header */
         if(!showDetail){
             HashMap<String, String> header = new HashMap<String, String>();
@@ -406,7 +406,7 @@ public class IDCRouteUtil {
             header.put("multi", "Multi");
             fields.add(header);
         }
-        
+
         /* Add routes */
         for(int i = start; i < end; i++){
             InterdomainRoute route = routes.get(i);
@@ -415,14 +415,14 @@ public class IDCRouteUtil {
             String egrURN = "*";
             RouteElem egress = route.getRouteElem();
             HashMap<String, String> map = new HashMap<String, String>();
-            
+
             /* find Id */
             String idStr = id + "";
             if(idStr.length() > idWidth){
                 idWidth = idStr.length();
             }
             id++;
-            
+
             /* find source */
             Link srcLink = route.getSrcLink();
             Port srcPort = route.getSrcPort();
@@ -430,16 +430,16 @@ public class IDCRouteUtil {
             if(route.isDefaultRoute()){
                 srcURN =  "default";
             }else if(srcLink != null){
-                srcURN = TopologyUtil.getFQTI(srcLink);
+                srcURN = srcLink.getFQTI();
             }else if(srcPort != null){
-                srcURN = TopologyUtil.getFQTI(srcPort);
+                srcURN = srcPort.getFQTI();
             }else if(srcNode != null){
-                srcURN = TopologyUtil.getFQTI(srcNode);
+                srcURN = srcNode.getFQTI();
             }
             if(srcURN.length() > srcWidth){
                 srcWidth = srcURN.length();
             }
-            
+
             /* find destination */
             Link destLink = route.getDestLink();
             Port destPort = route.getDestPort();
@@ -448,36 +448,36 @@ public class IDCRouteUtil {
             if(route.isDefaultRoute()){
                 destURN =  "default";
             }else if(destLink != null){
-                destURN = TopologyUtil.getFQTI(destLink);
+                destURN = destLink.getFQTI();
             }else if(destPort != null){
-                destURN = TopologyUtil.getFQTI(destPort);
+                destURN = destPort.getFQTI();
             }else if(destNode != null){
-                destURN = TopologyUtil.getFQTI(destNode);
+                destURN = destNode.getFQTI();
             }else if(destDomain != null){
-                destURN = TopologyUtil.getFQTI(destDomain);
+                destURN = destDomain.getFQTI();
             }
             if(destURN.length() > destWidth){
                 destWidth = destURN.length();
             }
-            
+
             /* find egress */
             Link egrLink = egress.getLink();
             Port egrPort = egress.getPort();
             Node egrNode = egress.getNode();
             Domain egrDomain = egress.getDomain();
             if(egrLink != null){
-                egrURN = TopologyUtil.getFQTI(egrLink);
+                egrURN = egrLink.getFQTI();
             }else if(egrPort != null){
-                egrURN = TopologyUtil.getFQTI(egrPort);
+                egrURN = egrPort.getFQTI();
             }else if(egrNode != null){
-                egrURN = TopologyUtil.getFQTI(egrNode);
+                egrURN = egrNode.getFQTI();
             }else if(egrDomain != null){
-                egrURN = TopologyUtil.getFQTI(egrDomain);
+                egrURN = egrDomain.getFQTI();
             }
             if(egrURN.length() > egrWidth){
                 egrWidth = egrURN.length();
             }
-            
+
             map.put("id", idStr);
             map.put("src", srcURN);
             map.put("dest", destURN);
@@ -486,7 +486,7 @@ public class IDCRouteUtil {
             map.put("multi", (egress.getNextHop() != null ? "Y" : "N"));
             fields.add(map);
         }
-        
+
         if(showDetail){
             /* Print detail view */
             this.printDetail(fields, routes);
@@ -494,25 +494,25 @@ public class IDCRouteUtil {
             /* Print table */
             System.out.println("IDC static routing table");
             for(HashMap<String, String> entry: fields){
-                
+
                 String entryId = entry.get("id");
                 System.out.print(entryId);
                 for(int i = 0; i < ((idWidth - entryId.length()) + 4); i++){
                     System.out.print(" ");
                 }
-                
+
                 String srcURN = entry.get("src");
                 System.out.print(srcURN);
                 for(int i = 0; i < ((srcWidth - srcURN.length()) + 4); i++){
                     System.out.print(" ");
                 }
-                
+
                 String destURN = entry.get("dest");
                 System.out.print(destURN);
                 for(int i = 0; i < ((destWidth - destURN.length()) + 4); i++){
                     System.out.print(" ");
                 }
-                
+
                 String strict = entry.get("strict");
                 System.out.print(strict);
                 for(int i = 0; i < ((strictWidth - strict.length()) + 4); i++){
@@ -523,7 +523,7 @@ public class IDCRouteUtil {
                 for(int i = 0; i < ((multiWidth - multi.length()) + 4); i++){
                     System.out.print(" ");
                 }
-                
+
                 String egrURN = entry.get("egr");
                 System.out.print(egrURN);
                 for(int i = 0; i < ((egrWidth - egrURN.length()) + 4); i++){
@@ -532,10 +532,10 @@ public class IDCRouteUtil {
                 System.out.println();
             }
         }
-        
+
         bss.getTransaction().commit();
     }
-    
+
     /**
      * Prints detailed view of a list of routes
      *
@@ -548,7 +548,7 @@ public class IDCRouteUtil {
             int index = Integer.parseInt(map.get("id")) - 1;
             InterdomainRoute route = routes.get(index);
             RouteElem routeElem = route.getRouteElem();
-            
+
             System.out.println("ID: " + map.get("id"));
             System.out.println("Source: " + map.get("src"));
             System.out.println("Destination: " + map.get("dest"));
@@ -563,22 +563,22 @@ public class IDCRouteUtil {
                 Node node = routeElem.getNode();
                 Port port = routeElem.getPort();
                 Link link = routeElem.getLink();
-                
+
                 if(link != null){
-                    System.out.println("    " + TopologyUtil.getFQTI(link));
+                    System.out.println("    " + link.getFQTI());
                 }else if(port != null){
-                    System.out.println("    " + TopologyUtil.getFQTI(port));
+                    System.out.println("    " + port.getFQTI());
                 }else if(node != null){
-                    System.out.println("    " + TopologyUtil.getFQTI(node));
+                    System.out.println("    " + node.getFQTI());
                 }else if(domain != null){
-                    System.out.println("    " + TopologyUtil.getFQTI(domain));
+                    System.out.println("    " + domain.getFQTI());
                 }
                 routeElem = routeElem.getNextHop();
             }
             System.out.println();
         }
     }
-    
+
     /**
      * Prints help message indicating acceptable parameters to this command
      */
@@ -597,12 +597,12 @@ public class IDCRouteUtil {
         System.out.println("\t-egress\tthe URN of the egress link to use for" +
                            " all requests matching this route.");
         System.out.println("\t-src\ta node, port, or link URN indicating " +
-                           "that all requests that have an ingress matching" + 
+                           "that all requests that have an ingress matching" +
                            " this element should use this route. If not " +
                            "specified any ingress matches. The domain " +
                            "portion of URNs passed to this parameter MUST " +
                            "always be the local domain.");
-        System.out.println("\t-dest\ta domain, node, port, or link URN " + 
+        System.out.println("\t-dest\ta domain, node, port, or link URN " +
                            "indicating that all requests that have an " +
                            "destination matching this element should use " +
                            "this route. If not specified any destination "+
@@ -627,10 +627,10 @@ public class IDCRouteUtil {
                             "specified then all routes shown");
         System.out.println("\t-detail\tprints a detailed view of the selected" +
                            " routes");
-        
-        
+
+
     }
-    
+
     /**
      * Reads in hops when user wants to specify multiple hops
      *
@@ -638,22 +638,22 @@ public class IDCRouteUtil {
      * @param isLoose boolean indicateing if this is a loose hop
      * @return a new list of hops as input by the user
      */
-    private ArrayList<String> processMulti(ArrayList<String> hops, 
+    private ArrayList<String> processMulti(ArrayList<String> hops,
                                            boolean isLoose){
         Scanner in = new Scanner(System.in);
-        
+
         while(true){
             if(hops.size() != 0){
                 System.out.print("Enter hop URN or type 'end' to complete: ");
             }else{
                 System.out.print("Enter local egress: ");
             }
-            
+
             String input = in.next();
             if(input.toLowerCase().equals("end")){
                 break;
             }
-            
+
             int urnType = TopologyUtil.getURNType(input);
             if((!isLoose) &&  urnType != TopologyUtil.LINK_URN){
                 System.err.println("This is a strict path so only " +
@@ -662,32 +662,32 @@ public class IDCRouteUtil {
                     "port ids.");
                 System.exit(0);
             }
-            
+
             hops.add(input.trim());
         }
-        
+
         if(hops.size() == 0){
             System.err.println("No egress link specified for the path");
             System.exit(0);
          }
-            
+
         return hops;
     }
-    
+
     /**
-     * Prepares an entry for the database. If a given domain, node, port, or 
+     * Prepares an entry for the database. If a given domain, node, port, or
      * link does not exists in the database it will create the element with
      * a default set of values.
      *
      * @param hop URN or hop to be examined
-     * @param domain Domain to save 
+     * @param domain Domain to save
      * @param node Node to save
      * @param port Port to save
      * @param link Link to save
      * @param bss hibernate session to use
      * @return URNElements containing final domain, node, port, and link
      */
-    private URNElements prepareEntry(String hop, Domain domain, Node node, 
+    private URNElements prepareEntry(String hop, Domain domain, Node node,
                                      Port port, Link link, Session bss){
         int urnType = TopologyUtil.getURNType(hop);
         String[] urnList = hop.split(":");
@@ -696,69 +696,69 @@ public class IDCRouteUtil {
         String portURN = "";
         String linkURN = "";
         URNElements result = new URNElements();
-        
+
         if(urnType >= TopologyUtil.DOMAIN_URN){
             domainURN = "urn:ogf:network:" + urnList[3];
             try{
-                domain = TopologyUtil.getDomain(domainURN, this.dbname); 
+                domain = TopologyUtil.getDomain(domainURN, this.dbname);
             }catch(BSSException e){}
             if(domain == null){
-                domain = TopologyUtil.initDomain();
+                domain = new Domain(true);
                 domain.setTopologyIdent(urnList[3].replaceAll("domain=",""));
             }
             bss.save(domain);
         }
-        
-        
+
+
         if(urnType >= TopologyUtil.NODE_URN){
             nodeURN += domainURN + ":" + urnList[4];
             try{
-                node = TopologyUtil.getNode(nodeURN, this.dbname); 
+                node = TopologyUtil.getNode(nodeURN, this.dbname);
             }catch(BSSException e){}
             if(node == null){
-                node = TopologyUtil.initNode(domain);
+                node = new Node(domain, true);
                 node.setTopologyIdent(urnList[4].replaceAll("node=", ""));
                 domain = null;
             }
             bss.save(node);
         }
-        
+
         if(urnType >= TopologyUtil.PORT_URN){
             portURN += nodeURN + ":" + urnList[5];
             try{
-                port = TopologyUtil.getPort(portURN, this.dbname); 
+                port = TopologyUtil.getPort(portURN, this.dbname);
             }catch(BSSException e){}
             if(port == null){
-                port = TopologyUtil.initPort(node);
+                port = new Port(node, true);
                 port.setTopologyIdent(urnList[5].replaceAll("port=", ""));
                 node = null;
             }
             bss.save(port);
         }
-        
+
         if(urnType >= TopologyUtil.LINK_URN){
             linkURN += portURN + ":" + urnList[6];
             try{
-                link = TopologyUtil.getLink(linkURN, this.dbname); 
+                link = TopologyUtil.getLink(linkURN, this.dbname);
             }catch(BSSException e){}
             if(link == null){
-                link = TopologyUtil.initLink(port);
+                link = new Link(port, true);
                 link.setTopologyIdent(urnList[6].replaceAll("link=", ""));
-                
+
                 port = null;
             }
             bss.save(link);
         }
-        
+
         /* Set and return result */
         result.domain = domain;
         result.node = node;
         result.port = port;
         result.link = link;
-        
+
         return result;
     }
-    
+
     /**
      * Class for storing a domain, node, port, and/or link object
      */
@@ -768,8 +768,8 @@ public class IDCRouteUtil {
         public Port port;
         public Link link;
     }
-    
-    
+
+
     public static void main(String[] args){
         IDCRouteUtil util = new IDCRouteUtil(args);
     }

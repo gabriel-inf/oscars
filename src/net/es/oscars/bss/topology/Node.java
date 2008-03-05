@@ -9,6 +9,7 @@ import org.hibernate.Hibernate;
 
 import java.io.Serializable;
 
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -35,13 +36,23 @@ public class Node extends HibernateBean implements Serializable {
     /** default constructor */
     public Node() {
     }
-    
+    /** initializing constructor */
+    public Node(Domain domDB, boolean init) {
+        if (!init) {
+            return;
+        }
+        this.setValid(true);
+        this.setTopologyIdent("changeme");
+        this.setDomain(domDB);
+        this.setPorts(new HashSet());
+    }
+
     /** copy constructor */
     public Node(Node node) {
-    	this.valid = node.isValid();
-    	this.topologyIdent = node.getTopologyIdent();
-    	this.domain = node.getDomain();
-    	this.ports = node.getPorts();
+        this.valid = node.isValid();
+        this.topologyIdent = node.getTopologyIdent();
+        this.domain = node.getDomain();
+        this.ports = node.getPorts();
     }
 
     /**
@@ -115,11 +126,22 @@ public class Node extends HibernateBean implements Serializable {
     public NodeAddress getNodeAddress() {
         return this.nodeAddress;
     }
-    
+
+    /**
+     * Constructs the fully qualified topology identifier
+     * @return the topology identifier
+     */
+    public String getFQTI() {
+        String parentFqti = this.getDomain().getFQTI();
+        String topoId = TopologyUtil.getLSTI(this.getTopologyIdent(), "Node");
+        return (parentFqti + ":node=" + topoId);
+    }
+
+
     public boolean equalsTopoId(Node node) {
-    	String thisFQTI = TopologyUtil.getFQTI(this);
-    	String thatFQTI = TopologyUtil.getFQTI(node);
-    	return thisFQTI.equals(thatFQTI);
+        String thisFQTI = this.getFQTI();
+        String thatFQTI = node.getFQTI();
+        return thisFQTI.equals(thatFQTI);
     }
 
 
@@ -145,7 +167,7 @@ public class Node extends HibernateBean implements Serializable {
         } else {
             // used in updating the topology database; only this field
             // are important in determining equality
-        	/*
+            /*
             return new EqualsBuilder().append(this.getTopologyIdent(),
                 castOther.getTopologyIdent()).isEquals();
                 */

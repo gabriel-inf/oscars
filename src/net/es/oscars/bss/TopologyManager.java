@@ -53,11 +53,11 @@ public class TopologyManager {
     private NotifyInitializer notifier;
 
     private HashMap<String, Domain> dbDomainMap;
-    private HashMap<String, Node> dbNodeMap; 
-    private HashMap<String, Port> dbPortMap; 
-    private HashMap<String, Link> dbLinkMap; 
-    private HashMap<Link, String> remoteLinkMap; 
-    
+    private HashMap<String, Node> dbNodeMap;
+    private HashMap<String, Port> dbPortMap;
+    private HashMap<String, Link> dbLinkMap;
+    private HashMap<Link, String> remoteLinkMap;
+
     public TopologyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
@@ -71,18 +71,18 @@ public class TopologyManager {
             // ignored it NotifyInitializer cannot be created.  Don't
             // want exceptions in constructor
         }
-        
+
         this.rm = new ReservationManager(this.dbname);
         this.utils = new Utils(this.dbname);
 
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
-        
+
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("topo", true);
         this.setLocalDomain(this.props.getProperty("localdomain").trim());
 
-        
+
         this.dbDomainMap = new HashMap<String, Domain>();
         this.dbNodeMap = new HashMap<String, Node>();
         this.dbPortMap = new HashMap<String, Port>();
@@ -93,15 +93,15 @@ public class TopologyManager {
     public void updateDomains(List<Domain> newDomains) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        
+
         this.log.info("updateDomains.start");
         this.sf.getCurrentSession().beginTransaction();
         try {
-        	// step 1
-	        this.log.info("merging with current topology");
-	        this.mergeDomains(newDomains);
-	        this.mergeRemoteLinks();
-	        this.log.info("finished merging with current topology");
+            // step 1
+            this.log.info("merging with current topology");
+            this.mergeDomains(newDomains);
+            this.mergeRemoteLinks();
+            this.log.info("finished merging with current topology");
            // step 2
            this.log.info("recalculating pending paths");
            this.recalculatePaths("PENDING");
@@ -131,7 +131,7 @@ public class TopologyManager {
     }
 
     private void mergeDomains(List<Domain> newDomains) {
-    	//        Domain domain = this.queryByParam("topologyIdent", topologyIdent);
+        //        Domain domain = this.queryByParam("topologyIdent", topologyIdent);
 
         this.log.debug("mergeDomains.start");
 
@@ -141,11 +141,11 @@ public class TopologyManager {
         List<Domain> currentDomains = domainDAO.list();
 
         for (Domain currentDomain : currentDomains) {
-            String fqti = TopologyUtil.getFQTI(currentDomain);
+            String fqti = currentDomain.getFQTI();
             this.log.debug("  Database domain: topoIdent: [" + currentDomain.getTopologyIdent()+ "] FQTI: [" + fqti + "]");
 
             if (!this.dbDomainMap.containsKey(fqti)) {
-            	this.dbDomainMap.put(fqti, currentDomain);
+                this.dbDomainMap.put(fqti, currentDomain);
             } else {
                 this.log.error("  Duplicate domain FQTIs in DB: [" + fqti + "]");
             }
@@ -153,23 +153,23 @@ public class TopologyManager {
 
         // Our merging for domains means we only ADD to the domain list
         for (Domain newDomain : newDomains) {
-            String newFqti = TopologyUtil.getFQTI(newDomain);
+            String newFqti = newDomain.getFQTI();
 
             this.log.debug("  Examiming domain, topoIdent: [" + newDomain.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
 
             if (!newDomainMap.containsKey(newFqti)) {
-            	newDomainMap.put(newFqti, newDomain);
+                newDomainMap.put(newFqti, newDomain);
             } else {
                 this.log.error("  Duplicate domain FQTIs in input: [" + newFqti + "], ignoring");
                 continue;
             }
-            
+
             if (newDomain.getTopologyIdent().equals(this.localDomain)) {
                 newDomain.setLocal(true);
             } else {
                 newDomain.setLocal(false);
             }
-           
+
             if (!this.dbDomainMap.containsKey(newFqti)) {
                 this.log.debug("  Creating domain, FQTI: [" + newFqti + "]");
                 newDomain.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Domain"));
@@ -184,22 +184,22 @@ public class TopologyManager {
             }
         }
 
-        
+
         // Now that everything is saved, merge domains
         for (Domain newDomain : newDomains) {
             Domain oldDomain = null;
 
-            String newFqti = TopologyUtil.getFQTI(newDomain);
+            String newFqti = newDomain.getFQTI();
 
             if (this.dbDomainMap.containsKey(newFqti)) {
                 oldDomain = (Domain) this.dbDomainMap.get(newFqti);
             }
 
             this.dbDomainMap.put(newFqti, newDomain);
-        	this.mergeNodes(oldDomain, newDomain);
+            this.mergeNodes(oldDomain, newDomain);
         }
-        
-        
+
+
         this.log.debug("mergeDomains.end");
     }
 
@@ -215,30 +215,30 @@ public class TopologyManager {
             Iterator oldNodeIt = oldDomain.getNodes().iterator();
             while (oldNodeIt.hasNext()) {
                 Node oldNode = (Node) oldNodeIt.next();
-                String oldFqti = TopologyUtil.getFQTI(oldNode);
+                String oldFqti = oldNode.getFQTI();
                 this.log.debug("  Database node: topoIdent: [" + oldNode.getTopologyIdent()+ "] FQTI: [" + oldFqti + "]");
 
                 if (!this.dbNodeMap.containsKey(oldFqti)) {
-                	oldNodeMap.put(oldFqti, oldNode);
-                	this.dbNodeMap.put(oldFqti, oldNode);
+                    oldNodeMap.put(oldFqti, oldNode);
+                    this.dbNodeMap.put(oldFqti, oldNode);
                 } else {
                     this.log.error("  Duplicate node FQTIs in DB: [" + oldFqti + "]");
                 }
             }
         }
-        
+
         Iterator newNodeIt = newDomain.getNodes().iterator();
 
         // Now, create new nodes / update existing
         while (newNodeIt.hasNext()) {
             Node newNode = (Node) newNodeIt.next();
-            String newFqti = TopologyUtil.getFQTI(newNode);
+            String newFqti = newNode.getFQTI();
 
             this.log.debug("  Examiming node, topoIdent: [" + newNode.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
 
-            
+
             if (!newNodeMap.containsKey(newFqti)) {
-            	newNodeMap.put(newFqti, newNode);
+                newNodeMap.put(newFqti, newNode);
             } else {
                 continue;
             }
@@ -250,7 +250,7 @@ public class TopologyManager {
                 }
                 newNode.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Node"));
                 nodeDAO.create(newNode);
-                
+
                 nodeAddrDAO.create(newNode.getNodeAddress());
 //                this.dbNodeMap.put(newFqti, newNode);
             } else {
@@ -261,9 +261,9 @@ public class TopologyManager {
                 // we got this far, so let's not set them explicitly
 
                 // Merge node addresses: set invalid if new one is null,
-                // replace value if otherwise. 
+                // replace value if otherwise.
                 if (oldNode.getNodeAddress() == null) {
-                    NodeAddress nodeAddr = TopologyUtil.initNodeAddress(oldNode);
+                    NodeAddress nodeAddr = new NodeAddress(oldNode, true);
                     oldNode.setNodeAddress(nodeAddr);
                 }
 
@@ -282,19 +282,19 @@ public class TopologyManager {
             }
         }
 
-    // Now that everything is saved, merge ports 
+    // Now that everything is saved, merge ports
         for (String key : newNodeMap.keySet()) {
-        	Node oldNode = null;
-        	Node newNode = newNodeMap.get(key);
+            Node oldNode = null;
+            Node newNode = newNodeMap.get(key);
 
             if (this.dbNodeMap.containsKey(key)) {
-            	oldNode = this.dbNodeMap.get(key);
+                oldNode = this.dbNodeMap.get(key);
             }
-        	this.dbNodeMap.put(key, newNode);
-        	this.mergePorts(oldNode, newNode);
+            this.dbNodeMap.put(key, newNode);
+            this.mergePorts(oldNode, newNode);
         }
 
-        
+
         // then invalidate nodes not existing any more
         for (String key : oldNodeMap.keySet()) {
             if (!newNodeMap.containsKey(key)) {
@@ -305,10 +305,10 @@ public class TopologyManager {
 
         this.log.debug("mergeNodes end");
     }
-    
-    
-    
-    
+
+
+
+
 
     private void mergePorts(Node oldNode, Node newNode) {
         this.log.debug("mergePorts start");
@@ -325,13 +325,13 @@ public class TopologyManager {
 
             while (oldPortIt.hasNext()) {
                 Port oldPort = (Port) oldPortIt.next();
-                String oldFqti = TopologyUtil.getFQTI(oldPort);
-                
+                String oldFqti = oldPort.getFQTI();
+
                 this.log.debug("  Database port: topoIdent: [" + oldPort.getTopologyIdent()+ "] FQTI: [" + oldFqti + "]");
-                
+
                 if (!this.dbPortMap.containsKey(oldFqti)) {
-                	this.dbPortMap.put(oldFqti, oldPort);
-                	oldPortMap.put(oldFqti, oldPort);
+                    this.dbPortMap.put(oldFqti, oldPort);
+                    oldPortMap.put(oldFqti, oldPort);
                 } else {
                     this.log.error("  Duplicate port FQTIs in DB: [" + oldFqti + "]");
                 }
@@ -339,17 +339,17 @@ public class TopologyManager {
         }
 
         Iterator newPortIt = newNode.getPorts().iterator();
-        
+
         // Now, create new ports / update existing
         while (newPortIt.hasNext()) {
             Port newPort = (Port) newPortIt.next();
 
-            String newFqti = TopologyUtil.getFQTI(newPort);
-            
+            String newFqti = newPort.getFQTI();
+
             this.log.debug("  Examiming port, topoIdent: [" + newPort.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
 
             if (!newPortMap.containsKey(newFqti)) {
-            	newPortMap.put(newFqti, newPort);
+                newPortMap.put(newFqti, newPort);
             } else {
                 continue;
             }
@@ -361,7 +361,7 @@ public class TopologyManager {
                 if (oldNode != null) {
                     newPort.setNode(oldNode);
                 } else {
-                	newPort.setNode(newNode);
+                    newPort.setNode(newNode);
                 }
                 newPort.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Port"));
 
@@ -372,7 +372,7 @@ public class TopologyManager {
                 // This port already existed, so just copy properties
                 Port oldPort = this.dbPortMap.get(newFqti);
                 // copy properties
-                // 
+                //
                 // Note: Topology identifier & node id MUST the same if
                 // we got this far, so let's not set them explicitly
                 oldPort.setCapacity(newPort.getCapacity());
@@ -387,18 +387,18 @@ public class TopologyManager {
             }
         }
 
-        
-        // Now that everything is saved, merge links 
+
+        // Now that everything is saved, merge links
         for (String key : newPortMap.keySet()) {
-        	Port oldPort = null;
-        	Port newPort = newPortMap.get(key);
+            Port oldPort = null;
+            Port newPort = newPortMap.get(key);
 
             if (this.dbPortMap.containsKey(key)) {
-            	oldPort = this.dbPortMap.get(key);
+                oldPort = this.dbPortMap.get(key);
             }
 
             this.dbPortMap.put(key, newPort);
-        	this.mergeLinks(oldPort, newPort);
+            this.mergeLinks(oldPort, newPort);
         }
 
         // then invalidate ports not existing any more
@@ -411,13 +411,13 @@ public class TopologyManager {
 
         this.log.debug("mergePorts.end");
     }
-    
+
 
     private void mergeLinks(Port oldPort, Port newPort) {
         this.log.debug("mergeLinks.start");
 
         LinkDAO linkDAO = new LinkDAO(this.dbname);
-        
+
         HashMap<String, Link> newLinkMap = new HashMap<String, Link>();
         HashMap<String, Link> oldLinkMap = new HashMap<String, Link>();
 
@@ -429,36 +429,36 @@ public class TopologyManager {
             while (oldLinkIt.hasNext()) {
                 Link oldLink = (Link) oldLinkIt.next();
 
-                String oldFqti = TopologyUtil.getFQTI(oldLink);
+                String oldFqti = oldLink.getFQTI();
                 this.log.debug("  Database link: topoIdent: [" + oldLink.getTopologyIdent()+ "] FQTI: [" + oldFqti + "]");
-            	
+
                 if (!this.dbLinkMap.containsKey(oldFqti)) {
-                	this.dbLinkMap.put(oldFqti, oldLink);
+                    this.dbLinkMap.put(oldFqti, oldLink);
                 } else {
                     this.log.error("Duplicate link FQTIs in DB: [" +oldFqti + "]");
                 }
 
                 if (!oldLinkMap.containsKey(oldFqti)) {
-                	oldLinkMap.put(oldFqti, oldLink);
+                    oldLinkMap.put(oldFqti, oldLink);
                 }
 
             }
         }
 
-        
+
         Iterator newLinkIt = newPort.getLinks().iterator();
-        
+
 
         // Now, create new ports / update existing
         while (newLinkIt.hasNext()) {
             Link newLink = (Link) newLinkIt.next();
-            
-            String newFqti = TopologyUtil.getFQTI(newLink);
+
+            String newFqti = newLink.getFQTI();
 
             this.log.debug("  Examiming link, topoIdent: [" + newLink.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
-            
+
             if (!newLinkMap.containsKey(newFqti)) {
-            	newLinkMap.put(newFqti, newLink);
+                newLinkMap.put(newFqti, newLink);
             } else {
                 continue;
             }
@@ -466,9 +466,9 @@ public class TopologyManager {
             if (!this.dbLinkMap.containsKey(newFqti)) {
                 this.log.debug("  Creating link, FQTI: [" + newFqti + "]");
                 // This link is brand new so insert it into DB
-                String remFQTI = TopologyUtil.getFQTI(newLink.getRemoteLink());
+                String remFQTI = newLink.getRemoteLink().getFQTI();
                 if (remFQTI != "") {
-                	this.remoteLinkMap.put(newLink, remFQTI);
+                    this.remoteLinkMap.put(newLink, remFQTI);
                 }
                 newLink.setRemoteLink(null);
                 if (oldPort != null) {
@@ -482,16 +482,16 @@ public class TopologyManager {
                 this.log.debug("  Updating link, FQTI: [" + newFqti + "]");
                 // This link already existed, so just copy properties
                 Link oldLink = this.dbLinkMap.get(newFqti);
-                String remFQTI = TopologyUtil.getFQTI(newLink.getRemoteLink());
+                String remFQTI = newLink.getRemoteLink().getFQTI();
                 if (remFQTI != "") {
-                	this.remoteLinkMap.put(oldLink, remFQTI);
+                    this.remoteLinkMap.put(oldLink, remFQTI);
                 }
 
                 oldLink.setRemoteLink(null);
 
                 // Note: Topology identifier & node id MUST the same if
                 // we got this far, so let's not set them explicitly
-                
+
                 oldLink.setCapacity(newLink.getCapacity());
                 oldLink.setGranularity(newLink.getGranularity());
                 oldLink.setMaximumReservableCapacity(newLink.getMaximumReservableCapacity());
@@ -500,25 +500,25 @@ public class TopologyManager {
                 oldLink.setTrafficEngineeringMetric(newLink.getTrafficEngineeringMetric());
 
                 oldLink.setValid(true);
-            	
+
                 linkDAO.update(oldLink);
             }
         }
 
         // Now that everything is saved, merge remote links, swcaps and ipaddrs
         for (String key : newLinkMap.keySet()) {
-        	Link newLink = newLinkMap.get(key);
-        	Link oldLink = null;
+            Link newLink = newLinkMap.get(key);
+            Link oldLink = null;
             if (dbLinkMap.containsKey(key)) {
-            	oldLink = dbLinkMap.get(key);
+                oldLink = dbLinkMap.get(key);
             }
-        	this.dbLinkMap.put(key, newLink);
+            this.dbLinkMap.put(key, newLink);
 
             this.mergeLinkSwcaps(oldLink, newLink);
             this.mergeLinkIpaddrs(oldLink, newLink);
         }
 
-        
+
         // then invalidate links not existing any more
         for (String key : oldLinkMap.keySet()) {
             if (!newLinkMap.containsKey(key)) {
@@ -526,15 +526,15 @@ public class TopologyManager {
                 this.invalidateLink(oldLinkMap.get(key));
             }
         }
-        
-        
+
+
 
         this.log.debug("mergeLinks.end");
     }
 
     private void mergeRemoteLinks() {
         this.log.debug("mergeRemoteLinks.start");
-        
+
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
         PortDAO portDAO = new PortDAO(this.dbname);
@@ -547,81 +547,81 @@ public class TopologyManager {
         HashMap<String, Link> dbLinkMap 	= new HashMap<String, Link>();
 
         for (Link dbLink : dbLinks) {
-        	String fqti = TopologyUtil.getFQTI(dbLink);
-        	dbLinkMap.put(fqti, dbLink);
+            String fqti = dbLink.getFQTI();
+            dbLinkMap.put(fqti, dbLink);
         }
 
         for (Link key : this.remoteLinkMap.keySet()) {
-        	String fqti = this.remoteLinkMap.get(key);
-        	if (dbLinkMap.containsKey(fqti)) {
-        		key.setRemoteLink(dbLinkMap.get(fqti));
-        		linkDAO.update(key);
-        	} else {
-        		newFQTIs.add(fqti);
-        	}
-        }
-        
-    	for (String fqti : newFQTIs) {
-    		this.log.debug ("  new remote link is: ["+fqti+"]");
-
-    		String newDomLSTI = TopologyUtil.getLSTI(fqti, "Domain");
-        	Domain remoteDomain = domainDAO.fromTopologyIdent(newDomLSTI);
-        	if (remoteDomain == null) {
-	    		this.log.debug ("  remote domain ["+newDomLSTI+"] does not exist, will create");
-        		remoteDomain = TopologyUtil.initDomain();
-        		if (newDomLSTI.equals(this.localDomain)) {
-        			remoteDomain.setLocal(true);
-                } else {
-                	remoteDomain.setLocal(false);
-                }
-        		remoteDomain.setTopologyIdent(newDomLSTI);
-        		domainDAO.create(remoteDomain);
-    		}
-    		
-
-    		String newNodeLSTI = TopologyUtil.getLSTI(fqti, "Node");
-
-    		Node remoteNode = nodeDAO.fromTopologyIdent(newNodeLSTI, remoteDomain);
-    		if (remoteNode == null) {
-	    		this.log.debug ("  remote Node["+newNodeLSTI+"] does not exist, will create");
-    			Node newNode = TopologyUtil.initNode(remoteDomain);
-        		newNode.setTopologyIdent(newNodeLSTI);
-        		nodeDAO.create(newNode);
-	    		remoteNode = newNode;
-    		}
-
-    		String newPortLSTI = TopologyUtil.getLSTI(fqti, "Port");
-    		Port remotePort = portDAO.fromTopologyIdent(newPortLSTI, remoteNode);
-    		if (remotePort == null) {
-	    		this.log.debug ("  remote Port ["+newPortLSTI+"] does not exist, will create");
-	    		Port newPort = TopologyUtil.initPort(remoteNode);
-        		newPort.setTopologyIdent(newPortLSTI);
-        		newPort.setAlias(newPortLSTI);
-        		portDAO.create(newPort);
-	    		remotePort = newPort;
-    		}
-    		
-    		String newLinkLSTI = TopologyUtil.getLSTI(fqti, "Link");
-    		Link remoteLink = linkDAO.fromTopologyIdent(newLinkLSTI, remotePort);
-    		if (remoteLink == null) {
-	    		this.log.debug ("  remote Link ["+newLinkLSTI+"] does not exist, will create");
-	    		remoteLink = TopologyUtil.initLink(remotePort);
-	    		remoteLink.setTopologyIdent(newLinkLSTI);
-	    		remoteLink.setAlias(newLinkLSTI);
-	    		linkDAO.create(remoteLink);
-    		}
-    		
-    		
-            for (Link key : this.remoteLinkMap.keySet()) {
-            	String linkFqti = this.remoteLinkMap.get(key);
-            	if (linkFqti.equals(fqti)) {
-            		this.log.debug ("  ["+fqti+"] is set as remote link for ["+TopologyUtil.getFQTI(key)+"]");
-            		key.setRemoteLink(remoteLink);
-            		linkDAO.update(key);
-            	}
+            String fqti = this.remoteLinkMap.get(key);
+            if (dbLinkMap.containsKey(fqti)) {
+                key.setRemoteLink(dbLinkMap.get(fqti));
+                linkDAO.update(key);
+            } else {
+                newFQTIs.add(fqti);
             }
         }
-    	
+
+        for (String fqti : newFQTIs) {
+            this.log.debug ("  new remote link is: ["+fqti+"]");
+
+            String newDomLSTI = TopologyUtil.getLSTI(fqti, "Domain");
+            Domain remoteDomain = domainDAO.fromTopologyIdent(newDomLSTI);
+            if (remoteDomain == null) {
+                this.log.debug ("  remote domain ["+newDomLSTI+"] does not exist, will create");
+                remoteDomain = new Domain(true);
+                if (newDomLSTI.equals(this.localDomain)) {
+                    remoteDomain.setLocal(true);
+                } else {
+                    remoteDomain.setLocal(false);
+                }
+                remoteDomain.setTopologyIdent(newDomLSTI);
+                domainDAO.create(remoteDomain);
+            }
+
+
+            String newNodeLSTI = TopologyUtil.getLSTI(fqti, "Node");
+
+            Node remoteNode = nodeDAO.fromTopologyIdent(newNodeLSTI, remoteDomain);
+            if (remoteNode == null) {
+                this.log.debug ("  remote Node["+newNodeLSTI+"] does not exist, will create");
+                Node newNode = new Node(remoteDomain, true);
+                newNode.setTopologyIdent(newNodeLSTI);
+                nodeDAO.create(newNode);
+                remoteNode = newNode;
+            }
+
+            String newPortLSTI = TopologyUtil.getLSTI(fqti, "Port");
+            Port remotePort = portDAO.fromTopologyIdent(newPortLSTI, remoteNode);
+            if (remotePort == null) {
+                this.log.debug ("  remote Port ["+newPortLSTI+"] does not exist, will create");
+                Port newPort =  new Port(remoteNode, true);
+                newPort.setTopologyIdent(newPortLSTI);
+                newPort.setAlias(newPortLSTI);
+                portDAO.create(newPort);
+                remotePort = newPort;
+            }
+
+            String newLinkLSTI = TopologyUtil.getLSTI(fqti, "Link");
+            Link remoteLink = linkDAO.fromTopologyIdent(newLinkLSTI, remotePort);
+            if (remoteLink == null) {
+                this.log.debug ("  remote Link ["+newLinkLSTI+"] does not exist, will create");
+                remoteLink = new Link(remotePort, true);
+                remoteLink.setTopologyIdent(newLinkLSTI);
+                remoteLink.setAlias(newLinkLSTI);
+                linkDAO.create(remoteLink);
+            }
+
+
+            for (Link key : this.remoteLinkMap.keySet()) {
+                String linkFqti = this.remoteLinkMap.get(key);
+                if (linkFqti.equals(fqti)) {
+                    this.log.debug ("  ["+fqti+"] is set as remote link for ["+key.getFQTI()+"]");
+                    key.setRemoteLink(remoteLink);
+                    linkDAO.update(key);
+                }
+            }
+        }
+
         this.log.debug("mergeRemoteLinks.end");
     }
 
@@ -633,14 +633,14 @@ public class TopologyManager {
         HashMap<String, Ipaddr> oldIpaddrMap = new HashMap<String, Ipaddr>();
 
         if (oldLink != null && oldLink.getIpaddrs() != null) {
-        	
+
             Iterator oldIpaddrIt = oldLink.getIpaddrs().iterator();
 
             while (oldIpaddrIt.hasNext()) {
                 Ipaddr oldIpaddr = (Ipaddr) oldIpaddrIt.next();
                 String oldIP = oldIpaddr.getIP();
                 if (oldIP == null) {
-                	continue;
+                    continue;
                 }
 
                 if (!oldIpaddrMap.containsKey(oldIP)) {
@@ -659,7 +659,7 @@ public class TopologyManager {
 
         // Now, create new ports / update existing
         while (newIpaddrIt.hasNext()) {
-        	
+
             Ipaddr newIpaddr = (Ipaddr) newIpaddrIt.next();
             String newIP = newIpaddr.getIP();
             if (newIP == null) {
@@ -699,7 +699,7 @@ public class TopologyManager {
             }
         }
 
-        			
+
         // then invalidate ipaddrs not existing any more
         for (String key : oldIpaddrMap.keySet()) {
             if (!newIpaddrMap.containsKey(key)) {
@@ -835,18 +835,18 @@ public class TopologyManager {
                         link = pathElem.getLink();
                         ipaddr = ipaddrDAO.fromLink(link);
                         if (ipaddr != null) {
-                        	ingressNodeIP = ipaddr.getIP();
+                            ingressNodeIP = ipaddr.getIP();
                         } else {
-                        	ingressNodeIP = null;
+                            ingressNodeIP = null;
                         }
                     } else if (pathElem.getDescription().equals("egress")) {
                         link = pathElem.getLink();
                         ipaddr = ipaddrDAO.fromLink(link);
                         if (ipaddr != null) {
-                        	egressNodeIP = ipaddr.getIP();
-	                    } else {
-	                    	egressNodeIP = null;
-	                    }
+                            egressNodeIP = ipaddr.getIP();
+                        } else {
+                            egressNodeIP = null;
+                        }
                     }
                 }
 

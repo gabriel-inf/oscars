@@ -17,109 +17,7 @@ public class TopologyUtil {
     public final static int NODE_URN = 5;
     public final static int PORT_URN = 6;
     public final static int LINK_URN = 7;
-    
-    /**
-     * This will initialize a Domain object with all the required
-     * fields filled in with place holder data, and return it.
-     * @return the new Domain object
-     */
-    public static Domain initDomain() {
-        Domain domDB = new Domain();
-        domDB.setUrl("Unknown");
-        domDB.setLocal(false);
-        domDB.setAbbrev("Unknown");
-        domDB.setTopologyIdent("Unknown");
-        domDB.setName("Unknown");
-        domDB.setNodes(new HashSet());
 
-        return domDB;
-    }
-
-    /**
-     * This will initialize a Node object with all the required
-     * fields filled in with place holder data, and return it.
-     * It will also associate it with its parent Domain object.
-     * @param domDB the parent Domain
-     * @return the new Node object
-     */
-    public static Node initNode(Domain domDB) {
-        Node nodeDB = new Node();
-        nodeDB.setValid(true);
-        nodeDB.setTopologyIdent("changeme");
-        nodeDB.setDomain(domDB);
-        nodeDB.setPorts(new HashSet());
-
-        return nodeDB;
-    }
-
-    /**
-     * This will initialize a NodeAddress object with all the required
-     * fields filled in with place holder data, and return it.
-     * It will also associate it with its parent Node object.
-     * @param nodeDB the parent Node
-     * @return the new NodeAddress bject
-     */
-    public static NodeAddress initNodeAddress(Node nodeDB) {
-        NodeAddress nodeAddressDB = new NodeAddress();
-        nodeAddressDB.setAddress("changeme");
-        nodeAddressDB.setNode(nodeDB);
-
-        return nodeAddressDB;
-    }
-
-    /**
-     * This will initialize a Port object with all the required
-     * fields filled in with place holder data, and return it.
-     * It will also associate it with its parent Node object.
-     * @param nodeDB the parent Node
-     * @return the new Port object
-     */
-    public static Port initPort(Node nodeDB) {
-        Port portDB = new Port();
-        portDB.setValid(true);
-        portDB.setTopologyIdent("changeme");
-        portDB.setCapacity(0L);
-        portDB.setMaximumReservableCapacity(0L);
-        portDB.setMinimumReservableCapacity(0L);
-        portDB.setUnreservedCapacity(0L);
-        portDB.setGranularity(0L);
-        portDB.setAlias("changeme");
-        portDB.setSnmpIndex(1);
-        portDB.setLinks(new HashSet());
-        portDB.setNode(nodeDB);
-
-        //   nodeDB.addPort(portDB);
-        return portDB;
-    }
-
-    /**
-     * This will initialize a Link object with all the required
-     * fields filled in with place holder data, and return it.
-     * It will also associate it with its parent Port object.
-     * @param portDB the parent Port
-     * @return the new Link object
-     */
-    public static Link initLink(Port portDB) {
-        Link linkDB = new Link();
-        linkDB.setValid(true);
-        linkDB.setTopologyIdent("changeme");
-        linkDB.setAlias("changeme");
-
-        linkDB.setSnmpIndex(1); // we don't have this info
-        linkDB.setTrafficEngineeringMetric("10"); // what should this be?
-
-        linkDB.setCapacity(0L);
-        linkDB.setMaximumReservableCapacity(0L);
-        linkDB.setMinimumReservableCapacity(0L);
-        linkDB.setUnreservedCapacity(0L);
-        linkDB.setGranularity(0L);
-        linkDB.setPort(portDB);
-        linkDB.setRemoteLink(null);
-        linkDB.setIpaddrs(new HashSet());
-
-        //  portDB.addLink(linkDB);
-        return linkDB;
-    }
 
     /**
      * Constructs the local topology identifier from a fully qualified
@@ -131,7 +29,7 @@ public class TopologyUtil {
     public static String getLSTI(String topoId, String objType) {
         String prefix = "urn:ogf:network:";
         if (topoId == null || topoId == "") {
-        	return null;
+            return null;
         }
 
         if (!topoId.startsWith(prefix)) {
@@ -185,7 +83,7 @@ public class TopologyUtil {
         // so we managed to split it
         if (longFormat) {
             if (parts.length == 2) {
-            	parts = parts[1].split(":");
+                parts = parts[1].split(":");
                 return parts[0];
             } else {
                 // something went wrong
@@ -201,81 +99,14 @@ public class TopologyUtil {
         }
     }
 
-    /**
-     * Constructs the fully qualified topology identifier
-     * @param domDB the domain object
-     * @return the topology identifier
-     */
-    public static String getFQTI(Domain domDB) {
-    	if (domDB == null) {
-    		return "";
-    	}
-        String topoId = domDB.getTopologyIdent();
-        String fqti;
-        String prefix_a = "urn:ogf:network:domain=";
-        String prefix_b = "urn:ogf:network:";
 
-        if (topoId.startsWith(prefix_a)) {
-            fqti = topoId;
-        } else if (topoId.startsWith(prefix_b)) {
-            fqti = topoId.replaceAll(prefix_b, prefix_a);
-        } else {
-            fqti = prefix_a + topoId;
-        }
 
-        return fqti;
-    }
-
-    /**
-     * Constructs the fully qualified topology identifier
-     * @param nodeDB the node object
-     * @return the topology identifier
-     */
-    public static String getFQTI(Node nodeDB) {
-    	if (nodeDB == null) {
-    		return "";
-    	}
-        String parentFqti = TopologyUtil.getFQTI(nodeDB.getDomain());
-        String topoId = TopologyUtil.getLSTI(nodeDB.getTopologyIdent(), "Node");
-
-        return (parentFqti + ":node=" + topoId);
-    }
-
-    /**
-     * Constructs the fully qualified topology identifier
-     * @param portDB the port object
-     * @return the topology identifier
-     */
-    public static String getFQTI(Port portDB) {
-    	if (portDB == null) {
-    		return "";
-    	}
-        String parentFqti = TopologyUtil.getFQTI(portDB.getNode());
-        String topoId = TopologyUtil.getLSTI(portDB.getTopologyIdent(), "Port");
-
-        return (parentFqti + ":port=" + topoId);
-    }
-
-    /**
-     * Constructs the fully qualified topology identifier
-     * @param linkDB the link object
-     * @return the topology identifier
-     */
-    public static String getFQTI(Link linkDB) {
-    	if (linkDB == null) {
-    		return "";
-    	}
-        String parentFqti = TopologyUtil.getFQTI(linkDB.getPort());
-        String topoId = TopologyUtil.getLSTI(linkDB.getTopologyIdent(), "Link");
-
-        return (parentFqti + ":link=" + topoId);
-    }
     /**
      * Utility method to convert a string representation of bandwidth
      * to a Long. We expect it to look like one of the following:
-     * 10Mbps / 10M / 10000000 / 10000000bps 
+     * 10Mbps / 10M / 10000000 / 10000000bps
      * If we can't parse it, we return 0L.
-     * 
+     *
      * @param strBandwidth the bandwidth as a string
      * @return bandwidth the bandwidth as a Long
      */
@@ -293,15 +124,15 @@ public class TopologyUtil {
             pattern = Pattern.compile("(\\d+)(bps)?");
             matcher = pattern.matcher(strBandwidth);
             if (matcher.matches()) {
-            	bandwidth = new Long(matcher.group(1));
+                bandwidth = new Long(matcher.group(1));
                 return bandwidth;
             } else {
-            	return new Long(0L);
+                return new Long(0L);
             }
         }
 
 
-        
+
         Long sig = new Long(matcher.group(1));
         String mag = matcher.group(2);
 
@@ -318,276 +149,276 @@ public class TopologyUtil {
 */
         return bandwidth;
     }
-    
+
     /**
      * Gets a Domain object from a topology identifier
-     * 
+     *
      * @param topoIdent the topology identifier
      * @param dbname the bss database name (typically bss)
      * @return the domain object
      * @throws BSSException
      */
     public static Domain getDomain(String topoIdent, String dbname) throws BSSException {
-    	Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
-    	if (!results.get("type").equals("domain")) {
-    		throw new BSSException("Invalid topoIdent type; need domain, is: "+results.get("type"));
-    	}
-    	DomainDAO domDAO = new DomainDAO(dbname);
-    	Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
-    	if (domain == null) {
-    		throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
-    	}
-    	return domain;
+        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
+        if (!results.get("type").equals("domain")) {
+            throw new BSSException("Invalid topoIdent type; need domain, is: "+results.get("type"));
+        }
+        DomainDAO domDAO = new DomainDAO(dbname);
+        Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
+        if (domain == null) {
+            throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
+        }
+        return domain;
     }
 
     /**
      * Gets a Node object from a topology identifier
-     * 
+     *
      * @param topoIdent the topology identifier
      * @param dbname the bss database name (typically bss)
      * @return the node object
      * @throws BSSException
      */
     public static Node getNode(String topoIdent, String dbname) throws BSSException {
-    	Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
-    	if (!results.get("type").equals("node")) {
-    		throw new BSSException("Invalid topoIdent type; need node, is: "+results.get("type"));
-    	}
-    	DomainDAO domDAO = new DomainDAO(dbname);
-    	NodeDAO nodeDAO = new NodeDAO(dbname);
-    	Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
-    	if (domain == null) {
-    		throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
-    	}
-    	Node node = nodeDAO.fromTopologyIdent(results.get("nodeId"), domain);
-    	if (node == null) {
-    		throw new BSSException("Node not found for node id: "+results.get("nodeId"));
-    	}
-    	return node;
+        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
+        if (!results.get("type").equals("node")) {
+            throw new BSSException("Invalid topoIdent type; need node, is: "+results.get("type"));
+        }
+        DomainDAO domDAO = new DomainDAO(dbname);
+        NodeDAO nodeDAO = new NodeDAO(dbname);
+        Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
+        if (domain == null) {
+            throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
+        }
+        Node node = nodeDAO.fromTopologyIdent(results.get("nodeId"), domain);
+        if (node == null) {
+            throw new BSSException("Node not found for node id: "+results.get("nodeId"));
+        }
+        return node;
     }
-    
+
     /**
      * Gets a Port object from a topology identifier
-     * 
+     *
      * @param topoIdent the topology identifier
      * @param dbname the bss database name (typically bss)
      * @return the port object
      * @throws BSSException
      */
     public static Port getPort(String topoIdent, String dbname) throws BSSException {
-    	Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
-    	if (!results.get("type").equals("port")) {
-    		throw new BSSException("Invalid topoIdent type; need port, is: "+results.get("type"));
-    	}
-    	DomainDAO domDAO = new DomainDAO(dbname);
-    	NodeDAO nodeDAO = new NodeDAO(dbname);
-    	PortDAO portDAO = new PortDAO(dbname);
-    	Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
-    	if (domain == null) {
-    		throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
-    	}
-    	Node node = nodeDAO.fromTopologyIdent(results.get("nodeId"), domain);
-    	if (node == null) {
-    		throw new BSSException("Node not found for node id: "+results.get("nodeId"));
-    	}
-    	Port port = portDAO.fromTopologyIdent(results.get("portId"), node);
-    	if (port == null) {
-    		throw new BSSException("Port not found for port id: "+results.get("portId"));
-    	}
-    	return port;
-    	
+        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
+        if (!results.get("type").equals("port")) {
+            throw new BSSException("Invalid topoIdent type; need port, is: "+results.get("type"));
+        }
+        DomainDAO domDAO = new DomainDAO(dbname);
+        NodeDAO nodeDAO = new NodeDAO(dbname);
+        PortDAO portDAO = new PortDAO(dbname);
+        Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
+        if (domain == null) {
+            throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
+        }
+        Node node = nodeDAO.fromTopologyIdent(results.get("nodeId"), domain);
+        if (node == null) {
+            throw new BSSException("Node not found for node id: "+results.get("nodeId"));
+        }
+        Port port = portDAO.fromTopologyIdent(results.get("portId"), node);
+        if (port == null) {
+            throw new BSSException("Port not found for port id: "+results.get("portId"));
+        }
+        return port;
+
     }
-    
+
     /**
      * Gets a Link object from a topology identifier
-     * 
+     *
      * @param topoIdent the topology identifier
      * @param dbname the bss database name (typically bss)
      * @return the link object
      * @throws BSSException
      */
     public static Link getLink(String topoIdent, String dbname) throws BSSException {
-    	Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
-    	if (!results.get("type").equals("link")) {
-    		throw new BSSException("Invalid topoIdent type; need link, is: "+results.get("type"));
-    	}
-    	DomainDAO domDAO = new DomainDAO(dbname);
-    	NodeDAO nodeDAO = new NodeDAO(dbname);
-    	PortDAO portDAO = new PortDAO(dbname);
-    	LinkDAO linkDAO = new LinkDAO(dbname);
-    	Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
-    	if (domain == null) {
-    		throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
-    	}
-    	Node node = nodeDAO.fromTopologyIdent(results.get("nodeId"), domain);
-    	if (node == null) {
-    		throw new BSSException("Node not found for node id: "+results.get("nodeId"));
-    	}
-    	Port port = portDAO.fromTopologyIdent(results.get("portId"), node);
-    	if (port == null) {
-    		throw new BSSException("Port not found for port id: "+results.get("portId"));
-    	}
-    	Link link = linkDAO.fromTopologyIdent(results.get("linkId"), port);
-    	if (link == null) {
-    		throw new BSSException("Link not found for link id: "+results.get("linkId"));
-    	}
-    	return link;
+        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(topoIdent);
+        if (!results.get("type").equals("link")) {
+            throw new BSSException("Invalid topoIdent type; need link, is: "+results.get("type"));
+        }
+        DomainDAO domDAO = new DomainDAO(dbname);
+        NodeDAO nodeDAO = new NodeDAO(dbname);
+        PortDAO portDAO = new PortDAO(dbname);
+        LinkDAO linkDAO = new LinkDAO(dbname);
+        Domain domain = domDAO.fromTopologyIdent(results.get("domainId"));
+        if (domain == null) {
+            throw new BSSException("Domain not found for domain id: "+results.get("domainId"));
+        }
+        Node node = nodeDAO.fromTopologyIdent(results.get("nodeId"), domain);
+        if (node == null) {
+            throw new BSSException("Node not found for node id: "+results.get("nodeId"));
+        }
+        Port port = portDAO.fromTopologyIdent(results.get("portId"), node);
+        if (port == null) {
+            throw new BSSException("Port not found for port id: "+results.get("portId"));
+        }
+        Link link = linkDAO.fromTopologyIdent(results.get("linkId"), port);
+        if (link == null) {
+            throw new BSSException("Link not found for link id: "+results.get("linkId"));
+        }
+        return link;
     }
-    
+
     /**
      * This method parses a topology identifier and returns useful information
      * in a hashtable. The hash keys are as follows:
      * type: one of "domain", "node", "port", "link", "ipv4address", "ipv6address", "unknown"
-     * 
+     *
      * domainId: the domain id component (if it exists)
      * nodeId: the node id component (if it exists)
      * portId: the port id component (if it exists)
      * linkId: the link id component (if it exists)
-     * 
+     *
      * fqti: the fully qualified topology identifier (if applicable)
-     * 
+     *
      * @param topoIdent the topology identifier to parse
      * @return a Hashtable with the parse results
      */
     public static Hashtable<String, String> parseTopoIdent(String topoIdent) {
-    	
-    	
-    	topoIdent = topoIdent.trim();
-    	
+
+
+        topoIdent = topoIdent.trim();
+
 //    	System.out.println("looking at: ["+topoIdent+"]");
 
-    	
-    	Hashtable<String, String> regexps = new Hashtable<String, String>();
-    	regexps.put("domainFull", "^urn:ogf:network:domain=([^:]+)$");
-    	regexps.put("domain", "^urn:ogf:network:([^:=]+)$");
-    	
-    	regexps.put("nodeFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+)$");
-    	regexps.put("node", "^urn:ogf:network:([^:=]+):([^:=]+)$");
-    	
-    	regexps.put("portFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+)$");
-    	regexps.put("port", "^urn:ogf:network:([^:=]+):([^:=]+):([^:=]+)$");
 
-    	regexps.put("linkFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+):link=([^:]+)$");
-    	regexps.put("link", "^urn:ogf:network:([^:=]+):([^:=]+):([^:=]+):([^:=]+)$");
-    	
-    	String domainId = "";
-    	String nodeId = "";
-    	String portId = "";
-    	String linkId = "";
-    	
-    	String matched = "";
+        Hashtable<String, String> regexps = new Hashtable<String, String>();
+        regexps.put("domainFull", "^urn:ogf:network:domain=([^:]+)$");
+        regexps.put("domain", "^urn:ogf:network:([^:=]+)$");
 
-    	Matcher matcher = null;
-    	
-    	
-    	for (String key: regexps.keySet()) {
-    		Pattern p = Pattern.compile(regexps.get(key));
-			matcher = p.matcher(topoIdent);
-			if (matcher.matches()) {
-        		if (key.equals("domain") || key.equals("domainFull")) {
-	    			matched = "domain";
-	    			domainId = matcher.group(1);
-	    		} else if (key.equals("node") || key.equals("nodeFull") ) {
-	    			matched = "node";
-	    			domainId = matcher.group(1);
-	    			nodeId = matcher.group(2);
-	    		} else if (key.equals("port") || key.equals("portFull") ) {
-	    			matched = "port";
-	    			domainId = matcher.group(1);
-	    			nodeId = matcher.group(2);
-	    			portId = matcher.group(3);
-	    		} else if (key.equals("link") || key.equals("linkFull") ) {
-	    			matched = "link";
-	    			domainId = matcher.group(1);
-	    			nodeId = matcher.group(2);
-	    			portId = matcher.group(3);
-	    			linkId = matcher.group(4);
-	    		}
-			}
-    	}
+        regexps.put("nodeFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+)$");
+        regexps.put("node", "^urn:ogf:network:([^:=]+):([^:=]+)$");
+
+        regexps.put("portFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+)$");
+        regexps.put("port", "^urn:ogf:network:([^:=]+):([^:=]+):([^:=]+)$");
+
+        regexps.put("linkFull", "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+):link=([^:]+)$");
+        regexps.put("link", "^urn:ogf:network:([^:=]+):([^:=]+):([^:=]+):([^:=]+)$");
+
+        String domainId = "";
+        String nodeId = "";
+        String portId = "";
+        String linkId = "";
+
+        String matched = "";
+
+        Matcher matcher = null;
+
+
+        for (String key: regexps.keySet()) {
+            Pattern p = Pattern.compile(regexps.get(key));
+            matcher = p.matcher(topoIdent);
+            if (matcher.matches()) {
+                if (key.equals("domain") || key.equals("domainFull")) {
+                    matched = "domain";
+                    domainId = matcher.group(1);
+                } else if (key.equals("node") || key.equals("nodeFull") ) {
+                    matched = "node";
+                    domainId = matcher.group(1);
+                    nodeId = matcher.group(2);
+                } else if (key.equals("port") || key.equals("portFull") ) {
+                    matched = "port";
+                    domainId = matcher.group(1);
+                    nodeId = matcher.group(2);
+                    portId = matcher.group(3);
+                } else if (key.equals("link") || key.equals("linkFull") ) {
+                    matched = "link";
+                    domainId = matcher.group(1);
+                    nodeId = matcher.group(2);
+                    portId = matcher.group(3);
+                    linkId = matcher.group(4);
+                }
+            }
+        }
 
 //    	TODO: make a class for the results?
-    	Hashtable<String, String> result = new Hashtable<String, String>();
-    	
-    	if (topoIdent == null || topoIdent.equals("")) {
-    		result.put("type", "empty");
-    		return result;
-    	}
-    	
-    	String compactForm = null;
-    	String realCompactForm = null;
-    	String fqti = null;
-    	String addressType = "";
+        Hashtable<String, String> result = new Hashtable<String, String>();
 
-    	try {
-    		InetAddress[] addrs = InetAddress.getAllByName(topoIdent);
- 			System.out.print("[Success]:");
- 			for (int i =0; i < addrs.length;i++){
- 				addressType = addrs[i].getClass().getName();
- 			}
+        if (topoIdent == null || topoIdent.equals("")) {
+            result.put("type", "empty");
+            return result;
+        }
 
- 			if (addressType.equals("java.net.Inet6Address")) {
- 				addressType = "ipv6address";
- 			} else if (addressType.equals("java.net.Inet4Address")) {
- 				addressType = "ipv4address";
- 			} else {
- 				addressType = "unknown";
- 			}
-	 		result.put("type", addressType);	 		
-      	    matched = "address";
- 		} catch(UnknownHostException e){
- 			if (matched == null) {
-		 		result.put("type", "unknown");	 		
-	      	    return result;
- 			}
- 		}
+        String compactForm = null;
+        String realCompactForm = null;
+        String fqti = null;
+        String addressType = "";
 
-    	if (matched.equals("domain")) {
-    		fqti = "urn:ogf:network:domain="+domainId;
-    		compactForm = "urn:ogf:network:"+domainId;
-    		realCompactForm = domainId;
-    	  	result.put("realcompact", realCompactForm);
-    	  	result.put("compact", compactForm);
-    	  	result.put("type", "domain");
-    	  	result.put("fqti", fqti);
-    	  	result.put("domainId", domainId);
-    	} else if (matched.equals("node")) {
-    		fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId;
-    		compactForm = "urn:ogf:network:"+domainId+":"+nodeId;
-    		realCompactForm = domainId+":"+nodeId;
-    	  	result.put("realcompact", realCompactForm);
-    	  	result.put("compact", compactForm);
-      	  	result.put("type", "node");
-    	  	result.put("fqti", fqti);
-    	  	result.put("domainId", domainId);
-    	  	result.put("nodeId", nodeId);
-    	} else if (matched.equals("port")) {
-    		fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId;
-    		compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId;
-    		realCompactForm = domainId+":"+nodeId+":"+portId;
-    	  	result.put("realcompact", realCompactForm);
-    	  	result.put("compact", compactForm);
-			result.put("type", "port");
-			result.put("fqti", fqti);
-    	  	result.put("domainId", domainId);
-    	  	result.put("nodeId", nodeId);
-    	  	result.put("portId", portId);
-    	} else if (matched.equals("link")) {
-    		fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId+":link="+linkId;
-    		compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId+":"+linkId;
-    		realCompactForm = domainId+":"+nodeId+":"+portId+":"+linkId;
-    	  	result.put("realcompact", realCompactForm);
-    	  	result.put("compact", compactForm);
-			result.put("type", "link");
-			result.put("fqti", fqti);
-    	  	result.put("domainId", domainId);
-    	  	result.put("nodeId", nodeId);
-    	  	result.put("portId", portId);
-    	  	result.put("linkId", linkId);
-    	}
- 		return result; 
+        try {
+            InetAddress[] addrs = InetAddress.getAllByName(topoIdent);
+             System.out.print("[Success]:");
+             for (int i =0; i < addrs.length;i++){
+                 addressType = addrs[i].getClass().getName();
+             }
+
+             if (addressType.equals("java.net.Inet6Address")) {
+                 addressType = "ipv6address";
+             } else if (addressType.equals("java.net.Inet4Address")) {
+                 addressType = "ipv4address";
+             } else {
+                 addressType = "unknown";
+             }
+             result.put("type", addressType);
+             matched = "address";
+         } catch(UnknownHostException e){
+             if (matched == null) {
+                result.put("type", "unknown");
+                return result;
+             }
+         }
+
+        if (matched.equals("domain")) {
+            fqti = "urn:ogf:network:domain="+domainId;
+            compactForm = "urn:ogf:network:"+domainId;
+            realCompactForm = domainId;
+            result.put("realcompact", realCompactForm);
+            result.put("compact", compactForm);
+            result.put("type", "domain");
+            result.put("fqti", fqti);
+            result.put("domainId", domainId);
+        } else if (matched.equals("node")) {
+            fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId;
+            compactForm = "urn:ogf:network:"+domainId+":"+nodeId;
+            realCompactForm = domainId+":"+nodeId;
+            result.put("realcompact", realCompactForm);
+            result.put("compact", compactForm);
+            result.put("type", "node");
+            result.put("fqti", fqti);
+            result.put("domainId", domainId);
+            result.put("nodeId", nodeId);
+        } else if (matched.equals("port")) {
+            fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId;
+            compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId;
+            realCompactForm = domainId+":"+nodeId+":"+portId;
+            result.put("realcompact", realCompactForm);
+            result.put("compact", compactForm);
+            result.put("type", "port");
+            result.put("fqti", fqti);
+            result.put("domainId", domainId);
+            result.put("nodeId", nodeId);
+            result.put("portId", portId);
+        } else if (matched.equals("link")) {
+            fqti = "urn:ogf:network:domain="+domainId+":node="+nodeId+":port="+portId+":link="+linkId;
+            compactForm = "urn:ogf:network:"+domainId+":"+nodeId+":"+portId+":"+linkId;
+            realCompactForm = domainId+":"+nodeId+":"+portId+":"+linkId;
+            result.put("realcompact", realCompactForm);
+            result.put("compact", compactForm);
+            result.put("type", "link");
+            result.put("fqti", fqti);
+            result.put("domainId", domainId);
+            result.put("nodeId", nodeId);
+            result.put("portId", portId);
+            result.put("linkId", linkId);
+        }
+         return result;
     }
-    
+
 
     /**
      * Checks to see if a hop id is a topology identifier, or an IP address.
@@ -606,7 +437,7 @@ public class TopologyUtil {
         // TODO:  test for fully qualified link in new format
         return false;
     }
-    
+
     /**
      * Returns the type (domain, node, port, or link) of the given urn
      *
@@ -614,13 +445,13 @@ public class TopologyUtil {
      * @return the type of the URN. corresponds to the constants in this class.
      */
      public static int getURNType(String urn){
-        if(urn == null){ 
-            return 0; 
+        if(urn == null){
+            return 0;
         }
-        
+
         return urn.split(":").length;
      }
-     
+
      /**
      * Returns the domain id of the given link
      *

@@ -9,6 +9,7 @@ import org.hibernate.Hibernate;
 
 import java.io.Serializable;
 
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -62,6 +63,27 @@ public class Link extends HibernateBean implements Serializable {
     /** default constructor */
     public Link() {
     }
+    public Link(Port portDB, boolean init) {
+        if (!init) {
+            return;
+        }
+        this.setValid(true);
+        this.setTopologyIdent("changeme");
+        this.setAlias("changeme");
+
+        this.setSnmpIndex(1); // we don't have this info
+        this.setTrafficEngineeringMetric("100"); // what should this be?
+
+        this.setCapacity(0L);
+        this.setMaximumReservableCapacity(0L);
+        this.setMinimumReservableCapacity(0L);
+        this.setUnreservedCapacity(0L);
+        this.setGranularity(0L);
+        this.setPort(portDB);
+        this.setRemoteLink(null);
+        this.setIpaddrs(new HashSet());
+    }
+
 
     /**
      * @return valid a boolean indicating whether link is still valid
@@ -269,10 +291,22 @@ public class Link extends HibernateBean implements Serializable {
     }
 
     public boolean equalsTopoId(Link link) {
-    	String thisFQTI = TopologyUtil.getFQTI(this);
-    	String thatFQTI = TopologyUtil.getFQTI(link);
-    	return thisFQTI.equals(thatFQTI);
+        String thisFQTI = this.getFQTI();
+        String thatFQTI = link.getFQTI();
+        return thisFQTI.equals(thatFQTI);
     }
+
+    /**
+     * Constructs the fully qualified topology identifier
+     * @return the topology identifier
+     */
+    public String getFQTI() {
+        String parentFqti = this.getPort().getFQTI();
+        String topoId = TopologyUtil.getLSTI(this.getTopologyIdent(), "Link");
+
+        return (parentFqti + ":link=" + topoId);
+    }
+
 
     // need to override superclass because dealing with transient
     // instances as well
@@ -296,12 +330,12 @@ public class Link extends HibernateBean implements Serializable {
         } else {
             // used in updating the topology database; only these fields
             // are important in determining equality
-        	/*
+            /*
             return new EqualsBuilder().append(this.getSnmpIndex(),
                 castOther.getSnmpIndex())
                                       .append(this.getPort(),
                 castOther.getPort()).isEquals();
-			*/
+            */
             return new EqualsBuilder().append(this.getTopologyIdent(),
                     castOther.getTopologyIdent())
                                           .append(this.getPort(),

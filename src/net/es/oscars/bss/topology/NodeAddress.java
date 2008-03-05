@@ -26,26 +26,35 @@ public class NodeAddress extends HibernateBean implements Serializable {
     /** default constructor */
     public NodeAddress() { }
 
+
+    public NodeAddress(Node nodeDB, boolean init) {
+        if (!init) {
+            return;
+        }
+        this.setAddress("changeme");
+        this.setNode(nodeDB);
+    }
+
     /**
      * @return address a string with the a node's address
-     */ 
+     */
     public String getAddress() { return this.address; }
 
     /**
      * @param address a string with the a node's address
-     */ 
+     */
     public void setAddress(String address) {
         this.address = address;
     }
 
     /**
      * @return node a Node instance (uses association)
-     */ 
+     */
     public Node getNode() { return this.node; }
 
     /**
      * @param node a Node instance (uses association)
-     */ 
+     */
     public void setNode(Node node) { this.node = node; }
 
     // need to override superclass because dealing with transient
