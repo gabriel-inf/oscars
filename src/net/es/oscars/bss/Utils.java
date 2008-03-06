@@ -45,7 +45,7 @@ public class Utils {
             }
             // if layer 2, send back topology identifier
             if (path.getLayer2Data() != null) {
-            	String fqti = TopologyUtil.getFQTI(link);
+                String fqti = link.getFQTI();
                 sb.append(fqti);
                 param = pathElem.getDescription();
                 if (param != null) {
@@ -64,25 +64,25 @@ public class Utils {
         String pathStr = sb.toString();
         return pathStr;
     }
-    
-    /** 
+
+    /**
      * String joiner
      * @param s a Collection of objects to join (uses toString())
      * @param delimiter the delimiter
      * @param quote a string to prefix each object with (null for none)
-     * @param unquote a string to postfix each object with (null for none) 
+     * @param unquote a string to postfix each object with (null for none)
      * @return joined the objects, quoted & unquoted, joined by the delimiter
      */
     public static String join(Collection s, String delimiter, String quote, String unquote) {
-    	if (s == null || s.isEmpty()) {
-    		return "";
-    	}
+        if (s == null || s.isEmpty()) {
+            return "";
+        }
         StringBuffer buffer = new StringBuffer();
         Iterator iter = s.iterator();
         while (iter.hasNext()) {
-    		buffer.append(quote);
-    		buffer.append(iter.next());
-    		buffer.append(unquote);
+            buffer.append(quote);
+            buffer.append(iter.next());
+            buffer.append(unquote);
             if (iter.hasNext()) {
                 buffer.append(delimiter);
             }

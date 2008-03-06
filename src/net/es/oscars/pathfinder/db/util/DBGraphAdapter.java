@@ -19,9 +19,9 @@ public class DBGraphAdapter {
     private Properties props;
     private String localDomain;
 
- 
+
     public DBGraphAdapter(String dbname) {
-    	this.dbname = dbname;
+        this.dbname = dbname;
         List<String> dbnames = new ArrayList<String>();
         dbnames.add(this.dbname);
 
@@ -29,16 +29,16 @@ public class DBGraphAdapter {
         initializer.initDatabase(dbnames);
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
 
-        
+
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("topo", true);
-        
+
         this.localDomain = this.props.getProperty("localdomain").trim();
-  
+
     }
-    
+
     public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth) {
-    	DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
+        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
         this.sf.getCurrentSession().beginTransaction();
@@ -56,90 +56,90 @@ public class DBGraphAdapter {
         Domain dom = domainDAO.fromTopologyIdent(this.localDomain);
         Iterator nodeIt = dom.getNodes().iterator();
         while (nodeIt.hasNext()) {
-        	Node node = (Node) nodeIt.next();
-        	if (!node.isValid()) {
-        		continue;
-        	}
-        	String nodeFQTI = TopologyUtil.getFQTI(node);
+            Node node = (Node) nodeIt.next();
+            if (!node.isValid()) {
+                continue;
+            }
+            String nodeFQTI = node.getFQTI();
 //        	System.out.println(nodeFQTI);
-        	g.addVertex(nodeFQTI);
-        	
+            g.addVertex(nodeFQTI);
+
             Iterator portIt = node.getPorts().iterator();
             while (portIt.hasNext()) {
-            	Port port = (Port) portIt.next();
-            	if (!port.isValid()) {
-            		continue;
-            	} 
-            	if (bandwidth > 0 && port.getCapacity() < bandwidth) {
-            		continue;
+                Port port = (Port) portIt.next();
+                if (!port.isValid()) {
+                    continue;
                 }
-            	
-            	String portFQTI = TopologyUtil.getFQTI(port);
-//            	System.out.println(portFQTI);
-                
+                if (bandwidth > 0 && port.getCapacity() < bandwidth) {
+                    continue;
+                }
 
-            	g.addVertex(portFQTI);
-            	edge = g.addEdge(nodeFQTI, portFQTI);
+                String portFQTI = port.getFQTI();
+//            	System.out.println(portFQTI);
+
+
+                g.addVertex(portFQTI);
+                edge = g.addEdge(nodeFQTI, portFQTI);
                 g.setEdgeWeight(edge, 0d);
 
                 edge = g.addEdge(portFQTI, nodeFQTI);
                 g.setEdgeWeight(edge, 0d);
 
-            	Iterator linkIt = port.getLinks().iterator();
+                Iterator linkIt = port.getLinks().iterator();
                 while (linkIt.hasNext()) {
-                	Link link = (Link) linkIt.next();
-                	if (!link.isValid()) {
-                		continue;
-                	}
-                   	String linkFQTI = TopologyUtil.getFQTI(link);
+                    Link link = (Link) linkIt.next();
+                    if (!link.isValid()) {
+                        continue;
+                    }
+                       String linkFQTI = link.getFQTI();
 //                	System.out.println(linkFQTI);
-                   	
-                	g.addVertex(linkFQTI);
-                	edge = g.addEdge(linkFQTI, portFQTI);
+
+                    g.addVertex(linkFQTI);
+                    edge = g.addEdge(linkFQTI, portFQTI);
                     g.setEdgeWeight(edge, 0d);
 
                     edge = g.addEdge(portFQTI, linkFQTI);
                     g.setEdgeWeight(edge, 0d);
-                	
-                	if (link.getRemoteLink() != null) {
-                		Link remLink = link.getRemoteLink(); 
-                		String remLinkFQTI = TopologyUtil.getFQTI(remLink);
-                		if (remLink.isValid() && remLinkFQTI != null) {
-                			Double edgeWeight = 10d;
-                			if (link.getTrafficEngineeringMetric() != null) {
-                				edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
-                			}
-	                		
-	                		g.addVertex(remLinkFQTI);
-	                		
-	                    	edge = g.addEdge(linkFQTI, remLinkFQTI);
-	                    	if (edge != null) {
-                    	        g.setEdgeWeight(edge, edgeWeight);
-                			}
-                		}
-                	}
+
+                    if (link.getRemoteLink() != null) {
+                        Link remLink = link.getRemoteLink();
+                        String remLinkFQTI = remLink.getFQTI();
+                        if (remLink.isValid() && remLinkFQTI != null) {
+                            Double edgeWeight = 10d;
+                            if (link.getTrafficEngineeringMetric() != null) {
+                                edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
+                            }
+
+                            g.addVertex(remLinkFQTI);
+
+                            edge = g.addEdge(linkFQTI, remLinkFQTI);
+                            if (edge != null) {
+                                g.setEdgeWeight(edge, edgeWeight);
+                            }
+                        }
+                    }
 
                 }
             }
-        	
+
         }
-        
-        
+
+
         this.sf.getCurrentSession().getTransaction().commit();
-    	return g;
-    	
+        return g;
+
     }
-    
-    
+
+
     double parseTEM(String trafficEngineeringMetric) {
-    	double weight = 0d;
-    	String[] elems = trafficEngineeringMetric.split(":");
-    	if (elems[0].trim().equals("weight")) {
-    		weight = new Double(elems[1].trim()).doubleValue();
-    	}
-    	return weight;
+        double weight = 0d;
+        String[] elems = trafficEngineeringMetric.split(":");
+        if (elems[0].trim().equals("weight")) {
+            weight = new Double(elems[1].trim()).doubleValue();
+        }
+        return weight;
     }
-  
-    
+
+
 }
-        
+

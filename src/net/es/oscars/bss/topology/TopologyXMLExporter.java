@@ -58,7 +58,7 @@ public class TopologyXMLExporter {
      * @return The topology JDOM Document object
      */
     public Document getTopology(String query) {
-    	
+
         this.ses = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
 
         Transaction tx = this.ses.beginTransaction();
@@ -72,7 +72,7 @@ public class TopologyXMLExporter {
 
         return doc;
     }
-    
+
    public Document getTopology(Topology topology) {
         this.log.debug("Start");
 
@@ -97,16 +97,16 @@ public class TopologyXMLExporter {
         String domTopoIdent = query; // TODO: how will queries look like?
         Element topoXML = new Element("topology", this.ns);
         topoXML.setAttribute("id", "OSCARS topology"); // TODO: specify this
-        
+
         Element idcXML = new Element("idcId", this.ns);
-        
+
         idcXML.addContent("placeholder"); // TODO: how do we determine this?
         topoXML.addContent(idcXML);
 
         Document doc = new Document(topoXML);
         Element domXML;
         List<Domain> domains;
-        
+
         if (domTopoIdent.equals("")) {
             query = "from Domain";
             domains = this.ses.createQuery(query).list();
@@ -123,20 +123,20 @@ public class TopologyXMLExporter {
 
         return doc;
     }
-    
+
     protected Document createXML(Topology topology) {
         Element topoXML = new Element("topology", this.ns);
         topoXML.setAttribute("id", "OSCARS topology"); // TODO: specify this
-        
+
         Element idcXML = new Element("idcId", this.ns);
-        
+
         idcXML.addContent("placeholder"); // TODO: how do we determine this?
         topoXML.addContent(idcXML);
 
         Document doc = new Document(topoXML);
         Element domXML;
         List<Domain> domains = topology.getDomains();
-        
+
         for (Domain domDB : domains) {
             domXML = this.exportDomain(domDB);
             topoXML.addContent(domXML);
@@ -154,7 +154,7 @@ public class TopologyXMLExporter {
     protected Element exportDomain(Domain domDB) {
         Namespace ns = this.ns;
 
-        String domTopoIdent = TopologyUtil.getFQTI(domDB);
+        String domTopoIdent = domDB.getFQTI();
 
         this.log.info("Creating XML for domain:[" + domTopoIdent + "]");
 
@@ -170,7 +170,7 @@ public class TopologyXMLExporter {
 
             while (nodeIt.hasNext()) {
                 Node nodeDB = (Node) nodeIt.next();
-                String nodeId = TopologyUtil.getFQTI(nodeDB);
+                String nodeId = nodeDB.getFQTI();
 
                 Element nodeXML = new Element("node", ns);
 
@@ -196,7 +196,7 @@ public class TopologyXMLExporter {
                         Port portDB = (Port) portIt.next();
                         Element portXML = new Element("port", ns);
 
-                        String portId = TopologyUtil.getFQTI(portDB);
+                        String portId = portDB.getFQTI();
                         Attribute portIdXML = new Attribute("id", portId, ns);
                         portXML.setAttribute(portIdXML);
 
@@ -237,7 +237,7 @@ public class TopologyXMLExporter {
                                 Link linkDB = (Link) linkIt.next();
                                 Element linkXML = new Element("link", ns);
 
-                                String linkId = TopologyUtil.getFQTI(linkDB);
+                                String linkId = linkDB.getFQTI();
                                 Attribute linkIdXML = new Attribute("id",
                                         linkId, ns);
                                 linkXML.setAttribute(linkIdXML);
@@ -247,8 +247,7 @@ public class TopologyXMLExporter {
                                 if (remLinkDB != null) {
                                     Element remLinkXML = new Element("remoteLinkId",
                                             ns);
-                                    remLinkXML.addContent(TopologyUtil.getFQTI(
-                                            remLinkDB));
+                                    remLinkXML.addContent(remLinkDB.getFQTI());
                                     linkXML.addContent(remLinkXML);
 /*
                                     Element remPortXML = new Element("remotePortId",
@@ -273,7 +272,7 @@ public class TopologyXMLExporter {
                                 }
                                 L2SwitchingCapabilityData l2capDB = linkDB.getL2SwitchingCapabilityData();
                                 if (l2capDB != null) {
-                                	Element l2CapXML = new Element("SwitchingCapabilityDescriptors", ns);
+                                    Element l2CapXML = new Element("SwitchingCapabilityDescriptors", ns);
                                     Element swCapTypeXML = new Element("switchingcapType", ns);
                                     Element encTypeXML = new Element("encodingType", ns);
                                     Element swCapSpcXML = new Element("switchingCapabilitySpecficInfo",
@@ -285,21 +284,21 @@ public class TopologyXMLExporter {
                                     Element capXML = new Element("capability", ns);
                                     Element ifceMtuXML = new Element("interfaceMTU", ns);
                                     Element vlanAvXML = new Element("vlanRangeAvailability", ns);
-                                    
+
                                     vlanAvXML.addContent(l2capDB.getVlanRangeAvailability());
                                     ifceMtuXML.addContent(new Integer(l2capDB.getInterfaceMTU()).toString());
-                                    
+
                                     swCapSpcXML.addContent(capXML);
                                     swCapSpcXML.addContent(ifceMtuXML);
                                     swCapSpcXML.addContent(vlanAvXML);
 
 
-                                    
+
 
                                     linkXML.addContent(l2CapXML);
-                                	
+
                                 }
-                                
+
                                 portXML.addContent(linkXML);
                             }
 
@@ -315,7 +314,7 @@ public class TopologyXMLExporter {
 
         return domXML;
     }
-    
+
 
     // Getter / setter functions
     /**

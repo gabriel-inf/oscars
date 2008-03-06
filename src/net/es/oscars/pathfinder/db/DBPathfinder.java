@@ -22,7 +22,7 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 
 import org.apache.log4j.*;
- 
+
 /**
  * DBPathfinder that uses the local database to calculate path
  *
@@ -33,13 +33,13 @@ public class DBPathfinder extends Pathfinder implements PCE {
     private Logger log;
     private DomainDAO domDAO;
     private DBGraphAdapter dbga;
-    
+
     public DBPathfinder(String dbname) {
         super(dbname);
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("dbpath", true);
-        
+
         this.dbga = new DBGraphAdapter(dbname);
 
         List<String> dbnames = new ArrayList<String>();
@@ -53,17 +53,17 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         domDAO = new DomainDAO(dbname);
     }
-    
+
     public Path findPathBetween(Link src, Link dst, Long bandwidth) {
-    	String srcStr = TopologyUtil.getFQTI(src);
-    	String dstStr = TopologyUtil.getFQTI(dst);
-    	return this.findPathBetween(srcStr, dstStr, bandwidth);
+        String srcStr = src.getFQTI();
+        String dstStr = dst.getFQTI();
+        return this.findPathBetween(srcStr, dstStr, bandwidth);
     }
-    
+
     public Path findPathBetween(String src, String dst, Long bandwidth) {
-    	
-    	Path path = new Path();
-    	
+
+        Path path = new Path();
+
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth);
         src = TopologyUtil.parseTopoIdent(src).get("fqti");
         dst = TopologyUtil.parseTopoIdent(dst).get("fqti");
@@ -78,14 +78,14 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
 
         peIt = sp.getPathEdgeList().iterator();
-        
+
         PathElem pathElem = null;
         PathElem prvPathElem = null;
         boolean firstLink = true;
 
         while (peIt.hasNext()) {
             DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();
-            
+
             String[] cols = edge.toString().split("\\s\\:\\s");
             String topoId = cols[0].substring(1);
             Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(topoId);
@@ -95,19 +95,19 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 pathElem = new PathElem();
                 pathElem.setLink(link);
                 if (firstLink) {
-                	firstLink = false;
-                	path.setPathElem(pathElem);
+                    firstLink = false;
+                    path.setPathElem(pathElem);
                 } else {
-                	prvPathElem.setNextElem(pathElem);
+                    prvPathElem.setNextElem(pathElem);
                 }
-            	prvPathElem = pathElem;
+                prvPathElem = pathElem;
             }
         }
         return path;
 
 
     }
-    
+
     /**
      * Finds a path given just source and destination or by expanding
      * a path the user explicitly sets
@@ -119,17 +119,17 @@ public class DBPathfinder extends Pathfinder implements PCE {
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
         CtrlPlanePathContent localPathForOSCARSDatabase;
         CtrlPlanePathContent pathToForwardToNextDomain;
-        
+
         if(ctrlPlanePath == null){
-            /* Calculate path that contains strict local hops and 
+            /* Calculate path that contains strict local hops and
             loose interdomain hops */
             CtrlPlanePathContent path = null;
-            
+
             pathInfo.setPath(path);
         } else {
 
         }
-        
+
         return pathInfo;  // just for compatibility with interface
     }
 

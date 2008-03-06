@@ -9,7 +9,7 @@ import net.es.oscars.pathfinder.PathfinderException;
 /**
  * Class handling set up of path-related variables for router configuration for
  * all vendors, for layer 2 and layer 3.
- *  
+ *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
 public class LSPData {
@@ -24,7 +24,7 @@ public class LSPData {
     private String vlanTag;
     private String ingressRtrLoopback;
     private String egressRtrLoopback;
- 
+
     /** Constructor. */
     public LSPData(String dbname) {
         this.utils = new Utils(dbname);
@@ -42,7 +42,7 @@ public class LSPData {
 
     public String getIngressRtrLoopback() { return this.ingressRtrLoopback; }
     public String getEgressRtrLoopback() { return this.egressRtrLoopback; }
- 
+
     /**
      * Given path, sets elements in path used in setting a number of
      * configuration variables.
@@ -159,8 +159,7 @@ public class LSPData {
             if (pathElem.getDescription() ==  null) {
                 Ipaddr ipaddr = ipaddrDAO.fromLink(link);
                 if (ipaddr == null) {
-                    throw new PSSException(
-                            "No IP for link: ["+TopologyUtil.getFQTI(link)+"]");
+                    throw new PSSException("No IP for link: ["+link.getFQTI()+"]");
                 }
                 hops.add(ipaddr.getIP());
             }
