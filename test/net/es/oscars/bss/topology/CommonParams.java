@@ -33,4 +33,8 @@ public class CommonParams {
     public static String getIpAddress() {
         return "127.0.0.1";
     }
+
+    public static int getInterdomainPreference() {
+        return 100;
+    }
 }

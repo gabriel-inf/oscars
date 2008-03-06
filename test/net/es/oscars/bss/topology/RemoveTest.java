@@ -16,7 +16,8 @@ import net.es.oscars.database.HibernateUtil;
  */
 @Test(groups={ "bss.topology", "remove" }, dependsOnGroups={
     "ipaddr", "link", "port", "node", "nodeAddress", "domain", "mplsData",
-    "layer2Data", "layer3Data", "pathElem", "path", "l2SwitchData" })
+    "layer2Data", "layer3Data", "pathElem", "path", "l2SwitchData",
+    "routeElem", "interdomainRoute" })
 public class RemoveTest {
     private SessionFactory sf;
     private String dbname;
@@ -62,14 +63,38 @@ public class RemoveTest {
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
+  @Test
+    public void interdomainRouteRemove() {
+        this.sf.getCurrentSession().beginTransaction();
+        int preference = CommonParams.getInterdomainPreference();
+        InterdomainRouteDAO dao = new InterdomainRouteDAO(this.dbname);
+        InterdomainRoute interdomainRoute = (InterdomainRoute)
+            dao.queryByParam("preference", preference);
+        dao.remove(interdomainRoute);
+        this.sf.getCurrentSession().getTransaction().commit();
+    }
+
+  @Test(dependsOnMethods={ "interdomainRouteRemove" })
+    public void cascadingDeletedRouteElement() {
+        this.sf.getCurrentSession().beginTransaction();
+        String description = CommonParams.getIdentifier();
+        RouteElemDAO dao = new RouteElemDAO(this.dbname);
+        RouteElem routeElem = (RouteElem)
+            dao.queryByParam("description", description);
+        this.sf.getCurrentSession().getTransaction().commit();
+        // if cascading delete works with interdomainRouteRemove, this will
+        // be null
+        assert routeElem == null;
+    }
+
   @Test(dependsOnMethods={ "nodeAddressRemove", "edgeInfoRemove",
-                           "l2SwitchingCapabilityRemove" })
+                      "l2SwitchingCapabilityRemove", "interdomainRouteRemove" })
     public void domainRemove() {
         this.sf.getCurrentSession().beginTransaction();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain domain =
                 (Domain) domainDAO.queryByParam("topologyIdent",
-                                               CommonParams.getIdentifier());
+                        CommonParams.getIdentifier());
         domainDAO.remove(domain);
         this.sf.getCurrentSession().getTransaction().commit();
     }

@@ -170,6 +170,41 @@ public class CreateTest {
         assert capability != null;
     }
 
+  @Test(dependsOnMethods={ "linkCreate" })
+    public void routeElemCreate() {
+        // depends on one of link, port, node, or domain being non-null
+        // (problematic) choosing link
+        this.sf.getCurrentSession().beginTransaction();
+        RouteElemDAO dao = new RouteElemDAO(this.dbname);
+        RouteElem routeElem = new RouteElem();
+        routeElem.setDescription(CommonParams.getIdentifier());
+        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        Link link = (Link)
+            linkDAO.queryByParam("topologyIdent",
+                                 CommonParams.getIdentifier());
+        routeElem.setLink(link);
+        dao.create(routeElem);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert routeElem != null;
+  }
+
+  @Test(dependsOnMethods={ "routeElemCreate" })
+    public void interdomainRouteCreate() {
+        this.sf.getCurrentSession().beginTransaction();
+        InterdomainRouteDAO dao = new InterdomainRouteDAO(this.dbname);
+        InterdomainRoute interdomainRoute = new InterdomainRoute();
+        interdomainRoute.setPreference(CommonParams.getInterdomainPreference());
+        interdomainRoute.setDefaultRoute(false);
+        RouteElemDAO routeElemDAO = new RouteElemDAO(this.dbname);
+        RouteElem routeElem = (RouteElem)
+            routeElemDAO.queryByParam("description",
+                                 CommonParams.getIdentifier());
+        interdomainRoute.setRouteElem(routeElem);
+        dao.create(interdomainRoute);
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert interdomainRoute != null;
+    }
+
   // sets up all path structure in this method to test cascading save
   // as well as path creation
   @Test(dependsOnMethods={ "portCreate" })

@@ -55,5 +55,7 @@
         <mapping resource="net/es/oscars/bss/topology/NodeAddress.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/EdgeInfo.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/L2SwitchingCapabilityData.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/InterdomainRoute.hbm.xml"/>
+        <mapping resource="net/es/oscars/bss/topology/RouteElem.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>
