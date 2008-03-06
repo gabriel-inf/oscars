@@ -298,9 +298,8 @@ public class TopologyManager {
         }
         */
 
-        return;
-
         this.log.debug("mergeNodes end");
+        return;
     }
 
 
