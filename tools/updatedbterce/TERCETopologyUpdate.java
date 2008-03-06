@@ -360,7 +360,7 @@ public class TERCETopologyUpdate{
         Link dbRemoteLink = null;
         
         if(remoteLinkId != null){
-            dbRemoteLink = this.urnToLink(remoteLinkId, bss);
+            dbRemoteLink = this.urnToLink(remoteLinkId, dbLink, bss);
         }
         
         dbLink.setRemoteLink(dbRemoteLink);
@@ -407,10 +407,11 @@ public class TERCETopologyUpdate{
      * it will create the elements that don't exist.
      * 
      * @param linkId the fully qualified ID of a link
+     * @param remoteLink the remote link of this element
      * @param bss the hibernate session to be used for any transactions
      * return the database entry of the link referenced by linkId
      */
-    private Link urnToLink(String linkId, Session bss){
+    private Link urnToLink(String linkId, Link remoteLink, Session bss){
         /* Check if edge link */
         if(linkId.contains("=*")){
             return null;
@@ -431,9 +432,10 @@ public class TERCETopologyUpdate{
               need to go through and verify each element exists */
             Domain domain = domainDAO.fromTopologyIdent(topoIds[3]);
             if(domain == null){
-                this.log.error("Unable to locate domain for " +
-                    linkId + " in database. Returning null link.");
-                return null;
+                this.log.info("Creating new domain for " + linkId);
+                domain = TopologyUtil.initDomain();
+                domain.setTopologyIdent(topoIds[3]);
+                bss.save(domain);
             }
             
             Node node = nodeDAO.fromTopologyIdent(topoIds[4], domain);
@@ -472,6 +474,7 @@ public class TERCETopologyUpdate{
                 link.setMaximumReservableCapacity(new Long(0));
                 link.setMinimumReservableCapacity(new Long(0));
                 link.setUnreservedCapacity(new Long(0));
+                link.setRemoteLink(remoteLink);
                 bss.save(link);
             }
         }else{
