@@ -245,6 +245,13 @@ public class UserDetails {
             }
             out.println("</td></tr>");
             out.println("<tr><td>*</td><td align='left'>");
+            if (attrNames.contains("OSCARS-operator")) {
+                out.println("<input class='SOAP' type='checkbox'  checked='checked' name='roles' value='OSCARS-operator' /> Operator - view all reservations");
+            } else {
+                out.println("<input class='SOAP' type='checkbox'  name='roles' value='OSCARS-operator' /> Operator - view all reservations");
+            }
+            out.println("</td></tr>");
+            out.println("<tr><td>*</td><td align='left'>");
             if (attrNames.contains("OSCARS-engineer")) {
                 out.println("<input class='SOAP' type='checkbox'  checked='checked' name='roles' value='OSCARS-engineer' /> Engineer - manage all reservations");
             } else {
