@@ -255,7 +255,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
                  axis2/opensaml-1.1.jar, axis2/rampart-core-1.3.jar,
                  axis2/rampart-policy-1.3.jar,
                  axis2/rampart-trust-1.3.jar, axis2/wss4j-1.5.3.jar,
-                 axis2/xmlsec-1.4.0.jar" />
+                 axis2/xmlsec-1.4.0.jar, axis2/log4j-1.2.14.jar"/>
         </copy>
         <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml"/>
@@ -334,7 +334,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <mkdir dir="${catalina.home}/shared/classes/server"/>
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
         <copy file="conf/rampart-1.3.mar" todir="${catalina.home}/shared/classes/repo/modules"/>
-        <copy file="conf/server/axis2.log4j.properties" tofile="${catalina.home}/shared/classes/log4j.properties"/>
+        <copy file="conf/server/common.log4j.properties" tofile="${catalina.home}/common/classes/log4j.properties"/>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
@@ -342,8 +342,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     </target>
     <target name="deployaar" description="copy OSCARS.aar to axis2 services directory" depends="aar, setupServer, deploylibs">
         <copy file="${build.home}/OSCARS.aar" todir="${webservice.home}"/>
-        <!-- not sure the next line is necessary as I  just corrected WEB_INF to WEB-INF  mrt -->
-        <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
+        <copy file="conf/server/axis2.log4j.properties" tofile="${webservice.home}/../classes/log4j.properties"/>
         <!-- these jars need to be in shared/lib to avoid classNotFound
          errors ... mrt/3/27 -->
         <copy todir="${webapp.home}/../shared/lib">
