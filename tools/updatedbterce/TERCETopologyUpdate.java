@@ -433,7 +433,7 @@ public class TERCETopologyUpdate{
             Domain domain = domainDAO.fromTopologyIdent(topoIds[3]);
             if(domain == null){
                 this.log.info("Creating new domain for " + linkId);
-                domain = TopologyUtil.initDomain();
+                domain = new Domain(true);
                 domain.setTopologyIdent(topoIds[3]);
                 bss.save(domain);
             }
