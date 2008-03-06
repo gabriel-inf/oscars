@@ -90,7 +90,7 @@ public class TopologyManager {
         this.remoteLinkMap = new HashMap<Link, String>();
     }
 
-    public void updateDomains(List<Domain> newDomains) {
+    public void updateTopology(Topology topology) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
@@ -99,8 +99,7 @@ public class TopologyManager {
         try {
             // step 1
             this.log.info("merging with current topology");
-            this.mergeDomains(newDomains);
-            this.mergeRemoteLinks();
+            this.mergeTopology(topology);
             this.log.info("finished merging with current topology");
            // step 2
            this.log.info("recalculating pending paths");
@@ -130,81 +129,76 @@ public class TopologyManager {
         this.log.info("updateDom.finish");
     }
 
-    private void mergeDomains(List<Domain> newDomains) {
+    private void mergeTopology(Topology newTopology) {
         //        Domain domain = this.queryByParam("topologyIdent", topologyIdent);
 
-        this.log.debug("mergeDomains.start");
+        this.log.debug("mergeTopology.start");
 
-        HashMap<String, Domain> newDomainMap = new HashMap<String, Domain>();
 
         DomainDAO domainDAO = new DomainDAO(this.dbname);
+
+
         List<Domain> currentDomains = domainDAO.list();
+        Topology savedTopology = new Topology();
+        savedTopology.setDomains(currentDomains);
 
-        for (Domain currentDomain : currentDomains) {
-            String fqti = currentDomain.getFQTI();
-            this.log.debug("  Database domain: topoIdent: [" + currentDomain.getTopologyIdent()+ "] FQTI: [" + fqti + "]");
 
-            if (!this.dbDomainMap.containsKey(fqti)) {
-                this.dbDomainMap.put(fqti, currentDomain);
+        ArrayList<Domain> domainsToInsert = new ArrayList<Domain>();
+        ArrayList<Domain> domainsToUpdate = new ArrayList<Domain>();
+
+        for (Domain newDomain : newTopology.getDomains()) {
+            boolean found = false;
+            Domain foundDomain = null;
+            for (Domain currentDomain : currentDomains) {
+                if (currentDomain.equalsTopoId(newDomain)) {
+                    found = true;
+                    foundDomain = currentDomain;
+                    // here is where we'd overwrite stuff
+                    break;
+                }
+            }
+            if (!found) {
+                domainsToInsert.add(newDomain);
             } else {
-                this.log.error("  Duplicate domain FQTIs in DB: [" + fqti + "]");
+                domainsToUpdate.add(foundDomain);
             }
         }
 
-        // Our merging for domains means we only ADD to the domain list
-        for (Domain newDomain : newDomains) {
-            String newFqti = newDomain.getFQTI();
-
-            this.log.debug("  Examiming domain, topoIdent: [" + newDomain.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
-
-            if (!newDomainMap.containsKey(newFqti)) {
-                newDomainMap.put(newFqti, newDomain);
-            } else {
-                this.log.error("  Duplicate domain FQTIs in input: [" + newFqti + "], ignoring");
-                continue;
-            }
-
-            if (newDomain.getTopologyIdent().equals(this.localDomain)) {
-                newDomain.setLocal(true);
-            } else {
-                newDomain.setLocal(false);
-            }
-
-            if (!this.dbDomainMap.containsKey(newFqti)) {
-                this.log.debug("  Creating domain, FQTI: [" + newFqti + "]");
-                newDomain.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Domain"));
-                domainDAO.create(newDomain);
-
-            } else {
-                this.log.debug("  Updating domain, FQTI: [" + newFqti + "]");
-                Domain oldDomain = (Domain) dbDomainMap.get(newFqti);
-                oldDomain.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Domain"));
-                domainDAO.update(oldDomain); // normalize JUST IN CASE
-                this.dbDomainMap.put(newFqti, oldDomain);
-            }
+        for (Domain domain : domainsToInsert) {
+            domainDAO.create(domain);
+            savedTopology.addDomain(domain);
+            System.out.println("Added domain: "+domain.getFQTI());
         }
 
+        for (Domain domain : domainsToUpdate) {
+            domainDAO.update(domain);
+            System.out.println("Updated domain: "+domain.getFQTI());
+        }
+
+
+        savedTopology.setDomains(domainDAO.list());
 
         // Now that everything is saved, merge domains
-        for (Domain newDomain : newDomains) {
-            Domain oldDomain = null;
-
-            String newFqti = newDomain.getFQTI();
-
-            if (this.dbDomainMap.containsKey(newFqti)) {
-                oldDomain = (Domain) this.dbDomainMap.get(newFqti);
+        for (Domain savedDomain : savedTopology.getDomains()) {
+            boolean found = false;
+            for (Domain newDomain : newTopology.getDomains()) {
+                if (newDomain.equalsTopoId(savedDomain)) {
+                    found = true;
+                    this.mergeNodes(savedDomain, newDomain);
+                    break;
+                }
             }
-
-            this.dbDomainMap.put(newFqti, newDomain);
-            this.mergeNodes(oldDomain, newDomain);
         }
 
+//        this.mergeRemoteLinks();
 
-        this.log.debug("mergeDomains.end");
+        this.log.debug("mergeTopology.end");
     }
 
     private void mergeNodes(Domain oldDomain, Domain newDomain) {
         this.log.debug("mergeNodes start");
+
+        /*
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
         NodeAddressDAO nodeAddrDAO = new NodeAddressDAO(this.dbname);
 
@@ -302,6 +296,9 @@ public class TopologyManager {
                 this.invalidateNode(oldNodeMap.get(key));
             }
         }
+        */
+
+        return;
 
         this.log.debug("mergeNodes end");
     }

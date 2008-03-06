@@ -24,8 +24,9 @@ public class Topology {
     public boolean addDomain(Domain domain) {
         boolean found = false;
         for (Domain d : this.domains) {
-            if ( TopologyUtil.getFQTI(d).equals(TopologyUtil.getFQTI(domain)) ) {
+            if ( d.equalsTopoId(domain)) {
                 found = true;
+                break;
             }
         }
         if (!found) {
@@ -35,4 +36,5 @@ public class Topology {
             return false;
         }
     }
+
 }
