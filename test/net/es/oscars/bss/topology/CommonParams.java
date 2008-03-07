@@ -6,6 +6,10 @@ public class CommonParams {
         return "test suite";
     }
 
+    public static String getResvIdentifier() {
+        return "reservation test";
+    }
+
     public static String getReservationDescription() {
         return "Test reservation unique description 123aaa456zzz";
     }
