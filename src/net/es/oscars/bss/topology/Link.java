@@ -10,6 +10,7 @@ import org.hibernate.Hibernate;
 import java.io.Serializable;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -289,6 +290,22 @@ public class Link extends HibernateBean implements Serializable {
     public void removeIpaddr(Ipaddr ipaddr) {
         this.ipaddrs.remove(ipaddr);
     }
+
+    public Ipaddr getIpaddrByIP(String IP) {
+        if (this.ipaddrs == null) {
+            return null;
+        }
+
+        Iterator ipaddrIt = this.ipaddrs.iterator();
+        while (ipaddrIt.hasNext()) {
+            Ipaddr ipaddr = (Ipaddr) ipaddrIt.next();
+            if (ipaddr.getIP().equals(IP)) {
+                return ipaddr;
+            }
+        }
+        return null;
+    }
+
 
     public boolean equalsTopoId(Link link) {
         String thisFQTI = this.getFQTI();

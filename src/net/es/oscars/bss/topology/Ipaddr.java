@@ -118,8 +118,8 @@ public class Ipaddr extends HibernateBean implements Serializable {
             // used in updating the topology database; only these fields
             // are important in determining equality
             return new EqualsBuilder().append(this.getIP(), castOther.getIP())
-                                      .append(this.getLink(),
-                castOther.getLink()).isEquals();
+                                      .append(this.getLink(), castOther.getLink())
+                                      .isEquals();
         }
     }
 

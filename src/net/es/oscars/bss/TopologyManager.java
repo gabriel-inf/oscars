@@ -52,11 +52,15 @@ public class TopologyManager {
     private String localDomain;
     private NotifyInitializer notifier;
 
-    private HashMap<String, Domain> dbDomainMap;
-    private HashMap<String, Node> dbNodeMap;
-    private HashMap<String, Port> dbPortMap;
-    private HashMap<String, Link> dbLinkMap;
-    private HashMap<Link, String> remoteLinkMap;
+
+    private DomainDAO domainDAO;
+    private NodeDAO nodeDAO;
+    private NodeAddressDAO nodeAddrDAO;
+    private PortDAO portDAO;
+    private LinkDAO linkDAO;
+    private IpaddrDAO ipaddrDAO;
+    private L2SwitchingCapabilityDataDAO l2swcapDAO;
+
 
     public TopologyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
@@ -82,15 +86,18 @@ public class TopologyManager {
         this.props = propHandler.getPropertyGroup("topo", true);
         this.setLocalDomain(this.props.getProperty("localdomain").trim());
 
+        this.domainDAO = new DomainDAO(this.dbname);
+        this.nodeDAO = new NodeDAO(this.dbname);
+        this.nodeAddrDAO = new NodeAddressDAO(this.dbname);
+        this.portDAO = new PortDAO(this.dbname);
+        this.linkDAO = new LinkDAO(this.dbname);
+        this.ipaddrDAO = new IpaddrDAO(this.dbname);
+        this.l2swcapDAO = new L2SwitchingCapabilityDataDAO(this.dbname);
 
-        this.dbDomainMap = new HashMap<String, Domain>();
-        this.dbNodeMap = new HashMap<String, Node>();
-        this.dbPortMap = new HashMap<String, Port>();
-        this.dbLinkMap = new HashMap<String, Link>();
-        this.remoteLinkMap = new HashMap<Link, String>();
     }
 
-    public void updateTopology(Topology topology) {
+    public void updateTopology(Topology topology, Hashtable<String, String> remoteLinkFQTIMap) {
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
@@ -99,9 +106,11 @@ public class TopologyManager {
         try {
             // step 1
             this.log.info("merging with current topology");
-            this.mergeTopology(topology);
+
+            this.mergeTopology(topology, remoteLinkFQTIMap);
             this.log.info("finished merging with current topology");
-           // step 2
+
+            // step 2
            this.log.info("recalculating pending paths");
            this.recalculatePaths("PENDING");
            this.log.info("recalculated pending paths");
@@ -109,13 +118,18 @@ public class TopologyManager {
            this.log.info("recalculating active paths");
            this.recalculatePaths("ACTIVE");
            this.log.info("recalculated active paths");
+
            // step 4
 //           this.clean();
         } catch (BSSException e) {
            this.sf.getCurrentSession().getTransaction().rollback();
 
            this.log.error("updateDomains: " + e.getMessage());
+
            e.printStackTrace(pw);
+           this.log.debug("error: "+e.getMessage());
+           this.log.debug(sw.toString());
+
            this.log.error(sw.toString());
            System.exit(-1);
         } catch (Exception e) {
@@ -123,24 +137,21 @@ public class TopologyManager {
            this.log.error("updateDomains exception: " + e.getMessage());
            e.printStackTrace(pw);
            this.log.error(sw.toString());
-           System.out.println("error: "+e.getMessage());
-           System.out.println(sw.toString());
+           this.log.debug("error: "+e.getMessage());
+           this.log.debug(sw.toString());
            System.exit(-1);
         }
         this.sf.getCurrentSession().getTransaction().commit();
         this.log.info("updateDom.finish");
     }
 
-    private void mergeTopology(Topology newTopology) {
+    private void mergeTopology(Topology newTopology, Hashtable<String, String> remoteLinkFQTIMap) throws BSSException {
         //        Domain domain = this.queryByParam("topologyIdent", topologyIdent);
 
         this.log.debug("mergeTopology.start");
 
-
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-
-
         List<Domain> currentDomains = domainDAO.list();
+
         Topology savedTopology = new Topology();
         savedTopology.setDomains(currentDomains);
 
@@ -169,12 +180,12 @@ public class TopologyManager {
         for (Domain domain : domainsToInsert) {
             domainDAO.create(domain);
             savedTopology.addDomain(domain);
-            System.out.println("Added domain: "+domain.getFQTI());
+            this.log.debug("Added domain: "+domain.getFQTI());
         }
 
         for (Domain domain : domainsToUpdate) {
             domainDAO.update(domain);
-            System.out.println("Updated domain: "+domain.getFQTI());
+            this.log.debug("Updated domain: "+domain.getFQTI());
         }
 
 
@@ -189,7 +200,7 @@ public class TopologyManager {
             }
         }
 
-//        this.mergeRemoteLinks();
+        this.mergeRemoteLinks(remoteLinkFQTIMap);
 
         this.log.debug("mergeTopology.end");
     }
@@ -197,10 +208,7 @@ public class TopologyManager {
     private void mergeNodes(Domain savedDomain, Domain newDomain) {
         this.log.debug("mergeNodes start");
 
-        NodeDAO nodeDAO = new NodeDAO(this.dbname);
-        NodeAddressDAO nodeAddrDAO = new NodeAddressDAO(this.dbname);
-
-        System.out.println("Merging nodes for: ["+savedDomain.getFQTI()+"]");
+        this.log.debug("Merging nodes for: ["+savedDomain.getFQTI()+"]");
 
         ArrayList<Node> nodesToInsert = new ArrayList<Node>();
         ArrayList<Node> nodesToUpdate = new ArrayList<Node>();
@@ -223,17 +231,17 @@ public class TopologyManager {
 
                 Node foundNode = savedDomain.getNodeByTopoId(newNode.getTopologyIdent());
 
-                NodeAddress foundNodeAddr = foundNode.getNodeAddress();
                 NodeAddress newNodeAddr = newNode.getNodeAddress();
 
-                if (foundNode != null) {
-                    System.out.println("Will add node: "+newNode.getFQTI());
+                if (foundNode == null) {
+                    this.log.debug("Will add node: "+newNode.getFQTI());
                     nodesToInsert.add(newNode);
                     if (newNodeAddr != null) {
                         nodeAddrsToInsert.add(newNodeAddr);
                     }
                 } else {
-                    System.out.println("Will update node: "+newNode.getFQTI());
+                    NodeAddress foundNodeAddr = foundNode.getNodeAddress();
+                    this.log.debug("Will update node: "+newNode.getFQTI());
                     foundNode.setValid(newNode.isValid());
                     nodesToUpdate.add(foundNode);
 
@@ -261,7 +269,7 @@ public class TopologyManager {
 
 
 
-        System.out.println("Checking for invalidation...");
+        this.log.debug("Checking for invalidation...");
 
         // Check for invalidation
         if (savedDomain.getNodes() == null) {
@@ -274,88 +282,89 @@ public class TopologyManager {
                 Node foundNode = newDomain.getNodeByTopoId(savedNode.getTopologyIdent());
 
                 if (foundNode == null) {
-                    System.out.println("Will invalidate node: "+savedNode.getFQTI());
+                    this.log.debug("Will invalidate node: "+savedNode.getFQTI());
                     nodesToInvalidate.add(savedNode);
                 }
             }
         }
 
-        System.out.println("Checking for invalidation finished.");
+        this.log.debug("Checking for invalidation finished.");
 
 
 
 
 
-        System.out.println("Adding nodes...");
+        this.log.debug("Adding nodes...");
         for (Node node : nodesToInsert) {
             savedDomain.addNode(node);
             try {
                 nodeDAO.create(node);
             } catch (Exception ex) {
-                System.out.println("Error: "+ex.getMessage());
+                this.log.debug("Error: "+ex.getMessage());
             }
         }
-        System.out.println("Adding nodes finished.");
+        this.log.debug("Adding nodes finished.");
 
-        System.out.println("Updating nodes...");
+        this.log.debug("Updating nodes...");
         for (Node node : nodesToUpdate) {
             try {
                 nodeDAO.update(node);
             } catch (Exception ex) {
-                System.out.println("Error: "+ex.getMessage());
+                this.log.debug("Error: "+ex.getMessage());
             }
         }
-        System.out.println("Updating nodes finished.");
+        this.log.debug("Updating nodes finished.");
 
 
-        System.out.println("Invalidating nodes...");
+        this.log.debug("Invalidating nodes...");
         for (Node node : nodesToInvalidate) {
             this.invalidateNode(node);
         }
-        System.out.println("Invalidating nodes finished.");
+        this.log.debug("Invalidating nodes finished.");
 
 
-        System.out.println("Adding node addresses...");
+        this.log.debug("Adding node addresses...");
         for (NodeAddress nodeAddr : nodeAddrsToInsert) {
             try {
                 nodeAddrDAO.create(nodeAddr);
             } catch (Exception ex) {
-                System.out.println("Error: "+ex.getMessage());
+                this.log.debug("Error: "+ex.getMessage());
             }
         }
-        System.out.println("Adding node addresses finished.");
+        this.log.debug("Adding node addresses finished.");
 
-        System.out.println("Updating node addresses...");
+        this.log.debug("Updating node addresses...");
         for (NodeAddress nodeAddr : nodeAddrsToUpdate) {
             try {
                 nodeAddrDAO.update(nodeAddr);
             } catch (Exception ex) {
-                System.out.println("Error: "+ex.getMessage());
+                this.log.debug("Error: "+ex.getMessage());
             }
         }
-        System.out.println("Updating node addresses finished.");
+        this.log.debug("Updating node addresses finished.");
 
-        System.out.println("Removing stale node addresses...");
+        this.log.debug("Removing stale node addresses...");
         for (NodeAddress nodeAddr : nodeAddrsToDelete) {
             try {
                 nodeAddrDAO.remove(nodeAddr);
             } catch (Exception ex) {
-                System.out.println("Error: "+ex.getMessage());
+                this.log.debug("Error: "+ex.getMessage());
             }
         }
-        System.out.println("Removing stale node addresses finished.");
+        this.log.debug("Removing stale node addresses finished.");
 
-/*
-        for (Node savedNode : savedDomain.getNodes()) {
-            for (Node newNode : newDomain.getNodes()) {
-                if (newNode.equalsTopoId(savedNode)) {
-//                    this.mergePorts(savedNode, newNode);
-                }
+        savedNodeIt = savedDomain.getNodes().iterator();
+        while (savedNodeIt.hasNext()) {
+            Node savedNode = (Node) savedNodeIt.next();
+
+            Node newNode = newDomain.getNodeByTopoId(savedNode.getTopologyIdent());
+            if (newNode != null) {
+                this.mergePorts(savedNode, newNode);
             }
         }
-*/
 
-        System.out.println("Merging nodes for: ["+savedDomain.getFQTI()+"] finished.");
+
+        this.log.debug("Merging nodes for: ["+savedDomain.getFQTI()+"] finished.");
 
 
 
@@ -365,462 +374,452 @@ public class TopologyManager {
 
 
 
-
-
-    private void mergePorts(Node oldNode, Node newNode) {
+    private void mergePorts(Node savedNode, Node newNode) {
         this.log.debug("mergePorts start");
+
         ArrayList<Port> portsToInsert = new ArrayList<Port>();
         ArrayList<Port> portsToUpdate = new ArrayList<Port>();
         ArrayList<Port> portsToInvalidate = new ArrayList<Port>();
 
-/*
-        PortDAO portDAO = new PortDAO(this.dbname);
+        Iterator savedPortIt;
+        Iterator newPortIt;
 
-        HashMap<String, Port> newPortMap = new HashMap<String, Port>();
-        HashMap<String, Port> oldPortMap = new HashMap<String, Port>();
+        // Check for adding and updating
+        if (newNode.getPorts() == null) {
+            // no adding or updating.
+        } else {
+            newPortIt = newNode.getPorts().iterator();
+            while (newPortIt.hasNext()) {
+                Port newPort = (Port) newPortIt.next();
 
+                Port foundPort = savedNode.getPortByTopoId(newPort.getTopologyIdent());
 
-
-        if (oldNode != null) {
-            Iterator oldPortIt = oldNode.getPorts().iterator();
-
-            while (oldPortIt.hasNext()) {
-                Port oldPort = (Port) oldPortIt.next();
-                String oldFqti = oldPort.getFQTI();
-
-                this.log.debug("  Database port: topoIdent: [" + oldPort.getTopologyIdent()+ "] FQTI: [" + oldFqti + "]");
-
-                if (!this.dbPortMap.containsKey(oldFqti)) {
-                    this.dbPortMap.put(oldFqti, oldPort);
-                    oldPortMap.put(oldFqti, oldPort);
+                if (foundPort == null) {
+                    this.log.debug("Will add port: "+newPort.getFQTI());
+                    portsToInsert.add(newPort);
                 } else {
-                    this.log.error("  Duplicate port FQTIs in DB: [" + oldFqti + "]");
+                    this.log.debug("Will update port: "+newPort.getFQTI());
+                    foundPort.setValid(newPort.isValid()); // true!
+                    foundPort.setAlias(newPort.getAlias());
+                    foundPort.setCapacity(newPort.getCapacity());
+                    foundPort.setGranularity(newPort.getGranularity());
+                    foundPort.setMaximumReservableCapacity(newPort.getMaximumReservableCapacity());
+                    foundPort.setMinimumReservableCapacity(newPort.getMinimumReservableCapacity());
+                    foundPort.setSnmpIndex(newPort.getSnmpIndex());
+                    foundPort.setUnreservedCapacity(newPort.getUnreservedCapacity());
+
+                    portsToUpdate.add(foundPort);
                 }
             }
         }
 
-        Iterator newPortIt = newNode.getPorts().iterator();
 
-        // Now, create new ports / update existing
-        while (newPortIt.hasNext()) {
-            Port newPort = (Port) newPortIt.next();
 
-            String newFqti = newPort.getFQTI();
+        this.log.debug("Checking for invalidation...");
 
-            this.log.debug("  Examiming port, topoIdent: [" + newPort.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
+        // Check for invalidation
+        if (savedNode.getPorts() == null) {
+            // nothing to invalidate.
+        } else {
+            savedPortIt = savedNode.getPorts().iterator();
+            while (savedPortIt.hasNext()) {
+                boolean found = false;
+                Port savedPort = (Port) savedPortIt.next();
+                Port foundPort = newNode.getPortByTopoId(savedPort.getTopologyIdent());
 
-            if (!newPortMap.containsKey(newFqti)) {
-                newPortMap.put(newFqti, newPort);
-            } else {
-                continue;
-            }
-
-            if (!this.dbPortMap.containsKey(newFqti)) {
-                // This port is brand new so insert it into DB
-                this.log.debug("  Creating port, FQTI: [" + newFqti + "]");
-
-                if (oldNode != null) {
-                    newPort.setNode(oldNode);
-                } else {
-                    newPort.setNode(newNode);
+                if (foundPort == null) {
+                    this.log.debug("Will invalidate port: "+savedPort.getFQTI());
+                    portsToInvalidate.add(savedPort);
                 }
-                newPort.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Port"));
+            }
+        }
 
-                portDAO.create(newPort);
-//                this.dbPortMap.put(newFqti, newPort);
-            } else {
-                this.log.debug("  Updating port, FQTI: [" + newFqti + "]");
-                // This port already existed, so just copy properties
-                Port oldPort = this.dbPortMap.get(newFqti);
-                // copy properties
-                //
-                // Note: Topology identifier & node id MUST the same if
-                // we got this far, so let's not set them explicitly
-                oldPort.setCapacity(newPort.getCapacity());
-                oldPort.setGranularity(newPort.getGranularity());
-                oldPort.setMaximumReservableCapacity(newPort.getMaximumReservableCapacity());
-                oldPort.setMinimumReservableCapacity(newPort.getMinimumReservableCapacity());
-                oldPort.setAlias(newPort.getAlias());
-                oldPort.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Port"));
+        this.log.debug("Checking for invalidation finished.");
 
-                oldPort.setValid(true);
-                portDAO.update(oldPort);
+
+
+
+        this.log.debug("Adding ports...");
+        for (Port port : portsToInsert) {
+            savedNode.addPort(port);
+            try {
+                portDAO.create(port);
+            } catch (Exception ex) {
+                this.log.debug("Error: "+ex.getMessage());
+            }
+        }
+        this.log.debug("Adding ports finished.");
+
+        this.log.debug("Updating ports...");
+        for (Port port : portsToUpdate) {
+            try {
+                portDAO.update(port);
+            } catch (Exception ex) {
+                this.log.debug("Error: "+ex.getMessage());
+            }
+        }
+        this.log.debug("Updating ports finished.");
+
+
+        this.log.debug("Invalidating ports...");
+        for (Port port : portsToInvalidate) {
+            this.invalidatePort(port);
+        }
+        this.log.debug("Invalidating ports finished.");
+
+
+
+        savedPortIt = savedNode.getPorts().iterator();
+        while (savedPortIt.hasNext()) {
+            Port savedPort = (Port) savedPortIt.next();
+            Port newPort = newNode.getPortByTopoId(savedPort.getTopologyIdent());
+            if (newPort!= null) {
+                this.mergeLinks(savedPort, newPort);
             }
         }
 
 
-        // Now that everything is saved, merge links
-        for (String key : newPortMap.keySet()) {
-            Port oldPort = null;
-            Port newPort = newPortMap.get(key);
 
-            if (this.dbPortMap.containsKey(key)) {
-                oldPort = this.dbPortMap.get(key);
-            }
-
-            this.dbPortMap.put(key, newPort);
-            this.mergeLinks(oldPort, newPort);
-        }
-
-        // then invalidate ports not existing any more
-        for (String key : oldPortMap.keySet()) {
-            if (!newPortMap.containsKey(key)) {
-                this.log.debug("  Invalidating port [" + key + "]");
-                this.invalidatePort(oldPortMap.get(key));
-            }
-        }
-*/
         this.log.debug("mergePorts.end");
     }
 
 
 
-
-
-    private void mergeLinks(Port oldPort, Port newPort) {
+    private void mergeLinks(Port savedPort, Port newPort) {
         this.log.debug("mergeLinks.start");
 
-        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        ArrayList<Link> linksToInsert = new ArrayList<Link>();
+        ArrayList<Link> linksToUpdate = new ArrayList<Link>();
+        ArrayList<Link> linksToInvalidate = new ArrayList<Link>();
 
-        HashMap<String, Link> newLinkMap = new HashMap<String, Link>();
-        HashMap<String, Link> oldLinkMap = new HashMap<String, Link>();
+        Iterator savedLinkIt;
+        Iterator newLinkIt;
 
-        // have a look at all the links under the old port
+        // Check for adding and updating
+        if (newPort.getLinks() == null) {
+            // no adding or updating.
+        } else {
+            newLinkIt = newPort.getLinks().iterator();
+            while (newLinkIt.hasNext()) {
+                Link newLink = (Link) newLinkIt.next();
 
-        if (oldPort != null) {
-            Iterator oldLinkIt = oldPort.getLinks().iterator();
+                Link foundLink = savedPort.getLinkByTopoId(newLink.getTopologyIdent());
 
-            while (oldLinkIt.hasNext()) {
-                Link oldLink = (Link) oldLinkIt.next();
+                if (foundLink == null) {
+                    this.log.debug("Will add link: "+newLink.getFQTI());
+                    newLink.setRemoteLink(null);
 
-                String oldFqti = oldLink.getFQTI();
-                this.log.debug("  Database link: topoIdent: [" + oldLink.getTopologyIdent()+ "] FQTI: [" + oldFqti + "]");
-
-                if (!this.dbLinkMap.containsKey(oldFqti)) {
-                    this.dbLinkMap.put(oldFqti, oldLink);
+                    linksToInsert.add(newLink);
                 } else {
-                    this.log.error("Duplicate link FQTIs in DB: [" +oldFqti + "]");
-                }
+                    this.log.debug("Will update link: "+newLink.getFQTI());
+                    foundLink.setCapacity(newLink.getCapacity());
+                    foundLink.setGranularity(newLink.getGranularity());
+                    foundLink.setMaximumReservableCapacity(newLink.getMaximumReservableCapacity());
+                    foundLink.setMinimumReservableCapacity(newLink.getMinimumReservableCapacity());
+                    foundLink.setAlias(newLink.getAlias());
+                    foundLink.setTrafficEngineeringMetric(newLink.getTrafficEngineeringMetric());
+                    foundLink.setValid(newLink.isValid()); // true!
 
-                if (!oldLinkMap.containsKey(oldFqti)) {
-                    oldLinkMap.put(oldFqti, oldLink);
-                }
+                    foundLink.setRemoteLink(null);
 
+                    linksToUpdate.add(foundLink);
+                }
             }
         }
 
 
-        Iterator newLinkIt = newPort.getLinks().iterator();
+        this.log.debug("Checking for invalidation...");
 
+        // Check for invalidation
+        if (savedPort.getLinks() == null) {
+            // nothing to invalidate.
+        } else {
+            savedLinkIt = savedPort.getLinks().iterator();
+            while (savedLinkIt.hasNext()) {
+                boolean found = false;
+                Link savedLink = (Link) savedLinkIt.next();
+                Link foundLink = newPort.getLinkByTopoId(savedLink.getTopologyIdent());
 
-        // Now, create new ports / update existing
-        while (newLinkIt.hasNext()) {
-            Link newLink = (Link) newLinkIt.next();
-
-            String newFqti = newLink.getFQTI();
-
-            this.log.debug("  Examiming link, topoIdent: [" + newLink.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
-
-            if (!newLinkMap.containsKey(newFqti)) {
-                newLinkMap.put(newFqti, newLink);
-            } else {
-                continue;
-            }
-
-            if (!this.dbLinkMap.containsKey(newFqti)) {
-                this.log.debug("  Creating link, FQTI: [" + newFqti + "]");
-                // This link is brand new so insert it into DB
-                String remFQTI = newLink.getRemoteLink().getFQTI();
-                if (remFQTI != "") {
-                    this.remoteLinkMap.put(newLink, remFQTI);
+                if (foundLink == null) {
+                    this.log.debug("Will invalidate link: "+savedLink.getFQTI());
+                    linksToInvalidate.add(savedLink);
                 }
-                newLink.setRemoteLink(null);
-                if (oldPort != null) {
-                    newLink.setPort(oldPort);
-                } else {
-                    newLink.setPort(newPort);
-                }
-                linkDAO.create(newLink);
-
-            } else {
-                this.log.debug("  Updating link, FQTI: [" + newFqti + "]");
-                // This link already existed, so just copy properties
-                Link oldLink = this.dbLinkMap.get(newFqti);
-                String remFQTI = newLink.getRemoteLink().getFQTI();
-                if (remFQTI != "") {
-                    this.remoteLinkMap.put(oldLink, remFQTI);
-                }
-
-                oldLink.setRemoteLink(null);
-
-                // Note: Topology identifier & node id MUST the same if
-                // we got this far, so let's not set them explicitly
-
-                oldLink.setCapacity(newLink.getCapacity());
-                oldLink.setGranularity(newLink.getGranularity());
-                oldLink.setMaximumReservableCapacity(newLink.getMaximumReservableCapacity());
-                oldLink.setMinimumReservableCapacity(newLink.getMinimumReservableCapacity());
-                oldLink.setAlias(newLink.getAlias());
-                oldLink.setTrafficEngineeringMetric(newLink.getTrafficEngineeringMetric());
-
-                oldLink.setValid(true);
-
-                linkDAO.update(oldLink);
             }
         }
 
-        // Now that everything is saved, merge remote links, swcaps and ipaddrs
-        for (String key : newLinkMap.keySet()) {
-            Link newLink = newLinkMap.get(key);
-            Link oldLink = null;
-            if (dbLinkMap.containsKey(key)) {
-                oldLink = dbLinkMap.get(key);
-            }
-            this.dbLinkMap.put(key, newLink);
-
-            this.mergeLinkSwcaps(oldLink, newLink);
-            this.mergeLinkIpaddrs(oldLink, newLink);
-        }
+        this.log.debug("Checking for invalidation finished.");
 
 
-        // then invalidate links not existing any more
-        for (String key : oldLinkMap.keySet()) {
-            if (!newLinkMap.containsKey(key)) {
-                this.log.debug("Invalidating link [" + key + "]");
-                this.invalidateLink(oldLinkMap.get(key));
+
+
+
+
+        this.log.debug("Adding links...");
+        for (Link link : linksToInsert) {
+            savedPort.addLink(link);
+            try {
+                linkDAO.create(link);
+            } catch (Exception ex) {
+                this.log.debug("Error: "+ex.getMessage());
             }
         }
+        this.log.debug("Adding links finished.");
+
+        this.log.debug("Updating links...");
+        for (Link link : linksToUpdate) {
+            try {
+                linkDAO.update(link);
+            } catch (Exception ex) {
+                this.log.debug("Error: "+ex.getMessage());
+            }
+        }
+        this.log.debug("Updating links finished.");
 
 
+        this.log.debug("Invalidating links...");
+        for (Link link : linksToInvalidate) {
+            this.invalidateLink(link);
+        }
+        this.log.debug("Invalidating links finished.");
+
+        savedLinkIt = savedPort.getLinks().iterator();
+        while (savedLinkIt.hasNext()) {
+            Link savedLink = (Link) savedLinkIt.next();
+            Link newLink = newPort.getLinkByTopoId(savedLink.getTopologyIdent());
+            if (newLink != null) {
+                this.mergeLinkIpaddrs(savedLink, newLink);
+                this.mergeLinkSwcaps(savedLink, newLink);
+            }
+        }
 
         this.log.debug("mergeLinks.end");
     }
 
-    private void mergeRemoteLinks() {
+    private void mergeRemoteLinks(Hashtable<String, String> remoteLinkFQTIMap) {
         this.log.debug("mergeRemoteLinks.start");
 
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
-        NodeDAO nodeDAO = new NodeDAO(this.dbname);
-        PortDAO portDAO = new PortDAO(this.dbname);
-        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        for (String thisFqti : remoteLinkFQTIMap.keySet()) {
 
-        // pull everything in-memory
-        List<Link> dbLinks 		= linkDAO.list();
-
-        ArrayList<String> newFQTIs =  new ArrayList<String>();
-        HashMap<String, Link> dbLinkMap 	= new HashMap<String, Link>();
-
-        for (Link dbLink : dbLinks) {
-            String fqti = dbLink.getFQTI();
-            dbLinkMap.put(fqti, dbLink);
-        }
-
-        for (Link key : this.remoteLinkMap.keySet()) {
-            String fqti = this.remoteLinkMap.get(key);
-            if (dbLinkMap.containsKey(fqti)) {
-                key.setRemoteLink(dbLinkMap.get(fqti));
-                linkDAO.update(key);
-            } else {
-                newFQTIs.add(fqti);
+            String remFqti = remoteLinkFQTIMap.get(thisFqti);
+            Link thisLink = null;
+            Link remoteLink = null;
+            try {
+                thisLink = TopologyUtil.getLink(thisFqti, this.dbname);
+            } catch (Exception ex) {
+                thisLink = null;
+                this.log.error("Error: "+ex.getMessage());
+                break;
             }
-        }
 
-        for (String fqti : newFQTIs) {
-            this.log.debug ("  new remote link is: ["+fqti+"]");
+            try {
+                remoteLink = TopologyUtil.getLink(remFqti, this.dbname);
+            } catch (Exception ex) {
+                remoteLink = this.insertFQTILink(remFqti, thisLink);
+            }
 
-            String newDomLSTI = TopologyUtil.getLSTI(fqti, "Domain");
-            Domain remoteDomain = domainDAO.fromTopologyIdent(newDomLSTI);
-            if (remoteDomain == null) {
-                this.log.debug ("  remote domain ["+newDomLSTI+"] does not exist, will create");
-                remoteDomain = new Domain(true);
-                if (newDomLSTI.equals(this.localDomain)) {
-                    remoteDomain.setLocal(true);
-                } else {
-                    remoteDomain.setLocal(false);
-                }
-                remoteDomain.setTopologyIdent(newDomLSTI);
-                domainDAO.create(remoteDomain);
+            if (thisLink != null) {
+                thisLink.setRemoteLink(remoteLink);
+                linkDAO.update(thisLink);
             }
 
 
-            String newNodeLSTI = TopologyUtil.getLSTI(fqti, "Node");
-
-            Node remoteNode = nodeDAO.fromTopologyIdent(newNodeLSTI, remoteDomain);
-            if (remoteNode == null) {
-                this.log.debug ("  remote Node["+newNodeLSTI+"] does not exist, will create");
-                Node newNode = new Node(remoteDomain, true);
-                newNode.setTopologyIdent(newNodeLSTI);
-                nodeDAO.create(newNode);
-                remoteNode = newNode;
-            }
-
-            String newPortLSTI = TopologyUtil.getLSTI(fqti, "Port");
-            Port remotePort = portDAO.fromTopologyIdent(newPortLSTI, remoteNode);
-            if (remotePort == null) {
-                this.log.debug ("  remote Port ["+newPortLSTI+"] does not exist, will create");
-                Port newPort =  new Port(remoteNode, true);
-                newPort.setTopologyIdent(newPortLSTI);
-                newPort.setAlias(newPortLSTI);
-                portDAO.create(newPort);
-                remotePort = newPort;
-            }
-
-            String newLinkLSTI = TopologyUtil.getLSTI(fqti, "Link");
-            Link remoteLink = linkDAO.fromTopologyIdent(newLinkLSTI, remotePort);
-            if (remoteLink == null) {
-                this.log.debug ("  remote Link ["+newLinkLSTI+"] does not exist, will create");
-                remoteLink = new Link(remotePort, true);
-                remoteLink.setTopologyIdent(newLinkLSTI);
-                remoteLink.setAlias(newLinkLSTI);
-                linkDAO.create(remoteLink);
-            }
-
-
-            for (Link key : this.remoteLinkMap.keySet()) {
-                String linkFqti = this.remoteLinkMap.get(key);
-                if (linkFqti.equals(fqti)) {
-                    this.log.debug ("  ["+fqti+"] is set as remote link for ["+key.getFQTI()+"]");
-                    key.setRemoteLink(remoteLink);
-                    linkDAO.update(key);
-                }
-            }
         }
 
         this.log.debug("mergeRemoteLinks.end");
     }
 
-    private void mergeLinkIpaddrs(Link oldLink, Link newLink) {
+    private void mergeLinkIpaddrs(Link savedLink, Link newLink) {
         this.log.debug("mergeLinkIpaddrs.start");
 
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
 
-        HashMap<String, Ipaddr> oldIpaddrMap = new HashMap<String, Ipaddr>();
+        ArrayList<Ipaddr> ipaddrsToInsert = new ArrayList<Ipaddr>();
+        ArrayList<Ipaddr> ipaddrsToUpdate = new ArrayList<Ipaddr>();
+        ArrayList<Ipaddr> ipaddrsToInvalidate = new ArrayList<Ipaddr>();
 
-        if (oldLink != null && oldLink.getIpaddrs() != null) {
+        Iterator savedIpaddrIt;
+        Iterator newIpaddrIt;
 
-            Iterator oldIpaddrIt = oldLink.getIpaddrs().iterator();
+        if (newLink.getIpaddrs() == null) {
+            // no adding or updating.
+        } else {
+            newIpaddrIt = newLink.getIpaddrs().iterator();
+            while (newIpaddrIt.hasNext()) {
+                Ipaddr newIpaddr = (Ipaddr) newIpaddrIt.next();
 
-            while (oldIpaddrIt.hasNext()) {
-                Ipaddr oldIpaddr = (Ipaddr) oldIpaddrIt.next();
-                String oldIP = oldIpaddr.getIP();
-                if (oldIP == null) {
-                    continue;
-                }
+                Ipaddr foundIpaddr = savedLink.getIpaddrByIP(newIpaddr.getIP());
 
-                if (!oldIpaddrMap.containsKey(oldIP)) {
-                    oldIpaddrMap.put(oldIP, oldIpaddr);
-                    this.log.debug("  Existing ipaddr in DB: [" + oldIP + "]");
+                if (foundIpaddr == null) {
+                    this.log.debug("Will add ipaddr: "+newIpaddr.getIP());
+                    newIpaddr.setLink(savedLink);
+                    ipaddrsToInsert.add(newIpaddr);
                 } else {
-                    this.log.error(
-                        "  Duplicate IP addresses for same link in DB: [" + oldIP + "]");
+                    this.log.debug("Will update ipaddr: "+newIpaddr.getIP());
+                    foundIpaddr.setValid(newIpaddr.isValid()); // true
+                    foundIpaddr.setLink(savedLink);
+                    ipaddrsToUpdate.add(foundIpaddr);
                 }
             }
         }
 
-        HashMap<String, Ipaddr> newIpaddrMap = new HashMap<String, Ipaddr>();
+        this.log.debug("Checking for invalidation...");
 
-        Iterator newIpaddrIt = newLink.getIpaddrs().iterator();
+        // Check for invalidation
+        if (savedLink.getIpaddrs() == null) {
+            // nothing to invalidate.
+        } else {
+            savedIpaddrIt = savedLink.getIpaddrs().iterator();
+            while (savedIpaddrIt.hasNext()) {
+                boolean found = false;
+                Ipaddr savedIpaddr = (Ipaddr) savedIpaddrIt.next();
+                Ipaddr foundIpaddr = newLink.getIpaddrByIP(savedIpaddr.getIP());
 
-        // Now, create new ports / update existing
-        while (newIpaddrIt.hasNext()) {
-
-            Ipaddr newIpaddr = (Ipaddr) newIpaddrIt.next();
-            String newIP = newIpaddr.getIP();
-            if (newIP == null) {
-                this.log.error("  Null IP!");
-                continue;
-            }
-
-            if (!newIpaddrMap.containsKey(newIP)) {
-                newIpaddrMap.put(newIP, newIpaddr);
-            } else {
-                this.log.error("  Duplicate Ipaddr ids for same port in input: [" +
-                    newIP + "]");
-            }
-
-            this.log.debug("  Examining ipaddr: [" + newIP + "]");
-
-            if (!oldIpaddrMap.containsKey(newIP)) {
-                this.log.debug("  Creating ipaddr (!): [" + newIP + "]");
-
-                if (oldLink != null) {
-                    newIpaddr.setLink(oldLink);
-                } else {
-                    newIpaddr.setLink(newLink);
+                if (foundIpaddr == null) {
+                    this.log.debug("Will invalidate ipaddr: "+savedIpaddr.getIP());
+                    ipaddrsToInvalidate.add(savedIpaddr);
                 }
-
-                newIpaddr.setIP(newIP);
-                newIpaddr.setValid(true);
-                ipaddrDAO.create(newIpaddr);
-            } else {
-                this.log.debug("  Updating ipaddr (!): [" + newIP + "]");
-                // This link already existed, so just copy properties
-                Ipaddr oldIpaddr = oldIpaddrMap.get(newIP);
-                oldIpaddr.setIP(newIP);
-                oldIpaddr.setValid(true);
-
-                ipaddrDAO.update(oldIpaddr);
             }
         }
 
+        this.log.debug("Checking for invalidation finished.");
 
-        // then invalidate ipaddrs not existing any more
-        for (String key : oldIpaddrMap.keySet()) {
-            if (!newIpaddrMap.containsKey(key)) {
-                this.log.debug("  Invalidating Ipaddr [" + key + "]");
-
-                Ipaddr oldIpaddr = oldIpaddrMap.get(key);
-                oldIpaddr.setValid(false);
-                ipaddrDAO.update(oldIpaddr);
+        this.log.debug("Adding ipaddrs...");
+        for (Ipaddr ipaddr : ipaddrsToInsert) {
+            savedLink.addIpaddr(ipaddr);
+            try {
+                ipaddrDAO.create(ipaddr);
+            } catch (Exception ex) {
+                this.log.debug("Error: "+ex.getMessage());
             }
         }
+        this.log.debug("Adding ipaddrs finished.");
+
+
+        this.log.debug("Updating ipaddrs...");
+        for (Ipaddr ipaddr : ipaddrsToUpdate) {
+            ipaddrDAO.update(ipaddr);
+        }
+        this.log.debug("Updating ipaddrs  finished.");
+
+
+
+        this.log.debug("Invalidating ipaddrs...");
+        for (Ipaddr ipaddr : ipaddrsToInvalidate) {
+            ipaddr.setValid(false);
+            ipaddrDAO.update(ipaddr);
+        }
+        this.log.debug("Invalidating ipaddrs  finished.");
 
         this.log.debug("mergeLinkIpaddrs.end");
     }
 
-    private void mergeLinkSwcaps(Link oldLink, Link newLink) {
-        L2SwitchingCapabilityDataDAO l2swcapDAO = new L2SwitchingCapabilityDataDAO(this.dbname);
-        LinkDAO linkDAO = new LinkDAO(this.dbname);
-        // YYYY
+    private void mergeLinkSwcaps(Link savedLink, Link newLink) {
         this.log.debug("mergeLinkSwcap.start");
+        String action = null;
 
-        L2SwitchingCapabilityData oldSwCap = null;
+        L2SwitchingCapabilityData savedSwCap = savedLink.getL2SwitchingCapabilityData();
         L2SwitchingCapabilityData newSwCap = newLink.getL2SwitchingCapabilityData();
 
-        if (oldLink != null) {
-            oldSwCap = oldLink.getL2SwitchingCapabilityData();
-        }
-
-        if ((oldSwCap == null) && (newSwCap == null)) {
-            // nothing to do
-            this.log.debug("mergeLinkSwcap.end");
+        if ((savedSwCap == null) && (newSwCap == null)) {
             return;
-        } else if ((oldSwCap != null) && (newSwCap == null)) {
-            this.log.debug("  removing l2 switching cap");
-        } else if (oldSwCap == null) {
-            this.log.debug("  inserting new l2 switching cap");
 
-            // new sw cap is not null
-            if (oldLink != null) {
-                oldLink.setL2SwitchingCapabilityData(newSwCap);
-                newSwCap.setLink(oldLink);
-                l2swcapDAO.update(newSwCap);
-                linkDAO.update(oldLink);
-            } else {
-                newLink.setL2SwitchingCapabilityData(newSwCap);
-                newSwCap.setLink(newLink);
-                l2swcapDAO.update(newSwCap);
-                linkDAO.update(newLink);
-            }
-        } else {
-            this.log.debug("  updating l2 switching cap");
-            // neither is null, copy properties to old
-            oldSwCap.setInterfaceMTU(newSwCap.getInterfaceMTU());
-            oldSwCap.setVlanRangeAvailability(newSwCap.getVlanRangeAvailability());
-            l2swcapDAO.update(oldSwCap);
+        } else if ((savedSwCap != null) && (newSwCap == null)) {
+            l2swcapDAO.remove(savedSwCap);
+            savedLink.setL2SwitchingCapabilityData(null);
+            linkDAO.update(savedLink);
+        } else if ((savedSwCap == null) && (newSwCap != null)) {
+
+            newSwCap.setLink(savedLink);
+            l2swcapDAO.create(newSwCap);
+
+            savedLink.setL2SwitchingCapabilityData(newSwCap);
+            linkDAO.update(savedLink);
+        } else if ((savedSwCap != null) && (newSwCap != null)) {
+            savedSwCap.setVlanRangeAvailability(newSwCap.getVlanRangeAvailability());
+            savedSwCap.setInterfaceMTU(newSwCap.getInterfaceMTU());
+            l2swcapDAO.update(savedSwCap);
         }
 
         this.log.debug("mergeLinkSwcap.end");
+    }
+
+
+
+    private Link insertFQTILink(String linkFqti, Link remoteLink) {
+
+        this.log.debug("Creating remote link: ["+linkFqti+"]");
+        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(linkFqti);
+        if (!results.get("type").equals("link")) {
+            return null;
+        }
+        String domainId = results.get("domainId");
+        String nodeId = results.get("nodeId");
+        String portId = results.get("portId");
+        String linkId = results.get("linkId");
+
+        List<Domain> currentDomains = domainDAO.list();
+
+        boolean haveDomain = false;
+        boolean haveNode = false;
+        boolean havePort = false;
+        boolean haveLink = false;
+
+        Domain domain = null;
+        for (Domain savedDomain : currentDomains) {
+            if (savedDomain.getTopologyIdent().equals(domainId)) {
+                haveDomain = true;
+                domain = savedDomain;
+                break;
+            }
+        }
+        if (!haveDomain) {
+            domain = new Domain(true);
+            domain.setTopologyIdent(domainId);
+        }
+
+        Node node = domain.getNodeByTopoId(nodeId);
+        if (node == null) {
+            node = new Node(domain, true);
+            node.setTopologyIdent(nodeId);
+        } else {
+            haveNode = true;
+        }
+
+        Port port = node.getPortByTopoId(portId);
+        if (port == null) {
+            port = new Port(node, true);
+            port.setTopologyIdent(portId);
+        } else {
+            havePort = true;
+        }
+
+        Link link = port.getLinkByTopoId(linkId);
+        if (link == null) {
+            link = new Link(port, true);
+            link.setTopologyIdent(linkId);
+            link.setRemoteLink(remoteLink);
+        } else {
+            haveLink = true;
+        }
+
+        if (!haveDomain) {
+            this.log.debug("Created domain: ["+domain.getFQTI()+"]");
+            domainDAO.create(domain);
+        }
+        if (!haveNode) {
+            this.log.debug("Created node: ["+node.getFQTI()+"]");
+            nodeDAO.create(node);
+        }
+        if (!havePort) {
+            this.log.debug("Created port: ["+port.getFQTI()+"]");
+            portDAO.create(port);
+        }
+        if (!haveLink) {
+            this.log.debug("Created link: ["+link.getFQTI()+"]");
+            linkDAO.create(link);
+        }
+
+        return link;
+
     }
 
     private void invalidateNode(Node nodeDB) {

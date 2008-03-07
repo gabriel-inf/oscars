@@ -42,6 +42,9 @@ public class TopologyXMLImporter {
 
     private Topology topology;
 
+    private Hashtable<String, String> remoteLinkMap;
+
+
     private TopologyManager topoManager;
 
     /**
@@ -82,6 +85,7 @@ public class TopologyXMLImporter {
         this.log.debug("parsing domains");
 
         this.topology = new Topology();
+        this.remoteLinkMap = new Hashtable<String, String>();
 
         Iterator domainIt = topoXML.getChildren("domain", ns).iterator();
         while (domainIt.hasNext()) {
@@ -120,7 +124,7 @@ public class TopologyXMLImporter {
 
         }
 
-        this.topoManager.updateTopology(this.topology);
+        this.topoManager.updateTopology(this.topology, this.remoteLinkMap);
     }
 
 
@@ -176,9 +180,11 @@ public class TopologyXMLImporter {
      */
     protected void parseNodeAddress(Element nodeXML, Node nodeDB) {
         Element addressXML = nodeXML.getChild("address", this.ns);
-
+        String address = "";
         // TODO: multiple addresses? it's 1-on-1 on the DB
-        String address = addressXML.getValue();
+        if (addressXML != null) {
+           address = addressXML.getValue();
+        }
 
         NodeAddress addrDB = nodeDB.getNodeAddress();
         this.log.debug(" node address is: [" + address + "]");
@@ -477,62 +483,67 @@ public class TopologyXMLImporter {
         this.log.debug("  remote link src: [" + remoteLinkId + "]");
         this.log.debug("  remote link LSTI: [" + TopologyUtil.getLSTI(remoteLinkId, "Link") + "]");
 
+        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(remoteLinkId);
+        String fqti;
 
-
-        // now let's go find the rest
-        xmlObj = linkXML.getChild("remoteDomainId", this.ns);
-        if (xmlObj != null) {
-            remoteDomainId = xmlObj.getValue();
-            xmlObj = null;
-        }
-        if (remoteDomainId == null || remoteDomainId.equals("")) {
-            remoteDomainId = TopologyUtil.getLSTI(remoteLinkId, "Domain");
+        if (results.get("type").equals("link")) {
+            fqti = results.get("fqti");
         } else {
-            remoteDomainId = TopologyUtil.getLSTI(remoteDomainId, "Domain");
+            xmlObj = linkXML.getChild("remoteDomainId", this.ns);
+            if (xmlObj != null) {
+                remoteDomainId = xmlObj.getValue();
+                xmlObj = null;
+            }
+            if (remoteDomainId == null || remoteDomainId.equals("")) {
+                remoteDomainId = TopologyUtil.getLSTI(remoteLinkId, "Domain");
+            } else {
+                remoteDomainId = TopologyUtil.getLSTI(remoteDomainId, "Domain");
+            }
+            if (remoteDomainId == null) {
+                this.log.error("couldn't determine remote domain id!");
+                return;
+            }
+            xmlObj = linkXML.getChild("remoteNodeId", this.ns);
+            if (xmlObj != null) {
+                remoteNodeId = xmlObj.getValue();
+                xmlObj = null;
+            }
+            if (remoteNodeId == null || remoteNodeId.equals("")) {
+                remoteNodeId = TopologyUtil.getLSTI(remoteLinkId, "Node");
+            } else {
+                remoteNodeId = TopologyUtil.getLSTI(remoteNodeId, "Node");
+            }
+            this.log.debug("  remote Node: [" + remoteNodeId + "]");
+
+            if (remoteNodeId == null) {
+                this.log.error("couldn't determine remote Node id!");
+                return;
+            }
+
+            xmlObj = linkXML.getChild("remotePortId", this.ns);
+            if (xmlObj != null) {
+                remotePortId = xmlObj.getValue();
+                xmlObj = null;
+            }
+            if (remotePortId == null || remotePortId.equals("")) {
+                remotePortId = TopologyUtil.getLSTI(remoteLinkId, "Port");
+            } else {
+                remotePortId = TopologyUtil.getLSTI(remotePortId, "Port");
+            }
+            this.log.debug("  remote Port: [" + remotePortId + "]");
+
+            if (remotePortId == null) {
+                this.log.error("couldn't determine remote Port id!");
+
+                return;
+            }
+            fqti = "urn:ogf:network:domain="+remoteDomainId+":node="+remoteNodeId+":port="+remotePortId+":link="+remoteLinkId;
         }
 
-        this.log.debug("  remote domain: [" + remoteDomainId + "]");
+        this.remoteLinkMap.put(linkDB.getFQTI(), fqti);
 
-        if (remoteDomainId == null) {
-            this.log.error("couldn't determine remote domain id!");
-            return;
-        }
 
-        xmlObj = linkXML.getChild("remoteNodeId", this.ns);
-        if (xmlObj != null) {
-            remoteNodeId = xmlObj.getValue();
-            xmlObj = null;
-        }
-        if (remoteNodeId == null || remoteNodeId.equals("")) {
-            remoteNodeId = TopologyUtil.getLSTI(remoteLinkId, "Node");
-        } else {
-            remoteNodeId = TopologyUtil.getLSTI(remoteNodeId, "Node");
-        }
-        this.log.debug("  remote Node: [" + remoteNodeId + "]");
-
-        if (remoteNodeId == null) {
-            this.log.error("couldn't determine remote Node id!");
-
-            return;
-        }
-
-        xmlObj = linkXML.getChild("remotePortId", this.ns);
-        if (xmlObj != null) {
-            remotePortId = xmlObj.getValue();
-            xmlObj = null;
-        }
-        if (remotePortId == null || remotePortId.equals("")) {
-            remotePortId = TopologyUtil.getLSTI(remoteLinkId, "Port");
-        } else {
-            remotePortId = TopologyUtil.getLSTI(remotePortId, "Port");
-        }
-        this.log.debug("  remote Port: [" + remotePortId + "]");
-
-        if (remotePortId == null) {
-            this.log.error("couldn't determine remote Port id!");
-
-            return;
-        }
+        /*
 
         // OK, we should have all the IDs set up; make the object
         // hierarchy
@@ -619,8 +630,8 @@ public class TopologyXMLImporter {
         if (!found) {
             remotePortDB.addLink(remoteLinkDB);
         }
-
         linkDB.setRemoteLink(remoteLinkDB);
+        */
 
         return;
     }
