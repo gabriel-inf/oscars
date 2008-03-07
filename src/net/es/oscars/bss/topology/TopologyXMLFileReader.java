@@ -18,7 +18,7 @@ import java.util.*;
  * @author Evangelos Chaniotakis (haniotak@es.net)
  */
 public class TopologyXMLFileReader {
-	
+
     private Logger log;
     private Properties props;
     private String nsUri;
@@ -35,12 +35,12 @@ public class TopologyXMLFileReader {
 
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("topo", true);
-        
+
         this.setNsUri(this.props.getProperty("nsuri").trim());
         this.setXsdFilename(this.props.getProperty("xsdFilename").trim());
     }
 
-    
+
     /**
      * This method will read an XML file into a JDOM Document object,
      * validating it against the schema .csd file, and call the
@@ -77,14 +77,13 @@ public class TopologyXMLFileReader {
      */
     protected Document loadFile(String fName) throws JDOMException, IOException {
         Document doc = null;
-        
+
         File xsdFile = new File( this.getXsdFilename());
         if (!xsdFile.exists()) {
-        	throw new IOException("XSD file not found!");
+            throw new IOException("XSD file not found!");
         }
-        
-        SAXBuilder sb = new SAXBuilder("org.apache.xerces.parsers.SAXParser",
-                true);
+
+        SAXBuilder sb = new SAXBuilder("org.apache.xerces.parsers.SAXParser", true);
 
         sb.setFeature("http://apache.org/xml/features/validation/schema", true);
         sb.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation",
@@ -100,10 +99,10 @@ public class TopologyXMLFileReader {
 
         return doc;
     }
-    
-    
+
+
     // Getter / setter functions
-    
+
     /**
      * nsUri getter
      * @return the value of nsUri
@@ -120,13 +119,13 @@ public class TopologyXMLFileReader {
         this.nsUri = uri;
     }
 
-    
+
     /**
      * xsdFilename getter
      * @return the value of xsdFilename
      */
     public String getXsdFilename() {
-    	return this.xsdFilename;
+        return this.xsdFilename;
     }
 
     /**
@@ -134,7 +133,7 @@ public class TopologyXMLFileReader {
      * @param filename The value to set; the path to the XSD file
      */
     public void setXsdFilename(String filename) {
-    	this.xsdFilename = filename;
+        this.xsdFilename = filename;
     }
-    
+
 }

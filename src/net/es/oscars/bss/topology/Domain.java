@@ -141,6 +141,32 @@ public class Domain extends HibernateBean implements Serializable {
      */
     public void setPaths(Set paths) { this.paths = paths; }
 
+    public boolean addNode(Node node) {
+
+        if (this.nodes.add(node)) {
+            node.setDomain(this);
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public Node getNodeByTopoId(String nodeTopologyId) {
+        if (this.nodes == null) {
+            return null;
+        }
+        Iterator nodeIt = this.nodes.iterator();
+        while (nodeIt.hasNext()) {
+            Node node = (Node) nodeIt.next();
+            if (node.getTopologyIdent().equals(nodeTopologyId)) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+
     /**
      * @return list of edge links to other domains
      */

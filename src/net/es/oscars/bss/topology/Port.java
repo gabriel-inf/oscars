@@ -9,8 +9,7 @@ import org.hibernate.Hibernate;
 
 import java.io.Serializable;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -250,6 +249,22 @@ public class Port extends HibernateBean implements Serializable {
     public void removeLink(Link link) {
         this.links.remove(link);
     }
+
+    public Link getLinkByTopoId(String linkTopologyId) {
+        if (this.links == null) {
+            return null;
+        }
+
+        Iterator linkIt = this.links.iterator();
+        while (linkIt.hasNext()) {
+            Link link = (Link) linkIt.next();
+            if (link.getTopologyIdent().equals(linkTopologyId)) {
+                return link;
+            }
+        }
+        return null;
+    }
+
 
     public boolean equalsTopoId(Port port) {
         String thisFQTI = this.getFQTI();

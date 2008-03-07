@@ -9,8 +9,7 @@ import org.hibernate.Hibernate;
 
 import java.io.Serializable;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -54,6 +53,7 @@ public class Node extends HibernateBean implements Serializable {
         this.domain = node.getDomain();
         this.ports = node.getPorts();
     }
+
 
     /**
      * @return valid a boolean indicating whether this entry is still valid
@@ -113,6 +113,19 @@ public class Node extends HibernateBean implements Serializable {
         }
 
         return added;
+    }
+    public Port getPortByTopoId(String portTopologyId) {
+        if (this.ports == null) {
+            return null;
+        }
+        Iterator portIt = this.ports.iterator();
+        while (portIt.hasNext()) {
+            Port port = (Port) portIt.next();
+            if (port.getTopologyIdent().equals(portTopologyId)) {
+                return port;
+            }
+        }
+        return null;
     }
 
     public void removePort(Port port) {

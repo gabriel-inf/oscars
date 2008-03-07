@@ -123,6 +123,8 @@ public class TopologyManager {
            this.log.error("updateDomains exception: " + e.getMessage());
            e.printStackTrace(pw);
            this.log.error(sw.toString());
+           System.out.println("error: "+e.getMessage());
+           System.out.println(sw.toString());
            System.exit(-1);
         }
         this.sf.getCurrentSession().getTransaction().commit();
@@ -149,10 +151,10 @@ public class TopologyManager {
         for (Domain newDomain : newTopology.getDomains()) {
             boolean found = false;
             Domain foundDomain = null;
-            for (Domain currentDomain : currentDomains) {
-                if (currentDomain.equalsTopoId(newDomain)) {
+            for (Domain savedDomain : currentDomains) {
+                if (savedDomain.equalsTopoId(newDomain)) {
                     found = true;
-                    foundDomain = currentDomain;
+                    foundDomain = savedDomain;
                     // here is where we'd overwrite stuff
                     break;
                 }
@@ -180,12 +182,9 @@ public class TopologyManager {
 
         // Now that everything is saved, merge domains
         for (Domain savedDomain : savedTopology.getDomains()) {
-            boolean found = false;
             for (Domain newDomain : newTopology.getDomains()) {
                 if (newDomain.equalsTopoId(savedDomain)) {
-                    found = true;
                     this.mergeNodes(savedDomain, newDomain);
-                    break;
                 }
             }
         }
@@ -195,108 +194,170 @@ public class TopologyManager {
         this.log.debug("mergeTopology.end");
     }
 
-    private void mergeNodes(Domain oldDomain, Domain newDomain) {
+    private void mergeNodes(Domain savedDomain, Domain newDomain) {
         this.log.debug("mergeNodes start");
 
-        /*
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
         NodeAddressDAO nodeAddrDAO = new NodeAddressDAO(this.dbname);
 
-        HashMap<String, Node> newNodeMap = new HashMap<String, Node>();
-        HashMap<String, Node> oldNodeMap = new HashMap<String, Node>();
+        System.out.println("Merging nodes for: ["+savedDomain.getFQTI()+"]");
 
-        if (oldDomain != null) {
-            Iterator oldNodeIt = oldDomain.getNodes().iterator();
-            while (oldNodeIt.hasNext()) {
-                Node oldNode = (Node) oldNodeIt.next();
-                String oldFqti = oldNode.getFQTI();
-                this.log.debug("  Database node: topoIdent: [" + oldNode.getTopologyIdent()+ "] FQTI: [" + oldFqti + "]");
+        ArrayList<Node> nodesToInsert = new ArrayList<Node>();
+        ArrayList<Node> nodesToUpdate = new ArrayList<Node>();
+        ArrayList<Node> nodesToInvalidate = new ArrayList<Node>();
 
-                if (!this.dbNodeMap.containsKey(oldFqti)) {
-                    oldNodeMap.put(oldFqti, oldNode);
-                    this.dbNodeMap.put(oldFqti, oldNode);
+        ArrayList<NodeAddress> nodeAddrsToInsert = new ArrayList<NodeAddress>();
+        ArrayList<NodeAddress> nodeAddrsToUpdate = new ArrayList<NodeAddress>();
+        ArrayList<NodeAddress> nodeAddrsToDelete = new ArrayList<NodeAddress>();
+
+        Iterator savedNodeIt;
+        Iterator newNodeIt;
+
+        // Check for adding and updating
+        if (newDomain.getNodes() == null) {
+            // no adding or updating.
+        } else {
+            newNodeIt = newDomain.getNodes().iterator();
+            while (newNodeIt.hasNext()) {
+                Node newNode = (Node) newNodeIt.next();
+
+                Node foundNode = savedDomain.getNodeByTopoId(newNode.getTopologyIdent());
+
+                NodeAddress foundNodeAddr = foundNode.getNodeAddress();
+                NodeAddress newNodeAddr = newNode.getNodeAddress();
+
+                if (foundNode != null) {
+                    System.out.println("Will add node: "+newNode.getFQTI());
+                    nodesToInsert.add(newNode);
+                    if (newNodeAddr != null) {
+                        nodeAddrsToInsert.add(newNodeAddr);
+                    }
                 } else {
-                    this.log.error("  Duplicate node FQTIs in DB: [" + oldFqti + "]");
+                    System.out.println("Will update node: "+newNode.getFQTI());
+                    foundNode.setValid(newNode.isValid());
+                    nodesToUpdate.add(foundNode);
+
+                    if (newNodeAddr != null) {
+                        if (foundNodeAddr != null) {
+                            //  update existing node address
+                            foundNodeAddr.setAddress(newNodeAddr.getAddress());
+                            nodeAddrsToUpdate.add(foundNodeAddr);
+                        } else {
+                            // insert the new one
+                            newNodeAddr.setNode(foundNode);
+                            foundNode.setNodeAddress(newNodeAddr);
+                            nodeAddrsToInsert.add(newNodeAddr);
+                        }
+                    } else {
+                        if (foundNodeAddr != null) {
+                            nodeAddrsToDelete.add(foundNodeAddr);
+                        } else {
+                            // both null, nothing to do
+                        }
+                    }
                 }
             }
         }
 
-        Iterator newNodeIt = newDomain.getNodes().iterator();
-
-        // Now, create new nodes / update existing
-        while (newNodeIt.hasNext()) {
-            Node newNode = (Node) newNodeIt.next();
-            String newFqti = newNode.getFQTI();
-
-            this.log.debug("  Examiming node, topoIdent: [" + newNode.getTopologyIdent()+ "] FQTI: [" + newFqti + "]");
 
 
-            if (!newNodeMap.containsKey(newFqti)) {
-                newNodeMap.put(newFqti, newNode);
-            } else {
-                continue;
-            }
+        System.out.println("Checking for invalidation...");
 
-            if (!this.dbNodeMap.containsKey(newFqti)) {
-                this.log.debug("  Creating node, FQTI: [" + newFqti + "]");
-                if (oldDomain != null) {
-                    newNode.setDomain(oldDomain);
+        // Check for invalidation
+        if (savedDomain.getNodes() == null) {
+            // nothing to invalidate.
+        } else {
+            savedNodeIt = savedDomain.getNodes().iterator();
+            while (savedNodeIt.hasNext()) {
+                boolean found = false;
+                Node savedNode = (Node) savedNodeIt.next();
+                Node foundNode = newDomain.getNodeByTopoId(savedNode.getTopologyIdent());
+
+                if (foundNode == null) {
+                    System.out.println("Will invalidate node: "+savedNode.getFQTI());
+                    nodesToInvalidate.add(savedNode);
                 }
-                newNode.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Node"));
-                nodeDAO.create(newNode);
-
-                nodeAddrDAO.create(newNode.getNodeAddress());
-//                this.dbNodeMap.put(newFqti, newNode);
-            } else {
-                Node oldNode = this.dbNodeMap.get(newFqti);
-                this.log.debug("  Updating node, FQTI: [" + newFqti + "]");
-
-                // Topology identifier & domain id MUST the same if
-                // we got this far, so let's not set them explicitly
-
-                // Merge node addresses: set invalid if new one is null,
-                // replace value if otherwise.
-                if (oldNode.getNodeAddress() == null) {
-                    NodeAddress nodeAddr = new NodeAddress(oldNode, true);
-                    oldNode.setNodeAddress(nodeAddr);
-                }
-
-                if (newNode.getNodeAddress() == null) {
-                    nodeAddrDAO.remove(oldNode.getNodeAddress());
-                    oldNode.setNodeAddress(null);
-                } else {
-                    oldNode.getNodeAddress()
-                           .setAddress(newNode.getNodeAddress().getAddress());
-                    nodeAddrDAO.update(oldNode.getNodeAddress());
-                }
-
-                oldNode.setTopologyIdent(TopologyUtil.getLSTI(newFqti, "Node"));
-                oldNode.setValid(true);
-                nodeDAO.update(oldNode);
             }
         }
 
-    // Now that everything is saved, merge ports
-        for (String key : newNodeMap.keySet()) {
-            Node oldNode = null;
-            Node newNode = newNodeMap.get(key);
-
-            if (this.dbNodeMap.containsKey(key)) {
-                oldNode = this.dbNodeMap.get(key);
-            }
-            this.dbNodeMap.put(key, newNode);
-            this.mergePorts(oldNode, newNode);
-        }
+        System.out.println("Checking for invalidation finished.");
 
 
-        // then invalidate nodes not existing any more
-        for (String key : oldNodeMap.keySet()) {
-            if (!newNodeMap.containsKey(key)) {
-                this.log.debug("  Invalidating node [" + key + "]");
-                this.invalidateNode(oldNodeMap.get(key));
+
+
+
+        System.out.println("Adding nodes...");
+        for (Node node : nodesToInsert) {
+            savedDomain.addNode(node);
+            try {
+                nodeDAO.create(node);
+            } catch (Exception ex) {
+                System.out.println("Error: "+ex.getMessage());
             }
         }
-        */
+        System.out.println("Adding nodes finished.");
+
+        System.out.println("Updating nodes...");
+        for (Node node : nodesToUpdate) {
+            try {
+                nodeDAO.update(node);
+            } catch (Exception ex) {
+                System.out.println("Error: "+ex.getMessage());
+            }
+        }
+        System.out.println("Updating nodes finished.");
+
+
+        System.out.println("Invalidating nodes...");
+        for (Node node : nodesToInvalidate) {
+            this.invalidateNode(node);
+        }
+        System.out.println("Invalidating nodes finished.");
+
+
+        System.out.println("Adding node addresses...");
+        for (NodeAddress nodeAddr : nodeAddrsToInsert) {
+            try {
+                nodeAddrDAO.create(nodeAddr);
+            } catch (Exception ex) {
+                System.out.println("Error: "+ex.getMessage());
+            }
+        }
+        System.out.println("Adding node addresses finished.");
+
+        System.out.println("Updating node addresses...");
+        for (NodeAddress nodeAddr : nodeAddrsToUpdate) {
+            try {
+                nodeAddrDAO.update(nodeAddr);
+            } catch (Exception ex) {
+                System.out.println("Error: "+ex.getMessage());
+            }
+        }
+        System.out.println("Updating node addresses finished.");
+
+        System.out.println("Removing stale node addresses...");
+        for (NodeAddress nodeAddr : nodeAddrsToDelete) {
+            try {
+                nodeAddrDAO.remove(nodeAddr);
+            } catch (Exception ex) {
+                System.out.println("Error: "+ex.getMessage());
+            }
+        }
+        System.out.println("Removing stale node addresses finished.");
+
+/*
+        for (Node savedNode : savedDomain.getNodes()) {
+            for (Node newNode : newDomain.getNodes()) {
+                if (newNode.equalsTopoId(savedNode)) {
+//                    this.mergePorts(savedNode, newNode);
+                }
+            }
+        }
+*/
+
+        System.out.println("Merging nodes for: ["+savedDomain.getFQTI()+"] finished.");
+
+
 
         this.log.debug("mergeNodes end");
         return;
@@ -308,7 +369,11 @@ public class TopologyManager {
 
     private void mergePorts(Node oldNode, Node newNode) {
         this.log.debug("mergePorts start");
+        ArrayList<Port> portsToInsert = new ArrayList<Port>();
+        ArrayList<Port> portsToUpdate = new ArrayList<Port>();
+        ArrayList<Port> portsToInvalidate = new ArrayList<Port>();
 
+/*
         PortDAO portDAO = new PortDAO(this.dbname);
 
         HashMap<String, Port> newPortMap = new HashMap<String, Port>();
@@ -404,9 +469,12 @@ public class TopologyManager {
                 this.invalidatePort(oldPortMap.get(key));
             }
         }
-
+*/
         this.log.debug("mergePorts.end");
     }
+
+
+
 
 
     private void mergeLinks(Port oldPort, Port newPort) {
