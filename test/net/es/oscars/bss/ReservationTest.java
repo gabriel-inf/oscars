@@ -140,7 +140,7 @@ public class ReservationTest {
     }
 
   @Test(dependsOnMethods={ "testReservationCreate" })
-    public void testReservationQuery() throws BSSException {
+    public void testReservationQuery() {
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String description = CommonParams.getReservationDescription();
@@ -158,8 +158,14 @@ public class ReservationTest {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String login = this.props.getProperty("login");
         List<String> logins = null;
-         // if null, list all reservations by all users
-        reservations = dao.list(logins, null, null, null, null, null);
+        try {
+             // if null, list all reservations by all users
+            reservations = dao.list(logins, null, null, null, null, null);
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
+        }
+
         this.sf.getCurrentSession().getTransaction().commit();
         assert !reservations.isEmpty();
     }
@@ -173,7 +179,12 @@ public class ReservationTest {
         List<String> logins = new ArrayList<String>();
         String login = this.props.getProperty("login");
         logins.add(login);
-        reservations = dao.list(logins, null, null, null, null, null);
+        try {
+            reservations = dao.list(logins, null, null, null, null, null);
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
+        }
         this.sf.getCurrentSession().getTransaction().commit();
         assert !reservations.isEmpty();
     }
