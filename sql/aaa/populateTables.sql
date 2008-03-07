@@ -64,6 +64,7 @@ INSERT INTO attributes VALUES(NULL, "OSCARS-engineer", "group");
 INSERT INTO attributes VALUES(NULL, "OSCARS-developer", "group");
 INSERT INTO attributes VALUES(NULL, "OSCARS-administrator", "group");
 INSERT INTO attributes VALUES(NULL, "OSCARS-service", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-operator", "group");
 -- INSERT INTO attributes VALUES(NULL, "user-mary ", "user");
 
 
@@ -146,12 +147,12 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="users"),
      (select id from permissions where name="query"),
-    "all-users", 1);
+    "all-users", 0);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="users"),
      (select id from permissions where name="modify"),
-    "all-users", 1);
+    "all-users", 0);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-user"),
      (select id from resources where name="reservations"),
@@ -262,8 +263,29 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
      NULL, NULL); 
--- INSERT INTO authorizations VALUES(NULL,NULL,NULL,
-     -- (select id from attributes where name="user-mary"),
-     -- (select id from resources where name="reservations"),
-     -- (select id from permissions where name="create"),
-     -- "specify-path-elements", 1);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-operator"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="list"),
+     all-users, 1);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-operator"),
+     (select id from resources where name="reservations"),
+     (select id from permissions where name="query"),
+     all-users, 1); 
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-operator"),
+     (select id from resources where name="users"),
+     (select id from permissions where name="list"),
+    "all-users", 1);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-operator"),
+     (select id from resources where name="users"),
+     (select id from permissions where name="query"),
+    "all-users", 0);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-operator"),
+     (select id from resources where name="users"),
+     (select id from permissions where name="modify"),
+    "all-users", 0);    
+
