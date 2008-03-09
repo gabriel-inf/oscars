@@ -638,21 +638,22 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      */
     public void init(ServiceContext sc) {
 
-        System.out.println("Axis2 init.start");
+        this.log = Logger.getLogger(this.getClass());
+	this.log.info("OSCARS init.start");
         String catalinaHome = System.getProperty("catalina.home");
-        System.out.println("catalina.home is "+ catalinaHome);
+	this.log.info("catalina.home is "+ catalinaHome);
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
         dbnames.add("aaa");
         dbnames.add("bss");
-        System.out.println("initDatabase.start");
+        this.log.info("initDatabase.start");
         initializer.initDatabase(dbnames);
-        System.out.println("initDatabase.finish");
+        this.log.info("initDatabase.finish");
         this.adapter = new ReservationAdapter();
         this.topoAdapter = new TopologyExchangeAdapter();
         this.pathSetupAdapter = new PathSetupAdapter();
         this.userMgr = new UserManager("aaa");
-        System.out.println("Axis2 init.finish");
+        this.log.info("OSCARS init.finish");
     }
 
     public void destroy(ServiceContext sc) {
