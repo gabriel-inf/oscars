@@ -17,7 +17,7 @@ import net.es.oscars.database.HibernateUtil;
  * @author David Robertson (dwrobertson@lbl.gov), Evangelos Chaniotakis (haniotak /at/ es dot net
  */
 
-@Test(groups={ "bss.topology", "importTopology" }, dependsOnGroups={
+@Test(groups={ "bss", "bss.topology", "importTopology" }, dependsOnGroups={
                                                             "exportTopology" })
 public class TopologyXMLFileReaderTest {
     private SessionFactory sf;

@@ -22,7 +22,8 @@ import net.es.oscars.database.*;
  * @author David Robertson (dwrobertson@lbl.gov), Evangelos Chaniotakis (haniotak /at/ es dot net
  */
 
-@Test(groups={ "bss.topology", "exportTopology" }, dependsOnGroups={ "remove" })
+@Test(groups={ "bss", "bss.topology", "exportTopology" },
+               dependsOnGroups={ "remove" })
 public class TopologyXMLExporterTest {
     private String dbname;
     private SessionFactory sf;

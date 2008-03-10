@@ -10,12 +10,11 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
 
 /**
- * This class tests methods in ParamValidator.java.  It depends on
- * several reservations created by ReservationManagerTest.
+ * This class tests methods in ParamValidator.java.
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss" }, dependsOnGroups = {"reservationManager" })
+@Test(groups={ "bss" })
 public class ParamValidatorTest {
     private Properties props;
     private SessionFactory sf;

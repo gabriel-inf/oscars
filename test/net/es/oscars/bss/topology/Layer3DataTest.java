@@ -15,7 +15,8 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss.topology", "layer3Data" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss", "bss.topology", "layer3Data" },
+               dependsOnGroups={ "create" })
 public class Layer3DataTest {
     private SessionFactory sf;
     private String dbname;

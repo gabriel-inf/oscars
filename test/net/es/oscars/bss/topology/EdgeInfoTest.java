@@ -14,7 +14,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss.topology", "edgeInfo" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss", "bss.topology", "edgeInfo" }, dependsOnGroups={ "create" })
 public class EdgeInfoTest {
     private SessionFactory sf;
     private String dbname;

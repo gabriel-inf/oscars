@@ -16,7 +16,8 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss.topology", "l2SwitchData" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss", "bss.topology", "l2SwitchData" },
+                dependsOnGroups={ "create" })
 public class L2SwitchingCapabilityDataTest {
     private SessionFactory sf;
     private String dbname;
