@@ -162,7 +162,7 @@ public class TopologyXMLExporter {
 
         domXML = new Element("domain", ns);
 
-        Attribute domIdXML = new Attribute("id", domTopoIdent, ns);
+        Attribute domIdXML = new Attribute("id", domTopoIdent);
         domXML.setAttribute(domIdXML);
 
         if (domDB.getNodes() != null) {
@@ -174,7 +174,7 @@ public class TopologyXMLExporter {
 
                 Element nodeXML = new Element("node", ns);
 
-                Attribute nodeIdXML = new Attribute("id", nodeId, ns);
+                Attribute nodeIdXML = new Attribute("id", nodeId);
                 nodeXML.setAttribute(nodeIdXML);
 
                 Element addrXML = new Element("address", ns);
@@ -197,38 +197,34 @@ public class TopologyXMLExporter {
                         Element portXML = new Element("port", ns);
 
                         String portId = portDB.getFQTI();
-                        Attribute portIdXML = new Attribute("id", portId, ns);
+                        Attribute portIdXML = new Attribute("id", portId);
                         portXML.setAttribute(portIdXML);
 
                         Element portCap = new Element("capacity", ns);
                         portCap.addContent(portDB.getCapacity().toString());
                         portXML.addContent(portCap);
 
-                        Long granularity = portDB.getGranularity();
+                        Long maxResCap = portDB.getMaximumReservableCapacity();
+                        if (maxResCap != null) {
+                            Element portMaxResCap = new Element("maximumReservableCapacity", ns);
+                            portMaxResCap.addContent(maxResCap.toString());
+                            portXML.addContent(portMaxResCap);
+                        }
 
+                        Long minResCap = portDB.getMinimumReservableCapacity();
+                        if (minResCap != null) {
+                            Element portMinResCap = new Element("minimumReservableCapacity", ns);
+                            portMinResCap.addContent(minResCap.toString());
+                            portXML.addContent(portMinResCap);
+                        }
+
+                        Long granularity = portDB.getGranularity();
                         if (granularity != null) {
                             Element portGran = new Element("granularity", ns);
                             portGran.addContent(granularity.toString());
                             portXML.addContent(portGran);
                         }
 
-                        Long minResCap = portDB.getMinimumReservableCapacity();
-
-                        if (minResCap != null) {
-                            Element portMinResCap = new Element("minimumReservableCapacity",
-                                    ns);
-                            portMinResCap.addContent(minResCap.toString());
-                            portXML.addContent(portMinResCap);
-                        }
-
-                        Long maxResCap = portDB.getMaximumReservableCapacity();
-
-                        if (maxResCap != null) {
-                            Element portMaxResCap = new Element("maximumReservableCapacity",
-                                    ns);
-                            portMaxResCap.addContent(maxResCap.toString());
-                            portXML.addContent(portMaxResCap);
-                        }
 
                         if (portDB.getLinks() != null) {
                             Iterator linkIt = portDB.getLinks().iterator();
@@ -238,15 +234,13 @@ public class TopologyXMLExporter {
                                 Element linkXML = new Element("link", ns);
 
                                 String linkId = linkDB.getFQTI();
-                                Attribute linkIdXML = new Attribute("id",
-                                        linkId, ns);
+                                Attribute linkIdXML = new Attribute("id", linkId);
                                 linkXML.setAttribute(linkIdXML);
 
                                 Link remLinkDB = linkDB.getRemoteLink();
 
                                 if (remLinkDB != null) {
-                                    Element remLinkXML = new Element("remoteLinkId",
-                                            ns);
+                                    Element remLinkXML = new Element("remoteLinkId", ns);
                                     remLinkXML.addContent(remLinkDB.getFQTI());
                                     linkXML.addContent(remLinkXML);
 /*
