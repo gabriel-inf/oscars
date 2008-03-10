@@ -251,11 +251,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <!-- Having to include the Rampart jar's is truly bizarre, because
              Tomcat can find the Axis2 jar's in the same directory. -->
         <copy todir="tmplib" flatten="true">
-            <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-132.jar,
-                 axis2/opensaml-1.1.jar, axis2/rampart-core-1.3.jar,
-                 axis2/rampart-policy-1.3.jar,
-                 axis2/rampart-trust-1.3.jar, axis2/wss4j-1.5.3.jar,
-                 axis2/xmlsec-1.4.0.jar, axis2/log4j-1.2.14.jar"/>
+            <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-132.jar,                  axis2/opensaml-1.1.jar, axis2/rampart-core-1.3.jar,                  axis2/rampart-policy-1.3.jar,                  axis2/rampart-trust-1.3.jar, axis2/wss4j-1.5.3.jar,                  axis2/xmlsec-1.4.0.jar, axis2/log4j-1.2.14.jar"/>
         </copy>
         <war destfile="OSCARS.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" includes="**/*" excludes="WEB-INF/web.xml"/>
@@ -343,6 +339,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy todir="${webapp.home}/../shared/lib">
             <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/>
         </copy>
+    	<!-- Since wss4j is there the PWCallback class needs to be there as well -->
+    	<copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
     <target name="deploywbui" description="copy OSCARS.war to webapp directory" depends="wbui, setupServer, deploylibs">
         <copy file="OSCARS.war" todir="${webapp.home}"/>
@@ -405,6 +403,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/OSCARS/test" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
             <jvmarg value="-Dcatalina.home=${catalina.home}"/>
+
             <jvmarg value="-Dapp=-test"/>
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
