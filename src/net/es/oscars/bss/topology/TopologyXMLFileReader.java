@@ -37,7 +37,13 @@ public class TopologyXMLFileReader {
         this.props = propHandler.getPropertyGroup("topo", true);
 
         this.setNsUri(this.props.getProperty("nsuri").trim());
-        this.setXsdFilename(this.props.getProperty("xsdFilename").trim());
+        EnvHandler envHandler = new EnvHandler();
+        String xsdFilename = this.props.getProperty("xsdFilename".trim());
+        xsdFilename = envHandler.expandEnv("xsdFilename");
+        if (xsdFilename != null) {
+            this.log.info(xsdFilename);
+        }
+        this.setXsdFilename(xsdFilename);
     }
 
 

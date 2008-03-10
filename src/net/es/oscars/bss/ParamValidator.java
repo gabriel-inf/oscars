@@ -26,13 +26,22 @@ public class ParamValidator {
         if (resv.getLogin() == null) {
             return sb.append("Null login");
         }
+        sb.append(this.checkStartTime(resv));
+        sb.append(this.checkEndTime(resv));
+        sb.append(this.checkBandwidth(resv));
+        sb.append(this.checkLogin(resv));
+        sb.append(this.checkStatus(resv));
+        sb.append(this.checkDescription(resv));
+        if (pathInfo == null) {
+            return sb;
+        }
         Layer2Info layer2Info = pathInfo.getLayer2Info();
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
         if (layer2Info != null) {
             sb.append(this.checkVtag(layer2Info));
             sb.append(this.checkL2Endpoint(layer2Info, false));
             sb.append(this.checkL2Endpoint(layer2Info, true));
         }
-        Layer3Info layer3Info = pathInfo.getLayer3Info();
         if (layer3Info != null) {
             sb.append(this.checkSrcHost(layer3Info));
             sb.append(this.checkDestHost(layer3Info));
@@ -52,12 +61,6 @@ public class ParamValidator {
         if (path != null) {
             sb.append(this.checkPath(path));
         }
-        sb.append(this.checkStartTime(resv));
-        sb.append(this.checkEndTime(resv));
-        sb.append(this.checkBandwidth(resv));
-        sb.append(this.checkLogin(resv));
-        sb.append(this.checkStatus(resv));
-        sb.append(this.checkDescription(resv));
         return sb;
     }
 
