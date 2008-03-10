@@ -34,7 +34,7 @@ public class ReservationManager {
     private PolicyManager policyMgr;
     private TypeConverter tc;
     private String dbname;
-    private ReservationLogger rsvLogger; 
+    private ReservationLogger rsvLogger;
 
     /** Constructor. */
     public ReservationManager(String dbname) {
@@ -73,14 +73,14 @@ public class ReservationManager {
         this.log.info("create.start");
         // login is checked in validate so set it here
         resv.setLogin(login);
-        
+
         //set GRI if none specified
         if (resv.getGlobalReservationId() == null){
             String gri = this.generateGRI();
             resv.setGlobalReservationId(gri);
         }
         this.rsvLogger.redirect(resv.getGlobalReservationId());
-        
+
         // so far just validation for create
         StringBuilder errorMsg =
                 paramValidator.validate(resv, pathInfo);
@@ -91,14 +91,14 @@ public class ReservationManager {
         this.log.info("create.validated");
         resv.setStatus("PENDING");
         CtrlPlanePathContent pathCopy = null;
-        
+
         // this modifies the path to include internal hops with layer 2,
         // and finds the complete path with traceroute
         Path path = this.getPath(resv, pathInfo);
         resv.setPath(path);
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
-        
+
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops
         // NOTE: This should really be done in internal pathfinders
@@ -109,9 +109,9 @@ public class ReservationManager {
         }else if (pathCopy == null && pathInfo.getLayer2Info() != null) {
             pathCopy = this.copyPath(pathInfo, true);
         }
-        
+
         pathInfo.setPath(pathCopy);
-        this.log.info("create.finish"); 
+        this.log.info("create.finish");
         this.rsvLogger.stop();
     }
 
@@ -155,7 +155,7 @@ public class ReservationManager {
      * @param gri string with reservation global reservation id
      * @param login  string with login name of user
      * @return reservation with cancellation status
-     * @throws BSSException 
+     * @throws BSSException
      */
     public Reservation cancel(String gri, String login, boolean allUsers)
             throws BSSException {
@@ -163,7 +163,7 @@ public class ReservationManager {
         this.rsvLogger.redirect(gri);
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String newStatus = null;
-        
+
         this.log.info("cancel.start: " + gri + " login: " + login + " allUsers is " + allUsers);
 
         Reservation resv = dao.query(gri);
@@ -172,22 +172,22 @@ public class ReservationManager {
                 "No current reservation with GRI: " + gri);
         }
         if (!allUsers) {
-            if  (!resv.getLogin().equals(login)) { 
+            if  (!resv.getLogin().equals(login)) {
                 throw new BSSException ("cancel reservation: permission denied");
             }
         }
         String prevStatus = resv.getStatus();
         if (prevStatus.equals("FINISHED")) {
             throw new BSSException(
-               "Trying to cancel a finished reservation"); 
+               "Trying to cancel a finished reservation");
         }
         if (prevStatus.equals("FAILED")) {
             throw new BSSException(
-               "Trying to cancel a failed reservation"); 
+               "Trying to cancel a failed reservation");
         }
         if (prevStatus.equals("CANCELLED")) {
             throw new BSSException(
-               "Trying to cancel an already cancelled reservation"); 
+               "Trying to cancel an already cancelled reservation");
         }
         if (prevStatus.equals("ACTIVE")) {
             newStatus = "PRECANCEL";
@@ -210,10 +210,10 @@ public class ReservationManager {
      * @param status string with final cancel status
      * @throws BSSException
      */
-    public void finalizeCancel(Reservation resv, String status) 
+    public void finalizeCancel(Reservation resv, String status)
             throws BSSException {
 
-    	this.rsvLogger.redirect(resv.getGlobalReservationId());
+        this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("finalizeCancel.start");
         String gri = resv.getGlobalReservationId();
 
@@ -240,7 +240,7 @@ public class ReservationManager {
      * @param login string with login name of the caller
      * @param allUsers boolean indicating user can view reservations for all users
      * @return resv corresponding reservation instance, if any
-     * @throws BSSException 
+     * @throws BSSException
      */
     public Reservation query(String gri, String login, boolean allUsers)
             throws BSSException {
@@ -255,16 +255,16 @@ public class ReservationManager {
         }
         if (!allUsers) {
             this.log.debug("reservation login is " + resv.getLogin());
-            if  (!resv.getLogin().equals(login)) { 
+            if  (!resv.getLogin().equals(login)) {
                 throw new BSSException ("query reservation: permission denied");
             }
         }
         this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
     }
-    
-    
-    
+
+
+
     /**
      * Modifies the reservation, given a partially filled in reservation
      * instance and additional parameters.
@@ -274,12 +274,30 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public void modify(Reservation resv)
+    public void modify(Reservation resv, String login, PathInfo pathInfo)
             throws  BSSException {
 
         this.log.info("modify.start");
-        this.log.info("modify.finish"); 
+        this.log.info("modify.finish");
     }
+
+    /**
+     * Modifies the reservation, given a partially filled in reservation
+     * instance and additional parameters.
+     *
+     * @param resv reservation instance modified in place
+     * @param login string with login name
+     * @param pathInfo contains either layer 2 or layer 3 info
+     * @throws BSSException
+     */
+    public void finalizeModifyResv(ModifyResReply forwardReply, Reservation resv, PathInfo pathInfo)
+            throws  BSSException {
+
+        this.log.info("finalizeModify.start");
+        this.log.info("finalizeModify.finish");
+    }
+
+
 
    /**
      * @param login String with user's login name
@@ -326,8 +344,8 @@ public class ReservationManager {
             throws BSSException {
 
         boolean isExplicit = (pathInfo.getPath() != null);
-        PathInfo intraPath = null; 
-        
+        PathInfo intraPath = null;
+
         try {
             intraPath = this.pceMgr.findPath(pathInfo);
         } catch (PathfinderException ex) {
@@ -338,8 +356,8 @@ public class ReservationManager {
         List<Reservation> reservations =
                 dao.overlappingReservations(resv.getStartTime(),
                                             resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, pathInfo, 
-                                           intraPath.getPath(), resv);       
+        this.policyMgr.checkOversubscribed(reservations, pathInfo,
+                                           intraPath.getPath(), resv);
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         // get next external hop (first past egress) from the complete path
@@ -371,15 +389,15 @@ public class ReservationManager {
      */
     public Path convertPath(PathInfo intraPathInfo, PathInfo interPathInfo,
         Domain nextDomain) throws BSSException {
-    	
+
         Link link = null;
         Link srcLink = null;
         Link destLink = null;
         String description = null;
         boolean foundIngress = false;
         PathElem lastElem = null;
-        
-    	ArrayList<String> linksList = new ArrayList<String>();
+
+        ArrayList<String> linksList = new ArrayList<String>();
 
         this.log.info("convertPath.start");
         DomainDAO domainDAO = new DomainDAO(this.dbname);
@@ -397,45 +415,45 @@ public class ReservationManager {
         CtrlPlanePathContent intraPath = intraPathInfo.getPath();
         CtrlPlaneHopContent[] hops = intraPath.getHop();
         List<PathElem> pathElems = new ArrayList<PathElem>();
-        
+
         //  finalize information at layer 2 if last domain
         if (nextDomain == null && layer2Info != null) {
             this.chooseVlanTag(layer2Info);
         }
-        
+
         // set pathSetupMode, default to timer-automatic
         if (pathSetupMode == null) {
             pathSetupMode = "timer-automatic";
         }
         path.setPathSetupMode(pathSetupMode);
-        
+
         for (int i = 0; i < hops.length; i++) {
             String hopTopoId = hops[i].getLinkIdRef();
             Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
-            
-            
+
+
             // can't store non-local addresses
             if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {
                 continue;
             }
-            
-            
+
+
             // check for duplicate hops in our local portion of the path
             String fqti = parseResults.get("fqti");
             if (linksList.contains(fqti)) {
-            	throw new BSSException("Duplicate hop in path: ["+fqti+"]");
+                throw new BSSException("Duplicate hop in path: ["+fqti+"]");
             } else {
-            	linksList.add(fqti);
+                linksList.add(fqti);
             }
 
             link = domainDAO.getFullyQualifiedLink(hopTopoId);
             if (link == null) {
                 this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
-            	throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]"); 
+                throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
             } else {
-            	this.log.debug("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
+                this.log.debug("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
             }
             PathElem pathElem = new PathElem();
             if (!foundIngress) {
@@ -459,7 +477,7 @@ public class ReservationManager {
                                  link.getId() + " is not valid");
                     }
                     try {
-                    	String ip =
+                        String ip =
                             utils.getLoopback(ipaddr.getIP(), "Juniper");
                         if (ip != null) {
                             pathElem.setDescription("ingress");
@@ -473,39 +491,39 @@ public class ReservationManager {
             pathElem.setLink(link);
             //set VLAN tag if layer2 request and l2sc link
             //TODO: Set differently if VLAN mapping supported
-            if(layer2Info != null && 
+            if(layer2Info != null &&
                 link.getL2SwitchingCapabilityData() != null &&
                 nextDomain == null){
                 this.setL2LinkDescr(pathElem, srcLink, destLink, link,  layer2Info);
             } else if (nextDomain != null) {
-            	this.log.info("next domain is NOT NULL, not setting up VLAN tags now");
+                this.log.info("next domain is NOT NULL, not setting up VLAN tags now");
             } else if (link.getL2SwitchingCapabilityData() == null) {
-            	this.log.info("L2 switching capability data is NULL, can't set up VLAN tags ");
+                this.log.info("L2 switching capability data is NULL, can't set up VLAN tags ");
             } else if (layer2Info == null) {
-            	this.log.info("layer 2 info is NULL");
+                this.log.info("layer 2 info is NULL");
             }
             pathElems.add(pathElem);
             lastElem = pathElem;
         }
-        
+
         if (!foundIngress) {
-        	this.log.error("No valid ingress router in path");
+            this.log.error("No valid ingress router in path");
             throw new BSSException("No valid ingress router in path");
         }
         if (lastElem == null) {
-        	this.log.error("No local hops in path");
+            this.log.error("No local hops in path");
             throw new BSSException("No local hops in path");
         }
-        
+
         lastElem.setDescription("egress");
         // set start to first element
         path.setPathElem(pathElems.get(0));
-        
+
         // set the next element for each element
         for (int i = 0; i < pathElems.size()-1; i++) {
             pathElems.get(i).setNextElem(pathElems.get(i+1));
         }
-        
+
         if (layer2Info != null) {
             Layer2Data dbLayer2Data = new Layer2Data();
             dbLayer2Data.setSrcEndpoint(layer2Info.getSrcEndpoint());
@@ -533,9 +551,9 @@ public class ReservationManager {
         this.log.debug("convertPath.end");
         return path;
     }
-    
+
     /**
-     * Stores the interdomain path. The interdomain path is stored primarily 
+     * Stores the interdomain path. The interdomain path is stored primarily
      * for reporting prurpose so there are not quite as many requirements as
      * for the intradomain path.
      *
@@ -549,7 +567,7 @@ public class ReservationManager {
         CtrlPlaneHopContent[] hops = path.getHop();
         PathElem prevPathElem = null;
         PathElem currPathElem = null;
-        
+
         for(int i = (hops.length - 1); i >= 0; i--){
             String urn = hops[i].getLinkIdRef();
             Link link = TopologyUtil.getLink(urn, this.dbname);
@@ -558,13 +576,13 @@ public class ReservationManager {
             currPathElem.setNextElem(prevPathElem);
             prevPathElem = currPathElem;
         }
-        
+
         return currPathElem;
     }
-    
+
     /**
      * Make a copy of the path.
-     * 
+     *
      * @param pathInfo a PathInfo instance containing a path
      * @param exclude boolean indicating whether to exclude internal hops
      * @return pathCopy a CtrlPlanePathContent instance with the copied path
@@ -576,13 +594,13 @@ public class ReservationManager {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         CtrlPlanePathContent pathCopy = new CtrlPlanePathContent();
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-        
+
         if (ctrlPlanePath == null) {
             return null;
         }
-        
+
         pathCopy.setId(ctrlPlanePath.getId());
-        
+
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
             CtrlPlaneHopContent hopCopy = new CtrlPlaneHopContent();
@@ -597,7 +615,7 @@ public class ReservationManager {
             Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
-            
+
             if (hopType.equals("link") &&  domainDAO.isLocal(domainId)) {
                 // add ingress
                 if (!edgeFound || i == (hops.length - 1)) {
@@ -629,7 +647,7 @@ public class ReservationManager {
      * first hop outside the local domain.
      *
      * @param pathInfo PathInfo instance containing path
-     * @return hop CtrlPlaneHopContent instance with hop in next domain 
+     * @return hop CtrlPlaneHopContent instance with hop in next domain
      */
     public CtrlPlaneHopContent getNextExternalHop(PathInfo pathInfo) {
 
@@ -642,7 +660,7 @@ public class ReservationManager {
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
 
-        	String hopTopoId = hops[i].getLinkIdRef();
+            String hopTopoId = hops[i].getLinkIdRef();
             Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
@@ -675,25 +693,25 @@ public class ReservationManager {
         // returns same value if already an IP address
         return addr.getHostAddress();
     }
-    
+
     public String generateGRI() throws BSSException{
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IdSequenceDAO idDAO = new IdSequenceDAO(this.dbname);
         Domain localDomain = domainDAO.getLocalDomain();
         int id = idDAO.getNewId();
         String gri = null;
-        
+
         if(localDomain != null){
             gri = localDomain.getTopologyIdent() + "-" + id;
             this.log.info("GRI: " + gri);
         }else{
             throw new BSSException("Unable to generate GRI");
         }
-        
+
         return gri;
     }
-    
-    /** 
+
+    /**
      * Sets VLAN tag on a pathElemenet.
      *
      * @param pathElem path element to be updated
@@ -702,13 +720,13 @@ public class ReservationManager {
      * @param link current link to be checked
      * @param layer2Info of the request
      */
-     public void setL2LinkDescr(PathElem pathElem, Link srcLink, Link destLink, 
+     public void setL2LinkDescr(PathElem pathElem, Link srcLink, Link destLink,
                                     Link link, Layer2Info layer2Info){
         VlanTag srcVtag = layer2Info.getSrcVtag();
         VlanTag destVtag = layer2Info.getDestVtag();
         int srcTagged = srcVtag.getTagged() ? 1 : -1;
         int destTagged = destVtag.getTagged() ? 1 : -1;
-        
+
         if (link == srcLink) {
             int vtagValue = Integer.parseInt(srcVtag.getString());
             pathElem.setLinkDescr((vtagValue * srcTagged) + "");
@@ -722,7 +740,7 @@ public class ReservationManager {
             this.log.info("linkId: " + link.getId() + ", internalLink: " + srcVtag.getString());
         }
      }
-    
+
     /**
      * Picks a VLAN tag from a range of VLANS
      *
@@ -732,7 +750,7 @@ public class ReservationManager {
     public void chooseVlanTag(Layer2Info layer2Info) throws BSSException{
         String vtag = layer2Info.getSrcVtag().getString();
         byte[] vtagMask = this.tc.rangeStringToMask(vtag);
-        
+
         /* Pick first available */
         for(int i = 0;i < vtagMask.length; i++){
             for(int j = 0; vtagMask[i] != 0 && j < 8; j++){
@@ -740,43 +758,43 @@ public class ReservationManager {
                 if(tag != 0){
                     vtag = (i*8 + j) + "";
                     this.log.info("chose VLAN " + vtag);
-                    
+
                     layer2Info.getSrcVtag().setString(vtag);
                     layer2Info.getDestVtag().setString(vtag);
-                    
+
                     return;
                 }
             }
         }
     }
-    
-    /** 
+
+    /**
      * Makes final changes to reservation before storage in database
      *
      * @param forwardReply response from forward request
      * @param resv reservation to be stored in database
      * @param pathInfo reservation path information
      */
-    public void finalizeResv(CreateReply forwardReply, Reservation resv,                                     
+    public void finalizeResv(CreateReply forwardReply, Reservation resv,
                              PathInfo pathInfo) throws BSSException{
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String pathSetupMode = pathInfo.getPathSetupMode();
         Path path = resv.getPath();
-        
+
         //Create token if user signaled
         if(pathSetupMode == null || pathSetupMode.equals("signal-xml")){
             this.generateToken(forwardReply, resv);
         }
-        
-        if(layer2Info != null && forwardReply != null && 
-            forwardReply.getPathInfo() != null && 
+
+        if(layer2Info != null && forwardReply != null &&
+            forwardReply.getPathInfo() != null &&
             forwardReply.getPathInfo().getLayer2Info() != null) {
 
             this.log.info("setting up vtags");
             DomainDAO domainDAO = new DomainDAO(this.dbname);
             Link srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
             Link destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
-            
+
             PathInfo fwdPathInfo = forwardReply.getPathInfo();
             VlanTag srcVtag = fwdPathInfo.getLayer2Info().getSrcVtag();
             VlanTag destVtag = fwdPathInfo.getLayer2Info().getDestVtag();
@@ -784,31 +802,31 @@ public class ReservationManager {
             this.log.info("dest vtag: " + destVtag);
             layer2Info.setSrcVtag(srcVtag);
             layer2Info.setDestVtag(destVtag);
-            
-            /* update VLANs in intradomain path */ 
+
+            /* update VLANs in intradomain path */
             PathElem pathElem = path.getPathElem();
             while (pathElem != null) {
                 if (pathElem.getLink().getL2SwitchingCapabilityData() != null){
                     this.log.info(pathElem.getLink().getTopologyIdent());
                     //TODO: Support VLAN mapping
-                    this.setL2LinkDescr(pathElem, srcLink, destLink, 
+                    this.setL2LinkDescr(pathElem, srcLink, destLink,
                                             pathElem.getLink(), layer2Info);
                 } else {
                     this.log.info("no switching capability data for: " + pathElem.getLink().getTopologyIdent());
                 }
                 pathElem = pathElem.getNextElem();
             }
-            
+
             /* Store interdomain path */
             try{
                 PathElem interPathElem = this.convertInterPath(fwdPathInfo);
                 path.setInterPathElem(interPathElem);
             }catch(BSSException e){
-                /* Catch error when try to store path with links not in the 
-                   database. Perhaps in the future this will be an error but 
-                   until everyone shares topology we can relax this requirement 
+                /* Catch error when try to store path with links not in the
+                   database. Perhaps in the future this will be an error but
+                   until everyone shares topology we can relax this requirement
                  */
-                this.log.info("Unable to store interdomain path. " + 
+                this.log.info("Unable to store interdomain path. " +
                     e.getMessage());
             }
         } else {
@@ -825,29 +843,29 @@ public class ReservationManager {
             } else {
                 this.log.info("unknown error");
             }
-            
-            /* Store version of path in terms of interdomain hops. Still want to do 
+
+            /* Store version of path in terms of interdomain hops. Still want to do
                this even if a local path because the intradomain version may be private.
                For current implementations the intradomain URNs and interdomain URNs will
                be the same but that won't be true in the future so we need two versions
                of every path*/
             try{
-                
+
                 PathElem interPathElem = this.convertInterPath(pathInfo);
                 path.setInterPathElem(interPathElem);
             }catch(BSSException e){
-                /* Catch error when try to store path with links not in the 
-                   database. Perhaps in the future this will be an error but 
-                   until everyone shares topology we can relax this requirement 
+                /* Catch error when try to store path with links not in the
+                   database. Perhaps in the future this will be an error but
+                   until everyone shares topology we can relax this requirement
                  */
-                this.log.info("Unable to store interdomain path. " + 
+                this.log.info("Unable to store interdomain path. " +
                     e.getMessage());
             }
         }
     }
-    
-    
-    /** 
+
+
+    /**
      * Creates a token if the last domain or sets the token returned from
      * the forward reply.
      *
@@ -857,28 +875,28 @@ public class ReservationManager {
     private void generateToken(CreateReply forwardReply, Reservation resv)
                     throws BSSException{
         Token token = new Token();
-        
+
         if(forwardReply == null){
             //Generate token
             String gri = resv.getGlobalReservationId();
             byte[] tokenKey = null;
-			String tokenValue = null;
-			try{
-			    tokenKey = TokenKey.generateTokenKey(gri);
-			    tokenValue = TokenBuilder.getXMLTokenValue(gri, tokenKey);
-			    this.log.info("token=" + tokenValue);
-			}catch(Exception e){
-			    this.log.error("Token building error: " + e.getMessage());
-			     throw new BSSException("Token building error: " + 
-			        e.getMessage());
-			}
-			token.setValue(tokenValue);
+            String tokenValue = null;
+            try{
+                tokenKey = TokenKey.generateTokenKey(gri);
+                tokenValue = TokenBuilder.getXMLTokenValue(gri, tokenKey);
+                this.log.info("token=" + tokenValue);
+            }catch(Exception e){
+                this.log.error("Token building error: " + e.getMessage());
+                 throw new BSSException("Token building error: " +
+                    e.getMessage());
+            }
+            token.setValue(tokenValue);
         }else if(forwardReply.getToken() == null){
             return;
         }else{
             token.setValue(forwardReply.getToken());
         }
-        
+
         resv.setToken(token);
         token.setReservation(resv);
     }

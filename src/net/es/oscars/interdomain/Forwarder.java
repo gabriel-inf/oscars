@@ -27,7 +27,7 @@ public class Forwarder extends Client {
         this.tc = new TypeConverter();
     }
 
-    private void setup(Reservation resv, String url) 
+    private void setup(Reservation resv, String url)
             throws InterdomainException {
 
         this.log.debug("setup.start: " + url);
@@ -69,8 +69,26 @@ public class Forwarder extends Client {
         return createReply;
     }
 
+    public ModifyResReply modify(Reservation resv, PathInfo pathInfo) throws InterdomainException {
+
+        ModifyResReply modifyReply = null;
+        Path path = resv.getPath();
+        if (path == null) {
+           throw new InterdomainException("no path provided to forwarder create");
+        }
+        Domain nextDomain = path.getNextDomain();
+        if (nextDomain == null) { return null; }
+        String url = nextDomain.getUrl();
+        this.log.info("modify.start forward to  " + url);
+        ForwardReply reply = this.forward("modifyReservation", resv, pathInfo, url);
+        modifyReply = reply.getModifyReservation();
+        this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
+        return modifyReply;
+    }
+
+
     public ResDetails query(Reservation resv) throws InterdomainException {
-        
+
         String url = null;
 
         if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
@@ -83,7 +101,7 @@ public class Forwarder extends Client {
     }
 
     public String cancel(Reservation resv) throws InterdomainException {
-        
+
         String url = null;
         if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
             url = resv.getPath().getNextDomain().getUrl();
@@ -93,10 +111,10 @@ public class Forwarder extends Client {
         ForwardReply reply = this.forward("cancelReservation", resv, null, url);
         return reply.getCancelReservation();
     }
-    
-    public CreatePathResponseContent createPath(Reservation resv) 
+
+    public CreatePathResponseContent createPath(Reservation resv)
             throws InterdomainException {
-        
+
         String url = null;
         if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
             url = resv.getPath().getNextDomain().getUrl();
@@ -106,10 +124,10 @@ public class Forwarder extends Client {
         ForwardReply reply = this.forward("createPath", resv, null, url);
         return reply.getCreatePath();
     }
-    
-    public RefreshPathResponseContent refreshPath(Reservation resv) 
+
+    public RefreshPathResponseContent refreshPath(Reservation resv)
             throws InterdomainException {
-        
+
         String url = null;
         if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
             url = resv.getPath().getNextDomain().getUrl();
@@ -119,10 +137,10 @@ public class Forwarder extends Client {
         ForwardReply reply = this.forward("refreshPath", resv, null, url);
         return reply.getRefreshPath();
     }
-    
-    public TeardownPathResponseContent teardownPath(Reservation resv) 
+
+    public TeardownPathResponseContent teardownPath(Reservation resv)
             throws InterdomainException {
-        
+
         String url = null;
         if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
             url = resv.getPath().getNextDomain().getUrl();
@@ -160,7 +178,7 @@ public class Forwarder extends Client {
                 GlobalReservationId rt = new GlobalReservationId();
                 rt.setGri(resv.getGlobalReservationId());
                 forPayload.setQueryReservation(rt);
- 
+
             } else if (operation.equals("createPath")) {
                 CreatePathContent cp = new CreatePathContent();
                 cp.setGlobalReservationId(resv.getGlobalReservationId());
@@ -195,19 +213,19 @@ public class Forwarder extends Client {
                                             url +  e.getMessage());
         }
     }
-    
+
     public ResCreateContent toCreateRequest(Reservation resv,
                                             PathInfo pathInfo) {
 
         long millis = -1;
         ResCreateContent resCont = new ResCreateContent();
-        
+
         /* default pathSetupMode between domains is signal-xml */
         String pathSetupMode = pathInfo.getPathSetupMode();
         if(pathSetupMode == null || pathSetupMode.equals("timer-automatic")){
             pathInfo.setPathSetupMode("signal-xml");
         }
-        
+
         resCont.setStartTime(resv.getStartTime());
         resCont.setEndTime(resv.getEndTime());
         /* output bandwidth is in bytes, input is in Mbytes */

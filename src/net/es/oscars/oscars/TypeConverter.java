@@ -42,13 +42,13 @@ public class TypeConverter {
      * @return A Hibernate Reservation instance
      * @throws BSSException
      */
-    public Reservation contentToReservation(ResCreateContent params) 
+    public Reservation contentToReservation(ResCreateContent params)
             throws BSSException {
 
         Reservation resv = new Reservation();
         PathInfo pathInfo = params.getPathInfo();
-        Layer2Info layer2Info = pathInfo.getLayer2Info(); 
-        Layer3Info layer3Info = pathInfo.getLayer3Info(); 
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
         // have to do error checking here because tooling doesn't handle
         // WSDL choice elements yet
         if ((layer2Info == null) && (layer3Info == null)) {
@@ -66,9 +66,58 @@ public class TypeConverter {
         resv.setBandwidth(bandwidth);
         resv.setDescription(params.getDescription());
         resv.setGlobalReservationId(params.getGlobalReservationId());
-        
+
         return resv;
     }
+
+    /**
+     * Builds Hibernate Reservation bean, given Axis2 ResCreateContent class.
+     *
+     * @param params ResCreateContent instance
+     * @return A Hibernate Reservation instance
+     * @throws BSSException
+     */
+    public Reservation contentToReservation(ModifyResContent params)
+            throws BSSException {
+
+        Reservation resv = new Reservation();
+        PathInfo pathInfo = params.getPathInfo();
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
+        // have to do error checking here because tooling doesn't handle
+        // WSDL choice elements yet
+        if ((layer2Info == null) && (layer3Info == null)) {
+            throw new BSSException("No path information provided");
+        } else if ((layer2Info != null) && (layer3Info != null)) {
+            throw new BSSException("Cannot provide both layer 2 and layer 3 information");
+        }
+        // Hibernate will pick up error if any properties are null that
+        // the database schema says cannot be null
+        resv.setStartTime(params.getStartTime());
+        resv.setEndTime(params.getEndTime());
+        Long bandwidth = new Long(Long.valueOf((long)params.getBandwidth() * 1000000L));
+        resv.setBandwidth(bandwidth);
+        resv.setDescription(params.getDescription());
+        resv.setGlobalReservationId(params.getGlobalReservationId());
+
+        return resv;
+    }
+
+    /**
+     * Builds Axis2 ModifyResReply class, given Hibernate Reservation bean.
+     *
+     * @param resv A Hibernate Reservation instance
+     * @return CreateReply instance
+     */
+    public ModifyResReply reservationToModifyReply(Reservation resv) {
+        ModifyResReply reply = new ModifyResReply();
+        ResDetails details = new ResDetails();
+        details = this.reservationToDetails(resv);
+        reply.setReservation(details);
+        return reply;
+    }
+
+
 
     /**
      * Builds Axis2 CreateReply class, given Hibernate Reservation bean.
@@ -79,7 +128,7 @@ public class TypeConverter {
     public CreateReply reservationToReply(Reservation resv) {
         CreateReply reply = new CreateReply();
         Token token = resv.getToken();
-        
+
         reply.setGlobalReservationId(resv.getGlobalReservationId());
         if(token != null){
             reply.setToken(token.getValue());
@@ -94,7 +143,7 @@ public class TypeConverter {
      * Builds Axis2 ResDetails class, given Hibernate bean.
      * Note that this is used by only by query, and is using
      * information from a stored reservation.
-     * 
+     *
      * @param resv A Hibernate reservation instance
      * @return ResDetails instance
      */
@@ -154,7 +203,7 @@ public class TypeConverter {
         return reply;
     }
 
-    
+
     /**
      * Builds all components of Axis2 PathInfo structure, given a
      * Hibernate Reservation bean.
@@ -217,7 +266,7 @@ public class TypeConverter {
         ctrlPlanePath.setId("unimplemented");
         return ctrlPlanePath;
     }
-    
+
     /**
      * Given the Hibernate bean for a path, return a filled in Axis2 instance
      * for layer 2 information.
@@ -229,14 +278,14 @@ public class TypeConverter {
         if (layer2Data == null) {
             return null;
         }
-        
+
         // Axis2 type
         Layer2Info layer2Info = new Layer2Info();
         layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
         layer2Info.setDestEndpoint(layer2Data.getDestEndpoint());
-        
+
         /* TODO: Coordinate between domains to determine if src and dest
-            are tagged or untagged. Also assumes vlan is the same along 
+            are tagged or untagged. Also assumes vlan is the same along
             entire path. */
         PathElem elem = path.getPathElem();
         while(elem != null){
@@ -248,7 +297,7 @@ public class TypeConverter {
                 layer2Info.setDestVtag(vtag);
                 break;
             }
-            
+
             elem = elem.getNextElem();
         }
         return layer2Info;
@@ -319,12 +368,12 @@ public class TypeConverter {
         // return as is if layer 2
         if (pathInfo.getLayer2Info() != null) {
             return;
-        } 
+        }
         // if layer 3, generate new path with host name/IP rather than
         // topology identifier
         CtrlPlanePathContent oldPath = pathInfo.getPath();
         CtrlPlanePathContent newPath = new CtrlPlanePathContent();
-        CtrlPlaneHopContent[] oldHops = oldPath.getHop(); 
+        CtrlPlaneHopContent[] oldHops = oldPath.getHop();
         DomainDAO domainDAO =  new DomainDAO("bss");
         for (int i=0; i < oldHops.length; i++) {
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
@@ -360,7 +409,7 @@ public class TypeConverter {
         pathInfo.setPath(newPath);
         return;
     }
-    
+
     /**
      * Given a PathInfo instance, determines whether it contains information
      *     requiring special authorization to set.
@@ -376,74 +425,74 @@ public class TypeConverter {
         }
         return false;
     }
-    
+
     /**
      * Converts a string to a bit mask. The range should take the form
-     * "x,y" for discontinuous ranges and "x-y" for continuous ranges. 
-     * These formats can be concatenated to specify many subranges 
+     * "x,y" for discontinuous ranges and "x-y" for continuous ranges.
+     * These formats can be concatenated to specify many subranges
      * (i.e 600,3000-3001).
-     * 
+     *
      * @param range the range string to be converted
      * @return a bit mask with values in given range set to 1
      * @throws BSSException
      */
     public byte[] rangeStringToMask(String range) throws BSSException{
         byte[] mask = new byte[512];
-        
+
         if (range.trim().equals("any")) {
-        	for (int i = 0; i < 512; i++) {
-        		mask[i] = (byte) 255;
-        	}
-        	return mask;
+            for (int i = 0; i < 512; i++) {
+                mask[i] = (byte) 255;
+            }
+            return mask;
         }
-        
+
         range = range.replaceAll("\\s", "");
         String[] rangeList = range.split(",");
         try {
-        	
-	        for(int i = 0; i < rangeList.length; i++){
-	            String[] rangeEnds = rangeList[i].split("-");
-	            if (rangeEnds.length == 1){
-	                int tag = Integer.parseInt(rangeEnds[0].trim());
-	                if(tag < 4096){
-	                    mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
-	                }
-	            } else if(rangeEnds.length == 2){
-	                int startTag = Integer.parseInt(rangeEnds[0].trim());
-	                int endTag = Integer.parseInt(rangeEnds[1].trim());
-	                if (startTag < 4096 && endTag < 4096){
-	                    for(int j = startTag; j <= endTag; j++){
-	                        mask[j/8] |= (1 << (7 - (j % 8)));
-	                    }
-	                }
-	            }else {
-	                throw new BSSException("Invalid VLAN range specified");
-	            }
-	        }
+
+            for(int i = 0; i < rangeList.length; i++){
+                String[] rangeEnds = rangeList[i].split("-");
+                if (rangeEnds.length == 1){
+                    int tag = Integer.parseInt(rangeEnds[0].trim());
+                    if(tag < 4096){
+                        mask[tag/8] = (byte)(1 << (7 - (tag % 8)));
+                    }
+                } else if(rangeEnds.length == 2){
+                    int startTag = Integer.parseInt(rangeEnds[0].trim());
+                    int endTag = Integer.parseInt(rangeEnds[1].trim());
+                    if (startTag < 4096 && endTag < 4096){
+                        for(int j = startTag; j <= endTag; j++){
+                            mask[j/8] |= (1 << (7 - (j % 8)));
+                        }
+                    }
+                }else {
+                    throw new BSSException("Invalid VLAN range specified");
+                }
+            }
         } catch (NumberFormatException ex) {
             throw new BSSException("Invalid VLAN range format	\n"+ ex.getMessage());
         }
-        
+
         /* for(int k = 0; k < mask.length; k++){
             System.out.println(k + ": " + (byte)(mask[k] & 255));
         } */
-        
+
         return mask;
     }
-    
+
     /**
      * Converts given mask to a range string. The range takes the form
-     * "x,y" for discontinuous ranges and "x-y" for continuous ranges. 
-     * These formats can be concatenated to specify many subranges 
+     * "x,y" for discontinuous ranges and "x-y" for continuous ranges.
+     * These formats can be concatenated to specify many subranges
      * (i.e 600,3000-3001).
-     * 
+     *
      * @param mask the bit mask to be converted
      * @return a range string representing the given bit mask
      */
     public String maskToRangeString(byte[] mask){
         int start = 0;
         String range = new String();
-        
+
         for(int i = 0; i < mask.length; i++){
             for(int j = 0; j < 8; j++){
                 int tag = i*8 + j;
@@ -466,7 +515,7 @@ public class TypeConverter {
 
         return range;
     }
-    
+
     /**
      * If given an int whose string length is less than 2, prepends a "0".
      *

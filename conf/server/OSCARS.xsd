@@ -247,6 +247,8 @@
             <xsd:element name="contentType" type="xsd:string" />
             <xsd:element name="createReservation"
                 type="tns:resCreateContent" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="modifyReservation"
+                type="tns:resModifyContent" />
             <xsd:element name="cancelReservation" type="tns:globalReservationId"
                 maxOccurs="1" minOccurs="0" />
             <xsd:element name="queryReservation" type="tns:globalReservationId"
@@ -266,6 +268,8 @@
         <xsd:sequence>
             <xsd:element name="contentType" type="xsd:string" />
             <xsd:element name="createReservation" type="tns:createReply"
+                maxOccurs="1" minOccurs="0" />
+            <xsd:element name="modifyReservation" type="tns:modifyResReply"
                 maxOccurs="1" minOccurs="0" />
             <xsd:element name="cancelReservation" type="xsd:string"
                 maxOccurs="1" minOccurs="0" />

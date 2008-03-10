@@ -114,15 +114,50 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public ModifyResReply
-        modify(ModifyResContent params, String login, boolean allUsers)
+    public ModifyResReply modify(ModifyResContent params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
 
-        ModifyResReply reply = null;
-
-        // TODO: actually finish this!
 
         this.log.info("modify.start");
+
+        Reservation resv = this.tc.contentToReservation(params);
+        this.log.debug("Reservation was: "+resv.getGlobalReservationId());
+
+        Forwarder forwarder = new Forwarder();
+        PathInfo pathInfo = params.getPathInfo();
+        ModifyResReply forwardReply = null;
+        ModifyResReply reply = null;
+        try {
+            this.rm.modify(resv, login, pathInfo);
+            // checks whether next domain should be contacted, forwards to
+            // the next domain if necessary, and handles the response
+            this.log.debug("modify, to forward");
+            forwardReply = forwarder.modify(resv, pathInfo);
+            this.rm.finalizeModifyResv(forwardReply, resv, pathInfo);
+            // persist to db
+            this.rm.store(resv);
+
+            this.log.debug("modify, to toModifyReply");
+            reply = this.tc.reservationToModifyReply(resv);
+            // set to input argument, which possibly has been modified during
+            // reservation creation
+
+            pathInfo.getPath().setId("unimplemented");
+            this.tc.clientConvert(pathInfo);
+            reply.getReservation().setPathInfo(pathInfo);
+
+
+        } catch (BSSException e) {
+            // send notification in all cases
+            this.sendFailureNotification(resv, e.getMessage());
+            throw new BSSException(e.getMessage());
+        } catch (InterdomainException e) {
+            // send notification in all cases
+            this.sendFailureNotification(resv, e.getMessage());
+            throw new InterdomainException(e.getMessage());
+        }
+
+
         this.log.info("modify.finish");
         return reply;
     }
