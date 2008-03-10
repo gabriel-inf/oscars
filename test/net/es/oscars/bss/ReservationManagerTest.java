@@ -22,8 +22,8 @@ import net.es.oscars.bss.topology.*;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-// @Test(groups={ "bss" })
-@Test(groups={ "broken" })
+@Test(groups={ "broken", "reservationManager" },
+        dependsOnGroups = { "importTopology" })
 public class ReservationManagerTest {
     private final Long BANDWIDTH = 25000000L;   // 25 Mbps
     private final int BURST_LIMIT = 10000000; // 10 Mbps
@@ -45,14 +45,12 @@ public class ReservationManagerTest {
     }
 
   @Test
-    public void testCreate() throws BSSException {
+    public void rmLayer3Create() throws BSSException {
         Reservation resv = new Reservation();
         PathInfo pathInfo = new PathInfo();
         CtrlPlanePathContent path = new CtrlPlanePathContent();
         Layer3Info layer3Info = new Layer3Info();
         MplsInfo mplsInfo = new MplsInfo();
-        Long millis = 0L;
-        Long bandwidth = 0L;
         String url = null;
         int id = -1;
 
@@ -61,13 +59,6 @@ public class ReservationManagerTest {
         layer3Info.setSrcHost(this.props.getProperty("sourceHostIP"));
         layer3Info.setDestHost(this.props.getProperty("destHostIP"));
 
-        millis = System.currentTimeMillis();
-        resv.setStartTime(millis);
-        resv.setCreatedTime(millis);
-        millis += DURATION;
-        resv.setEndTime(millis);
-
-        resv.setBandwidth(BANDWIDTH);
         mplsInfo.setBurstLimit(BURST_LIMIT);
         // description is unique, so can use it to access reservation in
         // other tests

@@ -29,8 +29,9 @@ public class DBTests {
         /* If these run, there are error messages in the hibernate log
          * each time the tests are run.  If these are commented out, the
          * error messages don't appear, but the number of aborted clients
-         * increases in MySQL. For now, choosing the former. */
-        HibernateUtil.closeSessionFactory("testaaa");
-        HibernateUtil.closeSessionFactory("testbss");
+         * increases in MySQL. For now, choosing the latter, to avoid
+         * error messages being generated. */
+        //HibernateUtil.closeSessionFactory("testaaa");
+        //HibernateUtil.closeSessionFactory("testbss");
     }
 }

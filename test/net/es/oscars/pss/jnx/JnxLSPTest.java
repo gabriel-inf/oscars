@@ -9,6 +9,8 @@ import java.util.Properties;
 import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.AuthHandler;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.pss.PSSException;
 
 
@@ -65,28 +67,15 @@ public class JnxLSPTest {
                 oscarsProps.getProperty("lsp_setup-priority"));
         this.l3HashMap.put("lsp_reservation-priority",
                 oscarsProps.getProperty("lsp_reservation-priority"));
-        this.jnxLSP = new JnxLSP("testbss");
+        this.jnxLSP = new JnxLSP(GlobalParams.getReservationTestDBName());
         this.jnxLSP.setConfigurable(false);
     }
 
   @Test
     public void allowedTest() {
-        String hostsProp = this.testProps.getProperty("allowedHosts");
-        Map<String,String> hostsMap = new HashMap<String,String>();
-        String[] allowedHosts = hostsProp.split(", ");
-        for (int i=0; i < allowedHosts.length; i++) {
-            hostsMap.put(allowedHosts[i], null);
-        }
-        String thisHost = System.getenv("HOST");
-        assert hostsMap.containsKey(thisHost);
-        String usersProp = this.testProps.getProperty("allowedUsers");
-        Map<String,String> usersMap = new HashMap<String,String>();
-        String[] allowedUsers = usersProp.split(", ");
-        for (int i=0; i < allowedUsers.length; i++) {
-            usersMap.put(allowedUsers[i], null);
-        }
-        String thisUser = System.getenv("USER");
-        assert usersMap.containsKey(thisUser);
+        AuthHandler authHandler = new AuthHandler();
+        boolean authorized = authHandler.checkAuthorization();
+        assert authorized : "You are not authorizated to do a traceroute from this machine";
     }
 
   @Test(dependsOnMethods={ "allowedTest" })

@@ -38,7 +38,7 @@ public class TopologyXMLFileReaderTest {
     }
 
   // not currently working
-  @Test(enabled=false, dependsOnMethods={ "importTopology" })
+  @Test(dependsOnMethods={ "importTopology" })
     public void importedPortList() {
         // make sure things got populated
         this.sf.getCurrentSession().beginTransaction();

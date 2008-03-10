@@ -20,11 +20,6 @@ import net.es.oscars.bss.topology.*;
  */
 @Test(groups={ "bss" })
 public class ReservationTest {
-    private final Long BANDWIDTH = 25000000L;   // 25 Mbps
-    private final Long BURST_LIMIT = 10000000L; // 10 Mbps
-    private final int DURATION = 240;       // 4 minutes 
-    private final String PROTOCOL = "UDP";
-    private final String LSP_CLASS = "4";
     private Properties props;
     private SessionFactory sf;
     private String dbname;
@@ -39,25 +34,16 @@ public class ReservationTest {
 
   @Test
     public void testReservationCreate() throws BSSException {
-        Long seconds = 0L;
-        Long bandwidth = 0L;
 
         // have to build everything by hand for DAO test
         Reservation resv = new Reservation();
-        // this is just testing the bean and setting layer 3 info;
-        // Extensive layer 2 tests will be in ReservationManagerTest
+        // this is just testing the bean, so any value will do, as long as it
+        // is the correct type and required ones are non-null
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        seconds = System.currentTimeMillis()/1000;
-        resv.setStartTime(seconds);
-        resv.setCreatedTime(seconds);
-        seconds += DURATION;
-        resv.setEndTime(seconds);
-
-        resv.setBandwidth(BANDWIDTH);
-        resv.setDescription(CommonParams.getReservationDescription());
-        resv.setStatus("TEST");
-        resv.setLogin(this.props.getProperty("login"));
+        CommonReservation common = new CommonReservation();
+        String description = CommonParams.getReservationDescription();
+        common.setParameters(resv, description);
 
         PathDAO pathDAO = new PathDAO(this.dbname);
         Path path = new Path();
@@ -65,8 +51,8 @@ public class ReservationTest {
 
         // set up MPLS data
         MPLSData mplsData = new MPLSData();
-        mplsData.setBurstLimit(BURST_LIMIT);
-        mplsData.setLspClass(LSP_CLASS);
+        mplsData.setBurstLimit(10000000L);
+        mplsData.setLspClass("4");
         path.setMplsData(mplsData);
 
         // set up layer 2 data
@@ -76,7 +62,7 @@ public class ReservationTest {
         path.setLayer2Data(layer2Data);
 
         // set up layer 3 data (just testing Hibernate structures,
-        // won't be both layer 2 and layer 3 data in real path
+        // won't be both layer 2 and layer 3 data in real path)
         Layer3Data layer3Data = new Layer3Data();
         layer3Data.setSrcHost(CommonParams.getSrcHost());
         layer3Data.setDestHost(CommonParams.getDestHost());
