@@ -90,9 +90,7 @@ public class ReservationManager {
 
         this.log.info("create.validated");
         resv.setStatus("PENDING");
-        // save complete copy of original path for forwarding
-        // for layer 2
-        CtrlPlanePathContent pathCopy = this.copyPath(pathInfo, false);
+        CtrlPlanePathContent pathCopy = null;
         
         // this modifies the path to include internal hops with layer 2,
         // and finds the complete path with traceroute

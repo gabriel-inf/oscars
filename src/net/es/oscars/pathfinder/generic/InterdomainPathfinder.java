@@ -185,6 +185,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         
         /* If strict or local path return local ingress and egress  */
         if(onlyLocal){
+            pathInfo.setPathType("strict");
             return pathInfo.getPath();
         }else if(pathType == null || pathType.equals("strict")){
             ingressHop.setLinkIdRef(ingressURN);
@@ -398,9 +399,12 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         
         /* add next hop if its the destination or a different domain than last
            hop in path looked up */
-        if(dest.equals(nextHopURN) || (!lastDomain.equals(nextHopDomain))){
+        if(dest.equals(nextHopURN)){
             newPath.addHop(currHops[hopIndex]);
             pathInfo.setPathType(routeType);
+        }else if(!lastDomain.equals(nextHopDomain)){
+            newPath.addHop(currHops[hopIndex]);
+            pathInfo.setPathType("loose");
         }else if(nextHopType > lastHopType){
             /* if hop already in path is more acurate than table's */
             CtrlPlaneHopContent[] newHops = newPath.getHop();
