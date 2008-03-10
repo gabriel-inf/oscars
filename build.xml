@@ -326,6 +326,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
         <copy file="conf/rampart-1.3.mar" todir="${catalina.home}/shared/classes/repo/modules"/>
         <copy file="conf/server/common.log4j.properties" tofile="${catalina.home}/common/classes/log4j.properties"/>
+        <copy file="conf/server/nmtopo-ctrlp.xsd" tofile="${catalina.home}/shared/classes/server/nmtopo-ctrlp.xsd "/>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
@@ -339,8 +340,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy todir="${webapp.home}/../shared/lib">
             <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/>
         </copy>
-    	<!-- Since wss4j is there the PWCallback class needs to be there as well -->
-    	<copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
+        <!-- Since wss4j is there the PWCallback class needs to be there as well -->
+        <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
     <target name="deploywbui" description="copy OSCARS.war to webapp directory" depends="wbui, setupServer, deploylibs">
         <copy file="OSCARS.war" todir="${webapp.home}"/>
@@ -403,7 +404,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/OSCARS/test" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
             <jvmarg value="-Dcatalina.home=${catalina.home}"/>
-
             <jvmarg value="-Dapp=-test"/>
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
