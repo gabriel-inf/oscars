@@ -38,8 +38,8 @@ public class TopologyXMLFileReader {
 
         this.setNsUri(this.props.getProperty("nsuri").trim());
         EnvHandler envHandler = new EnvHandler();
-        String xsdFilename = this.props.getProperty("xsdFilename".trim());
-        xsdFilename = envHandler.expandEnv("xsdFilename");
+        String xsdFilename = this.props.getProperty("xsdFilename").trim();
+        xsdFilename = envHandler.expandEnv(xsdFilename);
         if (xsdFilename != null) {
             this.log.info(xsdFilename);
         }
@@ -58,6 +58,7 @@ public class TopologyXMLFileReader {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
+        this.log.info("xmlFilename: " + xmlFilename);
         try {
             doc = this.loadFile(xmlFilename);
         } catch (JDOMException e) {
@@ -84,6 +85,7 @@ public class TopologyXMLFileReader {
     protected Document loadFile(String fName) throws JDOMException, IOException {
         Document doc = null;
 
+        this.log.info("loadFile: " + this.getXsdFilename());
         File xsdFile = new File( this.getXsdFilename());
         if (!xsdFile.exists()) {
             throw new IOException("XSD file not found!");

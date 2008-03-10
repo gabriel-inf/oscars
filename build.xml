@@ -326,7 +326,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <mkdir dir="${catalina.home}/shared/classes/repo/modules"/>
         <copy file="conf/rampart-1.3.mar" todir="${catalina.home}/shared/classes/repo/modules"/>
         <copy file="conf/server/common.log4j.properties" tofile="${catalina.home}/common/classes/log4j.properties"/>
-        <copy file="conf/server/nmtopo-ctrlp.xsd" tofile="${catalina.home}/shared/classes/server/nmtopo-ctrlp.xsd "/>
+        <copy file="conf/server/nmtopo-ctrlp.xsd" tofile="${catalina.home}/shared/classes/server/nmtopo-ctrlp.xsd"/>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
