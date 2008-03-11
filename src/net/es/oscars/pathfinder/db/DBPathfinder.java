@@ -61,27 +61,137 @@ public class DBPathfinder extends Pathfinder implements PCE {
      * @param pathInfo PathInfo instance containing hops of entire path
      * @throws PathfinderException
      */
-    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException{
-        Domain localDomain = domDAO.getLocalDomain();
+    public PathInfo findPath(PathInfo pathInfo, Reservation reservation)
+            throws PathfinderException {
 
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
+        CtrlPlanePathContent path = pathInfo.getPath();
+        if (path != null) {
+            DomainDAO domainDAO = new DomainDAO(this.dbname);
+            CtrlPlaneHopContent[] ctrlPlaneHops = path.getHop();
+            // if an ERO, not just ingress and/or egress
+            if (ctrlPlaneHops.length > 2) {
+               this.log.info("handling explicit route object");
+               if (pathInfo.getLayer2Info() != null) {
+                   this.handleLayer2ERO(pathInfo, reservation);
+                } else if (pathInfo.getLayer3Info() != null) {
+                    throw new PathfinderException("DB pathfinder does not hdle layer 3 yet");
+                } else {
+                    throw new PathfinderException(
+                        "An ERO must have associated layer 2 or layer 3 info");
+                }
+            // handle case where only ingress, egress, or both given
+            }
+        }
+        this.log.debug("findPath.End");
+        return pathInfo; //return same path to conform to interface
+    }
 
-        String srcEndpoint = pathInfo.getLayer2Info().getSrcEndpoint();
-        String destEndpoint = pathInfo.getLayer2Info().getDestEndpoint();
-
-        if (ctrlPlanePath == null){
-            /* Calculate path that contains strict local hops and
-            loose interdomain hops */
-            CtrlPlanePathContent path = null;
 
 
-            pathInfo.setPath(path);
-        } else {
-//            CtrlPlaneHopContent[] hops = ctrlPlanePath.getHops();
+
+    private void handleLayer2ERO(PathInfo pathInfo, Reservation reservation)
+            throws PathfinderException {
+        int numHops = 0;
+        this.log.debug("handleLayer2ERO.start");
+
+        Domain domain = domDAO.getLocalDomain();
+        Long bandwidth = reservation.getBandwidth();
+
+        CtrlPlanePathContent ero = pathInfo.getPath();
+        CtrlPlaneHopContent[] hops = ero.getHop();
+
+        // an array to hold the local portion of the path
+        ArrayList<String> localLinkIds = new ArrayList<String>();
+        int localLinkIndex = 0;
+
+        // store where the local stuff begins and ends
+        int firstLocalHopIndex = 0;
+        int lastLocalHopIndex = 0;
+
+        boolean foundLocalSegment = false;
+        for (int i=0; i < hops.length; i++) {
+            CtrlPlaneHopContent ctrlPlaneHop = hops[i];
+            String hopId = ctrlPlaneHop.getLinkIdRef();
+            if (!TopologyUtil.isTopologyIdentifier(hopId)) {
+                throw new PathfinderException(
+                    "layer 2 ERO must currently be made up of " +
+                    "LINK topology identifiers");
+            }
+            this.log.debug("hop id (original):["+hopId+"]");
+
+            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopId);
+            String fqti = parseResults.get("fqti");
+            String domainId = parseResults.get("domainId");
+
+            if (domDAO.isLocal(domainId)) {
+                if (!foundLocalSegment) {
+                    firstLocalHopIndex = i;
+                    foundLocalSegment = true;
+                }
+                localLinkIds.add(localLinkIndex, fqti);
+                localLinkIndex++;
+                lastLocalHopIndex = i;
+            }
+
+            // reset id ref to local topology identifier
+            ctrlPlaneHop.setLinkIdRef(fqti);
+            // make schema validator happy
+            ctrlPlaneHop.setId(fqti);
         }
 
-        return pathInfo;  // just for compatibility with interface
+        // Calculate path
+        // case 1: we get passed NO local links
+        // we need to know our ingress at the very least,
+        // so throw an exception
+        if (!foundLocalSegment) {
+            throw new PathfinderException("Path must contain at least the ingress link to local domain ["+domain.getTopologyIdent()+"]");
+        }
+        // case 2: We get passed ONE or MORE local links
+        // The very first one should be our ingress
+        // we find the paths between each two until we reach the last one
+        // then we find a path from the last one to the next domain.
+        Path localPath = new Path();
+        for (int i = 0; i < localLinkIndex -1; i++) {
+            String src = localLinkIds.get(i);
+            String dst = localLinkIds.get(i+1);
+            Path segmentPath = findPathBetween(src, dst, bandwidth);
+            if (segmentPath == null) {
+                throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
+            } else {
+                localPath = mergePaths(localPath, segmentPath);
+            }
+        }
+        String lastLocalLink = localLinkIds.get(localLinkIndex -1);
+        String nextHop = hops[lastLocalHopIndex + 1].getLinkIdRef();
+        Path segmentPath = findPathBetween(lastLocalLink, nextHop, bandwidth);
+        localPath = mergePaths(localPath, segmentPath);
+
+        this.log.debug("handleExplicitRouteObject.finish");
     }
+
+    private Path mergePaths(Path onePath, Path otherPath) {
+        Path result = new Path();
+        if (onePath.getPathElem() != null) {
+            PathElem firstOne = onePath.getPathElem();
+            if (otherPath.getPathElem() != null) {
+                PathElem lastOne = onePath.getPathElem();
+                while (lastOne.getNextElem() != null) {
+                    lastOne = lastOne.getNextElem();
+                }
+                lastOne.setNextElem(otherPath.getPathElem());
+            }
+            result.setPathElem(firstOne);
+            while (firstOne.getNextElem() != null) {
+                firstOne.setPath(result);
+                firstOne = firstOne.getNextElem();
+            }
+        } else {
+            result.setPathElem(otherPath.getPathElem());
+        }
+        return result;
+    }
+
+
 
 
     public Path findPathBetween(Link src, Link dst, Long bandwidth) {

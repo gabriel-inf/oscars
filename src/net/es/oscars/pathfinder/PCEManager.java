@@ -78,7 +78,7 @@ public class PCEManager {
             throw new PathfinderException(
                 "No path computation method specified in oscars.properties.");
         }
-        if (!pathMethod.equals("traceroute") && !pathMethod.equals("terce")) {
+        if (!pathMethod.equals("traceroute") && !pathMethod.equals("terce") && !pathMethod.equals("database")) {
             throw new PathfinderException(
                 "Path computation method specified in oscars.properties " +
                 "must be either traceroute or terce.");
