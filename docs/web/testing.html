@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>logging configuration</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="logging.html">Testing</a>
+</div>
+</div>
+<h2>Standalone tests</h2>
+<p>OSCARS uses the
+<a href=http://www.testng.org/">TestNG</a>
+package for testing.  Tests are organized hierarchically and mirror the
+src tree.  They are located under the test directory at the top level.
+The tests run standalone, so the material in the oscars and servlets
+directories, which requires a running server, is not covered.
+</p>
+
+<p>For the
+tests to run correctly, Hibernate must be installed, and the
+testaaa.cfg.xml and testbss.cfg.xml Hibernate configuration files must be in
+the classpath.  Those files are located under conf/server, and for the
+tests are copied into build/WEB-INF/classes.
+</p>
+
+<h3>Ant test properties</h3>
+<div style="margin-left: 40px;">
+<p>If just <em>ant test</em> is run, all tests are run.  Not all tests will be
+valid in all domains.  To account for that, the <em>idc</em> property is used.
+Currently it can have two values.  For the I2 specific tests, use
+<em>ant -Didc=I2</em>.  For ESnet specific tests, use 
+<em>ant -Didc=ESnet</em>.
+</p>
+
+<p>
+For running only a particular set of tests at the package level, the
+<em>t</em> property is used.  It is overriden by the idc property.  Related
+tests are grouped by TestNG directives in the test source.  For example, to run
+just the tests for bss.topology, use <em>ant test -Dt=bss.topology</em>.
+The tests for bss.topology also belong to the "bss" group, so
+<em>ant test -Dt=bss</em> would run those tests and the tests for the
+"bss" package.  If the TestNG output indicates that zero tests have been
+run, check the property setting that you specified.</p>
+</div>
+
+<h3>Test coverage</h3>
+<div style="margin-left: 40px;">
+<p>Coverage of the Hibernate beans and associated Hibernate configuration
+files is complete for the various database operations (e.g. insert, update,
+etc.).  There are a few non-Hibernate tests running; more are being worked
+on.</p>
+
+<p>Some tests will only be run if they are running as one of the users
+given by the "allowedUsers" property in test.properties, and on one of a
+set of machines given by the "allowedHosts" property.  If this is not
+the case, that test will fail and all the tests that depend on it will be
+skipped.</p>
+
+<p>An example 
+test.properties is in conf/examples/server.  You will need to set those
+properties if you are starting from scratch.  A filled-in version of this
+file has to be located in ${catalina.home}/shared/classes/server (the
+place for other configuration and properties files).  Tomcat doesn't
+have to be running.  If you have a domain-specific Subversion repository, it
+is copied there during the build from ${domain.home}/domain/trunk/server.
+</p>
+</div>
+
+<h3>Test logging</h3>
+<div style="margin-left: 40px;">
+<p>Uses build/classes/log4j.properties.  This
+file is included in the distribution in conf/server/log4j.properties, and
+is copied to the build directory during compilation.  Log messages
+are written to ${catalina.home}/logs/oscars-test.log.</p>
+</div>
+</body>
+</html>
