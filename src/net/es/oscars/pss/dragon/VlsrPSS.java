@@ -50,6 +50,8 @@ public class VlsrPSS implements PSS{
         String sshKey = this.props.getProperty("ssh.key");
         
         Path path = resv.getPath();
+        ArrayList<String> ero = this.pathToEro(path, false);
+        ArrayList<String> subnetEro = this.pathToEro(path, true);
         Layer2Data layer2Data = path.getLayer2Data();
         Link ingressLink = path.getPathElem().getLink();
         Link egressLink= this.getEgressLink(path);
@@ -88,6 +90,8 @@ public class VlsrPSS implements PSS{
                                             egrLocalId, null, 0);
         String gri = resv.getGlobalReservationId();
         lsp.setLSPName(gri);
+        lsp.setEro(ero);
+        lsp.setSubnetEro(subnetEro);
         
         /* Set layer specific params */
         if(layer2Data != null){
@@ -611,22 +615,34 @@ public class VlsrPSS implements PSS{
         String[] componentList = portTopoId.split("-");
         int number = 0;
         
+        /* If just a number return the number...*/
         if(componentList.length == 1){
-            number = Integer.parseInt(componentList[0]);
-        }else if(componentList.length == 3){
+            try{
+                number = Integer.parseInt(componentList[0]);
+                return number;
+            }catch(Exception e){}
+        }
+        
+        /* If in form K-M-N return local ID value... */
+        if(componentList.length == 3){
             int k = Integer.parseInt(componentList[0]);
             int m = Integer.parseInt(componentList[1]);
             int n = Integer.parseInt(componentList[2]);
             
             number = (k << 12) + (m << 8) + n;
-        }else if(matchAny){
-            number = -1;
-        }else{
-            throw new PSSException("Port ID must be in form L or K-M-N where" + 
-            " L = (K << 12) + (M << 8) + N");
+            return number;
         }
         
-        return number;
+        /* If doesn't match any of the above but isn't required to be an 
+           ethernet type return -1 */
+        if(matchAny){
+            return -1;
+        }
+        
+        /* Throw exception because ethernet type required but given something
+           else */
+        throw new PSSException("Port ID must be in form L or K-M-N where" + 
+            " L = (K << 12) + (M << 8) + N");
     }
     
     /**
@@ -751,5 +767,53 @@ public class VlsrPSS implements PSS{
         }
         
         return sshAddress;
+    }
+    
+    /**
+     * Converts a path element to list of strings to be used as an ERO.
+     *
+     * @param path the Path to be converted
+     * @param isSubnet indicates if this is a subnet(Ciena) ERO
+     * @returns the new ERO as a list of strings
+     */
+    private ArrayList<String> pathToEro(Path path, boolean isSubnet)
+            throws PSSException{
+        ArrayList<String> ero = new ArrayList<String>();
+        PathElem elem = path.getPathElem();
+
+        elem = elem.getNextElem();//dont add first hop
+        while(elem != null){
+            PathElem nextElem = elem.getNextElem();
+            Link link = elem.getLink();
+            Port port = link.getPort();
+            String linkId = link.getTopologyIdent();
+            String portId = port.getTopologyIdent();
+            
+            /* Skip hops that are DTLs and not subnets or vice versa (XOR) */
+            if(((!isSubnet) && portId.startsWith("DTL")) || (isSubnet && 
+                (!portId.startsWith("DTL")))){
+                elem = nextElem;
+                continue;
+            }
+            
+            /* Verify the link ID is an IPv4 address */
+            try{
+                InetAddress address = InetAddress.getByName(linkId);
+            }catch (UnknownHostException e) {
+			    throw  new PSSException("Invalid link id " + linkId + 
+			        ". Link IDs must be IP addresses on IDCs running DRAGON.");
+		    }
+		    
+            if(nextElem != null){ //dont add last hop
+                ero.add(linkId);
+                this.log.info((isSubnet ? "SUBNET" : "") + "ERO: " + linkId);
+            }
+            elem = nextElem;
+        }
+        
+        if(ero.size() == 0){
+            return null;
+        }
+        return ero;
     }
 }
