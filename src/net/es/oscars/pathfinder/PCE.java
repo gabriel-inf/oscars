@@ -3,7 +3,7 @@ package net.es.oscars.pathfinder;
 import java.util.List;
 
 import net.es.oscars.wsdlTypes.PathInfo;
-
+import net.es.oscars.bss.Reservation;
 
 /**
  * PCE is the interface implemented by the path computation element.
@@ -12,6 +12,6 @@ import net.es.oscars.wsdlTypes.PathInfo;
  */
 public interface PCE {
 
-    PathInfo findPath(PathInfo pathInfo)
+    PathInfo findPath(PathInfo pathInfo, Reservation reservation)
         throws PathfinderException;
 }

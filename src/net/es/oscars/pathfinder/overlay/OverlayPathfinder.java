@@ -12,6 +12,7 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.bss.Reservation;
 
 /**
  * OverlayPathfinder currently only handles explicit layer 2 and layer 3
@@ -40,7 +41,7 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
      * @return boolean indicating ERO used (necessary for interface)
      * @throws PathfinderException
      */
-    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException {
+    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
 
         String ingressNodeId = null;
         String egressNodeId = null;
@@ -104,7 +105,7 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
             Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopId);
             hopId = parseResults.get("compact");
             String domainId = parseResults.get("domainId");
-            
+
             this.log.debug("hop id (local):["+hopId+"]");
             if (domainDAO.isLocal(domainId)) {
                 numHops++;
@@ -115,7 +116,7 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
             ctrlPlaneHop.setId(hopId);
         }
         // throw error if no local path found
-        if (numHops == 0) { 
+        if (numHops == 0) {
             throw new PathfinderException("No local hops given in ERO");
         }
         this.log.debug("handleExplicitRouteObject.finish");
@@ -176,7 +177,7 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
             prevHop = hop;
         }
         // throw error if no local path found
-        if (numHops == 0) { 
+        if (numHops == 0) {
             throw new PathfinderException("No local hops given in ERO");
         }
         // check ingress for validity

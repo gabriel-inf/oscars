@@ -54,6 +54,36 @@ public class DBPathfinder extends Pathfinder implements PCE {
         domDAO = new DomainDAO(dbname);
     }
 
+    /**
+     * Finds a path given just source and destination or by expanding
+     * a path the user explicitly sets
+     *
+     * @param pathInfo PathInfo instance containing hops of entire path
+     * @throws PathfinderException
+     */
+    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException{
+        Domain localDomain = domDAO.getLocalDomain();
+
+        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
+
+        String srcEndpoint = pathInfo.getLayer2Info().getSrcEndpoint();
+        String destEndpoint = pathInfo.getLayer2Info().getDestEndpoint();
+
+        if (ctrlPlanePath == null){
+            /* Calculate path that contains strict local hops and
+            loose interdomain hops */
+            CtrlPlanePathContent path = null;
+
+
+            pathInfo.setPath(path);
+        } else {
+//            CtrlPlaneHopContent[] hops = ctrlPlanePath.getHops();
+        }
+
+        return pathInfo;  // just for compatibility with interface
+    }
+
+
     public Path findPathBetween(Link src, Link dst, Long bandwidth) {
         String srcStr = src.getFQTI();
         String dstStr = dst.getFQTI();
@@ -108,29 +138,5 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
     }
 
-    /**
-     * Finds a path given just source and destination or by expanding
-     * a path the user explicitly sets
-     *
-     * @param pathInfo PathInfo instance containing hops of entire path
-     * @throws PathfinderException
-     */
-    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException{
-        CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
-        CtrlPlanePathContent localPathForOSCARSDatabase;
-        CtrlPlanePathContent pathToForwardToNextDomain;
-
-        if(ctrlPlanePath == null){
-            /* Calculate path that contains strict local hops and
-            loose interdomain hops */
-            CtrlPlanePathContent path = null;
-
-            pathInfo.setPath(path);
-        } else {
-
-        }
-
-        return pathInfo;  // just for compatibility with interface
-    }
 
 }

@@ -1,6 +1,7 @@
 package net.es.oscars.pathfinder.generic;
 
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.InterdomainRouteDAO;
 import net.es.oscars.bss.topology.InterdomainRoute;
 import net.es.oscars.bss.topology.RouteElem;
@@ -22,15 +23,15 @@ import org.apache.log4j.*;
 /**
  * InterdomainPathfinder finds paths in the interdomainRoutes table of the
  * database. It does so by matching a given path (or the source and destination
- * if nor hops are given) to an entry in the database. It can match such requests 
- * at the domain, node, port, or link level. It can also accept paths that contain 
+ * if nor hops are given) to an entry in the database. It can match such requests
+ * at the domain, node, port, or link level. It can also accept paths that contain
  * not only link-id but also domain-ids, node-ids, and port-ids.
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
 public class InterdomainPathfinder extends Pathfinder implements PCE {
     private Logger log;
-    
+
     /**
      * Constructor
      *
@@ -40,38 +41,39 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         super(dbname);
         this.log = Logger.getLogger(this.getClass());
     }
-    
+
     /**
-     * Finds an interdomain path given path information from a 
+     * Finds an interdomain path given path information from a
      * createReservation request.
      *
      * @param pathInfo PathInfo instance containing current set of interdomain hops
      * @return a path containing the ingress and egress of the local domain
      * @throws PathfinderException
      */
-    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException{
+    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException{
+
         CtrlPlanePathContent interPath = pathInfo.getPath();
         CtrlPlanePathContent intraPath = null;
         Layer2Info layer2Info = pathInfo.getLayer2Info();
         String src = null;
         String dest = null;
         PathInfo intraPathInfo = new PathInfo();
-        
+
         if(layer2Info != null){
             src = layer2Info.getSrcEndpoint();
-            dest = layer2Info.getDestEndpoint();      
+            dest = layer2Info.getDestEndpoint();
         }else{
            this.reportError("Layer 2 path information must be provided for " +
             "this IDC.");
         }
-        
+
         if(interPath == null || interPath.getHop() == null){
             /* Create path with only src and dest in it */
             interPath = new CtrlPlanePathContent();
             interPath.setId("path-" + System.currentTimeMillis());
             CtrlPlaneHopContent srcHop = new CtrlPlaneHopContent();
             CtrlPlaneHopContent destHop = new CtrlPlaneHopContent();
-            
+
             srcHop.setId("src");
             destHop.setId("dest");
             srcHop.setLinkIdRef(src);
@@ -84,7 +86,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             /* verify the given LIDP is valid */
             this.verifyPath(src, dest, interPath);
         }
-        
+
         /* build new LIDP from existing LIDP */
         try{
             intraPath = this.buildNewPath(pathInfo);
@@ -92,24 +94,24 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         }catch(BSSException e){
             this.reportError(e.getMessage());
         }
-        
+
         this.log.info("Path Type: " + pathInfo.getPathType());
         for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
             this.log.info(pathInfo.getPath().getHop()[i].getLinkIdRef());
         }
-        
+
         return intraPathInfo;
     }
-    
+
     /**
      * Builds an interdomain path and stores it in the interdomain request
      *
      * @param pathInfo the PathInfo element from a createReservation request
      * @return a path containing the ingress and egress for this domain
      */
-    private CtrlPlanePathContent buildNewPath(PathInfo pathInfo) 
+    private CtrlPlanePathContent buildNewPath(PathInfo pathInfo)
         throws PathfinderException, BSSException{
-        
+
         CtrlPlanePathContent currPath = pathInfo.getPath();
         CtrlPlanePathContent newPath = new CtrlPlanePathContent();
         CtrlPlaneHopContent[] currHops = currPath.getHop();
@@ -128,7 +130,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         Link ingressLink = null;
         boolean oneLocalHop = false;
         boolean onlyLocal = true;
-        
+
         /* Copy each hop until reach egress or the last hop (destination) */
         for(int i = 0; i < currHops.length; i++){
             CtrlPlaneHopContent currHop = currHops[i];
@@ -139,7 +141,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             String linkIdURN = currHop.getLinkIdRef();
             String[] componentList = null;
             currHopIndex = i;
-            
+
             if(linkIdURN != null){
                 componentList = this.splitURN(linkIdURN, TopologyUtil.LINK_URN);
                 newHop.setLinkIdRef(linkIdURN);
@@ -153,13 +155,13 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
                 newHop.setNodeIdRef(nodeIdURN);
                 currHopURN = nodeIdURN;
             }else if(domainIdURN != null){
-                componentList = this.splitURN(domainIdURN, TopologyUtil.DOMAIN_URN);               
+                componentList = this.splitURN(domainIdURN, TopologyUtil.DOMAIN_URN);
                 newHop.setDomainIdRef(domainIdURN);
                 currHopURN = domainIdURN;
             }else{
-                this.reportError("Empty hop in provided path"); 
+                this.reportError("Empty hop in provided path");
             }
-            
+
             isLocal = domainDAO.isLocal(componentList[3]);
             if(isLocal && ingressFound){
                 egressURN = currHopURN;
@@ -178,11 +180,11 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             }else{
                 onlyLocal = false;
             }
-            
+
             newHop.setId("hop");
             newPath.addHop(newHop);
         }
-        
+
         /* If strict or local path return local ingress and egress  */
         if(onlyLocal){
             pathInfo.setPathType("strict");
@@ -198,7 +200,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         /* If loose path given find ingress... */
         if(ingressURN == null){
             ingressLink = this.findIngressFromPrevEgress(currHopURN, domainDAO);
-            ingressURN = this.urnFromLink(ingressLink);     
+            ingressURN = this.urnFromLink(ingressLink);
         }else if(ingressIndex > 0){
             String prevEgressURN = currHops[ingressIndex - 1].getLinkIdRef();
             ingressLink = this.findIngressFromPrevEgress(prevEgressURN,
@@ -211,10 +213,10 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         ingressHop.setLinkIdRef(ingressURN);
         newPath.addHop(ingressHop);
         intraPath.addHop(ingressHop);
-        
+
         /* ...then find egress */
         if(egressURN == null || (!egressURN.equals(currHopURN))){
-            RouteElem route = this.lookupRoute(ingressLink, egressURN, 
+            RouteElem route = this.lookupRoute(ingressLink, egressURN,
                                                currHopURN, oneLocalHop);
             newPath = this.addNewRoute(pathInfo, currHopIndex, currHopURN,
                                         route, newPath);
@@ -230,12 +232,12 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         /* Save new interdomain path */
         newPath.setId("path-" + System.currentTimeMillis());
         pathInfo.setPath(newPath);
-        
+
         return intraPath;
     }
-    
+
     /**
-     * Returns an ingress link given the URN of an egress link. It does so by 
+     * Returns an ingress link given the URN of an egress link. It does so by
      * looking-up the remoteLinkId of the egress link in the database.
      *
      * @param prevEgressURN the urn of the previous domain's egress
@@ -243,28 +245,28 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * @return the ingress link to the domain
      * @throws PathfinderException
      */
-    private Link findIngressFromPrevEgress(String prevEgressURN, 
+    private Link findIngressFromPrevEgress(String prevEgressURN,
         DomainDAO domainDAO) throws PathfinderException{
-        
+
         Link ingressLink = null;
         Link prevDomainEgress = domainDAO.getFullyQualifiedLink(prevEgressURN);
         if(prevDomainEgress == null){
             this.reportError("Path contains hops from previous domain " +
-                "that are unknown to this domain or are not fully " + 
-                "qualified. Please replace the hop containing " + 
+                "that are unknown to this domain or are not fully " +
+                "qualified. Please replace the hop containing " +
                 prevEgressURN + " with a known fully-qualified link ID.");
         }
-        
+
         ingressLink = prevDomainEgress.getRemoteLink();
         if(ingressLink == null){
             this.reportError("Could not locate the remote link of " +
                 prevEgressURN + ". Unable to find and verify local" +
                 " ingress.");
         }
-        
+
         return ingressLink;
     }
-    
+
     /**
      * Looks-up a route in the database given the ingress, egress, and next hop
      *
@@ -276,10 +278,10 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * @throws PathfinderException
      * @throws BSSException
      */
-    private RouteElem lookupRoute(Link ingressLink, String egressURN, 
-        String nextHopURN, boolean oneLocalHop) 
+    private RouteElem lookupRoute(Link ingressLink, String egressURN,
+        String nextHopURN, boolean oneLocalHop)
         throws PathfinderException, BSSException{
-       
+
         RouteElem route = null;
         Link egressLink = null;
         InterdomainRouteDAO routeDAO = new InterdomainRouteDAO(this.dbname);
@@ -313,14 +315,14 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
 
         /* Check that first hop is a link-id */
         if(egressLink == null){
-            this.reportError("Error with routing tables. " + 
-                "Domain egress to " + nextHopURN + " is not a link id. " + 
+            this.reportError("Error with routing tables. " +
+                "Domain egress to " + nextHopURN + " is not a link id. " +
                 "Please contact the IDC administrator.");
         }
-        
+
         return route;
     }
-    
+
     /**
      * Adds given route to the interdomain path and sets whether the new path
      * is strict or loose.
@@ -335,9 +337,9 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * @throws BSSException
      */
     private CtrlPlanePathContent addNewRoute(PathInfo pathInfo, int hopIndex,
-        String nextHopURN, RouteElem route, CtrlPlanePathContent newPath) 
+        String nextHopURN, RouteElem route, CtrlPlanePathContent newPath)
         throws PathfinderException, BSSException{
-       
+
         CtrlPlaneHopContent[] currHops = pathInfo.getPath().getHop();
         Link egressLink = route.getLink();
         Link nextHopLink = null;
@@ -348,7 +350,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         int lastHopType = 0;
         String dest = currHops[currHops.length - 1].getLinkIdRef();
         String routeType = route.isStrict() ? "strict" : "loose";
-        
+
         /* Add all the hops to the path */
         while(route != null){
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
@@ -357,7 +359,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             Port port = route.getPort();
             Link link = route.getLink();
             String urn = "";
-            
+
             if(link != null){
                 urn = this.urnFromLink(link);
                 hop.setLinkIdRef(urn);
@@ -371,18 +373,18 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
                 urn = this.urnFromDomain(domain);
                 hop.setDomainIdRef(urn);
             }else{
-                this.reportError("Invalid hop in route. Please ask the IDC " + 
+                this.reportError("Invalid hop in route. Please ask the IDC " +
                     "administrator to check their routing tables");
             }
             lastDomain = TopologyUtil.getURNDomainId(urn);
             lastHopType = TopologyUtil.getURNType(urn);
-            
+
             hop.setId("hop");
             newPath.addHop(hop);
             route = route.getNextHop();
             hopCount++;
         }
-        
+
         /* add remoteLink if one hop and remoteLink exists */
         nextHopLink = egressLink.getRemoteLink();
         if(hopCount == 1 && nextHopLink != null){
@@ -396,7 +398,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             lastDomain = nextHopLink.getPort().getNode()
                                     .getDomain().getTopologyIdent();
         }
-        
+
         /* add next hop if its the destination or a different domain than last
            hop in path looked up */
         if(dest.equals(nextHopURN)){
@@ -415,10 +417,10 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         for(int i = (hopIndex + 1); i < currHops.length; i++){
             newPath.addHop(currHops[i]);
         }
-        
+
         return newPath;
     }
-    
+
     /**
      * Verifies a given path is valid
      *
@@ -427,13 +429,13 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * @param interPath a createReservation request's given path
      * @throws PathfinderException
      */
-    private void verifyPath(String src, String dest, 
+    private void verifyPath(String src, String dest,
         CtrlPlanePathContent interPath) throws PathfinderException{
-        
+
         CtrlPlaneHopContent[] hops = interPath.getHop();
         String firstHop = hops[0].getLinkIdRef();
         String lastHop = hops[hops.length - 1].getLinkIdRef();
-        
+
         if(firstHop == null || lastHop == null){
             this.reportError("The first and last hop of the given path must " +
                 "be a link ID reference.");
@@ -446,11 +448,11 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
             "the destination. The destination given was " + dest + " and the" +
             "last hop of the provided path is " + lastHop);
         }
-        
+
     }
-    
+
     /**
-     * Splits a given URN into String array after verifying its of the 
+     * Splits a given URN into String array after verifying its of the
      * expected type
      *
      * @param urn the urn to split
@@ -458,12 +460,12 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * @return a String array of the URN's components
      * @throws PathfinderException
      */
-    private String[] splitURN(String urn, int partCount) 
+    private String[] splitURN(String urn, int partCount)
         throws PathfinderException{
-        
+
         String[] componentList = urn.split(":");
         String refType = "link";
-        
+
         if(partCount == TopologyUtil.DOMAIN_URN){
             refType = "domain";
         }else if(partCount == TopologyUtil.NODE_URN){
@@ -471,15 +473,15 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         }else if(partCount == TopologyUtil.PORT_URN){
             refType = "port";
         }
-        
+
         if(componentList.length != partCount){
             this.reportError("Invalid " + refType + " ID reference given in " +
                 "provided path. The URN that caused the error is " + urn);
         }
-        
+
         return componentList;
     }
-    
+
     /**
      * Generates a URN from a given Link
      *
@@ -492,7 +494,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         urn += ":link=" + link.getTopologyIdent();
         return urn;
     }
-    
+
     /**
      * Generates a URN from a given Port
      *
@@ -502,10 +504,10 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
     private String urnFromPort(Port port){
         Node node = port.getNode();
         String urn = this.urnFromNode(node);
-        urn += ":port=" + port.getTopologyIdent(); 
+        urn += ":port=" + port.getTopologyIdent();
         return urn;
     }
-    
+
     /**
      * Generates a URN from a given Node
      *
@@ -518,7 +520,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         urn += ":node=" + node.getTopologyIdent();
         return urn;
     }
-    
+
     /**
      * Generates a URN from a given Domain
      *
@@ -530,7 +532,7 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         urn += "domain=" + domain.getTopologyIdent();
         return urn;
     }
-    
+
     /**
      * Matches a URN to a given link and returns the link's URN. If URN is a
      * domain,node, or port ID then it is only matched to the level of the
@@ -542,24 +544,24 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
      * @throws PathfinderException
      *
      */
-    private String matchURNToLink(String urn, Link link) 
+    private String matchURNToLink(String urn, Link link)
         throws PathfinderException{
-        
+
         String linkURN = this.urnFromLink(link);
         String[] urnCompList = urn.split(":");
         String[] linkCompList = urn.split(":");
-        
+
         for(int i = 0; i < urnCompList.length; i++){
             if(!linkCompList[i].equals(urnCompList[i])){
-                this.reportError("The given ingress URN " + urn + 
-                    " does not match the remote link of the previous " + 
+                this.reportError("The given ingress URN " + urn +
+                    " does not match the remote link of the previous " +
                     "domain's egress hop. The hop should match " + linkURN);
             }
         }
-        
+
         return linkURN;
     }
-    
+
     /**
      * Reports an error
      *

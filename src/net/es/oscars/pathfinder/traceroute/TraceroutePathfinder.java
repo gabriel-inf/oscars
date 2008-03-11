@@ -12,6 +12,7 @@ import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.bss.Reservation;
 
 /**
  * TraceroutePathfinder performs traceroutes to find a layer 3 path from
@@ -37,7 +38,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
      * @return boolean indicating ERO was not used
      * @throws PathfinderException
      */
-    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException {
+    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
 
         List<String> hops = null;
         List<String> reverseHops = null;
@@ -125,14 +126,14 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
             ctrlPlanePath.addHop(ctrlPlaneHop);
         }
         // throw error if no local path found
-        if (!hopFound) { 
+        if (!hopFound) {
             throw new PathfinderException("No local hops found in path");
         }
         this.log.debug("pathFromHops.finish");
         return ctrlPlanePath;
     }
 
-    
+
     /**
      * Given sections of a traceroute, eliminate duplicates and build complete
      * list of hops.  Some of the sections may be null.  Note that there are
@@ -167,7 +168,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         this.log.debug("stitch.end");
         return completeHops;
     }
-    
+
     /**
      * Performs traceroute.
      *

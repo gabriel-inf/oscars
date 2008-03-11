@@ -8,7 +8,7 @@ import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.PathInfo;
-
+import net.es.oscars.bss.Reservation;
 
 /**
  * This class contains methods for handling PCE's (path computation elements)
@@ -34,7 +34,7 @@ public class PCEManager {
      * @return local path used for resource scheduling
      * @throws PathfinderException
      */
-    public PathInfo findPath(PathInfo pathInfo) throws PathfinderException {
+    public PathInfo findPath(PathInfo pathInfo, Reservation reservation) throws PathfinderException {
 
         this.log.info("PCEManager.findPath.start");
         String pathMethod = this.getPathMethod();
@@ -45,12 +45,12 @@ public class PCEManager {
             pathMethod = "overlay";
         }
         this.log.info("pathfinder method is " + pathMethod);
-        if (pathMethod == null) { 
+        if (pathMethod == null) {
             return null;
         }
-        this.pathfinder = 
+        this.pathfinder =
             new PathfinderFactory().createPathfinder(pathMethod, this.dbname);
-        PathInfo intraPath = this.pathfinder.findPath(pathInfo);
+        PathInfo intraPath = this.pathfinder.findPath(pathInfo, reservation);
         this.log.info("PCEManager.findPath.end");
         return intraPath;
     }
