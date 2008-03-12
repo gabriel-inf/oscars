@@ -1,20 +1,23 @@
-import net.es.oscars.bss.topology.*;
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.database.Initializer;
+import net.es.oscars.*;
+import net.es.oscars.pathfinder.*;
+import net.es.oscars.pathfinder.db.*;
 import net.es.oscars.pathfinder.db.util.*;
+import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.database.*;
+import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.*;
+
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 
 import org.hibernate.*;
-import org.hibernate.Transaction;
-
 import org.hibernate.cfg.*;
 
 import org.jgrapht.alg.*;
-
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import java.io.*;
-
 import java.util.*;
 
 
@@ -26,6 +29,71 @@ public class DBPFClient {
         String end;
         String usage = "Usage:\ndbPfClient.sh\n";
 
+
+        DBPathfinder dbpf = new DBPathfinder("bss");
+
+        Reservation reservation = new Reservation();
+        reservation.setBandwidth(1000000000L);
+
+
+        // set up path
+        PathInfo pathInfo = new PathInfo();
+
+        // Layer 2 stuff
+        Layer2Info layer2Info = new Layer2Info();
+        layer2Info.setSrcEndpoint("");
+        layer2Info.setDestEndpoint("");
+
+        VlanTag srcVtag = new VlanTag();
+        srcVtag.setString("any");
+        srcVtag.setTagged(true);
+        layer2Info.setSrcVtag(srcVtag);
+        VlanTag destVtag = new VlanTag();
+        destVtag.setString("any");
+        destVtag.setTagged(true);
+        layer2Info.setDestVtag(destVtag);
+
+        pathInfo.setLayer2Info(layer2Info);
+
+
+
+        CtrlPlanePathContent path = new CtrlPlanePathContent();
+        path.setId("userPath");
+        ArrayList<String> hops = new ArrayList<String>();
+        hops.add("urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*");
+        hops.add("urn:ogf:network:domain=es.net:node=wash-cr1:port=xe-3/1/0:link=*");
+        hops.add("urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet1/3:link=*");
+/*
+                urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
+                urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101
+                urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101
+                urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet1/3:link=*
+  */
+
+        for (String hopId : hops) {
+            CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+            hop.setLinkIdRef(hopId);
+            path.addHop(hop);
+        }
+        pathInfo.setPath(path);
+        pathInfo.setPathType("");
+
+
+        PathInfo result = null;
+        try {
+            result = dbpf.findPath(pathInfo, reservation);
+        } catch (Exception ex) {
+            System.out.println("Error: "+ex.getMessage());
+        }
+
+        path = result.getPath();
+        CtrlPlaneHopContent[] resultHops = path.getHop();
+        for (CtrlPlaneHopContent hop : resultHops) {
+            System.out.println(hop.getLinkIdRef());
+        }
+
+
+        /*
         DBGraphAdapter dbga = new DBGraphAdapter("bss");
 
         List<String> dbnames = new ArrayList<String>();
@@ -52,8 +120,15 @@ public class DBPFClient {
 
         start = "urn:ogf:network:es.net:albu-cr1:xe-3/0/0:*";
         end = "urn:ogf:network:es.net:atla-cr1:xe-3/0/0:*";
+//        ameslab-rt1:ge-1/1/0 & probably snll-mr1:ge 4/3
+
+        start = "urn:ogf:network:es.net:ameslab-rt1:ge-1/1/0:*";
+        end = "urn:ogf:network:es.net:snll-mr1:TenGigabitEthernet4/3:*";
 
         doPf(start, end, graph);
+
+
+        */
 /*
         start = "urn:ogf:network:es.net:atla-cr1:xe-4/1/0:*";
         end = "urn:ogf:network:es.net:lbl-mr1:TenGigabitEthernet1/1:*";
