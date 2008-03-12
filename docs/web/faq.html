@@ -35,6 +35,7 @@ SESSIONS.ser</a><br>
 <div style="margin-left: 40px;"><a href="#valid_certification_path">Unable
 to find a valid certification path</a>
 <br>
+<a href="#timestamp_failed">timestamp failed</a><br>
 </div>
 <br>
 <br>
@@ -93,13 +94,14 @@ and its required classes.</li>
 <br>
 </span>I get the following error when Tomcat is shut down.<br>
 <br>
-[ERROR] org.apache.catalina.session.ManagerBase -&nbsp; IOException
+<code>[ERROR] org.apache.catalina.session.ManagerBase -&nbsp;
+IOException
 while saving persisted sessions: java.io.FileNotFoundException:
 /usr/local/apache-tomcat-5.5.25/work/Catalina/localhost/axis2/SESSIONS.ser
 (No such file or directory)<br>
 java.io.FileNotFoundException:
 /usr/local/apache-tomcat-5.5.25/work/Catalina/localhost/axis2/SESSIONS.ser
-(No such file or directory)<br>
+(No such file or directory)</code><br>
 <br>
 Uncomment out the last line in conf/context.xml<br>
 <br>
@@ -132,30 +134,59 @@ I am trying to test the service interface from a
 client on the server machine. I am using the server url of
 https://localhost:8443/axis2/services/OSCARS and get the following
 error:<br>
-- I/O exception (org.apache.axis2.AxisFault) caught when processing
+<code>- I/O exception (org.apache.axis2.AxisFault) caught when
+processing
 request: sun.security.validator.ValidatorException: PKIX path building
 failed: sun.security.provider.certpath.SunCertPathBuilderException:
-unable to find valid certification path to requested target<br>
+unable to find valid certification path to requested target</code><br>
 <br>
 If you configure your server to listen on an http port as well as https
 you can test it using plain http. See conf/server.xml to configure the
 ports on which Tomcat is listening.</div>
 <p style="margin-left: 40px;">
-For SSL to work, the CN in the certificate that is in Tomcat's keystore
+For SSL to work, the issuer of the certificate that is in Tomcat's
+keystore
 (defined
-in conf/server.xml) must match the name of the host on which Tomcat is
-running
-and the certificate of the issuer of that certificate must be in the
+in conf/server.xml) must be in the
 client's
 repo/ssl-keystore.jks. If you are using a self-signed certificate for
 Tomcat
-that certificate must be in repo/ssl-keystore.jks. You can use keytool
+the certificate itself must be in repo/ssl-keystore.jks. You can use
+keytool
 to export
 the certificate from Tomcat's keystore and import it into the client
 ssl-keystore.
 Use keytool -help to tell you how to do this. <br>
 </p>
-<h2><a name="Web_Interface"></a>Web Interface</h2>
+<p style="margin-left: 40px; font-weight: bold;"><a
+ name="timestamp_failed"></a>org.apache.ws.security.WSSecurityException:
+General security error (Error during certificate path validation:
+timestamp check failed)<br>
+</p>
+<p style="margin-left: 40px; font-weight: bold;"><span
+ style="font-weight: normal;">I get the the following error when trying
+to connect to an OSCARS web service<br>
+</span></p>
+<p style="margin-left: 40px;"><code>hopishib.internet2.edu:8443/axis2/services/OSCARSWSHandler:
+Certificate path verification failed for certificate with subject
+CN=oscars/oscars-dev.es.net, OU=Services, DC=doegrids, DC=org; nested
+exception is:
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+org.apache.ws.security.WSSecurityException: General security error
+(Error during certificate path validation: timestamp check failed);
+nested exception is:
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+java.security.cert.CertPathValidatorException: timestamp check failed
+</code><br>
+</p>
+<p style="margin-left: 40px;">Check to see if the certificate for the
+issuer for the offending certificate is expired in the <br>
+shared/classes/sec-security.jks keystore for the target web service.<br>
+</p>
+<h2><a style="font-weight: normal;" name="Web_Interface"></a>Web
+Interface</h2>
 <h2><a name="Web_Service"></a>Web Service</h2>
 <h2><a name="Error_messages"></a>Error messages</h2>
 <!--#include virtual="footer.html" -->

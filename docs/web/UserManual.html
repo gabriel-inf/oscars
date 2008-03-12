@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>OSCARS User Manual</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="userMan.html">User Manual</a>
+</div>
+</div>
+<h1 style="text-align: center;">User Manual</h1>
+<div style="text-align: center;"><span style="font-style: italic;">OSCARS
+version&nbsp; 0.2.1 Apr 2008<br>
+</span>
+<div style="text-align: left;"><span style="font-style: italic;"></span><br
+ style="font-style: italic;">
+<span style="font-style: italic;"></span></div>
+</div>
+<br>
+<ol id="mozToc">
+<!--mozToc h2 1 h3 2 h4 3 h4 4 h5 5 h6 6--><li><a href="#mozTocId130537">Introduction</a></li>
+  <li><a href="#mozTocId916500">Web server interface</a>
+    <ol>
+      <li><a href="#mozTocId592309">login</a></li>
+      <li><a href="#mozTocId930716">create reservation</a></li>
+      <li><a href="#mozTocId364336">list reservation</a></li>
+      <li><a href="#mozTocId323456">reservation&nbsp; details</a></li>
+      <li><a href="#mozTocId712078">user profile</a></li>
+      <li><a href="#mozTocId76900">user list</a></li>
+      <li><a href="#mozTocId911851">add user</a></li>
+    </ol>
+  </li>
+</ol>
+<h2><a class="mozTocH2" name="mozTocId130537"></a>Introduction</h2>
+The OSCARS Ineterdomain Controller (IDC) allows end users to reserve
+high priority bandwidth between two hosts. The hosts may both be part
+of the same ISP domain, or may be on different domains if each of ISPs
+between the two hosts are running co-operating IDCs.
+<p>There are two interfaces provided by the IDC: a forms based web
+server
+interface (WBUI) and a web services SOAP message interface (API). Both
+are secured interfaces and require the user to be registered and
+authorized by the ISP at which the reservation starts. Individual
+authorization at subsequent ISPs is not required. Both interfaces
+allow the user to make, query, list, modify and delete reservations. In
+addition, the WBUI allows an administrator to add, authorize, and
+manage users, and the user to modify his user profile.
+</p>
+<h2><a class="mozTocH2" name="mozTocId916500"></a>Web server interface</h2>
+<h3><a class="mozTocH3" name="mozTocId592309"></a>login</h3>
+Before you can access the server you must login using the user name
+that you were given by the domain administrator and your password.
+OCSARS will then issue a cookie to your browser that will keep you
+authenticated for <span style="color: rgb(204, 0, 0);">NN</span>&nbsp;
+hours. Once you are logged in, you will see a row of tabs from which
+you can select the desired action.&nbsp; <br>
+<br>
+The parts of the WBUI that you will see depends on what authorizations
+you have. A normal OSCARS-user will only be able to create a
+reservation, list and see the details of his own reservations and
+modify his own profile. More privileged users, e.g. OSCARS-engineers
+and operators can see all the reservations. Users with admin
+privileges, OSCARS-Administrator can add and authorize new users and
+modify and delete users. See <a
+ href="file:///Users/mrt/Documents/eclipseWS/Trunk/docs/web/authorizationPolicy.html">Authorization
+Policy</a> for more
+information about the different levels of privileges.<br>
+<h3><a class="mozTocH3" name="mozTocId930716"></a>create reservation</h3>
+Allows the creation of&nbsp; new reservation. Reservations can be made
+at&nbsp; network layer 3 only between hosts that are within ESnet.
+Layer 2 specifications must be used for all interdomain
+reservations.&nbsp; <br>
+Note that ISPs use both <span style="font-style: italic;">abstract
+topology</span> node names and <span style="font-style: italic;">acutal
+topology</span> node names. Only abstract topology names will be seen
+outside the ISP, so a user will always be dealing with the abstract
+names. The actual hosts that will be used may vary and there may be
+multiple hosts between two abstract hops.<br>
+<br>
+Hops are specified using the <span style="font-style: italic;">topology
+identifier</span> defined by the Open Grid
+Forum (OGF) Network Measurement Working Group (NMWG) control plane
+topology schema. A topology identifier is a URN that may consist of as
+many as four hierarchical componets: domain:node:port:link. See <a
+ href="file:///Users/mrt/Documents/eclipseWS/Trunk/docs/web/tss.html">Topology
+components notes</a> for more about the topology naming scheme.<br>
+<br>
+<span style="font-weight: bold;">Layer 3 parameters</span><br>
+<ul>
+  <li>Source and host destinations may be specified by a DNS host name
+or an IP address. <br>
+  </li>
+  <li>The path need not be specified since it is entirely within ESnet
+and the IDC will caculate a shortest path between the two hosts.
+If&nbsp; hosts have multiple connections to ESnet you may specify a
+ingress or egress router.</li>
+  <li>Source port - the port on the source host from which the data
+will orginate.</li>
+  <li>Destination port - the port on the destination host to which the
+data will be delivered</li>
+  <li>Protocol - If you specify the protocol your data will be using,
+e.g. udp/tcp, ESnet can police the curcuit for that traffic and limit
+it to your reserved bandwidth.</li>
+  <li>DSCP (Differentiated service code point)&nbsp; is essentially QoS
+bits. Currently BNL's Terapaths sets the DSCP code point so that it can
+indicate to ESnet which flow (out of a bunch) that have the same
+src/dst will use the L3 circuit.<br>
+  </li>
+</ul>
+<span style="font-weight: bold;">Layer 2 parameters</span><br>
+<ul>
+  <li>Source and host destinations are specified as topology
+identifiers. They are the router port/link at which the data will enter
+and leave the ISPs. For example:<br>
+    <div style="margin-left: 40px;"><small style="font-weight: bold;">source:</small><code>
+urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
+    </code><br>
+    <small style="font-weight: bold;"> destination:</small> <code>urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1</code></div>
+    <br>
+There is a lookup service under development for hosts that will return
+the domain/node/port/link urn to which they connect. </li>
+  <li>Path is specified by a list of topology identifiers. For now at
+least the ingress and egress routers for each domain that is traversed
+must be input. The hops that you specify are a considered a <span
+ style="font-style: italic;">Loose Interdomain Path (LIDP)</span> are
+are taken as suggestions. If they are not available, other nodes&nbsp;
+may be substituted. By the time the path has been passed through all
+the domains, an ingress and egress router for each node will have been
+added and the path becomes a <span style="font-style: italic;">Strict
+Interdomain Path (SIDP). </span>The path that is stored with the
+reservation and displayed by the reservation details page is a
+confirmed (all the resources have been reserved) SIDP. For example the
+hops for the previous source and destinations are:<br>
+    <pre><span style="font-weight: bold;">    path:</span><br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*<br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet4/3:link=*<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.189-103:link=1<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1<br></pre>
+Note that the first and last hops are the same as the source and
+destination hosts.<br>
+    <br>
+  </li>
+  <li>VLAN is a tag chosen by the user, but if that tag is already in
+use it may be rejected and cause the reservation to fail. A VLAN tag
+allows a user to tie a certain vlan (or sub-interface) on a port to the
+transit circuit. Untagged circuits, essentially tie the entire port (or
+interface) to the transit circuit. Tagging allows multiplexing multiple
+VLANs over the same physical port and therefore servicing more then one
+partial reservation (e.g. VLAN3000 = 5Gb/s, VLAN3001 = 2.5Gb/s,
+VLAN3002 = 2.5Gb/s on a 10Gb/s link). Vtags should be choosen in the
+3K-4K range.<br>
+  </li>
+</ul>
+<h3>Common parameters</h3>
+<ul>
+  <li>Bandwidth - maximum bandwidth to reserve in Mbps</li>
+  <li>Purpose - stored with your reservation as part of our records.</li>
+  <li>Production circuit - check this box only if the reservation is to
+be used for moving production level data.The circuits used by these
+reservations will be monitored by the Network Operators and if they go
+down efforts will be made to fix the problems as quickly as possible,
+or to reroute the traffic.</li>
+  <li>Start date, Start time - the values default to the current time.
+Type in new values in the format shown.</li>
+  <li>End date, End time - the values default to 4 minutes from the
+current time. Type in new values in the format shown.</li>
+</ul>
+<h3><a class="mozTocH3" name="mozTocId364336"></a>list reservation</h3>
+<h3><a class="mozTocH3" name="mozTocId323456"></a>reservation&nbsp;
+details</h3>
+<h3><a class="mozTocH3" name="mozTocId712078"></a>user profile</h3>
+User with administration privileges will also see the following two
+tabs:<br>
+<h3><a class="mozTocH3" name="mozTocId76900"></a>user list</h3>
+<h3><a class="mozTocH3" name="mozTocId911851"></a>add user</h3>
+<br>
+<p><br>
+</p>
+<p><!--#include virtual="footer.html" -->
+</p>
+</body>
+</html>
