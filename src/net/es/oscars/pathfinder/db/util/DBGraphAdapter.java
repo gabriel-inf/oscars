@@ -3,6 +3,7 @@ package net.es.oscars.pathfinder.db.util;
 import java.util.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
@@ -37,21 +38,37 @@ public class DBGraphAdapter {
 
     }
 
-    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth) {
+    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth, Long startTime, Long endTime) {
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
         this.sf.getCurrentSession().beginTransaction();
+
         DomainDAO domainDAO = new DomainDAO(this.dbname);
-        /*
-        NodeDAO nodeDAO = new NodeDAO(this.dbname);
-        PortDAO portDAO = new PortDAO(this.dbname);
-        LinkDAO linkDAO = new LinkDAO(this.dbname);
-        */
+
+
+        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+        ArrayList<Reservation> reservations = new ArrayList<Reservation>(resvDAO.overlappingReservations(startTime, endTime));
+        HashMap<Port, Long> portRsvBw = new HashMap<Port, Long>();
+        for (Reservation resv : reservations) {
+            Long bw = resv.getBandwidth();
+            Path path = resv.getPath();
+            PathElem pathElem = path.getPathElem();
+            while (pathElem != null) {
+                Link link = pathElem.getLink();
+                Port port = link.getPort();
+                if (portRsvBw.containsKey(port)) {
+                    bw = bw + portRsvBw.get(port);
+                    portRsvBw.put(port, bw);
+                } else {
+                    portRsvBw.put(port, bw);
+                }
+                pathElem = pathElem.getNextElem();
+            }
+        }
+
 
         DefaultWeightedEdge edge;
-
-
 
         Domain dom = domainDAO.fromTopologyIdent(this.localDomain);
         Iterator nodeIt = dom.getNodes().iterator();
@@ -70,7 +87,12 @@ public class DBGraphAdapter {
                 if (!port.isValid()) {
                     continue;
                 }
-                if (bandwidth > 0 && port.getCapacity() < bandwidth) {
+
+                Long portCapacity = port.getCapacity();
+                Long reservedCapacity = portRsvBw.get(port);
+                Long remainingCapacity = portCapacity - reservedCapacity;
+
+                if (bandwidth > 0 && remainingCapacity < bandwidth) {
                     continue;
                 }
 
@@ -132,11 +154,7 @@ public class DBGraphAdapter {
 
 
     double parseTEM(String trafficEngineeringMetric) {
-        double weight = 0d;
-        String[] elems = trafficEngineeringMetric.split(":");
-        if (elems[0].trim().equals("weight")) {
-            weight = new Double(elems[1].trim()).doubleValue();
-        }
+        double weight = new Double(trafficEngineeringMetric).doubleValue();
         return weight;
     }
 

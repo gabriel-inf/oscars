@@ -93,7 +93,10 @@ public class DBPathfinder extends Pathfinder implements PCE {
         System.out.println("handleLayer2ERO.start");
 
         Domain domain = domDAO.getLocalDomain();
+
         Long bandwidth = reservation.getBandwidth();
+        Long startTime = reservation.getStartTime();
+        Long endTime = reservation.getEndTime();
 
         CtrlPlanePathContent ero = pathInfo.getPath();
         CtrlPlaneHopContent[] hops = ero.getHop();
@@ -156,7 +159,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             String src = localLinkIds.get(i);
             String dst = localLinkIds.get(i+1);
             System.out.println("Finding path between: ["+src+"] ["+dst+"] bw: "+bandwidth);
-            Path segmentPath = findPathBetween(src, dst, bandwidth);
+            Path segmentPath = findPathBetween(src, dst, bandwidth, startTime, endTime);
             if (segmentPath == null) {
                 throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
             } else {
@@ -169,7 +172,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (lastLocalHopIndex < hops.length - 1) {
             String lastLocalLink = localLinkIds.get(localLinkIndex -1);
             String nextHop = hops[lastLocalHopIndex + 1].getLinkIdRef();
-            Path segmentPath = findPathBetween(lastLocalLink, nextHop, bandwidth);
+            Path segmentPath = findPathBetween(lastLocalLink, nextHop, bandwidth, startTime, endTime);
             localPath = joinPaths(localPath, segmentPath);
             System.out.println("handleEro.foundToNext");
         }
@@ -249,20 +252,20 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
 
 
-    public Path findPathBetween(Link src, Link dst, Long bandwidth)
+    public Path findPathBetween(Link src, Link dst, Long bandwidth, Long startTime, Long endTime)
             throws PathfinderException {
         String srcStr = src.getFQTI();
         String dstStr = dst.getFQTI();
-        return this.findPathBetween(srcStr, dstStr, bandwidth);
+        return this.findPathBetween(srcStr, dstStr, bandwidth, startTime, endTime);
     }
 
-    public Path findPathBetween(String src, String dst, Long bandwidth)
+    public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime)
             throws PathfinderException {
         System.out.println("findPathBetween.start");
 
         Path path = new Path();
 
-        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth);
+        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth, startTime, endTime);
         src = TopologyUtil.parseTopoIdent(src).get("fqti");
         dst = TopologyUtil.parseTopoIdent(dst).get("fqti");
 
@@ -290,14 +293,14 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
             String[] cols = edge.toString().split("\\s\\:\\s");
 
-            // Double weight = graph.getEdgeWeight(edge);
-            // System.out.println(edge);
+            Double weight = graph.getEdgeWeight(edge);
+//            System.out.println(edge);
 
             String topoId = cols[0].substring(1);
             Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(topoId);
             String type = parseResults.get("type");
             if (type.equals("link")) {
-                System.out.println("Adding "+topoId+" edge");
+                System.out.println("Adding "+topoId+" edge "+weight);
                 Link link = domDAO.getFullyQualifiedLink(topoId);
                 pathElem = new PathElem();
                 pathElem.setLink(link);
@@ -313,6 +316,11 @@ public class DBPathfinder extends Pathfinder implements PCE {
         System.out.println("findPathBetween.end");
         return path;
 
+    }
+
+    private Path removeLoops(Path path) {
+        Path newPath = path;
+        return newPath;
     }
 
 
