@@ -25,9 +25,6 @@ public class Ipaddr extends HibernateBean implements Serializable {
     /** persistent field */
     private String IP;
 
-    /** nullable persistent field */
-//    private String description;
-
     /** persistent field */
     private Link link;
 
@@ -62,24 +59,6 @@ public class Ipaddr extends HibernateBean implements Serializable {
     public void setIP(String IP) {
         this.IP = IP;
     }
-
-    /**
-     * @return description a string with this address's description
-     */
-    /*
-    public String getDescription() {
-        return this.description;
-    }
-    */
-
-    /**
-     * @param description a string with this address's description
-     */
-    /*
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    */
 
     /**
      * @return link link instance (association used)
