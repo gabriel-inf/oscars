@@ -12,6 +12,7 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import net.es.oscars.PropHandler;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.bss.Reservation;
 import net.es.oscars.pathfinder.PathfinderException;
 
 /**
@@ -44,9 +45,10 @@ public class TraceroutePathfinderTest {
         layer3Info.setSrcHost(this.props.getProperty("srcHost"));
         layer3Info.setDestHost(this.props.getProperty("destHost"));
         pathInfo.setLayer3Info(layer3Info);
+        Reservation reservation = new Reservation();
         this.sf.getCurrentSession().beginTransaction();
         try {
-            PathInfo intraPath = this.pf.findPath(pathInfo);
+            PathInfo intraPath = this.pf.findPath(pathInfo, reservation);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
@@ -63,9 +65,10 @@ public class TraceroutePathfinderTest {
         layer3Info.setDestHost(this.props.getProperty("destHost"));
         //layer3Info.setIngressNodeIP(this.props.getProperty("ingressNode"));
         pathInfo.setLayer3Info(layer3Info);
+        Reservation reservation = new Reservation();
         this.sf.getCurrentSession().beginTransaction();
         try {
-            PathInfo intraPath = this.pf.findPath(pathInfo);
+            PathInfo intraPath = this.pf.findPath(pathInfo, reservation);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
@@ -82,9 +85,10 @@ public class TraceroutePathfinderTest {
         layer3Info.setDestHost(this.props.getProperty("destHost"));
         //layer3Info.setEgressNodeIP(this.props.getProperty("egressNode"));
         pathInfo.setLayer3Info(layer3Info);
+        Reservation reservation = new Reservation();
         this.sf.getCurrentSession().beginTransaction();
         try {
-            PathInfo intraPath = this.pf.findPath(pathInfo);
+            PathInfo intraPath = this.pf.findPath(pathInfo, reservation);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());
@@ -102,9 +106,10 @@ public class TraceroutePathfinderTest {
         //layer3Info.setIngressNodeIP(this.props.getProperty("ingressNode"));
         //layer3Info.setEgressNodeIP(this.props.getProperty("egressNode"));
         pathInfo.setLayer3Info(layer3Info);
+        Reservation reservation = new Reservation();
         this.sf.getCurrentSession().beginTransaction();
         try {
-            PathInfo intraPath = this.pf.findPath(pathInfo);
+            PathInfo intraPath = this.pf.findPath(pathInfo, reservation);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());

@@ -9,6 +9,7 @@ import org.hibernate.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.bss.Reservation;
 
 /**
  * This class tests methods in PCEManager.java.
@@ -43,9 +44,10 @@ public class PCEManagerTest {
         layer3Info.setSrcHost(this.props.getProperty("srcHost"));
         layer3Info.setDestHost(this.props.getProperty("destHost"));
         pathInfo.setLayer3Info(layer3Info);
+        Reservation reservation = new Reservation();
         this.sf.getCurrentSession().beginTransaction();
         try {
-            PathInfo intraPath = this.pceMgr.findPath(pathInfo);
+            PathInfo intraPath = this.pceMgr.findPath(pathInfo, reservation);
         } catch (PathfinderException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw new PathfinderException(ex.getMessage());

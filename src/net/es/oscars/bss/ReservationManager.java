@@ -347,7 +347,7 @@ public class ReservationManager {
         PathInfo intraPath = null;
 
         try {
-            intraPath = this.pceMgr.findPath(pathInfo);
+            intraPath = this.pceMgr.findPath(pathInfo, resv);
         } catch (PathfinderException ex) {
             throw new BSSException(ex.getMessage());
         }
