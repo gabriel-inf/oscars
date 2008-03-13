@@ -265,7 +265,8 @@ public class VlsrPSS implements PSS{
             if(status.equals(DragonLSP.STATUS_INSERVICE)){
                 this.log.info(gri + " is IN SERVICE");
                 break;
-            }else if(!status.equals(DragonLSP.STATUS_COMMIT) || i == 12){
+            }else if(!(status.equals(DragonLSP.STATUS_COMMIT) || 
+                       status.equals(DragonLSP.STATUS_LISTENING)) || i == 12){
                 this.log.error("Path setup failed. Status=" + lsp.getStatus());
                 resv.setStatus("FAILED");
                 
