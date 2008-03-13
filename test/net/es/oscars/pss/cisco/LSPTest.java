@@ -7,6 +7,7 @@ import java.util.*;
 import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.AuthHandler;
 import net.es.oscars.pss.PSSException;
 
 
@@ -48,6 +49,13 @@ public class LSPTest {
         this.commonHm.put("lsp_reservation-priority",
                 oscarsProps.getProperty("lsp_reservation-priority"));
         this.lsp = new LSP("bss");
+    }
+
+  @Test
+    public void allowedTest() {
+        AuthHandler authHandler = new AuthHandler();
+        boolean authorized = authHandler.checkAuthorization();
+        assert authorized : "You are not authorizated to set up a circuit from this machine";
     }
 
   /*

@@ -15,15 +15,13 @@ import net.es.oscars.database.*;
 /**
  * This class tests exporting the production topology database into the
  * interdomain XML format.  The resulting file is written into /tmp
- * This test runs after all the Hibernate bean tests.
  * The next test run, TopologyXMLFileReaderTest, reads that file into
- * the test database.  All tests in bss (up a directory) use that database to
- * avoid * possible corruption of the production database.
+ * the test database.  Many tests depend on this test, so it belongs to a number
+ * of groups.
  * @author David Robertson (dwrobertson@lbl.gov), Evangelos Chaniotakis (haniotak /at/ es dot net
  */
 
-@Test(groups={ "bss", "bss.topology", "exportTopology" },
-               dependsOnGroups={ "remove" })
+@Test(groups={ "bss", "pathfinder.traceroute", "exportTopology" })
 public class TopologyXMLExporterTest {
     private String dbname;
     private SessionFactory sf;

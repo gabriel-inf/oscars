@@ -75,7 +75,7 @@ public class JnxLSPTest {
     public void allowedTest() {
         AuthHandler authHandler = new AuthHandler();
         boolean authorized = authHandler.checkAuthorization();
-        assert authorized : "You are not authorizated to do a traceroute from this machine";
+        assert authorized : "You are not authorized to set up a circuit from this machine";
     }
 
   @Test(dependsOnMethods={ "allowedTest" })

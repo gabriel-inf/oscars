@@ -11,14 +11,14 @@ import net.es.oscars.database.HibernateUtil;
 
 /**
  * This class updates the test database from a file previously exported
- * from the production database by TopologyXMLExporterTest.  All tests
- * in bss depend on this test.
+ * from the production database by TopologyXMLExporterTest.  Many tests
+ * depend on this test, so it belongs to a number of groups.
  *
  * @author David Robertson (dwrobertson@lbl.gov), Evangelos Chaniotakis (haniotak /at/ es dot net
  */
 
-@Test(groups={ "bss", "bss.topology", "importTopology" }, dependsOnGroups={
-                                                            "exportTopology" })
+@Test(groups={ "bss", "pathfinder.traceroute", "importTopology" },
+               dependsOnGroups={ "exportTopology" } )
 public class TopologyXMLFileReaderTest {
     private SessionFactory sf;
     private String dbname;

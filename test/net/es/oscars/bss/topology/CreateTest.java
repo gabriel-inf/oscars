@@ -16,7 +16,7 @@ import net.es.oscars.bss.BSSException;
  * @author David Robertson (dwrobertson@lbl.gov)
  */
 
-@Test(groups={ "bss", "bss.topology", "create" })
+@Test(groups={ "bss.topology", "create" })
 public class CreateTest {
     private SessionFactory sf;
     private String dbname;

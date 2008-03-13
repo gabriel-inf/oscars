@@ -14,7 +14,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss", "bss.topology", "path" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss.topology", "path" }, dependsOnGroups={ "create" })
 public class PathTest {
     private SessionFactory sf;
     private String dbname;

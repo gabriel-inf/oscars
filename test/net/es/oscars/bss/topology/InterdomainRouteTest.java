@@ -14,7 +14,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss", "bss.topology", "interdomainRoute" },
+@Test(groups={ "bss.topology", "interdomainRoute" },
                dependsOnGroups={ "create" })
 public class InterdomainRouteTest {
     private SessionFactory sf;

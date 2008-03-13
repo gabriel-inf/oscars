@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.io.IOException;
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.AuthHandler;
 import net.es.oscars.pathfinder.PathfinderException;
 
 /**
@@ -14,7 +15,7 @@ import net.es.oscars.pathfinder.PathfinderException;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "pathfinder.traceroute" })
+@Test(groups={ "pathfinder.traceroute", "jnxTraceroute" })
 public class JnxTracerouteTest {
 
     private Properties props;
@@ -26,45 +27,50 @@ public class JnxTracerouteTest {
     }
 
   @Test
-    public void testTraceroute() throws PathfinderException, IOException {
+    public void allowedTest() {
+        AuthHandler authHandler = new AuthHandler();
+        boolean authorized = authHandler.checkAuthorization();
+        assert authorized : "You are not authorized to do a traceroute from this machine";
+    }
+
+  @Test(dependsOnMethods={ "allowedTest" })
+    public void jnxTraceroute() throws PathfinderException, IOException {
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        String ingressRouter = this.props.getProperty("ingressRouter");
+        String ingressNode = this.props.getProperty("ingressNode");
         String pathSrc =
-            jnxTraceroute.traceroute(ingressRouter,
+            jnxTraceroute.traceroute(ingressNode,
                                      this.props.getProperty("destHost"));
         // just tests that traceroute completed
-        assert ingressRouter.equals(pathSrc);
+        assert ingressNode.equals(pathSrc);
     
     }
 
-  @Test
-    public void testRawHopData() throws PathfinderException, IOException {
+  @Test(dependsOnMethods={ "allowedTest" })
+    public void jnxRawHopData() throws PathfinderException, IOException {
         List<String> hops = null;
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        String ingressRouter = this.props.getProperty("ingressRouter");
+        String ingressNode = this.props.getProperty("ingressNode");
         String pathSrc =
-            jnxTraceroute.traceroute(ingressRouter,
+            jnxTraceroute.traceroute(ingressNode,
                                      this.props.getProperty("destHost"));
         // should be at least one hop
         hops = jnxTraceroute.getRawHopData();
-        System.out.println("RawHopData: " + hops);
         assert !hops.isEmpty();
     }
 
-  @Test
-    public void testHopData() throws PathfinderException, IOException {
+  @Test(dependsOnMethods={ "allowedTest" })
+    public void jnxHopData() throws PathfinderException, IOException {
         List<String> hops = null;
         JnxTraceroute jnxTraceroute = new JnxTraceroute();
 
-        String ingressRouter = this.props.getProperty("ingressRouter");
+        String ingressNode = this.props.getProperty("ingressNode");
         String pathSrc =
-            jnxTraceroute.traceroute(ingressRouter,
+            jnxTraceroute.traceroute(ingressNode,
                                      this.props.getProperty("destHost"));
         // should be at least one hop
         hops = jnxTraceroute.getHops();
-        System.out.println("HopData: " + hops);
         assert !hops.isEmpty();
     }
 }

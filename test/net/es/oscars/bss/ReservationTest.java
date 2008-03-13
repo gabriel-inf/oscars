@@ -33,7 +33,7 @@ public class ReservationTest {
     }
 
   @Test
-    public void testReservationCreate() throws BSSException {
+    public void reservationDAOCreate() throws BSSException {
 
         // have to build everything by hand for DAO test
         Reservation resv = new Reservation();
@@ -125,8 +125,8 @@ public class ReservationTest {
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
-  @Test(dependsOnMethods={ "testReservationCreate" })
-    public void testReservationQuery() {
+  @Test(dependsOnMethods={ "reservationDAOCreate" })
+    public void reservationDAOQuery() {
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String description = CommonParams.getReservationDescription();
@@ -136,8 +136,8 @@ public class ReservationTest {
         assert reservation != null;
     }
 
-  @Test(dependsOnMethods={ "testReservationCreate" })
-    public void testReservationAuthList() throws BSSException {
+  @Test(dependsOnMethods={ "reservationDAOCreate" })
+    public void reservationDAOAuthList() throws BSSException {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
@@ -156,8 +156,8 @@ public class ReservationTest {
         assert !reservations.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "testReservationCreate" })
-    public void testReservationUserList() throws BSSException {
+  @Test(dependsOnMethods={ "reservationDAOCreate" })
+    public void reservationDAOUserList() throws BSSException {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
@@ -175,9 +175,9 @@ public class ReservationTest {
         assert !reservations.isEmpty();
     }
   
-  @Test(dependsOnMethods={ "testReservationQuery", "testReservationUserList",
-                           "testReservationAuthList" })
-    public void testReservationRemove() {
+  @Test(dependsOnMethods={ "reservationDAOQuery", "reservationDAOUserList",
+                           "reservationDAOAuthList" })
+    public void reservationDAORemove() {
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String description = CommonParams.getReservationDescription();

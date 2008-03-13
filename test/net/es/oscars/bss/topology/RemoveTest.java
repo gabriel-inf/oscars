@@ -14,7 +14,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss", "bss.topology", "remove" }, dependsOnGroups={
+@Test(groups={ "bss.topology", "remove" }, dependsOnGroups={
     "ipaddr", "link", "port", "node", "nodeAddress", "domain", "mplsData",
     "layer2Data", "layer3Data", "pathElem", "path", "l2SwitchData",
     "routeElem", "interdomainRoute" })

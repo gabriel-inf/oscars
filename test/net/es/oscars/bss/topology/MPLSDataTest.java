@@ -14,7 +14,7 @@ import net.es.oscars.database.HibernateUtil;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss", "bss.topology", "mplsData" }, dependsOnGroups={ "create" })
+@Test(groups={ "bss.topology", "mplsData" }, dependsOnGroups={ "create" })
 public class MPLSDataTest {
     private SessionFactory sf;
     private String dbname;
