@@ -166,6 +166,7 @@ public class TopologyManager {
                 if (savedDomain.equalsTopoId(newDomain)) {
                     found = true;
                     foundDomain = savedDomain;
+                    foundDomain.setLocal(newDomain.isLocal());
                     // here is where we'd overwrite stuff
                     break;
                 }
