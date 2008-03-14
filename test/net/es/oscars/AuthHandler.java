@@ -27,7 +27,9 @@ public class AuthHandler {
             hostsMap.put(allowedHosts[i], null);
         }
         String thisHost = System.getenv("HOST");
-        assert hostsMap.containsKey(thisHost);
+        if (!hostsMap.containsKey(thisHost)) {
+            return false;
+        }
         String usersProp = this.props.getProperty("allowedUsers");
         Map<String,String> usersMap = new HashMap<String,String>();
         String[] allowedUsers = usersProp.split(", ");
