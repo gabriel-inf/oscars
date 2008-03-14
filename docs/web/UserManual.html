@@ -17,7 +17,7 @@
 </div>
 <h1 style="text-align: center;">User Manual</h1>
 <div style="text-align: center;"><span style="font-style: italic;">OSCARS
-version&nbsp; 0.2.1 Apr 2008<br>
+version 0.2.1 Apr 2008<br>
 </span>
 <div style="text-align: left;"><span style="font-style: italic;"></span><br
  style="font-style: italic;">
@@ -28,15 +28,15 @@ version&nbsp; 0.2.1 Apr 2008<br>
 <!--mozToc h2 1 h3 2 h4 3 h4 4 h5 5 h6 6--><li><a href="#mozTocId130537">Introduction</a></li>
   <li><a href="#mozTocId916500">Web server interface</a>
     <ol>
-      <li><a href="#mozTocId592309">login</a></li>
-      <li><a href="#mozTocId930716">create reservation</a></li>
-      <li><a href="#mozTocId364336">list reservation</a></li>
-      <li><a href="#mozTocId323456">reservation&nbsp; details</a></li>
-      <li><a href="#cancel_reservation">cancel reservation</a><br>
+      <li><a href="#mozTocId592309">1. Login</a></li>
+      <li><a href="#mozTocId930716">2. Create Reservation</a></li>
+      <li><a href="#mozTocId364336">3. List Reservation</a></li>
+      <li><a href="#mozTocId323456">4. Reservation Details</a></li>
+      <li><a href="#cancel_reservation">5. Cancel Reservation</a><br>
       </li>
-      <li><a href="#mozTocId712078">user profile</a></li>
-      <li><a href="#mozTocId76900">user list</a></li>
-      <li><a href="#mozTocId911851">add user</a></li>
+      <li><a href="#mozTocId712078">6. User Profile</a></li>
+      <li><a href="#mozTocId76900">7. User List</a></li>
+      <li><a href="#mozTocId911851">8. Add User</a></li>
     </ol>
   </li>
 </ol>
@@ -53,16 +53,23 @@ authorized by the ISP at which the reservation starts. Individual
 authorization at subsequent ISPs is not required. Both interfaces
 allow the user to make, query, list, modify and delete reservations. In
 addition, the WBUI allows an administrator to add, authorize, and
-manage users, and the user to modify his user profile.
+manage users, and the user to modify his user profile.<br>
+</p>
+<p>The ESnet WBUI is accessible at <a
+ href="https://oscars.es.net/OSCARS/">https://oscars.es.net/OSCARS/</a>.
+The I2 WBUI is accessible at <a
+ href="https://ndb3-blmt.abilene.ucaid.edu:8443/OSCARS">https://ndb3-blmt.abilene.ucaid.edu:8443/OSCARS</a>.
+If you are connecting to I2 through an NREN, you will need to contact
+them for the WBUI URL to use.<br>
 </p>
 <h2><a class="mozTocH2" name="mozTocId916500"></a>Web server interface</h2>
-<h3><a class="mozTocH3" name="mozTocId592309"></a><big><big>login</big></big></h3>
+<h3><a class="mozTocH3" name="mozTocId592309"></a><big>1. Login</big></h3>
 Before you can access the server you must login using the user name
 that you were given by the domain administrator and your password.
 OCSARS will then issue a cookie to your browser that will keep you
 authenticated for <span style="color: rgb(0, 0, 0);">8</span> hours.
 Once you are logged in, you will see a row of tabs from which
-you can select the desired action.&nbsp; <br>
+you can select the desired action. <br>
 <br>
 The parts of the WBUI that you will see depends on what authorizations
 you have. A normal OSCARS-user will only be able to create a
@@ -74,12 +81,12 @@ modify and delete users. See <a
  href="file:///Users/mrt/Documents/eclipseWS/Trunk/docs/web/authorizationPolicy.html">Authorization
 Policy</a> for more
 information about the different levels of privileges.<br>
-<h3><a class="mozTocH3" name="mozTocId930716"></a><big><big>create
-reservation</big></big></h3>
-Allows the creation of&nbsp; new reservation. Reservations can be made
-at&nbsp; network layer 3 only between hosts that are within ESnet.
+<h3><a class="mozTocH3" name="mozTocId930716"></a><big>2. Create
+Reservation</big></h3>
+Allows the creation of new reservation. Reservations can be made
+at network layer 3 only between hosts that are within ESnet.
 Layer 2 specifications must be used for all interdomain
-reservations.&nbsp; <br>
+reservations. <br>
 Note that ISPs use both <span style="font-style: italic;">abstract
 topology</span> node names and <span style="font-style: italic;">acutal
 topology</span> node names. Only abstract topology names will be seen
@@ -95,53 +102,36 @@ many as four hierarchical componets: domain:node:port:link. See <a
  href="file:///Users/mrt/Documents/eclipseWS/Trunk/docs/web/tss.html">Topology
 components notes</a> for more about the topology naming scheme.<br>
 <br>
-<span style="font-weight: bold;">Layer 3 parameters</span><br>
+<h3>Common parameters</h3>
 <ul>
-  <li><span style="font-weight: bold;">Source</span> and <span
- style="font-weight: bold;">destination hosts</span> may be specified
-by a DNS host name
-or an IP address. <br>
-  </li>
-  <li>The path need not be specified since it is entirely within ESnet
-and the IDC will caculate a shortest path between the two hosts.
-If&nbsp; hosts have multiple connections to ESnet you may specify a
-ingress or egress router.</li>
-  <li><span style="font-weight: bold;">Source port</span> - the port on
-the source host from which the data
-will orginate.</li>
-  <li><span style="font-weight: bold;">Destination port</span> - the
-port on the destination host to which the
-data will be delivered</li>
-  <li><span style="font-weight: bold;">Protocol </span>- If you
-specify the protocol your data will be using,
-e.g. udp/tcp, ESnet can police the curcuit for that traffic and limit
-it to your reserved bandwidth.</li>
-  <li><span style="font-weight: bold;">DSCP</span> (Differentiated
-service code point)&nbsp; is essentially QoS
-bits. Currently BNL's Terapaths sets the DSCP code point so that it can
-indicate to ESnet which flow (out of a bunch) that have the same
-src/dst will use the L3 circuit.<br>
-  </li>
-</ul>
-<span style="font-weight: bold;">Layer 2 parameters</span><br>
-<ul>
-  <li><span style="font-weight: bold;">Source</span> and <span
- style="font-weight: bold;">destination hosts</span> are specified as
-topology
-identifiers. They are the router port/link at which the data will enter
-and leave the ISPs. For example:<br>
+  <li><span style="font-weight: bold;">Source </span>and <span
+ style="font-weight: bold;">Destination hosts</span> may be specified
+by a DNS host name, IP address or topology link identifier.</li>
+  <li>The following examples uses link identifiers:<br>
     <div style="margin-left: 40px;"><small style="font-weight: bold;">source:</small><code>
 urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
     </code><br>
     <small style="font-weight: bold;"> destination:</small> <code>urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1</code></div>
-    <br>
-There is a lookup service under development for hosts that will return
-the domain/node/port/link urn to which they connect. </li>
+  </li>
   <li><span style="font-weight: bold;">Path </span>is specified by a
-list of topology identifiers. For now at
-least the ingress and egress routers for each domain that is traversed
-must be input. The hops that you specify are a considered a <span
- style="font-style: italic;">Loose Interdomain Path (LIDP)</span> are
+list of topology identifiers for ingress and egress routers. In general
+a path should not be specified except by someone who knows how to
+traffic engineer the
+traffic, and wishes to specify an non-default interdomin peering point,
+e.g. if peering between ESnet/I2 in Sunnyvale is congested, we
+might set ESnet/I2's address in New York to bypass the congestion.
+Setting the routers may change the default path for the data flow. <br>
+  </li>
+  <li>However, currently for layer 2 reservations starting at ESnet
+sites the ingress and egress
+routers for each domain that is traversed
+must be input. <span style="color: rgb(204, 0, 0);">(This may change
+by the time of the April release)</span> <br>
+  </li>
+  <li>The
+hops that you specify are a
+considered a <span style="font-style: italic;">Loose Interdomain Path
+(LIDP)</span> are
 are taken as suggestions. If they are not available, other nodes may be
 substituted. By the time the path has been passed through all
 the domains, an ingress and egress router for each node will have been
@@ -153,23 +143,7 @@ resources have been reserved) SIDP. For example the
 hops for the previous source and destinations are:<br>
     <pre><span style="font-weight: bold;">    path:</span><br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*<br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet4/3:link=*<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.189-103:link=1<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1<br></pre>
 Note that the first and last hops are the same as the source and
-destination hosts.<br>
-    <br>
-  </li>
-  <li><span style="font-weight: bold;">VLAN </span>is a tag chosen by
-the user, but if that tag is already in
-use it may be rejected and cause the reservation to fail. A VLAN tag
-allows a user to tie a certain vlan (or sub-interface) on a port to the
-transit circuit. Untagged circuits, essentially tie the entire port (or
-interface) to the transit circuit. Tagging allows multiplexing multiple
-VLANs over the same physical port and therefore servicing more then one
-partial reservation (e.g. VLAN3000 = 5Gb/s, VLAN3001 = 2.5Gb/s,
-VLAN3002 = 2.5Gb/s on a 10Gb/s link). Vtags should be choosen in the
-3K-4K range.<br>
-  </li>
-</ul>
-<h3>Common parameters</h3>
-<ul>
+destination hosts.</li>
   <li><span style="font-weight: bold;">Bandwidth</span> - maximum
 bandwidth to reserve in Mbps</li>
   <li><span style="font-weight: bold;">Purpose</span> - stored with
@@ -187,17 +161,51 @@ Type in new values in the format shown.</li>
 values default to 4 minutes from the
 current time. Type in new values in the format shown.</li>
 </ul>
-<h3><a class="mozTocH3" name="mozTocId364336"></a><big><big>list
-reservation</big></big></h3>
+<span style="font-weight: bold;">Layer 3 parameters</span><br>
+<ul>
+  <li><span style="font-weight: bold;">Source port</span> - the port on
+the source host from which the data
+will orginate.</li>
+  <li><span style="font-weight: bold;">Destination port</span> - the
+port on the destination host to which the
+data will be delivered</li>
+  <li><span style="font-weight: bold;">Protocol </span>- If you
+specify the protocol your data will be using,
+e.g. UDP/TCP, ESnet can police the curcuit and allow only traffic using
+that protocol to use the reserved bandwidth.</li>
+  <li><span style="font-weight: bold;">DSCP</span> (Differentiated
+service code point) is essentially QoS
+bits. Currently BNL's Terapaths sets the DSCP code point so that it can
+indicate to ESnet which flow (out of a bunch) that have the same
+src/dst will use the L3 circuit.<br>
+  </li>
+</ul>
+<span style="font-weight: bold;">Layer 2 parameters</span> <br>
+<ul>
+  <li><span style="font-weight: bold;">VLAN tag</span> - A VLAN
+tag
+allows a user to tie a certain VLAN (or sub-interface) on a port to the
+transit circuit. Untagged circuits, essentially tie the entire port (or
+interface) to the transit circuit. Tagging allows multiplexing multiple
+VLANs over the same physical port and therefore servicing more then one
+partial reservation (e.g. VLAN3000 = 5Gb/s, VLAN3001 = 2.5Gb/s,
+VLAN3002 = 2.5Gb/s on a 10Gb/s link). Vtags should be choosen in the
+3K-4K range or may be set to "any" , in which case the originating IDC
+will assign an unused tag in an appropriate range. At this time the
+same VLAN tag must be used at all the transited links, but this will
+eventually change.<br>
+  </li>
+</ul>
+<h3><a class="mozTocH3" name="mozTocId364336"></a><big>3. List
+Reservation</big></h3>
 Depending on your privileges, list reservations will display only your
-reservations or all the reservations in the system.&nbsp; We make
+reservations or all the reservations in the system. We make
 available all the reservations that have ever been made, so the
 interface allows you to specify the statuses, the time periods, the
 links involved and the description of the reservations to display. In
 additon once a list of reservations has been displayed, you can click a
 column header to have the reservations sorted by that column. The
 column values are:<br>
-<br>
 <ul>
   <li><span style="font-weight: bold;">GRI</span> (Global Reservation
 Identifier) - a unique identifier assigned by the inital IDC. It is
@@ -208,14 +216,17 @@ user who created the reservation</li>
   <li>Status - one of <br>
   </li>
   <ul>
-    <li>PENDING - reservation has been made, but the scheduled start
+    <li>PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span>
+- reservation has been made, but the scheduled start
 time
 has not arrived yet</li>
     <li>ACTIVE - circuit is currently provisioned</li>
     <li>FINISHED - end time has past, and circuit has been torn down</li>
-    <li>CANCELLED -&nbsp; reservation was cancelled, circuit is not
+    <li>CANCELLED - reservation was cancelled, circuit is not
 active</li>
-    <li>FAILED - a link that the circuit uses is down, circuit may
+    <li>FAILED - Path may have failed to be setup because the required
+resources were not available, or a link that the circuit uses is down
+and the circuit may
 still be provisioned<br>
     </li>
     <li>INVALIDATED - </li>
@@ -230,12 +241,13 @@ the data flow starts</li>
   <li><span style="font-weight: bold;">Destination </span>- Node at
 which the data flow ends</li>
 </ul>
-If you click on&nbsp; a GRI, you will see the details of the
+If you click on a GRI, you will see the details of the
 reservation.<br>
-<h3><a class="mozTocH3" name="mozTocId323456"></a><big><big>reservation&nbsp;
-details</big></big></h3>
+<h3><a class="mozTocH3" name="mozTocId323456"></a><big>4.
+Reservation Details</big></h3>
+<br>
 The fields that are displayed in the list reservation page are
-repeated. The addtional fields are:<br>
+repeated. The addtional fields are:
 <ul>
   <li><span style="font-weight: bold;">description</span> - the
 description that the user specified<br>
@@ -257,11 +269,13 @@ include an ingress and egress router for each domain in the path.</li>
   <li><span style="font-weight: bold;">protocol </span>- for layer 3
 reservations</li>
 </ul>
-This page also provides a button to allow you to <a
- name="cancel_reservation"></a>cancel the
-reservation.<br>
-<h3><a class="mozTocH3" name="mozTocId712078"></a><big><big><span
- style="font-weight: bold;">user profile</span></big></big></h3>
+<h3><a name="cancel_reservation"></a><big><span
+ style="font-weight: bold;">5. Cancel Reservation
+</span></big></h3>
+The Reservation Details page provides a button to
+allow you to cancel the reservation.<br>
+<h3><a class="mozTocH3" name="mozTocId712078"></a><big><span
+ style="font-weight: bold;">6. User Profile</span></big></h3>
 Displays the information we keep about the user. Use this page to
 modify information about yourself.<br>
 <ul>
@@ -273,7 +287,7 @@ an "unable to load modifyUser servlet error"</span></span><span
     </span></span></li>
   <li><span style="font-weight: bold;">password/password confirmation</span>
 - used to change your password (type in
-your&nbsp; new password in both fields) </li>
+your new password in both fields) </li>
   <li style="font-weight: bold;">First Name</li>
   <li style="font-weight: bold;">Last Name</li>
   <li><span style="font-weight: bold;">x.509 subject name </span>- if
@@ -282,7 +296,7 @@ which requires that you sign all the messages, you must input the
 subject name of the certificate that you will use for signing.</li>
   <li><span style="font-weight: bold;">x.509 issuer name</span> - this
 is the subject name of the issuer of
-your signing certificate.&nbsp; If you are only going to use the WBUI,
+your signing certificate. If you are only going to use the WBUI,
 these items are not required</li>
   <li><span style="font-weight: bold;">Organization</span> - choose one
 from the pull-down menu</li>
@@ -304,13 +318,15 @@ roles, for all users</li>
 query all reservations, list all users</li>
     <li><span style="font-weight: bold;">service</span> - make
 reservations where the GRI is specified, modify
-reservations, signal a circuit to be provisioned or torn down.</li>
+reservations, signal a circuit to be provisioned or torn down. (granted
+to IDC services in co-operating domains)<br>
+    </li>
   </ul>
   <li><span style="font-weight: bold;">personal description</span> -
 for our information</li>
   <li style="font-weight: bold;">email (primary)</li>
   <li style="font-weight: bold;">email (secondary)</li>
-  <li><span style="font-weight: bold;">phone (primary)</span>&nbsp; If
+  <li><span style="font-weight: bold;">phone (primary)</span> If
 something fails during a active
 production reservation, we may need to contact you.<br>
   </li>
@@ -319,19 +335,18 @@ production reservation, we may need to contact you.<br>
 </ul>
 User with administration privileges will also see the following two
 tabs:<br>
-<h3><a class="mozTocH3" name="mozTocId76900"></a><big><big>user list</big></big></h3>
-Gives a list of all the users with columns for<br>
-loginId, First and Last names, Organization and phone number: clicking
-on a user will bring up the complete profile for that user, if&nbsp;
+<h3><a class="mozTocH3" name="mozTocId76900"></a><big>7. User List</big></h3>
+Gives a list of all the users with columns for loginId, First and Last
+names, Organization and phone number: clicking
+on a user will bring up the complete profile for that user, if
 you have the privileges to do so.<br>
-<br>
-<h3><a class="mozTocH3" name="mozTocId911851"></a><big><big>add user</big></big></h3>
-This presents an empty version of the user profile which can be filled
-in to add a new user to the system.<br>
-<br>
-<p><br>
-</p>
+<h3><a class="mozTocH3" name="mozTocId911851"></a><big>8. Add User</big></h3>
+This page presents an empty version of the user profile which can be
+filled
+in to add a new user to the system. See <a href="#mozTocId712078">User
+Profile</a> for a description of the fields.<br>
 <p><!--#include virtual="footer.html" -->
 </p>
+<br>
 </body>
 </html>
