@@ -387,15 +387,19 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         PathElem pathElem = null;
         PathElem prvPathElem = null;
-        boolean firstLink = true;
+        boolean firstEdge = true;
+        boolean lastEdge = false;
 
         while (peIt.hasNext()) {
             DefaultWeightedEdge edge = (DefaultWeightedEdge) peIt.next();
+            if (!peIt.hasNext()) {
+                lastEdge = true;
+            }
 
             String[] cols = edge.toString().split("\\s\\:\\s");
 
             Double weight = graph.getEdgeWeight(edge);
-//            this.log.debug(edge);
+            this.log.debug(edge);
 
             String topoId = cols[0].substring(1);
             Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(topoId);
@@ -405,8 +409,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 Link link = domDAO.getFullyQualifiedLink(topoId);
                 pathElem = new PathElem();
                 pathElem.setLink(link);
-                if (firstLink) {
-                    firstLink = false;
+                if (firstEdge) {
+                    firstEdge = false;
                     path.setPathElem(pathElem);
                 } else {
                     prvPathElem.setNextElem(pathElem);
@@ -414,6 +418,13 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 prvPathElem = pathElem;
             }
         }
+
+        Link lastLink = domDAO.getFullyQualifiedLink(dst);
+        PathElem lastPathElem = new PathElem();
+        lastPathElem.setLink(lastLink);
+        prvPathElem.setNextElem(lastPathElem);
+
+
         this.log.debug("findPathBetween.end");
         return path;
 
