@@ -75,20 +75,22 @@ public class LSP {
             throw new PSSException(
                     "No layer 2 data associated with path");
         }
+        /*
         if (!path.isExplicit()) {
             throw new PSSException(
                     "Cisco configuration currently requires an explicit path");
         }
+        */
         if (lspData.getIngressLink() == null) {
             throw new PSSException("Path endpoints not found yet");
         }
         // finds loopback info for both ingress and egress
         lspData.setLayer2PathInfo(true);
-        
+
         // Fill in parameters for setting up LSP circuit.
         this.hm = new HashMap<String, String>();
         this.fillCommonParams(resv, lspData.getVlanTag());
-        
+
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         this.hm.put("bandwidth", Long.toString(resv.getBandwidth()));
         this.hm.put("lsp_setup-priority",
@@ -105,14 +107,14 @@ public class LSP {
                 throw new PSSException("Egress port has no IP in DB!");
             }
             Link ingressLink = lspData.getIngressLink();
-        
+
             this.hm.put("port", ingressLink.getPort().getTopologyIdent());
             // router to send configuration command to (forward direction)
             this.hm.put("router",
                 ingressLink.getPort().getNode().getNodeAddress().getAddress());
             this.hm.put("lsp_to", lspFwdTo);
             this.hm.put("egress-rtr-loopback", lspData.getEgressRtrLoopback());
-            this.log.info("Filled in hash map for forward setup template"); 
+            this.log.info("Filled in hash map for forward setup template");
         } else {
             // reverse direction
             // get IP associated with first in-facing physical interface
@@ -136,9 +138,9 @@ public class LSP {
         this.setupLSP(hops);
         // TODO:  makes assumption that forward will always be called first
         if (direction.equals("forward")) {
-            this.log.info("Forward circuit set up done"); 
+            this.log.info("Forward circuit set up done");
         } else {
-            this.log.info("Circuit set up done"); 
+            this.log.info("Circuit set up done");
             resv.setStatus("ACTIVE");
         }
     }
@@ -311,7 +313,7 @@ public class LSP {
         this.log.info("teardownLSP.finish");
     }
 
-    /** 
+    /**
      * Gets the LSP status on a Cisco router.
      *
      * @return boolean indicating whether the circuit is up or down
@@ -387,7 +389,7 @@ public class LSP {
         // create a temporary file for use by RANCID
         String fname =  "/tmp/" + this.hm.get("resv-id");
         File tmpFile = new File(fname);
-        BufferedWriter outputStream = 
+        BufferedWriter outputStream =
             new BufferedWriter(new FileWriter(tmpFile));
         // write command to temporary file
         outputStream.write(cmdStr);
@@ -411,11 +413,11 @@ public class LSP {
      */
     private String runCommand(String[] cmd, String requiredOutput)
             throws IOException, PSSException {
-        
+
         String outputStr = null;
 
         Process p = Runtime.getRuntime().exec(cmd);
-        BufferedReader cmdOutput = 
+        BufferedReader cmdOutput =
             new BufferedReader(new InputStreamReader(p.getInputStream()));
         BufferedReader cmdError =
             new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -447,7 +449,7 @@ public class LSP {
      * @param vlanTag string with VLAN id
      * @throws PSSException
      */
-    private void fillCommonParams(Reservation resv, String vlanTag) 
+    private void fillCommonParams(Reservation resv, String vlanTag)
             throws PSSException {
 
         double resvNumTmp;
@@ -464,11 +466,11 @@ public class LSP {
             throw new PSSException("Couldn't parse GRI! ["+circuitName+"]");
         }
         try {
-        	resvNumTmp = Double.parseDouble(columns[1].trim());
+            resvNumTmp = Double.parseDouble(columns[1].trim());
         } catch (NumberFormatException ex) {
-        	this.log.error("Invalid number format for GRI numerical part" +
+            this.log.error("Invalid number format for GRI numerical part" +
                          ex.getMessage());
-        	throw ex;
+            throw ex;
         }
 
         // wrap at 65534 (65535 reserved for test)
@@ -476,7 +478,7 @@ public class LSP {
         String resvNumForTpt = Integer.toString(resvNum);
         this.log.info("Reservation number after cleanup is: "+resvNumForTpt+
                        " initially: "+columns[1]);
-        
+
         this.hm.put("resv-id", circuitName);
         this.hm.put("resv-num", resvNumForTpt);
         this.hm.put("vlan-id", vlanTag);
