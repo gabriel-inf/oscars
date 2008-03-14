@@ -29,11 +29,17 @@ public class DBPFClient {
         String end;
         String usage = "Usage:\ndbPfClient.sh\n";
 
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
 
         DBPathfinder dbpf = new DBPathfinder("bss");
 
+        ReservationManager rm = new ReservationManager("bss");
+
         Reservation reservation = new Reservation();
-        reservation.setBandwidth(1000000000L);
+        reservation.setBandwidth(0L);
+        reservation.setStartTime(0L);
+        reservation.setEndTime(0L);
 
 
         // set up path
@@ -41,9 +47,12 @@ public class DBPFClient {
 
         // Layer 2 stuff
         Layer2Info layer2Info = new Layer2Info();
-        layer2Info.setSrcEndpoint("");
-        layer2Info.setDestEndpoint("");
+        // layer2Info.setSrcEndpoint("urn:ogf:network:es.net:fnal-mr1:TenGigabitEthernet2/3:*");
+        // layer2Info.setDestEndpoint("urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet1/2:*");
+        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=chi-sl-mr1:port=TenGigabitEthernet4/3:link=*");
+//        layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=chic-vlsr:port=10.100.80.185-106:link=1");
 
+        layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=wash-vlsr:port=10.100.80.133-101:link=1");
         VlanTag srcVtag = new VlanTag();
         srcVtag.setString("any");
         srcVtag.setTagged(true);
@@ -60,9 +69,13 @@ public class DBPFClient {
         CtrlPlanePathContent path = new CtrlPlanePathContent();
         path.setId("userPath");
         ArrayList<String> hops = new ArrayList<String>();
-        hops.add("urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*");
-        hops.add("urn:ogf:network:domain=es.net:node=wash-cr1:port=xe-3/1/0:link=*");
-        hops.add("urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet1/3:link=*");
+        /*
+        hops.add("urn:ogf:network:es.net:fnal-mr1:TenGigabitEthernet2/3:*");
+        hops.add("urn:ogf:network:es.net:fnal-mr1:TenGigabitEthernet4/1:TenGigabitEthernet4/1.1816");
+
+        hops.add("urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet7/1:TenGigabitEthernet7/1.1816");
+        hops.add("urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet1/2:*");
+        */
 /*
                 urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
                 urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101
@@ -79,17 +92,26 @@ public class DBPFClient {
         pathInfo.setPathType("");
 
 
-        PathInfo result = null;
+        Path result = null;
         try {
-            result = dbpf.findPath(pathInfo, reservation);
+            result = rm.getPath(reservation, pathInfo);
+            //  result = dbpf.findPath(pathInfo, reservation);
         } catch (Exception ex) {
+            ex.printStackTrace(pw);
             System.out.println("Error: "+ex.getMessage());
+            System.out.println(sw.toString());
         }
 
-        path = result.getPath();
-        CtrlPlaneHopContent[] resultHops = path.getHop();
-        for (CtrlPlaneHopContent hop : resultHops) {
-            System.out.println(hop.getLinkIdRef());
+        if (result == null) {
+            System.out.println("No path");
+        } else {
+
+            PathElem elem = result.getPathElem();
+            while (elem != null) {
+                System.out.println(elem.getLink().getFQTI());
+                elem = elem.getNextElem();
+            }
+
         }
 
 
