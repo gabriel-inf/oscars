@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 
 import net.es.oscars.*;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.pathfinder.db.util.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.database.*;
@@ -73,7 +74,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (pathInfo.getLayer2Info() != null) {
            this.handleLayer2ERO(pathInfo, reservation);
         } else if (pathInfo.getLayer3Info() != null) {
-            throw new PathfinderException("DB pathfinder does not handle layer 3 yet");
+            // Falling through to traceroute for L3
+            TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
+            return tracePF.findPath(pathInfo, reservation);
         } else {
             throw new PathfinderException(
                 "An ERO must have associated layer 2 or layer 3 info");
