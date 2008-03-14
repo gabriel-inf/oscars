@@ -19,8 +19,8 @@ import net.es.oscars.database.HibernateUtil;
  * @author David Robertson (dwrobertson@lbl.gov), Evangelos Chaniotakis (haniotak /at/ es dot net
  */
 
-@Test(groups={ "bss", "pathfinder.traceroute", "importTopology" },
-               dependsOnGroups={ "exportTopology" } )
+@Test(groups={ "bss", "pathfinder.overlay", "pathfinder.traceroute",
+               "importTopology" }, dependsOnGroups={ "exportTopology" } )
 public class TopologyXMLFileReaderTest {
     private SessionFactory sf;
     private String dbname;
