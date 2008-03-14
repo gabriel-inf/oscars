@@ -351,6 +351,11 @@ public class ReservationManager {
         } catch (PathfinderException ex) {
             throw new BSSException(ex.getMessage());
         }
+
+        if (intraPath == null) {
+            throw new BSSException("Pathfinder could not find a path!");
+        }
+
         Long bandwidth = resv.getBandwidth();
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations =
