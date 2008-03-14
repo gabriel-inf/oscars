@@ -352,7 +352,7 @@ public class ReservationManager {
             throw new BSSException(ex.getMessage());
         }
 
-        if (intraPath == null) {
+        if (intraPath == null || intraPath.getPath() == null) {
             throw new BSSException("Pathfinder could not find a path!");
         }
 
