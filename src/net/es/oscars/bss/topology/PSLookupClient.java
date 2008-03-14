@@ -23,9 +23,9 @@ import net.es.oscars.bss.BSSException;
 import net.es.oscars.PropHandler;
 
 /**
- * Class used to retrieve the URNs assocaited with a given hostname 
- * via the perfSONAR Lookup Service 
- *  
+ * Class used to retrieve the URNs assocaited with a given hostname
+ * via the perfSONAR Lookup Service
+ *
  * @author Andrew Lake
  */
 public class PSLookupClient {
@@ -34,7 +34,7 @@ public class PSLookupClient {
     private String fname;
     private String url;
     private Properties props;
-    
+
     /** Contructor */
     public PSLookupClient(){
         PropHandler propHandler = new PropHandler("oscars.properties");
@@ -45,7 +45,7 @@ public class PSLookupClient {
         this.fname =  System.getenv("CATALINA_HOME") +
         "/shared/classes/server/perfSONAR-LSQuery.xml";
     }
-    
+
     /**
      * Retieves the URN for a given hostname from the perfSONAR
      * Lookup Service. The URL of the service is defined in oscars.properties.
@@ -57,7 +57,10 @@ public class PSLookupClient {
     public String lookup(String hostname) throws BSSException{
         String urn = null;
         Document topologyXMLDoc = null;
-        
+
+        if (hostname == null) {
+            return null;
+        }
         //Generate and send response
         try{
             PostMethod postMethod = this.generateRequest(this.url, hostname);
@@ -79,23 +82,23 @@ public class PSLookupClient {
             this.log.error("IO Error: " + e.getMessage());
             throw new BSSException("IO Error: " + e.getMessage());
         }
-        
+
         //Parse response
         NodeList urnList = topologyXMLDoc.getElementsByTagName("psservice:datum");
         Node urnNode = urnList.item(0);
         if(urnNode == null){
             return null;
         }
-        
+
         urn = urnNode.getTextContent();
         if(urn == null || urn.equals("Nothing returned for search.")){
             return null;
         }
-        
+
         //return urn with trailing whitespace removed
         return urn.replaceAll("\\s$", "");
     }
-    
+
     /**
      * Private method that creates the request to send to the lookup service.
      * It reads an XML file, replaces the correct fieldswith the hostname,
@@ -106,14 +109,14 @@ public class PSLookupClient {
      * @return a PostMethod that is callable by HttpClient
      * @throws IOException
      */
-    private PostMethod generateRequest(String url, String hostname) 
+    private PostMethod generateRequest(String url, String hostname)
         throws IOException{
         PostMethod postMethod = new PostMethod(url);
         FileReader fin = new FileReader(this.fname);
         StringBuilder xmlRequestBuilder = new StringBuilder("");
         String xmlRequest = null;
         StringRequestEntity entity = null;
-        
+
         char[] buf = new char[1500];
         while(fin.read(buf, 0, buf.length) > 0){
             xmlRequestBuilder.append(buf);
@@ -122,10 +125,10 @@ public class PSLookupClient {
         xmlRequest = xmlRequest.replaceAll("<!--hostname-->", hostname);
         entity = new StringRequestEntity(xmlRequest, "text/xml",null);
         postMethod.setRequestEntity(entity);
-        
+
         return postMethod;
     }
-    
+
     /**
      * Sends the given lookup request to the server
      *
@@ -136,12 +139,12 @@ public class PSLookupClient {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    private String sendRequest(PostMethod postMethod) throws HttpException, 
+    private String sendRequest(PostMethod postMethod) throws HttpException,
         IOException, ParserConfigurationException, SAXException{
         int statusCode = client.executeMethod(postMethod);
         this.log.info("LOOKUP REQUEST HTTP STATUS: " + statusCode);
         String response = postMethod.getResponseBodyAsString();
-        
+
         return response;
     }
 }

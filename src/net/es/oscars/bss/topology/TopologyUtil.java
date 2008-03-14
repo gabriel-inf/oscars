@@ -427,6 +427,7 @@ public class TopologyUtil {
      * @return boolean indicating whether hop is a topology identifier
      */
     public static boolean isTopologyIdentifier(String hopId) {
+        if (hopId == null) { return false; }
         // assume an IPv6 address
         if (hopId.matches(".*::.*")) { return false; }
         String[] componentList = hopId.split(":");
