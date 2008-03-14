@@ -90,6 +90,9 @@ public class DBGraphAdapter {
 
                 Long portCapacity = port.getCapacity();
                 Long reservedCapacity = portRsvBw.get(port);
+                if (reservedCapacity == null) {
+                    reservedCapacity = 0L;
+                }
                 Long remainingCapacity = portCapacity - reservedCapacity;
 
                 if (bandwidth > 0 && remainingCapacity < bandwidth) {
