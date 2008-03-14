@@ -1,8 +1,10 @@
 package net.es.oscars.bss.topology;
 
 import org.testng.annotations.*;
+import org.testng.Assert;
 
 import java.util.*;
+import java.io.*;
 
 import org.hibernate.*;
 
@@ -35,9 +37,42 @@ public class TopologyXMLFileReaderTest {
         // has its own session factory
         TopologyXMLFileReader reader = new TopologyXMLFileReader(this.dbname);
         reader.importFile(fname);
+        // fill in ipaddrs table (not part of the topology)
+        fname = GlobalParams.getExportedIpaddrFname();
+        BufferedReader ipaddrReader = null;
+        try {
+            ipaddrReader =
+                new BufferedReader(new FileReader(fname));
+        } catch (FileNotFoundException e) {
+            Assert.fail(e.getMessage());
+        }
+        this.sf.getCurrentSession().beginTransaction();
+        String line = null;
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        try {
+            while ((line=ipaddrReader.readLine()) != null) {
+                Ipaddr ipaddr = new Ipaddr();
+                String[] fields = line.split(" ");
+                if (fields.length != 3) {
+                    Assert.fail(fname + " is not in a valid format");
+                }
+                boolean valid = new Boolean(fields[0].trim()).booleanValue();
+                ipaddr.setValid(valid);
+                ipaddr.setIP(fields[1].trim());
+                Link link = domainDAO.getFullyQualifiedLink(fields[2]);
+                ipaddr.setLink(link);
+                if (link == null) {
+                    Assert.fail("cannot get link for ipaddr");
+                }
+                ipaddrDAO.create(ipaddr);
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+        this.sf.getCurrentSession().getTransaction().commit();
     }
 
-  // not currently working
   @Test(dependsOnMethods={ "importTopology" })
     public void importedPortList() {
         // make sure things got populated

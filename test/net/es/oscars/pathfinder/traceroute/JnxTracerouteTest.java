@@ -1,6 +1,7 @@
 package net.es.oscars.pathfinder.traceroute;
 
 import org.testng.annotations.*;
+import org.testng.Assert;
 
 import java.util.List;
 import java.util.Properties;
@@ -30,7 +31,7 @@ public class JnxTracerouteTest {
     public void allowedTest() {
         AuthHandler authHandler = new AuthHandler();
         boolean authorized = authHandler.checkAuthorization();
-        assert authorized : "You are not authorized to do a traceroute from this machine";
+        Assert.assertTrue(authorized, "You are not authorized to do a traceroute from this machine");
     }
 
   @Test(dependsOnMethods={ "allowedTest" })

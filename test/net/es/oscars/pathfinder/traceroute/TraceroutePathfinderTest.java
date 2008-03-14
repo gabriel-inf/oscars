@@ -1,6 +1,7 @@
 package net.es.oscars.pathfinder.traceroute;
 
 import org.testng.annotations.*;
+import org.testng.Assert;
 
 import java.util.List;
 import java.util.Properties;
@@ -22,7 +23,8 @@ import net.es.oscars.pathfinder.PathfinderException;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "pathfinder.traceroute" }, dependsOnGroups={"jnxTraceroute"} )
+@Test(groups={ "pathfinder.traceroute" },
+        dependsOnGroups={ "jnxTraceroute", "importTopology" } )
 public class TraceroutePathfinderTest {
     private Properties props;
     private SessionFactory sf;
@@ -44,7 +46,7 @@ public class TraceroutePathfinderTest {
     public void allowedTest() {
         AuthHandler authHandler = new AuthHandler();
         boolean authorized = authHandler.checkAuthorization();
-        assert authorized : "You are not authorized to do a traceroute from this machine";
+        Assert.assertTrue(authorized, "You are not authorized to do a traceroute from this machine");
     }
 
   @Test(dependsOnMethods={ "allowedTest" })

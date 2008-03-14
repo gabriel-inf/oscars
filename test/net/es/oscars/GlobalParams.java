@@ -19,4 +19,8 @@ public class GlobalParams {
         return "/tmp/exportedTopology.xml";
     }
 
+    public static String getExportedIpaddrFname() {
+        return "/tmp/exportedIpaddrs.txt";
+    }
+
 }

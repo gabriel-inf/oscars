@@ -43,15 +43,41 @@ public class TopologyXMLExporterTest {
         this.sf.getCurrentSession().beginTransaction();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain localDomain = domainDAO.getLocalDomain();
+        // Material having to do with the ipaddrs table is for the
+        // tests only.  That table is not part of the network
+        // topology.
+        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        List<Ipaddr> ipaddrs = ipaddrDAO.list();
+        // Copy the ipaddrs table into the temporary file.  The
+        // fully qualified topology identifier will be used to look up
+        // the link on import.
+        String fname = GlobalParams.getExportedIpaddrFname();
+        PrintWriter outputStream = new PrintWriter(new FileWriter(fname));
+        for (Ipaddr ipaddr: ipaddrs) {
+            String output = String.valueOf(ipaddr.isValid());
+            output += " " + ipaddr.getIP();
+            Link link = ipaddr.getLink();
+            Port port = link.getPort();
+            Node node = port.getNode();
+            Domain domain = node.getDomain();
+            output += " urn:ogf:network:" +
+                      domain.getTopologyIdent() + ":" +
+                      node.getTopologyIdent() + ":" +
+                      port.getTopologyIdent() + ":" +
+                      link.getTopologyIdent();
+            outputStream.println(output);
+        }
+        outputStream.close();
+        this.sf.getCurrentSession().getTransaction().commit();
+        // do topology export
         //String urn = "urn:ogf:network:domain=" + localDomain.getTopologyIdent();
         String urn = localDomain.getTopologyIdent();
-        this.sf.getCurrentSession().getTransaction().commit();
         // TopologyXMLExporter has its own session factory
         TopologyXMLExporter exporter = new TopologyXMLExporter(this.dbname);
         
         Document doc = exporter.getTopology(urn);
 
-        String fname = GlobalParams.getExportedTopologyFname();
+        fname = GlobalParams.getExportedTopologyFname();
         FileWriter writer = new FileWriter(fname);
         XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
         outputter.output(doc, writer);
