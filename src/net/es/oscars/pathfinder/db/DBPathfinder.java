@@ -67,23 +67,21 @@ public class DBPathfinder extends Pathfinder implements PCE {
             throws PathfinderException {
 
         this.log.debug("findPath.begin");
-        CtrlPlanePathContent path = pathInfo.getPath();
-        if (path != null) {
-            DomainDAO domainDAO = new DomainDAO(this.dbname);
-            CtrlPlaneHopContent[] ctrlPlaneHops = path.getHop();
-            // if an ERO, not just ingress and/or egress
-           this.log.debug("handling explicit route object");
-           if (pathInfo.getLayer2Info() != null) {
-               this.handleLayer2ERO(pathInfo, reservation);
-            } else if (pathInfo.getLayer3Info() != null) {
-                throw new PathfinderException("DB pathfinder does not hdle layer 3 yet");
-            } else {
-                throw new PathfinderException(
-                    "An ERO must have associated layer 2 or layer 3 info");
-            }
+        // if an ERO, not just ingress and/or egress
+
+        this.log.debug("handling explicit route object");
+        if (pathInfo.getLayer2Info() != null) {
+           this.handleLayer2ERO(pathInfo, reservation);
+        } else if (pathInfo.getLayer3Info() != null) {
+            throw new PathfinderException("DB pathfinder does not handle layer 3 yet");
+        } else {
+            throw new PathfinderException(
+                "An ERO must have associated layer 2 or layer 3 info");
         }
+
+
         this.log.debug("findPath.End");
-        return pathInfo; //return same path to conform to interface
+        return pathInfo;
     }
 
 
