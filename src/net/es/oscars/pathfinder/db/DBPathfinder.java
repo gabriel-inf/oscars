@@ -306,7 +306,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         this.log.debug("handleEro.injectedLocal");
 
-        for (int i = lastLocalHopIndex; i < hops.length; i++) {
+        for (int i = lastLocalHopIndex + 1; i < hops.length; i++) {
             totalHops++;
             tmpHops[j] = hops[i];
             this.log.debug("Injecting next "+hops[i].getLinkIdRef());

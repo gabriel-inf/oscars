@@ -70,83 +70,91 @@ public class DBGraphAdapter {
 
         DefaultWeightedEdge edge;
 
-        Domain dom = domainDAO.fromTopologyIdent(this.localDomain);
-        Iterator nodeIt = dom.getNodes().iterator();
-        while (nodeIt.hasNext()) {
-            Node node = (Node) nodeIt.next();
-            if (!node.isValid()) {
-                continue;
-            }
-            String nodeFQTI = node.getFQTI();
-//        	System.out.println(nodeFQTI);
-            g.addVertex(nodeFQTI);
+        List<Domain> domains = domainDAO.list();
+        for (Domain dom : domains) {
 
-            Iterator portIt = node.getPorts().iterator();
-            while (portIt.hasNext()) {
-                Port port = (Port) portIt.next();
-                if (!port.isValid()) {
+            Iterator nodeIt = dom.getNodes().iterator();
+            while (nodeIt.hasNext()) {
+                Node node = (Node) nodeIt.next();
+                if (!node.isValid()) {
                     continue;
                 }
+                String nodeFQTI = node.getFQTI();
+                g.addVertex(nodeFQTI);
 
-                Long portCapacity = port.getCapacity();
-                Long reservedCapacity = portRsvBw.get(port);
-                if (reservedCapacity == null) {
-                    reservedCapacity = 0L;
-                }
-                Long remainingCapacity = portCapacity - reservedCapacity;
-
-                if (bandwidth > 0 && remainingCapacity < bandwidth) {
-                    continue;
-                }
-
-                String portFQTI = port.getFQTI();
-//            	System.out.println(portFQTI);
-
-
-                g.addVertex(portFQTI);
-                edge = g.addEdge(nodeFQTI, portFQTI);
-                g.setEdgeWeight(edge, 0d);
-
-                edge = g.addEdge(portFQTI, nodeFQTI);
-                g.setEdgeWeight(edge, 0d);
-
-                Iterator linkIt = port.getLinks().iterator();
-                while (linkIt.hasNext()) {
-                    Link link = (Link) linkIt.next();
-                    if (!link.isValid()) {
+                Iterator portIt = node.getPorts().iterator();
+                while (portIt.hasNext()) {
+                    Port port = (Port) portIt.next();
+                    if (!port.isValid()) {
                         continue;
                     }
-                       String linkFQTI = link.getFQTI();
-//                	System.out.println(linkFQTI);
 
-                    g.addVertex(linkFQTI);
-                    edge = g.addEdge(linkFQTI, portFQTI);
-                    g.setEdgeWeight(edge, 0d);
+                    Long portCapacity = port.getCapacity();
+                    Long reservedCapacity = portRsvBw.get(port);
+                    if (reservedCapacity == null) {
+                        reservedCapacity = 0L;
+                    }
+                    Long remainingCapacity = portCapacity - reservedCapacity;
 
-                    edge = g.addEdge(portFQTI, linkFQTI);
-                    g.setEdgeWeight(edge, 0d);
+                    if (bandwidth > 0 && remainingCapacity < bandwidth) {
+                        continue;
+                    }
 
-                    if (link.getRemoteLink() != null) {
-                        Link remLink = link.getRemoteLink();
-                        String remLinkFQTI = remLink.getFQTI();
-                        if (remLink.isValid() && remLinkFQTI != null) {
-                            Double edgeWeight = 10d;
-                            if (link.getTrafficEngineeringMetric() != null) {
-                                edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
-                            }
+                    String portFQTI = port.getFQTI();
+    //            	System.out.println(portFQTI);
 
-                            g.addVertex(remLinkFQTI);
 
-                            edge = g.addEdge(linkFQTI, remLinkFQTI);
-                            if (edge != null) {
-                                g.setEdgeWeight(edge, edgeWeight);
+                    g.addVertex(portFQTI);
+                    edge = g.addEdge(nodeFQTI, portFQTI);
+                    if (edge != null) {
+                        g.setEdgeWeight(edge, 0.1d);
+                    }
+
+                    edge = g.addEdge(portFQTI, nodeFQTI);
+                    if (edge != null) {
+                        g.setEdgeWeight(edge, 0.1d);
+                    }
+
+                    Iterator linkIt = port.getLinks().iterator();
+                    while (linkIt.hasNext()) {
+                        Link link = (Link) linkIt.next();
+                        if (!link.isValid()) {
+                            continue;
+                        }
+                           String linkFQTI = link.getFQTI();
+    //                	System.out.println(linkFQTI);
+
+                        g.addVertex(linkFQTI);
+                        edge = g.addEdge(linkFQTI, portFQTI);
+                        if (edge != null) {
+                            g.setEdgeWeight(edge, 0.1d);
+                        }
+
+                        edge = g.addEdge(portFQTI, linkFQTI);
+                        if (edge != null) {
+                            g.setEdgeWeight(edge, 0.1d);
+                        }
+
+                        if (link.getRemoteLink() != null) {
+                            Link remLink = link.getRemoteLink();
+                            String remLinkFQTI = remLink.getFQTI();
+                            if (remLink.isValid() && remLinkFQTI != null) {
+                                Double edgeWeight = 10d;
+                                if (link.getTrafficEngineeringMetric() != null) {
+                                    edgeWeight = this.parseTEM(link.getTrafficEngineeringMetric());
+                                }
+
+                                g.addVertex(remLinkFQTI);
+
+                                edge = g.addEdge(linkFQTI, remLinkFQTI);
+                                if (edge != null) {
+                                    g.setEdgeWeight(edge, edgeWeight);
+                                }
                             }
                         }
                     }
-
                 }
             }
-
         }
 
 
