@@ -91,6 +91,19 @@ public class DBPathfinder extends Pathfinder implements PCE {
             throws PathfinderException {
         int numHops = 0;
         this.log.info("handleLayer2ERO.start");
+        Layer2Info layer2Info = pathInfo.getLayer2Info();
+
+        Hashtable<String, String> parseResults;
+        String fqti;
+
+        String srcEndpoint = layer2Info.getSrcEndpoint();
+        String destEndpoint = layer2Info.getDestEndpoint();
+
+        parseResults = TopologyUtil.parseTopoIdent(srcEndpoint);
+        srcEndpoint = parseResults.get("fqti");
+        parseResults = TopologyUtil.parseTopoIdent(destEndpoint);
+        destEndpoint = parseResults.get("fqti");
+
 
         Domain domain = domDAO.getLocalDomain();
 
@@ -101,6 +114,36 @@ public class DBPathfinder extends Pathfinder implements PCE {
         CtrlPlanePathContent ero = pathInfo.getPath();
         CtrlPlaneHopContent[] hops = ero.getHop();
 
+        if (hops != null) {
+            if (hops.length == 0) {
+                hops = new CtrlPlaneHopContent[2];
+                hops[0] = new CtrlPlaneHopContent();
+                hops[0].setLinkIdRef(srcEndpoint);
+                hops[1] = new CtrlPlaneHopContent();
+                hops[1].setLinkIdRef(destEndpoint);
+            } else if (hops.length == 1) {
+                throw new PathfinderException("ERO must include both source and destination!");
+            } else if (hops.length >= 2) {
+                CtrlPlaneHopContent firstHop = hops[0];
+                CtrlPlaneHopContent lastHop = hops[hops.length - -1];
+                String firstLinkId = firstHop.getLinkIdRef();
+                parseResults = TopologyUtil.parseTopoIdent(firstLinkId);
+                firstLinkId = parseResults.get("fqti");
+                String lastLinkId = lastHop.getLinkIdRef();
+                parseResults = TopologyUtil.parseTopoIdent(lastLinkId);
+                lastLinkId = parseResults.get("fqti");
+                if ( (! firstLinkId.equals(srcEndpoint)) || (! lastLinkId.equals(destEndpoint)) ) {
+                    throw new PathfinderException("ERO must include both source and destination!");
+                }
+            }
+        } else {
+            hops = new CtrlPlaneHopContent[2];
+            hops[0] = new CtrlPlaneHopContent();
+            hops[0].setLinkIdRef(srcEndpoint);
+            hops[1] = new CtrlPlaneHopContent();
+            hops[1].setLinkIdRef(destEndpoint);
+        }
+
         // an array to hold the local portion of the path
         ArrayList<String> localLinkIds = new ArrayList<String>();
         int localLinkIndex = 0;
@@ -110,6 +153,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         int lastLocalHopIndex = 0;
 
         boolean foundLocalSegment = false;
+
         for (int i=0; i < hops.length; i++) {
             CtrlPlaneHopContent ctrlPlaneHop = hops[i];
             String hopId = ctrlPlaneHop.getLinkIdRef();
@@ -120,8 +164,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
             }
             this.log.debug("hop id (original):["+hopId+"]");
 
-            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopId);
-            String fqti = parseResults.get("fqti");
+            parseResults = TopologyUtil.parseTopoIdent(hopId);
+            fqti = parseResults.get("fqti");
             String domainId = parseResults.get("domainId");
 
             if (domDAO.isLocal(domainId)) {
@@ -142,6 +186,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
         this.log.debug("first local hop is: "+firstLocalHopIndex);
         this.log.debug("last local hop is: "+lastLocalHopIndex);
+
+
 
         // Calculate path
         // case 1: we get passed NO local links
