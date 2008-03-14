@@ -38,8 +38,8 @@ public class DBPFClient {
 
         Reservation reservation = new Reservation();
         reservation.setBandwidth(0L);
-        reservation.setStartTime(0L);
-        reservation.setEndTime(0L);
+        reservation.setStartTime(1205444160L);
+        reservation.setEndTime(1205444400L);
 
 
         // set up path
@@ -49,10 +49,14 @@ public class DBPFClient {
         Layer2Info layer2Info = new Layer2Info();
         // layer2Info.setSrcEndpoint("urn:ogf:network:es.net:fnal-mr1:TenGigabitEthernet2/3:*");
         // layer2Info.setDestEndpoint("urn:ogf:network:es.net:chi-sl-mr1:TenGigabitEthernet1/2:*");
-        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=chi-sl-mr1:port=TenGigabitEthernet4/3:link=*");
+//        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=chi-sl-mr1:port=TenGigabitEthernet4/3:link=*");
 //        layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=chic-vlsr:port=10.100.80.185-106:link=1");
 
-        layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=wash-vlsr:port=10.100.80.133-101:link=1");
+//       layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=wash-vlsr:port=10.100.80.133-101:link=1");
+
+        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*");
+        layer2Info.setDestEndpoint("urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet4/3:link=*");
+
         VlanTag srcVtag = new VlanTag();
         srcVtag.setString("any");
         srcVtag.setTagged(true);
@@ -106,11 +110,22 @@ public class DBPFClient {
             System.out.println("No path");
         } else {
 
+            System.out.println("\nFound path:");
+
             PathElem elem = result.getPathElem();
             while (elem != null) {
                 System.out.println(elem.getLink().getFQTI());
                 elem = elem.getNextElem();
             }
+
+            System.out.println("\nNew pathInfo:");
+
+            CtrlPlanePathContent newPath = pathInfo.getPath();
+            CtrlPlaneHopContent[] newHops = newPath.getHop();
+            for (CtrlPlaneHopContent newHop : newHops) {
+                System.out.println(newHop.getLinkIdRef());
+            }
+
 
         }
 
