@@ -1,14 +1,41 @@
 -- Drop and then repopulate the institutions, resources, attributes,
--- userAttributes, permissions, and authorizations tables.  Note that the
--- users table is not handled by this script.  Attributes and authorizations
--- for sample ESnet users are given.
+-- userAttributes, permissions, and authorizations tables.
+-- Attributes and authorizations for sample ESnet users are given.
 
+use testaaa;
+
+DROP TABLE users;
 DROP TABLE institutions;
 DROP TABLE resources;
 DROP TABLE attributes;
 DROP TABLE userAttributes;
 DROP TABLE permissions;
 DROP TABLE authorizations;
+
+-- add test user to users table
+
+CREATE TABLE IF NOT EXISTS users (
+   id			INT NOT  NULL AUTO_INCREMENT,
+   login		TEXT NOT NULL,
+   certIssuer		TEXT,
+   certSubject		TEXT,
+   lastName		TEXT NOT NULL,
+   firstName		TEXT NOT NULL,
+   emailPrimary		TEXT NOT NULL,
+   phonePrimary		TEXT NOT NULL,
+   password		TEXT,
+   description		TEXT,
+   emailSecondary	TEXT,
+   phoneSecondary	TEXT,
+   status		TEXT,
+   activationKey	TEXT,
+   loginTime		INT,
+   cookieHash		TEXT,
+   institutionId	INT,
+   PRIMARY KEY (id)
+) type=MyISAM;
+
+INSERT INTO users VALUES(NULL,"superUser",NULL,NULL,"User","Super","foo@es.net","555-1212",NULL,"test user",NULL,NULL,NULL,NULL,NULL,NULL,1);
 
 -- populate institutions table
 
@@ -78,32 +105,8 @@ CREATE TABLE IF NOT EXISTS userAttributes (
 ) type=MyISAM;
 
 INSERT INTO userAttributes VALUES(NULL,
-	(select id from users where login = "mrthompson@lbl.gov"), 
-        (select id from attributes where name="OSCARS-user"));
-INSERT INTO userAttributes VALUES(NULL,
-        (select id from users where login = "mrthompson@lbl.gov"), 
-        (select id from attributes where name="OSCARS-administrator"));
--- INSERT INTO userAttributes VALUES(NULL,
-        -- (select id from users where login = "mrthompson@lbl.gov"), 
-        -- (select id from attributes where name="user-mary"));
-INSERT INTO userAttributes VALUES(NULL, 
-        (select id from users where login = "dwrobertson@lbl.gov"), 
+	(select id from users where login = "superUser"), 
         (select id from attributes where name="OSCARS-engineer"));
-INSERT INTO userAttributes VALUES(NULL,
-        (select id from users where login = "dwrobertson@lbl.gov"), 
-        (select id from attributes where name="OSCARS-administrator"));
-INSERT INTO userAttributes VALUES(NULL,
-        (select id from users where login = "chin@es.net"), 
-        (select id from attributes where name="OSCARS-engineer"));
-INSERT INTO userAttributes VALUES(NULL,
-        (select id from users where login = "chin@es.net"), 
-        (select id from attributes where name="OSCARS-administrator"));
-INSERT INTO userAttributes VALUES(NULL,
-	(select id from users where login = "oscars.es.net"), 
-        (select id from attributes where name="OSCARS-user"));
-INSERT INTO userAttributes VALUES(NULL,
-	(select id from users where login = "oscars.es.net"), 
-        (select id from attributes where name="OSCARS-service"));
 
         
 -- populate permissions table
@@ -272,7 +275,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="query"),
-     "all-users", 1); 
+     "all-users", 1);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="users"),
