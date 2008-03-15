@@ -29,16 +29,38 @@ version 0.2.1 Apr 2008<br>
   <li><a href="#mozTocId916500">Web server interface</a>
     <ol>
       <li><a href="#mozTocId592309">1. Login</a></li>
-      <li><a href="#mozTocId930716">2. Create Reservation</a></li>
-      <li><a href="#mozTocId364336">3. List Reservation</a></li>
-      <li><a href="#mozTocId323456">4. Reservation Details</a></li>
-      <li><a href="#cancel_reservation">5. Cancel Reservation</a><br>
-      </li>
+      <li><a href="#mozTocId930716">2. Create
+Reservation</a></li>
+      <ol>
+        <li><a href="#mozTocId876094">Common parameters</a></li>
+        <li><a href="#mozTocId463309">Layer 3 parameters</a></li>
+        <li><a href="#mozTocId265890">Layer 2 parameters </a></li>
+      </ol>
+      <li><a href="#mozTocId364336">3. List
+Reservation</a></li>
+      <li><a href="#mozTocId323456">4.
+Reservation Details</a></li>
+      <li><a href="#mozTocId594544">5.
+Cancel Reservation </a></li>
       <li><a href="#mozTocId712078">6. User Profile</a></li>
       <li><a href="#mozTocId76900">7. User List</a></li>
       <li><a href="#mozTocId911851">8. Add User</a></li>
     </ol>
   </li>
+  <li><a href="#mozTocId845904">Web Service Interface</a>
+    <ol>
+      <li><a href="#mozTocId65813">1. createReservation</a></li>
+    </ol>
+  </li>
+  <li><a href="#mozTocId798822">2. Query Reservation</a></li>
+  <li><a href="#mozTocId798162">3. List Reservation</a></li>
+  <li><a href="#mozTocId538182">4. Cancel Reservation</a></li>
+  <li><a href="#mozTocId885893">5. Forward</a></li>
+  <li><a href="#mozTocId303252">6. Get Network
+Topology</a></li>
+  <li><a href="#mozTocId383110">7. Initiate Topology
+Pull</a></li>
+  <li><a href="#mozTocId768207">8. Signal </a></li>
 </ol>
 <h2><a class="mozTocH2" name="mozTocId130537"></a>Introduction</h2>
 The OSCARS Ineterdomain Controller (IDC) allows end users to reserve
@@ -102,7 +124,7 @@ many as four hierarchical componets: domain:node:port:link. See <a
  href="file:///Users/mrt/Documents/eclipseWS/Trunk/docs/web/tss.html">Topology
 components notes</a> for more about the topology naming scheme.<br>
 <br>
-<h3>Common parameters</h3>
+<h3><a class="mozTocH3" name="mozTocId876094"></a>Common parameters</h3>
 <ul>
   <li><span style="font-weight: bold;">Source </span>and <span
  style="font-weight: bold;">Destination hosts</span> may be specified
@@ -161,7 +183,8 @@ Type in new values in the format shown.</li>
 values default to 4 minutes from the
 current time. Type in new values in the format shown.</li>
 </ul>
-<span style="font-weight: bold;">Layer 3 parameters</span><br>
+<h3><a class="mozTocH3" name="mozTocId463309"></a><span
+ style="font-weight: bold;">Layer 3 parameters</span></h3>
 <ul>
   <li><span style="font-weight: bold;">Source port</span> - the port on
 the source host from which the data
@@ -180,7 +203,8 @@ indicate to ESnet which flow (out of a bunch) that have the same
 src/dst will use the L3 circuit.<br>
   </li>
 </ul>
-<span style="font-weight: bold;">Layer 2 parameters</span> <br>
+<h3><a class="mozTocH3" name="mozTocId265890"></a><span
+ style="font-weight: bold;">Layer 2 parameters</span> </h3>
 <ul>
   <li><span style="font-weight: bold;">VLAN tag</span> - A VLAN
 tag
@@ -269,8 +293,9 @@ include an ingress and egress router for each domain in the path.</li>
   <li><span style="font-weight: bold;">protocol </span>- for layer 3
 reservations</li>
 </ul>
-<h3><a name="cancel_reservation"></a><big><span
- style="font-weight: bold;">5. Cancel Reservation
+<h3><a class="mozTocH3" name="mozTocId594544"></a><a
+ name="cancel_reservation"></a><big><span style="font-weight: bold;">5.
+Cancel Reservation
 </span></big></h3>
 The Reservation Details page provides a button to
 allow you to cancel the reservation.<br>
@@ -345,8 +370,130 @@ This page presents an empty version of the user profile which can be
 filled
 in to add a new user to the system. See <a href="#mozTocId712078">User
 Profile</a> for a description of the fields.<br>
-<p><!--#include virtual="footer.html" -->
-</p>
 <br>
+<h2><a class="mozTocH2" name="mozTocId845904"></a>Web Service Interface</h2>
+The web service interface is defined by the <a href="OSCARS.wsdl">OSCARS.wsdl</a>
+and <a href="OSCARS.xsd">OSCARS.xsd</a><br>
+We provide a Java client-side interface class,
+net.es.oscars.client/Client.java, to setup, send, receive and
+unmarshall the messages. There is also a directory,
+examples/javaClients that has two command line programs for each
+message. One version prompts for arguments and the CLI versions take
+all the arguments on the command line.&nbsp; <br>
+<br>
+The functional interfaces are:<br>
+<br>
+<h3><a class="mozTocH3" name="mozTocId65813"></a><big><span
+ style="font-weight: bold;">1. createReservation</span></big></h3>
+request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">Global Reservation Identifier</span>
+(int, 0 or 1)&nbsp; - may only be input by an IDC when forwarding a
+createReservation request </li>
+  <li><span style="font-weight: bold;">Start Time</span> (long) -time
+to start the reservation in seconds since midnight, January 1, 1970 UTC.</li>
+  <li><big><small><span style="font-weight: bold;">End Time</span>
+(long)</small> </big>- time to end the reservation in
+seconds since midnight, January 1, 1970 UTC.</li>
+  <li><span style="font-weight: bold;">bandwidth</span> (int) -
+bandwidth to be reserved in bps.<br>
+  </li>
+  <li><span style="font-weight: bold;">description</span> (string) -
+description of the purpose of
+the reservation.</li>
+  <li style="font-weight: bold;">Path Info:</li>
+  <ul>
+    <li style="font-weight: bold;">pathSetupMode
+(string) </li>
+    <ul>
+      <li> <span style="font-style: italic; font-weight: bold;">"timer-automatic"</span>
+means that the reserved circuit will be instantiated by the scheduler
+process</li>
+      <li> <span style="font-style: italic; font-weight: bold;">"signal-xml"</span>
+means the user will signal to instantiate the reserved circuit</li>
+    </ul>
+    <li> <span style="font-weight: bold;">pathType</span> (string, 0
+or 1) should be input as "<span
+ style="font-weight: bold; font-style: italic;">"loose"</span>, paths
+input from users are treated as suggestions.<br>
+    </li>
+    <li> <span style="font-weight: bold;">path </span>(CtrlPlanePathContent,
+0 or 1)</li>
+    <ul>
+      <li><span style="font-weight: bold;">hop</span> (0 or more)</li>
+      <ul>
+        <li><span style="font-weight: bold;">domainIdRef</span>
+(string, 0 or 1) </li>
+        <li><span style="font-weight: bold;">nodeIdRef</span> (string,
+0 or 1) </li>
+        <li><span style="font-weight: bold;">portIdRef</span> (string,
+0 or 1) </li>
+        <li><span style="font-weight: bold;">linkIdRef </span>(string,
+0 or 1) </li>
+      </ul>
+    </ul>
+    <li> <span style="font-weight: bold;">layer2Info</span>
+(layer2Info, optional)</li>
+    <ul>
+      <li><span style="font-weight: bold;">srcVtag</span> (string, 0 or
+1) can be a number, a range of numbers
+(3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"<br>
+      </li>
+      <li><span style="font-weight: bold;">destVtag</span> (string, 0
+or 1) can be a number, a range of numbers
+(3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"</li>
+      <li><span style="font-weight: bold;">srcEndpoin</span>t (string)
+The ingress router. May be DNS name,
+IPaddr or topology identifier<br>
+      </li>
+      <li><span style="font-weight: bold;">destEndpoint</span> (string)
+The egress router . May be DNS name,
+IPaddr or topology identifier</li>
+    </ul>
+    <li> <span style="font-weight: bold;">layer3Info</span>
+(layer3Info,optional)</li>
+    <ul>
+      <li><span style="font-weight: bold;">srcHost</span> (string) -
+may be DNS name, IPaddr or topology
+identifier<br>
+        <span style="font-weight: bold;">destHost</span> (string) - may
+be DNS name, IPaddr or topology identifier<br>
+        <span style="font-weight: bold;">protocol</span> (string, 0 or
+1) - "UDP" or "TCP"<br>
+        <span style="font-weight: bold;">srcIpPort </span>(int, 0 or 1)<br>
+        <span style="font-weight: bold;">destIpPort</span> (int, 0 or 1)<br>
+        <span style="font-weight: bold;">dscp</span> (string, 0 or 1) -
+used by Terrapaths to set QoS bits<br>
+      </li>
+    </ul>
+    <li> <span style="font-weight: bold;">mplsInfo </span> (mplsInfo,
+optional)</li>
+    <ul>
+      <li><span style="font-weight: bold;">burstLimit</span> (int) - in
+bps<br>
+        <span style="font-weight: bold;">lspClass </span>(string, 0 or
+1)<br>
+      </li>
+    </ul>
+  </ul>
+</ul>
+reply message parameters<br>
+<p>
+Because there are so many createReservation parameters, our example
+Java client, reads them from a properties file.<br>
+<br>
+<span style="color: rgb(204, 0, 0);">Describe how to use
+CreateReservation.sh</span><br>
+</p>
+<h2><a class="mozTocH2" name="mozTocId798822"></a>2. Query Reservation</h2>
+<h2><a class="mozTocH2" name="mozTocId798162"></a>3. List Reservation</h2>
+<h2><a class="mozTocH2" name="mozTocId538182"></a>4. Cancel Reservation</h2>
+<h2><a class="mozTocH2" name="mozTocId885893"></a>5. Forward</h2>
+<h2><a class="mozTocH2" name="mozTocId303252"></a>6. Get Network
+Topology</h2>
+<h2><a class="mozTocH2" name="mozTocId383110"></a>7. Initiate Topology
+Pull</h2>
+<h2><a class="mozTocH2" name="mozTocId768207"></a>8. Signal<br>
+</h2>
 </body>
 </html>
