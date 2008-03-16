@@ -85,7 +85,7 @@ public class CreateReservationForm extends HttpServlet {
         out.println("<tbody>");
         out.println("<tr>");
         out.println("<td><input type='submit' value='Reserve bandwidth'></input></td>");
-        out.println("<td><input class='SOAP' type='radio' name='production' value='production'>");
+        out.println("<td><input class='SOAP' type='checkbox' name='production' value='production'>");
         out.println("Production circuit</input></td>");
         out.println("<td><input type='reset' value='Reset form fields'></input></td>");
         out.println("</tr>");

@@ -168,10 +168,16 @@ public class CreateReservation extends HttpServlet {
             ? (Long.valueOf(strParam.trim()) * 1000000L) : null;
         resv.setBandwidth(bandwidth);
         String description = request.getParameter("description");
+        // only one checkbox
         String productionStatus = request.getParameter("production");
-        // if not blank, radio box indicating production circuit was checked
-        if (productionStatus != null) {
+        // if checkbox was checked, indicate that is production circuit
+        Logger log = Logger.getLogger(this.getClass());
+        if ((productionStatus != null) &&
+                !productionStatus.trim().equals("")) {
+            log.info("**** productionStatus " + productionStatus);
             description = "[PRODUCTION CIRCUIT] " + description;
+        } else {
+            log.info("**** productionStatus is blank");
         }
         resv.setDescription(description);
 

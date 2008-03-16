@@ -76,6 +76,13 @@ function submitForm( form, methodName, params ) {
                 }
             }
         }
+        // remove production param if not checked
+        // one checkbox apparently is treated differently than multiple
+        if (form.production) {
+            if (form.production.checked != true) {
+                form.production.value='';
+            }
+        }
 
         for (var e=0; e < numElements; e++) {
             var foundMultiple = false;
@@ -126,7 +133,15 @@ function newSection( methodName, params ) {
 
 // Handle response from XMLHttpRequest.
 function handleResponse(xmlhttp, methodName) {
-    //alert(xmlhttp.responseText);
+    /*
+    for (var i = 0; i < xmlhttp.responseText.length; i += 1500) {
+        var end = i + 1500;
+        if (end > xmlhttp.responseText.length) {
+            end = xmlhttp.responseText.length;
+        }
+        alert(xmlhttp.responseText.substring(i, end));
+    }
+    */
     var responseDom = xmlhttp.responseXML;
     var serializer = new XMLSerializer();
     //alert(serializer.serializeToString(responseDom));
