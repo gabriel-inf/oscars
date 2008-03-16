@@ -171,13 +171,9 @@ public class CreateReservation extends HttpServlet {
         // only one checkbox
         String productionStatus = request.getParameter("production");
         // if checkbox was checked, indicate that is production circuit
-        Logger log = Logger.getLogger(this.getClass());
         if ((productionStatus != null) &&
                 !productionStatus.trim().equals("")) {
-            log.info("**** productionStatus " + productionStatus);
             description = "[PRODUCTION CIRCUIT] " + description;
-        } else {
-            log.info("**** productionStatus is blank");
         }
         resv.setDescription(description);
 
