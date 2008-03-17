@@ -46,7 +46,8 @@ public class TraceroutePathfinderTest {
     public void allowedTest() {
         AuthHandler authHandler = new AuthHandler();
         boolean authorized = authHandler.checkAuthorization();
-        Assert.assertTrue(authorized, "You are not authorized to do a traceroute from this machine");
+        Assert.assertTrue(authorized,
+            "You are not authorized to do a traceroute from this machine. ");
     }
 
   @Test(dependsOnMethods={ "allowedTest" })

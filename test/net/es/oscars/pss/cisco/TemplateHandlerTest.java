@@ -17,7 +17,7 @@ import net.es.oscars.pss.PSSException;
  *
  */
 //@Test(groups={ "pss.cisco, xml" })
-@Test(groups={ "pss.cisco, foo" })
+@Test(groups={ "pss.cisco" })
 public class TemplateHandlerTest {
     private final String BANDWIDTH = "10000000"; // 10 Mbps
     private Properties testProps;
@@ -46,24 +46,24 @@ public class TemplateHandlerTest {
         this.commonHm.put("lsp_reservation-priority",
                 oscarsProps.getProperty("lsp_reservation-priority"));
         this.commonHm.put("bandwidth", BANDWIDTH);
-        // this just tests template filling
+        // this just tests template filling; doesn't matter what values are
         this.commonHm.put("vlan-id", "0");
         this.commonHm.put("port", "GigabitEthernet1/0/0");
         this.commonHm.put("egress-rtr-loopback",
-                          this.testProps.getProperty("egressNode"));
-        this.commonHm.put("lsp_to", this.testProps.getProperty("egressNode"));
+                          this.testProps.getProperty("layer2Dest"));
+        this.commonHm.put("lsp_to", this.testProps.getProperty("layer2Dest"));
 
         this.setupFileName = System.getenv("CATALINA_HOME") +
-                                 "/shared/oscars.conf/server/" +
-                                 oscarsProps.getProperty("setupFile");
+                                  "/shared/classes/server/" +
+                                 oscarsProps.getProperty("setupL2Template");
         this.teardownFileName =  System.getenv("CATALINA_HOME") +
-                                 "/shared/oscars.conf/server/" +
-                                 oscarsProps.getProperty("teardownFile");
+                                 "/shared/classes/server/" +
+                                 oscarsProps.getProperty("teardownL2Template");
         this.th = new TemplateHandler();
     }
 
   @Test
-    public void ciscoSetup() throws IOException, PSSException {
+    public void ciscoTemplateSetup() throws IOException, PSSException {
 
         StringBuilder sb = new StringBuilder();
 
@@ -78,16 +78,12 @@ public class TemplateHandlerTest {
         this.log.info(sb.toString());
 
         List<String> hops = new ArrayList<String>();
-        // these are just used to fill in the template as a test
-        hops.add("134.55.75.94");  // ingress
-        hops.add("134.55.209.21");
-        hops.add("134.55.219.10");
-        hops.add("134.55.217.2");
-        hops.add("134.55.207.37");
-        hops.add("134.55.220.49");
-        hops.add("134.55.209.46");
-        hops.add("134.55.207.34");
-        hops.add("134.55.219.26");
+        String[] pathHops =
+            this.testProps.getProperty("layer2Path").split(", ");
+        for (int i=0; i < pathHops.length; i++) {
+            pathHops[i] = pathHops[i].trim();
+            hops.add(pathHops[i]);
+        }
 
         String buf = this.th.buildString(hm, hops, this.setupFileName);
         this.log.info("\n" + buf);
@@ -96,7 +92,7 @@ public class TemplateHandlerTest {
     }
 
   @Test
-    public void ciscoTeardown() throws IOException, PSSException {
+    public void ciscoTemplateTeardown() throws IOException, PSSException {
 
         this.log.info("testBasicTeardown.start");
         Map<String,String> hm =

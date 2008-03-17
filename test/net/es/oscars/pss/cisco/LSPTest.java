@@ -8,6 +8,7 @@ import org.apache.log4j.*;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.AuthHandler;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.pss.PSSException;
 
 
@@ -15,14 +16,14 @@ import net.es.oscars.pss.PSSException;
  * This class tests Cisco router configuration.
  *
  */
-@Test(groups={ "TODO" })
+@Test(groups={ "broken" })
 public class LSPTest {
     private final String BANDWIDTH = "10000000"; // 10 Mbps
     // resv-num's will wrap at 65534
     private final String GRI = "65535";
     private Properties testProps;
     private LSP lsp;
-    private Map<String, String> commonHm;
+    private HashMap<String, String> commonHm;
     private Logger log;
 
   @BeforeClass
@@ -36,11 +37,13 @@ public class LSPTest {
                 propHandler.getPropertyGroup("pss.cisco", true);
         this.commonHm = new HashMap<String,String>();
         this.commonHm.put("resv-id", "oscars_" + 
-                           this.testProps.getProperty("asNum") + "-" + GRI);
+                        this.testProps.getProperty("localAsNum") + "-" + GRI);
         this.commonHm.put("resv-num", GRI);
-        // TODO:  temporary placeholders
-        this.commonHm.put("lsp_to", this.testProps.getProperty("egressNode"));
-        this.commonHm.put("egress-rtr-loopback", this.testProps.getProperty("egressNode"));
+        // not actually setting up circuit, just testing layer on top of
+        // TemplateHandler
+        this.commonHm.put("lsp_to", this.testProps.getProperty("layer2Dest"));
+        this.commonHm.put("egress-rtr-loopback",
+                this.testProps.getProperty("layer2Dest"));
         this.commonHm.put("bandwidth", BANDWIDTH);
         this.commonHm.put("vlan-id", "0");
         this.commonHm.put("port", "non-existent");
@@ -48,49 +51,31 @@ public class LSPTest {
                 oscarsProps.getProperty("lsp_setup-priority"));
         this.commonHm.put("lsp_reservation-priority",
                 oscarsProps.getProperty("lsp_reservation-priority"));
-        this.lsp = new LSP("bss");
+        this.lsp = new LSP(GlobalParams.getReservationTestDBName());
+        this.lsp.setConfigurable(false);
     }
 
   @Test
-    public void allowedTest() {
-        AuthHandler authHandler = new AuthHandler();
-        boolean authorized = authHandler.checkAuthorization();
-        assert authorized : "You are not authorizated to set up a circuit from this machine";
-    }
+    public void createCiscoCircuit() throws PSSException {
 
-  /*
-  @Test
-    public void setupLSP() throws PSSException {
-
-        Map<String,String> hm =
-            new HashMap<String,String>(this.commonHm);
         List<String> hops = new ArrayList<String>();
-
-        // TODO:  Cisco ingress, properties
-        hops.add("134.55.75.94");  // ingress
-        hops.add("134.55.209.21");
-        hops.add("134.55.219.10");
-        hops.add("134.55.217.2");
-        hops.add("134.55.207.37");
-        hops.add("134.55.220.49");
-        hops.add("134.55.209.46");
-        hops.add("134.55.207.34");
-        hops.add("134.55.219.26");
-        this.lsp.setupLSP(hm, hops);
+        String[] pathHops =
+            this.testProps.getProperty("layer2Path").split(", ");
+        for (int i=0; i < pathHops.length; i++) {
+            pathHops[i] = pathHops[i].trim();
+            hops.add(pathHops[i]);
+        }
+        //this.lsp.setParameters(this.commonHm);
+        this.lsp.setupLSP(hops);
         // if got to here without exception, successful for now
         assert true;
     }
 
   @Test
-    public void tearDownLSP() throws PSSException {
+    public void teardownCiscoCircuit() throws PSSException {
 
-        // if a hash value is unused in connecting to the router, or
-        // in the template, it is ignored
-        Map<String,String> hm =
-            new HashMap<String,String>(this.commonHm);
-        this.lsp.teardownLSP(hm);
+        this.lsp.teardownLSP();
         // if got to here without exception, successful for now
         assert true;
     }
-    */
 }

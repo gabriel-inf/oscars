@@ -1,6 +1,7 @@
 package net.es.oscars.pss;
 
 import org.testng.annotations.*;
+import org.testng.Assert;
 
 import java.util.*;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 
 import net.es.oscars.PropHandler;
+import net.es.oscars.AuthHandler;
 
 /**
  * This class tests making SNMP calls using SNMP.java.
@@ -29,6 +31,14 @@ public class SNMPTest {
         this.props = propHandler.getPropertyGroup("test.snmp", true);
     }
         
+  @Test
+    public void allowedTest() {
+        AuthHandler authHandler = new AuthHandler();
+        boolean authorized = authHandler.checkAuthorization();
+        Assert.assertTrue(authorized,
+            "You are not authorized to make an SNMP query from this machine. ");
+    }
+
 /*
     public void testQueryLSPSnmp() throws IOException{
         SNMP snmp = new SNMP();
@@ -43,6 +53,7 @@ public class SNMPTest {
     }
 */
 
+  @Test(dependsOnMethods={ "allowedTest" })
     public void testQueryRouterType() throws IOException, PSSException {
         SNMP snmp = new SNMP();
         String router = this.props.getProperty("router");
