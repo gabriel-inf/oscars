@@ -11,6 +11,8 @@ package net.es.oscars.oscars;
  */
 
 import java.util.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 
@@ -247,7 +249,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new BSSFaultMessage("modifyReservation interdomain error " + e.getMessage());
         } catch (Exception e) {
             this.bss.getTransaction().rollback();
-            this.log.error("modifyReservation caught Exception: " + e.getMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+
+            this.log.error("modifyReservation caught Exception: " + e.getMessage() + "\n" + sw.toString());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         }
 
@@ -639,9 +645,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public void init(ServiceContext sc) {
 
         this.log = Logger.getLogger(this.getClass());
-	this.log.info("OSCARS init.start");
+    this.log.info("OSCARS init.start");
         String catalinaHome = System.getProperty("catalina.home");
-	this.log.info("catalina.home is "+ catalinaHome);
+    this.log.info("catalina.home is "+ catalinaHome);
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
         dbnames.add("aaa");
