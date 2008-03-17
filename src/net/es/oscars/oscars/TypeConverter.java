@@ -391,7 +391,7 @@ public class TypeConverter {
         Ipaddr ipaddr = null;
 
         // return as is if layer 2
-        if (if (pathInfo == null || pathInfo.getLayer2Info() != null) {
+        if (pathInfo.getLayer2Info() != null) {
             return;
         }
         // if layer 3, generate new path with host name/IP rather than
