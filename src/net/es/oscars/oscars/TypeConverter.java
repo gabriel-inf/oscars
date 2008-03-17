@@ -111,8 +111,7 @@ public class TypeConverter {
      */
     public ModifyResReply reservationToModifyReply(Reservation resv) {
         ModifyResReply reply = new ModifyResReply();
-        ResDetails details = new ResDetails();
-        details = this.reservationToDetails(resv);
+        ResDetails details = this.reservationToDetails(resv);
         reply.setReservation(details);
         return reply;
     }
@@ -156,8 +155,10 @@ public class TypeConverter {
         reply.setStartTime(resv.getStartTime());
         reply.setEndTime(resv.getEndTime());
         reply.setCreateTime(resv.getCreatedTime());
-        int bandwidth = resv.getBandwidth().intValue();
-        reply.setBandwidth(bandwidth);
+        if (resv.getBandwidth() != null) {
+            int bandwidth = resv.getBandwidth().intValue();
+            reply.setBandwidth(bandwidth);
+        }
         reply.setDescription(resv.getDescription());
         reply.setPathInfo(this.getPathInfo(resv));
         return reply;
@@ -213,17 +214,21 @@ public class TypeConverter {
      */
     public PathInfo getPathInfo(Reservation resv) {
         PathInfo pathInfo = new PathInfo();
-        pathInfo.setPathSetupMode(resv.getPath().getPathSetupMode());
-        pathInfo.setPath(this.pathToCtrlPlane(resv.getPath()));
-        // one of these is allowed to be null
-        Layer2Info layer2Info = this.pathToLayer2Info(resv.getPath());
-        pathInfo.setLayer2Info(layer2Info);
-        Layer3Info layer3Info = this.pathToLayer3Info(resv.getPath());
-        pathInfo.setLayer3Info(layer3Info);
-        // allowed to be null
-        MplsInfo mplsInfo = this.pathToMplsInfo(resv.getPath());
-        pathInfo.setMplsInfo(mplsInfo);
-        return pathInfo;
+        if (resv.getPath() != null) {
+            pathInfo.setPathSetupMode(resv.getPath().getPathSetupMode());
+            pathInfo.setPath(this.pathToCtrlPlane(resv.getPath()));
+            // one of these is allowed to be null
+            Layer2Info layer2Info = this.pathToLayer2Info(resv.getPath());
+            pathInfo.setLayer2Info(layer2Info);
+            Layer3Info layer3Info = this.pathToLayer3Info(resv.getPath());
+            pathInfo.setLayer3Info(layer3Info);
+            // allowed to be null
+            MplsInfo mplsInfo = this.pathToMplsInfo(resv.getPath());
+            pathInfo.setMplsInfo(mplsInfo);
+            return pathInfo;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -245,13 +250,7 @@ public class TypeConverter {
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
             Link link = pathElem.getLink();
             if (path.getLayer2Data() != null) {
-                Port port = link.getPort();
-                Node node = port.getNode();
-                Domain domain = node.getDomain();
-                hopId = domain.getTopologyIdent() + ":" +
-                         node.getTopologyIdent() + ":" +
-                         port.getTopologyIdent() + ":" +
-                         link.getTopologyIdent();
+                hopId = link.getFQTI();
             } else {
                 String nodeName = link.getPort().getNode().getTopologyIdent();
                 IpaddrDAO ipaddrDAO = new IpaddrDAO("bss");
