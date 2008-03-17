@@ -117,7 +117,6 @@ public class ReservationAdapter {
     public ModifyResReply modify(ModifyResContent params, String login, boolean allUsers)
             throws BSSException, InterdomainException {
 
-
         this.log.info("modify.start");
 
         Reservation resv = this.tc.contentToReservation(params);
@@ -128,32 +127,32 @@ public class ReservationAdapter {
         ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
-            this.rm.modify(resv, login, pathInfo);
+            this.rm.modify(resv, login);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("modify, to forward");
-            forwardReply = forwarder.modify(resv, pathInfo);
-            this.rm.finalizeModifyResv(forwardReply, resv, pathInfo);
-            // persist to db
-            this.rm.store(resv);
+            forwardReply = forwarder.modify(resv);
+            this.rm.finalizeModifyResv(forwardReply, resv);
 
             this.log.debug("modify, to toModifyReply");
             reply = this.tc.reservationToModifyReply(resv);
+
             // set to input argument, which possibly has been modified during
             // reservation creation
-
-            pathInfo.getPath().setId("unimplemented");
-            this.tc.clientConvert(pathInfo);
+            if (pathInfo != null) {
+                pathInfo.getPath().setId("unimplemented");
+                this.tc.clientConvert(pathInfo);
+            }
             reply.getReservation().setPathInfo(pathInfo);
 
 
         } catch (BSSException e) {
             // send notification in all cases
-            this.sendFailureNotification(resv, e.getMessage());
+            this.sendFailureNotification(resv, "modify failed with error: " + e.getMessage());
             throw new BSSException(e.getMessage());
         } catch (InterdomainException e) {
             // send notification in all cases
-            this.sendFailureNotification(resv, e.getMessage());
+            this.sendFailureNotification(resv, "modify failed with error: " + e.getMessage());
             throw new InterdomainException(e.getMessage());
         }
 

@@ -69,19 +69,17 @@ public class Forwarder extends Client {
         return createReply;
     }
 
-    public ModifyResReply modify(Reservation resv, PathInfo pathInfo) throws InterdomainException {
+    public ModifyResReply modify(Reservation resv) throws InterdomainException {
 
-        ModifyResReply modifyReply = null;
-        Path path = resv.getPath();
-        if (path == null) {
-           throw new InterdomainException("no path provided to forwarder create");
+        String url = null;
+
+        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
+            url = resv.getPath().getNextDomain().getUrl();
         }
-        Domain nextDomain = path.getNextDomain();
-        if (nextDomain == null) { return null; }
-        String url = nextDomain.getUrl();
+
         this.log.info("modify.start forward to  " + url);
-        ForwardReply reply = this.forward("modifyReservation", resv, pathInfo, url);
-        modifyReply = reply.getModifyReservation();
+        ForwardReply reply = this.forward("modifyReservation", resv, null, url);
+        ModifyResReply modifyReply = reply.getModifyReservation();
         this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
         return modifyReply;
     }

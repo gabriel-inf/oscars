@@ -274,7 +274,7 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public void modify(Reservation resv, String login, PathInfo pathInfo)
+    public void modify(Reservation resv, String login)
             throws  BSSException {
 
         this.log.info("modify.start");
@@ -290,7 +290,7 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public void finalizeModifyResv(ModifyResReply forwardReply, Reservation resv, PathInfo pathInfo)
+    public void finalizeModifyResv(ModifyResReply forwardReply, Reservation resv)
             throws  BSSException {
 
         this.log.info("finalizeModify.start");
