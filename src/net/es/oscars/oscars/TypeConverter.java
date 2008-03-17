@@ -222,6 +222,7 @@ public class TypeConverter {
      * @return pathInfo a filled in PathInfo Axis2 type
      */
     public PathInfo getPathInfo(Reservation resv) {
+        this.log.debug("getPathInfo.start");
         PathInfo pathInfo = new PathInfo();
         if (resv.getPath() != null) {
             pathInfo.setPathSetupMode(resv.getPath().getPathSetupMode());
@@ -234,8 +235,10 @@ public class TypeConverter {
             // allowed to be null
             MplsInfo mplsInfo = this.pathToMplsInfo(resv.getPath());
             pathInfo.setMplsInfo(mplsInfo);
+            this.log.debug("getPathInfo.end");
             return pathInfo;
         } else {
+            this.log.debug("getPathInfo.end");
             return null;
         }
     }
