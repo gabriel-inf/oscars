@@ -276,8 +276,12 @@ public class ReservationManager {
      */
     public void modify(Reservation resv, String login)
             throws  BSSException {
-
         this.log.info("modify.start");
+        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+        resv = resvDAO.query(resv.getGlobalReservationId());
+
+
+
         this.log.info("modify.finish");
     }
 
