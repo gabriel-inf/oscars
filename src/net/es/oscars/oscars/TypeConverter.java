@@ -163,7 +163,11 @@ public class TypeConverter {
         reply.setStatus(resv.getStatus());
         reply.setStartTime(resv.getStartTime());
         reply.setEndTime(resv.getEndTime());
-        reply.setCreateTime(resv.getCreatedTime());
+        if (resv.getCreatedTime() == null) {
+            reply.setCreateTime(0L);
+        } else {
+            reply.setCreateTime(resv.getCreatedTime());
+        }
         if (resv.getBandwidth() != null) {
             int bandwidth = resv.getBandwidth().intValue();
             reply.setBandwidth(bandwidth);
