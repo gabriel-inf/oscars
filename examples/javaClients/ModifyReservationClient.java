@@ -19,7 +19,7 @@ import net.es.oscars.client.Client;
 import net.es.oscars.PropHandler;
 
 
-public class CreateReservationClient {
+public class ModifyReservationClient {
     /**
      * @param args  [0] directory name of the client repository
      *                  contains rampart.mar and axis2.xml
@@ -29,43 +29,39 @@ public class CreateReservationClient {
 
 
         try {
-            CreateReservationClient cl = new CreateReservationClient();
-            cl.create(args);
+            ModifyReservationClient cl = new ModifyReservationClient();
+            cl.modify(args);
         } catch (AAAFaultMessage e) {
-            System.out.println(
-                    "AAAFaultMessage from createReservation");
+            System.out.println("AAAFaultMessage from modifyReservation");
             System.out.println(e.getFaultMessage().getMsg());
         } catch (BSSFaultMessage e) {
-            System.out.println(
-                    "BSSFaultMessage from createReservation");
+            System.out.println("BSSFaultMessage from modifyReservation");
             System.out.println(e.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e) {
-            System.out.println(
-                    "RemoteException returned from createReservation");
+            System.out.println("RemoteException returned from modifyReservation");
             System.out.println(e.getMessage());
         } catch (Exception e) {
-            System.out.println(
-                    "OSCARSStub threw exception in createReservation");
+            System.out.println("OSCARSStub threw exception in modifyReservation");
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public CreateReply create(String[] args)
+    public ModifyResReply modify(String[] args)
             throws AAAFaultMessage, BSSFaultMessage,
                    java.rmi.RemoteException, Exception {
 
-        CreateReply response = null;
+        ModifyResReply response = null;
 
         response = this.sendContent(args);
         this.outputResponse(response);
         return response;
     }
 
-    public CreateReply sendContent(String[] args)
+    public ModifyResReply sendContent(String[] args)
         throws AAAFaultMessage, RemoteException, Exception {
 
-        ResCreateContent content = new ResCreateContent();
+        ModifyResContent content = new ModifyResContent();
 
         Client client = null;
         Properties props = new Properties();
@@ -86,7 +82,7 @@ public class CreateReservationClient {
             if (args[i].equals("-help") ||
                 args[i].equals("-h")) {
                 // properties file only optional if running from CLI
-                System.out.println("usage from createRes.sh: ./createRes.sh -pf propertiesFile [-alt]");
+                System.out.println("usage from modifyRes.sh: ./modifyRes.sh -pf propertiesFile [-alt]");
                 System.out.println("-alt chooses an alternate URL for a IDC from the properties file");
                 System.exit(0);
             }
@@ -207,10 +203,8 @@ public class CreateReservationClient {
             layer3Info.setSrcIpPort(0);
             layer3Info.setDestIpPort(0);
         }
-        mplsInfo.setBurstLimit(
-                Integer.parseInt(props.getProperty("burstLimit","10000000")));
-        content.setBandwidth(
-                Integer.parseInt(props.getProperty("bandwidth","10")));
+        mplsInfo.setBurstLimit(Integer.parseInt(props.getProperty("burstLimit","10000000")));
+        content.setBandwidth(Integer.parseInt(props.getProperty("bandwidth","10")));
         pathInfo.setPathSetupMode(props.getProperty("pathSetupMode", "timer-automatic"));
         if (layer.equals("2")) {
             pathInfo.setLayer2Info(layer2Info);
@@ -249,13 +243,6 @@ public class CreateReservationClient {
         }
         content.setPathInfo(pathInfo);
         param = props.getProperty("interactive", "0");
-
-        String gri = props.getProperty("gri", null);
-        if (gri != null && !gri.equals("")) {
-            content.setGlobalReservationId(gri);
-        }
-
-
         // if interactive, allow to override selected parameters
         if (!param.equals("0")) {
             try {
@@ -265,19 +252,27 @@ public class CreateReservationClient {
                 System.exit(1);
             }
         }
+
+        String gri = props.getProperty("gri", null);
+        if (gri != null && !gri.equals("")) {
+            content.setGlobalReservationId(gri);
+        } else {
+            System.out.println("Must set a GRI!");
+            System.exit(1);
+        }
+
         // make the call to the server
-        CreateReply response = client.createReservation(content);
+        ModifyResReply response = client.modifyReservation(content);
         return response;
     }
 
-    public void overrideProperties(ResCreateContent content)
+    public void overrideProperties(ModifyResContent content)
             throws IOException {
 
         String arg = null;
 
         // if prompting for parameters
-        BufferedReader br =
-                new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         PathInfo pathInfo = content.getPathInfo();
         Layer2Info layer2Info = pathInfo.getLayer2Info();
@@ -325,6 +320,7 @@ public class CreateReservationClient {
         }
         this.setTimes(content, start_time, end_time, duration);
 
+
         arg = Args.getArg(br, "Bandwidth",
                     Integer.toString(content.getBandwidth()));
         if (arg != null) { content.setBandwidth(Integer.parseInt(arg)); }
@@ -335,27 +331,23 @@ public class CreateReservationClient {
         // don't allow override of ERO at this time
     }
 
-    public void outputResponse(CreateReply response) {
-        System.out.println("GRI: " + response.getGlobalReservationId());
-        System.out.println("Status: " + response.getStatus().toString());
+    public void outputResponse(ModifyResReply response) {
+        ResDetails reservation = response.getReservation();
+        System.out.println("GRI: " + reservation.getGlobalReservationId());
+        System.out.println("Status: " + reservation.getStatus().toString());
 
-        String token = response.getToken();
-        if(token != null){
-            System.out.println("Token: " + token);
-        }
-
-        if ((response.getPathInfo() != null) &&
-            (response.getPathInfo().getLayer3Info() != null)) {
-            this.outputHops(response.getPathInfo().getPath());
+        if ((reservation.getPathInfo() != null) &&
+            (reservation.getPathInfo().getLayer3Info() != null)) {
+            this.outputHops(reservation.getPathInfo().getPath());
         }
     }
 
-    public void setTimes(ResCreateContent content, String start_time, String end_time, String duration) {
+    public void setTimes(ModifyResContent content, String start_time, String end_time, String duration) {
         // all times are communicated to the server in UTC
         Long startTime = null;
         Long endTime = null;
-
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 
         if (start_time == null || start_time.equals("")) {
             startTime = System.currentTimeMillis()/1000;
