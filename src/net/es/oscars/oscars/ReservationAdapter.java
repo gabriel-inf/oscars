@@ -139,7 +139,7 @@ public class ReservationAdapter {
 
             // set to input argument, which possibly has been modified during
             // reservation creation
-            if (pathInfo != null) {
+            if (pathInfo != null && pathInfo.getPath() != null) {
                 pathInfo.getPath().setId("unimplemented");
                 this.tc.clientConvert(pathInfo);
             }
