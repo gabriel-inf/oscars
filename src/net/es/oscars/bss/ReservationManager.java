@@ -285,7 +285,13 @@ public class ReservationManager {
             throws  BSSException {
         this.log.info("modify.start");
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-        resv = resvDAO.query(resv.getGlobalReservationId());
+
+        Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
+        if (persistentResv == null) {
+            throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
+        } else {
+            resv = persistentResv;
+        }
 
 
 
