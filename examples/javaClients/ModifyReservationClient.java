@@ -5,6 +5,8 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.rmi.RemoteException;
 
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
@@ -26,6 +28,8 @@ public class ModifyReservationClient {
      *              [1] the default url of the service endpoint
      */
     public static void main(String[] args) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
 
 
         try {
@@ -42,8 +46,9 @@ public class ModifyReservationClient {
             System.out.println(e.getMessage());
         } catch (Exception e) {
             System.out.println("OSCARSStub threw exception in modifyReservation");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            System.out.println("Error: "+e.getMessage());
+            e.printStackTrace(pw);
+            System.out.println(sw.toString());
         }
     }
 
@@ -152,9 +157,9 @@ public class ModifyReservationClient {
         mplsInfo = new MplsInfo();
         content.setDescription(props.getProperty("description",""));
 
-        String start_time = props.getProperty("start_time").trim();
-        String end_time = props.getProperty("end_time").trim();
-        String duration = props.getProperty("duration").trim();
+        String start_time = props.getProperty("start_time");
+        String end_time = props.getProperty("end_time");
+        String duration = props.getProperty("duration");
 
         this.setTimes(content, start_time, end_time, duration);
 
@@ -261,8 +266,9 @@ public class ModifyReservationClient {
             System.exit(1);
         }
 
-        // make the call to the server
         ModifyResReply response = client.modifyReservation(content);
+
+        // make the call to the server
         return response;
     }
 
@@ -348,33 +354,33 @@ public class ModifyReservationClient {
         Long endTime = null;
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-
-        if (start_time == null || start_time.equals("")) {
+        if (start_time == null || start_time.trim().equals("")) {
             startTime = System.currentTimeMillis()/1000;
         } else {
             try {
-                startTime = df.parse(start_time).getTime()/1000;
+                startTime = df.parse(start_time.trim()).getTime()/1000;
             } catch (java.text.ParseException ex) {
                 System.out.println("Error parsing start date: "+ex.getMessage());
                 System.exit(1);
             }
         }
 
-        if (duration == null || duration.equals("")) {
-            double dseconds = Double.valueOf(duration) * 3600.0;
+        if (duration != null && !duration.trim().equals("")) {
+            double dseconds = Double.valueOf(duration.trim()) * 3600.0;
             long seconds = (long)dseconds;
             endTime = startTime + seconds;
 
-        } else if (end_time == null || end_time.equals("")) {
+        } else if (end_time == null || end_time.trim().equals("")) {
             endTime = startTime + 600;
         } else {
             try {
-                endTime = df.parse(end_time).getTime()/1000;
+                endTime = df.parse(end_time.trim()).getTime()/1000;
             } catch (java.text.ParseException ex) {
                 System.out.println("Error parsing end date: "+ex.getMessage());
                 System.exit(1);
             }
         }
+
 
 
         content.setStartTime(startTime);
