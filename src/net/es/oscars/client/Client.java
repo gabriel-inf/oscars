@@ -43,7 +43,7 @@ public class Client {
                 ConfigurationContextFactory
                 .createConfigurationContextFromFileSystem(repo, null);
 
-        this.stub = new OSCARSStub(this.configContext, url); 
+        this.stub = new OSCARSStub(this.configContext, url);
         ServiceClient sc = this.stub._getServiceClient();
         Options opts = sc.getOptions();
         opts.setTimeOutInMilliSeconds(300000); // set to 5 minutes
@@ -54,13 +54,13 @@ public class Client {
     /**
      * Makes call to server to cancel a reservation.
      *
-     * @param gri a GlobalReservationId instance with reservation's unique id 
+     * @param gri a GlobalReservationId instance with reservation's unique id
      * @return a string with the reservation's status
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      * @throws java.rmi.RemoteException
      */
-    public String cancelReservation(GlobalReservationId gri) 
+    public String cancelReservation(GlobalReservationId gri)
             throws AAAFaultMessage, java.rmi.RemoteException,
                   Exception {
 
@@ -85,13 +85,35 @@ public class Client {
            throws AAAFaultMessage, java.rmi.RemoteException,
                   Exception {
 
-        CreateReply crr =  null; 
+        CreateReply crr =  null;
         CreateReservationResponse resResponse =
             new CreateReservationResponse();
         CreateReservation createRes = new CreateReservation();
         createRes.setCreateReservation(resRequest);
         resResponse = this.stub.createReservation(createRes);
         crr = resResponse.getCreateReservationResponse();
+        return crr;
+    }
+
+    /**
+     * Makes call to server to modify a reservation.
+     *
+     * @param resRequest a ModifyResContent with reservation parameters
+     * @return crr a ModifyResReply instance with the reservation's GRI and status
+     * @throws AAAFaultMessage
+     * @throws BSSFaultMessage
+     * @throws java.rmi.RemoteException
+     */
+    public ModifyResReply modifyReservation(ModifyResContent resRequest)
+           throws AAAFaultMessage, java.rmi.RemoteException,
+                  Exception {
+
+        ModifyResReply crr =  null;
+        ModifyReservationResponse resResponse = new ModifyReservationResponse();
+        ModifyReservation modifyRes = new ModifyReservation();
+        modifyRes.setModifyReservation(resRequest);
+        resResponse = this.stub.modifyReservation(modifyRes);
+        crr = resResponse.getModifyReservationResponse();
         return crr;
     }
 
@@ -134,7 +156,7 @@ public class Client {
         ResDetails qreply = qrr.getQueryReservationResponse();
         return qreply;
     }
-    
+
     /**
      * Makes call to server to get a global view of domain's topology
      *
@@ -154,7 +176,7 @@ public class Client {
         GetTopologyResponseContent response = topo.getGetNetworkTopologyResponse();
         return response;
     }
-    
+
     /**
      * Tells the server to update its topology
      *
@@ -165,18 +187,18 @@ public class Client {
      * @throws java.rmi.RemoteException
      */
     public InitiateTopologyPullResponseContent initiateTopologyPull(
-           InitiateTopologyPullContent request) throws AAAFaultMessage, 
+           InitiateTopologyPullContent request) throws AAAFaultMessage,
            java.rmi.RemoteException, Exception {
 
         InitiateTopologyPull initTopoPull = new InitiateTopologyPull();
         initTopoPull.setInitiateTopologyPull(request);
-        InitiateTopologyPullResponse initResult = 
+        InitiateTopologyPullResponse initResult =
             this.stub.initiateTopologyPull(initTopoPull);
-        InitiateTopologyPullResponseContent response = 
+        InitiateTopologyPullResponseContent response =
             initResult.getInitiateTopologyPullResponse();
         return response;
     }
-    
+
     /**
      * Signals that a previously made reservation should be created
      *
@@ -187,19 +209,19 @@ public class Client {
      * @throws java.rmi.RemoteException
      */
     public CreatePathResponseContent createPath(
-           CreatePathContent request) throws AAAFaultMessage, 
+           CreatePathContent request) throws AAAFaultMessage,
            java.rmi.RemoteException, Exception {
 
         CreatePath cpath = new CreatePath();
         cpath.setCreatePath(request);
-        CreatePathResponse createResult = 
+        CreatePathResponse createResult =
             this.stub.createPath(cpath);
-        CreatePathResponseContent response = 
+        CreatePathResponseContent response =
             createResult.getCreatePathResponse();
-            
+
         return response;
     }
-    
+
     /**
      * Verifies that a previously setup path is still active
      *
@@ -210,19 +232,19 @@ public class Client {
      * @throws java.rmi.RemoteException
      */
     public RefreshPathResponseContent refreshPath(
-           RefreshPathContent request) throws AAAFaultMessage, 
+           RefreshPathContent request) throws AAAFaultMessage,
            java.rmi.RemoteException, Exception {
 
         RefreshPath rpath = new RefreshPath();
         rpath.setRefreshPath(request);
-        RefreshPathResponse refreshResult = 
+        RefreshPathResponse refreshResult =
             this.stub.refreshPath(rpath);
-        RefreshPathResponseContent response = 
+        RefreshPathResponseContent response =
             refreshResult.getRefreshPathResponse();
-            
+
         return response;
     }
-    
+
     /**
      * Tearsdown a previously setup path
      *
@@ -233,19 +255,19 @@ public class Client {
      * @throws java.rmi.RemoteException
      */
     public TeardownPathResponseContent teardownPath(
-           TeardownPathContent request) throws AAAFaultMessage, 
+           TeardownPathContent request) throws AAAFaultMessage,
            java.rmi.RemoteException, Exception {
 
         TeardownPath tpath = new TeardownPath();
         tpath.setTeardownPath(request);
-        TeardownPathResponse teardownResult = 
+        TeardownPathResponse teardownResult =
             this.stub.teardownPath(tpath);
-        TeardownPathResponseContent response = 
+        TeardownPathResponseContent response =
             teardownResult.getTeardownPathResponse();
-            
+
         return response;
     }
- 
+
     /**
      * Makes call to server to forward a create reservation request to the
      * next domain.
@@ -262,7 +284,7 @@ public class Client {
 
         ForwardReply freply = null;
         ForwardResponse frsp = null;
-        
+
         frsp = this.stub.forward(fwd);
         freply = frsp.getForwardResponse();
         return freply;
