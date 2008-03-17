@@ -78,6 +78,13 @@ public class ReservationManager {
         if (resv.getGlobalReservationId() == null){
             String gri = this.generateGRI();
             resv.setGlobalReservationId(gri);
+        } else {
+            ReservationDAO dao = new ReservationDAO(this.dbname);
+            Reservation tmp = dao.query(resv.getGlobalReservationId());
+            if (tmp != null) {
+                throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
+            }
+
         }
         this.rsvLogger.redirect(resv.getGlobalReservationId());
 
