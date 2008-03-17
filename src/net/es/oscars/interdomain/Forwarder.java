@@ -77,11 +77,15 @@ public class Forwarder extends Client {
             url = resv.getPath().getNextDomain().getUrl();
         }
 
-        this.log.info("modify.start forward to  " + url);
-        ForwardReply reply = this.forward("modifyReservation", resv, null, url);
-        ModifyResReply modifyReply = reply.getModifyReservation();
-        this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
-        return modifyReply;
+        if (url != null) {
+            this.log.info("modify.start forward to  " + url);
+            ForwardReply reply = this.forward("modifyReservation", resv, null, url);
+            ModifyResReply modifyReply = reply.getModifyReservation();
+            this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
+            return modifyReply;
+        } else {
+            return null;
+        }
     }
 
 
