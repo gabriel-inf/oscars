@@ -2,7 +2,7 @@
 <!-- by the Apache Axis2 version: #axisVersion# #today# -->
 <serviceGroup>
 <service name="OSCARS" scope="application">
-<module ref="rampart" /> 
+<module ref="rampart" />
 <messageReceivers>
 <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="net.es.oscars.oscars.OSCARSMessageReceiverInOut"/>
 </messageReceivers>
@@ -33,6 +33,12 @@
 <outputActionMapping>http://oscars.es.net/OSCARS/OSCARS/cancelReservationResponse</outputActionMapping>
 <faultActionMapping faultName="AAAErrorException">http://oscars.es.net/OSCARS/OSCARS/cancelReservation/Fault/AAAErrorException</faultActionMapping>
 <faultActionMapping faultName="BSSErrorException">http://oscars.es.net/OSCARS/OSCARS/cancelReservation/Fault/BSSErrorException</faultActionMapping>
+</operation>
+<operation name="modifyReservation" mep="http://www.w3.org/ns/wsdl/in-out">
+<actionMapping>http://oscars.es.net/OSCARS/modifyReservation</actionMapping>
+<outputActionMapping>http://oscars.es.net/OSCARS/OSCARS/modifyReservationResponse</outputActionMapping>
+<faultActionMapping faultName="AAAErrorException">http://oscars.es.net/OSCARS/OSCARS/modifyReservation/Fault/AAAErrorException</faultActionMapping>
+<faultActionMapping faultName="BSSErrorException">http://oscars.es.net/OSCARS/OSCARS/modifyReservation/Fault/BSSErrorException</faultActionMapping>
 </operation>
 <operation name="queryReservation" mep="http://www.w3.org/ns/wsdl/in-out">
 <actionMapping>http://oscars.es.net/OSCARS/queryReservation</actionMapping>
