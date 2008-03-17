@@ -153,6 +153,7 @@ public class TypeConverter {
         this.log.debug("reservationToDetails.start");
 
         if (resv == null) {
+            this.log.debug("reservationToDetails.end (null)");
             return null;
         }
 
@@ -381,13 +382,16 @@ public class TypeConverter {
      * @param pathInfo a PathInfo instance
      */
     public void clientConvert(PathInfo pathInfo) {
+        this.log.debug("clientConvert.start");
+
+
 
         String hopId = null;
         String hostName = null;
         Ipaddr ipaddr = null;
 
         // return as is if layer 2
-        if (pathInfo.getLayer2Info() != null) {
+        if (if (pathInfo == null || pathInfo.getLayer2Info() != null) {
             return;
         }
         // if layer 3, generate new path with host name/IP rather than
@@ -428,6 +432,7 @@ public class TypeConverter {
         }
         newPath.setId("unimplemented");
         pathInfo.setPath(newPath);
+        this.log.debug("clientConvert.end");
         return;
     }
 
