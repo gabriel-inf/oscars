@@ -1,6 +1,7 @@
 package net.es.oscars.bss;
 
 import org.testng.annotations.*;
+import org.testng.Assert;
 
 import java.util.*;
 import java.util.Properties;
@@ -9,9 +10,10 @@ import org.hibernate.*;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
-import net.es.oscars.GlobalParams;
 import net.es.oscars.wsdlTypes.*;
+import net.es.oscars.GlobalParams;
 import net.es.oscars.PropHandler;
+import net.es.oscars.AuthHandler;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.bss.topology.*;
@@ -22,7 +24,7 @@ import net.es.oscars.bss.topology.*;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "broken", "reservationManager" },
+@Test(groups={ "bss", "reservationManager" },
         dependsOnGroups = { "importTopology" })
 public class ReservationManagerTest {
     private final Long BANDWIDTH = 25000000L;   // 25 Mbps
@@ -30,6 +32,8 @@ public class ReservationManagerTest {
     private final int DURATION = 240000;       // 4 minutes 
     private final String PROTOCOL = "UDP";
     private final String LSP_CLASS = "4";
+    private final String CANCEL_RESV_DESCRIPTION =
+                                             "reservation for testing cancel";
     private ReservationManager rm;
     private Properties props;
     private SessionFactory sf;
@@ -40,15 +44,22 @@ public class ReservationManagerTest {
         PropHandler propHandler = new PropHandler("test.properties");
         this.props = propHandler.getPropertyGroup("test.common", true);
         this.dbname = GlobalParams.getReservationTestDBName();
-        this.sf = HibernateUtil.getSessionFactory(dbname);
+        this.sf = HibernateUtil.getSessionFactory(this.dbname);
         this.rm = new ReservationManager(this.dbname);
     }
 
   @Test
-    public void rmLayer3Create() throws BSSException {
+    public void allowedTest() {
+        AuthHandler authHandler = new AuthHandler();
+        boolean authorized = authHandler.checkAuthorization();
+        Assert.assertTrue(authorized, 
+            "Not authorized to do a layer 3 reservation using traceroute from this machine. ");
+    }
+
+  @Test(dependsOnMethods={ "allowedTest" })
+    public void rmCreateForCancel() {
         Reservation resv = new Reservation();
         PathInfo pathInfo = new PathInfo();
-        CtrlPlanePathContent path = new CtrlPlanePathContent();
         Layer3Info layer3Info = new Layer3Info();
         MplsInfo mplsInfo = new MplsInfo();
         String url = null;
@@ -56,38 +67,45 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        layer3Info.setSrcHost(this.props.getProperty("sourceHostIP"));
-        layer3Info.setDestHost(this.props.getProperty("destHostIP"));
+        layer3Info.setSrcHost(this.props.getProperty("srcHost"));
+        layer3Info.setDestHost(this.props.getProperty("destHost"));
 
         mplsInfo.setBurstLimit(BURST_LIMIT);
-        // description is unique, so can use it to access reservation in
-        // other tests
-        resv.setDescription(CommonParams.getReservationDescription());
+        CommonReservation common = new CommonReservation();
+        common.setParameters(resv, CANCEL_RESV_DESCRIPTION);
         layer3Info.setProtocol(PROTOCOL);
         mplsInfo.setLspClass(LSP_CLASS);
-        String account = this.props.getProperty("login");
+        String login = this.props.getProperty("login");
         pathInfo.setLayer3Info(layer3Info);
         pathInfo.setMplsInfo(mplsInfo);
-        pathInfo.setPath(path);
 
         try {
-            this.rm.create(resv, account, pathInfo);
+            this.rm.create(resv, login, pathInfo);
         } catch (BSSException ex) {
+            Assert.fail("Could not create reservation. ", ex);
             this.sf.getCurrentSession().getTransaction().rollback();
-            throw ex;
         }
-        id = resv.getId();
+        try {
+            this.rm.store(resv);
+        } catch (BSSException ex) {
+            Assert.fail("Could not persist reservation.. ", ex);
+            this.sf.getCurrentSession().getTransaction().rollback();
+        }
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testQuery() throws BSSException {
+  @Test(dependsOnMethods={ "rmCreateForCancel" })
+    public void rmReservationQuery() throws BSSException {
         Reservation reservation = null;
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String description = CommonParams.getReservationDescription();
-        Reservation testResv = dao.queryByParam("description", description);
+        Reservation testResv =
+            dao.queryByParam("description", CANCEL_RESV_DESCRIPTION);
+        if (testResv == null) {
+            assert false : "Could not find test reservation";
+        }
         try {
             reservation = this.rm.query(testResv.getGlobalReservationId(),
                                         testResv.getLogin(), true);
@@ -101,8 +119,8 @@ public class ReservationManagerTest {
         assert testGri.equals(newGri);
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testAuthList() throws BSSException {
+  @Test(dependsOnMethods={ "rmCreateForCancel" })
+    public void rmAuthList() throws BSSException {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
@@ -121,8 +139,8 @@ public class ReservationManagerTest {
         assert !reservations.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testUserList() throws BSSException {
+  @Test(dependsOnMethods={ "rmCreateForCancel" })
+    public void rmUserList() throws BSSException {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
@@ -141,14 +159,14 @@ public class ReservationManagerTest {
         assert !reservations.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "testCreate" })
-    public void testCancel() throws BSSException {
+  @Test(dependsOnMethods={ "rmCreateForCancel" })
+    public void rmReservationCancel() throws BSSException {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        String description = CommonParams.getReservationDescription();
-        Reservation resv = dao.queryByParam("description", description);
+        Reservation resv = 
+            dao.queryByParam("description", CANCEL_RESV_DESCRIPTION);
         try {
             this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
                            true);

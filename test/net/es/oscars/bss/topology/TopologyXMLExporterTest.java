@@ -55,9 +55,15 @@ public class TopologyXMLExporterTest {
         String fname = GlobalParams.getExportedIpaddrFname();
         PrintWriter outputStream = new PrintWriter(new FileWriter(fname));
         for (Ipaddr ipaddr: ipaddrs) {
+            if (!ipaddr.isValid()) {
+                continue;
+            }
             String output = String.valueOf(ipaddr.isValid());
             output += " " + ipaddr.getIP();
             Link link = ipaddr.getLink();
+            if (link == null) {
+                continue;
+            }
             Port port = link.getPort();
             Node node = port.getNode();
             Domain domain = node.getDomain();

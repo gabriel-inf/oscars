@@ -82,4 +82,14 @@ public class TopologyXMLFileReaderTest {
         this.sf.getCurrentSession().getTransaction().commit();
         assert !ports.isEmpty();
     }
+
+  @Test(dependsOnMethods={ "importTopology" })
+    public void importedIpaddrList() {
+        // make sure things got populated
+        this.sf.getCurrentSession().beginTransaction();
+        IpaddrDAO dao = new IpaddrDAO(this.dbname);
+        List<Ipaddr> ipaddrs = dao.list();
+        this.sf.getCurrentSession().getTransaction().commit();
+        assert !ipaddrs.isEmpty();
+    }
 }
