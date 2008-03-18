@@ -127,12 +127,13 @@ public class ReservationAdapter {
         ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
-            Reservation persistentResv = this.rm.modify(resv, login);
+            Reservation persistentResv = this.rm.modify(resv, login, pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("modify, to forward");
-            forwardReply = forwarder.modify(resv);
-            persistentResv = this.rm.finalizeModifyResv(forwardReply, resv);
+            forwardReply = forwarder.modify(resv, pathInfo);
+            persistentResv = this.rm.finalizeModifyResv(forwardReply, resv, pathInfo);
+
 
             this.log.debug("modify, to toModifyReply");
             reply = this.tc.reservationToModifyReply(persistentResv);

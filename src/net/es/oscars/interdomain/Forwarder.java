@@ -69,7 +69,7 @@ public class Forwarder extends Client {
         return createReply;
     }
 
-    public ModifyResReply modify(Reservation resv) throws InterdomainException {
+    public ModifyResReply modify(Reservation resv, PathInfo pathInfo) throws InterdomainException {
 
         String url = null;
 
@@ -79,7 +79,7 @@ public class Forwarder extends Client {
 
         if (url != null) {
             this.log.info("modify.start forward to  " + url);
-            ForwardReply reply = this.forward("modifyReservation", resv, null, url);
+            ForwardReply reply = this.forward("modifyReservation", resv, pathInfo, url);
             ModifyResReply modifyReply = reply.getModifyReservation();
             this.log.info("modify.finish GRI is: " + modifyReply.getReservation().getGlobalReservationId());
             return modifyReply;

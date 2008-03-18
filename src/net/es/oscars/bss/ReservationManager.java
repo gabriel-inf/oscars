@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.log4j.*;
+import org.hibernate.*;
 
 import org.aaaarch.gaaapi.tvs.TokenBuilder;
 import org.aaaarch.gaaapi.tvs.TokenKey;
@@ -19,6 +20,8 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.notify.*;
+import net.es.oscars.database.HibernateUtil;
+
 
 
 /**
@@ -281,9 +284,13 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation modify(Reservation resv, String login)
+    public Reservation modify(Reservation resv, String login, PathInfo pathInfo)
             throws  BSSException {
         this.log.info("modify.start");
+
+        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        bss.beginTransaction();
+
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
 
         Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
@@ -291,11 +298,14 @@ public class ReservationManager {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
         }
 
+        resvDAO.remove(persistentResv);
+
+        Path path = this.getPath(resv, pathInfo);
+
+
+        bss.getTransaction().rollback();
         this.log.info("modify.finish");
         return persistentResv;
-
-
-
     }
 
     /**
@@ -307,7 +317,7 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation finalizeModifyResv(ModifyResReply forwardReply, Reservation resv)
+    public Reservation finalizeModifyResv(ModifyResReply forwardReply, Reservation resv, PathInfo pathInfo)
             throws  BSSException {
 
         this.log.info("finalizeModify.start");
@@ -317,6 +327,8 @@ public class ReservationManager {
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to finalize modify, GRI: "+resv.getGlobalReservationId());
         }
+
+
         this.log.info("finalizeModify.finish");
         return persistentResv;
     }
