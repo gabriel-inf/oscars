@@ -338,8 +338,18 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 while (lastOne.getNextElem() != null) {
                     lastOne = lastOne.getNextElem();
                 }
+                PathElem otherOne = otherPath.getPathElem();
+                Link lastLink = lastOne.getLink();
+                Link otherLink = otherOne.getLink();
+                while (lastLink.equalsTopoId(otherLink)) {
+                    otherOne = otherOne.getNextElem();
+                    otherLink = otherOne.getLink();
+                }
+
                 lastOne.setNextElem(otherPath.getPathElem());
             }
+
+            // ok, joined the two, now setPath() for all the pathElems
             result.setPathElem(firstOne);
             while (firstOne.getNextElem() != null) {
                 firstOne.setPath(result);
