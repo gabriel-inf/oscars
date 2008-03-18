@@ -159,23 +159,13 @@ public class TypeConverter {
 
         ResDetails reply = new ResDetails();
         reply.setGlobalReservationId(resv.getGlobalReservationId());
-        if (resv.getLogin() == null) {
-            reply.setLogin("");
-        } else {
             reply.setLogin(resv.getLogin());
-        }
         reply.setStatus(resv.getStatus());
         reply.setStartTime(resv.getStartTime());
         reply.setEndTime(resv.getEndTime());
-        if (resv.getCreatedTime() == null) {
-            reply.setCreateTime(0L);
-        } else {
-            reply.setCreateTime(resv.getCreatedTime());
-        }
-        if (resv.getBandwidth() != null) {
-            int bandwidth = resv.getBandwidth().intValue();
-            reply.setBandwidth(bandwidth);
-        }
+        reply.setCreateTime(resv.getCreatedTime());
+        int bandwidth = resv.getBandwidth().intValue();
+        reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
         reply.setPathInfo(this.getPathInfo(resv));
         this.log.debug("reservationToDetails.end");

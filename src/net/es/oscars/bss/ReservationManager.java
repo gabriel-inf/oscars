@@ -281,7 +281,7 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public void modify(Reservation resv, String login)
+    public Reservation modify(Reservation resv, String login)
             throws  BSSException {
         this.log.info("modify.start");
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
@@ -289,13 +289,13 @@ public class ReservationManager {
         Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
-        } else {
-            resv = persistentResv;
         }
 
-
-
         this.log.info("modify.finish");
+        return persistentResv;
+
+
+
     }
 
     /**
@@ -307,7 +307,7 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public void finalizeModifyResv(ModifyResReply forwardReply, Reservation resv)
+    public Reservation finalizeModifyResv(ModifyResReply forwardReply, Reservation resv)
             throws  BSSException {
 
         this.log.info("finalizeModify.start");
@@ -316,10 +316,9 @@ public class ReservationManager {
         Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to finalize modify, GRI: "+resv.getGlobalReservationId());
-        } else {
-            resv = persistentResv;
         }
         this.log.info("finalizeModify.finish");
+        return persistentResv;
     }
 
 
