@@ -377,7 +377,13 @@ public class TypeConverter {
             return;
         }
         CtrlPlanePathContent path = pathInfo.getPath();
+        if (path == null) {
+            return;
+        }
         CtrlPlaneHopContent[] hops = path.getHop();
+        if (hops == null) {
+            return;
+        }
         for (int i=0; i < hops.length; i++) {
             CtrlPlaneHopContent hop = hops[i];
             if (hop.getId() == null || hop.getId().equals("")) {
