@@ -388,15 +388,22 @@ public class TypeConverter {
         String hostName = null;
         Ipaddr ipaddr = null;
 
-        // return as is if layer 2
+        CtrlPlanePathContent oldPath = pathInfo.getPath();
+        CtrlPlanePathContent newPath = new CtrlPlanePathContent();
+        CtrlPlaneHopContent[] oldHops = oldPath.getHop();
+
+        // return as is if layer 2; just fix hop id
         if (pathInfo.getLayer2Info() != null) {
+            for (int i=0; i < oldHops.length; i++) {
+                CtrlPlaneHopContent hop = oldHops[i];
+                if (hop.getId() == null || hop.getId().equals("")) {
+                    hop.setId(hop.getLinkIdRef());
+                }
+            }
             return;
         }
         // if layer 3, generate new path with host name/IP rather than
         // topology identifier
-        CtrlPlanePathContent oldPath = pathInfo.getPath();
-        CtrlPlanePathContent newPath = new CtrlPlanePathContent();
-        CtrlPlaneHopContent[] oldHops = oldPath.getHop();
         DomainDAO domainDAO =  new DomainDAO("bss");
         for (int i=0; i < oldHops.length; i++) {
             CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
