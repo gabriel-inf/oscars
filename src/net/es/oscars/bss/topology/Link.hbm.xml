@@ -27,6 +27,7 @@
         <meta attribute="field-description">
            @hibernate.property not-null="true"
         </meta>    
+        <column sql-type="BOOLEAN" name="valid" />
     </property>
 
     <property name="snmpIndex" not-null="true">
