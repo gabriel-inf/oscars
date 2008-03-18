@@ -179,7 +179,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 throw new PathfinderException("ERO must include both source and destination!");
             } else if (hops.length >= 2) {
                 CtrlPlaneHopContent firstHop = hops[0];
-                CtrlPlaneHopContent lastHop = hops[hops.length - -1];
+                CtrlPlaneHopContent lastHop = hops[hops.length -1];
                 String firstLinkId = firstHop.getLinkIdRef();
                 parseResults = TopologyUtil.parseTopoIdent(firstLinkId);
                 firstLinkId = parseResults.get("fqti");
