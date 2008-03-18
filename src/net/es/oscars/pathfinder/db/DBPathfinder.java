@@ -261,7 +261,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             String src = localLinkIds.get(i);
             String dst = localLinkIds.get(i+1);
             this.log.debug("Finding path between: ["+src+"] ["+dst+"] bw: "+bandwidth);
-            Path segmentPath = findPathBetween(src, dst, bandwidth, startTime, endTime);
+            Path segmentPath = findPathBetween(src, dst, bandwidth, startTime, endTime, reservation);
             if (segmentPath == null) {
                 throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
             } else {
@@ -274,7 +274,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (lastLocalHopIndex < hops.length - 1) {
             String lastLocalLink = localLinkIds.get(localLinkIndex -1);
             String nextHop = hops[lastLocalHopIndex + 1].getLinkIdRef();
-            Path segmentPath = findPathBetween(lastLocalLink, nextHop, bandwidth, startTime, endTime);
+            Path segmentPath = findPathBetween(lastLocalLink, nextHop, bandwidth, startTime, endTime, reservation);
             localPath = joinPaths(localPath, segmentPath);
             this.log.debug("handleEro.foundToNext");
         }
@@ -364,20 +364,20 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
 
 
-    public Path findPathBetween(Link src, Link dst, Long bandwidth, Long startTime, Long endTime)
+    public Path findPathBetween(Link src, Link dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation)
             throws PathfinderException {
         String srcStr = src.getFQTI();
         String dstStr = dst.getFQTI();
-        return this.findPathBetween(srcStr, dstStr, bandwidth, startTime, endTime);
+        return this.findPathBetween(srcStr, dstStr, bandwidth, startTime, endTime, reservation);
     }
 
-    public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime)
+    public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation)
             throws PathfinderException {
         this.log.debug("findPathBetween.start");
 
         Path path = new Path();
 
-        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth, startTime, endTime);
+        DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth, startTime, endTime, reservation);
         src = TopologyUtil.parseTopoIdent(src).get("fqti");
         dst = TopologyUtil.parseTopoIdent(dst).get("fqti");
 

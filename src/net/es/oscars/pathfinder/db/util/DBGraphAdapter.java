@@ -38,7 +38,7 @@ public class DBGraphAdapter {
 
     }
 
-    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth, Long startTime, Long endTime) {
+    public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth, Long startTime, Long endTime, Reservation reservationToIgnore) {
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
@@ -51,19 +51,24 @@ public class DBGraphAdapter {
         ArrayList<Reservation> reservations = new ArrayList<Reservation>(resvDAO.overlappingReservations(startTime, endTime));
         HashMap<Port, Long> portRsvBw = new HashMap<Port, Long>();
         for (Reservation resv : reservations) {
-            Long bw = resv.getBandwidth();
-            Path path = resv.getPath();
-            PathElem pathElem = path.getPathElem();
-            while (pathElem != null) {
-                Link link = pathElem.getLink();
-                Port port = link.getPort();
-                if (portRsvBw.containsKey(port)) {
-                    bw = bw + portRsvBw.get(port);
-                    portRsvBw.put(port, bw);
-                } else {
-                    portRsvBw.put(port, bw);
+            if (reservationToIgnore != null &&
+                    resv.getGlobalReservationId().equals(reservationToIgnore.getGlobalReservationId())) {
+                // should not look at this one
+            } else {
+                Long bw = resv.getBandwidth();
+                Path path = resv.getPath();
+                PathElem pathElem = path.getPathElem();
+                while (pathElem != null) {
+                    Link link = pathElem.getLink();
+                    Port port = link.getPort();
+                    if (portRsvBw.containsKey(port)) {
+                        bw = bw + portRsvBw.get(port);
+                        portRsvBw.put(port, bw);
+                    } else {
+                        portRsvBw.put(port, bw);
+                    }
+                    pathElem = pathElem.getNextElem();
                 }
-                pathElem = pathElem.getNextElem();
             }
         }
 
