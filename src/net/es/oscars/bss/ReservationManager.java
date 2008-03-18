@@ -335,6 +335,7 @@ public class ReservationManager {
         persistentResv.setStartTime(resv.getStartTime());
         persistentResv.setEndTime(resv.getEndTime());
         resvDAO.update(persistentResv);
+        resvDAO.flush();
 
 
 
