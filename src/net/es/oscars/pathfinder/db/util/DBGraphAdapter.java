@@ -23,12 +23,14 @@ public class DBGraphAdapter {
 
     public DBGraphAdapter(String dbname) {
         this.dbname = dbname;
+        /*
         List<String> dbnames = new ArrayList<String>();
         dbnames.add(this.dbname);
 
         Initializer initializer = new Initializer();
         initializer.initDatabase(dbnames);
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
+        */
 
 
         PropHandler propHandler = new PropHandler("oscars.properties");
@@ -42,7 +44,7 @@ public class DBGraphAdapter {
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
-        this.sf.getCurrentSession().beginTransaction();
+        // this.sf.getCurrentSession().beginTransaction();
 
         DomainDAO domainDAO = new DomainDAO(this.dbname);
 
@@ -163,7 +165,7 @@ public class DBGraphAdapter {
         }
 
 
-        this.sf.getCurrentSession().getTransaction().commit();
+        // this.sf.getCurrentSession().getTransaction().commit();
         return g;
 
     }
