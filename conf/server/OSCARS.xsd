@@ -248,7 +248,7 @@
             <xsd:element name="createReservation"
                 type="tns:resCreateContent" maxOccurs="1" minOccurs="0" />
             <xsd:element name="modifyReservation"
-                type="tns:modifyResContent" />
+                type="tns:modifyResContent" maxOccurs="1" minOccurs="0" />
             <xsd:element name="cancelReservation" type="tns:globalReservationId"
                 maxOccurs="1" minOccurs="0" />
             <xsd:element name="queryReservation" type="tns:globalReservationId"
