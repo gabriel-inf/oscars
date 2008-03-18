@@ -372,6 +372,18 @@ public class TypeConverter {
         return mplsInfo;
     }
 
+    public void ensureLocalIds(PathInfo pathInfo) {
+        CtrlPlanePathContent path = pathInfo.getPath();
+        CtrlPlaneHopContent[] hops = path.getHop();
+        for (int i=0; i < hops.length; i++) {
+            CtrlPlaneHopContent hop = hops[i];
+            if (hop.getId() == null || hop.getId().equals("")) {
+                hop.setId(hop.getLinkIdRef());
+            }
+        }
+        return;
+    }
+
     /**
      * Given a PathInfo instance, converts the ERO to format for client.
      * Currently it is passed back as is for layer 2, and converted to host name
@@ -394,12 +406,7 @@ public class TypeConverter {
 
         // return as is if layer 2; just fix hop id
         if (pathInfo.getLayer2Info() != null) {
-            for (int i=0; i < oldHops.length; i++) {
-                CtrlPlaneHopContent hop = oldHops[i];
-                if (hop.getId() == null || hop.getId().equals("")) {
-                    hop.setId(hop.getLinkIdRef());
-                }
-            }
+            this.ensureLocalIds(pathInfo);
             return;
         }
         // if layer 3, generate new path with host name/IP rather than
