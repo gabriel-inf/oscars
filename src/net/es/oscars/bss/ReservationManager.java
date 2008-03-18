@@ -289,7 +289,6 @@ public class ReservationManager {
         this.log.info("modify.start");
 
         Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        bss.beginTransaction();
 
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
 
@@ -298,12 +297,10 @@ public class ReservationManager {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
         }
 
-        resvDAO.remove(persistentResv);
 
         Path path = this.getPath(resv, pathInfo);
 
 
-        bss.getTransaction().rollback();
         this.log.info("modify.finish");
         return persistentResv;
     }
@@ -394,9 +391,7 @@ public class ReservationManager {
 
         Long bandwidth = resv.getBandwidth();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        List<Reservation> reservations =
-                dao.overlappingReservations(resv.getStartTime(),
-                                            resv.getEndTime());
+        List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
         this.policyMgr.checkOversubscribed(reservations, pathInfo,
                                            intraPath.getPath(), resv);
         Domain nextDomain = null;

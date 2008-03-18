@@ -55,7 +55,10 @@ public class PolicyManager {
         /* Insert into links the intervals that old reservations are using a
         link during the new reservation*/
         for (Reservation resv: activeReservations) {
-            this.getMatchingLinks(links, resv, newReservation, pathInfo);
+            // make sure we don't check the reservation against itself
+            if (!resv.getGlobalReservationId().equals(newReservation.getGlobalReservationId())) {
+                this.getMatchingLinks(links, resv, newReservation, pathInfo);
+            }
         }
 
         /* Go through each link in the path and check for oversubscription */
