@@ -66,9 +66,9 @@ public class ReservationAdapter {
         CreateReply reply = null;
         try {
 
-            this.tc.ensureLocalIds(pathInfo);
 
             this.rm.create(resv, login, pathInfo);
+            this.tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("create, to forward");
@@ -130,8 +130,8 @@ public class ReservationAdapter {
         ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
-            this.tc.ensureLocalIds(pathInfo);
             Reservation persistentResv = this.rm.modify(resv, login, pathInfo);
+            this.tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("modify, to forward");

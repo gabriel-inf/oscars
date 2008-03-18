@@ -373,6 +373,9 @@ public class TypeConverter {
     }
 
     public void ensureLocalIds(PathInfo pathInfo) {
+        if (pathInfo == null) {
+            return;
+        }
         CtrlPlanePathContent path = pathInfo.getPath();
         CtrlPlaneHopContent[] hops = path.getHop();
         for (int i=0; i < hops.length; i++) {
