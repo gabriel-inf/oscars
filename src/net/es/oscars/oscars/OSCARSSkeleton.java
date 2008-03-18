@@ -234,15 +234,19 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         aaa.getTransaction().commit();
 
+        this.bss.beginTransaction();
         try {
             reply = this.adapter.modify(params, login, allUsers);
         } catch (BSSException e) {
+            this.bss.getTransaction().rollback();
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         }   catch (InterdomainException e) {
+            this.bss.getTransaction().rollback();
             this.log.error("modifyReservation interdomain error: " + e.getMessage());
             throw new BSSFaultMessage("modifyReservation interdomain error " + e.getMessage());
         } catch (Exception e) {
+            this.bss.getTransaction().rollback();
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
@@ -251,6 +255,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new BSSFaultMessage("modifyReservation: " + e.getMessage());
         }
         response.setModifyReservationResponse(reply);
+        this.bss.getTransaction().commit();
         return response;
     }
 
