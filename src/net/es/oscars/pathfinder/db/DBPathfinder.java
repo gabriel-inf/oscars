@@ -44,6 +44,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         this.props = propHandler.getPropertyGroup("dbpath", true);
 
         this.dbga = new DBGraphAdapter(dbname);
+        /*
 
         List<String> dbnames = new ArrayList<String>();
         dbnames.add(dbname);
@@ -53,6 +54,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         SessionFactory sf = HibernateUtil.getSessionFactory(dbname);
         sf.getCurrentSession().beginTransaction();
+        */
 
         domDAO = new DomainDAO(dbname);
     }
