@@ -43,9 +43,11 @@ public class ModifyReservationClient {
             System.out.println(e.getFaultMessage().getMsg());
         } catch (java.rmi.RemoteException e) {
             System.out.println("RemoteException returned from modifyReservation");
-            System.out.println(e.getMessage());
+            System.out.println("Error: "+e.getMessage());
+            e.printStackTrace(pw);
+            System.out.println(sw.toString());
         } catch (Exception e) {
-            System.out.println("OSCARSStub threw exception in modifyReservation");
+            System.out.println("Exception in modifyReservation");
             System.out.println("Error: "+e.getMessage());
             e.printStackTrace(pw);
             System.out.println(sw.toString());
@@ -339,8 +341,21 @@ public class ModifyReservationClient {
 
     public void outputResponse(ModifyResReply response) {
         ResDetails reservation = response.getReservation();
+
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        date.setTime(reservation.getStartTime()*1000L);
+        String startTime = df.format(date);
+
+        date.setTime(reservation.getEndTime()*1000L);
+        String endTime = df.format(date);
+
+        System.out.println("\n\nResponse:\n");
         System.out.println("GRI: " + reservation.getGlobalReservationId());
         System.out.println("Status: " + reservation.getStatus().toString());
+        System.out.println("New startTime: " + startTime);
+        System.out.println("New endTime: " + endTime);
 
         if ((reservation.getPathInfo() != null) &&
             (reservation.getPathInfo().getLayer3Info() != null)) {
