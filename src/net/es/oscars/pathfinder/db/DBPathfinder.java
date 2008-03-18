@@ -346,7 +346,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
                     otherLink = otherOne.getLink();
                 }
 
-                lastOne.setNextElem(otherPath.getPathElem());
+                lastOne.setNextElem(otherOne);
             }
 
             // ok, joined the two, now setPath() for all the pathElems
