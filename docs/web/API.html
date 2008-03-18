@@ -1,0 +1,460 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>OSCARS API User Manual</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="UserManual.html">User Manual</a> &gt; <a href="API.html">API
+User Manual</a>
+</div>
+</div>
+<h1 style="text-align: center;">API User Manual</h1>
+<div style="text-align: center;"><span style="font-style: italic;">OSCARS
+version 0.2.1 Apr 2008<br>
+</span>
+</div>
+<br>
+<ul id="mozToc">
+<!--mozToc  h2 1 h3 2 h4 3 --><li> <br>
+  </li>
+  <li><a href="#mozTocId310871">Web Service Interface
+(API) </a>
+    <ul>
+      <li><a href="#mozTocId65813">1. Create Reservation</a></li>
+      <li><a href="#mozTocId530945">2. Query
+Reservation</a></li>
+      <li><a href="#mozTocId798162">3. List
+Reservations</a></li>
+      <li><a href="#mozTocId903052">4. Modify Reservation </a></li>
+      <li><a href="#mozTocId538182">5. Cancel
+Reservation</a></li>
+      <li><a href="#mozTocId885893">6. Forward</a></li>
+      <li><a href="#mozTocId303252">7. Get Network
+Topology</a></li>
+      <li><a href="#mozTocId383110">8. Initiate
+Topology
+Pull</a></li>
+      <li><a href="#mozTocId768207">9. Refresh Path</a></li>
+      <li><a href="#mozTocId254167">10. Teardown Path</a></li>
+    </ul>
+  </li>
+</ul>
+<h2><a class="mozTocH2" name="mozTocId310871"></a><a
+ name="Web_Service_Interface_API"></a>Web Service Interface
+(API)<br>
+</h2>
+The web service interface is defined by the <a href="OSCARS.wsdl">OSCARS.wsdl</a>
+, <a href="OSCARS.xsd">OSCARS.xsd</a> and <a href="nmtopo-ctrlp.xsd">nmtopo-ctrlp.xsd</a><br>
+We provide a Java client-side interface class,
+net.es.oscars.client/Client.java, to setup, marshal parameters, send,
+receive and
+unmarshall the parameters. There is also a directory,
+examples/javaClients that has two command line programs for each
+message. One version prompts for arguments and the CLI versions take
+all the arguments on the command line.&nbsp; <br>
+<br>
+The functional interfaces are:<br>
+<br>
+<h3><a class="mozTocH3" name="mozTocId65813"></a><big><span
+ style="font-weight: bold;">1. <a name="CreateReservation"></a>Create
+Reservation</span></big></h3>
+<a name="createResContent"></a>Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">Global Reservation Identifier</span>
+(int, 0 or 1)&nbsp; - may only be input by an IDC when forwarding a
+createReservation request </li>
+  <li><span style="font-weight: bold;">Start Time</span> (long) -time
+to start the reservation in seconds since midnight, January 1, 1970 UTC.</li>
+  <li><big><small><span style="font-weight: bold;">End Time</span>
+(long)</small> </big>- time to end the reservation in
+seconds since midnight, January 1, 1970 UTC.</li>
+  <li><span style="font-weight: bold;">bandwidth</span> (int) -
+bandwidth to be reserved in bps.<br>
+  </li>
+  <li><span style="font-weight: bold;">description</span> (string) -
+description of the purpose of
+the reservation.</li>
+  <li style="font-weight: bold;"><a name="PathInfo"></a>Path Info:</li>
+  <ul>
+    <li style="font-weight: bold;">pathSetupMode
+(string) </li>
+    <ul>
+      <li> <span style="font-style: italic; font-weight: bold;">"timer-automatic"</span>
+means that the reserved circuit will be instantiated by the scheduler
+process</li>
+      <li> <span style="font-style: italic; font-weight: bold;">"signal-xml"</span>
+means the user will signal to instantiate the reserved circuit</li>
+    </ul>
+    <li> <span style="font-weight: bold;">pathType</span> (string, 0
+or 1) should be input as "<span
+ style="font-weight: bold; font-style: italic;">"loose"</span>, paths
+input from users are treated as suggestions.<br>
+    </li>
+    <li> <span style="font-weight: bold;">path </span>(CtrlPlanePathContent,
+0 or 1)</li>
+    <ul>
+      <li><span style="font-weight: bold;">hop</span> (0 or more)</li>
+      <ul>
+        <li><span style="font-weight: bold;">domainIdRef</span>
+(string, 0 or 1) </li>
+        <li><span style="font-weight: bold;">nodeIdRef</span> (string,
+0 or 1) </li>
+        <li><span style="font-weight: bold;">portIdRef</span> (string,
+0 or 1) </li>
+        <li><span style="font-weight: bold;">linkIdRef </span>(string,
+0 or 1) </li>
+      </ul>
+    </ul>
+    <li> <span style="font-weight: bold;">layer2Info</span>
+(layer2Info, optional)</li>
+    <ul>
+      <li><span style="font-weight: bold;">srcVtag</span> (string, 0 or
+1) can be a number, a range of numbers
+(3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"<br>
+      </li>
+      <li><span style="font-weight: bold;">destVtag</span> (string, 0
+or 1) can be a number, a range of numbers
+(3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"</li>
+      <li><span style="font-weight: bold;">srcEndpoin</span>t (string)
+The ingress router. May be DNS name,
+IPaddr or topology identifier<br>
+      </li>
+      <li><span style="font-weight: bold;">destEndpoint</span> (string)
+The egress router . May be DNS name,
+IPaddr or topology identifier</li>
+    </ul>
+    <li> <span style="font-weight: bold;">layer3Info</span>
+(layer3Info,optional)</li>
+    <ul>
+      <li><span style="font-weight: bold;">srcHost</span> (string) -
+may be DNS name, IPaddr or topology
+identifier<br>
+        <span style="font-weight: bold;">destHost</span> (string) - may
+be DNS name, IPaddr or topology identifier<br>
+        <span style="font-weight: bold;">protocol</span> (string, 0 or
+1) - "UDP" or "TCP"<br>
+        <span style="font-weight: bold;">srcIpPort </span>(int, 0 or 1)<br>
+        <span style="font-weight: bold;">destIpPort</span> (int, 0 or 1)<br>
+        <span style="font-weight: bold;">dscp</span> (string, 0 or 1) -
+used by Terrapaths to set QoS bits<br>
+      </li>
+    </ul>
+    <li> <span style="font-weight: bold;">mplsInfo </span> (mplsInfo,
+optional)</li>
+    <ul>
+      <li><span style="font-weight: bold;">burstLimit</span> (int) - in
+bps<br>
+        <span style="font-weight: bold;">lspClass </span>(string, 0 or
+1)<br>
+      </li>
+    </ul>
+  </ul>
+</ul>
+<a name="CreateReply"></a>Reply message parameters:
+<ul>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) - the revservation id&nbsp; assigned to this reservation</li>
+  <li><span style="font-weight: bold;">status </span>(string) - should
+be PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span><br>
+  </li>
+</ul>
+Possible fault messages:<br>
+<ul>
+  <li><a name="checkUser"></a>checkUser: no certSubject found in
+message - message was not
+signed correctly</li>
+  <li>checkUser invalid user</li>
+  <li>checkUser: no attributes for user&nbsp; - user has no privileges</li>
+  <li>createReservation: permission denied<br>
+  </li>
+  <li>invalid parameters: null reservation, null login, null network
+layer information</li>
+  <li>pathfinder errors depending on which pathfinder is being used.</li>
+  <li>hop in path does NOT have an associated physical interface:
+[linkRef]</li>
+  <li>hop in path has maximum reservable capacity = 0: [linkRef]</li>
+  <li>Node [linkRef] oversubscribed:&nbsp; RequiredCapacity &gt;
+maximumReservableCapacity</li>
+  <li>createReservation interdomain error</li>
+  <ul>
+    <li>failed to reach remote domain - the next domain in the
+path could not be reached.</li>
+    <li>AAAfaultMsg (same as above but from remote domain)</li>
+    <li>BSSfault Msg (same as above but from remote domain) </li>
+  </ul>
+</ul>
+<p>examples/javaClients/CreateRes.sh is a shell script that reads the
+input arguments from a property file and runs the
+CreateReservation.java program.<br>
+</p>
+<p><code>createRes.sh -pf examples.l1.properties</code><br>
+</p>
+<p>There are two example properties files: example.l2.properties (for a
+layer 2 reservation) and<br>
+example.l3.properties (for a layer 3 reservations) These file contain
+the createReservation parameters. Edit the url1 to point to your
+service host, and url2 for an alternative host. You can use
+https://localhost/axis2/OSCARS if you are running the examples on your
+server.<br>
+Edit the source, destination and ero values for your host.<br>
+</p>
+<h2><a class="mozTocH2" name="mozTocId530945"></a><a
+ name="QueryReservation"></a>2. Query
+Reservation</h2>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;"><a name="QueryGRI"></a>Global
+Reservation Id</span>
+(string)
+- the reservation id returned by Create
+Reservation</li>
+</ul>
+<a name="resDetails"></a>
+Reply message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) -
+the reservation id</li>
+  <li><span style="font-weight: bold;">login</span> (string) - login
+name of
+the owner of the reservation</li>
+  <li><span style="font-weight: bold;">status</span> (string) - see <a
+ href="WBUI.html#Status">above</a></li>
+  <li><span style="font-weight: bold;">startTime</span> (long) -
+reservation
+start time in seconds since midnight, January 1, 1970 UTC.</li>
+  <li><span style="font-weight: bold;">endTime </span>(long) -
+reservation
+end time in seconds since midnight, January 1, 1970 UTC.</li>
+  <li><span style="font-weight: bold;">createTime</span> (long) - time
+reservation was created in seconds since midnight, January 1, 1970 UTC.</li>
+  <li><span style="font-weight: bold;">bandwidth</span> (int) - Bits
+per
+second</li>
+  <li><span style="font-weight: bold;">description</span> (string) -
+the
+description of hte reservation</li>
+  <li><span style="font-weight: bold;">pathInfo:</span>&nbsp; see <a
+ href="#PathInfo">above</a></li>
+</ul>
+<br>
+possible error returns<br>
+<ul>
+  <li><a href="#checkUser">checkUser errors</a></li>
+  <li>Reservation not found:</li>
+  <li>query reservation: permission denied</li>
+</ul>
+<br>
+examples/javaClients/queryRes.sh will run the
+QueryReservationClient.&nbsp; Edit queryRes.sh to set the urls for the
+OSCARS host(s) in your domain. It will prompt for the GRI of the
+reservation that you want to query. Note that QueryReservationClient
+does not print out some of the pathInfo values. <br>
+<br>
+<br>
+<h2><a class="mozTocH2" name="mozTocId798162"></a>3. <a
+ name="ListReservations"></a>List
+Reservations</h2>
+Request message parameters:<br>
+<br>
+The following may be set to limit the reservations that are returned.<br>
+<ul>
+  <li><span style="font-weight: bold;">resStatus</span> (string) - zero
+or more of ALL, ACTIVE, PENDING, FINISHED, CANCELLED, FAILED</li>
+  <li>sequence of 0 or 1</li>
+  <ul>
+    <li><span style="font-weight: bold;">startTime</span> (long) -
+reservations ending after this time<br>
+    </li>
+    <li><span style="font-weight: bold;">endTime</span> (long) -
+reservations starting before this time</li>
+    <li>thus all reservations that are active within this interval<br>
+    </li>
+  </ul>
+  <li><span style="font-weight: bold;">description</span> (string, 0 or
+1) - reservations must have this description<br>
+  </li>
+  <li><span style="font-weight: bold;">linkId</span> (string, 0 or
+more)
+- reservations must contain these hops<br>
+  </li>
+  <li><span style="font-weight: bold;">resRequested</span> (int, 0 or
+1) - number of reservations to return</li>
+  <li><span style="font-weight: bold;">resOffset</span> (int, 0 or 1) -
+offset of first reservation to return</li>
+</ul>
+<br>
+Note that this may be called with no input parameters and is thus a
+good call to make for your first attempt to contact your server. It
+will test whether your keystores and permissions are correctly set up.<br>
+<br>
+Reply message parameters:<br>
+<br>
+An array of <span style="font-weight: bold;">ResDetails</span> - this
+is the same set of parameters that Query
+Reservation <a href="#resDetails">returns</a>.<br>
+<br>
+Possible error returns<br>
+<ul>
+  <li><a href="#checkUser">checkUser errors</a></li>
+  <li>listReservations: permission denied</li>
+</ul>
+examples/javaClients/listRes.sh will call ListReservationsClient.java
+which will prompt for the input arguments. As usual edit listRes.sh to
+set the urls for your server host.<br>
+<br>
+<h2><a class="mozTocH2" name="mozTocId903052"></a>4. <a
+ name="ModifyReservation_"></a>Modify Reservation<br>
+</h2>
+This interface allows the modification of a scheduled or active
+reservation. Currently only the start and end time of the reservation
+may be changed.<br>
+<br>
+Request message parameters<br>
+<ul>
+  <li><span style="font-weight: bold;">globalReservationId </span>(string)
+- the reservation id returned by Create
+Reservation</li>
+  <li><span style="font-weight: bold;">startTime</span>(long) -time
+to start the reservation in seconds since midnight, January 1, 1970 UTC.</li>
+  <li><span style="font-weight: bold;">endTime</span>(long) -time
+to end the reservation in seconds since midnight, January 1, 1970 UTC.</li>
+  <li><span style="font-weight: bold;">bandwidth</span> (int) -
+bandwidth in bps</li>
+  <li><span style="font-weight: bold;">description</span> (string) -
+description of purpose of reservation</li>
+  <li><span style="font-weight: bold;">pathInfo</span> (PathInfoType)</li>
+</ul>
+Reply message parameters<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">reservationDetails</span> (<a
+ href="#resDetails">resDetails</a>)&nbsp; - the details for the
+modified reservation<br>
+<br>
+<h2><a class="mozTocH2" name="mozTocId538182"></a>5. <a
+ name="CancelReservation"></a>Cancel
+Reservation</h2>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;"><a name="CancelGRI"></a>Global
+Reservation Id</span> (string)
+- the reservation id returned by Create
+Reservation</li>
+</ul>
+Response message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">status</span> (string) - the new
+status of the reservation - it will be
+CANCELLED if the reservation was PENDING <span
+ style="color: rgb(204, 0, 0);">[SCHEDULED]</span> or PRECANCEL if
+the reservation was ACTIVE. For an ACTIVE reserveration the scheduler
+must tear down the circuit before the reservation is changed to
+CANCELLED.</li>
+</ul>
+possible error returns:<br>
+<ul>
+  <li>No current reservation with GRI</li>
+  <li>cancel reservation: permission denied</li>
+  <li>Trying to cancel a finished|failed|or already cancelled
+reservation</li>
+</ul>
+<h2><a class="mozTocH2" name="mozTocId885893"></a>6. <a name="Forward"></a>Forward</h2>
+This call is for use by an IDC only. It forwards a message that it has
+received to the next domain on the reservation path. It is called by
+the server class net.es.oscars.interdomain/Forwarder.<br>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">payload</span> (forwardPayload)</li>
+  <ul>
+    <li><span style="font-weight: bold;">contentType</span> (string) -
+one of "createReservation","modifyReservation", "cancelReservation",
+"queryReservation", "createPath", "refreshPath","modifyPath",
+"teardownPath"</li>
+    <li>&nbsp;one of the following elments as specified by the
+contentType
+parameter
+      <ul>
+        <li><span style="font-weight: bold;">createReservation</span>
+(<a href="#createResContent">resCreateContent</a>) </li>
+        <li><span style="font-weight: bold;">modifyReservation</span>
+(resModifyContent) </li>
+        <li><span style="font-weight: bold;">cancelReservation</span>
+(<a href="#CancelGRI">globalReservationId</a>) </li>
+        <li><span style="font-weight: bold;">queryReservation</span>
+(<a href="#QueryGRI">globalReservationId</a>) </li>
+        <li><span style="font-weight: bold;">createPath</span>
+(createPathContent) </li>
+        <li><span style="font-weight: bold;">refreshPath</span>
+(refreshPathContent) </li>
+        <li><span style="font-weight: bold;">teardownPath</span>
+(teardownPathContent) </li>
+      </ul>
+    </li>
+  </ul>
+  <li><span style="font-weight: bold;">payloadSender </span>(string)
+-
+subject DN of the original requester. This is for information or
+logging of subsequent domains. This message is signed, authenticated
+and authorized by the forwarding IDC service.</li>
+</ul>
+Return message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">contentType </span>(string) -
+one of -
+one of "createReservation","modifyReservation", "cancelReservation",
+"queryReservation", "createPath", "refreshPath","modifyPath",
+"teardownPath"</li>
+  <li>one of the following elments as specified by the
+contentType
+parameter </li>
+  <ul>
+    <li><span style="font-weight: bold;">createReservation</span> (<a
+ href="#CreateReply">createReply</a>) </li>
+    <li><span style="font-weight: bold;">modifyReservation</span>
+(modifyResReply) </li>
+    <li><span style="font-weight: bold;">cancelReservation</span>
+(string) -&nbsp; new message status: CANCELLED or PRECANCEL<br>
+    </li>
+    <li><span style="font-weight: bold;">queryReservation</span>
+(<a href="#resDetails">resDetails</a>) </li>
+    <li><span style="font-weight: bold;">createPath</span>
+(createPathResponseContent) </li>
+    <li><span style="font-weight: bold;">refreshPath</span>
+(refreshPathResponseContent) </li>
+    <li><span style="font-weight: bold;">teardownPath</span>
+(teardownPathResponseContent) </li>
+  </ul>
+</ul>
+possible error messages:<br>
+<ul>
+  <li>failed to reach remote domain:</li>
+  <li>All the ones from the message being forwarded.</li>
+</ul>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+<h2><a class="mozTocH2" name="mozTocId303252"></a>7. <a
+ name="GetNetworkTopology"></a>Get Network
+Topology</h2>
+<h2><a class="mozTocH2" name="mozTocId383110"></a>8. <a
+ name="InitiateTopologyPull"></a>Initiate
+Topology
+Pull</h2>
+<h2><a class="mozTocH2" name="mozTocId768207"></a>9. <a
+ name="RefreshPath"></a>Refresh Path</h2>
+<h2><a class="mozTocH2" name="mozTocId254167"></a>10. <a
+ name="TeardownPath"></a>Teardown Path</h2>
+<br>
+<br>
+<!--#include virtual="footer.html" -->
+</body>
+</html>
