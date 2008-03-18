@@ -297,7 +297,9 @@ public class ReservationManager {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
         }
 
+        // TODO: check if the new path is different from the old path..
 
+        // this will throw an exception if modification isn't possible
         Path path = this.getPath(resv, pathInfo);
 
 
@@ -324,6 +326,16 @@ public class ReservationManager {
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to finalize modify, GRI: "+resv.getGlobalReservationId());
         }
+        // this will throw an exception if modification isn't possible
+        Path path = this.getPath(resv, pathInfo);
+
+        // TODO: check if the new path is different from the old path..
+
+        // OK, if we got so far, just change the times
+        persistentResv.setStartTime(resv.getStartTime());
+        persistentResv.setEndTime(resv.getEndTime());
+        resvDAO.update(persistentResv);
+
 
 
         this.log.info("finalizeModify.finish");
