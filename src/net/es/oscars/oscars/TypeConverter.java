@@ -159,7 +159,11 @@ public class TypeConverter {
 
         ResDetails reply = new ResDetails();
         reply.setGlobalReservationId(resv.getGlobalReservationId());
-        reply.setLogin(resv.getLogin());
+        if (resv.getLogin() == null) {
+            reply.setLogin("");
+        } else {
+            reply.setLogin(resv.getLogin());
+        }
         reply.setStatus(resv.getStatus());
         reply.setStartTime(resv.getStartTime());
         reply.setEndTime(resv.getEndTime());
