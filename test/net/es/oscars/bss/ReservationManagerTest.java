@@ -27,11 +27,6 @@ import net.es.oscars.bss.topology.*;
 @Test(groups={ "bss", "reservationManager" },
         dependsOnGroups = { "importTopology" })
 public class ReservationManagerTest {
-    private final Long BANDWIDTH = 25000000L;   // 25 Mbps
-    private final int BURST_LIMIT = 10000000; // 10 Mbps
-    private final int DURATION = 240000;       // 4 minutes 
-    private final String PROTOCOL = "UDP";
-    private final String LSP_CLASS = "4";
     private final String LAYER2_DESCRIPTION = "layer 2 test reservation";
     private final String LAYER3_DESCRIPTION = "layer 3 test reservation";
     private ReservationManager rm;
@@ -60,26 +55,14 @@ public class ReservationManagerTest {
     public void layer2Create1() {
         Reservation resv = new Reservation();
         PathInfo pathInfo = new PathInfo();
-        Layer2Info layer2Info = new Layer2Info();
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        layer2Info.setSrcEndpoint(this.props.getProperty("layer2Src"));
-        layer2Info.setDestEndpoint(this.props.getProperty("layer2Dest"));
-        VlanTag srcVtag = new VlanTag();
-        srcVtag.setString(this.props.getProperty("vlanTag"));
-        srcVtag.setTagged(true);
-        layer2Info.setSrcVtag(srcVtag);
-        VlanTag destVtag = new VlanTag();
-        destVtag.setString(this.props.getProperty("vlanTag"));
-        destVtag.setTagged(true);
-        layer2Info.setDestVtag(destVtag);
-
         CommonReservation common = new CommonReservation();
-        common.setParameters(resv, LAYER2_DESCRIPTION + " #1");
-        resv.setBandwidth(5000000000L);
+        String vlanTag = this.props.getProperty("vlanTag");
+        common.setLayer2Parameters(resv, pathInfo, vlanTag,
+                                   LAYER2_DESCRIPTION + " #1");
         String login = this.props.getProperty("login");
-        pathInfo.setLayer2Info(layer2Info);
 
         try {
             this.rm.create(resv, login, pathInfo);
@@ -96,34 +79,23 @@ public class ReservationManagerTest {
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
-  @Test(expectedExceptions={ BSSException.class })
+  @Test(dependsOnMethods={ "layer2Create1" },
+        expectedExceptions={ BSSException.class })
     public void checkOversubscribed() throws BSSException {
         Reservation resv = new Reservation();
         PathInfo pathInfo = new PathInfo();
-        Layer2Info layer2Info = new Layer2Info();
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        layer2Info.setSrcEndpoint(this.props.getProperty("layer2Src"));
-        layer2Info.setDestEndpoint(this.props.getProperty("layer2Dest"));
         String vlanTag = this.props.getProperty("vlanTag");
         int newVlan = Integer.parseInt(vlanTag.trim());
         newVlan += 1;
         String newVlanStr = Integer.toString(newVlan);
-        VlanTag srcVtag = new VlanTag();
-        srcVtag.setString(newVlanStr);
-        srcVtag.setTagged(true);
-        layer2Info.setSrcVtag(srcVtag);
-        VlanTag destVtag = new VlanTag();
-        destVtag.setString(newVlanStr);
-        destVtag.setTagged(true);
-        layer2Info.setDestVtag(destVtag);
-
         CommonReservation common = new CommonReservation();
-        common.setParameters(resv, LAYER2_DESCRIPTION + " #2");
-        resv.setBandwidth(6000000000L);
+        common.setLayer2Parameters(resv, pathInfo, newVlanStr,
+                                   LAYER2_DESCRIPTION + " #2");
+        resv.setBandwidth(10000000000L);
         String login = this.props.getProperty("login");
-        pathInfo.setLayer2Info(layer2Info);
 
         try {
             this.rm.create(resv, login, pathInfo);
@@ -135,30 +107,19 @@ public class ReservationManagerTest {
     }
 
 /*
-  @Test(expectedExceptions={ BSSException.class })
+  @Test(dependsOnMethods={ "layer2Create1" },
+        expectedExceptions={ BSSException.class })
     public void checkOversubscribedVlan() throws BSSException {
         Reservation resv = new Reservation();
         PathInfo pathInfo = new PathInfo();
-        Layer2Info layer2Info = new Layer2Info();
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        layer2Info.setSrcEndpoint(this.props.getProperty("layer2Src"));
-        layer2Info.setDestEndpoint(this.props.getProperty("layer2Dest"));
         String vlanTag = this.props.getProperty("vlanTag");
-        VlanTag srcVtag = new VlanTag();
-        srcVtag.setString(vlanTag);
-        srcVtag.setTagged(true);
-        layer2Info.setSrcVtag(srcVtag);
-        VlanTag destVtag = new VlanTag();
-        destVtag.setString(vlanTag);
-        destVtag.setTagged(true);
-        layer2Info.setDestVtag(destVtag);
-
         CommonReservation common = new CommonReservation();
-        common.setParameters(resv, LAYER2_DESCRIPTION + " #3");
+        common.setLayer2Parameters(resv, pathInfo, vlanTag,
+                                   LAYER2_DESCRIPTION + " #3");
         String login = this.props.getProperty("login");
-        pathInfo.setLayer2Info(layer2Info);
 
         try {
             this.rm.create(resv, login, pathInfo);
@@ -174,22 +135,12 @@ public class ReservationManagerTest {
     public void layer3Create() {
         Reservation resv = new Reservation();
         PathInfo pathInfo = new PathInfo();
-        Layer3Info layer3Info = new Layer3Info();
-        MplsInfo mplsInfo = new MplsInfo();
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        layer3Info.setSrcHost(this.props.getProperty("srcHost"));
-        layer3Info.setDestHost(this.props.getProperty("destHost"));
-
-        mplsInfo.setBurstLimit(BURST_LIMIT);
         CommonReservation common = new CommonReservation();
-        common.setParameters(resv, LAYER3_DESCRIPTION);
-        layer3Info.setProtocol(PROTOCOL);
-        mplsInfo.setLspClass(LSP_CLASS);
+        common.setLayer3Parameters(resv, pathInfo, LAYER3_DESCRIPTION);
         String login = this.props.getProperty("login");
-        pathInfo.setLayer3Info(layer3Info);
-        pathInfo.setMplsInfo(mplsInfo);
 
         try {
             this.rm.create(resv, login, pathInfo);
@@ -206,7 +157,7 @@ public class ReservationManagerTest {
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
-  @Test(dependsOnMethods={ "layer3Create" })
+  @Test(dependsOnMethods={ "layer2Create1" })
     public void rmReservationQuery() throws BSSException {
         Reservation reservation = null;
 
@@ -231,7 +182,7 @@ public class ReservationManagerTest {
         assert testGri.equals(newGri);
     }
 
-  @Test(dependsOnMethods={ "layer3Create" })
+  @Test(dependsOnMethods={ "layer2Create1" })
     public void rmAuthList() throws BSSException {
         List<Reservation> reservations = null;
 
@@ -251,7 +202,7 @@ public class ReservationManagerTest {
         assert !reservations.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "layer3Create" })
+  @Test(dependsOnMethods={ "layer2Create1" })
     public void rmUserList() throws BSSException {
         List<Reservation> reservations = null;
 
