@@ -28,7 +28,6 @@ import net.es.oscars.bss.topology.*;
         dependsOnGroups = { "importTopology" })
 public class ReservationManagerTest {
     private final String LAYER2_DESCRIPTION = "layer 2 test reservation";
-    private final String LAYER3_DESCRIPTION = "layer 3 test reservation";
     private ReservationManager rm;
     private Properties props;
     private SessionFactory sf;
@@ -66,14 +65,14 @@ public class ReservationManagerTest {
         try {
             this.rm.create(resv, login, pathInfo);
         } catch (BSSException ex) {
-            Assert.fail("Could not create reservation. ", ex);
             this.sf.getCurrentSession().getTransaction().rollback();
+            Assert.fail("Could not create reservation. ", ex);
         }
         try {
             this.rm.store(resv);
         } catch (BSSException ex) {
-            Assert.fail("Could not persist reservation.. ", ex);
             this.sf.getCurrentSession().getTransaction().rollback();
+            Assert.fail("Could not persist reservation.. ", ex);
         }
         this.sf.getCurrentSession().getTransaction().commit();
     }
@@ -87,21 +86,21 @@ public class ReservationManagerTest {
         this.sf.getCurrentSession().beginTransaction();
         CommonReservation common = new CommonReservation();
         String description =
-            CommonReservation.getScheduledReservationDescription();
+            CommonReservation.getScheduledLayer2Description();
         common.setLayer2Parameters(resv, pathInfo, "any", description);
         String login = this.props.getProperty("login");
 
         try {
             this.rm.create(resv, login, pathInfo);
         } catch (BSSException ex) {
-            Assert.fail("Could not create reservation. ", ex);
             this.sf.getCurrentSession().getTransaction().rollback();
+            Assert.fail("Could not create reservation. ", ex);
         }
         try {
             this.rm.store(resv);
         } catch (BSSException ex) {
-            Assert.fail("Could not persist reservation.. ", ex);
             this.sf.getCurrentSession().getTransaction().rollback();
+            Assert.fail("Could not persist reservation.. ", ex);
         }
         this.sf.getCurrentSession().getTransaction().commit();
     }
@@ -162,21 +161,22 @@ public class ReservationManagerTest {
         PathInfo pathInfo = new PathInfo();
 
         this.sf.getCurrentSession().beginTransaction();
+        String description = CommonReservation.getScheduledLayer3Description();
         CommonReservation common = new CommonReservation();
-        common.setLayer3Parameters(resv, pathInfo, LAYER3_DESCRIPTION);
+        common.setLayer3Parameters(resv, pathInfo, description);
         String login = this.props.getProperty("login");
 
         try {
             this.rm.create(resv, login, pathInfo);
         } catch (BSSException ex) {
-            Assert.fail("Could not create reservation. ", ex);
             this.sf.getCurrentSession().getTransaction().rollback();
+            Assert.fail("Could not create reservation. ", ex);
         }
         try {
             this.rm.store(resv);
         } catch (BSSException ex) {
-            Assert.fail("Could not persist reservation.. ", ex);
             this.sf.getCurrentSession().getTransaction().rollback();
+            Assert.fail("Could not persist reservation.. ", ex);
         }
         this.sf.getCurrentSession().getTransaction().commit();
     }
@@ -250,23 +250,6 @@ public class ReservationManagerTest {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         Reservation resv = 
             dao.queryByParam("description", LAYER2_DESCRIPTION);
-        try {
-            this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
-                           true);
-        } catch (BSSException ex) {
-            this.sf.getCurrentSession().getTransaction().rollback();
-            throw ex;
-        }
-        this.sf.getCurrentSession().getTransaction().commit();
-    }
-
-  @Test(dependsOnMethods={ "layer3Create" })
-    public void rmLayer3ReservationCancel() throws BSSException {
-
-        this.sf.getCurrentSession().beginTransaction();
-        ReservationDAO dao = new ReservationDAO(this.dbname);
-        Reservation resv = 
-            dao.queryByParam("description", LAYER3_DESCRIPTION);
         try {
             this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
                            true);

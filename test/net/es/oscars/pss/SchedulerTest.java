@@ -47,14 +47,19 @@ public class SchedulerTest {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = scheduler.pendingReservations(TIME_INTERVAL);
         Long seconds = System.currentTimeMillis()/1000;
-        String description =
-                CommonReservation.getScheduledReservationDescription();
+        String layer2Description =
+                CommonReservation.getScheduledLayer2Description();
+        String layer3Description =
+                CommonReservation.getScheduledLayer3Description();
         for (Reservation resv: reservations) {
             if (resv.getStatus().equals("FAILED")) {
                 this.sf.getCurrentSession().getTransaction().rollback();
                 Assert.fail(resv.getDescription() + " failed");
-            // make sure this reservation gets expired in next test
-            } else if (resv.getDescription().equals(description)) {
+            // make sure these reservations get expired in next test
+            } else if (resv.getDescription().equals(layer2Description)) {
+                resv.setEndTime(seconds);
+                dao.update(resv);
+            } else if (resv.getDescription().equals(layer3Description)) {
                 resv.setEndTime(seconds);
                 dao.update(resv);
             }

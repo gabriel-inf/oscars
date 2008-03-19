@@ -75,7 +75,11 @@ public class CommonReservation {
         pathInfo.setLayer2Info(layer2Info);
     }
 
-    public static String getScheduledReservationDescription() {
-        return "automated test reservation for scheduling";
+    public static String getScheduledLayer2Description() {
+        return "automated layer 2 test reservation for scheduling";
+    }
+
+    public static String getScheduledLayer3Description() {
+        return "automated layer 3 test reservation for scheduling";
     }
 }
