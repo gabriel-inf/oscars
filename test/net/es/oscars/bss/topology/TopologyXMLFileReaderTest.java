@@ -20,7 +20,8 @@ import net.es.oscars.database.HibernateUtil;
  */
 
 @Test(groups={ "bss", "pathfinder.overlay", "pathfinder.traceroute",
-               "importTopology" }, dependsOnGroups={ "exportTopology" } )
+               "pathfinder.db", "importTopology" },
+               dependsOnGroups={ "exportTopology" } )
 public class TopologyXMLFileReaderTest {
     private SessionFactory sf;
     private String dbname;
@@ -68,6 +69,7 @@ public class TopologyXMLFileReaderTest {
                 ipaddrDAO.create(ipaddr);
             }
         } catch (IOException e) {
+            this.sf.getCurrentSession().getTransaction().commit();
             Assert.fail(e.getMessage());
         }
         this.sf.getCurrentSession().getTransaction().commit();

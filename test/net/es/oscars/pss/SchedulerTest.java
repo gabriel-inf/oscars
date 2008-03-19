@@ -51,10 +51,10 @@ public class SchedulerTest {
                 CommonReservation.getScheduledReservationDescription();
         for (Reservation resv: reservations) {
             if (resv.getStatus().equals("FAILED")) {
+                this.sf.getCurrentSession().getTransaction().rollback();
                 Assert.fail(resv.getDescription() + " failed");
-            }
             // make sure this reservation gets expired in next test
-            if (resv.getDescription().equals(description)) {
+            } else if (resv.getDescription().equals(description)) {
                 resv.setEndTime(seconds);
                 dao.update(resv);
             }
@@ -72,6 +72,7 @@ public class SchedulerTest {
         reservations = scheduler.expiredReservations(TIME_INTERVAL);
         for (Reservation resv: reservations) {
             if (resv.getStatus().equals("FAILED")) {
+                this.sf.getCurrentSession().getTransaction().rollback();
                 Assert.fail(resv.getDescription() + " failed");
             }
         }

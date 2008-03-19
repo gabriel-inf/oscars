@@ -22,7 +22,7 @@ import net.es.oscars.database.*;
  */
 
 @Test(groups={ "bss", "pathfinder.traceroute", "pathfinder.overlay",
-               "exportTopology" })
+               "pathfinder.db", "exportTopology" })
 public class TopologyXMLExporterTest {
     private String dbname;
     private SessionFactory sf;
