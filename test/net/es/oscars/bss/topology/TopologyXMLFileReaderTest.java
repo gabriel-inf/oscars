@@ -69,7 +69,7 @@ public class TopologyXMLFileReaderTest {
                 ipaddrDAO.create(ipaddr);
             }
         } catch (IOException e) {
-            this.sf.getCurrentSession().getTransaction().commit();
+            this.sf.getCurrentSession().getTransaction().rollback();
             Assert.fail(e.getMessage());
         }
         this.sf.getCurrentSession().getTransaction().commit();
