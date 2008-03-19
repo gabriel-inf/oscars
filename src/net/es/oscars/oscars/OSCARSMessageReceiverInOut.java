@@ -11,7 +11,7 @@
         *  OSCARSMessageReceiverInOut message receiver
         */
 
-        public class OSCARSMessageReceiverInOut extends org.apache.axis2.receivers.AbstractInOutSyncMessageReceiver{
+        public class OSCARSMessageReceiverInOut extends org.apache.axis2.receivers.AbstractInOutMessageReceiver{
 
 
         public void invokeBusinessLogic(org.apache.axis2.context.MessageContext msgContext, org.apache.axis2.context.MessageContext newMsgContext)
