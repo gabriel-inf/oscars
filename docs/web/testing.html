@@ -31,6 +31,14 @@ the classpath.  Those files are located under conf/server, and for the
 tests are copied into build/WEB-INF/classes.
 </p>
 
+<p>The Hibernate configuration files for the tests are set to create and
+drop each test database for each test run.  In practice, the contents of
+tables are deleted before each test run.  After each test run,  sessions are
+closed, but data remains in the test databases.
+The user that connects to the test databases must have the following MySQL
+grants for them: SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, and ALTER. 
+</p>
+
 <h3>Ant test properties</h3>
 <div style="margin-left: 40px;">
 <p>If just <em>ant test</em> is run, all tests are run.  Not all tests will be
@@ -45,18 +53,20 @@ For running only a particular set of tests at the package level, the
 <em>t</em> property is used.  It is overriden by the idc property.  Related
 tests are grouped by TestNG directives in the test source.  For example, to run
 just the tests for bss.topology, use <em>ant test -Dt=bss.topology</em>.
-The tests for bss.topology also belong to the "bss" group, so
-<em>ant test -Dt=bss</em> would run those tests and the tests for the
-"bss" package.  If the TestNG output indicates that zero tests have been
+If the TestNG output indicates that zero tests have been
 run, check the property setting that you specified.</p>
+
 </div>
 
 <h3>Test coverage</h3>
 <div style="margin-left: 40px;">
 <p>Coverage of the Hibernate beans and associated Hibernate configuration
 files is complete for the various database operations (e.g. insert, update,
-etc.).  There are a few non-Hibernate tests running; more are being worked
-on.</p>
+etc.).  In general, there are high-level tests that exercise most of the
+classes, and low-level tests for the beans and pathfinding.  Helper classes
+that are exercised by the high-level tests are in most cases not tested
+directly.
+</p>
 
 <p>Some tests will only be run if they are running as one of the users
 given by the "allowedUsers" property in test.properties, and on one of a
@@ -64,13 +74,23 @@ set of machines given by the "allowedHosts" property.  If this is not
 the case, that test will fail and all the tests that depend on it will be
 skipped.</p>
 
+<p>The bss group contains tests for exporting data from the production
+database and importing it into the test database, and tests for
+both reservation scheduling and circuit setup.  If the "allowLSP"
+property is set in oscars.properties (located in the same directory as
+test.properties), some scheduling tests will create
+temporary circuits if they are running as an allowed user on an allowed
+host.
+</p>
+
 <p>An example 
 test.properties is in conf/examples/server.  You will need to set those
 properties if you are starting from scratch.  A filled-in version of this
 file has to be located in ${catalina.home}/shared/classes/server (the
 place for other configuration and properties files).  Tomcat doesn't
 have to be running.  If you have a domain-specific Subversion repository, it
-is copied there during the build from ${domain.home}/domain/trunk/server.
+is copied to the Tomcat directory during the build from
+${domain.home}/domain/trunk/server.
 </p>
 </div>
 
