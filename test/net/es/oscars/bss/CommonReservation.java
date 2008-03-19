@@ -74,4 +74,8 @@ public class CommonReservation {
         layer2Info.setDestVtag(destVtag);
         pathInfo.setLayer2Info(layer2Info);
     }
+
+    public static String getScheduledReservationDescription() {
+        return "automated test reservation for scheduling";
+    }
 }

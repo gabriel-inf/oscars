@@ -57,11 +57,38 @@ public class ReservationManagerTest {
         PathInfo pathInfo = new PathInfo();
 
         this.sf.getCurrentSession().beginTransaction();
-        ReservationDAO dao = new ReservationDAO(this.dbname);
         CommonReservation common = new CommonReservation();
         String vlanTag = this.props.getProperty("vlanTag");
         common.setLayer2Parameters(resv, pathInfo, vlanTag,
-                                   LAYER2_DESCRIPTION + " #1");
+                                   LAYER2_DESCRIPTION);
+        String login = this.props.getProperty("login");
+
+        try {
+            this.rm.create(resv, login, pathInfo);
+        } catch (BSSException ex) {
+            Assert.fail("Could not create reservation. ", ex);
+            this.sf.getCurrentSession().getTransaction().rollback();
+        }
+        try {
+            this.rm.store(resv);
+        } catch (BSSException ex) {
+            Assert.fail("Could not persist reservation.. ", ex);
+            this.sf.getCurrentSession().getTransaction().rollback();
+        }
+        this.sf.getCurrentSession().getTransaction().commit();
+    }
+
+  @Test
+    public void layer2CreateAnyVtag() {
+        Reservation resv = new Reservation();
+        PathInfo pathInfo = new PathInfo();
+
+        // Scheduler test uses this reservation
+        this.sf.getCurrentSession().beginTransaction();
+        CommonReservation common = new CommonReservation();
+        String description =
+            CommonReservation.getScheduledReservationDescription();
+        common.setLayer2Parameters(resv, pathInfo, "any", description);
         String login = this.props.getProperty("login");
 
         try {
@@ -86,7 +113,6 @@ public class ReservationManagerTest {
         PathInfo pathInfo = new PathInfo();
 
         this.sf.getCurrentSession().beginTransaction();
-        ReservationDAO dao = new ReservationDAO(this.dbname);
         String vlanTag = this.props.getProperty("vlanTag");
         int newVlan = Integer.parseInt(vlanTag.trim());
         newVlan += 1;
@@ -114,7 +140,6 @@ public class ReservationManagerTest {
         PathInfo pathInfo = new PathInfo();
 
         this.sf.getCurrentSession().beginTransaction();
-        ReservationDAO dao = new ReservationDAO(this.dbname);
         String vlanTag = this.props.getProperty("vlanTag");
         CommonReservation common = new CommonReservation();
         common.setLayer2Parameters(resv, pathInfo, vlanTag,
@@ -137,7 +162,6 @@ public class ReservationManagerTest {
         PathInfo pathInfo = new PathInfo();
 
         this.sf.getCurrentSession().beginTransaction();
-        ReservationDAO dao = new ReservationDAO(this.dbname);
         CommonReservation common = new CommonReservation();
         common.setLayer3Parameters(resv, pathInfo, LAYER3_DESCRIPTION);
         String login = this.props.getProperty("login");
@@ -163,9 +187,8 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        String description = CommonParams.getReservationDescription();
         Reservation testResv =
-            dao.queryByParam("description", LAYER3_DESCRIPTION);
+            dao.queryByParam("description", LAYER2_DESCRIPTION);
         if (testResv == null) {
             assert false : "Could not find test reservation";
         }
@@ -187,7 +210,6 @@ public class ReservationManagerTest {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
-        ReservationDAO dao = new ReservationDAO(this.dbname);
         List<String> logins = new ArrayList<String>();
         String login = this.props.getProperty("login");
         logins.add(login);
@@ -207,7 +229,6 @@ public class ReservationManagerTest {
         List<Reservation> reservations = null;
 
         this.sf.getCurrentSession().beginTransaction();
-        ReservationDAO dao = new ReservationDAO(this.dbname);
         List<String> logins = new ArrayList<String>();
         String login = this.props.getProperty("login");
         logins.add(login);
@@ -222,9 +243,25 @@ public class ReservationManagerTest {
         assert !reservations.isEmpty();
     }
 
+  @Test(dependsOnMethods={ "layer2Create1" })
+    public void rmLayer2ReservationCancel() throws BSSException {
+
+        this.sf.getCurrentSession().beginTransaction();
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        Reservation resv = 
+            dao.queryByParam("description", LAYER2_DESCRIPTION);
+        try {
+            this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
+                           true);
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw ex;
+        }
+        this.sf.getCurrentSession().getTransaction().commit();
+    }
+
   @Test(dependsOnMethods={ "layer3Create" })
-    public void rmReservationCancel() throws BSSException {
-        List<Reservation> reservations = null;
+    public void rmLayer3ReservationCancel() throws BSSException {
 
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
