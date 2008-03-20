@@ -196,7 +196,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
         <mkdir dir="web/docs"/>
         <copy todir="web/docs">
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
-            <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctlp.xsd"/>
+            <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctrlp.xsd"/>
         </copy>
         <copy todir="web/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
