@@ -288,6 +288,9 @@ public class ReservationManager {
             throws  BSSException {
         this.log.info("modify.start");
 
+        // need to set this
+        resv.setLogin(login);
+
         Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
 
         ParamValidator paramValidator = new ParamValidator();
