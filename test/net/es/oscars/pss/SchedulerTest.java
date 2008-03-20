@@ -74,7 +74,7 @@ public class SchedulerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         Scheduler scheduler = new Scheduler(this.dbname);
-        reservations = scheduler.expiredReservations(TIME_INTERVAL);
+        reservations = scheduler.expiredReservations(0);
         for (Reservation resv: reservations) {
             if (resv.getStatus().equals("FAILED")) {
                 this.sf.getCurrentSession().getTransaction().rollback();
