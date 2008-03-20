@@ -2,6 +2,7 @@ package net.es.oscars.pss;
 
 import java.io.*;
 import java.util.Properties;
+import java.util.List;
 
 import org.apache.log4j.*;
 
@@ -51,8 +52,13 @@ public class VendorPSSFactory implements PSS {
         LSP ciscoLSP = null;
 
         this.log.info("createPath.start");
+        // start of magic
+        NodeDAO dao = new NodeDAO(this.dbname);
+        List<Node> nodes = dao.list();
+        // end of magic
         Path path = resv.getPath();
         this.lspData.setPathVars(path.getPathElem());
+        this.log.info("to getRouterType");
         String sysDescr = this.getRouterType(this.lspData.getIngressLink());
         if (sysDescr.contains("Juniper")) {
             this.log.info("Creating Juniper-style forward path");
@@ -166,6 +172,10 @@ public class VendorPSSFactory implements PSS {
         // for Cisco circuit set up
         LSP ciscoLSP = null;
 
+        // start of magic
+        NodeDAO dao = new NodeDAO(this.dbname);
+        List<Node> nodes = dao.list();
+        // end of magic
         Path path = resv.getPath();
         this.lspData.setPathVars(path.getPathElem());
         String sysDescr = this.getRouterType(this.lspData.getIngressLink());
@@ -228,9 +238,25 @@ public class VendorPSSFactory implements PSS {
         String sysDescr = null;
 
         try {
+            this.log.info("to getAddress");
+            if (link == null) {
+                this.log.info("link is null");
+            }
+            if (link.getPort() == null) {
+                this.log.info("port is null");
+            }
+            if (link.getPort().getNode() == null) {
+                this.log.info("node is null");
+            }
+            if (link.getPort().getNode().getNodeAddress() == null) {
+                this.log.info("getNodeAddress is null for " + link.getPort().getNode().getId());
+            }
             // db enforces not-null
             String nodeAddress =
                 link.getPort().getNode().getNodeAddress().getAddress();
+            if (nodeAddress == null) {
+                this.log.info("getAddress is null");
+            }
             this.log.info("Querying router type using SNMP for node address: ["+nodeAddress+"]");
 
             SNMP snmp = new SNMP();

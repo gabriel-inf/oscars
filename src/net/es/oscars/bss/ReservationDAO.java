@@ -230,7 +230,7 @@ public class ReservationDAO
         seconds = System.currentTimeMillis()/1000 + timeInterval;
         String hsql = "from Reservation where " +
                       "((status = 'ACTIVE' or status= 'PENDING') and " +
-                      "endTime < :endTime) or (status = 'PRECANCEL')";
+                      "endTime <= :endTime) or (status = 'PRECANCEL')";
         this.reservations = this.getSession().createQuery(hsql)
                               .setLong("endTime", seconds)
                               .list();
