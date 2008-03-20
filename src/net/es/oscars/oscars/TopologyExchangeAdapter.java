@@ -71,6 +71,7 @@ public class TopologyExchangeAdapter {
         GetNetworkTopology getTopoRequest = new GetNetworkTopology();
         GetTopologyContent request = new GetTopologyContent();
         TopologyPuller pullClient = null;
+        StringBuffer resultMsg = new StringBuffer();
 
         /* Connect to DB */
         Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
@@ -122,6 +123,7 @@ public class TopologyExchangeAdapter {
                         //only log, dont't fail just because one fails
                         this.log.warn("could not insert topology, error message follows");
                         this.log.warn(e.getMessage());
+                        resultMsg.append("could not insert topology: " + e.getMessage());
                     }
                 } else {
                     this.log.warn("topology response from ["+url+"] was null");
@@ -133,7 +135,9 @@ public class TopologyExchangeAdapter {
 
         this.log.info("initiateTopologyPull.end");
 
-        initTopoResponse.setResultMsg("SUCCESS");
+        if (resultMsg.length() > 0) {
+            initTopoResponse.setResultMsg(resultMsg.toString());
+        } else { initTopoResponse.setResultMsg("SUCCESS"); }
 
         return initTopoResponse;
     }
