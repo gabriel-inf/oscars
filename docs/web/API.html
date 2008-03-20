@@ -255,8 +255,31 @@ the reservation id</li>
   <li><span style="font-weight: bold;">login</span> (string) - login
 name of
 the owner of the reservation</li>
-  <li><span style="font-weight: bold;">status</span> (string) - see <a
- href="WBUI.html#Status">above</a></li>
+  <li><span style="font-weight: bold;">status</span> (string) - 
+  <ul>
+    <li>PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span>
+- reservation has been made, but the scheduled start
+time
+has not arrived yet</li>
+    <li>ACTIVE - circuit is currently provisioned</li>
+    <li>FINISHED - end time has past, and circuit has been torn down</li>
+    <li>CANCELLED - reservation was canceled, circuit is not
+active</li>
+    <li>FAILED - Path may have failed to be setup because the required
+resources were not available, or a link that the circuit uses is down
+and the circuit may
+still be provisioned<br>
+    </li>
+    <li>INVALIDATED - <span style="color: rgb(204, 0, 0);">No longer
+used?</span></li>
+    <li><span style="color: rgb(204, 0, 0);">HOLD- reservation is in
+the process of being made, the current domain is waiting for subsequent
+domains to confirm the resources.</span></li>
+    <li><span style="color: rgb(204, 0, 0);">WAIT - a xml-signaled
+reservation whose start time has passed but has not received a setup
+signal, or which has received a tear down signal before its end time.<br>
+      </span></li>
+  </ul></li>
   <li><span style="font-weight: bold;">startTime</span> (long) -
 reservation
 start time in seconds since midnight, January 1, 1970 UTC.</li>
