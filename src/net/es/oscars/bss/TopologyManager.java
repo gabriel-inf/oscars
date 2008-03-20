@@ -238,6 +238,8 @@ public class TopologyManager {
                     this.log.debug("Will add node: "+newNode.getFQTI());
                     nodesToInsert.add(newNode);
                     if (newNodeAddr != null) {
+                        newNodeAddr.setNode(newNode);
+                        newNode.setNodeAddress(newNodeAddr);
                         nodeAddrsToInsert.add(newNodeAddr);
                     }
                 } else {
@@ -249,6 +251,8 @@ public class TopologyManager {
                     if (newNodeAddr != null) {
                         if (foundNodeAddr != null) {
                             //  update existing node address
+                            foundNodeAddr.setNode(foundNode);
+                            foundNode.setNodeAddress(foundNodeAddr);
                             foundNodeAddr.setAddress(newNodeAddr.getAddress());
                             nodeAddrsToUpdate.add(foundNodeAddr);
                         } else {
