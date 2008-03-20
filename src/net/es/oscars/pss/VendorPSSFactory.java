@@ -238,25 +238,12 @@ public class VendorPSSFactory implements PSS {
         String sysDescr = null;
 
         try {
-            this.log.info("to getAddress");
-            if (link == null) {
-                this.log.info("link is null");
-            }
-            if (link.getPort() == null) {
-                this.log.info("port is null");
-            }
-            if (link.getPort().getNode() == null) {
-                this.log.info("node is null");
-            }
             if (link.getPort().getNode().getNodeAddress() == null) {
-                this.log.info("getNodeAddress is null for " + link.getPort().getNode().getId());
+                this.log.error("getNodeAddress is null for " + link.getPort().getNode().getId());
+                throw new PSSException("No node address associated with node");
             }
-            // db enforces not-null
             String nodeAddress =
                 link.getPort().getNode().getNodeAddress().getAddress();
-            if (nodeAddress == null) {
-                this.log.info("getAddress is null");
-            }
             this.log.info("Querying router type using SNMP for node address: ["+nodeAddress+"]");
 
             SNMP snmp = new SNMP();
