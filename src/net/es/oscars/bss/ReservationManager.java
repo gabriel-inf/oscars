@@ -290,6 +290,15 @@ public class ReservationManager {
 
         Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
 
+        ParamValidator paramValidator = new ParamValidator();
+
+        StringBuilder errorMsg =
+            paramValidator.validate(resv, pathInfo);
+        if (errorMsg.length() > 0) {
+            throw new BSSException(errorMsg.toString());
+        }
+
+
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
 
         Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());

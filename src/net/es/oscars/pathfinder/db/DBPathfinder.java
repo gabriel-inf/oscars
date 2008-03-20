@@ -142,7 +142,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 throw new PathfinderException("Could not resolve "+destEndpoint);
             } else {
                 try {
-                    destEndpoint = this.lookupClient.lookup(destEndpoint);
+                    fqti = this.lookupClient.lookup(destEndpoint);
                 } catch (BSSException ex) {
                     throw new PathfinderException("Could not resolve "+destEndpoint+" . Error was: "+ex.getMessage());
                 }

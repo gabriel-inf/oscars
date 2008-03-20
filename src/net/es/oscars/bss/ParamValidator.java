@@ -66,7 +66,7 @@ public class ParamValidator {
 
     /**
      * @param resv A Reservation instance
-     */ 
+     */
     private String checkStartTime(Reservation resv) {
 
         // no check for now
@@ -75,7 +75,7 @@ public class ParamValidator {
 
     /**
      * @param resv A Reservation instance
-     */ 
+     */
     private String checkEndTime(Reservation resv) {
 
         // no check for now
@@ -84,7 +84,7 @@ public class ParamValidator {
 
     /**
      * @param resv A Reservation instance
-     */ 
+     */
     private String checkBandwidth(Reservation resv) {
 
         Long bandwidth = resv.getBandwidth();
@@ -100,7 +100,7 @@ public class ParamValidator {
 
     /**
      * @param resv A Reservation instance
-     */ 
+     */
     private String checkLogin(Reservation resv) {
 
         // no check for now
@@ -109,7 +109,7 @@ public class ParamValidator {
 
     /**
      * @param resv A Reservation instance
-     */ 
+     */
     private String checkStatus(Reservation resv) {
 
         // no check for now
@@ -118,7 +118,7 @@ public class ParamValidator {
 
     /**
      * @param resv A Reservation instance
-     */ 
+     */
     private String checkDescription(Reservation resv) {
 
         String defaultDescription = "No description provided.";
@@ -137,11 +137,14 @@ public class ParamValidator {
     /**
      * @param path An explicit path containing an ERO (layer 2 or layer 3),
      *     or an ingress and egress (layer 3)
-     */ 
+     */
     private String checkPath(CtrlPlanePathContent path) {
         // for now, just check length
+        if (path == null) {
+            return "";
+        }
         CtrlPlaneHopContent[] hops = path.getHop();
-        if (hops.length == 1) {
+        if (hops != null && hops.length == 1) {
             return("path, if specified, must contain more than one hop");
         }
         return "";
@@ -149,37 +152,37 @@ public class ParamValidator {
 
     /**
      * @param layer2Info A Layer2Info instance (layer 2 specific)
-     */ 
+     */
     private String checkVtag(Layer2Info layer2Info) {
         /* Currently only accepts case where either both
          or neither is specified. If specified, they must have the same value.
          In the future these limits will be relaxed as support for VLAN mapping is added. */
-        
+
         VlanTag srcVtag = layer2Info.getSrcVtag();
         VlanTag destVtag = layer2Info.getDestVtag();
         String vtag = null;
-        
+
         if(srcVtag != null && destVtag != null){
             vtag = srcVtag.getString();
             if(!vtag.equals(destVtag.getString())){
-                return "source and destination VLAN tag must be same. VLAN" + 
+                return "source and destination VLAN tag must be same. VLAN" +
                 " mapping not yet supported";
             }
         }else if(srcVtag != destVtag){
             return "You must specify both the source and destination VLAN " +
                     "tag or neither";
-            
+
         }
 
-        // vlan tag can be either a single integer, a range of integers, or 
+        // vlan tag can be either a single integer, a range of integers, or
         // "any"
         if(vtag == null || vtag.equals("any")){
             return "";
         }
-        
+
         String[] vlanFields = vtag.split("[-,]");
         for (int i=0; i < vlanFields.length; i++) {
-            int field = Integer.parseInt(vlanFields[i].trim()); 
+            int field = Integer.parseInt(vlanFields[i].trim());
             if ((field < 2) || (field > 4094)) {
                 return("vlan given, " + field + " is not between 1 and 4094");
             }
@@ -190,22 +193,22 @@ public class ParamValidator {
 
     /**
      * @param layer2Info A Layer2Info instance (layer 2 specific)
-     */ 
+     */
     private String checkL2Endpoint(Layer2Info layer2Info, boolean isDest) {
         String urn = null;
         String endpoint = null;
-        
+
         if(isDest){
             endpoint = layer2Info.getDestEndpoint();
         }else{
             endpoint = layer2Info.getSrcEndpoint();
-        }   
-        
+        }
+
         /* If URN do no further checking */
         if((endpoint.matches("^urn:ogf:network:.*"))){
             return "";
         }
-        
+
         /* Lookup name via perfSONAR Lookup Service */
         PSLookupClient lsClient = new PSLookupClient();
         try{
@@ -213,14 +216,14 @@ public class ParamValidator {
         }catch(BSSException e){
             return e.getMessage();
         }
-        
+
         /* Print error if no match in LS */
         if(urn == null){
             return "Unable to lookup endpoint " + endpoint + ". Please " +
-                "specify a valid URN or a name registered in a " + 
+                "specify a valid URN or a name registered in a " +
                 "perfSONAR Lookup Service";
         }
-        
+
         if(isDest){
             layer2Info.setDestEndpoint(urn);
         }else{
@@ -231,7 +234,7 @@ public class ParamValidator {
 
     /**
      * @param layer3Info A Layer3Info instance (layer 3 specific)
-     */ 
+     */
     private String checkSrcHost(Layer3Info layer3Info) {
 
         // Check to make sure host exists
@@ -247,7 +250,7 @@ public class ParamValidator {
 
     /**
      * @param layer3Info A Layer3Info instance (layer 3 specific)
-     */ 
+     */
     private String checkDestHost(Layer3Info layer3Info) {
 
         InetAddress destAddress = null;
@@ -263,7 +266,7 @@ public class ParamValidator {
 
     /**
      * @param layer3Info A Layer3Info instance (layer 3 specific)
-     */ 
+     */
     private String checkSrcIpPort(Layer3Info layer3Info) {
 
         Integer port = layer3Info.getSrcIpPort();
@@ -278,7 +281,7 @@ public class ParamValidator {
 
     /**
      * @param layer3Info A Layer3Info instance (layer 3 specific)
-     */ 
+     */
     private String checkDestIpPort(Layer3Info layer3Info) {
 
         Integer port = layer3Info.getDestIpPort();
@@ -292,7 +295,7 @@ public class ParamValidator {
 
     /**
      * @param layer3Info A Layer3Info instance (layer 3 specific)
-     */ 
+     */
     private String checkDscp(Layer3Info layer3Info) {
 
         String dscp = layer3Info.getDscp();
@@ -306,7 +309,7 @@ public class ParamValidator {
 
     /**
      * @param layer3Info A Layer3Info instance (layer 3 specific)
-     */ 
+     */
     private String checkProtocol(Layer3Info layer3Info) {
 
         String protocol = layer3Info.getProtocol();
@@ -314,7 +317,7 @@ public class ParamValidator {
 
         protocol = protocol.toLowerCase();
         if (protocol.equals("udp") || protocol.equals("tcp")) {
-            // ensure that what ends up in the db is valid 
+            // ensure that what ends up in the db is valid
             // lowercase protocol
             layer3Info.setProtocol(protocol);
             return "";
@@ -325,14 +328,14 @@ public class ParamValidator {
                 return ("Illegal protocol specified: " + protocol + ".  \n");
             }
         } catch (Exception e1) {
-            return ("Illegal protocol specified: " + protocol + ".  \n");          	
+            return ("Illegal protocol specified: " + protocol + ".  \n");
         }
         return "";
     }
 
     /**
      * @param mplsInfo an MplsInfo instance containing MPLS-specific data
-     */ 
+     */
     private String checkLspClass(MplsInfo mplsInfo) {
 
         String defaultLspClass = "4";
