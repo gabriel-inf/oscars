@@ -24,8 +24,8 @@ version 0.2.1 Apr 2008<br>
 </div>
 <br>
 <ul id="mozToc">
-<!--mozToc h2 1 h3 2 --><li><a href="#mozTocId338737">Web server
-interface (WBUI)</a>
+<!--mozToc h2 1 h3 2 --><li><a href="#mozTocId338737">Web Browser
+Interface (WBUI)</a>
     <ul>
       <li><a href="#mozTocId393263">1. Login</a></li>
       <li><a href="#mozTocId752007">2. Create
@@ -49,8 +49,8 @@ Cancel Reservation </a></li>
   </li>
 </ul>
 <h2><a class="mozTocH2" name="mozTocId338737"></a><a
- name="WebServerInterfaceWBUI"></a><a class="mozTocH2"
- name="mozTocId338737">Web Server Interface (WBUI)</a></h2>
+ name="WebBrowserInterfaceWBUI"></a><a class="mozTocH2"
+ name="mozTocId338737">Web Browser Interface (WBUI)</a></h2>
 <h3><a class="mozTocH3" name="mozTocId393263"></a><big>1. <a
  name="Login"></a>Login</big></h3>
 Before you can access the server you must login using the user name
@@ -78,7 +78,7 @@ at network layer 3 only between hosts that are within ESnet.
 Layer 2 specifications must be used for all interdomain
 reservations. <br>
 Note that ISPs use both <span style="font-style: italic;">abstract
-topology</span> node names and <span style="font-style: italic;">acutal
+topology</span> node names and <span style="font-style: italic;">actual
 topology</span> node names. Only abstract topology names will be seen
 outside the ISP, so a user will always be dealing with the abstract
 names. The actual hosts that will be used may vary and there may be
@@ -88,7 +88,7 @@ Hops are specified using the <span style="font-style: italic;">topology
 identifier</span> defined by the Open Grid
 Forum (OGF) Network Measurement Working Group (NMWG) control plane
 topology schema. A topology identifier is a URN that may consist of as
-many as four hierarchical componets: domain:node:port:link. See <a
+many as four hierarchical components: domain:node:port:link. See <a
  href="docs/web/tss.html">Topology
 components notes</a> for more about the topology naming scheme.<br>
 <br>
@@ -176,13 +176,13 @@ current time. Type in new values in the format shown.</li>
 <ul>
   <li><span style="font-weight: bold;">Source port</span> - the port on
 the source host from which the data
-will orginate.</li>
+will originate.</li>
   <li><span style="font-weight: bold;">Destination port</span> - the
 port on the destination host to which the
 data will be delivered</li>
   <li><span style="font-weight: bold;">Protocol </span>- If you
 specify the protocol your data will be using,
-e.g. UDP/TCP, ESnet can police the curcuit and allow only traffic using
+e.g. UDP/TCP, ESnet can police the circuit and allow only traffic using
 that protocol to use the reserved bandwidth.</li>
   <li><span style="font-weight: bold;">DSCP</span> (Differentiated
 service code point) is essentially QoS
@@ -203,7 +203,7 @@ transit circuit. Untagged circuits, essentially tie the entire port (or
 interface) to the transit circuit. Tagging allows multiplexing multiple
 VLANs over the same physical port and therefore servicing more then one
 partial reservation (e.g. VLAN3000 = 5Gb/s, VLAN3001 = 2.5Gb/s,
-VLAN3002 = 2.5Gb/s on a 10Gb/s link). Vtags should be choosen in the
+VLAN3002 = 2.5Gb/s on a 10Gb/s link). Vtags should be chosen in the
 3K-4K range or may be set to "<span
  style="font-weight: bold; font-style: italic;">any</span>" , in which
 case the originating IDC
@@ -220,12 +220,13 @@ reservations or all the reservations in the system. We keep a record of
 all the reservations that have ever been made, so the
 interface allows you to specify the statuses, the time periods, the
 links involved and the description of the reservations to display. In
-additon once a list of reservations has been displayed, you can click a
+addition once a list of reservations has been displayed, you can click
+a
 column header to have the reservations sorted by that column. The
 column values are:<br>
 <ul>
   <li><span style="font-weight: bold;">GRI</span> (Global Reservation
-Identifier) - a unique identifier assigned by the inital IDC. It is
+Identifier) - a unique identifier assigned by the initial IDC. It is
 used across domains to identify a reservation, and by the user when
 querying or modifying a reservation.</li>
   <li><span style="font-weight: bold;">User</span> - login name of the
@@ -240,7 +241,7 @@ time
 has not arrived yet</li>
     <li>ACTIVE - circuit is currently provisioned</li>
     <li>FINISHED - end time has past, and circuit has been torn down</li>
-    <li>CANCELLED - reservation was cancelled, circuit is not
+    <li>CANCELLED - reservation was canceled, circuit is not
 active</li>
     <li>FAILED - Path may have failed to be setup because the required
 resources were not available, or a link that the circuit uses is down
@@ -253,8 +254,8 @@ used?</span></li>
 the process of being made, the current domain is waiting for subsequent
 domains to confirm the resources.</span></li>
     <li><span style="color: rgb(204, 0, 0);">WAIT - a xml-signaled
-reservation whose start time has passed but has not recevied a setup
-signal, or which has recevied a tear down signal before its end time.<br>
+reservation whose start time has passed but has not received a setup
+signal, or which has received a tear down signal before its end time.<br>
       </span></li>
   </ul>
   <li><span style="font-weight: bold;">Start Time </span>- Date and
@@ -275,7 +276,7 @@ reservation.<br>
 <a name="ReservationDetails"></a>Reservation Details</big></h3>
 <br>
 The fields that are displayed in the list reservation page are
-repeated. The addtional fields are:
+repeated. The additional fields are:
 <ul>
   <li><span style="font-weight: bold;">description</span> - the
 description that the user specified<br>

@@ -16,19 +16,20 @@
 User Manual</a>
 </div>
 </div>
-<h1 style="text-align: center;">API User Manual</h1>
+<h1 style="text-align: center;"><a class="mozTocH1"
+ name="mozTocId258292"></a>API User Manual</h1>
 <div style="text-align: center;"><span style="font-style: italic;">OSCARS
 version 0.2.1 Apr 2008<br>
 </span>
 </div>
 <br>
 <ul id="mozToc">
-<!--mozToc  h2 1 h3 2 h4 3 --><li> <br>
-  </li>
-  <li><a href="#mozTocId310871">Web Service Interface
+<!--mozToc h2 1 h3 2--><li><a href="#mozTocId310871">Web Service
+Interface
 (API) </a>
     <ul>
-      <li><a href="#mozTocId65813">1. Create Reservation</a></li>
+      <li><a href="#mozTocId65813">1. Create
+Reservation</a></li>
       <li><a href="#mozTocId530945">2. Query
 Reservation</a></li>
       <li><a href="#mozTocId798162">3. List
@@ -42,8 +43,9 @@ Topology</a></li>
       <li><a href="#mozTocId383110">8. Initiate
 Topology
 Pull</a></li>
-      <li><a href="#mozTocId768207">9. Refresh Path</a></li>
-      <li><a href="#mozTocId254167">10. Teardown Path</a></li>
+      <li><a href="#mozTocId261951">9. Create Path</a></li>
+      <li><a href="#mozTocId768207">10. Refresh Path</a></li>
+      <li><a href="#mozTocId254167">11. Teardown Path</a></li>
     </ul>
   </li>
 </ul>
@@ -56,16 +58,31 @@ The web service interface is defined by the <a href="OSCARS.wsdl">OSCARS.wsdl</a
 We provide a Java client-side interface class,
 net.es.oscars.client/Client.java, to setup, marshal parameters, send,
 receive and
-unmarshall the parameters. There is also a directory,
+unmarshal the parameters. There is also a directory,
 examples/javaClients that has two command line programs for each
-message. One version prompts for arguments and the CLI versions take
-all the arguments on the command line.&nbsp; <br>
+message. One version prompts for arguments and the other (*CLI) take
+all the arguments from the command line.&nbsp; <br>
 <br>
 The functional interfaces are:<br>
 <br>
 <h3><a class="mozTocH3" name="mozTocId65813"></a><big><span
  style="font-weight: bold;">1. <a name="CreateReservation"></a>Create
 Reservation</span></big></h3>
+Schedules a reservation. Path information may be specified in either
+layer 2 or layer 3 formats. Currently layer3 reservations are only
+supported by ESnet and so will only work when both the source and
+destination hosts directly served by ESnet.<br>
+<br>
+The path parameter comes in serveral varieties. An input path is
+considered <span style="font-style: italic;">Loose Interdomain Path
+(LIDP)</span> where the hops are taken as suggestions. It may only
+contain domain ingress and egress routers. Once the IDC(s) have chosen
+a path, it becomes a Strict <span style="font-style: italic;">Interdomain
+Path (SIDP)</span>. It may contain some <span
+ style="font-style: italic;">abstract</span> intradomain network
+elements. When the resources have been reserved, the path becomes
+a&nbsp; <span style="font-style: italic;">confirmed SIDP</span>.<br>
+<br>
 <a name="createResContent"></a>Request message parameters:<br>
 <ul>
   <li><span style="font-weight: bold;">Global Reservation Identifier</span>
@@ -99,7 +116,8 @@ or 1) should be input as "<span
 input from users are treated as suggestions.<br>
     </li>
     <li> <span style="font-weight: bold;">path </span>(CtrlPlanePathContent,
-0 or 1)</li>
+0 or 1) Contains only domain ingress and egress points<br>
+    </li>
     <ul>
       <li><span style="font-weight: bold;">hop</span> (0 or more)</li>
       <ul>
@@ -144,7 +162,7 @@ be DNS name, IPaddr or topology identifier<br>
         <span style="font-weight: bold;">srcIpPort </span>(int, 0 or 1)<br>
         <span style="font-weight: bold;">destIpPort</span> (int, 0 or 1)<br>
         <span style="font-weight: bold;">dscp</span> (string, 0 or 1) -
-used by Terrapaths to set QoS bits<br>
+used by TeraPaths to set QoS bits<br>
       </li>
     </ul>
     <li> <span style="font-weight: bold;">mplsInfo </span> (mplsInfo,
@@ -161,10 +179,20 @@ bps<br>
 <a name="CreateReply"></a>Reply message parameters:
 <ul>
   <li><span style="font-weight: bold;">globalReservationId</span>
-(string) - the revservation id&nbsp; assigned to this reservation</li>
-  <li><span style="font-weight: bold;">status </span>(string) - should
-be PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span><br>
+(string) - the reservation id&nbsp; assigned to this reservation</li>
+  <li><span style="font-weight: bold;">token</span> (string, 0 or 1) If
+the pathSetupMode was <span style="font-style: italic;">xml-signaled</span>
+a token will be returned that may be used when signaling the
+reservation to start or finish.<br>
   </li>
+  <li><span style="font-weight: bold;">status </span>(string) - should
+be PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span></li>
+  <li><span style="font-weight: bold;">pathInfo</span> ( <a
+ href="#PathInfo">pathInfo</a>) - same format as described above, but
+all the hops have been filled in and resources reserved resulting in a <span
+ style="font-style: italic;">confirmed SIDP.</span><br>
+    <span style="color: rgb(204, 0, 0);"><br>
+    </span></li>
 </ul>
 Possible fault messages:<br>
 <ul>
@@ -188,7 +216,7 @@ maximumReservableCapacity</li>
     <li>failed to reach remote domain - the next domain in the
 path could not be reached.</li>
     <li>AAAfaultMsg (same as above but from remote domain)</li>
-    <li>BSSfault Msg (same as above but from remote domain) </li>
+    <li>BSSfaultMsg (same as above but from remote domain) </li>
   </ul>
 </ul>
 <p>examples/javaClients/CreateRes.sh is a shell script that reads the
@@ -204,7 +232,7 @@ the createReservation parameters. Edit the url1 to point to your
 service host, and url2 for an alternative host. You can use
 https://localhost/axis2/OSCARS if you are running the examples on your
 server.<br>
-Edit the source, destination and ero values for your host.<br>
+Edit the source, destination and ERO values for your host.<br>
 </p>
 <h2><a class="mozTocH2" name="mozTocId530945"></a><a
  name="QueryReservation"></a>2. Query
@@ -247,7 +275,7 @@ description of hte reservation</li>
  href="#PathInfo">above</a></li>
 </ul>
 <br>
-possible error returns<br>
+Possible fault messages<br>
 <ul>
   <li><a href="#checkUser">checkUser errors</a></li>
   <li>Reservation not found:</li>
@@ -255,7 +283,7 @@ possible error returns<br>
 </ul>
 <br>
 examples/javaClients/queryRes.sh will run the
-QueryReservationClient.&nbsp; Edit queryRes.sh to set the urls for the
+QueryReservationClient.&nbsp; Edit queryRes.sh to set the URLs for the
 OSCARS host(s) in your domain. It will prompt for the GRI of the
 reservation that you want to query. Note that QueryReservationClient
 does not print out some of the pathInfo values. <br>
@@ -303,21 +331,21 @@ An array of <span style="font-weight: bold;">ResDetails</span> - this
 is the same set of parameters that Query
 Reservation <a href="#resDetails">returns</a>.<br>
 <br>
-Possible error returns<br>
+Possible fault messages<br>
 <ul>
   <li><a href="#checkUser">checkUser errors</a></li>
   <li>listReservations: permission denied</li>
 </ul>
 examples/javaClients/listRes.sh will call ListReservationsClient.java
 which will prompt for the input arguments. As usual edit listRes.sh to
-set the urls for your server host.<br>
+set the URLs for your server host.<br>
 <br>
 <h2><a class="mozTocH2" name="mozTocId903052"></a>4. <a
  name="ModifyReservation_"></a>Modify Reservation<br>
 </h2>
 This interface allows the modification of a scheduled or active
 reservation. Currently only the start and end time of the reservation
-may be changed.<br>
+may be changed. The rest of the parameters will be ignored.<br>
 <br>
 Request message parameters<br>
 <ul>
@@ -357,11 +385,11 @@ Response message parameters:<br>
 status of the reservation - it will be
 CANCELLED if the reservation was PENDING <span
  style="color: rgb(204, 0, 0);">[SCHEDULED]</span> or PRECANCEL if
-the reservation was ACTIVE. For an ACTIVE reserveration the scheduler
+the reservation was ACTIVE. For an ACTIVE reservation the scheduler
 must tear down the circuit before the reservation is changed to
 CANCELLED.</li>
 </ul>
-possible error returns:<br>
+possible fault messages:<br>
 <ul>
   <li>No current reservation with GRI</li>
   <li>cancel reservation: permission denied</li>
@@ -436,23 +464,190 @@ parameter </li>
 (teardownPathResponseContent) </li>
   </ul>
 </ul>
-possible error messages:<br>
+Possible fault messages:<br>
 <ul>
   <li>failed to reach remote domain:</li>
   <li>All the ones from the message being forwarded.</li>
 </ul>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+<br>
 <h2><a class="mozTocH2" name="mozTocId303252"></a>7. <a
  name="GetNetworkTopology"></a>Get Network
 Topology</h2>
+Calls a server to get a global view of the domain's topology.<br>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;"><a name="topologyType"></a>topologyType</span>
+(string) - for a TERCE server the values must be one of: <span
+ style="font-style: italic;">"all","adjacentdomains","delta"</span> or <span
+ style="font-style: italic;">"internetworklinks".</span> It is
+currently not used for an OSCARS topology database.<br>
+  </li>
+</ul>
+Request message parameters:<br>
+<ul>
+  <span style="font-weight: bold;">ctrplTopology</span> - a <a
+ href="nmtopo-ctrlp.xsd">nmwg
+topology</a>
+description
+</ul>
+Possible fault messages:<br>
+<ul>
+  <li>OSCARSSkeleton:getNetwordTopology: permission denied - need
+query permission on domains.</li>
+</ul>
+<br>
 <h2><a class="mozTocH2" name="mozTocId383110"></a>8. <a
  name="InitiateTopologyPull"></a>Initiate
 Topology
 Pull</h2>
-<h2><a class="mozTocH2" name="mozTocId768207"></a>9. <a
+Tells an IDC to update its topology. Causes the IDC to pull the
+complete topologies for all the domains in its domain tables, and to
+update the topology tables with the results.<br>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">topologyType</span>
+(string) - currently
+ignored and set to "all" in the getNetworkTopology calls.<br>
+  </li>
+</ul>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">resultMsg</span> (string) -
+SUCCESS if the all the domains have been updated. Otherwise it will
+contain all the topology exception messages.<br>
+  </li>
+</ul>
+Possible fault messages:<br>
+<ul>
+  <li>OSCARSSkeleton:initiateTopologyPull: permission denied -
+need&nbsp; modify permission on domains.</li>
+  <li>No local domain has been specified - this is an internal error in
+the domains database<br>
+  </li>
+</ul>
+<br>
+<h2><a class="mozTocH2" name="mozTocId261951"></a>9. Create Path</h2>
+Causes all the IDCs on the path to provision the path for a previously
+scheduled reservation whose start time has been reached. The
+reservation must have been created with a pathSetupMode of
+"xml-signal". <br>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">token </span>(string, 0 or 1) -
+must be input if you are not the creator of the reservation<br>
+  </li>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) - the reservation id returned by Create
+Reservation</li>
+</ul>
+Request message parameters:
+<ul>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) - the reservation id that was input</li>
+  <li><span style="font-weight: bold;">status</span> (string) - will be
+ACTIVE if the call succeeded.</li>
+</ul>
+Possible fault messages:<br>
+<br>
+<ul>
+  <li>OSCARSSkeleton:createPath: permission denied&nbsp; - you do not
+have signal permission </li>
+  <li>no reservations match request</li>
+  <li>Path setup mode is null</li>
+  <li>Path setup mode is not signal-xml</li>
+  <li>Path cannot be created. Invalid reservation specified.&nbsp; -
+occurs if status is not PENDING</li>
+  <li>Path cannot be created. Reservation start time not yet reached.</li>
+  <li>Path cannot be created. Reservation end time has been reached.</li>
+</ul>
+<br>
+<h2><a class="mozTocH2" name="mozTocId768207"></a>10. <a
  name="RefreshPath"></a>Refresh Path</h2>
-<h2><a class="mozTocH2" name="mozTocId254167"></a>10. <a
+Checks to see if the path of a scheduled reservation is still valid.
+Checks local path <br>
+first and if it is ok&nbsp; then forwards the refreshPath request. If
+the local path has failed it forwards a teardown * message. If the
+forwardResponse indicates an downstream error the local path is removed
+and the exception passed upstream.<br>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">token </span>(string, 0 or 1) -
+must be input if you are not the creator of the reservation<br>
+  </li>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) - the reservation id returned by Create
+Reservation</li>
+</ul>
+Reply message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) - the reservation id that was input</li>
+  <li><span style="font-weight: bold;">status</span> (string) - will be
+ACTIVE if the path is still valid, FAILED if the path is invalid<br>
+  </li>
+</ul>
+<br>
+Possible fault messages<br>
+<ul>
+  <li>OSCARSSkeleton:refreshPath: permission denied&nbsp; - you do not
+have signal permission </li>
+  <li>no reservations match request - if request not found, or is not
+mode xml-signal</li>
+  <li>Path cannot be refreshed.Reservation is not active. Please run
+createPath first.</li>
+  <li>A path failure has occurred. The path is no longer active.
+Reason: <br>
+  </li>
+</ul>
+<br>
+<h2><a class="mozTocH2" name="mozTocId254167"></a>11. <a
  name="TeardownPath"></a>Teardown Path</h2>
+Will teardown an ACTIVE reservation. Removes local path <br>
+first and then forwards request. If there is a failure in the local path<br>
+the teardown the request is still forwarded and the exception is
+reported <br>
+upstream. The reservation status is reset to PENDING [<span
+ style="color: rgb(204, 0, 0);">SCHEDULED</span>]<br>
+if the reservation end time has not been reached, so that the path
+could still rebuilt.<br>
+<br>
+Request message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">token </span>(string, 0 or 1) -
+must be input if you are not the creator of the reservation<br>
+  </li>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) - the reservation id returned by Create
+Reservation</li>
+</ul>
+Reply message parameters:<br>
+<ul>
+  <li><span style="font-weight: bold;">globalReservationId</span>
+(string) - the reservation id that was input</li>
+  <li><span style="font-weight: bold;">status</span> (string) - will be
+PENDING [<span style="color: rgb(204, 0, 0);">SCHEDULED</span>]&nbsp;
+if the teardown was successful but the reservation end time has not
+been reached. It will be FINISHED if it is later than the end time.<br>
+  </li>
+</ul>
+<br>
+Possible fault messages<br>
+<ul>
+  <li>OSCARSSkeleton:refreshPath: permission denied&nbsp; - you do not
+have signal permission </li>
+  <li>no reservations match request - if request not found, or is not
+mode xml-signal</li>
+  <li>Path cannot be refreshed.Reservation is not active. Please run
+createPath first.</li>
+  <li>A path failure has occurred. The path is no longer active.
+Reason: <br>
+  </li>
+</ul>
+<br>
 <br>
 <br>
 <!--#include virtual="footer.html" -->
