@@ -25,7 +25,7 @@ import net.es.oscars.bss.topology.*;
  * @author David Robertson (dwrobertson@lbl.gov)
  */
 @Test(groups={ "bss", "reservationManager" },
-        dependsOnGroups = { "importTopology" })
+        dependsOnGroups = { "importTopology", "reservationTest" })
 public class ReservationManagerTest {
     private final String LAYER2_DESCRIPTION = "layer 2 test reservation";
     private ReservationManager rm;
@@ -62,7 +62,7 @@ public class ReservationManagerTest {
 
         this.sf.getCurrentSession().beginTransaction();
         CommonReservation common = new CommonReservation();
-        String vlanTag = this.props.getProperty("vlanTag");
+        String vlanTag = this.props.getProperty("vlanTag").trim();
         common.setLayer2Parameters(resv, pathInfo, vlanTag,
                                    LAYER2_DESCRIPTION);
         String login = this.props.getProperty("login");
@@ -144,7 +144,7 @@ public class ReservationManagerTest {
         PathInfo pathInfo = new PathInfo();
 
         this.sf.getCurrentSession().beginTransaction();
-        String vlanTag = this.props.getProperty("vlanTag");
+        String vlanTag = this.props.getProperty("vlanTag").trim();
         CommonReservation common = new CommonReservation();
         common.setLayer2Parameters(resv, pathInfo, vlanTag,
                                    LAYER2_DESCRIPTION + " #3");

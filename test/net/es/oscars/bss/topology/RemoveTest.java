@@ -54,7 +54,7 @@ public class RemoveTest {
   @Test
     public void l2SwitchingCapabilityRemove() {
         this.sf.getCurrentSession().beginTransaction();
-        String vlanRange = "any";
+        String vlanRange = "0";
         L2SwitchingCapabilityDataDAO dao =
             new L2SwitchingCapabilityDataDAO(this.dbname);
         L2SwitchingCapabilityData capability = (L2SwitchingCapabilityData)
@@ -153,9 +153,11 @@ public class RemoveTest {
         this.sf.getCurrentSession().beginTransaction();
         PathDAO dao = new PathDAO(this.dbname);
         PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
+        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        Link link = (Link)
+            linkDAO.queryByParam("topologyIdent", CommonParams.getPathIdentifier());
         PathElem pathElem =
-            (PathElem) pathElemDAO.queryByParam("description",
-                                                "ingress");
+            (PathElem) pathElemDAO.queryByParam("linkId", link.getId());
         Path path = (Path) dao.queryByParam("pathElemId", pathElem.getId()); 
         dao.remove(path);
         // links created in pathCreate were deleted by cascade
@@ -166,15 +168,15 @@ public class RemoveTest {
     public void cascadingDeletedPathElem() {
         this.sf.getCurrentSession().beginTransaction();
         PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
+        LinkDAO dao = new LinkDAO(this.dbname);
+        Link link = (Link)
+            dao.queryByParam("topologyIdent", CommonParams.getIdentifier());
         PathElem ingressPathElem = (PathElem)
-            pathElemDAO.queryByParam("description", "ingress");
-        PathElem egressPathElem = (PathElem)
-            pathElemDAO.queryByParam("description", "egress");
+            pathElemDAO.queryByParam("linkId", link.getId());
         this.sf.getCurrentSession().getTransaction().commit();
         // if cascading delete works with path testRemove, this will
         // be null
         assert ingressPathElem == null;
-        assert egressPathElem == null;
     }
 
   @Test(dependsOnMethods={ "pathRemove" })

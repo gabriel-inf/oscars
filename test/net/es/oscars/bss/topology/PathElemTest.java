@@ -28,9 +28,12 @@ public class PathElemTest {
   @Test
     public void pathElemQuery() {
         this.sf.getCurrentSession().beginTransaction();
+        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        Link link = (Link)
+            linkDAO.queryByParam("topologyIdent", CommonParams.getPathIdentifier());
         PathElemDAO dao = new PathElemDAO(this.dbname);
         PathElem pathElem = (PathElem)
-            dao.queryByParam("description", "ingress");
+            dao.queryByParam("linkId", link.getId());
         this.sf.getCurrentSession().getTransaction().commit();
         assert pathElem != null;
     }

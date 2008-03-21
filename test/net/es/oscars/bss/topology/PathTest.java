@@ -30,8 +30,11 @@ public class PathTest {
         this.sf.getCurrentSession().beginTransaction();
         PathDAO dao = new PathDAO(this.dbname);
         PathElemDAO pathElemDAO = new PathElemDAO(this.dbname);
-        PathElem pathElem = (PathElem) pathElemDAO.queryByParam("description",
-                                 "ingress");
+        LinkDAO linkDAO = new LinkDAO(this.dbname);
+        Link link = (Link)
+            linkDAO.queryByParam("topologyIdent", CommonParams.getPathIdentifier());
+        PathElem pathElem = (PathElem) pathElemDAO.queryByParam("linkId",
+                                 link.getId());
         Path path = (Path) dao.queryByParam("pathElemId", pathElem.getId()); 
         this.sf.getCurrentSession().getTransaction().commit();
         assert path != null;

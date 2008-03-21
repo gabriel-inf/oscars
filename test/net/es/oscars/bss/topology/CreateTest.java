@@ -158,7 +158,8 @@ public class CreateTest {
         L2SwitchingCapabilityDataDAO dao =
             new L2SwitchingCapabilityDataDAO(this.dbname);
         L2SwitchingCapabilityData capability = new L2SwitchingCapabilityData();
-        capability.setVlanRangeAvailability("any");
+        // this is just testing the bean
+        capability.setVlanRangeAvailability("0");
         capability.setInterfaceMTU(1500);
         LinkDAO linkDAO = new LinkDAO(this.dbname);
         Link link = (Link)
@@ -247,7 +248,7 @@ public class CreateTest {
         link0.setSnmpIndex(0);
         link0.setCapacity(10000000L);
         link0.setMaximumReservableCapacity(5000000L);
-        link0.setTopologyIdent("test link 0");
+        link0.setTopologyIdent(CommonParams.getPathIdentifier());
         ipaddr0.setLink(link0);
         PortDAO portDAO = new PortDAO(this.dbname);
         Port port = portDAO.queryByParam("topologyIdent",

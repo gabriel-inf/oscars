@@ -18,8 +18,10 @@ import net.es.oscars.bss.topology.*;
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "bss" })
+@Test(groups={ "bss", "reservationTest" })
 public class ReservationTest {
+    private final String DESCRIPTION = "ReservationTest reservation";
+    private final String TOPOLOGY_IDENT = "ReservationTest id";
     private Properties props;
     private SessionFactory sf;
     private String dbname;
@@ -42,8 +44,7 @@ public class ReservationTest {
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
         CommonReservation common = new CommonReservation();
-        String description = CommonParams.getReservationDescription();
-        common.setParameters(resv, description);
+        common.setParameters(resv, DESCRIPTION);
 
         PathDAO pathDAO = new PathDAO(this.dbname);
         Path path = new Path();
@@ -84,21 +85,21 @@ public class ReservationTest {
         link.setSnmpIndex(0);
         link.setCapacity(10000000L);
         link.setMaximumReservableCapacity(5000000L);
-        link.setTopologyIdent(CommonParams.getResvIdentifier());
+        link.setTopologyIdent(TOPOLOGY_IDENT);
         ipaddr.setLink(link);
 
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain domain = new Domain();
         domain.setName("test");
         domain.setAbbrev("test");
-        domain.setTopologyIdent(CommonParams.getResvIdentifier());
+        domain.setTopologyIdent(TOPOLOGY_IDENT);
         domain.setUrl("test");
         domainDAO.create(domain);
 
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
         Node node = new Node();
         node.setValid(true);
-        node.setTopologyIdent(CommonParams.getResvIdentifier());
+        node.setTopologyIdent(TOPOLOGY_IDENT);
         node.setDomain(domain);
         nodeDAO.create(node);
 
@@ -110,7 +111,7 @@ public class ReservationTest {
         port.setMaximumReservableCapacity(5000000L);
         port.setMinimumReservableCapacity(5000000L);
         port.setUnreservedCapacity(0L);
-        port.setTopologyIdent(CommonParams.getResvIdentifier());
+        port.setTopologyIdent(TOPOLOGY_IDENT);
         port.setNode(node);
         portDAO.create(port);
 
@@ -129,9 +130,8 @@ public class ReservationTest {
     public void reservationDAOQuery() {
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        String description = CommonParams.getReservationDescription();
         Reservation reservation =
-            dao.queryByParam("description", description);
+            dao.queryByParam("description", DESCRIPTION);
         this.sf.getCurrentSession().getTransaction().commit();
         assert reservation != null;
     }
@@ -180,9 +180,8 @@ public class ReservationTest {
     public void reservationDAORemove() {
         this.sf.getCurrentSession().beginTransaction();
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        String description = CommonParams.getReservationDescription();
         Reservation reservation =
-                (Reservation) dao.queryByParam("description", description);
+                (Reservation) dao.queryByParam("description", DESCRIPTION);
         dao.remove(reservation);
         // clean up other objects created
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
@@ -191,18 +190,15 @@ public class ReservationTest {
         ipaddrDAO.remove(ipaddr);
         LinkDAO linkDAO = new LinkDAO(this.dbname);
         Link link =
-                (Link) linkDAO.queryByParam("topologyIdent",
-                               CommonParams.getResvIdentifier());
+                (Link) linkDAO.queryByParam("topologyIdent", TOPOLOGY_IDENT);
         linkDAO.remove(link);
         PortDAO portDAO = new PortDAO(this.dbname);
         Port port =
-                (Port) portDAO.queryByParam("topologyIdent",
-                               CommonParams.getResvIdentifier());
+                (Port) portDAO.queryByParam("topologyIdent", TOPOLOGY_IDENT);
         portDAO.remove(port);
         NodeDAO nodeDAO = new NodeDAO(this.dbname);
         Node node =
-                (Node) nodeDAO.queryByParam("topologyIdent",
-                               CommonParams.getResvIdentifier());
+                (Node) nodeDAO.queryByParam("topologyIdent", TOPOLOGY_IDENT);
         nodeDAO.remove(node);
         this.sf.getCurrentSession().getTransaction().commit();
     }

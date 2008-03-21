@@ -6,6 +6,10 @@ public class CommonParams {
         return "test suite";
     }
 
+    public static String getPathIdentifier() {
+        return "path test suite";
+    }
+
     public static String getResvIdentifier() {
         return "reservation test";
     }
