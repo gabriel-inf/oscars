@@ -387,7 +387,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </condition>
     </target>
     <target name="testESnet" depends="startupTestNG, ESnet.check" if="ESnet.set">
-        <property name="groups" value="aaa, bss, pathfinder.db, pathfinder.traceroute, pss, pss.jnx, pss.cisco, initdb"/>
+        <property name="groups" value="aaa, bss, bss.topology, pathfinder.db, pathfinder.traceroute, pss, pss.jnx, pss.cisco, initdb"/>
         <property name="testsuite" value="ESnet.suite"/>
     </target>
     <!-- following section provides for testing all packages specific to a domain -->

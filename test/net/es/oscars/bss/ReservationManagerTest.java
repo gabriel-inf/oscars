@@ -136,7 +136,6 @@ public class ReservationManagerTest {
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
-/*
   @Test(dependsOnMethods={ "layer2Create1" },
         expectedExceptions={ BSSException.class })
     public void checkOversubscribedVlan() throws BSSException {
@@ -158,7 +157,6 @@ public class ReservationManagerTest {
         }
         this.sf.getCurrentSession().getTransaction().commit();
     }
-*/
 
   @Test(dependsOnMethods={ "allowedTest" })
     public void layer3Create() {
