@@ -28,3 +28,18 @@ one place.
     http://dev.mysql.com/downloads/connector/j/3.1.html
 
 
+If you are upgrading Hibernate, the following jar's all need to be upgraded
+at the same time, assuming Hibernate has a later version.  The jar's
+besides hibernate3.jar are found in lib in the Hibernate distribution.  Some
+of the required Hibernate jar's (see _README.txt in lib) are also found
+elsewhere and shouldn't be copied, for example those from Axis2.
+
+hibernate3.jar
+asm.jar
+asm-attrs.jar
+antlr-x.jar
+c3p0-x.jar
+cglib-x.jar
+jta.jar
+
+
