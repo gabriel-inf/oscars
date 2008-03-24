@@ -1,8 +1,10 @@
 CREATE DATABASE IF NOT EXISTS bss;
 USE bss;
 
+--
 -- table holding reservation information
 -- this information is used for scheduling
+--
 CREATE TABLE IF NOT EXISTS reservations (
     id                  INT NOT NULL AUTO_INCREMENT,
     startTime           BIGINT UNSIGNED NOT NULL,
@@ -21,7 +23,9 @@ CREATE TABLE IF NOT EXISTS reservations (
 PRIMARY KEY (id)
 ) type = MyISAM;
 
+--
 -- table used as a sequence generator for part of the GRI
+--
 CREATE TABLE IF NOT EXISTS idSequence (
     id                  INT NOT NULL AUTO_INCREMENT,
 PRIMARY KEY (id)
@@ -29,7 +33,9 @@ PRIMARY KEY (id)
 
 -- topology section
 
+--
 -- table for administrative domain, e.g. ESnet
+--
 CREATE TABLE IF NOT EXISTS domains (
     id                  INT NOT NULL AUTO_INCREMENT,
         -- topology exchange id; in ESnet, currently AS number
@@ -43,7 +49,9 @@ CREATE TABLE IF NOT EXISTS domains (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for node description
+--
 CREATE TABLE IF NOT EXISTS nodes (
     id                  INT NOT NULL AUTO_INCREMENT,
     valid               BOOLEAN NOT NULL,
@@ -54,7 +62,9 @@ CREATE TABLE IF NOT EXISTS nodes (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for port description
+--
 CREATE TABLE IF NOT EXISTS ports (
     id                  INT NOT NULL AUTO_INCREMENT,
     valid               BOOLEAN NOT NULL,
@@ -77,7 +87,9 @@ CREATE TABLE IF NOT EXISTS ports (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for link description
+--
 CREATE TABLE IF NOT EXISTS links (
     id                  INT NOT NULL AUTO_INCREMENT,
     valid               BOOLEAN NOT NULL,
@@ -106,7 +118,9 @@ CREATE TABLE IF NOT EXISTS links (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for ip addresses
+--
 CREATE TABLE IF NOT EXISTS ipaddrs (
     id                  INT NOT NULL AUTO_INCREMENT,
     valid               BOOLEAN NOT NULL,
@@ -117,7 +131,9 @@ CREATE TABLE IF NOT EXISTS ipaddrs (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for paths associated with pending or active reservations
+--
 CREATE TABLE IF NOT EXISTS paths (
     id                  INT NOT NULL AUTO_INCREMENT,
         -- whether path was explicitly given by user
@@ -135,7 +151,9 @@ CREATE TABLE IF NOT EXISTS paths (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for elements in paths associated with pending or active reservations
+--
 CREATE TABLE IF NOT EXISTS pathElems (
     id                  INT NOT NULL AUTO_INCREMENT,
         -- currently ingress, egress, or null
@@ -149,7 +167,9 @@ CREATE TABLE IF NOT EXISTS pathElems (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for layer 2 information
+--
 CREATE TABLE IF NOT EXISTS layer2Data (
     id                  INT NOT NULL AUTO_INCREMENT,
     srcEndpoint         TEXT NOT NULL,
@@ -157,7 +177,9 @@ CREATE TABLE IF NOT EXISTS layer2Data (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for layer 3 information
+--
 CREATE TABLE IF NOT EXISTS layer3Data (
     id                  INT NOT NULL AUTO_INCREMENT,
     srcHost             TEXT NOT NULL, 
@@ -173,7 +195,9 @@ CREATE TABLE IF NOT EXISTS layer3Data (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for MPLS information
+--
 CREATE TABLE IF NOT EXISTS mplsData (
     id                 INT NOT NULL AUTO_INCREMENT,
         -- in bps
@@ -182,7 +206,9 @@ CREATE TABLE IF NOT EXISTS mplsData (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- table for node addresses (layer 2 only)
+--
 CREATE TABLE IF NOT EXISTS nodeAddresses (
     id                  INT NOT NULL AUTO_INCREMENT,
     address             TEXT NOT NULL,
@@ -191,7 +217,9 @@ CREATE TABLE IF NOT EXISTS nodeAddresses (
     PRIMARY KEY (id)
 ) type=MyISAM;
 
+--
 -- Layer 2 edge table
+--
 CREATE TABLE IF NOT EXISTS l2SwitchingCapabilityData (
     id			INT NOT NULL AUTO_INCREMENT,
     linkId		INT NOT NULL UNIQUE,
@@ -200,8 +228,10 @@ CREATE TABLE IF NOT EXISTS l2SwitchingCapabilityData (
     PRIMARY KEY (id)
 ) type = MyISAM;
 
+--
 -- Table that associates outside hops with domains and stores
 -- info only needed at edges (layer 3 only)
+--
 CREATE TABLE IF NOT EXISTS edgeInfos (
     id                 INT NOT NULL AUTO_INCREMENT,
     externalIP         TEXT NOT NULL,
