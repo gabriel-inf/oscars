@@ -110,6 +110,52 @@ public class ReservationManagerTest {
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
+  @Test(dependsOnMethods={ "layer2Create1" })
+    public void layer2Modify1() throws BSSException {
+
+        this.sf.getCurrentSession().beginTransaction();
+        // TODO:  this needs to be reviewed as to what part of PathInfo
+        //        can be changed by modify
+        ReservationDAO dao = new ReservationDAO(this.dbname);
+        Reservation resv =
+            dao.queryByParam("description", LAYER2_DESCRIPTION);
+        if (resv == null) {
+            assert false : "Could not find test reservation";
+        }
+        // currently just copying reservation's path info
+        Path path = resv.getPath();
+        PathElem pathElem = path.getPathElem();
+        Link link = pathElem.getLink();
+        L2SwitchingCapabilityData l2SwitchingData =
+            link.getL2SwitchingCapabilityData();
+        String vlanTag = l2SwitchingData.getVlanRangeAvailability();
+        Layer2Data layer2Data = path.getLayer2Data();
+        Layer2Info layer2Info = new Layer2Info();
+        layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
+        layer2Info.setDestEndpoint(layer2Data.getDestEndpoint());
+        VlanTag srcVtag = new VlanTag();
+        srcVtag.setString(vlanTag);
+        srcVtag.setTagged(true);
+        layer2Info.setSrcVtag(srcVtag);
+        VlanTag destVtag = new VlanTag();
+        destVtag.setString(vlanTag);
+        destVtag.setTagged(true);
+        layer2Info.setDestVtag(srcVtag);
+        PathInfo pathInfo = new PathInfo();
+        pathInfo.setLayer2Info(layer2Info);
+        // this is the reservation that will be cancelled
+        Long seconds = resv.getEndTime();
+        seconds += 3600;
+        resv.setEndTime(seconds);
+        try {
+            this.rm.modify(resv, resv.getLogin(), pathInfo);
+        } catch (BSSException ex) {
+            this.sf.getCurrentSession().getTransaction().rollback();
+            throw(ex);
+        }
+        this.sf.getCurrentSession().getTransaction().commit();
+    }
+
   @Test(dependsOnMethods={ "layer2Create1" },
         expectedExceptions={ BSSException.class })
     public void checkOversubscribed() throws BSSException {

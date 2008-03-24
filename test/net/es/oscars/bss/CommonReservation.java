@@ -57,10 +57,8 @@ public class CommonReservation {
 
     }
 
-    public void setLayer2Parameters(Reservation resv, PathInfo pathInfo,
-                                    String vlanTag, String description) {
+    public void setLayer2PathInfo(PathInfo pathInfo, String vlanTag) {
 
-        this.setParameters(resv, description);
         Layer2Info layer2Info = new Layer2Info();
         layer2Info.setSrcEndpoint(this.props.getProperty("layer2Src"));
         layer2Info.setDestEndpoint(this.props.getProperty("layer2Dest"));
@@ -73,6 +71,13 @@ public class CommonReservation {
         destVtag.setTagged(true);
         layer2Info.setDestVtag(destVtag);
         pathInfo.setLayer2Info(layer2Info);
+    }
+
+    public void setLayer2Parameters(Reservation resv, PathInfo pathInfo,
+                                    String vlanTag, String description) {
+
+        this.setParameters(resv, description);
+        this.setLayer2PathInfo(pathInfo, vlanTag);
     }
 
     public static String getScheduledLayer2Description() {
