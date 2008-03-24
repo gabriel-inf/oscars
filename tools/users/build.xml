@@ -34,7 +34,7 @@
     </target>
     
     <target name="compile" description="Compile Java sources" depends="prepare">
-        <javac srcdir="." includes="IDCUserAddUtil.java" destdir="${useradd.home}/classes" classpathref="compile.path">
+        <javac srcdir="." includes="*.java" destdir="${useradd.home}/classes" classpathref="compile.path">
             <classpath>
                 <fileset dir="${build.home}/lib" includes="**/*.jar"/>
                 <fileset dir="${build.home}/build/WEB-INF/classes" includes="**/*.jar" />
