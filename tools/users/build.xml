@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="idcuseraddutil" default="all">
+
+    <property environment="env" />
+    <property name="build.home" value="../.." />
+    <property name="build.classes" value="${build.home}/build/WEB-INF/classes" />
+    <property name="useradd.home" value="." />
+
+    <path id="compile.path">
+        <pathelement location="${build.classes}" />
+    </path>
+
+    <target name="all" depends="useraddutil" description="Do it all" />
+
+    <target name="clean" description="Delete main build directory">
+        <delete dir="${useradd.home}/classes" />
+        <delete dir="${useradd.home}/lib" />
+        <delete failonerror="false">
+            <fileset dir="${useradd.home}" includes="IDCUserAddUtil.jar" />
+        </delete>
+        <delete dir="${useradd.home}/classes" />
+    </target>
+
+    <target name="prepare" description="Create build directoy and copy in files">
+        <mkdir dir="${useradd.home}/classes"/>
+        <copy todir="lib">
+            <fileset dir="${build.home}/lib" includes="hibernate3.jar,dom4j-*.jar,commons-collections-*.jar,jta.jar,mysql-connector-java-*.jar,c3p0-*.jar,cglib-*.jar,asm.jar,antlr-*.jar"/>
+            <fileset dir="${build.home}/lib/axis2" includes="log4j-*.jar,commons-logging-*.jar"/>
+        </copy>
+        <copy todir="classes">
+            <fileset dir="${useradd.home}" includes="log4j.properties" />
+        </copy>
+    </target>
+    
+    <target name="compile" description="Compile Java sources" depends="prepare">
+        <javac srcdir="." includes="IDCUserAddUtil.java" destdir="${useradd.home}/classes" classpathref="compile.path">
+            <classpath>
+                <fileset dir="${build.home}/lib" includes="**/*.jar"/>
+                <fileset dir="${build.home}/build/WEB-INF/classes" includes="**/*.jar" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="useraddutil" description="Create IDCUserAddUtil.jar file" depends="compile" >
+        <jar destfile="IDCUserAddUtil.jar">
+            <!-- Tweak the manifest *to do* the right thing -->
+            <manifest>
+                  <attribute name="Main-Class" value="IDCUserAddUtil"/>
+            </manifest>
+            <fileset dir="${build.classes}" includes="**/*.class,**/*.xml" />
+            <fileset dir="${useradd.home}/classes"  includes="*.class,log4j.properties" />
+            <!--
+                <fileset dir="${build.home}" includes="lib/hibernate3.jar, lib/log4j-1.2.13.jar, lib/commons-logging-1.1.jar"/> 
+             -->
+        </jar>
+    </target>
+
+</project>
+
+
