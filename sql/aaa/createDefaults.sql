@@ -297,7 +297,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
-     "all-users", 1);
+     NULL, NULL);
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="reservations"),
