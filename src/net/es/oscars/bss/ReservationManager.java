@@ -291,8 +291,6 @@ public class ReservationManager {
         // need to set this
         resv.setLogin(login);
 
-        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
-
         ParamValidator paramValidator = new ParamValidator();
 
         StringBuilder errorMsg =
