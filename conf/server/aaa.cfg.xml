@@ -20,13 +20,11 @@
         <property name="current_session_context_class">thread</property>
 
         <!-- connection pool section -->
-	<!--
         <property name="hibernate.c3p0.min_size">5</property>
 	<property name="hibernate.c3p0.max_size">20</property>
 	<property name="hibernate.c3p0.timeout">300</property>
 	<property name="hibernate.c3p0.max_statements">50</property>
 	<property name="hibernate.c3p0.idle_test_period">3000</property>
-	-->
 
         <!-- miscellaneous settings section -->
         <!-- enable batch updates even for versioned data -->
