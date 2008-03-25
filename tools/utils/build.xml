@@ -1,40 +1,55 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<project name="utils" default="all">
+<project name="idcutil" default="all">
 
+    <property environment="env" />
     <property name="build.home" value="../.." />
     <property name="build.classes" value="${build.home}/build/WEB-INF/classes" />
-    <property name="util.home" value="." />
-
+    <property name="idcutil.home" value="." />
 
     <path id="compile.path">
         <pathelement location="${build.classes}" />
     </path>
 
-    <target name="all" depends="compile" description="Do it all" />
+    <target name="all" depends="idcutil" description="Do it all" />
 
     <target name="clean" description="Delete main build directory">
-        <delete dir="${util.home}/classes" />
-        <delete dir="${util.home}/lib" />
+        <delete dir="${idcutil.home}/classes" />
+        <delete dir="${idcutil.home}/lib" />
+        <delete failonerror="false">
+            <fileset dir="${idcutil.home}" includes="IDCUtil.jar" />
+        </delete>
     </target>
 
     <target name="prepare" description="Create build directoy and copy in files">
-        <mkdir dir="${util.home}/classes"/>
+        <mkdir dir="${idcutil.home}/classes"/>
         <copy todir="lib">
-            <fileset dir="${build.home}/lib" includes="hibernate3.jar, log4j-1.2.13.jar"/>
+            <fileset dir="${build.home}/lib" includes="hibernate3.jar,dom4j-*.jar,commons-collections-*.jar,jta.jar,mysql-connector-java-*.jar,c3p0-*.jar,cglib-*.jar,asm.jar,antlr-*.jar"/>
+            <fileset dir="${build.home}/lib/axis2" includes="log4j-*.jar,commons-logging-*.jar"/>
+        </copy>
+        <copy todir="classes">
+            <fileset dir="${idcutil.home}" includes="log4j.properties" />
         </copy>
     </target>
-
+    
     <target name="compile" description="Compile Java sources" depends="prepare">
-        <javac srcdir="." includes="ModifyCertificate.java" destdir="${util.home}/classes" classpathref="compile.path">
+        <javac srcdir="." includes="*.java" destdir="${idcutil.home}/classes" classpathref="compile.path">
             <classpath>
-                <fileset dir="lib" includes="**/*.jar"/>
+                <fileset dir="${build.home}/lib" includes="**/*.jar"/>
+                <fileset dir="${build.home}/build/WEB-INF/classes" includes="**/*.jar" />
             </classpath>
-
         </javac>
     </target>
 
-  
+    <target name="idcutil" description="Create IDCUtil.jar file" depends="compile" >
+        <jar destfile="IDCUtil.jar">
+            <fileset dir="${build.classes}" includes="**/*.class,**/*.xml" />
+            <fileset dir="${idcutil.home}/classes"  includes="*.class,log4j.properties" />
+            <!--
+                <fileset dir="${build.home}" includes="lib/hibernate3.jar, lib/log4j-1.2.13.jar, lib/commons-logging-1.1.jar"/> 
+             -->
+        </jar>
+    </target>
 
 </project>
 
