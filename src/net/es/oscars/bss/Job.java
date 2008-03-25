@@ -43,7 +43,7 @@ public class Job extends HibernateBean implements Serializable {
     }
 
     /**
-     * @param Reservation reservation the Reservation this history message
+     * @param  reservation the Reservation this history message
      * should be attached to
      */
     public void setReservation(Reservation reservation) {
@@ -117,7 +117,7 @@ public class Job extends HibernateBean implements Serializable {
     }
 
     /**
-     * @return done A Boolean describing if the job must be performed
+     * @param done A Boolean describing if the job must be performed
      */
     public void setDone(Boolean done) {
         this.done = done;

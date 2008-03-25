@@ -54,7 +54,7 @@ public class ReservationManager {
             this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
             // TODO:  ReservationAdapter, ReservationManager, etc. will
             // have init methods that throw exceptions that will not be
-            // ignored it NotifyInitializer cannot be created.  Don't
+            // ignored if NotifyInitializer cannot be created.  Don't
             // want exceptions in constructor
         }
     }
@@ -321,8 +321,8 @@ public class ReservationManager {
      * Modifies the reservation, given a partially filled in reservation
      * instance and additional parameters.
      *
+     * @param forwardReply response from the forwarded modify message
      * @param resv reservation instance modified in place
-     * @param login string with login name
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
@@ -395,6 +395,13 @@ public class ReservationManager {
     /**
      * Finds path between source and destination, checks to make sure
      * it wouldn't violate policy, and then finds the next domain, if any.
+     * 
+     * @param resv partially filled in resvervation, use startTime, endTime, bandWidth,
+     * 	           GRI
+     * @param pathInfo - input pathInfo,includes either layer2 or layer3 path
+     *                  information, may also include explicit path hops.
+     * @return a Path structure with the intradomain path hops, nextDomain, and
+     *                  whether the path hops were explicitly set by the user. 
      */
     public Path getPath(Reservation resv, PathInfo pathInfo)
             throws BSSException {
@@ -439,12 +446,13 @@ public class ReservationManager {
     }
 
     /**
-     * Converts complete path in Axis2 data structure into
-     * database path.
+     * Converts the intradomain and interdomain paths in Axis2 data structure into
+     * database Path class containing both.
      *
-     * @param pathInfo PathInfo instance (Axis2 type) with filled in info
-     * @param nextDomain domain instance with information about next domain
-     * @return path path in database format
+     * @param intraPathInfo PathInfo instance (Axis2 type) with filled in info
+     * @param interPathInfo PathInfo instance (Axis2 type) with filled in info
+     * @param nextDomain Domain instance with information about next domain
+     * @return path Path in database format
      */
     public Path convertPath(PathInfo intraPathInfo, PathInfo interPathInfo,
         Domain nextDomain) throws BSSException {
@@ -640,7 +648,8 @@ public class ReservationManager {
     }
 
     /**
-     * Make a copy of the path.
+     * Make a copy of either just the internal hops or all the hops on the path
+     * depending on the value of the exclude boolean.
      *
      * @param pathInfo a PathInfo instance containing a path
      * @param exclude boolean indicating whether to exclude internal hops
@@ -753,6 +762,13 @@ public class ReservationManager {
         return addr.getHostAddress();
     }
 
+    /**
+     *  Generates the next Gobal Rresource Identifier, created from the local  
+     *  Domain's topology identifier and the next unused index in the IdSequence table.
+     *  
+     * @return the GRI.
+     * @throws BSSException
+     */
     public String generateGRI() throws BSSException{
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IdSequenceDAO idDAO = new IdSequenceDAO(this.dbname);
@@ -828,7 +844,9 @@ public class ReservationManager {
     }
 
     /**
-     * Makes final changes to reservation before storage in database
+     * Makes final changes to reservation before storage in database.
+     * Stores token and vlan tags if they are returned by forwardReply
+     * Stores the interdomain path elements returned by forwardReply
      *
      * @param forwardReply response from forward request
      * @param resv reservation to be stored in database
@@ -840,7 +858,8 @@ public class ReservationManager {
         String pathSetupMode = pathInfo.getPathSetupMode();
         Path path = resv.getPath();
 
-        //Create token if user signaled
+        // if user signaled and last domain create token, otherwise store
+        // token returned in forwardReply
         if(pathSetupMode == null || pathSetupMode.equals("signal-xml")){
             this.generateToken(forwardReply, resv);
         }
@@ -925,8 +944,8 @@ public class ReservationManager {
 
 
     /**
-     * Creates a token if the last domain or sets the token returned from
-     * the forward reply.
+     * Creates a token if this is the last domain otherwise sets the token returned 
+     * from the forward reply.
      *
      * @param forwardReply response from forward request
      * @param resv reservation to be stored in database

@@ -161,8 +161,9 @@ public class PolicyManager {
      * Add to list of Link instances matching links in the new reservation.
      *
      * @param links map structure containing lists of matching links
-     * @param path Path instance containing links
-     * @return links list of link instances
+     * @param resv an existing reservation during the time period of the new reservation
+     * @param newResv the reservation that is being created
+     * @param pathInfo the path of the new reservation.
      * @throws BSSException
      */
     private void getMatchingLinks(Map<Link,List<IntervalAggregator>> links,
@@ -289,8 +290,9 @@ public class PolicyManager {
      * Update l2sc resource information based on a given link description.
      * This is the method that removes VLANS because of time conflicts.
      *
-     * @param l2scData the L2SwitchingCapabilityData of a link
+     * @param linkDescr String containing the vlan used by the link
      * @param layer2Info layer2 parameters of a reservation
+     * @param sameUserGRI String 
      * @throws BSSException
      */
     public void updateL2scResources(String linkDescr, Layer2Info layer2Info,

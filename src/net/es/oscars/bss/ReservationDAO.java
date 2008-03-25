@@ -190,10 +190,11 @@ public class ReservationDAO
 
 
     /**
-     * Finds current OSCARS reservations will become expired
-     * some time in the future
+     * Finds current OSCARS reservations that will expire
+     * during the specified time interval
      *
-     * @param timeInterval An int to add to the current time
+     * @param offset start time of the interval in seconds since 12AM, Jan 1, 1970.
+     * @param interval the length of the interval to check.
      * @return list of expired reservations
      */
     @SuppressWarnings("unchecked")

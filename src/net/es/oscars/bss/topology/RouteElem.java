@@ -55,12 +55,14 @@ public class RouteElem extends HibernateBean implements Serializable {
     }
     
     /**
-     * @return description a string with this path element's description
+     * @return boolean that is true if this is a strict element (has been
+     *              validated by the IDC)
      */ 
     public boolean isStrict() { return this.strict; }
 
     /**
-     * @param description a string with this path element's description
+     * @param strict a boolean set to true if this is a strict element (has been
+     *              validated by the IDC)
      */ 
     public void setStrict(boolean strict) {
         this.strict = strict;

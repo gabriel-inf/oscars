@@ -56,7 +56,7 @@ public class History extends HibernateBean implements Serializable {
     }
 
     /**
-     * @param Reservation reservation the Reservation this history message
+     * @param  reservation the Reservation this history message
      * should be attached to
      */
     public void setReservation(Reservation reservation) {

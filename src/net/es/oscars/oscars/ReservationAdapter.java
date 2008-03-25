@@ -49,6 +49,12 @@ public class ReservationAdapter {
     }
 
     /**
+     * Called by OSCARSSkeleton to create a reservation.
+     * First finds or validates a path through the local domain and holds the 
+     * resources. Then forwards the request to the next domain if there is one.
+     * Finally stores the information received back from the forwarded request
+     * to make a complete interdomain reservation.
+     * 
      * @param params ResCreateContent instance with with request params.
      * @param login String with user's login name
      * @return reply CreateReply encapsulating library reply.
@@ -112,6 +118,11 @@ public class ReservationAdapter {
     }
 
     /**
+     * Modifies some pieces of a SCHEDULED reservation. For now only
+     * start and end times are actually modified.
+     * Attempts to modify local reservation and if that succeeds forwards
+     * the request to the next domain.
+     * 
      * @param params ModifyResContent instance with with request params.
      * @param login String with user's login name
      * @return reply CreateReply encapsulating library reply.
@@ -167,6 +178,9 @@ public class ReservationAdapter {
     }
 
     /**
+     * Cancels a scheduled or active reservation. Cancels the local reservation
+     * and forwards the reply to the next domain, if any.
+     * 
      * @param params GlobalReservationId instance with with request params.
      * @param login String with user's login name
      * @param allUsers boolean true if user can cancel other user's reservations
@@ -194,6 +208,15 @@ public class ReservationAdapter {
     }
 
     /**
+     * Returns detailed information about a reservation.
+     * Gets the local path from the intradomain path. Then forwards to 
+     * request to get the inter domain hops and combines them to give a 
+     * complete interdomain path. 
+     * TODO: change TypeConverter.reservationToDetails to get the hops 
+     * from the interdomain path rather than the intradomain path and then
+     * drop the forwarder call. At the moment we don't require the interdomain
+     * path to be complete since the topology exchanges may not all be complete yet.
+     * 
      * @param params GlobalReservationId instance with with request params.
      * @param allUsers boolean indicating user can view all reservations
      * @return reply ResDetails instance encapsulating library reply.
@@ -224,6 +247,8 @@ public class ReservationAdapter {
     }
 
     /**
+     * List all the reservations on this IDC that meet the input constraints.
+     * 
      * @param login String with user's login name
      *
      * @param loginIds a list of user logins. If not null or empty, results will
@@ -310,6 +335,7 @@ public class ReservationAdapter {
 
     /**
      * Adds the remote hops to the local hops to create the complete path.
+     * 
      * @param localPathInfo - the path from the local reservation, has the
      *                        remote hops appended to it.
      * @param remotePathInfo - path returned from forward.create reservation
