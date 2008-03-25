@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.security.cert.*;
 import java.security.Principal;
 import java.util.Properties;
+import java.util.ArrayList;
 
 import org.hibernate.*;
 
@@ -90,7 +91,7 @@ public class ModifyCertificate {
                     user.setPassword(password);
                 }
 
-                mc.mgr.update(user);
+                mc.mgr.update(user, false);
 
             } catch (AAAException e) {
                 System.out.println("caught AAAexception: " + e.getMessage());
@@ -143,8 +144,10 @@ public class ModifyCertificate {
 
     protected void setUp() {
         Initializer initializer = new Initializer();
-        initializer.initDatabase();
-        this.mgr = new UserManager();
+        ArrayList<String> dbnames = new ArrayList<String>();
+        dbnames.add("aaa");
+        initializer.initDatabase(dbnames);
+        this.mgr = new UserManager("aaa");
         this.sessionFac = HibernateUtil.getSessionFactory("aaa");
         this.sessionFac.getCurrentSession().beginTransaction();
     }
