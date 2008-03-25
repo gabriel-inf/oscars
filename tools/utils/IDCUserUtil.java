@@ -158,7 +158,7 @@ public class IDCUserUtil extends IDCCmdUtil{
         int n = in.nextInt();
         in.nextLine();
         
-        if(n < 0 || n > users.size()){
+        if(n <= 0 || n > users.size()){
             System.err.println("Invalid user number '" +n + "' entered");
             System.exit(0);
         }
@@ -196,7 +196,7 @@ public class IDCUserUtil extends IDCCmdUtil{
                 System.out.println("Non-numeric value entered in role list");
                 System.exit(0);
             }
-            if(n < 0 || n > attrs.size()){
+            if(n <= 0 || n > attrs.size()){
                 System.err.println("Invalid role number '" + n + "' entered");
                 System.exit(0);
             }

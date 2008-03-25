@@ -67,7 +67,7 @@ public class IDCCmdUtil{
         int n = in.nextInt();
         in.nextLine();
         
-        if(n < 0 || n > institutions.size()){
+        if(n <= 0 || n > institutions.size()){
             System.err.println("Invalid organization number '" +n + "' entered");
             System.exit(0);
         }
