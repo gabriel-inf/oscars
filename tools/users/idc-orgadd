@@ -7,4 +7,4 @@ do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
 
-java -cp $OSCARS_CLASSPATH:IDCUserAddUtil.jar IDCOrgUtil add $*
+java -cp $OSCARS_CLASSPATH:IDCUtil.jar IDCOrgUtil add $*

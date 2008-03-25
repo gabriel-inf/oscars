@@ -14,9 +14,7 @@ import org.hibernate.*;
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class IDCUserUtil{
-    private String dbname;
-    private Logger log;
+public class IDCUserUtil extends IDCCmdUtil{
     private Properties props;
     
     public IDCUserUtil(){
@@ -89,7 +87,7 @@ public class IDCUserUtil{
             }
         }else { input = ""; }
         user.setCertIssuer(input);
-        user.setInstitution(this.selectInstitution(in));
+        user.setInstitution(this.selectInstitution(in, "user's organization"));
         userAttrs = this.selectRoles(in);
         user.setDescription(this.readInput(in, "Personal Description", "", false));
         user.setEmailPrimary(this.readInput(in, "Email(Primary)", "", true));
@@ -137,62 +135,6 @@ public class IDCUserUtil{
         aaa.getTransaction().commit();
     }
     
-    /**
-     * Method to read in user input strings
-     *
-     * @param in a Scanner used toaccept input
-     * @param label a String describing the requested input to the user
-     * @param defaultVal the default value to assign if no input provided
-     * @param req boolean indicating whether this field is required
-     * @return the String input by the user
-     */
-    private String readInput(Scanner in, String label, String defaultVal, boolean req){
-        System.out.print(label + (req?"*":""));// + " [" + defaultVal + "]: ");
-        System.out.print(": ");
-        String input = in.nextLine().trim();
-        
-        if(input.equals("") && (!defaultVal.equals(""))){
-            input = defaultVal;
-        }else if(input.equals("") && defaultVal.equals("") && req){
-            System.err.println("The field '" + label + "' is required.");
-            System.exit(0);
-        }else if(input.equals("")){
-            return null;
-        }
-        
-        return input;
-    }
-    
-    
-    /**
-     * Prints the current list of institutions in the database and allows the
-     * user to choose one
-     *
-     * @param in the Scanner to use for accepting input
-     * @return the selected Institution
-     */
-    private Institution selectInstitution(Scanner in){
-        InstitutionDAO instDAO = new InstitutionDAO(this.dbname);
-        List<Institution> institutions = instDAO.list();
-        int i = 1;
-        
-        System.out.println();
-        for(Institution inst : institutions){
-            System.out.println(i + ". " + inst.getName());
-            i++;
-        }
-        
-        System.out.print("Select the user's organization (by number): ");
-        int n = in.nextInt();
-        in.nextLine();
-        
-        if(n < 0 || n > institutions.size()){
-            System.err.println("Invalid organization number '" +n + "' entered");
-            System.exit(0);
-        }
-        
-        return institutions.get(n-1);
-    }
     
     /**
      * Prints the current list of users in the database and allows the

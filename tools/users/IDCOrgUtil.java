@@ -12,9 +12,7 @@ import org.hibernate.*;
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class IDCOrgUtil{
-    private String dbname;
-    private Logger log;
+public class IDCOrgUtil extends IDCCmdUtil{
     
     public IDCOrgUtil(){
         this.log = Logger.getLogger(this.getClass());
@@ -60,7 +58,7 @@ public class IDCOrgUtil{
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
-        Institution org = this.selectInstitution(in);
+        Institution org = this.selectInstitution(in, "organization to delete");
         System.out.print("Are you sure you want to delete '" + 
                             org.getName() + "'? [y/n] ");
         String ans = in.next();
@@ -73,62 +71,6 @@ public class IDCOrgUtil{
         }
        
         aaa.getTransaction().commit();
-    }
-    
-    /**
-     * Method to read in user input strings
-     *
-     * @param in a Scanner used to accept input
-     * @param label a String describing the requested input to the user
-     * @param defaultVal the default value to assign if no input provided
-     * @param req boolean indicating whether this field is required
-     * @return the String input by the user
-     */
-    private String readInput(Scanner in, String label, String defaultVal, boolean req){
-        System.out.print(label + (req?"*":""));// + " [" + defaultVal + "]: ");
-        System.out.print(": ");
-        String input = in.nextLine().trim();
-        
-        if(input.equals("") && (!defaultVal.equals(""))){
-            input = defaultVal;
-        }else if(input.equals("") && defaultVal.equals("") && req){
-            System.err.println("The field '" + label + "' is required.");
-            System.exit(0);
-        }else if(input.equals("")){
-            return null;
-        }
-        
-        return input;
-    }
-    
-    /**
-     * Prints the current list of institutions in the database and allows the
-     * user to choose one
-     *
-     * @param in the Scanner to use for accepting input
-     * @return the selected Institution
-     */
-    private Institution selectInstitution(Scanner in){
-        InstitutionDAO instDAO = new InstitutionDAO(this.dbname);
-        List<Institution> institutions = instDAO.list();
-        int i = 1;
-        
-        System.out.println();
-        for(Institution inst : institutions){
-            System.out.println(i + ". " + inst.getName());
-            i++;
-        }
-        
-        System.out.print("Select the organization to delete(by number): ");
-        int n = in.nextInt();
-        in.nextLine();
-        
-        if(n < 0 || n > institutions.size()){
-            System.err.println("Invalid organization number '" +n + "' entered");
-            System.exit(0);
-        }
-        
-        return institutions.get(n-1);
     }
     
     public static void main(String[] args){
