@@ -26,7 +26,8 @@ importing topology information from other IDCs. OSCARS uses the Open
 Grid&nbsp; Forum Network Measurements Working Group (NMWG) control
 plane <a
  href="https://damsl.cis.udel.edu/svn/proto_docs/Topo_Schema/schema/nmtopo_ctrlplane.rnc">XML
-schema&nbsp;</a> developed by DICE to describe topology. <br>
+schema&nbsp;</a> developed by DICE to describe topology that is being
+exchanged. <br>
 </p>
 <p> Currently OSCARS supports these operations on two different
 implementations of the topology database:</p>
@@ -57,9 +58,17 @@ be modified to load the appropriate class when the tedb.tedbMethod
 property has that value.<br>
 </p>
 <h2>BSS Topology Tables</h2>
+The topology tables are used by the OSCARS and interdomain pathfinder
+when finding a route. They are also used by the scheduling code to
+check for oversubscription and elements from them are referenced from
+the reservation tables. Thus, even at a site where the local topology
+and pathfinding are provided by an exernal service such as TERCE these
+tables are required. At Dragon sites, topoloy is imported from TERCE
+and stored in the topology tables.<br>
 <br>
 OSCARS assumes that you have described your topology in the Open Grid
-Forum (OGF) Network Measurement Working Group (NMWG) control plane
+Forum (OGF) Network Measurement Working Group (NMWG) <a
+ name="nmwgTopologySchema"></a>control plane
 topology schema. The NMWG topology schema consists of a hierarchy of <span
  style="font-weight: bold;">domains, nodes, ports,</span> and <span
  style="font-weight: bold;">links</span>. The table below describes
@@ -169,7 +178,7 @@ come with the software are shown below:<br>
 <br>
 <p>
 The <span style="font-weight: bold;">domains table</span> contains the
-following information about each domain that we can interact with:<br>
+following information about each domain that the IDC can interact with:<br>
 </p>
 <pre> 	Integer id              /** identifier field */  <br>	String topologyIdent 	/** persistant field */ <br>	String name          	/** persistant field */	<br>	String url           	/** persistant field: of OSCARS service for the domain */<br>	String abbrev        	/** persistant field */ <br>	boolean local         	/** persistant field: is this the local domain */</pre>
 <p>The <span style="font-weight: bold;">nodes table</span> contains
@@ -186,24 +195,46 @@ the following information for each link in
 the local
 domain:
 </p>
-<pre>	Integer id 			/** identifier field */ <br>	boolean valid                   /** persistant field */  <br>	Integer snmpIndex               /** nullable persistent field */ <br>	String topologyIdent            /** persistant field */ <br>	String trafficEngineeringMetric /** nullable persistent field */ <br>	Long capacity                  	/** nullable persistent field */ <br>	Long maximumReservableCapacity 	/** nullable persistent field */<br>	Long minimumReservableCapacity 	/** nullable persistent field */ <br>	Long granularity               	/** nullable persistent field */  <br>	Long unreservedCapacity        	/** nullable persistent field */  <br>	String alias                    /** nullable persistent field */ <br>	Integer remoteLinkId            /** nullable persistent field */ <br>	Integer portId                 	/** persistant field: parent port */ <br></pre>
+<pre>	Integer id 			/** identifier field */ <br>	boolean valid                   /** persistant field */  <br>	Integer snmpIndex               /** nullable persistent field */ <br>	String topologyIdent            /** persistant field */ <br>	String trafficEngineeringMetric /** nullable persistent field */ <br>	Long capacity                  	/** nullable persistent field */ <br>	Long maximumReservableCapacity 	/** nullable persistent field */<br>	Long minimumReservableCapacity 	/** nullable persistent field */ <br>	Long granularity               	/** nullable persistent field */  <br>	Long unreservedCapacity        	/** nullable persistent field */  <br>	String alias                    /** nullable persistent field */ <br>	Integer remoteLinkId            /** nullable persistent field */ <br>	Integer portId                 	/** persistant field: parent port */<br>	Set ipaddrs			/** optional set of ippaddrs */<br>	Integer l2SwitchingCapabilityData /** optional index into the l2SwitchingCapabilityData table */ <br></pre>
 Where the topologyIdent is a logical name that identifies the link;
 trafficEngineeringMetric is a description of a traffic metric that may
 be used
 when selecting a path: granularity is the increments at which the
 bandwidth may
-be reserved; remoteLinkId is the link on the other end of the
-connection; and portId is an index into the ports table. If the&nbsp;
+be reserved; remoteLinkId is an index into the links table for the link
+on the other end of the
+connection; and portId is an index into the ports table for the parent
+port. If the&nbsp;
 capacity fields are null, the information is taken from the parent
-port. <span style="font-weight: bold;">(?)</span><br>
+port. <span style="font-weight: bold;"></span><br>
 <br>
 The <span style="font-weight: bold;">ipaddrs table</span> contains the
 following information:<br>
-<pre>	Integer id              /** identifier field */ <br>	boolean valid  		/** persistant field */ <br>	String IP     		/** persistant field */ <br>	Integer linkId 		/** persistant field */<br>Not sure how this is used. what is the relation between links and ipaddrs.</pre>
-<span style="font-weight: bold;">nodeAddress table</span> - not sure
-how it is used.
-<pre>	Integer id      	/** identifier field */  <br>	String address 		/** persistant field: dotted IP address */ <br>	Integer nodeId  	/** persistant field: corresponding entry in nodes table */ <br><br></pre>
+<pre>	Integer id              /** identifier field */ <br>	boolean valid  		/** persistant field */ <br>	String IP     		/** persistant field */ <br>	Integer linkId 		/** persistant field, index into links table */<br><br>Used to get a  valid IP Address for a link.<br></pre>
+<span style="font-weight: bold;">nodeAddresses table</span> - does not
+appear to be currently used.<br>
+<pre>	Integer id      	/** identifier field */  <br>	String address 		/** persistant field: dotted IP address */ <br>	Integer nodeId  	/** persistant field: corresponding entry in nodes table */</pre>
+<span style="font-weight: bold;">
+edgeInfos table</span><span style="font-weight: bold;"><br>
+</span>
+<pre>	Integer id      	/** identifier field */  <br>	String externalIP	/** persistant field */<br>	Integer ipaddrId	/** persistant field, index into ipaddrs table */ <br>	Integer domainId	/** persistant field, index into domains table */</pre>
+The next domain on an input layer2 path is found by looking up the
+first hop outside of this domain, the externalIP, in this table.<br>
 <br>
+<span style="font-weight: bold;">interdomainRoutes table</span><br>
+<pre>	Integer id      	/** identifier field */  	<br>	Integer srcNodeId    	/** nullable persistent field */<br>	Integer srcPortId	/** nullable persistent field */ <br>	Integer srcLinkId	/** nullable persistent field */ <br>	Integer destDomainId	/** nullable persistent field */ <br>	Integer destNodeId	/** nullable persistent field */ <br> 	Integer destLinkId	/** nullable persistent field */ <br>	Integer routeElemId	/** persistant field */  <br>	Integer preference	/** persistant field */  <br>	boolean defaultRoute	/** persistant field */      </pre>
+Used to look-up routes that match the given source and destination,
+specified by either nodes, ports or links. If no routes match then the
+default route or null is returned. It orders routes by source,
+destination and preference. Matches that are more specific are ordered
+higher (i.e. a matching link is higher than a matching port, etc). Used
+by the genericInterdomainPathfinder.<br>
+<br>
+<span style="font-weight: bold;">routeElems table</span><br>
+<pre>	Integer id      	/** identifier field */ <br>	Integer domainId 	/** nullable persistent field */<br>	Integer nodeId		/** nullable persistent field */ <br>	Integer portId		/** nullable persistent field */ <br>	Integer linkId		/** nullable persistent field */ <br>	Integer nextHopId	/** nullable persistent field */ <br>	String description	/** nullable persistent field */<br>	<br>Contains the indexes into the domain,node,port and link table for an interdomainRoute.<br>nextHopId is an index into this table for then next hop on the route.<br><br><span
+ style="font-weight: bold;">l2SwitchingCapabilityData table</span><br
+ style="font-weight: bold;"><br>	Integer id      	/** identifier field */ <br>	Integer linkId		/** persistent field */ <br>	String vlanRangeAvailability	/** persistent field */ | <br>	Integer interfaceMTU	/** persistent field */ <br><br>Will find switching capability for a given link. <br><span
+ style="font-weight: bold;"></span><br></pre>
 <br>
 <!--#include virtual="footer.html" -->
 </body>

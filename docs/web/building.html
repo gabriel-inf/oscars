@@ -1,0 +1,277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Building OSCARS</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="building.html">Building OSCARS</a>
+</div>
+</div>
+<h1>Building OSCARS</h1>
+<h2>Hardware requirements</h2>
+The OSCARS IDC software requires a single PC that will act as a web
+server for processing requests. Most modern PCs should be suitable for
+running the software. The following specifications are the minimum
+requirements for most installations:<br>
+<ul>
+  <li>1Ghz Processor, 1GB memory</li>
+  <li>Linux/Unix Operating System (including MacOSX)<br>
+  </li>
+  <li>Basic Internet connectivity</li>
+  <li>System clock running the Network Time Protocol (NTP)</li>
+  <li>Access to a mail server to send mail<br>
+  </li>
+</ul>
+The IDC listens on port 8080 and port 8443 by default.<br>
+<br>
+<br>
+<h2>Software Prerequisites</h2>
+The OSCARS software is written in Java and depends on the following
+Java packages. <br>
+<ul>
+  <li><a href="http://tomcat.apache.org">Apache Tomcat 5.5</a> servlet
+container</li>
+  <li><a href="http://ws.apache.org/axis2">Apache Axis2 1.3 </a>Web
+service container</li>
+  <li><a
+ href="http://ws.apache.org/axis2/modules/rampart/1_3/security-module.html">Apache
+Rampart 1.3 </a>- for Web service message security</li>
+  <li><a href="http://logging.apache.org/log4j/1.2/">Log4j</a> -
+logging libraries</li>
+  <li><a href="http://ant.apache.org/">Ant 1.7</a> - Java build tool</li>
+  <li><a href="http://java.sun.com/products/jta/">Java Transaction API
+(JTA) 1.0.1</a> Used by hibernate for managing transactions<br>
+  </li>
+  <li><a href="http://www.hibernate.org">Hibernate</a> - database
+libraries&nbsp; (included in the distribution)<br>
+  </li>
+  <li><a href="http://www.dojotoolkit.org/">Dojo </a>- Javascript
+toolkit library</li>
+</ul>
+We are using the Java 1.5 compiler. The persisent data for
+reservations, topology and user information is stored in <a
+ href="http://dev.mysql.com">MySQL</a> tables so MySQL 4.1.2 or later
+must be installed.<br>
+<br>
+See the <a href="dependencies.html">Dependencies</a> page or the <a
+ href="DCN-SUITE-OSCARS-INSTALL.pdf">DCN-Dragon-Suite Installation
+Manual</a> section 1 and 2 for details on how to install and configure
+these packages.<br>
+<br>
+<h2>Setting-up the MySQL Database</h2>
+Creating the necessary databases requires a MySQL user account with
+proper privileges. Assuming a username of &#8220;oscars&#8221; and a password of
+&#8220;password&#8221; the following commands will create the account if it does
+not exist and assign that account the proper privileges:<br>
+<br>
+<div style="margin-left: 40px;"><code>mysql -p</code><br>
+<code>...enter mysql admin password...<br>
+<br>
+</code><code>mysql&gt; GRANT SELECT, INSERT, CREATE, INDEX, UPDATE,
+DELETE, DROP
+ON aaa.* TO oscars@localhost IDENTIFIED BY 'password&#8217;;<br>
+<br>
+</code><code>mysql&gt; GRANT SELECT, INSERT, CREATE, INDEX, UPDATE,
+DELETE, DROP
+ON bss.* TO oscars@localhost IDENTIFIED BY 'password;</code><br>
+<code></code></div>
+<code><br>
+</code>You may use any username and password you wish because they are
+specified in a later configuration step of the software. See the MySQL
+manual for more information on managing users and privileges.<br>
+<br>
+<span style="font-weight: bold;">Creating the aaa Database</span><br>
+The aaa database contains authentication, authorization, and accounting
+information. This includes user accounts and attributes. To create the
+database and populate it with some sample values, issue these commands:<br>
+<br>
+<div style="margin-left: 40px;"><code>cd sql/aaa</code><br>
+<code>mysql &#8211;u your-username &#8211;p &lt; ./createDefaults.sql</code><br>
+<code></code></div>
+<br>
+This creates a database with the permissions and resources expected by
+the aaa component as well as two sample users: oscars-admin and
+oscars-user (both with password oscars) and a set of suggested
+attributes and authorizations for holders of those attributes. Do not
+run this command after you have added more information to the
+database, as it deletes all the existing tables and starts over.<br>
+<br>
+If you want to create empty tables use the createTables.sql
+script.<br>
+<br>
+<span style="font-weight: bold;">Creating the bss Database</span><br>
+The Bandwidth Scheduling Subcomponent (BSS) reserves and manages
+network resources. The bss contains the list of reservations and enough
+local topology information to track the resources in use by those
+reservations. To create the database and a set of empty tables, issue
+these commands:<br>
+<br>
+<div style="margin-left: 40px;"><code>cd sql/bss</code><br>
+<code>mysql &#8211;u your-username &#8211;p &lt; ./createTables.sql</code><br>
+</div>
+<br>
+Do not run this command after you have added any topology to the
+database as it deletes all the existing tables and starts over. If you
+wish to just delete information about reservations use the
+cleanReservations.sql script.<br>
+<br>
+<h2>Download OSCARS</h2>
+See the <a href="download.html">Download</a> page for instructions on
+how to download the OSCARS source code from either the code repository
+or from a tar file. <br>
+<br>
+The distribution includes the OSCARS IDC code; a suite of test
+programs; a set of example Web Service client programs; a tools
+directory that includes a stand-alone scheduler program, some topology
+updating tools, a monitoring script that checks that the service is
+responding,&nbsp; a script to do sanity checks on the databases;
+complete documentation including the JavaDoc and configuration files.<br>
+<br>
+<h2>Quick Start</h2>
+<br>
+If&nbsp; you have installed Tomcat, Axis2
+with Rampart and are able to connect to the Tomcat server and see that
+Axis is running successfully, you can try the following ant comands to
+build
+and deploy the OSCARS.war and OSCARS.aar.<br>
+<br>
+Set the CATALINA_HOME&nbsp; environment variable to the directory in
+which
+Tomcat is deployed. <br>
+<br>
+<span style="font-weight: bold;">Quick Start for Dragon setup</span><br
+ style="font-weight: bold;">
+<br style="font-weight: bold;">
+<div style="margin-left: 40px;"><code>cd dcn-software-suite-0.2/idc<br>
+ant deploydragon</code><br>
+<code>ant deploywbui</code><br>
+<code>setupServer<br>
+cd $CATALINA_HOME/logs<br>
+../bin/startup.sh ; tail -f catalina.out<br>
+</code></div>
+<br>
+<span style="font-weight: bold;">Quick Start for OSCARS without Dragon</span><br>
+<br>
+<div style="margin-left: 40px;"><code>cd
+&lt;oscars_install_directory&gt;</code><code></code><br>
+<code>ant deployaar</code><br>
+<code>ant deploywbui</code><br>
+<code>setupServer<br>
+</code><code>cd $CATALINA_HOME/logs<br>
+../bin/startup.sh ; tail -f catalina.out<br>
+</code>
+<br>
+At this point you should be able to connect to the OSCARS web browser
+interface at http(s)://localhost:[8080|8443]/OSCARS and see a login
+screen.<br>
+</div>
+<br>
+<h2>Step by step description of the build process<br>
+</h2>
+Once Tomcat and Axis have been installed, you should set the following
+environment variable:<br>
+<br>
+&nbsp;&nbsp;&nbsp; CATALINA_HOME&nbsp; set to the directory in which
+Tomcat is deployed. <br>
+<br>
+If you want to create a directory to store your variations of the
+OSCARS
+configuration files, you can optionally set DOMAIN_HOME to point to it.<br>
+<br>
+At this point the targets that you run will depend of whether you are
+running the Dragon control plane software or not. cd into the directory
+in which the OSCARS IDC has been expanded. There will be a build.xml
+file there as well as the directories conf, docs, lib, examples, src,
+et.al. At the end of the build process two files will be produced:
+build/OSCARS.aar which is the Web Services deployable file and
+OSCARS.war which is the Servlet deployable file. These files are copied
+to $CATALINA_HOME/webapps and
+$CATALINA_HOME/webapps/axis2/WEB_INF/services respectively.<br>
+<br>
+<div style="margin-left: 40px;"><code>cd dcn-software-suite-0.2/idc
+(for Dragon)<br>
+</code><code>cd
+&lt;oscars_install_directory&gt; (for non-Dragon)</code><code></code><br>
+<code>ant deployaar/dragon</code><br>
+<code>ant deploywbui</code><br>
+<code>setupServer</code><br>
+</div>
+<span style="font-weight: bold;"></span><br>
+The first deploy target will cause a number of other targets to be
+executed.<br>
+<span style="font-style: italic;">deployaar</span> depends on <span
+ style="font-style: italic;">prepare, compile</span> and <span
+ style="font-style: italic;">aar</span><br>
+<span style="font-style: italic;">deploydragon</span> depends on <span
+ style="font-style: italic;">prepareDragon,</span> and then <span
+ style="font-style: italic;">prepare, compile</span> and <span
+ style="font-style: italic;">aar</span><br>
+<span style="font-style: italic;">prepareDragon</span> copies the&nbsp;
+Dragon jar files into the lib directory.<br>
+<br>
+<span style="font-style: italic;">prepare</span> copies axis2 and
+tomcat libraries from the Tomcat deployed area, $CATALINA_HOME, into
+the lib directory, and the msql-connector jars from a maven
+repository.&nbsp; It also copies some configuration files from the conf
+directory to the build area, from whence they will be put in the aar
+and
+war files.<br>
+<br>
+<span style="font-style: italic;">compile</span> depends on <span
+ style="font-style: italic;">prepare</span> and <span
+ style="font-style: italic;">wsdl2java<br>
+wsdl2java </span>checks to see if the web service stubs have been
+generated from the OSCARS.wsdl<br>
+and if not runs the axis2 WSDL2Java program to generate them. The
+resulting java files are put in src/net/es/oscars/wsdlTypes and
+src/org/ogf/schema/network/topology/ctrlplane/_20070626<br>
+Then all the src files are compiled into build/WEB-INF/classes.<br>
+<br>
+<span style="font-style: italic;">aar</span> ceates the
+build/OSCARS.aar file from the classes in build/WEB-INF/classes
+(excluding
+the servlet classes),&nbsp; the jars in the lib directory and the wsdl,
+xsd and services.xml files in conf/server.<br>
+<br>
+<span style="font-style: italic;">deployaar</span>&nbsp; copies
+OSCARS.aar to $CATALINA_HOME/webapps/WEB_INF/services, the
+log4j.properties file to $CATALINA_HOME/webapps/WEB_INF/classes where
+axis2 can find it, and a couple of jar files that need to be in
+$CATALINA_HOME/shared/lib.<br>
+<br>
+<span style="font-style: italic;">deploywbui</span> depends on <span
+ style="font-style: italic;">wbui</span> which depends on <span
+ style="font-style: italic;">compile</span>.<br>
+<span style="font-style: italic;">wbui</span> generates the JavaDocs
+for all the IDC classes and for just the client side classes. It copies
+all the static docs into the web/docs directory from which they are
+included in the OSCARS.war. It then builds the war from the classes in
+build/WEB-INF/classes (excluding the web services classes), the lib
+jars and the docs.<br>
+<br>
+<span style="font-style: italic;">deploywbui</span> just copies the
+OSCARS.war file to $CATALINA_HOME/webapps. If Tomcat is running at the
+time of the deploy and is configured to dynamically deploy services,
+the new war will immediately be deployed. If Tomcat is not running, you
+may need to delete the old deployed directory
+$CATALINA_HOME/webapps/OSCARS before the new war will be started.<br>
+<br>
+<span style="font-style: italic;">setupServer</span> copies a number of
+files to the $CATALINA_HOME/shared area where they are used by axis2
+and rampart. We also have our own version of log4j.properties which we
+put in $CATALINA_HOME/common/classes for use by Tomcat. <span
+ style="font-style: italic;">setupServer</span> only needs to be run
+once per installation unless you change any of the copied
+configuration files.<br>
+<!--#include virtual="footer.html" -->
+<br>
+</body>
+</html>

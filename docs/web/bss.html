@@ -39,9 +39,11 @@ reservation is entered into the BSS's reservation table.<br>
 <h2>Configuration</h2>
 <br>
 When the OSCARS server software is installed, the bss database tables
-must be created and populated. There are two sets of table: those used
-to define reservations that start out empty and those used to define
-topology that must be populated with topology information. See <a
+must be created and populated. There are two sets of tables use by the
+scheduling component: those used
+to define reservations and those used to define
+topology. The topology tables must be populated with topology
+information before the OSCARS service can function. See <a
  href="tss.html">TSS Component Notes</a> for details on the topology
 tables.<br>
 <br>
@@ -61,7 +63,8 @@ loose hop (CLP) is returned to the user where it has been verified that
 an acutal path with the requested bandwidth can be made through these
 hops.&nbsp; The way the hops are expressed depends on the layer (2 or
 3) that is being specified and how the domains specify their
-topologies. see <a href="tss.html">topology exchange</a>.&nbsp; <br>
+topologies. See the <a href="tss.html#nmwgTopologySchema">NMWG
+topology schema</a> for how we identify hops. <br>
 <br>
 Once the reservation has been added to the reservations table in each
 of the transited domains, the circuit can be instantiated either by a
@@ -75,17 +78,19 @@ handled&nbsp; by the <a href="pss.html">path realization component</a>.
  style="font-weight: bold;"><br>
 </span>There are two classes of tables used by the BSS: ones that
 describe the static topology of the local domain and some aspect of
-adjacent domains; and ones that describe reservations.<br>
+adjacent domains; and ones that describe reservations. The topology
+tables are described in <a href="tss.html">TSS Component Notes</a>.
+The reseverations table are describe&nbsp; below.<br>
 <br>
 <h3>Reservation specific tables</h3>
 When a reservation is made an entry is created for it in the <span
  style="font-weight: bold;">reservations table</span> containing the
 following information:<br>
-<pre>	Integer id 			/** identifier field */  <br>	Long startTime 			/** persistant field */<br>	Long endTime 			/** persistant field */  <br>	Long createdTime 		/** persistant field */<br>	Long bandwidth 			/** persistant field */<br>	String login			/** persistant field: login name of the owner of the reservation */ <br> 	String status 			/** persistant field */<br>	String description	    	/** nullable persistent field */<br>	String globalReservationId     	/** nullable persistent field */  <br> 	Integer pathId 			/** persistant field: index to paths table */<br>	Integer token			/** nullable persistent field: index to tokens table */ </pre>
+<pre>	Integer id 			/** identifier field */  <br>	Long startTime 			/** persistant field, secs since 12am, Jan 1, 1970 UTC. */<br>	Long endTime 			/** persistant field, secs since 12am, Jan 1, 1970 UTC */  <br>	Long createdTime 		/** persistant field, secs since 12am, Jan 1, 1970 UTC */<br>	Long bandwidth 			/** persistant field */<br>	String login			/** persistant field: login name of the owner of the reservation */ <br> 	String status 			/** persistant field */<br>	String description	    	/** nullable persistent field */<br>	String globalReservationId     	/** nullable persistent field */  <br> 	Integer pathId 			/** persistant field: index to paths table */<br>	Integer token			/** nullable persistent field: index to tokens table */ </pre>
 <br>
 The <span style="font-weight: bold;">paths table </span>contains:<br>
 <pre> 	Integer id  		/** identifier field */ <br>	Boolean explicit 	/** persistant field: was path specified by user */ <br>	String pathSetupMode  	/** nullable persistent field: by timer or message signal */ <br> 	Integer nextDomainId 	/** nullable persistent field */  <br>	Integer pathElemId  	/** persistant field: index to first path element */ <br>	Integer layer2DataId 	/** nullable persistent field: index to layer2Data table */ <br>	Integer layer3DataId 	/** nullable persistent field: index to layer3Data table  */ <br>	Integer mplsDataId  	/** nullable persistent field: index to mpls table  */<br></pre>
-Where explicit is true if the complete path was input; pathSetupMode
+Explicit is true if the complete path was input; pathSetupMode
 specifies if the path will be instantiated automatically by the
 scheduler or by a signal from the user; if nextDomainId is not
 null it is an index into the domain table that identifies the next
@@ -109,9 +114,19 @@ Where linkId is an index into the links table and nextId
 is a index to the next
 pathElem if any.<br>
 <br>
+<pre><span style="font-weight: bold;">MplsData table</span><br
+ style="font-weight: bold;"><br>	Integer id      	/** identifier field */<br>	Long burstLimit		/** persistent field */ <br>	String lspClass		/** persistent field */ </pre>
+Contains the burstLimit and lspClass associated with a Path.<br>
+<br>
 The <span style="font-weight: bold;">tokens table</span> contains an
 opaque identifier associated with each reservation.<br>
 <pre>	Integer id            	/** identifier field */  <br>	Integer reservationId 	/** persistant field */ <br>	String value         	/** persistant field */ </pre>
+<span style="font-weight: bold;">idSequence table&nbsp; </span>a
+sequence of integers<br>
+<pre>	Integer id            	/** identifier field */ </pre>
+Used to assign the numeric part of the next GRI. Ensures that
+reservation ids will never be reused.<br>
+&nbsp;
 <br>
 <br>
 <!--#include virtual="footer.html" -->

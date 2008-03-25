@@ -22,10 +22,9 @@
       <div class="name">Configuration</div>
       <div class="content"> <a href="database.html">MySQL tables</a> <a
  href="tomcat.html">Tomcat</a> <a href="tomcat.html#axis2">Axis2 with
-Rampart</a>
-      <a href="tomcat.html#oscars">OSCARS</a> <a
- href="msgSecurity.html">Keystores</a>
-      <a href="logging.html">Logging</a> </div>
+Rampart</a> <a href="tomcat.html#oscars">OSCARS</a> <a
+ href="msgSecurity.html">Keystores</a> <a href="logging.html">Logging</a>
+      </div>
       </div>
       </div>
       <br>
@@ -48,7 +47,9 @@ The server portion of OSCARS currently depends on being
 deployed under Tomcat 5.5 for the browser-based
 interface. <a href="tomcat.html">Details</a> of our Tomcat
 configuration.
-      <h3><a href="http://ws.apache.org/axis2">Apache Axis2</a> and <a
+      <h3><a
+ href="http://ws.apache.org/axis2/modules/rampart/1_3/security-module.html">Apache
+Axis2 and </a><a
  href="http://ws.apache.org/axis2/modules/rampart/1_3/security-module.html">Rampart</a></h3>
 The API-based interface depends on being deployed under
 Axis2.1.3. with rampart 1.3 running under Tomcat 5.5.
@@ -74,6 +75,12 @@ be found in the <a href="msgSecurity.html">Message Security notes</a>.<br>
 Both Tomcat and Axis2 can be configured to use Log4j logging. OSCARS
 also uses log4j. The various configuration files that are used are
 explained <a href="logging.html">here</a>.<br>
+      <br>
+      <a href="http://ant.apache.org/">ANT</a> <br>
+Java build tool. We have targets for configuring the Tomcat server,
+generating the Java web service stubs from the WSDL file, compiling the
+code, testing the code and depolying the OSCARS war, aar and
+documentation.<br>
       <h3><a href="http://dojotoolkit.org/">Dojo</a></h3>
 The Dojo toolkit is used by the OSCARS web pages. The latest release
 can be downloaded from <a href="http://dojotoolkit.org/downloads">here</a><br>
