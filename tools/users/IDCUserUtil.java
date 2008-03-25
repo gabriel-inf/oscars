@@ -10,29 +10,27 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 /**
- * IDCUserAddUtil is a command-line client for adding users to the database
+ * IDCUserUtil is a command-line client for adding/deleting users
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class IDCUserAddUtil{
+public class IDCUserUtil{
     private String dbname;
     private Logger log;
     private Properties props;
     
-    public IDCUserAddUtil(){
+    public IDCUserUtil(){
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("aaa", true);
-        this.dbname = "aaa";
-        this.addUser();
-        
+        this.dbname = "aaa"; 
     }
     
     /**
      * Main logic that adds user to the database
      *
      */
-    private void addUser(){
+    public void addUser(){
         Scanner in = new Scanner(System.in);
         String input = null;
         EraserThread et = new EraserThread();
@@ -111,6 +109,35 @@ public class IDCUserAddUtil{
     }
     
     /**
+     * Main llogic for deleting a user from the database
+     */
+    public void removeUser(){
+        Scanner in = new Scanner(System.in);
+
+        /* Init database */
+        Initializer initializer = new Initializer();
+        ArrayList<String> dbnames = new ArrayList<String>();
+        dbnames.add(this.dbname);
+        initializer.initDatabase(dbnames);
+        Session aaa =
+            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        aaa.beginTransaction();
+        User user = this.selectUser(in);
+        System.out.print("Are you sure you want to delete '" + 
+                            user.getLogin() + "'? [y/n] ");
+        String ans = in.next();
+        
+        if(ans.toLowerCase().startsWith("y")){
+            aaa.delete(user);
+            System.out.println("User '" + user.getLogin() + "' deleted.");
+        }else{
+            System.out.println("Operation cancelled. No user deleted.");
+        }
+       
+        aaa.getTransaction().commit();
+    }
+    
+    /**
      * Method to read in user input strings
      *
      * @param in a Scanner used toaccept input
@@ -165,6 +192,36 @@ public class IDCUserAddUtil{
         }
         
         return institutions.get(n-1);
+    }
+    
+    /**
+     * Prints the current list of users in the database and allows the
+     * user to choose one
+     *
+     * @param in the Scanner to use for accepting input
+     * @return the selected Institution
+     */
+    private User selectUser(Scanner in){
+        UserDAO userDAO = new UserDAO(this.dbname);
+        List<User> users = userDAO.list();
+        int i = 1;
+        
+        System.out.println();
+        for(User user : users){
+            System.out.println(i + ". " + user.getLogin());
+            i++;
+        }
+        
+        System.out.print("Select the user to delete (by number): ");
+        int n = in.nextInt();
+        in.nextLine();
+        
+        if(n < 0 || n > users.size()){
+            System.err.println("Invalid user number '" +n + "' entered");
+            System.exit(0);
+        }
+        
+        return users.get(n-1);
     }
     
     /**
@@ -239,6 +296,11 @@ public class IDCUserAddUtil{
     }
     
     public static void main(String[] args){
-        IDCUserAddUtil util = new IDCUserAddUtil();
+        IDCUserUtil util = new IDCUserUtil();
+        if(args[0] != null && args[0].equals("remove")){
+            util.removeUser();
+        }else{
+            util.addUser();
+        }
     }
 }

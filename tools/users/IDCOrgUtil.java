@@ -8,15 +8,15 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 /**
- * IDCUserAddUtil is a command-line client for adding users to the database
+ * IDCOrgUtil is a command-line client for adding organizations to the database
  *
  * @author Andrew Lake (alake@internet2.edu)
  */
-public class IDCOrgAddUtil{
+public class IDCOrgUtil{
     private String dbname;
     private Logger log;
     
-    public IDCOrgAddUtil(){
+    public IDCOrgUtil(){
         this.log = Logger.getLogger(this.getClass());
         this.dbname = "aaa";
     }
@@ -132,7 +132,7 @@ public class IDCOrgAddUtil{
     }
     
     public static void main(String[] args){
-        IDCOrgAddUtil util = new IDCOrgAddUtil();
+        IDCOrgUtil util = new IDCOrgUtil();
         if(args[0] != null && args[0].equals("remove")){
             util.removeOrg();
         }else{
