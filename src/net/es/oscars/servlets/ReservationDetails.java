@@ -143,12 +143,17 @@ public class ReservationDetails {
             }
         }
         Utils utils = new Utils("bss");
-        String pathStr = utils.pathToString(path);
+        String pathStr = utils.pathToString(path, false);
         if (pathStr != null) {
-            out.println("<tr><td>Nodes in path</td><td>" +
+            out.println("<tr><td>Intradomain nodes in path</td><td>" +
                         pathStr + "</td></tr>");
         }
-
+        String interPathStr = utils.pathToString(path, true);
+        if ((interPathStr != null) &&
+                !interPathStr.trim().equals("")) {
+            out.println("<tr><td>Interdomain nodes</td><td>" +
+                        interPathStr + "</td></tr>");
+        }
         out.println("</tbody></table>");
         out.println("</content>");
     }

@@ -270,9 +270,11 @@ public class Reservation extends HibernateBean implements Serializable {
                 sb.append("LSP class: " + mplsData.getLspClass() + "\n");
             }
         }
-        sb.append("local hops: \n\n");
+        sb.append("intradomain hops: \n\n");
         Utils utils = new Utils(dbname);
-        sb.append(utils.pathToString(path));
+        sb.append(utils.pathToString(path, false));
+        sb.append("\ninterdomain hops: \n\n");
+        sb.append(utils.pathToString(path, true));
         sb.append("\n");
         return sb.toString();
     }

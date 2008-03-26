@@ -155,9 +155,14 @@ public class QueryReservation extends HttpServlet {
             }
         }
         net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
-        String pathStr = utils.pathToString(path);
+        String pathStr = utils.pathToString(path, false);
         if (pathStr != null) {
             outputMap.put("pathReplace", pathStr);
+        }
+        String interPathStr = utils.pathToString(path, true);
+        if ((interPathStr != null) &&
+                !interPathStr.trim().equals("")) {
+            outputMap.put("interPathReplace", interPathStr);
         }
     }
 }

@@ -25,20 +25,28 @@ public class Utils {
      * Converts Hibernate path to a series of identifiers.  Used by servlets.
      *
      * @param path path to convert to string
+     * @param interDomain boolean for intra or interdomain path
      * @return pathStr converted path
      */
-    public String pathToString(Path path) {
+    public String pathToString(Path path, boolean interDomain) {
 
         Ipaddr ipaddr = null;
         String nodeName = null;
         String param = null;
+        PathElem pathElem = null;
+        int ctr = 0;
 
         // TODO:  more null checks may be necessary
         StringBuilder sb = new StringBuilder();
-        PathElem pathElem  = path.getPathElem();
+        if (!interDomain) {
+            pathElem  = path.getPathElem();
+        } else {
+            pathElem = path.getInterPathElem();
+        }
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         int i = 0;
         while (pathElem != null) {
+            ctr++;
             Link link = pathElem.getLink();
             if(i != 0){
                 sb.append(", ");
@@ -60,6 +68,10 @@ public class Utils {
             }
             pathElem = pathElem.getNextElem();
             i++;
+        }
+        // in this case, all hops are local
+        if (interDomain && (ctr == 2)) {
+            return "";
         }
         String pathStr = sb.toString();
         return pathStr;
