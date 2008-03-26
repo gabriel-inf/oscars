@@ -25,13 +25,18 @@ public class VendorPSSFactory implements PSS {
     private String dbname;
     private LSPData lspData;
     private boolean allowLSP;
+    private static String staticAllowLSP;
 
     public VendorPSSFactory(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties commonProps = propHandler.getPropertyGroup("pss", true);
-        this.allowLSP =
-            commonProps.getProperty("allowLSP").equals("1") ? true : false;
+        if (staticAllowLSP != null) {
+            this.allowLSP = staticAllowLSP.equals("1") ? true : false;
+        } else {
+            this.allowLSP =
+                commonProps.getProperty("allowLSP").equals("1") ? true : false;
+        }
         this.dbname = dbname;
         this.lspData = new LSPData(dbname);
     }
@@ -216,6 +221,15 @@ public class VendorPSSFactory implements PSS {
                                    resv.getGlobalReservationId() + " failed");
         }
         return resv.getStatus();
+    }
+
+    /**
+     * Allows overriding the allowLSP property.  Primarily for tests.
+     * Must be called before LSP is instantiated.
+     * @param overrideAllowLSP "0" or "1" indicating whether LSP can be set up
+     */
+    public static void setConfigurable(String overrideAllowLSP) {
+        staticAllowLSP = overrideAllowLSP;
     }
 
     /**

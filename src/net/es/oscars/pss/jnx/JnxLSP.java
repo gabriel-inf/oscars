@@ -36,12 +36,17 @@ public class JnxLSP {
     private Logger log;
     private Map<String,String> hm;
     private boolean allowLSP;
+    private static String staticAllowLSP;
 
     public JnxLSP(String dbname) {
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.commonProps = propHandler.getPropertyGroup("pss", true);
-        this.allowLSP =
-            this.commonProps.getProperty("allowLSP").equals("1") ? true : false;
+        if (staticAllowLSP != null) {
+            this.allowLSP = staticAllowLSP.equals("1") ? true : false;
+        } else {
+            this.allowLSP =
+                this.commonProps.getProperty("allowLSP").equals("1") ? true : false;
+        } 
         this.props = propHandler.getPropertyGroup("pss.jnx", true);
         this.th = new TemplateHandler();
         this.log = Logger.getLogger(this.getClass());
@@ -298,10 +303,11 @@ public class JnxLSP {
 
     /**
      * Allows overriding the allowLSP property.  Primarily for tests.
+     * Must be called before JnxLSP is instantiated.
      * @param allowLSP boolean indicating whether LSP can be set up
      */
-    public void setConfigurable(boolean allowLSP) {
-        this.allowLSP = allowLSP;
+    public static void setConfigurable(String overrideAllowLSP) {
+        staticAllowLSP = overrideAllowLSP;
     }
 
     /**

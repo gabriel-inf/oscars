@@ -76,11 +76,9 @@ skipped.</p>
 
 <p>The bss group contains tests for exporting data from the production
 database and importing it into the test database, and tests for
-both reservation scheduling and circuit setup.  If the "allowLSP"
-property is set in oscars.properties (located in the same directory as
-test.properties), some scheduling tests will create
-temporary circuits if they are running as an allowed user on an allowed
-host.
+both reservation scheduling and circuit setup.  The scheduling tests override
+whether circuits can be set up according to the oscars.properties
+allowLSP property; no routers are configured.
 </p>
 
 <p>An example 

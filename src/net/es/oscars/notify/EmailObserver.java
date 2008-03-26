@@ -20,6 +20,7 @@ public class EmailObserver implements Observer {
     private String webmaster;
     private String localhostname;
     private List<String> sysadmins;
+    private static String staticOverrideNotification;
 
     public EmailObserver() {
         this.log = Logger.getLogger(this.getClass());
@@ -49,6 +50,11 @@ public class EmailObserver implements Observer {
 
     // Observer interface requires second argument to be Object
     public void update (Observable obj, Object arg) {
+        if ((staticOverrideNotification != null) &&
+                !staticOverrideNotification.equals("1")) {
+            this.log.info("email notification overriden");
+            return;
+        }
         if (!(arg instanceof HashMap)) {
             this.log.error("[ALERT] Wrong argument passed to EmailObserver");
             return;
@@ -105,6 +111,15 @@ public class EmailObserver implements Observer {
         message.setSubject(subject);
         message.setText(notification);
         Transport.send(message);   // Send message
+    }
+
+    /**
+     * Allows overriding whether a notification is sent.  Primarily for tests.
+     * Must be called before notifier is instantiated.
+     * @param overrideNotification "0" or "1" indicating whether email sent 
+     */
+    public static void setNotification(String overrideNotification) {
+        staticOverrideNotification = overrideNotification;
     }
 
     public String getWebmaster() { return this.webmaster; }

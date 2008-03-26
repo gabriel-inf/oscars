@@ -25,15 +25,20 @@ public class LSP {
     private Logger log;
     private Map<String,String> hm;
     private boolean allowLSP;
+    private static String staticAllowLSP;
 
     public LSP(String dbname) {
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.commonProps = propHandler.getPropertyGroup("pss", true);
-        this.allowLSP =
-            this.commonProps.getProperty("allowLSP").equals("1") ? true : false;
+        this.log = Logger.getLogger(this.getClass());
+        if (staticAllowLSP != null) {
+            this.allowLSP = staticAllowLSP.equals("1") ? true : false;
+        } else {
+            this.allowLSP =
+                this.commonProps.getProperty("allowLSP").equals("1") ? true : false;
+        }
         this.props = propHandler.getPropertyGroup("pss.cisco", true);
         this.th = new TemplateHandler();
-        this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
     }
 
@@ -262,10 +267,11 @@ public class LSP {
 
     /**
      * Allows overriding the allowLSP property.  Primarily for tests.
-     * @param allowLSP boolean indicating whether LSP can be set up
+     * Must be called before LSP is instantiated.
+     * @param overrideAllowLSP "0" or "1" indicating whether LSP can be set up
      */
-    public void setConfigurable(boolean allowLSP) {
-        this.allowLSP = allowLSP;
+    public static void setConfigurable(String overrideAllowLSP) {
+        staticAllowLSP = overrideAllowLSP;
     }
 
     /**

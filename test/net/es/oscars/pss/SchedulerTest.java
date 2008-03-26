@@ -14,6 +14,9 @@ import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.CommonReservation;
 import net.es.oscars.bss.ReservationDAO;
 import net.es.oscars.interdomain.InterdomainException;
+import net.es.oscars.pss.cisco.LSP;
+import net.es.oscars.pss.jnx.JnxLSP;
+import net.es.oscars.notify.EmailObserver;
 
 /**
  * This class tests methods in Scheduler.java called by SOAP, as well as
@@ -35,6 +38,12 @@ public class SchedulerTest {
         this.props = propHandler.getPropertyGroup("test.common", true);
         this.dbname = GlobalParams.getReservationTestDBName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
+        // make sure routers aren't configured by tests
+        VendorPSSFactory.setConfigurable("0");
+        JnxLSP.setConfigurable("0");
+        LSP.setConfigurable("0");
+        // make sure no notification is sent
+        EmailObserver.setNotification("0");
     }
         
   @Test
