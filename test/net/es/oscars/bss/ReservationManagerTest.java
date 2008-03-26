@@ -295,7 +295,7 @@ public class ReservationManagerTest {
         assert !reservations.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "layer2Create1" })
+  @Test(dependsOnMethods={ "layer2Modify1" })
     public void rmLayer2ReservationCancel() throws BSSException {
 
         this.sf.getCurrentSession().beginTransaction();
