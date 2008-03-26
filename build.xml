@@ -401,7 +401,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <property name="testsuite" value="I2.suite"/>
     </target>
     <target name="test" depends="test.compile, testpkg, testESnet, testI2">
-        <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/OSCARS/test" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
+        <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/test" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
             <jvmarg value="-Dcatalina.home=${catalina.home}"/>
             <jvmarg value="-Dapp=-test"/>
