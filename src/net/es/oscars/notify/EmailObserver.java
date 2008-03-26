@@ -115,7 +115,7 @@ public class EmailObserver implements Observer {
 
     /**
      * Allows overriding whether a notification is sent.  Primarily for tests.
-     * Must be called before notifier is instantiated.
+     *
      * @param overrideNotification "0" or "1" indicating whether email sent 
      */
     public static void setNotification(String overrideNotification) {

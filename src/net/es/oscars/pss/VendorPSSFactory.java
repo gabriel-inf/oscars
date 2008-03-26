@@ -225,7 +225,7 @@ public class VendorPSSFactory implements PSS {
 
     /**
      * Allows overriding the allowLSP property.  Primarily for tests.
-     * Must be called before LSP is instantiated.
+     * Must be called before this class is instantiated.
      * @param overrideAllowLSP "0" or "1" indicating whether LSP can be set up
      */
     public static void setConfigurable(String overrideAllowLSP) {
