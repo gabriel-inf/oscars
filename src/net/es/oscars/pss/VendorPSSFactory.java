@@ -52,10 +52,6 @@ public class VendorPSSFactory implements PSS {
         LSP ciscoLSP = null;
 
         this.log.info("createPath.start");
-        // start of magic
-        NodeDAO dao = new NodeDAO(this.dbname);
-        List<Node> nodes = dao.list();
-        // end of magic
         Path path = resv.getPath();
         this.lspData.setPathVars(path.getPathElem());
         this.log.info("to getRouterType");
@@ -172,10 +168,6 @@ public class VendorPSSFactory implements PSS {
         // for Cisco circuit set up
         LSP ciscoLSP = null;
 
-        // start of magic
-        NodeDAO dao = new NodeDAO(this.dbname);
-        List<Node> nodes = dao.list();
-        // end of magic
         Path path = resv.getPath();
         this.lspData.setPathVars(path.getPathElem());
         String sysDescr = this.getRouterType(this.lspData.getIngressLink());

@@ -21,7 +21,7 @@ import net.es.oscars.database.*;
  * @author David Robertson (dwrobertson@lbl.gov), Evangelos Chaniotakis (haniotak /at/ es dot net
  */
 
-@Test(groups={ "bss", "pathfinder.traceroute", "pathfinder.overlay",
+@Test(groups={ "bss", "bss.topology", "pathfinder.traceroute", "pathfinder.overlay",
                "pathfinder.db", "exportTopology" })
 public class TopologyXMLExporterTest {
     private String dbname;

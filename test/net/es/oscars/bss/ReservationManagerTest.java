@@ -125,10 +125,7 @@ public class ReservationManagerTest {
         // currently just copying reservation's path info
         Path path = resv.getPath();
         PathElem pathElem = path.getPathElem();
-        Link link = pathElem.getLink();
-        L2SwitchingCapabilityData l2SwitchingData =
-            link.getL2SwitchingCapabilityData();
-        String vlanTag = l2SwitchingData.getVlanRangeAvailability();
+        String vlanTag = pathElem.getLinkDescr();
         Layer2Data layer2Data = path.getLayer2Data();
         Layer2Info layer2Info = new Layer2Info();
         layer2Info.setSrcEndpoint(layer2Data.getSrcEndpoint());
@@ -298,7 +295,7 @@ public class ReservationManagerTest {
         assert !reservations.isEmpty();
     }
 
-  @Test(dependsOnMethods={ "layer2Modify1" })
+  @Test(dependsOnMethods={ "layer2Create1" })
     public void rmLayer2ReservationCancel() throws BSSException {
 
         this.sf.getCurrentSession().beginTransaction();
