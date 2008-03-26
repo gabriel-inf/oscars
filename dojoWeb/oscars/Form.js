@@ -447,7 +447,9 @@ oscars.Form.onResvRowSelect = function(/*Event*/ evt) {
         error: oscars.Form.handleError,
         form: dojo.byId("reservationDetailsForm")
     });
-    // set tab to user details
+    // Set tab to reservation details.
+    // Note that this generates an apparently harmless error message in
+    // Firebug console.
     mainTabContainer.selectChild(resvDetailsPaneTab);
 }
 
