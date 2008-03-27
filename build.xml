@@ -37,7 +37,14 @@
     <target name="prepare" depends="axis2LocalCopy, tomcatLocalCopy, jarRemoteCopy">
         <!-- a bit of a kludge -->
         <available file="lib/axis2/mail-1.4.jar" property="axis2.found"/>
-        <fail unless="axis2.found" message="Ant scp is inherently insecure in that it either echoes the passphrase as it is being input, or requires the passphrase to be stored on the disk somewhere.  Please scp all jar's from CATALINA_HOME/webapps/axis2/WEB-INF/lib to lib/axis2 from a machine where Axis2 is installed."/>
+        <fail unless="axis2.found" message="Axis2 library not found. Please either build and deploy axis2.war with rampart support, or manually copy the necessary .jar files to lib/axis2. See documentation for details."/>
+
+        <available file="lib/jta.jar" property="jta.found"/>
+        <fail unless="jta.found" message="JTA library not found. Please download jta.jar from Sun's website and place it in the lib directory."/>
+
+        <available file="lib/axis2/rampart-core-1.3.jar" property="rampart.found"/>
+        <fail unless="rampart.found" message="Rampart library not found. We recommend that you use conf/axis2/build.xml to rebuild the Axis2 webapp, then redeploy. See documentation for more."/>
+
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
             <fileset dir="conf/server" includes="*.cfg.xml, log4j.properties"/>
