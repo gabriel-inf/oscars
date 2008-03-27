@@ -64,10 +64,9 @@ The parts of the WBUI that you will see depends on what authorizations
 you have. A normal OSCARS-user will only be able to create a
 reservation, list and see the details of his own reservations and
 modify his own profile. More privileged users, e.g. OSCARS-engineers
-and operators can see all the reservations. Users with admin
+and OSCARS-operators can see all the reservations. Users with admin
 privileges, OSCARS-Administrator can add and authorize new users and
-modify and delete users. See <a
- href="docs/web/authorizationPolicy.html">Authorization
+modify and delete users. See <a href="authorizationPolicy.html">Authorization
 Policy</a> for more
 information about the different levels of privileges.<br>
 <h3><a class="mozTocH3" name="mozTocId752007"></a><big>2. <a
@@ -89,7 +88,7 @@ identifier</span> defined by the Open Grid
 Forum (OGF) Network Measurement Working Group (NMWG) control plane
 topology schema. A topology identifier is a URN that may consist of as
 many as four hierarchical components: domain:node:port:link. See <a
- href="docs/web/tss.html">Topology
+ href="tss.html">Topology
 components notes</a> for more about the topology naming scheme.<br>
 <br>
 <h3><a class="mozTocH3" name="mozTocId79347"></a><a
@@ -97,7 +96,9 @@ components notes</a> for more about the topology naming scheme.<br>
 <ul>
   <li><span style="font-weight: bold;">Source </span>and <span
  style="font-weight: bold;">Destination hosts</span> may be specified
-by a DNS host name, IP address or topology link identifier.</li>
+by a DNS host name or IP address for layer 3 reservations or as a
+topology link identifier for layer 2 reservations.<br>
+  </li>
   <li>Example for layer 3 reservation:</li>
   <ul>
     <li><small style="font-weight: bold;">source:</small><code>
@@ -113,21 +114,22 @@ urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
   </li>
   <li>For layer3 reservations the hosts are the machines on which the
 data resides and are specified by DNS names or IPaddrs. For layer2
-reservation, they are the ingress and egress routers to the ISP and are
+reservation, they are the ingress and egress links to the ISP and are
 currently input as topology identifiers.&nbsp; In this case a user must
-communicate with the ISP to find out what links to use.<br>
+communicate with the ISP administrators to find out what links to use.<br>
   </li>
   <li><span style="font-weight: bold;">Path </span>is a
-list of topology identifiers for ingress and egress routers. In general
+list of topology identifiers for ingress and egress links/routers. In
+general
 a path should not be specified except by someone who knows how to
 traffic engineer the
-traffic, and wishes to specify an non-default interdomin peering point,
-e.g. if peering between ESnet/I2 in Sunnyvale is congested, we
+traffic, and wishes to specify an non-default interdomain peering
+point,
+e.g. if peering between ESnet/I2 in Sunnyvale is congested, one
 might set ESnet/I2's address in New York to bypass the congestion.
 Setting the routers may change the default path for the data flow.
 However, currently for layer 2 reservations starting at ESnet
-sites the ingress and egress
-routers for each domain that is traversed
+sites the ingress and egress links for each domain that is traversed
 must be input. <span style="color: rgb(204, 0, 0);">(This may change
 by the time of the April release)</span> <br>
   </li>
@@ -138,13 +140,13 @@ considered a <span style="font-style: italic;">Loose Interdomain Path
 (LIDP)</span> are
 are taken as suggestions. If they are not available, other nodes may be
 substituted. By the time the path has been passed through all
-the domains, an ingress and egress router for each node will have been
+the domains, an ingress and egress link for each domain will have been
 added and the path becomes a <span style="font-style: italic;">Strict
 Interdomain Path (SIDP). </span>The path that is stored with the
 reservation and displayed by the reservation details page is a <span
  style="font-style: italic;">confirmed</span> (all the
 resources have been reserved) SIDP. For example the
-hops for the layer 2 example are:<br>
+hops for the layer 2 example above are:<br>
       <pre><span style="font-weight: bold;">    path:</span><br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*<br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet4/3:link=*<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.189-103:link=1<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1<br></pre>
 Note that the first and last hops are the same as the source and
 destination hosts. Currently this is required for layer 2 reservations,
@@ -188,8 +190,7 @@ that protocol to use the reserved bandwidth.</li>
 service code point) is essentially QoS
 bits. Currently BNL's Terapaths sets the DSCP code point so that it can
 indicate to ESnet which flow (out of a bunch) that have the same
-src/dst will use the L3 circuit.<br>
-  </li>
+src/dst will use the L3 circuit.</li>
 </ul>
 <h3><a class="mozTocH3" name="mozTocId938748"></a><a class="mozTocH3"
  name="layer2"></a><span style="font-weight: bold;"><a
@@ -232,10 +233,10 @@ querying or modifying a reservation.</li>
   <li><span style="font-weight: bold;">User</span> - login name of the
 user who created the reservation</li>
   <li><span style="font-weight: bold;"><a name="Status"></a>Status </span>-
-one of <br>
+one or more of <br>
   </li>
   <ul>
-    <li>PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span>
+    <li>PENDING&nbsp;
 - reservation has been made, but the scheduled start
 time
 has not arrived yet</li>
@@ -248,15 +249,7 @@ resources were not available, or a link that the circuit uses is down
 and the circuit may
 still be provisioned<br>
     </li>
-    <li>INVALIDATED - <span style="color: rgb(204, 0, 0);">No longer
-used?</span></li>
-    <li><span style="color: rgb(204, 0, 0);">HOLD- reservation is in
-the process of being made, the current domain is waiting for subsequent
-domains to confirm the resources.</span></li>
-    <li><span style="color: rgb(204, 0, 0);">WAIT - a xml-signaled
-reservation whose start time has passed but has not received a setup
-signal, or which has received a tear down signal before its end time.<br>
-      </span></li>
+    <li>INVALIDATED -&nbsp;</li>
   </ul>
   <li><span style="font-weight: bold;">Start Time </span>- Date and
 time at which the reservation circuit will be provisioned (times are
@@ -264,10 +257,10 @@ displayed in the local time zone of the browser)</li>
   <li><span style="font-weight: bold;">End Time</span> - Date and time
 at which the reservation circuit will be torn down</li>
   <li><span style="font-weight: bold;">Origin</span> - Node at which
-the data flow starts - user host for layer 3, ingress router for layer 2<br>
+the data flow starts - user host for layer 3, ingress link for layer 2<br>
   </li>
   <li><span style="font-weight: bold;">Destination </span>- Node at
-which the data flow ends - user host for layer 3, egress router for
+which the data flow ends - user host for layer 3, egress link for
 layer 2</li>
 </ul>
 If you click on a GRI, you will see the details of the
@@ -275,7 +268,8 @@ reservation.<br>
 <h3><a class="mozTocH3" name="mozTocId792110"></a><big>4.
 <a name="ReservationDetails"></a>Reservation Details</big></h3>
 <br>
-The fields that are displayed in the list reservation page are
+The fields that are displayed in the <a href="#ListReservations">list
+reservation</a> page are
 repeated. The additional fields are:
 <ul>
   <li><span style="font-weight: bold;">description</span> - the
@@ -284,22 +278,26 @@ description that the user specified<br>
   <li><span style="font-weight: bold;">created time</span> - time the
 reservation was created (local time zone of the browser)</li>
   <li><span style="font-weight: bold;">bandwidth</span> - in bits per
-second (?) <span style="color: rgb(204, 0, 0);">Shouldn't this be in
-Mbps to match create reservation?</span><br>
+second <br>
   </li>
   <li><span style="font-weight: bold;">VLAN tag</span> - used to
 identify a flow across domains<br>
   </li>
   <li><span style="font-weight: bold;">nodes in path</span> - the
 abstract nodes in the confirmed SIDP (Strict Interdomain Path). It will
-include an ingress and egress router for each domain in the path.</li>
+include an ingress and egress link for each domain in the path.</li>
   <li><span style="font-weight: bold;">source, destination port</span>
 - for layer 3 reservations only</li>
   <li><span style="font-weight: bold;">protocol </span>- for layer 3
-reservations</li>
+reservations (if set)<br>
+  </li>
+  <li><span style="font-weight: bold;">burstlimit </span>- for layer
+3, in bits per second (if set)<br>
+  </li>
+  <li><span style="font-weight: bold;">lsp class</span> - for layer 3
+(if set)</li>
 </ul>
-<h3><a class="mozTocH3" name="mozTocId849582"></a><a
- name="CancelReservation"></a><big><span style="font-weight: bold;">5.
+<h3><big><span style="font-weight: bold;">5.
 Cancel Reservation
 </span></big></h3>
 The Reservation Details page provides a button to
@@ -335,10 +333,10 @@ modified by an administrator. Currently
 there are five choices which can be combined:</li>
   <ul>
     <li><span style="font-weight: bold;">user</span> - make
-reservations, query and modify own reservations,
+reservations, query, modify and signal own reservations,
 modify own profile</li>
     <li><span style="font-weight: bold;">engineer</span> - make
-reservations, query and modify all
+reservations, query, modify and signal all
 reservations,
 modify own profile</li>
     <li><span style="font-weight: bold;">administrator</span> - create
@@ -347,8 +345,8 @@ roles, for all users</li>
     <li><span style="font-weight: bold;">operator</span> - list and
 query all reservations, list all users</li>
     <li><span style="font-weight: bold;">service</span> - make
-reservations where the GRI is specified, modify
-reservations, signal a circuit to be provisioned or torn down. (granted
+reservations where the GRI and path elements are specified, list,
+query, modify and signal own reservations (granted
 to IDC services in co-operating domains)<br>
     </li>
   </ul>

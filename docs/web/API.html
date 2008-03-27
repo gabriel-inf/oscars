@@ -63,7 +63,12 @@ examples/javaClients that has two command line programs for each
 message. One version prompts for arguments and the other (*CLI) take
 all the arguments from the command line.&nbsp; <br>
 <br>
-The functional interfaces are:<br>
+The functional interfaces are: <br>
+<span style="font-weight: bold; font-style: italic;">(Note</span><span
+ style="font-style: italic;"> (0 or 1) means that there can be 0 or 1
+instances of the parameter, ( 0 or more) means 0 or unlimited instances
+are allowed. Otherwise there must be just one instance.)</span><br
+ style="font-style: italic;">
 <br>
 <h3><a class="mozTocH3" name="mozTocId65813"></a><big><span
  style="font-weight: bold;">1. <a name="CreateReservation"></a>Create
@@ -71,12 +76,12 @@ Reservation</span></big></h3>
 Schedules a reservation. Path information may be specified in either
 layer 2 or layer 3 formats. Currently layer3 reservations are only
 supported by ESnet and so will only work when both the source and
-destination hosts directly served by ESnet.<br>
+destination hosts are directly served by ESnet.<br>
 <br>
 The path parameter comes in serveral varieties. An input path is
 considered <span style="font-style: italic;">Loose Interdomain Path
 (LIDP)</span> where the hops are taken as suggestions. It may only
-contain domain ingress and egress routers. Once the IDC(s) have chosen
+contain domain ingress and egress links. Once the IDC(s) have chosen
 a path, it becomes a Strict <span style="font-style: italic;">Interdomain
 Path (SIDP)</span>. It may contain some <span
  style="font-style: italic;">abstract</span> intradomain network
@@ -86,7 +91,7 @@ a&nbsp; <span style="font-style: italic;">confirmed SIDP</span>.<br>
 <a name="createResContent"></a>Request message parameters:<br>
 <ul>
   <li><span style="font-weight: bold;">Global Reservation Identifier</span>
-(int, 0 or 1)&nbsp; - may only be input by an IDC when forwarding a
+(int, 0 or 1)&nbsp; - should only be input by an IDC when forwarding a
 createReservation request </li>
   <li><span style="font-weight: bold;">Start Time</span> (long) -time
 to start the reservation in seconds since midnight, January 1, 1970 UTC.</li>
@@ -94,7 +99,7 @@ to start the reservation in seconds since midnight, January 1, 1970 UTC.</li>
 (long)</small> </big>- time to end the reservation in
 seconds since midnight, January 1, 1970 UTC.</li>
   <li><span style="font-weight: bold;">bandwidth</span> (int) -
-bandwidth to be reserved in bps.<br>
+bandwidth to be reserved in Mbps. (mega bits per second)<br>
   </li>
   <li><span style="font-weight: bold;">description</span> (string) -
 description of the purpose of
@@ -111,12 +116,12 @@ process</li>
 means the user will signal to instantiate the reserved circuit</li>
     </ul>
     <li> <span style="font-weight: bold;">pathType</span> (string, 0
-or 1) should be input as "<span
+or 1) should be input as <span
  style="font-weight: bold; font-style: italic;">"loose"</span>, paths
 input from users are treated as suggestions.<br>
     </li>
     <li> <span style="font-weight: bold;">path </span>(CtrlPlanePathContent,
-0 or 1) Contains only domain ingress and egress points<br>
+0 or 1) Contains only domain ingress and egress links<br>
     </li>
     <ul>
       <li><span style="font-weight: bold;">hop</span> (0 or more)</li>
@@ -128,29 +133,33 @@ input from users are treated as suggestions.<br>
         <li><span style="font-weight: bold;">portIdRef</span> (string,
 0 or 1) </li>
         <li><span style="font-weight: bold;">linkIdRef </span>(string,
-0 or 1) </li>
+0 or 1)</li>
       </ul>
     </ul>
-    <li> <span style="font-weight: bold;">layer2Info</span>
-(layer2Info, optional)</li>
-    <ul>
-      <li><span style="font-weight: bold;">srcVtag</span> (string, 0 or
+    <li><span style="font-weight: bold;">layer2Info</span>
+(layer2Info) (one of layer2 or layer 3 info must be input)<br>
+      <ul>
+        <li><span style="font-weight: bold;">srcVtag</span> (string, 0
+or
 1) can be a number, a range of numbers
 (3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"<br>
-      </li>
-      <li><span style="font-weight: bold;">destVtag</span> (string, 0
+        </li>
+        <li><span style="font-weight: bold;">destVtag</span> (string, 0
 or 1) can be a number, a range of numbers
 (3000-4000) or "<span style="font-weight: bold; font-style: italic;">any</span>"</li>
-      <li><span style="font-weight: bold;">srcEndpoin</span>t (string)
-The ingress router. May be DNS name,
+        <li><span style="font-weight: bold;">srcEndpoin</span>t
+(string)
+The ingress link. May be DNS name,
 IPaddr or topology identifier<br>
-      </li>
-      <li><span style="font-weight: bold;">destEndpoint</span> (string)
-The egress router . May be DNS name,
+        </li>
+        <li><span style="font-weight: bold;">destEndpoint</span>
+(string)
+The egress link . May be DNS name,
 IPaddr or topology identifier</li>
-    </ul>
+      </ul>
+    </li>
     <li> <span style="font-weight: bold;">layer3Info</span>
-(layer3Info,optional)</li>
+(layer3Info) (one of layer2 or layer 3 info must be input) </li>
     <ul>
       <li><span style="font-weight: bold;">srcHost</span> (string) -
 may be DNS name, IPaddr or topology
@@ -159,20 +168,22 @@ identifier<br>
 be DNS name, IPaddr or topology identifier<br>
         <span style="font-weight: bold;">protocol</span> (string, 0 or
 1) - "UDP" or "TCP"<br>
-        <span style="font-weight: bold;">srcIpPort </span>(int, 0 or 1)<br>
-        <span style="font-weight: bold;">destIpPort</span> (int, 0 or 1)<br>
+        <span style="font-weight: bold;">srcIpPort </span>(int, 0 or
+1) - port on the source host to use<br>
+        <span style="font-weight: bold;">destIpPort</span> (int, 0 or
+1) - port on the destination host to use<br>
         <span style="font-weight: bold;">dscp</span> (string, 0 or 1) -
 used by TeraPaths to set QoS bits<br>
       </li>
     </ul>
     <li> <span style="font-weight: bold;">mplsInfo </span> (mplsInfo,
-optional)</li>
+0 or 1) specific to Cisco and Juniper routers</li>
     <ul>
       <li><span style="font-weight: bold;">burstLimit</span> (int) - in
-bps<br>
+bits per second (bps) - maximum instantaneous burst allowed <br>
         <span style="font-weight: bold;">lspClass </span>(string, 0 or
-1)<br>
-      </li>
+1) - forwarding class that the packets transiting the LSP will be set
+to (i.e. MPLS EXP bits) </li>
     </ul>
   </ul>
 </ul>
@@ -182,11 +193,11 @@ bps<br>
 (string) - the reservation id&nbsp; assigned to this reservation</li>
   <li><span style="font-weight: bold;">token</span> (string, 0 or 1) If
 the pathSetupMode was <span style="font-style: italic;">xml-signaled</span>
-a token will be returned that may be used when signaling the
-reservation to start or finish.<br>
+a token will be returned that may be used to signal circuit&nbsp; setup
+and tear down.<br>
   </li>
   <li><span style="font-weight: bold;">status </span>(string) - should
-be PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span></li>
+be PENDING<span style="color: rgb(204, 0, 0);"></span></li>
   <li><span style="font-weight: bold;">pathInfo</span> ( <a
  href="#PathInfo">pathInfo</a>) - same format as described above, but
 all the hops have been filled in and resources reserved resulting in a <span
@@ -219,7 +230,8 @@ path could not be reached.</li>
     <li>BSSfaultMsg (same as above but from remote domain) </li>
   </ul>
 </ul>
-<p>examples/javaClients/CreateRes.sh is a shell script that reads the
+<p><code style="font-weight: bold;">examples/javaClients/CreateRes.sh</code>
+is a shell script that reads the
 input arguments from a property file and runs the
 CreateReservation.java program.<br>
 </p>
@@ -257,7 +269,7 @@ name of
 the owner of the reservation</li>
   <li><span style="font-weight: bold;">status</span> (string) -
     <ul>
-      <li>PENDING <span style="color: rgb(204, 0, 0);">[SCHEDULED]</span>
+      <li>PENDING&nbsp;<span style="color: rgb(204, 0, 0);"></span>
 - reservation has been made, but the scheduled start
 time
 has not arrived yet</li>
@@ -271,15 +283,8 @@ resources were not available, or a link that the circuit uses is down
 and the circuit may
 still be provisioned<br>
       </li>
-      <li>INVALIDATED - <span style="color: rgb(204, 0, 0);">No longer
-used?</span></li>
-      <li><span style="color: rgb(204, 0, 0);">HOLD- reservation is in
-the process of being made, the current domain is waiting for subsequent
-domains to confirm the resources.</span></li>
-      <li><span style="color: rgb(204, 0, 0);">WAIT - a xml-signaled
-reservation whose start time has passed but has not received a setup
-signal, or which has received a tear down signal before its end time.<br>
-        </span></li>
+      <li>INVALIDATED - <span style="color: rgb(0, 0, 0);">set </span>when
+the topology database is updated and its path is no longer valid</li>
     </ul>
   </li>
   <li><span style="font-weight: bold;">startTime</span> (long) -
@@ -292,10 +297,11 @@ end time in seconds since midnight, January 1, 1970 UTC.</li>
 reservation was created in seconds since midnight, January 1, 1970 UTC.</li>
   <li><span style="font-weight: bold;">bandwidth</span> (int) - Bits
 per
-second</li>
+second (bps)<br>
+  </li>
   <li><span style="font-weight: bold;">description</span> (string) -
 the
-description of hte reservation</li>
+description of the reservation</li>
   <li><span style="font-weight: bold;">pathInfo:</span>&nbsp; see <a
  href="#PathInfo">above</a></li>
 </ul>
@@ -307,7 +313,8 @@ Possible fault messages<br>
   <li>query reservation: permission denied</li>
 </ul>
 <br>
-examples/javaClients/queryRes.sh will run the
+<code style="font-weight: bold;">examples/javaClients/queryRes.sh </code>will
+run the
 QueryReservationClient.&nbsp; Edit queryRes.sh to set the URLs for the
 OSCARS host(s) in your domain. It will prompt for the GRI of the
 reservation that you want to query. Note that QueryReservationClient
@@ -322,7 +329,9 @@ Request message parameters:<br>
 The following may be set to limit the reservations that are returned.<br>
 <ul>
   <li><span style="font-weight: bold;">resStatus</span> (string) - zero
-or more of ALL, ACTIVE, PENDING, FINISHED, CANCELLED, FAILED</li>
+or more of&nbsp; ACTIVE, PENDING, FINISHED, CANCELLED, FAILED. If no
+status is input, all statuses will be matched.<br>
+  </li>
   <li>sequence of 0 or 1</li>
   <ul>
     <li><span style="font-weight: bold;">startTime</span> (long) -
@@ -334,16 +343,19 @@ reservations starting before this time</li>
     </li>
   </ul>
   <li><span style="font-weight: bold;">description</span> (string, 0 or
-1) - reservations must have this description<br>
+1) - reservation descriptions must contain this string.<br>
   </li>
   <li><span style="font-weight: bold;">linkId</span> (string, 0 or
 more)
 - reservations must contain these hops<br>
   </li>
   <li><span style="font-weight: bold;">resRequested</span> (int, 0 or
-1) - number of reservations to return</li>
+1) - number of reservations to return. If not set, all reservations
+that match are returned.<br>
+  </li>
   <li><span style="font-weight: bold;">resOffset</span> (int, 0 or 1) -
-offset of first reservation to return</li>
+offset of first reservation to return. If not set, offset will be 0.<br>
+  </li>
 </ul>
 <br>
 Note that this may be called with no input parameters and is thus a
@@ -361,7 +373,8 @@ Possible fault messages<br>
   <li><a href="#checkUser">checkUser errors</a></li>
   <li>listReservations: permission denied</li>
 </ul>
-examples/javaClients/listRes.sh will call ListReservationsClient.java
+<code style="font-weight: bold;">examples/javaClients/listRes.sh</code>
+will call ListReservationsClient.java
 which will prompt for the input arguments. As usual edit listRes.sh to
 set the URLs for your server host.<br>
 <br>
@@ -382,7 +395,7 @@ to start the reservation in seconds since midnight, January 1, 1970 UTC.</li>
   <li><span style="font-weight: bold;">endTime</span>(long) -time
 to end the reservation in seconds since midnight, January 1, 1970 UTC.</li>
   <li><span style="font-weight: bold;">bandwidth</span> (int) -
-bandwidth in bps</li>
+bandwidth in Mbps</li>
   <li><span style="font-weight: bold;">description</span> (string) -
 description of purpose of reservation</li>
   <li><span style="font-weight: bold;">pathInfo</span> (PathInfoType)</li>
@@ -408,8 +421,8 @@ Response message parameters:<br>
 <ul>
   <li><span style="font-weight: bold;">status</span> (string) - the new
 status of the reservation - it will be
-CANCELLED if the reservation was PENDING <span
- style="color: rgb(204, 0, 0);">[SCHEDULED]</span> or PRECANCEL if
+CANCELLED if the reservation was PENDING&nbsp;<span
+ style="color: rgb(204, 0, 0);"></span>or PRECANCEL if
 the reservation was ACTIVE. For an ACTIVE reservation the scheduler
 must tear down the circuit before the reservation is changed to
 CANCELLED.</li>
@@ -421,6 +434,12 @@ possible fault messages:<br>
   <li>Trying to cancel a finished|failed|or already cancelled
 reservation</li>
 </ul>
+<code style="font-weight: bold;">examples/javaClients/cancelRes.sh</code>
+will call CancelReservationClient.java
+which will prompt for the input arguments. As usual edit cancelRes.sh
+to
+set the URLs for your server host.<br>
+<br>
 <h2><a class="mozTocH2" name="mozTocId885893"></a>6. <a name="Forward"></a>Forward</h2>
 This call is for use by an IDC only. It forwards a message that it has
 received to the next domain on the reservation path. It is called by
@@ -519,9 +538,13 @@ description
 </ul>
 Possible fault messages:<br>
 <ul>
-  <li>OSCARSSkeleton:getNetwordTopology: permission denied - need
+  <li>OSCARSSkeleton:getNetworkTopology: permission denied - need
 query permission on domains.</li>
 </ul>
+<code style="font-weight: bold;">examples/javaClients/getNetworkTopology.sh</code>
+will call GetNetworkTopologyClient.java. As usual edit
+getNetworkTopology.sh to
+set the URLs for your server host.<br>
 <br>
 <h2><a class="mozTocH2" name="mozTocId383110"></a>8. <a
  name="InitiateTopologyPull"></a>Initiate
@@ -555,6 +578,10 @@ need&nbsp; modify permission on domains.</li>
 the domains database<br>
   </li>
 </ul>
+<code style="font-weight: bold;">examples/javaClients/initiateTopologyPull.sh</code>
+will call InitiateTopologyPullClient.java. As usual edit
+initiateTopologyPull.sh to
+set the URLs for your server host.<br>
 <br>
 <h2><a class="mozTocH2" name="mozTocId261951"></a>9. Create Path</h2>
 Causes all the IDCs on the path to provision the path for a previously
@@ -597,7 +624,7 @@ occurs if status is not PENDING</li>
 Checks to see if the path of a scheduled reservation is still valid.
 Checks local path <br>
 first and if it is ok&nbsp; then forwards the refreshPath request. If
-the local path has failed it forwards a teardown * message. If the
+the local path has failed it forwards a teardown message. If the
 forwardResponse indicates an downstream error the local path is removed
 and the exception passed upstream.<br>
 <br>
@@ -638,8 +665,7 @@ Will teardown an ACTIVE reservation. Removes local path <br>
 first and then forwards request. If there is a failure in the local path<br>
 the teardown the request is still forwarded and the exception is
 reported <br>
-upstream. The reservation status is reset to PENDING [<span
- style="color: rgb(204, 0, 0);">SCHEDULED</span>]<br>
+upstream. The reservation status is reset to PENDING <br>
 if the reservation end time has not been reached, so that the path
 could still rebuilt.<br>
 <br>
@@ -657,7 +683,7 @@ Reply message parameters:<br>
   <li><span style="font-weight: bold;">globalReservationId</span>
 (string) - the reservation id that was input</li>
   <li><span style="font-weight: bold;">status</span> (string) - will be
-PENDING [<span style="color: rgb(204, 0, 0);">SCHEDULED</span>]&nbsp;
+PENDING&nbsp;
 if the teardown was successful but the reservation end time has not
 been reached. It will be FINISHED if it is later than the end time.<br>
   </li>
