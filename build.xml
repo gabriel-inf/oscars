@@ -405,6 +405,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
             <jvmarg value="-Dcatalina.home=${catalina.home}"/>
             <jvmarg value="-Dapp=-test"/>
+            <jvmarg value="-Dsuite=${testsuite}"/>
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
     </target>
