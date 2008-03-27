@@ -51,6 +51,16 @@ public class QueryReservation extends HttpServlet {
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
+        // special case:  handle LSP names for ESnet
+        if (gri.startsWith("oscars_es_net") ||
+                gri.startsWith("OSCARS_ES_NET")) {
+            String[] idFields = gri.split("-");
+            if (idFields.length == 2) {
+                gri = "es.net-" + idFields[1];
+            } else {
+                utils.handleFailure(out, "invalid LSP name", null, bss);
+            }
+        }
         try {
             reservation = rm.query(gri, userName, allUsers);
         } catch (BSSException e) {
@@ -86,6 +96,7 @@ public class QueryReservation extends HttpServlet {
         String strParam = null;
         Long ms = null;
 
+        // this will replace LSP name if one was given instead of a GRI
         String gri = resv.getGlobalReservationId();
         Path path = resv.getPath();
         Layer2Data layer2Data = path.getLayer2Data();
