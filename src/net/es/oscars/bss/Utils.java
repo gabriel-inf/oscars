@@ -59,7 +59,10 @@ public class Utils {
                 if (param != null) {
                     sb.append(", desc: ["+pathElem.getDescription()+"]");
                 }
-                sb.append(", VLAN: ["+pathElem.getLinkDescr()+"]");
+                param = pathElem.getLinkDescr();
+                if (param != null) {
+                    sb.append(", VLAN: [" + param + "]");
+                }
             // otherwise, send back host name/IP address pair
             } else {
                 nodeName = link.getPort().getNode().getTopologyIdent();
