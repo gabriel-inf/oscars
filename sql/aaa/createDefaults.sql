@@ -14,10 +14,11 @@ DROP TABLE IF EXISTS permissions;
 DROP TABLE IF EXISTS authorizations;
 DROP TABLE IF EXISTS attributes;
 DROP TABLE IF EXISTS userAttributes;
-DROP TABLE IF EXISTS users;
 
 
--- populate users table with a sample user
+-- create empty users table 
+-- use the tools/utils/idc-useradd script to add a first administrative user
+-- after that use the WBUI
 
 CREATE TABLE IF NOT EXISTS users (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -38,18 +39,7 @@ CREATE TABLE IF NOT EXISTS users (
     cookieHash          TEXT,
     institutionId       INT NOT NULL,    -- foreign key (when convert to InnoDB)
     PRIMARY KEY (id)
-
 ) type=MyISAM;
-
--- create a default user accounts with username oscars-admin, oscars-user and 
--- password oscars
-
-INSERT INTO users VALUES(NULL, 'oscars-admin', NULL, NULL, 'OSCARS', 'ADMIN', 
-    'oscars-admin@nowhere.net', '5555555555','osSyzhoUttaAI', NULL, NULL, NULL, 
-     NULL, NULL, NULL, NULL, 1);
-INSERT INTO users VALUES(NULL, 'oscars-user', NULL, NULL, 'OSCARS', 'USER', 
-    'oscars-user@nowhere.net', '5555555555','osSyzhoUttaAI', NULL, NULL, NULL, 
-     NULL, NULL, NULL, NULL, 1);
 
 -- populate institutions table     
 
@@ -92,18 +82,21 @@ CREATE TABLE IF NOT EXISTS attributes (
 
 -- ordinary OSCARS user
 INSERT INTO attributes VALUES(NULL, "OSCARS-user", "group");
--- member of the  network engineering group. Get complete control over
+
+-- member of the  network engineering group. Has complete control over
 -- all reservations
 INSERT INTO attributes VALUES(NULL, "OSCARS-engineer", "group");
--- Get complete control over all user accounts, including granting permissions
+
+-- Has complete control over all user accounts, including granting permissions
 INSERT INTO attributes VALUES(NULL, "OSCARS-administrator", "group");
+
 -- attribute for an IDC in an adjacent network domain. It's attributes implement
 -- an SLA between domains.  Currently set to all permissions on reservations and 
 -- query permissions for domains, no permissions on users
 INSERT INTO attributes VALUES(NULL, "OSCARS-service", "group");
+
 -- for use by NOC operators. Can see all reservations.
 INSERT INTO attributes VALUES(NULL, "OSCARS-operator", "group");
-
 
 -- populate userAttributes table
 
@@ -115,18 +108,6 @@ CREATE TABLE IF NOT EXISTS userAttributes (
 ) type=MyISAM;
         
        
-INSERT INTO userAttributes VALUES(NULL,
-	(select id from users where login = "oscars-admin"), 
-        (select id from attributes where name="OSCARS-administrator"));
-
-INSERT INTO userAttributes VALUES(NULL,
-	(select id from users where login = "oscars-admin"), 
-        (select id from attributes where name="OSCARS-engineer"));
-
-INSERT INTO userAttributes VALUES(NULL,
-	(select id from users where login = "oscars-user"), 
-        (select id from attributes where name="OSCARS-user"));
-        
 -- populate permissions table
 
 CREATE TABLE IF NOT EXISTS permissions (
@@ -199,6 +180,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
      NULL, NULL); 
+     
 -- authorizations for OSCARS-engineer
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-engineer"),
@@ -236,7 +218,18 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
      "all_users", 1); 
--- super-user authorizations for AAA operations
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-engineer"),
+     (select id from resources where name="domains"),
+     (select id from permissions where name="query"),
+     NULL, NULL);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-engineer"),
+     (select id from resources where name="domains"),
+     (select id from permissions where name="modify"),
+     NULL, NULL);
+     
+--  Authorizations for OSCARS-administrator
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-administrator"),
      (select id from resources where name="users"),
@@ -257,7 +250,9 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="users"),
      (select id from permissions where name="modify"),
      "all-users", 1);
+     
 -- authorizations for service user 
+-- note that all the reservations fowarded by a service are owned by the service
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="domains"),
@@ -273,6 +268,7 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="modify"),
      NULL, NULL); 
+-- list is only used in debugging interdomain interactions
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-service"),
      (select id from resources where name="reservations"),
@@ -298,6 +294,18 @@ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from resources where name="reservations"),
      (select id from permissions where name="signal"),
      NULL, NULL);
+INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="domains"),
+     (select id from permissions where name="query"),
+     NULL, NULL);
+ INSERT INTO authorizations VALUES(NULL,NULL,NULL,
+     (select id from attributes where name="OSCARS-service"),
+     (select id from resources where name="domains"),
+     (select id from permissions where name="modify"),
+     NULL, NULL);
+     
+-- NOC operators
 INSERT INTO authorizations VALUES(NULL,NULL,NULL,
      (select id from attributes where name="OSCARS-operator"),
      (select id from resources where name="reservations"),
