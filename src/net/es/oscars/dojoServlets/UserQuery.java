@@ -232,6 +232,11 @@ public class UserQuery extends HttpServlet {
         } else {
             roleMap.put("oscarsUserRole", Boolean.FALSE);
         }
+        if (attrNames.contains("OSCARS-operator")) {
+            roleMap.put("operatorUserRole", Boolean.TRUE);
+        } else {
+            roleMap.put("operatorUserRole", Boolean.FALSE);
+        }
         if (attrNames.contains("OSCARS-engineer")) {
             roleMap.put("engineerUserRole", Boolean.TRUE);
         } else {

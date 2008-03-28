@@ -115,8 +115,9 @@ public class UserModify extends HttpServlet {
                     curRoles.add(attrDAO.getAttributeId(s));
                 }
                 /*
-                 * form only sets OSCARS-user, OSCRAS-service, OSCARS-engineer
-                 * or OSCARS-administrator so we need to compare those three
+                 * form only sets OSCARS-user, OSCARS-service, 
+                 * OSCARS-operator, OSCARS-engineer or
+                 * OSCARS-administrator so we need to compare those three
                  * values between the new and current.
                  */
                  for (Integer newRoleItem : newRoles) {
