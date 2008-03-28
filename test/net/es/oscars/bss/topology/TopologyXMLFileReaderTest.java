@@ -34,6 +34,8 @@ public class TopologyXMLFileReaderTest {
         
   @Test
     public void importTopology() {
+        System.err.println("Starting import of bss topology.  This may take " +
+                           "a minute or two.");
         String fname = GlobalParams.getExportedTopologyFname();
         // has its own session factory
         TopologyXMLFileReader reader = new TopologyXMLFileReader(this.dbname);
