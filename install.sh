@@ -263,7 +263,9 @@ if [ $INSTALL_DB == 1 ]; then
 
 		while [ $MYSQL_GOT_IDC_CREDENTIALS == 0 ]; do
 
-			echo -n "- Input a MySQL username the IDC will use to connect. Leave blank for \"oscars\": "
+			echo "- Input a MySQL username the IDC will use to connect to the databases."; 
+			echo "  -- This name and password must match the hibernate.connection.username and password specified in oscars.properties."
+		    echo -n "  Leave blank for \"oscars\": "
 			read MYSQL_IDC_USERNAME;
 			if [ ! "$MYSQL_IDC_USERNAME" ]; then
 				MYSQL_IDC_USERNAME="oscars";
@@ -278,7 +280,7 @@ if [ $INSTALL_DB == 1 ]; then
 			`mysql --user=$MYSQL_IDC_USERNAME --password="$MYSQL_IDC_PASSWORD" --host=$MYSQL_SERVER --execute="STATUS" > /dev/null 2> /dev/null`;
 			if [ $? != 0 ]; then
 				echo "    Could not connect with IDC credentials. Will grant IDC account privileges.";
-				echo -n "- Input the password for the IDC account one more time: "
+				echo -n "- Input the password for the IDC account one more time and the user will be added: "
 				stty -echo;
 				read MYSQL_IDC_PASSWORD2;
 				stty echo;
@@ -302,6 +304,8 @@ if [ $INSTALL_DB == 1 ]; then
 
 			MYSQL_AAA_DBNAME="aaa";
 			MYSQL_BSS_DBNAME="bss";
+			MYSQL_TESTBSS_DBNAME="testbss";
+			MYSQL_TESTAAA_DBNAME="testaaa";
 
 #		echo -n "- Input the BSS database name. Leave blank for \"bss\": "
 #		read MYSQL_BSS_DBNAME;
@@ -325,9 +329,11 @@ if [ $INSTALL_DB == 1 ]; then
 
 
 
-		echo "    Creating databases...";
+		echo "    Creating databases $MYSQL_BSS_DBNAME, $MYSQL_AAA_DBNAME, $MYSQL_TESTBSS_DBNAME, $MYSQL_TESTAAA_DBNAME ";
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_BSS_DBNAME" > /dev/null 2> /dev/null`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_AAA_DBNAME" > /dev/null 2> /dev/null`;
+		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_TESTBSS_DBNAME" > /dev/null 2> /dev/null`;
+	    `mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="CREATE DATABASE $MYSQL_TESTAAA_DBNAME" > /dev/null 2> /dev/null`;
 		echo "    Databases created...";
 		echo "    Initializing databases...";
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_BSS_DBNAME < sql/bss/createTables.sql`;
@@ -342,18 +348,21 @@ if [ $INSTALL_DB == 1 ]; then
 		fi
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_BSS_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_AAA_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
-		echo "    IDC account authorized.";
+		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_TESTBSS_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
+		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER --execute="GRANT ALL PRIVILEGES ON $MYSQL_TESTAAA_DBNAME.* TO '$MYSQL_IDC_USERNAME'@'$MYSQL_IDC_HOSTNAME' IDENTIFIED BY '$MYSQL_IDC_PASSWORD'"`;
+	    echo "    IDC account authorized.";
 
 		if [ $MYSQL_SERVER == "localhost" ]; then
 			MYSQL_SERVER="";
 		fi
 
 		echo "    Modifying conf/server/aaa.cfg.xml ...";
-		sed -e "s/jdbc:mysql:\/\/\/aaa/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_AAA_DBNAME/g" conf/server/aaa.cfg.xml > conf/server/aaa.cfg.xml;
+		sed -e "s/jdbc:mysql:\/\/\/aaa/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_AAA_DBNAME/g" conf/server/aaa.cfg.xml > conf/server/aaaTemp.cfg.xml;
+		mv conf/server/aaaTemp.cfg.xml conf/server/aaa.cfg.xml;
 
 		echo "   Modifying conf/server/bss.cfg.xml ...";
-		sed -e "s/jdbc:mysql:\/\/\/bss/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_BSS_DBNAME/g" conf/server/bss.cfg.xml > conf/server/bss.cfg.xml;
-
+		sed -e "s/jdbc:mysql:\/\/\/bss/jdbc:mysql:\/\/$MYSQL_SERVER\/$MYSQL_BSS_DBNAME/g" conf/server/bss.cfg.xml > conf/server/bssTemp.cfg.xml;
+		mv conf/server/bssTemp.cfg.xml conf/server/bss.cfg.xml;
 	fi
 fi
 
