@@ -297,21 +297,28 @@ if [ $INSTALL_DB == 1 ]; then
 		done
 		echo "";
 
-		echo -n "- Input the BSS database name. Leave blank for \"bss\": "
-		read MYSQL_BSS_DBNAME;
-		if [ ! $MYSQL_BSS_DBNAME ]; then
 
-			MYSQL_BSS_DBNAME="bss";
-		fi
-		echo "    Using $MYSQL_BSS_DBNAME . ";
+# NOTE: Currenty hardcoded, uncomment snippet below to interactively set
 
-		echo -n "- Input the AAA database name. Leave blank for \"aaa\": "
-		read MYSQL_AAA_DBNAME;
-		if [ ! $MYSQL_AAA_DBNAME ]; then
 			MYSQL_AAA_DBNAME="aaa";
-		fi
-		echo "    Using $MYSQL_AAA_DBNAME . ";
-		echo "";
+			MYSQL_BSS_DBNAME="bss";
+
+#		echo -n "- Input the BSS database name. Leave blank for \"bss\": "
+#		read MYSQL_BSS_DBNAME;
+#		if [ ! $MYSQL_BSS_DBNAME ]; then
+
+#			MYSQL_BSS_DBNAME="bss";
+#		fi
+#		echo "    Using $MYSQL_BSS_DBNAME . ";
+
+#		echo -n "- Input the AAA database name. Leave blank for \"aaa\": "
+#		read MYSQL_AAA_DBNAME;
+#		if [ ! $MYSQL_AAA_DBNAME ]; then
+#			MYSQL_AAA_DBNAME="aaa";
+#		fi
+#		echo "    Using $MYSQL_AAA_DBNAME . ";
+#		echo "";
+
 
 		echo -n "- Got all information. Press return to create the databases...";
 		read THROWAWAY;
