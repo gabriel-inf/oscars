@@ -323,12 +323,23 @@ public class OSCARSExerciser extends Client{
                 System.exit(0);
             }
             srcVtag.setString(param);
-            srcVtag.setTagged(true);
+            param = this.props.getProperty(resv + ".tagSrc");
+            if(param != null){
+                srcVtag.setTagged(param.equals("1"));
+            }else{
+                srcVtag.setTagged(true);
+            }
             layer2Info.setSrcVtag(srcVtag);
             VlanTag destVtag = new VlanTag();
+            param = this.props.getProperty(resv + ".vtag").trim();
             // same as srcVtag for now
             destVtag.setString(param);
-            destVtag.setTagged(true);
+            param = this.props.getProperty(resv + ".tagDest");
+            if(param != null){
+                destVtag.setTagged(param.equals("1"));
+            }else{
+                destVtag.setTagged(true);
+            }
             layer2Info.setDestVtag(destVtag);
         } else {
             param = this.props.getProperty(resv + ".sourceHostName").trim();
@@ -347,8 +358,11 @@ public class OSCARSExerciser extends Client{
             layer3Info.setSrcIpPort(0);
             layer3Info.setDestIpPort(0);
         }
-        mplsInfo.setBurstLimit(
-                Integer.parseInt(this.props.getProperty(resv + ".burstLimit","10000000")));
+        param = this.props.getProperty(resv + ".burstLimit","10000000");
+        if(param != null){
+            mplsInfo.setBurstLimit(Integer.parseInt(param));
+            pathInfo.setMplsInfo(mplsInfo);
+        }
         content.setBandwidth(
                 Integer.parseInt(this.props.getProperty(resv + ".bandwidth","10")));
         pathInfo.setPathSetupMode(this.props.getProperty(resv + ".pathSetupMode", "timer-automatic"));
@@ -357,7 +371,6 @@ public class OSCARSExerciser extends Client{
         } else {
             pathInfo.setLayer3Info(layer3Info);
         }
-        pathInfo.setMplsInfo(mplsInfo);
         CtrlPlanePathContent path = new CtrlPlanePathContent();
         path.setId("userPath");//id doesn't matter in this context
         boolean hasEro = false;
@@ -568,6 +581,8 @@ public class OSCARSExerciser extends Client{
         }
         
         /* Exercise */
+        System.out.println("NOTE: You may suppress log ouput by modifying " + 
+                                "conf/log4j.properties");
         exerciser = new OSCARSExerciser(pf, alt, start, end);
         exerciser.exercise();
     }
