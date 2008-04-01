@@ -338,6 +338,7 @@ if [ $INSTALL_DB == 1 ]; then
 		echo "    Initializing databases...";
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_BSS_DBNAME < sql/bss/createTables.sql`;
 		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_AAA_DBNAME < sql/aaa/createTables.sql`;
+		`mysql --user=$MYSQL_PRIV_USERNAME --password="$MYSQL_PRIV_PASSWORD" --host=$MYSQL_SERVER -D$MYSQL_AAA_DBNAME < sql/aaa/populateDefaults.sql`;
 		echo "    Databases initialized...";
 
 		echo "    Granting privileges to IDC account...";
