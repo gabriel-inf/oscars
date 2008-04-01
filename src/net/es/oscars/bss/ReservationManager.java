@@ -307,7 +307,48 @@ public class ReservationManager {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
         }
 
-        // TODO: check if the new path is different from the old path..
+
+        // handle times
+        Long now = System.currentTimeMillis()/1000;
+
+        if (persistentResv.getStatus().equals("FAILED")) {
+            throw new BSSException("Cannot modify: reservation has already failed.");
+
+        } else if (persistentResv.getStatus().equals("FINISHED")) {
+            throw new BSSException("Cannot modify: reservation has already finished.");
+
+        } else if (persistentResv.getStatus().equals("CANCELLED")) {
+            throw new BSSException("Cannot modify: reservation has been cancelled.");
+
+        } else if (persistentResv.getStatus().equals("INVALIDATED")) {
+            throw new BSSException("Cannot modify: reservation has been invalidated.");
+
+        } else if (persistentResv.getStatus().equals("ACTIVE")) {
+            // we will silently not allow the user to modify the start time
+            resv.setStartTime(persistentResv.getStartTime());
+            // can't end before current time
+            if (resv.getEndTime() < now) {
+                resv.setEndTime(now);
+            }
+            // can't end before start
+            if (resv.getStartTime() > resv.getEndTime()) {
+                throw new BSSException("Cannot modify: end time before start.");
+            }
+
+        } else if (persistentResv.getStatus().equals("PENDING")) {
+            if (resv.getEndTime() <= now) {
+                throw new BSSException("Cannot modify: reservation ends before current time.");
+            }
+            // can't start before current time
+            if (resv.getStartTime() < now) {
+                resv.setStartTime(now);
+            }
+            if (resv.getStartTime() > resv.getEndTime()) {
+                throw new BSSException("Cannot modify: start time after end time!");
+            }
+
+        }
+
 
         // this will throw an exception if modification isn't possible
         Path path = this.getPath(resv, pathInfo);
@@ -395,13 +436,13 @@ public class ReservationManager {
     /**
      * Finds path between source and destination, checks to make sure
      * it wouldn't violate policy, and then finds the next domain, if any.
-     * 
+     *
      * @param resv partially filled in resvervation, use startTime, endTime, bandWidth,
      * 	           GRI
      * @param pathInfo - input pathInfo,includes either layer2 or layer3 path
      *                  information, may also include explicit path hops.
      * @return a Path structure with the intradomain path hops, nextDomain, and
-     *                  whether the path hops were explicitly set by the user. 
+     *                  whether the path hops were explicitly set by the user.
      */
     public Path getPath(Reservation resv, PathInfo pathInfo)
             throws BSSException {
@@ -763,9 +804,9 @@ public class ReservationManager {
     }
 
     /**
-     *  Generates the next Gobal Rresource Identifier, created from the local  
+     *  Generates the next Gobal Rresource Identifier, created from the local
      *  Domain's topology identifier and the next unused index in the IdSequence table.
-     *  
+     *
      * @return the GRI.
      * @throws BSSException
      */
@@ -944,7 +985,7 @@ public class ReservationManager {
 
 
     /**
-     * Creates a token if this is the last domain otherwise sets the token returned 
+     * Creates a token if this is the last domain otherwise sets the token returned
      * from the forward reply.
      *
      * @param forwardReply response from forward request
