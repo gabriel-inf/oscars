@@ -18,11 +18,24 @@ fi
 echo "  ";
 echo "  ";
 
-
 echo "--- Stopping Tomcat...";
 $CATALINA_HOME/bin/shutdown.sh;
 echo "  ";
 echo "  ";
+STATUS2="";
+echo "Do you wish to copy key files and oscars configuration files to Tomcat now? [y/n] " 
+ans=0;
+while [ $ans == 0 ]; do
+   read ans;
+   if [ "$ans" != "y" ] && [ "$ans" != "Y" ] && [ "$ans" != "n" ] && [ "$ans" != "N" ]; then
+		ans=0;
+   fi
+done
+if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+	echo "  OK, will setup the server";
+	ant setupServer;
+	STATUS2=", server configured"
+fi
 echo "--- Deploying IDC...";
 ant deployall;
 echo "  ";
@@ -31,6 +44,6 @@ echo "--- Restarting Tomcat...";
 $CATALINA_HOME/bin/startup.sh;
 echo "  ";
 echo "  ";
-echo "IDC deployed.";
+echo "IDC deployed$STATUS2";
 
 exit 0;
