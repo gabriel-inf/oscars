@@ -10,12 +10,28 @@ import java.text.SimpleDateFormat;
 import net.es.oscars.oscars.AAAFaultMessage;
 import net.es.oscars.oscars.BSSFaultMessage;
 
+/**
+ * OSCARSExerciser is a class that issues a series of requests to OSCARS based
+ * on parameters set in a properties file. It is capable of issuing the 
+ * following types of requests: createReservation, cancelReservation, 
+ * createPath and teardownPath.
+ **/
 public class OSCARSExerciser extends Client{
     private Properties props;
     private String url;
     private int start;
     private int end;
     
+    /**
+     * Initializes the exerciser client
+     * 
+     * @param propFileName the path to the properties file with test requests
+     * @param altURL 
+     *      boolean indicating whether the alternate URL in the properties file
+     *      should be used
+     * @param start the number of the first test to conduct (i.e. resv5 => 5)
+     * @param end the number of the last test to conduct (i.e. resv5 => 5)
+     */
     public OSCARSExerciser(String propFileName, boolean altURL, int start, int end){
         super();
         this.props = new Properties();
@@ -54,7 +70,11 @@ public class OSCARSExerciser extends Client{
         this.end = end;
     }
     
+    /**
+     *  Conducts tests specified in the properties file given
+     */
     public void exercise(){
+        this.log.info("exercise.start");
         for(int i = this.start; i <= this.end; i++){
             String resv = "resv" + i;
             String layer = this.props.getProperty(resv + ".layer");
@@ -63,15 +83,21 @@ public class OSCARSExerciser extends Client{
             }
             
             //send create reservation
+            this.log.info(resv + ".start");
             System.out.print("Test " + i + ": createReservation......");
             try{
+                this.log.info(resv + ".createReservation.start");
                 ResCreateContent content = this.propertiesToCreateResv(resv, layer);
                 CreateReply response = this.createReservation(content);
+                this.log.info(resv + ".response\n" +
+                    this.responseToString(response));
                 System.out.println(response.getStatus());
+                this.log.info(resv + ".createReservation.end");
                 
                 //wait for setup
                 String wait = this.props.getProperty(resv + ".waitForSetup");
                 if(wait != null && wait.equals("1")){
+                    this.log.info("waiting for path setup");
                     this.pollResv(response, content.getStartTime(),"PENDING");
                 }
                 
@@ -80,24 +106,32 @@ public class OSCARSExerciser extends Client{
                 
                 //do tasks
                 this.performResvTasks(response.getGlobalReservationId(), tasks);
+                this.log.info(resv + ".end");
             }catch (AAAFaultMessage e) {
                 System.out.println("FAILED");
-                //System.out.println(e.getFaultMessage().getMsg());
+                this.log.error(e.getFaultMessage().getMsg());
             }catch (BSSFaultMessage e) {
                 System.out.println("FAILED");
-                //System.out.println(e.getFaultMessage().getMsg());
+                this.log.error(e.getFaultMessage().getMsg());
             }catch (java.rmi.RemoteException e) {
                 System.out.println("FAILED");
-                //System.out.println(e.getMessage());
+                this.log.error(e.getMessage());
             }catch (Exception e) {
                 System.out.println("FAILED");
-                System.out.println(e.getMessage());
+                this.log.error(e.getMessage());
             }
         }
-        
+        this.log.info("exercise.end");
         System.out.println("Exercises complete");
     }
     
+    /**
+     * Determines the order that requests such as cancel, createPath, and 
+     * teardownPath will be issued
+     *
+     * @param resv the name of the test for which to schedule tasks
+     * @returns a sorted list of tasks indicating the task type and time
+     */
     private ArrayList<String[]> scheduleResvTaks(String resv){
         ArrayList<String[]> tasks = new ArrayList<String[]>();
         String[] propNames = {"cancelTime", "createPathTime", "teardownPathTime"};
@@ -135,7 +169,15 @@ public class OSCARSExerciser extends Client{
         return tasks;
     }   
     
-    private void performResvTasks(String gri, ArrayList<String[]> tasks) throws Exception{
+    /**
+     * Performs the tasks in a given task list
+     *
+     * @param gri the GRI of the reservation being tested
+     * @param tasks the list oftasks to conduct
+     * @throws Exception
+     */
+    private void performResvTasks(String gri, ArrayList<String[]> tasks) 
+            throws Exception{
         long totalTime = 0;
         for(String[] task : tasks){
             String type = task[0];
@@ -148,23 +190,32 @@ public class OSCARSExerciser extends Client{
             System.out.println("AWAKE");
             
             if(type.equals("cancelTime")){
+                this.log.info(gri + ".cancel.start");
                 System.out.print("Cancelling " + gri + "......");
                 GlobalReservationId cancelReq = new GlobalReservationId();
                 cancelReq.setGri(gri);
                 String response = this.cancelReservation(cancelReq);
                 System.out.println(response);
+                 this.log.info(gri + ".cancel.status." + response);
+                this.log.info(gri + ".cancel.end");
             }else if(type.equals("createPathTime")){
+                this.log.info(gri + ".createPath.start");
                 System.out.print("Sending createPath......");
                 CreatePathContent createRequest = new CreatePathContent();
                 createRequest.setGlobalReservationId(gri);
                 CreatePathResponseContent createResponse = this.createPath(createRequest);
                 System.out.println(createResponse.getStatus());
+                this.log.info(gri + ".createPath.status." + createResponse.getStatus());
+                this.log.info(gri + ".createPath.end");
             }else if(type.equals("teardownPathTime")){
+                this.log.info(gri + ".teardownPath.start");
                 System.out.print("Sending teardownPath......");
                 TeardownPathContent teardownRequest = new TeardownPathContent();
                 teardownRequest.setGlobalReservationId(gri);
                 TeardownPathResponseContent teardownResponse = this.teardownPath(teardownRequest);
                 System.out.println(teardownResponse.getStatus());
+                 this.log.info(gri + ".teardownPath.status." + teardownResponse.getStatus());
+                this.log.info(gri + ".teardownPath.end");
             }else{
                 System.out.println("Skipping unrecognized operation.");
             }
@@ -172,12 +223,22 @@ public class OSCARSExerciser extends Client{
         }
     }
     
-    private void pollResv(CreateReply response, Long startTime, String waitStatus) throws Exception{
+    /**
+     * Checks whether a reservation has changed from given status
+     *
+     * @param response the reply from a createReservation request
+     * @param startTime the start time of the reservation
+     * @param waitStatus the status that needs to change
+     * @throws Exception
+     */
+    private void pollResv(CreateReply response, Long startTime, 
+                            String waitStatus) throws Exception{
         String pathSetupMode = response.getPathInfo().getPathSetupMode();
         long sleepTime = startTime.longValue()*1000 - System.currentTimeMillis();
         GlobalReservationId queryRequest = new GlobalReservationId();
+        String gri = response.getGlobalReservationId();
         
-        queryRequest.setGri(response.getGlobalReservationId());
+        queryRequest.setGri(gri);
         
         if(pathSetupMode != null && (!pathSetupMode.equals("timer-automatic"))){
             return;
@@ -190,10 +251,13 @@ public class OSCARSExerciser extends Client{
         
         for(int i = 0; i < 10; i++){
             System.out.println("AWAKE");
+            this.log.info(gri + ".query.start");
             System.out.print("Checking reservation status......");
             ResDetails details = this.queryReservation(queryRequest);
             String status = details.getStatus();
+            this.log.info(gri + ".query.status." + status);
             System.out.println(status);
+            this.log.info(gri + ".query.end");
             if(!status.equals(waitStatus)){
                 return;
             }
@@ -205,6 +269,13 @@ public class OSCARSExerciser extends Client{
         throw new Exception("Circuit not automatically setup by scheduler");
     }
     
+    /**
+     * Converts a properties file to a createReservation request
+     *
+     * @param resv the label of the test to conduct
+     * @param layer the layer element of the test
+     * @return a ResCreateContent element with the parameters of the test
+     */
     private ResCreateContent propertiesToCreateResv(String resv, String layer){
         ResCreateContent content = new ResCreateContent();
         Layer2Info layer2Info = null;
@@ -327,7 +398,17 @@ public class OSCARSExerciser extends Client{
         return content;
     }
     
-    public void setTimes(ResCreateContent content, String start_time, String end_time, String duration) {
+    /**
+     * Sets the time of the reservation request. Borrowed this from 
+     * createReservationClient.
+     *
+     * @param content the request for which to set the times 
+     * @param start_time the start of the reservation
+     * @param end_time the end of the reservation
+     * @param duration the duration of the reservation
+     */
+    public void setTimes(ResCreateContent content, String start_time, 
+                            String end_time, String duration) {
         // all times are communicated to the server in UTC
         Long startTime = null;
         Long endTime = null;
@@ -361,20 +442,81 @@ public class OSCARSExerciser extends Client{
             }
         }
 
-
         content.setStartTime(startTime);
         content.setEndTime(endTime);
         // format for printing (have to convert back to milliseconds)
         Date date = new Date(startTime*1000);
-        //System.out.println("Start time: " +
-       //         DateFormat.getDateTimeInstance(
-        //            DateFormat.LONG, DateFormat.LONG).format(date));
         date = new Date(endTime*1000);
-        //System.out.println("End time: " +
-           //     DateFormat.getDateTimeInstance(
-               //     DateFormat.LONG, DateFormat.LONG).format(date));
     }
     
+    /**
+     * Converts a CreateReply to a string that can be printed in the logs
+     *
+     * @param response the CreateReply to be converted
+     */
+    private String responseToString(CreateReply response){
+        PathInfo pathInfo = response.getPathInfo();
+        String output = "GRI: " + response.getGlobalReservationId() + "\n";
+        output += "Token: " + response.getToken() + "\n";
+        output += "Status: " + response.getStatus() + "\n";
+        
+        if(pathInfo != null){
+            Layer2Info l2Info = pathInfo.getLayer2Info();
+            MplsInfo mplsInfo = pathInfo.getMplsInfo();
+            Layer3Info l3Info = pathInfo.getLayer3Info();
+            CtrlPlanePathContent path = pathInfo.getPath();
+            CtrlPlaneHopContent[] hops = (path == null ? null : path.getHop());
+            
+            output += "Path Setup Mode: " + pathInfo.getPathSetupMode() + "\n";
+            output += "Path Type: " + pathInfo.getPathType() + "\n";
+            if(l2Info != null){
+                VlanTag srcVtag = l2Info.getSrcVtag();
+                VlanTag destVtag = l2Info.getDestVtag();
+                output += "L2 Source: " + l2Info.getSrcEndpoint() + "\n";
+                output += "L2 Dest: " + l2Info.getDestEndpoint() + "\n";
+                if(srcVtag != null){
+                    output += "L2 Source VLAN Tag: " + srcVtag.getString() + 
+                        "(tagged=" + srcVtag.getTagged() + ")\n";
+                }
+                if(destVtag != null){
+                    output += "L2 Dest VLAN Tag: " + destVtag.getString() + 
+                        "(tagged=" + destVtag.getTagged() + ")\n";
+                }
+            }
+            
+            if(l3Info != null){
+                output += "L3 Source: " + l3Info.getSrcHost() + "\n";
+                output += "L3 Dest: " + l3Info.getDestHost() + "\n";
+                output += "Protocol: " + l3Info.getProtocol() + "\n";
+                output += "Src L4 Port: " + l3Info.getSrcIpPort() + "\n";
+                output += "Dest L4 Port: " + l3Info.getDestIpPort() + "\n";
+                output += "DSCP: " + l3Info.getDscp() + "\n";
+            }
+            
+            if(mplsInfo != null){
+                output += "Burst Limit: " + mplsInfo.getBurstLimit() + "\n";
+                output += "LSP Class: " + mplsInfo.getLspClass() + "\n";
+            }
+            
+            if(hops != null){
+                output += "Path:\n";
+                for(CtrlPlaneHopContent hop : hops){
+                    output += "    " + hop.getLinkIdRef() + "\n";
+                }
+            }
+        }
+        
+        return output;
+    }
+    
+    /**
+     *  @param args
+     *      -pf required. the path to the properties file
+     *      -start optional. the first test to conduct (i.e. resv5 => 5)
+     *      -end optional. the last test to conduct (i.e. resv5 => 5)
+     *      -alt optional. use the alternate url
+     *
+     */
     public static void main(String[] args){
         OSCARSExerciser exerciser = null;
         String pf = null;
