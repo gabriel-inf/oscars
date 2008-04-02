@@ -12,96 +12,103 @@
 <!--#include virtual="header.html" -->
 <div id="topBar" class="topBar">
 <div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
- href="testing.html">Testing</a>
+ href="install.html">Installing</a> &gt; <a href="testing.html">Testing</a>
 </div>
 </div>
 <h2>Standalone tests</h2>
 <p>OSCARS uses the
-<a href=http://www.testng.org/">TestNG</a>
-package for testing.  Tests are organized hierarchically and mirror the
-src tree.  They are located under the test directory at the top level.
+<a href="http://www.testng.org/%22">TestNG</a>
+package for testing. Tests are organized hierarchically and mirror the
+src tree. They are located under the test directory at the top level.
 The tests run standalone, so the material in the oscars and servlets
 directories, which requires a running server, is not covered.
 </p>
-
 <p>For the
 tests to run correctly, Hibernate must be installed, and the
-testaaa.cfg.xml and testbss.cfg.xml Hibernate configuration files must be in
-the classpath.  Those files are located under conf/server, and for the
+testaaa.cfg.xml and testbss.cfg.xml Hibernate configuration files must
+be in
+the classpath. Those files are located under conf/server, and for the
 tests are copied into build/WEB-INF/classes.
 </p>
-
-<p>The Hibernate configuration files for the tests are set to create and
-drop each test database for each test run.  In practice, the contents of
-tables are deleted before each test run.  After each test run,  sessions are
+<p>The Hibernate configuration files for the tests are set to create
+and
+drop each test database for each test run. In practice, the contents of
+tables are deleted before each test run. After each test run, sessions
+are
 closed, but data remains in the test databases.
-The user that connects to the test databases must have the following MySQL
-grants for them: SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, and ALTER. 
-</p>
-
+The user that connects to the test databases must have the following
+MySQL
+grants for them: SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, and
+ALTER. </p>
 <p>
 Test results suitable for viewing by a browser are located in
-${catalina.home}/webapps/test.  You can view them at https://hostname/test.
+${catalina.home}/webapps/test. You can view them at
+https://hostname/test.
 </p>
-
 <h3>Ant test properties</h3>
 <div style="margin-left: 40px;">
-<p>If just <em>ant test</em> is run, all tests are run.  Not all tests will be
-valid in all domains.  To account for that, the <em>idc</em> property is used.
-Currently it can have two values.  For the I2 specific tests, use
-<em>ant -Didc=I2</em>.  For ESnet specific tests, use 
-<em>ant -Didc=ESnet</em>.
+<p>If just <em>ant test</em> is run, all tests are run. Not all tests
+will be
+valid in all domains. To account for that, the <em>idc</em> property
+is used.
+Currently it can have two values. For the I2 specific tests, use
+<em>ant -Didc=I2</em>. For ESnet specific tests, use <em>ant
+-Didc=ESnet</em>.
 </p>
-
 <p>
 For running only a particular set of tests at the package level, the
-<em>t</em> property is used.  It is overriden by the idc property.  Related
-tests are grouped by TestNG directives in the test source.  For example, to run
+<em>t</em> property is used. It is overriden by the idc property.
+Related
+tests are grouped by TestNG directives in the test source. For example,
+to run
 just the tests for bss.topology, use <em>ant test -Dt=bss.topology</em>.
 If the TestNG output indicates that zero tests have been
 run, check the property setting that you specified.</p>
-
 </div>
-
 <h3>Test coverage</h3>
 <div style="margin-left: 40px;">
-<p>Coverage of the Hibernate beans and associated Hibernate configuration
-files is complete for the various database operations (e.g. insert, update,
-etc.).  In general, there are high-level tests that exercise most of the
-classes, and low-level tests for the beans and pathfinding.  Helper classes
+<p>Coverage of the Hibernate beans and associated Hibernate
+configuration
+files is complete for the various database operations (e.g. insert,
+update,
+etc.). In general, there are high-level tests that exercise most of the
+classes, and low-level tests for the beans and pathfinding. Helper
+classes
 that are exercised by the high-level tests are in most cases not tested
 directly.
 </p>
-
 <p>Some tests will only be run if they are running as one of the users
-given by the "allowedUsers" property in test.properties, and on one of a
-set of machines given by the "allowedHosts" property.  If this is not
-the case, that test will fail and all the tests that depend on it will be
+given by the "allowedUsers" property in test.properties, and on one of
+a
+set of machines given by the "allowedHosts" property. If this is not
+the case, that test will fail and all the tests that depend on it will
+be
 skipped.</p>
-
 <p>The bss group contains tests for exporting data from the production
 database and importing it into the test database, and tests for
-both reservation scheduling and circuit setup.  The scheduling tests override
+both reservation scheduling and circuit setup. The scheduling tests
+override
 whether circuits can be set up according to the oscars.properties
 allowLSP property; no routers are configured.
 </p>
-
-<p>An example 
-test.properties is in conf/examples/server.  You will need to set those
-properties if you are starting from scratch.  A filled-in version of this
+<p>An example test.properties is in conf/examples/server. You will need
+to set those
+properties if you are starting from scratch. A filled-in version of
+this
 file has to be located in ${catalina.home}/shared/classes/server (the
-place for other configuration and properties files).  Tomcat doesn't
-have to be running.  If you have a domain-specific Subversion repository, it
+place for other configuration and properties files). Tomcat doesn't
+have to be running. If you have a domain-specific Subversion
+repository, it
 is copied to the Tomcat directory during the build from
 ${domain.home}/domain/trunk/server.
 </p>
 </div>
-
 <h3>Test logging</h3>
 <div style="margin-left: 40px;">
-<p>Uses build/classes/log4j.properties.  This
-file is included in the distribution in conf/server/log4j.properties, and
-is copied to the build directory during compilation.  Log messages
+<p>Uses build/classes/log4j.properties. This
+file is included in the distribution in conf/server/log4j.properties,
+and
+is copied to the build directory during compilation. Log messages
 are written to ${catalina.home}/logs/oscars-test.log.</p>
 </div>
 </body>

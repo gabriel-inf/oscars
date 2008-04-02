@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <title>Tomcat/Axis configuration</title>
+  <title>Tomcat/Tomcat install</title>
   <base href="/docs">
   <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
@@ -11,10 +11,23 @@
 <div id="topBar" class="topBar">
 <div class="topBarDiv"> &nbsp;
 <a href="index.html">home</a> &gt; <a href="dependencies.html">Dependencies</a>
-&gt; <a href="tomcat.html">Tomcat/Axis2 configuration</a>
+&gt; <a href="tomcat.html">Tomcat Install</a>
 </div>
 </div>
+<h2>Tomcat download and install</h2>
+Go to the <a href="http://tomcat.apache.org/download-55.cgi">Apache
+Tomcat download site </a>and download the core distribution that
+matches your hosting environment. Extract the tar or zip file into the
+directory from which you want to run the Tomcat server. Set the
+evironment variable CATALINA_HOME to the extracted directory.<br>
+e.g. if you untarred apache-tomcat-5.5.26.tar in /usr/local,
+CATALINA_HOME should be set to /usr/local/apache-tomcat-5.5.26.<br>
+<br>
 <h2>Tomcat Configuration</h2>
+Complete Tomcat documentation can be found at <a
+ href="http://tomcat.apache.org/tomcat-5.5-doc/index.html">Tomcat 5-5
+doc.</a> The things you may need to do for OSCARS are itemized below.<br>
+<br>
 <h3>$CATALINA_HOME/conf</h3>
 <ul>
   <li><span style="font-weight: bold;"> server.xml</span> - defines
@@ -27,22 +40,33 @@ will
 listen the protocol (http or https), and the location of the keystore
 for
 https connectors.</li>
+    <li>You should enable Tomcat to run https only, as user passwords
+are passed to the browser interface. If http is used the passwords are
+passed unencrypted. See <a
+ href="http://tomcat.apache.org/tomcat-5.5-doc/ssl-howto.html">SSL-howto</a>
+for instructions on how to do this.<br>
+    </li>
     <ul>
       <li> define a dumper valve here</li>
-      <li> define remoteAddrValve here to limit the sites that can
+      <li> define remoteAddrValve here if you wish to limit the sites
+that can
 access the connector</li>
     </ul>
   </ul>
   <li><span style="font-weight: bold;"> web.xml</span> - defines
 default values for servlets for static
 resources, e.g. jsp, We used the sample in the distribution but enabled
-the SSI filter to enable server includes on all html files.</li>
+the SSI filter to enable server includes on all html files as the
+OSCARS documentation html pages use includes.<br>
+  </li>
   <li><span style="font-weight: bold;"> context.xml</span> - Uncomment
 the line&nbsp;&nbsp;&nbsp; &lt;Manager pathname="" /&gt; to not allow
 sessions to be saved between Tomcat restarts.<br>
   </li>
   <li><span style="font-weight: bold;"> logging.properties</span> - can
-be edited to change some logging levels</li>
+be edited to change some logging levels (see <a href="logging.html">logging
+configuration</a> for more on how to customize Tomcat to use log4j)<br>
+  </li>
   <li><span style="font-weight: bold;"> tomcat-users.xml </span>- user
 names and passwords for access to the
 Tomcat administrative web pages</li>
@@ -58,12 +82,14 @@ logging.
 <h3>$CATALINA_HOME/shared</h3>
 Contains classes and libraries shared by all the webapps but not the
 Tomcat server. This has been where we have put files that can't seem to
-be found from the axis2.war or the OSCARS.aar. Currently the contents
+be found from the axis2.war or the OSCARS.aar. The ant task setupServer
+will populate the classes directory and deploylibs will polulate the
+lib directory. Currently the contents
 are:<br>
 <ul>
   <li>classes/repo - files that need to be on the classpath as
 repo/&lt;filename&gt; These are files used when OSCARS is forwarding a
-request, see <a href="#server-client">below</a>
+request, see <a href="oscarsConf.html#server-client">OSCARS interdomain</a>.
     <ul>
       <li>sec-client.jks </li>
       <li>sec-client.properties - says the keystore file is in
@@ -109,119 +135,6 @@ and JAVA_OPTS="-Djava.net.preferIPv4Stack=true" to get around a FreeBSD
 6.0 / ipv6/ jdk1.5 bug </li>
   <li>catalina.sh - starts the command with output sent to
 $CATALINA_HOME/logs/catalina.out </li>
-</ul>
-<a name="axis2">
-<h2>Axis2 Configuration</h2>
-</a>
-<ul>
-  <li>$CATALINA_HOME/webapps/axis2/WEB-INF/web.xml<br>
-    <ul>
-      <li> defines servlets, e.g SOAPMonitor. AdminServlet,Axis2Servlet</li>
-      <li>maps urls to servlet names, and servlet names to class</li>
-    </ul>
-  </li>
-  <li>$CATALINA_HOME/webapps/axis2/WEB-INF/conf/axis2.xml<br>
-    <ul>
-      <li>Defines parameters like enableMTOM, username, password (for
-axis admin)</li>
-      <li> defines messageRecievers, transportReceivers(http, tcp, smtp</li>
-      <li>Engage global modules like SOAPMonitor and rampart</li>
-      <li> defines phase order (added soapMonitor phase)</li>
-    </ul>
-  </li>
-  <li>$CATALINA_HOME/webapps/axis2/WEB-INF/classes/log4j.properties<br>
-  </li>
-  <ul>
-    <li>Our version is copied from conf/server/axis2.log4j.properties
-by the ant target deployaar. The OSCARS.aar gets it from here and not
-from within OSCARS.aar. </li>
-  </ul>
-</ul>
-<h2><a name="oscars"></a>OSCARS Configuration</h2>
-<h3>Server</h3>
-<ul>
-  <li>OSCARS.jar/META-INF/<b>services.xml</b>
-is generated by WSDL2Java and specifies all the methods and parameters.
-The security inFlow and outFlow parameters need to be added to this
-file. The&nbsp; name of the sec-properties file is given here. </li>
-  <li>classes/<b>sec-server.properties</b>
-names the keystore file and has its
-password</li>
-  <li>classes/<b>sec-server.jks</b>
-has
-the keystore that is used by rampart to
-verify signed messages. It only needs to contain the trustedCaCerts for
-the issuers of any user who will submit a signed message.</li>
-  <li>Files copied from OSCARS to axis2</li>
-  <ul>
-    <li>need the oscars version of log4j.properties to be in
-webapps/axis2/classes</li>
-    <li>need&nbsp; to copy wss4j.jar, xalan.jar and xmlsec.jar to
-webapps/axis2/lib,</li>
-    <li>wss4j.jar must not be in OSCARS.war or OSCARS.aar, or it causes
-class conflicts.</li>
-  </ul>
-</ul>
-<h3><a name="server-client">Server acting as client</a></h3>
-When the server forwards a request to another domain, it acts as a
-OSCARS/axis2 client and thus needs to include te client-side
-configuration files. These files are put into
-$CATALINA_HOME/shared/classes/repo.
-<p>The location of the axis2.xml file and the repository in which the
-modules are found are set in Forwarder.setup. Forwarder.setup calls
-KeyMangement.setKeyStore which sets the ssl keystore to the
-file "ssl-keystore.jks" in the repository directory. </p>
-<p>axis2.xml defines the names of the signatureProperty file and the
-keystore.
-</p>
-<p>The files sec-client.properties, sec-client.jks and ssl-keystore.jks
-are also
-copied to $CATALINA_HOME/shared/classes/repo so that they will be on
-the server's classpath.<br>
-<br>
-</p>
-<h3>Client</h3>
-See <a href="msgSecurity.html">Security Reference</a> for more
-details about these files.<br>
-<ul>
-  <li><b>axis2.xml</b> - needed when
-signing messages. It contains:</li>
-  <ul>
-    <li>InFlow and OutFlow parameters</li>
-    <li>Name of the client-properties file</li>
-  </ul>
-  <br>
-The axis2.xml file can be found by the client code from a
-javavm flag -daxis2.xml=&lt;filename&gt; <br>
-or can be set programatically by <br>
-  <pre>ConfigurationContext configContext = <br>		ConfigurationContextFactory.createConfigurationContextFromFileSystem(repo, null);<br>ServiceClient serviceClient = new ServiceClient(configContext, null)</pre>
-Where <b>repo</b> is a directory on the classpath that contains a
-conf/axis2.xml file.<br>
-  <br>
-The repo directory also contains: <li><b>sec-client.properties</b>
-contains:
-    <ul>
-      <li>org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
-      </li>
-      <li>org.apache.ws.security.crypto.merlin.keystore.type=jks </li>
-      <li>org.apache.ws.security.crypto.merlin.keystore.password=password
-      </li>
-      <li>.apache.ws.security.crypto.merlin.file=sec-client.jks (name
-of keystore file)</li>
-    </ul>
-  </li>
-  <li><b>sec-client-key.jks</b>
-contains</li>
-  <ul>
-    <li>keyentry for the user specified in axis2.xml to be signing
-the outgoing messages</li>
-    <li>trustedCaCerts for the issuer of this user's certificate <br>
-    </li>
-  </ul>
-  <li><b>ssl-keystore.jks </b>- has
-the certificate and issuer for the ssl
-certificate of the oscars services to which the client will be
-connecting </li>
 </ul>
 <!--#include virtual="footer.html" -->
 </body>

@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Installing OSCARS</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="install.html">Install</a> &gt; <a href="msgSecurity.html">Message
+Security</a> &gt; <a href="keytool.html">Using Keytool</a>
+</div>
+</div>
+<br>
+<h2>Managing a Java keystore</h2>
+<p>The keytool command is part of the&nbsp; Java 2 JDK release.
+Complete documentation can be found at <a
+ href="http://java.sun.com/j2se/1.3/docs/tooldocs/win32/keytool.html">sun-keytool.html</a>.
+The keytool command will do most of what you need: listing contents,
+setting aliases, adding new trust certificates. The one thing it does
+not
+do is to import a trusted entry, e.g. cert and key. There is a class
+that
+comes with the jetty release that we have used. There may be tools in
+the Sun suite as well.<br>
+</p>
+<h3>Input a issuer's certifcate as a trustedCertEntry</h3>
+You need to have the x.509 certificate of the CA in pem format (tagged
+ascii base 64 encoded). To convert from a DER format (binary) use
+openssl:<br>
+<pre>openssl x509 -in CAcert.der -inform DER -outform PEM -out CAcert.pem</pre>
+To import into a keystore:<br>
+<pre>keytool -import -keystore sec-client.jks -file CAcert.pem -trustcacerts -alias CA</pre>
+<h4>Input a pkcs12 file to a key store</h4>
+Used when you have a user certificate that was generated outside of the
+keystore and you<br>
+wish to import as a keyEntry.<br>
+<pre>#NOTE:<br># Need both the cert and private key in the keystore so...<br># need to be in pem format so if it is in DER format<br><br>#use openssl to make ONE pkcs12 file (combine both cert &amp; private key)<br>openssl pkcs12 -inkey jason.key.pem -in jason.cert.pem  -export -out jason.pkcs12<br><br># use jetty to load it (from http://jetty.mortbay.org/)<br># with  jetty-6.0.2 the command is<br>java -cp org.mortbay.jetty-6.0.2.jar org.mortbay.jetty.security.PKCS12Import jason.pkcs12 sec-client.jks<br><br></pre>
+<p>Now to rename the alias use:</p>
+<pre>keytool -keyclone -alias 1 -dest jason -keystore sec-client.jks<br>keytool -delete -alias 1 -keystore sec-client.jks<br></pre>
+<p>Then to import the DOEGrids CA cert:</p>
+<pre>keytool -import -keystore sec-client.jks -file doeGridsCA.pem -trustcacerts -alias DOEGridsCA<br>keytool -import -keystore sec-client.jks -file esnetRoot.pem -trustcacerts -alias esnetRoot<br></pre>
+<!--#include virtual="footer.html" -->
+<br>
+<br>
+</body>
+</html>
