@@ -38,13 +38,10 @@
         <!-- a bit of a kludge -->
         <available file="lib/axis2/mail-1.4.jar" property="axis2.found"/>
         <fail unless="axis2.found" message="Axis2 library not found. Please either build and deploy axis2.war with rampart support, or manually copy the necessary .jar files to lib/axis2. See documentation for details."/>
-
         <available file="lib/jta.jar" property="jta.found"/>
         <fail unless="jta.found" message="JTA library not found. Please download jta.jar from Sun's website and place it in the lib directory."/>
-
         <available file="lib/axis2/rampart-core-1.3.jar" property="rampart.found"/>
         <fail unless="rampart.found" message="Rampart library not found. We recommend that you use conf/axis2/build.xml to rebuild the Axis2 webapp, then redeploy. See documentation for more."/>
-
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
             <fileset dir="conf/server" includes="*.cfg.xml, log4j.properties"/>
@@ -109,7 +106,7 @@ Adding a -sd switch generates resources/services.xml -->
             <arg value="-d"/>
             <arg value="adb"/>
             <arg value="-package"/>
-            <arg value="net.es.oscars.oscars"/>
+            <arg value="net.es.oscars.newOscars"/>
             <arg value="--namespace2package"/>
             <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes"/>
         </java>
@@ -205,6 +202,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
             <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctrlp.xsd"/>
         </copy>
+    	<copy file="install.sh" tofile="web/docs/install.sh.txt"/>
         <copy todir="web/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
         </copy>
@@ -281,6 +279,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
             <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctlp.xsd"/>
         </copy>
+	    <copy file="install.sh" tofile="dojoweb/docs/install.sh.txt"/>
         <copy todir="dojoWeb/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
         </copy>
@@ -408,10 +407,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <property name="testsuite" value="I2.suite"/>
     </target>
     <target name="test" depends="test.compile, testpkg, testESnet, testI2">
-        <testng classpathref="test.path" groups="${groups}"
-            suitename="${testsuite}" outputDir="${webapp.home}/test"
-	    listeners="net.es.oscars.ITestListener"
-            haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
+        <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/test" listeners="net.es.oscars.ITestListener" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
             <jvmarg value="-Dcatalina.home=${catalina.home}"/>
             <jvmarg value="-Dapp=-test"/>
