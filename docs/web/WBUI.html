@@ -19,7 +19,7 @@ User Manual</a>
 <h1 style="text-align: center;">User Manual - Part 1: WBUI<br>
 </h1>
 <div style="text-align: center;"><span style="font-style: italic;">OSCARS
-version 0.2.1 Apr 2008<br>
+version 0.3 Apr 2008<br>
 </span>
 </div>
 <br>
@@ -65,7 +65,7 @@ you have. A normal OSCARS-user will only be able to create a
 reservation, list and see the details of his own reservations and
 modify his own profile. More privileged users, e.g. OSCARS-engineers
 and OSCARS-operators can see all the reservations. Users with admin
-privileges, OSCARS-Administrator can add and authorize new users and
+privileges, OSCARS-administrator can add and authorize new users and
 modify and delete users. See <a href="authorizationPolicy.html">Authorization
 Policy</a> for more
 information about the different levels of privileges.<br>
@@ -116,7 +116,8 @@ urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
 data resides and are specified by DNS names or IPaddrs. For layer2
 reservation, they are the ingress and egress links to the ISP and are
 currently input as topology identifiers.&nbsp; In this case a user must
-communicate with the ISP administrators to find out what links to use.<br>
+communicate with the ISP administrators to find out what links to use.
+    <br>
   </li>
   <li><span style="font-weight: bold;">Path </span>is a
 list of topology identifiers for ingress and egress links/routers. In
@@ -130,12 +131,9 @@ might set ESnet/I2's address in New York to bypass the congestion.
 Setting the routers may change the default path for the data flow.
 However, currently for layer 2 reservations starting at ESnet
 sites the ingress and egress links for each domain that is traversed
-must be input. <span style="color: rgb(204, 0, 0);">(This may change
-by the time of the April release)</span> <br>
-  </li>
-  <ul>
-    <li>The
-hops that you specify are a
+must be input. This may change in
+the future.</li>
+  <li>The hops that you specify are a
 considered a <span style="font-style: italic;">Loose Interdomain Path
 (LIDP)</span> are
 are taken as suggestions. If they are not available, other nodes may be
@@ -147,12 +145,11 @@ reservation and displayed by the reservation details page is a <span
  style="font-style: italic;">confirmed</span> (all the
 resources have been reserved) SIDP. For example the
 hops for the layer 2 example above are:<br>
-      <pre><span style="font-weight: bold;">    path:</span><br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*<br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet4/3:link=*<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.189-103:link=1<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1<br></pre>
+    <pre><span style="font-weight: bold;">    path:</span><br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*<br>    urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/1:link=TenGigabitEthernet1/1.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet2/3:link=TenGigabitEthernet2/3.101<br>    urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet4/3:link=*<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.189-103:link=1<br>    urn:ogf:network:domain=dcn.internet2.edu:node=newy-vlsr:port=10.100.80.193-104:link=1<br></pre>
 Note that the first and last hops are the same as the source and
 destination hosts. Currently this is required for layer 2 reservations,
 but may change in the future.<br>
-    </li>
-  </ul>
+  </li>
   <li><span style="font-weight: bold;">Bandwidth</span> - maximum
 bandwidth to reserve in Mbps</li>
   <li><span style="font-weight: bold;">Purpose</span> - stored with
@@ -308,9 +305,8 @@ Displays the information we keep about the user. Use this page to
 modify information about yourself.<br>
 <ul>
   <li><span style="font-weight: bold;">login name <span> - can not be
-altered since it is your primary identification</span></span><span>
-- <span style="color: rgb(204, 0, 0);">BUT trying to modify it gives
-an "unable to load modifyUser servlet error"</span></span><span
+altered since it is your primary identification</span></span><span> <span
+ style="color: rgb(204, 0, 0);"></span></span><span
  style="font-weight: bold;"><span><br>
     </span></span></li>
   <li><span style="font-weight: bold;">password/password confirmation</span>

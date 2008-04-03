@@ -92,7 +92,7 @@ service container</li>
         <li><a href="axis2.html">Apache
 Rampart 1.3 </a>- for Web service message security</li>
       </ul>
-The persisant data for
+The persistent data for
 reservations, topology and user information is stored in <a
  href="database.html">MySQL</a> tables so MySQL 4.1.2 or later
 must be installed.<br>
@@ -129,6 +129,13 @@ hibernate.connection.username and password.<br>
 If this user does not already exist, it will be created and granted "<code>ALL
 PRIVILEGES ON aaa.* and
 bss.*</code>" <br>
+      <br>
+Do not confuse these two mysql users with the OSCARS users that you
+will be creating later. These users should have access to mysql only
+from localhost. The access control on these users is completely
+separate from that of the OSCARS users, so in order to preserve the
+integrity of the OSCARS system, the number of mysql users should be
+strictly limited to system administrators.<br>
       <br>
 If you do not want to have install.sh create your databases&nbsp; you
 can use the following commands.<br>
@@ -221,7 +228,7 @@ and/or <span style="font-style: italic;">http://localhost:8080/</span><br>
 which should show you a Tomcat page. Clicking on the status button, and
 giving it the Tomcat manager account and password that you set in
 $CATALINA_HOME/conf/tomcat-users.xml should bring up a page that lets
-you chose to list applications. Clicking on that should show axis2 as
+you choose to list applications. Clicking on that should show axis2 as
 one of the services. Clicking on that should give you an axis2 welcome
 page. <br>
       <br>
@@ -268,7 +275,7 @@ Edit the $DOMAIN_HOME/server/oscars.properties to change <span
 you add any users.<br>
       <br>
 use <span style="font-weight: bold; font-style: italic;">ant
-setupServer</span> to copy the new files to $CATALINA_OUT<br>
+setupServer</span> to copy the new files to $CATALINA_HOME<br>
       <br>
 Use the <span style="font-weight: bold; font-style: italic;">tools/utils/idc-useradd</span>
 command to add a privileged OSCARS user.&nbsp; <br>
@@ -319,69 +326,87 @@ get his certificate and the certificate for the issuer of his
 certificate. Then add the DN of the subject and issuer to the aaa:users
 table certSubject and certIssuer and add the issuer certificate to
 $DOMAIN_HOME/server/sec-server.jks, followed by ant setupServer to copy
-it to<br>
-$CATALINA_HOME/shared/classes/server.<br>
+it to $CATALINA_HOME/shared/classes/server. <br>
+      <br>
+Use the following command to add a <span style="font-style: italic;">trustedCertEntry</span>
+for the CA represented by <span style="font-style: italic;">cert.pem</span>
+to the keystore <span style="font-style: italic;">sec-server.jks</span>.<br>
       <br>
 &nbsp;&nbsp;&nbsp;&nbsp; <code><span style="font-weight: bold;">keytool
 -import -keystore
-sec-server.jks -file 'cert.pem' -trustcacerts -alias '<span
- style="font-style: italic;">CAname</span>'</span> <br>
+sec-server.jks -file '<span style="font-style: italic;">cert.pem</span>'
+-trustcacerts -alias '<span style="font-style: italic;">CAname</span>'</span>
+      <br>
       </code>
       <h2><a class="mozTocH2" name="mozTocId660439"></a>Setting
 up Client Keystores</h2>
       <span style="font-weight: bold;"><br>
-axis2.xml - </span>edit to set name of the user who will be making
+axis2.xml - </span>edit the line<br>
+      <br>
+      <code>&lt;user&gt;alice&lt;/user&gt;<br>
+      <br>
+      </code>to set name of the user who will be making
 requests tothe OSCARS service. The user name should be the alias that
 is in the keystore.<br>
-      <br>
-      <span style="font-weight: bold;">ssl-keystore.jks</span> - Need
-to add the certificate and the issuer's certificate of&nbsp; the Tomcat
-server to which the client will be connecting.<br>
-      <br>
+      <span style="font-weight: bold;"></span><br>
       <span style="font-weight: bold;">sec-client.properties</span> -
-needs to be edited to have the correct name and password for the
-keystore file<br>
+As in the case of the server, this should&nbsp; be edited to have to
+change the&nbsp; password for the
+keystore file (sec-client.jks).<br>
       <br>
-      <span style="font-weight: bold;">sec-client.jks</span> - needs
-keyEntry for the client making web service requests to the OSCARS
-server.<br>
+      <span style="font-weight: bold;">sec-client.jks</span> -
+Change&nbsp; the password as above if you have edited
+sec-client.properties. Add a keyEntry for the client making web service
+requests to the OSCARS
+server. (see <a href="keytool.html">keytool</a> for several ways to do
+this.)<br>
+      <br>
+      <span style="font-weight: bold;">ssl-keystore.jks</span> -If you
+will be connecting to a server other than: <br>
+      <br>
+oscars.es.net, oscars-dev.es.net - signed for by <br>
+CN=ESnet SSL Server Certificates, OU=Certificate Authorities, DC=ES,
+DC=net<br>
+ndb3-blmt.abilene.ucaid.edu -signed for by<br>
+CN=DCSTest, OU=DCS Test, O=DCS Test, L=Ann Arbor, ST=Michigan, C=US<br>
+      <br>
+you will need to add either the site certificate or the issuer's
+certificate of&nbsp; the Tomcat
+server to which the client will be connecting. The password for
+conf/examples/ssl-keystore.jks is "oscars".<br>
+(see <a href="keytool.html">keytool</a> for suggestions on how to find
+the site certificate for a https enabled website.)<br>
       <br>
       <h2><a class="mozTocH2" name="mozTocId718338"></a><a
  name="antTasks"></a>Description of
 major tasks in the build process<br>
       </h2>
-      <br>
-There are a few Dragon-specific targets that only need to be run if
-your site is running the DRAGON software.<br>
-      <br>
       <span style="font-style: italic;"></span> <span
- style="font-style: italic;">prepareDragon</span> copies
-the&nbsp;
-Dragon jar files into the lib directory.<br>
-      <span style="font-style: italic;">deployDragon</span> calls
-prepareDragon and then builds and deploys an oscars.aar file that
-contains the dragon pathfinder code. Note that the oscars.properties
-file in examples/server is set to use the Dragon/Terce sofware.<br>
-      <br>
+ style="font-style: italic;"></span><br>
       <span style="font-style: italic;">prepare</span> copies axis2 and
 tomcat libraries from the Tomcat deployed area, $CATALINA_HOME, into
-the lib directory, and the msql-connector jars from a maven
+the distribution's lib directory, and the msql-connector jars from a
+maven
 repository.&nbsp; It also copies some configuration files from the conf
 directory to the build area, from whence they will be put in the aar
 and
 war files.<br>
+Normally called by the <span style="font-style: italic;">compile</span>
+task.<br>
+      <span style="font-style: italic;"><br>
+wsdl2java </span>checks to see if the web service stubs have been
+generated from the OSCARS.wsdl and if not runs the axis2 WSDL2Java
+program to generate them. The
+resulting Java files are put in src/net/es/oscars/wsdlTypes and
+src/org/ogf/schema/network/topology/ctrlplane/_20070626<br>
       <br>
       <span style="font-style: italic;">compile</span> depends on <span
  style="font-style: italic;">prepare</span> and <span
  style="font-style: italic;">wsdl2java<br>
-wsdl2java </span>checks to see if the web service stubs have been
-generated from the OSCARS.wsdl<br>
-and if not runs the axis2 WSDL2Java program to generate them. The
-resulting java files are put in src/net/es/oscars/wsdlTypes and
-src/org/ogf/schema/network/topology/ctrlplane/_20070626<br>
-Then all the src files are compiled into build/WEB-INF/classes.<br>
+      </span>compiles all the server classes into build/WEB-INF/classes.<br>
       <br>
-      <span style="font-style: italic;">aar</span> ceates the
+      <span style="font-style: italic;"></span> <span
+ style="font-style: italic;">aar</span> ceates the
 build/OSCARS.aar file from the classes in build/WEB-INF/classes
 (excluding
 the servlet classes),&nbsp; the jars in the lib directory and the wsdl,
@@ -392,10 +417,7 @@ OSCARS.aar to $CATALINA_HOME/webapps/WEB_INF/services, the
 log4j.properties file to $CATALINA_HOME/webapps/WEB_INF/classes where
 axis2 can find it, and a couple of jar files that need to be in
 $CATALINA_HOME/shared/lib.<br>
-      <br>
-      <span style="font-style: italic;">deploywbui</span> depends on <span
- style="font-style: italic;">wbui</span> which depends on <span
- style="font-style: italic;">compile</span>.<br>
+      <span style="font-style: italic;"></span><br>
       <span style="font-style: italic;">wbui</span> generates the
 JavaDocs
 for all the IDC classes and for just the client side classes. It copies
@@ -404,7 +426,10 @@ included in the OSCARS.war. It then builds the war from the classes in
 build/WEB-INF/classes (excluding the web services classes), the lib
 jars and the docs.<br>
       <br>
-      <span style="font-style: italic;">deploywbui</span> just copies
+      <span style="font-style: italic;">deploywbui</span>&nbsp; depends
+on <span style="font-style: italic;">wbui, compile,</span> and <span
+ style="font-style: italic;">copydocs</span><br>
+It just copies
 the
 OSCARS.war file to $CATALINA_HOME/webapps. If Tomcat is running at the
 time of the deploy and is configured to dynamically deploy services,

@@ -29,22 +29,74 @@ that
 comes with the jetty release that we have used. There may be tools in
 the Sun suite as well.<br>
 </p>
-<h3>Input a issuer's certifcate as a trustedCertEntry</h3>
+<h3>Finding an CA certificate</h3>
+Ask whoever is running the service that you want
+to connect to, to send you the CA certificate that signed its web site
+certificate. Then enter that in your ssl-keystore.<br>
+<br>
+<span style="font-weight: bold;">Get the site certificate</span><br>
+<br>
+Another approach is to get the site certificate and use that instead.
+Connect to
+the service with your browser using https and then export the
+certificate from your browser.<br>
+<br>
+In IE the following is reputed to work.<br>
+<br>
+<i>View certificate -&gt; certificate details -&gt;</i> <i>copy to file</i>
+<br>
+<br>
+For Firefox you need the following extension.<br>
+<br>
+https://addons.mozilla.org/en-US/firefox/addon/1964<br>
+<br>
+Once this is installed there will be a "certificate Manager" entry in
+the tools menu.
+<br>
+<br>
+<span style="font-style: italic;">tools -&gt; websites -&gt; select
+certificate -&gt; view -&gt; export</span><br>
+<br>
+<h3>Input a site or CA certifcate as a trustedCertEntry</h3>
+<br>
 You need to have the x.509 certificate of the CA in pem format (tagged
-ascii base 64 encoded). To convert from a DER format (binary) use
+ascii base-64 encoded). To convert from a DER format (binary) use
 openssl:<br>
-<pre>openssl x509 -in CAcert.der -inform DER -outform PEM -out CAcert.pem</pre>
+<pre style="font-weight: bold;">openssl x509 -in <span
+ style="font-style: italic;">'CAcert.der'</span> -inform DER -outform PEM -out <span
+ style="font-style: italic;">'CAcert.pem'</span></pre>
 To import into a keystore:<br>
-<pre>keytool -import -keystore sec-client.jks -file CAcert.pem -trustcacerts -alias CA</pre>
+<pre style="font-weight: bold;">keytool -import -keystore <span
+ style="font-style: italic;">'sec-client.jks'</span> -file <span
+ style="font-style: italic;">'CAcert.pem'</span> -trustcacerts -alias <span
+ style="font-style: italic;">'CA'</span></pre>
 <h4>Input a pkcs12 file to a key store</h4>
 Used when you have a user certificate that was generated outside of the
 keystore and you<br>
 wish to import as a keyEntry.<br>
-<pre>#NOTE:<br># Need both the cert and private key in the keystore so...<br># need to be in pem format so if it is in DER format<br><br>#use openssl to make ONE pkcs12 file (combine both cert &amp; private key)<br>openssl pkcs12 -inkey jason.key.pem -in jason.cert.pem  -export -out jason.pkcs12<br><br># use jetty to load it (from http://jetty.mortbay.org/)<br># with  jetty-6.0.2 the command is<br>java -cp org.mortbay.jetty-6.0.2.jar org.mortbay.jetty.security.PKCS12Import jason.pkcs12 sec-client.jks<br><br></pre>
+<pre>#NOTE:<br># Need both the cert and private key in the keystore so...<br># need to be in pem format so if it is in DER format convert to pem first<br><br>#use openssl to make ONE pkcs12 file (combine both cert &amp; private key)<br><span
+ style="font-weight: bold;">openssl pkcs12 -inkey <span
+ style="font-style: italic;">'jason.key.pem'</span> -in <span
+ style="font-style: italic;">'jason.cert.pem'</span>  -export -out <span
+ style="font-style: italic;">'jason.pkcs12'</span></span><br><br># use jetty to load it (from http://jetty.mortbay.org/)<br># with  jetty-6.0.2 the command is<br><span
+ style="font-weight: bold;">java -cp org.mortbay.jetty-6.0.2.jar org.mortbay.jetty.security.PKCS12Import <span
+ style="font-style: italic;">'jason.pkcs12' 'sec-client.jks</span></span><span
+ style="font-style: italic;">'</span><br><br></pre>
 <p>Now to rename the alias use:</p>
-<pre>keytool -keyclone -alias 1 -dest jason -keystore sec-client.jks<br>keytool -delete -alias 1 -keystore sec-client.jks<br></pre>
+<pre><span style="font-weight: bold;">keytool -keyclone -alias 1 -dest <span
+ style="font-style: italic;">'jason'</span> -keystore <span
+ style="font-style: italic;">'sec-client.jks'</span></span><br
+ style="font-weight: bold;"><span style="font-weight: bold;">keytool -delete -alias 1 -keystore <span
+ style="font-style: italic;">'sec-client.jks'</span></span><br></pre>
 <p>Then to import the DOEGrids CA cert:</p>
-<pre>keytool -import -keystore sec-client.jks -file doeGridsCA.pem -trustcacerts -alias DOEGridsCA<br>keytool -import -keystore sec-client.jks -file esnetRoot.pem -trustcacerts -alias esnetRoot<br></pre>
+<pre><span style="font-weight: bold;">keytool -import -keystore <span
+ style="font-style: italic;">'sec-client.jks'</span> -file <span
+ style="font-style: italic;">'doeGridsCA.pem'</span> -trustcacerts -alias <span
+ style="font-style: italic;">'DOEGridsCA'</span></span><br
+ style="font-weight: bold;"><span style="font-weight: bold;">keytool -import -keystore <span
+ style="font-style: italic;">'sec-client.jks'</span> -file <span
+ style="font-style: italic;">'esnetRoot.pem'</span> -trustcacerts -alias <span
+ style="font-style: italic;">'esnetRoot'</span></span><br></pre>
 <!--#include virtual="footer.html" -->
 <br>
 <br>
