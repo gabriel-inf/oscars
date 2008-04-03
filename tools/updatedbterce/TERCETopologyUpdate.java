@@ -413,7 +413,7 @@ public class TERCETopologyUpdate{
      */
     private Link urnToLink(String linkId, Link remoteLink, Session bss){
         /* Check if edge link */
-        if(linkId.contains("=*")){
+        if(linkId.equals("urn:ogf:network:domain=*:node=*:port=*:link=*")){
             return null;
         }
         linkId = linkId.replace("domain=","");
