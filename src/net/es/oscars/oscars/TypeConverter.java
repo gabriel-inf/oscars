@@ -164,7 +164,7 @@ public class TypeConverter {
         reply.setStartTime(resv.getStartTime());
         reply.setEndTime(resv.getEndTime());
         reply.setCreateTime(resv.getCreatedTime());
-        Long mbps = resv.getBandwidth()/1000;
+        Long mbps = resv.getBandwidth()/1000000;
         int bandwidth = mbps.intValue();
         reply.setBandwidth(bandwidth);
         reply.setDescription(resv.getDescription());
