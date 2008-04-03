@@ -16,7 +16,6 @@
     <property name="build.classes" value="${build.home}/WEB-INF/classes"/>
     <property name="build.lib" value="lib"/>
     <property name="build.axis2.lib" value="lib/axis2"/>
-    <property name="build.dragon.lib" value="lib/dragon"/>
     <property name="tomcat.loc" value="${catalina.home}/common/lib"/>
     <property name="axis2.loc" value="${webapp.home}/axis2/WEB-INF/lib"/>
     <property name="maven.repo" value="maven-repository"/>
@@ -45,12 +44,6 @@
         <copy todir="${build.classes}">
             <fileset dir="src" includes="**/*.hbm.xml"/>
             <fileset dir="conf/server" includes="*.cfg.xml, log4j.properties"/>
-        </copy>
-    </target>
-    <target name="prepareDragon">
-        <!-- copy dragon libs -->
-        <copy todir="${build.lib}">
-            <fileset dir="${build.dragon.lib}" includes="*.jar"/>
         </copy>
     </target>
     <target name="initMaven">
@@ -160,7 +153,6 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             <classpath>
                 <fileset dir="${build.lib}" includes="*.jar"/>
                 <fileset dir="${build.axis2.lib}" includes="*.jar"/>
-                <fileset dir="${build.dragon.lib}" includes="*.jar"/>
             </classpath>
         </javac>
     </target>
@@ -361,7 +353,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <path id="test.compile.path">
         <fileset dir="${build.lib}" includes="*.jar"/>
         <fileset dir="${build.axis2.lib}" includes="*.jar" excludes="rampart-core-1.3.jar"/>
-        <fileset dir="${build.dragon.lib}" includes="*.jar"/>
         <pathelement location="${build.classes}"/>
     </path>
     <path id="test.path">
@@ -415,17 +406,4 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
     </target>
-    <!-- DRAGON specific targets -->
-    <target name="terceRemoteCopy" depends="initMaven">
-        <artifact:dependencies>
-            <dependency groupId="terce" artifactId="terce-ws" version="0.1" type="aar"/>
-            <dependency groupId="terce" artifactId="static-terce-config" version="0.2" type="tar"/>
-            <localRepository refid="local.repository"/>
-            <remoteRepository refid="remote.repository.i2"/>
-        </artifact:dependencies>
-        <copy file="${maven.repo}/terce/terce-ws/0.1/terce-ws-0.1.aar" todir="${catalina.home}/webapps/axis2/WEB-INF/services"/>
-        <untar src="${maven.repo}/terce/static-terce-config/0.2/static-terce-config-0.2.tar" dest="${catalina.home}/shared/classes" overwrite="false"/>
-    </target>
-    <target name="dragon" depends="prepareDragon,prepare,compile,aar"/>
-    <target name="deploydragon" depends="dragon,deployaar"/>
 </project>
