@@ -93,6 +93,9 @@ public class ReservationAdapter {
             // reservation creation
             pathInfo.getPath().setId("unimplemented");
             this.tc.clientConvert(pathInfo);
+            //Set pathType to null so backward-compatible with old clients
+            //pathType always strict in response so not needed anyways
+            pathInfo.setPathType(null);
             reply.setPathInfo(pathInfo);
             Map<String,String> messageInfo = new HashMap<String,String>();
             messageInfo.put("subject",
