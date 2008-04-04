@@ -186,8 +186,8 @@ public class DBPFClient {
 
     private static void doPf(String start, String end,
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph) {
-        start = TopologyUtil.parseTopoIdent(start).get("fqti");
-        end = TopologyUtil.parseTopoIdent(end).get("fqti");
+        start = URNParser.parseTopoIdent(start).get("fqti");
+        end = URNParser.parseTopoIdent(end).get("fqti");
 
         DijkstraShortestPath sp;
         Iterator peIt;
@@ -213,7 +213,7 @@ public class DBPFClient {
     private static void printEdge(String edge, double edgeWeight) {
         String[] cols = edge.toString().split("\\s\\:\\s");
         String topoId = cols[0].substring(1);
-        Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(topoId);
+        Hashtable<String, String> parseResults = URNParser.parseTopoIdent(topoId);
         String type = parseResults.get("type");
         String bandwidth = "";
         String compact = parseResults.get("realcompact");

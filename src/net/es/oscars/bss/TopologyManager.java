@@ -752,7 +752,7 @@ public class TopologyManager {
     private Link insertFQTILink(String linkFqti, Link remoteLink) {
 
         this.log.debug("Creating remote link: ["+linkFqti+"]");
-        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(linkFqti);
+        Hashtable<String, String> results = URNParser.parseTopoIdent(linkFqti);
         if (!results.get("type").equals("link")) {
             return null;
         }

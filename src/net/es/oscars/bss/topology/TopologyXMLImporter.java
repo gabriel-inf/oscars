@@ -488,7 +488,7 @@ public class TopologyXMLImporter {
         this.log.debug("  remote link src: [" + remoteLinkId + "]");
         this.log.debug("  remote link LSTI: [" + TopologyUtil.getLSTI(remoteLinkId, "Link") + "]");
 
-        Hashtable<String, String> results = TopologyUtil.parseTopoIdent(remoteLinkId);
+        Hashtable<String, String> results = URNParser.parseTopoIdent(remoteLinkId);
         String fqti;
 
         if (results.get("type").equals("link")) {

@@ -119,7 +119,7 @@ public class PolicyManager {
         for (int i = 0; i < hops.length; i++) {
             this.log.info(hops[i].getLinkIdRef());
             String hopTopoId = hops[i].getLinkIdRef();
-            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
 
@@ -292,7 +292,7 @@ public class PolicyManager {
      *
      * @param linkDescr String containing the vlan used by the link
      * @param layer2Info layer2 parameters of a reservation
-     * @param sameUserGRI String 
+     * @param sameUserGRI String
      * @throws BSSException
      */
     public void updateL2scResources(String linkDescr, Layer2Info layer2Info,

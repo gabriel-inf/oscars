@@ -537,7 +537,7 @@ public class ReservationManager {
 
         for (int i = 0; i < hops.length; i++) {
             String hopTopoId = hops[i].getLinkIdRef();
-            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
 
@@ -721,7 +721,7 @@ public class ReservationManager {
             }
 
             String hopTopoId = hops[i].getLinkIdRef();
-            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
 
@@ -770,7 +770,7 @@ public class ReservationManager {
         for (int i = 0; i < hops.length; i++) {
 
             String hopTopoId = hops[i].getLinkIdRef();
-            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopTopoId);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
             if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {

@@ -114,7 +114,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         this.log.debug("handleLayer2ERO.endpoints");
 
-        parseResults = TopologyUtil.parseTopoIdent(srcEndpoint);
+        parseResults = URNParser.parseTopoIdent(srcEndpoint);
         if (parseResults != null) {
             fqti = parseResults.get("fqti");
         } else {
@@ -136,7 +136,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         fqti = null;
 
-        parseResults = TopologyUtil.parseTopoIdent(destEndpoint);
+        parseResults = URNParser.parseTopoIdent(destEndpoint);
         if (parseResults != null) {
             fqti = parseResults.get("fqti");
         } else {
@@ -188,10 +188,10 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 CtrlPlaneHopContent firstHop = hops[0];
                 CtrlPlaneHopContent lastHop = hops[hops.length -1];
                 String firstLinkId = firstHop.getLinkIdRef();
-                parseResults = TopologyUtil.parseTopoIdent(firstLinkId);
+                parseResults = URNParser.parseTopoIdent(firstLinkId);
                 firstLinkId = parseResults.get("fqti");
                 String lastLinkId = lastHop.getLinkIdRef();
-                parseResults = TopologyUtil.parseTopoIdent(lastLinkId);
+                parseResults = URNParser.parseTopoIdent(lastLinkId);
                 lastLinkId = parseResults.get("fqti");
                 if ( (! firstLinkId.equals(srcEndpoint)) || (! lastLinkId.equals(destEndpoint)) ) {
                     throw new PathfinderException("ERO must include both source and destination!");
@@ -227,7 +227,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             }
             this.log.debug("hop id (original):["+hopId+"]");
 
-            parseResults = TopologyUtil.parseTopoIdent(hopId);
+            parseResults = URNParser.parseTopoIdent(hopId);
             fqti = parseResults.get("fqti");
             String domainId = parseResults.get("domainId");
 
@@ -385,8 +385,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
         Path path = new Path();
 
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> graph = dbga.dbToGraph(bandwidth, startTime, endTime, reservation);
-        src = TopologyUtil.parseTopoIdent(src).get("fqti");
-        dst = TopologyUtil.parseTopoIdent(dst).get("fqti");
+        src = URNParser.parseTopoIdent(src).get("fqti");
+        dst = URNParser.parseTopoIdent(dst).get("fqti");
 
         DijkstraShortestPath sp;
         Iterator peIt;
@@ -420,7 +420,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             this.log.debug(edge);
 
             String topoId = cols[0].substring(1);
-            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(topoId);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(topoId);
             String type = parseResults.get("type");
             if (type.equals("link")) {
                 this.log.debug("Adding "+topoId+" edge "+weight);

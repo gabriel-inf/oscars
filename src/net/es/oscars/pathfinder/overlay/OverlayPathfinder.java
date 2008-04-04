@@ -102,7 +102,7 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
             }
             this.log.debug("hop id (original):["+hopId+"]");
 
-            Hashtable<String, String> parseResults = TopologyUtil.parseTopoIdent(hopId);
+            Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopId);
             hopId = parseResults.get("compact");
             String domainId = parseResults.get("domainId");
 
