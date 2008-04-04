@@ -1,4 +1,4 @@
-package net.es.oscars.bss.topology;
+package net.es.oscars.lookup;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileReader;
@@ -19,8 +19,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.PropHandler;
+
 
 /**
  * Class used to retrieve the URNs assocaited with a given hostname
@@ -33,17 +32,12 @@ public class PSLookupClient {
     private HttpClient client;
     private String fname;
     private String url;
-    private Properties props;
+
 
     /** Contructor */
     public PSLookupClient(){
-        PropHandler propHandler = new PropHandler("oscars.properties");
-        this.props = propHandler.getPropertyGroup("lookup", true);
-        this.url = this.props.getProperty("url");
         this.log = Logger.getLogger(this.getClass());
         this.client = new HttpClient();
-        this.fname =  System.getenv("CATALINA_HOME") +
-        "/shared/classes/server/perfSONAR-LSQuery.xml";
     }
 
     /**
@@ -54,7 +48,7 @@ public class PSLookupClient {
      * @return String of URN found. null if URN is not found by Lookup Service.
      * throws BSSException
      */
-    public String lookup(String hostname) throws BSSException{
+    public String lookup(String hostname) throws LookupException {
         String urn = null;
         Document topologyXMLDoc = null;
 
@@ -71,16 +65,16 @@ public class PSLookupClient {
             topologyXMLDoc = docBuilder.parse(in);
         }catch (HttpException e) {
             this.log.error("HTTP Error: " + e.getMessage());
-            throw new BSSException("HTTP Error: " + e.getMessage());
+            throw new LookupException("HTTP Error: " + e.getMessage());
         }catch (SAXException e) {
             this.log.error("SAX Error: " + e.getMessage());
-            throw new BSSException("SAX Error: " + e.getMessage());
+            throw new LookupException("SAX Error: " + e.getMessage());
         }catch (ParserConfigurationException e) {
             this.log.error("Parser Error: " + e.getMessage());
-            throw new BSSException("Parser Error: " + e.getMessage());
+            throw new LookupException("Parser Error: " + e.getMessage());
         }catch (IOException e) {
             this.log.error("IO Error: " + e.getMessage());
-            throw new BSSException("IO Error: " + e.getMessage());
+            throw new LookupException("IO Error: " + e.getMessage());
         }
 
         //Parse response
@@ -139,13 +133,28 @@ public class PSLookupClient {
      * @throws ParserConfigurationException
      * @throws SAXException
      */
-    private String sendRequest(PostMethod postMethod) throws HttpException,
-        IOException, ParserConfigurationException, SAXException{
+    private String sendRequest(PostMethod postMethod)
+            throws HttpException, IOException, ParserConfigurationException, SAXException {
         int statusCode = client.executeMethod(postMethod);
         this.log.info("LOOKUP REQUEST HTTP STATUS: " + statusCode);
         String response = postMethod.getResponseBodyAsString();
-
         return response;
+    }
+
+    public String getFname() {
+        return fname;
+    }
+
+    public void setFname(String fname) {
+        this.fname = fname;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }
 

@@ -6,6 +6,9 @@ import java.util.*;
 import java.rmi.RemoteException;
 
 import net.es.oscars.*;
+import net.es.oscars.lookup.LookupException;
+import net.es.oscars.lookup.LookupFactory;
+import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.pathfinder.traceroute.*;
 import net.es.oscars.pathfinder.db.util.*;
@@ -38,7 +41,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
     public DBPathfinder(String dbname) {
         super(dbname);
-        this.lookupClient = new PSLookupClient();
+        LookupFactory lookupFactory = new LookupFactory();
+        this.lookupClient = lookupFactory.getPSLookupClient();
+
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         this.props = propHandler.getPropertyGroup("dbpath", true);
@@ -122,7 +127,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             } else {
                 try {
                     fqti = this.lookupClient.lookup(srcEndpoint);
-                } catch (BSSException ex) {
+                } catch (LookupException ex) {
                     throw new PathfinderException("Could not resolve "+srcEndpoint+" . Error was: "+ex.getMessage());
                 }
             }
@@ -143,7 +148,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             } else {
                 try {
                     fqti = this.lookupClient.lookup(destEndpoint);
-                } catch (BSSException ex) {
+                } catch (LookupException ex) {
                     throw new PathfinderException("Could not resolve "+destEndpoint+" . Error was: "+ex.getMessage());
                 }
             }

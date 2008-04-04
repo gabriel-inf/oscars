@@ -8,7 +8,7 @@ import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.bss.topology.PSLookupClient;
+import net.es.oscars.lookup.*;
 
 /**
  * Class that performs server side validation for reservation parameters.
@@ -210,10 +210,11 @@ public class ParamValidator {
         }
 
         /* Lookup name via perfSONAR Lookup Service */
-        PSLookupClient lsClient = new PSLookupClient();
-        try{
+        LookupFactory lookupFactory = new LookupFactory();
+        PSLookupClient lsClient = lookupFactory.getPSLookupClient();
+        try {
             urn = lsClient.lookup(endpoint);
-        }catch(BSSException e){
+        } catch(LookupException e){
             return e.getMessage();
         }
 
