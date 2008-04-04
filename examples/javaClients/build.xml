@@ -6,7 +6,7 @@
 <property name="repo" location="./repo" />
 <property name="src" location="../../src" />
 <property name="defaultKeys" location="../../conf/examples/client"/>
-<available property="domain.exists" file="${env.DOMAIN_HOME}"/> 
+<available property="domain.exists" file="${env.DOMAIN_HOME}"/>
 <property name="domain" location="${env.DOMAIN_HOME}/client" />
 <property name="public" location="../../conf" />
 <property name="url"
@@ -22,17 +22,17 @@
 
 <target name="copydomain"  if="domain.exists">
     <!-- Copy domain keys to repo -->
-	<mkdir dir="${repo}"/>
+    <mkdir dir="${repo}"/>
     <copy todir="${repo}" >
         <fileset dir="${domain}" includes="*.*"  />
     </copy>
 </target>
 <target name="copydefaults"  unless="domain.exists">
-	<!-- Copy default keys to repo -->
-	<mkdir dir="${repo}"/>
-	<copy todir="${repo}" >
-	    <fileset dir="${defaultKeys}" includes="*.*"  />
-	</copy>
+    <!-- Copy default keys to repo -->
+    <mkdir dir="${repo}"/>
+    <copy todir="${repo}" >
+        <fileset dir="${defaultKeys}" includes="*.*"  />
+    </copy>
 </target>
 <target name="prepare" depends="copydomain,copydefaults">
     <mkdir dir="${repo}/modules" />
@@ -54,6 +54,9 @@
         <include name="net/es/oscars/oscars/*FaultMessageException.java" />
         <include name="net/es/oscars/oscars/ExtensionMapper.java" />
         <include name="net/es/oscars/wsdlTypes/*.java" />
+        <include name="net/es/oscars/bss/topology/URNParser.java" />
+        <include name="net/es/oscars/lookup/LookupException.java" />
+        <include name="net/es/oscars/lookup/PSLookupClient.java" />
         <include name="net/es/oscars/client/**/*.java" />
         <include name="net/es/oscars/PropHandler.java" />
         <include name="net/es/oscars/LogWrapper.java" />
@@ -62,7 +65,7 @@
 
 <target name ="compile" depends="compile-stubs">
     <javac classpathref="client.path" srcdir="." destdir="${build}/classes"
-	    debug="true" debuglevel="lines,vars,source" />
+        debug="true" debuglevel="lines,vars,source" />
     <!-- Copy application resources -->
     <copy  todir="${build}/classes">
         <fileset dir="${repo}"

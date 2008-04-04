@@ -194,7 +194,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
             <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctrlp.xsd"/>
         </copy>
-    	<copy file="install.sh" tofile="web/docs/install.sh.txt"/>
+        <copy file="install.sh" tofile="web/docs/install.sh.txt"/>
         <copy todir="web/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
         </copy>
@@ -226,8 +226,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <!-- Client API section -->
     <target name="clientapi" description="Create jar with client API classes" depends="compile">
         <jar destfile="build/OSCARS-client-api.jar">
-            <fileset dir="${build.classes}" includes="net/es/oscars/client/**/*, net/es/oscars/wsdlTypes/*, net/es/oscars/PropHandler.class, net/es/oscars/oscars/OSCARSStub.class, net/es/oscars/oscars/AAAFaultMessage.class, net/es/oscars/oscars/BSSFaultMessage.class, org/**/*"/>
-            <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml"/>
+            <fileset dir="${build.classes}" includes="net/es/oscars/client/**/*, net/es/oscars/lookup/PSLookupClient.class, net/es/oscars/lookup/LookupException.class, net/es/oscars/bss/topology/URNParser.class, net/es/oscars/wsdlTypes/*, net/es/oscars/PropHandler.class, net/es/oscars/oscars/OSCARSStub.class, net/es/oscars/oscars/AAAFaultMessage.class, net/es/oscars/oscars/BSSFaultMessage.class, org/**/*"/>
+            <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml, perfSONAR-LSQuery.xml"/>
         </jar>
     </target>
     <target name="clientapipack" description="Create zip with jars, docs, and examples for client" depends="clientapi, clientdocs">
@@ -271,7 +271,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
             <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctlp.xsd"/>
         </copy>
-	    <copy file="install.sh" tofile="dojoweb/docs/install.sh.txt"/>
+        <copy file="install.sh" tofile="dojoweb/docs/install.sh.txt"/>
         <copy todir="dojoWeb/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
         </copy>
