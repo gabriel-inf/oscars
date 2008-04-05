@@ -99,7 +99,13 @@ public class InterdomainPathfinder extends Pathfinder implements PCE {
         for(int i = 0; i < pathInfo.getPath().getHop().length; i++){
             this.log.info(pathInfo.getPath().getHop()[i].getLinkIdRef());
         }
-
+        
+        /* Remove strict pathType for backward compatibility */
+        String interPathType = pathInfo.getPathType();
+        if(interPathType != null && interPathType.equals("strict")){
+            pathInfo.setPathType(null);
+        }
+        
         return intraPathInfo;
     }
 
