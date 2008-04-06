@@ -272,13 +272,23 @@ public class IDCRouteUtil {
         }
 
         /* save entry */
-        route.setSrcNode(srcNode);
-        route.setSrcPort(srcPort);
-        route.setSrcLink(srcLink);
-        route.setDestDomain(destDomain);
-        route.setDestNode(destNode);
-        route.setDestPort(destPort);
-        route.setDestLink(destLink);
+        if(srcLink != null){
+            route.setSrcLink(srcLink);
+        }else if(srcPort != null){
+            route.setSrcPort(srcPort);
+        }else if(srcNode != null){
+            route.setSrcNode(srcNode);
+        }   
+        
+        if(destLink != null){
+            route.setDestLink(destLink);
+        }else if(destPort != null){
+            route.setDestPort(destPort);
+        }else if(destNode != null){
+            route.setDestNode(destNode);
+        }else if(destDomain != null){
+            route.setDestDomain(destDomain);
+        }
         route.setRouteElem(elem);
         route.setPreference(100);
         route.setDefaultRoute(isDefault);
