@@ -12,7 +12,7 @@ fi
 if [ -n "$CATALINA_HOME" ]; then
 	echo "    CATALINA_HOME is set to $CATALINA_HOME";
 else
-	echo "Required environment variable CATALINA_HOME is not set. Please run install.sh .";
+	echo "Required environment variable CATALINA_HOME is not set. Please run do_build.sh .";
 	exit 1;
 fi
 echo "  ";

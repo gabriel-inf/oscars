@@ -398,7 +398,7 @@ fi
 
 echo "  Please refer to the documentation for instructions.";
 echo "";
-echo "After you have completed the above, please run deploy.sh";
+echo "After you have completed the above, please run do_install.sh";
 echo "";
 echo "##############################################################################";
 

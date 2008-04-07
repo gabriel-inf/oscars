@@ -105,14 +105,14 @@ Manual</a> also covers installation of these packages in section 1 and
 2.<br>
       <br>
 There is also a shell script included in the distribution, <span
- style="font-weight: bold; font-style: italic;">install.sh</span>,
+ style="font-weight: bold; font-style: italic;">do_build.sh</span>,
 that will attempt to download axis2 and rampart and build a properly
 configured axis2.war file. If mysql is found on your PATH, it will also
 create and populate the databases and tables that OSCARS uses. <br>
       <h2><a class="mozTocH2" name="mozTocId995497"></a>Setting-up the
 MySQL Database</h2>
       <br>
-If you let <span style="font-style: italic; font-weight: bold;">install.sh</span>
+If you let <span style="font-style: italic; font-weight: bold;">do_build.sh</span>
 install
 your databases it will do the following things: <br>
       <br>
@@ -137,7 +137,7 @@ separate from that of the OSCARS users, so in order to preserve the
 integrity of the OSCARS system, the number of mysql users should be
 strictly limited to system administrators.<br>
       <br>
-If you do not want to have install.sh create your databases&nbsp; you
+If you do not want to have do_build.sh create your databases&nbsp; you
 can use the following commands.<br>
       <br>
       <span style="font-weight: bold;">Creating the aaa Database</span><br>
@@ -187,7 +187,7 @@ ON bss.* TO '<span style="font-style: italic;">user-name</span>'@'localhost'
 IDENTIFIED BY '<span style="font-style: italic;">password</span>'; </strong><br>
       <br>
       </code><a name="editProperties"></a>Once the IDC user has been
-added to the database either by install.sh or manually you must edit
+added to the database either by do_build.sh or manually you must edit
 the file <span style="font-weight: bold; font-style: italic;">examples/server/oscars.properties</span><span
  style="font-weight: bold;"></span> to set the
 hibernate.connection.username and hibernate.connection.password to the
@@ -212,7 +212,7 @@ complete documentation including the JavaDoc and configuration files.<br>
       <br>
 If&nbsp; you have installed Tomcat, Ant, jta.jar and MySQL, and have
 started the MySQL server, you can run the <span
- style="font-weight: bold; font-style: italic;">install.sh</span>
+ style="font-weight: bold; font-style: italic;">do_build.sh</span>
 script;<br>
       <br>
 It will check the installation of the items listed above, download and

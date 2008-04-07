@@ -194,7 +194,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
             <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctrlp.xsd"/>
         </copy>
-        <copy file="install.sh" tofile="web/docs/install.sh.txt"/>
+        <copy file="do_build.sh" tofile="web/docs/do_build.sh.txt"/>
         <copy todir="web/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
         </copy>
@@ -271,7 +271,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
             <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctlp.xsd"/>
         </copy>
-        <copy file="install.sh" tofile="dojoweb/docs/install.sh.txt"/>
+        <copy file="do_build.sh" tofile="dojoweb/docs/do_build.sh.txt"/>
         <copy todir="dojoWeb/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
         </copy>
