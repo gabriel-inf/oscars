@@ -44,6 +44,8 @@ public class VlsrPSS implements PSS{
         String promptPattern = this.props.getProperty("promptPattern");
         String hasNarbStr = this.props.getProperty("hasNarb");
         boolean hasNarb = ((hasNarbStr == null) || hasNarbStr.equals("1"));
+        String setEROStr = this.props.getProperty("setERO");
+        boolean setERO = (setEROStr != null && setEROStr.equals("1"));
         String sshPortForwardStr = this.props.getProperty("ssh.portForward");
         boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String sshUser = this.props.getProperty("ssh.user");
@@ -90,8 +92,10 @@ public class VlsrPSS implements PSS{
                                             egrLocalId, null, 0);
         String gri = resv.getGlobalReservationId();
         lsp.setLSPName(gri);
-        lsp.setEro(ero);
-        lsp.setSubnetEro(subnetEro);
+        if(setERO){
+            lsp.setEro(ero);
+            lsp.setSubnetEro(subnetEro);
+        }
         
         /* Set layer specific params */
         if(layer2Data != null){
