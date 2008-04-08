@@ -384,6 +384,28 @@ echo "";
 echo "";
 echo "--- IDC built.";
 
+READ_BUILDTOOLS=0;
+while [ $READ_BUILDTOOLS == 0 ]; do
+    echo "";
+    echo -n "Should I build the OSCARS tools for you y/n?";
+    read READ_BUILDTOOLS;
+    if [ "$READ_BUILDTOOLS" != "y" ] && [ "$READ_BUILDTOOLS" != "Y" ] && [ "$READ_BUILDTOOLS" != "n" ] && [ "$READ_BUILDTOOLS" != "N" ]; then
+        READ_BUILDTOOLS=0;
+    fi
+done
+if [ "$READ_BUILDTOOLS" == "y" ] || [ "$READ_BUILDTOOLS" == "Y" ]; then
+    echo "";
+    echo "";
+    echo "--- Building tools...";
+    cd ./tools/utils
+    ant
+    cd ../schedulers
+    ant
+    echo "";
+    echo "";
+    echo "--- Tools built.";
+fi
+
 
 echo "";
 echo "##############################################################################";
