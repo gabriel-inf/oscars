@@ -168,7 +168,7 @@ public class InterdomainRouteDAO extends GenericHibernateDAO<InterdomainRoute, I
             String urn = "urn:ogf:network:" + componentList[3] + ":" + 
                 componentList[4];
             try{
-                destNode = TopologyUtil.getNode(destURN, dbname);
+                destNode = TopologyUtil.getNode(urn, dbname);
                 destDomain = destNode.getDomain();
                 whereClause += "(destDomain=? OR destNode=?)";
                 hsql += (whereClause + orderByClause);
