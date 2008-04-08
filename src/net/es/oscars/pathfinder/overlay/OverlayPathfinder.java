@@ -52,7 +52,12 @@ public class OverlayPathfinder extends Pathfinder implements PCE {
             DomainDAO domainDAO = new DomainDAO(this.dbname);
             CtrlPlaneHopContent[] ctrlPlaneHops = path.getHop();
             // if an ERO, not just ingress and/or egress
-            if (ctrlPlaneHops.length > 2) {
+            if (ctrlPlaneHops == null) {
+                throw new PathfinderException(
+                        "An ERO with no hops at all " +
+                        "is temporarily not handled");
+
+            } else if (ctrlPlaneHops.length > 2) {
                this.log.info("handling explicit route object");
                if (pathInfo.getLayer2Info() != null) {
                    this.handleLayer2ERO(pathInfo);
