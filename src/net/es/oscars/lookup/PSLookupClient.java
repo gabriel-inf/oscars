@@ -32,6 +32,7 @@ public class PSLookupClient {
     private HttpClient client;
     private String fname;
     private String url;
+    private String xmlRequest;
 
 
     /** Contructor */
@@ -106,21 +107,31 @@ public class PSLookupClient {
     private PostMethod generateRequest(String url, String hostname)
         throws IOException{
         PostMethod postMethod = new PostMethod(url);
-        FileReader fin = new FileReader(this.fname);
-        StringBuilder xmlRequestBuilder = new StringBuilder("");
-        String xmlRequest = null;
-        StringRequestEntity entity = null;
 
-        char[] buf = new char[1500];
-        while(fin.read(buf, 0, buf.length) > 0){
-            xmlRequestBuilder.append(buf);
+        if (this.getXmlRequest() == null || this.getXmlRequest().equals("")) {
+            this.readXmlRequest(this.fname);
         }
-        xmlRequest = xmlRequestBuilder.toString();
-        xmlRequest = xmlRequest.replaceAll("<!--hostname-->", hostname);
-        entity = new StringRequestEntity(xmlRequest, "text/xml",null);
+
+        String thisXmlRequest = xmlRequest.replaceAll("<!--hostname-->", hostname);
+        StringRequestEntity entity = new StringRequestEntity(thisXmlRequest, "text/xml",null);
         postMethod.setRequestEntity(entity);
 
         return postMethod;
+    }
+
+    private void readXmlRequest(String filename) throws IOException {
+        if (filename != null && !filename.equals("")) {
+            FileReader fin = new FileReader(filename);
+            StringBuilder xmlRequestBuilder = new StringBuilder("");
+
+            char[] buf = new char[1500];
+            while(fin.read(buf, 0, buf.length) > 0){
+                xmlRequestBuilder.append(buf);
+            }
+            this.setXmlRequest(xmlRequestBuilder.toString());
+        } else {
+            throw new IOException("Empty filename!");
+        }
     }
 
     /**
@@ -155,6 +166,14 @@ public class PSLookupClient {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getXmlRequest() {
+        return xmlRequest;
+    }
+
+    public void setXmlRequest(String xmlRequest) {
+        this.xmlRequest = xmlRequest;
     }
 }
 
