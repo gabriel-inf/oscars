@@ -8,6 +8,7 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.database.Initializer;
 
+import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
 import org.jgrapht.*;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
@@ -19,10 +20,12 @@ public class DBGraphAdapter {
     private String dbname;
     private Properties props;
     private String localDomain;
+    private Logger log;
 
 
     public DBGraphAdapter(String dbname) {
         this.dbname = dbname;
+        this.log = Logger.getLogger(this.getClass());
         /*
         List<String> dbnames = new ArrayList<String>();
         dbnames.add(this.dbname);
@@ -41,6 +44,7 @@ public class DBGraphAdapter {
     }
 
     public DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> dbToGraph(Long bandwidth, Long startTime, Long endTime, Reservation reservationToIgnore) {
+        this.log.debug("dbToGraph.start");
         DefaultDirectedWeightedGraph<String, DefaultWeightedEdge> g =
             new DefaultDirectedWeightedGraph<String, DefaultWeightedEdge>(DefaultWeightedEdge.class);
 
@@ -57,6 +61,7 @@ public class DBGraphAdapter {
                     resv.getGlobalReservationId().equals(reservationToIgnore.getGlobalReservationId())) {
                 // should not look at this one
             } else {
+                this.log.debug("Found overlapping reservation: "+resv.getGlobalReservationId());
                 Long bw = resv.getBandwidth();
                 Path path = resv.getPath();
                 PathElem pathElem = path.getPathElem();
@@ -164,7 +169,7 @@ public class DBGraphAdapter {
             }
         }
 
-
+        this.log.debug("dbToGraph.start");
         // this.sf.getCurrentSession().getTransaction().commit();
         return g;
 
