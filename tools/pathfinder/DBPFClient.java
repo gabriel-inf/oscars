@@ -25,6 +25,15 @@ public class DBPFClient {
     private static DomainDAO domDAO;
 
     public static void main(String[] argv) {
+        List<String> dbnames = new ArrayList<String>();
+        dbnames.add("bss");
+
+        Initializer initializer = new Initializer();
+        initializer.initDatabase(dbnames);
+
+        SessionFactory sf = HibernateUtil.getSessionFactory("bss");
+        sf.getCurrentSession().beginTransaction();
+
         String start;
         String end;
         String usage = "Usage:\ndbPfClient.sh\n";
@@ -38,8 +47,8 @@ public class DBPFClient {
 
         Reservation reservation = new Reservation();
         reservation.setBandwidth(0L);
-        reservation.setStartTime(1205444160L);
-        reservation.setEndTime(1205444400L);
+        reservation.setStartTime(1305444160L);
+        reservation.setEndTime(1305444400L);
 
 
         // set up path
@@ -54,8 +63,8 @@ public class DBPFClient {
 
 //       layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=wash-vlsr:port=10.100.80.133-101:link=1");
 
-        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*");
-        layer2Info.setDestEndpoint("urn:ogf:network:domain=es.net:node=aofa-mr1:port=TenGigabitEthernet4/3:link=*");
+        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=fnal-mr1:port=TenGigabitEthernet7/4:link=*");
+        layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=KANS:port=S27391:link=10.100.80.185");
 
         VlanTag srcVtag = new VlanTag();
         srcVtag.setString("any");
@@ -97,9 +106,10 @@ public class DBPFClient {
 
 
         Path result = null;
+        PathInfo piResult = null;
         try {
             result = rm.getPath(reservation, pathInfo);
-            //  result = dbpf.findPath(pathInfo, reservation);
+             //piResult = dbpf.findPath(pathInfo, reservation);
         } catch (Exception ex) {
             ex.printStackTrace(pw);
             System.out.println("Error: "+ex.getMessage());
@@ -108,6 +118,12 @@ public class DBPFClient {
 
         if (result == null) {
             System.out.println("No path");
+        } else if (piResult == null) {
+            CtrlPlanePathContent newPath = piResult.getPath();
+            CtrlPlaneHopContent[] newHops = newPath.getHop();
+            for (CtrlPlaneHopContent newHop : newHops) {
+                System.out.println(newHop.getLinkIdRef());
+            }
         } else {
 
             System.out.println("\nFound path:");
