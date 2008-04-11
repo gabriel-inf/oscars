@@ -78,6 +78,10 @@ public class ReservationAdapter {
 
             this.rm.create(resv, login, pathInfo);
             this.tc.ensureLocalIds(pathInfo);
+
+            // TODO: why does this sometimes get unset?
+            pathInfo.getPath().setId("unimplemented");
+
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("create, to forward");
