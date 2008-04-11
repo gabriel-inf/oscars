@@ -709,9 +709,10 @@ public class ReservationManager {
         }
 
         String pathId = "unimplemented";
-        if (ctrlPlanePath.getId() == null) {
+        if (ctrlPlanePath.getId() == null && !ctrlPlanePath.getId().equals("")) {
             pathId = ctrlPlanePath.getId();
         }
+
         pathCopy.setId(pathId);
 
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
