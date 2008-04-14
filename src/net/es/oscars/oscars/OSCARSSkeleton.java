@@ -63,7 +63,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
     */
-    public CreateReservationResponse
+    public synchronized CreateReservationResponse
         createReservation(CreateReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
 
@@ -113,7 +113,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public CancelReservationResponse
+    public synchronized CancelReservationResponse
         cancelReservation(CancelReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
 
@@ -165,7 +165,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public QueryReservationResponse
+    public synchronized QueryReservationResponse
         queryReservation(QueryReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
 
@@ -212,7 +212,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws BSSFaultMessage
     */
 
-    public ModifyReservationResponse
+    public synchronized ModifyReservationResponse
         modifyReservation(ModifyReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
 
@@ -268,7 +268,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public ListReservationsResponse
+    public synchronized ListReservationsResponse
         listReservations(ListReservations request)
             throws AAAFaultMessage, BSSFaultMessage {
 
@@ -313,7 +313,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public GetNetworkTopologyResponse
+    public synchronized GetNetworkTopologyResponse
         getNetworkTopology(GetNetworkTopology request)
             throws BSSFaultMessage,AAAFaultMessage {
 
@@ -361,7 +361,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public InitiateTopologyPullResponse
+    public synchronized InitiateTopologyPullResponse
         initiateTopologyPull(InitiateTopologyPull request)
             throws BSSFaultMessage,AAAFaultMessage {
 
@@ -409,7 +409,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public CreatePathResponse
+    public synchronized CreatePathResponse
         createPath(CreatePath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
@@ -454,7 +454,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public RefreshPathResponse
+    public synchronized RefreshPathResponse
         refreshPath(RefreshPath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
@@ -499,7 +499,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public TeardownPathResponse
+    public synchronized TeardownPathResponse
         teardownPath(TeardownPath request)
             throws BSSFaultMessage,AAAFaultMessage {
 
@@ -551,7 +551,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
      */
-    public ForwardResponse forward(Forward request)
+    public synchronized ForwardResponse forward(Forward request)
             throws BSSFaultMessage, AAAFaultMessage {
 
         ForwardReply forwardReply = new ForwardReply();
