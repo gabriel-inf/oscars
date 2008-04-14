@@ -314,10 +314,9 @@ public class PolicyManager {
         layer2Info.getDestVtag().setString(vtag.getString());
 
         if (vtag.getString().equals("")) {
-            if(sameUserGRI != null){
-                throw new BSSException("GRI: " + sameUserGRI + "\nLast VLAN" +
-                    " in range in use by a reservation you previously placed");
-            }else{
+            if (sameUserGRI != null){
+                throw new BSSException("Last VLAN in use by a reservation you previously placed (" + sameUserGRI + ")");
+            } else {
                 throw new BSSException("VLAN tag unavailable in specified " +
                  "range. If no VLAN range was specified then there are no " +
                  "available vlans along the path.");
