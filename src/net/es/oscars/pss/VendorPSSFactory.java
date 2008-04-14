@@ -120,7 +120,7 @@ public class VendorPSSFactory implements PSS {
         }
         if (!active) {
             resv.setStatus("FAILED");
-            throw new PSSException("circuit setup for " + 
+            throw new PSSException("circuit setup for " +
                                    resv.getGlobalReservationId() + " failed");
         }
         this.log.info("create.end");
@@ -217,7 +217,7 @@ public class VendorPSSFactory implements PSS {
         }
         if (active) {
             resv.setStatus("FAILED");
-            throw new PSSException("circuit teardown for " + 
+            throw new PSSException("circuit teardown for " +
                                    resv.getGlobalReservationId() + " failed");
         }
         return resv.getStatus();
@@ -242,27 +242,40 @@ public class VendorPSSFactory implements PSS {
     private String getRouterType(Link link) throws PSSException {
 
         String sysDescr = null;
+        String nodeAddress = link.getPort().getNode().getNodeAddress().getAddress();
 
-        try {
-            if (link.getPort().getNode().getNodeAddress() == null) {
-                this.log.error("getNodeAddress is null for " + link.getPort().getNode().getId());
-                throw new PSSException("No node address associated with node");
-            }
-            String nodeAddress =
-                link.getPort().getNode().getNodeAddress().getAddress();
-            this.log.info("Querying router type using SNMP for node address: ["+nodeAddress+"]");
-
-            SNMP snmp = new SNMP();
-            snmp.initializeSession(nodeAddress);
-            sysDescr = snmp.queryRouterType();
-            snmp.closeSession();
-
-        } catch (IOException e) {
-        	this.log.error("Error querying router type using SNMP: ["+e.getMessage()+"]");
-            throw new PSSException(e.getMessage());
+        if (link.getPort().getNode().getNodeAddress() == null) {
+            this.log.error("getNodeAddress is null for " + link.getPort().getNode().getId());
+            throw new PSSException("No node address associated with node; cannot configure.");
         }
+
+        String errorMsg = "";
+        int numTries = 5;
+        for (int i = 0; i < numTries; i++) {
+            this.log.info("Querying router type using SNMP for node address: ["+nodeAddress+"]");
+            try {
+                SNMP snmp = new SNMP();
+                snmp.initializeSession(nodeAddress);
+                sysDescr = snmp.queryRouterType();
+                snmp.closeSession();
+            } catch (Exception ex) {
+                errorMsg = ex.getMessage();
+                if (i < numTries-1) {
+                    this.log.error("Error querying router type using SNMP; ["+errorMsg+"], retrying in 5 sec.");
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        this.log.error("Thread interrupted, failing");
+                        throw new PSSException("Unable to determine router type");
+                    }
+                } else {
+                    this.log.error("Error querying router type using SNMP; ["+errorMsg+"], failing after "+i+" attempts.");
+                }
+            }
+        }
+
         if (sysDescr == null) {
-            throw new PSSException("Unable to determine router type");
+            throw new PSSException("Unable to determine router type; error was: "+errorMsg);
         }
         this.log.info("Got sysdescr: ["+sysDescr+"]");
         return sysDescr;
