@@ -180,7 +180,7 @@ public class ReservationDAO
 
         seconds = System.currentTimeMillis()/1000 + timeInterval;
         String hsql = "from Reservation where status = :status " +
-                      "and startTime < :startTime +" +
+                      "and startTime < :startTime " +
                       " order by startTime";
         this.reservations = this.getSession().createQuery(hsql)
                               .setString("status", "PENDING")
