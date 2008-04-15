@@ -258,6 +258,7 @@ public class VendorPSSFactory implements PSS {
                 snmp.initializeSession(nodeAddress);
                 sysDescr = snmp.queryRouterType();
                 snmp.closeSession();
+                i = numTries;
             } catch (Exception ex) {
                 errorMsg = ex.getMessage();
                 if (i < numTries-1) {
