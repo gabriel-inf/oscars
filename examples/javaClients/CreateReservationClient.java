@@ -76,7 +76,9 @@ public class CreateReservationClient {
         String propFileName = null;
         String url = null;
         String param = null;
-
+        String useMplsProp = null;
+        boolean useMpls = true;
+        
         // use the alternate URL in the file
         boolean useAlternateURL = false;
         // which network layer to use
@@ -153,9 +155,12 @@ public class CreateReservationClient {
         }
         // for layer 2, this will only be used if the router configured is
         // a Juniper
-        mplsInfo = new MplsInfo();
+        useMplsProp = props.getProperty("mpls");
+        useMpls = (useMplsProp == null || useMplsProp.equals("1"));
+        if(useMpls){
+            mplsInfo = new MplsInfo();
+        }
         content.setDescription(props.getProperty("description",""));
-
         String start_time = props.getProperty("start_time");
         String end_time = props.getProperty("end_time");
         String duration = props.getProperty("duration");
@@ -207,8 +212,11 @@ public class CreateReservationClient {
             layer3Info.setSrcIpPort(0);
             layer3Info.setDestIpPort(0);
         }
-        mplsInfo.setBurstLimit(
-                Integer.parseInt(props.getProperty("burstLimit","10000000")));
+        if(useMpls){
+            mplsInfo.setBurstLimit(
+                    Integer.parseInt(props.getProperty("burstLimit","10000000")));
+            pathInfo.setMplsInfo(mplsInfo);
+        }
         content.setBandwidth(
                 Integer.parseInt(props.getProperty("bandwidth","10")));
         pathInfo.setPathSetupMode(props.getProperty("pathSetupMode", "timer-automatic"));
@@ -217,7 +225,6 @@ public class CreateReservationClient {
         } else {
             pathInfo.setLayer3Info(layer3Info);
         }
-        pathInfo.setMplsInfo(mplsInfo);
         CtrlPlanePathContent path = new CtrlPlanePathContent();
         path.setId("userPath");//id doesn't matter in this context
         boolean hasEro = false;
@@ -259,7 +266,7 @@ public class CreateReservationClient {
         // if interactive, allow to override selected parameters
         if (!param.equals("0")) {
             try {
-                this.overrideProperties(content);
+                this.overrideProperties(content, useMpls);
             } catch (IOException ioe) {
                 System.out.println("IO error reading input");
                 System.exit(1);
@@ -270,7 +277,7 @@ public class CreateReservationClient {
         return response;
     }
 
-    public void overrideProperties(ResCreateContent content)
+    public void overrideProperties(ResCreateContent content, boolean useMpls)
             throws IOException {
 
         String arg = null;
@@ -310,11 +317,13 @@ public class CreateReservationClient {
             arg = Args.getArg(br, "Protocol", "");
             if (!arg.equals("")) { layer3Info.setProtocol(arg); }
         }
-        MplsInfo mplsInfo = pathInfo.getMplsInfo();
-        arg = Args.getArg(br, "Burst limit",
-                Integer.toString(mplsInfo.getBurstLimit()));
-        if (arg != null) { mplsInfo.setBurstLimit(Integer.parseInt(arg)); }
-
+        if(useMpls){
+            MplsInfo mplsInfo = pathInfo.getMplsInfo();
+            arg = Args.getArg(br, "Burst limit",
+                    Integer.toString(mplsInfo.getBurstLimit()));
+            if (arg != null) { mplsInfo.setBurstLimit(Integer.parseInt(arg)); }
+        }
+        
         /* Common parameters */
         // TODO:  get default from properties
         String duration = null;
