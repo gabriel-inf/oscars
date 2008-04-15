@@ -22,7 +22,7 @@ public class UserSession {
         Properties props = propHandler.getPropertyGroup("aaa", true);
         this.userCookieName = props.getProperty("userName");
         this.sessionCookieName = props.getProperty("sessionName");
-        this.secureCookie = 
+        this.secureCookie =
             props.getProperty("secureCookie").equals("1") ? true : false;
     }
 
@@ -34,9 +34,19 @@ public class UserSession {
             out.println("No session has been established");
             out.println("</status></xml>");
             userName = null;
+            return null;
         }
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+
+        SessionFactory sf = HibernateUtil.getSessionFactory("aaa");
+        if (sf == null) {
+            out.println("<xml><status>");
+            out.println("No session has been established");
+            out.println("</status></xml>");
+            userName = null;
+            return null;
+        }
+
+        Session aaa = sf.getCurrentSession();
         aaa.beginTransaction();
         UserManager userMgr = new UserManager("aaa");
         if (!userMgr.validSession(userName, sessionName)) {
