@@ -110,8 +110,8 @@ public class OSCARSDatabase implements TEDB {
         Element topoXML = doc.getRootElement();
 
         CtrlPlaneTopologyContent topology = new CtrlPlaneTopologyContent();
-        topology.setId(topoXML.getAttributeValue("id", ns));
-        topology.setIdcId("esnet-idc"); // TODO: fix this
+        topology.setId("IDC topology");
+        topology.setIdcId("IDC"); // TODO: fix this
 
         Iterator domIt = topoXML.getChildren("domain", ns).iterator();
         while (domIt.hasNext()) {
