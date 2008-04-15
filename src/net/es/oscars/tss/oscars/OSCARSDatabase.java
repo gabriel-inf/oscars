@@ -30,7 +30,7 @@ public class OSCARSDatabase implements TEDB {
     private String nsPrefix;
     private String dbname;
 
-    /** 
+    /**
     * Constructor that initializes properties & logging
     */
 
@@ -81,9 +81,9 @@ public class OSCARSDatabase implements TEDB {
     * the database to a JDOM Document object, then iterating through
     * the document and populating the Axis2 types.
     *
-    * A type of topology is provided by the parameter to the call, 
+    * A type of topology is provided by the parameter to the call,
     * but currently only <i>all</i> is supported; future work will
-    * improve this. 
+    * improve this.
     *
     * The values for type are:
     *   all, adjacentdomains, delta, nodes, internetworklinks
@@ -118,9 +118,13 @@ public class OSCARSDatabase implements TEDB {
           Element domXML = (Element) domIt.next();
           CtrlPlaneDomainContent domain = new CtrlPlaneDomainContent();
           topology.addDomain(domain);
-          topology.setId("esnet topology");
+          String domainId = domXML.getAttributeValue("id", ns);
 
-          domain.setId(domXML.getAttributeValue("id", ns));
+          if (domainId == null || domainId.equals("")) {
+              continue;
+          }
+
+          domain.setId(domainId);
           this.log.info("domain:"+domain.getId());
 
           Iterator nodeIt = domXML.getChildren("node", ns).iterator();
@@ -212,17 +216,17 @@ public class OSCARSDatabase implements TEDB {
 
     /**
      * Inserts the contents of a topology Axis2 object to the database.
-     * This converts the Axis2 objects into a JDOM XML document and 
+     * This converts the Axis2 objects into a JDOM XML document and
      * passes that into the XML importer class, which handles the
      * actual insertion into the database.
      *
      * Note: This roundabout way of inserting the topology could be made a
      * lot more straightforward if I could find a way to get a JDOM Document
-     * out of an Axis2 object. 
+     * out of an Axis2 object.
      * Not finished yet (haniotak)
      *
      * @param topology the topology to be inserted
-     */ 
+     */
 
     public void insertNetworkTopology(CtrlPlaneTopologyContent topology)
         throws TSSException {

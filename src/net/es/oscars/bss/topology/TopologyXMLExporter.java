@@ -61,13 +61,13 @@ public class TopologyXMLExporter {
 
         this.ses = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
 
-        Transaction tx = this.ses.beginTransaction();
+//        Transaction tx = this.ses.beginTransaction();
 
         this.log.debug("Start");
 
         Document doc = this.createXML(query);
 
-        tx.commit();
+//        tx.commit();
         this.log.debug("Done");
 
         return doc;
