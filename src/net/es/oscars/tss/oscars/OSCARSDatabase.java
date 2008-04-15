@@ -118,7 +118,7 @@ public class OSCARSDatabase implements TEDB {
           Element domXML = (Element) domIt.next();
           CtrlPlaneDomainContent domain = new CtrlPlaneDomainContent();
           topology.addDomain(domain);
-          String domainId = domXML.getAttributeValue("id", ns);
+          String domainId = domXML.getAttributeValue("id");
 
           if (domainId == null || domainId.equals("")) {
               continue;
@@ -140,7 +140,7 @@ public class OSCARSDatabase implements TEDB {
               node.setAddress(nodeAddr);
             }
 
-            node.setId(nodeXML.getAttributeValue("id", ns));
+            node.setId(nodeXML.getAttributeValue("id"));
 
             domain.addNode(node);
 
@@ -152,7 +152,7 @@ public class OSCARSDatabase implements TEDB {
               CtrlPlanePortContent port = new CtrlPlanePortContent();
 
               node.addPort(port);
-              port.setId(portXML.getAttributeValue("id", ns));
+              port.setId(portXML.getAttributeValue("id"));
 
               this.log.info("port:"+port.getId());
 
@@ -181,7 +181,7 @@ public class OSCARSDatabase implements TEDB {
                 Element linkXML = (Element) linkIt.next();
                 CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
                 port.addLink(link);
-                link.setId(linkXML.getAttributeValue("id", ns));
+                link.setId(linkXML.getAttributeValue("id"));
                 this.log.info("link:"+link.getId());
 
                 Element remDomXML = linkXML.getChild("remoteDomainId", ns);
