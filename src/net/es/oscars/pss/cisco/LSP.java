@@ -3,6 +3,8 @@ package net.es.oscars.pss.cisco;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.*;
 
@@ -327,7 +329,7 @@ public class LSP {
      */
     public boolean statusLSP() throws PSSException {
 
-        boolean status = false;
+//        boolean status = false;
         String outputStr = null;
 
         this.log.info("statusLSP.start");
@@ -335,18 +337,32 @@ public class LSP {
                       this.hm.get("router"));
         String[] cmd = { "clogin", "-c", "show mpls l2transport vc",
                          this.hm.get("router") };
-        String requiredOutput = "Eth VLAN " + this.hm.get("vlan-id");
+
+        // this is a regexp; the parentheses indicate a capture group
+        String outputExpression = "Eth VLAN " + this.hm.get("vlan-id") + ".*(UP|DOWN)";
+
+        // the capture group will be compared to desiredOutput
+        String desiredOutput = "UP";
         try {
-            outputStr = this.runCommand(cmd, requiredOutput);
+            outputStr = this.runCommand(cmd, outputExpression, desiredOutput, 5);
         } catch (IOException ex) {
             throw new PSSException(ex.getMessage());
         }
-        if (outputStr == null) { return false; }
+        if (outputStr == null) {
+            return false;
+        } else if (outputStr.equals("UP")) {
+            return true;
+        } else {
+            return false;
+        }
+        /*
         String[] fields = outputStr.trim().split(" ");
         int lastField = fields.length - 1;
         status = fields[lastField].equals("UP") ? true : false;
         this.log.info("statusLSP.finish with status " + status);
         return status;
+        */
+
     }
 
     /**
@@ -402,7 +418,7 @@ public class LSP {
         outputStream.close();
         this.log.info("clogin -x " + fname + " " + this.hm.get("router"));
         String cmd[] = { "clogin", "-x", fname, this.hm.get("router") };
-        this.runCommand(cmd, null);
+        this.runCommand(cmd, null, null, 1);
         // delete temporary file
         tmpFile.delete();
     }
@@ -412,36 +428,79 @@ public class LSP {
      * output.
      *
      * @param cmdStr array with command and arguments to exec
-     * @param requiredOutput string with required output, if any
+     * @param requiredOutput string with a regexp to match output, if any
+     * @param times times to attempt the command until desired result
      * @return outputStr first line of output with the required string
      * @throws IOException
      * @throws PSSException
      */
-    private String runCommand(String[] cmd, String requiredOutput)
+    private String runCommand(String[] cmd, String outputExpression, String desiredOutput, int times)
             throws IOException, PSSException {
 
         String outputStr = null;
 
         Process p = Runtime.getRuntime().exec(cmd);
-        BufferedReader cmdOutput =
-            new BufferedReader(new InputStreamReader(p.getInputStream()));
-        BufferedReader cmdError =
-            new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+        BufferedReader cmdOutput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader cmdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
         String errInfo = cmdError.readLine();
+
         if (errInfo != null ) {
             this.log.warn("RANCID command error: " + errInfo );
             cmdOutput.close();
             cmdError.close();
             throw new PSSException("RANCID commnd error: " + errInfo);
         }
-        String outputLine = null;
-        while ((outputLine = cmdOutput.readLine()) != null) {
-            this.log.info("output: " + outputLine);
-            if (requiredOutput != null) {
-                if (outputLine.contains(requiredOutput)) {
-                    outputStr = new String(outputLine);
+
+        boolean done = false;
+
+        int i = 1;
+        while (!done) {
+            String outputLine = null;
+            while ((outputLine = cmdOutput.readLine()) != null) {
+                this.log.info("output: " + outputLine);
+                // Did user ask for a specific output?
+                if (outputExpression != null) {
+                    if (outputLine.matches(outputExpression)) {
+                        Pattern patt = Pattern.compile(outputExpression);
+                        Matcher m = patt.matcher(outputLine);
+                        String matched = m.group(1);
+                        // We don't care about output? OK, done
+                        // but do not return, let's get & log the whole output first
+                        if (desiredOutput == null) {
+                            this.log.info("Output matched expression");
+                            outputStr = matched;
+                            done = true;
+                        // We do care about output and it's correct? OK, done
+                        } else if (matched != null && matched.equals(desiredOutput)) {
+                            this.log.info("Output matched expression and desired result");
+                            outputStr = matched;
+                            done = true;
+                        // We do care about output and it's incorrect? Get the next line
+                        } else {
+                            outputStr = matched;
+                        }
+                    }
                 }
             }
+            // after this attempt we haven't gotten a result yet
+            if (outputStr == null && !done) {
+                // this is not the last time so wanObjecte can try again in a bit
+                if (i < times) {
+                    try {
+                        Thread.sleep(10000);
+                    } catch (Exception ex) {
+                        cmdOutput.close();
+                        cmdError.close();
+                        this.log.warn("Error getting status: "+ex.getMessage());
+                        throw new PSSException("Error getting status: "+ex.getMessage());
+                    }
+                // this was the last attempt, return whatever we have
+                } else {
+                    done = true;
+                }
+            }
+            i++;
         }
         cmdOutput.close();
         cmdError.close();
