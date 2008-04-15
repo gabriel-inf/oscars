@@ -462,18 +462,18 @@ public class LSP {
                 // Did user ask for a specific output?
                 if (outputExpression != null) {
                     if (outputLine.matches(outputExpression)) {
+                        this.log.info("Output matched expression: "+outputExpression);
                         Pattern patt = Pattern.compile(outputExpression);
                         Matcher m = patt.matcher(outputLine);
                         String matched = m.group(1);
                         // We don't care about output? OK, done
                         // but do not return, let's get & log the whole output first
                         if (desiredOutput == null) {
-                            this.log.info("Output matched expression");
                             outputStr = matched;
                             done = true;
                         // We do care about output and it's correct? OK, done
                         } else if (matched != null && matched.equals(desiredOutput)) {
-                            this.log.info("Output matched expression and desired result");
+                            this.log.info("Output matched desired result");
                             outputStr = matched;
                             done = true;
                         // We do care about output and it's incorrect? Get the next line
