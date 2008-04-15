@@ -180,7 +180,8 @@ public class ReservationDAO
 
         seconds = System.currentTimeMillis()/1000 + timeInterval;
         String hsql = "from Reservation where status = :status " +
-                      "and startTime < :startTime";
+                      "and startTime < :startTime +" +
+                      " order by startTime";
         this.reservations = this.getSession().createQuery(hsql)
                               .setString("status", "PENDING")
                               .setLong("startTime", seconds)
@@ -207,8 +208,9 @@ public class ReservationDAO
         long periodEnd = offset + interval;
 
         String hsql = "from Reservation where " +
-                      "((status = 'ACTIVE' or status= 'PENDING') and " +
-                      " (endTime >= :periodStart and endTime <= :periodEnd)) or (status = 'PRECANCEL')";
+                      " ((status = 'ACTIVE' or status= 'PENDING') and " +
+                      " (endTime >= :periodStart and endTime <= :periodEnd)) or (status = 'PRECANCEL')" +
+                      " order by endTime";
         this.reservations = this.getSession().createQuery(hsql)
                               .setLong("periodStart", periodStart)
                               .setLong("periodEnd", periodEnd)
