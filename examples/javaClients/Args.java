@@ -21,6 +21,9 @@ public class Args {
             throws IOException {
 
         String inarg = null;
+        if(def == null){
+            def = "";
+        }
         System.out.print(prompt + ": [" + def.trim() +"] ");
         System.out.flush();
         inarg = br.readLine().trim();
