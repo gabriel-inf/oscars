@@ -998,6 +998,12 @@ public class ReservationManager {
      */
     private void generateToken(CreateReply forwardReply, Reservation resv)
                     throws BSSException{
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("aaa", true);
+        String doTokenGen = props.getProperty("useSignalTokens");
+        if(doTokenGen != null && doTokenGen.equals("0")){
+            return;
+        }
         Token token = new Token();
 
         if(forwardReply == null){
