@@ -46,7 +46,7 @@ done
 if [ "$MYSQL_ANS2" = "y" ] || [ "$MYSQL_ANS2" = "Y" ]; then
     echo -n "Please enter your mysql user name: ";
     read MYSQL_USER;
-    mysql -u $MYSQL_USER -p < sql/bss/upgradeTables.sql
+    mysql -u $MYSQL_USER -p < sql/aaa/upgradeTables.sql
     echo "--- mysql tables upgraded";
 fi
 
