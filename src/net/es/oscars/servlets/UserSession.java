@@ -16,12 +16,14 @@ public class UserSession {
     private String userCookieName;
     private String sessionCookieName;
     private boolean secureCookie;
-
+    private String guestLogin;
+    
     public  UserSession() {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("aaa", true);
         this.userCookieName = props.getProperty("userName");
         this.sessionCookieName = props.getProperty("sessionName");
+        this.guestLogin = props.getProperty("guestLogin");
         this.secureCookie =
             props.getProperty("secureCookie").equals("1") ? true : false;
     }
@@ -114,5 +116,9 @@ public class UserSession {
         // whether has to go over SSL
         cookie.setSecure(this.secureCookie);
         return cookie;
+    }
+    
+    public String getGuestLogin(){
+        return this.guestLogin;
     }
 }
