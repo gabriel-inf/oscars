@@ -22,7 +22,7 @@ import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.notify.*;
-
+import net.es.oscars.PropHandler;
 
 public class CreateReservation extends HttpServlet {
 
@@ -191,7 +191,10 @@ public class CreateReservation extends HttpServlet {
 
         CtrlPlanePathContent path = null;
         Logger log = Logger.getLogger(this.getClass());
-
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("wbui", true);
+        String defaultLayer = props.getProperty("defaultLayer");
+        
         PathInfo pathInfo = new PathInfo();
         String explicitPath = request.getParameter("explicitPath");
 
@@ -235,10 +238,12 @@ public class CreateReservation extends HttpServlet {
         
         // TODO:  layer 2 parameters trump layer 3 parameters for now, until
         // handle in Javascript
-        if (vlanTag != null) {
+        if (vlanTag != null || (defaultLayer != null && 
+                defaultLayer.equals("2"))) {
             Layer2Info layer2Info = new Layer2Info();
             VlanTag srcVtagObject = new VlanTag();
             VlanTag destVtagObject = new VlanTag();
+            vlanTag = (vlanTag == null ? "any" : vlanTag);
             srcVtagObject.setString(vlanTag);
             destVtagObject.setString(vlanTag);
             srcVtagObject.setTagged(tagSrcPort.equals("1"));
