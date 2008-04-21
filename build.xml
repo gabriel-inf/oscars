@@ -271,7 +271,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="docs" excludes="papers/*,notes, notes/*, web, web/**/*"/>
             <fileset dir="conf/server" includes="OSCARS.*, nmtopo-ctlp.xsd"/>
         </copy>
-        <copy file="do_build.sh" tofile="dojoweb/docs/do_build.sh.txt"/>
+        <copy file="do_build.sh" tofile="dojoWeb/docs/do_build.sh.txt"/>
         <copy todir="dojoWeb/docs">
             <fileset dir="docs/web" includes="*.html, images/*, styleSheets/*.css"/>
         </copy>
