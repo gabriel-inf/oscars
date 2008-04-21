@@ -304,7 +304,7 @@ public class JnxLSP {
     /**
      * Allows overriding the allowLSP property.  Primarily for tests.
      * Must be called before JnxLSP is instantiated.
-     * @param allowLSP boolean indicating whether LSP can be set up
+     * @param overrideAllowLSP boolean indicating whether LSP can be set up
      */
     public static void setConfigurable(String overrideAllowLSP) {
         staticAllowLSP = overrideAllowLSP;

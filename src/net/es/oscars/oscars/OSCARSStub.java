@@ -570,7 +570,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#createReservation
+                     * @see net.es.oscars.oscars.OSCARSStub#createReservation
                      * @param createReservation0
 
                      */
@@ -695,7 +695,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#cancelReservation
+                     * @see net.es.oscars.oscars.OSCARSStub#cancelReservation
                      * @param cancelReservation2
 
                      */
@@ -820,7 +820,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#queryReservation
+                     * @see net.es.oscars.oscars.OSCARSStub#queryReservation
                      * @param queryReservation4
 
                      */
@@ -945,7 +945,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#modifyReservation
+                     * @see net.es.oscars.oscars.OSCARSStub#modifyReservation
                      * @param modifyReservation6
 
                      */
@@ -1070,7 +1070,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#listReservations
+                     * @see net.es.oscars.oscars.OSCARSStub#listReservations
                      * @param listReservations8
 
                      */
@@ -1195,7 +1195,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#getNetworkTopology
+                     * @see net.es.oscars.oscars.OSCARSStub#getNetworkTopology
                      * @param getNetworkTopology10
 
                      */
@@ -1320,7 +1320,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#initiateTopologyPull
+                     * @see net.es.oscars.oscars.OSCARSStub#initiateTopologyPull
                      * @param initiateTopologyPull12
 
                      */
@@ -1445,7 +1445,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#createPath
+                     * @see net.es.oscars.oscars.OSCARSStub#createPath
                      * @param createPath14
 
                      */
@@ -1570,7 +1570,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#refreshPath
+                     * @see net.es.oscars.oscars.OSCARSStub#refreshPath
                      * @param refreshPath16
 
                      */
@@ -1695,7 +1695,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#teardownPath
+                     * @see net.es.oscars.oscars.OSCARSStub#teardownPath
                      * @param teardownPath18
 
                      */
@@ -1820,7 +1820,7 @@
 
                     /**
                      * Auto generated method signature
-                     * @see net.es.oscars.oscars.OSCARS#forward
+                     * @see net.es.oscars.oscars.OSCARSStub#forward
                      * @param forward20
 
                      */
