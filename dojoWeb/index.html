@@ -12,16 +12,16 @@
     </script>
     <!-- register namespace for OSCARS Javascript modules -->
     <script type="text/javascript">
-        dojo.registerModulePath("oscars", "../../../oscars")
+        dojo.registerModulePath("oscars", "../../../oscars");
     </script>
     <script type="text/javascript">dojo.require("oscars.Form");</script>
     <script type="text/javascript">dojo.require("oscars.DigitalClock");</script>
     <script type="text/javascript">
-        <!-- required to parse the widgets -->
+        // required to parse the widgets
         dojo.require("dojo.parser");
-        <!-- required for back and forward buttons to work -->
+        // required for back and forward buttons to work
         dojo.require("dojo.back");
-        <!-- all widgets used in all forms -->
+        // all widgets used in all forms
         dojo.require("dojo.data.ItemFileReadStore");
         dojo.require("dijit.layout.TabContainer");
         dojo.require("dijit.form.Button");
@@ -37,7 +37,7 @@
         dojo.require("dojox.grid._data.model");
     </script>
     <script type="text/javascript">
-        <!-- declare Dojo class for OSCARS global state -->
+        // declare Dojo class for OSCARS global state
         dojo.declare("OSCARSState", null, {
             constructor: function(args, node){
                 dojo.mixin(this, args);
@@ -45,24 +45,24 @@
             login: "",
             firstPage: false,
             userGridInitialized: false,
-            resvGridInitialized: 0,
+            resvGridInitialized: 0
         });
     </script>
     <script type="text/javascript">
-        <!-- these are called after login page is finished parsing -->
-        <!-- clock in upper left hand corner of page -->
+        // these are called after login page is finished parsing
+        // clock in upper left hand corner of page
         dojo.addOnLoad(oscars.DigitalClock.initClock);
-        <!-- add event for clicking on tab -->
+        // add event for clicking on tab
         dojo.addOnLoad(function(){
             var w =dijit.byId("mainTabContainer");
             dojo.connect(w, "selectChild", oscars.Form.selectedChanged);
         });
-        <!-- add event for changing URL of content pane -->
+        // add event for changing URL of content pane
         dojo.addOnLoad(function(){
             var w =dijit.byId("sessionPane");
             dojo.connect(w, "setHref", oscars.Form.hrefChanged);
         });
-        <!-- initialize back/forward button state -->
+        // initialize back/forward button state
         dojo.addOnLoad(oscars.Form.initBackForwardState); 
     </script>
   </head>
@@ -107,6 +107,7 @@
          href="forms/session.html" selected="true">
     </div>
 
+    </div>
     </div>
 
     <div id="notices">

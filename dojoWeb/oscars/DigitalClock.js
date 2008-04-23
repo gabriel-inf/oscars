@@ -50,7 +50,7 @@ oscars.DigitalClock.updateClocks = function (clock) {
     formattedTime += (minute > 9 ? '' : '0') + minute;
     endDateDefault.innerHTML = formattedDt;
     endTimeDefault.innerHTML = formattedTime;
-}
+};
 
 // Init and updateClocks are adapted from the DHTML Utopia book.
 oscars.DigitalClock.initClock = function () {
@@ -58,10 +58,10 @@ oscars.DigitalClock.initClock = function () {
 
     oscars.DigitalClock.updateClocks(clock);
     setInterval(function() { oscars.DigitalClock.updateClocks(clock); }, 60000);
-}
+};
 
 // Outputs datetime with format: 1/1/2007 13:00, given seconds since epoch.
-oscars.DigitalClock.convertFromSeconds = function(seconds) {
+oscars.DigitalClock.convertFromSeconds = function (seconds) {
     var jsDate = new Date(seconds*1000);
     var year = jsDate.getFullYear();
     var month = jsDate.getMonth() + 1;
@@ -71,10 +71,10 @@ oscars.DigitalClock.convertFromSeconds = function(seconds) {
     var formattedDt = month + "/" + day + "/" + year + " " + hour;
     formattedDt += (minute > 9 ? ':' : ':0') + minute;
     return formattedDt;
-}
+};
 
-oscars.DigitalClock.convertDateTime = function(jsDate, dateId, timeId,
-                                               useCurrent) {
+oscars.DigitalClock.convertDateTime = function (jsDate, dateId, timeId,
+                                                useCurrent) {
     // contains seconds, and any error message
     var dateFields = oscars.DigitalClock.convertDateWidget(jsDate, dateId);
     var timeFields = oscars.DigitalClock.convertTimeWidget(jsDate, timeId, 
@@ -86,10 +86,10 @@ oscars.DigitalClock.convertDateTime = function(jsDate, dateId, timeId,
                  timeFields.hour, timeFields.minute, 0, 0);
     seconds = finalDate.getTime()/1000;
     return seconds;
-}
+};
 
-oscars.DigitalClock.convertDateWidget = function(jsDate, dateId) {
-    var dateFields = new Object();
+oscars.DigitalClock.convertDateWidget = function (jsDate, dateId) {
+    var dateFields = {};
     var dateWidget = dijit.byId(dateId);
     if  (oscars.Form.isBlank(dateWidget.getDisplayedValue())) {
         dateFields.year = jsDate.getFullYear();
@@ -104,10 +104,10 @@ oscars.DigitalClock.convertDateWidget = function(jsDate, dateId) {
         dateFields.year = fields[2];
     }
     return dateFields;
-}
+};
 
-oscars.DigitalClock.convertTimeWidget = function(jsDate, timeId, useCurrent) {
-    var timeFields = new Object();
+oscars.DigitalClock.convertTimeWidget = function (jsDate, timeId, useCurrent) {
+    var timeFields = {};
     var timeWidget = dijit.byId(timeId);
     // if day of year filled in, but time isn't, use current time
     if (oscars.Form.isBlank(timeWidget.getValue())) {
@@ -130,4 +130,4 @@ oscars.DigitalClock.convertTimeWidget = function(jsDate, timeId, useCurrent) {
         timeFields.minute = fields[1];
     }
     return timeFields;
-}
+};

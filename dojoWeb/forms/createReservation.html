@@ -1,22 +1,25 @@
 <html>
 <head>
-    <script type="text/javascript>
-        dojo.addOnLoad(function(){
+    <script type="text/javascript">
+        function checkLoaded() {
             var w = dojo.byId("reservationLogin");
             w.value= oscarsState.login;
-        });
-        dojo.addOnLoad(function(){
+        }
+        function initialPost() {
             dojo.xhrPost({
-                url: 'servlet/CreateReservationForm',
+                url: "servlet/CreateReservationForm",
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
                 form: dojo.byId("createReservationForm")
             });
-        });
+        }
+        dojo.addOnLoad(checkLoaded);
+        dojo.addOnLoad(initialPost);
     </script>
 </head>
 
+<body>
 <form id="createReservationForm" method="POST">
 
 <!-- currently just used to load form once -->
@@ -69,7 +72,7 @@ to the number of lines occurring in the hops list.
       <label for="production">Production circuit</label>
     </td>
     <td>
-      <input type="reset" value="Reset form fields"></input>
+      <input type="reset" value="Reset form fields" />
     </td>
   </tr>
   <tr>
@@ -97,6 +100,7 @@ to the number of lines occurring in the hops list.
       </td>
     </tr>
 
+  <tr>
     <td>Bandwidth (Mbps)</td>
     <td class="required">
       <input type="text" name="bandwidth" id="bandwidth"
@@ -169,7 +173,7 @@ to the number of lines occurring in the hops list.
   <!-- layer 2 parameters -->
   <tr class="layer2"><td>VLAN</td>
     <td>
-      <input type="text" dojoType="dijit.form.TextBox" name="vlanTag"></input>
+      <input type="text" dojoType="dijit.form.TextBox" name="vlanTag" />
     </td>
     <td>tag, or range, e.g. 3000-3100</td></tr>
   <tr class="layer2"><td>Source Port</td>
@@ -192,29 +196,29 @@ to the number of lines occurring in the hops list.
   <!-- layer 3 parameters -->
   <tr class="layer3" style="display:none"><td>Source port</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="srcPort"
-               maxlength="5" >
-        </input>
+               maxlength="5" />
     </td>
     <td>(1024-65535)</td></tr>
   <tr class="layer3" style="display:none"><td>Destination port</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="destPort"
-               maxlength="5" >
-    </input></td>
+               maxlength="5" />
+    </td>
     <td>(1024-65535)</td>
   </tr>
   <tr class="layer3" style="display:none"><td>Protocol</td>
-    <td><input type="text" dojoType="dijit.form.TextBox" name="protocol">
-        </input></td>
-        <td>(0-255, or string)</td></tr>
+    <td><input type="text" dojoType="dijit.form.TextBox" name="protocol" />
+    </td>
+    <td>(0-255, or string)</td></tr>
   <tr class="layer3" style="display:none"><td>DSCP</td>
     <td><input dojoType="dijit.form.ValidationTextBox" name="dscp"
                promptMessage="Enter differentiated service code point"
-               maxlength="2" /></td>
-    </input></td>
+               maxlength="2" />
+    </td>
     <td>(0-63)</td>
   </tr>
 
 </tbody>
 </table>
 </form>
+</body>
 </html>

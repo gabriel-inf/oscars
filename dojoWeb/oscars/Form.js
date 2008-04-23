@@ -96,18 +96,18 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
             oscarsState.resvGridInitialized = 2;
         }
     }
-}
+};
 
-oscars.Form.handleError = function(responseObject, ioArgs) {
+oscars.Form.handleError = function (responseObject, ioArgs) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     oscarsStatus.className = "failure";
     oscarsStatus.innerHTML = responseObject.message +
           ".  If it is a servlet problem, contact an admin to restart the Web server.";
-}
+};
 
 // handles successful reply from AuthenticateUser servlet
-oscars.Form.handleAuthenticateReply = function(responseObject,
-                                               mainTabContainer) {
+oscars.Form.handleAuthenticateReply = function (responseObject,
+                                                mainTabContainer) {
     var sessionPane = dijit.byId("sessionPane");
     var userNameInput = dojo.byId("userName");
     oscarsState.login = userNameInput.value;
@@ -170,7 +170,7 @@ oscars.Form.handleAuthenticateReply = function(responseObject,
             userAddPaneTab.startup();
         }
     }
-}
+};
 
 // handles user logout
 oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
@@ -202,14 +202,14 @@ oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
     // reset global state
     oscarsState.userGridInitialized = false;
     oscarsState.resvGridInitialized = 0;
-}
+};
 
 // NOTE:  Depends on naming  convention agreements between client and server.
 // Parameter names ending with Checkboxes, Display and Replace are treated
 // differently than other names, which are treated as widget ids.  Note that
 // widget id's of "method", "status", and "succeed" will mess things up, since
 // they are parameter names used by handleReply.
-oscars.Form.applyParams = function(responseObject) {
+oscars.Form.applyParams = function (responseObject) {
     for (var param in responseObject) {
         var n = dojo.byId(param);
         var cb = null;
@@ -258,53 +258,55 @@ oscars.Form.applyParams = function(responseObject) {
             n.value = responseObject[param];
         }   
     }
-}
+};
 
 // chooses which input parameters to display in create reservation page
-oscars.Form.layerChooser = function(/*Event*/ evt) {
+oscars.Form.layerChooser = function (/*Event*/ evt) {
+    var i;
     var layer2Nodes = dojo.query(".layer2");
     var layer3Nodes = dojo.query(".layer3");
     if (evt.target.id == "layer2") {
-        for (var i = 0; i < layer2Nodes.length; i++) {
+        for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = ""; 
         }
-        for (var i = 0; i < layer3Nodes.length; i++) {
+        for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = "none"; 
         }
     } else if (evt.target.id == "layer3") {
-        for (var i = 0; i < layer2Nodes.length; i++) {
+        for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "none"; 
         }
-        for (var i = 0; i < layer3Nodes.length; i++) {
+        for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = ""; 
         }
     }
-}
+};
 
 // chooses which params to display in reservation details page
-oscars.Form.hideParams = function(responseObject) {
+oscars.Form.hideParams = function (responseObject) {
+    var i;
     var n = dojo.byId("vlanReplace");
     var layer2Nodes = dojo.query(".layer2Replace");
     var layer3Nodes = dojo.query(".layer3Replace");
     if (!oscars.Form.isBlank(n.innerHTML)) {
-        for (var i = 0; i < layer2Nodes.length; i++) {
+        for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = ""; 
         }
-        for (var i = 0; i < layer3Nodes.length; i++) {
+        for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = "none"; 
         }
     } else {
-        for (var i = 0; i < layer2Nodes.length; i++) {
+        for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "none"; 
         }
-        for (var i = 0; i < layer3Nodes.length; i++) {
+        for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = ""; 
         }
     }
-}
+};
 
 // take action based on which tab was clicked on
-oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
+oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     var oscarsStatus = dojo.byId("oscarsStatus");
     // if not currently in error state, change status to reflect current tab
     var changeStatus = oscarsStatus.className == "success" ? true : false;
@@ -340,11 +342,11 @@ oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
     // selected user details tab
     } else if (contentPane.id == "userDetailsPane") {
         if (changeStatus) {
-            var n = dojo.byId("userDetailsForm");
-            if (n == null) {
+            var node = dojo.byId("userDetailsForm");
+            if (node == null) {
                 console.log("userDetailsForm not instantiated");
             }
-            if (n != null) {
+            if (node != null) {
                 if (oscars.Form.isBlank(n.profileName.value)) {
                     oscarsStatus.innerHTML = "Profile for user " +
                                              oscarsState.login;
@@ -392,10 +394,10 @@ oscars.Form.selectedChanged = function(/* ContentPane widget */ contentPane) {
         }
     };
     dojo.back.addToHistory(state);
-}
+};
 
 // refresh user list from servlet
-oscars.Form.refreshUserGrid = function() {
+oscars.Form.refreshUserGrid = function () {
     var userGrid = dijit.byId("userGrid");
     var newStore = new dojo.data.ItemFileReadStore(
                       {url: 'servlet/UserList'});
@@ -404,10 +406,10 @@ oscars.Form.refreshUserGrid = function() {
                       {query: {login: '*'}, clientSort: true});
     userGrid.setModel(newModel);
     userGrid.refresh();
-}
+};
 
 // select user details based on row select in grid
-oscars.Form.onUserRowSelect = function(/*Event*/ evt) {
+oscars.Form.onUserRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var userDetailsPaneTab = dijit.byId("userDetailsPane");
     var userGrid = dijit.byId("userGrid");
@@ -425,12 +427,12 @@ oscars.Form.onUserRowSelect = function(/*Event*/ evt) {
     });
     // set tab to user details
     mainTabContainer.selectChild(userDetailsPaneTab);
-}
+};
 
 // select reservation based on grid row select
 // TODO:  should be based on grid cell select; want to be able to copy
 //        source or destination to link id's search tab
-oscars.Form.onResvRowSelect = function(/*Event*/ evt) {
+oscars.Form.onResvRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
     var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
     var resvGrid = dijit.byId("resvGrid");
@@ -451,20 +453,20 @@ oscars.Form.onResvRowSelect = function(/*Event*/ evt) {
     // Note that this generates an apparently harmless error message in
     // Firebug console.
     mainTabContainer.selectChild(resvDetailsPaneTab);
-}
+};
 
-oscars.Form.hrefChanged = function(newUrl) {
+oscars.Form.hrefChanged = function (newUrl) {
     // start of back/forward button functionality
     var state = {
         back: function() { console.log("Back was clicked!"); },
         forward: function() { console.log("Forward was clicked!"); }
     };
     dojo.back.addToHistory(state);
-}
+};
 
 // check create reservation form's start and end date and time's, and
 // converts hidden form fields to seconds
-oscars.Form.checkDateTimes = function() {
+oscars.Form.checkDateTimes = function () {
     var currentDate = new Date();
     var msg = null;
     var startSeconds =
@@ -496,11 +498,11 @@ oscars.Form.checkDateTimes = function() {
     var endSecondsN = dojo.byId("hiddenEndSeconds");
     endSecondsN.value = endSeconds;
     return true;
-}
+};
 
 // sets hidden form fields' seconds values from search date and time
 // constraints in list reservations form
-oscars.Form.convertSearchTimes = function() {
+oscars.Form.convertSearchTimes = function () {
     var currentDate = new Date();
     var startSeconds = null;
     var endSeconds = null;
@@ -526,21 +528,21 @@ oscars.Form.convertSearchTimes = function() {
     startSecondsN.value = startSeconds;
     var endSecondsN = dojo.byId("endTimeSeconds");
     endSecondsN.value = endSeconds;
-}
+};
 
 // convert seconds in incoming reservations list to date and time
-oscars.Form.convertReservationTimes = function(data) {
+oscars.Form.convertReservationTimes = function (data) {
     for (var i=0; i < data.length; i++) {
         // these fields are in seconds
         data[i][2] = oscars.DigitalClock.convertFromSeconds(data[i][2]);
         data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
     }
-}
+};
 
 // From Javascript book, p. 264
 
 // check to see if no parameter set
-oscars.Form.isBlank = function(str) {
+oscars.Form.isBlank = function (str) {
     if (str == null) {
         return true;
     }
@@ -549,14 +551,14 @@ oscars.Form.isBlank = function(str) {
         if ((c != ' ') && (c != '\n') && (c != '')) { return false; }
     }
     return true;
-}
+};
 
-oscars.Form.initBackForwardState = function() {
+oscars.Form.initBackForwardState = function () {
     // initially no state
     var state = {
         back: function() { },
         forward: function() { }
     };
     dojo.back.setInitialState(state);
-}
+};
 

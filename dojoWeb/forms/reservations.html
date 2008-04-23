@@ -7,7 +7,7 @@
          {name: 'User', width: "18em"},
          {name: 'Start Time', width: "10em"},
          {name: 'End Time', width: "10em"},
-         {name: 'Status', width: "34em"},
+         {name: 'Status', width: "34em"}
        ],
        [
          {name: 'Origin', colSpan:"3", width: "44em"},
@@ -17,6 +17,8 @@
     var resvLayout = [ resvView ];
 </script>
 </head>
+
+<body>
 
 <p>The reservations returned can be constrained by their status, text in
 their description, times that they end after or start before, and topology
@@ -80,7 +82,7 @@ information about a reservation.</p>
              promptMessage="Enter the time portion of the date in format HH:MM"
              invalidMessage="Invalid format:  use HH:MM" width="10em" />HH:MM</td>
   <td>
-    <input type="reset" value="Reset fields"></input>
+    <input type="reset" value="Reset fields" />
   </td>
 
 </tr>
@@ -105,4 +107,5 @@ information about a reservation.</p>
 <div id="resvGrid" dojoType="dojox.Grid" structure="resvLayout">
 </div>
 
+</body>
 </html>

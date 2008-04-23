@@ -1,6 +1,6 @@
 <html>
 <head>
-    <script type="text/javascript>
+    <script type="text/javascript">
         dojo.addOnLoad(function(){
             var w = dojo.byId("addingUserLogin");
             w.value= oscarsState.login;
@@ -17,6 +17,7 @@
     </script>
 </head>
 
+<body>
 <p>Required fields are outlined in green.</p>
 <form id="userAddForm" method="POST">
   <input type="hidden" name="login" id="addingUserLogin" />
@@ -39,7 +40,7 @@
       </button>
     </td>
     <td>
-      <input type="reset" value="Reset form fields"</input>
+      <input type="reset" value="Reset form fields" />
     </td>
   </tr>
 
@@ -216,4 +217,5 @@
   </tbody>
   </table>
 </form>
+</body>
 </html>
