@@ -709,7 +709,7 @@ public class ReservationManager {
         }
 
         String pathId = "unimplemented";
-        if (ctrlPlanePath.getId() == null && !ctrlPlanePath.getId().equals("")) {
+        if (ctrlPlanePath.getId() != null && !ctrlPlanePath.getId().equals("")) {
             pathId = ctrlPlanePath.getId();
         }
 
