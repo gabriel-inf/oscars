@@ -96,7 +96,7 @@ public class CreateReservation extends HttpServlet {
 
         Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
-
+        String errMessage = null;
         try {
             // url returned, if not null, indicates location of next domain
             // manager
@@ -120,14 +120,17 @@ public class CreateReservation extends HttpServlet {
             Object obj = (Object) messageInfo;
             observable.eventOccured(obj);
         } catch (BSSException e) {
-            this.sendFailureNotification(resv, e.getMessage());
-            utils.handleFailure(out, e.getMessage(), null, bss);
-            return;
+            errMessage = e.getMessage();
         } catch (Exception e) {
             // use this so we can find NullExceptions
-            this.sendFailureNotification(resv, e.getMessage());
-            utils.handleFailure(out, e.toString(), null, bss);
-            return;
+            errMessage = e.getMessage();
+        } finally {
+            forwarder.cleanUp();
+            if(errMessage != null){
+                this.sendFailureNotification(resv, errMessage);
+                utils.handleFailure(out, errMessage, null, bss);
+                return;
+            }
         }
 
         log.info("to page creation");

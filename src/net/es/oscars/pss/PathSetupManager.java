@@ -20,7 +20,6 @@ public class PathSetupManager{
     private String dbname;
     private Properties props;
     private PSS pss;
-    private Forwarder forwarder;
     private ReservationLogger rsvLogger; 
     private NotifyInitializer notifier;
  
@@ -39,7 +38,6 @@ public class PathSetupManager{
             // ignored it NotifyInitializer cannot be created.  Don't
             // want exceptions in constructor
         }
-        this.forwarder = new Forwarder();
         this.props = propHandler.getPropertyGroup("pss", true);
         this.pss =
             pssFactory.createPSS(this.props.getProperty("method"), dbname);
@@ -63,6 +61,8 @@ public class PathSetupManager{
         this.log.info("create.start");
         String status = null;
         String gri = resv.getGlobalReservationId();
+        Forwarder forwarder = new Forwarder();
+        CreatePathResponseContent forwardReply = null;
         
         /* Check reservation */
         if(this.pss == null){
@@ -73,16 +73,27 @@ public class PathSetupManager{
         /* Forward to next domain */
         if(doForward){
             this.log.info("thinks forwarding, calling createPath");
-            CreatePathResponseContent forwardReply = 
-                this.forwarder.createPath(resv);
-            if(forwardReply == null){
-                this.log.info("last domain in signaling path");
-            }else if(!forwardReply.getStatus().equals("ACTIVE")){
-                String errMsg = "forwardReply returned an unrecognized status: " +         
-                    forwardReply.getStatus();
-                this.log.error(errMsg);
-                throw new PSSException(errMsg);
+            InterdomainException interException = null;
+            try{
+                forwardReply = forwarder.createPath(resv);
+            }catch(InterdomainException e){
+                interException = e;
+            }finally{
+                forwarder.cleanUp();
+                if(interException != null){
+                    throw interException;
+                }
             }
+        }
+        
+        /* Print forward status */
+        if(forwardReply == null){
+            this.log.info("last domain in signaling path");
+        }else if(!forwardReply.getStatus().equals("ACTIVE")){
+            String errMsg = "forwardReply returned an unrecognized status: " +         
+                forwardReply.getStatus();
+            this.log.error(errMsg);
+            throw new PSSException(errMsg);
         }
         
         /* Create path */
@@ -117,6 +128,8 @@ public class PathSetupManager{
         boolean stillActive = false;
         String errorMsg = null;
         String gri = resv.getGlobalReservationId();
+        Forwarder forwarder = new Forwarder();
+        RefreshPathResponseContent forwardReply = null;
         this.rsvLogger.redirect(resv.getGlobalReservationId());
         
         /* Check reservation */
@@ -137,29 +150,30 @@ public class PathSetupManager{
         
         /* Forward to next domain */
         if(stillActive && doForward){
+            InterdomainException interException = null;
             try{
-                RefreshPathResponseContent forwardReply = 
-                    this.forwarder.refreshPath(resv);
-                if(forwardReply == null){
-                    this.log.info("last domain in signaling path");
-                }else if(!forwardReply.getStatus().equals("ACTIVE")){
-                    String errMsg = "forwardReply returned an unrecognized status: " +         
-                        forwardReply.getStatus();
-                    this.log.error(errMsg);
-                    throw new PSSException(errMsg);
+                forwardReply = forwarder.refreshPath(resv);
+            }catch(InterdomainException e){
+                interException = e;
+            }finally{
+                forwarder.cleanUp();
+                if(interException != null){
+                    throw interException;
                 }
-             }catch(PSSException e){
-                /* teardown local path if doesn't refresh in current domain */
-                this.pss.teardownPath(resv);
-                throw e;
-             }catch(InterdomainException e){
-                /* teardown local path if doesn't refresh in current domain */
-                this.pss.teardownPath(resv);
-                throw e;
-             }
-         }else if(doForward){
+            }
+        }else if(doForward){
             this.forwardTeardown(resv, errorMsg);
-         }
+        }
+         
+        /* Print forwarding status */
+        if(forwardReply == null){
+            this.log.info("last domain in signalling path");
+        }else if(!forwardReply.getStatus().equals("ACTIVE")){
+            String errMsg = "forwardReply returned an unrecognized status: " +         
+                forwardReply.getStatus();
+            this.log.error(errMsg);
+            throw new PSSException(errMsg);
+        }
         
         this.rsvLogger.stop();
         return status;
@@ -222,20 +236,12 @@ public class PathSetupManager{
     private void forwardTeardown(Reservation resv, String errorMsg) 
             throws PSSException{
         String gri = resv.getGlobalReservationId();
+        Forwarder forwarder = new Forwarder();
+        TeardownPathResponseContent forwardReply = null;
         
         try{
-            TeardownPathResponseContent forwardReply = 
-                this.forwarder.teardownPath(resv);
-            if(forwardReply == null){
-                this.log.info("last domain in signaling path");
-            }else if((!forwardReply.getStatus().equals("PENDING")) &&
-                        (!forwardReply.getStatus().equals("FINISHED"))){
-                String errMsg = "forwardReply returned an unrecognized status: " +         
-                    forwardReply.getStatus();
-                this.log.error(errMsg);
-                throw new PSSException(errMsg);
-            }  
-         }catch(Exception e){
+            forwardReply = forwarder.teardownPath(resv);
+        }catch(Exception e){
             /* check for forward error */
             if(errorMsg != null){
                 errorMsg = "Multiple Exceptions for " + gri + 
@@ -243,7 +249,20 @@ public class PathSetupManager{
             }
             errorMsg += e.getMessage();
             this.log.error("Forward error for " + gri + ": " + e.getMessage());
-         }
+        }finally{
+            forwarder.cleanUp();
+        }
+         
+        /* Print forward results */
+        if(forwardReply == null){
+            this.log.info("last domain in signaling path");
+        }else if((!forwardReply.getStatus().equals("PENDING")) &&
+                    (!forwardReply.getStatus().equals("FINISHED"))){
+            String errMsg = "forwardReply returned an unrecognized status: " +         
+                forwardReply.getStatus();
+            this.log.error(errMsg);
+            throw new PSSException(errMsg);
+        }  
         
         /* Since exception may occur remotely or locally throw both here */
         if(errorMsg != null){

@@ -74,8 +74,6 @@ public class ReservationAdapter {
         CreateReply forwardReply = null;
         CreateReply reply = null;
         try {
-
-
             this.rm.create(resv, login, pathInfo);
             this.tc.ensureLocalIds(pathInfo);
 
@@ -85,7 +83,17 @@ public class ReservationAdapter {
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("create, to forward");
-            forwardReply = forwarder.create(resv, pathInfo);
+            InterdomainException interException = null;
+            try{
+                forwardReply = forwarder.create(resv, pathInfo);
+            }catch(InterdomainException e){
+                interException = e;
+            }finally{
+                forwarder.cleanUp();
+                if(interException != null){
+                    throw interException;
+                }
+            }
             this.rm.finalizeResv(forwardReply, resv, pathInfo);
             // persist to db
             this.rm.store(resv);
@@ -156,7 +164,17 @@ public class ReservationAdapter {
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("modify, to forward");
-            forwardReply = forwarder.modify(resv, pathInfo);
+            InterdomainException interException = null;
+            try{
+                forwardReply = forwarder.modify(resv, pathInfo);
+            }catch(InterdomainException e){
+                interException = e;
+            }finally{
+                forwarder.cleanUp();
+                if(interException != null){
+                    throw interException;
+                }
+            }
             persistentResv = this.rm.finalizeModifyResv(forwardReply, resv, pathInfo);
 
 
@@ -202,7 +220,7 @@ public class ReservationAdapter {
 
         Reservation resv = null;
         Forwarder forwarder = new Forwarder();
-        String remoteStatus;
+        String remoteStatus = null;
 
         String gri = params.getGri();
         this.log.info("cancel.start: " + gri);
@@ -212,7 +230,18 @@ public class ReservationAdapter {
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and handles the response
         this.log.debug("cancel to forward");
-        remoteStatus = forwarder.cancel(resv);
+        
+        InterdomainException interException = null;
+        try{
+            remoteStatus = forwarder.cancel(resv);
+        }catch(InterdomainException e){
+            interException = e;
+        }finally{
+            forwarder.cleanUp();
+            if(interException != null){
+                throw interException;
+            }
+        }
         this.rm.finalizeCancel(resv, remoteStatus);
         return resv.getStatus();
     }
@@ -246,7 +275,18 @@ public class ReservationAdapter {
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and returns the response
         this.log.debug("query to forward");
-        ResDetails forwardReply = forwarder.query(resv);
+        ResDetails forwardReply = null;
+        InterdomainException interException = null;
+        try{
+            forwardReply = forwarder.query(resv);
+        }catch(InterdomainException e){
+            interException = e;
+        }finally{
+            forwarder.cleanUp();
+            if(interException != null){
+                throw interException;
+            }
+        }
         this.log.debug("query, to toReply");
         if (forwardReply != null && forwardReply.getPathInfo() != null) {
             // Add remote hops to returned explicitPath

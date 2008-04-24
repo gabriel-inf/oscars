@@ -53,16 +53,21 @@ public class CancelReservation extends HttpServlet {
         Session bss = 
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
+        String errMessage = null;
         try {
         	reservation = rm.cancel(gri, userName, allUsers);
             String remoteStatus = forwarder.cancel(reservation);
             rm.finalizeCancel(reservation, remoteStatus);
         } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(), null, bss);
-            return;
-        } catch (InterdomainException ex) {
-            utils.handleFailure(out, ex.getMessage(), null, bss);
-            return;
+            errMessage = e.getMessage();
+        } catch (InterdomainException e) {
+            errMessage = e.getMessage();
+        } finally {
+            forwarder.cleanUp();
+            if(errMessage != null){
+                utils.handleFailure(out, errMessage, null, bss);
+                return;  
+            }
         }
         out.println("<xml>");
         out.println("<status>Successfully got reservation details</status>");

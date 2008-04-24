@@ -50,7 +50,25 @@ public class Client {
         sc.setOptions(opts);
         this.stub._setServiceClient(sc);
     }
-
+    
+    /**
+     * Terminates the Axis2 ConfigurationContext. You only need to call
+     * this if you are running the client in an environment such as 
+     * Tomcat to prevent memory leaks.
+     */
+    public void cleanUp(){
+        if(this.configContext == null){
+            return;
+        }
+        try{
+            this.configContext.terminate();
+        }catch(AxisFault e){
+            this.log.warn("Unable to terminate Axis2 configuration context." +
+                "There may be a memory leak so you should watch Tomcat's " +
+                "thread count. " + e.getMessage());
+        }
+    }
+    
     /**
      * Makes call to server to cancel a reservation.
      *

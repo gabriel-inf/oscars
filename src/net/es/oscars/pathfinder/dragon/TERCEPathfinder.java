@@ -55,7 +55,7 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         String src = intraHops[0].getLinkIdRef();
         String dest = intraHops[1].getLinkIdRef();
         CtrlPlanePathContent intraPath = this.terce(src, dest);
-
+        
         intraPathInfo.setPath(intraPath);
 
         return intraPathInfo;
@@ -80,18 +80,21 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         CtrlPlanePathContent path = null;
         CtrlPlaneHopContent[] hops = null;
         TERCEStub terce= null;
-
+        ConfigurationContext configContext = null;
+        String errMessage = "";
+        String repo = System.getenv("CATALINA_HOME");
+        
+        this.log.info("terce.start");
+        this.log.info("src=" + src);
+        this.log.info("dest=" + dest);
+        repo += (repo.endsWith("/") ? "" :"/");
+        repo += "shared/classes/terce.conf/repo/";
+        System.setProperty("axis2.xml", repo + "axis2.xml");
+        
+        
         /* Calculate path */
         try {
-            this.log.info("terce.start");
-            this.log.info("src=" + src);
-            this.log.info("dest=" + dest);
-            String repo = System.getenv("CATALINA_HOME");
-            repo += (repo.endsWith("/") ? "" :"/");
-            repo += "shared/classes/terce.conf/repo/";
-            System.setProperty("axis2.xml", repo + "axis2.xml");
-            ConfigurationContext configContext =
-                ConfigurationContextFactory
+            configContext = ConfigurationContextFactory
                 .createConfigurationContextFromFileSystem(repo, null);
             terce = new TERCEStub(configContext, terceURL);
 
@@ -115,14 +118,43 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
                 log.info("terce.path.hop=" + hops[i].getLinkIdRef());
             }
             log.info("terce.path.end");
-
             this.log.info("terce.end");
-        } catch (RemoteException e) {
-            throw new PathfinderException(e.getMessage());
+        }catch (RemoteException e) {
+            errMessage = e.getMessage();
         }catch (RCEFaultMessage e) {
-            throw new PathfinderException(e.getFaultMessage().getMsg());
+            errMessage = e.getFaultMessage().getMsg();
+        }catch (Exception e) {
+            errMessage = e.getMessage();
+        }finally{
+            //must terminate configContext to prevent memory leak
+            errMessage += this.cleanUp(configContext);
+            
+            //throw exception
+            if(!errMessage.equals("")){
+                throw new PathfinderException(errMessage);
+            }
         }
 
         return responseContent.getPath();
+    }
+    
+    /**
+     * Prevents memory leak in axis2 client
+     *
+     * @param configContext an Axis2 ConfigurationContext to delete
+     * @return an error message if one occurred. An empty string otherwise.
+     */
+    private String cleanUp(ConfigurationContext configContext){
+        if(configContext == null){
+            return "";
+        }
+        
+        try{
+            configContext.terminate();
+        }catch(Exception e){
+            return "Unable to disconnect from TERCE: " + e.getMessage();
+        }
+        
+        return "";
     }
 }
