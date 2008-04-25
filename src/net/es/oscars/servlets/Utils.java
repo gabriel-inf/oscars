@@ -1,4 +1,4 @@
-package net.es.oscars.dojoServlets;
+package net.es.oscars.servlets;
 
 import java.io.PrintWriter;
 import javax.servlet.http.*;

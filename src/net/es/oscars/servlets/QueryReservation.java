@@ -1,4 +1,4 @@
-package net.es.oscars.dojoServlets;
+package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
@@ -30,8 +30,8 @@ public class QueryReservation extends HttpServlet {
         ReservationManager rm = new ReservationManager("bss");
         UserManager userMgr = new UserManager("aaa");
         UserSession userSession = new UserSession();
-        net.es.oscars.dojoServlets.Utils utils =
-            new net.es.oscars.dojoServlets.Utils();
+        net.es.oscars.servlets.Utils utils =
+            new net.es.oscars.servlets.Utils();
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
