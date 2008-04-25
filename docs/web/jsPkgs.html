@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Install OSCARS</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt; <a
+ href="install.html">install OSCARS browser interface</a> &gt; <a href="jsPkgs.html">Javascript
+Packages</a>
+</div>
+</div>
+<h1>Javascript Packages</h1>
+<table style="margin-top: 10px;" cellspacing="5" width="95%">
+  <tbody>
+    <tr>
+      <td valign="top"> <br>
+      <br>
+      <div class="leftcol" nowrap="nowrap" valign="top" align="left">
+      <div class="frame item">
+      <a href="#dojo">Dojo 1.1</a> </div>
+      </div>
+      <div> </div>
+      </div>
+      </td>
+      <td valign="top">
+      <h2><a name="dojo"></a>Dojo 1.1</h2>
+This tool kit is used to support the new browser
+interface.  Go to the <a
+ href="http://www.dojotoolkit.org/downloads">Dojo site</a> and download
+version 1.1. Untar as root into /usr/local/src. Make a symbolic link
+named dojo in that directory to dojo-release-1.1.0. The ant tasks
+depend on that link. ant deploywbui will copy all 1600 plus files to
+web/lib and create the OSCARS webapp.  If you were running the server
+with the older interface before, be sure to stop the server, completely remove
+webapps/OSCARS before running deploywbui, and restart.<br>
+      <code></code> <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<!--#include virtual="footer.html" -->
+<br>
+<br>
+</body>
+</html>
