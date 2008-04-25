@@ -16,19 +16,30 @@ public class UserSession {
 
     private String userCookieName;
     private String sessionCookieName;
+    private boolean secureCookie;
+    private String guestLogin;
 
     public  UserSession() {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("aaa", true);
         this.userCookieName = props.getProperty("userName");
         this.sessionCookieName = props.getProperty("sessionName");
+        this.guestLogin = props.getProperty("guestLogin");
+        this.secureCookie =
+            props.getProperty("secureCookie").equals("1") ? true : false;
+
     }
 
     public String checkSession(PrintWriter out, HttpServletRequest request) {
         String userName = this.getCookie(this.userCookieName, request);
         String sessionName = this.getCookie(this.sessionCookieName, request);
         if ((userName == null) || (sessionName == null)) {
-            userName = null;
+            Map errorMap = new HashMap();
+            errorMap.put("success", Boolean.FALSE);
+            errorMap.put("status", "No session has been established");
+            JSONObject jsonObject = JSONObject.fromObject(errorMap);
+            out.println("/* " + jsonObject + " */");
+            return null;
         }
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
@@ -88,6 +99,10 @@ public class UserSession {
         return null;
     }
 
+    public String getGuestLogin() {
+        return this.guestLogin;
+    }
+
     private Cookie handleCookie(String cookieName, String cookieValue) {
 
         String sentCookieName = null;
@@ -101,7 +116,8 @@ public class UserSession {
             sentCookieName = cookieName;
         }
         Cookie cookie = new Cookie(sentCookieName, cookieValue);
-        cookie.setSecure(true);
+        // whether has to go over SSL
+        cookie.setSecure(this.secureCookie);
         return cookie;
     }
 }

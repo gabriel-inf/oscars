@@ -53,9 +53,16 @@ public class AuthenticateUser extends HttpServlet {
 
         out = response.getWriter();
         String userName = request.getParameter("userName");
-        Random generator = new Random();
-        int r = generator.nextInt();
-        String sessionName = String.valueOf(r);
+        String guestLogin = userSession.getGuestLogin();
+        String sessionName = "";
+        if (userName != null && guestLogin != null && 
+            userName.equals(guestLogin)) {
+            sessionName = "1234567890";
+        } else {
+            Random generator = new Random();
+            int r = generator.nextInt();
+            sessionName = String.valueOf(r);
+        }
         response.setContentType("text/json-comment-filtered");
         Session aaa = 
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();

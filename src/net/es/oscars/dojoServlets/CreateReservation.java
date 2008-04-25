@@ -24,6 +24,7 @@ import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.notify.*;
+import net.es.oscars.PropHandler;
 
 
 public class CreateReservation extends HttpServlet {
@@ -32,6 +33,7 @@ public class CreateReservation extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
+
         this.log = Logger.getLogger(this.getClass());
         this.log.info("CreateReservation.start");
 
@@ -39,7 +41,7 @@ public class CreateReservation extends HttpServlet {
         try {
             this.notifier.init();
         } catch (NotifyException ex) {
-            log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
+            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
             // TODO:  ReservationAdapter, ReservationManager, etc. will
             // have init methods that throw exceptions that will not be
             // ignored it NotifyInitializer cannot be created.  Don't
@@ -66,10 +68,9 @@ public class CreateReservation extends HttpServlet {
             return;
         }
 
-
-        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa =
+            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
-
         UserManager userMgr = new UserManager("aaa");
 
         // Check to see if user can create this  reservation
@@ -94,12 +95,11 @@ public class CreateReservation extends HttpServlet {
 
             return;
         }
-
         aaa.getTransaction().commit();
 
         Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
-
+        String errMessage = null;
         try {
             // url returned, if not null, indicates location of next domain
             // manager
@@ -121,14 +121,17 @@ public class CreateReservation extends HttpServlet {
             Object obj = (Object) messageInfo;
             observable.eventOccured(obj);
         } catch (BSSException e) {
-            this.sendFailureNotification(resv, e.getMessage());
-            utils.handleFailure(out, e.getMessage(), null, bss);
-            return;
+            errMessage = e.getMessage();
         } catch (Exception e) {
             // use this so we can find NullExceptions
-            this.sendFailureNotification(resv, e.getMessage());
-            utils.handleFailure(out, e.toString(), null, bss);
-            return;
+            errMessage = e.getMessage();
+        } finally {
+            forwarder.cleanUp();
+            if (errMessage != null) {
+                this.sendFailureNotification(resv, errMessage);
+                utils.handleFailure(out, errMessage, null, bss);
+                return;
+            }
         }
 
         Map outputMap = new HashMap();
@@ -194,6 +197,9 @@ public class CreateReservation extends HttpServlet {
             throws BSSException {
 
         CtrlPlanePathContent path = null;
+        PropHandler propHandler = new PropHandler("oscars.properties");
+        Properties props = propHandler.getPropertyGroup("wbui", true);
+        String defaultLayer = props.getProperty("defaultLayer");
 
         PathInfo pathInfo = new PathInfo();
         String explicitPath = request.getParameter("explicitPath");
@@ -239,10 +245,12 @@ public class CreateReservation extends HttpServlet {
         
         // TODO:  layer 2 parameters trump layer 3 parameters for now, until
         // handle in Javascript
-        if ((vlanTag != null) && !vlanTag.trim().equals("")) {
+        if (((vlanTag != null) && !vlanTag.trim().equals("")) ||
+              (defaultLayer !=  null && defaultLayer.equals("2"))) {
             Layer2Info layer2Info = new Layer2Info();
             VlanTag srcVtagObject = new VlanTag();
             VlanTag destVtagObject = new VlanTag();
+            vlanTag = (vlanTag == null ? "any" : vlanTag);
             srcVtagObject.setString(vlanTag);
             destVtagObject.setString(vlanTag);
             boolean tagged = tagSrcPort.equals("Tagged");
