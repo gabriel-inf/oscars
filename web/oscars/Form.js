@@ -314,7 +314,8 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     // selected reservations tab
     if (contentPane.id == "reservationsPane") {
         if (changeStatus) {
-            oscarsStatus.innerHTML = "Reservations list";
+            oscarsStatus.className = "inprocess";
+            oscarsStatus.innerHTML = "Retrieving reservations...";
         }
         // refresh reservations grid
         var resvGrid = dijit.byId("resvGrid");
@@ -328,6 +329,10 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
                 error: oscars.Form.handleError,
                 form: dojo.byId("reservationListForm")
             });
+        }
+        if (changeStatus) {
+            oscarsStatus.className = "success";
+            oscarsStatus.innerHTML = "Reservations list";
         }
     // selected create reservation tab
     } else if (contentPane.id == "createReservationPane") {

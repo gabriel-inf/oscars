@@ -19,6 +19,9 @@
         <button dojoType="dijit.form.Button" id="login">
           LOGIN 
           <script type="dojo/method" event="onClick">
+              var oscarsStatus = dojo.byId("oscarsStatus");
+              oscarsStatus.className = "inprocess";
+              oscarsStatus.innerHTML = "Authenticating...";
               dojo.xhrPost({
                   url: 'servlet/AuthenticateUser',
                   handleAs: "json-comment-filtered",

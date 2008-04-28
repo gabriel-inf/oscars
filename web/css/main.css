@@ -38,6 +38,11 @@ td {
     padding: 0.2em;
 }
 
+.inprocess {
+    border: 2px solid #cc0;
+    padding: 0.2em;
+}
+
 /* settings for title section of Web page */
 #pagetitle {
     border: 0;

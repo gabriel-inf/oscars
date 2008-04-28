@@ -37,6 +37,9 @@ information about a reservation.</p>
   <button dojoType="dijit.form.Button" id="refreshReservationList">
      Refresh 
      <script type="dojo/method" event="onClick">
+        var oscarsStatus = dojo.byId("oscarsStatus");
+        oscarsStatus.className = "inprocess";
+        oscarsStatus.innerHTML = "Retrieving reservations...";
         oscars.Form.convertSearchTimes();
         dojo.xhrPost({
             url: 'servlet/ListReservations',

@@ -55,6 +55,9 @@ to the number of lines occurring in the hops list.
          <script type="dojo/method" event="onClick">
             var legal = oscars.Form.checkDateTimes();
             if (legal) {
+                var oscarsStatus = dojo.byId("oscarsStatus");
+                oscarsStatus.className = "inprocess";
+                oscarsStatus.innerHTML = "Creating reservation...";
                 dojo.xhrPost({
                   url: 'servlet/CreateReservation',
                   handleAs: "json-comment-filtered",
