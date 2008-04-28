@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>AAA Component Notes</title>
+  <base href="/docs">
+  <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
+  <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
+</head>
+<body>
+<!--#include virtual="header.html" -->
+<div id="topBar" class="topBar">
+<div class="topBarDiv"> &nbsp; <a href="index.html">home</a> &gt;
+Components &gt; <a href="browserInterface.html">Dojo Development Notes</a>
+</div>
+</div>
+<h1>Dojo Development Notes</h1>
+<p>There are several tools that will make developing new forms and servlets
+easier.</p>
+<h2>Firebug</h2>
+<p>The use of Firebug and Firebug Lite is covered in a
+<a href="http://www.dojotoolkit.org/book/book-dojo/part-4-meta-dojo-making-your-dojo-code-run-faster-and-better/debugging-facilities/deb">tutorial</a>
+by the Dojo developers.</p>
+<p>Usage of the Firebug debugger statement is somewhat temperamental.  You
+can insert it at any point in the Javascript code, for example web/oscars/Form.js.
+You won't see the code where it stops when you click on the Script tab
+(you'll see the code for dojo.js), and if you're not careful where you move
+the mouse, you're back to the HTML code inspector.  However, if you stay in the
+Script tab, on the right
+side of the window you can inspect any variables that exists where the
+breakpoint is set, and continue to the next breakpoint and inspect
+variables there.</p>
+<h2>JSLint and Rhino</h2>
+<p>Unfortunately, Javascript syntax errors will result in cryptic messages in
+Firebug such as "oscars.Form has no properties" if there is a syntax
+error in web/oscars/Form.js, with no clue as to where the syntax error is.
+That is where
+<a href="http://www.jslint.com/rhino/index.html">JSLint and Rhino</a>
+come in.  JSLint is a Javascript syntax checker that can check HTML
+and Javascript files for errors and bad usage.
+web/lib/jslint.js is included with the OSCARS
+distribution because there is no license.</p>
+
+<p>There are still a lot of warning messages
+for files like web/oscars/Form.js, but none are fatal.  You will need
+to temporarily remove embedded dojo/method scripts in the HTML files
+in forms, because JSLint thinks that they are illegal locations for
+Javascript.  That's still
+worthwhile doing, because I found other errors once I worked around
+that restriction.  JSLint will flag any Dojo regular expressions used,
+but they are non-fatal.</p>
+
+<p>
+JSLint by itself
+requires pasting your code into its Web page, which is very cumbersome.
+With the use of Rhino, which is written in Java, you can use JSLint
+on the command-line.  Unfortunately, we cannot redistribute its jar because
+of licensing issues.  You can
+<a href="http://www.mozilla.org/rhino/download.html">download</a> and
+unzip it, and place js.jar in lib in the main directory.  After that you can
+run the
+syntaxChecker.sh script in web to check for syntax errors in any of the
+HTML or Javascript files, for example "./syntaxChecker.sh oscars/Form.js".</p>
+</body>
+</html>
