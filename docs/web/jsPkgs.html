@@ -31,15 +31,16 @@ Packages</a>
       </td>
       <td valign="top">
       <h2><a name="dojo"></a>Dojo 1.1</h2>
-This tool kit is used to support the new browser
-interface.  Go to the <a
- href="http://www.dojotoolkit.org/downloads">Dojo site</a> and download
-version 1.1. Untar as root into /usr/local/src. Make a symbolic link
-named dojo in that directory to dojo-release-1.1.0. The ant tasks
-depend on that link. ant deploywbui will copy all 1600 plus files to
-web/lib and create the OSCARS webapp.  If you were running the server
+This Javascript tool kit is used to support the new browser
+interface.  A tarred and gzipped Version 1.1 from the Dojo
+<a href="http://www.dojotoolkit.org/downloads">download site</a> is
+distributed with OSCARS.  You can run the Ant task "ant installdojo" to
+install it, or let it automatically install when you deploy the war file
+with Ant.
+If you were running the server
 with the older interface before, be sure to stop the server, completely remove
-webapps/OSCARS before running deploywbui, and restart.<br>
+webapps/OSCARS before deploying the war file with "ant deploywbui", and
+restart.<br>
       <code></code> <br>
       </td>
     </tr>

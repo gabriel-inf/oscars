@@ -230,11 +230,13 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     </target>
     <!-- Dojo WBUI section ************************************************* -->
     <property name="dojo" value="/usr/local/src/dojo"/>
-    <available property="dojo.present" file="web/lib/dojo"/>
-    <target name="copydojo" unless="dojo.present" description="copy necessary Dojo material from /usr/local/src">
-        <copy todir="web/lib/dojo">
-            <fileset dir="${dojo}" includes="dojo/**/*, dijit/**/*, dojox/**/*, util/**/*" excludes="**/tests/**/*" />
-        </copy>
+    <available property="dojo.installed" file="web/lib/dojo"/>
+    <target name="installdojo" unless="dojo.installed" description="unzip and untar Dojo material if necessary">
+        <gunzip src="web/lib/dojo-release-1.1.0.tar.gz" />
+	<untar src="web/lib/dojo-release-1.1.0.tar"
+	       dest="web/lib" />
+        <move file="web/lib/dojo-release-1.1.0" tofile="web/lib/dojo" />
+	<delete file="web/lib/dojo-release-1.1.0.tar" />
     </target>
     <target name="copydocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
         <mkdir dir="web/docs"/>
@@ -250,7 +252,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="docs/papers" includes="*.pdf"/>
         </copy>
     </target>
-    <target name="wbui" description="Build war file for deploy" depends="compile, copydojo, copydocs">
+    <target name="wbui" description="Build war file for deploy" depends="compile, installdojo, copydocs">
         <copy todir="tmplib" flatten="true">
             <fileset dir="lib" includes="*.jar, axis2/bcprov-jdk15-132.jar,                  axis2/opensaml-1.1.jar, axis2/rampart-core-1.3.jar,                  axis2/rampart-policy-1.3.jar,                  axis2/rampart-trust-1.3.jar, axis2/wss4j-1.5.3.jar,                  axis2/xmlsec-1.4.0.jar"/>
         </copy>
