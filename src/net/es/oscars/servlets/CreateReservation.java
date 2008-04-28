@@ -250,7 +250,7 @@ public class CreateReservation extends HttpServlet {
             Layer2Info layer2Info = new Layer2Info();
             VlanTag srcVtagObject = new VlanTag();
             VlanTag destVtagObject = new VlanTag();
-            vlanTag = (vlanTag == null ? "any" : vlanTag);
+            vlanTag = (vlanTag == null||vlanTag.equals("") ? "any" : vlanTag);
             srcVtagObject.setString(vlanTag);
             destVtagObject.setString(vlanTag);
             boolean tagged = tagSrcPort.equals("Tagged");
