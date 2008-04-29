@@ -1,8 +1,8 @@
 #!/bin/sh
 ###############################################################################
-# USAGE: idc-certdel
+# USAGE: idc-certview
 # 
-# Deletes a certificate form a chosen keystore
+# Displays a certificate from a chosen keystore
 ###############################################################################
 
 if [ -z "$CATALINA_HOME" ]; then
@@ -14,7 +14,7 @@ KS_PATH="";
 KS_PASS="";
 
 while [ 1 ]; do
-    echo "Choose the keystore with the certificate you'd like to delete:";
+    echo "Choose the keystore with the certificate you'd like to view:";
     echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
     echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
     echo "    3. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
@@ -48,7 +48,7 @@ fi
 CERT_ALIAS="";
 CERT_LIST=`keytool -list -keystore $KS_PATH.jks -storepass $KS_PASS | grep "Entry" | sed -e "s/\([a-zA-Z0-9_-]*\),.*/\1/g"`;
 if [ $? != 0 ]; then
-    echo "-- Error while trying to list certificates in the keystore. Please manually enter the alias of the certificate you'd like to delete";
+    echo "-- Error while trying to list certificates in the keystore. Please manually enter the alias of the certificate you'd like to view";
     echo "";
     echo -n "Enter certificate alias: ";
     read CERT_ALIAS;
@@ -59,7 +59,7 @@ while [ -z "$CERT_ALIAS" ]; do
     CERTS=( );
     COUNT=0;
     echo "";
-    echo "Choose the certificate you wish to delete:"
+    echo "Choose the certificate you wish to view:"
     for LINE in $( echo "$CERT_LIST" ); do
         COUNT=`expr $COUNT + 1`;
         echo "    $COUNT. $LINE";
@@ -77,24 +77,12 @@ while [ -z "$CERT_ALIAS" ]; do
     CERT_ALIAS=${CERTS[$OPCHOICE]};
 done
 
-echo -n "Are you sure you want to delete the certificate '$CERT_ALIAS' y/n? ";
-ans=0;
-while [ $ans == 0 ]; do
-   read ans;
-   if [ "$ans" != "y" ] && [ "$ans" != "Y" ] && [ "$ans" != "n" ] && [ "$ans" != "N" ]; then
-		ans=0;
-   fi
-done
-if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
-    echo "-- Certificate delete cancelled. Your certificate was NOT deleted.";
-    exit 0;
-fi
+echo "";
+echo "-- Certificate details"
+echo "";
+keytool -list -keystore $KS_PATH.jks -storepass $KS_PASS -alias $CERT_ALIAS -V
 
-keytool -delete -keystore $KS_PATH.jks -alias $CERT_ALIAS -storepass $KS_PASS;
-if [ $? != 0 ]; then
-    echo "-- Keytool returned an error. Your certificate was not deleted.";
-    exit 1;
-fi
-
-echo "-- Certificate successfully deleted";
 exit 0;
+
+
+
