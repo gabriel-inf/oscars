@@ -1,0 +1,76 @@
+#!/bin/sh
+###############################################################################
+# USAGE: idc-kspasswd
+# 
+# Changes the keystore passwords of sec-server.jks and sec-client.jks and stores
+# the changes in their associated .properties files.
+###############################################################################
+
+if [ -z "$CATALINA_HOME" ]; then
+	echo "Required environment variable CATALINA_HOME is not set. Please run do_build.sh .";
+	exit 1;
+fi
+
+KS_PATH="";
+
+while [ 1 ]; do
+    echo "Choose the keystore with the password you'd like to change:";
+    echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
+    echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
+    echo -n "Enter choice: ";
+    read OPCHOICE;
+    
+    if [ "$OPCHOICE" == "1" ]; then
+        KS_PATH="$CATALINA_HOME/shared/classes/repo/sec-client";
+        break;
+    elif [ "$OPCHOICE" == "2" ]; then
+        KS_PATH="$CATALINA_HOME/shared/classes/server/sec-server";
+        break;
+    else
+       echo "Invalid choice. Please choose 1 or 2."; 
+    fi
+done
+
+while [ 1 ]; do
+    OLD_PASSWD="";
+    echo -n "Enter the old keystore password: "
+    stty -echo;
+    read OLD_PASSWD;
+    stty echo;
+    echo "";
+    
+    NEW_PASSWD="";
+    echo -n "Enter the new keystore password: "
+    stty -echo;
+    read NEW_PASSWD;
+    stty echo;
+    echo "";
+    
+    NEW_PASSWD2="";
+    echo -n "Re-enter the new keystore password: "
+    stty -echo;
+    read NEW_PASSWD2;
+    stty echo;
+    echo "";
+    
+    if [ "$NEW_PASSWD" != "" ] && [ "$NEW_PASSWD2" != "" ] && [ "$NEW_PASSWD" == "$NEW_PASSWD2" ]; then
+        keytool -storepasswd -keystore $KS_PATH.jks -new $NEW_PASSWD -storepass $OLD_PASSWD
+    else
+        echo "-- New password fields do not match. Please try again...";
+        continue;
+    fi
+    
+    if [ $? != 0 ]; then 
+        echo "-- Keytool returned an error when changing the password. Please try again...";
+        continue;
+    fi
+    
+    sed -i -e "s/org.apache.ws.security.crypto.merlin.keystore.password=.*/org.apache.ws.security.crypto.merlin.keystore.password=$NEW_PASSWD/" $KS_PATH.properties;
+    if [ $? != 0 ]; then 
+        echo "-- Sed returned an error when updating '$KS_PATH.properties'. Please manually add the line org.apache.ws.security.crypto.merlin.keystore.password=YOUR_NEW_PASSWORD to $KS_PATH.properties.";
+        exit;
+    fi
+    
+    echo "-- Password changed";
+    exit 0;
+done
