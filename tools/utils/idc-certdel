@@ -1,0 +1,58 @@
+#!/bin/sh
+###############################################################################
+# USAGE: idc-certdel
+# 
+# Deletes a password form a chosen keystore
+###############################################################################
+
+if [ -z "$CATALINA_HOME" ]; then
+	echo "Required environment variable CATALINA_HOME is not set. Please run do_build.sh .";
+	exit 1;
+fi
+
+KS_PATH="";
+KS_PASS="";
+
+while [ 1 ]; do
+    echo "Choose the keystore with the certificate you'd like to delete:";
+    echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
+    echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
+    echo "    3. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
+    
+    echo -n "Enter choice: ";
+    read OPCHOICE;
+    
+    if [ "$OPCHOICE" == "1" ]; then
+        KS_PATH="$CATALINA_HOME/shared/classes/repo/sec-client";
+        break;
+    elif [ "$OPCHOICE" == "2" ]; then
+        KS_PATH="$CATALINA_HOME/shared/classes/server/sec-server";
+        break;
+    elif [ "$OPCHOICE" == "3" ]; then
+        KS_PATH="$CATALINA_HOME/shared/classes/repo/ssl-keystore";
+        KS_PASS="oscars";
+        break;
+    else
+       echo "Invalid choice. Please choose 1, 2, or 3."; 
+    fi
+done
+
+if [ -z "$KS_PASS" ]; then 
+    KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $KS_PATH.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
+    if [ $? != 0 ]; then
+        echo "-- Error while trying to determine keystore password. Please check error message above and try running idc-certadd again.";
+        exit 1;
+    fi
+fi
+
+echo -n "Enter an alias for the certificate to delete: ";
+read CERT_ALIAS;
+
+keytool -delete -keystore $KS_PATH.jks -alias $CERT_ALIAS -storepass $KS_PASS;
+if [ $? != 0 ]; then
+    echo "-- Keytool returned an error. Your certificate was not deleted.";
+    exit 1;
+fi
+
+echo "-- Certificate successfully deleted";
+exit 0;
