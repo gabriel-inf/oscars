@@ -1,0 +1,276 @@
+#!/bin/sh
+###############################################################################
+# USAGE: idc-certadd
+# 
+# Allows user to:
+#   1. Create a new certificate to be kept in sec-client.jks
+#   2. Import a signed certificate into sec-client.jks
+#   3. Import a trusted certificate into sec-server.jks or ssl-keystore.jks
+###############################################################################
+
+###############################################################################
+# GLOBALS
+###############################################################################
+if [ -z "$CATALINA_HOME" ]; then
+	echo "Required environment variable CATALINA_HOME is not set.";
+	exit 1;
+fi
+REPO_PATH="$CATALINA_HOME/shared/classes/repo";
+SERVER_PATH="$CATALINA_HOME/shared/classes/server";
+
+###############################################################################
+# SUBROUTINES
+###############################################################################
+create_new_cert ()
+{
+    echo "";
+    echo "-- You have chosen to create a new certificate for sending messages to other IDCs.";
+    echo "";
+    
+    CERT_ALIAS="";
+    CERT_VALIDITY="";
+    echo -n "Enter an alias for this certificate: ";
+    read CERT_ALIAS;
+    
+    echo -n "How many days will this certifcate be valid?: ";
+    read CERT_VALIDITY;
+    
+    KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $REPO_PATH/sec-client.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
+    if [ $? != 0 ]; then
+        echo "-- Error while trying to determine keystore password. Please check error message above and try running idc-certadd again.";
+        exit 1;
+    fi
+    
+    echo "-- Using keystore password from $REPO_PATH/sec-client.jks";
+    keytool -genkey -alias $CERT_ALIAS -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -validity $CERT_VALIDITY;
+    if [ $? != 0 ]; then
+        echo "-- Keytool returned an error. See the error message above and please try again.";
+        exit 1;
+    fi
+    
+    sed -i -e "s/<user>.*<\/user>/<user>$CERT_ALIAS<\/user>/g" $REPO_PATH/axis2.xml
+    if [ $? != 0 ]; then
+        echo "-- 'sed' returned an error. Please try running idc-certadd again.";
+        exit 1;
+    fi
+    echo "-- Certificate created.";
+    
+    CSR_ANS=0;
+    while [ $CSR_ANS == 0 ]; do
+        echo -n "Would you like to generate a Certificate Signing Request (CSR) y/n? ";
+        read CSR_ANS;
+        if [ "$CSR_ANS" != "y" ] && [ "$CSR_ANS" != "Y" ] && [ "$CSR_ANS" != "n" ] && [ "$CSR_ANS" != "N" ]; then
+            CSR_ANS=0;
+        fi
+    done
+    
+    if [ "$CSR_ANS" == "y" ] || [ "$CSR_ANS" == "Y" ]; then
+        CSR_FILE="";
+        echo -n "What filename should I give the CSR?: ";
+        read CSR_FILE;
+        #NOTE: ~ doesn't work in file path
+        keytool -certreq -alias $CERT_ALIAS -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -file $CSR_FILE;
+        if [ $? != 0 ]; then
+            echo "-- Keytool returned an error. You may try generating the CSR again run 'idc-csr'.";
+            echo "";
+            echo "-- Certificate successfully created. No CSR generated at this time.";
+            echo "--- If you decide to get your certificate signed later you may run the command idc-csr";
+            exit 1;
+        fi
+        echo "-- Certificate Signing Request saved in file $CSR_FILE";
+        echo " --- Please send $CSR_FILE to your CA for signing.";
+        echo " --- You may then import your signed certificate by running idc-certadd and choosing option 2.";
+    else
+        echo "-- Certificate successfully created. No CSR generated at this time.";
+        echo "--- If you decide to get your certificate signed later you may run the command idc-csr";
+    fi    
+}
+
+import_signed_cert ()
+{
+    echo "";
+    echo "-- You have chosen to import a signed certificate for talking to other domains.";
+    echo "";
+    
+    CERTFILE="";
+    while [ 1 ]; do
+         echo -n "Enter the filename of your signed certificate: ";
+        read CERTFILE;
+        if [ -f "$CERTFILE" ]; then
+            break;
+        else
+            echo "- Cannot find certificate file '$CERTFILE'"; 
+        fi
+    done
+    
+    KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $REPO_PATH/sec-client.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
+    if [ $? != 0 ]; then
+        echo "-- Error while trying to determine keystore password. Please check above error and try running idc-certadd again.";
+        exit 1;
+    fi
+    
+    echo "-- Using keystore password from $REPO_PATH/sec-client.jks";
+    
+    CERT_ALIAS=`grep "<user>.*</user>" $REPO_PATH/axis2.xml | sed -e 's/.*<user>\(.*\)<\/user>.*/\1/'`;
+    if [ $? != 0 ]; then
+        echo "-- Error reading certificate alias from '$REPO_PATH/axis2.xml'. Please check that file and try running idc-certadd again.";
+        exit 1;
+    fi
+    echo "-- Using certificate with the alias $CERT_ALIAS"
+    echo "--- If this is not the correct alias please exit (Ctrl-C) and modify the <user> tag in axis2.xml"
+    
+    ISSUER=`keytool -printcert -file $CERTFILE -V | grep Issuer | sed -e 's/Issuer: //'`;
+    if [ $? != 0 ]; then
+        echo "-- Error reading signed certificate. Please try running idc-certadd again.";
+        exit 1;
+    fi
+    IMPORT_ISSUER=`keytool -list -keystore $REPO_PATH/sec-client.jks -V -storepass $KS_PASS | grep "Owner.*$ISSUER"`;
+    
+    if [ -z "$IMPORT_ISSUER" ]; then
+        echo "-- You need to import the root certificate of the CA  that signed your certificate."
+        echo "--- Your CA should have given you this file. If they did not then they can provide it.";
+        echo "--- The certificate will have the subject '$ISSUER'";
+        while [ 1 ]; do
+            echo -n "Enter the filename of your CA's certificate: ";
+            read CAFILE;
+            if [ -f "$CAFILE" ]; then
+                break;
+            else
+                echo "- Cannot find certificate file '$CAFILE'"; 
+            fi
+        done
+        
+        CAALIAS="";
+        echo -n "Enter an alias for your CA's certificate: ";
+        read CAALIAS;
+        
+        keytool -import -keystore $REPO_PATH/sec-client.jks -alias $CAALIAS -storepass $KS_PASS -file $CAFILE
+        if [ $? != 0 ]; then
+            echo "-- Error importing the CA cetficate. Please try running idc-certadd again.";
+            exit 1;
+        fi
+        echo "-- CA certificate imported";
+    fi
+    
+    keytool -import -keystore $REPO_PATH/sec-client.jks -alias $CERT_ALIAS -storepass $KS_PASS -file $CERTFILE
+    if [ $? != 0 ]; then
+        echo "-- Error importing your signed certficate. Almost done but keytool threw an error when running the import command.";
+        exit 1;
+    fi
+    echo "-- Signed certificate imported";
+}
+
+trust_cert ()
+{
+    echo "";
+    echo "-- You have chosen to import a trusted certificate.";
+    echo "";
+    
+    CERTFILE="";
+    while [ 1 ]; do
+        echo -n "Enter certificate filename: ";
+        read CERTFILE;
+        if [ -f "$CERTFILE" ]; then
+            break;
+        else
+            echo "- Cannot find certificate file '$CERTFILE'"; 
+        fi
+    done
+    
+    echo -n "Enter certificate alias (This value is used to reference the certificate in some configuration files. It may be any valid string.): ";
+    read alias;
+    
+    if [ ! -f "$SERVER_PATH/sec-server.jks" ]; then
+        echo "Cannot find sec-server.jks. Please build and install OSCARS."; 
+        exit 1;
+    fi
+    
+    if [ ! -f "$REPO_PATH/ssl-keystore.jks" ]; then
+        echo "Cannot find ssl-keystore.jks. Please build and install OSCARS."; 
+        exit 1;
+    fi
+    
+    echo "OSCARS will trust this certificate when it's used to sign...";
+    echo -n "...an incoming request y/n? ";
+    server=0;
+    while [ $server == 0 ]; do
+       read server;
+       if [ "$server" != "y" ] && [ "$server" != "Y" ] && [ "$server" != "n" ] && [ "$server" != "N" ]; then
+            server=0;
+       fi
+    done
+    
+    echo -n "...the SSL certificate of another IDC's web server y/n? ";
+    ssl=0;
+    while [ $ssl == 0 ]; do
+       read ssl;
+       if [ "$ssl" != "y" ] && [ "$ssl" != "Y" ] && [ "$ssl" != "n" ] && [ "$ssl" != "N" ]; then
+            ssl=0;
+       fi
+    done
+
+    echo "-- Using keystore password from $SERVER_PATH/sec-server.jks";
+    
+    if [ "$server" == "y" ] || [ "$server" == "Y" ]; then
+        KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $SERVER_PATH/sec-server.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
+        if [ $? != 0 ]; then
+            echo "-- Error while trying to determine keystore password. Please check above error and try running idc-certadd again.";
+            exit 1;
+        fi
+        
+        keytool -import -keystore $SERVER_PATH/sec-server.jks -file $CERTFILE -storepass $KS_PASS -alias $alias;
+        if [ $? != 0 ]; then
+            echo "-- Keytool returned an error while importing the certificate for trusting incoming requests.";
+            exit 1;
+        fi
+        echo "";
+        echo "-- Certificate imported into $SERVER_PATH/sec-server.jks. Messages containing this certificate or another certificate issued by the CA it represents will now be trusted.";
+        echo "";
+    fi
+    
+    if [ "$ssl" == "y" ] || [ "$ssl" == "Y" ]; then
+        keytool -import -keystore $REPO_PATH/ssl-keystore.jks -file $CERTFILE -storepass oscars -alias $alias;
+        if [ $? != 0 ]; then
+            echo "-- Keytool returned an error importing the certificate for trusting other domain's SSL certificates.";
+            exit 1;
+        fi
+        echo "";
+        echo "-- Certificate imported into $REPO_PATH/ssl-keystore.jks. HTTPS servers using this certificate or another certificate issued by the CA it represents will now be trusted.";
+        echo "";
+    fi
+    
+    echo "-- Complete";
+    exit 0;
+}
+
+
+###############################################################################
+# MAIN
+###############################################################################
+# Get the user's choice
+while [ 1 ]; do
+    echo "What would you like to do?";
+    echo "    1. Create a new certificate my IDC will use in outgoing messages to other IDCs";
+    echo "    2. Import a certificate created using choice 1 that was signed by a CA";
+    echo "    3. Trust a CA or another IDC's certificate";
+    echo -n "Enter choice: ";
+    read OPCHOICE;
+    
+    if [ "$OPCHOICE" == "1" ]; then
+        create_new_cert;
+        break;
+    elif [ "$OPCHOICE" == "2" ]; then
+        import_signed_cert;
+        break;
+    elif [ "$OPCHOICE" == "3" ]; then
+        trust_cert "";
+        break;
+    else
+       echo "Invalid choice. Please choose 1, 2, or 3."; 
+    fi
+done
+
+
+
+
+
