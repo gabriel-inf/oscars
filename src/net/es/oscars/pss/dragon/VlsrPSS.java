@@ -46,6 +46,8 @@ public class VlsrPSS implements PSS{
         boolean hasNarb = ((hasNarbStr == null) || hasNarbStr.equals("1"));
         String setEROStr = this.props.getProperty("setERO");
         boolean setERO = (setEROStr != null && setEROStr.equals("1"));
+        String tunnelModeStr = this.props.getProperty("tunnelMode");
+        boolean tunnelMode = (tunnelModeStr != null && tunnelModeStr.equals("1"));
         String sshPortForwardStr = this.props.getProperty("ssh.portForward");
         boolean sshPortForward = (sshPortForwardStr != null && sshPortForwardStr.equals("1"));
         String sshUser = this.props.getProperty("ssh.user");
@@ -104,8 +106,13 @@ public class VlsrPSS implements PSS{
             int vtag = 0;
             
             if(ingressLinkDescr < 0 && 
-                ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE)){
+                ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
+                (!tunnelMode)){
                 vtag = -1;
+            }else if(ingressLinkDescr < 0 && 
+                ingLocalId.getType().equals(DragonLocalID.SUBNET_INTERFACE) &&
+                tunnelMode){
+                vtag = 0;
             }else{
                 vtag = Math.abs(ingressLinkDescr);
             }
