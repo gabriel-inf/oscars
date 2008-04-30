@@ -1,8 +1,8 @@
 #!/bin/sh
 ###############################################################################
-# USAGE: idc-certdel
+# USAGE: idc-certexport
 # 
-# Deletes a certificate from a chosen keystore
+# Exports a certificate to a file from a chosen keystore
 ###############################################################################
 
 if [ -z "$CATALINA_HOME" ]; then
@@ -77,24 +77,15 @@ while [ -z "$CERT_ALIAS" ]; do
     CERT_ALIAS=${CERTS[$OPCHOICE]};
 done
 
-echo -n "Are you sure you want to delete the certificate '$CERT_ALIAS' y/n? ";
-ans=0;
-while [ $ans == 0 ]; do
-   read ans;
-   if [ "$ans" != "y" ] && [ "$ans" != "Y" ] && [ "$ans" != "n" ] && [ "$ans" != "N" ]; then
-		ans=0;
-   fi
-done
-if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
-    echo "-- Certificate delete cancelled. Your certificate was NOT deleted.";
-    exit 0;
-fi
+CERT_FILE="";
+echo -n "What filename should I give the exported certificate?: ";
+read CERT_FILE;
 
-keytool -delete -keystore $KS_PATH.jks -alias $CERT_ALIAS -storepass $KS_PASS;
+keytool -export -keystore $KS_PATH.jks -alias $CERT_ALIAS -storepass $KS_PASS -rfc -file $CERT_FILE;
 if [ $? != 0 ]; then
-    echo "-- Keytool returned an error. Your certificate was not deleted.";
+    echo "-- Keytool returned an error. Your certificate was not exported.";
     exit 1;
 fi
 
-echo "-- Certificate successfully deleted";
+echo "-- Certificate successfully exported";
 exit 0;
