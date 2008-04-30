@@ -1,0 +1,40 @@
+#!/bin/sh
+###############################################################################
+# USAGE: idc-certsignreq
+# 
+# Generates a certificate signing request for the currently used certificate in
+# sec-client.jks.
+###############################################################################
+
+if [ -z "$CATALINA_HOME" ]; then
+	echo "Required environment variable CATALINA_HOME is not set.";
+	exit 1;
+fi
+REPO_PATH="$CATALINA_HOME/shared/classes/repo";
+
+KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $REPO_PATH/sec-client.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;
+if [ $? != 0 ]; then
+    echo "-- Error while trying to determine keystore password. Please check error message above and try running idc-certadd again.";
+    exit 1;
+fi
+
+echo "-- Using keystore password from $REPO_PATH/sec-client.jks";
+    
+CERT_ALIAS=`grep "<user>.*</user>" $REPO_PATH/axis2.xml | sed -e 's/.*<user>\(.*\)<\/user>.*/\1/'`;
+if [ $? != 0 ]; then
+    echo "-- Error reading certificate alias from '$REPO_PATH/axis2.xml'. Please check that file and try running idc-certadd again.";
+    exit 1;
+fi
+echo "-- Using certificate with the alias $CERT_ALIAS"
+echo "--- If this is not the correct alias please exit (Ctrl-C) and modify the <user> tag in axis2.xml"
+
+CSR_FILE="";
+echo -n "What filename should I give the CSR?: ";
+read CSR_FILE;
+#NOTE: ~ doesn't work in file path
+keytool -certreq -alias $CERT_ALIAS -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -file $CSR_FILE;
+if [ $? != 0 ]; then
+    echo "-- Keytool returned an error. Please see error above and try again.";
+    exit 1;
+fi
+echo "-- Certificate Signing Request saved in file $CSR_FILE";

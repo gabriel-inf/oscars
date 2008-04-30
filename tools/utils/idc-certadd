@@ -71,10 +71,10 @@ create_new_cert ()
         #NOTE: ~ doesn't work in file path
         keytool -certreq -alias $CERT_ALIAS -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -file $CSR_FILE;
         if [ $? != 0 ]; then
-            echo "-- Keytool returned an error. You may try generating the CSR again run 'idc-csr'.";
+            echo "-- Keytool returned an error. You may try generating the CSR again run 'idc-certsignreq'.";
             echo "";
             echo "-- Certificate successfully created. No CSR generated at this time.";
-            echo "--- If you decide to get your certificate signed later you may run the command idc-csr";
+            echo "--- If you decide to get your certificate signed later you may run the command idc-certsignreq";
             exit 1;
         fi
         echo "-- Certificate Signing Request saved in file $CSR_FILE";
@@ -82,7 +82,7 @@ create_new_cert ()
         echo " --- You may then import your signed certificate by running idc-certadd and choosing option 2.";
     else
         echo "-- Certificate successfully created. No CSR generated at this time.";
-        echo "--- If you decide to get your certificate signed later you may run the command idc-csr";
+        echo "--- If you decide to get your certificate signed later you may run the command idc-certsignreq";
     fi    
 }
 
