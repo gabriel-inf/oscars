@@ -373,9 +373,30 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
     public Path findPathBetween(Link src, Link dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation)
             throws PathfinderException {
-        String srcStr = src.getFQTI();
-        String dstStr = dst.getFQTI();
-        return this.findPathBetween(srcStr, dstStr, bandwidth, startTime, endTime, reservation);
+
+        boolean linked = false;
+        // Special case: if links are in same node
+        if (src.getPort().getNode().equals(dst.getPort().getNode())) {
+            linked = true;
+        } else if (src.getRemoteLink().equals(dst)) {
+            // TODO: check if there is available bandwidth!
+            linked = true;
+        }
+        if (linked) {
+            Path newPath = new Path();
+            PathElem pathElemSrc = new PathElem();
+            pathElemSrc.setLink(src);
+
+            PathElem pathElemDst = new PathElem();
+            pathElemDst.setLink(dst);
+            pathElemSrc.setNextElem(pathElemDst);
+
+            return(newPath);
+        } else {
+            String srcStr = src.getFQTI();
+            String dstStr = dst.getFQTI();
+            return this.findPathBetween(srcStr, dstStr, bandwidth, startTime, endTime, reservation);
+        }
     }
 
     public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation)
