@@ -2,7 +2,7 @@
 
 <head>
     <script type="text/javascript">
-        function cancelReservation() {
+        function cancelReservation(dialogFields) {
             dojo.xhrPost({
               url: 'servlet/CancelReservation',
               handleAs: "json-comment-filtered",
