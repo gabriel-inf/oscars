@@ -41,7 +41,7 @@ create_new_cert ()
         exit 1;
     fi
     
-    echo "-- Using keystore password from $REPO_PATH/sec-client.jks";
+    echo "-- Using keystore password from $REPO_PATH/sec-client.properties";
     keytool -genkey -alias $CERT_ALIAS -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -validity $CERT_VALIDITY;
     if [ $? != 0 ]; then
         echo "-- Keytool returned an error. See the error message above and please try again.";
@@ -114,7 +114,7 @@ import_signed_cert ()
         exit 1;
     fi
     
-    echo "-- Using keystore password from $REPO_PATH/sec-client.jks";
+    echo "-- Using keystore password from $REPO_PATH/sec-client.properties";
     
     CERT_ALIAS=`grep "<user>.*</user>" $REPO_PATH/axis2.xml | sed -e 's/.*<user>\(.*\)<\/user>.*/\1/'`;
     if [ $? != 0 ]; then
@@ -216,7 +216,7 @@ trust_cert ()
        fi
     done
 
-    echo "-- Using keystore password from $SERVER_PATH/sec-server.jks";
+    echo "-- Using keystore password from $SERVER_PATH/sec-server.properties";
     
     if [ "$server" == "y" ] || [ "$server" == "Y" ]; then
         KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $SERVER_PATH/sec-server.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;

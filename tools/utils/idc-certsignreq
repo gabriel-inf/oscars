@@ -18,7 +18,7 @@ if [ $? != 0 ]; then
     exit 1;
 fi
 
-echo "-- Using keystore password from $REPO_PATH/sec-client.jks";
+echo "-- Using keystore password from $REPO_PATH/sec-client.properties";
     
 CERT_ALIAS=`grep "<user>.*</user>" $REPO_PATH/axis2.xml | sed -e 's/.*<user>\(.*\)<\/user>.*/\1/'`;
 if [ $? != 0 ]; then
