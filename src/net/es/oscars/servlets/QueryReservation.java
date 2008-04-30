@@ -26,6 +26,7 @@ public class QueryReservation extends HttpServlet {
             throws IOException, ServletException {
 
         boolean allUsers = false;
+        boolean internalIntradomainHops = false;
         Reservation reservation = null;
         ReservationManager rm = new ReservationManager("bss");
         UserManager userMgr = new UserManager("aaa");
@@ -39,13 +40,21 @@ public class QueryReservation extends HttpServlet {
         if (userName == null) { return; }
         Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
-         AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "query");
-         if (authVal == AuthValue.DENIED) {
-             utils.handleFailure(out, "no permission to query Reservations",  aaa, null);
-             return;
-         }
-         if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
-         aaa.getTransaction().commit();
+        // check to see if user is allowed to query at all, and if they can
+        // only look at reservations they have made
+        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "query");
+        if (authVal == AuthValue.DENIED) {
+            utils.handleFailure(out, "no permission to query Reservations",  aaa, null);
+            return;
+        }
+        if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
+        // check to see if may look at internal intradomain path elements
+        authVal = userMgr.checkModResAccess(userName,
+            "Reservations", "create", 0, 0, true, false );
+        if  (authVal != AuthValue.DENIED ) {
+            internalIntradomainHops = true;
+        }
+        aaa.getTransaction().commit();
          
         String gri = request.getParameter("gri");
         Session bss = 
@@ -73,7 +82,8 @@ public class QueryReservation extends HttpServlet {
         Map outputMap = new HashMap();
         outputMap.put("status", "Successfully got reservation details for " +
                                 reservation.getGlobalReservationId());
-        this.contentSection(outputMap, reservation, userName);
+        this.contentSection(outputMap, reservation, userName,
+                            internalIntradomainHops);
         outputMap.put("method", "QueryReservation");
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
@@ -89,7 +99,8 @@ public class QueryReservation extends HttpServlet {
     }
 
     public void
-        contentSection(Map outputMap, Reservation resv, String userName) {
+        contentSection(Map outputMap, Reservation resv, String userName,
+                       boolean internalIntradomainHops) {
 
         Long longParam = null;
         Integer intParam = null;
@@ -167,6 +178,12 @@ public class QueryReservation extends HttpServlet {
         }
         net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
         String pathStr = utils.pathToString(path, false);
+        // don't allow non-authorized user to see internal hops
+        if ((pathStr != null) && !internalIntradomainHops) {
+            String[] hops = pathStr.trim().split("\n");
+            pathStr = hops[0] + "\n";
+            pathStr += hops[hops.length-1];
+        }
         if (pathStr != null) {
             outputMap.put("pathReplace", pathStr);
         }

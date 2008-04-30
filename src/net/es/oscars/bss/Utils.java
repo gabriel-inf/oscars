@@ -49,20 +49,12 @@ public class Utils {
             ctr++;
             Link link = pathElem.getLink();
             if(i != 0){
-                sb.append(", ");
+                sb.append("\n");
             }
             // if layer 2, send back topology identifier
             if (path.getLayer2Data() != null) {
                 String fqti = link.getFQTI();
                 sb.append(fqti);
-                param = pathElem.getDescription();
-                if (param != null) {
-                    sb.append(", desc: ["+pathElem.getDescription()+"]");
-                }
-                param = pathElem.getLinkDescr();
-                if (param != null) {
-                    sb.append(", VLAN: [" + param + "]");
-                }
             // otherwise, send back host name/IP address pair
             } else {
                 nodeName = link.getPort().getNode().getTopologyIdent();

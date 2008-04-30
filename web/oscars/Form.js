@@ -180,6 +180,7 @@ oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
     loginSection.style.display = ""; 
     var logoutSection = dojo.byId("logoutSection");
     logoutSection.style.display = "none"; 
+    dijit.byId("cancelDialog").destroy();
     // destroy all other tabs
     if (dijit.byId("reservationsPane") != null) {
         mainTabContainer.closeChild(dijit.byId("reservationsPane"));
