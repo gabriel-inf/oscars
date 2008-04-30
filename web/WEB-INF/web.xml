@@ -30,6 +30,10 @@
         <servlet-class>net.es.oscars.servlets.QueryReservation</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>ModifyReservation</servlet-name>
+        <servlet-class>net.es.oscars.servlets.ModifyReservation</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>CancelReservation</servlet-name>
         <servlet-class>net.es.oscars.servlets.CancelReservation</servlet-class>
     </servlet>
@@ -80,6 +84,10 @@
     <servlet-mapping>
         <servlet-name>QueryReservation</servlet-name>
         <url-pattern>/servlet/QueryReservation</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ModifyReservation</servlet-name>
+        <url-pattern>/servlet/ModifyReservation</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>CancelReservation</servlet-name>
