@@ -54,8 +54,8 @@ public class VlsrPSS implements PSS{
         String sshKey = this.props.getProperty("ssh.key");
         
         Path path = resv.getPath();
-        ArrayList<String> ero = this.pathToEro(path, false);
-        ArrayList<String> subnetEro = this.pathToEro(path, true);
+        ArrayList<String> ero = null;
+        ArrayList<String> subnetEro = null;
         Layer2Data layer2Data = path.getLayer2Data();
         Link ingressLink = path.getPathElem().getLink();
         Link egressLink= this.getEgressLink(path);
@@ -95,6 +95,8 @@ public class VlsrPSS implements PSS{
         String gri = resv.getGlobalReservationId();
         lsp.setLSPName(gri);
         if(setERO){
+            ero = this.pathToEro(path, false);
+            subnetEro = this.pathToEro(path, true);
             lsp.setEro(ero);
             lsp.setSubnetEro(subnetEro);
         }
@@ -872,6 +874,10 @@ public class VlsrPSS implements PSS{
         elem = elem.getNextElem();//dont add first hop
         while(elem != null){
             PathElem nextElem = elem.getNextElem();
+            //don't care about the last edge hop
+            if(nextElem == null){
+                break;
+            }
             Link link = elem.getLink();
             Port port = link.getPort();
             String linkId = link.getTopologyIdent();
