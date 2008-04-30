@@ -921,8 +921,7 @@ public class TopologyManager {
                 pathElem = pathElem.getNextElem();
             }
 
-            String subject = "Reservation " + r.getGlobalReservationId() +
-                             "invalidated";
+            String subject = "Reservation " + r.getGlobalReservationId() + "invalidated";
 
             //TODO:  build layer-specific info from old path in database
             //       assuming only the hops have the possibility of changing
@@ -936,8 +935,8 @@ public class TopologyManager {
                 String msg = "Reservation invalidated due to oversubscription.\n " +
                               r.toString(this.dbname) + "\n";
                 this.sendMessage(subject, msg, r);
-                r.setStatus("INVALIDATED");
-                this.log.warn("INVALIDATED request due to oversubscription: " +r.getGlobalReservationId() );
+//                r.setStatus("INVALIDATED");
+                this.log.warn("request may be INVALID due to oversubscription: " +r.getGlobalReservationId() );
                 dao.update(r);
 
                 continue;
@@ -951,7 +950,7 @@ public class TopologyManager {
                     String msg = "Reservation invalidated due to changed path.\n" +
                                   r.toString(this.dbname) + "\n";
                     this.sendMessage(subject, msg, r);
-                    r.setStatus("INVALIDATED");
+//                    r.setStatus("INVALIDATED");
                     this.log.warn("INVALIDATED request due to changed path: " +r.getGlobalReservationId() );
                     dao.update(r);
                 }
