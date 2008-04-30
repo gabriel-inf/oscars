@@ -33,6 +33,11 @@ public class DBPFClient {
 
         SessionFactory sf = HibernateUtil.getSessionFactory("bss");
         sf.getCurrentSession().beginTransaction();
+        Date today = new Date();
+        Long now = today.getTime();
+        now = now / 1000;
+        Long startTime = now;
+        Long endTime = now + 600;
 
         String start;
         String end;
@@ -47,8 +52,8 @@ public class DBPFClient {
 
         Reservation reservation = new Reservation();
         reservation.setBandwidth(0L);
-        reservation.setStartTime(1305444160L);
-        reservation.setEndTime(1305444400L);
+        reservation.setStartTime(startTime);
+        reservation.setEndTime(endTime);
 
 
         // set up path
@@ -63,15 +68,17 @@ public class DBPFClient {
 
 //       layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=wash-vlsr:port=10.100.80.133-101:link=1");
 
-        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=fnal-mr1:port=TenGigabitEthernet7/4:link=*");
-        layer2Info.setDestEndpoint("urn:ogf:network:domain=dcn.internet2.edu:node=KANS:port=S27391:link=10.100.80.185");
+        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=fnal-mr1:port=TenGigabitEthernet4/3:link=*");
+        layer2Info.setDestEndpoint("urn:ogf:network:domain=es.net:node=chi-sl-mr1:port=TenGigabitEthernet4/4:link=*");
+        layer2Info.setSrcEndpoint("urn:ogf:network:domain=es.net:node=anl-mr1:port=TenGigabitEthernet3/3:link=*");
+        layer2Info.setDestEndpoint("urn:ogf:network:domain=es.net:node=atla-cr1:port=xe-5/1/0:link=*");
 
         VlanTag srcVtag = new VlanTag();
-        srcVtag.setString("any");
+        srcVtag.setString("3140");
         srcVtag.setTagged(true);
         layer2Info.setSrcVtag(srcVtag);
         VlanTag destVtag = new VlanTag();
-        destVtag.setString("any");
+        destVtag.setString("3140");
         destVtag.setTagged(true);
         layer2Info.setDestVtag(destVtag);
 
@@ -118,7 +125,7 @@ public class DBPFClient {
 
         if (result == null) {
             System.out.println("No path");
-        } else if (piResult == null) {
+        } else if (piResult != null) {
             CtrlPlanePathContent newPath = piResult.getPath();
             CtrlPlaneHopContent[] newHops = newPath.getHop();
             for (CtrlPlaneHopContent newHop : newHops) {
