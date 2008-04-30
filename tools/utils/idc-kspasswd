@@ -17,7 +17,7 @@ while [ 1 ]; do
     echo "Choose the keystore with the password you'd like to change:";
     echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
     echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
-    echo -n "Enter choice: ";
+    printf "Enter choice: ";
     read OPCHOICE;
     
     if [ "$OPCHOICE" == "1" ]; then
@@ -33,21 +33,21 @@ done
 
 while [ 1 ]; do
     OLD_PASSWD="";
-    echo -n "Enter the old keystore password: "
+    printf "Enter the old keystore password: "
     stty -echo;
     read OLD_PASSWD;
     stty echo;
     echo "";
     
     NEW_PASSWD="";
-    echo -n "Enter the new keystore password: "
+    printf "Enter the new keystore password: "
     stty -echo;
     read NEW_PASSWD;
     stty echo;
     echo "";
     
     NEW_PASSWD2="";
-    echo -n "Re-enter the new keystore password: "
+    printf "Re-enter the new keystore password: "
     stty -echo;
     read NEW_PASSWD2;
     stty echo;

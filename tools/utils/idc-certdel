@@ -19,7 +19,7 @@ while [ 1 ]; do
     echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
     echo "    3. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
     
-    echo -n "Enter choice: ";
+    printf "Enter choice: ";
     read OPCHOICE;
     
     if [ "$OPCHOICE" == "1" ]; then
@@ -50,7 +50,7 @@ CERT_LIST=`keytool -list -keystore $KS_PATH.jks -storepass $KS_PASS | grep "Entr
 if [ $? != 0 ]; then
     echo "-- Error while trying to list certificates in the keystore. Please manually enter the alias of the certificate you'd like to delete";
     echo "";
-    echo -n "Enter certificate alias: ";
+    printf "Enter certificate alias: ";
     read CERT_ALIAS;
 fi
 
@@ -65,7 +65,7 @@ while [ -z "$CERT_ALIAS" ]; do
         echo "    $COUNT. $LINE";
         CERTS[`expr $COUNT - 1`]="$LINE";
     done
-    echo -n "Enter choice: ";
+    printf "Enter choice: ";
     read OPCHOICE;
 
     if [ -z "$OPCHOICE" ] || [ -z `echo $OPCHOICE | egrep "^[0-9]+$"` ] || [ $OPCHOICE -lt 1 ] || [ $OPCHOICE -gt $COUNT ]; then
@@ -77,7 +77,7 @@ while [ -z "$CERT_ALIAS" ]; do
     CERT_ALIAS=${CERTS[$OPCHOICE]};
 done
 
-echo -n "Are you sure you want to delete the certificate '$CERT_ALIAS' y/n? ";
+printf "Are you sure you want to delete the certificate '$CERT_ALIAS' y/n? ";
 ans=0;
 while [ $ans == 0 ]; do
    read ans;
