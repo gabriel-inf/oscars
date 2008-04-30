@@ -75,6 +75,8 @@ create_new_cert ()
             echo "";
             echo "-- Certificate successfully created. No CSR generated at this time.";
             echo "--- If you decide to get your certificate signed later you may run the command idc-certsignreq";
+            CERT_SUBJ=`keytool -list -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -alias $CERT_ALIAS -V | grep "Owner" | sed -e 's/Owner:\(.*\)/\1/g'`;
+            echo "--- Send the following X.509 subject to your neighboring IDCs:$CERT_SUBJ";
             exit 1;
         fi
         echo "-- Certificate Signing Request saved in file $CSR_FILE";
@@ -83,7 +85,10 @@ create_new_cert ()
     else
         echo "-- Certificate successfully created. No CSR generated at this time.";
         echo "--- If you decide to get your certificate signed later you may run the command idc-certsignreq";
-    fi    
+    fi
+    
+    CERT_SUBJ=`keytool -list -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -alias $CERT_ALIAS -V | grep "Owner" | sed -e 's/Owner:\(.*\)/\1/g'`;
+    echo "--- Send the following X.509 subject to your neighboring IDCs:$CERT_SUBJ";
 }
 
 import_signed_cert ()
@@ -158,6 +163,8 @@ import_signed_cert ()
         exit 1;
     fi
     echo "-- Signed certificate imported";
+    CERT_SUBJ=`keytool -list -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -alias $CERT_ALIAS -V | grep "Owner" | sed -e 's/Owner:\(.*\)/\1/g'`;
+    echo "--- Send the following X.509 subject to your neighboring IDCs:$CERT_SUBJ";
 }
 
 trust_cert ()
@@ -270,7 +277,4 @@ while [ 1 ]; do
     fi
 done
 
-
-
-
-
+exit 0;
