@@ -83,10 +83,12 @@ public class JnxLSP {
         Layer3Data layer3Data = path.getLayer3Data();
         PathElem pathElem = path.getPathElem();
         if (layer2Data != null) {
+            /*
             if (!path.isExplicit()) {
                 throw new PSSException(
                         "no explicit path provided for layer 2 Juniper setup");
             }
+            */
             if (lspData.getIngressLink() == null) {
                 throw new PSSException(
                         "createPath called before getting path endpoints");
@@ -196,7 +198,7 @@ public class JnxLSP {
 
         // Additional information from the template will be used if
         // an explicit path was given.
-        if (path.isExplicit()) {
+        if (layer2Data!= null || path.isExplicit()) {
             // reset to beginning
             pathElem = path.getPathElem();
             hops = lspData.getHops(pathElem, direction, false);
