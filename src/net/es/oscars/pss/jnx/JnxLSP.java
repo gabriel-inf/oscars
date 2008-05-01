@@ -46,7 +46,7 @@ public class JnxLSP {
         } else {
             this.allowLSP =
                 this.commonProps.getProperty("allowLSP").equals("1") ? true : false;
-        } 
+        }
         this.props = propHandler.getPropertyGroup("pss.jnx", true);
         this.th = new TemplateHandler();
         this.log = Logger.getLogger(this.getClass());
@@ -117,8 +117,15 @@ public class JnxLSP {
             this.hm.put("policer_burst-size-limit",
                     Long.toString(mplsData.getBurstLimit()));
         } else {
+            /*
             throw new PSSException(
                     "No MPLS data associated with path");
+                    */
+
+            Long burst_size = resv.getBandwidth() / 10;
+            this.hm.put("policer_burst-size-limit", burst_size.toString());
+            this.hm.put("lsp_class-of-service", "4");
+
         }
         if (layer2Data != null) {
             this.hm.put("resv-id", circuitName);
@@ -184,7 +191,7 @@ public class JnxLSP {
              this.commonProps.getProperty("lsp_setup-priority"));
         this.hm.put("lsp_reservation-priority",
              this.commonProps.getProperty("lsp_reservation-priority"));
-        this.hm.put("firewall_filter_marker", 
+        this.hm.put("firewall_filter_marker",
              this.props.getProperty("firewall_filter_marker"));
 
         // Additional information from the template will be used if
@@ -404,7 +411,7 @@ public class JnxLSP {
         return true;
     }
 
-    /** 
+    /**
      * Gets the LSP status on a Juniper router.
      *
      * @return boolean indicating status
@@ -503,11 +510,11 @@ public class JnxLSP {
      * Checks the status of the LSP that was just set up or torn down.
      *
      * @param conn SSH connection
-     * @return status (not done yet) 
+     * @return status (not done yet)
      * @throws IOException
      * @throws JDOMException
      */
-    private int getStatus(LSPConnection conn) 
+    private int getStatus(LSPConnection conn)
             throws IOException, JDOMException {
 
         int status = -1;
@@ -527,7 +534,7 @@ public class JnxLSP {
      * @throws IOException
      * @throws JDOMException
      */
-    private String readResponse(InputStream in) 
+    private String readResponse(InputStream in)
             throws IOException, JDOMException {
 
         ByteArrayOutputStream buff  = new ByteArrayOutputStream();
