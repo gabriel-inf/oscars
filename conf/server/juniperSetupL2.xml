@@ -1,5 +1,4 @@
 <junoscript version="1.0" release="7.3">
-
 <rpc><lock-configuration /></rpc>
 <rpc>
   <load-configuration>
@@ -107,5 +106,4 @@
 </rpc>
 <rpc><commit-configuration /></rpc>
 <rpc><unlock-configuration /></rpc>
-
 </junoscript>
