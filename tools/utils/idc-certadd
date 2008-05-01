@@ -32,7 +32,7 @@ create_new_cert ()
     printf "Enter an alias for this certificate: ";
     read CERT_ALIAS;
     
-    printf "How many days will this certifcate be valid?: ";
+    printf "How many days will this certificate be valid?: ";
     read CERT_VALIDITY;
     
     KS_PASS=`grep "org.apache.ws.security.crypto.merlin.keystore.password" $REPO_PATH/sec-client.properties | sed -e 's/.*org.apache.ws.security.crypto.merlin.keystore.password=\(.*\)/\1/'`;

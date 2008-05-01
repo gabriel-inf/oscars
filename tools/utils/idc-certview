@@ -13,11 +13,35 @@ fi
 KS_PATH="";
 KS_PASS="";
 
+print_cert ()
+{
+    CERTFILE="";
+    while [ 1 ]; do
+        printf "Enter the certificate filename: ";
+        read CERTFILE;
+        if [ -f "$CERTFILE" ]; then
+            break;
+        else
+            echo "- Cannot find certificate file '$CERTFILE'"; 
+        fi
+    done
+    
+    echo "-- Certificate Details";
+    echo "--- NOTE: The 'Owner' field is the X.509 subject name";
+    echo "";
+    keytool -printcert -V -file $CERTFILE;
+    if [ $? != 0 ]; then
+        echo "-- Error printing certificate.";
+        exit 1;
+    fi
+}
+
 while [ 1 ]; do
-    echo "Choose the keystore with the certificate you'd like to view:";
+    echo "Choose the keystore or file with the certificate you'd like to view:";
     echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
     echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
     echo "    3. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
+    echo "    4. Open certificate file...";
     
     printf "Enter choice: ";
     read OPCHOICE;
@@ -32,6 +56,9 @@ while [ 1 ]; do
         KS_PATH="$CATALINA_HOME/shared/classes/repo/ssl-keystore";
         KS_PASS="oscars";
         break;
+    elif [ "$OPCHOICE" == "4" ]; then
+        print_cert "";
+        exit 0;
     else
        echo "Invalid choice. Please choose 1, 2, or 3."; 
     fi
