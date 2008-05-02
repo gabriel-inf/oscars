@@ -63,13 +63,18 @@ oscars.DigitalClock.initClock = function () {
 // Outputs datetime with format: 1/1/2007 13:00, given seconds since epoch.
 oscars.DigitalClock.convertFromSeconds = function (seconds) {
     var jsDate = new Date(seconds*1000);
+    // put in format that is sortable
     var year = jsDate.getFullYear();
     var month = jsDate.getMonth() + 1;
+    month = (month > 9 ? '' : '0') + month;
     var day = jsDate.getDate();
+    day = (day > 9 ? '' : '0') + day;
     var hour = jsDate.getHours();
+    hour = (hour > 9 ? '' : '0') + hour;
     var minute = jsDate.getMinutes();
-    var formattedDt = month + "/" + day + "/" + year + " " + hour;
-    formattedDt += (minute > 9 ? ':' : ':0') + minute;
+    minute = (minute > 9 ? '' : '0') + minute;
+    var formattedDt = year + "/" + month + "/" + day + " " + hour +
+                      ":" + minute; 
     return formattedDt;
 };
 

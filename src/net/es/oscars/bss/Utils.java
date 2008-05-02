@@ -73,6 +73,27 @@ public class Utils {
     }
 
     /**
+     * Gets VLAN tag given path.  Assumes just one VLAN tag in path for now.
+     *
+     * @param path Path with reservation's page
+     * @return vlanTag string with VLAN tag, if any
+     */
+    public String getVlanTag(Path path) {
+        String vlanTag = null;
+        PathElem pathElem = path.getPathElem();
+        while (pathElem != null) {
+            if (pathElem.getDescription() != null) {
+                if (pathElem.getDescription().equals("ingress")) {
+                    vlanTag = pathElem.getLinkDescr();
+                    break;
+                }
+            }
+            pathElem = pathElem.getNextElem();
+        }
+        return vlanTag;
+    }
+
+    /**
      * String joiner
      * @param s a Collection of objects to join (uses toString())
      * @param delimiter the delimiter

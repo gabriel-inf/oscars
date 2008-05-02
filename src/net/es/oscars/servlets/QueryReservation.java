@@ -107,6 +107,8 @@ public class QueryReservation extends HttpServlet {
         String strParam = null;
         Long ms = null;
 
+        // TODO:  fix hard-wired database name
+        net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
         // this will replace LSP name if one was given instead of a GRI
         String gri = resv.getGlobalReservationId();
         Path path = resv.getPath();
@@ -124,23 +126,12 @@ public class QueryReservation extends HttpServlet {
         outputMap.put("startTimeConvert", resv.getStartTime());
         outputMap.put("endTimeConvert", resv.getEndTime());
         outputMap.put("createdTimeConvert", resv.getCreatedTime());
-        outputMap.put("bandwidthReplace", resv.getBandwidth());
+        // convert to Mbps, commas added by Dojo
+        outputMap.put("bandwidthReplace", resv.getBandwidth()/1000000);
         if (layer2Data != null) {
             outputMap.put("sourceReplace", layer2Data.getSrcEndpoint());
             outputMap.put("destinationReplace", layer2Data.getDestEndpoint());
-            // get VLAN tag
-            String vlanTag = null;
-            PathElem pathElem = path.getPathElem();
-            while (pathElem != null) {
-                if (pathElem.getDescription() != null) {
-                    if (pathElem.getDescription().equals("ingress")) {
-                        // assume just one VLAN for now
-                        vlanTag = pathElem.getLinkDescr();
-                        break;
-                    }
-                }
-                pathElem = pathElem.getNextElem();
-            }
+            String vlanTag = utils.getVlanTag(path);
             if (vlanTag != null) {
                 outputMap.put("vlanReplace", vlanTag);
             } else {
@@ -176,7 +167,6 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put("lspClassReplace", mplsData.getLspClass());
             }
         }
-        net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
         String pathStr = utils.pathToString(path, false);
         // don't allow non-authorized user to see internal hops
         if ((pathStr != null) && !internalIntradomainHops) {

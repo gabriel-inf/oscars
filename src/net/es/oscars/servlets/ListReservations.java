@@ -2,6 +2,9 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.servlet.*;
@@ -15,6 +18,7 @@ import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.bss.ReservationManager;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.BSSException;
+import net.es.oscars.bss.Utils;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.User;
 import net.es.oscars.aaa.AAAException;
@@ -31,7 +35,7 @@ public class ListReservations extends HttpServlet {
 	      this.dbname = "bss";
         List<Reservation> reservations = null;
         UserSession userSession = new UserSession();
-        Utils utils = new Utils();
+        net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
@@ -92,7 +96,7 @@ public class ListReservations extends HttpServlet {
             endTimeSeconds = Long.valueOf(endTimeStr.trim());
         }
         boolean allUsers = false;
-        Utils utils = new Utils();
+        net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
 
         UserManager mgr = new UserManager("aaa");
         List<User> users = mgr.list();
@@ -127,23 +131,34 @@ public class ListReservations extends HttpServlet {
         String hostName = null;
         String destination = null;
 
+        // TODO:  fix hard-wired database name
+        net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
         List<String> statuses = this.getStatuses(request);
         ArrayList resvList = new ArrayList();
         for (Reservation resv: reservations) {
+            Path path = resv.getPath();
+            String pathStr = utils.pathToString(path, false);
+            String localSrc = null;
+            String localDest = null;
+            if (pathStr != null) {
+                String[] hops = pathStr.trim().split("\n");
+                localSrc = hops[0];
+                localDest = hops[hops.length-1];
+            }
             ArrayList resvEntry = new ArrayList();
             gri = resv.getGlobalReservationId();
-            Layer3Data layer3Data = resv.getPath().getLayer3Data();
-            Layer2Data layer2Data = resv.getPath().getLayer2Data();
+            Layer3Data layer3Data = path.getLayer3Data();
+            Layer2Data layer2Data = path.getLayer2Data();
             resvEntry.add(gri);
-            resvEntry.add(resv.getLogin());
-            // entries are converted on the fly to standard date and time
-            // format before the model's data is set
-            resvEntry.add(resv.getStartTime().toString());
-            resvEntry.add(resv.getEndTime().toString());
             resvEntry.add(resv.getStatus());
+            Long mbps = resv.getBandwidth()/1000000;
+            String bandwidthField = mbps.toString() + "Mbps";
+            resvEntry.add(bandwidthField);
+            // entries are converted on the fly on the client to standard
+            // date and time format before the model's data is set
+            resvEntry.add(resv.getStartTime().toString());
             if (layer2Data != null) {
-                resvEntry.add(layer2Data.getSrcEndpoint());
-                resvEntry.add(layer2Data.getDestEndpoint());
+                resvEntry.add(this.abbreviate(layer2Data.getSrcEndpoint()));
             } else if (layer3Data != null) {
                 source = layer3Data.getSrcHost();
                 try {
@@ -153,6 +168,24 @@ public class ListReservations extends HttpServlet {
                 } catch (UnknownHostException e) {
                     resvEntry.add(source);
                 }
+            }
+            if (localSrc != null) {
+                if (layer2Data != null) {
+                    resvEntry.add(this.abbreviate(localSrc));
+                } else {
+                    resvEntry.add(localSrc);
+                }
+            } else {
+                resvEntry.add("");
+            }
+            // start of second sub-row
+            resvEntry.add(resv.getLogin());
+            String vlanTag = utils.getVlanTag(path);
+            resvEntry.add(vlanTag);
+            resvEntry.add(resv.getEndTime().toString());
+            if (layer2Data != null) {
+                resvEntry.add(this.abbreviate(layer2Data.getDestEndpoint()));
+            } else if (layer3Data != null) {
                 destination = layer3Data.getDestHost();
                 try {
                     inetAddress = InetAddress.getByName(destination);
@@ -161,6 +194,15 @@ public class ListReservations extends HttpServlet {
                 } catch (UnknownHostException e) {
                     resvEntry.add(destination);
                 }
+            }
+            if (localDest != null) {
+                if (layer2Data != null) {
+                    resvEntry.add(this.abbreviate(localDest));
+                } else {
+                    resvEntry.add(localDest);
+                }
+            } else {
+                resvEntry.add("");
             }
             resvList.add(resvEntry);
         }
@@ -211,7 +253,7 @@ public class ListReservations extends HttpServlet {
         return description;
     }
 
-    public  List<String> getStatuses(HttpServletRequest request) {
+    public List<String> getStatuses(HttpServletRequest request) {
 
         List<String> statuses = new ArrayList<String>();
         String paramStatuses[] = request.getParameterValues("statuses");
@@ -223,5 +265,31 @@ public class ListReservations extends HttpServlet {
             }
         }
         return statuses;
+    }
+
+    /**
+     * Returns an abbreviated version of the full layer 2 topology identifier.
+     * (adapted from bss.topology.URNParser)
+     *
+     * @param topoId string with full topology identifier, for example
+     * urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
+     * @return string abbreviation such as es.net:bnl-mr1:TenGigabitEthernet1/3
+     */
+    public String abbreviate(String topoIdent) {
+        Pattern p = Pattern.compile(
+            "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+):link=([^:]+)$");
+        Matcher matcher = p.matcher(topoIdent);
+        String domainId = "";
+        String nodeId = "";
+        String portId = "";
+        // punt if not in expected format
+        if (!matcher.matches()) {
+            return topoIdent;
+        } else {
+            domainId = matcher.group(1);
+            nodeId = matcher.group(2);
+            portId = matcher.group(3);
+            return domainId + ":" + nodeId + ":" + portId;
+        }
     }
 }

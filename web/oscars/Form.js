@@ -539,9 +539,11 @@ oscars.Form.convertSearchTimes = function () {
 // convert seconds in incoming reservations list to date and time
 oscars.Form.convertReservationTimes = function (data) {
     for (var i=0; i < data.length; i++) {
-        // these fields are in seconds
-        data[i][2] = oscars.DigitalClock.convertFromSeconds(data[i][2]);
+        // These fields are sent by the server in epoch seconds
+        // Note that if the grid layout changes, the indices need to
+        // change.
         data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
+        data[i][8] = oscars.DigitalClock.convertFromSeconds(data[i][8]);
     }
 };
 
