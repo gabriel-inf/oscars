@@ -59,7 +59,11 @@ public class Utils {
             } else {
                 nodeName = link.getPort().getNode().getTopologyIdent();
                 ipaddr = ipaddrDAO.fromLink(link);
-                sb.append(nodeName + ": " + ipaddr.getIP());
+                if ((ipaddr == null) || (ipaddr.getIP() == null)) {
+                    sb.append(nodeName + ": " + "*Out of date IP*");
+                } else {
+                    sb.append(nodeName + ": " + ipaddr.getIP());
+                }
             }
             pathElem = pathElem.getNextElem();
             i++;
