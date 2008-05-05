@@ -9,8 +9,8 @@
             <unit>
                 <name><user-var>vlan_id</user-var></name>
                 <description><user-var>resv-id</user-var><txt>:</txt><user-var>bandwidth</user-var><txt>:oscars-l2circuit:show:circuit-intercloud</txt></description>
-                <encapsulation>vlan-ccc</encapsulation>
                 <vlan-id><user-var>vlan_id</user-var></vlan-id>
+                <encapsulation>vlan-ccc</encapsulation>
                 <family>
                     <ccc>
                         <policer>
@@ -34,6 +34,7 @@
                         <lsp><user-var>resv-id</user-var></lsp>
                     </install-nexthop>
                     <forwarding-class>expedited-forwarding</forwarding-class>
+                    <accept/>
                 </then>
             </term>
         </policy-statement>
@@ -44,6 +45,7 @@
       </policy-options>
       <routing-options>
         <forwarding-table>
+            <export>load-balancing-policy</export>
             <export><user-var>resv-id</user-var></export>
         </forwarding-table>
       </routing-options>
@@ -54,7 +56,9 @@
                 <from><user-var>lsp_from</user-var></from>
                 <to><user-var>lsp_to</user-var></to>
                 <metric>65535</metric>
-                <bandwidth><user-var>bandwidth</user-var></bandwidth>
+                <bandwidth>
+                    <per-traffic-class-bandwidth><user-var>bandwidth</user-var></per-traffic-class-bandwidth>
+                   </bandwidth>
                 <class-of-service><user-var>lsp_class-of-service</user-var></class-of-service>
                 <setup-priority><user-var>lsp_setup-priority</user-var></setup-priority>
                 <reservation-priority><user-var>lsp_reservation-priority</user-var></reservation-priority>
@@ -62,10 +66,6 @@
                     <name><user-var>resv-id</user-var></name>
                 </primary>
             </label-switched-path>
-        </mpls>
-      </protocols>
-      <protocols>
-        <mpls>
             <path>
                 <name><user-var>resv-id</user-var></name>
                 <!-- inserted programmatically
@@ -84,6 +84,7 @@
                     <virtual-circuit-id><user-var>vlan_id</user-var></virtual-circuit-id>
                     <description><user-var>resv-id</user-var></description>
                     <community><user-var>resv-id</user-var></community>
+                    <mtu>9174</mtu>
                 </interface>
             </neighbor>
         </l2circuit>
@@ -91,7 +92,6 @@
       <firewall>
         <policer>
             <name><user-var>resv-id</user-var></name>
-            <logical-interface-policer/>
             <if-exceeding>
                 <bandwidth-limit><user-var>bandwidth</user-var></bandwidth-limit>
                 <burst-size-limit><user-var>policer_burst-size-limit</user-var></burst-size-limit>
