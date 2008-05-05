@@ -17,12 +17,14 @@ import net.es.oscars.wsdlTypes.ListRequest;
 import net.es.oscars.wsdlTypes.ListReply;
 import net.es.oscars.wsdlTypes.MplsInfo;
 import net.es.oscars.wsdlTypes.PathInfo;
+import net.es.oscars.wsdlTypes.VlanTag;
 import net.es.oscars.wsdlTypes.ResDetails;
 
 public class ListReservationCLI {
     private String url;
     private String repo;
     private String status = null;
+    private String vlan = null;
     private String description = null;
     private String endpoint = null;
     private String src = null;
@@ -66,6 +68,8 @@ public class ListReservationCLI {
                     this.repo = args[i+1].trim();
                 }else if(args[i].equals("-status")){
                     this.status = args[i+1].trim();
+                }else if(args[i].equals("-vlan")){
+                    this.vlan = args[i+1].trim();
                 }else if(args[i].equals("-desc")){
                     this.description = args[i+1].trim();
                 }else if(args[i].equals("-endpoint")){
@@ -162,6 +166,19 @@ public class ListReservationCLI {
             }
         }
 
+        String[] vlanTagList;
+        if (this.vlan != null) {
+            String[] vlans = this.vlan.trim().split(",");
+            for (String v: vlans) {
+                v = v.trim();
+                if (!v.equals("")) {
+                    VlanTag vlanTag = new VlanTag();
+                    vlanTag.setString(v);
+                    vlanTag.setTagged(true);
+                    listReq.addVlanTag(vlanTag);
+                }
+            }
+        }
 
         listReq.setResRequested(this.numResults);
 

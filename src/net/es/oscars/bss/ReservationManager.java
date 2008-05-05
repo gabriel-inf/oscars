@@ -400,8 +400,8 @@ public class ReservationManager {
      * @param login String with user's login name
      *
      * @param loginIds a list of user logins. If not null or empty, results will
-     * only include reservations submitted by these specific users. If null / empty
-     * results will include reservations by all users.
+     * only include reservations submitted by these specific users.
+     * If null / empty results will include reservations by all users.
      *
      * @param statuses a list of reservation statuses. If not null or empty,
      * results will only include reservations with one of these statuses.
@@ -411,7 +411,14 @@ public class ReservationManager {
      * include reservations whose path includes at least one of the links.
      * If null / empty, results will include reservations with any path.
      *
-     * @param startTime the start of the time window to look in; null for everything before the endTime
+     * @param vlanTags a list of VLAN tags.  If not null or empty,
+     * results will only include reservations where (currently) the first link
+     * in the path has a VLAN tag from the list (or ranges in the list).  If
+     * null / empty, results will include reservations with any associated
+     * VLAN.
+     *
+     * @param startTime the start of the time window to look in; null for
+     * everything before the endTime
      *
      * @param endTime the end of the time window to look in; null for everything after the startTime,
      * leave both start and endTime null to disregard time
@@ -420,14 +427,17 @@ public class ReservationManager {
      * @throws BSSException
      */
     public List<Reservation> list(String login, List<String> loginIds,
-        List<String> statuses, String description, List<Link> links, Long startTime, Long endTime)
-        throws BSSException {
+        List<String> statuses, String description, List<Link> links,
+        List<String> vlanTags,  Long startTime, Long endTime)
+                throws BSSException {
+
         List<Reservation> reservations = null;
 
         this.log.info("list.start, login: " + login);
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        reservations = dao.list(loginIds, statuses, description, links, startTime, endTime);
+        reservations = dao.list(loginIds, statuses, description, links,
+                                vlanTags, startTime, endTime);
         this.log.info("list.finish, success");
 
         return reservations;

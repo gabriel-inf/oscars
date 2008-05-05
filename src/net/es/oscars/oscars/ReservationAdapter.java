@@ -302,24 +302,35 @@ public class ReservationAdapter {
      * @param login String with user's login name
      *
      * @param loginIds a list of user logins. If not null or empty, results will
-     * only include reservations submitted by these specific users. If null / empty
-     * results will include reservations by all users.
+     * only include reservations submitted by these specific users. If
+     * null / empty, results will include reservations by all users.
      *
-     * @param request the listRequest received by OSCARSSkeleton. Includes an array
-     *  of reservation statuses. a list of topology identifiers, start and end times,
-     *  number of reservations requested, and offset of first reservation to return.
+     * @param request the listRequest received by OSCARSSkeleton. Includes an
+     *  array of reservation statuses. a list of topology identifiers, a list
+     *  of VLAN tags or ranges, start and end times, number of reservations
+     *  requested, and offset of first reservation to return.  The items
+     *  in the listRequest are
      *
-     * If statuses is not empty, results will only include reservations with one of these statuses.
-     * If null / empty, results will include reservations with any status.
+     * If statuses is not empty, results will only include reservations with one
+     * of these statuses.  If null / empty, results will include reservations
+     * with any status.
      *
      * If topology identifiers is not null / empty, results will only
      * include reservations whose path includes at least one of the links.
      * If null / empty, results will include reservations with any path.
      *
-     * startTime is the start of the time window to look in; null for everything before the endTime
+     * vlanTags a list of VLAN tags.  If not null or empty,
+     * results will only include reservations where (currently) the first link
+     * in the path has a VLAN tag from the list (or ranges in the list).  If
+     * null / empty, results will include reservations with any associated
+     * VLAN.
      *
-     * endTime is the end of the time window to look in; null for everything after the startTime,
-     * leave both start and endTime null to disregard time
+     * startTime is the start of the time window to look in; null for
+     * everything before the endTime.
+     *
+     * endTime is the end of the time window to look in; null for
+     * everything after the startTime, Leave both start and endTime null to
+     * isregard time.
      *
      * @return reply ListReply encapsulating library reply.
      * @throws BSSException
@@ -328,18 +339,19 @@ public class ReservationAdapter {
         ListRequest request) throws BSSException {
         ListReply reply = null;
         List<Reservation> reservations = null;
-        ArrayList<net.es.oscars.bss.topology.Link> inLinks = new ArrayList<net.es.oscars.bss.topology.Link>();
+        ArrayList<net.es.oscars.bss.topology.Link> inLinks =
+            new ArrayList<net.es.oscars.bss.topology.Link>();
+        ArrayList<String> inVlanTags = new ArrayList<String>();
         ArrayList<String> statuses = new ArrayList<String>();
 
-
-        /* Lookup name via perfSONAR Lookup Service */
+        // lookup name via perfSONAR Lookup Service
         LookupFactory lookupFactory = new LookupFactory();
         PSLookupClient lookupClient = lookupFactory.getPSLookupClient();
 
         this.log.info("list.start");
         String[] linkIds = request.getLinkId();
+        VlanTag[] vlanTags = request.getVlanTag();
         String[] resStatuses = request.getResStatus();
-
 
         if (linkIds != null && linkIds.length > 0 ) {
             for (String s : linkIds) {
@@ -361,12 +373,21 @@ public class ReservationAdapter {
                         inLinks.add(link);
 
                     } catch (BSSException ex) {
-                        this.log.error("Could not get link for string: ["+s.trim()+"], error: ["+ex.getMessage()+"]");
+                        this.log.error("Could not get link for string: [" + 
+                                    s.trim()+"], error: ["+ex.getMessage()+"]");
                     }
                 }
             }
         }
 
+        if (vlanTags != null && vlanTags.length > 0) {
+            for (VlanTag v: vlanTags) {
+                String s = v.getString().trim();
+                if (s != null && !s.equals("")) {
+                    inVlanTags.add(s);
+                }
+            }
+        }
         if (resStatuses != null && resStatuses.length > 0 ) {
             for (String s : request.getResStatus()) {
                 if (s != null && !s.trim().equals("")) {
@@ -384,7 +405,9 @@ public class ReservationAdapter {
             endTime = tmp.getEndTime();
         }
         String description = request.getDescription();
-        reservations = this.rm.list(login, loginIds, statuses, description, inLinks, startTime, endTime);
+        reservations =
+            this.rm.list(login, loginIds, statuses, description, inLinks, 
+                         inVlanTags, startTime, endTime);
 
         reply = this.tc.reservationToListReply(reservations,
                 request.getResRequested(), request.getResOffset());

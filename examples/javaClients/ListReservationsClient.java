@@ -63,7 +63,9 @@ public class ListReservationsClient extends ExampleClient {
         // Prompt for input parameters specific to query
         try {
             String linkId = "";
-            String[] statuses;
+            // arbitrary
+            String[] vlanTagList = new String[20];
+            String[] statuses = new String[20];
             String strResults = "";
             String strOffset = "";
             String description = "";
@@ -76,6 +78,11 @@ public class ListReservationsClient extends ExampleClient {
                 statuses = statusesInput.split(",");
                 System.out.print("Input a link topoId to only get reservations affecting that: ");
                 linkId = br.readLine().trim();
+                System.out.print(
+                        "Input a comma-separated set of vlanTags or ranges " +
+                        "to get only associated reservations: ");
+                String vlansInput = br.readLine().trim();
+                vlanTagList = vlansInput.split(",");
                 System.out.print("Input a string to only get reservations with that as part of the description: ");
                 description = br.readLine().trim();
                 System.out.print("Number of results (default 10): ");
@@ -90,8 +97,16 @@ public class ListReservationsClient extends ExampleClient {
                 }
                 */
             } else {
-                String statusesInput = this.getProperties().getProperty("statuses").trim();
-                statuses = statusesInput.split(",");
+                String statusesInput = this.getProperties().getProperty("statuses");
+                if (statusesInput != null) {
+                    statusesInput = statusesInput.trim();
+                    statuses = statusesInput.split(",");
+                }
+                String vlansInput = this.getProperties().getProperty("vlans");
+                if (vlansInput != null) {
+                    vlansInput = vlansInput.trim();
+                    vlanTagList = vlansInput.split(",");
+                }
                 linkId = this.getProperties().getProperty("linkId");
             }
 
@@ -111,6 +126,13 @@ public class ListReservationsClient extends ExampleClient {
 
             for (String status: statuses) {
                 listReq.addResStatus(status.trim());
+            }
+            for (String v: vlanTagList) {
+                VlanTag vlanTag = new VlanTag();
+                // number legality checks currently performed only on server
+                vlanTag.setString(v.trim());
+                vlanTag.setTagged(true);
+                listReq.addVlanTag(vlanTag);
             }
             if (!linkId.equals("")) {
                 listReq.addLinkId(linkId.trim());

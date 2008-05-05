@@ -59,6 +59,12 @@ public class ReservationDAO
      * include reservations whose path includes at least one of the links.
      * If null / empty, results will include reservations with any path.
      *
+     * @param vlanTags a list of VLAN tags.  If not null or empty,
+     * results will only include reservations where (currently) the first link
+     * in the path has a VLAN tag from the list (or ranges in the list).  If
+     * null / empty, results will include reservations with any associated
+     * VLAN.
+     *
      * @param startTime the start of the time window to look in; null for everything before the endTime
      *
      * @param endTime the end of the time window to look in; null for everything after the startTime,
@@ -68,8 +74,11 @@ public class ReservationDAO
      * @throws BSSException
      */
     @SuppressWarnings("unchecked")
-    public List<Reservation> list(List<String> logins, List<String> statuses, String description, List<Link> links, Long startTime, Long endTime)
-            throws BSSException {
+    public List<Reservation> list(List<String> logins, List<String> statuses,
+            String description, List<Link> links, List<String> vlanTags,
+            Long startTime, Long endTime)
+                throws BSSException {
+
         this.log.info("list.start");
         this.reservations = new ArrayList<Reservation>();
         ArrayList<String> criteria = new ArrayList<String>();
@@ -117,8 +126,20 @@ public class ReservationDAO
             query.setLong("endTime", endTime);
         }
 
-
         this.reservations = query.list();
+
+        if (vlanTags != null && !vlanTags.isEmpty() &&
+            !vlanTags.contains("any")) {
+            ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
+            for (Reservation rsv : this.reservations) {
+                if (!this.containsVlan(rsv, vlanTags)) {
+                    removeThese.add(rsv);
+                }
+            }
+            for (Reservation rsv : removeThese) {
+                this.reservations.remove(rsv);
+            }
+        }
 
         if (links != null && !links.isEmpty()) {
             ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
@@ -293,5 +314,52 @@ public class ReservationDAO
                                         .uniqueResult();
 
         return resv;
+    }
+
+    /**
+     * Checks to see whether first element in path contains a VLAN in the
+     * list of tags or ranges specified.
+     *
+     * @param rsv Reservation to check
+     * @param vlanTags list of tags or tag ranges to check
+     *
+     * @return whether first element in path has a matching VLAN
+     */
+    private boolean containsVlan(Reservation rsv, List<String> vlanTags) {
+        int checkVtag = -1;
+        int minVtag = 100000;
+        int maxVtag = -1;
+        Utils utils = new Utils(this.dbname);
+        String tagStr = utils.getVlanTag(rsv.getPath());
+        // no associated VLAN
+        if (tagStr == null) {
+            return false;
+        }
+        int resvVtag = Integer.parseInt(tagStr);
+        for (String v: vlanTags) {
+            String[] range = v.split("-");
+            // single number
+            if (range.length == 1) {
+                try {
+                    checkVtag = Integer.parseInt(range[0]);
+                } catch (NumberFormatException ex) {
+                    continue;
+                }
+                if (checkVtag == resvVtag) {
+                    return true;
+                }
+            } else if (range.length == 2) {
+                try {
+                    minVtag = Integer.parseInt(range[0]);
+                    maxVtag = Integer.parseInt(range[1]);
+                } catch (NumberFormatException ex) {
+                    continue;
+                }
+                if ((resvVtag >= minVtag) && (resvVtag <= maxVtag)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

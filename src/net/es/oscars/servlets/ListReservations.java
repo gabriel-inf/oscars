@@ -112,8 +112,10 @@ public class ListReservations extends HttpServlet {
             logins.add(login);
         }
         try {
-            reservations = rm.list(login, logins, statuses, description,
-                                   inLinks, startTimeSeconds, endTimeSeconds);
+            // TODO:  add VLAN tags
+            reservations =
+                rm.list(login, logins, statuses, description, inLinks,
+                        null, startTimeSeconds, endTimeSeconds);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);
             return null;
