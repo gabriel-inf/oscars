@@ -371,8 +371,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
 
 
-    public Path findPathBetween(Link src, Link dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation)
-            throws PathfinderException {
+    public Path directPath(Link src, Link dst) throws PathfinderException {
 
         boolean linked = false;
         // Special case: if links are in same node
@@ -393,15 +392,23 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
             return(newPath);
         } else {
-            String srcStr = src.getFQTI();
-            String dstStr = dst.getFQTI();
-            return this.findPathBetween(srcStr, dstStr, bandwidth, startTime, endTime, reservation);
+            return null;
         }
     }
 
     public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation)
             throws PathfinderException {
         this.log.debug("findPathBetween.start");
+
+        DomainDAO domDAO = new DomainDAO("bss");
+        Link srcLink = domDAO.getFullyQualifiedLink(src);
+        Link dstLink = domDAO.getFullyQualifiedLink(dst);
+
+        Path directPath = this.directPath(srcLink, dstLink);
+        if (directPath != null) {
+            return directPath;
+        }
+
 
         Path path = new Path();
 
