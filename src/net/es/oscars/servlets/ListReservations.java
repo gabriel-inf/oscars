@@ -28,6 +28,12 @@ import net.es.oscars.bss.topology.*;
 public class ListReservations extends HttpServlet {
     private String dbname;
 
+    /**
+     * Handles servlet request (both get and post) from list reservations form.
+     * 
+     * @param request servlet request
+     * @param response servlet response
+     */
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
@@ -67,10 +73,11 @@ public class ListReservations extends HttpServlet {
     }
 
     /**
-     *  GetReservations returns either all reservations or just the reservations
-     *  for this user, depending on his or her permissions.
+     *  Gets search parameters from servlet request and calls the reservation
+     *  manager to get the resulting reservations, if any. 
      *  
      * @param out PrintWriter used to report errors on the status line
+     * @param request servlet request
      * @param login string with login name of user
      * @return list of Reservation instances
      */
@@ -85,6 +92,7 @@ public class ListReservations extends HttpServlet {
         List<Reservation> reservations = null;
         List<String> logins = null;
         List<String> statuses = this.getStatuses(request);
+        List<String> vlans = this.getVlanTags(request);
         String description = this.getDescription(request);
         List<Link> inLinks = this.getLinks(request);
         String startTimeStr = request.getParameter("startTimeSeconds");
@@ -112,10 +120,9 @@ public class ListReservations extends HttpServlet {
             logins.add(login);
         }
         try {
-            // TODO:  add VLAN tags
             reservations =
                 rm.list(login, logins, statuses, description, inLinks,
-                        null, startTimeSeconds, endTimeSeconds);
+                        vlans, startTimeSeconds, endTimeSeconds);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);
             return null;
@@ -123,6 +130,14 @@ public class ListReservations extends HttpServlet {
         return reservations;
     }
 
+    /**
+     * Formats reservation data sent back by list request from the reservation
+     * manager into grid format that Dojo understands.
+     *
+     * @param outputMap map containing grid data
+     * @param reservations list of reservations satisfying search criteria
+     * @param request servlet request
+     */
     public void
         outputReservations(Map outputMap, List<Reservation> reservations,
                            HttpServletRequest request) {
@@ -221,6 +236,14 @@ public class ListReservations extends HttpServlet {
         return linkList;
     }
 
+    /**
+     * Gets list of links to search for.  If a reservation's path includes
+     * one of these links, it is returned as part of the list.
+     *
+     * @param request servlet request
+     * @
+     * @return list of links to send to BSS
+     */
     public List<Link> getLinks(HttpServletRequest request) {
 
         Logger log = Logger.getLogger(this.getClass());
@@ -246,6 +269,13 @@ public class ListReservations extends HttpServlet {
         return inLinks;
     }
 
+    /**
+     * Gets description search parameter and sets to blank field if empty.
+     *
+     * @param request servlet request
+     * @
+     * @return string with description
+     */
     public String getDescription(HttpServletRequest request) {
 
         String description = request.getParameter("resvDescription"); 
@@ -255,6 +285,13 @@ public class ListReservations extends HttpServlet {
         return description;
     }
 
+    /**
+     * Gets reservation statuses to search for.
+     *
+     * @param request servlet request
+     * @
+     * @return list of statuses to send to BSS
+     */
     public List<String> getStatuses(HttpServletRequest request) {
 
         List<String> statuses = new ArrayList<String>();
@@ -267,6 +304,29 @@ public class ListReservations extends HttpServlet {
             }
         }
         return statuses;
+    }
+
+    /**
+     * Gets VLAN tags and/or ranges of VLAN tags to search for from
+     * servlet request.
+     *
+     * @param request servlet request
+     * @
+     * @return list of vlans and/or ranges to send to BSS
+     */
+    public List<String> getVlanTags(HttpServletRequest request) {
+
+        List<String> vlanTags = new ArrayList<String>();
+        String vlanParam = request.getParameter("vlanSearch");
+        String[] paramTags = vlanParam.split(" ");
+        if (paramTags == null) {
+            vlanTags.add("");
+        } else {
+            for (int i=0 ; i < paramTags.length; i++) {
+                vlanTags.add(paramTags[i]);
+            }
+        }
+        return vlanTags;
     }
 
     /**

@@ -37,7 +37,7 @@ information about a reservation.</p>
 
 <table>
 <tr>
-  <td width="14%">
+  <td width="7%">
   <button dojoType="dijit.form.Button" id="refreshReservationList">
      Refresh 
      <script type="dojo/method" event="onClick">
@@ -65,6 +65,12 @@ information about a reservation.</p>
       <option value="FAILED">FAILED</option>
       <option value="INVALIDATED">INVALIDATED</option>
   </select>
+  </td>
+
+  <td width="9%">VLAN:
+    <input dojoType="dijit.form.ValidationTextBox" name="vlanSearch"
+             id="vlanSearch"
+             promptMessage="Enter space separated tag(s) and/or ranges, e.g. 3000 3500-3600">Number and/or range
   </td>
 
   <td width="12%">Ending after:
