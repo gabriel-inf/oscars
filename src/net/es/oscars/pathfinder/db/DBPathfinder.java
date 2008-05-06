@@ -336,35 +336,85 @@ public class DBPathfinder extends Pathfinder implements PCE {
         this.log.debug("handleExplicitRouteObject.finish");
     }
 
-    private Path joinPaths(Path onePath, Path otherPath) {
+    private Path joinPaths(Path pathA, Path pathB) {
+//        System.out.println("joinPaths.start");
+        PathElem tmp;
+        /*
+        if (pathA.getPathElem() != null) {
+            System.out.println("pathA before join, start:");
+            tmp = pathA.getPathElem();
+            while (tmp.getNextElem() != null) {
+                System.out.println(tmp.getLink().getFQTI());
+                tmp = tmp.getNextElem();
+            }
+            System.out.println("pathA before join, end");
+        } else {
+            System.out.println("pathA empty");
+        }
+
+
+        if (pathB.getPathElem() != null) {
+            System.out.println("pathB before join, start:");
+            tmp = pathB.getPathElem();
+            while (tmp.getNextElem() != null) {
+                System.out.println(tmp.getLink().getFQTI());
+                tmp = tmp.getNextElem();
+            }
+            System.out.println("pathB before join, end");
+        } else {
+            System.out.println("pathB empty");
+        }
+        */
+
+
         Path result = new Path();
-        if (onePath.getPathElem() != null) {
-            PathElem firstOne = onePath.getPathElem();
-            if (otherPath.getPathElem() != null) {
-                PathElem lastOne = onePath.getPathElem();
-                while (lastOne.getNextElem() != null) {
-                    lastOne = lastOne.getNextElem();
+        if (pathA.getPathElem() != null) {
+            // very first element of the first path
+            PathElem firstOfA = pathA.getPathElem();
+            if (pathB.getPathElem() != null) {
+                // find very last element of the first path
+                PathElem lastOfA = pathA.getPathElem();
+                while (lastOfA.getNextElem() != null) {
+                    lastOfA = lastOfA.getNextElem();
                 }
-                PathElem otherOne = otherPath.getPathElem();
-                Link lastLink = lastOne.getLink();
-                Link otherLink = otherOne.getLink();
-                while (lastLink.equalsTopoId(otherLink)) {
-                    otherOne = otherOne.getNextElem();
-                    otherLink = otherOne.getLink();
+                Link lastLinkOfA = lastOfA.getLink();
+
+                // first path element of the second path
+                PathElem firstOfB = pathB.getPathElem();
+                Link firstLinkOfB = firstOfB.getLink();
+                while (lastLinkOfA.equalsTopoId(firstLinkOfB)) {
+                    firstOfB = firstOfB.getNextElem();
+                    firstLinkOfB = firstOfB.getLink();
                 }
 
-                lastOne.setNextElem(otherOne);
+                lastOfA.setNextElem(firstOfB);
+            } else {
+                result = pathA;
             }
 
             // ok, joined the two, now setPath() for all the pathElems
-            result.setPathElem(firstOne);
-            while (firstOne.getNextElem() != null) {
-                firstOne.setPath(result);
-                firstOne = firstOne.getNextElem();
+            result.setPathElem(firstOfA);
+//            System.out.println("path after join start:");
+            while (firstOfA.getNextElem() != null) {
+                firstOfA.setPath(result);
+                firstOfA = firstOfA.getNextElem();
+//                System.out.println(firstOfA.getLink().getFQTI());
             }
+//            System.out.println("path after join end");
         } else {
-            result = otherPath;
+            result = pathB;
         }
+/*
+        System.out.println("result after join, start:");
+        tmp = result.getPathElem();
+        while (tmp.getNextElem() != null) {
+            System.out.println(tmp.getLink().getFQTI());
+            tmp = tmp.getNextElem();
+        }
+        System.out.println("result after join, end");
+
+        System.out.println("joinPaths.end");
+        */
         return result;
     }
 
@@ -392,6 +442,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
             PathElem pathElemDst = new PathElem();
             pathElemDst.setLink(dst);
             pathElemSrc.setNextElem(pathElemDst);
+
+            newPath.setPathElem(pathElemSrc);
 
             return(newPath);
         } else {

@@ -69,8 +69,8 @@ public class DBGraphAdapter {
                     Link link = pathElem.getLink();
                     Port port = link.getPort();
                     if (portRsvBw.containsKey(port)) {
-                        bw = bw + portRsvBw.get(port);
-                        portRsvBw.put(port, bw);
+                        Long newbw = bw + portRsvBw.get(port);
+                        portRsvBw.put(port, newbw);
                     } else {
                         portRsvBw.put(port, bw);
                     }
@@ -78,6 +78,14 @@ public class DBGraphAdapter {
                 }
             }
         }
+        /*
+        Iterator it = portRsvBw.keySet().iterator();
+        while (it.hasNext()) {
+            Port p = (Port) it.next();
+            Long bw = portRsvBw.get(p);
+            System.out.println("port: "+p.getFQTI()+ " bw: "+bw/1000000+"Mbps");
+        }
+        */
 
 
         DefaultWeightedEdge edge;
