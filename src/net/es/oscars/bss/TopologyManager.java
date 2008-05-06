@@ -112,11 +112,13 @@ public class TopologyManager {
 
             // step 2
            this.log.info("recalculating pending paths");
-           this.recalculatePaths("PENDING");
+           // TODO: currently broken, must fix!
+//           this.recalculatePaths("PENDING");
            this.log.info("recalculated pending paths");
            // step 3
            this.log.info("recalculating active paths");
-           this.recalculatePaths("ACTIVE");
+           // TODO: currently broken, must fix!
+//           this.recalculatePaths("ACTIVE");
            this.log.info("recalculated active paths");
 
            // step 4
