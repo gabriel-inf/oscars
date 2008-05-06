@@ -373,12 +373,15 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
     public Path directPath(Link src, Link dst) throws PathfinderException {
 
+        this.log.debug("checking if "+src.getFQTI()+" and "+dst.getFQTI()+" are directly connected");
         boolean linked = false;
         // Special case: if links are in same node
         if (src.getPort().getNode().equals(dst.getPort().getNode())) {
             linked = true;
+            this.log.debug(" yes, same node");
         } else if (src.getRemoteLink().equals(dst)) {
             // TODO: check if there is available bandwidth!
+            this.log.debug(" yes, are linked");
             linked = true;
         }
         if (linked) {
@@ -392,6 +395,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
             return(newPath);
         } else {
+            this.log.debug(" no, are not connected");
             return null;
         }
     }
