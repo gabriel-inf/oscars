@@ -429,7 +429,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (src.getPort().getNode().equals(dst.getPort().getNode())) {
             linked = true;
             this.log.debug(" yes, same node");
-        } else if (src.getRemoteLink().equals(dst)) {
+        } else if (src.getRemoteLink() != null && src.getRemoteLink().equals(dst)) {
             // TODO: check if there is available bandwidth!
             this.log.debug(" yes, are linked");
             linked = true;
@@ -459,6 +459,11 @@ public class DBPathfinder extends Pathfinder implements PCE {
         DomainDAO domDAO = new DomainDAO("bss");
         Link srcLink = domDAO.getFullyQualifiedLink(src);
         Link dstLink = domDAO.getFullyQualifiedLink(dst);
+        if (srcLink == null) {
+            throw new PathfinderException("Could not locate link in DB for string: "+src);
+        } else if (dstLink == null) {
+            throw new PathfinderException("Could not locate link in DB for string: "+dst);
+        }
 
         Path directPath = this.directPath(srcLink, dstLink);
         if (directPath != null) {
