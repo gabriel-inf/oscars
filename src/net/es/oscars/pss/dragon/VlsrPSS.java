@@ -39,6 +39,7 @@ public class VlsrPSS implements PSS{
     public String createPath(Reservation resv) throws PSSException{
         this.log.info("vlsr.create.start");
         DragonCSA csa = new DragonCSA();
+        csa.setLogger("PathScheduler");
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
         String promptPattern = this.props.getProperty("promptPattern");
@@ -367,6 +368,7 @@ public class VlsrPSS implements PSS{
         this.log.info("vlsr.refresh.start");
         
         DragonCSA csa = new DragonCSA();
+        csa.setLogger("PathScheduler");
         DragonLSP lsp = null;
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
@@ -475,6 +477,7 @@ public class VlsrPSS implements PSS{
     public String teardownPath(Reservation resv) throws PSSException{
         this.log.info("vlsr.teardown.start");
         DragonCSA csa = new DragonCSA();
+        csa.setLogger("PathScheduler");
         JSch jsch = new JSch();
         String password = this.props.getProperty("password");
         String sshPortForwardStr = this.props.getProperty("ssh.portForward");
