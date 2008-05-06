@@ -514,22 +514,26 @@ public class ReservationManager {
         String description = null;
         boolean foundIngress = false;
         PathElem lastElem = null;
-
         ArrayList<String> linksList = new ArrayList<String>();
 
         this.log.info("convertPath.start");
+
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         LinkDAO linkDAO =  new LinkDAO(this.dbname);
+
         Layer2Info layer2Info = interPathInfo.getLayer2Info();
         Layer3Info layer3Info = interPathInfo.getLayer3Info();
         String pathSetupMode = interPathInfo.getPathSetupMode();
+
         if (layer2Info != null) {
             srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
             destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
         }
+
         Path path = new Path();
         path.setNextDomain(nextDomain);
+
         CtrlPlanePathContent intraPath = intraPathInfo.getPath();
         CtrlPlaneHopContent[] hops = intraPath.getHop();
         List<PathElem> pathElems = new ArrayList<PathElem>();
@@ -547,6 +551,7 @@ public class ReservationManager {
 
         for (int i = 0; i < hops.length; i++) {
             String hopTopoId = hops[i].getLinkIdRef();
+            this.log.debug("convertPath: converting link: "+hopTopoId);
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
@@ -554,6 +559,7 @@ public class ReservationManager {
 
             // can't store non-local addresses
             if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {
+                this.log.debug("convertPath: not a local link");
                 continue;
             }
 
@@ -576,6 +582,7 @@ public class ReservationManager {
             PathElem pathElem = new PathElem();
             if (!foundIngress) {
                 if (layer2Info != null) {
+                    this.log.debug("convertPath: found first L2 local link, setting to ingress");
                     pathElem.setDescription("ingress");
                     foundIngress = true;
                 } else {
@@ -583,20 +590,14 @@ public class ReservationManager {
                     net.es.oscars.pathfinder.Utils utils =
                         new net.es.oscars.pathfinder.Utils(this.dbname);
                     // assumes one to one relationship
-                    Ipaddr ipaddr =
-                        ipaddrDAO.queryByParam("linkId", link.getId());
+                    Ipaddr ipaddr = ipaddrDAO.queryByParam("linkId", link.getId());
                     if (ipaddr == null) {
-                        throw new BSSException(
-                            "no IP address associated with link " +
-                             link.getId());
+                        throw new BSSException("no IP address associated with link " + link.getId());
                     } else if (!ipaddr.isValid()) {
-                        throw new BSSException(
-                                "IP address associated with link " +
-                                 link.getId() + " is not valid");
+                        throw new BSSException("IP address associated with link " + link.getId() + " is not valid");
                     }
                     try {
-                        String ip =
-                            utils.getLoopback(ipaddr.getIP(), "Juniper");
+                        String ip = utils.getLoopback(ipaddr.getIP(), "Juniper");
                         if (ip != null) {
                             pathElem.setDescription("ingress");
                             foundIngress = true;
@@ -611,7 +612,7 @@ public class ReservationManager {
             //TODO: Set differently if VLAN mapping supported
             if(layer2Info != null &&
                 link.getL2SwitchingCapabilityData() != null &&
-                nextDomain == null){
+                nextDomain == null) {
                 this.setL2LinkDescr(pathElem, srcLink, destLink, link,  layer2Info);
             } else if (nextDomain != null) {
                 this.log.info("next domain is NOT NULL, not setting up VLAN tags now");
