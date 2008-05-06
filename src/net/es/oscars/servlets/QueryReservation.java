@@ -175,12 +175,30 @@ public class QueryReservation extends HttpServlet {
             pathStr += hops[hops.length-1];
         }
         if (pathStr != null) {
-            outputMap.put("pathReplace", pathStr);
+            StringBuilder sb = new StringBuilder();
+            // Utils.pathToString has new line separated hops
+            String[] hops = pathStr.trim().split("\n");
+            // enforce one hop per line in outer table cell
+            sb.append("<table>");
+            for (int i=0; i < hops.length; i++) {
+                sb.append("<tr><td class='innerHops'>" + hops[i] + "</td></tr>");
+            }
+            sb.append("</table>");
+            outputMap.put("pathReplace", sb.toString());
         }
         String interPathStr = utils.pathToString(path, true);
         if ((interPathStr != null) &&
                 !interPathStr.trim().equals("")) {
-            outputMap.put("interPathReplace", interPathStr);
+            StringBuilder sb = new StringBuilder();
+            String[] hops = interPathStr.trim().split("\n");
+            // enforce one hop per line in outer table cell
+            sb.append("<table>");
+            for (int i=0; i < hops.length; i++) {
+                sb.append("<tr><td class='innerHops'>" + hops[i] +
+                          "</td></tr>");
+            }
+            sb.append("</table>");
+            outputMap.put("interPathReplace", sb.toString());
         }
     }
 }

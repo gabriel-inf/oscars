@@ -18,6 +18,11 @@ td {
     padding: .2em;
 }
 
+/* no padding for inner hops tables */
+td.innerHops {
+    padding: 0;
+}
+
 .required {
     border: 2px solid #0a0;
     padding: 0;
@@ -42,7 +47,7 @@ td {
     border: 2px solid #cc0;
     padding: 0.2em;
 }
-
+  
 /* settings for title section of Web page */
 #pagetitle {
     border: 0;

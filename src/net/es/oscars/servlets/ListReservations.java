@@ -317,12 +317,10 @@ public class ListReservations extends HttpServlet {
     public List<String> getVlanTags(HttpServletRequest request) {
 
         List<String> vlanTags = new ArrayList<String>();
-        String vlanParam = request.getParameter("vlanSearch");
-        String[] paramTags = vlanParam.split(" ");
-        if (paramTags == null) {
-            vlanTags.add("");
-        } else {
-            for (int i=0 ; i < paramTags.length; i++) {
+        String vlanParam = request.getParameter("vlanSearch").trim();
+        if ((vlanParam != null) && !vlanParam.equals("")) {
+            String[] paramTags = vlanParam.split(" ");
+            for (int i=0; i < paramTags.length; i++) {
                 vlanTags.add(paramTags[i]);
             }
         }
