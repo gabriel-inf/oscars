@@ -37,6 +37,7 @@
     function catchSearch(event) {
         if (event.keyCode == dojo.keys.ENTER) {
             postSearch();
+            dojo.stopEvent(event);
         }
     }
     function initSearch() {

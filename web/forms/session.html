@@ -16,6 +16,8 @@
     function catchEnter(event) {
         if (event.keyCode == dojo.keys.ENTER) {
             postLogin();
+            // necessary for Safari
+            dojo.stopEvent(event);
         }
     }
     function initSession(event) {

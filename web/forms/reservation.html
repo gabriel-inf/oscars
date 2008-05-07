@@ -25,6 +25,7 @@
       function catchQuery(event) {
           if (event.keyCode == dojo.keys.ENTER) {
               postQuery();
+              dojo.stopEvent(event);
           }
       }
       function initQuery(event) {
