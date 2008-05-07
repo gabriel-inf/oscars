@@ -1,4 +1,31 @@
 <html>
+<head>
+<script type="text/javascript">
+    function postLogin() {
+        var oscarsStatus = dojo.byId("oscarsStatus");
+        oscarsStatus.className = "inprocess";
+        oscarsStatus.innerHTML = "Authenticating...";
+        dojo.xhrPost({
+            url: 'servlet/AuthenticateUser',
+            handleAs: "json-comment-filtered",
+            load: oscars.Form.handleReply,
+            error: oscars.Form.handleError,
+            form: dojo.byId("AuthenticateUser")
+        });
+    }
+    function catchEnter(event) {
+        if (event.keyCode == dojo.keys.ENTER) {
+            postLogin();
+        }
+    }
+    function initSession(event) {
+        dojo.connect(dijit.byId("userName").domNode, 'onkeypress', catchEnter);
+        dojo.connect(dojo.byId("password"), 'onkeypress', catchEnter);
+    }
+    // dojo.addOnLoad doesn't work properly within separate ContentPanes
+    dojo.connect(dijit.byId("sessionPane"), "onLoad", initSession);
+</script>
+</head>
 <body>
     <br />
     <div id="loginSection">
@@ -6,29 +33,21 @@
         <table>
           <tr>
             <th>User Name:</th>
-            <td><input type="text" dojoType="dijit.form.TextBox"
-                 name="userName" id="userName" size="28" /></td>
+            <td><input dojoType="dijit.form.ValidationTextBox"
+                required="true" name="userName" id="userName" size="28" />
+            </td>
           </tr>
           <tr>
             <th>Password:</th>
             <td>
-              <input type="password" name="password" size="28" />
+                <input type="password" name="password" id="password" size="28" />
             </td>
           </tr>
         </table>
         <button dojoType="dijit.form.Button" id="login">
           LOGIN 
           <script type="dojo/method" event="onClick">
-              var oscarsStatus = dojo.byId("oscarsStatus");
-              oscarsStatus.className = "inprocess";
-              oscarsStatus.innerHTML = "Authenticating...";
-              dojo.xhrPost({
-                  url: 'servlet/AuthenticateUser',
-                  handleAs: "json-comment-filtered",
-                  load: oscars.Form.handleReply,
-                  error: oscars.Form.handleError,
-                  form: dojo.byId("AuthenticateUser")
-              });
+              postLogin();
           </script>
         </button>
     </form>

@@ -20,27 +20,8 @@
     };
     var resvLayout = [ resvView ];
 </script>
-</head>
-
-<body>
-
-<p>The reservations returned can be constrained by their status, text in
-their description, times that they end after or start before, and topology
-identifiers that they contain in their path.  Times given are in the
-time zone of the browser.  Click on the GRI link to view detailed
-information about a reservation.</p>
-
-<form id="reservationListForm" method="POST">
-
-<input type="hidden" name="startTimeSeconds" id="startTimeSeconds" />
-<input type="hidden" name="endTimeSeconds" id="endTimeSeconds" />
-
-<table>
-<tr>
-  <td width="7%">
-  <button dojoType="dijit.form.Button" id="refreshReservationList">
-     Refresh 
-     <script type="dojo/method" event="onClick">
+<script type="text/javascript">
+    function postSearch() {
         var oscarsStatus = dojo.byId("oscarsStatus");
         oscarsStatus.className = "inprocess";
         oscarsStatus.innerHTML = "Retrieving reservations...";
@@ -52,6 +33,54 @@ information about a reservation.</p>
             error: oscars.Form.handleError,
             form: dojo.byId("reservationListForm")
         });
+    }
+    function catchSearch(event) {
+        if (event.keyCode == dojo.keys.ENTER) {
+            postSearch();
+        }
+    }
+    function initSearch() {
+        dojo.connect(dijit.byId("vlanSearch").domNode, 'onkeypress',
+                     catchSearch);
+        /*
+        dojo.connect(dijit.byId("startDateSearch").domNode, 'onkeypress',
+                     catchSearch);
+        dojo.connect(dijit.byId("startTimeSearch").domNode, 'onkeypress',
+                     catchSearch);
+        dojo.connect(dijit.byId("endDateSearch").domNode, 'onkeypress',
+                     catchSearch);
+        dojo.connect(dijit.byId("endTimeSearch").domNode, 'onkeypress',
+                     catchSearch);
+        */
+        dojo.connect(dijit.byId("linkIds").domNode, 'onkeypress', catchSearch);
+        dojo.connect(dijit.byId("resvDescription").domNode, 'onkeypress',
+                     catchSearch);
+    }
+    dojo.connect(dijit.byId("reservationsPane"), "onLoad", initSearch);
+</script>
+</head>
+
+<body>
+
+<p>The reservations returned by a search can be constrained by their status,
+text in their description, times that they end after or start before, and
+topology identifiers that they contain in their path.  Times given are in the
+time zone of the browser.  Click on a row to view detailed
+information about a reservation.  Click on SEARCH again to get the latest
+information on the reservations chosen.</p>
+
+<form id="reservationListForm" method="POST">
+
+<input type="hidden" name="startTimeSeconds" id="startTimeSeconds" />
+<input type="hidden" name="endTimeSeconds" id="endTimeSeconds" />
+
+<table>
+<tr>
+  <td width="7%">
+  <button dojoType="dijit.form.Button" id="refreshReservationList">
+     SEARCH
+     <script type="dojo/method" event="onClick">
+         postSearch();
     </script>
   </button>
   </td>

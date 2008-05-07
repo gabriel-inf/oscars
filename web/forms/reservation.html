@@ -2,15 +2,35 @@
 
 <head>
     <script type="text/javascript">
-        function cancelReservation(dialogFields) {
-            dojo.xhrPost({
-              url: 'servlet/CancelReservation',
-              handleAs: "json-comment-filtered",
-              load: oscars.Form.handleReply,
-              error: oscars.Form.handleError,
-              form: dojo.byId("reservationDetailsForm")
-            });
-        }
+      function postQuery() {
+          dojo.xhrPost({
+            url: 'servlet/QueryReservation',
+            handleAs: "json-comment-filtered",
+            load: oscars.Form.handleReply,
+            error: oscars.Form.handleError,
+            form: dojo.byId("reservationDetailsForm")
+          });
+      }
+      function cancelReservation(dialogFields) {
+          dojo.xhrPost({
+            url: 'servlet/CancelReservation',
+            handleAs: "json-comment-filtered",
+            load: oscars.Form.handleReply,
+            error: oscars.Form.handleError,
+            form: dojo.byId("reservationDetailsForm")
+          });
+      }
+    </script>
+    <script type="text/javascript">
+      function catchQuery(event) {
+          if (event.keyCode == dojo.keys.ENTER) {
+              postQuery();
+          }
+      }
+      function initQuery(event) {
+          dojo.connect(dijit.byId("gri").domNode, 'onkeypress', catchQuery);
+      }
+      dojo.connect(dijit.byId("reservationDetailsPane"), "onLoad", initQuery);
     </script>
 </head>
 
@@ -26,15 +46,9 @@
     </td>
     <td>
       <button dojoType="dijit.form.Button" id="queryReservation">
-        Refresh 
+        REFRESH
       <script type="dojo/method" event="onClick">
-        dojo.xhrPost({
-          url: 'servlet/QueryReservation',
-          handleAs: "json-comment-filtered",
-          load: oscars.Form.handleReply,
-          error: oscars.Form.handleError,
-          form: dojo.byId("reservationDetailsForm")
-        });
+          postQuery();
       </script>
       </button>
     </td>
@@ -43,15 +57,6 @@
                 onclick="dijit.byId('cancelDialog').show();">
         CANCEL 
       </button>
-    </td>
-  </tr>
-  <!-- workaround for enter causing exit from application for GRI -->
-  <!-- (happens with only one text input field) -->
-  <tr style="display:none">
-    <td colspan="4">
-      <input type="text" name="foo" id="foo"
-             dojoType="dijit.form.ValidationTextBox"
-             promptMessage="foo" />
     </td>
   </tr>
 </table>
