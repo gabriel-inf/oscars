@@ -72,11 +72,24 @@ public class GraphVizExporter {
     */
     private StringBuffer graph = new StringBuffer();
 
+    private static String[] colors;
+
    /**
     * Constructor: creates a new GraphViz object that will contain
     * a graph.
     */
    public GraphVizExporter() {
+       colors = new String[10];
+       colors[0] = "red";
+       colors[1] = "blue";
+       colors[2] = "green";
+       colors[3] = "yellow";
+       colors[4] = "darkorange";
+       colors[5] = "purple";
+       colors[6] = "darkgreen";
+       colors[7] = "brown";
+       colors[8] = "orange";
+       colors[9] = "violet";
    }
 
    /**
@@ -108,7 +121,119 @@ public class GraphVizExporter {
       graph.append('\n');
    }
 
+   public void addLinkToPath(Link link, ArrayList<String> nodesOnPath, HashMap<String, ArrayList<String>> nodePortsOnPath) {
+       if (link == null) {
+           return;
+       }
+//       System.out.println(link.getFQTI());
+
+       Port port = link.getPort();
+       Node node = port.getNode();
+       Domain dom = node.getDomain();
+       String nodeId = dom.getTopologyIdent()+"_"+node.getTopologyIdent();
+       nodesOnPath.add(nodeId);
+       String portId = port.getTopologyIdent();
+       portId = portId.replaceAll("TenGigabitEthernet", "Te");
+       portId = portId.replaceAll("GigabitEthernet", "Ge");
+       ArrayList<String> nodePorts = nodePortsOnPath.get(nodeId);
+       if (nodePorts == null) {
+           nodePorts = new ArrayList<String>();
+           nodePorts.add(portId);
+           nodePortsOnPath.put(nodeId, nodePorts);
+       } else {
+           if (!nodePorts.contains(portId)) {
+               nodePorts.add(portId);
+           }
+       }
+   }
+
+   public void addResvEdge(PathElem pe, String gri, HashMap<String, HashMap<String, HashMap<String, String>>> griToResvEdges, boolean isFirst, HashMap<String, ArrayList<String>> resvEndpointGroups) {
+       if (pe == null) {
+           return;
+       }
+
+       String startId = gri+"-start";
+       String endId = gri+"-end";
+
+       Link link = pe.getLink();
+       Port port = link.getPort();
+       Node node = port.getNode();
+       Domain dom = node.getDomain();
+
+       String nodeId = dom.getTopologyIdent()+"_"+node.getTopologyIdent();
+       String portId = port.getTopologyIdent();
+       portId = portId.replaceAll("TenGigabitEthernet", "Te");
+       portId = portId.replaceAll("GigabitEthernet", "Ge");
+       String left = "\""+nodeId+"\":\""+portId+"\"";
+       String right = "";
+       boolean addToGroup = false;
+
+       if (isFirst) {
+           String resvNode = "\"remote_"+nodeId+"\":\""+startId+"\"";
+           this.addResvEdge(resvNode, left, gri, griToResvEdges);
+           addToGroup = true;
+       }
+
+       if (pe.getNextElem() != null) {
+           PathElem nextPe = pe.getNextElem();
+           Link nextLink = nextPe.getLink();
+           Port nextPort = nextLink.getPort();
+           Node nextNode = nextPort.getNode();
+           Domain nextDom = nextNode.getDomain();
+           String nextNodeId = nextDom.getTopologyIdent()+"_"+nextNode.getTopologyIdent();
+           String nextPortId = nextPort.getTopologyIdent();
+           if (!nodeId.equals(nextNodeId)) {
+               nextPortId = nextPortId.replaceAll("TenGigabitEthernet", "Te");
+               nextPortId = nextPortId.replaceAll("GigabitEthernet", "Ge");
+               right = "\""+nextNodeId+"\":\""+nextPortId+"\"";
+           }
+       } else {
+           right = "\"remote_"+nodeId+"\":\""+endId+"\"";
+           addToGroup = true;
+       }
+       if (!right.equals("")) {
+           this.addResvEdge(left, right, gri, griToResvEdges);
+       }
+
+       if (addToGroup) {
+           ArrayList<String> resvEndpointGroup = resvEndpointGroups.get(nodeId);
+           if (resvEndpointGroup == null) {
+               resvEndpointGroup = new ArrayList<String>();
+               resvEndpointGroups.put(nodeId, resvEndpointGroup);
+           }
+           String what;
+           if (isFirst) {
+               what = startId;
+           } else {
+               what = endId;
+           }
+           if (!resvEndpointGroup.contains(what)) {
+               resvEndpointGroup.add(what);
+           }
+       }
+
+   }
+
+   public void addResvEdge(String left, String right, String gri, HashMap<String, HashMap<String, HashMap<String, String>>> griToResvEdges) {
+       String edge = left + " -- " + right;
+       HashMap<String, HashMap<String, String>> resvEdges = griToResvEdges.get(gri);
+       if (resvEdges == null) {
+           resvEdges = new HashMap<String, HashMap<String, String>>();
+           griToResvEdges.put(gri, resvEdges);
+       }
+       HashMap<String, String> edgeAttrs = resvEdges.get(edge);
+       if (edgeAttrs == null) {
+           edgeAttrs = new HashMap<String, String>();
+           resvEdges.put(edge, edgeAttrs);
+//                   System.out.println("edge: "+edge);
+       }
+       edgeAttrs.put("left", left);
+       edgeAttrs.put("right", right);
+   }
+
    public void exportTopology(Topology topo, List<Reservation> resvs) {
+       DomainDAO domDAO = new DomainDAO("bss");
+
        HashMap graphAttrs = new HashMap<String, String>();
 
        HashMap<String, String> linkedEdges = new HashMap<String, String>();
@@ -116,27 +241,92 @@ public class GraphVizExporter {
        HashMap<String, ArrayList<String>> nodesToPorts = new HashMap<String, ArrayList<String>>();
 
        HashMap<String, HashMap<String, String>> graphNodes = new HashMap<String, HashMap<String, String>>();
-       HashMap<String, HashMap<String, String>> graphEdges= new HashMap<String, HashMap<String, String>>();
+       HashMap<String, HashMap<String, String>> graphEdges = new HashMap<String, HashMap<String, String>>();
 
-       graphAttrs.put("sep", "0.5");
-       graphAttrs.put("overlap", "\"orthoyx\"");
-       graphAttrs.put("splines", "\"true\"");
-       graphAttrs.put("concentrate", "\"true\"");
+
+       ArrayList<String> nodesOnPath = new ArrayList<String>();
+       HashMap<String, ArrayList<String>> nodePortsOnPath = new HashMap<String, ArrayList<String>>();
+
+       ArrayList<String> resvNodes = new ArrayList<String>();
+       HashMap<String, HashMap<String, String>> resvEndpointAttrs = new HashMap<String, HashMap<String, String>>();
+       HashMap<String, HashMap<String, HashMap<String, String>>> griToResvEdges = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+       HashMap<String, ArrayList<String>> resvEndpointGroups = new HashMap<String, ArrayList<String>>();
+
+
+       // find out which nodes & links we need to print: only those on reservation paths
+       for (Reservation resv : resvs) {
+           String gri = resv.getGlobalReservationId();
+           String resvDescription = resv.getDescription().trim();
+           resvDescription = resvDescription.replaceAll("\\[PRODUCTION\\]", "");
+           resvDescription = resvDescription.replaceAll("\\[PRODUCTION CIRCUIT\\]", "");
+           String startId = gri+"-start";
+           String endId = gri+"-end";
+           String label = resvDescription;
+           HashMap<String, String> startEndpointAttrs = new HashMap<String, String>();
+           HashMap<String, String> endEndpointAttrs = new HashMap<String, String>();
+           startEndpointAttrs.put("label", label);
+           endEndpointAttrs.put("label", label);
+           resvEndpointAttrs.put(startId, startEndpointAttrs);
+           resvEndpointAttrs.put(endId, endEndpointAttrs);
+
+
+//           System.out.println(gri);
+           resvNodes.add(gri);
+           Path path = resv.getPath();
+           PathElem pe = path.getPathElem();
+           if (pe != null) {
+               Link link = pe.getLink();
+               this.addResvEdge(pe, gri, griToResvEdges, true, resvEndpointGroups);
+               this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
+               while (pe.getNextElem() != null) {
+                   pe = pe.getNextElem();
+                   link = pe.getLink();
+                   this.addResvEdge(pe, gri, griToResvEdges, false, resvEndpointGroups);
+                   this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
+               }
+           }
+           /*
+           pe = path.getInterPathElem();
+           if (pe != null) {
+               Link link = pe.getLink();
+               this.addResvEdge(pe, gri, griToResvEdges, true);
+               this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
+               while (pe.getNextElem() != null) {
+                   pe = pe.getNextElem();
+                   link = pe.getLink();
+                   this.addResvEdge(pe, gri, griToResvEdges, false);
+                   this.addLinkToPath(link, nodesOnPath, nodePortsOnPath);
+               }
+           }
+           Layer2Data l2data = resv.getPath().getLayer2Data();
+           if (l2data != null) {
+               String src = l2data.getSrcEndpoint();
+               String dst = l2data.getDestEndpoint();
+
+               Link srcLink = domDAO.getFullyQualifiedLink(src);
+               Link dstLink = domDAO.getFullyQualifiedLink(dst);
+               this.addLinkToPath(srcLink, nodesOnPath, nodePortsOnPath);
+               this.addLinkToPath(dstLink, nodesOnPath, nodePortsOnPath);
+           }
+           */
+       }
+
+
+       graphAttrs.put("sep", "0.2");
+       graphAttrs.put("overlap", "\"portho_yx\"");
+       graphAttrs.put("splines", "\"false\"");
        graphAttrs.put("ratio", "0.7");
-       graphAttrs.put("model", "\"subset\"");
+//       graphAttrs.put("model", "\"subset\"");
 
-       String linksDot = "";
-       String nodesDot = "";
 
        for (Domain dom : topo.getDomains()) {
            String domId = dom.getTopologyIdent();
 
            Iterator nodeIt = dom.getNodes().iterator();
            while (nodeIt.hasNext()) {
-               Node node = (Node) nodeIt.next();
-               if (this.nodeIsPrintable(node)) {
-                   String nodeId = dom.getTopologyIdent()+"_"+node.getTopologyIdent();
-
+                 Node node = (Node) nodeIt.next();
+               String nodeId = dom.getTopologyIdent()+"_"+node.getTopologyIdent();
+               if (this.nodeIsPrintable(node) && nodesOnPath.contains(nodeId)) {
                    HashMap<String, String> nodeAttrs = new HashMap<String, String>();
                    graphNodes.put(nodeId, nodeAttrs);
                    ArrayList<String> nodePorts = new ArrayList<String>();
@@ -145,11 +335,15 @@ public class GraphVizExporter {
                    Iterator portIt = node.getPorts().iterator();
                    while (portIt.hasNext()) {
                        Port port = (Port) portIt.next();
-                       if (this.portIsPrintable(port)) {
-                           String portId = port.getTopologyIdent();
-                           portId = portId.replaceAll("TenGigabitEthernet", "Te");
-                           portId = portId.replaceAll("GigabitEthernet", "Ge");
+                       String portId = port.getTopologyIdent();
+                       portId = portId.replaceAll("TenGigabitEthernet", "Te");
+                       portId = portId.replaceAll("GigabitEthernet", "Ge");
+                       ArrayList<String> thisNodePortsOnPath = nodePortsOnPath.get(nodeId);
+                       if (thisNodePortsOnPath.contains(portId)) {
                            nodePorts.add(portId);
+                       }
+
+                       if (this.portIsPrintable(port) && thisNodePortsOnPath.contains(portId)) {
 
                            Iterator linkIt = port.getLinks().iterator();
                            while (linkIt.hasNext()) {
@@ -166,27 +360,31 @@ public class GraphVizExporter {
                                    remPortId = remPortId.replaceAll("GigabitEthernet", "Ge");
 
                                    String remNodeId = remDom.getTopologyIdent()+"_"+remNode.getTopologyIdent();
-                                   String left = "\""+nodeId+"\":\""+portId+"\"";
-                                   String right = "\""+remNodeId+"\":\""+remPortId+"\"";
-                                   String edge = left + " -- " + right;
-                                   String tem = link.getTrafficEngineeringMetric();
+                                   ArrayList<String> thatNodePortsOnPath = nodePortsOnPath.get(remNodeId);
+                                   if (nodesOnPath.contains(remNodeId) && thatNodePortsOnPath.contains(remPortId)) {
 
-                                   Long bandwidth = link.getMaximumReservableCapacity();
-                                   Long bwMbps = bandwidth / 1000000;
+                                       String left = "\""+nodeId+"\":\""+portId+"\"";
+                                       String right = "\""+remNodeId+"\":\""+remPortId+"\"";
+                                       String edge = left + " -- " + right;
+                                       String tem = link.getTrafficEngineeringMetric();
 
-                                   HashMap<String, String> edgeAttrs = new HashMap<String, String>();
-                                   edgeAttrs.put("Mbps", bwMbps.toString());
-                                   edgeAttrs.put("tem", tem);
-                                   edgeAttrs.put("left", left);
-                                   edgeAttrs.put("right", right);
-                                   edgeAttrs.put("leftPort", portId);
-                                   edgeAttrs.put("rightPort", remPortId);
-                                   edgeAttrs.put("leftNode", nodeId);
-                                   edgeAttrs.put("rightNode", remNodeId);
-                                   edgeAttrs.put("leftDomain", domId);
-                                   edgeAttrs.put("rightDomain", remDomId);
-                                   graphEdges.put(edge, edgeAttrs);
-                                   linkedEdges.put(left, right);
+                                       Long bandwidth = link.getMaximumReservableCapacity();
+                                       Long bwMbps = bandwidth / 1000000;
+
+                                       HashMap<String, String> edgeAttrs = new HashMap<String, String>();
+                                       edgeAttrs.put("Mbps", bwMbps.toString());
+                                       edgeAttrs.put("tem", tem);
+                                       edgeAttrs.put("left", left);
+                                       edgeAttrs.put("right", right);
+                                       edgeAttrs.put("leftPort", portId);
+                                       edgeAttrs.put("rightPort", remPortId);
+                                       edgeAttrs.put("leftNode", nodeId);
+                                       edgeAttrs.put("rightNode", remNodeId);
+                                       edgeAttrs.put("leftDomain", domId);
+                                       edgeAttrs.put("rightDomain", remDomId);
+                                       graphEdges.put(edge, edgeAttrs);
+                                       linkedEdges.put(left, right);
+                                   }
                                }
                            }
                        }
@@ -194,7 +392,10 @@ public class GraphVizExporter {
                }
            }
        }
-       // collection from DB done, create DOT format
+       // topology collection from DB done
+
+
+
 
 
        // prep graph
@@ -208,42 +409,100 @@ public class GraphVizExporter {
        }
 
 
-       // print NODES
+       String nodesDot = this.getTopoNodesDot(graphNodes, nodesToPorts, portPositions);
+       this.addln(nodesDot);
+
+
+       String edgesDot = this.getTopoEdgesDot(graphEdges, portPositions);
+       this.addln(edgesDot);
+
+       // print RESERVATION NODES
        this.addln("{");
        this.addln("node [shape=none];");
-       Iterator gnodeIt = graphNodes.keySet().iterator();
-       while (gnodeIt.hasNext()) {
-           String nodeId = (String) gnodeIt.next();
+       Iterator egIt = resvEndpointGroups.keySet().iterator();
+       while (egIt.hasNext()) {
+           String nodeId = (String) egIt.next();
+           ArrayList<String> endpointGroup = resvEndpointGroups.get(nodeId);
+           String groupId = "\"remote_"+nodeId+"\"";
+           this.addln(groupId + " [label=<<table cellspacing=\"16\">");
+           for (String endpoint : endpointGroup) {
+               this.addln("<tr><td port=\""+endpoint+"\">"+endpoint+"</td></tr>");
+           }
+           this.addln("</table>>];");
+       }
+       this.addln("}");
+
+       // print RESERVATION EDGES
+       Iterator griIt = griToResvEdges.keySet().iterator();
+       int colorIndex = 0;
+       while (griIt.hasNext()) {
+           String gri = (String) griIt.next();
+           String color = colors[colorIndex];
+//           System.out.println(gri+"_"+color);
+
+           HashMap<String, HashMap<String, String>> resvEdges = griToResvEdges.get(gri);
+           Iterator edgeIt = resvEdges.keySet().iterator();
+           while (edgeIt.hasNext()) {
+               String edge = (String) edgeIt.next();
+               String style = "[color = "+color+", penwidth=2]";
+               this.addln(edge+" "+style+";");
+//               System.out.println(edge);
+           }
+           colorIndex++;
+       }
+
+
+
+       // finish graph
+       this.addln(this.end_graph());
+
+   }
+
+   public String getTopoNodesDot(HashMap<String, HashMap<String, String>> graphNodes, HashMap<String, ArrayList<String>> nodesToPorts, HashMap<String, String> portPositions) {
+       // print NODES
+       String nodesDot = "{\n";
+       nodesDot += "node [shape=none];\n";
+       Iterator graphNodeIt = graphNodes.keySet().iterator();
+       while (graphNodeIt.hasNext()) {
+           String nodeId = (String) graphNodeIt.next();
            String nodeDot = "\""+nodeId+"\"";
-           nodeDot += " [label=<<table cellspacing=\"12\">\n";
+           nodeDot += " [label=<<table cellspacing=\"24\" cellpadding=\"4\">\n";
            nodeDot += " <tr><td colspan=\"2\">"+nodeId+"</td></tr>\n";
            Iterator npIt = nodesToPorts.get(nodeId).iterator();
            int i = 0;
            while (npIt.hasNext()) {
                String portId = (String) npIt.next();
                if (i == 0) {
-                   portPositions.put(nodeId+"_"+portId, "w");
+                   portPositions.put(nodeId+"_"+portId, " ");
+               } else if (i == 1) {
+                   portPositions.put(nodeId+"_"+portId, " ");
                } else {
-                   portPositions.put(nodeId+"_"+portId, "e");
+//                   portPositions.put(nodeId+"_"+portId, "se");
                }
 
                if (i == 0) {
                    nodeDot += "<tr>\n";
                }
                nodeDot += "<td port=\""+portId+"\">"+portId+"</td>\n";
+
                i++;
 
-               if (i == 2 || !npIt.hasNext()) {
+               if (i == 1 || !npIt.hasNext()) {
                    nodeDot += "</tr>\n";
                    i = 0;
                }
            }
-           nodeDot += "</table>>];";
-           this.addln(nodeDot);
+           nodeDot += "</table>>];\n";
+           nodesDot += nodeDot;
        }
-       this.addln("}");
+       nodesDot += "}\n";
+       return nodesDot;
+   }
 
+   public String getTopoEdgesDot(HashMap<String, HashMap<String, String>> graphEdges, HashMap<String, String> portPositions) {
+       HashMap<String, ArrayList<String>> alreadyLinked = new HashMap<String, ArrayList<String>>();
 
+       String edgesDot = "";
        // print EDGES
        Iterator gedgeIt = graphEdges.keySet().iterator();
        while (gedgeIt.hasNext()) {
@@ -265,62 +524,58 @@ public class GraphVizExporter {
            Integer mbps = Integer.parseInt(bwMbps);
            Integer tem = Integer.parseInt(trafficEng);
 
+           boolean isFirstEdgeBetween = true;
+           ArrayList<String> linksFromLeft = alreadyLinked.get(left);
+           ArrayList<String> linksFromRight = alreadyLinked.get(right);
+           if (linksFromLeft == null) {
+               linksFromLeft = new ArrayList<String>();
+               alreadyLinked.put(left, linksFromLeft);
+               linksFromLeft.add(right);
+           } else {
+               if (linksFromLeft.contains(right)) {
+                   isFirstEdgeBetween = false;
+               }
+           }
+           if (linksFromRight == null) {
+               linksFromRight = new ArrayList<String>();
+               alreadyLinked.put(right, linksFromRight);
+               linksFromRight.add(left);
+           } else {
+               if (linksFromRight.contains(left)) {
+                   isFirstEdgeBetween = false;
+               }
+           }
+
            boolean interdomain = false;
            if (!leftDomain.equals(rightDomain)) {
                interdomain = true;
            }
 
-           Integer bwQuantum = 1;
-           if (mbps >= 10000) {
-               bwQuantum = 8;
-           } else if (mbps >= 1000) {
-               bwQuantum = 2;
-           } else {
-               bwQuantum = 1;
-           }
-           Integer teQuantum = 1;
-           if (tem >= 1000) {
-               teQuantum = 8;
-           } else if (tem >= 100) {
-               teQuantum = 2;
-           } else {
-               teQuantum = 1;
-           }
 
-           String width = "1";
+           String width = "4";
            String weight = "1";
            String length = "1";
-           String extraStyle = "";
-           float importance = bwQuantum.floatValue()/teQuantum.floatValue();
+           String extraStyle = "dashed";
            if (interdomain) {
-               importance = importance * 2;
+               width = "3";
+           }
+           if (!isFirstEdgeBetween) {
+               extraStyle = ", invis";
            }
 
-           if (importance < 0.5) {
-               length = "1";
-               extraStyle = ",dotted";
-           } else if (importance <= 2) {
-               length = "2";
-               width = "2";
-               weight="8";
-               extraStyle = ",dashed";
-           } else {
-               length = "4";
-               width = "4";
-               weight="64";
-           }
+           // leftPortPos = ":"+leftPortPos;
+           // rightPortPos = ":"+rightPortPos;
+           leftPortPos = "";
+           rightPortPos = "";
 
-           String style = "style=\"setlinewidth("+width+")"+extraStyle+"\"";
+           String style = "style=\""+extraStyle+"\", penwidth="+width;
 
-           edgeDot = left+":"+leftPortPos+" -- "+right+":"+rightPortPos+" [dir=both, "+style+", weight="+weight+", len="+length+"];";
-           this.addln(edgeDot);
-
+           edgeDot = left+leftPortPos+" -- "+right+rightPortPos+" [dir=both, "+style+", weight="+weight+", len="+length+"];\n";
+           edgesDot += edgeDot;
        }
-
-       // finish graph
-       this.addln(this.end_graph());
-
+       return edgesDot;
    }
+
 
    public boolean nodeIsPrintable(Node node) {
        if (!node.isValid()) {
@@ -351,6 +606,7 @@ public class GraphVizExporter {
        return false;
    }
    public boolean linkIsPrintable(Link link) {
+       String out = link.getFQTI()+" printable? ";
        if (!link.isValid()) {
            return false;
        }
