@@ -353,12 +353,12 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
                 console.log("userDetailsForm not instantiated");
             }
             if (node != null) {
-                if (oscars.Form.isBlank(n.profileName.value)) {
+                if (oscars.Form.isBlank(node.profileName.value)) {
                     oscarsStatus.innerHTML = "Profile for user " +
                                              oscarsState.login;
                 } else {
                     oscarsStatus.innerHTML = "Profile for user " +
-                                             n.profileName.value;
+                                             node.profileName.value;
                 }
             }
         }
