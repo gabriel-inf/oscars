@@ -307,7 +307,6 @@ oscars.Form.hideParams = function (responseObject) {
 
 // take action based on which tab was clicked on
 oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
-    console.log("in selectedChanged: " + contentPane.id);
     var mainTabContainer = null;
     // start of back/forward button functionality
     var state = {
@@ -327,7 +326,7 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
         },
         changeUrl: contentPane.id,
     };
-        console.log("adding to history: " + state.changeUrl);
+        //console.log("adding to history: " + state.changeUrl);
         dojo.back.addToHistory(state);
     var oscarsStatus = dojo.byId("oscarsStatus");
     // if not currently in error state, change status to reflect current tab
