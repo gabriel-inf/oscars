@@ -10,8 +10,7 @@
         @import "css/main.css";
     </style>
     <script type="text/javascript" src="lib/dojo/dojo/dojo.js"
-        djConfig="parseOnLoad: true, preventBackButtonFix: false",
-        dojoIframeHistoryUrl: "lib/dojo/dojo/resources/iframe_history.html"
+        djConfig="parseOnLoad: true, preventBackButtonFix: false"
     </script>
     <!-- register namespace for OSCARS Javascript modules -->
     <script type="text/javascript">
@@ -22,7 +21,7 @@
     <script type="text/javascript">
         // required to parse the widgets
         dojo.require("dojo.parser");
-        // required for back and forward buttons to work
+        // will be required for back and forward buttons to work
         dojo.require("dojo.back");
         // all widgets used in all forms
         dojo.require("dojo.data.ItemFileReadStore");
@@ -49,7 +48,6 @@
             },
             login: "",
             firstPage: false,
-            overrideBackForward: false,
             userGridInitialized: false,
             resvGridInitialized: 0
         });
@@ -68,7 +66,6 @@
     </script>
   </head>
   <body class="tundra">
-    <script type="text/javascript">dojo.back.init();</script>
     <table id="pagetitle">
       <tr>
         <td>

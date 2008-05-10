@@ -311,23 +311,10 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     // start of back/forward button functionality
     var state = {
         back: function() {
-            mainTabContainer = dijit.byId("mainTabContainer");
-            console.log("Back was clicked! " + this.changeUrl);
-            oscarsState.overrideBackForward =
-                (this.id == contentPane.id) ? true : false;
-            //mainTabContainer.selectChild(this.id);
         },
         forward: function() {
-            mainTabContainer = dijit.byId("mainTabContainer");
-            console.log("Forward was clicked! " + this.changeUrl);
-            oscarsState.overrideBackForward =
-                (this.id == contentPane.id) ? true : false;
-            //mainTabContainer.selectChild(this.id);
-        },
-        changeUrl: contentPane.id,
+        }
     };
-        //console.log("adding to history: " + state.changeUrl);
-        dojo.back.addToHistory(state);
     var oscarsStatus = dojo.byId("oscarsStatus");
     // if not currently in error state, change status to reflect current tab
     var changeStatus = oscarsStatus.className == "success" ? true : false;
@@ -369,9 +356,6 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     } else if (contentPane.id == "userDetailsPane") {
         if (changeStatus) {
             var node = dojo.byId("userDetailsForm");
-            if (node == null) {
-                console.log("userDetailsForm not instantiated");
-            }
             if (node != null) {
                 if (oscars.Form.isBlank(node.profileName.value)) {
                     oscarsStatus.innerHTML = "Profile for user " +
@@ -566,13 +550,8 @@ oscars.Form.initBackForwardState = function () {
     var mainTabContainer = null;
     // callbacks handle back/forward button functionality
     var state = {
-        back: function() {
-            console.log("Back was clicked! " + "sessionPane");
-        },
-        forward: function() {
-            console.log("Forward was clicked! " + "sessionPane");
-        },
-        changeUrl: "sessionPane",
+        back: function() { },
+        forward: function() { }
     };
     dojo.back.setInitialState(state);
 };
