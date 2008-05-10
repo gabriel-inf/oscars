@@ -1,4 +1,6 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
   <head>
     <title>On-demand Secure Circuits and Advance Reservation System</title>
     <style type="text/css">
@@ -8,7 +10,8 @@
         @import "css/main.css";
     </style>
     <script type="text/javascript" src="lib/dojo/dojo/dojo.js"
-            djConfig="parseOnLoad: true, preventBackButtonFix: false">
+        djConfig="parseOnLoad: true, preventBackButtonFix: false",
+        dojoIframeHistoryUrl: "lib/dojo/dojo/resources/iframe_history.html"
     </script>
     <!-- register namespace for OSCARS Javascript modules -->
     <script type="text/javascript">
@@ -19,7 +22,7 @@
     <script type="text/javascript">
         // required to parse the widgets
         dojo.require("dojo.parser");
-        // will be required for back and forward buttons to work
+        // required for back and forward buttons to work
         dojo.require("dojo.back");
         // all widgets used in all forms
         dojo.require("dojo.data.ItemFileReadStore");
@@ -46,6 +49,7 @@
             },
             login: "",
             firstPage: false,
+            overrideBackForward: false,
             userGridInitialized: false,
             resvGridInitialized: 0
         });
@@ -59,16 +63,12 @@
             var w =dijit.byId("mainTabContainer");
             dojo.connect(w, "selectChild", oscars.Form.selectedChanged);
         });
-        // add event for changing URL of content pane
-        dojo.addOnLoad(function(){
-            var w =dijit.byId("sessionPane");
-            dojo.connect(w, "setHref", oscars.Form.hrefChanged);
-        });
         // initialize back/forward button state
         dojo.addOnLoad(oscars.Form.initBackForwardState); 
     </script>
   </head>
   <body class="tundra">
+    <script type="text/javascript">dojo.back.init();</script>
     <table id="pagetitle">
       <tr>
         <td>

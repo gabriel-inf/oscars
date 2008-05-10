@@ -16,7 +16,6 @@ selectedChanged(contentPaneWidget)
 refreshUserGrid()
 onUserRowSelect(evt)
 onResvRowSelect(evt)
-hrefChanged(newUrl)
 checkDateTimes()
 convertSearchTimes()
 convertReservationTimes()
@@ -308,6 +307,28 @@ oscars.Form.hideParams = function (responseObject) {
 
 // take action based on which tab was clicked on
 oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
+    console.log("in selectedChanged: " + contentPane.id);
+    var mainTabContainer = null;
+    // start of back/forward button functionality
+    var state = {
+        back: function() {
+            mainTabContainer = dijit.byId("mainTabContainer");
+            console.log("Back was clicked! " + this.changeUrl);
+            oscarsState.overrideBackForward =
+                (this.id == contentPane.id) ? true : false;
+            //mainTabContainer.selectChild(this.id);
+        },
+        forward: function() {
+            mainTabContainer = dijit.byId("mainTabContainer");
+            console.log("Forward was clicked! " + this.changeUrl);
+            oscarsState.overrideBackForward =
+                (this.id == contentPane.id) ? true : false;
+            //mainTabContainer.selectChild(this.id);
+        },
+        changeUrl: contentPane.id,
+    };
+        console.log("adding to history: " + state.changeUrl);
+        dojo.back.addToHistory(state);
     var oscarsStatus = dojo.byId("oscarsStatus");
     // if not currently in error state, change status to reflect current tab
     var changeStatus = oscarsStatus.className == "success" ? true : false;
@@ -390,16 +411,6 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
                                      " logged in";
         }
     }
-    // start of back/forward button functionality
-    var state = {
-        back: function() {
-            console.log("Back was clicked! ");
-        },
-        forward: function() {
-            console.log("Forward was clicked! ");
-        }
-    };
-    dojo.back.addToHistory(state);
 };
 
 // refresh user list from servlet
@@ -459,15 +470,6 @@ oscars.Form.onResvRowSelect = function (/*Event*/ evt) {
     // Note that this generates an apparently harmless error message in
     // Firebug console.
     mainTabContainer.selectChild(resvDetailsPaneTab);
-};
-
-oscars.Form.hrefChanged = function (newUrl) {
-    // start of back/forward button functionality
-    var state = {
-        back: function() { console.log("Back was clicked!"); },
-        forward: function() { console.log("Forward was clicked!"); }
-    };
-    dojo.back.addToHistory(state);
 };
 
 // check create reservation form's start and end date and time's, and
@@ -562,10 +564,16 @@ oscars.Form.isBlank = function (str) {
 };
 
 oscars.Form.initBackForwardState = function () {
-    // initially no state
+    var mainTabContainer = null;
+    // callbacks handle back/forward button functionality
     var state = {
-        back: function() { },
-        forward: function() { }
+        back: function() {
+            console.log("Back was clicked! " + "sessionPane");
+        },
+        forward: function() {
+            console.log("Forward was clicked! " + "sessionPane");
+        },
+        changeUrl: "sessionPane",
     };
     dojo.back.setInitialState(state);
 };
