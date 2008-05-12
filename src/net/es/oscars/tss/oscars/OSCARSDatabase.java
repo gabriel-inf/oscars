@@ -13,6 +13,7 @@ import org.apache.axiom.om.*;
 
 import org.ogf.schema.network.topology.ctrlplane._20070626.*;
 
+import java.sql.Time;
 import java.util.*;
 
 
@@ -29,6 +30,7 @@ public class OSCARSDatabase implements TEDB {
     private String nsUri;
     private String nsPrefix;
     private String dbname;
+    private String localdomain;
 
     /**
     * Constructor that initializes properties & logging
@@ -41,6 +43,7 @@ public class OSCARSDatabase implements TEDB {
         this.log = Logger.getLogger(this.getClass());
         this.setNsUri(this.props.getProperty("nsuri"));
         this.setNsPrefix(this.props.getProperty("nsprefix"));
+        this.setLocaldomain(this.props.getProperty("localdomain"));
         this.ns = Namespace.getNamespace(this.getNsPrefix(), this.getNsUri());
     }
 
@@ -108,10 +111,14 @@ public class OSCARSDatabase implements TEDB {
         Namespace ns = this.ns;
 
         Element topoXML = doc.getRootElement();
+        Date today = new Date();
+        Long now = today.getTime();
+        now = now / 1000;
 
         CtrlPlaneTopologyContent topology = new CtrlPlaneTopologyContent();
-        topology.setId("IDC topology");
-        topology.setIdcId("IDC"); // TODO: fix this
+        String topologyId = this.getLocaldomain() + "-" + now.toString();
+        topology.setId(topologyId);
+        topology.setIdcId(this.getLocaldomain());
 
         Iterator domIt = topoXML.getChildren("domain", ns).iterator();
         while (domIt.hasNext()) {
@@ -328,5 +335,13 @@ public class OSCARSDatabase implements TEDB {
         }
 
         return;
+    }
+
+    public String getLocaldomain() {
+        return localdomain;
+    }
+
+    public void setLocaldomain(String localdomain) {
+        this.localdomain = localdomain;
     }
 }
