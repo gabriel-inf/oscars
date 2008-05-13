@@ -69,7 +69,8 @@ public class AuthenticateUser extends HttpServlet {
         aaa.beginTransaction();
         try {
             String unused =
-                mgr.verifyLogin(userName, request.getParameter("password"),
+                mgr.verifyLogin(userName,
+                                request.getParameter("initialPassword"),
                                 sessionName);
         } catch (AAAException e) {
             utils.handleFailure(out, e.getMessage(), aaa, null);
