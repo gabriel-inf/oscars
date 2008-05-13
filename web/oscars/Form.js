@@ -1,6 +1,7 @@
 /*
 Form.js:        Javascript form callback handling using Dojo functionality
-Last modified:  March 3, 2008
+                Note that all security is enforced on the server side.
+Last modified:  May 13, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -67,14 +68,14 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         oscars.Form.refreshUserGrid();
     } else if (responseObject.method == "CreateReservation") {
         // transition to reservation details tab on successful creation
-        var formParam = dojo.byId("reservationDetailsForm");
+        var formParam = dijit.byId("reservationDetailsForm").domNode;
         formParam.gri.value = responseObject.gri;
         dojo.xhrPost({
             url: 'servlet/QueryReservation',
             handleAs: "json-comment-filtered",
             load: oscars.Form.handleReply,
             error: oscars.Form.handleError,
-            form: dojo.byId("reservationDetailsForm")
+            form: dijit.byId("reservationDetailsForm").domNode
         });
         // set tab to reservation details
         var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
@@ -174,6 +175,9 @@ oscars.Form.handleAuthenticateReply = function (responseObject,
 // handles user logout
 oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
     var sessionPane = dijit.byId("sessionPane");
+    // Reset login values because otherwise valid to login again by
+    // anyone accessing the browser.
+    dijit.byId("AuthenticateUser").domNode.reset(); 
     // toggle display of login/logout section of page
     var loginSection = dojo.byId("loginSection");
     loginSection.style.display = ""; 
@@ -335,7 +339,7 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
-                form: dojo.byId("reservationListForm")
+                form: dijit.byId("reservationListForm").domNode
             });
         }
         if (changeStatus) {
@@ -347,15 +351,13 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Reservation creation form";
         }
-        n = dojo.byId("reservationLogin");
-        // only do first time
-        if (n == null) {
+        if (contentPane.href == "") {
             contentPane.setHref("forms/createReservation.html");
         }
     // selected user details tab
     } else if (contentPane.id == "userDetailsPane") {
         if (changeStatus) {
-            var node = dojo.byId("userDetailsForm");
+            var node = dijit.byId("userDetailsForm").domNode;
             if (node != null) {
                 if (oscars.Form.isBlank(node.profileName.value)) {
                     oscarsStatus.innerHTML = "Profile for user " +
@@ -384,8 +386,7 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Add a user";
         }
-        n = dojo.byId("addingUserLogin");
-        if (n == null) {
+        if (contentPane.href == "") {
             contentPane.setHref("forms/userAdd.html");
         }
     } else if (contentPane.id == "sessionPane") {
@@ -415,7 +416,7 @@ oscars.Form.onUserRowSelect = function (/*Event*/ evt) {
     var userGrid = dijit.byId("userGrid");
     // get user name
     var profileName = userGrid.model.getDatum(evt.rowIndex, 1);
-    var formParam = dojo.byId("userDetailsForm");
+    var formParam = dijit.byId("userDetailsForm").domNode;
     formParam.profileName.value = profileName;
     // get user details
     dojo.xhrPost({
@@ -423,7 +424,7 @@ oscars.Form.onUserRowSelect = function (/*Event*/ evt) {
         handleAs: "json-comment-filtered",
         load: oscars.Form.handleReply,
         error: oscars.Form.handleError,
-        form: dojo.byId("userDetailsForm")
+        form: dijit.byId("userDetailsForm").domNode
     });
     // set tab to user details
     mainTabContainer.selectChild(userDetailsPaneTab);
@@ -439,7 +440,7 @@ oscars.Form.onResvRowSelect = function (/*Event*/ evt) {
     // get reservation's GRI; data in row starts at 0 unlike with
     // ItemFileReadStore
     var gri = resvGrid.model.getDatum(evt.rowIndex, 0);
-    var formParam = dojo.byId("reservationDetailsForm");
+    var formParam = dijit.byId("reservationDetailsForm").domNode;
     formParam.gri.value = gri;
     // get reservation details
     dojo.xhrPost({
@@ -447,7 +448,7 @@ oscars.Form.onResvRowSelect = function (/*Event*/ evt) {
         handleAs: "json-comment-filtered",
         load: oscars.Form.handleReply,
         error: oscars.Form.handleError,
-        form: dojo.byId("reservationDetailsForm")
+        form: dijit.byId("reservationDetailsForm").domNode
     });
     // Set tab to reservation details.
     // Note that this generates an apparently harmless error message in

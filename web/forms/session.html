@@ -2,6 +2,10 @@
 <head>
 <script type="text/javascript">
     function postLogin() {
+        var valid = dijit.byId("AuthenticateUser").validate();
+        if (!valid) {
+            return;
+        }
         var oscarsStatus = dojo.byId("oscarsStatus");
         oscarsStatus.className = "inprocess";
         oscarsStatus.innerHTML = "Authenticating...";
@@ -10,7 +14,7 @@
             handleAs: "json-comment-filtered",
             load: oscars.Form.handleReply,
             error: oscars.Form.handleError,
-            form: dojo.byId("AuthenticateUser")
+            form: dijit.byId("AuthenticateUser").domNode
         });
     }
     function catchEnter(event) {
@@ -22,27 +26,34 @@
     }
     function initSession(event) {
         dojo.connect(dijit.byId("userName").domNode, 'onkeypress', catchEnter);
-        dojo.connect(dojo.byId("password"), 'onkeypress', catchEnter);
+        dojo.connect(dojo.byId("initialPassword"), 'onkeypress', catchEnter);
     }
     // dojo.addOnLoad doesn't work properly within separate ContentPanes
-    dojo.connect(dijit.byId("sessionPane"), "onLoad", initSession);
+   dojo.connect(dijit.byId("sessionPane"), "onLoad", initSession);
 </script>
 </head>
 <body>
     <br />
     <div id="loginSection">
-    <form id="AuthenticateUser" method="post"> 
+    <form id="AuthenticateUser" dojoType="dijit.form.Form"> 
         <table>
           <tr>
             <th>User Name:</th>
-            <td><input dojoType="dijit.form.ValidationTextBox"
-                required="true" name="userName" id="userName" size="28" />
+            <td class="required"><input dojoType="dijit.form.ValidationTextBox"
+                required="true" regexp="[\w]+@[\w\.]+" name="userName"
+                id="userName" promptMessage="Enter your login name"
+                invalidMessage="Enter your login name" size="28" />
             </td>
           </tr>
           <tr>
             <th>Password:</th>
-            <td>
-                <input type="password" name="password" id="password" size="28" />
+            <td class="required">
+                <input dojoType="dijit.form.ValidationTextBox"
+                required="true" type="password" name="initialPassword"
+                id="initialPassword"
+                promptMessage="Enter your password"
+                invalidMessage="You must enter your password"
+                size="28" />
             </td>
           </tr>
         </table>
@@ -62,7 +73,7 @@
     </div>
 
     <div id="logoutSection" style="display:none">
-    <form id="UserLogout" method="post"> 
+    <form id="UserLogout" dojoType="dijit.form.Form"> 
         <button dojoType="dijit.form.Button" id="logout">
           LOGOUT 
           <script type="dojo/method" event="onClick">
@@ -71,7 +82,7 @@
                   handleAs: "json-comment-filtered",
                   load: oscars.Form.handleReply,
                   error: oscars.Form.handleError,
-                  form: dojo.byId("UserLogout")
+                  form: dijit.byId("UserLogout").domNode
               });
           </script>
         </button>

@@ -1,29 +1,22 @@
 <html>
 <head>
     <script type="text/javascript">
-        function checkLoaded() {
-            var w = dojo.byId("reservationLogin");
-            w.value= oscarsState.login;
-        }
         function initialPost() {
             dojo.xhrPost({
                 url: "servlet/CreateReservationForm",
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
-                form: dojo.byId("createReservationForm")
+                form: dijit.byId("createReservationForm").domNode
             });
         }
-        dojo.addOnLoad(checkLoaded);
-        dojo.addOnLoad(initialPost);
+        dojo.connect(dijit.byId("createReservationPane"), "onLoad", initialPost);
     </script>
 </head>
 
 <body>
-<form id="createReservationForm" method="POST">
+<form id="createReservationForm" dojoType="dijit.form.Form">
 
-<!-- currently just used to load form once -->
-<input type="hidden" name="login" id="reservationLogin" />
 <input type="hidden" name="startSeconds" id="hiddenStartSeconds" />
 <input type="hidden" name="endSeconds" id="hiddenEndSeconds" />
 
@@ -53,19 +46,26 @@ to the number of lines occurring in the hops list.
       <button dojoType="dijit.form.Button" id="createReservation">
          Create Reservation
          <script type="dojo/method" event="onClick">
-            var legal = oscars.Form.checkDateTimes();
-            if (legal) {
-                var oscarsStatus = dojo.byId("oscarsStatus");
-                oscarsStatus.className = "inprocess";
-                oscarsStatus.innerHTML = "Creating reservation...";
-                dojo.xhrPost({
-                  url: 'servlet/CreateReservation',
-                  handleAs: "json-comment-filtered",
-                  load: oscars.Form.handleReply,
-                  error: oscars.Form.handleError,
-                  form: dojo.byId("createReservationForm")
-                });
+            var legalDates = oscars.Form.checkDateTimes();
+            // status bar shows error message
+            if (!legalDates) {
+                return;
             }
+            // check validity of rest of fields
+            var valid = dijit.byId("createReservationForm").validate();
+            if (!valid) {
+                return;
+            } 
+            var oscarsStatus = dojo.byId("oscarsStatus");
+            oscarsStatus.className = "inprocess";
+            oscarsStatus.innerHTML = "Creating reservation...";
+            dojo.xhrPost({
+              url: 'servlet/CreateReservation',
+              handleAs: "json-comment-filtered",
+              load: oscars.Form.handleReply,
+              error: oscars.Form.handleError,
+              form: dijit.byId("createReservationForm").domNode
+            });
         </script>
       </button>
     </td>

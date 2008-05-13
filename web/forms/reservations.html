@@ -22,6 +22,10 @@
 </script>
 <script type="text/javascript">
     function postSearch() {
+        var valid = dijit.byId("reservationListForm").validate();
+        if (!valid) {
+            return;
+        }
         var oscarsStatus = dojo.byId("oscarsStatus");
         oscarsStatus.className = "inprocess";
         oscarsStatus.innerHTML = "Retrieving reservations...";
@@ -31,7 +35,7 @@
             handleAs: "json-comment-filtered",
             load: oscars.Form.handleReply,
             error: oscars.Form.handleError,
-            form: dojo.byId("reservationListForm")
+            form: dijit.byId("reservationListForm").domNode
         });
     }
     function catchSearch(event) {
@@ -43,16 +47,6 @@
     function initSearch() {
         dojo.connect(dijit.byId("vlanSearch").domNode, 'onkeypress',
                      catchSearch);
-        /*
-        dojo.connect(dijit.byId("startDateSearch").domNode, 'onkeypress',
-                     catchSearch);
-        dojo.connect(dijit.byId("startTimeSearch").domNode, 'onkeypress',
-                     catchSearch);
-        dojo.connect(dijit.byId("endDateSearch").domNode, 'onkeypress',
-                     catchSearch);
-        dojo.connect(dijit.byId("endTimeSearch").domNode, 'onkeypress',
-                     catchSearch);
-        */
         dojo.connect(dijit.byId("linkIds").domNode, 'onkeypress', catchSearch);
         dojo.connect(dijit.byId("resvDescription").domNode, 'onkeypress',
                      catchSearch);
@@ -70,7 +64,7 @@ time zone of the browser.  Click on a row to view detailed
 information about a reservation.  Click on SEARCH again to get the latest
 information on the reservations chosen.</p>
 
-<form id="reservationListForm" method="POST">
+<form id="reservationListForm" dojoType="dijit.form.Form"> 
 
 <input type="hidden" name="startTimeSeconds" id="startTimeSeconds" />
 <input type="hidden" name="endTimeSeconds" id="endTimeSeconds" />

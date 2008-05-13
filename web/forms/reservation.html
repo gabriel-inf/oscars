@@ -3,12 +3,16 @@
 <head>
     <script type="text/javascript">
       function postQuery() {
+          valid = dijit.byId("reservationDetailsForm").validate();
+          if (!valid) {
+              return;
+          }
           dojo.xhrPost({
             url: 'servlet/QueryReservation',
             handleAs: "json-comment-filtered",
             load: oscars.Form.handleReply,
             error: oscars.Form.handleError,
-            form: dojo.byId("reservationDetailsForm")
+            form: dijit.byId("reservationDetailsForm").domNode
           });
       }
       function cancelReservation(dialogFields) {
@@ -17,7 +21,7 @@
             handleAs: "json-comment-filtered",
             load: oscars.Form.handleReply,
             error: oscars.Form.handleError,
-            form: dojo.byId("reservationDetailsForm")
+            form: dijit.byId("reservationDetailsForm").domNode
           });
       }
     </script>
@@ -36,7 +40,7 @@
 </head>
 
 <body>
-<form id="reservationDetailsForm" method="POST">
+<form id="reservationDetailsForm" dojoType="dijit.form.Form">
 <table>
   <tr>
     <td>GRI</td>

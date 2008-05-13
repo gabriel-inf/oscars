@@ -1,26 +1,35 @@
 <html>
 <head>
     <script type="text/javascript">
-        dojo.addOnLoad(function(){
-            var w = dojo.byId("addingUserLogin");
-            w.value= oscarsState.login;
-        });
-        dojo.addOnLoad(function(){
+        function initUserAdd() {
             dojo.xhrPost({
                 url: 'servlet/UserAddForm',
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
-                form: dojo.byId("userAddForm")
+                form: dijit.byId("userAddForm").domNode
             });
-        });
+        }
+        function postUserAdd() { 
+            var valid = dijit.byId("userAddForm").validate();
+            if (!valid) {
+                return;
+            }
+            dojo.xhrPost({
+              url: 'servlet/UserAdd',
+              handleAs: "json-comment-filtered",
+              load: oscars.Form.handleReply,
+              error: oscars.Form.handleError,
+              form: dijit.byId("userAddForm").domNode
+            });
+        }
+        dojo.connect(dijit.byId("userAddPane"), "onLoad", initUserAdd);
     </script>
 </head>
 
 <body>
 <p>Required fields are outlined in green.</p>
-<form id="userAddForm" method="POST">
-  <input type="hidden" name="login" id="addingUserLogin" />
+<form id="userAddForm" dojoType="dijit.form.Form">
 
   <table>
   <tbody>
@@ -29,13 +38,7 @@
       <button dojoType="dijit.form.Button" id="userAdd">
          Add User 
          <script type="dojo/method" event="onClick">
-            dojo.xhrPost({
-              url: 'servlet/UserAdd',
-              handleAs: "json-comment-filtered",
-              load: oscars.Form.handleReply,
-              error: oscars.Form.handleError,
-              form: dojo.byId("userAddForm")
-            });
+             postUserAdd();
         </script>
       </button>
     </td>

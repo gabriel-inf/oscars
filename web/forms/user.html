@@ -1,21 +1,35 @@
 <html>
 <head>
     <script type="text/javascript">
-        dojo.addOnLoad(function(){
+        function initUserQuery() {
             dojo.xhrPost({
                 url: 'servlet/UserQuery',
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
-                form: dojo.byId("userDetailsForm")
+                form: dijit.byId("userDetailsForm").domNode
             });
-        });
+        }
+        function postUserModify() {
+            valid = dijit.byId("userDetailsForm").validate();
+            if (!valid) {
+                return;
+            }
+            dojo.xhrPost({
+              url: 'servlet/UserModify',
+              handleAs: "json-comment-filtered",
+              load: oscars.Form.handleReply,
+              error: oscars.Form.handleError,
+              form: dijit.byId("userDetailsForm").domNode
+            });
+        }
+        dojo.connect(dijit.byId("userDetailsPane"), "onLoad", initUserQuery);
     </script>
 </head>
 
 <body>
 <p>Required fields are outlined in green.</p>
-<form id="userDetailsForm" method="POST">
+<form id="userDetailsForm" dojoType="dijit.form.Form">
 
   <table>
   <tr>
@@ -23,18 +37,13 @@
   <button dojoType="dijit.form.Button" id="userModify">
      Modify 
      <script type="dojo/method" event="onClick">
-        dojo.xhrPost({
-          url: 'servlet/UserModify',
-          handleAs: "json-comment-filtered",
-          load: oscars.Form.handleReply,
-          error: oscars.Form.handleError,
-          form: dojo.byId("userDetailsForm")
-        });
+         postUserModify();
     </script>
   </button>
   </td>
 
   <td>
+  <!-- TODO:  confirmation dialog -->
   <!-- id'd this way to be able to toggle its display based on whether
        profile is oneself or not -->
   <div id="userDeleteDisplay" style="display:none">
@@ -46,7 +55,7 @@
           handleAs: "json-comment-filtered",
           load: oscars.Form.handleReply,
           error: oscars.Form.handleError,
-          form: dojo.byId("userDetailsForm")
+          form: dijit.byId("userDetailsForm").domNode
         });
       </script>
     </button>
