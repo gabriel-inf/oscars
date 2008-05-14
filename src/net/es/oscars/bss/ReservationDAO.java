@@ -115,6 +115,8 @@ public class ReservationDAO
         if (!criteria.isEmpty()) {
             hsql += " where " +Utils.join(criteria, " and ", "(", ")");
         }
+        hsql += " + order by r.startTime desc";
+
 
         this.log.debug("HSQL is: ["+hsql+"]");
 
