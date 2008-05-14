@@ -417,6 +417,7 @@ oscars.Form.onUserRowSelect = function (/*Event*/ evt) {
     // get user name
     var profileName = userGrid.model.getDatum(evt.rowIndex, 1);
     var formParam = dijit.byId("userDetailsForm").domNode;
+    formParam.reset();
     formParam.profileName.value = profileName;
     // get user details
     dojo.xhrPost({
