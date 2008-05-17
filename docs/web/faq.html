@@ -4,7 +4,6 @@
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
   <title>OSCARS FAQ</title>
-  <base href="/docs">
   <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
@@ -35,9 +34,16 @@ SESSIONS.ser</a><br>
 <div style="margin-left: 40px;"><a href="#valid_certification_path">Unable
 to find a valid certification path</a>
 <br>
-<a href="#timestamp_failed">timestamp failed</a><br>
+<a href="#timestamp_failed">Timestamp failed</a><br>
 </div>
-<br>
+<a href="#Web_Interface">Web Interface</a><br>
+<div style="margin-left: 40px;"><a href="#incompleteLoginPage">Incomplete
+login page</a></div>
+<a href="#Web_Service">Web service</a><br>
+<div style="margin-left: 40px;">
+<a href="faq.html#hql.ast.HqlToken">hibernate.hql.ast.hqlToken class
+not found</a><br>
+</div>
 <br>
 <h2><a name="Installation"></a>Installation</h2>
 <ul>
@@ -84,8 +90,7 @@ build.xml to remove the lines:
 and its required classes.</li>
     <li><br>
     </li>
-    <li>Install the axis2.war in $CATALINA_HOME/webapps.<br>
-    </li>
+    <li>Install the axis2.war in $CATALINA_HOME/webapps.</li>
   </ul>
 </ul>
 <h2><a name="Configuration"></a>Configuration</h2>
@@ -187,7 +192,27 @@ shared/classes/sec-security.jks keystore for the target web service.<br>
 </p>
 <h2><a style="font-weight: normal;" name="Web_Interface"></a>Web
 Interface</h2>
+<h3><a name="incompleteLoginPage"></a>When you first go to the OSCARS
+web site, you get an incomplete login page.</h3>
+This may be caused by your browser timing out before everything is
+loaded. A solution is to manually download the file <span
+ class="attribute-value">lib/dojo/dojo/dojo.js</span><br>
 <h2><a name="Web_Service"></a>Web Service</h2>
+<br>
+<h3><span style="font-weight: bold;"><a name="hql.ast.HqlToken"></a>ClassNotFoundException:
+org.hibernate.hql.ast.HqlToken</span></h3>
+encountered when a createReservation is attempted via the API.<br>
+<ul>
+  <li>copy the file dcn-software-suite-0.3/idc/lib/antlr-2.7.6.jar to
+either $CATALINA_HOME/shared/lib or
+$CATALINA_HOME/webapps/axis2/WEB-INF.</li>
+  <li>The hibernate class ast.HqlToken extends a class from antlr which
+seems to cause problems on some installations. It probably has
+something to do with the axis2 class loaders, but we haven't figured
+out what. The jar is part of the OSCARS.aar and should be found from
+there, but in some cases it is not.<br>
+  </li>
+</ul>
 <h2><a name="Error_messages"></a>Error messages</h2>
 <!--#include virtual="footer.html" -->
 </body>

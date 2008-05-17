@@ -2,7 +2,6 @@
 <html>
 <head>
   <title>Tomcat/Tomcat install</title>
-  <base href="/docs">
   <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
@@ -57,7 +56,7 @@ access the connector</li>
 default values for servlets for static
 resources, e.g. jsp, We used the sample in the distribution but enabled
 the SSI filter to enable server includes on all html files as the
-OSCARS documentation html pages use includes.<br>
+OSCARS documentation html pages use server-side includes.<br>
   </li>
   <li><span style="font-weight: bold;"> context.xml</span> - Uncomment
 the line&nbsp;&nbsp;&nbsp; &lt;Manager pathname="" /&gt; to not allow
@@ -117,10 +116,14 @@ repo/sec-client.jks </li>
       <li>test.properties </li>
     </ul>
   </li>
-  <li> lib contains the axis2 and rampart jars.<br>
+  <li> lib contains the axis2 and rampart jars</li>
+  <li>on some installations it was necessary to copy
+dcn-software-suite-0.3/idc/lib/antlr-2.7.6.jar to either shared/lib or
+$CATALINA_HOME/webapps/axis2/WEB-INF. ( see <a
+ href="faq.html#hql.ast.HqlToken">faq.html </a>)<br>
   </li>
 </ul>
-<h3>$CATALINA_HOME/webapps</h3>
+<h3>&nbsp;$CATALINA_HOME/webapps</h3>
 Contains all the user provided war files. In our case this is
 OSCARS.war and
 axis2.war. When a war file is put in this directory it will be

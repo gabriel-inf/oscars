@@ -4,7 +4,6 @@
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
   <title>Installing OSCARS</title>
-  <base href="/docs">
   <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
@@ -32,8 +31,8 @@ OSCARS</a>
           <ol>
             <li><a href="#mozTocId718113">Hardware requirements</a></li>
             <li><a href="#mozTocId694638">Software Prerequisites</a></li>
-            <li><a href="#mozTocId995497">Setting-up the MySQL Database</a></li>
             <li><a href="#mozTocId277748">Download OSCARS</a></li>
+            <li><a href="#mozTocId995497">Setting-up the MySQL Database</a></li>
             <li><a href="#mozTocId382019">Quick Start</a></li>
             <li><a href="#mozTocId427254">Creating OSCARS users </a></li>
             <li><a href="#mozTocId78259">Setting up Server Keystores</a></li>
@@ -109,6 +108,19 @@ There is also a shell script included in the distribution, <span
 that will attempt to download axis2 and rampart and build a properly
 configured axis2.war file. If mysql is found on your PATH, it will also
 create and populate the databases and tables that OSCARS uses. <br>
+      <h2><a class="mozTocH2" name="mozTocId277748"></a>Download OSCARS</h2>
+      <br>
+See the <a href="download.html">Download</a> page for instructions on
+how to download the OSCARS source code from either the code repository
+or from a tar file. <br>
+      <br>
+The distribution includes the OSCARS IDC code; a suite of test
+programs; a set of example Web Service client programs; a tools
+directory that includes a stand-alone scheduler program, some topology
+updating tools, a monitoring script that checks that the service is
+responding,&nbsp; a script to do sanity checks on the databases;
+complete documentation including the JavaDoc and configuration files.<br>
+      <br>
       <h2><a class="mozTocH2" name="mozTocId995497"></a>Setting-up the
 MySQL Database</h2>
       <br>
@@ -126,9 +138,12 @@ the IDC software to connect to the database. This&nbsp; name and
 password must match what you put in the oscars.properties file as
 hibernate.connection.username and password.<br>
       <br>
-If this user does not already exist, it will be created and granted "<code>ALL
-PRIVILEGES ON aaa.* and
-bss.*</code>" <br>
+Create databases named <span style="font-style: italic;">aaa, bss,
+testaaa</span> and <span style="font-style: italic;">testbss</span>,
+create the IDC user if it does not already exist, and grant it "<code>ALL
+PRIVILEGES" <span style="font-family: verdana,arial,sans-serif;">on
+the four databases. Initialize the aaa database with standard
+permissions, attributes and resources.</span></code><br>
       <br>
 Do not confuse these two mysql users with the OSCARS users that you
 will be creating later. These users should have access to mysql only
@@ -138,7 +153,8 @@ integrity of the OSCARS system, the number of mysql users should be
 strictly limited to system administrators.<br>
       <br>
 If you do not want to have do_build.sh create your databases&nbsp; you
-can use the following commands.<br>
+can say no to the "Install databases" prompt and use the following
+commands instead.<br>
       <br>
       <span style="font-weight: bold;">Creating the aaa Database</span><br>
 The aaa database contains authentication, authorization, and accounting
@@ -194,33 +210,24 @@ hibernate.connection.username and hibernate.connection.password to the
 user and password that were given for the IDC user.<br
  style="font-weight: bold; font-style: italic;">
       <br>
-      <h2><a class="mozTocH2" name="mozTocId277748"></a>Download OSCARS</h2>
-      <br>
-See the <a href="download.html">Download</a> page for instructions on
-how to download the OSCARS source code from either the code repository
-or from a tar file. <br>
-      <br>
-The distribution includes the OSCARS IDC code; a suite of test
-programs; a set of example Web Service client programs; a tools
-directory that includes a stand-alone scheduler program, some topology
-updating tools, a monitoring script that checks that the service is
-responding,&nbsp; a script to do sanity checks on the databases;
-complete documentation including the JavaDoc and configuration files.<br>
-      <br>
       <h2><a class="mozTocH2" name="mozTocId382019"></a><a
  name="quickStart"></a>Quick Start</h2>
       <br>
-If&nbsp; you have installed Tomcat, Ant, jta.jar and MySQL, and have
-started the MySQL server, you can run the <span
- style="font-weight: bold; font-style: italic;">do_build.sh</span>
+If&nbsp; you have installed Tomcat, Ant, jta.jar and MySQL, you can run
+the <span style="font-weight: bold; font-style: italic;">do_build.sh</span>
 script;<br>
       <br>
 It will check the installation of the items listed above, download and
-install axis2 with rampart if needed, setup the database and compile
+install axis2 with rampart if needed, setup the databases and compile
 the distribution.<br>
       <br>
-If you want to see if things are working so far, start the Tomcat
-server and use your browser to connect to<br>
+Once do_build has completed building the tools and exited, you can try
+the following:&nbsp; start the Tomcat
+server using<br>
+      <br>
+$CATALINA_HOME/bin/startup.sh <br>
+      <br>
+and use your browser to connect to<br>
       <br>
       <span style="font-style: italic;">https://localhost:8443/</span>
 and/or <span style="font-style: italic;">http://localhost:8080/</span><br>
@@ -240,7 +247,7 @@ To do the former:<br>
 Check to see that <span style="font-weight: bold; font-style: italic;">examples/server/oscars.properties</span><span
  style="font-weight: bold;"></span>:hibernate.connection.user/password
 are set correctly (see <a href="#editProperties">above</a>)&nbsp; and
-then run the <span style="font-weight: bold; font-style: italic;">deploy.sh</span>
+then run the <span style="font-weight: bold; font-style: italic;">do_install.sh</span>
 command and answer yes to the question about copying keyfiles and
 configuration files.<br>
       <br>
