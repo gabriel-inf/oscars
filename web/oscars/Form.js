@@ -1,7 +1,7 @@
 /*
 Form.js:        Javascript form callback handling using Dojo functionality
                 Note that all security is enforced on the server side.
-Last modified:  May 13, 2008
+Last modified:  May 16, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -63,8 +63,8 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
                 (responseObject.method == "UserAdd")) {
         // after adding or removing a user, refresh the user list and
         // display that tab
-        var usersPaneTab = dijit.byId("usersPane");
-        mainTabContainer.selectChild(usersPaneTab);
+        var userListPane = dijit.byId("userListPane");
+        mainTabContainer.selectChild(userListPane);
         oscars.Form.refreshUserGrid();
     } else if (responseObject.method == "CreateReservation") {
         // transition to reservation details tab on successful creation
@@ -120,54 +120,54 @@ oscars.Form.handleAuthenticateReply = function (responseObject,
 
     // programmatically create all tabs that user is authorized for
     // list reservations form
-    var reservationsPaneTab = new dojox.layout.ContentPane(
+    var reservationsPane = new dojox.layout.ContentPane(
           {title:'Reservations', id: 'reservationsPane'},
            dojo.doc.createElement('div'));
-           reservationsPaneTab.setHref("forms/reservations.html");
-    mainTabContainer.addChild(reservationsPaneTab, 0);
-    reservationsPaneTab.startup();
+           reservationsPane.setHref("forms/reservations.html");
+    mainTabContainer.addChild(reservationsPane, 0);
+    reservationsPane.startup();
 
     // reservation details form
-    var reservationDetailsPaneTab = new dojox.layout.ContentPane(
+    var reservationDetailsPane = new dojox.layout.ContentPane(
         {title:'Reservation Details', id: 'reservationDetailsPane'},
          dojo.doc.createElement('div'));
-           reservationDetailsPaneTab.setHref("forms/reservation.html");
-    mainTabContainer.addChild(reservationDetailsPaneTab, 1);
-    reservationDetailsPaneTab.startup();
+           reservationDetailsPane.setHref("forms/reservationDetails.html");
+    mainTabContainer.addChild(reservationDetailsPane, 1);
+    reservationDetailsPane.startup();
 
     // create reservation form
-    var createReservationPaneTab = new dojox.layout.ContentPane(
-        {title:'Create Reservation', id: 'createReservationPane'},
+    var reservationCreatePane = new dojox.layout.ContentPane(
+        {title:'Create Reservation', id: 'reservationCreatePane'},
          dojo.doc.createElement('div'));
-    mainTabContainer.addChild(createReservationPaneTab, 2);
-    createReservationPaneTab.startup();
+    mainTabContainer.addChild(reservationCreatePane, 2);
+    reservationCreatePane.startup();
 
     // user details form
-    var userDetailsPaneTab = new dojox.layout.ContentPane(
-         {title:'User Profile', id: 'userDetailsPane'},
+    var userProfilePane = new dojox.layout.ContentPane(
+         {title:'User Profile', id: 'userProfilePane'},
           dojo.doc.createElement('div'));
-    userDetailsPaneTab.setHref("forms/user.html");
-    mainTabContainer.addChild(userDetailsPaneTab, 3);
-    userDetailsPaneTab.startup();
+    userProfilePane.setHref("forms/userProfile.html");
+    mainTabContainer.addChild(userProfilePane, 3);
+    userProfilePane.startup();
 
     // tabs requiring additional authorization
     if (responseObject.authorizedTabs != null) {
         // user list form
         if (responseObject.authorizedTabs.usersPane) {
-            var usersPaneTab = new dojox.layout.ContentPane(
-                  {title:'User List', id: 'usersPane'},
+            var userListPane = new dojox.layout.ContentPane(
+                  {title:'User List', id: 'userListPane'},
                    dojo.doc.createElement('div'));
-                usersPaneTab.setHref("forms/users.html");
-            mainTabContainer.addChild(usersPaneTab, 3);
-            usersPaneTab.startup();
+                userListPane.setHref("forms/userList.html");
+            mainTabContainer.addChild(userListPane, 3);
+            userListPane.startup();
         }
         // add user form
         if (responseObject.authorizedTabs.userAddPane) {
-            var userAddPaneTab = new dojox.layout.ContentPane(
+            var userAddPane = new dojox.layout.ContentPane(
                   {title:'Add User', id: 'userAddPane'},
                    dojo.doc.createElement('div'));
-            mainTabContainer.addChild(userAddPaneTab, 4);
-            userAddPaneTab.startup();
+            mainTabContainer.addChild(userAddPane, 4);
+            userAddPane.startup();
         }
     }
 };
@@ -188,20 +188,20 @@ oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
     if (dijit.byId("reservationsPane") != null) {
         mainTabContainer.closeChild(dijit.byId("reservationsPane"));
     }
-    if (dijit.byId("createReservationPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("createReservationPane"));
+    if (dijit.byId("reservationCreatePane") != null) {
+        mainTabContainer.closeChild(dijit.byId("reservationCreatePane"));
     }
     if (dijit.byId("reservationDetailsPane") != null) {
         mainTabContainer.closeChild(dijit.byId("reservationDetailsPane"));
     }
-    if (dijit.byId("usersPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("usersPane"));
+    if (dijit.byId("userListPane") != null) {
+        mainTabContainer.closeChild(dijit.byId("userListPane"));
     }
     if (dijit.byId("userAddPane") != null) {
         mainTabContainer.closeChild(dijit.byId("userAddPane"));
     }
-    if (dijit.byId("userDetailsPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("userDetailsPane"));
+    if (dijit.byId("userProfilePane") != null) {
+        mainTabContainer.closeChild(dijit.byId("userProfilePane"));
     }
     // reset global state
     oscarsState.userGridInitialized = false;
@@ -339,7 +339,7 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
-                form: dijit.byId("reservationListForm").domNode
+                form: dijit.byId("reservationsForm").domNode
             });
         }
         if (changeStatus) {
@@ -347,17 +347,17 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
             oscarsStatus.innerHTML = "Reservations list";
         }
     // selected create reservation tab
-    } else if (contentPane.id == "createReservationPane") {
+    } else if (contentPane.id == "reservationCreatePane") {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Reservation creation form";
         }
         if (contentPane.href == "") {
-            contentPane.setHref("forms/createReservation.html");
+            contentPane.setHref("forms/reservationCreate.html");
         }
     // selected user details tab
-    } else if (contentPane.id == "userDetailsPane") {
+    } else if (contentPane.id == "userProfilePane") {
         if (changeStatus) {
-            var node = dijit.byId("userDetailsForm").domNode;
+            var node = dijit.byId("userProfileForm").domNode;
             if (node != null) {
                 if (oscars.Form.isBlank(node.profileName.value)) {
                     oscarsStatus.innerHTML = "Profile for user " +
@@ -369,7 +369,7 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
             }
         }
     // selected user list tab
-    } else if (contentPane.id == "usersPane") {
+    } else if (contentPane.id == "userListPane") {
         if (changeStatus) {
             oscarsStatus.innerHTML = "Users list";
         }
@@ -412,11 +412,11 @@ oscars.Form.refreshUserGrid = function () {
 // select user details based on row select in grid
 oscars.Form.onUserRowSelect = function (/*Event*/ evt) {
     var mainTabContainer = dijit.byId("mainTabContainer");
-    var userDetailsPaneTab = dijit.byId("userDetailsPane");
+    var userProfilePane = dijit.byId("userProfilePane");
     var userGrid = dijit.byId("userGrid");
     // get user name
     var profileName = userGrid.model.getDatum(evt.rowIndex, 1);
-    var formParam = dijit.byId("userDetailsForm").domNode;
+    var formParam = dijit.byId("userProfileForm").domNode;
     formParam.reset();
     formParam.profileName.value = profileName;
     // get user details
@@ -425,10 +425,10 @@ oscars.Form.onUserRowSelect = function (/*Event*/ evt) {
         handleAs: "json-comment-filtered",
         load: oscars.Form.handleReply,
         error: oscars.Form.handleError,
-        form: dijit.byId("userDetailsForm").domNode
+        form: dijit.byId("userProfileForm").domNode
     });
     // set tab to user details
-    mainTabContainer.selectChild(userDetailsPaneTab);
+    mainTabContainer.selectChild(userProfilePane);
 };
 
 // select reservation based on grid row select

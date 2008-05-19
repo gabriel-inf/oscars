@@ -7,15 +7,15 @@
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
-                form: dijit.byId("createReservationForm").domNode
+                form: dijit.byId("reservationCreateForm").domNode
             });
         }
-        dojo.connect(dijit.byId("createReservationPane"), "onLoad", initialPost);
+        dojo.connect(dijit.byId("reservationCreatePane"), "onLoad", initialPost);
     </script>
 </head>
 
 <body>
-<form id="createReservationForm" dojoType="dijit.form.Form">
+<form id="reservationCreateForm" dojoType="dijit.form.Form">
 
 <input type="hidden" name="startSeconds" id="hiddenStartSeconds" />
 <input type="hidden" name="endSeconds" id="hiddenEndSeconds" />
@@ -43,7 +43,7 @@ to the number of lines occurring in the hops list.
   <tbody>
   <tr>
     <td width="15%">
-      <button dojoType="dijit.form.Button" id="createReservation">
+      <button dojoType="dijit.form.Button" id="reservationCreate">
          Create Reservation
          <script type="dojo/method" event="onClick">
             var legalDates = oscars.Form.checkDateTimes();
@@ -52,7 +52,7 @@ to the number of lines occurring in the hops list.
                 return;
             }
             // check validity of rest of fields
-            var valid = dijit.byId("createReservationForm").validate();
+            var valid = dijit.byId("reservationCreateForm").validate();
             if (!valid) {
                 return;
             } 
@@ -64,7 +64,7 @@ to the number of lines occurring in the hops list.
               handleAs: "json-comment-filtered",
               load: oscars.Form.handleReply,
               error: oscars.Form.handleError,
-              form: dijit.byId("createReservationForm").domNode
+              form: dijit.byId("reservationCreateForm").domNode
             });
         </script>
       </button>

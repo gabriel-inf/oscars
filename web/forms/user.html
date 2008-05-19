@@ -7,11 +7,11 @@
                 handleAs: "json-comment-filtered",
                 load: oscars.Form.handleReply,
                 error: oscars.Form.handleError,
-                form: dijit.byId("userDetailsForm").domNode
+                form: dijit.byId("userProfileForm").domNode
             });
         }
         function postUserModify() {
-            valid = dijit.byId("userDetailsForm").validate();
+            valid = dijit.byId("userProfileForm").validate();
             if (!valid) {
                 return;
             }
@@ -20,16 +20,16 @@
               handleAs: "json-comment-filtered",
               load: oscars.Form.handleReply,
               error: oscars.Form.handleError,
-              form: dijit.byId("userDetailsForm").domNode
+              form: dijit.byId("userProfileForm").domNode
             });
         }
-        dojo.connect(dijit.byId("userDetailsPane"), "onLoad", initUserQuery);
+        dojo.connect(dijit.byId("userProfileForm"), "onLoad", initUserQuery);
     </script>
 </head>
 
 <body>
 <p>Required fields are outlined in green.</p>
-<form id="userDetailsForm" dojoType="dijit.form.Form">
+<form id="userProfileForm" dojoType="dijit.form.Form">
 
   <table>
   <tr>
@@ -55,7 +55,7 @@
           handleAs: "json-comment-filtered",
           load: oscars.Form.handleReply,
           error: oscars.Form.handleError,
-          form: dijit.byId("userDetailsForm").domNode
+          form: dijit.byId("userProfileForm").domNode
         });
       </script>
     </button>

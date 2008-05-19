@@ -22,7 +22,7 @@
 </script>
 <script type="text/javascript">
     function postSearch() {
-        var valid = dijit.byId("reservationListForm").validate();
+        var valid = dijit.byId("reservationsForm").validate();
         if (!valid) {
             return;
         }
@@ -35,7 +35,7 @@
             handleAs: "json-comment-filtered",
             load: oscars.Form.handleReply,
             error: oscars.Form.handleError,
-            form: dijit.byId("reservationListForm").domNode
+            form: dijit.byId("reservationsForm").domNode
         });
     }
     function catchSearch(event) {
@@ -64,7 +64,7 @@ time zone of the browser.  Click on a row to view detailed
 information about a reservation.  Click on SEARCH again to get the latest
 information on the reservations chosen.</p>
 
-<form id="reservationListForm" dojoType="dijit.form.Form"> 
+<form id="reservationsForm" dojoType="dijit.form.Form"> 
 
 <input type="hidden" name="startTimeSeconds" id="startTimeSeconds" />
 <input type="hidden" name="endTimeSeconds" id="endTimeSeconds" />
