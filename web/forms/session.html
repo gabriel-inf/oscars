@@ -1,32 +1,16 @@
 <html>
 <head>
 <script type="text/javascript">
-    function postLogin() {
-        var valid = dijit.byId("AuthenticateUser").validate();
-        if (!valid) {
-            return;
-        }
-        var oscarsStatus = dojo.byId("oscarsStatus");
-        oscarsStatus.className = "inprocess";
-        oscarsStatus.innerHTML = "Authenticating...";
-        dojo.xhrPost({
-            url: 'servlet/AuthenticateUser',
-            handleAs: "json-comment-filtered",
-            load: oscars.Form.handleReply,
-            error: oscars.Form.handleError,
-            form: dijit.byId("AuthenticateUser").domNode
-        });
-    }
     function catchEnter(event) {
         if (event.keyCode == dojo.keys.ENTER) {
-            postLogin();
+            oscars.UserLogin.authenticateUser();
             // necessary for Safari
             dojo.stopEvent(event);
         }
     }
     function initSession(event) {
         dojo.connect(dijit.byId("userName").domNode, 'onkeypress', catchEnter);
-        dojo.connect(dojo.byId("initialPassword"), 'onkeypress', catchEnter);
+        dojo.connect(dijit.byId("initialPassword").domNode, 'onkeypress', catchEnter);
     }
     // dojo.addOnLoad doesn't work properly within separate ContentPanes
    dojo.connect(dijit.byId("sessionPane"), "onLoad", initSession);
@@ -60,7 +44,7 @@
         <button dojoType="dijit.form.Button" id="login">
           LOGIN 
           <script type="dojo/method" event="onClick">
-              postLogin();
+              oscars.UserLogin.authenticateUser();
           </script>
         </button>
     </form>
@@ -77,13 +61,7 @@
         <button dojoType="dijit.form.Button" id="logout">
           LOGOUT 
           <script type="dojo/method" event="onClick">
-              dojo.xhrPost({
-                  url: 'servlet/UserLogout',
-                  handleAs: "json-comment-filtered",
-                  load: oscars.Form.handleReply,
-                  error: oscars.Form.handleError,
-                  form: dijit.byId("UserLogout").domNode
-              });
+              oscars.UserLogout.postLogout();
           </script>
         </button>
     </form>

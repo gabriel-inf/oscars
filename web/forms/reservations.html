@@ -21,26 +21,9 @@
     var resvLayout = [ resvView ];
 </script>
 <script type="text/javascript">
-    function postSearch() {
-        var valid = dijit.byId("reservationsForm").validate();
-        if (!valid) {
-            return;
-        }
-        var oscarsStatus = dojo.byId("oscarsStatus");
-        oscarsStatus.className = "inprocess";
-        oscarsStatus.innerHTML = "Retrieving reservations...";
-        oscars.Form.convertSearchTimes();
-        dojo.xhrPost({
-            url: 'servlet/ListReservations',
-            handleAs: "json-comment-filtered",
-            load: oscars.Form.handleReply,
-            error: oscars.Form.handleError,
-            form: dijit.byId("reservationsForm").domNode
-        });
-    }
     function catchSearch(event) {
         if (event.keyCode == dojo.keys.ENTER) {
-            postSearch();
+            oscars.Reservations.postSearch();
             dojo.stopEvent(event);
         }
     }
@@ -75,7 +58,7 @@ information on the reservations chosen.</p>
   <button dojoType="dijit.form.Button" id="refreshReservationList">
      SEARCH
      <script type="dojo/method" event="onClick">
-         postSearch();
+         oscars.Reservations.postSearch();
     </script>
   </button>
   </td>

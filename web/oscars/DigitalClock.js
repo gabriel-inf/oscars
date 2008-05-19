@@ -96,7 +96,7 @@ oscars.DigitalClock.convertDateTime = function (jsDate, dateId, timeId,
 oscars.DigitalClock.convertDateWidget = function (jsDate, dateId) {
     var dateFields = {};
     var dateWidget = dijit.byId(dateId);
-    if  (oscars.Form.isBlank(dateWidget.getDisplayedValue())) {
+    if  (oscars.Utils.isBlank(dateWidget.getDisplayedValue())) {
         dateFields.year = jsDate.getFullYear();
         dateFields.month = jsDate.getMonth();
         dateFields.day = jsDate.getDate();
@@ -115,7 +115,7 @@ oscars.DigitalClock.convertTimeWidget = function (jsDate, timeId, useCurrent) {
     var timeFields = {};
     var timeWidget = dijit.byId(timeId);
     // if day of year filled in, but time isn't, use current time
-    if (oscars.Form.isBlank(timeWidget.getValue())) {
+    if (oscars.Utils.isBlank(timeWidget.getValue())) {
         if (useCurrent) {
             timeFields.hour = jsDate.getHours();
             timeFields.minute = jsDate.getMinutes();

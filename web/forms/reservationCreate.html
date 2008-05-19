@@ -1,16 +1,8 @@
 <html>
 <head>
     <script type="text/javascript">
-        function initialPost() {
-            dojo.xhrPost({
-                url: "servlet/CreateReservationForm",
-                handleAs: "json-comment-filtered",
-                load: oscars.Form.handleReply,
-                error: oscars.Form.handleError,
-                form: dijit.byId("reservationCreateForm").domNode
-            });
-        }
-        dojo.connect(dijit.byId("reservationCreatePane"), "onLoad", initialPost);
+        dojo.connect(dijit.byId("reservationCreatePane"), "onLoad",
+                     oscars.ReservationCreate.init);
     </script>
 </head>
 
@@ -46,26 +38,7 @@ to the number of lines occurring in the hops list.
       <button dojoType="dijit.form.Button" id="reservationCreate">
          Create Reservation
          <script type="dojo/method" event="onClick">
-            var legalDates = oscars.Form.checkDateTimes();
-            // status bar shows error message
-            if (!legalDates) {
-                return;
-            }
-            // check validity of rest of fields
-            var valid = dijit.byId("reservationCreateForm").validate();
-            if (!valid) {
-                return;
-            } 
-            var oscarsStatus = dojo.byId("oscarsStatus");
-            oscarsStatus.className = "inprocess";
-            oscarsStatus.innerHTML = "Creating reservation...";
-            dojo.xhrPost({
-              url: 'servlet/CreateReservation',
-              handleAs: "json-comment-filtered",
-              load: oscars.Form.handleReply,
-              error: oscars.Form.handleError,
-              form: dijit.byId("reservationCreateForm").domNode
-            });
+            oscars.ReservationCreate.createReservation();
         </script>
       </button>
     </td>
@@ -165,11 +138,11 @@ to the number of lines occurring in the hops list.
   <tr><td colspan="3">
       <input dojoType="dijit.form.RadioButton" id="layer2" name="layer"
              checked="checked" value="layer2" type="radio"
-             onClick="oscars.Form.layerChooser" />
+             onClick="oscars.ReservationCreate.layerChooser" />
       <label for="layer2">Use layer 2 parameters</label>
       <input dojoType="dijit.form.RadioButton" id="layer3" name="layer"
              value="layer3" type="radio"
-             onClick="oscars.Form.layerChooser" />
+             onClick="oscars.ReservationCreate.layerChooser" />
       <label for="layer3">Use layer 3 parameters</label>
   </td></tr>
 

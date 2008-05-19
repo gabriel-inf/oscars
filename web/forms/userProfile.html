@@ -1,29 +1,8 @@
 <html>
 <head>
     <script type="text/javascript">
-        function initUserQuery() {
-            dojo.xhrPost({
-                url: 'servlet/UserQuery',
-                handleAs: "json-comment-filtered",
-                load: oscars.Form.handleReply,
-                error: oscars.Form.handleError,
-                form: dijit.byId("userProfileForm").domNode
-            });
-        }
-        function postUserModify() {
-            valid = dijit.byId("userProfileForm").validate();
-            if (!valid) {
-                return;
-            }
-            dojo.xhrPost({
-              url: 'servlet/UserModify',
-              handleAs: "json-comment-filtered",
-              load: oscars.Form.handleReply,
-              error: oscars.Form.handleError,
-              form: dijit.byId("userProfileForm").domNode
-            });
-        }
-        dojo.connect(dijit.byId("userProfileForm"), "onLoad", initUserQuery);
+        dojo.connect(dijit.byId("userProfilePane"), "onLoad",
+                     oscars.UserProfile.postUserQuery);
     </script>
 </head>
 
@@ -37,7 +16,7 @@
   <button dojoType="dijit.form.Button" id="userModify">
      Modify 
      <script type="dojo/method" event="onClick">
-         postUserModify();
+         oscars.UserProfile.postUserModify();
     </script>
   </button>
   </td>
@@ -50,13 +29,7 @@
      <button dojoType="dijit.form.Button" id="userDelete">
        Delete 
        <script type="dojo/method" event="onClick">
-        dojo.xhrPost({
-          url: 'servlet/UserRemove',
-          handleAs: "json-comment-filtered",
-          load: oscars.Form.handleReply,
-          error: oscars.Form.handleError,
-          form: dijit.byId("userProfileForm").domNode
-        });
+           oscars.UserProfile.postUserRemove();
       </script>
     </button>
   </div>

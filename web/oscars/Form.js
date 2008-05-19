@@ -1,35 +1,31 @@
 /*
-Form.js:        Javascript form callback handling using Dojo functionality
+Form.js:        General form handling for browser interface.  Functionality
+                specific to a single form is in its own module.
                 Note that all security is enforced on the server side.
-Last modified:  May 16, 2008
+Last modified:  May 19, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
-handleReply(responseObject, ioArgs)
 handleError(responseObject, ioArgs)
-handleAuthenticateReply(responseObject, mainTabContainer)
-handleLogout(responseObject, mainTabContainer)
+resetStatus(responseObject);
 applyParams(responseObject)
-layerChooser(evt);
-hideParams(responseObject)
 selectedChanged(contentPaneWidget)
-refreshUserGrid()
-onUserRowSelect(evt)
-onResvRowSelect(evt)
-checkDateTimes()
-convertSearchTimes()
-convertReservationTimes()
-isBlank(str)
 initBackForwardState()
 */
 
 dojo.provide("oscars.Form");
 
-// handles all servlet replies
-oscars.Form.handleReply = function (responseObject, ioArgs) {
+oscars.Form.handleError = function (responseObject, ioArgs) {
+    var oscarsStatus = dojo.byId("oscarsStatus");
+    oscarsStatus.className = "failure";
+    oscarsStatus.innerHTML = responseObject.message +
+          ".  If it is a servlet problem, contact an admin to restart the Web server.";
+};
+
+// handles resetting status message 
+oscars.Form.resetStatus = function (responseObject) {
     var status = responseObject.status;
-    var mainTabContainer = dijit.byId("mainTabContainer");
     var oscarsStatus = dojo.byId("oscarsStatus");
     if (responseObject.success) {
         oscarsStatus.className = "success";
@@ -42,170 +38,9 @@ oscars.Form.handleReply = function (responseObject, ioArgs) {
         oscarsState.firstPage = false;
     }
     if (!responseObject.success) {
-        return;
+        return false;
     }
-    if (responseObject.method == "AuthenticateUser") {
-        oscars.Form.handleAuthenticateReply(responseObject, mainTabContainer);
-    } else if (responseObject.method == "UserLogout") {
-        oscars.Form.handleLogout(responseObject, mainTabContainer);
-    } else if (responseObject.method == "QueryReservation") {
-        // set parameter values in form from responseObject
-        oscars.Form.applyParams(responseObject);
-        // for displaying only layer 2 or layer 3 fields
-        oscars.Form.hideParams(responseObject);
-    } else if ((responseObject.method == "CreateReservationForm") ||
-                (responseObject.method == "UserQuery") ||
-                (responseObject.method == "UserModify") ||
-                (responseObject.method == "UserAddForm")) {
-        // set parameter values in form from responseObject
-        oscars.Form.applyParams(responseObject);
-    } else if ((responseObject.method == "UserRemove") ||
-                (responseObject.method == "UserAdd")) {
-        // after adding or removing a user, refresh the user list and
-        // display that tab
-        var userListPane = dijit.byId("userListPane");
-        mainTabContainer.selectChild(userListPane);
-        oscars.Form.refreshUserGrid();
-    } else if (responseObject.method == "CreateReservation") {
-        // transition to reservation details tab on successful creation
-        var formParam = dijit.byId("reservationDetailsForm").domNode;
-        formParam.gri.value = responseObject.gri;
-        dojo.xhrPost({
-            url: 'servlet/QueryReservation',
-            handleAs: "json-comment-filtered",
-            load: oscars.Form.handleReply,
-            error: oscars.Form.handleError,
-            form: dijit.byId("reservationDetailsForm").domNode
-        });
-        // set tab to reservation details
-        var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
-        mainTabContainer.selectChild(resvDetailsPaneTab);
-    } else if (responseObject.method == "CancelReservation") {
-        var statusN = dojo.byId("statusReplace");
-        // table cell
-        statusN.innerHTML = "CANCELLED";
-    } else if (responseObject.method == "ListReservations") {
-        var resvGrid = dijit.byId("resvGrid");
-        var model = resvGrid.model;
-        // convert seconds to datetime format before displaying
-        oscars.Form.convertReservationTimes(responseObject.resvData);
-        model.setData(responseObject.resvData);
-        // workaround for bug where doesn't show up on first setData
-        if (oscarsState.resvGridInitialized == 1) {
-            model.setData(responseObject.resvData);
-            oscarsState.resvGridInitialized = 2;
-        }
-    }
-};
-
-oscars.Form.handleError = function (responseObject, ioArgs) {
-    var oscarsStatus = dojo.byId("oscarsStatus");
-    oscarsStatus.className = "failure";
-    oscarsStatus.innerHTML = responseObject.message +
-          ".  If it is a servlet problem, contact an admin to restart the Web server.";
-};
-
-// handles successful reply from AuthenticateUser servlet
-oscars.Form.handleAuthenticateReply = function (responseObject,
-                                                mainTabContainer) {
-    var sessionPane = dijit.byId("sessionPane");
-    var userNameInput = dojo.byId("userName");
-    oscarsState.login = userNameInput.value;
-    oscarsState.firstPage = true;
-    // toggle display of login/logout section of page
-    var loginSection = dojo.byId("loginSection");
-    loginSection.style.display = "none"; 
-    var logoutSection = dojo.byId("logoutSection");
-    logoutSection.style.display = ""; 
-
-    // programmatically create all tabs that user is authorized for
-    // list reservations form
-    var reservationsPane = new dojox.layout.ContentPane(
-          {title:'Reservations', id: 'reservationsPane'},
-           dojo.doc.createElement('div'));
-           reservationsPane.setHref("forms/reservations.html");
-    mainTabContainer.addChild(reservationsPane, 0);
-    reservationsPane.startup();
-
-    // reservation details form
-    var reservationDetailsPane = new dojox.layout.ContentPane(
-        {title:'Reservation Details', id: 'reservationDetailsPane'},
-         dojo.doc.createElement('div'));
-           reservationDetailsPane.setHref("forms/reservationDetails.html");
-    mainTabContainer.addChild(reservationDetailsPane, 1);
-    reservationDetailsPane.startup();
-
-    // create reservation form
-    var reservationCreatePane = new dojox.layout.ContentPane(
-        {title:'Create Reservation', id: 'reservationCreatePane'},
-         dojo.doc.createElement('div'));
-    mainTabContainer.addChild(reservationCreatePane, 2);
-    reservationCreatePane.startup();
-
-    // user details form
-    var userProfilePane = new dojox.layout.ContentPane(
-         {title:'User Profile', id: 'userProfilePane'},
-          dojo.doc.createElement('div'));
-    userProfilePane.setHref("forms/userProfile.html");
-    mainTabContainer.addChild(userProfilePane, 3);
-    userProfilePane.startup();
-
-    // tabs requiring additional authorization
-    if (responseObject.authorizedTabs != null) {
-        // user list form
-        if (responseObject.authorizedTabs.usersPane) {
-            var userListPane = new dojox.layout.ContentPane(
-                  {title:'User List', id: 'userListPane'},
-                   dojo.doc.createElement('div'));
-                userListPane.setHref("forms/userList.html");
-            mainTabContainer.addChild(userListPane, 3);
-            userListPane.startup();
-        }
-        // add user form
-        if (responseObject.authorizedTabs.userAddPane) {
-            var userAddPane = new dojox.layout.ContentPane(
-                  {title:'Add User', id: 'userAddPane'},
-                   dojo.doc.createElement('div'));
-            mainTabContainer.addChild(userAddPane, 4);
-            userAddPane.startup();
-        }
-    }
-};
-
-// handles user logout
-oscars.Form.handleLogout = function (responseObject, mainTabContainer) {
-    var sessionPane = dijit.byId("sessionPane");
-    // Reset login values because otherwise valid to login again by
-    // anyone accessing the browser.
-    dijit.byId("AuthenticateUser").domNode.reset(); 
-    // toggle display of login/logout section of page
-    var loginSection = dojo.byId("loginSection");
-    loginSection.style.display = ""; 
-    var logoutSection = dojo.byId("logoutSection");
-    logoutSection.style.display = "none"; 
-    dijit.byId("cancelDialog").destroy();
-    // destroy all other tabs
-    if (dijit.byId("reservationsPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("reservationsPane"));
-    }
-    if (dijit.byId("reservationCreatePane") != null) {
-        mainTabContainer.closeChild(dijit.byId("reservationCreatePane"));
-    }
-    if (dijit.byId("reservationDetailsPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("reservationDetailsPane"));
-    }
-    if (dijit.byId("userListPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("userListPane"));
-    }
-    if (dijit.byId("userAddPane") != null) {
-        mainTabContainer.closeChild(dijit.byId("userAddPane"));
-    }
-    if (dijit.byId("userProfilePane") != null) {
-        mainTabContainer.closeChild(dijit.byId("userProfilePane"));
-    }
-    // reset global state
-    oscarsState.userGridInitialized = false;
-    oscarsState.resvGridInitialized = 0;
+    return true;
 };
 
 // NOTE:  Depends on naming  convention agreements between client and server.
@@ -264,51 +99,6 @@ oscars.Form.applyParams = function (responseObject) {
     }
 };
 
-// chooses which input parameters to display in create reservation page
-oscars.Form.layerChooser = function (/*Event*/ evt) {
-    var i;
-    var layer2Nodes = dojo.query(".layer2");
-    var layer3Nodes = dojo.query(".layer3");
-    if (evt.target.id == "layer2") {
-        for (i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = ""; 
-        }
-        for (i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = "none"; 
-        }
-    } else if (evt.target.id == "layer3") {
-        for (i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = "none"; 
-        }
-        for (i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = ""; 
-        }
-    }
-};
-
-// chooses which params to display in reservation details page
-oscars.Form.hideParams = function (responseObject) {
-    var i;
-    var n = dojo.byId("vlanReplace");
-    var layer2Nodes = dojo.query(".layer2Replace");
-    var layer3Nodes = dojo.query(".layer3Replace");
-    if (!oscars.Form.isBlank(n.innerHTML)) {
-        for (i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = ""; 
-        }
-        for (i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = "none"; 
-        }
-    } else {
-        for (i = 0; i < layer2Nodes.length; i++) {
-            layer2Nodes[i].style.display = "none"; 
-        }
-        for (i = 0; i < layer3Nodes.length; i++) {
-            layer3Nodes[i].style.display = ""; 
-        }
-    }
-};
-
 // take action based on which tab was clicked on
 oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     var mainTabContainer = null;
@@ -325,227 +115,24 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     var n = null;
     // selected reservations tab
     if (contentPane.id == "reservationsPane") {
-        if (changeStatus) {
-            oscarsStatus.className = "inprocess";
-            oscarsStatus.innerHTML = "Retrieving reservations...";
-        }
-        // refresh reservations grid
-        var resvGrid = dijit.byId("resvGrid");
-        if ((resvGrid != null) && (oscarsState.resvGridInitialized == 0)) {
-            oscarsState.resvGridInitialized = 1;
-            dojo.connect(resvGrid, "onRowClick", oscars.Form.onResvRowSelect);
-            dojo.xhrPost({
-                url: 'servlet/ListReservations',
-                handleAs: "json-comment-filtered",
-                load: oscars.Form.handleReply,
-                error: oscars.Form.handleError,
-                form: dijit.byId("reservationsForm").domNode
-            });
-        }
-        if (changeStatus) {
-            oscarsStatus.className = "success";
-            oscarsStatus.innerHTML = "Reservations list";
-        }
+        oscars.Reservations.tabSelected(contentPane, oscarsStatus,
+                                        changeStatus);
     // selected create reservation tab
     } else if (contentPane.id == "reservationCreatePane") {
-        if (changeStatus) {
-            oscarsStatus.innerHTML = "Reservation creation form";
-        }
-        if (contentPane.href == "") {
-            contentPane.setHref("forms/reservationCreate.html");
-        }
+        oscars.ReservationCreate.tabSelected(contentPane, oscarsStatus,
+                                        changeStatus);
     // selected user details tab
     } else if (contentPane.id == "userProfilePane") {
-        if (changeStatus) {
-            var node = dijit.byId("userProfileForm").domNode;
-            if (node != null) {
-                if (oscars.Form.isBlank(node.profileName.value)) {
-                    oscarsStatus.innerHTML = "Profile for user " +
-                                             oscarsState.login;
-                } else {
-                    oscarsStatus.innerHTML = "Profile for user " +
-                                             node.profileName.value;
-                }
-            }
-        }
+        oscars.UserProfile.tabSelected(contentPane, oscarsStatus, changeStatus);
     // selected user list tab
     } else if (contentPane.id == "userListPane") {
-        if (changeStatus) {
-            oscarsStatus.innerHTML = "Users list";
-        }
-        var userGrid = dijit.byId("userGrid");
-        // The current implementation of grids is buggy.
-        // This should not be necessary.
-        if ((userGrid != null) && (!oscarsState.userGridInitialized)) {
-            oscars.Form.refreshUserGrid();
-            dojo.connect(userGrid, "onRowClick", oscars.Form.onUserRowSelect);
-            oscarsState.userGridInitialized = true;
-        }
+        oscars.UserList.tabSelected(contentPane, oscarsStatus, changeStatus);
     // selected add user tab
     } else if (contentPane.id == "userAddPane") {
-        if (changeStatus) {
-            oscarsStatus.innerHTML = "Add a user";
-        }
-        if (contentPane.href == "") {
-            contentPane.setHref("forms/userAdd.html");
-        }
+        oscars.UserAdd.tabSelected(contentPane, oscarsStatus, changeStatus);
     } else if (contentPane.id == "sessionPane") {
-        if (changeStatus) {
-            oscarsStatus.innerHTML = "User " + oscarsState.login +
-                                     " logged in";
-        }
+        oscars.UserLogin.tabSelected(oscarsStatus, changeStatus);
     }
-};
-
-// refresh user list from servlet
-oscars.Form.refreshUserGrid = function () {
-    var userGrid = dijit.byId("userGrid");
-    var newStore = new dojo.data.ItemFileReadStore(
-                      {url: 'servlet/UserList'});
-    var newModel = new dojox.grid.data.DojoData(
-                      null, newStore,
-                      {query: {login: '*'}, clientSort: true});
-    userGrid.setModel(newModel);
-    userGrid.refresh();
-};
-
-// select user details based on row select in grid
-oscars.Form.onUserRowSelect = function (/*Event*/ evt) {
-    var mainTabContainer = dijit.byId("mainTabContainer");
-    var userProfilePane = dijit.byId("userProfilePane");
-    var userGrid = dijit.byId("userGrid");
-    // get user name
-    var profileName = userGrid.model.getDatum(evt.rowIndex, 1);
-    var formParam = dijit.byId("userProfileForm").domNode;
-    formParam.reset();
-    formParam.profileName.value = profileName;
-    // get user details
-    dojo.xhrPost({
-        url: 'servlet/UserQuery',
-        handleAs: "json-comment-filtered",
-        load: oscars.Form.handleReply,
-        error: oscars.Form.handleError,
-        form: dijit.byId("userProfileForm").domNode
-    });
-    // set tab to user details
-    mainTabContainer.selectChild(userProfilePane);
-};
-
-// select reservation based on grid row select
-// TODO:  should be based on grid cell select; want to be able to copy
-//        source or destination to link id's search tab
-oscars.Form.onResvRowSelect = function (/*Event*/ evt) {
-    var mainTabContainer = dijit.byId("mainTabContainer");
-    var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
-    var resvGrid = dijit.byId("resvGrid");
-    // get reservation's GRI; data in row starts at 0 unlike with
-    // ItemFileReadStore
-    var gri = resvGrid.model.getDatum(evt.rowIndex, 0);
-    var formParam = dijit.byId("reservationDetailsForm").domNode;
-    formParam.gri.value = gri;
-    // get reservation details
-    dojo.xhrPost({
-        url: 'servlet/QueryReservation',
-        handleAs: "json-comment-filtered",
-        load: oscars.Form.handleReply,
-        error: oscars.Form.handleError,
-        form: dijit.byId("reservationDetailsForm").domNode
-    });
-    // Set tab to reservation details.
-    // Note that this generates an apparently harmless error message in
-    // Firebug console.
-    mainTabContainer.selectChild(resvDetailsPaneTab);
-};
-
-// check create reservation form's start and end date and time's, and
-// converts hidden form fields to seconds
-oscars.Form.checkDateTimes = function () {
-    var currentDate = new Date();
-    var msg = null;
-    var startSeconds =
-        oscars.DigitalClock.convertDateTime(currentDate, "startDate",
-                                            "startTime", true);
-    // default is 4 minutes in the future
-    var endDate = new Date(startSeconds*1000 + 60*4*1000);
-    var endSeconds =
-            oscars.DigitalClock.convertDateTime(endDate, "endDate", "endTime",
-                                                true);
-    // additional checks for legality
-    // check for start time more than four minutes in the past
-    if (startSeconds < (currentDate.getTime()/1000 - 240)) {
-        msg = "Start time is more than four minutes in the past";
-    } else if (startSeconds > endSeconds) {
-        msg = "End time is before start time";
-    } else if (startSeconds == endSeconds) {
-        msg = "End time is the same as start time";
-    }
-    if (msg != null) {
-        var oscarsStatus = dojo.byId("oscarsStatus");
-        oscarsStatus.className = "failure";
-        oscarsStatus.innerHTML = msg;
-        return false;
-    }
-    var startSecondsN = dojo.byId("hiddenStartSeconds");
-    // set hidden field value, which is what servlet uses
-    startSecondsN.value = startSeconds;
-    var endSecondsN = dojo.byId("hiddenEndSeconds");
-    endSecondsN.value = endSeconds;
-    return true;
-};
-
-// sets hidden form fields' seconds values from search date and time
-// constraints in list reservations form
-oscars.Form.convertSearchTimes = function () {
-    var currentDate = new Date();
-    var startSeconds = null;
-    var endSeconds = null;
-    var startDateWidget = dijit.byId("startDateSearch");
-    var startTimeWidget = dijit.byId("startTimeSearch");
-    // don't do anything if both blank
-    if (!(oscars.Form.isBlank(startDateWidget.getDisplayedValue()) &&
-          oscars.Form.isBlank(startTimeWidget.getValue()))) {
-        startSeconds =
-            oscars.DigitalClock.convertDateTime(currentDate, "startDateSearch",
-                                                "startTimeSearch", false);
-    }
-    var endDateWidget = dijit.byId("endDateSearch");
-    var endTimeWidget = dijit.byId("endTimeSearch");
-    if (!(oscars.Form.isBlank(endDateWidget.getDisplayedValue()) &&
-          oscars.Form.isBlank(endTimeWidget.getValue()))) {
-        endSeconds =
-            oscars.DigitalClock.convertDateTime(currentDate, "endDateSearch",
-                                                "endTimeSearch", false);
-    }
-    var startSecondsN = dojo.byId("startTimeSeconds");
-    // set hidden field value, which is what servlet uses
-    startSecondsN.value = startSeconds;
-    var endSecondsN = dojo.byId("endTimeSeconds");
-    endSecondsN.value = endSeconds;
-};
-
-// convert seconds in incoming reservations list to date and time
-oscars.Form.convertReservationTimes = function (data) {
-    for (var i=0; i < data.length; i++) {
-        // These fields are sent by the server in epoch seconds
-        // Note that if the grid layout changes, the indices need to
-        // change.
-        data[i][3] = oscars.DigitalClock.convertFromSeconds(data[i][3]);
-        data[i][8] = oscars.DigitalClock.convertFromSeconds(data[i][8]);
-    }
-};
-
-// From Javascript book, p. 264
-
-// check to see if no parameter set
-oscars.Form.isBlank = function (str) {
-    if (str == null) {
-        return true;
-    }
-    for (var i = 0; i < str.length; i++) {
-        var c = str.charAt(i);
-        if ((c != ' ') && (c != '\n') && (c != '')) { return false; }
-    }
-    return true;
 };
 
 oscars.Form.initBackForwardState = function () {

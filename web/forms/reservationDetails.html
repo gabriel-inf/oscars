@@ -2,33 +2,9 @@
 
 <head>
     <script type="text/javascript">
-      function postQuery() {
-          valid = dijit.byId("reservationDetailsForm").validate();
-          if (!valid) {
-              return;
-          }
-          dojo.xhrPost({
-            url: 'servlet/QueryReservation',
-            handleAs: "json-comment-filtered",
-            load: oscars.Form.handleReply,
-            error: oscars.Form.handleError,
-            form: dijit.byId("reservationDetailsForm").domNode
-          });
-      }
-      function cancelReservation(dialogFields) {
-          dojo.xhrPost({
-            url: 'servlet/CancelReservation',
-            handleAs: "json-comment-filtered",
-            load: oscars.Form.handleReply,
-            error: oscars.Form.handleError,
-            form: dijit.byId("reservationDetailsForm").domNode
-          });
-      }
-    </script>
-    <script type="text/javascript">
       function catchQuery(event) {
           if (event.keyCode == dojo.keys.ENTER) {
-              postQuery();
+              oscars.ReservationDetails.postQueryReservation();
               dojo.stopEvent(event);
           }
       }
@@ -53,7 +29,7 @@
       <button dojoType="dijit.form.Button" id="queryReservation">
         REFRESH
       <script type="dojo/method" event="onClick">
-          postQuery();
+          oscars.ReservationDetails.postQueryReservation();
       </script>
       </button>
     </td>
@@ -65,21 +41,8 @@
     </td>
   </tr>
 </table>
-</form>
 
-<!-- cancel dialog; note that doesn't seem to work inside a form -->
-<div dojoType="dijit.Dialog" id="cancelDialog"
-     style="display:none;" title="Are you sure you want to cancel?" execute="cancelReservation(arguments[0]);">
-  <table>
-    <tr>
-      <td>
-        <button dojoType="dijit.form.Button" type="submit">YES
-        </button>
-      </td>
-    </tr>
-  </table>
-</div>
-<table width="90%">
+<table width="100%">
   <tr><td>Status</td><td id="statusReplace"></td></tr>
   <tr><td>User</td><td id="userReplace" /></tr>
   <tr><td>Description</td><td id="descriptionReplace" /></tr>
@@ -113,5 +76,19 @@
       <td>LSP</td><td id="lspClassReplace" />
   </tr>
 </table>
+</form>
+<!-- cancel dialog; note that doesn't seem to work inside a form -->
+<div dojoType="dijit.Dialog" id="cancelDialog"
+    style="display:none;" title="Are you sure you want to cancel?"
+    execute="oscars.ReservationDetails.postCancelReservation(arguments[0]);">
+  <table>
+    <tr>
+      <td>
+        <button dojoType="dijit.form.Button" type="submit">YES
+        </button>
+      </td>
+    </tr>
+  </table>
+</div>
 </body>
 </html>

@@ -1,29 +1,7 @@
 <html>
 <head>
     <script type="text/javascript">
-        function initUserAdd() {
-            dojo.xhrPost({
-                url: 'servlet/UserAddForm',
-                handleAs: "json-comment-filtered",
-                load: oscars.Form.handleReply,
-                error: oscars.Form.handleError,
-                form: dijit.byId("userAddForm").domNode
-            });
-        }
-        function postUserAdd() { 
-            var valid = dijit.byId("userAddForm").validate();
-            if (!valid) {
-                return;
-            }
-            dojo.xhrPost({
-              url: 'servlet/UserAdd',
-              handleAs: "json-comment-filtered",
-              load: oscars.Form.handleReply,
-              error: oscars.Form.handleError,
-              form: dijit.byId("userAddForm").domNode
-            });
-        }
-        dojo.connect(dijit.byId("userAddPane"), "onLoad", initUserAdd);
+        dojo.connect(dijit.byId("userAddPane"), "onLoad", oscars.UserAdd.init);
     </script>
 </head>
 
@@ -38,7 +16,7 @@
       <button dojoType="dijit.form.Button" id="userAdd">
          Add User 
          <script type="dojo/method" event="onClick">
-             postUserAdd();
+             oscars.UserAdd.postUserAdd();
         </script>
       </button>
     </td>
