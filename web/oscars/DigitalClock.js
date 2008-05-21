@@ -1,12 +1,19 @@
 /*
-DigitalClock.js:        Prints out current date and time in various places.
-Last modified:  January 31, 2008
+DigitalClock.js:  Handles date and time conversions, as well as the main
+                  clock display in the status bar, and the clock displays
+                  on the create reservation form.
+Last modified:  May 19, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
-initClock()
 updateClocks()
+initClock(clock)
+convertFromSeconds(seconds)
+secondsToWidgets(seconds, dateId, timeId)
+convertDateTime(jsDate, dateId, timeId, useCurrent)
+convertDateWidget(jsDate, dateId)
+convertTimeWidget(jsDate, timeId, useCurrent)
 */
 
 dojo.provide("oscars.DigitalClock");
@@ -15,7 +22,7 @@ monthName = ['January', 'February', 'March', 'April', 'May',
    'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // Outputs datetime with format: July 1, 2005 13:00 in main clock.
-// Updates default times on create reservation form page
+// Updates default times on create reservation form page.
 oscars.DigitalClock.updateClocks = function (clock) {
     var localDate = new Date();
     var ms = localDate.getTime();
@@ -57,9 +64,13 @@ oscars.DigitalClock.initClock = function () {
     var clock = dojo.byId('clock');
 
     oscars.DigitalClock.updateClocks(clock);
+    // set up timer for update
     setInterval(function() { oscars.DigitalClock.updateClocks(clock); }, 60000);
 };
 
+// Following methods are variants of converting back and forth between
+// seconds and either a string or a widget value.
+//
 // Outputs datetime with format: 1/1/2007 13:00, given seconds since epoch.
 oscars.DigitalClock.convertFromSeconds = function (seconds) {
     var jsDate = new Date(seconds*1000);
@@ -78,6 +89,50 @@ oscars.DigitalClock.convertFromSeconds = function (seconds) {
     return formattedDt;
 };
 
+// Given date and time widgets, converts to seconds since epoch.
+// Blank widget values are illegal.
+oscars.DigitalClock.widgetsToSeconds = function (dateId, timeId) {
+    var dateWidget = dijit.byId(dateId);
+    var timeWidget = dijit.byId(timeId);
+    if  (oscars.Utils.isBlank(dateWidget.getDisplayedValue())) {
+        return -1;
+    }
+    if (oscars.Utils.isBlank(timeWidget.getValue())) {
+        return -1;
+    }
+    var dateFields = {};
+    var fields = dateWidget.getDisplayedValue().split("/");
+    dateFields.month = fields[0]-1;
+    dateFields.day = fields[1];
+    dateFields.year = fields[2];
+    var timeFields = {};
+    fields = timeWidget.getValue().split(":");
+    timeFields.hour = fields[0];
+    timeFields.minute = fields[1];
+    //console.log("year: " + dateFields.year + ", month: " + dateFields.month + ", day: " + dateFields.day + ", hour: " + timeFields.hour + ", minute: " + timeFields.minute);
+    var finalDate =
+        new Date(dateFields.year, dateFields.month, dateFields.day,
+                 timeFields.hour, timeFields.minute, 0, 0);
+    var seconds = finalDate.getTime()/1000;
+    return seconds;
+};
+
+// Fills in date and time widgets, given seconds since epoch.
+oscars.DigitalClock.secondsToWidgets = function (seconds, dateId, timeId) {
+    var jsDate = new Date(seconds*1000);
+    var dateWidget = dijit.byId(dateId);
+    dateWidget.setValue(jsDate);
+    var hour = jsDate.getHours();
+    hour = (hour > 9 ? '' : '0') + hour;
+    var minute = jsDate.getMinutes();
+    minute = (minute > 9 ? '' : '0') + minute;
+    var formattedTime = hour + ":" + minute; 
+    var timeWidget = dijit.byId(timeId);
+    timeWidget.setValue(formattedTime);
+};
+
+// Converts from date and time widget to seconds since epoch.  If either
+// is blank, that portion of the current time is used.
 oscars.DigitalClock.convertDateTime = function (jsDate, dateId, timeId,
                                                 useCurrent) {
     // contains seconds, and any error message
@@ -93,6 +148,8 @@ oscars.DigitalClock.convertDateTime = function (jsDate, dateId, timeId,
     return seconds;
 };
 
+// If the date widget is blank, returns the Javascript Date fields for the
+// current date.  Otherwise, return the fields given the widget.
 oscars.DigitalClock.convertDateWidget = function (jsDate, dateId) {
     var dateFields = {};
     var dateWidget = dijit.byId(dateId);
@@ -111,11 +168,14 @@ oscars.DigitalClock.convertDateWidget = function (jsDate, dateId) {
     return dateFields;
 };
 
+// If the time widget is blank, returns the Javascript Date fields for the
+// current time.  Otherwise, return the fields given the widget.
 oscars.DigitalClock.convertTimeWidget = function (jsDate, timeId, useCurrent) {
     var timeFields = {};
     var timeWidget = dijit.byId(timeId);
     // if day of year filled in, but time isn't, use current time
     if (oscars.Utils.isBlank(timeWidget.getValue())) {
+        // either use the current time, or midnight
         if (useCurrent) {
             timeFields.hour = jsDate.getHours();
             timeFields.minute = jsDate.getMinutes();

@@ -44,7 +44,7 @@
 text in their description, times that they end after or start before, and
 topology identifiers that they contain in their path.  Times given are in the
 time zone of the browser.  Click on a row to view detailed
-information about a reservation.  Click on SEARCH again to get the latest
+information about a reservation.  Click on REFRESH again to get the latest
 information on the reservations chosen.</p>
 
 <form id="reservationsForm" dojoType="dijit.form.Form"> 
@@ -56,7 +56,7 @@ information on the reservations chosen.</p>
 <tr>
   <td width="7%">
   <button dojoType="dijit.form.Button" id="refreshReservationList">
-     SEARCH
+     REFRESH
      <script type="dojo/method" event="onClick">
          oscars.Reservations.postSearch();
     </script>

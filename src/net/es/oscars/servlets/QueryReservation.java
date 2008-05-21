@@ -116,15 +116,18 @@ public class QueryReservation extends HttpServlet {
         Layer3Data layer3Data = path.getLayer3Data();
         MPLSData mplsData = path.getMplsData();
         String status = resv.getStatus();
-        outputMap.put("gri", gri);
+        // always blank NEW GRI field, current GRI is in griReplace's
+        // innerHTML
+        outputMap.put("newGri", "");
+        outputMap.put("griReplace", gri);
         outputMap.put("statusReplace", status);
         outputMap.put("userReplace", resv.getLogin());
         String sanitized = resv.getDescription().replace("<", "");
         String sanitized2 = sanitized.replace(">", "");
         outputMap.put("descriptionReplace", sanitized2);
 
-        outputMap.put("startTimeConvert", resv.getStartTime());
-        outputMap.put("endTimeConvert", resv.getEndTime());
+        outputMap.put("modifyStartSeconds", resv.getStartTime());
+        outputMap.put("modifyEndSeconds", resv.getEndTime());
         outputMap.put("createdTimeConvert", resv.getCreatedTime());
         // convert to Mbps, commas added by Dojo
         outputMap.put("bandwidthReplace", resv.getBandwidth()/1000000);

@@ -4,12 +4,12 @@
     <script type="text/javascript">
       function catchQuery(event) {
           if (event.keyCode == dojo.keys.ENTER) {
-              oscars.ReservationDetails.postQueryReservation();
+              oscars.ReservationDetails.postQueryReservation(true);
               dojo.stopEvent(event);
           }
       }
       function initQuery(event) {
-          dojo.connect(dijit.byId("gri").domNode, 'onkeypress', catchQuery);
+          dojo.connect(dijit.byId("newGri").domNode, 'onkeypress', catchQuery);
       }
       dojo.connect(dijit.byId("reservationDetailsPane"), "onLoad", initQuery);
     </script>
@@ -17,20 +17,48 @@
 
 <body>
 <form id="reservationDetailsForm" dojoType="dijit.form.Form">
+<input type="hidden" name="gri" id="gri" />
+<input type="hidden" name="modifyStartSeconds" id="modifyStartSeconds" />
+<input type="hidden" name="modifyEndSeconds" id="modifyEndSeconds" />
+<!-- not currently modifiable; hidden preferable to fields that look to
+     be modifiable if the user had the proper authorization -->
+<input type="hidden" name="modifyBandwidth" id="modifyBandwidth" />
+<input type="hidden" name="modifyDescription" id="modifyDescription" />
 <table>
   <tr>
-    <td>GRI</td>
+    <td>NEW GRI</td>
     <td>
-      <input type="text" name="gri" id="gri"
+      <input type="text" name="newGri" id="newGri"
              dojoType="dijit.form.ValidationTextBox"
-             promptMessage="Enter a global reservation id" />
+             promptMessage="Enter a new GRI to retrieve its details" />
     </td>
     <td>
       <button dojoType="dijit.form.Button" id="queryReservation">
+        QUERY 
+      <script type="dojo/method" event="onClick">
+          oscars.ReservationDetails.postQueryReservation(true);
+      </script>
+      </button>
+    </td>
+  </tr>
+</table>
+<hr/>
+<table>
+  <tr>
+    <td>
+      <button dojoType="dijit.form.Button" id="refreshReservation">
         REFRESH
       <script type="dojo/method" event="onClick">
-          oscars.ReservationDetails.postQueryReservation();
+          oscars.ReservationDetails.postQueryReservation(false);
       </script>
+      </button>
+    </td>
+    <td>
+      <button dojoType="dijit.form.Button" id="modifyReservation">
+         MODIFY
+         <script type="dojo/method" event="onClick">
+             oscars.ReservationDetails.postModify();
+         </script>
       </button>
     </td>
     <td>
@@ -43,11 +71,40 @@
 </table>
 
 <table width="100%">
+  <tr>
+      <!-- setting once sets for all in this column -->
+      <td width="15%">GRI</td>
+      <td id="griReplace"></td>
+  </tr>
   <tr><td>Status</td><td id="statusReplace"></td></tr>
   <tr><td>User</td><td id="userReplace" /></tr>
   <tr><td>Description</td><td id="descriptionReplace" /></tr>
-  <tr><td>Start time</td><td id="startTimeConvert" /></tr>
-  <tr><td>End time</td><td id="endTimeConvert" /></tr>
+  <tr>
+    <td>Start date</td>
+    <td><input dojoType="dijit.form.DateTextBox" name="modifyStartDate"
+               id="modifyStartDate" size="28" />
+    </td>
+  </tr>
+  <tr><td>Start time</td>
+      <td><input dojoType="dijit.form.ValidationTextBox" name="modifyStartTime"
+             id="modifyStartTime"
+             regExp="[0-2]?[\d]:[0-5][\d]"
+             promptMessage="Enter the start time in format HH:MM"
+             invalidMessage="Invalid format:  use HH:MM" size="28" /></td>
+  </tr>
+  <tr>
+    <td>End date</td>
+    <td><input dojoType="dijit.form.DateTextBox" name="modifyEndDate"
+               id="modifyEndDate" size="28" />
+    </td>
+  </tr>
+  <tr><td>End time</td>
+    <td><input dojoType="dijit.form.ValidationTextBox" name="modifyEndTime"
+             id="modifyEndTime"
+             regExp="[0-2]?[\d]:[0-5][\d]"
+             promptMessage="Enter the end time in format HH:MM"
+             invalidMessage="Invalid format:  use HH:MM" size="28" /></td>
+  </tr>
   <tr><td>Created time</td> <td id="createdTimeConvert" /> </tr>
   <tr><td>Bandwidth (Mbps)</td><td id="bandwidthReplace" /></tr>
   <tr><td>Source</td><td id="sourceReplace" /></tr>
@@ -77,6 +134,22 @@
   </tr>
 </table>
 </form>
+<!-- tooltip section for buttons -->
+<div dojoType = "dijit.Tooltip" connectId="queryReservation" position="after">
+    Gets the current status of the reservation identified by NEW GRI from the
+    server.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="refreshReservation" position="above">
+    Gets the current status of the reservation from the server.  Any
+    local modifications on the client are overwritten.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="modifyReservation" position="above">
+    Modifies the start time and end time for the reservation, if they are
+    valid arguments.
+</div>
+<div dojoType = "dijit.Tooltip" connectId="cancelReservation" position="above">
+    Cancels the current reservation if it is pending or active.
+</div>
 <!-- cancel dialog; note that doesn't seem to work inside a form -->
 <div dojoType="dijit.Dialog" id="cancelDialog"
     style="display:none;" title="Are you sure you want to cancel?"

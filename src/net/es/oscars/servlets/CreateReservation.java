@@ -196,7 +196,7 @@ public class CreateReservation extends HttpServlet {
      * Takes form parameters and builds PathInfo structures.
      *
      * @param request contains form request parameters
-     * @return pathInfo a PathInfo instance with layer 3 information
+     * @return pathInfo a PathInfo instance with layer 2 or 3 information
      */
     public PathInfo handlePath(HttpServletRequest request)
             throws BSSException {
