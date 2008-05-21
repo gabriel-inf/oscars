@@ -303,11 +303,18 @@ public class TypeConverter {
             are tagged or untagged. Also assumes vlan is the same along
             entire path. */
         PathElem elem = path.getPathElem();
-        while(elem != null){
-            String vlanNum = elem.getLinkDescr();
-            if(vlanNum != null){
+        while (elem != null) {
+            String vlanStr = elem.getLinkDescr();
+            if (vlanStr != null) {
                 VlanTag vtag = new VlanTag();
-                vtag.setString(Math.abs(Integer.parseInt(vlanNum)) + "");
+                int storedVlan = Integer.parseInt(vlanStr);
+                int vlanNum = Math.abs(storedVlan);
+                vtag.setString(vlanNum + "");
+                if (storedVlan >= 0) {
+                    vtag.setTagged(true);
+                } else {
+                    vtag.setTagged(false);
+                }
                 layer2Info.setSrcVtag(vtag);
                 layer2Info.setDestVtag(vtag);
                 break;

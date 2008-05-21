@@ -196,12 +196,6 @@ public class ModifyReservation extends HttpServlet {
 
         TypeConverter tc = new TypeConverter();
         PathInfo pathInfo = tc.getPathInfo(resv);
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        // TODO:  hopefully temporary fix
-        VlanTag srcVtag = layer2Info.getSrcVtag();
-        srcVtag.setTagged(true);
-        VlanTag destVtag = layer2Info.getDestVtag();
-        destVtag.setTagged(true);
         return pathInfo;
     }
 
