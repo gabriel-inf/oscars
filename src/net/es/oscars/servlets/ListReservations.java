@@ -198,7 +198,12 @@ public class ListReservations extends HttpServlet {
             // start of second sub-row
             resvEntry.add(resv.getLogin());
             String vlanTag = utils.getVlanTag(path);
-            resvEntry.add(vlanTag);
+            if (vlanTag != null) {
+                int vlanNum = Math.abs(Integer.parseInt(vlanTag));
+                resvEntry.add(vlanNum + "");
+            } else {
+                resvEntry.add("");
+            }
             resvEntry.add(resv.getEndTime().toString());
             if (layer2Data != null) {
                 resvEntry.add(this.abbreviate(layer2Data.getDestEndpoint()));

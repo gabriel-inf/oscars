@@ -337,7 +337,7 @@ public class ReservationDAO
         if (tagStr == null) {
             return false;
         }
-        int resvVtag = Integer.parseInt(tagStr);
+        int resvVtag = Math.abs(Integer.parseInt(tagStr));
         for (String v: vlanTags) {
             String[] range = v.split("-");
             // single number

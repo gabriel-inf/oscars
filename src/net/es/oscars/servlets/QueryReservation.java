@@ -136,7 +136,8 @@ public class QueryReservation extends HttpServlet {
             outputMap.put("destinationReplace", layer2Data.getDestEndpoint());
             String vlanTag = utils.getVlanTag(path);
             if (vlanTag != null) {
-                outputMap.put("vlanReplace", vlanTag);
+                int vlanNum = Math.abs(Integer.parseInt(vlanTag));
+                outputMap.put("vlanReplace", vlanNum + "");
             } else {
                 outputMap.put("vlanReplace",
                               "Warning: No VLAN tag present");
