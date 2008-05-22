@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Main build file -->
 <project xmlns:artifact="urn:maven-artifact-ant" name="OSCARS" default="all">
-    <!-- properties section for main targets ******************************* -->
+    <!-- properties section for main targets ******************************** -->
     <property environment="env"/>
     <available property="domain.exists" file="${env.DOMAIN_HOME}"/>
     <property name="domain.home" value="${env.DOMAIN_HOME}"/>
