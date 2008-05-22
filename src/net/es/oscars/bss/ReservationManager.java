@@ -195,10 +195,11 @@ public class ReservationManager {
             throw new BSSException(
                "Trying to cancel a failed reservation");
         }
-        if (prevStatus.equals("CANCELLED")) {
+        if (prevStatus.equals("CANCELLED") || prevStatus.equals("PRECANCEL")) {
             throw new BSSException(
                "Trying to cancel an already cancelled reservation");
         }
+        
         if (prevStatus.equals("ACTIVE")) {
             newStatus = "PRECANCEL";
         } else {
