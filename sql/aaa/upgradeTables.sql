@@ -1,3 +1,5 @@
+USE aaa;
+
 -- attribute for an IDC in an adjacent network domain. It's attributes implement
 -- an SLA between domains.  Currently set to all permissions on reservations and 
 -- query permissions for domains, no permissions on users
