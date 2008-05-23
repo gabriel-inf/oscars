@@ -188,10 +188,12 @@ public class QueryReservation extends HttpServlet {
             StringBuilder sb = new StringBuilder();
             // Utils.pathToString has new line separated hops
             String[] hops = pathStr.trim().split("\n");
+            sb.append("<tbody>");
             // enforce one hop per line in outer table cell
             for (int i=0; i < hops.length; i++) {
                 sb.append("<tr><td class='innerHops'>" + hops[i] + "</td></tr>");
             }
+            sb.append("</tbody>");
             outputMap.put("pathReplace", sb.toString());
         }
         String interPathStr = utils.pathToString(path, true);
@@ -200,12 +202,12 @@ public class QueryReservation extends HttpServlet {
             StringBuilder sb = new StringBuilder();
             String[] hops = interPathStr.trim().split("\n");
             // enforce one hop per line in outer table cell
-            sb.append("<table>");
+            sb.append("<tbody>");
             for (int i=0; i < hops.length; i++) {
                 sb.append("<tr><td class='innerHops'>" + hops[i] +
                           "</td></tr>");
             }
-            sb.append("</table>");
+            sb.append("</tbody>");
             outputMap.put("interPathReplace", sb.toString());
         }
     }

@@ -25,6 +25,7 @@
 <input type="hidden" name="modifyBandwidth" id="modifyBandwidth" />
 <input type="hidden" name="modifyDescription" id="modifyDescription" />
 <table>
+  <tbody>
   <tr>
     <td>NEW GRI</td>
     <td>
@@ -41,9 +42,11 @@
       </button>
     </td>
   </tr>
+  </tbody>
 </table>
 <hr/>
 <table>
+  <tbody>
   <tr>
     <td>
       <button dojoType="dijit.form.Button" id="refreshReservation">
@@ -76,9 +79,11 @@
       </button>
     </td>
   </tr>
+  </tbody>
 </table>
 
 <table width="100%">
+  <tbody>
   <tr>
       <!-- setting once sets for all in this column -->
       <td width="15%">GRI</td>
@@ -118,7 +123,7 @@
   <tr><td>Source</td><td id="sourceReplace" /></tr>
   <tr><td>Destination</td><td id="destinationReplace" /></tr>
   <tr><td>Intradomain hops</td><td><table id="pathReplace"></table></td></tr>
-  <tr><td>Interdomain path</td><td id="interPathReplace" /></tr>
+  <tr><td>Interdomain path</td><td><table id="interPathReplace"></table></td></tr>
   <tr class="layer2Replace"><td>VLAN</td><td id="vlanReplace" /></tr>
   <tr class="layer2Replace"><td>Tagged</td><td id="taggedReplace" /></tr>
 
@@ -141,6 +146,7 @@
   <tr class="layer3Replace" style="display: none">
       <td>LSP</td><td id="lspClassReplace" />
   </tr>
+  </tbody>
 </table>
 </form>
 <!-- tooltip section for buttons -->

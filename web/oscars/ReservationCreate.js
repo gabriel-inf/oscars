@@ -126,7 +126,7 @@ oscars.ReservationCreate.toggleLayer = function (/*String*/ id) {
             layer3Nodes[i].style.display = ""; 
         }
     }
-}
+};
 
 // check create reservation form's start and end date and time's, and
 // converts hidden form fields to seconds
