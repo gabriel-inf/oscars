@@ -1,6 +1,6 @@
 /*
 ReservationDetails.js:  Handles reservation details form.
-Last modified:  May 19, 2008
+Last modified:  May 21, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -69,6 +69,73 @@ oscars.ReservationDetails.postCancelReservation = function (dialogFields) {
             error: oscars.Form.handleError,
             form: formNode
     });
+};
+
+// Clones current reservation except for date/times, changing to the
+// create reservation page with those parameters filled in.  This is a
+// client-side only method.
+oscars.ReservationDetails.cloneReservation = function () {
+    var layer2Reservation = true;  // default is layer 2
+    var i = null;
+
+    oscars.ReservationCreate.resetFields();
+    // copy fields from reservation details form to reservation creation form
+    var node = dojo.byId("descriptionReplace");
+    dijit.byId("reservationDescription").setValue(node.innerHTML);
+    node = dojo.byId("bandwidthReplace");
+    dijit.byId("bandwidth").setValue(node.innerHTML);
+    node = dojo.byId("sourceReplace");
+    dijit.byId("source").setValue(node.innerHTML);
+    node = dojo.byId("destinationReplace");
+    dijit.byId("destination").setValue(node.innerHTML);
+    // see if path widget on create reservation page is displayed before
+    // cloning path
+    var pathSectionNode = dojo.byId("authorizedPathDisplay");
+    if (pathSectionNode.style.display != "none") {
+        var tableNode = dojo.byId("pathReplace");
+        var tbodyNode = tableNode.firstChild;
+        var trNodes = tbodyNode.childNodes;
+        var pathStr = "";
+        for (i = 0; i < trNodes.length; i++) {
+            // get contents of text element in td (hop)
+            pathStr += trNodes[i].firstChild.firstChild.data + "\n";
+        }
+        // set path text area on create reservation page
+        var textareaWidget = dijit.byId("explicitPath");
+        textareaWidget.setValue(pathStr);
+    }
+    node = dojo.byId("vlanReplace");
+    if (oscars.Utils.isBlank(node.innerHTML)) {
+        layer2Reservation = false;
+    }
+    if (layer2Reservation) {
+        dijit.byId("vlanTag").setValue(node.innerHTML);
+        node = dojo.byId("taggedReplace");
+        var tagSrcPort = dojo.byId("tagSrcPort");
+        var tagDestPort = dojo.byId("tagDestPort");
+        if (node.innerHTML == "true") {
+            tagSrcPort.selectedIndex = 0;
+            tagDestPort.selectedIndex = 0;
+        } else {
+            tagSrcPort.selectedIndex = 1;
+            tagDestPort.selectedIndex = 1;
+        }
+    } else {
+        var radioWidget = dijit.byId("layer3");
+        radioWidget.setValue(true);
+        node = dojo.byId("sourcePortReplace");
+        dijit.byId("srcPort").setValue(node.innerHTML);
+        node = dojo.byId("destinationPortReplace");
+        dijit.byId("destPort").setValue(node.innerHTML);
+        node = dojo.byId("protocolReplace");
+        dijit.byId("protocol").setValue(node.innerHTML);
+        node = dojo.byId("dscpReplace");
+        dijit.byId("dscp").setValue(node.innerHTML);
+    }
+    var mainTabContainer = dijit.byId("mainTabContainer");
+    // set to create reservation tab
+    var resvCreatePane = dijit.byId("reservationCreatePane");
+    mainTabContainer.selectChild(resvCreatePane);
 };
 
 // handles all servlet replies

@@ -1,13 +1,15 @@
 /*
 ReservationCreate.js:   Handles reservation creation.
-Last modified:  May 19, 2008
+Last modified:  May 21, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
 init()
+createReservation()
 handleReply(responseObject, ioArgs)
 tabSelected(contentPaneWidget, changeStatus)
+resetFields()
 layerChooser(evt);
 checkDateTimes()
 */
@@ -70,8 +72,8 @@ oscars.ReservationCreate.handleReply = function (responseObject, ioArgs) {
             form: dijit.byId("reservationDetailsForm").domNode
         });
         // set tab to reservation details
-        var resvDetailsPaneTab = dijit.byId("reservationDetailsPane");
-        mainTabContainer.selectChild(resvDetailsPaneTab);
+        var resvDetailsPane = dijit.byId("reservationDetailsPane");
+        mainTabContainer.selectChild(resvDetailsPane);
     }
 };
 
@@ -83,24 +85,40 @@ oscars.ReservationCreate.tabSelected = function (
     if (changeStatus) {
         oscarsStatus.innerHTML = "Reservation creation form";
     }
-    if (contentPane.href == "") {
-        contentPane.setHref("forms/reservationCreate.html");
-    }
+};
+
+// resets all fields, including ones the standard reset doesn't catch
+oscars.ReservationCreate.resetFields = function () {
+    var formParam = dijit.byId("reservationCreateForm").domNode;
+    // do the standard ones first
+    formParam.reset();
+    // if layer 3 fields are displayed, display layer 2 ones again since
+    // that button is rechecked on reset
+    oscars.ReservationCreate.toggleLayer("layer2");
+    // set whether VLAN's are tagged back to default (Tagged)
+    var tagSrcPort = dojo.byId("tagSrcPort");
+    tagSrcPort.selectedIndex = 0;
+    var tagDestPort = dojo.byId("tagDestPort");
+    tagDestPort.selectedIndex = 0;
 };
 
 // chooses layer 2 or layer 3 parameters to display in create reservation page
 oscars.ReservationCreate.layerChooser = function (/*Event*/ evt) {
+    oscars.ReservationCreate.toggleLayer(evt.target.id);
+};
+
+oscars.ReservationCreate.toggleLayer = function (/*String*/ id) {
     var i;
     var layer2Nodes = dojo.query(".layer2");
     var layer3Nodes = dojo.query(".layer3");
-    if (evt.target.id == "layer2") {
+    if (id == "layer2") {
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = ""; 
         }
         for (i = 0; i < layer3Nodes.length; i++) {
             layer3Nodes[i].style.display = "none"; 
         }
-    } else if (evt.target.id == "layer3") {
+    } else if (id == "layer3") {
         for (i = 0; i < layer2Nodes.length; i++) {
             layer2Nodes[i].style.display = "none"; 
         }
@@ -108,7 +126,7 @@ oscars.ReservationCreate.layerChooser = function (/*Event*/ evt) {
             layer3Nodes[i].style.display = ""; 
         }
     }
-};
+}
 
 // check create reservation form's start and end date and time's, and
 // converts hidden form fields to seconds

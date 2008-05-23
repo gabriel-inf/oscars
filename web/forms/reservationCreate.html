@@ -48,13 +48,19 @@ to the number of lines occurring in the hops list.
       <label for="production">Production circuit</label>
     </td>
     <td>
-      <input type="reset" value="Reset form fields" />
+      <!-- straight form reset doesn't reset all fields properly -->
+      <button dojoType="dijit.form.Button" id="reservationCreateReset">
+         Reset form fields
+         <script type="dojo/method" event="onClick">
+            oscars.ReservationCreate.resetFields();
+        </script>
+      </button>
     </td>
   </tr>
   <tr>
     <td>Source</td>
     <td class="required" colspan="2">
-      <input type="text" name="source"
+      <input type="text" name="source" id="source"
              dojoType="dijit.form.ValidationTextBox"
              required="true" />
     </td>
@@ -62,7 +68,7 @@ to the number of lines occurring in the hops list.
   <tr>
     <td>Destination</td>
     <td class="required" colspan="2">
-      <input type="text" name="destination"
+      <input type="text" name="destination" id="destination"
              dojoType="dijit.form.ValidationTextBox" 
              required="true" />
     </td>
@@ -149,12 +155,13 @@ to the number of lines occurring in the hops list.
   <!-- layer 2 parameters -->
   <tr class="layer2"><td>VLAN</td>
     <td>
-      <input type="text" dojoType="dijit.form.TextBox" name="vlanTag" />
+      <input type="text" dojoType="dijit.form.TextBox" name="vlanTag"
+             id="vlanTag" />
     </td>
     <td>tag, or range, e.g. 3000-3100</td></tr>
   <tr class="layer2"><td>Source Port</td>
     <td colspan="2">
-      <select name="tagSrcPort">
+      <select name="tagSrcPort" id="tagSrcPort">
         <option value="Tagged" selected="selected">Tagged</option>
         <option value="Untagged">Untagged</option>
       </select>
@@ -162,7 +169,7 @@ to the number of lines occurring in the hops list.
   </tr>
   <tr class="layer2"><td>Destination Port</td>
     <td colspan="2">
-      <select name="tagDestPort">
+      <select name="tagDestPort" id="tagDestPort">
         <option value="Tagged" selected="selected">Tagged</option>
         <option value="Untagged">Untagged</option>
       </select>
@@ -172,23 +179,24 @@ to the number of lines occurring in the hops list.
   <!-- layer 3 parameters -->
   <tr class="layer3" style="display:none"><td>Source port</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="srcPort"
-               maxlength="5" />
+               id="srcPort" maxlength="5" />
     </td>
     <td>(1024-65535)</td></tr>
   <tr class="layer3" style="display:none"><td>Destination port</td>
     <td><input type="text" dojoType="dijit.form.TextBox" name="destPort"
-               maxlength="5" />
+               id="destPort" maxlength="5" />
     </td>
     <td>(1024-65535)</td>
   </tr>
   <tr class="layer3" style="display:none"><td>Protocol</td>
-    <td><input type="text" dojoType="dijit.form.TextBox" name="protocol" />
+    <td><input type="text" dojoType="dijit.form.TextBox" name="protocol"
+               id="protocol" />
     </td>
     <td>(0-255, or string)</td></tr>
   <tr class="layer3" style="display:none"><td>DSCP</td>
     <td><input dojoType="dijit.form.ValidationTextBox" name="dscp"
                promptMessage="Enter differentiated service code point"
-               maxlength="2" />
+               id="dscp" maxlength="2" />
     </td>
     <td>(0-63)</td>
   </tr>

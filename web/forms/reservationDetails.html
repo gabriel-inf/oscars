@@ -67,6 +67,14 @@
         CANCEL 
       </button>
     </td>
+    <td>
+      <button dojoType="dijit.form.Button" id="cloneReservation">
+         CLONE
+         <script type="dojo/method" event="onClick">
+             oscars.ReservationDetails.cloneReservation();
+         </script>
+      </button>
+    </td>
   </tr>
 </table>
 
@@ -109,9 +117,10 @@
   <tr><td>Bandwidth (Mbps)</td><td id="bandwidthReplace" /></tr>
   <tr><td>Source</td><td id="sourceReplace" /></tr>
   <tr><td>Destination</td><td id="destinationReplace" /></tr>
-  <tr><td>Intradomain hops</td><td id="pathReplace" /></tr>
+  <tr><td>Intradomain hops</td><td><table id="pathReplace"></table</tr>
   <tr><td>Interdomain path</td><td id="interPathReplace" /></tr>
   <tr class="layer2Replace"><td>VLAN</td><td id="vlanReplace" /></tr>
+  <tr class="layer2Replace"><td>Tagged</td><td id="taggedReplace" /></tr>
 
   <tr class="layer3Replace" style="display: none">
     <td>Source port</td><td id="sourcePortReplace" />

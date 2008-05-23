@@ -136,8 +136,14 @@ public class QueryReservation extends HttpServlet {
             outputMap.put("destinationReplace", layer2Data.getDestEndpoint());
             String vlanTag = utils.getVlanTag(path);
             if (vlanTag != null) {
-                int vlanNum = Math.abs(Integer.parseInt(vlanTag));
+                int storedVlan = Integer.parseInt(vlanTag);
+                int vlanNum = Math.abs(storedVlan);
                 outputMap.put("vlanReplace", vlanNum + "");
+                if (storedVlan >= 0) {
+                    outputMap.put("taggedReplace", "true");
+                } else {
+                    outputMap.put("taggedReplace", "false");
+                }
             } else {
                 outputMap.put("vlanReplace",
                               "Warning: No VLAN tag present");
@@ -183,11 +189,9 @@ public class QueryReservation extends HttpServlet {
             // Utils.pathToString has new line separated hops
             String[] hops = pathStr.trim().split("\n");
             // enforce one hop per line in outer table cell
-            sb.append("<table>");
             for (int i=0; i < hops.length; i++) {
                 sb.append("<tr><td class='innerHops'>" + hops[i] + "</td></tr>");
             }
-            sb.append("</table>");
             outputMap.put("pathReplace", sb.toString());
         }
         String interPathStr = utils.pathToString(path, true);

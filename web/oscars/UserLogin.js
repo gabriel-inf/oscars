@@ -60,7 +60,7 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
     var reservationDetailsPane = new dojox.layout.ContentPane(
         {title:'Reservation Details', id: 'reservationDetailsPane'},
          dojo.doc.createElement('div'));
-           reservationDetailsPane.setHref("forms/reservationDetails.html");
+    reservationDetailsPane.setHref("forms/reservationDetails.html");
     mainTabContainer.addChild(reservationDetailsPane, 1);
     reservationDetailsPane.startup();
 
@@ -68,6 +68,7 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
     var reservationCreatePane = new dojox.layout.ContentPane(
         {title:'Create Reservation', id: 'reservationCreatePane'},
          dojo.doc.createElement('div'));
+    reservationCreatePane.setHref("forms/reservationCreate.html");
     mainTabContainer.addChild(reservationCreatePane, 2);
     reservationCreatePane.startup();
 
