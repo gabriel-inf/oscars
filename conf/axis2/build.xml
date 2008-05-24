@@ -100,7 +100,6 @@
                     <lib dir="lib">
                             <include name="**" />
                             <exclude name="**servlet**" />
-                            <exclude name="ant*.jar" />
                     </lib>
                     <lib dir="${rampart_lib}">
                             <include name="*.jar" />

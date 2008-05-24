@@ -150,7 +150,9 @@ if [ $BUILD_AXIS ]; then
 		echo "    Rampart  downloaded. Unzipping...";
 		`unzip -qq -d dists dists/rampart-1.3.zip`;
 	fi
-	echo "--- Building Axis2 with Rampart...";
+	echo "--- Copying OSCARS specific libs to Axis2...";
+	cp lib/antlr* dists/axis2-1.3/lib;
+        echo "--- Building Axis2 with Rampart...";
 	`sed -e 's/CHANGE_THIS/\.\./g' conf/axis2/build.xml > dists/axis2-1.3/webapp/build.xml`;
 	cd dists/axis2-1.3/webapp;
 	ant;
