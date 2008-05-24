@@ -42,7 +42,7 @@ create_new_cert ()
     fi
     
     echo "-- Using keystore password from $REPO_PATH/sec-client.properties";
-    keytool -genkey -alias $CERT_ALIAS -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -validity $CERT_VALIDITY;
+    keytool -genkey -alias $CERT_ALIAS -keystore $REPO_PATH/sec-client.jks -storepass $KS_PASS -keypass password -validity $CERT_VALIDITY;
     if [ $? != 0 ]; then
         echo "-- Keytool returned an error. See the error message above and please try again.";
         exit 1;
