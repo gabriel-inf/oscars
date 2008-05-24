@@ -79,7 +79,8 @@ public class ModifyReservation extends HttpServlet {
         }
         aaa.getTransaction().commit();
 
-        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss =
+            HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         PathInfo pathInfo = null;
         try {
@@ -97,7 +98,10 @@ public class ModifyReservation extends HttpServlet {
         }
         String errMessage = null;
         try {
-            Reservation persistentResv = rm.modify(resv, userName, pathInfo);
+            // currently allUsers here is redundant, but that will probably
+            // change in the future
+            Reservation persistentResv = rm.modify(resv, userName, allUsers,
+                                                   pathInfo);
             tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response

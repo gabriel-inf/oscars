@@ -146,7 +146,8 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public ModifyResReply modify(ModifyResContent params, String login, boolean allUsers)
+    public ModifyResReply modify(ModifyResContent params, String login,
+                                 boolean allUsers)
             throws BSSException, InterdomainException {
 
         this.log.info("modify.start");
@@ -159,24 +160,24 @@ public class ReservationAdapter {
         ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
-            Reservation persistentResv = this.rm.modify(resv, login, pathInfo);
+            Reservation persistentResv = this.rm.modify(resv, login, allUsers,
+                                                        pathInfo);
             this.tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
             this.log.debug("modify, to forward");
             InterdomainException interException = null;
-            try{
+            try {
                 forwardReply = forwarder.modify(resv, pathInfo);
-            }catch(InterdomainException e){
+            } catch(InterdomainException e) {
                 interException = e;
-            }finally{
+            } finally {
                 forwarder.cleanUp();
-                if(interException != null){
+                if (interException != null) {
                     throw interException;
                 }
             }
             persistentResv = this.rm.finalizeModifyResv(forwardReply, resv, pathInfo);
-
 
             this.log.debug("modify, to toModifyReply");
             reply = this.tc.reservationToModifyReply(persistentResv);
@@ -188,8 +189,6 @@ public class ReservationAdapter {
                 this.tc.clientConvert(pathInfo);
             }
             reply.getReservation().setPathInfo(pathInfo);
-
-
         } catch (BSSException e) {
             // send notification in all cases
             this.sendFailureNotification(resv, "modify failed with error: " + e.getMessage());
@@ -199,8 +198,6 @@ public class ReservationAdapter {
             this.sendFailureNotification(resv, "modify failed with error: " + e.getMessage());
             throw new InterdomainException(e.getMessage());
         }
-
-
         this.log.info("modify.finish");
         return reply;
     }
@@ -215,7 +212,8 @@ public class ReservationAdapter {
      * @return ResStatus reply CancelReservationResponse
      * @throws BSSException
      */
-    public String cancel(GlobalReservationId params, String login, boolean allUsers)
+    public String cancel(GlobalReservationId params, String login,
+                         boolean allUsers)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;

@@ -282,16 +282,16 @@ public class ReservationManager {
      *
      * @param resv reservation instance modified in place
      * @param login string with login name
+     * @param allUsers boolean indicating if can modify reservations for any user
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation modify(Reservation resv, String login, PathInfo pathInfo)
+    public Reservation modify(Reservation resv, String login, boolean allUsers,
+                              PathInfo pathInfo)
             throws  BSSException {
         this.log.info("modify.start");
-
-        // need to set this
+        // need to set this before validation
         resv.setLogin(login);
-
         ParamValidator paramValidator = new ParamValidator();
 
         StringBuilder errorMsg =
@@ -300,30 +300,30 @@ public class ReservationManager {
             throw new BSSException(errorMsg.toString());
         }
 
-
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-
-        Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
+        Reservation persistentResv =
+            resvDAO.query(resv.getGlobalReservationId());
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
         }
-
+        if (!allUsers) {
+            this.log.debug("current login is " + persistentResv.getLogin());
+            if  (!persistentResv.getLogin().equals(login)) {
+                throw new BSSException("modify reservation: permission denied");
+            }
+        }
 
         // handle times
         Long now = System.currentTimeMillis()/1000;
 
         if (persistentResv.getStatus().equals("FAILED")) {
             throw new BSSException("Cannot modify: reservation has already failed.");
-
         } else if (persistentResv.getStatus().equals("FINISHED")) {
             throw new BSSException("Cannot modify: reservation has already finished.");
-
         } else if (persistentResv.getStatus().equals("CANCELLED")) {
             throw new BSSException("Cannot modify: reservation has been cancelled.");
-
         } else if (persistentResv.getStatus().equals("INVALIDATED")) {
             throw new BSSException("Cannot modify: reservation has been invalidated.");
-
         } else if (persistentResv.getStatus().equals("ACTIVE")) {
             // we will silently not allow the user to modify the start time
             resv.setStartTime(persistentResv.getStartTime());
@@ -335,7 +335,6 @@ public class ReservationManager {
             if (resv.getStartTime() > resv.getEndTime()) {
                 throw new BSSException("Cannot modify: end time before start.");
             }
-
         } else if (persistentResv.getStatus().equals("PENDING")) {
             if (resv.getEndTime() <= now) {
                 throw new BSSException("Cannot modify: reservation ends before current time.");
@@ -347,14 +346,9 @@ public class ReservationManager {
             if (resv.getStartTime() > resv.getEndTime()) {
                 throw new BSSException("Cannot modify: start time after end time!");
             }
-
         }
-
-
         // this will throw an exception if modification isn't possible
         Path path = this.getPath(resv, pathInfo);
-
-
         this.log.info("modify.finish");
         return persistentResv;
     }
