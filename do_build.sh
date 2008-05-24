@@ -135,7 +135,7 @@ if [ $BUILD_AXIS ]; then
 	if [ ! -d dists/axis2-1.3 ]; then
 		if [ ! -f dists/axis2-1.3-bin.zip ]; then
 			echo "--- Downloading Axis2...";
-			`wget -P dists http://www.devlib.org/apache/ws/axis2/1_3/axis2-1.3-bin.zip`;
+			`wget -P dists http://www.eng.lsu.edu/mirrors/apache/ws/axis2/1_3/axis2-1.3-bin.zip`;
 		fi
 		echo "    Axis downloaded. Unzipping...";
 		`unzip -qq -d dists dists/axis2-1.3-bin.zip`;
