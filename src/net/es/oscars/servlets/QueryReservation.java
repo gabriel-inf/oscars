@@ -25,7 +25,6 @@ public class QueryReservation extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        boolean allUsers = false;
         boolean internalIntradomainHops = false;
         Reservation reservation = null;
         ReservationManager rm = new ReservationManager("bss");
@@ -47,13 +46,14 @@ public class QueryReservation extends HttpServlet {
             utils.handleFailure(out, "no permission to query Reservations",  aaa, null);
             return;
         }
-        if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
+
         // check to see if may look at internal intradomain path elements
-        authVal = userMgr.checkModResAccess(userName,
+        AuthValue authValHops = userMgr.checkModResAccess(userName,
             "Reservations", "create", 0, 0, true, false );
-        if  (authVal != AuthValue.DENIED ) {
+        if  (authValHops != AuthValue.DENIED ) {
             internalIntradomainHops = true;
         }
+        String institution = userMgr.getInstitution(userName);
         aaa.getTransaction().commit();
          
         String gri = request.getParameter("gri");
@@ -71,7 +71,7 @@ public class QueryReservation extends HttpServlet {
             }
         }
         try {
-            reservation = rm.query(gri, userName, allUsers);
+            reservation = rm.query(gri, userName, institution, authVal.ordinal());
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, bss);
             return;

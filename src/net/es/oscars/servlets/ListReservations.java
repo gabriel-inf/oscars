@@ -38,7 +38,7 @@ public class ListReservations extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-	      this.dbname = "bss";
+	    this.dbname = "bss";
         List<Reservation> reservations = null;
         UserSession userSession = new UserSession();
         net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
@@ -90,7 +90,6 @@ public class ListReservations extends HttpServlet {
 
         ReservationManager rm = new ReservationManager("bss");
         List<Reservation> reservations = null;
-        List<String> logins = null;
         List<String> statuses = this.getStatuses(request);
         List<String> vlans = this.getVlanTags(request);
         String description = this.getDescription(request);
@@ -103,7 +102,6 @@ public class ListReservations extends HttpServlet {
         if ((endTimeStr != null) && !endTimeStr.equals("")) {
             endTimeSeconds = Long.valueOf(endTimeStr.trim());
         }
-        boolean allUsers = false;
         net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
 
         UserManager mgr = new UserManager("aaa");
@@ -113,15 +111,12 @@ public class ListReservations extends HttpServlet {
             utils.handleFailure(out, "no permission to list Reservations",  null, null);
             return null;
         }
-        if (authVal == AuthValue.ALLUSERS) { allUsers=true; }
-        // if logins are null, reservations from all users are returned
-        if (!allUsers) {
-            logins = new ArrayList<String>();
-            logins.add(login);
-        }
+
+        
+        String institution = mgr.getInstitution(login);
         try {
             reservations =
-                rm.list(login, logins, statuses, description, inLinks,
+                rm.list(login, institution, authVal.ordinal(), statuses, description, inLinks,
                         vlans, startTimeSeconds, endTimeSeconds);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(),  null, null);

@@ -212,6 +212,19 @@ public class UserManager {
         this.log.debug("loginFromDN.end");
         return login;
     }
+    
+    /**
+     * Returns the institution of the user
+     * 
+     * @param login String login name of the user
+     * 
+     * @return String name of the institution of the user
+     */
+    public String getInstitution (String login){
+	UserDAO userDAO = new UserDAO(this.dbname);
+	User user = userDAO.query(login);
+	return user.getInstitution().getName();
+	}
 
     /**
      * Authenticates user via login name and password.
@@ -324,27 +337,30 @@ public class UserManager {
      * DENIED means the requested action is not allowed<br>
      * ALLUSERS means the requested action is allowed on objects that belong
      *     to any user<br>
+     * MYSITE means the requested actions is allowed only on objects that 
+     * 	    belong to the same site as the requester<br>
      * SELFONLY  means the requested action is allowed only on objects that
      *      belong to the requester.
      *      
      * @author mrt
      *
      */
-    public enum AuthValue { DENIED, ALLUSERS, SELFONLY };
+    public enum AuthValue { DENIED, ALLUSERS, MYSITE, SELFONLY };
     
    
     /**
      * Checks to make sure that that user has the permission to use the
      *     resource by checking for the corresponding triplet in the
      *     authorizations table. This method is called for everything except 
-     *     createReservation, so the only constraint of interest is 'allUsers'.
-     *     If it exists, it is used to determine if allUsers or selfOnly should
-     *     be returned.
+     *     createReservation, so the constraints of interest are 'allUsers' and 'mySite'.
+     *     The least restrained access that any of the user's attributes grants
+     *     is returned, where ALLUSERS > SITEONLY > SELFONLY > DENIED. If there is only an
+     *     authorization with no constraint, the default of SELFONLY is returned.
      *
      * @param userName a string with the login name of the user
      * @param resourceName a string identifying a resource
      * @param permissionName a string identifying a permission
-     * @return one of DENIED, SELFONLY, ALLUSERS
+     * @return one of DENIED, SELFONLY, SITEONLY, ALLUSERS
      */
     public AuthValue checkAccess(String userName, String resourceName,
                                  String permissionName) {
@@ -361,16 +377,16 @@ public class UserManager {
             return AuthValue.DENIED;
         }
         /* check to see if any of the users attributes grants this
-         * authorization, and look for a selfOnly constraint
+         * authorization, and look for a selfOnly or MySite constraint
          */
         Iterator attrIter = this.userAttrs.iterator();
         while (attrIter.hasNext()) {
             currentAttr = (UserAttribute) attrIter.next();
-            /*
+           
             this.log.debug("attrId: " + currentAttr.getAttributeId() +
                            ", resourceId: " + this.resourceId +
                            ", permissionId: " + this.permissionId);
-            */
+          
             auths = authDAO.query(currentAttr.getAttributeId(),
                                   this.resourceId, this.permissionId);
             if (auths.isEmpty()) { 
@@ -383,40 +399,52 @@ public class UserManager {
                 auth = (Authorization) authItr.next();
                 if (auth.getConstraintName() == null) {
                     // found an authorization with no constraints,
-                    // user is allowed for self only
-                    //this.log.debug("attrId: authorized with no constraint");
-                    retVal =  AuthValue.SELFONLY;
-                    retValSt = "SELFONLY";
-                } else if (auth.getConstraintName().equals("all-users")) {
-                    if (auth.getConstraintValue() ==
-                            AuthValue.ALLUSERS.ordinal()) {
+                    // user is allowed for self only unless something better has  been found
+                    //this.log.debug("attrId: authorized for SELFONLY");
+                    if (retVal == null) {
+                        retVal =  AuthValue.SELFONLY;
+                        retValSt = retVal.toString();
+                    }
+                } else if (auth.getConstraintName().equals("my_site")) {
+                    if (auth.getConstraintValue().intValue() == 1) {
+                        // found a constrained authorization, remember it
+                        // and see if we can do better
+                        this.log.debug("checkAccess MYSITE access");
+                        retVal = AuthValue.MYSITE;
+                        retValSt = retVal.toString();;
+                    }
+                }
+                else if (auth.getConstraintName().equals("all-users")) {
+                    if (auth.getConstraintValue().intValue() == 1) {
                         // found an authorization with allUsers allowed,
-                        // user is allowed
+                        // highest level access, so return it
                         this.log.debug("checkAccess:finish ALLUSERS access");
                         return AuthValue.ALLUSERS;
                     } else {
-                        // found a constrained authorization, remember it
+                        // found a self-only constrained authorization, remember it
                         // and see if we can do better
-                        this.log.debug("checkAccess SELFONLY access");
-                        retVal = AuthValue.SELFONLY;
-                        retValSt = "SELFONLY";
+                        if (retVal == null) {  // haven't found anything better yet 
+                            this.log.debug("checkAccess SELFONLY access");
+                            retVal = AuthValue.SELFONLY;
+                            retValSt = retVal.toString();
+                        }
                     }
                 }
             } // end of all authorizations for this attribute
-        }
+        } // end of all attributes
         if (retVal == null ) {
             this.log.info("No authorizations found for user " + userName +
                           ", permission " + permissionName +
                           ", resource " + resourceName);
             retVal = AuthValue.DENIED;
-            retValSt = "DENIED";
+            retValSt = retVal.toString();
         }
         this.log.info("checkAccess.finish: " + retValSt + " access");
         return retVal;
     }   
     /**
      * Checks to make sure that that user has the permission to use the
-     *     resource by checking for the corresponding quadtuplet in the
+     *     resource by checking for the corresponding quadruplet in the
      *     authorizations table. This method is only called for
      *     createReservation, so the constraints of interest are max-bandwidth,
      *     max-duration, specify-path-constraints, and specify-gri

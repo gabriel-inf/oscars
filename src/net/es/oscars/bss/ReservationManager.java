@@ -241,7 +241,23 @@ public class ReservationManager {
                       resv.getGlobalReservationId());
         this.rsvLogger.stop();
     }
-
+    /**
+     * User constraint values <br>
+     * The order should match UserManager.authValue<br>
+     * Note this is defined to avoid the import of aaa.UserManager - mrt
+     * DENIED means the requested action is not allowed<br>
+     * ALLUSERS means the requested action is allowed on objects that belong
+     *     to any user<br>
+     * MYSITE means the requested actions is allowed only on objects that 
+     * 	    belong to the same site as the requester<br>
+     * SELFONLY  means the requested action is allowed only on objects that
+     *      belong to the requester.
+     *      
+     * @author mrt
+     *
+     */
+    
+    public enum UserConstraint { DENIED, ALLUSERS, MYSITE, SELFONLY };
 
     /**
      * Given a reservation GRI, queries the database and returns the
@@ -249,25 +265,48 @@ public class ReservationManager {
      *
      * @param gri string with reservation GRI
      * @param login string with login name of the caller
-     * @param allUsers boolean indicating user can view reservations for all users
+     * @param institution string with institution of caller
+     * @param constraint indicates which reservations may be viewed
+     *         1 means all reservations for all users
+     *         2 means only for users at the same institution
+     *         3 means only the callers reservations
      * @return resv corresponding reservation instance, if any
      * @throws BSSException
      */
-    public Reservation query(String gri, String login, boolean allUsers)
+    public Reservation query(String gri, String login, String institution, int constraint)
             throws BSSException {
 
         Reservation resv = null;
+        UserConstraint uc = null;; 
+        switch (constraint) {
+            case 1: uc=UserConstraint.ALLUSERS; break;
+            case 2: uc=UserConstraint.MYSITE; break;
+            case 3: uc=UserConstraint.SELFONLY;
+        }
 
-        this.log.info("query.start: " + gri + " login: " + login + " allUsers is " + allUsers);
+        this.log.info("query.start: " + gri + " login: " + login + " userConstraint is " + uc.toString());
         ReservationDAO dao = new ReservationDAO(this.dbname);
         resv = dao.query(gri);
         if (resv == null) {
             throw new BSSException("Reservation not found: " + gri);
         }
-        if (!allUsers) {
+        if (uc.equals(UserConstraint.SELFONLY)) {
             this.log.debug("reservation login is " + resv.getLogin());
             if  (!resv.getLogin().equals(login)) {
                 throw new BSSException ("query reservation: permission denied");
+            }
+        }
+        if (uc.equals(UserConstraint.MYSITE)){
+
+             // get the sites associated the source and destination of the reservation
+            String sourceSite = this.sourceSite(resv);
+            if (!sourceSite.equals(institution)) {
+        	String destSite = this.destSite(resv);
+        	if (!destSite.equals(institution)){
+        	    this.log.debug("reservation source is " + sourceSite + ": destination is " 
+        		    + destSite);
+        	    throw new BSSException ("query reservation: permission denied");
+        	}
             }
         }
         this.log.info("query.finish: " + resv.getGlobalReservationId());
@@ -394,9 +433,12 @@ public class ReservationManager {
    /**
      * @param login String with user's login name
      *
-     * @param loginIds a list of user logins. If not null or empty, results will
-     * only include reservations submitted by these specific users.
-     * If null / empty results will include reservations by all users.
+     * @param institution String with name of user's institution
+     * 
+     * @param constraint int indicates which reservations may be viewed
+     *         1 means all reservations for all users
+     *         2 means only for users at the same institution
+     *         3 means only the callers reservations
      *
      * @param statuses a list of reservation statuses. If not null or empty,
      * results will only include reservations with one of these statuses.
@@ -418,21 +460,45 @@ public class ReservationManager {
      * @param endTime the end of the time window to look in; null for everything after the startTime,
      * leave both start and endTime null to disregard time
      *
-     * @return reservations list of reservations
+     * @return reservations list of reservations that user is allowed to see
      * @throws BSSException
      */
-    public List<Reservation> list(String login, List<String> loginIds,
+    public List<Reservation> list(String login, String institution, int constraint,
         List<String> statuses, String description, List<Link> links,
         List<String> vlanTags,  Long startTime, Long endTime)
                 throws BSSException {
 
         List<Reservation> reservations = null;
-
+        List<String> loginIds = new ArrayList<String>();
+        UserConstraint uc = null;; 
+        switch (constraint) {
+            case 1: uc=UserConstraint.ALLUSERS; break;
+            case 2: uc=UserConstraint.MYSITE; break;
+            case 3: uc=UserConstraint.SELFONLY;
+        }
         this.log.info("list.start, login: " + login);
 
+        if (uc.equals(UserConstraint.SELFONLY)){
+            loginIds.add(login);
+        }
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.list(loginIds, statuses, description, links,
                                 vlanTags, startTime, endTime);
+        
+        if (uc.equals(UserConstraint.MYSITE)){
+            // remove all the reservations that do not start or terminate at institution
+            String sourceSite = null;
+            String destSite = null;
+            for (Reservation resv : reservations) {
+                sourceSite = this.sourceSite(resv);
+                if (!sourceSite.equals(institution)) {
+                    destSite = this.destSite(resv);
+                    if (!destSite.equals(institution)){
+                        reservations.remove(resv);
+                    } 
+                }
+            }
+        }
         this.log.info("list.finish, success");
 
         return reservations;
@@ -813,6 +879,29 @@ public class ReservationManager {
         // returns same value if already an IP address
         return addr.getHostAddress();
     }
+    
+    
+    /**
+     * Returns the name of the institution of the source endpoint of the reservation 
+     * Can we assume that either the source or the destination must be on the local path? - mrt
+     * 
+     * @param Reservation reservation for which we want to find the source institution
+     * @returns String institution of the reservation source
+     */
+    public String sourceSite(Reservation resv) {
+	return "TBD";
+    }
+    
+    /**
+     * Returns the name of the institution of the destination endpoint of the reservation 
+     * 
+     * @param Reservation reservation for which we want to find the destination institution
+     * @return String institution of the reservation destination
+     */
+    public String destSite(Reservation resv) {
+	return "TBD";
+    }
+
 
     /**
      *  Generates the next Gobal Rresource Identifier, created from the local

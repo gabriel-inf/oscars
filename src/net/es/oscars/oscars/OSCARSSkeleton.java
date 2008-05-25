@@ -162,7 +162,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     }
 
     /**
-     * @param request QueryReservation instance with with request params
+     * @param request QueryReservation instance containing request params
      * @return response QueryReservationResponse encapsulating library reply
      * @throws AAAFaultMessage
      * @throws BSSFaultMessage
@@ -172,7 +172,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throws AAAFaultMessage, BSSFaultMessage {
 
         ResDetails reply = null;
-        boolean allUsers = false;
 
         String login = this.checkUser();
         Session aaa =
@@ -182,18 +181,16 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         GlobalReservationId gri = request.getQueryReservation();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "query");
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
+        if (authVal == AuthValue.DENIED) {
                 throw new AAAFaultMessage("queryReservation: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers =  true;  break;
         }
-
+        String institution = this.userMgr.getInstitution(login);
+        
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.query(gri, login,allUsers);
+            reply = this.adapter.query(gri, login, institution, authVal.ordinal());
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("queryReservation: " + e.getMessage());
@@ -280,7 +277,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throws AAAFaultMessage, BSSFaultMessage {
 
         ListReply reply = null;
-        ArrayList<String> loginIds = null;
         String login = this.checkUser();
 
         Session aaa =
@@ -289,23 +285,16 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                throw new AAAFaultMessage( "listReservations: permission denied");
-            case SELFONLY:
-                loginIds = new ArrayList<String>();
-                loginIds.add(login);
-                break;
-            case ALLUSERS:
-                /* leave loginIds = null, implies all users are wanted */
-                break;
+        if (authVal == AuthValue.DENIED) {
+            throw new AAAFaultMessage("queryReservation: permission denied");
         }
+        String institution = this.userMgr.getInstitution(login);
 
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.list(login, loginIds, request.getListReservations());
+            reply = this.adapter.list(login, institution, authVal.ordinal(), request.getListReservations());
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("listReservations: " + e.getMessage());
@@ -811,4 +800,5 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         aaa.getTransaction().commit();
         return login;
     }
+ 
 }

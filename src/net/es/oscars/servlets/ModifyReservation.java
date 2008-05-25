@@ -68,15 +68,13 @@ public class ModifyReservation extends HttpServlet {
         UserManager userMgr = new UserManager("aaa");
         AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
                 "modify");
-        switch (authVal) {
-            case DENIED:
+        if (authVal == AuthValue.DENIED) {
                 this.log.info("denied");
                 utils.handleFailure(out,
                         "modifyReservation: permission denied", aaa, null);
                 return;
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
         }
+        String institution = userMgr.getInstitution(userName);
         aaa.getTransaction().commit();
 
         Session bss =
@@ -90,7 +88,7 @@ public class ModifyReservation extends HttpServlet {
             // allUsers is for the modify permission, but no point in this
             // succeeding if will be unable to modify. 
             Reservation tempResv =
-                rm.query(resv.getGlobalReservationId(), userName, allUsers); 
+                rm.query(resv.getGlobalReservationId(), userName, institution, authVal.ordinal()); 
             pathInfo = this.handlePath(tempResv);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), null, null);

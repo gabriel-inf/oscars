@@ -254,13 +254,18 @@ public class ReservationAdapter {
      * drop the forwarder call. At the moment we don't require the interdomain
      * path to be complete since the topology exchanges may not all be complete yet.
      *
-     * @param params GlobalReservationId instance with with request params.
-     * @param allUsers boolean indicating user can view all reservations
+     * @param params GlobalReservationId instance with request params.
+     * @param login String user's login name
+     * @param institution String user's institution name
+     * @param userConstraint int indicates which reservations may be viewed
+     *         1 means reservations for all users
+     *         2 means reservation only for users at the same institution
+     *         3 means only the callers reservations
      * @return reply ResDetails instance encapsulating library reply.
      * @throws BSSException
      */
     public ResDetails
-        query(GlobalReservationId params, String login, boolean allUsers)
+        query(GlobalReservationId params, String login, String institution, int userConstraint)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;
@@ -268,7 +273,7 @@ public class ReservationAdapter {
 
         String gri = params.getGri();
         this.log.info("query.start: " + gri);
-        resv = this.rm.query(gri, login, allUsers);
+        resv = this.rm.query(gri, login, institution, userConstraint);
         ResDetails reply = this.tc.reservationToDetails(resv);
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and returns the response
@@ -298,8 +303,10 @@ public class ReservationAdapter {
      * List all the reservations on this IDC that meet the input constraints.
      *
      * @param login String with user's login name
+     * 
+     * @param institution String with the user's institution name
      *
-     * @param loginIds a list of user logins. If not null or empty, results will
+     * @param int constraint that specifies what 
      * only include reservations submitted by these specific users. If
      * null / empty, results will include reservations by all users.
      *
@@ -328,12 +335,12 @@ public class ReservationAdapter {
      *
      * endTime is the end of the time window to look in; null for
      * everything after the startTime, Leave both start and endTime null to
-     * isregard time.
+     * disregard time.
      *
      * @return reply ListReply encapsulating library reply.
      * @throws BSSException
      */
-    public ListReply list(String login, List<String> loginIds,
+    public ListReply list(String login, String institution, int constraint,
         ListRequest request) throws BSSException {
         ListReply reply = null;
         List<Reservation> reservations = null;
@@ -404,7 +411,7 @@ public class ReservationAdapter {
         }
         String description = request.getDescription();
         reservations =
-            this.rm.list(login, loginIds, statuses, description, inLinks, 
+            this.rm.list(login, institution, constraint, statuses, description, inLinks, 
                          inVlanTags, startTime, endTime);
 
         reply = this.tc.reservationToListReply(reservations,
