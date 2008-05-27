@@ -300,10 +300,12 @@ public class ReservationManager {
 
              // get the sites associated the source and destination of the reservation
             String sourceSite = this.sourceSite(resv);
+            this.log.debug("sourceSite is " + sourceSite);
             if (!sourceSite.equals(institution)) {
         	String destSite = this.destSite(resv);
+            this.log.debug("destinationSite is " + destSite);
         	if (!destSite.equals(institution)){
-        	    this.log.debug("reservation source is " + sourceSite + ": destination is " 
+        	    this.log.debug("institution is " + institution + ": reservation source is " + sourceSite + ": destination is " 
         		    + destSite);
         	    throw new BSSException ("query reservation: permission denied");
         	}
@@ -470,6 +472,7 @@ public class ReservationManager {
 
         List<Reservation> reservations = null;
         List<String> loginIds = new ArrayList<String>();
+        List<Reservation> authResv = new LinkedList<Reservation>();
         UserConstraint uc = null;; 
         switch (constraint) {
             case 1: uc=UserConstraint.ALLUSERS; break;
@@ -491,17 +494,19 @@ public class ReservationManager {
             String destSite = null;
             for (Reservation resv : reservations) {
                 sourceSite = this.sourceSite(resv);
-                if (!sourceSite.equals(institution)) {
+                if (sourceSite.equals(institution)) {
+                    authResv.add(resv);
+                } else {
                     destSite = this.destSite(resv);
-                    if (!destSite.equals(institution)){
-                        reservations.remove(resv);
+                    if (destSite.equals(institution)){
+                        authResv.add(resv);
                     } 
                 }
             }
         }
         this.log.info("list.finish, success");
 
-        return reservations;
+        return authResv;
     }
 
     /**
@@ -889,7 +894,19 @@ public class ReservationManager {
      * @returns String institution of the reservation source
      */
     public String sourceSite(Reservation resv) {
-	return "TBD";
+        String institution = "UNKNOWN";
+        Path path = resv.getPath();
+        PathElem hop = path.getPathElem();
+        Link src = hop.getLink();
+        String topologyId = src.getTopologyIdent();
+        this.log.debug("topologyIdent from source link is" + topologyId);
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        Domain srcDomain = domainDAO.fromTopologyIdent(topologyId);
+        //String institution = srcDomain.getInstitution();
+        if (srcDomain != null) {
+            institution = srcDomain.getName();
+        }
+        return institution;
     }
     
     /**
@@ -899,7 +916,22 @@ public class ReservationManager {
      * @return String institution of the reservation destination
      */
     public String destSite(Reservation resv) {
-	return "TBD";
+        String institution = "UNKNOWN";    
+        Path path = resv.getPath();
+        PathElem hop = path.getPathElem();
+        while (hop.getNextElem() != null) {
+            hop = hop.getNextElem();
+        }
+        Link src = hop.getLink();
+        String topologyId = src.getTopologyIdent();
+        this.log.debug("topologyIdent from destination link is" + topologyId);
+        DomainDAO domainDAO = new DomainDAO(this.dbname);
+        Domain destDomain = domainDAO.fromTopologyIdent(topologyId);
+        //String institution = srcDomain.getInstitution();
+        if (destDomain != null ){
+            institution = destDomain.getName();
+        }
+        return institution;
     }
 
 

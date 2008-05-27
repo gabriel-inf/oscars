@@ -405,7 +405,7 @@ public class UserManager {
                         retVal =  AuthValue.SELFONLY;
                         retValSt = retVal.toString();
                     }
-                } else if (auth.getConstraintName().equals("my_site")) {
+                } else if (auth.getConstraintName().equals("my-site")) {
                     if (auth.getConstraintValue().intValue() == 1) {
                         // found a constrained authorization, remember it
                         // and see if we can do better

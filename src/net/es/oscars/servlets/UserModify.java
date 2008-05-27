@@ -116,7 +116,7 @@ public class UserModify extends HttpServlet {
                 }
                 /*
                  * form only sets OSCARS-user, OSCARS-service, 
-                 * OSCARS-operator, OSCARS-engineer or
+                 * OSCARS-operator, OSCARS-engineer, OSCARS-siteAdmin or
                  * OSCARS-administrator so we need to compare those three
                  * values between the new and current.
                  */

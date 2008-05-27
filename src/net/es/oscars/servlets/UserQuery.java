@@ -252,6 +252,11 @@ public class UserQuery extends HttpServlet {
         } else {
             roleMap.put("serviceUserRole", Boolean.FALSE);
         }
+        if (attrNames.contains("OSCARS-siteAdmin")){
+            roleMap.put("siteAdminUserRole",Boolean.TRUE);
+        } else {
+            roleMap.put("siteAdminUserRole", Boolean.FALSE);
+        }
         if (modify) {
             roleMap.put("modify", Boolean.TRUE);
         } else {
