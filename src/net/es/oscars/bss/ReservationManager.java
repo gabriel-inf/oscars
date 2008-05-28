@@ -479,7 +479,7 @@ public class ReservationManager {
             case 2: uc=UserConstraint.MYSITE; break;
             case 3: uc=UserConstraint.SELFONLY;
         }
-        this.log.info("list.start, login: " + login);
+        this.log.info("list.start, login: " + login + "constraint: " + constraint);
 
         if (uc.equals(UserConstraint.SELFONLY)){
             loginIds.add(login);
@@ -503,10 +503,11 @@ public class ReservationManager {
                     } 
                 }
             }
+            reservations = authResv;
         }
         this.log.info("list.finish, success");
 
-        return authResv;
+        return reservations;
     }
 
     /**
@@ -898,8 +899,19 @@ public class ReservationManager {
         Path path = resv.getPath();
         PathElem hop = path.getPathElem();
         Link src = hop.getLink();
-        String topologyId = src.getTopologyIdent();
-        this.log.debug("topologyIdent from source link is" + topologyId);
+        Link remoteLink = src.getRemoteLink();
+        String topologyId = null;
+        String FQTI = null;
+        // not sure if going to the remote link is helpful, it is still in the IDC domain - mrt
+        if (remoteLink != null){
+            FQTI=remoteLink.getFQTI();
+            topologyId = remoteLink.getPort().getNode().getDomain().getTopologyIdent();
+           // this.log.debug("remote source link is: " + FQTI + " domain: " + topologyId );
+        } else {
+            FQTI = src.getFQTI();
+            topologyId = src.getPort().getNode().getDomain().getTopologyIdent();
+           // this.log.debug("source link is: " + FQTI + " domain: "+ topologyId);
+        }
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain srcDomain = domainDAO.fromTopologyIdent(topologyId);
         //String institution = srcDomain.getInstitution();
@@ -922,9 +934,19 @@ public class ReservationManager {
         while (hop.getNextElem() != null) {
             hop = hop.getNextElem();
         }
-        Link src = hop.getLink();
-        String topologyId = src.getTopologyIdent();
-        this.log.debug("topologyIdent from destination link is" + topologyId);
+        Link dest = hop.getLink();
+        Link remoteLink = dest.getRemoteLink();
+        String topologyId = null;
+        String FQTI = null;
+        if (remoteLink != null) {
+            FQTI=remoteLink.getFQTI();
+            topologyId = remoteLink.getPort().getNode().getDomain().getTopologyIdent();
+            // this.log.debug("remote destination link: " + FQTI + " domain: " + topologyId );
+        } else {
+            FQTI=dest.getFQTI();
+            topologyId = dest.getPort().getNode().getDomain().getTopologyIdent();
+            // this.log.debug("destination link is: " + FQTI + " domain: " + topologyId );
+        }
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain destDomain = domainDAO.fromTopologyIdent(topologyId);
         //String institution = srcDomain.getInstitution();
@@ -936,7 +958,7 @@ public class ReservationManager {
 
 
     /**
-     *  Generates the next Gobal Rresource Identifier, created from the local
+     *  Generates the next Global Resource Identifier, created from the local
      *  Domain's topology identifier and the next unused index in the IdSequence table.
      *
      * @return the GRI.
