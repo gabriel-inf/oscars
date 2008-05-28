@@ -284,11 +284,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         aaa.beginTransaction();
 
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
-        aaa.getTransaction().commit();
         if (authVal == AuthValue.DENIED) {
             throw new AAAFaultMessage("queryReservation: permission denied");
         }
         String institution = this.userMgr.getInstitution(login);
+        aaa.getTransaction().commit();
 
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
