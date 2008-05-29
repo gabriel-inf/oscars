@@ -1,6 +1,6 @@
 /*
 UserList.js:  Handles user list functionality.  Note that it uses a grid.
-Last modified:  May 19, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -15,7 +15,7 @@ dojo.provide("oscars.UserList");
 
 // handles all servlet replies
 oscars.UserList.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
+    if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
 };

@@ -1,6 +1,6 @@
 /*
 UserProfile.js:  Handles user profile form.
-Last modified:  May 19, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -54,7 +54,7 @@ oscars.UserProfile.postUserRemove = function () {
 
 // handles servlet replies for user query, modify, and remove requests
 oscars.UserProfile.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
+    if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
@@ -78,14 +78,11 @@ oscars.UserProfile.tabSelected = function (
         /* Boolean */ changeStatus) {
     if (changeStatus) {
         var node = dijit.byId("userProfileForm").domNode;
-        if (node != null) {
-            if (oscars.Utils.isBlank(node.profileName.value)) {
-                oscarsStatus.innerHTML = "Profile for user " +
-                                         oscarsState.login;
-            } else {
-                oscarsStatus.innerHTML = "Profile for user " +
-                                         node.profileName.value;
-            }
+        // will only be blank if not coming in from user form,
+        // and this is the first time the tab has been selected
+        if (oscars.Utils.isBlank(node.profileName.value)) {
+            node.profileName.value = oscarsState.login;
+            oscars.UserProfile.postUserQuery();
         }
     }
 };

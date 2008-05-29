@@ -1,6 +1,6 @@
 /*
 UserAdd.js:     Handles add user form.
-Last modified:  May 19, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -39,7 +39,7 @@ oscars.UserAdd.postUserAdd = function () {
 
 // handles reply from request to server to add user
 oscars.UserAdd.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
+    if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");

@@ -1,6 +1,6 @@
 /*
 Reservations.js:   Handles reservations list form, including grid.
-Last modified:  May 19, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -37,7 +37,7 @@ oscars.Reservations.postSearch = function () {
 
 // handles reply from list reservations servlet
 oscars.Reservations.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
+    if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");

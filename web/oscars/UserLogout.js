@@ -1,6 +1,6 @@
 /*
 Logout.js:        Handles user logout.
-Last modified:  May 19, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -26,7 +26,7 @@ oscars.UserLogout.postLogout = function () {
 // Handles reply from UserLogout servlet.  Closes all tabs and returns
 // interface to original state.
 oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
+    if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");

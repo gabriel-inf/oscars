@@ -1,6 +1,6 @@
 /*
 ReservationCreate.js:   Handles reservation creation.
-Last modified:  May 21, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -53,14 +53,18 @@ oscars.ReservationCreate.createReservation = function () {
 
 // handles replies from servlets having to do with reservation creation
 oscars.ReservationCreate.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
-        return;
-    }
     var mainTabContainer = dijit.byId("mainTabContainer");
     if (responseObject.method == "CreateReservationForm") {
+        // necessary for correct status message upon login
+        if (!oscars.Form.resetStatus(responseObject, false)) {
+            return;
+        }
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
     } else if (responseObject.method == "CreateReservation") {
+        if (!oscars.Form.resetStatus(responseObject, true)) {
+            return;
+        }
         // transition to reservation details tab on successful creation
         var formParam = dijit.byId("reservationDetailsForm").domNode;
         formParam.gri.value = responseObject.gri;

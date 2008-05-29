@@ -1,6 +1,6 @@
 /*
 ReservationDetails.js:  Handles reservation details form.
-Last modified:  May 21, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -145,7 +145,7 @@ oscars.ReservationDetails.cloneReservation = function () {
 
 // handles all servlet replies
 oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
+    if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");

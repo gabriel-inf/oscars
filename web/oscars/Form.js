@@ -2,13 +2,13 @@
 Form.js:        General form handling for browser interface.  Functionality
                 specific to a single form is in its own module.
                 Note that all security is enforced on the server side.
-Last modified:  May 19, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
 handleError(responseObject, ioArgs)
-resetStatus(responseObject);
+resetStatus(responseObject, changeStatus);
 applyParams(responseObject)
 selectedChanged(contentPaneWidget)
 initBackForwardState()
@@ -24,7 +24,7 @@ oscars.Form.handleError = function (responseObject, ioArgs) {
 };
 
 // handles resetting status message 
-oscars.Form.resetStatus = function (responseObject) {
+oscars.Form.resetStatus = function (responseObject, changeStatus) {
     var status = responseObject.status;
     var oscarsStatus = dojo.byId("oscarsStatus");
     if (responseObject.success) {
@@ -32,10 +32,8 @@ oscars.Form.resetStatus = function (responseObject) {
     } else {
         oscarsStatus.className = "failure";
     }
-    // hack to prevent wrong status message on first page
-    if (!oscarsState.firstPage || (responseObject.method != "UserQuery")) {
+    if (changeStatus || !responseObject.success) {
         oscarsStatus.innerHTML = responseObject.status;
-        oscarsState.firstPage = false;
     }
     if (!responseObject.success) {
         return false;

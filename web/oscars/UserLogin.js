@@ -1,7 +1,7 @@
 /*
 UserLogin.js:   Handles user login.  Displays all tabs if user authenticated.
                 Note that all security is enforced on the server side.
-Last modified:  May 19, 2008
+Last modified:  May 30, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
@@ -33,14 +33,13 @@ oscars.UserLogin.authenticateUser = function () {
 
 // handles reply from AuthenticateUser servlet
 oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
-    if (!oscars.Form.resetStatus(responseObject)) {
+    if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
     var sessionPane = dijit.byId("sessionPane");
     var userNameInput = dojo.byId("userName");
     oscarsState.login = userNameInput.value;
-    oscarsState.firstPage = true;
     // toggle display of login/logout section of page
     var loginSection = dojo.byId("loginSection");
     loginSection.style.display = "none"; 
