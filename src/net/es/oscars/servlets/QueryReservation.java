@@ -2,6 +2,9 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
@@ -102,6 +105,8 @@ public class QueryReservation extends HttpServlet {
         contentSection(Map outputMap, Reservation resv, String userName,
                        boolean internalIntradomainHops) {
 
+        InetAddress inetAddress = null;
+        String hostName = null;
         Long longParam = null;
         Integer intParam = null;
         String strParam = null;
@@ -149,8 +154,22 @@ public class QueryReservation extends HttpServlet {
                               "Warning: No VLAN tag present");
             }
         } else if (layer3Data != null) {
-            outputMap.put("sourceReplace", layer3Data.getSrcHost());
-            outputMap.put("destinationReplace", layer3Data.getDestHost());
+            strParam = layer3Data.getSrcHost();
+            try {
+                inetAddress = InetAddress.getByName(strParam);
+                hostName = inetAddress.getHostName();
+            } catch (UnknownHostException e) {
+                hostName = strParam;
+            }
+            outputMap.put("sourceReplace", hostName);
+            strParam = layer3Data.getDestHost();
+            try {
+                inetAddress = InetAddress.getByName(strParam);
+                hostName = inetAddress.getHostName();
+            } catch (UnknownHostException e) {
+                hostName = strParam;
+            }
+            outputMap.put("destinationReplace", hostName);
             intParam = layer3Data.getSrcIpPort();
             if ((intParam != null) && (intParam != 0)) {
                 outputMap.put("sourcePortReplace", intParam);

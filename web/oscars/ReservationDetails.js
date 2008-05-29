@@ -100,9 +100,12 @@ oscars.ReservationDetails.cloneReservation = function () {
             // get contents of text element in td (hop)
             pathStr += trNodes[i].firstChild.firstChild.data + "\n";
         }
-        // set path text area on create reservation page
-        var textareaWidget = dijit.byId("explicitPath");
-        textareaWidget.setValue(pathStr);
+        // don't clone layer 3 if no longer valid
+        if (pathStr.match(/Out of date IP/) == null) {
+            // set path text area on create reservation page
+            var textareaWidget = dijit.byId("explicitPath");
+            textareaWidget.setValue(pathStr);
+        }
     }
     node = dojo.byId("vlanReplace");
     if (oscars.Utils.isBlank(node.innerHTML)) {
@@ -123,6 +126,8 @@ oscars.ReservationDetails.cloneReservation = function () {
     } else {
         var radioWidget = dijit.byId("layer3");
         radioWidget.setValue(true);
+        // show layer 3 parameters
+        oscars.ReservationCreate.toggleLayer("layer3");
         node = dojo.byId("sourcePortReplace");
         dijit.byId("srcPort").setValue(node.innerHTML);
         node = dojo.byId("destinationPortReplace");
@@ -145,6 +150,10 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
     }
     var mainTabContainer = dijit.byId("mainTabContainer");
     if (responseObject.method == "QueryReservation") {
+        // reset node which indicates whether layer 2 or layer 3 before
+        // applying results of query
+        var node = dojo.byId("vlanReplace");
+        node.innerHTML = "";
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
         // for displaying only layer 2 or layer 3 fields
