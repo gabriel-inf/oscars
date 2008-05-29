@@ -456,7 +456,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             throws PathfinderException {
         this.log.debug("findPathBetween.start");
 
-        DomainDAO domDAO = new DomainDAO("bss");
+        DomainDAO domDAO = new DomainDAO(this.dbname);
         Link srcLink = domDAO.getFullyQualifiedLink(src);
         Link dstLink = domDAO.getFullyQualifiedLink(dst);
         if (srcLink == null) {
