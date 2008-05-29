@@ -145,7 +145,7 @@ public class ReservationManagerTest {
         seconds += 3600;
         resv.setEndTime(seconds);
         try {
-            this.rm.modify(resv, resv.getLogin(), pathInfo);
+            this.rm.modify(resv, resv.getLogin(), null, 1, pathInfo);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw(ex);
@@ -246,7 +246,7 @@ public class ReservationManagerTest {
         }
         try {
             reservation = this.rm.query(testResv.getGlobalReservationId(),
-                                        testResv.getLogin(), true);
+                                        testResv.getLogin(), null, 1);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -266,7 +266,7 @@ public class ReservationManagerTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = this.rm.list(login, logins, null, null,
+            reservations = this.rm.list(login, null, 1, null, null,
                                         null, null, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
@@ -285,7 +285,7 @@ public class ReservationManagerTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = this.rm.list(login, logins, null, null, null, null,
+            reservations = this.rm.list(login, null, 3, null, null, null, null,
                                         null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
@@ -304,7 +304,7 @@ public class ReservationManagerTest {
             dao.queryByParam("description", LAYER2_DESCRIPTION);
         try {
             this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
-                           true);
+                           null, 1);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;

@@ -75,14 +75,13 @@ public class TopologyXMLExporterTest {
             outputStream.println(output);
         }
         outputStream.close();
-        this.sf.getCurrentSession().getTransaction().commit();
         // do topology export
         //String urn = "urn:ogf:network:domain=" + localDomain.getTopologyIdent();
         String urn = localDomain.getTopologyIdent();
-        // TopologyXMLExporter has its own session factory
         TopologyXMLExporter exporter = new TopologyXMLExporter(this.dbname);
         
         Document doc = exporter.getTopology(urn);
+        this.sf.getCurrentSession().getTransaction().commit();
 
         fname = GlobalParams.getExportedTopologyFname();
         FileWriter writer = new FileWriter(fname);
