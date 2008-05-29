@@ -98,8 +98,8 @@ public class ModifyReservation extends HttpServlet {
         try {
             // currently allUsers here is redundant, but that will probably
             // change in the future
-            Reservation persistentResv = rm.modify(resv, userName, allUsers,
-                                                   pathInfo);
+            Reservation persistentResv = rm.modify(resv, userName, institution,
+                                                   authVal.ordinal(),pathInfo);
             tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response

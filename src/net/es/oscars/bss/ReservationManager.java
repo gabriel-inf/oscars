@@ -164,28 +164,38 @@ public class ReservationManager {
      *
      * @param gri string with reservation global reservation id
      * @param login  string with login name of user
+     * @param institution string with institution of caller
+     * @param constraint indicates which reservations may be viewed
+     *         1 means all reservations for all users
+     *         2 means only for users at the same institution
+     *         3 means only the callers reservations
+     *         4 means both site and self reservations
      * @return reservation with cancellation status
      * @throws BSSException
      */
-    public Reservation cancel(String gri, String login, boolean allUsers)
+    public Reservation cancel(String gri, String login, String institution, 
+            int constraint)
             throws BSSException {
 
         this.rsvLogger.redirect(gri);
+        UserConstraint uc= mapConstraint(constraint);
+        
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String newStatus = null;
 
-        this.log.info("cancel.start: " + gri + " login: " + login + " allUsers is " + allUsers);
+        this.log.info("cancel.start: " + gri + " login: " + login + " institution: " + 
+                institution + " constraint: " + uc.toString());
 
         Reservation resv = dao.query(gri);
         if (resv == null) {
             throw new BSSException(
                 "No current reservation with GRI: " + gri);
         }
-        if (!allUsers) {
-            if  (!resv.getLogin().equals(login)) {
-                throw new BSSException ("cancel reservation: permission denied");
-            }
+        if (!checkAuth(uc,resv,login,institution) ) {
+            throw new BSSException(
+                    "cancelReservtion: permission denied");
         }
+
         String prevStatus = resv.getStatus();
         if (prevStatus.equals("FINISHED")) {
             throw new BSSException(
@@ -252,12 +262,13 @@ public class ReservationManager {
      * 	    belong to the same site as the requester<br>
      * SELFONLY  means the requested action is allowed only on objects that
      *      belong to the requester.
-     *      
+     *  SITEANDSELF the requested action is allowed on objects that
+     *      belong to the requester or to his site   
      * @author mrt
      *
      */
     
-    public enum UserConstraint { DENIED, ALLUSERS, MYSITE, SELFONLY };
+    public enum UserConstraint { DENIED, ALLUSERS, MYSITE, SELFONLY, SITEANDSELF };
 
     /**
      * Given a reservation GRI, queries the database and returns the
@@ -270,6 +281,7 @@ public class ReservationManager {
      *         1 means all reservations for all users
      *         2 means only for users at the same institution
      *         3 means only the callers reservations
+     *         4 means both site and self reservations
      * @return resv corresponding reservation instance, if any
      * @throws BSSException
      */
@@ -277,39 +289,16 @@ public class ReservationManager {
             throws BSSException {
 
         Reservation resv = null;
-        UserConstraint uc = null;; 
-        switch (constraint) {
-            case 1: uc=UserConstraint.ALLUSERS; break;
-            case 2: uc=UserConstraint.MYSITE; break;
-            case 3: uc=UserConstraint.SELFONLY;
-        }
+        UserConstraint uc= mapConstraint(constraint);
 
-        this.log.info("query.start: " + gri + " login: " + login + " userConstraint is " + uc.toString());
+        this.log.info("query.start: " + gri + " login: " + login + " userConstraint: " + uc.toString());
         ReservationDAO dao = new ReservationDAO(this.dbname);
         resv = dao.query(gri);
         if (resv == null) {
             throw new BSSException("Reservation not found: " + gri);
         }
-        if (uc.equals(UserConstraint.SELFONLY)) {
-            this.log.debug("reservation login is " + resv.getLogin());
-            if  (!resv.getLogin().equals(login)) {
-                throw new BSSException ("query reservation: permission denied");
-            }
-        }
-        if (uc.equals(UserConstraint.MYSITE)){
-
-             // get the sites associated the source and destination of the reservation
-            String sourceSite = this.sourceSite(resv);
-            this.log.debug("sourceSite is " + sourceSite);
-            if (!sourceSite.equals(institution)) {
-        	String destSite = this.destSite(resv);
-            this.log.debug("destinationSite is " + destSite);
-        	if (!destSite.equals(institution)){
-        	    this.log.debug("institution is " + institution + ": reservation source is " + sourceSite + ": destination is " 
-        		    + destSite);
-        	    throw new BSSException ("query reservation: permission denied");
-        	}
-            }
+        if (!checkAuth(uc,resv,login,institution)) {
+            throw new BSSException ("query reservation: permission denied");
         }
         this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
@@ -323,14 +312,23 @@ public class ReservationManager {
      *
      * @param resv reservation instance modified in place
      * @param login string with login name
-     * @param allUsers boolean indicating if can modify reservations for any user
+     * @param institution string with institution of caller
+     * @param constraint indicates which reservations may be viewed
+     *         1 means all reservations for all users
+     *         2 means only for users at the same institution
+     *         3 means only the callers reservations
+     *         4 means both site and self reservations
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation modify(Reservation resv, String login, boolean allUsers,
-                              PathInfo pathInfo)
+    public Reservation modify(Reservation resv, String login, String institution,
+            int constraint, PathInfo pathInfo)
             throws  BSSException {
-        this.log.info("modify.start");
+        
+        UserConstraint uc = mapConstraint(constraint);
+        this.log.info("modify.start: login: " + login + " institution: " + 
+                institution + " constraint: " + uc.toString());
+
         // need to set this before validation
         resv.setLogin(login);
         ParamValidator paramValidator = new ParamValidator();
@@ -347,11 +345,9 @@ public class ReservationManager {
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
         }
-        if (!allUsers) {
-            this.log.debug("current login is " + persistentResv.getLogin());
-            if  (!persistentResv.getLogin().equals(login)) {
-                throw new BSSException("modify reservation: permission denied");
-            }
+
+        if (!checkAuth(uc,persistentResv,login,institution)) {
+            throw new BSSException("modify reservation: permission denied");
         }
 
         // handle times
@@ -434,13 +430,12 @@ public class ReservationManager {
 
    /**
      * @param login String with user's login name
-     *
      * @param institution String with name of user's institution
-     * 
      * @param constraint int indicates which reservations may be viewed
      *         1 means all reservations for all users
      *         2 means only for users at the same institution
      *         3 means only the callers reservations
+     *         3 means the caller's reservations and ones at the same institution
      *
      * @param statuses a list of reservation statuses. If not null or empty,
      * results will only include reservations with one of these statuses.
@@ -473,13 +468,9 @@ public class ReservationManager {
         List<Reservation> reservations = null;
         List<String> loginIds = new ArrayList<String>();
         List<Reservation> authResv = new LinkedList<Reservation>();
-        UserConstraint uc = null;; 
-        switch (constraint) {
-            case 1: uc=UserConstraint.ALLUSERS; break;
-            case 2: uc=UserConstraint.MYSITE; break;
-            case 3: uc=UserConstraint.SELFONLY;
-        }
-        this.log.info("list.start, login: " + login + "constraint: " + constraint);
+        
+        UserConstraint uc = mapConstraint(constraint);
+        this.log.info("list.start, login: " + login + " constraint: " + constraint);
 
         if (uc.equals(UserConstraint.SELFONLY)){
             loginIds.add(login);
@@ -488,18 +479,26 @@ public class ReservationManager {
         reservations = dao.list(loginIds, statuses, description, links,
                                 vlanTags, startTime, endTime);
         
-        if (uc.equals(UserConstraint.MYSITE)){
-            // remove all the reservations that do not start or terminate at institution
+        if (uc.equals(UserConstraint.MYSITE) || 
+                uc.equals(UserConstraint.SITEANDSELF)){
+            // keep only reservations that start or terminate at institution 
+            // or belong to user
             String sourceSite = null;
             String destSite = null;
             for (Reservation resv : reservations) {
+                if (uc.equals(UserConstraint.SITEANDSELF)){
+                    if (resv.getLogin().equals(login)){
+                        authResv.add(resv);
+                        continue;
+                    }
+                }
                 sourceSite = this.sourceSite(resv);
                 if (sourceSite.equals(institution)) {
                     authResv.add(resv);
                 } else {
                     destSite = this.destSite(resv);
                     if (destSite.equals(institution)){
-                        authResv.add(resv);
+                            authResv.add(resv);
                     } 
                 }
             }
@@ -1178,5 +1177,61 @@ public class ReservationManager {
 
         resv.setToken(token);
         token.setReservation(resv);
+    }
+    
+    /**
+     * maps the values of UserManager.authValue to ReservationManager.UserConstraint
+     * @param ordVal
+     * @return UserConstraint - with the appropriate value
+     */
+    private UserConstraint mapConstraint(int ordVal) {
+        UserConstraint uc = null;
+        switch (ordVal) {
+            case 1: uc=UserConstraint.ALLUSERS; break;
+            case 2: uc=UserConstraint.MYSITE; break;
+            case 3: uc=UserConstraint.SELFONLY; break;
+            case 4: uc=UserConstraint.SITEANDSELF;
+        }
+        return uc;
+    }
+    
+    /**
+     * Checks to see if the reservation meets the constraint
+     * @param uc UserConstraint one of ALLUSERS, MYSITE, SELFONLY, SITEANDSELF
+     * @param resv Reservation to be checked
+     * @param login String user's login name
+     * @param institution String name of user's institution
+     * @return Boolean allowed
+     */
+    private Boolean checkAuth(UserConstraint uc, Reservation resv, 
+            String login, String institution) {
+ 
+        if (uc.equals(UserConstraint.ALLUSERS)) {
+            return true;
+        }
+        if (uc.equals(UserConstraint.SELFONLY) || 
+                uc.equals(UserConstraint.SITEANDSELF)) {
+            this.log.debug("checkAuth: reservation login is " + resv.getLogin());
+            if  (resv.getLogin().equals(login)) {
+                 return true;
+            }
+        }
+        if (uc.equals(UserConstraint.MYSITE) ||
+                uc.equals(UserConstraint.SITEANDSELF)){
+
+             // get the sites associated the source or destination of the reservation
+            String sourceSite = this.sourceSite(resv);
+            this.log.debug("checkAuth: sourceSite is " + sourceSite);
+            if (sourceSite.equals(institution)) {
+                return true;
+            } else {
+                String destSite = this.destSite(resv);
+                this.log.debug("checkAuth: destinationSite is " + destSite);
+                if (destSite.equals(institution)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

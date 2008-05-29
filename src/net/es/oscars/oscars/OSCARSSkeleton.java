@@ -127,21 +127,18 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         GlobalReservationId params = request.getCancelReservation();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
+        if (authVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("cancelReservation: permission denied");
+        }
+        String institution = this.userMgr.getInstitution(login);
         // read-only
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                this.log.info("denied");
-                throw new AAAFaultMessage("OSCARSSkeleton:cancelReservation: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
-        }
 
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.cancel(params, login,allUsers);
+            reply = this.adapter.cancel(params,login,institution,authVal.ordinal());
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("cancelReservation caught BSSException: " + e.getMessage());
@@ -180,12 +177,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         GlobalReservationId gri = request.getQueryReservation();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "query");
-        aaa.getTransaction().commit();
-        if (authVal == AuthValue.DENIED) {
+        if (authVal.equals(AuthValue.DENIED)) {
                 throw new AAAFaultMessage("queryReservation: permission denied");
         }
         String institution = this.userMgr.getInstitution(login);
-        
+        aaa.getTransaction().commit();
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
@@ -221,26 +217,22 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ModifyReservationResponse response = new ModifyReservationResponse();
         ModifyResContent params = request.getModifyReservation();
         String login = this.checkUser();
-        boolean allUsers = false;
 
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
-        aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                this.log.info("denied");
-                throw new AAAFaultMessage("OSCARSSkeleton:modifyReservation: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
+        if (authVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("modifyReservation: permission denied");
         }
+        String institution = this.userMgr.getInstitution(login);
+        aaa.getTransaction().commit();
 
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.modify(params, login, allUsers);
+            reply = this.adapter.modify(params, login, institution, authVal.ordinal() );
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
@@ -284,8 +276,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         aaa.beginTransaction();
 
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
-        if (authVal == AuthValue.DENIED) {
-            throw new AAAFaultMessage("queryReservation: permission denied");
+        if (authVal.equals(AuthValue.DENIED)) {
+            throw new AAAFaultMessage("listReservations: permission denied");
         }
         String institution = this.userMgr.getInstitution(login);
         aaa.getTransaction().commit();

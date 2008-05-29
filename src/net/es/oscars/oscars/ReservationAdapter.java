@@ -143,11 +143,17 @@ public class ReservationAdapter {
      *
      * @param params ModifyResContent instance with with request params.
      * @param login String with user's login name
+     * @param institution String with name of user's institution
+     * @param userConstraint int indicates which reservations may be viewed
+     *         1 means reservations for all users
+     *         2 means reservation only for users at the same institution
+     *         3 means only the caller's reservations
+     *         4 means caller's reservation or at caller's site
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
     public ModifyResReply modify(ModifyResContent params, String login,
-                                 boolean allUsers)
+                                 String institution, int userConstraint )
             throws BSSException, InterdomainException {
 
         this.log.info("modify.start");
@@ -160,7 +166,7 @@ public class ReservationAdapter {
         ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
-            Reservation persistentResv = this.rm.modify(resv, login, allUsers,
+            Reservation persistentResv = this.rm.modify(resv, login, institution, userConstraint,
                                                         pathInfo);
             this.tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
@@ -208,12 +214,17 @@ public class ReservationAdapter {
      *
      * @param params GlobalReservationId instance with with request params.
      * @param login String with user's login name
-     * @param allUsers boolean true if user can cancel other user's reservations
+     * @param institution String with name of user's institution
+     * @param userConstraint int indicates which reservations may be viewed
+     *         1 means reservations for all users
+     *         2 means reservation only for users at the same institution
+     *         3 means only the caller's reservations
+     *         4 means caller's reservation or at caller's site
      * @return ResStatus reply CancelReservationResponse
      * @throws BSSException
      */
     public String cancel(GlobalReservationId params, String login,
-                         boolean allUsers)
+                         String institution, int userConstraint)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;
@@ -222,7 +233,7 @@ public class ReservationAdapter {
 
         String gri = params.getGri();
         this.log.info("cancel.start: " + gri);
-        resv = this.rm.cancel(gri, login, allUsers);
+        resv = this.rm.cancel(gri, login, institution, userConstraint);
         this.log.info("cancel.finish " +
                       "GRI: " + gri + ", status: "  + resv.getStatus());
         // checks whether next domain should be contacted, forwards to
@@ -260,7 +271,8 @@ public class ReservationAdapter {
      * @param userConstraint int indicates which reservations may be viewed
      *         1 means reservations for all users
      *         2 means reservation only for users at the same institution
-     *         3 means only the callers reservations
+     *         3 means only the caller's reservations
+     *         4 means caller's reservation or at caller's site
      * @return reply ResDetails instance encapsulating library reply.
      * @throws BSSException
      */
@@ -306,9 +318,11 @@ public class ReservationAdapter {
      * 
      * @param institution String with the user's institution name
      *
-     * @param int constraint that specifies what 
-     * only include reservations submitted by these specific users. If
-     * null / empty, results will include reservations by all users.
+     * @param userConstraint int indicates which reservations may be viewed
+     *         1 means reservations for all users
+     *         2 means reservation only for users at the same institution
+     *         3 means only the caller's reservations
+     *         4 means caller's reservation or at caller's site
      *
      * @param request the listRequest received by OSCARSSkeleton. Includes an
      *  array of reservation statuses. a list of topology identifiers, a list
@@ -340,7 +354,7 @@ public class ReservationAdapter {
      * @return reply ListReply encapsulating library reply.
      * @throws BSSException
      */
-    public ListReply list(String login, String institution, int constraint,
+    public ListReply list(String login, String institution, int userConstraint,
         ListRequest request) throws BSSException {
         ListReply reply = null;
         List<Reservation> reservations = null;
@@ -411,7 +425,7 @@ public class ReservationAdapter {
         }
         String description = request.getDescription();
         reservations =
-            this.rm.list(login, institution, constraint, statuses, description, inLinks, 
+            this.rm.list(login, institution, userConstraint, statuses, description, inLinks, 
                          inVlanTags, startTime, endTime);
 
         reply = this.tc.reservationToListReply(reservations,

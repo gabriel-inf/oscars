@@ -341,11 +341,11 @@ public class UserManager {
      * 	    belong to the same site as the requester<br>
      * SELFONLY  means the requested action is allowed only on objects that
      *      belong to the requester.
-     *      
+     * SITEANDSELF means the requested action is allowed on both site and self objects.    
      * @author mrt
      *
      */
-    public enum AuthValue { DENIED, ALLUSERS, MYSITE, SELFONLY };
+    public enum AuthValue { DENIED, ALLUSERS, MYSITE, SELFONLY, SITEANDSELF};
     
    
     /**
@@ -360,7 +360,7 @@ public class UserManager {
      * @param userName a string with the login name of the user
      * @param resourceName a string identifying a resource
      * @param permissionName a string identifying a permission
-     * @return one of DENIED, SELFONLY, SITEONLY, ALLUSERS
+     * @return one of DENIED, SELFONLY, SITEONLY, ALLUSERS, SITEANDSELF
      */
     public AuthValue checkAccess(String userName, String resourceName,
                                  String permissionName) {
@@ -370,6 +370,8 @@ public class UserManager {
         UserAttribute currentAttr = null;
         AuthValue retVal =null;
         String retValSt = "DENIED";
+        Boolean site = false;
+        Boolean self = false;
          
         this.log.info("checkAccess.start");
         if (!this.getIds(userName, resourceName, permissionName)) {
@@ -399,19 +401,14 @@ public class UserManager {
                 auth = (Authorization) authItr.next();
                 if (auth.getConstraintName() == null) {
                     // found an authorization with no constraints,
-                    // user is allowed for self only unless something better has  been found
+                    // user is allowed for self only 
                     //this.log.debug("attrId: authorized for SELFONLY");
-                    if (retVal == null) {
-                        retVal =  AuthValue.SELFONLY;
-                        retValSt = retVal.toString();
-                    }
+                    self=true;
                 } else if (auth.getConstraintName().equals("my-site")) {
                     if (auth.getConstraintValue().intValue() == 1) {
                         // found a constrained authorization, remember it
-                        // and see if we can do better
+                        site=true;
                         this.log.debug("checkAccess MYSITE access");
-                        retVal = AuthValue.MYSITE;
-                        retValSt = retVal.toString();;
                     }
                 }
                 else if (auth.getConstraintName().equals("all-users")) {
@@ -422,16 +419,19 @@ public class UserManager {
                         return AuthValue.ALLUSERS;
                     } else {
                         // found a self-only constrained authorization, remember it
-                        // and see if we can do better
-                        if (retVal == null) {  // haven't found anything better yet 
-                            this.log.debug("checkAccess SELFONLY access");
-                            retVal = AuthValue.SELFONLY;
-                            retValSt = retVal.toString();
-                        }
+                        self=true;
                     }
                 }
             } // end of all authorizations for this attribute
         } // end of all attributes
+        if (site && self) { 
+            retVal=AuthValue.SITEANDSELF;
+        } else if (site) {
+            retVal = AuthValue.MYSITE;
+        } else if (self) {
+            retVal = AuthValue.SELFONLY;
+        }
+        retValSt = retVal.toString();
         if (retVal == null ) {
             this.log.info("No authorizations found for user " + userName +
                           ", permission " + permissionName +

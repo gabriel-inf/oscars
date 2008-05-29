@@ -46,7 +46,7 @@ public class CancelReservation extends HttpServlet {
             utils.handleFailure(out, "no permission to cancel Reservations",  aaa, null);
             return;
         }
-        if (authVal == AuthValue.ALLUSERS) {allUsers=true;}
+        String institution = userMgr.getInstitution(userName);
         aaa.getTransaction().commit();
         
         String gri = request.getParameter("gri");
@@ -56,7 +56,7 @@ public class CancelReservation extends HttpServlet {
         bss.beginTransaction();
         String errMessage = null;
         try {
-        	reservation = rm.cancel(gri, userName, allUsers);
+        	reservation = rm.cancel(gri, userName, institution, authVal.ordinal());
             String remoteStatus = forwarder.cancel(reservation);
             rm.finalizeCancel(reservation, remoteStatus);
         } catch (BSSException e) {
