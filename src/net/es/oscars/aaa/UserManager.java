@@ -392,7 +392,7 @@ public class UserManager {
             auths = authDAO.query(currentAttr.getAttributeId(),
                                   this.resourceId, this.permissionId);
             if (auths.isEmpty()) { 
-                //this.log.debug("attrId:  no authorization" );
+                this.log.debug("attrId:  no authorization" );
                 continue;
             } 
             Iterator authItr = auths.iterator();
@@ -402,20 +402,21 @@ public class UserManager {
                 if (auth.getConstraintName() == null) {
                     // found an authorization with no constraints,
                     // user is allowed for self only 
-                    //this.log.debug("attrId: authorized for SELFONLY");
+                    // this.log.debug("attrId: authorized for SELFONLY");
                     self=true;
                 } else if (auth.getConstraintName().equals("my-site")) {
                     if (auth.getConstraintValue().intValue() == 1) {
                         // found a constrained authorization, remember it
                         site=true;
-                        this.log.debug("checkAccess MYSITE access");
+                        // this.log.debug("checkAccess MYSITE access");
                     }
                 }
                 else if (auth.getConstraintName().equals("all-users")) {
                     if (auth.getConstraintValue().intValue() == 1) {
                         // found an authorization with allUsers allowed,
                         // highest level access, so return it
-                        this.log.debug("checkAccess:finish ALLUSERS access");
+                        this.log.debug("checkAccess:finish ALLUSERS access for "
+                                + permissionName + " on " + resourceName);
                         return AuthValue.ALLUSERS;
                     } else {
                         // found a self-only constrained authorization, remember it
@@ -431,15 +432,16 @@ public class UserManager {
         } else if (self) {
             retVal = AuthValue.SELFONLY;
         }
-        retValSt = retVal.toString();
+
         if (retVal == null ) {
             this.log.info("No authorizations found for user " + userName +
                           ", permission " + permissionName +
                           ", resource " + resourceName);
             retVal = AuthValue.DENIED;
-            retValSt = retVal.toString();
         }
-        this.log.info("checkAccess.finish: " + retValSt + " access");
+        retValSt = retVal.toString();
+        this.log.info("checkAccess.finish: " + retValSt + " access for " 
+                + permissionName + " on " + resourceName);
         return retVal;
     }   
     /**
