@@ -93,8 +93,6 @@ public class TopologyXMLExporter {
      */
     @SuppressWarnings("unchecked")
     protected Document createXML(String domainId) {
-        DomainDAO domDAO = new DomainDAO(this.dbname);
-        Domain domDB = domDAO.fromTopologyIdent(domainId);
 
         Element topoXML = new Element("topology", this.ns);
         topoXML.setAttribute("id", "OSCARS topology"); // TODO: specify this
@@ -105,8 +103,19 @@ public class TopologyXMLExporter {
         Document doc = new Document(topoXML);
         Element domXML;
 
-        domXML = this.exportDomain(domDB);
-        topoXML.addContent(domXML);
+        DomainDAO domDAO = new DomainDAO(this.dbname);
+
+        if (domainId != null && !domainId.equals(""))  {
+            Domain domDB = domDAO.fromTopologyIdent(domainId);
+            domXML = this.exportDomain(domDB);
+            topoXML.addContent(domXML);
+        } else {
+            for (Domain domDB: domDAO.list()) {
+                domXML = this.exportDomain(domDB);
+                topoXML.addContent(domXML);
+            }
+        }
+
 
         return doc;
     }
