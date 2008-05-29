@@ -19,7 +19,6 @@ import java.util.*;
  */
 public class TopologyXMLExporter {
     private Logger log;
-    private Session ses;
     private Properties props;
     private Namespace ns;
     private String nsUri;
@@ -57,15 +56,15 @@ public class TopologyXMLExporter {
      * @param query the query to perform against the DB
      * @return The topology JDOM Document object
      */
-    public Document getTopology(String query) {
+    public Document getTopology(String domainId) {
 
-        this.ses = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
+//        this.ses = HibernateUtil.getSessionFactory(this.dbname).getCurrentSession();
 
 //        Transaction tx = this.ses.beginTransaction();
 
         this.log.debug("Start");
 
-        Document doc = this.createXML(query);
+        Document doc = this.createXML(domainId);
 
 //        tx.commit();
         this.log.debug("Done");
@@ -93,33 +92,21 @@ public class TopologyXMLExporter {
      * @return The topology JDOM Document object
      */
     @SuppressWarnings("unchecked")
-    protected Document createXML(String query) {
-        String domTopoIdent = query; // TODO: how will queries look like?
+    protected Document createXML(String domainId) {
+        DomainDAO domDAO = new DomainDAO(this.dbname);
+        Domain domDB = domDAO.fromTopologyIdent(domainId);
+
         Element topoXML = new Element("topology", this.ns);
         topoXML.setAttribute("id", "OSCARS topology"); // TODO: specify this
-
         Element idcXML = new Element("idcId", this.ns);
 
         idcXML.addContent("placeholder"); // TODO: how do we determine this?
         topoXML.addContent(idcXML);
-
         Document doc = new Document(topoXML);
         Element domXML;
-        List<Domain> domains;
 
-        if (domTopoIdent.equals("")) {
-            query = "from Domain";
-            domains = this.ses.createQuery(query).list();
-        } else {
-            query = "from Domain as dbobj where topologyIdent=:topoIdent";
-            domains = this.ses.createQuery(query)
-                              .setString("topoIdent", domTopoIdent).list();
-        }
-
-        for (Domain domDB : domains) {
-            domXML = this.exportDomain(domDB);
-            topoXML.addContent(domXML);
-        }
+        domXML = this.exportDomain(domDB);
+        topoXML.addContent(domXML);
 
         return doc;
     }
