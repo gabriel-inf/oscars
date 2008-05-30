@@ -60,9 +60,9 @@ public class Utils {
                 nodeName = link.getPort().getNode().getTopologyIdent();
                 ipaddr = ipaddrDAO.fromLink(link);
                 if ((ipaddr == null) || (ipaddr.getIP() == null)) {
-                    sb.append(nodeName + ": " + "*Out of date IP*");
+                    sb.append("*Out of date IP*");
                 } else {
-                    sb.append(nodeName + ": " + ipaddr.getIP());
+                    sb.append(ipaddr.getIP());
                 }
             }
             pathElem = pathElem.getNextElem();
