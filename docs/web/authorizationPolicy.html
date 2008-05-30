@@ -42,7 +42,7 @@ registered users are and what attributes each one has. As a result, it
 needs to control who may manage users and their permissions, so users
 become a controlled resource in addition to bandwidth. A final resource
 is the internal topology, since we want control who may view the actual
-topology and who may see and abstracted version of it. </p>
+topology and who may see an abstracted version of it. </p>
 <p>The underlying guideline of our design and implementation is to keep
 authorization policy and implementation as simple as possible. We have
 tried to make the granularity of access decisions no finer than is
@@ -87,9 +87,13 @@ control with respect to the resources that OSCARS controls.<br>
   <li>query own reservations</li>
   <li>cancel, modify own reservation</li>
   <li>signal own reservation</li>
+  <li>list all reservations starting or teminating at a site<br>
+  </li>
+  <li>query any reservations starting or teminating at a site</li>
+  <li>cancel, modify any reservations starting or teminating at a site </li>
   <li>list all reservations</li>
   <li>query any reservations</li>
-  <li>cancel, modify any reservations </li>
+  <li>cancel, modify any reservations</li>
   <li>signal any reservations</li>
 </ul>
 <span style="font-style: italic;">(signaling instantiates a reservation
@@ -114,7 +118,8 @@ The following tables define the components for authorization:<br>
 <ul>
   <li><span style="font-weight: bold;">users </span>&#8211; contains
 an entry for each registered user, containing among other things, user
-loginId, certSubject and certIssuer</li>
+loginId, institution to which the user belongs, certSubject and
+certIssuer</li>
   <li><span style="font-weight: bold;">resources</span> &#8211; has
 three entries: users, reservations, topology where topology is the
 information about specific paths and routers.</li>
@@ -141,10 +146,12 @@ circuit for reservation to be instantiated or torn down.<br>
 for attributes on which authorization
 is
 granted, e.g. OSCARS-user, OSCARS-engineer, OSCARS-admin,
-OSCARS-service, OSCARS-operator
-and explicit user attributes for users with specific permissions, e.g.
-user-david. There is an attribute-type field as well which is currently
-not used.<br>
+OSCARS-service, OSCARS-operator,OSCARS-siteAdmin. There is an
+attribute-type field which is set to group for all these attributes. It
+is possible to define explicit user attributes for users with specific
+permissions, e.g.
+user-david with the attribute type user. So far we have not found
+the&nbsp; need for any user attributes.<br>
   </li>
   <li><span style="font-weight: bold;"> userAttributes</span> -
 maps userIds to the attributes they
@@ -158,9 +165,9 @@ applies to create and modify reservation</li>
       <li> <span style="font-weight: bold;">max-duration</span>
 (int),
 applies to create and modify reservation</li>
-      <li> <span style="font-weight: bold;">specify-path-elements
-(boolean), applies to create and modify
-reservation</span></li>
+      <li> <span style="font-weight: bold;">specify-path-elements </span>(boolean),
+applies to create and modify
+reservation</li>
       <li><span style="font-weight: bold;">specify-gri</span> (boolean)
 can a Global Reservation Identifier be
 specified
@@ -168,12 +175,16 @@ on create reservation</li>
       <li> <span style="font-weight: bold;">all-users </span>(boolean),
 applies to everything except create
 reservation.</li>
+      <li><span style="font-weight: bold;">my-site</span> (boolean)
+currently applies only to list, query, cancel and modify reservations<br>
+      </li>
     </ul>
   </li>
   <li><span style="font-weight: bold;">authorization</span> - combines
 these elements into a row for each
 action that each user is permitted. Each row consists of an attribute
-id, a resource id, a permission id and optionally a constraint that
+id, a resource id, a permission id and optionally a constraint and
+value that
 applies to this authorization. <br>
   </li>
 </ul>
@@ -185,13 +196,7 @@ CMS-member.<br>
 The advantage of attributes is that it allows a set of authorizations
 to be crafted which can then be applied to a class of users. Otherwise,
 each time a new user registers, he must be given the correct and
-complete set of permissions for whatever he wants to do. In our example
-below, if a new network engineer, Ned, arrives, we would need to
-duplicate all the authorization entries that Ed has for him. If we had
-just entered those authorizations for "OSCARS-engineer" then we would
-just need to assign Ned that attribute. It also makes the tables
-smaller and thus may make it easier to understand the global picture of
-who has what permissions.<br>
+complete set of permissions for whatever he wants to do. <br>
 <br>
 With attribute-based authorization, the access check will need to look
 up user attributes, then look up authorizations for each attribute the
@@ -199,14 +204,11 @@ user has and merge them (take the maximum of the permissions). <br>
 <br>
 <h3>Default behaviors</h3>
 <ul>
-  <li>If a user has no entry in the user table, any attempted OSCARS
+  <li>If a user has no entry in the user table or has no attributes in
+the userAttribute table, any attempted OSCARS
 access
 will be rejected immediately by Oscars:OscarsSkeleton:checkUser or
 Servlets:AuthenticateUser</li>
-  <li>If there are no attributes for the user in the userAttribute
-table
-access will be rejected immediately by Oscars:OscarsSkeleton:checkUser
-or Servlets:AuthenticateUser</li>
   <li>If no attribute that the user possesses has an entry for the
 resource/permission pair in the authorization table, the request is
 denied.</li>
@@ -222,6 +224,9 @@ persistent
 reservations are allowed.</li>
     <li>If no all-users constraint is specified, the default is
 false (only access to own information is allowed).</li>
+    <li>If a my-site constraint is specified access to&nbsp;
+information that is site specific is allowed.<br>
+    </li>
     <li>If specify-path-elements is not specified, the default is
 false and
 no routers or hops may be input.</li>
@@ -238,14 +243,12 @@ We have users alice, bob, ed, david chin and andy. Alice and bob have
 all their permissions individually assigned. Ed, chin and andy get all
 their permissions from group attributes. David gets most permissions
 from groups but has one more added individually.
-<p>Note: &lt;ed&gt;,&lt;david&gt;,&lt;chin&gt;, &lt;andy&gt; are
+<p>Note: &lt;ed&gt;,&lt;david&gt;,&lt;chin&gt;, &lt;andy&gt; and
+&lt;bob&gt; are
 indices
 in the users table.<br>
-&lt;OSCARS-eng&gt;&lt;OSCARS-op&gt;,&lt;user-chin&gt;,&lt;user-david&gt;
+&lt;OSCARS-eng&gt;&lt;OSCARS-op&gt;
 are indices in the attributes table.<br>
-A user would only need an "id-entry" in the attribute table if some
-authorization was to be granted explicitly to him. It is suggest that
-a user should get all his authorizations based on group attributes.<br>
 </p>
 <p><span style="font-weight: bold;">attributes Table</span></p>
 <table style="text-align: left; width: 616px; height: 220px;" border="1"
@@ -291,38 +294,25 @@ a user should get all his authorizations based on group attributes.<br>
     <tr>
       <td style="vertical-align: top;">6<br>
       </td>
-      <td style="vertical-align: top;">HOPI-developer</td>
-      <td style="vertical-align: top;">group</td>
+      <td style="vertical-align: top;">OSCARS-siteAdmin<br>
+      </td>
+      <td style="vertical-align: top;">group<br>
+      </td>
     </tr>
     <tr>
       <td style="vertical-align: top;">7<br>
       </td>
-      <td style="vertical-align: top;">user-bob</td>
-      <td style="vertical-align: top;">user</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">8<br>
-      </td>
-      <td style="vertical-align: top;"> user-alice</td>
-      <td style="vertical-align: top;">user<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">9<br>
-      </td>
-      <td style="vertical-align: top;">user-david<br>
-      </td>
-      <td style="vertical-align: top;">user<br>
-      </td>
+      <td style="vertical-align: top;">I2-developer</td>
+      <td style="vertical-align: top;">group</td>
     </tr>
   </tbody>
 </table>
 <h3>userAttributes table</h3>
-<table style="text-align: left; width: 616px; height: 292px;" border="1"
+<table style="text-align: left; width: 616px; height: 220px;" border="1"
  cellpadding="2" cellspacing="0">
   <tbody>
     <tr>
-      <td style="vertical-align: top;">id (int)&nbsp; </td>
+      <td style="vertical-align: top;">id (int)</td>
       <td style="vertical-align: top;">loginId (int) </td>
       <td style="vertical-align: top;">attribute id (int) </td>
     </tr>
@@ -333,17 +323,19 @@ a user should get all his authorizations based on group attributes.<br>
       <td style="vertical-align: top;"> &lt;OSCARS-eng&gt;</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">11<br>
-      </td>
-      <td style="vertical-align: top;">&lt;david&gt; </td>
-      <td style="vertical-align: top;">&lt;user-david&gt; </td>
-    </tr>
-    <tr>
       <td style="vertical-align: top;">2<br>
       </td>
       <td style="vertical-align: top;">&lt;david&gt;<br>
       </td>
       <td style="vertical-align: top;">&lt;OSCARS-user&gt;<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">3<br>
+      </td>
+      <td style="vertical-align: top;">&lt;bob&gt;<br>
+      </td>
+      <td style="vertical-align: top;">&lt;OSCARS-siteAdmin&gt;<br>
       </td>
     </tr>
     <tr>
@@ -362,29 +354,13 @@ a user should get all his authorizations based on group attributes.<br>
       <td style="vertical-align: top;">6<br>
       </td>
       <td style="vertical-align: top;">&lt;andy&gt;&nbsp; </td>
-      <td style="vertical-align: top;">&lt;HOPI-dev&gt; </td>
+      <td style="vertical-align: top;">&lt;I2-dev&gt; </td>
     </tr>
     <tr>
       <td style="vertical-align: top;">7<br>
       </td>
       <td style="vertical-align: top;">&lt;andy&gt;</td>
       <td style="vertical-align: top;">&lt;OSCARS-user&gt;</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">13<br>
-      </td>
-      <td style="vertical-align: top;">&lt;alice&gt;<br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-alice&gt;<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">14<br>
-      </td>
-      <td style="vertical-align: top;">&lt;bob&gt;<br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;<br>
-      </td>
     </tr>
   </tbody>
 </table>
@@ -394,307 +370,14 @@ a user should get all his authorizations based on group attributes.<br>
  cellpadding="2" cellspacing="0">
   <tbody>
     <tr>
-      <td style="vertical-align: top;">id <br>
-(int)<br>
-      </td>
-      <td style="vertical-align: top;">attributeId<br>
-(int)<br>
-      <br>
-      </td>
-      <td style="vertical-align: top;">resource<br>
-      </td>
-      <td style="vertical-align: top;">permission<br>
-      </td>
-      <td style="vertical-align: top;">constraint name<br>
-(string)<br>
-      </td>
+      <td style="vertical-align: top;">id (int) </td>
+      <td style="vertical-align: top;">attributeId&nbsp; (int) </td>
+      <td style="vertical-align: top;">resource </td>
+      <td style="vertical-align: top;">permission </td>
+      <td style="vertical-align: top;">constraint name <br>
+(string) </td>
       <td style="vertical-align: top;">value (int)<br>
-1=true, 0=false<br>
-      <br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">list<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[1]<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">users</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[1]<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">users</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[1]<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">create<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">max-bandwidth<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">10M<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">create<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">max-duration<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">600min<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">list<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">0<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">0<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">all-users<br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">0<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">max-bandwidth
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">10M<br>
-      </td>
-    </tr>
-    <tr>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-alice&gt;</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">modify
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">max-duration
-      </td>
-      <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">600min<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;<br>
-      </td>
-      <td style="vertical-align: top;">users<br>
-      </td>
-      <td style="vertical-align: top;">list<br>
-      </td>
-      <td style="vertical-align: top;">all-users<br>
-      </td>
-      <td style="vertical-align: top;">1<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;</td>
-      <td style="vertical-align: top;">users</td>
-      <td style="vertical-align: top;">query<br>
-      </td>
-      <td style="vertical-align: top;">all-users<br>
-      </td>
-      <td style="vertical-align: top;">1<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;</td>
-      <td style="vertical-align: top;">users</td>
-      <td style="vertical-align: top;">modify<br>
-      </td>
-      <td style="vertical-align: top;">all-users<br>
-      </td>
-      <td style="vertical-align: top;">1<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;</td>
-      <td style="vertical-align: top;">reservations<br>
-      </td>
-      <td style="vertical-align: top;">create<br>
-      </td>
-      <td style="vertical-align: top;">specify-path-elements<br>
-      </td>
-      <td style="vertical-align: top;">0<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;</td>
-      <td style="vertical-align: top;">reservations</td>
-      <td style="vertical-align: top;">list<br>
-      </td>
-      <td style="vertical-align: top;">all-users<br>
-      </td>
-      <td style="vertical-align: top;">1<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;</td>
-      <td style="vertical-align: top;">reservations</td>
-      <td style="vertical-align: top;">query<br>
-      </td>
-      <td style="vertical-align: top;">all-users<br>
-      </td>
-      <td style="vertical-align: top;">1<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;</td>
-      <td style="vertical-align: top;">reservations</td>
-      <td style="vertical-align: top;">modify<br>
-      </td>
-      <td style="vertical-align: top;">all-users<br>
-      </td>
-      <td style="vertical-align: top;">1<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top;">&lt;user-bob&gt;</td>
-      <td style="vertical-align: top;">reservations</td>
-      <td style="vertical-align: top;">modify<br>
-      </td>
-      <td style="vertical-align: top;">specify-path-elements </td>
-      <td style="vertical-align: top;">0<br>
-      </td>
+1=true, 0=false </td>
     </tr>
     <tr>
       <td
@@ -873,7 +556,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td style="vertical-align: top;">query<br>
       </td>
-      <td style="vertical-align: top;">null [2]<br>
+      <td style="vertical-align: top;">null [1]<br>
       </td>
       <td style="vertical-align: top;"><br>
       </td>
@@ -885,7 +568,7 @@ a user should get all his authorizations based on group attributes.<br>
       <td style="vertical-align: top;">users</td>
       <td style="vertical-align: top;">modify<br>
       </td>
-      <td style="vertical-align: top;">null [2]<br>
+      <td style="vertical-align: top;">null [1]<br>
       </td>
       <td style="vertical-align: top;"><br>
       </td>
@@ -927,7 +610,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[2]</td>
+[1]</td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
       </td>
@@ -946,7 +629,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[2]</td>
+[1]</td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
       </td>
@@ -966,7 +649,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[3]<br>
+[2]<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
@@ -985,7 +668,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[3]</td>
+[2]</td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
       </td>
@@ -1003,7 +686,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[3]</td>
+[2]</td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
       </td>
@@ -1021,7 +704,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[3]</td>
+[2]</td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
       </td>
@@ -1041,7 +724,7 @@ a user should get all his authorizations based on group attributes.<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">null
-[3]<br>
+[2]<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
@@ -1101,16 +784,52 @@ a user should get all his authorizations based on group attributes.<br>
  style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
       </td>
       <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;user-david&gt;<br>
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations<br>
       </td>
       <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">create<br>
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">list<br>
       </td>
       <td
- style="vertical-align: top; background-color: rgb(255, 255, 204);">specify-path-elements<br>
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">my-site<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">1<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">query<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">my-site<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">1<br>
+      </td>
+    </tr>
+    <tr>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);"><br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">&lt;OSCARS-siteAdmin&gt;</td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">reservations</td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">modify<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(255, 255, 204);">my-site<br>
       </td>
       <td
  style="vertical-align: top; background-color: rgb(255, 255, 204);">1<br>
@@ -1120,20 +839,14 @@ a user should get all his authorizations based on group attributes.<br>
 </table>
 <br>
 Defaults<br>
-[1] same as all-users=0, selfOnly<br>
-[2] manage and view only his own user info<br>
-[3] unlimited bandwidth and duration, only modify, list, query and
+[1] manage and view only his own user info<br>
+[2] unlimited bandwidth and duration, only modify, list, query and
 signal own
 reservations, not input path components.<br>
 <br>
-Alice is the least privileged. She is allowed to make reservations of a
-limited bandwidth and duration, and only see and modify her own
-information. Bob is the leader of a group making reservations. He is
-allowed to make reservations of unlimited bandwidth, unlimited
-duration, specify ingress, egress and hops and see and manage other
-users and their reservations. Ed is a network engineer. As an
+Ed is a network engineer. As an
 OSCARS-engineer he can make reservations, see, modify and signal all
-reservations, can only see user information,
+reservations, can only see and modify his own user information,
 and has free rein over the topology.&nbsp; An OSCARS operator can view
 everybody's
 reservations&nbsp; and can see and modify only his own user
@@ -1142,9 +855,7 @@ bandwidth
 and duration, view, modify and signal his own reservations and see and
 modify his own user information.
 An OSCARS admin can manage all user information, but not see or modify
-reservations. &lt;user-david&gt; has all the permissions of an OSCARS
-user and OSCARS admin and can also specify path elements when
-creating a reservation.<br>
+reservations. <br>
 <br>
 <h3>CheckAccess Implementation</h3>
 The preferred way to implement access control is to isolate the access
@@ -1159,29 +870,32 @@ modifyReservation.<br>
 <span style="font-weight: bold;">Standard checkAccess method:<br>
 <br>
 </span>
-<code style="font-weight: bold;"><big>AuthValue
+<small><code style="font-weight: bold;"><big>AuthValue
 UserManager.checkAccess(String user, String resource, String
-permission);</big></code>
+permission);</big></code></small>
 <p>Initialize the return value to DENIED<br>
 Lookup user in userAttribute table to get list of all attributes<br>
-For each attribute lookup ((attrId,resource,permission) in
+For each attribute lookup (attrId,resource,permission) in
 authorization table.<br>
 &nbsp;&nbsp;&nbsp; If deny is returned, continue<br>
-&nbsp;&nbsp;&nbsp; If there is no constraint, set returnValue to
+&nbsp;&nbsp;&nbsp; If there is no constraint, remember
 SELFONLY and continue<br>
 &nbsp;&nbsp;&nbsp; If all-users=true is returned, return ALLUSERS<br>
-&nbsp;&nbsp;&nbsp; If all-users=false is returned, set returnValue to
+&nbsp;&nbsp;&nbsp; If all-users=false is returned, remember
 SELFONLY and continue<br>
-At end of loop return SELFONLY or DENIED <br>
+&nbsp;&nbsp;&nbsp; If my-site constraint is found remember SITEONLY and
+continue<br>
+At end of loop check for SELFONLY and/or MYSITE<br>
+Return DENIED, SELFONLY, SITEONLY, SITEANDSELF.
 </p>
 <p><span style="font-weight: bold;">checkAccess method called by
 createReservation and
 modifyReservation:<br>
 <br>
-</span><big><code style="font-weight: bold;">AuthValue
+</span><code style="font-weight: bold;">AuthValue
 UserManager.checkModResAccess(String user,String resource,
 String permission, int ReqBandWidth, int ReqDuration, Boolean
-specify-path-elements);</code></big><br>
+specify-path-elements);</code><br>
 <br>
 Start out with<br>
 &nbsp;&nbsp;&nbsp; ReturnValue = DENIED<br>
