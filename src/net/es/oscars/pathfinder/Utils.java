@@ -52,10 +52,6 @@ public class Utils {
                 if (!this.isRouterType(nodeName, description)) {
                     return null;
                 }
-                // temporary kludge
-                if (description.equals("Juniper")) {
-                    nodeName += "-oscars";
-                }
             }
             loopbackIP = this.getIP(nodeName);
             if (loopbackIP == null) {
