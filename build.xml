@@ -99,7 +99,7 @@ Adding a -sd switch generates resources/services.xml -->
             <arg value="-d"/>
             <arg value="adb"/>
             <arg value="-package"/>
-            <arg value="net.es.oscars.newOscars"/>
+            <arg value="net.es.oscars.oscars"/>
             <arg value="--namespace2package"/>
             <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes"/>
         </java>
