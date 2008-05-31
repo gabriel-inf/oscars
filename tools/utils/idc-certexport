@@ -14,7 +14,7 @@ KS_PATH="";
 KS_PASS="";
 
 while [ 1 ]; do
-    echo "Choose the keystore with the certificate you'd like to delete:";
+    echo "Choose the keystore with the certificate you'd like to export:";
     echo "    1. sec-client.jks - stores the private key and certificate used to send messages to other IDCs";
     echo "    2. sec-server.jks - stores certificates trusted to sign incoming messages";
     echo "    3. ssl-keystore.jks - stores SSL certificates of other IDCs running HTTPS";
@@ -48,7 +48,7 @@ fi
 CERT_ALIAS="";
 CERT_LIST=`keytool -list -keystore $KS_PATH.jks -storepass $KS_PASS | grep "Entry" | sed -e "s/\([a-zA-Z0-9_-]*\),.*/\1/g"`;
 if [ $? != 0 ]; then
-    echo "-- Error while trying to list certificates in the keystore. Please manually enter the alias of the certificate you'd like to delete";
+    echo "-- Error while trying to list certificates in the keystore. Please manually enter the alias of the certificate you'd like to export";
     echo "";
     printf "Enter certificate alias: ";
     read CERT_ALIAS;
@@ -59,7 +59,7 @@ while [ -z "$CERT_ALIAS" ]; do
     CERTS=( );
     COUNT=0;
     echo "";
-    echo "Choose the certificate you wish to delete:"
+    echo "Choose the certificate you wish to export:"
     for LINE in $( echo "$CERT_LIST" ); do
         COUNT=`expr $COUNT + 1`;
         echo "    $COUNT. $LINE";
