@@ -885,7 +885,7 @@ public class VlsrPSS implements PSS{
             try{
                 sshPort = Integer.parseInt(sshPortStr);
             }catch(Exception e){
-                this.log.warn(propName + "is set to not-interger value '" +
+                this.log.warn(propName + "is set to non-interger value '" +
                     sshPortStr +"'. Using port 22 instead.");
             }
         }
