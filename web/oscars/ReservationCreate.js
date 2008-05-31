@@ -78,6 +78,10 @@ oscars.ReservationCreate.handleReply = function (responseObject, ioArgs) {
         // set tab to reservation details
         var resvDetailsPane = dijit.byId("reservationDetailsPane");
         mainTabContainer.selectChild(resvDetailsPane);
+    } else {
+        if (!oscars.Form.resetStatus(responseObject, true)) {
+            return;
+        }
     }
 };
 
