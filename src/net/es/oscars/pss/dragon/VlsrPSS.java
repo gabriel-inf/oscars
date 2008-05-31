@@ -153,7 +153,8 @@ public class VlsrPSS implements PSS{
             if(sshPortForward){
                 try{
                     String sshAddress = this.findSshAddress(egressLink);
-                    egressSshSess = jsch.getSession(sshUser, sshAddress, 22);
+                    int sshPort = this.findSshPort(egressLink);
+                    egressSshSess = jsch.getSession(sshUser, sshAddress, sshPort);
                     Properties config = new Properties();
                     config.put("StrictHostKeyChecking", "no");
                     egressSshSess.setConfig(config);
@@ -218,7 +219,8 @@ public class VlsrPSS implements PSS{
         if(sshPortForward){
             try{
                 String sshAddress = this.findSshAddress(ingressLink);
-                ingressSshSess = jsch.getSession(sshUser, sshAddress, 22);
+                int sshPort = this.findSshPort(ingressLink);
+                ingressSshSess = jsch.getSession(sshUser, sshAddress, sshPort);
                 Properties config = new Properties();
                 config.put("StrictHostKeyChecking", "no");
                 ingressSshSess.setConfig(config);
@@ -399,7 +401,8 @@ public class VlsrPSS implements PSS{
         if(sshPortForward){
             try{
                 String sshAddress = this.findSshAddress(ingressLink);
-                sshSession = jsch.getSession(sshUser, sshAddress, 22);
+                int sshPort = this.findSshPort(ingressLink);
+                sshSession = jsch.getSession(sshUser, sshAddress, sshPort);
                 Properties config = new Properties();
                 config.put("StrictHostKeyChecking", "no");
                 sshSession.setConfig(config);
@@ -508,7 +511,8 @@ public class VlsrPSS implements PSS{
         if(sshPortForward){
             try{
                 String sshAddress = this.findSshAddress(ingressLink);
-                sshSession = jsch.getSession(sshUser, sshAddress, 22);
+                int sshPort = this.findSshPort(ingressLink);
+                sshSession = jsch.getSession(sshUser, sshAddress, sshPort);
                 Properties config = new Properties();
                 config.put("StrictHostKeyChecking", "no");
                 sshSession.setConfig(config);
@@ -860,6 +864,33 @@ public class VlsrPSS implements PSS{
         }
         
         return sshAddress;
+    }
+    
+    /**
+     * Retrieves the ssh port used to access the remote host. It looks in
+     * properties file first for a pss.dragon.<nodeId>.ssh.port=<port> property 
+     * where <nodeId> is the topology identifier of the node and <port> 
+     * is the port used to access the VLSR via ssh.
+     *
+     * @param link the ingress link
+     * @return int of port used to access VLSR via ssh
+     * @throws PSSException
+     */
+    private int findSshPort(Link link) throws PSSException{
+        Node node = link.getPort().getNode();
+        String propName = node.getTopologyIdent() + ".ssh.port";
+        String sshPortStr = this.props.getProperty(propName);
+        int sshPort = 22;
+        if(sshPortStr != null){
+            try{
+                sshPort = Integer.parseInt(sshPortStr);
+            }catch(Exception e){
+                this.log.warn(propName + "is set to not-interger value '" +
+                    sshPortStr +"'. Using port 22 instead.");
+            }
+        }
+        
+        return sshPort;
     }
     
     /**
