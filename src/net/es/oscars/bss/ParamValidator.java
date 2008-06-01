@@ -161,10 +161,13 @@ public class ParamValidator {
         VlanTag srcVtag = layer2Info.getSrcVtag();
         VlanTag destVtag = layer2Info.getDestVtag();
         String vtag = null;
-
+        boolean tagged = true;
+        
         if(srcVtag != null && destVtag != null){
             vtag = srcVtag.getString();
-            if(!vtag.equals(destVtag.getString())){
+            tagged = srcVtag.getTagged();
+            if(!vtag.equals(destVtag.getString()) ||
+               tagged != destVtag.getTagged()){
                 return "source and destination VLAN tag must be same. VLAN" +
                 " mapping not yet supported";
             }

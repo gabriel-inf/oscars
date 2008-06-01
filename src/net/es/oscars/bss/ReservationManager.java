@@ -992,21 +992,16 @@ public class ReservationManager {
      public void setL2LinkDescr(PathElem pathElem, Link srcLink, Link destLink,
                                     Link link, Layer2Info layer2Info){
         VlanTag srcVtag = layer2Info.getSrcVtag();
-        VlanTag destVtag = layer2Info.getDestVtag();
         int srcTagged = srcVtag.getTagged() ? 1 : -1;
-        int destTagged = destVtag.getTagged() ? 1 : -1;
-
+        
+        int vtagValue = Integer.parseInt(srcVtag.getString());
+        pathElem.setLinkDescr((vtagValue * srcTagged) + "");
         if (link == srcLink) {
-            int vtagValue = Integer.parseInt(srcVtag.getString());
-            pathElem.setLinkDescr((vtagValue * srcTagged) + "");
             this.log.info("linkId: " + link.getId() + ", srcLink: " + vtagValue * srcTagged);
         } else if(link == destLink) {
-            int vtagValue = Integer.parseInt(destVtag.getString());
-            pathElem.setLinkDescr((vtagValue * destTagged) + "");
             this.log.info("linkId: " + link.getId() + ", destLink: " + vtagValue * srcTagged);
         } else {
-            pathElem.setLinkDescr(srcVtag.getString());
-            this.log.info("linkId: " + link.getId() + ", internalLink: " + srcVtag.getString());
+            this.log.info("linkId: " + link.getId() + ", internalLink: " + vtagValue * srcTagged);
         }
      }
 

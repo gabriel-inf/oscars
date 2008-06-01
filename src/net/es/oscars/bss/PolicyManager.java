@@ -209,12 +209,13 @@ public class PolicyManager {
 
                     L2SwitchingCapabilityData l2scData =
                         link.getL2SwitchingCapabilityData();
-                    if(srcLink == link && (!srcTagged)){
-                        throw new BSSException("Cannot use untagged VLAN on" +
-                                                " source at requested time.");
-                    }else if(destLink == link && (!destTagged)){
-                        throw new BSSException("Cannot use untagged VLAN on" +
-                                                " dest at requested time.");
+                    /* 
+                      If an untagged source then everything after the source
+                       must be untagged for now since mapping isn't supported.
+                    */
+                    if(!srcTagged){
+                        throw new BSSException("Cannot use untagged VLAN" +
+                                                " at requested time.");
                     }else if (l2scData != null) {
                         this.updateL2scResources(pathElem.getLinkDescr(),
                                                  layer2Info, sameUserGRI);
@@ -260,14 +261,8 @@ public class PolicyManager {
 
         /* Check if link allows untagged VLAN */
         byte canBeUntagged = (byte) ((availVtagMask[0] & 255) >> 7);
-        if(currLink == srcLink && (!vtag.getTagged()) &&
-            canBeUntagged != 1){
-            throw new BSSException("Specified source endpoint " +
-                                        "cannot be untagged");
-        }else if(currLink == destLink && (!vtag2.getTagged()) &&
-                    canBeUntagged != 1){
-            throw new BSSException("Specified destination endpoint" +
-                                        " cannot be untagged");
+        if((!vtag.getTagged()) && canBeUntagged != 1){
+            throw new BSSException("Link in path cannot be untagged");
         }
 
         vtagMask = tc.rangeStringToMask(vtag.getString());
