@@ -27,6 +27,7 @@ public class UserModify extends HttpServlet {
         this.dbname = "aaa";
         this.log.info("userModify:start");
 
+        String methodName = "UserModify";
         UserManager mgr = null;
         User user = null;
         int userId;
@@ -75,13 +76,14 @@ public class UserModify extends HttpServlet {
               user= mgr.query(profileName);
               userId=user.getId();
          } else {
-            utils.handleFailure(out,"no permission to modify users", aaa,null);
+            utils.handleFailure(out,"no permission to modify users", 
+                                methodName, aaa,null);
             return;
         }
 
         if (user == null) {
             String msg = "User " + profileName + " does not exist";
-            utils.handleFailure(out, msg, aaa, null);
+            utils.handleFailure(out, msg, methodName, aaa, null);
         }
 
         try {
@@ -150,7 +152,7 @@ public class UserModify extends HttpServlet {
                  }
              }             
         } catch (AAAException e) {
-            utils.handleFailure(out, e.getMessage(), aaa, null);
+            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
             return;
         }
         outputMap.put("status", "Profile for user " +
@@ -159,7 +161,7 @@ public class UserModify extends HttpServlet {
         authVal = mgr.checkAccess(userName, "Users", "modify");
         // or user may  have changed a target users attributes
         attrNames =  mgr.getAttrNames(profileName); 
-        outputMap.put("method", "UserModify");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
@@ -252,6 +254,3 @@ public class UserModify extends HttpServlet {
         userAttrDAO.create(userAttr);
     }
 }
-
- 
-

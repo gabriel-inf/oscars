@@ -28,6 +28,7 @@ public class UserList extends HttpServlet {
         this.log = Logger.getLogger(this.getClass());
         this.log.debug("userList:start");
 
+        String methodName = "UserList";
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
@@ -43,10 +44,10 @@ public class UserList extends HttpServlet {
         try {
             this.outputUsers(outputMap, userName);
         } catch (AAAException e) {
-            utils.handleFailure(out, e.getMessage(), aaa, null);
+            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
             return;
         }
-        outputMap.put("method", "UserList");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

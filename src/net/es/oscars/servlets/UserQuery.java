@@ -30,6 +30,7 @@ public class UserQuery extends HttpServlet {
         this.dbname = "aaa";
         this.log.debug("userQuery:start");
 
+        String methodName = "UserQuery";
         User targetUser = null;
         boolean self =  false; // is query about the current user
         boolean modifyAllowed = false;
@@ -74,7 +75,8 @@ public class UserQuery extends HttpServlet {
         if ((authVal == AuthValue.ALLUSERS)  ||  ( self && (authVal == AuthValue.SELFONLY))) {
               targetUser= mgr.query(profileName);
          } else {
-            utils.handleFailure(out,"no permission to query users", aaa,null);
+            utils.handleFailure(out,"no permission to query users",
+                                methodName, aaa,null);
             return;
         }
         /* check to see if user has modify permission for this user
@@ -96,7 +98,7 @@ public class UserQuery extends HttpServlet {
                 outputMap, targetUser, modifyAllowed,
                 (authVal == AuthValue.ALLUSERS),
                 institutions, attrNames);
-        outputMap.put("method", "UserQuery");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

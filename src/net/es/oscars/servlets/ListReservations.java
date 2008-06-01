@@ -38,7 +38,8 @@ public class ListReservations extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-	    this.dbname = "bss";
+        String methodName = "ListReservations";
+        this.dbname = "bss";
         List<Reservation> reservations = null;
         UserSession userSession = new UserSession();
         net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
@@ -54,10 +55,10 @@ public class ListReservations extends HttpServlet {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         Map outputMap = new HashMap();
-        reservations = this.getReservations(out, request, userName);
+        reservations = this.getReservations(out, request, methodName, userName);
         this.outputReservations(outputMap, reservations, request);
         outputMap.put("status", "Reservations list");
-        outputMap.put("method", "ListReservations");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
@@ -83,7 +84,7 @@ public class ListReservations extends HttpServlet {
      */
     public List<Reservation>
         getReservations(PrintWriter out, HttpServletRequest request,
-                        String login)  {
+                        String methodName, String login)  {
 
         Long startTimeSeconds = null;
         Long endTimeSeconds = null;
@@ -108,7 +109,8 @@ public class ListReservations extends HttpServlet {
         List<User> users = mgr.list();
         AuthValue authVal = mgr.checkAccess(login, "Reservations", "list");
         if (authVal == AuthValue.DENIED) {
-            utils.handleFailure(out, "no permission to list Reservations",  null, null);
+            utils.handleFailure(out, "no permission to list Reservations", 
+                                methodName, null, null);
             return null;
         }
 
@@ -119,7 +121,7 @@ public class ListReservations extends HttpServlet {
                 rm.list(login, institution, authVal.ordinal(), statuses, description, inLinks,
                         vlans, startTimeSeconds, endTimeSeconds);
         } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(),  null, null);
+            utils.handleFailure(out, e.getMessage(), methodName, null, null);
             return null;
         }
         return reservations;
@@ -261,7 +263,8 @@ public class ListReservations extends HttpServlet {
                         link = TopologyUtil.getLink(s.trim(), this.dbname);
                         inLinks.add(link);
                     } catch (BSSException ex) {
-	        			        log.error("Could not get link for string: ["+s.trim()+"], error: ["+ex.getMessage()+"]");
+                        log.error("Could not get link for string: [" +
+                                   s.trim()+"], error: ["+ex.getMessage()+"]");
                     }
                 }
             }

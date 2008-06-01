@@ -23,10 +23,28 @@ oscars.Form.handleError = function (responseObject, ioArgs) {
           ".  If it is a servlet problem, contact an admin to restart the Web server.";
 };
 
-// handles resetting status message 
+// handles resetting status message, and checking for valid reply 
 oscars.Form.resetStatus = function (responseObject, changeStatus) {
-    var status = responseObject.status;
     var oscarsStatus = dojo.byId("oscarsStatus");
+    if (responseObject.method == null) {
+        oscarsStatus.className = "failure";
+        oscarsStatus.innerHTML = "Invalid servlet reply: no method returned; " +
+                                 "contact administrator";
+        return false;
+    }
+    if (responseObject.success == null) {
+        oscarsStatus.className = "failure";
+        oscarsStatus.innerHTML = "Invalid servlet reply: no success status " +
+                                 "returned; contact administrator";
+        return false;
+    }
+    if (responseObject.status == null) {
+        oscarsStatus.className = "failure";
+        oscarsStatus.innerHTML = "Invalid servlet reply: no status returned; " +
+                                 "contact administrator";
+        return false;
+    }
+    var status = responseObject.status;
     if (responseObject.success) {
         oscarsStatus.className = "success";
     } else {

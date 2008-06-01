@@ -36,6 +36,7 @@ public class ModifyReservation extends HttpServlet {
 
         this.log = Logger.getLogger(this.getClass());
         this.log.info("ModifyReservation.start");
+        String methodName = "ModifyReservation";
 
         this.notifier = new NotifyInitializer();
         try {
@@ -70,8 +71,8 @@ public class ModifyReservation extends HttpServlet {
                 "modify");
         if (authVal == AuthValue.DENIED) {
                 this.log.info("denied");
-                utils.handleFailure(out,
-                        "modifyReservation: permission denied", aaa, null);
+                utils.handleFailure(out, "modifyReservation: permission denied",
+                                    methodName, aaa, null);
                 return;
         }
         String institution = userMgr.getInstitution(userName);
@@ -91,7 +92,7 @@ public class ModifyReservation extends HttpServlet {
                 rm.query(resv.getGlobalReservationId(), userName, institution, authVal.ordinal()); 
             pathInfo = this.handlePath(tempResv);
         } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(), null, null);
+            utils.handleFailure(out, e.getMessage(), methodName, null, null);
             return;
         }
         String errMessage = null;
@@ -129,7 +130,7 @@ public class ModifyReservation extends HttpServlet {
             forwarder.cleanUp();
             if (errMessage != null) {
                 this.sendFailureNotification(resv, errMessage);
-                utils.handleFailure(out, errMessage, null, bss);
+                utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;
             }
         }
@@ -137,7 +138,7 @@ public class ModifyReservation extends HttpServlet {
         Map outputMap = new HashMap();
         outputMap.put("status", "Modified reservation with GRI " +
             resv.getGlobalReservationId());
-        outputMap.put("method", "ModifyReservation");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

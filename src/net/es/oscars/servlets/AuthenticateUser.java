@@ -46,6 +46,7 @@ public class AuthenticateUser extends HttpServlet {
 
         PrintWriter out = null;
 
+        String methodName = "AuthenticateUser";
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         UserManager mgr = new UserManager("aaa");
@@ -73,7 +74,7 @@ public class AuthenticateUser extends HttpServlet {
                                 request.getParameter("initialPassword"),
                                 sessionName);
         } catch (AAAException e) {
-            utils.handleFailure(out, e.getMessage(), aaa, null);
+            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
             return;
         }
         // Used to indicate if tabbed pages requiring authorization can
@@ -95,7 +96,7 @@ public class AuthenticateUser extends HttpServlet {
         userSession.setCookie("userName", userName, response);
         userSession.setCookie("sessionName", sessionName, response);
         Map outputMap = new HashMap();
-        outputMap.put("method", "AuthenticateUser");
+        outputMap.put("method", methodName);
         outputMap.put("authorizedTabs", authorizedTabs);
         outputMap.put("success", Boolean.TRUE);
         outputMap.put("status", userName + " signed in.  Use tabs " +

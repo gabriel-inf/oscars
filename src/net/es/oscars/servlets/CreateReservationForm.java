@@ -22,6 +22,7 @@ public class CreateReservationForm extends HttpServlet {
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
 
+        String methodName = "CreateReservationForm";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
@@ -33,12 +34,14 @@ public class CreateReservationForm extends HttpServlet {
         AuthValue authVal = mgr.checkModResAccess(userName,
                 "Reservations", "create", 0, 0, false, false );
         if (authVal == AuthValue.DENIED ) {
-            utils.handleFailure(out, "No permission granted to create a reservation" , aaa, null);
+            utils.handleFailure(out,
+                    "No permission granted to create a reservation",
+                    methodName, aaa, null);
             return;
         }
         Map outputMap = new HashMap();
         outputMap.put("status", "Reservation creation form");
-        outputMap.put("method", "CreateReservationForm");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         this.contentSection(outputMap, userName);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

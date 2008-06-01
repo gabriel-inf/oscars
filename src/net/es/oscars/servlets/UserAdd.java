@@ -26,6 +26,7 @@ public class UserAdd extends HttpServlet {
             throws IOException, ServletException {
 
         this.log = Logger.getLogger(this.getClass());
+        String methodName = "UserAdd";
         this.dbname = "aaa";
         this.log.debug("userAdd:start");
 
@@ -75,18 +76,19 @@ public class UserAdd extends HttpServlet {
             }  else {
                 // this also makes sure won't list users either if don't
                 // have permission
-                utils.handleFailure(out, "not allowed to add a new user", aaa, null);
+                utils.handleFailure(out, "not allowed to add a new user",
+                                    methodName, aaa, null);
                 return;
             }
         } catch (AAAException e) {
             log.error("UserAdd caught exception: "+ e.getMessage());
-            utils.handleFailure(out, e.getMessage(), aaa, null);
+            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
             return;
         }
         Map outputMap = new HashMap();
         outputMap.put("status", "User " + profileName +
                                 " successfully created");
-        outputMap.put("method", "UserAdd");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

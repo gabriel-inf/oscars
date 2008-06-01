@@ -28,6 +28,7 @@ public class QueryReservation extends HttpServlet {
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+        String methodName = "QueryReservation";
         boolean internalIntradomainHops = false;
         Reservation reservation = null;
         ReservationManager rm = new ReservationManager("bss");
@@ -46,7 +47,8 @@ public class QueryReservation extends HttpServlet {
         // only look at reservations they have made
         AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "query");
         if (authVal == AuthValue.DENIED) {
-            utils.handleFailure(out, "no permission to query Reservations",  aaa, null);
+            utils.handleFailure(out, "no permission to query Reservations",
+                                methodName, aaa, null);
             return;
         }
 
@@ -70,24 +72,26 @@ public class QueryReservation extends HttpServlet {
             if (idFields.length == 2) {
                 gri = "es.net-" + idFields[1];
             } else {
-                utils.handleFailure(out, "invalid LSP name", null, bss);
+                utils.handleFailure(out, "invalid LSP name", 
+                                    methodName, null, bss);
             }
         }
         try {
             reservation = rm.query(gri, userName, institution, authVal.ordinal());
         } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(), null, bss);
+            utils.handleFailure(out, e.getMessage(), methodName, null, bss);
             return;
         }
         if (reservation == null) {
-            utils.handleFailure(out, "reservation does not exist", null, bss);
+            utils.handleFailure(out, "reservation does not exist",
+                                methodName, null, bss);
         }
         Map outputMap = new HashMap();
         outputMap.put("status", "Successfully got reservation details for " +
                                 reservation.getGlobalReservationId());
         this.contentSection(outputMap, reservation, userName,
                             internalIntradomainHops);
-        outputMap.put("method", "QueryReservation");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

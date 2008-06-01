@@ -21,6 +21,7 @@ public class UserRemove extends HttpServlet {
                       HttpServletResponse response)
             throws IOException, ServletException {
 
+        String methodName = "UserRemove";
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         UserManager mgr = new UserManager("aaa");
@@ -39,29 +40,32 @@ public class UserRemove extends HttpServlet {
         try {
             // cannot remove oneself
             if (profileName == userName) { 
-                utils.handleFailure(out, "may not remove yourself", aaa, null);
+                utils.handleFailure(out, "may not remove yourself",
+                                    methodName, aaa, null);
                 return;
             }
             if (authVal == AuthValue.ALLUSERS) {
                  mgr.remove(profileName);
             } else {
-                   utils.handleFailure(out,"no permission modify users", aaa,null);
+                   utils.handleFailure(out,"no permission modify users",
+                                       methodName, aaa,null);
                    return;
             }
         } catch (AAAException e) {
-            utils.handleFailure(out, e.getMessage(), aaa, null);
+            utils.handleFailure(out, e.getMessage(), methodName, aaa, null);
             return;
         }
         authVal = mgr.checkAccess(userName, "Users", "list");
         // shouldn't be able to get to this point, but just in case
         if (!(authVal == AuthValue.ALLUSERS)) {
-            utils.handleFailure(out,"no permission to list users", aaa,null);
+            utils.handleFailure(out, "no permission to list users",
+                                methodName, aaa, null);
             return;
         }
         Map outputMap = new HashMap();
         outputMap.put("status", "User " + profileName +
                                 " successfully removed");
-        outputMap.put("method", "UserRemove");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

@@ -29,6 +29,7 @@ public class UserAddForm extends HttpServlet {
         Logger log = Logger.getLogger(this.getClass());
         log.debug("UserAddForm: start");
 
+        String methodName = "UserAddForm";
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
@@ -39,7 +40,8 @@ public class UserAddForm extends HttpServlet {
         aaa.beginTransaction();
         AuthValue authVal = mgr.checkAccess(userName, "Users", "modify");
         if (authVal != AuthValue.ALLUSERS) {
-            utils.handleFailure(out, "not allowed to add a new user", aaa, null);
+            utils.handleFailure(out, "not allowed to add a new user",
+                                methodName, aaa, null);
             return;
         }
         institutions = mgr.getInstitutions();
@@ -47,7 +49,7 @@ public class UserAddForm extends HttpServlet {
         Map outputMap = new HashMap();
         outputMap.put("status", "Add a user");
         this.outputInstitutionMenu(outputMap, institutions);
-        outputMap.put("method", "UserAddForm");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

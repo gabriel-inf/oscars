@@ -14,14 +14,15 @@ import net.es.oscars.aaa.AttributeDAO;
 
 public class Utils {
 
-    public void handleFailure(PrintWriter out, String message, Session aaa,
-                              Session bss) {
+    public void handleFailure(PrintWriter out, String message, String method,
+                              Session aaa, Session bss) {
 
         if (aaa != null) { aaa.getTransaction().rollback(); }
         if (bss != null) { bss.getTransaction().rollback(); }
         Map errorMap = new HashMap();
         errorMap.put("success", Boolean.FALSE);
         errorMap.put("status", message);
+        errorMap.put("method", method);
         JSONObject jsonObject = JSONObject.fromObject(errorMap);
         out.println("/* " + jsonObject + " */");
         return;

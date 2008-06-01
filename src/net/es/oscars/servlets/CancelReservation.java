@@ -28,6 +28,7 @@ public class CancelReservation extends HttpServlet {
         String reply = null;
         boolean allUsers = false;
         
+        String methodName = "CancelReservation";
         UserManager userMgr =  new UserManager("aaa");
         ReservationManager rm = new ReservationManager("bss");
         UserSession userSession = new UserSession();
@@ -41,9 +42,11 @@ public class CancelReservation extends HttpServlet {
  
         Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
+        AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
+                                                "modify");
         if (authVal == AuthValue.DENIED) {
-            utils.handleFailure(out, "no permission to cancel Reservations",  aaa, null);
+            utils.handleFailure(out, "no permission to cancel Reservations",
+                                methodName, aaa, null);
             return;
         }
         String institution = userMgr.getInstitution(userName);
@@ -66,14 +69,14 @@ public class CancelReservation extends HttpServlet {
         } finally {
             forwarder.cleanUp();
             if (errMessage != null) {
-                utils.handleFailure(out, errMessage, null, bss);
+                utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;
             }
         }
         Map outputMap = new HashMap();
         outputMap.put("status", "Successfully cancelled reservation with " +
                                 "GRI " + reservation.getGlobalReservationId());
-        outputMap.put("method", "CancelReservation");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");

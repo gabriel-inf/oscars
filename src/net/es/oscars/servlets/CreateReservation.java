@@ -37,6 +37,7 @@ public class CreateReservation extends HttpServlet {
         this.log = Logger.getLogger(this.getClass());
         this.log.info("CreateReservation.start");
 
+        String methodName = "CreateReservation";
         this.notifier = new NotifyInitializer();
         try {
             this.notifier.init();
@@ -64,7 +65,7 @@ public class CreateReservation extends HttpServlet {
         try {
             pathInfo = this.handlePath(request);
         } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(), null, null);
+            utils.handleFailure(out, e.getMessage(), methodName, null, null);
             return;
         }
 
@@ -91,7 +92,7 @@ public class CreateReservation extends HttpServlet {
 
         if (authVal == AuthValue.DENIED) {
             utils.handleFailure(out, "createReservation permission denied",
-                aaa, null);
+                                methodName, aaa, null);
 
             return;
         }
@@ -129,7 +130,7 @@ public class CreateReservation extends HttpServlet {
             forwarder.cleanUp();
             if (errMessage != null) {
                 this.sendFailureNotification(resv, errMessage);
-                utils.handleFailure(out, errMessage, null, bss);
+                utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;
             }
         }
@@ -138,7 +139,7 @@ public class CreateReservation extends HttpServlet {
         outputMap.put("gri", resv.getGlobalReservationId());
         outputMap.put("status", "Created reservation with GRI " +
             resv.getGlobalReservationId());
-        outputMap.put("method", "CreateReservation");
+        outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
