@@ -9,7 +9,9 @@ import net.es.oscars.*;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.pathfinder.generic.*;
+import net.es.oscars.bss.BSSException;
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.topology.*;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.apache.axis2.context.ConfigurationContext;
@@ -52,9 +54,39 @@ public class TERCEPathfinder extends Pathfinder implements PCE {
         InterdomainPathfinder interPathfinder = new InterdomainPathfinder(this.dbname);
         PathInfo intraPathInfo = interPathfinder.findPath(pathInfo, reservation);
         CtrlPlaneHopContent[] intraHops = intraPathInfo.getPath().getHop();
-        String src = intraHops[0].getLinkIdRef();
-        String dest = intraHops[1].getLinkIdRef();
-        CtrlPlanePathContent intraPath = this.terce(src, dest);
+        CtrlPlanePathContent intraPath = new CtrlPlanePathContent();
+        boolean firstHop = true;
+        for(int i = 0; i < (intraHops.length - 1); i++){
+            String src = intraHops[i].getLinkIdRef();
+            String dest = intraHops[i+1].getLinkIdRef();
+            Link srcLink = null;
+            Link destLink = null;
+            try{
+                srcLink = TopologyUtil.getLink(src,"bss");
+                destLink = TopologyUtil.getLink(dest,"bss");
+            }catch(BSSException e){
+                throw new PathfinderException("Error processing " +
+                    "intra-domain path: " +  e.getMessage());
+            }
+            Link srcRemoteLink = srcLink.getRemoteLink();
+            Node srcNode = srcLink.getPort().getNode();
+            Node destNode = destLink.getPort().getNode();
+            
+            if(firstHop){
+                intraPath.addHop(intraHops[i]);
+            }
+            if(srcNode.equals(destNode) || 
+                (srcRemoteLink != null && srcRemoteLink.equals(destLink))){
+                intraPath.addHop(intraHops[i+1]);
+            }else{
+                CtrlPlanePathContent tercePath = this.terce(src, dest);
+                CtrlPlaneHopContent[] terceHops = tercePath.getHop();
+                for(int j = 1; j < terceHops.length; j++){
+                    intraPath.addHop(terceHops[j]);
+                }
+            }
+            firstHop = false;
+        }
         
         intraPathInfo.setPath(intraPath);
 
