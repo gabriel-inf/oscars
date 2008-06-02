@@ -83,6 +83,9 @@ oscars.UserProfile.tabSelected = function (
         if (oscars.Utils.isBlank(node.profileName.value)) {
             node.profileName.value = oscarsState.login;
             oscars.UserProfile.postUserQuery();
+        } else {
+            oscarsStatus.innerHTML = "Profile for user " +
+                                     node.profileName.value;
         }
     }
 };
