@@ -91,31 +91,31 @@ public class URNParser {
         String realCompactForm = null;
         String fqti = null;
         String addressType = "";
-
-        try {
-            InetAddress[] addrs = InetAddress.getAllByName(topoIdent);
-             System.out.print("[Success]:");
-             for (int i =0; i < addrs.length;i++){
-                 addressType = addrs[i].getClass().getName();
+        
+        if(matched == null){
+            try {
+                InetAddress[] addrs = InetAddress.getAllByName(topoIdent);
+                 System.out.print("[Success]:");
+                 for (int i =0; i < addrs.length;i++){
+                     addressType = addrs[i].getClass().getName();
+                 }
+    
+                 if (addressType.equals("java.net.Inet6Address")) {
+                     addressType = "ipv6address";
+                 } else if (addressType.equals("java.net.Inet4Address")) {
+                     addressType = "ipv4address";
+                 } else {
+                     addressType = "unknown";
+                 }
+                 result.put("type", addressType);
+                 matched = "address";
+             } catch(UnknownHostException e){
+                 if (matched == null) {
+                    result.put("type", "unknown");
+                    return result;
+                 }
              }
-
-             if (addressType.equals("java.net.Inet6Address")) {
-                 addressType = "ipv6address";
-             } else if (addressType.equals("java.net.Inet4Address")) {
-                 addressType = "ipv4address";
-             } else {
-                 addressType = "unknown";
-             }
-             result.put("type", addressType);
-             matched = "address";
-         } catch(UnknownHostException e){
-             if (matched == null) {
-                result.put("type", "unknown");
-                return result;
-             }
-         }
-
-        if (matched.equals("domain")) {
+        }else if (matched.equals("domain")) {
             fqti = "urn:ogf:network:domain="+domainId;
             compactForm = "urn:ogf:network:"+domainId;
             realCompactForm = domainId;
