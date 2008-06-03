@@ -15,6 +15,7 @@ import net.es.oscars.GlobalParams;
 import net.es.oscars.PropHandler;
 import net.es.oscars.AuthHandler;
 import net.es.oscars.database.HibernateUtil;
+import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.pathfinder.*;
 import net.es.oscars.bss.topology.*;
 
@@ -145,7 +146,8 @@ public class ReservationManagerTest {
         seconds += 3600;
         resv.setEndTime(seconds);
         try {
-            this.rm.modify(resv, resv.getLogin(), null, 1, pathInfo);
+            this.rm.modify(resv, resv.getLogin(), null,
+                           AuthValue.ALLUSERS.ordinal(), pathInfo);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw(ex);
@@ -201,6 +203,7 @@ public class ReservationManagerTest {
         this.sf.getCurrentSession().getTransaction().commit();
     }
 
+  /*
   @Test(dependsOnMethods={ "allowedTest" })
     public void layer3Create() {
         Reservation resv = new Reservation();
@@ -232,6 +235,7 @@ public class ReservationManagerTest {
         }
         this.sf.getCurrentSession().getTransaction().commit();
     }
+*/
 
   @Test(dependsOnMethods={ "layer2Create1" })
     public void rmReservationQuery() throws BSSException {
@@ -246,7 +250,8 @@ public class ReservationManagerTest {
         }
         try {
             reservation = this.rm.query(testResv.getGlobalReservationId(),
-                                        testResv.getLogin(), null, 1);
+                                        testResv.getLogin(), null,
+                                        AuthValue.ALLUSERS.ordinal());
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -266,8 +271,9 @@ public class ReservationManagerTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = this.rm.list(login, null, 1, null, null,
-                                        null, null, null, null);
+            reservations = this.rm.list(login, null,
+                                        AuthValue.ALLUSERS.ordinal(), null,
+                                        null, null, null, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -285,8 +291,9 @@ public class ReservationManagerTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = this.rm.list(login, null, 3, null, null, null, null,
-                                        null, null);
+            reservations = this.rm.list(login, null,
+                                        AuthValue.SELFONLY.ordinal(), null,
+                                        null, null, null, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -304,7 +311,7 @@ public class ReservationManagerTest {
             dao.queryByParam("description", LAYER2_DESCRIPTION);
         try {
             this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
-                           null, 1);
+                           null, AuthValue.ALLUSERS.ordinal());
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
