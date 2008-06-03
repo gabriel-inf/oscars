@@ -185,6 +185,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             } else if (hops.length == 1) {
                 throw new PathfinderException("ERO must include both source and destination!");
             } else if (hops.length >= 2) {
+                /* This is likely not needed, breaks interop too
                 CtrlPlaneHopContent firstHop = hops[0];
                 CtrlPlaneHopContent lastHop = hops[hops.length -1];
                 String firstLinkId = firstHop.getLinkIdRef();
@@ -193,9 +194,11 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 String lastLinkId = lastHop.getLinkIdRef();
                 parseResults = URNParser.parseTopoIdent(lastLinkId);
                 lastLinkId = parseResults.get("fqti");
+
                 if ( (! firstLinkId.equals(srcEndpoint)) || (! lastLinkId.equals(destEndpoint)) ) {
                     throw new PathfinderException("ERO must include both source and destination!");
                 }
+                */
             }
         } else {
             hops = new CtrlPlaneHopContent[2];
