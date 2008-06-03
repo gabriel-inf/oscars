@@ -173,17 +173,17 @@ public class ReservationManager {
      * @return reservation with cancellation status
      * @throws BSSException
      */
-    public Reservation cancel(String gri, String login, String institution, 
+    public Reservation cancel(String gri, String login, String institution,
             int constraint)
             throws BSSException {
 
         this.rsvLogger.redirect(gri);
         UserConstraint uc= mapConstraint(constraint);
-        
+
         ReservationDAO dao = new ReservationDAO(this.dbname);
         String newStatus = null;
 
-        this.log.info("cancel.start: " + gri + " login: " + login + " institution: " + 
+        this.log.info("cancel.start: " + gri + " login: " + login + " institution: " +
                 institution + " constraint: " + uc.toString());
 
         Reservation resv = dao.query(gri);
@@ -209,7 +209,7 @@ public class ReservationManager {
             throw new BSSException(
                "Trying to cancel an already cancelled reservation");
         }
-        
+
         if (prevStatus.equals("ACTIVE")) {
             newStatus = "PRECANCEL";
         } else {
@@ -258,16 +258,16 @@ public class ReservationManager {
      * DENIED means the requested action is not allowed<br>
      * ALLUSERS means the requested action is allowed on objects that belong
      *     to any user<br>
-     * MYSITE means the requested actions is allowed only on objects that 
+     * MYSITE means the requested actions is allowed only on objects that
      * 	    belong to the same site as the requester<br>
      * SELFONLY  means the requested action is allowed only on objects that
      *      belong to the requester.
      *  SITEANDSELF the requested action is allowed on objects that
-     *      belong to the requester or to his site   
+     *      belong to the requester or to his site
      * @author mrt
      *
      */
-    
+
     public enum UserConstraint { DENIED, ALLUSERS, MYSITE, SELFONLY, SITEANDSELF };
 
     /**
@@ -324,24 +324,22 @@ public class ReservationManager {
     public Reservation modify(Reservation resv, String login, String institution,
             int constraint, PathInfo pathInfo)
             throws  BSSException {
-        
+
         UserConstraint uc = mapConstraint(constraint);
-        this.log.info("modify.start: login: " + login + " institution: " + 
+        this.log.info("modify.start: login: " + login + " institution: " +
                 institution + " constraint: " + uc.toString());
 
         // need to set this before validation
         resv.setLogin(login);
         ParamValidator paramValidator = new ParamValidator();
 
-        StringBuilder errorMsg =
-            paramValidator.validate(resv, pathInfo);
+        StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
 
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-        Reservation persistentResv =
-            resvDAO.query(resv.getGlobalReservationId());
+        Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
         }
@@ -384,6 +382,14 @@ public class ReservationManager {
                 throw new BSSException("Cannot modify: start time after end time!");
             }
         }
+
+        // If pathInfo is null that means we should keep the stored path
+        if (pathInfo == null) {
+            pathInfo = tc.getPathInfo(persistentResv);
+            if (pathInfo == null) {
+                throw new BSSException("No path provided or stored in DB for reservation "+resv.getGlobalReservationId());
+            }
+        }
         // this will throw an exception if modification isn't possible
         Path path = this.getPath(resv, pathInfo);
         this.log.info("modify.finish");
@@ -409,6 +415,15 @@ public class ReservationManager {
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to finalize modify, GRI: "+resv.getGlobalReservationId());
         }
+
+        // If pathInfo is null that means we should keep the stored path
+        if (pathInfo == null) {
+            pathInfo = tc.getPathInfo(persistentResv);
+            if (pathInfo == null) {
+                throw new BSSException("No path provided or stored in DB for reservation "+resv.getGlobalReservationId());
+            }
+        }
+
         // this will throw an exception if modification isn't possible
         Path path = this.getPath(resv, pathInfo);
 
@@ -468,7 +483,7 @@ public class ReservationManager {
         List<Reservation> reservations = null;
         List<String> loginIds = new ArrayList<String>();
         List<Reservation> authResv = new LinkedList<Reservation>();
-        
+
         UserConstraint uc = mapConstraint(constraint);
         this.log.info("list.start, login: " + login + " constraint: " + constraint);
 
@@ -478,10 +493,10 @@ public class ReservationManager {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.list(loginIds, statuses, description, links,
                                 vlanTags, startTime, endTime);
-        
-        if (uc.equals(UserConstraint.MYSITE) || 
+
+        if (uc.equals(UserConstraint.MYSITE) ||
                 uc.equals(UserConstraint.SITEANDSELF)){
-            // keep only reservations that start or terminate at institution 
+            // keep only reservations that start or terminate at institution
             // or belong to user
             String sourceSite = null;
             String destSite = null;
@@ -499,7 +514,7 @@ public class ReservationManager {
                     destSite = this.destSite(resv);
                     if (destSite.equals(institution)){
                             authResv.add(resv);
-                    } 
+                    }
                 }
             }
             reservations = authResv;
@@ -884,12 +899,12 @@ public class ReservationManager {
         // returns same value if already an IP address
         return addr.getHostAddress();
     }
-    
-    
+
+
     /**
-     * Returns the name of the institution of the source endpoint of the reservation 
+     * Returns the name of the institution of the source endpoint of the reservation
      * Can we assume that either the source or the destination must be on the local path? - mrt
-     * 
+     *
      * @param Reservation reservation for which we want to find the source institution
      * @returns String institution of the reservation source
      */
@@ -919,15 +934,15 @@ public class ReservationManager {
         }
         return institution;
     }
-    
+
     /**
-     * Returns the name of the institution of the destination endpoint of the reservation 
-     * 
+     * Returns the name of the institution of the destination endpoint of the reservation
+     *
      * @param Reservation reservation for which we want to find the destination institution
      * @return String institution of the reservation destination
      */
     public String destSite(Reservation resv) {
-        String institution = "UNKNOWN";    
+        String institution = "UNKNOWN";
         Path path = resv.getPath();
         PathElem hop = path.getPathElem();
         while (hop.getNextElem() != null) {
@@ -993,7 +1008,7 @@ public class ReservationManager {
                                     Link link, Layer2Info layer2Info){
         VlanTag srcVtag = layer2Info.getSrcVtag();
         int srcTagged = srcVtag.getTagged() ? 1 : -1;
-        
+
         int vtagValue = Integer.parseInt(srcVtag.getString());
         pathElem.setLinkDescr((vtagValue * srcTagged) + "");
         if (link == srcLink) {
@@ -1173,7 +1188,7 @@ public class ReservationManager {
         resv.setToken(token);
         token.setReservation(resv);
     }
-    
+
     /**
      * maps the values of UserManager.authValue to ReservationManager.UserConstraint
      * @param ordVal
@@ -1189,7 +1204,7 @@ public class ReservationManager {
         }
         return uc;
     }
-    
+
     /**
      * Checks to see if the reservation meets the constraint
      * @param uc UserConstraint one of ALLUSERS, MYSITE, SELFONLY, SITEANDSELF
@@ -1198,13 +1213,13 @@ public class ReservationManager {
      * @param institution String name of user's institution
      * @return Boolean allowed
      */
-    private Boolean checkAuth(UserConstraint uc, Reservation resv, 
+    private Boolean checkAuth(UserConstraint uc, Reservation resv,
             String login, String institution) {
- 
+
         if (uc.equals(UserConstraint.ALLUSERS)) {
             return true;
         }
-        if (uc.equals(UserConstraint.SELFONLY) || 
+        if (uc.equals(UserConstraint.SELFONLY) ||
                 uc.equals(UserConstraint.SITEANDSELF)) {
             this.log.debug("checkAuth: reservation login is " + resv.getLogin());
             if  (resv.getLogin().equals(login)) {

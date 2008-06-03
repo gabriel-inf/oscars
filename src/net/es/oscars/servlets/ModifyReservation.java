@@ -87,9 +87,9 @@ public class ModifyReservation extends HttpServlet {
             // cannot be modified yet but is necessary for the interface.
             // Redundant operation in that it will be converted back unchanged.
             // allUsers is for the modify permission, but no point in this
-            // succeeding if will be unable to modify. 
+            // succeeding if will be unable to modify.
             Reservation tempResv =
-                rm.query(resv.getGlobalReservationId(), userName, institution, authVal.ordinal()); 
+                rm.query(resv.getGlobalReservationId(), userName, institution, authVal.ordinal());
             pathInfo = this.handlePath(tempResv);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), methodName, null, null);
@@ -106,7 +106,7 @@ public class ModifyReservation extends HttpServlet {
             // the next domain if necessary, and handles the response
             this.log.debug("modify, to forward");
             InterdomainException interException = null;
-            forwardReply = forwarder.modify(resv, pathInfo);
+            forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
             persistentResv = rm.finalizeModifyResv(forwardReply, resv, pathInfo);
             Map<String,String> messageInfo = new HashMap<String,String>();
             messageInfo.put("subject",
@@ -175,7 +175,7 @@ public class ModifyReservation extends HttpServlet {
         }
         resv.setEndTime(seconds);
 
-        // currently hidden form fields; not modifiable 
+        // currently hidden form fields; not modifiable
         strParam = request.getParameter("modifyBandwidth");
         bandwidth = ((strParam != null) && !strParam.trim().equals(""))
             ? (Long.valueOf(strParam.trim()) * 1000000L) : 0L;
@@ -205,7 +205,7 @@ public class ModifyReservation extends HttpServlet {
     private void sendFailureNotification(Reservation resv, String errMsg) {
 
         Map<String,String> messageInfo = new HashMap<String,String>();
-        messageInfo.put("subject", 
+        messageInfo.put("subject",
                 "Modifying reservation " + resv.getGlobalReservationId() +
                 " through browser failed");
         messageInfo.put("body",

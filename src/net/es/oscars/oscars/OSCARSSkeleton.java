@@ -218,8 +218,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ModifyResContent params = request.getModifyReservation();
         String login = this.checkUser();
 
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         if (authVal.equals(AuthValue.DENIED)) {
@@ -228,8 +227,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String institution = this.userMgr.getInstitution(login);
         aaa.getTransaction().commit();
 
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
             reply = this.adapter.modify(params, login, institution, authVal.ordinal() );
@@ -792,5 +790,5 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         aaa.getTransaction().commit();
         return login;
     }
- 
+
 }

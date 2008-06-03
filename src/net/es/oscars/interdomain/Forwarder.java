@@ -47,7 +47,7 @@ public class Forwarder extends Client {
         }
         this.log.debug("setup.finish: " + url);
     }
-    
+
     public CreateReply create(Reservation resv, PathInfo pathInfo)
             throws InterdomainException {
 
@@ -69,12 +69,13 @@ public class Forwarder extends Client {
         return createReply;
     }
 
-    public ModifyResReply modify(Reservation resv, PathInfo pathInfo) throws InterdomainException {
+    public ModifyResReply modify(Reservation resv, Reservation persistentResv, PathInfo pathInfo) throws InterdomainException {
 
         String url = null;
 
-        if (resv.getPath() != null && resv.getPath().getNextDomain() != null) {
-            url = resv.getPath().getNextDomain().getUrl();
+        // currently get the next domain from the stored path
+        if (persistentResv.getPath() != null && persistentResv.getPath().getNextDomain() != null) {
+            url = persistentResv.getPath().getNextDomain().getUrl();
         }
 
         if (url != null) {
@@ -180,6 +181,9 @@ public class Forwarder extends Client {
                 GlobalReservationId rt = new GlobalReservationId();
                 rt.setGri(resv.getGlobalReservationId());
                 forPayload.setQueryReservation(rt);
+            } else if (operation.equals("modifyReservation")) {
+                ModifyResContent modResContent = this.toModifyRequest(resv, pathInfo);
+                forPayload.setModifyReservation(modResContent);
 
             } else if (operation.equals("createPath")) {
                 CreatePathContent cp = new CreatePathContent();
@@ -214,6 +218,19 @@ public class Forwarder extends Client {
             throw new InterdomainException("BSSFaultMessage from :" +
                                             url +  e.getMessage());
         }
+    }
+    public ModifyResContent toModifyRequest(Reservation resv, PathInfo pathInfo) {
+        ModifyResContent modResContent = new ModifyResContent();
+
+        modResContent.setStartTime(resv.getStartTime());
+        modResContent.setEndTime(resv.getEndTime());
+        /* output bandwidth is in bytes, input is in Mbytes */
+        Long bandwidth = resv.getBandwidth()/1000000;
+        modResContent.setBandwidth( bandwidth.intValue());
+        modResContent.setDescription(resv.getDescription());
+        modResContent.setGlobalReservationId(resv.getGlobalReservationId());
+        modResContent.setPathInfo(pathInfo);
+        return modResContent;
     }
 
     public ResCreateContent toCreateRequest(Reservation resv,

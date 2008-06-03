@@ -163,6 +163,10 @@ public class ReservationAdapter {
 
         Forwarder forwarder = new Forwarder();
         PathInfo pathInfo = params.getPathInfo();
+
+        // for now, do NOT change the path no matter what the user specified
+        pathInfo = null;
+
         ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
@@ -174,7 +178,7 @@ public class ReservationAdapter {
             this.log.debug("modify, to forward");
             InterdomainException interException = null;
             try {
-                forwardReply = forwarder.modify(resv, pathInfo);
+                forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
             } catch(InterdomainException e) {
                 interException = e;
             } finally {
@@ -239,7 +243,7 @@ public class ReservationAdapter {
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and handles the response
         this.log.debug("cancel to forward");
-        
+
         InterdomainException interException = null;
         try{
             remoteStatus = forwarder.cancel(resv);
@@ -315,7 +319,7 @@ public class ReservationAdapter {
      * List all the reservations on this IDC that meet the input constraints.
      *
      * @param login String with user's login name
-     * 
+     *
      * @param institution String with the user's institution name
      *
      * @param userConstraint int indicates which reservations may be viewed
@@ -392,7 +396,7 @@ public class ReservationAdapter {
                         inLinks.add(link);
 
                     } catch (BSSException ex) {
-                        this.log.error("Could not get link for string: [" + 
+                        this.log.error("Could not get link for string: [" +
                                     s.trim()+"], error: ["+ex.getMessage()+"]");
                     }
                 }
@@ -425,7 +429,7 @@ public class ReservationAdapter {
         }
         String description = request.getDescription();
         reservations =
-            this.rm.list(login, institution, userConstraint, statuses, description, inLinks, 
+            this.rm.list(login, institution, userConstraint, statuses, description, inLinks,
                          inVlanTags, startTime, endTime);
 
         reply = this.tc.reservationToListReply(reservations,
