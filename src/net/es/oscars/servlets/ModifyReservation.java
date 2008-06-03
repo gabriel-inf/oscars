@@ -81,26 +81,12 @@ public class ModifyReservation extends HttpServlet {
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
+        // for now, path cannot be modified
         PathInfo pathInfo = null;
-        try {
-            // For now, get pathInfo from current reservation since it
-            // cannot be modified yet but is necessary for the interface.
-            // Redundant operation in that it will be converted back unchanged.
-            // allUsers is for the modify permission, but no point in this
-            // succeeding if will be unable to modify.
-            Reservation tempResv =
-                rm.query(resv.getGlobalReservationId(), userName, institution, authVal.ordinal());
-            pathInfo = this.handlePath(tempResv);
-        } catch (BSSException e) {
-            utils.handleFailure(out, e.getMessage(), methodName, null, null);
-            return;
-        }
         String errMessage = null;
         try {
-            // currently allUsers here is redundant, but that will probably
-            // change in the future
             Reservation persistentResv = rm.modify(resv, userName, institution,
-                                                   authVal.ordinal(),pathInfo);
+                                                   authVal.ordinal(), pathInfo);
             tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
@@ -183,23 +169,6 @@ public class ModifyReservation extends HttpServlet {
         String description = request.getParameter("modifyDescription");
         resv.setDescription(description);
         return resv;
-    }
-
-    /**
-     * Takes current reservation and builds PathInfo structures.
-     * This is only necessary to satisfy the reservation manager's
-     * modifyReservation interface.  Eventually it will be modifiable
-     * via the Web interface.
-     *
-     * @param resv a current reservation
-     * @return pathInfo a PathInfo instance with layer 2 or 3 information
-     */
-    public PathInfo handlePath(Reservation resv)
-            throws BSSException {
-
-        TypeConverter tc = new TypeConverter();
-        PathInfo pathInfo = tc.getPathInfo(resv);
-        return pathInfo;
     }
 
     private void sendFailureNotification(Reservation resv, String errMsg) {
