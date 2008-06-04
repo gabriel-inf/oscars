@@ -242,6 +242,47 @@ public class TypeConverter {
             return null;
         }
     }
+    
+    /**
+     * Takes a pathInfo object and sets the source and destination
+     * to the ingress and egress. This makes it valid for pathfinders
+     * testing whether src and dest are set as the first and last hops 
+     * in the path. Assumes that the path object contains the local 
+     * path segment.
+     *
+     * @param pathInfo the pathInfo instance to convert
+     * @return the converted pathInfo object 
+     */
+    public PathInfo toLocalPathInfo(PathInfo pathInfo){
+        Layer2Info l2Info = pathInfo.getLayer2Info();
+        Layer3Info l3Info = pathInfo.getLayer3Info();
+        CtrlPlanePathContent path = pathInfo.getPath();
+        CtrlPlaneHopContent[] hop = path.getHop();
+        String ingress = null;
+        String egress = null;
+        
+        if(path == null){
+            return pathInfo;
+        }
+        
+        hop = path.getHop();
+        if(hop == null){
+            return pathInfo;
+        }
+        
+        ingress = hop[0].getLinkIdRef();
+        egress = hop[hop.length - 1].getLinkIdRef();
+        if(l2Info != null){
+            l2Info.setSrcEndpoint(ingress);
+            l2Info.setDestEndpoint(egress);
+        }
+        if(l3Info != null){
+            l3Info.setSrcHost(ingress);
+            l3Info.setDestHost(egress);
+        }
+        
+        return pathInfo;
+    }
 
     /**
      * Builds Axis2 CtrlPlanePathContent, given Hibernate Path bean with

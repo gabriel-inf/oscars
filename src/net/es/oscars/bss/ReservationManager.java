@@ -389,6 +389,7 @@ public class ReservationManager {
             if (pathInfo == null) {
                 throw new BSSException("No path provided or stored in DB for reservation "+resv.getGlobalReservationId());
             }
+            pathInfo = tc.toLocalPathInfo(pathInfo);
         }
         // this will throw an exception if modification isn't possible
         Path path = this.getPath(resv, pathInfo);
