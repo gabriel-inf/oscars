@@ -255,23 +255,25 @@ public class TypeConverter {
         if(path == null){
             return pathInfo;
         }
-        
+
         hop = path.getHop();
         if(hop == null){
             return pathInfo;
         }
-        
+
         ingress = hop[0].getLinkIdRef();
         egress = hop[hop.length - 1].getLinkIdRef();
         if(l2Info != null){
             l2Info.setSrcEndpoint(ingress);
             l2Info.setDestEndpoint(egress);
+            pathInfo.setLayer2Info(l2Info);
         }
         if(l3Info != null){
             l3Info.setSrcHost(ingress);
             l3Info.setDestHost(egress);
+            pathInfo.setLayer3Info(l3Info);
         }
-        
+
         return pathInfo;
     }
 

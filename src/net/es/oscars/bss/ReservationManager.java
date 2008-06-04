@@ -392,6 +392,7 @@ public class ReservationManager {
             pathInfo = tc.toLocalPathInfo(pathInfo);
         }
         // this will throw an exception if modification isn't possible
+        this.log.info("PI SRC: " + pathInfo.getLayer2Info().getSrcEndpoint());
         Path path = this.getPath(resv, pathInfo);
         this.log.info("modify.finish");
         return persistentResv;
@@ -425,18 +426,11 @@ public class ReservationManager {
             }
         }
 
-        // this will throw an exception if modification isn't possible
-        Path path = this.getPath(resv, pathInfo);
-
-        // TODO: check if the new path is different from the old path..
-
         // OK, if we got so far, just change the times
         persistentResv.setStartTime(resv.getStartTime());
         persistentResv.setEndTime(resv.getEndTime());
         resvDAO.update(persistentResv);
         resvDAO.flush();
-
-
 
         this.log.info("finalizeModify.finish");
         return persistentResv;
