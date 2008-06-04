@@ -120,7 +120,7 @@
             <xsd:element name="endTime" type="xsd:long" />
             <xsd:element name="bandwidth" type="xsd:int" />
             <xsd:element name="description" type="xsd:string" />
-            <xsd:element name="pathInfo" type="tns:pathInfo" />
+            <xsd:element name="pathInfo" type="tns:pathInfo" maxOccurs="1" minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
 
