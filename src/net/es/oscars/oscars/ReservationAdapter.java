@@ -187,18 +187,20 @@ public class ReservationAdapter {
                     throw interException;
                 }
             }
-            persistentResv = this.rm.finalizeModifyResv(forwardReply, resv, pathInfo);
+            persistentResv = this.rm.finalizeModifyResv(forwardReply, resv);
 
             this.log.debug("modify, to toModifyReply");
             reply = this.tc.reservationToModifyReply(persistentResv);
 
             // set to input argument, which possibly has been modified during
             // reservation creation
-            if (pathInfo != null && pathInfo.getPath() != null) {
+            //PATHINFO always null so comment out for now
+            /* if (pathInfo != null && pathInfo.getPath() != null) {
                 pathInfo.getPath().setId("unimplemented");
                 this.tc.clientConvert(pathInfo);
             }
-            reply.getReservation().setPathInfo(pathInfo);
+            reply.getReservation().setPathInfo(pathInfo); */
+            
         } catch (BSSException e) {
             // send notification in all cases
             this.sendFailureNotification(resv, "modify failed with error: " + e.getMessage());

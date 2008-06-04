@@ -407,7 +407,7 @@ public class ReservationManager {
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public Reservation finalizeModifyResv(ModifyResReply forwardReply, Reservation resv, PathInfo pathInfo)
+    public Reservation finalizeModifyResv(ModifyResReply forwardReply, Reservation resv)
             throws  BSSException {
 
         this.log.info("finalizeModify.start");
@@ -416,14 +416,6 @@ public class ReservationManager {
         Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
         if (persistentResv == null) {
             throw new BSSException("Could not locate reservation to finalize modify, GRI: "+resv.getGlobalReservationId());
-        }
-
-        // If pathInfo is null that means we should keep the stored path
-        if (pathInfo == null) {
-            pathInfo = tc.getPathInfo(persistentResv);
-            if (pathInfo == null) {
-                throw new BSSException("No path provided or stored in DB for reservation "+resv.getGlobalReservationId());
-            }
         }
 
         // OK, if we got so far, just change the times
