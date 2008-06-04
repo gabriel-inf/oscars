@@ -81,16 +81,7 @@ public class TypeConverter {
             throws BSSException {
 
         Reservation resv = new Reservation();
-        PathInfo pathInfo = params.getPathInfo();
-        Layer2Info layer2Info = pathInfo.getLayer2Info();
-        Layer3Info layer3Info = pathInfo.getLayer3Info();
-        // have to do error checking here because tooling doesn't handle
-        // WSDL choice elements yet
-        if ((layer2Info == null) && (layer3Info == null)) {
-            throw new BSSException("No path information provided");
-        } else if ((layer2Info != null) && (layer3Info != null)) {
-            throw new BSSException("Cannot provide both layer 2 and layer 3 information");
-        }
+        
         // Hibernate will pick up error if any properties are null that
         // the database schema says cannot be null
         resv.setStartTime(params.getStartTime());

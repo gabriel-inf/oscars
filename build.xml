@@ -232,11 +232,10 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <property name="dojo" value="/usr/local/src/dojo"/>
     <available property="dojo.installed" file="web/lib/dojo"/>
     <target name="installdojo" unless="dojo.installed" description="unzip and untar Dojo material if necessary">
-        <gunzip src="web/lib/dojo-release-1.1.1.tar.gz" />
-	<untar src="web/lib/dojo-release-1.1.1.tar"
-	       dest="web/lib" />
-        <move file="web/lib/dojo-release-1.1.1" tofile="web/lib/dojo" />
-	<delete file="web/lib/dojo-release-1.1.1.tar" />
+        <gunzip src="web/lib/dojo-release-1.1.1.tar.gz"/>
+        <untar src="web/lib/dojo-release-1.1.1.tar" dest="web/lib"/>
+        <move file="web/lib/dojo-release-1.1.1" tofile="web/lib/dojo"/>
+        <delete file="web/lib/dojo-release-1.1.1.tar"/>
     </target>
     <target name="copydocs" description="copy documentation for use in warfile" depends="populateApiDocs, populateClientDocs">
         <mkdir dir="web/docs"/>
