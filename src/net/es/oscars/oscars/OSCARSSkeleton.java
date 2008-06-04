@@ -573,6 +573,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             CreateReply reply = response.getCreateReservationResponse();
             forwardReply.setCreateReservation(reply);
 
+        } else if (contentType.equals("modifyReservation")) {
+            ModifyReservation message = new ModifyReservation();
+            ModifyResContent params = forwardPayload.getModifyReservation();
+            message.setModifyReservation(params);
+            ModifyReservationResponse response = this.modifyReservation(message);
+            ModifyResReply reply = response.getModifyReservationResponse();
+            forwardReply.setModifyReservation(reply);
+
         } else if (contentType.equals("queryReservation")) {
             QueryReservation message = new QueryReservation();
             GlobalReservationId params = forwardPayload.getQueryReservation();
