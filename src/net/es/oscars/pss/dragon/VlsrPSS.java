@@ -24,7 +24,6 @@ public class VlsrPSS implements PSS{
     private Logger log;
     
     public final static int DEL_LSP_DELAY = 15000;
-    public final static int DEL_LOCALID_DELAY = 5000;
     
     /** Constructor */
     public VlsrPSS(){
@@ -198,12 +197,7 @@ public class VlsrPSS implements PSS{
             }
             
             /* Create egress local id */
-            if(csa.deleteLocalId(egrLocalId)){
-                //wait for DRAGON to clear out local ID
-                try{
-                    Thread.sleep(VlsrPSS.DEL_LOCALID_DELAY);
-                 }catch(Exception e){}
-            }
+            csa.deleteLocalId(egrLocalId);
             if(csa.createLocalId(egrLocalId, egrLocalIdIface)){
                 this.log.info("Created local-id " + egrLocalId.getType() + " " +
                     egrLocalId.getNumber());
@@ -275,12 +269,8 @@ public class VlsrPSS implements PSS{
             
             /* Delete local-id if ingress and egress not the same */
             if(!(ingress.getHostAddress().equals(egress.getHostAddress()) && 
-                ingLocalId.getNumber() == egrLocalId.getNumber()) &&
-                csa.deleteLocalId(ingLocalId)){
-                //wait for DRAGON to clear out local ID
-                try{
-                    Thread.sleep(VlsrPSS.DEL_LOCALID_DELAY);
-                 }catch(Exception e){}
+                ingLocalId.getNumber() == egrLocalId.getNumber())){
+                csa.deleteLocalId(ingLocalId);
             }
          
             if(csa.createLocalId(ingLocalId, ingLocalIdIface)){
