@@ -23,6 +23,9 @@ public class VlsrPSS implements PSS{
     private Properties props;
     private Logger log;
     
+    public final static int DEL_LSP_DELAY = 15000;
+    public final static int DEL_LOCALID_DELAY = 5000;
+    
     /** Constructor */
     public VlsrPSS(){
         this.log = Logger.getLogger(this.getClass());
@@ -195,7 +198,12 @@ public class VlsrPSS implements PSS{
             }
             
             /* Create egress local id */
-            csa.deleteLocalId(egrLocalId);
+            if(csa.deleteLocalId(egrLocalId)){
+                //wait for DRAGON to clear out local ID
+                try{
+                    Thread.sleep(VlsrPSS.DEL_LOCALID_DELAY);
+                 }catch(Exception e){}
+            }
             if(csa.createLocalId(egrLocalId, egrLocalIdIface)){
                 this.log.info("Created local-id " + egrLocalId.getType() + " " +
                     egrLocalId.getNumber());
@@ -267,8 +275,12 @@ public class VlsrPSS implements PSS{
             
             /* Delete local-id if ingress and egress not the same */
             if(!(ingress.getHostAddress().equals(egress.getHostAddress()) && 
-                ingLocalId.getNumber() == egrLocalId.getNumber())){
-                csa.deleteLocalId(ingLocalId);
+                ingLocalId.getNumber() == egrLocalId.getNumber()) &&
+                csa.deleteLocalId(ingLocalId)){
+                //wait for DRAGON to clear out local ID
+                try{
+                    Thread.sleep(VlsrPSS.DEL_LOCALID_DELAY);
+                 }catch(Exception e){}
             }
          
             if(csa.createLocalId(ingLocalId, ingLocalIdIface)){
@@ -558,6 +570,7 @@ public class VlsrPSS implements PSS{
                 if(sshSession != null){
                     sshSession.disconnect();
                 }
+                
                 throw new PSSException("Unable to teardown LSP: " + 
                     csa.getError());
             }
@@ -584,6 +597,11 @@ public class VlsrPSS implements PSS{
         }else{
             resv.setStatus("PENDING");
         }
+        
+        //Sleep for awhile to make sure LSP is cleared out
+        try{
+            Thread.sleep(VlsrPSS.DEL_LSP_DELAY);
+        }catch(Exception e){}
         
         this.log.info("vlsr.teardown.end");
         
