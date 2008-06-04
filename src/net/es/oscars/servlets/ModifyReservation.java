@@ -93,7 +93,7 @@ public class ModifyReservation extends HttpServlet {
             this.log.debug("modify, to forward");
             InterdomainException interException = null;
             forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
-            persistentResv = rm.finalizeModifyResv(forwardReply, resv, pathInfo);
+            persistentResv = rm.finalizeModifyResv(forwardReply, resv);
             Map<String,String> messageInfo = new HashMap<String,String>();
             messageInfo.put("subject",
                 "Reservation " + persistentResv.getGlobalReservationId() +
