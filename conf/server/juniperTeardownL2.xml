@@ -1,61 +1,62 @@
 <junoscript version="1.0" release="7.3">
-
 <rpc><lock-configuration /></rpc>
 <rpc>
-  <load-configuration>
-    <configuration>
-      <interfaces>
-        <interface>
-            <name><user-var>interface</user-var></name>
-            <unit delete="delete">
-                <name><user-var>vlan_id</user-var></name>
-            </unit>
-        </interface>
-      </interfaces>
-      <policy-options>
-        <policy-statement delete="delete">
-            <name><user-var>resv-id</user-var></name>
-        </policy-statement>
-        <community delete="delete">
-            <name><user-var>resv-id</user-var></name>
-        </community>
-      </policy-options>
-      <routing-options>
-        <forwarding-table>
-            <export delete="delete"><user-var>resv-id</user-var></export>
-        </forwarding-table>
-      </routing-options>
-      <protocols>
-        <mpls>
-            <label-switched-path delete="delete">
-                <name><user-var>resv-id</user-var></name>
-            </label-switched-path>
-        </mpls>
-      </protocols>
-      <protocols>
-        <mpls>
-            <path delete="delete">
-                <name><user-var>resv-id</user-var></name>
-            </path>
-        </mpls>
-        <l2circuit>
-            <neighbor>
-                <name><user-var>egress-rtr-loopback</user-var></name>
-                <interface delete="delete">
-                    <name><user-var>port</user-var><txt>.</txt><user-var>vlan_id</user-var></name>
+    <load-configuration>
+        <configuration>
+            <interfaces>
+                <interface>
+                    <name><user-var>interface</user-var></name>
+                        <unit delete="delete">
+                            <name><user-var>vlan_id</user-var></name>
+                        </unit>
                 </interface>
-            </neighbor>
-        </l2circuit>
-      </protocols>
-      <firewall>
-        <policer delete="delete">
-            <name><user-var>resv-id</user-var></name>
-        </policer>
-      </firewall>
-    </configuration>
-  </load-configuration>
+            </interfaces>
+            <policy-options>
+                <policy-statement delete="delete">
+                    <name><user-var>resv-id</user-var></name>
+                </policy-statement>
+                <community delete="delete">
+                    <name><user-var>resv-id</user-var></name>
+                </community>
+            </policy-options>
+            <routing-options>
+                <forwarding-table>
+                    <export delete="delete"><user-var>resv-id</user-var></export>
+                </forwarding-table>
+            </routing-options>
+            <protocols>
+                <mpls>
+                    <label-switched-path delete="delete">
+                        <name><user-var>resv-id</user-var></name>
+                    </label-switched-path>
+                    <path delete="delete">
+                        <name><user-var>resv-id</user-var></name>
+                    </path>
+                </mpls>
+                <l2circuit>
+                    <neighbor>
+                        <name><user-var>egress-rtr-loopback</user-var></name>
+                        <interface delete="delete">
+                            <name><user-var>port</user-var><txt>.</txt><user-var>vlan_id</user-var></name>
+                        </interface>
+                    </neighbor>
+                </l2circuit>
+            </protocols>
+            <firewall>
+                <policer delete="delete">
+                    <name><user-var>resv-id</user-var></name>
+                </policer>
+                <family>
+                    <any>
+                        <filter delete="delete">
+                            <name><user-var>resv-id</user-var></name>
+                        </filter>
+                    </any>
+                </family>
+            </firewall>
+        </configuration>
+    </load-configuration>
 </rpc>
 <rpc><commit-configuration /></rpc>
 <rpc><unlock-configuration /></rpc>
-
 </junoscript>

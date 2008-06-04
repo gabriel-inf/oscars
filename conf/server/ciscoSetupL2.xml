@@ -3,9 +3,8 @@ configure terminal
 policy-map **resv-id**
   class class-default
    police cir **bandwidth**
-     conform-action transmit
-     exceed-action drop
-     violate-action drop
+     conform-action set-mpls-exp-topmost-transmit 4
+     exceed-action policed-dscp-transmit
 !
 pseudowire-class **resv-id**
  encapsulation mpls
