@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# update classpath
+OSCARS_CLASSPATH="."
+for f in lib/*.jar
+do
+    OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
+done
+
+for f in ../../lib/axis2/*.jar
+do
+    OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
+done
+
+java -cp $OSCARS_CLASSPATH:IDCNotify.jar:. IDCNotifyServer $*
+
