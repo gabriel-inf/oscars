@@ -3,7 +3,7 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>AAA Component Notes</title>
+  <title>Dojo Development Notes</title>
   <link rel="stylesheet" href="styleSheets/oscars.css" type="text/css">
   <link rel="shortcut icon" href="images/esnet.ico" type="image/x-icon">
 </head>
@@ -14,10 +14,268 @@
 Components &gt; <a href="browserInterface.html">Dojo Development Notes</a>
 </div>
 </div>
+
 <h1>Dojo Development Notes</h1>
-<p>There are several tools that will make developing new forms and servlets
-easier.</p>
-<h2>Firebug</h2>
+<p>The following are notes for developers wishing to add new material to
+the WBUI.  The various components of the interface are described, and what
+is involved in common tasks such as adding new Web forms.  Debugging can be
+a challenge; various tools for that in the browser and Dojo environment are
+described.  Another page describes the
+<a href="WBUI.html">interface</a> from the user's point of view.
+A large amount of information about the current implementation has been
+necessary to give the background necessary for adding new functionality.
+</p>
+
+<h2>WBUI Components</h2>
+
+<p>
+A number of components contribute to the WBUI.  They are described from
+the standpoint of this specific implementation; links to general information
+about each component are provided.  The server side (Tomcat and servlets) is
+covered first.
+</p>
+
+<h3>Tomcat</h3>
+
+<p>Apache
+<a href="http://tomcat.apache.org/">Tomcat</a> 5.5 is used as the Web
+server and acts as a container for the Java servlets.  Note that the
+<a href="https://bach.lbl.gov:9090/OSCARS/docs/API.html">Web service</a>
+interface also makes calls to servlets within an
+<a href="http://ws.apache.org/axis2/">Axis2</a> service contained within
+the same Tomcat instance.</p>
+
+<p>The client (the web directory under the main directory) and server side of
+the WBUI are deployed into Tomcat with the Ant "deploywbui" target in
+the main directory.
+</p>
+
+<h3>Servlets</h3>
+
+<p>Java servlets (located in src/net/es/oscars/servlets)
+handle all requests from the client.  Reservation-related
+servlets reformat incoming parameter values and make the same requests
+to the BSS as the Axis2 Web service servlets do.  AAA administration is only
+available through the WBUI-related servlets and not the Web service.
+</p>
+
+<p>All security is handled by the server side, by calls within the servlets to
+the AAA for user authentication and authorization.  Login's require a login name
+and a password.
+The OSCARS <a href="authorizationPolicy.html">authorization policy</a>
+is used, given an authenticated login name.  Some
+client-side functionality, such as some tabs, are normally available only
+after server authorization, but could be easily displayed by someone intent on
+circumventing that.  
+In such a case, submission of forms normally requiring authorization to see
+would result in AAA errors returned from the servlets.
+</p>
+
+<p>The results of all calls to the AAA or BSS are returned via commented
+<a href="http://www.json.org/">JSON</a> formatted data.  The MIME type
+returned is "text/json-comment-filtered".  They are commented
+to avoid certain cross-site scripting attacks.  When Dojo 1.2 is available,
+a more secure method than this may be used.
+</p>
+
+<p>Servlet classes are mapped to URL's in web/WEB-INF/web.xml.  One section
+of this file sets up mappings between servlet names and servlet classes, and
+the other sets up a mapping between the servlet name and a relative URL
+which is used in client requests.
+</p>
+
+<h3>Dojo toolkit</h3>
+
+<p>We are currently using (and redistributing) version 1.1.1 of the
+<a href="www.dojotoolkit.org">Dojo</a> toolkit.  It is automatically
+installed as part of the WBUI deploy.  It is extensive, and includes
+a large library of widgets, AJAX handling, JSON handling, event handling,
+etc.  It is cross-platform, but its Internet Explorer support, while improving,
+is not enough yet to run OSCARS using that browser.
+</p>
+
+<p>The
+<a href="http://www.dojotoolkit.org/book/dojo-book-1-0">Book of Dojo</a>
+contains a large amount of information on using Dojo, actually a somewhat
+daunting amount of information.  The current WBUI uses a relatively small
+number of Dojo's features.  One feature of note that is used are Dojo
+grids, which while experimental, are used in the WBUI for sortable, clickable
+tables.  The book section on Dijit contains information on all the widgets used.
+More information on how Dojo is used in the WBUI is provided in the following
+sections.
+</p>
+
+<h3>Main page</h3>
+
+<p>
+web/index.html is the starting page in the WBUI, accessible via
+https://oscars.es.net/OSCARS/.  It is also in effect the only page in
+the WBUI.  The displayed portion contains a banner at the top indicating
+some of the organizations currently participating in developing OSCARS,
+a line containing the current date and time as well as the current
+status of the client, and a set of tabs and their content.  Before
+successful login, only the Login/Logout tab is displayed.  After login,
+more tabs appear, depending on user authorizations (see the page on the
+<a href="WBUI.html">user interface</a> for a general description of the tabs).
+At the bottom of the page are links pointing to the documentation,
+and other general information.  These will open up in separate browser
+tabs.  Following that are two email links.
+</p>
+
+<p>
+It is very important to note that the back/forward button should not be
+used while in the WBUI.  The reason for this is described after the
+following sections describing the source for the document.
+</p>
+
+<p>
+Going through the source for the page, the first item is the DOCTYPE.
+Including the DOCTYPE, as is, is important for the proper
+functioning of some Dojo widgets.
+</p>
+
+<p>
+The next section contains all the CSS style sheets used.
+The first is
+necessary for proper styling of grids, the next two are the standard Dojo
+style sheets, and the last is a local style sheet containing rules that may
+override the Dojo rules.  More on style sheets is contained in the section
+on them below.
+</p>
+
+<p>The first script section includes the required main Dojo Javascript module,
+and contains configuration indicating that Dojo widgets should be parsed
+when a page is loaded, and a property that would be used if back/forward
+worked (preventBackButtonFix)</p>
+
+<p>The next two script sections register the namespace for the WBUI Javascript
+modules (oscars), and make the modules available (oscars.*).  More on the
+modules is provided in the section on them below.</p>
+
+<p>The next section includes (a long list of dojo.requires) the modules for
+all the Dojo widgets used within the WBUI (dijit.* and dojox.*).
+The dojo.* modules provide core functionality
+as well a module (ItemFileReadStore) used for data by one kind of grid.
+</p>
+
+<p>OSCARSState is the declaration for a class used for a global variable.</p>
+
+<p>The script section with the dojo.addOnLoads sets up method calls that
+happen once, after all the widgets in index.html have been parsed.
+oscars.DigitalClock.initClock initializes the date and time display in
+the status bar.  The next addOnLoad sets up the method to call when a
+tab is clicked on.  The final one is not currently functional.
+</p>
+
+<p>Dojo depends a great deal on its style sheets for proper functioning.
+Having the body class be "tundra" is important, so don't change that.
+</p>
+
+<p>
+The first table includes the banner, the date/time display, and the status
+line.
+The color surrounding the current status indicates the state that the WBUI is
+in.  Green means that an operation succeeded, yellow indicates an in progress
+operation, and red indicates that a client request failed.  The color is
+controlled by resetting the class of the oscarsStatus DOM node.
+</p>
+
+<p>The next div section creates a global variable with the OSCARSState
+class.  It is referenced simple by oscarsState in all the WBUI Javascript
+modules and HTML pages.
+</p>
+
+<p>The next div section sets up the
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-2-dijit/layout/tab-container">TabContainer</a> and its initial
+Login/Logout tab (ContentPane).  All HTML pages referenced by this and other
+tabs are loaded when the corresponding ContentPane is selected.
+Only the portion of the page for the current ContentPane changes
+when another tab (and HTML page) are selected.  The whole page is not
+reloaded.  This is the reason that the back/forward browser buttons cannot
+be used; you will exit the application.  A fix for this has been under
+investigation for awhile, but has not been successful yet.  There are hooks
+in index.html to allow this, but they are not currently functional.
+</p>
+
+<h3>HTML forms</h3>
+
+<p>
+All the static HTML pages are contained in web/forms.  Nothing has been
+done to protect the HTML pages normally requiring authorization from being
+viewed.  They are non-functional without the appropriate server authorization.
+</p>
+
+<p>
+The pages are named
+similarly to the tab/ContentPane that loads them.  Most of the Dojo
+setup has already been done in index.html and does not need to be repeated
+in these pages.  These pages are tightly coupled to the correspondingly named
+Javascript modules in web/oscars.  An attempt was made to keep as much
+Javascript as possible out of the HTML pages and in the modules.
+Pages starting with reservation* deal
+with requests to the BSS.  Pages starting with user* deal with the AAA.
+</p>
+
+<p>
+Functionality used by a number of pages is covered here; it would be too
+lengthy to cover them all in detail.  It is important to distinguish 
+between two types of entities:  HTML DOM nodes such as div and table, and
+Dojo widgets such as dijit.form.Button.  Each Dojo widget is given an
+id unique across all HTML pages, since the id is global and allows it to
+be accessed anywhere in a script.  A Dojo widget is retrieved using
+the dijit.byId(id) call, and allows Dojo-related methods to be called on it.
+Each Dojo widget also has an associated DOM element which can
+be used for Javascript DOM-related operations, retrieved by
+dijit.byId(id).domNode.
+</p>
+
+<p>
+Each DOM element that has an id (again global) assigned to it can be
+retrieved using dojo.byId(domId).  Id's have only been assigned to DOM elements
+if it is desired that its display status can be changed (visible or not),
+or that its innerHTML can be changed.
+</p>
+
+<p>
+Note that dojox.layout.ContentPane is used to contain the HTML pages
+rather than dijit.layout.ContentPane (programmatic tab creation
+and the associated loading of an HTML page are covered
+in the following section).
+The dojox version has more functionality, especially for being able to
+tie an event to the the initial page load.  An example of this usage is
+in reservationCreate.html, in the script in its head section:
+</p>
+
+<pre>
+dojo.connect(dijit.byId("reservationCreatePane"), "onLoad",
+                         oscars.ReservationCreate.init);
+</pre>
+
+<p>
+reservationCreatePane is the id of the containing ContentPane for
+reservationCreate.html.
+oscars.ReservationCreate.init is called on the first page load, and only on
+the first page load.
+</p>
+
+<h3>Javascript modules</h3>
+
+<h3>Stylesheets</h3>
+
+<h2>Common tasks</h2>
+
+<h3>Using a new Dojo widget</h3>
+
+<h3>Adding a new page</h3>
+
+<h3>Setting up calls to servlets</h3>
+
+<h2>Debugging</h2>
+
+<p>There are several tools and sources of information that will make
+developing new forms and servlets easier.</p>
+
+<h3>Firebug</h3>
 <p>The use of Firebug and Firebug Lite is covered in a
 <a href="http://www.dojotoolkit.org/book/book-dojo/part-4-meta-dojo-making-your-dojo-code-run-faster-and-better/debugging-facilities/deb">tutorial</a>
 by the Dojo developers.</p>
@@ -30,7 +288,9 @@ Script tab, on the right
 side of the window you can inspect any variables that exists where the
 breakpoint is set, and continue to the next breakpoint and inspect
 variables there.</p>
-<h2>JSLint and Rhino</h2>
+
+<h3>JSLint and Rhino</h3>
+
 <p>Unfortunately, Javascript syntax errors will result in cryptic messages in
 Firebug such as "oscars.Form has no properties" if there is a syntax
 error in web/oscars/Form.js, with no clue as to where the syntax error is.
@@ -61,5 +321,8 @@ unzip it, and place js.jar in lib in the main directory.  After that you can
 run the
 syntaxChecker.sh script in web to check for syntax errors in any of the
 HTML or Javascript files, for example "./syntaxChecker.sh oscars/Form.js".</p>
+
+<h3>Dojo forums</h3>
+
 </body>
 </html>
