@@ -26,7 +26,8 @@ public class CancelReservation extends HttpServlet {
 
         Reservation reservation = null;
         String reply = null;
-        boolean allUsers = false;
+        String institution = null;
+        String loginConstraint = null;
         
         String methodName = "CancelReservation";
         UserManager userMgr =  new UserManager("aaa");
@@ -49,7 +50,13 @@ public class CancelReservation extends HttpServlet {
                                 methodName, aaa, null);
             return;
         }
-        String institution = userMgr.getInstitution(userName);
+        if (authVal.equals(AuthValue.MYSITE) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+                institution = userMgr.getInstitution(userName);
+            } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+                loginConstraint = userName;
+            }
         aaa.getTransaction().commit();
         
         String gri = request.getParameter("gri");
@@ -59,7 +66,7 @@ public class CancelReservation extends HttpServlet {
         bss.beginTransaction();
         String errMessage = null;
         try {
-        	reservation = rm.cancel(gri, userName, institution, authVal.ordinal());
+        	reservation = rm.cancel(gri, loginConstraint, institution);
             String remoteStatus = forwarder.cancel(reservation);
             rm.finalizeCancel(reservation, remoteStatus);
         } catch (BSSException e) {
@@ -74,7 +81,7 @@ public class CancelReservation extends HttpServlet {
             }
         }
         Map outputMap = new HashMap();
-        outputMap.put("status", "Successfully cancelled reservation with " +
+        outputMap.put("status", "Successfully canceled reservation with " +
                                 "GRI " + reservation.getGlobalReservationId());
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);

@@ -32,17 +32,6 @@ public class UserManager {
      *
      * @param user a user instance containing user parameters
      * @param institutionName a string with the new user's affiliation
-     */
-    public void create(User user, String institutionName)
-            throws AAAException {
-
-        this.create(user, institutionName, null);
-    }
-
-    /** Creates a system user.
-     *
-     * @param user a user instance containing user parameters
-     * @param institutionName a string with the new user's affiliation
      * @param roles a list of attributes for the user
      */
     public void create(User user, String institutionName, List<Integer> roles)
@@ -415,7 +404,7 @@ public class UserManager {
                     if (auth.getConstraintValue().intValue() == 1) {
                         // found an authorization with allUsers allowed,
                         // highest level access, so return it
-                        this.log.debug("checkAccess:finish ALLUSERS access for "
+                        this.log.info("checkAccess:finish ALLUSERS access for "
                                 + permissionName + " on " + resourceName);
                         return AuthValue.ALLUSERS;
                     } else {
@@ -455,9 +444,12 @@ public class UserManager {
      * @param resourceName a string identifying a resource
      * @param permissionName a string identifying a permission
      * @param reqBandwidth int with bandwidth requested
-     * @param reqDuration int with reservation duration, -1 means persistant
+     * @param reqDuration int with reservation duration, -1 means persistent
      * @param specPathElems boolean, true means pathElements have been input
      * @return one of DENIED, SELFONLY, ALLUSERS
+     * 
+     * Note: SELFONLY and ALLUSERS don't make sense and aren't used 
+     *       MYSITE might make sense -mrt
      */
     public AuthValue checkModResAccess(String userName, String resourceName,
             String permissionName, int reqBandwidth, int reqDuration, 

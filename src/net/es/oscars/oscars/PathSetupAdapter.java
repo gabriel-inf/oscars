@@ -33,7 +33,8 @@ public class PathSetupAdapter{
      * local path setup a teardownPath message is issued.
      *
      * @param params createPathContent request parameters
-     * @param login the login of the user that made the request
+     * @param login if not null only reservations of this user or with
+     *        the token set are allowed.
      * @return the result containing ACTIVE status. 
      * @throws PSSException
      * @throws InterdomainException
@@ -56,10 +57,20 @@ public class PathSetupAdapter{
         ReservationDAO resvDAO = new ReservationDAO("bss");
         
         /* Retrieve reservation */
-        Reservation resv = resvDAO.queryByGRIAndLogin(gri, login); 
-        if (resv == null && tokenValue != null) {
-            resv = this.validateToken(tokenValue, gri);
-        }else if (resv == null) {
+        Reservation resv = null;
+        if (login == null ) {
+            try {
+                resv = resvDAO.query(gri);
+            } catch ( BSSException e ){
+                throw new PSSException("No reservations match request");
+            }    
+        } else {
+            resv = resvDAO.queryByGRIAndLogin(gri, login);  
+            if (resv == null && tokenValue != null) {
+                resv = this.validateToken(tokenValue, gri);
+            }
+        }
+        if (resv == null) {
             throw new PSSException("No reservations match request");
         }
         
@@ -104,7 +115,8 @@ public class PathSetupAdapter{
      * path is removed and the exception passed upstream.
      *
      * @param params RefreshPathContent request parameters
-     * @param login the login of the user that made the request
+     * @param login if not null only reservations of this user or with
+     *        the token set are allowed.
      * @return the result containing ACTIVE status if successful
      * @throws PSSException
      * @throws InterdomainException
@@ -125,13 +137,22 @@ public class PathSetupAdapter{
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         ReservationDAO resvDAO = new ReservationDAO("bss");
-        String errorMessage = null;
         
         /* Retrieve reservation */
-        Reservation resv = resvDAO.queryByGRIAndLogin(gri, login);
-        if (resv == null && tokenValue != null) {
-            resv = this.validateToken(tokenValue, gri);
-        }else if (resv == null) {
+        Reservation resv = null;
+        if (login == null ) {
+            try {
+                resv = resvDAO.query(gri);
+            } catch ( BSSException e ){
+                throw new PSSException("No reservations match request");
+            }    
+        } else {
+            resv = resvDAO.queryByGRIAndLogin(gri, login);  
+            if (resv == null && tokenValue != null) {
+                resv = this.validateToken(tokenValue, gri);
+            }
+        }
+        if (resv == null) {
             throw new PSSException("No reservations match request");
         }
         
@@ -172,7 +193,8 @@ public class PathSetupAdapter{
      * later if the reservation is not expired.
      *
      * @param params TeardownPathContent request parameters
-     * @param login the login of the user that made the request
+     * @param login if not null only reservations of this user or with
+     *        the token set are allowed.
      * @return the result containing PENDING status if successful
      * @throws PSSException
      * @throws InterdomainException
@@ -185,7 +207,6 @@ public class PathSetupAdapter{
         String gri = params.getGlobalReservationId();
         String tokenValue = params.getToken();
         String status = null;
-        String errorMsg = null;
         
         this.log.info("teardown.start"); 
         
@@ -196,10 +217,20 @@ public class PathSetupAdapter{
         ReservationDAO resvDAO = new ReservationDAO("bss");
         
         /* Retrieve reservation */
-        Reservation resv = resvDAO.queryByGRIAndLogin(gri, login); 
-        if (resv == null && tokenValue != null) {
-            resv = this.validateToken(tokenValue, gri);
-        }else if (resv == null) {
+        Reservation resv = null;
+        if (login == null ) {
+            try {
+                resv = resvDAO.query(gri);
+            } catch ( BSSException e ){
+                throw new PSSException("No reservations match request");
+            }    
+        } else {
+            resv = resvDAO.queryByGRIAndLogin(gri, login);  
+            if (resv == null && tokenValue != null) {
+                resv = this.validateToken(tokenValue, gri);
+            }
+        }
+        if (resv == null) {
             throw new PSSException("No reservations match request");
         }
         

@@ -106,6 +106,8 @@ public class ListReservations extends HttpServlet {
         net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
 
         UserManager mgr = new UserManager("aaa");
+        String institution = null;
+        String loginConstraint = null;
         List<User> users = mgr.list();
         AuthValue authVal = mgr.checkAccess(login, "Reservations", "list");
         if (authVal == AuthValue.DENIED) {
@@ -113,12 +115,16 @@ public class ListReservations extends HttpServlet {
                                 methodName, null, null);
             return null;
         }
-
-        
-        String institution = mgr.getInstitution(login);
+        if (authVal.equals(AuthValue.MYSITE) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+                institution = mgr.getInstitution(login);
+            } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+                loginConstraint = login;
+            }
         try {
             reservations =
-                rm.list(login, institution, authVal.ordinal(), statuses, description, inLinks,
+                rm.list(loginConstraint, institution, statuses, description, inLinks,
                         vlans, startTimeSeconds, endTimeSeconds);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), methodName, null, null);

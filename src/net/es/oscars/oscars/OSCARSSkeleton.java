@@ -118,9 +118,10 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
 
         // ResStatus reply = null;
         String reply = null;
-        boolean allUsers = false;
         System.out.println("OSCARSSkeleton cancelReservation");
         String login = this.checkUser();
+        String institution = null;
+        String loginConstraint = null;
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
@@ -129,8 +130,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("cancelReservation: permission denied");
+        } 
+        if (authVal.equals(AuthValue.MYSITE) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+            institution = this.userMgr.getInstitution(login);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+            loginConstraint = login;
         }
-        String institution = this.userMgr.getInstitution(login);
         // read-only
         aaa.getTransaction().commit();
 
@@ -138,7 +145,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.cancel(params,login,institution,authVal.ordinal());
+            reply = this.adapter.cancel(params,loginConstraint,institution);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("cancelReservation caught BSSException: " + e.getMessage());
@@ -171,6 +178,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ResDetails reply = null;
 
         String login = this.checkUser();
+        String loginConstraint = null;
+        String institution = null;
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
@@ -180,13 +189,19 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         if (authVal.equals(AuthValue.DENIED)) {
                 throw new AAAFaultMessage("queryReservation: permission denied");
         }
-        String institution = this.userMgr.getInstitution(login);
+        if (authVal.equals(AuthValue.MYSITE) ||
+		        authVal.equals(AuthValue.SITEANDSELF)){
+            institution = this.userMgr.getInstitution(login);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+            loginConstraint = login;
+        }
         aaa.getTransaction().commit();
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.query(gri, login, institution, authVal.ordinal());
+            reply = this.adapter.query(gri, loginConstraint, institution);
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("queryReservation: " + e.getMessage());
@@ -216,6 +231,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         ModifyResReply reply = null;
         ModifyReservationResponse response = new ModifyReservationResponse();
         ModifyResContent params = request.getModifyReservation();
+        String loginConstraint = null;
+        String institution = null;
         String login = this.checkUser();
 
         Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
@@ -224,13 +241,20 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("modifyReservation: permission denied");
         }
-        String institution = this.userMgr.getInstitution(login);
+        if (authVal.equals(AuthValue.MYSITE) ||
+               authVal.equals(AuthValue.SITEANDSELF)){
+            institution = this.userMgr.getInstitution(login);
+        } 
+        if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+            loginConstraint = login;
+        }
         aaa.getTransaction().commit();
 
         Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.modify(params, login, institution, authVal.ordinal() );
+            reply = this.adapter.modify(params, loginConstraint, institution );
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("modifyReservation caught BSSException: " + e.getMessage());
@@ -267,6 +291,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throws AAAFaultMessage, BSSFaultMessage {
 
         ListReply reply = null;
+        String loginConstraint = null;
+        String institution = null;
         String login = this.checkUser();
 
         Session aaa =
@@ -277,14 +303,20 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("listReservations: permission denied");
         }
-        String institution = this.userMgr.getInstitution(login);
+        if (authVal.equals(AuthValue.MYSITE) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+            institution = this.userMgr.getInstitution(login);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+            loginConstraint = login;
+        }
         aaa.getTransaction().commit();
 
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
         bss.beginTransaction();
         try {
-            reply = this.adapter.list(login, institution, authVal.ordinal(), request.getListReservations());
+            reply = this.adapter.list(loginConstraint, institution, request.getListReservations());
         } catch (BSSException e) {
             bss.getTransaction().rollback();
             this.log.error("listReservations: " + e.getMessage());
@@ -309,23 +341,20 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         GetTopologyContent requestContent = request.getGetNetworkTopology();
         GetNetworkTopologyResponse response = new GetNetworkTopologyResponse();
         GetTopologyResponseContent responseContent = null;
-        boolean allUsers = false;
         String login = this.checkUser();
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
 
-        /* Check user atributes. Must have query permissions
+        /* Check user attributes. Must have query permissions
            on Domains resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "query");
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                this.log.info("denied");
-                throw new AAAFaultMessage("OSCARSSkeleton:getNetworkTopology: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
-        }
+
+       if (authVal.equals(AuthValue.DENIED)) {
+	   this.log.info("denied");
+	   throw new AAAFaultMessage("OSCARSSkeleton:getNetworkTopology: permission denied");
+       }
 
         Session bss =
             HibernateUtil.getSessionFactory("bss").getCurrentSession();
@@ -358,22 +387,18 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         InitiateTopologyPullContent requestContent = request.getInitiateTopologyPull();
         InitiateTopologyPullResponse response = new InitiateTopologyPullResponse();
         InitiateTopologyPullResponseContent responseContent = null;
-        boolean allUsers = false;
         String login = this.checkUser();
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
 
-        /* Check user atributes. Must have modify permissions
+        /* Check user attributes. Must have modify permissions
            on Domains resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Domains", "modify");
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                this.log.info("denied");
-                throw new AAAFaultMessage("OSCARSSkeleton:initiateTopologyPull: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
+        if (authVal.equals(AuthValue.DENIED)) {
+            this.log.info("denied");
+            throw new AAAFaultMessage("OSCARSSkeleton:initiateTopologyPull: permission denied");
         }
 
         Session bss =
@@ -408,27 +433,31 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         CreatePathContent requestContent = request.getCreatePath();
         CreatePathResponse response = new CreatePathResponse();
         CreatePathResponseContent responseContent = null;
-
-        boolean allUsers = false;
+        String loginConstraint = null;
+        String institution = null; // not used yet
         String login = this.checkUser();
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
 
-        /* Check user atributes. Must have signal permissions
+        /* Check user attributes. Must have signal permissions
            on Reservations resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                this.log.info("denied");
-                throw new AAAFaultMessage("OSCARSSkeleton:createPath: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
+        if (authVal.equals(AuthValue.DENIED)) {
+            this.log.info("denied");
+            throw new AAAFaultMessage("OSCARSSkeleton:createPath: permission denied");
+        }
+        if (authVal.equals(AuthValue.MYSITE) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+           institution = this.userMgr.getInstitution(login);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+           loginConstraint = login;
         }
 
         try {
-            responseContent = this.pathSetupAdapter.create(requestContent, login);
+            responseContent = this.pathSetupAdapter.create(requestContent, loginConstraint);
             response.setCreatePathResponse(responseContent);
         } catch(PSSException e) {
             throw new BSSFaultMessage("createPath: " + e.getMessage());
@@ -455,26 +484,31 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         RefreshPathResponse response = new RefreshPathResponse();
         RefreshPathResponseContent responseContent = null;
 
-        boolean allUsers = false;
+        String loginConstraint = null;
+        String institution = null; // not used yet
         String login = this.checkUser();
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
 
-        /* Check user atributes. Must have signal permissions
+        /* Check user attributes. Must have signal permissions
            on Reservations resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                this.log.info("denied");
-                throw new AAAFaultMessage("OSCARSSkeleton:refreshPath: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
+        if (authVal.equals(AuthValue.DENIED)) {
+            this.log.info("denied");
+            throw new AAAFaultMessage("OSCARSSkeleton:refreshPath: permission denied");
+        }
+        if (authVal.equals(AuthValue.MYSITE) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+           institution = this.userMgr.getInstitution(login);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+           loginConstraint = login;
         }
 
         try {
-            responseContent = this.pathSetupAdapter.refresh(requestContent, login);
+            responseContent = this.pathSetupAdapter.refresh(requestContent, loginConstraint);
             response.setRefreshPathResponse(responseContent);
         } catch (PSSException e) {
             throw new BSSFaultMessage("refreshPath: " + e.getMessage());
@@ -501,26 +535,31 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         TeardownPathResponse response = new TeardownPathResponse();
         TeardownPathResponseContent responseContent = null;
 
-        boolean allUsers = false;
+        String loginConstraint = null;
+        String institution = null; // not used yet
         String login = this.checkUser();
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
 
-        /* Check user atributes. Must have signal permissions
+        /* Check user attributes. Must have signal permissions
            on Reservations resources */
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "signal");
         aaa.getTransaction().commit();
-        switch (authVal) {
-            case DENIED:
-                this.log.info("denied");
-                throw new AAAFaultMessage("OSCARSSkeleton:teardownPath: permission denied");
-            case SELFONLY: allUsers = false; break;
-            case ALLUSERS: allUsers = true; break;
+        if (authVal.equals(AuthValue.DENIED)) {
+            this.log.info("denied");
+            throw new AAAFaultMessage("OSCARSSkeleton:teardownPath: permission denied");
+        }
+        if (authVal.equals(AuthValue.MYSITE) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+           institution = this.userMgr.getInstitution(login);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+                authVal.equals(AuthValue.SITEANDSELF)){
+           loginConstraint = login;
         }
 
         try{
-            responseContent = this.pathSetupAdapter.teardown(requestContent, login);
+            responseContent = this.pathSetupAdapter.teardown(requestContent, loginConstraint);
             response.setTeardownPathResponse(responseContent);
         } catch(PSSException e) {
             throw new BSSFaultMessage("teardownPath: " + e.getMessage());

@@ -55,6 +55,8 @@ public class ModifyReservation extends HttpServlet {
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
+        String institution = null;
+        String loginConstraint = null;
 
         response.setContentType("text/json-comment-filtered");
 
@@ -62,7 +64,6 @@ public class ModifyReservation extends HttpServlet {
         if (userName == null) { return; }
 
         Reservation resv = this.toReservation(request);
-        boolean allUsers = false;
         Session aaa =
             HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
@@ -75,7 +76,14 @@ public class ModifyReservation extends HttpServlet {
                                     methodName, aaa, null);
                 return;
         }
-        String institution = userMgr.getInstitution(userName);
+        if (authVal.equals(AuthValue.MYSITE) ||
+              authVal.equals(AuthValue.SITEANDSELF)){
+            institution = userMgr.getInstitution(userName);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+        	    authVal.equals(AuthValue.SITEANDSELF)){
+            loginConstraint = userName;
+        }  
+
         aaa.getTransaction().commit();
 
         Session bss =
@@ -85,8 +93,8 @@ public class ModifyReservation extends HttpServlet {
         PathInfo pathInfo = null;
         String errMessage = null;
         try {
-            Reservation persistentResv = rm.modify(resv, userName, institution,
-                                                   authVal.ordinal(), pathInfo);
+            Reservation persistentResv = rm.modify(resv, loginConstraint, institution,
+                                                   pathInfo);
             tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response

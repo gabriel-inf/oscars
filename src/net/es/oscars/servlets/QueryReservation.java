@@ -36,7 +36,8 @@ public class QueryReservation extends HttpServlet {
         UserSession userSession = new UserSession();
         net.es.oscars.servlets.Utils utils =
             new net.es.oscars.servlets.Utils();
-
+        String institution = null;
+        String loginConstraint = null;
         PrintWriter out = response.getWriter();
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
@@ -51,14 +52,20 @@ public class QueryReservation extends HttpServlet {
                                 methodName, aaa, null);
             return;
         }
-
+        if (authVal.equals(AuthValue.MYSITE) ||
+            authVal.equals(AuthValue.SITEANDSELF)){
+            institution = userMgr.getInstitution(userName);
+        } if (authVal.equals(AuthValue.SELFONLY) ||
+    	    authVal.equals(AuthValue.SITEANDSELF)){
+            loginConstraint = userName;
+        }
+        
         // check to see if may look at internal intradomain path elements
         AuthValue authValHops = userMgr.checkModResAccess(userName,
             "Reservations", "create", 0, 0, true, false );
         if  (authValHops != AuthValue.DENIED ) {
             internalIntradomainHops = true;
-        }
-        String institution = userMgr.getInstitution(userName);
+        };
         aaa.getTransaction().commit();
          
         String gri = request.getParameter("gri");
@@ -77,7 +84,7 @@ public class QueryReservation extends HttpServlet {
             }
         }
         try {
-            reservation = rm.query(gri, userName, institution, authVal.ordinal());
+            reservation = rm.query(gri, loginConstraint, institution);
         } catch (BSSException e) {
             utils.handleFailure(out, e.getMessage(), methodName, null, bss);
             return;
