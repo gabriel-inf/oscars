@@ -12,5 +12,5 @@ do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
 
-java -cp $OSCARS_CLASSPATH:IDCNotify.jar:. IDCNotifyServer $*
+java -cp $OSCARS_CLASSPATH:IDCNotify.jar:. -Dcatalina.home=$CATALINA_HOME IDCNotifyServer $*
 
