@@ -18,8 +18,12 @@ Components &gt; <a href="browserInterface.html">Dojo Development Notes</a>
 <h1>Dojo Development Notes</h1>
 <p>The following are notes for developers wishing to add new material to
 the WBUI.  The various components of the interface are described, and what
-is involved in common tasks such as adding new Web forms.  Debugging can be
-a challenge; various tools for that in the browser and Dojo environment are
+is involved in
+<a href="#commonTasksSection">common tasks</a>
+such as adding new Web forms.  Debugging can be
+a challenge; various
+<a href="#debuggingSection">tools</a>
+for that in the browser and Dojo environment are
 described.  Another page describes the
 <a href="WBUI.html">interface</a> from the user's point of view.
 A large amount of information about the current implementation has been
@@ -75,7 +79,9 @@ would result in AAA errors returned from the servlets.
 <a href="http://www.json.org/">JSON</a> formatted data.  The MIME type
 returned is "text/json-comment-filtered".  They are commented
 to avoid certain cross-site scripting attacks.  When Dojo 1.2 is available,
-a more secure method than this may be used.
+a more secure method than this may be used.  The section on
+<a href="#modulesSection">Javascript modules</a> covers the communication
+between the client and server in more detail.
 </p>
 
 <p>Servlet classes are mapped to URL's in web/WEB-INF/web.xml.  One section
@@ -100,7 +106,9 @@ contains a large amount of information on using Dojo, actually a somewhat
 daunting amount of information.  The current WBUI uses a relatively small
 number of Dojo's features.  One feature of note that is used are Dojo
 grids, which while experimental, are used in the WBUI for sortable, clickable
-tables.  The book section on Dijit contains information on all the widgets used.
+tables.  The book section on
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-2-dijit-0">Dijit</a>
+contains information on all the widgets used.
 More information on how Dojo is used in the WBUI is provided in the following
 sections.
 </p>
@@ -124,7 +132,9 @@ tabs.  Following that are two email links.
 
 <p>
 It is very important to note that the back/forward button should not be
-used while in the WBUI.  The reason for this is described after the
+used while in the WBUI.  The
+<a href="#backReason">reason</a>
+for this is described after the
 following sections describing the source for the document.
 </p>
 
@@ -139,7 +149,8 @@ The next section contains all the CSS style sheets used.
 The first is
 necessary for proper styling of grids, the next two are the standard Dojo
 style sheets, and the last is a local style sheet containing rules that may
-override the Dojo rules.  More on style sheets is contained in the section
+override the Dojo rules.  More on style sheets is contained in the
+<a href="#styleSection">section</a>
 on them below.
 </p>
 
@@ -150,9 +161,12 @@ worked (preventBackButtonFix)</p>
 
 <p>The next two script sections register the namespace for the WBUI Javascript
 modules (oscars), and make the modules available (oscars.*).  More on the
-modules is provided in the section on them below.</p>
+modules is provided in the
+<a href="#modulesSection">section</a>
+below.</p>
 
-<p>The next section includes (a long list of dojo.requires) the modules for
+<p>The next script section includes (a long list of dojo.requires)
+the modules for
 all the Dojo widgets used within the WBUI (dijit.* and dojox.*).
 The dojo.* modules provide core functionality
 as well a module (ItemFileReadStore) used for data by one kind of grid.
@@ -160,7 +174,9 @@ as well a module (ItemFileReadStore) used for data by one kind of grid.
 
 <p>OSCARSState is the declaration for a class used for a global variable.</p>
 
-<p>The script section with the dojo.addOnLoads sets up method calls that
+<p>The following script section uses
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/functions-used-everywhere/dojo-addonload">dojo.addOnLoad</a>
+several times.  This sets up method calls that
 happen once, after all the widgets in index.html have been parsed.
 oscars.DigitalClock.initClock initializes the date and time display in
 the status bar.  The next addOnLoad sets up the method to call when a
@@ -185,13 +201,18 @@ class.  It is referenced simple by oscarsState in all the WBUI Javascript
 modules and HTML pages.
 </p>
 
-<p>The next div section sets up the
-<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-2-dijit/layout/tab-container">TabContainer</a> and its initial
+<p id="backReason">The next div section sets up the
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-2-dijit/layout/tab-container">TabContainer</a>
+and its initial
 Login/Logout tab (ContentPane).  All HTML pages referenced by this and other
 tabs are loaded when the corresponding ContentPane is selected.
 Only the portion of the page for the current ContentPane changes
 when another tab (and HTML page) are selected.  The whole page is not
-reloaded.  This is the reason that the back/forward browser buttons cannot
+reloaded.
+</p>
+
+<p>
+This is the reason that the back/forward browser buttons cannot
 be used; you will exit the application.  A fix for this has been under
 investigation for awhile, but has not been successful yet.  There are hooks
 in index.html to allow this, but they are not currently functional.
@@ -214,11 +235,12 @@ Javascript modules in web/oscars.  An attempt was made to keep as much
 Javascript as possible out of the HTML pages and in the modules.
 Pages starting with reservation* deal
 with requests to the BSS.  Pages starting with user* deal with the AAA.
+Functionality used by a number of pages is covered here; it would be too
+lengthy to cover them all in detail.
 </p>
 
 <p>
-Functionality used by a number of pages is covered here; it would be too
-lengthy to cover them all in detail.  It is important to distinguish 
+It is important to distinguish 
 between two types of entities:  HTML DOM nodes such as div and table, and
 Dojo widgets such as dijit.form.Button.  Each Dojo widget is given an
 id unique across all HTML pages, since the id is global and allows it to
@@ -234,13 +256,18 @@ Each DOM element that has an id (again global) assigned to it can be
 retrieved using dojo.byId(domId).  Id's have only been assigned to DOM elements
 if it is desired that its display status can be changed (visible or not),
 or that its innerHTML can be changed.
+The Dojo Book provides more information on
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/functions-used-everywhere/dojo-byid">ways</a>
+of accessing nodes and elements.
+
 </p>
 
 <p>
 Note that dojox.layout.ContentPane is used to contain the HTML pages
 rather than dijit.layout.ContentPane (programmatic tab creation
 and the associated loading of an HTML page are covered
-in the following section).
+in a Common tasks 
+<a href="tabCreation">section</a> below).
 The dojox version has more functionality, especially for being able to
 tie an event to the the initial page load.  An example of this usage is
 in reservationCreate.html, in the script in its head section:
@@ -255,22 +282,249 @@ dojo.connect(dijit.byId("reservationCreatePane"), "onLoad",
 reservationCreatePane is the id of the containing ContentPane for
 reservationCreate.html.
 oscars.ReservationCreate.init is called on the first page load, and only on
-the first page load.
+the first page load.  This method is located in the file 
+web/oscars/ReservationCreate.js.
 </p>
 
-<h3>Javascript modules</h3>
+<p>
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/functions-used-everywhere/dojo-connect">dojo.connect</a>
+is used in a number of places to connect
+event handlers to events associated with a widget.  Note that in this
+instance, where an HTML page is being loaded within a ContentPane, this
+usage of dojo.connect works, and dojo.addOnLoad doesn't.
+</p>
 
-<h3>Stylesheets</h3>
+<p>
+In addition to the "onLoad" event, dojo.connect is also used with
+the "onkeypress" event in the HTML pages
+(for an example, see web/forms/reservations.html).  The event handler in these
+cases is using the event's key code to know when "Enter" has been pressed, which
+is an alternative on some pages to having a button to submit a form.
+Note that in this case dojo.stopEvent must be called after form submission,
+or the page will stop working under Safari.
+More on events is covered in the Dojo Book
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/event-system">section</a>.
+</p>
 
-<h2>Common tasks</h2>
+<p>
+Another way that events can be associated with widgets, particularly
+button presses, is with "dojo/method".  This is covered in the Dojo book
+in a concise way on a high-level
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/hello-world-tutorial">overview page</a>,
+which is useful in general in getting started.  An example of its usage
+within OSCARS is in web/forms/reservationCreate.html.  A script with this
+type is embedded within the declaration of a widget such as a button, and
+in this instance is tied to the button's "onClick" event.
+</p>
+
+<p>All forms have the widget type dijit.form.Form.  These are used
+because of the (currently) undocumented method "validate".  There are 
+a large number of
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-2-dijit/form-validation-specialized-input/textbox-validating-currency-number">Dojo TextBoxes</a>
+in the HTML pages, primarily ValidationTextBox and one instance where
+NumberTextBox is used.
+</p>
+
+<p>ValidationTextBox's have a number of useful
+attributes.  One is a prompt message that appears when the user begins
+to type input; another is an invalid message that appears when a user
+has typed invalid input according to some regular expression, or when a
+user has not entered a required field.  Unfortunately the former is
+activated when the focus enters rather than leaves the text box, so a 
+warning triangle will appear until the regular expression is satisfied.
+NumberTextBox's allow constraints such as minimum and maximum values.
+An example is in web/forms/reservationCreate.html, for the bandwidth
+setting.
+</p>
+
+<p>
+Before a form is submitted, the Form's validate method is called by
+the Javascript modules.  If some of the fields are invalid, the form is
+not submitted, all invalid messages are displayed, and the cursor is set
+to the first invalid field.
+</p>
+
+<p>
+Two types of grids (tables on steroids)
+are used, one in web/forms/reservations.html, and the
+other in web/forms/userList.html.  In both these files, the table layout
+is set up in a script section in the top.  The cells set up the table headings
+and the field names that the client expects in incoming data.
+Setting up the exact widths of each field appears to be necessary.
+Note that the reservations setup has two items in its inner array, to be
+able to handle subrows, in which text taking up two or more lines in the
+table is treated and styled as a unit by Dojo.
+</p>
+
+<p>In
+userList.html, a static data store
+(<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/what-dojo-data/available-stores/dojo-data-item">dojo.data.ItemFileReadStore</a>)
+is used which is destroyed and recreated programmatically (since it is static)
+on each user list refresh in web/oscars/userList.js from the servlet reply.
+</p>
+
+<p>
+In reservations.html, a storeless model is used in which the data is formatted
+in a raw way by the servlet in exactly the way the grid expects.  Only
+dojox.Grid is set up in the HTML for that page.  Note that this was
+necessary to be able to handle the more dynamic search setup for that page
+in a very simple way, as
+opposed to using
+<a href="http://dojotoolkit.org/book/dojo-book-0-9-1-0/part-2-dijit-dojo-widget-library/advanced-editing-and-display/grid-1-0/sortin#comment-9112">dojo.data.QueryReadStore</a>
+which is rather complex (note the length and amount of
+perhaps inconsistent code in this
+<a href="#dojoForumSection">Dojo forum</a> thread).
+The storeless model could potentially be used for the user list as well, but
+the latter code is working.
+</p>
+
+<p>More on how these two types of grids are filled by the servlets and handled
+by the modules is given in the following section.
+There is a great amount of material
+associated with grids, and you will need to refer
+to the
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/docx-documentation-under-development/grid">Dojo documentation</a>
+for the complete meaning of views, layouts, data stores, and models.
+The storeless model is not covered there, but in a
+Dojo forum
+<a href="http://www.dojotoolkit.org/forum/dojox-dojox/dojox-support/refresh-grid-when-underlying-data-server-changes">thread</a>
+(see some of the later postings).
+</p>
+
+<h3 id="modulesSection">Javascript modules</h3>
+
+<p>
+In the current implementation,
+by convention all the event handlers containing dojo.xhrPost calls are placed
+at the beginning of the module corresponding to the HTML page.
+</p>
+
+<h3 id="styleSection">Stylesheets</h3>
+
+<p>The one style sheet specifically associated with the WBUI is located in
+web/css/main.css.  It contains miscellaneous rules associated with OSCARS;
+most of the style rules are in the three Dojo style files listed at 
+the top of the main page.
+</p>
+
+<p>The ".required" and ".warning" rules are used to control the color
+outlining DOM elements such as table cells that are required, and that
+require special notice, respectively.  ".success", ".failure", and
+".inprocess" are rules controlling the color outlining the table cell
+with the status line.
+</p>
+
+<p>
+Specific rules overriding Dojo rules are at the bottom of this file.  Their
+comments indicate their function.  The last four rules make alternating
+rows in grids stand out more clearly, and make long rows fit more
+easily on the page.
+</p>
+
+<h2 id="commonTasksSection">Common tasks</h2>
 
 <h3>Using a new Dojo widget</h3>
 
-<h3>Adding a new page</h3>
+<p>If you need to add functionality not covered by a widget currently
+used within the interface you will need to look at the Dijit
+<a href=http://www.dojotoolkit.org/book/dojo-book-0-9/part-2-dijit-0">book section</a>,
+which covers all the widgets grouped by function, to find an appropriate one.
+The documentation for each widget and any associated events is fairly
+complete, but in some cases you may have to look at the tests or the source
+for the proper usage.  Grids are covered under this book section as well.
+</p>
 
-<h3>Setting up calls to servlets</h3>
+<p>
+After Dojo has been auto-installed, most widget tests can be found in
+web/lib/dojo/dijit/tests.  They contain working examples, but have the
+drawback that most are single page.  The source for the widgets is in
+the next directory up.  The exceptions are any dojo.data or dojox.grid related
+modules, which are under web/lib/dojo/dojo and web/lib/dojo/dojox.
+</p>
 
-<h2>Debugging</h2>
+<p>
+After a widget has been found and used, it will need to be added to the list of
+dojo.require's on the main page, for example dojo.require("dijit.form.Button"),
+or else the tab where that widget is added will not display.
+</p>
+
+<h3 id="#tabCreation">Adding a new page</h3>
+
+<p>
+Adding a new tab involves creating a new HTML page under web/forms, adding
+code to web/oscars/UserLogin.js and UserLogout.js to programmatically
+create and destroy the tab,
+writing a new Javascript module under web/oscars to handle events and
+communication with the server,
+writing a new servlet under src/net/es/oscars/servlets, and setting up
+new information in web/WEB-INF/web.xml so that Tomcat can handle the
+communication between client and server.  Therefore it's fairly involved.
+</p>
+
+<p>
+In general, the current code on both the client and server side can serve as
+models for all of this.
+The conventions described in the section on
+<a href="#modulesSection">Javascript modules</a> should be followed
+in setting up those modules and communication between the client and
+server.
+</p>
+
+<p>Tabs other than Login/Logout are created programmatically in
+web/oscars/UserLogin.js in the handleReply method after successful user
+authentication.  As an example, the following code in handleReply creates the
+ContentPane for the User Profile tab, and loads the corresponding
+web/forms/userProfile.html file:
+
+<pre>
+    var userProfilePane = new dojox.layout.ContentPane(
+         {title:'User Profile', id: 'userProfilePane'},
+          dojo.doc.createElement('div'));
+    userProfilePane.setHref("forms/userProfile.html");
+    mainTabContainer.addChild(userProfilePane, 3);
+    userProfilePane.startup();
+</pre>
+
+<p>
+The setHref call loads the corresponding HTML file.  The ContentPane
+is then added to the main TabContainer.  Note that the integer determines
+the tab's place in the tab list at the top of the TabContainer.
+Don't forget the startup call, which completes the setup.
+</p>
+
+<p>
+Any tab created programmatically needs to be closed in the handleReply
+method of UserLogout.js.  Otherwise, the next login will fail because a
+widget with that id (in this case "userProfilePane") already exists.  The
+following code does this for the widget with that id:
+
+<pre>
+    if (dijit.byId("userProfilePane") != null) {
+        mainTabContainer.closeChild(dijit.byId("userProfilePane"));
+    }
+</pre>
+
+<p>
+Two sets of elements need to be added for any new servlet in
+web/WEB-INF/web.xml.  One is a servlet element to map
+between a servlet name and a servlet class, and the other is a servlet-mapping
+element that maps between the servlet name and a relative URL.
+</p>
+
+<h3>Adding new calls to servlets</h3>
+
+<p>
+Each HTML page may contain different events that result in calls to multiple
+servlets, so there is not a one-to-one mapping.
+Adding new servlet calls from an existing page requires a subset of the
+tasks discussed in the previous section, i.e. no new HTML page, no
+additional tabs, and no new module is required.  A widget setting up a new
+event needs to be added to the HTML page, a new event handler
+added to the corresponding module, a new servlet written, and
+web.xml needs to be modified.
+</p>
+
+<h2 id="debuggingSection">Debugging</h2>
 
 <p>There are several tools and sources of information that will make
 developing new forms and servlets easier.</p>
@@ -291,7 +545,7 @@ variables there.</p>
 
 <h3>JSLint and Rhino</h3>
 
-<p>Unfortunately, Javascript syntax errors will result in cryptic messages in
+<p>Javascript syntax errors will result in cryptic messages in
 Firebug such as "oscars.Form has no properties" if there is a syntax
 error in web/oscars/Form.js, with no clue as to where the syntax error is.
 That is where
@@ -314,7 +568,7 @@ but they are non-fatal.</p>
 JSLint by itself
 requires pasting your code into its Web page, which is very cumbersome.
 With the use of Rhino, which is written in Java, you can use JSLint
-on the command-line.  Unfortunately, we cannot redistribute its jar because
+on the command-line.  We cannot redistribute its jar because
 of licensing issues.  You can
 <a href="http://www.mozilla.org/rhino/download.html">download</a> and
 unzip it, and place js.jar in lib in the main directory.  After that you can
@@ -322,7 +576,26 @@ run the
 syntaxChecker.sh script in web to check for syntax errors in any of the
 HTML or Javascript files, for example "./syntaxChecker.sh oscars/Form.js".</p>
 
-<h3>Dojo forums</h3>
+<h3 id="dojoForumSection">Dojo forums</h3>
+
+<p>
+The
+<a href="http://www.dojotoolkit.org/forum">Dojo forums</a> contain user
+questions and replies from either more experienced users or from developers.
+This interface could not have been developed without it.  You will need
+to set up a login to be able to post questions.  Note that this system
+is not perfect and you may need to do some digging (sorting by date would
+be nice, since Dojo has gone through a major revision in the last year).
+Some material (especially anything with 0.4) is out of date.
+</p>
+
+<p>
+You will have a much greater chance of a reply if you can condense the
+problem you are having into a small amount of sample code that someone else
+can use to reproduce the problem.  Doing so has been more of a problem as
+the interface has grown.  As always in such a system, search first before
+posting.
+</p>
 
 </body>
 </html>
