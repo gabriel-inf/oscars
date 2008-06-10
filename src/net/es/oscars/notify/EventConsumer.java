@@ -31,6 +31,10 @@ public class EventConsumer extends Thread{
                 observable.eventOccured(obj);
             }catch(InterruptedException e){
                 this.log.warn("Interrupted while listening for event");
+            }catch(Exception e){
+                //keep alive even if underlying exception
+                e.printStackTrace();
+                this.log.error(e);
             }
         }
     }

@@ -31,7 +31,6 @@ public class ReservationAdapter {
     private Logger log;
     private ReservationManager rm;
     private TypeConverter tc;
-    private NotifyInitializer notifier;
     private String dbname;
 
     public ReservationAdapter() {
@@ -39,16 +38,6 @@ public class ReservationAdapter {
         this.dbname = "bss";
         this.rm = new ReservationManager("bss");
         this.tc = new TypeConverter();
-        this.notifier = new NotifyInitializer();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
-            // TODO:  ReservationAdapter, ReservationManager, etc. will
-            // have init methods that throw exceptions that will not be
-            // ignored it NotifyInitializer cannot be created.  Don't
-            // want exceptions in constructor
-        }
     }
 
     /**
@@ -73,7 +62,10 @@ public class ReservationAdapter {
         PathInfo pathInfo = params.getPathInfo();
         CreateReply forwardReply = null;
         CreateReply reply = null;
+        EventProducer eventProducer = new EventProducer();
+        
         try {
+            eventProducer.addEvent(Event.RESV_CREATE_STARTED, login, "API", resv);
             this.rm.create(resv, login, pathInfo);
             this.tc.ensureLocalIds(pathInfo);
 
@@ -97,7 +89,10 @@ public class ReservationAdapter {
             this.rm.finalizeResv(forwardReply, resv, pathInfo);
             // persist to db
             this.rm.store(resv);
-
+            resv.toString("bss");//initialize object
+            eventProducer.addEvent(Event.RESV_CREATE_COMPLETED, login, 
+                "API", resv);
+            
             this.log.debug("create, to toReply");
             reply = this.tc.reservationToReply(resv);
             if (pathInfo.getLayer3Info() != null && forwardReply != null && forwardReply.getPathInfo() != null) {
@@ -112,26 +107,22 @@ public class ReservationAdapter {
             //pathType always strict in response so not needed anyways
             pathInfo.setPathType(null);
             reply.setPathInfo(pathInfo);
-            Map<String,String> messageInfo = new HashMap<String,String>();
-            messageInfo.put("subject",
-                            "Reservation " + resv.getGlobalReservationId() +
-                             " scheduling through API succeeded");
-            messageInfo.put("body", "Reservation scheduling succeeded.\n" +
-                                  resv.toString("bss"));
-            messageInfo.put("alertLine", resv.getDescription());
-            NotifierSource observable = this.notifier.getSource();
-            Object obj = (Object) messageInfo;
-            observable.eventOccured(obj);
         } catch (BSSException e) {
             // send notification in all cases
-            this.sendFailureNotification(resv, e.getMessage());
+            String errMsg = this.generateErrorMsg(resv, e.getMessage());
+            eventProducer.addEvent(Event.RESV_CREATE_FAILED, login, "API", 
+                resv, "", errMsg);
             throw new BSSException(e.getMessage());
         } catch (InterdomainException e) {
             // send notification in all cases
-            this.sendFailureNotification(resv, e.getMessage());
+            String errMsg = this.generateErrorMsg(resv, e.getMessage());
+            eventProducer.addEvent(Event.RESV_CREATE_FAILED, login, "API", 
+                resv, "", errMsg);
             throw new InterdomainException(e.getMessage());
         }
+        
         this.log.info("create.finish: " + resv.toString("bss"));
+        
         return reply;
     }
 
@@ -152,7 +143,7 @@ public class ReservationAdapter {
             throws BSSException, InterdomainException {
 
         this.log.info("modify.start");
-
+        EventProducer eventProducer = new EventProducer();
         Reservation resv = this.tc.contentToReservation(params);
         this.log.debug("Reservation was: "+resv.getGlobalReservationId());
 
@@ -198,11 +189,15 @@ public class ReservationAdapter {
             
         } catch (BSSException e) {
             // send notification in all cases
-            this.sendFailureNotification(resv, "modify failed with error: " + e.getMessage());
+            String errMsg = this.generateErrorMsg(resv, e.getMessage());
+            eventProducer.addEvent(Event.RESV_MODIFY_FAILED, login, "API",
+                resv, "", errMsg);
             throw new BSSException(e.getMessage());
         } catch (InterdomainException e) {
             // send notification in all cases
-            this.sendFailureNotification(resv, "modify failed with error: " + e.getMessage());
+            String errMsg = this.generateErrorMsg(resv, e.getMessage());
+            eventProducer.addEvent(Event.RESV_MODIFY_FAILED, login, "API",
+                resv, "", errMsg);
             throw new InterdomainException(e.getMessage());
         }
         this.log.info("modify.finish");
@@ -247,7 +242,7 @@ public class ReservationAdapter {
                 throw interException;
             }
         }
-        this.rm.finalizeCancel(resv, remoteStatus);
+        this.rm.finalizeCancel(resv, login, "API");
         return resv.getStatus();
     }
 
@@ -513,26 +508,14 @@ public class ReservationAdapter {
         this.log.info("logCreateParams.finish");
     }
 
-    private void sendFailureNotification(Reservation resv, String errMsg) {
-
-        // ugly, but notifies in all cases.  Have to be careful if creation
-        // did not get too far.
-        Map<String,String> messageInfo = new HashMap<String,String>();
+    private String generateErrorMsg(Reservation resv, String errMsg) {
+        //Have to be careful if creation did not get too far.
         if (resv == null) {
-            messageInfo.put("subject",
-                "Reservation scheduling through API entirely failed");
-            messageInfo.put("body",
-                "Reservation scheduling entirely failed with " + errMsg);
-        } else if (resv.getGlobalReservationId() != null) {
-            messageInfo.put("subject",
-                "Reservation " + resv.getGlobalReservationId() + " failed");
-            messageInfo.put("body",
-                "Reservation scheduling through API failed with " +
-                 errMsg + "\n" + resv.toString("bss"));
-            messageInfo.put("alertLine", resv.getDescription());
+            errMsg = "Reservation scheduling entirely failed with " + errMsg;
+        }else if (resv.getGlobalReservationId() != null) {
+           errMsg = "Reservation scheduling through API failed with " + errMsg;
         }
-        NotifierSource observable = this.notifier.getSource();
-        Object obj = (Object) messageInfo;
-        observable.eventOccured(obj);
+        
+        return errMsg;
     }
 }

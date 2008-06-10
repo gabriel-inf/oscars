@@ -29,7 +29,6 @@ import net.es.oscars.PropHandler;
 
 public class CreateReservation extends HttpServlet {
     private Logger log;
-    private NotifyInitializer notifier;
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
@@ -38,23 +37,14 @@ public class CreateReservation extends HttpServlet {
         this.log.info("CreateReservation.start");
 
         String methodName = "CreateReservation";
-        this.notifier = new NotifyInitializer();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
-            // TODO:  ReservationAdapter, ReservationManager, etc. will
-            // have init methods that throw exceptions that will not be
-            // ignored it NotifyInitializer cannot be created.  Don't
-            // want exceptions in constructor
-        }
         TypeConverter tc = new TypeConverter();
         Forwarder forwarder = new Forwarder();
         ReservationManager rm = new ReservationManager("bss");
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
-
+        EventProducer eventProducer = new EventProducer();
+        
         response.setContentType("text/json-comment-filtered");
 
         String userName = userSession.checkSession(out, request);
@@ -110,17 +100,8 @@ public class CreateReservation extends HttpServlet {
             CreateReply forwardReply = forwarder.create(resv, pathInfo);
             rm.finalizeResv(forwardReply, resv, pathInfo);
             rm.store(resv);
-            Map<String,String> messageInfo = new HashMap<String,String>();
-            messageInfo.put("subject",
-                "Reservation " + resv.getGlobalReservationId() +
-                " scheduling through browser succeeded");
-            messageInfo.put("body",
-                "Reservation scheduling through browser succeeded.\n" +
-                 resv.toString("bss") + "\n");
-            messageInfo.put("alertLine", resv.getDescription());
-            NotifierSource observable = this.notifier.getSource();
-            Object obj = (Object) messageInfo;
-            observable.eventOccured(obj);
+            eventProducer.addEvent(Event.RESV_CREATE_COMPLETED, userName, 
+                "WBUI", resv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (Exception e) {
@@ -129,7 +110,8 @@ public class CreateReservation extends HttpServlet {
         } finally {
             forwarder.cleanUp();
             if (errMessage != null) {
-                this.sendFailureNotification(resv, errMessage);
+                eventProducer.addEvent(Event.RESV_CREATE_FAILED, userName, 
+                    "WBUI", resv, "", errMessage);
                 utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;
             }
@@ -314,28 +296,5 @@ public class CreateReservation extends HttpServlet {
         pathInfo.setMplsInfo(mplsInfo);
 
         return pathInfo;
-    }
-
-    private void sendFailureNotification(Reservation resv, String errMsg) {
-
-        // ugly, but notifies in all cases.  Have to be careful if creation
-        // did not get too far.
-        Map<String,String> messageInfo = new HashMap<String,String>();
-        if (resv == null) {
-            messageInfo.put("subject",
-                "Reservation scheduling entirely failed");
-            messageInfo.put("body",
-                "Reservation scheduling through browser entirely failed");
-        } else if (resv.getGlobalReservationId() != null) {
-            messageInfo.put("subject", 
-                "Reservation " + resv.getGlobalReservationId() + " failed");
-            messageInfo.put("body",
-                    "Scheduling reservation through browser failed with" +
-                            errMsg + "\n" + resv.toString("bss"));
-            messageInfo.put("alertLine", resv.getDescription());
-        }
-        NotifierSource observable = this.notifier.getSource();
-        Object obj = (Object) messageInfo;
-        observable.eventOccured(obj);
     }
 }

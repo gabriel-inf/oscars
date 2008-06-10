@@ -50,7 +50,6 @@ public class TopologyManager {
     private Utils utils;
     private Properties props;
     private String localDomain;
-    private NotifyInitializer notifier;
 
 
     private DomainDAO domainDAO;
@@ -65,16 +64,6 @@ public class TopologyManager {
     public TopologyManager(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = dbname;
-        this.notifier = new NotifyInitializer();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
-            // TODO:  ReservationAdapter, ReservationManager, etc. will
-            // have init methods that throw exceptions that will not be
-            // ignored it NotifyInitializer cannot be created.  Don't
-            // want exceptions in constructor
-        }
 
         this.rm = new ReservationManager(this.dbname);
         this.utils = new Utils(this.dbname);
@@ -923,8 +912,6 @@ public class TopologyManager {
                 pathElem = pathElem.getNextElem();
             }
 
-            String subject = "Reservation " + r.getGlobalReservationId() + "invalidated";
-
             //TODO:  build layer-specific info from old path in database
             //       assuming only the hops have the possibility of changing
             PathInfo pathInfo = new PathInfo();
@@ -934,11 +921,12 @@ public class TopologyManager {
                 // finds path and checks for oversubscription
                 path = this.rm.getPath(r, pathInfo);
             } catch (BSSException e) {
-                String msg = "Reservation invalidated due to oversubscription.\n " +
-                              r.toString(this.dbname) + "\n";
-                this.sendMessage(subject, msg, r);
-//                r.setStatus("INVALIDATED");
-                this.log.warn("request may be INVALID due to oversubscription: " +r.getGlobalReservationId() );
+                String msg = "Reservation invalidated due to oversubscription.";
+                EventProducer eventProducer = new EventProducer();
+                eventProducer.addEvent(Event.RESV_INVALIDATED, "",
+                    "WBUI", r, "", msg);
+                this.log.warn("request may be INVALID due to oversubscription: " +
+                    r.getGlobalReservationId() );
                 dao.update(r);
 
                 continue;
@@ -949,11 +937,13 @@ public class TopologyManager {
                 dao.update(r);
             } else if (status.equals("ACTIVE")) {
                 if (!this.isDuplicate(oldPath, path)) {
-                    String msg = "Reservation invalidated due to changed path.\n" +
-                                  r.toString(this.dbname) + "\n";
-                    this.sendMessage(subject, msg, r);
+                    String msg = "Reservation invalidated due to changed path.";
+                    EventProducer eventProducer = new EventProducer();
+                    eventProducer.addEvent(Event.RESV_INVALIDATED, "", 
+                        "WBUI", r, "", msg);
 //                    r.setStatus("INVALIDATED");
-                    this.log.warn("INVALIDATED request due to changed path: " +r.getGlobalReservationId() );
+                    this.log.warn("INVALIDATED request due to changed path: " +
+                        r.getGlobalReservationId() );
                     dao.update(r);
                 }
             }
@@ -1196,15 +1186,5 @@ public class TopologyManager {
      */
     public void setLocalDomain(String domainId) {
         this.localDomain = domainId;
-    }
-
-    private void sendMessage(String subject, String msg, Reservation resv) {
-        Map<String,String> messageInfo = new HashMap<String,String>();
-        messageInfo.put("subject", subject);
-        messageInfo.put("body", msg);
-        messageInfo.put("alertLine", resv.getDescription());
-        NotifierSource observable = this.notifier.getSource();
-        Object obj = (Object) messageInfo;
-        observable.eventOccured(obj);
     }
 }

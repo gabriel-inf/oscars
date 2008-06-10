@@ -19,23 +19,12 @@ import net.es.oscars.notify.*;
  */
 public class Scheduler {
     private Logger log;
-    private NotifyInitializer notifier;
     private String dbname;
     private PathSetupManager pathSetupManager;
 
     public Scheduler(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         this.pathSetupManager = new PathSetupManager(dbname);
-        this.notifier = new NotifyInitializer();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
-            // TODO:  ReservationAdapter, ReservationManager, etc. will
-            // have init methods that throw exceptions that will not be
-            // ignored it NotifyInitializer cannot be created.  Don't
-            // want exceptions in constructor
-        }
         this.dbname = dbname;
     }
 
@@ -49,15 +38,11 @@ public class Scheduler {
     public List<Reservation> pendingReservations(Integer timeInterval)  {
 
         List<Reservation> reservations = null;
-        boolean success = false;
-        boolean badSetup = false;
+        EventProducer eventProducer = new EventProducer();
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.pendingReservations(timeInterval);
         for (Reservation resv: reservations) {
-            String subject = "Circuit set up for " +
-                             resv.getGlobalReservationId();
-            String notification = "Circuit set up for reservation ";
             try {
                 // call PSS to schedule LSP
                 String pathSetupMode = resv.getPath().getPathSetupMode();
@@ -66,44 +51,29 @@ public class Scheduler {
                 if (pathSetupMode.equals("timer-automatic")) {
                     // resv set to proper status inside dragon, cisco, or jnx
                     String status = this.pathSetupManager.create(resv, true);
-                    success = true;
                 }
-                subject += " succeeded";
-                notification += "succeeded.\n" + resv.toString(this.dbname) + "\n";
+                eventProducer.addEvent(Event.PATH_SETUP_COMPLETED, "", 
+                    "SCHEDULER", resv);
             } catch (PSSException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                badSetup = true;
-                subject += " failed";
-                notification += "failed with " + ex.getMessage() +
-                                "\n" + resv.toString(this.dbname) + "\n";
-                this.log.error(notification);
+                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                    "SCHEDULER", resv, "", ex.getMessage());
+                this.log.error(ex.getMessage());
             } catch (InterdomainException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                badSetup = true;
-                subject += " failed";
-                notification += "failed with " + ex.getMessage() +
-                                "\n" + resv.toString(this.dbname) + "\n";
-                this.log.error(notification);
+                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                    "SCHEDULER", resv, "", ex.getMessage());
+                this.log.error(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                badSetup = true;
-                subject += " failed";
-                notification += "failed with " + ex.getMessage() +
-                                "\n" + resv.toString(this.dbname) + "\n";
-                this.log.error(notification);
+                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                    "SCHEDULER", resv, "", ex.getMessage());
+                this.log.error(ex.getMessage());
             }
-            if (success || badSetup) {
-                Map<String,String> messageInfo = new HashMap<String,String>();
-                messageInfo.put("subject", subject);
-                messageInfo.put("body", notification);
-                messageInfo.put("alertLine", resv.getDescription());
-                NotifierSource observable = this.notifier.getSource();
-                Object obj = (Object) messageInfo;
-                observable.eventOccured(obj);
-            }
+
             dao.update(resv);
         }
         return reservations;
@@ -124,51 +94,35 @@ public class Scheduler {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.expiredReservations(timeInterval);
         for (Reservation resv: reservations) {
-            String subject = "Circuit teardown for " +
-                             resv.getGlobalReservationId();
-            String notification = "Circuit tear down for reservation ";
+            EventProducer eventProducer = new EventProducer();
+            
             try {
                 // call PSS to tear down LSP
                 prevStatus = resv.getStatus();
-                // this should only happen due to a failed interdomain
-                // communication
-                if (prevStatus.equals("PENDING")) {
-                    String errMsg = "pending reservation " +
-                        "expired without ever having been set up";
-                    throw new PSSException(errMsg);
-                }
+                
                 this.log.info("expiredReservation: " +
-                              resv.getGlobalReservationId());
+                              resv.getGlobalReservationId());      
                 String status = this.pathSetupManager.teardown(resv, false);
+                eventProducer.addEvent(Event.PATH_TEARDOWN_COMPLETED, "", 
+                    "SCHEDULER", resv);
+                
                 if (status.equals("CANCELLED")) {
-                    subject += " because of cancellation";
-                    notification += "occurred because of cancellation.\n";
-                } else {
-                    subject += " succeeded";
-                    notification += "succeeded.\n";
-               }
-                notification += resv.toString(this.dbname) + "\n";
+                    eventProducer.addEvent(Event.RESV_CANCELLED, "", 
+                        "SCHEDULER", resv);
+                }
             } catch (PSSException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                subject += " failed";
-                notification += "failed with " + ex.getMessage() +
-                                "\n" + resv.toString(this.dbname) + "\n";
-                this.log.error(notification);
+                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                    "SCHEDULER", resv, "", ex.getMessage());
+                this.log.error(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                subject += " failed";
-                notification += "failed with " + ex.getMessage() +
-                                "\n" + resv.toString(this.dbname) + "\n";
+                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                    "SCHEDULER", resv, "", ex.getMessage());
+                this.log.error(ex.getMessage());
             }
-            Map<String,String> messageInfo = new HashMap<String,String>();
-            messageInfo.put("subject", subject);
-            messageInfo.put("body", notification);
-            messageInfo.put("alertLine", resv.getDescription());
-            NotifierSource observable = this.notifier.getSource();
-            Object obj = (Object) messageInfo;
-            observable.eventOccured(obj);
             dao.update(resv);
         }
         return reservations;
@@ -190,48 +144,28 @@ public class Scheduler {
         Integer days_30 = 30 * days_1;
 
         List<Reservation> reservations = null;
-
-        NotifierSource observable = this.notifier.getSource();
-        Map<String,String> messageInfo = new HashMap<String,String>();
-
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        String subject = "Expiring OSCARS reservation";
-        String body = "";
-
+        EventProducer eventProducer = new EventProducer();
+        
         // 1 day
         reservations = dao.expiringReservations(days_1, timeInterval);
         for (Reservation resv: reservations) {
-            body = "Reservation with GRI: "+resv.getGlobalReservationId()+" expiring in 24 hours.";
-
-            messageInfo.put("subject", subject);
-            messageInfo.put("body", body);
-            messageInfo.put("alertLine", resv.getDescription());
-            Object obj = (Object) messageInfo;
-            observable.eventOccured(obj);
+            eventProducer.addEvent(Event.RESV_EXPIRES_IN_1DAY, "", 
+                    "SCHEDULER", resv);
         }
 
         // 7 days
         reservations = dao.expiringReservations(days_7, timeInterval);
         for (Reservation resv: reservations) {
-            body = "Reservation with GRI: "+resv.getGlobalReservationId()+" expiring in 7 days.";
-
-            messageInfo.put("subject", subject);
-            messageInfo.put("body", body);
-            messageInfo.put("alertLine", resv.getDescription());
-            Object obj = (Object) messageInfo;
-            observable.eventOccured(obj);
+            eventProducer.addEvent(Event.RESV_EXPIRES_IN_7DAYS, "", 
+                    "SCHEDULER", resv);
         }
 
         // 30 days
         reservations = dao.expiringReservations(days_30, timeInterval);
         for (Reservation resv: reservations) {
-            body = "Reservation with GRI: "+resv.getGlobalReservationId()+" expiring in 30 days.";
-
-            messageInfo.put("subject", subject);
-            messageInfo.put("body", body);
-            messageInfo.put("alertLine", resv.getDescription());
-            Object obj = (Object) messageInfo;
-            observable.eventOccured(obj);
+            eventProducer.addEvent(Event.RESV_EXPIRES_IN_30DAYS, "", 
+                    "SCHEDULER", resv);
         }
 
 

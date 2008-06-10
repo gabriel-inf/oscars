@@ -68,7 +68,7 @@ public class CancelReservation extends HttpServlet {
         try {
         	reservation = rm.cancel(gri, loginConstraint, institution);
             String remoteStatus = forwarder.cancel(reservation);
-            rm.finalizeCancel(reservation, remoteStatus);
+            rm.finalizeCancel(reservation, userName, "WBUI");
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (InterdomainException e) {

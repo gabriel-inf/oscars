@@ -29,7 +29,6 @@ import net.es.oscars.PropHandler;
 
 public class ModifyReservation extends HttpServlet {
     private Logger log;
-    private NotifyInitializer notifier;
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
@@ -38,16 +37,6 @@ public class ModifyReservation extends HttpServlet {
         this.log.info("ModifyReservation.start");
         String methodName = "ModifyReservation";
 
-        this.notifier = new NotifyInitializer();
-        try {
-            this.notifier.init();
-        } catch (NotifyException ex) {
-            this.log.error("*** COULD NOT INITIALIZE NOTIFIER ***");
-            // TODO:  ReservationAdapter, ReservationManager, etc. will
-            // have init methods that throw exceptions that will not be
-            // ignored it NotifyInitializer cannot be created.  Don't
-            // want exceptions in constructor
-        }
         TypeConverter tc = new TypeConverter();
         Forwarder forwarder = new Forwarder();
         ModifyResReply forwardReply = null;
@@ -55,6 +44,8 @@ public class ModifyReservation extends HttpServlet {
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
+        EventProducer eventProducer = new EventProducer();
+        
         String institution = null;
         String loginConstraint = null;
 
@@ -92,8 +83,9 @@ public class ModifyReservation extends HttpServlet {
         // for now, path cannot be modified
         PathInfo pathInfo = null;
         String errMessage = null;
+        Reservation persistentResv = null;
         try {
-            Reservation persistentResv = rm.modify(resv, loginConstraint, institution,
+            persistentResv = rm.modify(resv, loginConstraint, institution,
                                                    pathInfo);
             tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
@@ -103,16 +95,8 @@ public class ModifyReservation extends HttpServlet {
             forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
             persistentResv = rm.finalizeModifyResv(forwardReply, resv);
             Map<String,String> messageInfo = new HashMap<String,String>();
-            messageInfo.put("subject",
-                "Reservation " + persistentResv.getGlobalReservationId() +
-                " modification through browser succeeded");
-            messageInfo.put("body",
-                "Reservation modification through browser succeeded.\n" +
-                 persistentResv.toString("bss") + "\n");
-            messageInfo.put("alertLine", persistentResv.getDescription());
-            NotifierSource observable = this.notifier.getSource();
-            Object obj = (Object) messageInfo;
-            observable.eventOccured(obj);
+            eventProducer.addEvent(Event.RESV_MODIFY_COMPLETED, userName, 
+                "WBUI", persistentResv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (InterdomainException e) {
@@ -123,7 +107,8 @@ public class ModifyReservation extends HttpServlet {
         } finally {
             forwarder.cleanUp();
             if (errMessage != null) {
-                this.sendFailureNotification(resv, errMessage);
+                eventProducer.addEvent(Event.RESV_MODIFY_FAILED, userName, 
+                    "WBUI", persistentResv, "", errMessage);
                 utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;
             }
@@ -144,7 +129,6 @@ public class ModifyReservation extends HttpServlet {
         throws IOException, ServletException {
         this.doGet(request, response);
     }
-
 
     public Reservation toReservation(HttpServletRequest request) {
         String strParam = null;
@@ -177,20 +161,5 @@ public class ModifyReservation extends HttpServlet {
         String description = request.getParameter("modifyDescription");
         resv.setDescription(description);
         return resv;
-    }
-
-    private void sendFailureNotification(Reservation resv, String errMsg) {
-
-        Map<String,String> messageInfo = new HashMap<String,String>();
-        messageInfo.put("subject",
-                "Modifying reservation " + resv.getGlobalReservationId() +
-                " through browser failed");
-        messageInfo.put("body",
-               "Modifying reservation through browser failed with" +
-                        errMsg + "\n" + resv.toString("bss"));
-        messageInfo.put("alertLine", resv.getDescription());
-        NotifierSource observable = this.notifier.getSource();
-        Object obj = (Object) messageInfo;
-        observable.eventOccured(obj);
     }
 }

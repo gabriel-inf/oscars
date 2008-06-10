@@ -33,19 +33,20 @@ public class EventProducer{
         }
     }
     
-    public void addEvent(String type, String userLogin, Reservation resv){
-        this.addEvent(type, userLogin, resv, null, null);
+    public void addEvent(String type, String userLogin, String source,
+        Reservation resv){
+        this.addEvent(type, userLogin, source, resv, null, null);
     }
     
-    public void addEvent(String type, String userLogin, Reservation resv,
-        String errorCode, String errorMessage){
+    public void addEvent(String type, String userLogin, String source,
+        Reservation resv, String errorCode, String errorMessage){
         Event event = new Event();
-        //initialize reservation
-        resv.toString();
+        Reservation resvCopy = resv.copy();
         event.setType(type);
         event.setTimestamp(System.currentTimeMillis());
         event.setUserLogin(userLogin);
-        event.setReservation(resv);
+        event.setSource(source);
+        event.setReservation(resvCopy);
         event.setErrorCode(errorCode);
         event.setErrorMessage(errorMessage);
         this.addEvent(event);

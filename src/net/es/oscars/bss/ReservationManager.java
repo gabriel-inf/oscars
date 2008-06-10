@@ -227,27 +227,18 @@ public class ReservationManager {
      * Assume that permission exists or we would not have got this far
      *
      * @param resv Reservation instance
-     * @param status string with final cancel status
+     * @param eventSrc string indicating whether API or scheduler called method
      * @throws BSSException
      */
-    public void finalizeCancel(Reservation resv, String status)
+    public void finalizeCancel(Reservation resv, String login, String eventSrc)
             throws BSSException {
 
         this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("finalizeCancel.start");
         String gri = resv.getGlobalReservationId();
-
-        Map<String,String> messageInfo = new HashMap<String,String>();
-        messageInfo.put("subject",
-                "Reservation " + resv.getGlobalReservationId() + " cancelled");
-        messageInfo.put("body",
-            "Reservation cancelled.\n" + resv.toString(this.dbname));
-        messageInfo.put("alertLine", resv.getDescription());
-        NotifierSource observable = this.notifier.getSource();
-        Object obj = (Object) messageInfo;
-        observable.eventOccured(obj);
-        this.log.info("finalizeCancel.finish: " +
-                      resv.getGlobalReservationId());
+        EventProducer eventProducer = new EventProducer();
+        eventProducer.addEvent(Event.RESV_CANCEL_COMPLETED, login, 
+            eventSrc, resv);
         this.rsvLogger.stop();
     }
 
