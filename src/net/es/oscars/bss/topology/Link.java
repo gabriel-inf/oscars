@@ -359,7 +359,27 @@ public class Link extends HibernateBean implements Serializable {
                     castOther.getPort()).isEquals();
         }
     }
-
+    
+    /**
+     * Only copies topology identifier information. Useful for detaching
+     * object from hibernate and passing to other processes that only care
+     * about IDs.
+     *
+     * @return a copy of this link
+     **/
+    public Link topoCopy(){
+        Link linkCopy = new Link();
+        Port portCopy = null;
+        linkCopy.setTopologyIdent(this.topologyIdent);
+        
+        if(this.port != null){
+            portCopy = this.port.topoCopy();
+        }
+        linkCopy.setPort(portCopy);
+        
+        return linkCopy;
+    }
+    
     public String toString() {
         return new ToStringBuilder(this).append("id", getId()).toString();
     }

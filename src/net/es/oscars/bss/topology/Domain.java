@@ -250,6 +250,17 @@ public class Domain extends HibernateBean implements Serializable {
                 .isEquals();
         }
     }
+    
+    public Domain copy(){
+        Domain domainCopy = new Domain();
+        domainCopy.setTopologyIdent(this.topologyIdent);
+        domainCopy.setName(this.name);
+        domainCopy.setAbbrev(this.abbrev);
+        domainCopy.setUrl(this.url);
+        domainCopy.setLocal(this.local);
+        
+        return domainCopy;
+    }
 
     public String toString() {
         return new ToStringBuilder(this)

@@ -47,6 +47,12 @@ public class Token extends HibernateBean implements Serializable {
     public void setReservation(Reservation reservation) { 
         this.reservation = reservation; 
     }
+    
+    public Token copy(){
+        Token tokenCopy = new Token();
+        tokenCopy.setValue(this.value);
+        return tokenCopy;
+    }
 
     public String toString() {
         return new ToStringBuilder(this)

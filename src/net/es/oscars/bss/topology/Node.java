@@ -156,7 +156,27 @@ public class Node extends HibernateBean implements Serializable {
         String thatFQTI = node.getFQTI();
         return thisFQTI.equals(thatFQTI);
     }
-
+    
+    /**
+     * Only copies topology identifier information. Useful for detaching
+     * object from hibernate and passing to other processes that only care
+     * about IDs.
+     *
+     * @return a copy of this node
+     **/
+    public Node topoCopy(){
+        Node nodeCopy = new Node();
+        Domain domainCopy = null;
+        
+        nodeCopy.setTopologyIdent(this.topologyIdent);
+        
+        if(this.domain != null){
+            domainCopy = this.domain.copy();
+        }
+        nodeCopy.setDomain(domainCopy);
+        
+        return nodeCopy;
+    }
 
     // need to override superclass because dealing with transient
     // instances as well

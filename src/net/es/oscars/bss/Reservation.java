@@ -173,6 +173,34 @@ public class Reservation extends HibernateBean implements Serializable {
             .append("id", getId())
             .toString();
     }
+    
+    public Reservation copy(){
+        Reservation resvCopy = new Reservation();
+        Token tokenCopy = null;
+        Path pathCopy = null;
+        
+        resvCopy.setGlobalReservationId(this.globalReservationId);
+        resvCopy.setStartTime(this.startTime);
+        resvCopy.setEndTime(this.endTime);
+        resvCopy.setCreatedTime(this.createdTime);
+        resvCopy.setBandwidth(this.bandwidth);
+        resvCopy.setLogin(this.login);
+        resvCopy.setStatus(this.status);
+        resvCopy.setDescription(this.description);
+        
+        if(this.token != null){
+            tokenCopy = this.token.copy();
+        }
+        resvCopy.setToken(tokenCopy);
+        
+        if(this.path != null){
+            pathCopy = this.path.copy();
+        }
+        resvCopy.setPath(pathCopy);
+        
+        return resvCopy;
+        
+    }
 
     public String toString(String dbname) {
         StringBuilder sb = new StringBuilder();

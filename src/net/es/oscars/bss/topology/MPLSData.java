@@ -71,6 +71,13 @@ public class MPLSData extends HibernateBean implements Serializable {
                 .isEquals();
         }
     }
+    
+    public MPLSData copy(){
+        MPLSData mplsDataCopy = new MPLSData();
+        mplsDataCopy.setBurstLimit(this.burstLimit);    
+        mplsDataCopy.setLspClass(this.lspClass);
+        return mplsDataCopy;
+    }
 
     public String toString() {
         return new ToStringBuilder(this)

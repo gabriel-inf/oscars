@@ -49,7 +49,7 @@ public class Layer2Data extends HibernateBean implements Serializable {
     public void setDestEndpoint(String destEndpoint) {
         this.destEndpoint = destEndpoint;
     }
-
+    
     // need to override superclass because dealing with transient
     // instances as well
     public boolean equals(Object o) {
@@ -72,7 +72,14 @@ public class Layer2Data extends HibernateBean implements Serializable {
                 .isEquals();
         }
     }
-
+    
+    public Layer2Data copy(){
+        Layer2Data l2DataCopy = new Layer2Data();
+        l2DataCopy.setSrcEndpoint(this.srcEndpoint);
+        l2DataCopy.setDestEndpoint(this.destEndpoint);
+        return l2DataCopy;
+    }
+    
     public String toString() {
         return new ToStringBuilder(this)
             .append("srcEndpoint", this.getSrcEndpoint())

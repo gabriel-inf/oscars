@@ -317,7 +317,28 @@ public class Port extends HibernateBean implements Serializable {
                     castOther.getNode()).isEquals();
         }
     }
-
+    
+    /**
+     * Only copies topology identifier information. Useful for detaching
+     * object from hibernate and passing to other processes that only care
+     * about IDs.
+     *
+     * @return a copy of this port
+     **/
+    public Port topoCopy(){
+        Port portCopy = new Port();
+        Node nodeCopy = null;
+        
+        portCopy.setTopologyIdent(this.topologyIdent);
+        
+        if(this.node != null){
+            nodeCopy = this.node.topoCopy();
+        }
+        portCopy.setNode(nodeCopy);
+        
+        return portCopy;
+    }
+        
     public String toString() {
         return new ToStringBuilder(this).append("id", getId()).toString();
     }

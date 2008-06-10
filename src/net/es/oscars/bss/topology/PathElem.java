@@ -118,7 +118,28 @@ public class PathElem extends HibernateBean implements Serializable {
                 .isEquals();
         }
     }
-
+    
+    public PathElem copy(){
+        PathElem pathElemCopy = new PathElem();
+        PathElem nextElemCopy = null;
+        Link linkCopy = null;
+        
+        pathElemCopy.setDescription(this.description);
+        pathElemCopy.setLinkDescr(this.linkDescr);
+        
+        if(this.link != null){
+            linkCopy = this.link.topoCopy();
+        }
+        pathElemCopy.setLink(linkCopy);
+        
+        if(this.nextElem != null){
+            nextElemCopy = this.nextElem.copy();
+        }
+        pathElemCopy.setNextElem(nextElemCopy);
+        
+        return pathElemCopy;
+    }
+    
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
