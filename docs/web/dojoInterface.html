@@ -95,7 +95,7 @@ which is used in client requests.
 <p>We are currently using (and redistributing) version 1.1.1 of the
 <a href="www.dojotoolkit.org">Dojo</a> toolkit.  It is automatically
 installed as part of the WBUI deploy.  It is extensive, and includes
-a large library of widgets, AJAX handling, JSON handling, event handling,
+a large library of widgets, Ajax handling, JSON handling, event handling,
 etc.  It is cross-platform, but its Internet Explorer support, while improving,
 is not enough yet to run OSCARS using that browser.
 </p>
@@ -218,7 +218,7 @@ investigation for awhile, but has not been successful yet.  There are hooks
 in index.html to allow this, but they are not currently functional.
 </p>
 
-<h3>HTML forms</h3>
+<h3 id="htmlSection">HTML pages</h3>
 
 <p>
 All the static HTML pages are contained in web/forms.  Nothing has been
@@ -246,19 +246,19 @@ Dojo widgets such as dijit.form.Button.  Each Dojo widget is given an
 id unique across all HTML pages, since the id is global and allows it to
 be accessed anywhere in a script.  A Dojo widget is retrieved using
 the dijit.byId(id) call, and allows Dojo-related methods to be called on it.
-Each Dojo widget also has an associated DOM element which can
-be used for Javascript DOM-related operations, retrieved by
-dijit.byId(id).domNode.
+Each Dojo widget is also accessible as a DOM node which can
+be used for Javascript DOM-related operations, accessed by
+dijit.byId(id).domNode or by dojo.byId(id).
 </p>
 
 <p>
-Each DOM element that has an id (again global) assigned to it can be
-retrieved using dojo.byId(domId).  Id's have only been assigned to DOM elements
+Each non-widget DOM node that has an id (again global) assigned to it can be
+retrieved using dojo.byId(domId).  Id's have only been assigned to such nodes
 if it is desired that its display status can be changed (visible or not),
 or that its innerHTML can be changed.
 The Dojo Book provides more information on
 <a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/functions-used-everywhere/dojo-byid">ways</a>
-of accessing nodes and elements.
+of accessing nodes and widgets.
 
 </p>
 
@@ -366,14 +366,11 @@ on each user list refresh in web/oscars/userList.js from the servlet reply.
 <p>
 In reservations.html, a storeless model is used in which the data is formatted
 in a raw way by the servlet in exactly the way the grid expects.  Only
-dojox.Grid is set up in the HTML for that page.  Note that this was
+the dojox.Grid widget is set up in the HTML for that page.  Note that this was
 necessary to be able to handle the more dynamic search setup for that page
 in a very simple way, as
-opposed to using
-<a href="http://dojotoolkit.org/book/dojo-book-0-9-1-0/part-2-dijit-dojo-widget-library/advanced-editing-and-display/grid-1-0/sortin#comment-9112">dojo.data.QueryReadStore</a>
-which is rather complex (note the length and amount of
-perhaps inconsistent code in this
-<a href="#dojoForumSection">Dojo forum</a> thread).
+opposed to using the complex
+<a href="http://dojotoolkit.org/book/dojo-book-0-9-1-0/part-2-dijit-dojo-widget-library/advanced-editing-and-display/grid-1-0/sortin#comment-9112">dojo.data.QueryReadStore</a>.
 The storeless model could potentially be used for the user list as well, but
 the latter code is working.
 </p>
@@ -388,15 +385,176 @@ for the complete meaning of views, layouts, data stores, and models.
 The storeless model is not covered there, but in a
 Dojo forum
 <a href="http://www.dojotoolkit.org/forum/dojox-dojox/dojox-support/refresh-grid-when-underlying-data-server-changes">thread</a>
-(see some of the later postings).
+(after the initial postings).
 </p>
 
 <h3 id="modulesSection">Javascript modules</h3>
 
+<p>All Javascript modules are in the "oscars" namespace, and are located in
+web/oscars.  Each registers themselves with Dojo with a
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/modules-and-namespaces/creating-your-own-modul">dojo.provide</a>
+line at the top of the module.  dojo.require is called for each module
+on the main page to actually make their methods available.
+</p>
+
 <p>
-In the current implementation,
-by convention all the event handlers containing dojo.xhrPost calls are placed
-at the beginning of the module corresponding to the HTML page.
+The modules are in three groups.
+One contains methods having to do with date/time
+handling, display, and conversions (DigitalClock.js).
+Two (Form.js and Utils.js)
+contain methods used by all tab-related modules. The tab-related
+modules have names corresponding to their associated HTML file.
+Note that Dojo classes are not used.  Not all methods are described for
+space reasons, but there are comments within the modules.
+</p>
+
+<p>
+The tab-related modules (referred to just as modules below) use Ajax to
+communicate with the servlets.
+The
+<a href="http://www.dojotoolkit.org/book/dojo-book-0-9/part-3-programmatic-dijit-and-dojo/ajax-transports">Dojo Ajax</a>
+calls wrapping XMLHttpRequest are dojo.xhrGet and dojo.xhrPost.
+In the current implementation, only dojo.xhrPost is used,
+and all the event handlers containing dojo.xhrPost calls are placed
+at the beginning of each module.
+</p>
+
+<p>
+The following is an example call to dojo.xhrPost from
+web/oscars/ReservationCreate.js, from the createReservation method:
+</p>
+
+<pre>
+    dojo.xhrPost({
+      url: 'servlet/CreateReservation',
+      handleAs: "json-comment-filtered",
+      load: oscars.ReservationCreate.handleReply,
+      error: oscars.Form.handleError,
+      form: dijit.byId("reservationCreateForm").domNode
+    });
+</pre>
+
+<p>
+The "url" attribute contains the servlet to submit the form to.  Recall
+that this mapping is set up in web/WEB-INF/web.xml.  "handleAs" gives the
+MIME type that is expected for the reply.  "load" gives the name of the
+method that will handle the JSON-encoded reply.  Each of the
+modules has an associated handleReply method.  "error" gives the name of
+the error handler that is encountered if an HTTP error code is returned, and
+"form" is the DOM id of the form that is being submitted.
+</p>
+
+<p>The HTTP error handler used is common to all modules, and
+is contained in Form.js.  It also contains the selectedChanged event handler,
+which is tied to the TabContainer's "selectChild" event on the main page.
+It's only function is to select one of these module's similarly
+named methods, based on the passed in ContentPane's (tab's) id.
+</p>
+
+<p>Also in Form.js, resetStatus is a method called at the beginning
+of every module.  The responseObject argument is the Javascript object
+(extracted from within comments by Dojo) returned in the JSON sent back from
+the servlet.
+Each servlet must set several properties of this object when it sends
+the JSON reply.  These are an identifier referring to that servlet
+("method"), whether there was an error or not ("success"), and a 
+status message ("status").  The status line is reset to the status message,
+and the color of its outline changed by resetting the class of its
+enclosing table cell based on success or failure.
+</p>
+
+<p>The next method in Form.js, applyParams, depends on a number of naming
+conventions, shared by the modules and the servlets, regarding the naming of
+returned properties and their values.  These conventions are expedient
+rather than elegant, and could be extended with others.
+The name/value pairs returned are operation dependent.
+</p>
+
+<p>
+Property names returned by a servlet must correspond to the id of a node or
+widget
+within a form, or they are ignored (as in the case of "status", etc.
+above).  In some cases the suffix
+of the property name is used to determine what to do.
+In the case of "Replace", the property's
+value is used to replace the innerHTML of the corresponding element.
+"Display" changes the visibility of the corresponding DOM element, depending
+on whether the value is true or false.  "TimeConvert" is a special case
+for converting that property's value from seconds to a date/time string,
+and replacing the innerHTML with that.  Property names ending with "Checkboxes"
+are a special case to set up whether a checkbox should be modifiable,
+and which checkboxes to check.  The default is to set the corresponding
+Dojo widget's value to the property value.
+</p>
+
+<p>A successful servlet reply may result in the selection of a new tab.  
+For example, if a user is added, oscars.UserAdd.handleReply will select
+the "User List" tab.
+</p>
+
+<p>Servlets expect time-related parameters to be in seconds.
+createReservation.html and reservations.html have calendar-based
+dijit.form.DateTextBox's for the date, and
+ValidationTextBox's to constrain the time to be a valid HH:MM value,
+as well as date/time strings in the reservations grid on the latter page.
+There are a number of conversion methods in oscars.DigitalClock, called by
+these modules,
+that convert from these formats to seconds on the servlet request, and from
+seconds to widget values or date/time strings on the reply.  Hidden form
+elements are used to hold the seconds values in several cases.
+</p>
+
+<p>Grids are the most difficult widgets to use.  The HTML side
+of their setup is covered in the section on
+<a href="#htmlSection">HTML pages</a>.  The main problem was that the
+logical place to put grid initialization (in a handler for an
+"onLoad" event) resulted in no grid display.  The situation was worse for
+the reservations grid (see oscars.Reservations.handleReply).
+Grid initialization for both the users list and the reservations list is
+handled the first time the corresponding tabSelected method in those
+modules is called;
+resetting attributes in the global oscarsState accomplishes that.
+</p>
+
+<p>The event
+handler for row clicks is set up as part of grid initialization.
+If a row in the reservations grid on the
+"Reservations" tab is clicked on, the "Reservation Details" tab is selected
+to display the result of the QueryReservation servlet call.  If a row in the
+users grid on the "User List" tab is clicked on, the "User Profile" tab is
+selected to display the results of the UserQuery servlet call.
+</p>
+
+<p>If the user grid needs to be refreshed, as a result of a user add or
+a user deletion, a new ItemFileReadStore is created, which is tied to
+a call to the UserList servlet.  A new model is set up, and the grid's
+refresh method is used to bring the data over and format it.
+See the outputUsers method in the UserList servlet for how the data
+store is populated.  Note that the field names there are those given in the
+view setup at the top of userList.html.
+</p>
+
+<p>
+The reservations grid uses a storeless data model, as was mentioned in
+the section on HTML pages.  There are no field names involved in the
+ListReservations servlet's outputReservations method.  Everything
+depends on adding the entries in the same order as in the fields in the
+view setup on the HTML page, in a two-dimensional list matching
+the view.
+</p>
+
+<p>
+With the user list data store, a map is returned, and Dojo handles
+more of the work.  With the reservations list, the servlet is explicitly
+called on a form submit, as opposed to the call being implicit with a grid
+refresh on the ItemFileReadStore.  Calling model.setData in
+oscars.Reservations.handleReply with the servlet response refreshes the 
+reservations grid.  Note that the fields with seconds are converted to
+date/time strings before setData is called.
+</p>
+
+<p>Additional information about the modules is described in the
+<a href="#commonTasksSection">section</a> on common tasks.
 </p>
 
 <h3 id="styleSection">Stylesheets</h3>
