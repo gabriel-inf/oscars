@@ -301,10 +301,6 @@ public class ReservationAdapter {
      * List all the reservations on this IDC that meet the input constraints.
      *
      * @param login String with user's login name
-<<<<<<< .mine
-=======
-     *
->>>>>>> .r6548
      * @param institution String with the user's institution name
      *
      * @param request the listRequest received by OSCARSSkeleton. Includes an
