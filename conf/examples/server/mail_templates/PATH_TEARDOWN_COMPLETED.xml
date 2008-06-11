@@ -1,7 +1,7 @@
 <oscarsMail>
 
 <contentType>text/plain</contentType>
-<subject>##TAG:PRODUCTION##Circuit teardown for reservation ##gri## succeeded</subject>
+<subject>##TAG:PRODUCTION CIRCUIT##Circuit teardown for reservation ##gri## succeeded</subject>
 <messageBody>
 Circuit teardown succeeded.
 ##reservation##

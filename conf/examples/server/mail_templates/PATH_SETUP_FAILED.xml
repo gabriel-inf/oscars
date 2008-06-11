@@ -1,7 +1,7 @@
 <oscarsMail>
 
 <contentType>text/plain</contentType>
-<subject>##TAG:PRODUCTION##Circuit set up for reservation ##gri## failed</subject>
+<subject>##TAG:PRODUCTION CIRCUIT##Circuit set up for reservation ##gri## failed</subject>
 <messageBody>
 Circuit set up failed with ##errorMessage##
 ##reservation##

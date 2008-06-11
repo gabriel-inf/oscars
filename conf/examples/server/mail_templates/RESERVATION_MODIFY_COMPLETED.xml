@@ -1,7 +1,7 @@
 <oscarsMail>
 
 <contentType>text/plain</contentType>
-<subject>##TAG:PRODUCTION##Reservation ##gri## modification through ##eventSource## succeeded</subject>
+<subject>##TAG:PRODUCTION CIRCUIT##Reservation ##gri## modification through ##eventSource## succeeded</subject>
 <messageBody>
 Reservation modification succeeded.
 ##reservation##

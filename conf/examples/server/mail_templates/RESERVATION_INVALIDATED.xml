@@ -1,7 +1,7 @@
 <oscarsMail>
 
 <contentType>text/plain</contentType>
-<subject>##TAG:PRODUCTION##Reservation ##gri## invalidated</subject>
+<subject>##TAG:PRODUCTION CIRCUIT##Reservation ##gri## invalidated</subject>
 <messageBody>
 ##errorMessage##
 ##reservation##
