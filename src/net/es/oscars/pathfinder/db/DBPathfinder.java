@@ -126,6 +126,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
                 egress = fqti;
                 if (!foundIngress) {
                     ingress = fqti;
+                    foundIngress = true;
                 }
             }
         }
