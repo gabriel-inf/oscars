@@ -121,7 +121,6 @@ public class DBPathfinder extends Pathfinder implements PCE {
             String linkId = parseResults.get("linkId");
             String domainId = parseResults.get("domainId");
             fqti = parseResults.get("fqti");
-            System.out.println(fqti);
             if (domainId.equals(localDomain.getTopologyIdent())) {
                 egress = fqti;
                 if (!foundIngress) {
