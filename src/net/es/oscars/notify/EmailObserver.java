@@ -26,7 +26,11 @@ public class EmailObserver implements Observer {
     private String localhostname;
     private List<String> sysadmins;
     private static String staticOverrideNotification;
-
+    
+    /**
+     * Constructor. Reads-in mail.webmaster and mail.recipients from 
+     * oscars.properties to build mailing list.
+     */
     public EmailObserver() {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
@@ -53,8 +57,17 @@ public class EmailObserver implements Observer {
         }
     }
 
-    // Observer interface requires second argument to be Object
+    /**
+     * Observer method called whenever a change occurs. It accepts an 
+     * Observable object and an net.es.oscars.notify.Event object as
+     * arguments. Sends email notifications if template exists for
+     * event.
+     *
+     * @param obj the observable object
+     * @param arg the event that ocurred
+     */
     public void update (Observable obj, Object arg) {
+        // Observer interface requires second argument to be Object
         if ((staticOverrideNotification != null) &&
                 !staticOverrideNotification.equals("1")) {
             this.log.info("email notification overriden");
@@ -65,6 +78,7 @@ public class EmailObserver implements Observer {
             return;
         }
         
+        //TODO: Do not hardcode this path
         Event event = (Event) arg;
         String catalinaHome = System.getProperty("catalina.home");
         if(!catalinaHome.endsWith("/")){
@@ -138,6 +152,14 @@ public class EmailObserver implements Observer {
         }
     }
     
+    /**
+     * Given a template as a string this replaces all the dynamic fields with
+     * values in the given event object.
+     *
+     * @param template String of the template containing the fields to replace
+     * @param event the event containing the values to fill-in
+     * @return the template with all dynamic fields replaced
+     */
     private String applyTemplate(String template, Event event){
         Reservation resv = event.getReservation();
         Path path = null;
@@ -147,6 +169,8 @@ public class EmailObserver implements Observer {
         String msg = template;
         String eventTime = this.formatTime(event.getTimestamp());
         
+        //NOTE: There are more efficient ways to parse and replace fields
+        //but this seems to work for now.
         this.log.info("applyTemplate.start");
         msg = this.replaceTemplateField("##event##", event.toString(), msg);
         msg = this.replaceTemplateField("##eventType##", event.getType(), msg);
@@ -259,6 +283,14 @@ public class EmailObserver implements Observer {
         return msg;
     }
     
+    /**
+     * Convenience method for replacing a single value in a template
+     *
+     * @param field the field to replace
+     * @param value the value with which to replace the field
+     * @param template the template on which the replacement will be made
+     * @return the template with replaced fields
+     */
     private String replaceTemplateField(String field, String value, String template){
         String msg = template;
         
@@ -271,6 +303,14 @@ public class EmailObserver implements Observer {
         return msg;
     }
     
+    /**
+     * Applies user-defined tags specified in ##TAG:<i>TAG_NAME</i>## fields to
+     * a given template.
+     *
+     * @param description the description of the reservation that may contain tags
+     * @param template the template to which in which tags may be shown
+     * @return the template with all user-defined tags displayed
+     */
     private String applyUserDefinedTags(String description, String template){
         Pattern tagPattern = Pattern.compile("##TAG:(.+?)##");
         Matcher tagMatcher = tagPattern.matcher(template);
@@ -289,6 +329,13 @@ public class EmailObserver implements Observer {
         return template;
     }
     
+    /**
+     * Sends an email message with the given parameters.
+     *
+     * @param subject the subject of the email to send
+     * @param notification the body of the email to send
+     * @param contentType the type of message (i.e. text/plain, text/html)
+     */
     public void sendMessage(String subject, String notification, 
         String contentType) throws javax.mail.MessagingException {
 
@@ -305,6 +352,12 @@ public class EmailObserver implements Observer {
         Transport.send(message);   // Send message
     }
     
+    /**
+     * Returns string formatted UTC datetime
+     *
+     * @param timestamp a Long containing the timestamp
+     * @return string-formatted datetime
+     */
     private String formatTime(Long timestamp){
         if(timestamp != null){
             return this.formatTime(timestamp.longValue());
@@ -312,6 +365,12 @@ public class EmailObserver implements Observer {
         return "";
     }
     
+    /**
+     * Returns string formatted UTC datetime
+     *
+     * @param timestamp a long containing the timestamp
+     * @return string-formatted datetime
+     */
     private String formatTime(long timestamp){
         DateFormat df = DateFormat.getInstance();
         df.setTimeZone(TimeZone.getTimeZone("GMT"));

@@ -374,7 +374,6 @@ public class ReservationManager {
      *
      * @param forwardReply response from the forwarded modify message
      * @param resv reservation instance modified in place
-     * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
     public Reservation finalizeModifyResv(ModifyResReply forwardReply, Reservation resv)
@@ -844,8 +843,8 @@ public class ReservationManager {
      * Returns the name of the institution of the source endpoint of the reservation
      * Assume that either the source or the destination must be on the local path.
      *
-     * @param Reservation reservation for which we want to find the source institution
-     * @returns String institution of the reservation source
+     * @param resv reservation for which we want to find the source institution
+     * @return String institution of the reservation source
      */
     public String sourceSite(Reservation resv) {
         String institution = "UNKNOWN";
@@ -877,7 +876,7 @@ public class ReservationManager {
     /**
      * Returns the name of the institution of the destination endpoint of the reservation
      *
-     * @param Reservation reservation for which we want to find the destination institution
+     * @param resv reservation for which we want to find the destination institution
      * @return String institution of the reservation destination
      */
     public String destSite(Reservation resv) {

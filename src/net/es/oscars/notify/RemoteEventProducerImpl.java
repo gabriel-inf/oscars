@@ -3,7 +3,10 @@ package net.es.oscars.notify;
 import java.rmi.RemoteException;
 import org.apache.log4j.*;
 
-
+/**
+ * Implementation of RemoteEventProducer class that allows access to a central
+ * EventQueue object.
+ */
 public class RemoteEventProducerImpl implements RemoteEventProducer{
     private Logger log;
     
@@ -11,6 +14,11 @@ public class RemoteEventProducerImpl implements RemoteEventProducer{
         this.log = Logger.getLogger(this.getClass());
     }
     
+    /**
+     * Adds event to central EventQueue
+     *
+     * @param event the event to add to the EventQueue
+     */
     public void addEvent(Event event) throws RemoteException{
         this.log.info("Adding event " + event.getType() + " to queue");
         try{

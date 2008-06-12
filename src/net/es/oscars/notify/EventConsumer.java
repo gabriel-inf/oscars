@@ -2,6 +2,10 @@ package net.es.oscars.notify;
 
 import org.apache.log4j.*;
 
+/**
+ * EventConsumer listens for events in an EvenetQueue and notifies Observers
+ * when an element is added to the queue.
+ */
 public class EventConsumer extends Thread{
     private Logger log;
     boolean keepAlive;
