@@ -157,6 +157,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             totalHops++;
             pathElem = pathElem.getNextElem();
         }
+        tmpHops[totalHops] = new CtrlPlaneHopContent();
         tmpHops[totalHops].setId(pathElem.getLink().getFQTI());
         totalHops++;
 
