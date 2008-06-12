@@ -170,7 +170,8 @@
     <td class="required">
       <input name="emailPrimary" id="newEmailPrimary"
              dojoType="dijit.form.ValidationTextBox"
-             regExp=".+@.+\..+" required="true"
+             regExp="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
+             required="true"
              promptMessage="Enter the primary email address"
              invalidMessage="You must enter the primary email address" />
     </td>
@@ -180,7 +181,7 @@
     <td>
       <input name="emailSecondary" id="newEmailSecondary"
              dojoType="dijit.form.ValidationTextBox"
-             regExp=".+@.+\..+"
+             regExp="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
              promptMessage="Enter a secondary email address"
              invalidMessage="You must enter a valid secondary email address" />
     </td>
