@@ -55,8 +55,7 @@ public class Utils {
             }
             loopbackIP = this.getIP(nodeName);
             if (loopbackIP == null) {
-                throw new PathfinderException(
-                    "Unable to look up IP for host " + nodeName);
+                throw new PathfinderException("Unable to look up IP for host " + nodeName);
             }
         } catch (IOException e) {
             throw new PathfinderException(e.getMessage());

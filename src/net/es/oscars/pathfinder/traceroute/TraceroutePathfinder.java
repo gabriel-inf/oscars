@@ -69,20 +69,8 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         for (int i=reverseHops.size()-1; i >= 1; i--) {
             previousHops.add(reverseHops.get(i));
         }
-        // make sure this path contains a Juniper router (temporary)
-        for (String hop: previousHops) {
-            loopbackIP = this.utils.getLoopback(hop, "Juniper");
-            if (loopbackIP != null) {
-                ingressNodeIP = hop;
-                break;
-            }
-        }
-        if (loopbackIP == null) {
-            throw new PathfinderException("path between src and host " +
-                "does not contain a Juniper router");
-        }
-        // find path from ingress to destination
-        hops = this.traceroute(ingressNodeIP, destHost);
+        // find path from default to destination
+        hops = this.traceroute(defaultRouter, destHost);
         List<String> completeHops = this.stitch(previousHops, hops);
         ctrlPlanePath = this.pathFromHops(completeHops);
         pathInfo.setPath(ctrlPlanePath);
@@ -104,6 +92,7 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         CtrlPlanePathContent ctrlPlanePath = new CtrlPlanePathContent();
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
+        NodeAddressDAO nodeAddrDAO = new NodeAddressDAO(this.dbname);
         String fqn = null;
         boolean hopFound = false;
 
@@ -116,6 +105,10 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
             CtrlPlaneHopContent ctrlPlaneHop = new CtrlPlaneHopContent();
             if (ipaddrDAO.queryByParam("IP", hop) != null) {
                 fqn = domainDAO.setFullyQualifiedLink(localTopologyIdent, hop);
+                hopFound = true;
+            } else if (nodeAddrDAO.queryByParam("address", hop) != null) {
+                Node node = nodeAddrDAO.queryByParam("address", hop).getNode();
+                fqn = node.getFQTI();
                 hopFound = true;
             } else {
                 fqn = domainDAO.setFullyQualifiedLink("other", hop);
@@ -192,6 +185,8 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
             throw new PathfinderException(ex.getMessage());
         }
         hops = jnxTraceroute.getHops();
+
+
         // prepend source to path
         hops.add(0, pathSrc);
         return hops;

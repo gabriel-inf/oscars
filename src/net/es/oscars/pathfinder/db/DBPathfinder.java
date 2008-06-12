@@ -82,11 +82,9 @@ public class DBPathfinder extends Pathfinder implements PCE {
            this.handleLayer2ERO(pathInfo, reservation);
         } else if (pathInfo.getLayer3Info() != null) {
             // Falling through to traceroute for L3
-            TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
-            return tracePF.findPath(pathInfo, reservation);
+            this.handleLayer3ERO(pathInfo, reservation);
         } else {
-            throw new PathfinderException(
-                "An ERO must have associated layer 2 or layer 3 info");
+            throw new PathfinderException("An ERO must have associated layer 2 or layer 3 info");
         }
 
 
@@ -95,6 +93,82 @@ public class DBPathfinder extends Pathfinder implements PCE {
     }
 
 
+    private void handleLayer3ERO(PathInfo pathInfo, Reservation reservation)
+            throws PathfinderException {
+        this.log.debug("handleLayer3ERO.start");
+        Domain localDomain = domDAO.getLocalDomain();
+        Hashtable<String, String> parseResults;
+        String fqti = null;
+
+        Layer3Info layer3Info = pathInfo.getLayer3Info();
+
+        String srcHost = layer3Info.getSrcHost();
+        String destHost = layer3Info.getDestHost();
+
+        TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
+        PathInfo tracePathInfo = tracePF.findPath(pathInfo, reservation);
+
+        CtrlPlaneHopContent[] traceHops = tracePathInfo.getPath().getHop();
+
+        boolean foundIngress = false;
+        String ingress = "";
+        String egress = "";
+        for (CtrlPlaneHopContent traceHop : traceHops) {
+            parseResults = URNParser.parseTopoIdent(traceHop.getId());
+            String type = parseResults.get("type");
+            String nodeId = parseResults.get("nodeId");
+            String portId = parseResults.get("portId");
+            String linkId = parseResults.get("linkId");
+            String domainId = parseResults.get("domainId");
+            fqti = parseResults.get("fqti");
+            System.out.println(fqti);
+            if (domainId.equals(localDomain.getTopologyIdent())) {
+                egress = fqti;
+                if (!foundIngress) {
+                    ingress = fqti;
+                }
+            }
+        }
+        if (!foundIngress) {
+            throw new PathfinderException("Could not find any local hops!");
+        }
+
+
+        Long bandwidth = reservation.getBandwidth();
+        Long startTime = reservation.getStartTime();
+        Long endTime = reservation.getEndTime();
+        CtrlPlanePathContent newPathContent = new CtrlPlanePathContent();
+        CtrlPlaneHopContent[] tmpHops = new CtrlPlaneHopContent[100]; // should be enough..
+
+        Path foundPath = findPathBetween(ingress, egress, bandwidth, startTime, endTime, reservation, "L3");
+        if (foundPath == null) {
+            throw new PathfinderException("Could not find path!");
+        }
+
+        PathElem pathElem = foundPath.getPathElem();
+        if (pathElem == null) {
+            throw new PathfinderException("Could not find path!");
+        }
+        int totalHops = 0;
+        while (pathElem.getNextElem() != null) {
+            tmpHops[totalHops].setId(pathElem.getLink().getFQTI());
+            totalHops++;
+            pathElem = pathElem.getNextElem();
+        }
+        tmpHops[totalHops].setId(pathElem.getLink().getFQTI());
+        totalHops++;
+
+        CtrlPlaneHopContent[] hops = new CtrlPlaneHopContent[totalHops-1];
+
+        for (int i = 0; i < totalHops; i++) {
+            hops[i] = tmpHops[i];
+        }
+
+        newPathContent.setHop(tmpHops);
+        pathInfo.setPath(newPathContent);
+
+        this.log.debug("handleLayer3ERO.end");
+    }
 
 
     private void handleLayer2ERO(PathInfo pathInfo, Reservation reservation)
@@ -271,7 +345,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
             String src = localLinkIds.get(i);
             String dst = localLinkIds.get(i+1);
             this.log.debug("Finding path between: ["+src+"] ["+dst+"] bw: "+bandwidth);
-            Path segmentPath = findPathBetween(src, dst, bandwidth, startTime, endTime, reservation);
+            Path segmentPath = findPathBetween(src, dst, bandwidth, startTime, endTime, reservation, "L2");
             if (segmentPath == null) {
                 throw new PathfinderException("Could not find path between ["+src+"] and ["+dst+"]");
             } else {
@@ -284,7 +358,7 @@ public class DBPathfinder extends Pathfinder implements PCE {
         if (lastLocalHopIndex < hops.length - 1) {
             String lastLocalLink = localLinkIds.get(localLinkIndex -1);
             String nextHop = hops[lastLocalHopIndex + 1].getLinkIdRef();
-            Path segmentPath = findPathBetween(lastLocalLink, nextHop, bandwidth, startTime, endTime, reservation);
+            Path segmentPath = findPathBetween(lastLocalLink, nextHop, bandwidth, startTime, endTime, reservation, "L2");
             localPath = joinPaths(localPath, segmentPath);
             this.log.debug("handleEro.foundToNext");
         }
@@ -455,24 +529,29 @@ public class DBPathfinder extends Pathfinder implements PCE {
         }
     }
 
-    public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation)
+
+
+    public Path findPathBetween(String src, String dst, Long bandwidth, Long startTime, Long endTime, Reservation reservation, String layer)
             throws PathfinderException {
         this.log.debug("findPathBetween.start");
 
+
         DomainDAO domDAO = new DomainDAO(this.dbname);
-        Link srcLink = domDAO.getFullyQualifiedLink(src);
-        Link dstLink = domDAO.getFullyQualifiedLink(dst);
-        if (srcLink == null) {
-            throw new PathfinderException("Could not locate link in DB for string: "+src);
-        } else if (dstLink == null) {
-            throw new PathfinderException("Could not locate link in DB for string: "+dst);
-        }
 
-        Path directPath = this.directPath(srcLink, dstLink);
-        if (directPath != null) {
-            return directPath;
-        }
+        if (layer.equals("L2")) {
+            Link srcLink = domDAO.getFullyQualifiedLink(src);
+            Link dstLink = domDAO.getFullyQualifiedLink(dst);
+            if (srcLink == null) {
+                throw new PathfinderException("Could not locate link in DB for string: "+src);
+            } else if (dstLink == null) {
+                throw new PathfinderException("Could not locate link in DB for string: "+dst);
+            }
 
+            Path directPath = this.directPath(srcLink, dstLink);
+            if (directPath != null) {
+                return directPath;
+            }
+        }
 
         Path path = new Path();
 
