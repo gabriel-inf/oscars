@@ -269,7 +269,13 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar"/>
         </copy>
     </target>
-    <target name="copydomain" if="domain.exists">
+    <target name="copyMailTemplates">
+	    <mkdir dir="${catalina.home}/shared/classes/server/mail_templates"/>
+	    <copy todir="${catalina.home}/shared/classes/server/mail_templates">
+	        <fileset dir="${defaultKeys}/server/mail_templates" includes="*.xml"/>
+	    </copy>
+    </target>
+    <target name="copydomain" if="domain.exists" depends="copyMailTemplates">
         <!-- Copy domain keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
@@ -279,13 +285,8 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${domain.home}/server/" includes="*key, sec-server.*, oscars.properties, test.properties"/>
         </copy>
-        <!-- TODO: Move this to notify specific task -->
-        <mkdir dir="${catalina.home}/shared/classes/server/mail_templates"/>
-        <copy todir="${catalina.home}/shared/classes/server/mail_templates">
-            <fileset dir="${domain.home}/server/mail_templates" includes="*.xml"/>
-        </copy>
     </target>
-    <target name="copydefaults" unless="domain.exists">
+    <target name="copydefaults" unless="domain.exists" depends="copyMailTemplates">
         <!-- Copy default keys to repo -->
         <mkdir dir="${catalina.home}/shared/classes/repo"/>
         <copy todir="${catalina.home}/shared/classes/repo">
@@ -294,11 +295,6 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         </copy>
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="${defaultKeys}/server/" includes="*key, sec-server.*, oscars.properties, test.properties"/>
-        </copy>
-        <!-- TODO: Move this to notify specific task -->
-        <mkdir dir="${catalina.home}/shared/classes/server/mail_templates"/>
-        <copy todir="${catalina.home}/shared/classes/server/mail_templates">
-            <fileset dir="${defaultKeys}/server/mail_templates" includes="*.xml"/>
         </copy>
     </target>
     <target name="setupServer" description="populate the shared/classes directory" depends="copydomain,copydefaults">
