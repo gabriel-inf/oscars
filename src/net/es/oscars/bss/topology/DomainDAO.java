@@ -228,7 +228,7 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
         String nodeId = parseResults.get("nodeId");
         String portId = parseResults.get("portId");
         String linkId = parseResults.get("linkId");
-        if (type.equals("link")) {
+        if (type != null && type.equals("link")) {
             link = this.getFullyQualifiedLink(domainId, nodeId, portId, linkId);
         }
         return link;
