@@ -107,8 +107,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         TraceroutePathfinder tracePF = new TraceroutePathfinder(this.dbname);
         PathInfo tracePathInfo = tracePF.findPath(pathInfo, reservation);
-
         CtrlPlaneHopContent[] traceHops = tracePathInfo.getPath().getHop();
+
 
         boolean foundIngress = false;
         String ingress = "";
@@ -167,6 +167,8 @@ public class DBPathfinder extends Pathfinder implements PCE {
 
         newPathContent.setHop(hops);
         pathInfo.setPath(newPathContent);
+        reservation.getPath().setExplicit(true);
+
 
         this.log.debug("handleLayer3ERO.end");
     }
