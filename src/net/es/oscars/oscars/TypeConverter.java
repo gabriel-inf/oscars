@@ -57,10 +57,20 @@ public class TypeConverter {
             throw new BSSException(
                     "Cannot provide both layer 2 and layer 3 information");
         }
-        // Hibernate will pick up error if any properties are null that
-        // the database schema says cannot be null
-        resv.setStartTime(params.getStartTime());
-        resv.setEndTime(params.getEndTime());
+        Long startTime = params.getStartTime();
+        Long endTime = params.getEndTime();
+        long currentTime = System.currentTimeMillis() / 1000;
+        // somewhat arbitrary; could be clock skew between client and server
+        if ((startTime - currentTime) < -240L) {
+            throw new BSSException(
+                    "Start time is more than 4 minutes in the past: check your system time or client settings");
+        }
+        if (startTime >= endTime) {
+            throw new BSSException(
+                    "End time must be greater than start time");
+        }
+        resv.setStartTime(startTime);
+        resv.setEndTime(endTime);
         Long bandwidth = new Long(
                 Long.valueOf((long)params.getBandwidth() * 1000000L));
         resv.setBandwidth(bandwidth);
