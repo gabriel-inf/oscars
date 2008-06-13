@@ -219,7 +219,7 @@ public class CheckTopoIds {
                                         if (remLink == null) {
                                             vo += "  no remote link\n";
                                         } else {
-                                            vo += "  remote link id: "+TopologyUtil.getFQTI(remLink)+"\n";
+                                            vo += "  remote link id: "+remLink.getFQTI()+"\n";
                                             dbo += "rem: ["+remLink.getId()+"] ";
                                         }
 
