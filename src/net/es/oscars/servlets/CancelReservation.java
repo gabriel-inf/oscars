@@ -50,13 +50,13 @@ public class CancelReservation extends HttpServlet {
                                 methodName, aaa, null);
             return;
         }
-        if (authVal.equals(AuthValue.MYSITE) ||
-                authVal.equals(AuthValue.SITEANDSELF)){
-                institution = userMgr.getInstitution(userName);
-            } if (authVal.equals(AuthValue.SELFONLY) ||
-                authVal.equals(AuthValue.SITEANDSELF)){
-                loginConstraint = userName;
-            }
+        if (authVal.equals(AuthValue.MYSITE)){
+            institution = userMgr.getInstitution(userName);
+            loginConstraint = userName;  // note if the user had an all-user constraint 
+                                         // it would have been returned instead of MYSITE 
+        } else if (authVal.equals(AuthValue.SELFONLY)){
+            loginConstraint = userName;
+        }
         aaa.getTransaction().commit();
         
         String gri = request.getParameter("gri");

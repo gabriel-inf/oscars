@@ -108,20 +108,19 @@ public class ListReservations extends HttpServlet {
         UserManager mgr = new UserManager("aaa");
         String institution = null;
         String loginConstraint = null;
-        List<User> users = mgr.list();
         AuthValue authVal = mgr.checkAccess(login, "Reservations", "list");
         if (authVal == AuthValue.DENIED) {
             utils.handleFailure(out, "no permission to list Reservations", 
                                 methodName, null, null);
             return null;
         }
-        if (authVal.equals(AuthValue.MYSITE) ||
-                authVal.equals(AuthValue.SITEANDSELF)){
-                institution = mgr.getInstitution(login);
-            } if (authVal.equals(AuthValue.SELFONLY) ||
-                authVal.equals(AuthValue.SITEANDSELF)){
-                loginConstraint = login;
-            }
+        if (authVal.equals(AuthValue.MYSITE)) {
+            institution = mgr.getInstitution(login);
+            loginConstraint = login;  // note if the user had an all-user constraint 
+	                                  // it would have been returned instead of MYSITE 
+        } else if (authVal.equals(AuthValue.SELFONLY)){
+            loginConstraint = login;
+        }
         try {
             reservations =
                 rm.list(loginConstraint, institution, statuses, description, inLinks,

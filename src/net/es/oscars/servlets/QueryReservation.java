@@ -52,14 +52,13 @@ public class QueryReservation extends HttpServlet {
                                 methodName, aaa, null);
             return;
         }
-        if (authVal.equals(AuthValue.MYSITE) ||
-            authVal.equals(AuthValue.SITEANDSELF)){
+        if (authVal.equals(AuthValue.MYSITE)) {
             institution = userMgr.getInstitution(userName);
-        } if (authVal.equals(AuthValue.SELFONLY) ||
-    	    authVal.equals(AuthValue.SITEANDSELF)){
+            loginConstraint = userName;  // note if the user had an all-user constraint 
+                                         // it would have been returned instead of MYSITE 
+        } else if (authVal.equals(AuthValue.SELFONLY)){
             loginConstraint = userName;
         }
-        
         // check to see if may look at internal intradomain path elements
         AuthValue authValHops = userMgr.checkModResAccess(userName,
             "Reservations", "create", 0, 0, true, false );

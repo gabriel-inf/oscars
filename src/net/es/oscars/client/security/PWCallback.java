@@ -24,7 +24,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.util.Properties;
-import net.es.oscars.PropHandler;
+// import net.es.oscars.PropHandler;
 import java.io.FileInputStream;
 
 /**
@@ -34,13 +34,13 @@ import java.io.FileInputStream;
 public class PWCallback implements CallbackHandler {
 
     /** Field key */
-    private static final byte[] key = {
+   /*  private static final byte[] key = {
         (byte) 0x31, (byte) 0xfd, (byte) 0xcb, (byte) 0xda, (byte) 0xfb,
         (byte) 0xcd, (byte) 0x6b, (byte) 0xa8, (byte) 0xe6, (byte) 0x19,
         (byte) 0xa7, (byte) 0xbf, (byte) 0x51, (byte) 0xf7, (byte) 0xc7,
         (byte) 0x3e, (byte) 0x80, (byte) 0xae, (byte) 0x98, (byte) 0x51,
         (byte) 0xc8, (byte) 0x51, (byte) 0x34, (byte) 0x04,
-    };
+    }; */
 
     /*
      * (non-Javadoc)
@@ -63,7 +63,8 @@ public class PWCallback implements CallbackHandler {
             FileInputStream in = new FileInputStream("repo/sec-client.properties");
             props.load(in);
             propKeyPass = props.getProperty(
-                            "net.es.oscars.client.security.PWCallback.keypass");
+              //              "net.es.oscars.client.security.PWCallback.keypass");
+        	    "org.apache.ws.security.crypto.merlin.keystore.password");
             in.close();
         }catch (IOException e) {}
         
@@ -82,7 +83,7 @@ public class PWCallback implements CallbackHandler {
                  * 
                  * Here we perform only a very simple check.
                  */
-                if (pc.getUsage() == WSPasswordCallback.USERNAME_TOKEN_UNKNOWN) {
+               /* if (pc.getUsage() == WSPasswordCallback.USERNAME_TOKEN_UNKNOWN) {
                 	if(pc.getIdentifer().equals("Ron") && pc.getPassword().equals("noR")) {
                         return;
                 	}
@@ -91,7 +92,7 @@ public class PWCallback implements CallbackHandler {
                     }               	
                     throw new UnsupportedCallbackException(callbacks[i],
                     "check failed");
-                }
+                } */
 
                 /*
                  * here call a function/method to lookup the password for
@@ -99,11 +100,11 @@ public class PWCallback implements CallbackHandler {
                  * e.g.: pc.setPassword(passStore.getPassword(pc.getIdentfifier))
                  * for Testing we supply a fixed name here.
                  */
-                if (pc.getUsage() == WSPasswordCallback.KEY_NAME) {
+               /* if (pc.getUsage() == WSPasswordCallback.KEY_NAME) {
                     pc.setKey(key);
                 }else if(propKeyPass != null){
                     pc.setPassword(propKeyPass);
-                } else if(pc.getIdentifer().equals("alice")) {
+                 } else if(pc.getIdentifer().equals("alice")) {
                     pc.setPassword("password");
                 } else if(pc.getIdentifer().equals("jason")) {
                     pc.setPassword("password");
@@ -111,6 +112,11 @@ public class PWCallback implements CallbackHandler {
                     pc.setPassword("password");
                 } else if(pc.getIdentifer().equals("Ron")) {
                     pc.setPassword("noR");
+                } else {
+                    pc.setPassword("password");
+                } */
+                if (propKeyPass != null) {
+                    pc.setPassword(propKeyPass);
                 } else {
                     pc.setPassword("password");
                 }

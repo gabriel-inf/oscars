@@ -179,22 +179,13 @@ public class ReservationManager {
 
         this.rsvLogger.redirect(gri);
 
-        ReservationDAO dao = new ReservationDAO(this.dbname);
         String newStatus = null;
 
         this.log.info("cancel.start: " + gri + " login: " + login + " institution: " +
                 institution );
 
-        Reservation resv = dao.query(gri);
-        if (resv == null) {
-            throw new BSSException(
-                "No current reservation with GRI: " + gri);
-        }
-        if (!checkAuth(resv,login,institution) ) {
-            throw new BSSException(
-                    "cancelReservtion: permission denied");
-        }
-
+        Reservation resv = getConstrainedResv(gri,login,institution);
+ 
         String prevStatus = resv.getStatus();
         if (prevStatus.equals("FINISHED")) {
             throw new BSSException(
@@ -235,10 +226,10 @@ public class ReservationManager {
 
         this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("finalizeCancel.start");
-        String gri = resv.getGlobalReservationId();
         EventProducer eventProducer = new EventProducer();
         eventProducer.addEvent(Event.RESV_CANCEL_COMPLETED, login, 
-            eventSrc, resv);
+             eventSrc, resv);
+
         this.rsvLogger.stop();
     }
 
@@ -258,24 +249,12 @@ public class ReservationManager {
      */
     public Reservation query(String gri, String login, String institution)
             throws BSSException {
-
-        Reservation resv = null;
-       
-
+     
         this.log.info("query.start: " + gri + " login: " + login );
-        ReservationDAO dao = new ReservationDAO(this.dbname);
-        resv = dao.query(gri);
-        if (resv == null) {
-            throw new BSSException("Reservation not found: " + gri);
-        }
-        if (!checkAuth(resv,login,institution)) {
-            throw new BSSException ("query reservation: permission denied");
-        }
+        Reservation resv = getConstrainedResv(gri,login,institution);
         this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
     }
-
-
 
     /**
      * Modifies the reservation, given a partially filled in reservation
@@ -296,26 +275,19 @@ public class ReservationManager {
             throws  BSSException {
 
     
-        this.log.info("modify.start: login: " + login + " institution: " +
-                institution);
+        this.log.info("modify.start: login: " +  login + " institution: " +  institution ) ;
 
+        String gri = resv.getGlobalReservationId();
+        Reservation persistentResv = getConstrainedResv(gri,login,institution);
         // need to set this before validation
-        resv.setLogin(login);
+        // leave it the same, do not set to current user
+        resv.setLogin(persistentResv.getLogin());
+        
         ParamValidator paramValidator = new ParamValidator();
 
         StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
-        }
-
-        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-        Reservation persistentResv = resvDAO.query(resv.getGlobalReservationId());
-        if (persistentResv == null) {
-            throw new BSSException("Could not locate reservation to modify, GRI: "+resv.getGlobalReservationId());
-        }
-
-        if (!checkAuth(persistentResv,login,institution)) {
-            throw new BSSException("modify reservation: permission denied");
         }
 
         // handle times
@@ -440,29 +412,32 @@ public class ReservationManager {
         List<String> loginIds = new ArrayList<String>();
         List<Reservation> authResv = new LinkedList<Reservation>();
 
-        this.log.info("list.start, login: " + login );
+        this.log.info("list.start, login: " + login + " institution: " + institution);
 
-        if (login != null){
+        if (login != null && institution == null){
+            // get only reservations that belong to this user
             loginIds.add(login);
         }
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.list(loginIds, statuses, description, links,
                                 vlanTags, startTime, endTime);
         
-        if (login == null){
-            // all reservations are allowed
+        if ((login == null) || (institution == null)){
+            // the dao.list selected only the allowed reservations
             this.log.info("list.finish, success");
-            return reservations;            
-        }
-        // keep reservations that start or terminate at institution 
-        // or belong to this user
-        for (Reservation resv : reservations) {
-            if (checkAuth( resv, login, institution)){
+            return reservations;  
+        } else {
+            // the institution and login were both set
+            // keep reservations that start or terminate at institution 
+            // or belong to this user
+            for (Reservation resv : reservations) {
+        	if ( checkInstitution( resv, institution) || resv.getLogin().equals(login)){
                     authResv.add(resv);
+        	}
             }
+            this.log.info("list.finish, success");
+            return authResv;
         }
-        this.log.info("list.finish, success");
-        return authResv;
     }
 
     /**
@@ -843,8 +818,8 @@ public class ReservationManager {
      * Returns the name of the institution of the source endpoint of the reservation
      * Assume that either the source or the destination must be on the local path.
      *
-     * @param resv reservation for which we want to find the source institution
-     * @return String institution of the reservation source
+     * @param resv Reservation for which we want to find the source institution
+     * @return  institution String name of the reservation source
      */
     public String sourceSite(Reservation resv) {
         String institution = "UNKNOWN";
@@ -876,8 +851,8 @@ public class ReservationManager {
     /**
      * Returns the name of the institution of the destination endpoint of the reservation
      *
-     * @param resv reservation for which we want to find the destination institution
-     * @return String institution of the reservation destination
+     * @param resv Reservation for which we want to find the destination institution
+     * @return institution String name of the reservation destination
      */
     public String destSite(Reservation resv) {
         String institution = "UNKNOWN";
@@ -1126,47 +1101,73 @@ public class ReservationManager {
         resv.setToken(token);
         token.setReservation(resv);
     }
-
-
     /**
-     * Checks to see if the reservation meets the constraints
+     * Checks to see if the reservation either starts or terminates at the given institution
      * @param resv Reservation to be checked
-     * @param login String user's login name
-     *          if null any user's reservation is ok
-     *          if set, only that user's reservation may be returned
      * @param institution String with institution of caller
-     *          if null reservations from any site may be returned
-     *          if set only reservations starting or ending at that site 
-     *          or belonging to the specified login may be returned
      * @return Boolean allowed
      */
 
-    private Boolean checkAuth(Reservation resv, 
-            String login, String institution) {
-
-        if (login == null) {
-            // user has right for all reservations
+    public Boolean checkInstitution(Reservation resv, String institution) {
+  
+        // get the site associated the source of the reservation
+        String sourceSite = this.sourceSite(resv);
+        this.log.debug("checkAuth: sourceSite is " + sourceSite);
+        if (sourceSite.equals(institution)) {
             return true;
-        }
-        if (institution != null){
-             // get the sites associated the source or destination of the reservation
-            String sourceSite = this.sourceSite(resv);
-            this.log.debug("checkAuth: sourceSite is " + sourceSite);
-            if (sourceSite.equals(institution)) {
+        } else {
+            // get the site associated the destination of the reservation
+            String destSite = this.destSite(resv);
+            this.log.debug("checkAuth: destinationSite is " + destSite);
+            if (destSite.equals(institution)){
                 return true;
-            } else {
-                String destSite = this.destSite(resv);
-                this.log.debug("checkAuth: destinationSite is " + destSite);
-                if (destSite.equals(institution)){
-                    return true;
-                }
             }
-        }
-        // otherwise check if the reservation belongs to this user 
-        this.log.debug("checkAuth: reservation login is " + resv.getLogin());
-        if  (resv.getLogin().equals(login)) {
-             return true;
         }
         return false;
     }
+ 
+    /**
+     *  finds the reservations that matches all the constraints
+     *  
+     *  @param gri String global reservation Id identifies the reservation
+     *  @param String loginConstraint = reservation must be owned by this login
+     *  @param String institutionConstraint - reservation must belong to this institution
+     *  
+     *  @return Reservation - a reservation that meets the constraint,
+     *  @throws PSSException if no such reservation exists
+     *  
+     */
+   private Reservation getConstrainedResv(String gri, String loginConstraint,
+	   		String institutionConstraint)  throws BSSException {
+       
+       ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+       Reservation resv = null;
+       
+       if (loginConstraint == null || institutionConstraint != null ) {
+           // see if the reservation exists
+           try {
+       	       resv = resvDAO.query(gri);
+           } catch ( BSSException e ){
+               this.log.error("No reservation matches gri: " + gri);
+       	       throw new BSSException("No reservations match request");
+           } 
+           if (institutionConstraint != null) {
+       	       //check the institution
+       	       if (!this.checkInstitution(resv, institutionConstraint) ) {
+       	           resv = null;
+       	       }
+           }
+       }
+       if (resv == null && loginConstraint != null) {
+           resv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);  
+       }
+       if (resv == null) {
+	   this.log.error("No reservation matches gri: " + gri + " login: " +
+		   loginConstraint + " institution: " + institutionConstraint);
+           throw new BSSException("No reservations match request");
+       } 
+       return resv;
+   }
+
+ 
 }

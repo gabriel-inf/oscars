@@ -329,12 +329,11 @@ public class UserManager {
      * MYSITE means the requested actions is allowed only on objects that 
      * 	    belong to the same site as the requester<br>
      * SELFONLY  means the requested action is allowed only on objects that
-     *      belong to the requester.
-     * SITEANDSELF means the requested action is allowed on both site and self objects.    
+     *      belong to the requester.    
      * @author mrt
      *
      */
-    public enum AuthValue { DENIED, ALLUSERS, MYSITE, SELFONLY, SITEANDSELF};
+    public enum AuthValue { DENIED, ALLUSERS, MYSITE, SELFONLY};
     
    
     /**
@@ -349,7 +348,7 @@ public class UserManager {
      * @param userName a string with the login name of the user
      * @param resourceName a string identifying a resource
      * @param permissionName a string identifying a permission
-     * @return one of DENIED, SELFONLY, SITEONLY, ALLUSERS, SITEANDSELF
+     * @return one of DENIED, SELFONLY, SITEONLY, ALLUSERS
      */
     public AuthValue checkAccess(String userName, String resourceName,
                                  String permissionName) {
@@ -414,9 +413,7 @@ public class UserManager {
                 }
             } // end of all authorizations for this attribute
         } // end of all attributes
-        if (site && self) { 
-            retVal=AuthValue.SITEANDSELF;
-        } else if (site) {
+        if (site) {
             retVal = AuthValue.MYSITE;
         } else if (self) {
             retVal = AuthValue.SELFONLY;
