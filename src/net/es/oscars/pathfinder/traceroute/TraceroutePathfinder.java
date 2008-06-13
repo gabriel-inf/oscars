@@ -144,10 +144,14 @@ public class TraceroutePathfinder extends Pathfinder implements PCE {
         List<String> completeHops = new ArrayList<String>();
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         for (String hop: previousHops) {
-            if (ipaddrDAO.queryByParam("IP", hop) == null) {
+/*           No need any more
+             if (ipaddrDAO.queryByParam("IP", hop) == null) {
                 this.log.debug("previous: " + hop);
                 completeHops.add(hop);
             }
+*/
+            this.log.debug("previous: " + hop);
+            completeHops.add(hop);
         }
         for (String hop: hops) {
             if (ipaddrDAO.queryByParam("IP", hop) != null) {
