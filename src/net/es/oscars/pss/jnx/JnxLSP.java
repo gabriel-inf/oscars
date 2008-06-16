@@ -103,7 +103,7 @@ public class JnxLSP {
         // Create map for filling in template.
         this.hm = new HashMap<String, String>();
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
-        // "." is illegal character in name parameter
+        // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
         // capitalize circuit names for production circuits
         if (resv.getDescription().contains("PRODUCTION")) {
@@ -155,9 +155,9 @@ public class JnxLSP {
                 this.setupLogin(lspData.getEgressLink());
             }
         } else if (layer3Data != null) {
-            this.hm.put("name", circuitName);
-            this.hm.put("from", lspData.getIngressRtrLoopback());
-            this.hm.put("to", lspData.getEgressRtrLoopback());
+            this.hm.put("resv-id", circuitName);
+            this.hm.put("lsp_from", lspData.getIngressRtrLoopback());
+            this.hm.put("lsp_to", lspData.getEgressRtrLoopback());
             this.hm.put("source-address", layer3Data.getSrcHost());
             this.hm.put("destination-address", layer3Data.getDestHost());
             Integer intParam = layer3Data.getSrcIpPort();
@@ -177,32 +177,22 @@ public class JnxLSP {
             if (param != null) {
                 this.hm.put("protocol", param);
             }
-            param = resv.getDescription();
-            if (param != null) {
-                this.hm.put("lsp_description", param);
-            } else {
-                this.hm.put("lsp_description", "no description provided");
-            }
             this.hm.put("internal_interface_filter",
                  this.props.getProperty("internal_interface_filter"));
             this.hm.put("external_interface_filter",
                  this.props.getProperty("external_interface_filter"));
             this.setupLogin(lspData.getIngressLink());
+            this.hm.put("firewall_filter_marker",
+                 this.props.getProperty("firewall_filter_marker"));
         }
         this.hm.put("lsp_setup-priority",
              this.commonProps.getProperty("lsp_setup-priority"));
         this.hm.put("lsp_reservation-priority",
              this.commonProps.getProperty("lsp_reservation-priority"));
-        this.hm.put("firewall_filter_marker",
-             this.props.getProperty("firewall_filter_marker"));
 
-        // Additional information from the template will be used if
-        // an explicit path was given.
-        if (layer2Data!= null || path.isExplicit()) {
-            // reset to beginning
-            pathElem = path.getPathElem();
-            hops = lspData.getHops(pathElem, direction, false);
-        }
+        // reset to beginning
+        pathElem = path.getPathElem();
+        hops = lspData.getHops(pathElem, direction, false);
         boolean active = this.setupLSP(hops);
         // TODO:  makes assumption forward called first
         if ((layer3Data != null) || direction.equals("reverse")) {
@@ -263,7 +253,7 @@ public class JnxLSP {
         // Create map for filling in template.
         this.hm = new HashMap<String, String>();
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
-        // "." is illegal character in name parameter
+        // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
         // capitalize circuit names for production circuits
         if (resv.getDescription().contains("PRODUCTION")) {
@@ -291,7 +281,7 @@ public class JnxLSP {
             }
         }
         else if (layer3Data != null) {
-            this.hm.put("name", circuitName);
+            this.hm.put("resv-id", circuitName);
             this.hm.put("internal_interface_filter",
                  this.props.getProperty("internal_interface_filter"));
             this.hm.put("external_interface_filter",

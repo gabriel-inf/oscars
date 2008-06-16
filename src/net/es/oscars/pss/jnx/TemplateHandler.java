@@ -51,7 +51,7 @@ public class TemplateHandler {
         XPath xpath  = XPath.newInstance("//user-var");
         List userVarList = xpath.selectNodes(doc);
         this.replaceElements(userVarList, hm);
-        // special case
+        // special case for layer 3
         xpath = XPath.newInstance("//term[@name=\"firewall_filter_marker\"]");
         List termList = xpath.selectNodes(doc);
         this.replaceFilterNames(termList, hm);
