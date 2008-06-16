@@ -26,7 +26,14 @@ package net.es.oscars.bss.topology;
 
 import java.io.*;
 import java.util.*;
+
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
+
 import net.es.oscars.bss.*;
+import net.es.oscars.wsdlTypes.Layer2Info;
+import net.es.oscars.wsdlTypes.PathInfo;
+import net.es.oscars.wsdlTypes.ResDetails;
 
 /**
  * <dl>
@@ -72,24 +79,34 @@ public class GraphVizExporter {
     */
     private StringBuffer graph = new StringBuffer();
 
-    private static String[] colors;
+    public static String[] colors;
 
    /**
     * Constructor: creates a new GraphViz object that will contain
     * a graph.
     */
    public GraphVizExporter() {
-       colors = new String[10];
-       colors[0] = "red";
+       colors = new String[20];
+       colors[0] = "red3";
        colors[1] = "blue";
-       colors[2] = "green";
-       colors[3] = "yellow";
-       colors[4] = "darkorange";
-       colors[5] = "purple";
+       colors[2] = "aquamarine4";
+       colors[3] = "gold4";
+       colors[4] = "darkorange3";
+       colors[5] = "purple4";
        colors[6] = "darkgreen";
-       colors[7] = "brown";
+       colors[7] = "brown4";
        colors[8] = "orange";
        colors[9] = "violet";
+       colors[10] = "pink";
+       colors[11] = "blueviolet";
+       colors[12] = "coral4";
+       colors[13] = "dodgerblue4";
+       colors[14] = "chocolate4";
+       colors[15] = "chartreuse4";
+       colors[16] = "gray12";
+       colors[17] = "tan4";
+       colors[18] = "firebrick2";
+       colors[19] = "olivedrab";
    }
 
    /**
@@ -99,6 +116,14 @@ public class GraphVizExporter {
    public String getDotSource() {
       return graph.toString();
    }
+
+   public void setDotSource(String graph) {
+       if (this.graph.length() > 0) {
+           this.graph.delete(0, this.graph.length()-1);
+       }
+       this.graph.append(graph);
+   }
+
 
    /**
     * Adds a string to the graph's source (without newline).
@@ -576,6 +601,234 @@ public class GraphVizExporter {
        return edgesDot;
    }
 
+
+   public String exportReservations(ResDetails[] resList, String[] topNodes) throws IOException {
+
+       String color;
+       Hashtable<String, Hashtable<String, ArrayList<String>>> nodePorts = new Hashtable<String, Hashtable<String, ArrayList<String>>>();
+       Hashtable<String, ArrayList<String>> portLinks;
+       ArrayList<String> links;
+       ArrayList<ArrayList<String>> coloredHops = new ArrayList<ArrayList<String>>();
+       String[] gris = new String[100];
+
+       String output = "\n\n\ndigraph reservations {\n";
+       String sources = "";
+       String dests = "";
+
+       for (int i = 0; i < resList.length; i++) {
+           ResDetails resv = resList[i];
+           color = colors[i];
+
+           String gri = resv.getGlobalReservationId();
+           gris[i] = gri;
+
+           String resvDescription = resv.getDescription().trim();
+           resvDescription = resvDescription.replaceAll("\\[PRODUCTION\\]", "");
+           resvDescription = resvDescription.replaceAll("\\[PRODUCTION CIRCUIT\\]", "");
+
+
+           sources += "\""+gri+"-start\" [label=\""+gri+"\\n"+resvDescription+"\"];\n";
+           dests += "\""+gri+"-end\" [label=\""+gri+"\\n"+resvDescription+"\"];\n";
+
+
+           int bandwidth = resv.getBandwidth();
+           PathInfo pathInfo = resList[i].getPathInfo();
+           Layer2Info layer2Info = pathInfo.getLayer2Info();
+           if (layer2Info != null) {
+               CtrlPlanePathContent path = pathInfo.getPath();
+               CtrlPlaneHopContent[] hops = path.getHop();
+
+               boolean reverseHops = false;
+               if (topNodes != null) {
+                   String topoId = hops[hops.length - 1].getId();
+                   Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
+                   String nodeId = parsed.get("nodeId");
+                   for (String topNode : topNodes) {
+                       if (nodeId.matches(topNode)) {
+                           reverseHops = true;
+                       }
+                   }
+               }
+
+               if (reverseHops) {
+                   int temp;
+                   int low = 0 ;
+                   int high = hops.length - 1 ;
+                   while (low < high) {
+                       CtrlPlaneHopContent tmpHop = hops[low];
+                      hops[low] = hops[high];
+                      hops[high] = tmpHop;
+                      low++;
+                      high--;
+                   }
+               }
+
+
+               ArrayList<String> theseHops = new ArrayList<String>();
+
+               for (int j = 0; j < hops.length; j++) {
+
+                   CtrlPlaneHopContent hop = hops[j];
+                   String topoId = hop.getId();
+//                       System.out.println(topoId);
+
+                   Hashtable<String, String> parsed = URNParser.parseTopoIdent(topoId);
+                   String domainId = parsed.get("domainId");
+                   String nodeId   = parsed.get("nodeId");
+                   String portId   = parsed.get("portId");
+                   String linkId   = parsed.get("linkId");
+                   portId = portId.replaceAll("TenGigabitEthernet", "Te");
+                   linkId = linkId.replaceAll("TenGigabitEthernet", "Te");
+
+                   if (linkId.equals("*")) {
+                       portId = portId+":"+linkId;
+                   } else {
+                       portId = linkId;
+                   }
+
+                   if (nodePorts.get(nodeId) != null) {
+                       portLinks = (Hashtable<String, ArrayList<String>>) nodePorts.get(nodeId);
+                   } else {
+                       portLinks = new Hashtable<String, ArrayList<String>>();
+                       nodePorts.put(nodeId, portLinks);
+                   }
+
+                   if (portLinks.containsKey(portId)) {
+                       links = portLinks.get(portId);
+                   } else {
+                       links = new ArrayList<String>();
+                       portLinks.put(portId, links);
+                   }
+//                       output += "\""+nodeId+":"+portId+"\";\n";
+                   theseHops.add("\""+nodeId+":"+portId+"\"");
+
+               }
+               coloredHops.add(theseHops);
+           }
+       } // end for loop
+
+       output += "{\n";
+       output += "rank=source;\nnode [shape=record];\n";
+       output += sources;
+       output += "}\n";
+
+       output += "{\n";
+       output += "rank=sink;\nnode [shape=record];\n";
+       output += dests;
+       output += "}\n";
+
+       // place ports of the same node in their own node [shape=record];\n cluster
+       Iterator nodeIt = nodePorts.keySet().iterator();
+       while (nodeIt.hasNext()) {
+           String nodeId = (String) nodeIt.next();
+           portLinks = nodePorts.get(nodeId);
+//               output += "\""+nodeId+"\" [shape=record,label=\"" + nodeId + " | { ";
+
+           Iterator portIt = portLinks.keySet().iterator();
+           output += "subgraph \"cluster_"+nodeId+"\" {\n";
+           output += " label=\""+nodeId+"\";\n";
+           output += " fontsize=20;\n";
+           output += " node [style=filled, fillcolor=white];\n";
+           output += " style=filled;\nfillcolor=\"#E0E0E0s\";\n";
+           while (portIt.hasNext()) {
+
+               String portId = (String) portIt.next();
+               output += "\""+nodeId+":"+portId+"\" [label=\""+portId+"\"];\n";
+//                   output += "<"+portId+"> "+portId;
+               if (portIt.hasNext()) {
+//                       output += " | ";
+               }
+           }
+           output += "}\n";
+//s                output += "} \"];\n";
+       }
+
+       // make labels for inter-node hops
+       int i = 0;
+       Hashtable<String, Integer> edgeBWs = new Hashtable<String, Integer>();
+       for (ArrayList<String> theHops : coloredHops) {
+           ResDetails resv = resList[i];
+           String gri = resv.getGlobalReservationId();
+           int bandwidth = resv.getBandwidth();
+           i++;
+           for (int j = 0; j < theHops.size() - 1; j++) {
+               String hop = theHops.get(j);
+
+               String nextHop = theHops.get(j+1);
+               String edge = hop+":"+nextHop;
+               if (j == 0 || j % 2 > 0 ) {
+                   int edgeBW = 0;
+                   if (edgeBWs.containsKey(edge)) {
+                       edgeBW = edgeBWs.get(edge);
+                   }
+                   edgeBW += bandwidth;
+                   edgeBWs.put(edge, edgeBW);
+
+//                       output += hop+" -> "+nextHop+" [color="+color+",dir=both, style=bold];\n";
+//                   } else {
+//                       output += hop+" -> "+nextHop+" [color="+color+",dir=both,style=bold];\n";
+               }
+           }
+       }
+
+       // output edges
+       i = 0;
+       for (ArrayList<String> theHops : coloredHops) {
+           ResDetails resv = resList[i];
+           String gri = resv.getGlobalReservationId();
+           int bandwidth = resv.getBandwidth();
+           String lineweight;
+           if (bandwidth >= 10000) {
+               lineweight = "\"setlinewidth(6)\"";
+           } else if (bandwidth >= 5000) {
+               lineweight = "\"setlinewidth(4)\"";
+           } else if (bandwidth >= 1000) {
+               lineweight = "\"setlinewidth(2)\"";
+           } else {
+               lineweight = "bold";
+           }
+           color = colors[i];
+           i++;
+           for (int j = 0; j < theHops.size() - 1; j++) {
+               String hop = theHops.get(j);
+               String nextHop = theHops.get(j+1);
+               String edge = hop+":"+nextHop;
+               String reverseEdge = nextHop+":"+hop;
+               int edgeBW = 0;
+               String label="";
+               if (edgeBWs.containsKey(edge)) {
+                   edgeBW = edgeBWs.get(edge);
+                   label = "total:\\n"+edgeBW+" Mbps";
+
+                   edgeBWs.remove(edge);
+                   edgeBWs.remove(reverseEdge);
+               } else if (edgeBWs.containsKey(reverseEdge)) {
+                   edgeBW = edgeBWs.get(reverseEdge);
+                   label = "total:\\n"+edgeBW+" Mbps";
+                   edgeBWs.remove(edge);
+                   edgeBWs.remove(reverseEdge);
+               }
+
+               if (j == 0) {
+                   label = bandwidth+" Mbps";
+                   output += "\""+gri+"-start\" -> "+hop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\", minlen=2];\n";
+               }
+               if (j % 2 > 0 ) {
+                   output += hop+" -> "+nextHop+" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", label=\""+label+"\", minlen=3];\n";
+               } else {
+                   output += hop+" -> "+nextHop+" [color="+color+",dir=both, group="+color+"];\n";
+               }
+               if (j == theHops.size() -2) {
+                   output += nextHop +" -> \""+gri+"-end\" [color="+color+",dir=both, style="+lineweight+", weight=5, group="+color+", minlen=2];\n";
+               }
+           }
+       }
+       output += "}\n";
+
+       this.setDotSource(output);
+       return output;
+
+   }
 
    public boolean nodeIsPrintable(Node node) {
        if (!node.isValid()) {

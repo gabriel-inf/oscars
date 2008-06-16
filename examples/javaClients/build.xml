@@ -55,6 +55,7 @@
         <include name="net/es/oscars/oscars/ExtensionMapper.java" />
         <include name="net/es/oscars/wsdlTypes/*.java" />
         <include name="net/es/oscars/bss/topology/URNParser.java" />
+        <include name="net/es/oscars/bss/topology/GraphVizExporter.java" />
         <include name="net/es/oscars/lookup/LookupException.java" />
         <include name="net/es/oscars/lookup/PSLookupClient.java" />
         <include name="net/es/oscars/client/**/*.java" />
@@ -132,7 +133,7 @@
     </java>
 </target>
 
-<target name="jar" description="Create jar with example classs" depends="compile">
+<target name="jar" description="Create jar with example classes" depends="compile">
     <jar destfile="../../build/OSCARS-client-examples.jar">
          <fileset dir="${build}/classes" includes="*.class" excludes="InitiateTopologyPullClient.class"/>
          <fileset dir="../../conf/server" includes="perfSONAR-LSQuery.xml" />
