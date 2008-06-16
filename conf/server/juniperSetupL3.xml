@@ -1,5 +1,4 @@
 <junoscript version="1.0" release="7.3">
-
 <rpc><lock-configuration /></rpc>
 <rpc>
   <load-configuration>
@@ -7,36 +6,36 @@
       <protocols>
         <mpls>
           <label-switched-path>
-            <name><user-var>name</user-var></name>
-            <from><user-var>from</user-var></from>
-            <to><user-var>to</user-var></to>
+            <name><user-var>resv-id</user-var></name>
+            <from><user-var>lsp_from</user-var></from>
+            <to><user-var>lsp_to</user-var></to>
             <metric>65535</metric>
-            <bandwidth><user-var>bandwidth</user-var></bandwidth>
-            <class-of-service>
-              <user-var>lsp_class-of-service</user-var>
-            </class-of-service>
-            <no-cspf/>
-            <setup-priority>
+            <bandwidth>
+              <per-traffic-class-bandwidth>
+                <user-var>bandwidth</user-var>
+              </per-traffic-class-bandwidth>
+            </bandwidth>
+	    <setup-priority>
               <user-var>lsp_setup-priority</user-var>
-            </setup-priority>
-            <reservation-priority>
+	    </setup-priority>
+	    <reservation-priority>
               <user-var>lsp_reservation-priority</user-var>
-            </reservation-priority>
-            <description>
-              <user-var>lsp_description</user-var>
-            </description>
-            <primary optional="yes">
-              <name><user-var>name</user-var></name>
+	    </reservation-priority>
+            <primary>
+              <name><user-var>resv-id</user-var></name>
             </primary>
+            <policing>
+              <filter><user-var>resv-id</user-var></filter>
+            </policing>
           </label-switched-path>
 
-          <!-- Note that this is an optional section, used when an
-          explicit path is given.  In this case, the specification of the
+          <!--
+          The specification of the
           path element must be referenced by the <primary> label in the
           above section.  Each hop in the path is enclosed within a <name>
           element within a <path-list> element.  These elements are added
           programmatically. -->
-          <path optional="yes">
+          <path>
              <name><user-var>name</user-var></name>
              <!--
              <path-list>
@@ -52,18 +51,17 @@
       </protocols>
       <firewall>
         <policer>
-          <name><user-var>name</user-var></name>
-          <filter-specific/>
+          <name><user-var>resv-id</user-var></name>
           <if-exceeding>
             <bandwidth-limit>
               <user-var>bandwidth</user-var>
             </bandwidth-limit>
             <burst-size-limit>
-                <user-var>policer_burst-size-limit</user-var>
+              <user-var>policer_burst-size-limit</user-var>
             </burst-size-limit>
           </if-exceeding>
           <then>
-            <discard/>
+            <forwarding-class>scavenger-service</forwarding-class>
           </then>
         </policer>
         <family>
@@ -71,7 +69,7 @@
             <filter>
               <name><user-var>internal_interface_filter</user-var></name>
               <term>
-                <name><user-var>name</user-var></name>
+                <name><user-var>resv-id</user-var></name>
                 <from>
                   <source-address>
                     <user-var>source-address</user-var>
@@ -91,22 +89,21 @@
                   </destination-port>
                 </from>
                 <then>
-                  <policer><user-var>name</user-var></policer>
-                  <count><user-var>name</user-var></count>
+                  <count><user-var>resv-id</user-var></count>
                   <forwarding-class>expedited-forwarding</forwarding-class>
                   <routing-instance>
-                    <user-var>name</user-var>
+                    <user-var>resv-id</user-var>
                   </routing-instance>
                 </then>
               </term>
               <term insert="after" name="firewall_filter_marker">
-                <name><user-var>name</user-var></name>
+                <name><user-var>resv-id</user-var></name>
               </term>
             </filter>
             <filter>
               <name><user-var>external_interface_filter</user-var></name>
               <term>
-                <name><user-var>name</user-var></name>
+                <name><user-var>resv-id</user-var></name>
                 <from>
                   <source-address>
                     <user-var>source-address</user-var>
@@ -119,31 +116,42 @@
                     <user-var>protocol</user-var>
                   </protocol>
                   <source-port optional="yes">
-                    <user-var>source-port</user-var>i
+                    <user-var>source-port</user-var>
                   </source-port>
                   <destination-port optional="yes">
                     <user-var>destination-port</user-var>
                   </destination-port>
                 </from>
                 <then>
-                  <policer><user-var>name</user-var></policer>
-                  <count><user-var>name</user-var></count>
+                  <count><user-var>resv-id</user-var></count>
                   <forwarding-class>expedited-forwarding</forwarding-class>
-                  <routing-instance>
-                    <user-var>name</user-var>
-                  </routing-instance>
+                  <routing-instance><user-var>resv-id</user-var></routing-instance>
                 </then>
               </term>
               <term insert="after" name="firewall_filter_marker">
-                <name><user-var>name</user-var></name>
+                <name><user-var>resv-id</user-var></name>
               </term>
             </filter>
           </inet>
+          <any>
+            <filter>
+              <name><user-var>resv-id</user-var></name>
+              <term>
+                <name><user-var>resv-id</user-var></name>
+                <then>
+                  <policer><user-var>resv-id</user-var></policer>
+                  <count><user-var>resv-id</user-var></count>
+                  <forwarding-class>expedited-forwarding</forwarding-class>
+                  <accept/>
+                </then>
+              </term>
+            </filter>
+          </any>
         </family>
       </firewall>
       <routing-instances>
         <instance>
-          <name><user-var>name</user-var></name>
+          <name><user-var>resv-id</user-var></name>
           <instance-type>forwarding</instance-type>
           <routing-options>
             <static>
@@ -152,7 +160,7 @@
                   <user-var>destination-address</user-var>
                 </destination>
                 <lsp-next-hop>
-                  <name><user-var>name</user-var></name>
+                  <name><user-var>resv-id</user-var></name>
                 </lsp-next-hop>
               </route>
             </static>
@@ -164,5 +172,4 @@
 </rpc>
 <rpc><commit-configuration /></rpc>
 <rpc><unlock-configuration /></rpc>
-
 </junoscript>
