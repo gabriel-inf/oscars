@@ -59,5 +59,9 @@
         <one-to-many class="net.es.oscars.bss.topology.Path" />
     </set>
 
+    <one-to-one name="institution"
+	    class="net.es.oscars.bss.topology.Institution"
+	    property-ref="domain" />
+
 </class>
 </hibernate-mapping>

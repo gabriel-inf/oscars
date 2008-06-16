@@ -314,3 +314,14 @@ CREATE TABLE IF NOT EXISTS routeElems (
   strict BOOLEAN NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=MyISAM;
+
+--
+-- Table to look up an institution associated with a domain (for site admin
+-- privileges)
+CREATE TABLE IF NOT EXISTS institutions (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    name                TEXT NOT NULL,
+        -- key of corresponding domain in domains table
+    domainId            INT NOT NULL,
+    PRIMARY KEY (id)
+) type=MyISAM;
