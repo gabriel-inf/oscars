@@ -1,8 +1,6 @@
 package net.es.oscars.pathfinder;
 
 import net.es.oscars.pathfinder.dragon.TERCEPathfinder;
-import net.es.oscars.pathfinder.overlay.OverlayPathfinder;
-import net.es.oscars.pathfinder.traceroute.TraceroutePathfinder;
 import net.es.oscars.pathfinder.db.DBPathfinder;
 
 /**
@@ -20,13 +18,9 @@ public class PathfinderFactory {
      */
     public PCE createPathfinder(String pathMethod, String dbname) {
 
-        // only three choices at the moment
-        if (pathMethod.equals("traceroute")) {
-            return new TraceroutePathfinder(dbname);
-        } else if (pathMethod.equals("terce")) {
+        // only two choices at the moment
+        if (pathMethod.equals("terce")) {
             return new TERCEPathfinder(dbname);
-        } else if (pathMethod.equals("overlay")) {
-            return new OverlayPathfinder(dbname);
         } else if (pathMethod.equals("database")) {
             return new DBPathfinder(dbname);
         }
