@@ -320,6 +320,7 @@ CREATE TABLE IF NOT EXISTS routeElems (
 -- privileges)
 CREATE TABLE IF NOT EXISTS sites (
     id                  INT NOT NULL AUTO_INCREMENT,
+        -- site name, matches a name in the aaa institutions table
     name                TEXT NOT NULL,
         -- key of corresponding domain in domains table
     domainId            INT NOT NULL,
