@@ -318,7 +318,7 @@ CREATE TABLE IF NOT EXISTS routeElems (
 --
 -- Table to look up an institution associated with a domain (for site admin
 -- privileges)
-CREATE TABLE IF NOT EXISTS institutions (
+CREATE TABLE IF NOT EXISTS sites (
     id                  INT NOT NULL AUTO_INCREMENT,
     name                TEXT NOT NULL,
         -- key of corresponding domain in domains table

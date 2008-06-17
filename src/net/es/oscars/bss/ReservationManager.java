@@ -822,18 +822,16 @@ public class ReservationManager {
      * @return  institution String name of the reservation source
      */
     public String sourceSite(Reservation resv) {
-        String institution = "UNKNOWN";
         Path path = resv.getPath();
         PathElem hop = path.getPathElem();
         Link src = hop.getLink();
         Link remoteLink = src.getRemoteLink();
         String topologyId = null;
         String FQTI = null;
-        // not sure if going to the remote link is helpful, it is still in the IDC domain - mrt
         if (remoteLink != null){
             FQTI=remoteLink.getFQTI();
             topologyId = remoteLink.getPort().getNode().getDomain().getTopologyIdent();
-           // this.log.debug("remote source link is: " + FQTI + " domain: " + topologyId );
+            this.log.debug("remote source link is: " + FQTI + " domain: " + topologyId );
         } else {
             FQTI = src.getFQTI();
             topologyId = src.getPort().getNode().getDomain().getTopologyIdent();
@@ -841,11 +839,14 @@ public class ReservationManager {
         }
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain srcDomain = domainDAO.fromTopologyIdent(topologyId);
-        //String institution = srcDomain.getInstitution();
-        if (srcDomain != null) {
-            institution = srcDomain.getName();
+        String institutionName = "UNKNOWN";
+        if (srcDomain != null ){
+            Site institution = srcDomain.getSite();
+            if (institution != null) {
+                institutionName = institution.getName();
+            }
         }
-        return institution;
+        return institutionName;
     }
 
     /**
@@ -855,7 +856,6 @@ public class ReservationManager {
      * @return institution String name of the reservation destination
      */
     public String destSite(Reservation resv) {
-        String institution = "UNKNOWN";
         Path path = resv.getPath();
         PathElem hop = path.getPathElem();
         while (hop.getNextElem() != null) {
@@ -868,7 +868,7 @@ public class ReservationManager {
         if (remoteLink != null) {
             FQTI=remoteLink.getFQTI();
             topologyId = remoteLink.getPort().getNode().getDomain().getTopologyIdent();
-            // this.log.debug("remote destination link: " + FQTI + " domain: " + topologyId );
+            this.log.debug("remote destination link: " + FQTI + " domain: " + topologyId );
         } else {
             FQTI=dest.getFQTI();
             topologyId = dest.getPort().getNode().getDomain().getTopologyIdent();
@@ -876,11 +876,14 @@ public class ReservationManager {
         }
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         Domain destDomain = domainDAO.fromTopologyIdent(topologyId);
-        //String institution = srcDomain.getInstitution();
+        String institutionName = "UNKNOWN";
         if (destDomain != null ){
-            institution = destDomain.getName();
+            Site institution = destDomain.getSite();
+            if (institution != null) {
+                institutionName = institution.getName();
+            }
         }
-        return institution;
+        return institutionName;
     }
 
 

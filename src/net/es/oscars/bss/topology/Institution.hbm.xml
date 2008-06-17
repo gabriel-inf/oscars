@@ -5,9 +5,9 @@
     
 <hibernate-mapping>
 
-<class name="net.es.oscars.bss.topology.Institution" table="institutions">
+<class name="net.es.oscars.bss.topology.Site" table="sites">
     <meta attribute="class-description" inherit="false">
-       @hibernate.class table="institutions"
+       @hibernate.class table="sites"
     </meta>
 
     <id name="id">

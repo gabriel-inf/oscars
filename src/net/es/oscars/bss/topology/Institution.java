@@ -10,9 +10,9 @@ import org.hibernate.Hibernate;
 import net.es.oscars.database.HibernateBean;
 
 /**
- * Institution is the Hibernate bean for the bss.institutions table.
+ * Site is the Hibernate bean for the bss.sites table.
  */
-public class Institution extends HibernateBean implements Serializable {
+public class Site extends HibernateBean implements Serializable {
     // TODO:  need to do this via Ant rather than manually
     // The number is the latest Subversion revision number
     private static final long serialVersionUID = 4151;
@@ -24,16 +24,16 @@ public class Institution extends HibernateBean implements Serializable {
     private Domain domain;
 
     /** default constructor */
-    public Institution() { }
+    public Site() { }
 
 
     /**
-     * @return name a string with the institution name
+     * @return name a string with the site name
      */
     public String getName() { return this.name; }
 
     /**
-     * @param name a string with the institution name
+     * @param name a string with the site name
      */
     public void setName(String name) {
         this.name = name;
@@ -57,7 +57,7 @@ public class Institution extends HibernateBean implements Serializable {
         if (o == null || thisClass != Hibernate.getClass(o)) {
             return false;
         }
-        Institution castOther = (Institution) o;
+        Site castOther = (Site) o;
         // if both of these have been saved to the database
         if ((this.getId() != null) &&
             (castOther.getId() != null)) {

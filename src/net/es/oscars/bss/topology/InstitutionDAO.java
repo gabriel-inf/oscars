@@ -5,13 +5,13 @@ import java.util.List;
 import net.es.oscars.database.GenericHibernateDAO;
 
 /**
- * InstitutionDAO is the data access object for the bss.institutions table.
+ * SiteDAO is the data access object for the bss.institutions table.
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-public class InstitutionDAO extends GenericHibernateDAO<Institution, Integer> {
+public class SiteDAO extends GenericHibernateDAO<Site, Integer> {
 
-    public InstitutionDAO(String dbname) {
+    public SiteDAO(String dbname) {
         this.setDatabase(dbname);
     }
 }
