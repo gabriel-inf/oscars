@@ -28,6 +28,18 @@ public class UserManager {
         this.salt = props.getProperty("salt");
     }
 
+    /** Creates a system user. 
+     * This constructor is used by the test suite
+     *
+     * @param user a user instance containing user parameters
+     * @param institutionName a string with the new user's affiliation
+     */
+    public void create(User user, String institutionName)
+            throws AAAException {
+
+        this.create(user, institutionName, null);
+    }
+
     /** Creates a system user.
      *
      * @param user a user instance containing user parameters

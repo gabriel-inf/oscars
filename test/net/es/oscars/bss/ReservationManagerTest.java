@@ -146,8 +146,7 @@ public class ReservationManagerTest {
         seconds += 3600;
         resv.setEndTime(seconds);
         try {
-            this.rm.modify(resv, resv.getLogin(), null,
-                           AuthValue.ALLUSERS.ordinal(), pathInfo);
+            this.rm.modify(resv, null, null, pathInfo);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw(ex);
@@ -250,8 +249,7 @@ public class ReservationManagerTest {
         }
         try {
             reservation = this.rm.query(testResv.getGlobalReservationId(),
-                                        testResv.getLogin(), null,
-                                        AuthValue.ALLUSERS.ordinal());
+                                        null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -271,9 +269,8 @@ public class ReservationManagerTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = this.rm.list(login, null,
-                                        AuthValue.ALLUSERS.ordinal(), null,
-                                        null, null, null, null, null);
+            reservations = this.rm.list (null, null, null, null,
+                                         null, null, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -291,9 +288,8 @@ public class ReservationManagerTest {
         String login = this.props.getProperty("login");
         logins.add(login);
         try {
-            reservations = this.rm.list(login, null,
-                                        AuthValue.SELFONLY.ordinal(), null,
-                                        null, null, null, null, null);
+            reservations = this.rm.list(null, null, null, null,
+                                        null, null, null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
@@ -310,8 +306,7 @@ public class ReservationManagerTest {
         Reservation resv = 
             dao.queryByParam("description", LAYER2_DESCRIPTION);
         try {
-            this.rm.cancel(resv.getGlobalReservationId(), resv.getLogin(),
-                           null, AuthValue.ALLUSERS.ordinal());
+            this.rm.cancel(resv.getGlobalReservationId(), null, null);
         } catch (BSSException ex) {
             this.sf.getCurrentSession().getTransaction().rollback();
             throw ex;
