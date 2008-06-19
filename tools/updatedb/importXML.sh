@@ -29,6 +29,6 @@ export CLASSPATH=$CLASSPATH
 
 # start up logging to file
 javac `pwd`/ImportXML.java -d ../../build/tools
-java -Djava.net.preferIPv4Stack=true ImportXML $*
+java -Dlog4j.configuration=file://$cwd/log4j.top.properties -Djava.net.preferIPv4Stack=true ImportXML $*
 
 exit 1

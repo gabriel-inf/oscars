@@ -5,6 +5,7 @@ cwd=`pwd`
 progname="$0"
 curdir=`dirname "$progname"`
 
+
 # update classpath
 OSCARS_CLASSPATH=""
 # TODO:  better solution
@@ -48,7 +49,8 @@ done
 # wrong one is used.  This somewhat bad solution depends on the war file being
 # deployed.
 
-java -Dlog4j.configuration=file://$CATALINA_HOME/webapps/OSCARS/WEB-INF/classes/log4j.properties -Djava.net.preferIPv4Stack=true -Dcatalina.home=$CATALINA_HOME PathScheduler $*
+#echo java -Dlog4j.configuration=file://$cwd/log4j.sched.properties -Djava.net.preferIPv4Stack=true -Dcatalina.home=$CATALINA_HOME PathScheduler $*
+java -Dlog4j.configuration=file://$cwd/log4j.sched.properties -Djava.net.preferIPv4Stack=true -Dcatalina.home=$CATALINA_HOME PathScheduler $*
 
 rm -f $LOCKFILE            # unlock
 

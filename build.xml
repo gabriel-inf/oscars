@@ -376,8 +376,9 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="test" depends="test.compile, testpkg, testESnet, testI2">
         <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/test" listeners="net.es.oscars.ITestListener" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
+        	<jvmarg value="-Dlog4j.configuration=file:///${env.PWD}/test/log4j.test.properties"/> 
             <jvmarg value="-Dcatalina.home=${catalina.home}"/>
-            <jvmarg value="-Dapp=-test"/>
+            <!-- <jvmarg value="-Dapp=-test"/> -->
             <jvmarg value="-Dsuite=${testsuite}"/>
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
