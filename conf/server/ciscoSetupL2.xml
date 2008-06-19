@@ -5,6 +5,7 @@ policy-map **resv-id**
    police cir **bandwidth**
      conform-action set-mpls-exp-topmost-transmit 4
      exceed-action policed-dscp-transmit
+     violate-action policed-dscp-transmit
 !
 pseudowire-class **resv-id**
  encapsulation mpls
