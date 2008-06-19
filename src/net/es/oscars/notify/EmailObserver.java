@@ -168,6 +168,8 @@ public class EmailObserver implements Observer {
         MPLSData mplsData = null;
         String msg = template;
         String eventTime = this.formatTime(event.getTimestamp());
+        String val = null;
+        Integer intVal = null;
         
         //NOTE: There are more efficient ways to parse and replace fields
         //but this seems to work for now.
@@ -250,14 +252,34 @@ public class EmailObserver implements Observer {
                 l3Data.getSrcHost(), msg);
             msg = this.replaceTemplateField("##l3Dest##", 
                 l3Data.getDestHost(), msg);
+            intVal = l3Data.getSrcIpPort();
+            if (intVal != null) {
+                val = intVal.toString();
+            } else {
+                val = "";
+            }
             msg = this.replaceTemplateField("##l3SrcPort##", 
-                l3Data.getSrcIpPort() + "", msg);
+                val, msg);
+            intVal = l3Data.getDestIpPort();
+            if (intVal != null) {
+                val = intVal.toString();
+            } else {
+                val = "";
+            }
             msg = this.replaceTemplateField("##l3DestPort##", 
-                l3Data.getDestIpPort() + "", msg);
+                val, msg);
+            val = l3Data.getProtocol();
+            if (val == null) {
+                val = "";
+            }
             msg = this.replaceTemplateField("##protocol##", 
-                l3Data.getProtocol(), msg);
+                val, msg);
+            val = l3Data.getDscp();
+            if (val == null) {
+                val = "";
+            }
             msg = this.replaceTemplateField("##dscp##", 
-                l3Data.getDscp(), msg);
+                val, msg);
         }else{
             msg = this.replaceTemplateField("##l3Source##", "", msg);
             msg = this.replaceTemplateField("##l3Dest##", "", msg);
