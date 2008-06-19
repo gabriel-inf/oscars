@@ -2,15 +2,14 @@
 
 # update classpath
 OSCARS_CLASSPATH="."
-for f in lib/*.jar
-do
-    OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
-done
 
+# only a few of these are necessary; at some point just pick the ones in use
 for f in ../../lib/axis2/*.jar
 do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
 done
+
+OSCARS_CLASSPATH="$OSCARS_CLASSPATH":../../lib/commons-lang-2.3.jar
 
 java -cp $OSCARS_CLASSPATH:IDCNotify.jar:. -Dcatalina.home=$CATALINA_HOME IDCNotifyServer $*
 

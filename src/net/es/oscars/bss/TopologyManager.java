@@ -878,7 +878,6 @@ public class TopologyManager {
         Ipaddr ipaddr = null;
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         List<Reservation> reservations = dao.statusReservations(status);
 
         for (Reservation r : reservations) {
@@ -892,7 +891,7 @@ public class TopologyManager {
                 if (pathElem.getDescription() != null) {
                     if (pathElem.getDescription().equals("ingress")) {
                         link = pathElem.getLink();
-                        ipaddr = ipaddrDAO.fromLink(link);
+                        ipaddr = link.getValidIpaddr();
                         if (ipaddr != null) {
                             ingressNodeIP = ipaddr.getIP();
                         } else {
@@ -900,7 +899,7 @@ public class TopologyManager {
                         }
                     } else if (pathElem.getDescription().equals("egress")) {
                         link = pathElem.getLink();
-                        ipaddr = ipaddrDAO.fromLink(link);
+                        ipaddr = link.getValidIpaddr();
                         if (ipaddr != null) {
                             egressNodeIP = ipaddr.getIP();
                         } else {
@@ -987,7 +986,7 @@ public class TopologyManager {
 
         for (PathElem pathElem : pathElems) {
             Link link = pathElem.getLink();
-            Ipaddr ipaddr = ipaddrDAO.fromLink(link);
+            Ipaddr ipaddr = link.getValidIpaddr();
             ipset.add(ipaddr);
         }
 

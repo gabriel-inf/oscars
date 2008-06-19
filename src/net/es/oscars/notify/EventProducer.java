@@ -1,5 +1,8 @@
 package net.es.oscars.notify;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.RemoteException;
@@ -69,7 +72,16 @@ public class EventProducer{
     public void addEvent(String type, String userLogin, String source,
         Reservation resv, String errorCode, String errorMessage){
         Event event = new Event();
-        Reservation resvCopy = resv.copy();
+        Reservation resvCopy = null;
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        try {
+            resvCopy = resv.copy();
+        } catch (Exception e) {
+            this.log.info("caught exception");
+            e.printStackTrace(pw);
+            this.log.info(sw.toString());
+        }
         event.setType(type);
         event.setTimestamp(System.currentTimeMillis());
         event.setUserLogin(userLogin);

@@ -151,13 +151,12 @@ public class LSPData {
 
         List<String> hops = new ArrayList<String>();
         List<String> restrictedHops = new ArrayList<String>();
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         while (pathElem != null) {
             Link link = pathElem.getLink();
             // this gets everything except the ingress and egress, which we
             // don't want
             if (pathElem.getDescription() ==  null) {
-                Ipaddr ipaddr = ipaddrDAO.fromLink(link);
+                Ipaddr ipaddr = link.getValidIpaddr();
                 if (ipaddr == null) {
                     throw new PSSException("No IP for link: ["+link.getFQTI()+"]");
                 }

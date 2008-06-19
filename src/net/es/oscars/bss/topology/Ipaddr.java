@@ -102,6 +102,19 @@ public class Ipaddr extends HibernateBean implements Serializable {
         }
     }
 
+    /**
+     * Copyies only information useful for detaching
+     * object from hibernate and passing to other processes.
+     *
+     * @return a copy of this ipaddr
+     **/
+    public Ipaddr copy(){
+        Ipaddr ipaddrCopy = new Ipaddr();
+        ipaddrCopy.setIP(this.IP);
+        ipaddrCopy.setValid(this.valid);
+        return ipaddrCopy;
+    }
+    
     public String toString() {
         return new ToStringBuilder(this).append("id", getId()).toString();
     }

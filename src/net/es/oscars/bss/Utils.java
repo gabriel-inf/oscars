@@ -43,7 +43,6 @@ public class Utils {
         } else {
             pathElem = path.getInterPathElem();
         }
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         int i = 0;
         while (pathElem != null) {
             ctr++;
@@ -58,7 +57,7 @@ public class Utils {
             // otherwise, send back host name/IP address pair
             } else {
                 nodeName = link.getPort().getNode().getTopologyIdent();
-                ipaddr = ipaddrDAO.fromLink(link);
+                ipaddr = link.getValidIpaddr();
                 if ((ipaddr == null) || (ipaddr.getIP() == null)) {
                     sb.append("*Out of date IP*");
                 } else {

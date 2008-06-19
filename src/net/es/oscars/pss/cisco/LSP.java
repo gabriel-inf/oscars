@@ -96,7 +96,6 @@ public class LSP {
         this.hm = new HashMap<String, String>();
         this.fillCommonParams(resv, lspData.getVlanTag());
 
-        IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
         this.hm.put("bandwidth", Long.toString(resv.getBandwidth()));
         this.hm.put("lsp_setup-priority",
              this.commonProps.getProperty("lsp_setup-priority"));
@@ -105,7 +104,7 @@ public class LSP {
 
         if (direction.equals("forward")) {
             // get IP associated with physical interface before egress
-            ipaddr = ipaddrDAO.fromLink(lspData.getLastXfaceElem().getLink());
+            ipaddr = lspData.getLastXfaceElem().getLink().getValidIpaddr();
             if (ipaddr != null) {
                 lspFwdTo = ipaddr.getIP();
             } else {
@@ -123,8 +122,7 @@ public class LSP {
         } else {
             // reverse direction
             // get IP associated with first in-facing physical interface
-            ipaddr = ipaddrDAO.fromLink(
-                     lspData.getIngressPathElem().getNextElem().getLink());
+            ipaddr = lspData.getIngressPathElem().getNextElem().getLink().getValidIpaddr();
             if (ipaddr != null) {
                 lspRevTo = ipaddr.getIP();
             } else {

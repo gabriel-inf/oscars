@@ -291,6 +291,26 @@ public class Link extends HibernateBean implements Serializable {
         this.ipaddrs.remove(ipaddr);
     }
 
+    /**
+     * Returns the valid Ipaddr associated with this link.  There is only
+     * one; there may also be several invalid addresses.
+     *
+     * @return Ipaddr a valid ipaddr instance associated with this link.
+     */
+    public Ipaddr getValidIpaddr() {
+        if (this.ipaddrs == null) {
+            return null;
+        }
+        Iterator ipaddrIt = this.ipaddrs.iterator();
+        while (ipaddrIt.hasNext()) {
+            Ipaddr ipaddr = (Ipaddr) ipaddrIt.next();
+            if (ipaddr.isValid()) {
+                return ipaddr;
+            }
+        }
+        return null;
+    }
+
     public Ipaddr getIpaddrByIP(String IP) {
         if (this.ipaddrs == null) {
             return null;
@@ -361,9 +381,8 @@ public class Link extends HibernateBean implements Serializable {
     }
     
     /**
-     * Only copies topology identifier information. Useful for detaching
-     * object from hibernate and passing to other processes that only care
-     * about IDs.
+     * Copyies only information useful for detaching
+     * object from hibernate and passing to other processes.
      *
      * @return a copy of this link
      **/
@@ -371,12 +390,16 @@ public class Link extends HibernateBean implements Serializable {
         Link linkCopy = new Link();
         Port portCopy = null;
         linkCopy.setTopologyIdent(this.topologyIdent);
-        
+        Ipaddr ipaddr = this.getValidIpaddr();
+        if (ipaddr != null) {
+            Ipaddr ipaddrCopy = ipaddr.copy();
+            linkCopy.setIpaddrs(new HashSet());
+            linkCopy.addIpaddr(ipaddrCopy);
+        }
         if(this.port != null){
             portCopy = this.port.topoCopy();
         }
         linkCopy.setPort(portCopy);
-        
         return linkCopy;
     }
     

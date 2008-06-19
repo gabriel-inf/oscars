@@ -141,8 +141,7 @@ public class DomainDAO extends GenericHibernateDAO<Domain, Integer> {
          String[] componentList = topologyIdent.split(":");
          // TODO:  error checking
          Link link = this.getFullyQualifiedLink(componentList);
-         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
-         Ipaddr ipaddr = ipaddrDAO.fromLink(link);
+         Ipaddr ipaddr = link.getValidIpaddr();
          return ipaddr.getIP();
      }
 
