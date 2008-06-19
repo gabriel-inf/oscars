@@ -3,7 +3,6 @@
 # update classpath
 OSCARS_CLASSPATH="."
 
-# only a few of these are necessary; at some point just pick the ones in use
 for f in ../../lib/axis2/*.jar
 do
     OSCARS_CLASSPATH="$OSCARS_CLASSPATH":$f
