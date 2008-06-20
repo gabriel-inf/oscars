@@ -69,8 +69,6 @@ public class ModifyReservation extends HttpServlet {
         }
         if (authVal.equals(AuthValue.MYSITE)) {
             institution = userMgr.getInstitution(userName);
-            loginConstraint = userName;  /* note if the user had an all-user constraint 
-                                            it would have been returned instead of MYSITE */
         } else if (authVal.equals(AuthValue.SELFONLY)) {
             loginConstraint = userName;
         }  
@@ -108,7 +106,7 @@ public class ModifyReservation extends HttpServlet {
             forwarder.cleanUp();
             if (errMessage != null) {
                 eventProducer.addEvent(Event.RESV_MODIFY_FAILED, userName, 
-                    "WBUI", persistentResv, "", errMessage);
+                    "WBUI", resv, "", errMessage);
                 utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;
             }

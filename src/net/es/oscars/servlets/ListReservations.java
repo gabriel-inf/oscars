@@ -116,8 +116,6 @@ public class ListReservations extends HttpServlet {
         }
         if (authVal.equals(AuthValue.MYSITE)) {
             institution = mgr.getInstitution(login);
-            loginConstraint = login;  // note if the user had an all-user constraint 
-	                                  // it would have been returned instead of MYSITE 
         } else if (authVal.equals(AuthValue.SELFONLY)){
             loginConstraint = login;
         }

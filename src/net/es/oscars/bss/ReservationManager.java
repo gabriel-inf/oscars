@@ -250,7 +250,7 @@ public class ReservationManager {
     public Reservation query(String gri, String login, String institution)
             throws BSSException {
      
-        this.log.info("query.start: " + gri + " login: " + login );
+        this.log.info("query.start: " + gri + " login: " + login + " institution: " + institution);
         Reservation resv = getConstrainedResv(gri,login,institution);
         this.log.info("query.finish: " + resv.getGlobalReservationId());
         return resv;
@@ -422,16 +422,15 @@ public class ReservationManager {
         reservations = dao.list(loginIds, statuses, description, links,
                                 vlanTags, startTime, endTime);
         
-        if ((login == null) || (institution == null)){
+        if (institution == null){
             // the dao.list selected only the allowed reservations
             this.log.info("list.finish, success");
             return reservations;  
         } else {
-            // the institution and login were both set
             // keep reservations that start or terminate at institution 
             // or belong to this user
             for (Reservation resv : reservations) {
-        	if ( checkInstitution( resv, institution) || resv.getLogin().equals(login)){
+        	if ( checkInstitution( resv, institution)){
                     authResv.add(resv);
         	}
             }
@@ -1146,8 +1145,7 @@ public class ReservationManager {
        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
        Reservation resv = null;
        
-       if (loginConstraint == null || institutionConstraint != null ) {
-           // see if the reservation exists
+       if (loginConstraint == null ) {
            try {
        	       resv = resvDAO.query(gri);
            } catch ( BSSException e ){
@@ -1161,7 +1159,7 @@ public class ReservationManager {
        	       }
            }
        }
-       if (resv == null && loginConstraint != null) {
+       else  {
            resv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);  
        }
        if (resv == null) {
