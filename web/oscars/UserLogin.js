@@ -51,7 +51,7 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
     var reservationsPane = new dojox.layout.ContentPane(
           {title:'Reservations', id: 'reservationsPane'},
            dojo.doc.createElement('div'));
-           reservationsPane.setHref("forms/reservations.html");
+    reservationsPane.setHref("forms/reservations.html");
     mainTabContainer.addChild(reservationsPane, 0);
     reservationsPane.startup();
 
@@ -86,7 +86,7 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
             var userListPane = new dojox.layout.ContentPane(
                   {title:'User List', id: 'userListPane'},
                    dojo.doc.createElement('div'));
-                userListPane.setHref("forms/userList.html");
+            userListPane.setHref("forms/userList.html");
             mainTabContainer.addChild(userListPane, 3);
             userListPane.startup();
         }
@@ -97,6 +97,16 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
                    dojo.doc.createElement('div'));
             mainTabContainer.addChild(userAddPane, 4);
             userAddPane.startup();
+        }
+        // basic AAA management form (institutions, resources, permissions,
+        // attributes)
+        if (responseObject.authorizedTabs.aaaPane) {
+            var aaaPane = new dojox.layout.ContentPane(
+                  {title:'AAA', id: 'aaaPane'},
+                   dojo.doc.createElement('div'));
+            aaaPane.setHref("forms/aaa.html");
+            mainTabContainer.addChild(aaaPane, 5);
+            aaaPane.startup();
         }
     }
 };

@@ -69,6 +69,10 @@
         <servlet-name>UserLogout</servlet-name>
         <servlet-class>net.es.oscars.servlets.UserLogout</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AAA</servlet-name>
+        <servlet-class>net.es.oscars.servlets.AAA</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>AuthenticateUser</servlet-name>
         <url-pattern>/servlet/AuthenticateUser</url-pattern>
@@ -124,6 +128,10 @@
     <servlet-mapping>
         <servlet-name>UserLogout</servlet-name>
         <url-pattern>/servlet/UserLogout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AAA</servlet-name>
+        <url-pattern>/servlet/AAA</url-pattern>
     </servlet-mapping>
 
 </web-app>

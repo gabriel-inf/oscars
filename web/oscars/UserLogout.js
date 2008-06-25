@@ -59,6 +59,9 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     if (dijit.byId("userProfilePane") != null) {
         mainTabContainer.closeChild(dijit.byId("userProfilePane"));
     }
+    if (dijit.byId("aaaPane") != null) {
+        mainTabContainer.closeChild(dijit.byId("aaaPane"));
+    }
     // reset global state
     oscarsState.userGridInitialized = false;
     oscarsState.resvGridInitialized = 0;
