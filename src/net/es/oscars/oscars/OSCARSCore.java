@@ -14,14 +14,22 @@ import net.es.oscars.notify.*;
 import net.es.oscars.lookup.*;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
+import net.es.oscars.scheduler.*;
+
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 public class OSCARSCore {
 
     private Logger log;
 
+    public boolean initialized = false;
+
     private static OSCARSCore instance = null;
 
-    // Hardcoded but you can set them for tests etc
+    // Hardcoded but one can set them for tests etc
     private String bssDbName = "bss";
     private String aaaDbName = "aaa";
 
@@ -31,6 +39,8 @@ public class OSCARSCore {
     private UserManager userManager = null;
     private PCEManager pceManager = null;
     private PathSetupManager pathSetupManager = null;
+    private PolicyManager policyManager = null;
+
     private NotifyInitializer notifier = null;
     private PSLookupClient lookupClient = null;
 
@@ -39,6 +49,7 @@ public class OSCARSCore {
     private ReservationAdapter reservationAdapter = null;
     private TypeConverter typeConverter = null;
     private Forwarder forwarder = null;
+    private ScheduleManager scheduleManager = null;
 
 
     private OSCARSCore() {
@@ -53,8 +64,7 @@ public class OSCARSCore {
         return OSCARSCore.instance;
     }
 
-    public static OSCARSCore init()
-            throws BSSException, AAAException, PSSException, LookupException, NotifyException, PathfinderException {
+    public static OSCARSCore init() {
         if (OSCARSCore.instance == null) {
             OSCARSCore.instance = new OSCARSCore();
         }
@@ -64,31 +74,66 @@ public class OSCARSCore {
         return instance;
     }
 
-    public void initAll()
-        throws BSSException, AAAException, PSSException, LookupException, NotifyException, PathfinderException {
+    public void initAll() {
         this.log.debug("initAll.start");
 
         this.initDatabases();
         this.initReservationManager();
-        this.initLookupClient();
-        this.initNotifier();
-        this.initPCEManager();
         this.initPathSetupManager();
         this.initTopologyManager();
         this.initTopologyExchangeManager();
         this.initUserManager();
+        this.initScheduleManager();
+        this.initPCEManager();
+        this.initPolicyManager();
+
+        this.initLookupClient();
+        this.initNotifier();
 
         this.initReservationAdapter();
         this.initTopologyExchangeAdapter();
         this.initPathSetupAdapter();
         this.initTypeConverter();
         this.initForwarder();
+        this.initialized = true;
+
+
+
+        try {
+            Scheduler sched = this.getScheduleManager().getScheduler();
+
+            String gri = "es.net-1200";
+            JobDetail jobDetail = new JobDetail("create-"+gri, "UNQUEUED", CreateReservationJob.class);
+            jobDetail.setDurability(true);
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDetail.setJobDataMap(jobDataMap);
+            this.log.debug("Adding job create-"+gri);
+            sched.addJob(jobDetail, false);
+
+            gri = "es.net-2200";
+            jobDetail = new JobDetail("create-"+gri, "UNQUEUED", CreateReservationJob.class);
+            jobDetail.setDurability(true);
+            jobDataMap = new JobDataMap();
+            jobDetail.setJobDataMap(jobDataMap);
+            this.log.debug("Adding job create-"+gri);
+            sched.addJob(jobDetail, false);
+
+        } catch (SchedulerException ex) {
+            this.log.error("Could not schedule job", ex);
+        }
+
+
 
         this.log.debug("initAll.end");
     }
 
     public void shutdown() {
         this.log.info("shutdown.start");
+        try {
+            this.scheduleManager.getScheduler().shutdown(false);
+        } catch (SchedulerException ex) {
+            this.log.error("Scheduler error shutting down", ex);
+        }
         HibernateUtil.destroySessionFactories();
         this.log.info("shutdown.end");
     }
@@ -96,108 +141,87 @@ public class OSCARSCore {
 
 
 
-    public void initDatabases() throws BSSException, AAAException {
+    public void initDatabases() {
         this.log.debug("initDatabases.start");
-        if (this.bssDbName == null) {
-            this.log.error("BSS DB name not set in OSCARS core");
-            throw new BSSException("BSS DB name not set in OSCARS core");
-        }
-        if (this.aaaDbName == null) {
-            this.log.error("AAA DB name not set in OSCARS core");
-            throw new AAAException("AAA DB name not set in OSCARS core");
-        }
         ArrayList<String> dbnames = new ArrayList<String>();
         dbnames.add(this.bssDbName);
         dbnames.add(this.aaaDbName);
         Initializer dbInitializer = new Initializer();
         dbInitializer.initDatabase(dbnames);
+        Session aaa = this.getAaaSession();
+        Session bss = this.getBssSession();
         this.log.debug("initDatabases.end");
     }
 
 
-    public void initReservationManager() throws BSSException {
+    public void initReservationManager() {
         this.log.debug("initReservationManager.start");
-        if (this.bssDbName == null) {
-            this.log.error("BSS DB name not set in OSCARS core");
-            throw new BSSException("BSS DB name not set in OSCARS core");
-        }
         this.reservationManager = new ReservationManager(this.bssDbName);
         this.log.debug("initReservationManager.end");
     }
 
 
-    public void initLookupClient() throws LookupException {
+    public void initLookupClient() {
         this.log.debug("initLookupClient.start");
         LookupFactory lookupFactory = new LookupFactory();
         this.lookupClient = lookupFactory.getPSLookupClient();
         this.log.debug("initLookupClient.end");
     }
 
-    public void initNotifier() throws NotifyException {
+    public void initNotifier()  {
         this.log.debug("initNotifier.start");
         this.notifier = new NotifyInitializer();
-        this.notifier.init();
+        try {
+            this.notifier.init();
+        } catch (NotifyException ex) {
+            this.log.error("Could not init notifier", ex);
+        }
         this.log.debug("initNotifier.end");
     }
 
-    public void initPCEManager() throws PathfinderException, BSSException {
+    public void initPCEManager() {
         this.log.debug("initPCEManager.start");
-        if (this.bssDbName == null) {
-            this.log.error("BSS DB name not set in OSCARS core");
-            throw new BSSException("BSS DB name not set in OSCARS core");
-        }
         this.pceManager = new PCEManager(this.bssDbName);
         this.log.debug("initPCEManager.end");
     }
 
-    public void initPathSetupManager() throws PSSException, BSSException {
+    public void initPathSetupManager() {
         this.log.debug("initPathSetupManager.start");
-        if (this.bssDbName == null) {
-            this.log.error("BSS DB name not set in OSCARS core");
-            throw new BSSException("BSS DB name not set in OSCARS core");
-        }
         this.pathSetupManager = new PathSetupManager(this.bssDbName);
         this.log.debug("initPathSetupManager.end");
     }
 
-    public void initTopologyManager() throws BSSException {
+    public void initTopologyManager() {
         this.log.debug("initTopologyManager.start");
-        if (this.bssDbName == null) {
-            this.log.error("BSS DB name not set in OSCARS core");
-            throw new BSSException("BSS DB name not set in OSCARS core");
-        }
         this.topologyManager = new TopologyManager(this.bssDbName);
         this.log.debug("initTopologyManager.end");
     }
 
-    public void initUserManager() throws AAAException {
+    public void initUserManager() {
         this.log.debug("initUserManager.start");
-        if (this.aaaDbName == null) {
-            this.log.error("AAA DB name not set in OSCARS core");
-            throw new AAAException("AAA DB name not set in OSCARS core");
-        }
         this.userManager = new UserManager(this.aaaDbName);
         this.log.debug("initUserManager.end");
     }
+
     public void initTopologyExchangeManager() {
         this.log.debug("initTopologyExchangeManager.start");
         this.topologyExchangeManager = new TopologyExchangeManager();
         this.log.debug("initTopologyExchangeManager.end");
     }
 
-    public void initReservationAdapter() throws BSSException {
+    public void initReservationAdapter() {
         this.log.debug("initReservationAdapter.start");
         this.reservationAdapter = new ReservationAdapter();
         this.log.debug("initReservationAdapter.end");
     }
 
-    public void initTopologyExchangeAdapter() throws BSSException {
+    public void initTopologyExchangeAdapter() {
         this.log.debug("initTopologyExchangeAdapter.start");
         this.topologyExchangeAdapter = new TopologyExchangeAdapter();
         this.log.debug("initTopologyExchangeAdapter.end");
     }
 
-    public void initPathSetupAdapter() throws BSSException, PSSException {
+    public void initPathSetupAdapter() {
         this.log.debug("initPathSetupAdapter.start");
         this.pathSetupAdapter = new PathSetupAdapter();
         this.log.debug("initPathSetupAdapter.end");
@@ -215,13 +239,40 @@ public class OSCARSCore {
         this.log.debug("initForwarder.end");
     }
 
+    public void initScheduleManager() {
+        this.log.debug("initScheduleManager.start");
+        this.scheduleManager = ScheduleManager.getInstance();
+        this.log.debug("initScheduleManager.end");
+    }
+    public void initPolicyManager() {
+        this.log.debug("initPolicyManager.start");
+        this.policyManager = new PolicyManager(this.bssDbName);
+        this.log.debug("initPolicyManager.end");
+    }
+
     public Session getAaaSession() {
         Session aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
+        if (aaa == null || !aaa.isOpen()) {
+            this.log.debug("opening AAA session");
+            HibernateUtil.getSessionFactory(this.aaaDbName).openSession();
+            aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
+        }
+        if (aaa == null || !aaa.isOpen()) {
+            this.log.error("BSS session is still closed!");
+        }
         return aaa;
     }
 
     public Session getBssSession() {
         Session bss = HibernateUtil.getSessionFactory(this.bssDbName).getCurrentSession();
+        if (bss == null || !bss.isOpen()) {
+            this.log.debug("opening BSS session");
+            bss = HibernateUtil.getSessionFactory(this.bssDbName).openSession();
+            bss = HibernateUtil.getSessionFactory(this.bssDbName).getCurrentSession();
+        }
+        if (bss == null || !bss.isOpen()) {
+            this.log.error("BSS session is still closed!");
+        }
         return bss;
     }
 
@@ -257,7 +308,7 @@ public class OSCARSCore {
     /**
      * @return the reservationManager
      */
-    public ReservationManager getReservationManager() throws BSSException {
+    public ReservationManager getReservationManager() {
         if (this.reservationManager == null) {
             this.initReservationManager();
         }
@@ -275,7 +326,7 @@ public class OSCARSCore {
     /**
      * @return the topologyManager
      */
-    public TopologyManager getTopologyManager() throws BSSException {
+    public TopologyManager getTopologyManager() {
         if (this.topologyManager == null) {
             this.initTopologyManager();
         }
@@ -292,7 +343,7 @@ public class OSCARSCore {
     /**
      * @return the userManager
      */
-    public UserManager getUserManager() throws AAAException {
+    public UserManager getUserManager() {
         if (this.userManager == null) {
             this.initUserManager();
         }
@@ -309,7 +360,7 @@ public class OSCARSCore {
     /**
      * @return the PCEManager
      */
-    public PCEManager getPCEManager() throws PathfinderException, BSSException {
+    public PCEManager getPCEManager() {
         if (this.pceManager == null) {
             this.initPCEManager();
         }
@@ -326,7 +377,7 @@ public class OSCARSCore {
     /**
      * @return the pathSetupManager
      */
-    public PathSetupManager getPathSetupManager() throws PSSException, BSSException {
+    public PathSetupManager getPathSetupManager() {
         if (this.pathSetupManager == null) {
             this.initPathSetupManager();
         }
@@ -343,7 +394,7 @@ public class OSCARSCore {
     /**
      * @return the notifier
      */
-    public NotifyInitializer getNotifier() throws NotifyException {
+    public NotifyInitializer getNotifier() {
         if (this.notifier == null) {
             this.initNotifier();
         }
@@ -360,7 +411,7 @@ public class OSCARSCore {
     /**
      * @return the lookupClient
      */
-    public PSLookupClient getLookupClient() throws LookupException {
+    public PSLookupClient getLookupClient() {
         if (this.lookupClient == null) {
             this.initLookupClient();
         }
@@ -377,7 +428,7 @@ public class OSCARSCore {
     /**
      * @return the topologyExchangeAdapter
      */
-    public TopologyExchangeAdapter getTopologyExchangeAdapter() throws BSSException {
+    public TopologyExchangeAdapter getTopologyExchangeAdapter() {
         if (this.topologyExchangeAdapter == null) {
             this.initTopologyExchangeAdapter();
         }
@@ -395,7 +446,7 @@ public class OSCARSCore {
     /**
      * @return the pathSetupAdapter
      */
-    public PathSetupAdapter getPathSetupAdapter() throws BSSException, PSSException {
+    public PathSetupAdapter getPathSetupAdapter() {
         if (this.pathSetupAdapter == null) {
             this.initPathSetupAdapter();
         }
@@ -412,7 +463,7 @@ public class OSCARSCore {
     /**
      * @return the reservationAdapter
      */
-    public ReservationAdapter getReservationAdapter() throws BSSException {
+    public ReservationAdapter getReservationAdapter() {
         if (this.reservationAdapter == null) {
             this.initReservationAdapter();
         }
@@ -476,6 +527,40 @@ public class OSCARSCore {
     public void setTopologyExchangeManager(
             TopologyExchangeManager topologyExchangeManager) {
         this.topologyExchangeManager = topologyExchangeManager;
+    }
+
+    /**
+     * @return the scheduleManager
+     */
+    public ScheduleManager getScheduleManager() {
+        if (this.scheduleManager == null) {
+            this.initScheduleManager();
+        }
+        return scheduleManager;
+    }
+
+    /**
+     * @param scheduleManager the scheduleManager to set
+     */
+    public void setScheduleManager(ScheduleManager scheduleManager) {
+        this.scheduleManager = scheduleManager;
+    }
+
+    /**
+     * @return the policyManager
+     */
+    public PolicyManager getPolicyManager() {
+        if (this.policyManager == null) {
+            this.initPolicyManager();
+        }
+        return policyManager;
+    }
+
+    /**
+     * @param policyManager the policyManager to set
+     */
+    public void setPolicyManager(PolicyManager policyManager) {
+        this.policyManager = policyManager;
     }
 
 
