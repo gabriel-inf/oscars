@@ -32,13 +32,20 @@ public class IDCOrgUtil extends IDCCmdUtil{
         ArrayList<String> dbnames = new ArrayList<String>();
         dbnames.add(this.dbname);
         initializer.initDatabase(dbnames);
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        aaa.beginTransaction();
-        Institution org = new Institution();
-        org.setName(name);
-        aaa.save(org);
-        aaa.getTransaction().commit();
+        try { // if there is a unique index defined on the institution name 
+              // hibernate will throw an exception if you try to add a duplicate name
+            Session aaa =
+                HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+            aaa.beginTransaction();
+            Institution org = new Institution();
+            org.setName(name);
+            aaa.save(org);
+            aaa.getTransaction().commit();
+        } catch (HibernateException e){
+            System.out.println("caught " + e.getClass().getName() + ": " + e.getMessage());
+            System.out.println( name + " not added.");
+            return;
+        }
         
         System.out.println("New organization '" + name + "' added.");
     }
