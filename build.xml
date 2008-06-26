@@ -305,6 +305,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
         <copy file="conf/server/nmtopo-ctrlp.xsd" tofile="${catalina.home}/shared/classes/server/nmtopo-ctrlp.xsd"/>
         <!-- copy log4j.jar to common/lib so that Tomcat will use log4j logging -->
         <copy file="lib/axis2/log4j-1.2.14.jar" tofile="${catalina.home}/common/lib/log4j-1.2.14.jar"/>
+
         <copy todir="${catalina.home}/shared/classes/server">
             <fileset dir="conf/server/" includes="cisco*.xml, juniper*.xml, *perfSONAR* "/>
         </copy>
