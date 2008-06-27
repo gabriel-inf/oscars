@@ -429,6 +429,7 @@ public class ReservationManager {
         } else {
             // keep reservations that start or terminate at institution 
             // or belong to this user
+            this.log.debug("Checking " + reservations.size() + " reservations for site");
             for (Reservation resv : reservations) {
         	if ( checkInstitution( resv, institution)){
                     authResv.add(resv);
@@ -1083,13 +1084,13 @@ public class ReservationManager {
   
         // get the site associated the source of the reservation
         String sourceSite = this.endPointSite(resv, true);
-        this.log.debug("checkInstitution: sourceSite is " + sourceSite);
+        // this.log.debug("checkInstitution: sourceSite is " + sourceSite);
         if (sourceSite.equals(institution)) {
             return true;
         } else {
             // get the site associated the destination of the reservation
             String destSite = this.endPointSite(resv,false);
-            this.log.debug("checkInstitution: destinationSite is " + destSite);
+            // this.log.debug("checkInstitution: destinationSite is " + destSite);
             if (destSite.equals(institution)){
                 return true;
             }
