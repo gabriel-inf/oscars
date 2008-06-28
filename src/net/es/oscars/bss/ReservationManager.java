@@ -822,7 +822,7 @@ public class ReservationManager {
      * @param boolean source: true returns the source , false returns the destination
      * @return institution String name of the end point
      */
-    public String endPointSite(Reservation resv, DomainDAO domainDAO, Boolean source) {
+    public String endPointSite(Reservation resv, Boolean source) {
         Path path = resv.getPath();
         PathElem hop = path.getPathElem();
         if (!source) { // get last hop
@@ -832,19 +832,19 @@ public class ReservationManager {
         }
         Link endPoint = hop.getLink();
         Link remoteLink = endPoint.getRemoteLink();
-        String topologyId = null;
+        String institutionName = "UNKNOWN";
+        Domain endDomain = null;
         // String FQTI = null;
         if (remoteLink != null) {
-            topologyId = remoteLink.getPort().getNode().getDomain().getTopologyIdent();
+            endDomain = remoteLink.getPort().getNode().getDomain();
             // FQTI=remoteLink.getFQTI();
-            // this.log.debug("remote link: " + FQTI + " domain: " + topologyId );
+            // this.log.debug("remote link: " + FQTI + " domain: " + endDomain.getTopologyIdent() );
         } else {
-            topologyId = endPoint.getPort().getNode().getDomain().getTopologyIdent();
+            endDomain = endPoint.getPort().getNode().getDomain();
             // FQTI=endPoint.getFQTI();
-            // this.log.debug("endPoint link is: " + FQTI + " domain: " + topologyId );
+            // this.log.debug("endPoint link is: " + FQTI + " domain: " + endDomain.getTopologyIdent());
         }
-        Domain endDomain = domainDAO.fromTopologyIdent(topologyId);
-        String institutionName = "UNKNOWN";
+
         if (endDomain != null ){
             Site institution = endDomain.getSite();
             if (institution != null) {
@@ -1080,15 +1080,14 @@ public class ReservationManager {
      */
 
     public Boolean checkInstitution(Reservation resv, String institution) {
-        DomainDAO domainDAO = new DomainDAO(this.dbname);
         // get the site associated the source of the reservation
-        String sourceSite = this.endPointSite(resv, domainDAO, true);
+        String sourceSite = this.endPointSite(resv, true);
         // this.log.debug("checkInstitution: sourceSite is " + sourceSite);
         if (sourceSite.equals(institution)) {
             return true;
         } else {
             // get the site associated the destination of the reservation
-            String destSite = this.endPointSite(resv,domainDAO, false);
+            String destSite = this.endPointSite(resv,false);
             // this.log.debug("checkInstitution: destinationSite is " + destSite);
             if (destSite.equals(institution)){
                 return true;
