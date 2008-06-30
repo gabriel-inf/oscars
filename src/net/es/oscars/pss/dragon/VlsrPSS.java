@@ -70,8 +70,8 @@ public class VlsrPSS implements PSS{
         
         String telnetAddress = this.findTelnetAddress(ingressLink);
         String telnetAddressDest = this.findTelnetAddress(egressLink);
-        int port = 0;
-        int portDest = 0;
+        int port = this.findTelnetPort(sshPortForward);
+        int portDest = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         Session ingressSshSess = null;
         Session egressSshSess = null;
@@ -170,7 +170,6 @@ public class VlsrPSS implements PSS{
                 int bindFailCount = 0;
                 for(int i = 0; i < 10; i++){
                     try{
-                        portDest = this.findTelnetPort(sshPortForward);
                         egressSshSess.setPortForwardingL(portDest, telnetAddressDest, remotePort);
                         this.log.info("SSH to dest VLSR bound to port " + 
                              portDest + " after " + i + " failures.");
@@ -179,6 +178,7 @@ public class VlsrPSS implements PSS{
                         this.log.info("Failed to setup SSH: " + e.getMessage());
                         bindFailCount++;
                     }
+                    portDest = this.findTelnetPort(sshPortForward);
                 }
                 
                 /* Throw exception if couldn't create SSH tunnel after 10 tries */
@@ -236,7 +236,6 @@ public class VlsrPSS implements PSS{
             int bindFailCount = 0;
             for(int i = 0; i < 10; i++){
                 try{
-                    port = this.findTelnetPort(sshPortForward);
                     ingressSshSess.setPortForwardingL(port, telnetAddress, remotePort);
                     this.log.info("SSH to src VLSR bound to port " + 
                          port + " after " + i + " failures.");
@@ -245,6 +244,7 @@ public class VlsrPSS implements PSS{
                     this.log.info("Failed to build SSH tunnel: " + e.getMessage());
                     bindFailCount++;
                 }
+                port = this.findTelnetPort(sshPortForward);
             }
             
             /* Throw exception if couldn't create SSH tunnel after 10 tries */
@@ -384,7 +384,7 @@ public class VlsrPSS implements PSS{
         Path path = resv.getPath();
         Link ingressLink = path.getPathElem().getLink(); 
         String telnetAddress = this.findTelnetAddress(ingressLink);
-        int port = 0;
+        int port = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         String gri = resv.getGlobalReservationId();
         Session sshSession = null;
@@ -418,7 +418,6 @@ public class VlsrPSS implements PSS{
             int bindFailCount = 0;
             for(int i = 0; i < 10; i++){
                 try{
-                    port = this.findTelnetPort(sshPortForward);
                     sshSession.setPortForwardingL(port, telnetAddress, remotePort);
                     this.log.info("SSH bound to local port " + 
                          port + " after " + i + " failures.");
@@ -427,6 +426,7 @@ public class VlsrPSS implements PSS{
                     this.log.info("Failed to build SSH tunnel: " + e.getMessage());
                     bindFailCount++;
                 }
+                port = this.findTelnetPort(sshPortForward);
             }
             
             /* Throw exception if couldn't create SSH tunnel after 10 tries */
@@ -494,7 +494,7 @@ public class VlsrPSS implements PSS{
         Link ingressLink = path.getPathElem().getLink();  
         String gri = resv.getGlobalReservationId();
         String telnetAddress = this.findTelnetAddress(ingressLink);
-        int port = 0;
+        int port = this.findTelnetPort(sshPortForward);
         int remotePort = Integer.parseInt(this.props.getProperty("remotePort"));
         Session sshSession = null;
         String prevStatus = resv.getStatus();
@@ -527,7 +527,6 @@ public class VlsrPSS implements PSS{
             int bindFailCount = 0;
             for(int i = 0; i < 10; i++){
                 try{
-                    port = this.findTelnetPort(sshPortForward);
                     sshSession.setPortForwardingL(port, telnetAddress, remotePort);
                     this.log.info("SSH bound to port " + port + " after " + i + " failures.");
                     break;
@@ -535,6 +534,7 @@ public class VlsrPSS implements PSS{
                     this.log.info("Failed to build SSH tunnel: " + e.getMessage());
                     bindFailCount++;
                 }
+                port = this.findTelnetPort(sshPortForward);
             }
             
             /* Throw exception if couldn't create SSH tunnel after 10 tries */
