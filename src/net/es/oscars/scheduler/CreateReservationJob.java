@@ -3,7 +3,7 @@ import org.apache.log4j.Logger;
 import org.quartz.*;
 import net.es.oscars.bss.*;
 
-public class CreateReservationJob extends ChainingJob implements Job {
+public class CreateReservationJob extends ChainingJob implements org.quartz.Job {
     private Logger log;
 
 

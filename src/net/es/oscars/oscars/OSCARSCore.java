@@ -134,7 +134,8 @@ public class OSCARSCore {
         } catch (SchedulerException ex) {
             this.log.error("Scheduler error shutting down", ex);
         }
-        HibernateUtil.destroySessionFactories();
+        HibernateUtil.closeSessionFactory(this.aaaDbName);
+        HibernateUtil.closeSessionFactory(this.bssDbName);
         this.log.info("shutdown.end");
     }
 
