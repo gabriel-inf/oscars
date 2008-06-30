@@ -107,16 +107,28 @@ information on the reservations chosen.</p>
 
 </tr>
 <tr>
-  <td colspan="6">Link ids:
+  <td colspan="5">Link ids (widget will expand vertically):
       <textarea name="linkIds" id="linkIds" dojoType="dijit.form.Textarea">
-    </textarea>Widget will expand vertically
+    </textarea>
   </td>
 
-  <td>Description:
+  <td>Description sub-string:
   <input name="resvDescription" id="resvDescription"
-       dojoType="dijit.form.TextBox"
-       promptMessage="Search by reservation description" />
+       dojoType="dijit.form.ValidationTextBox"
+       promptMessage="Search for description containing string" />
   </td>
+
+  <td>Number of rows:
+  <select name="numRows" size="1">
+      <option value="100" selected="selected"><= 100</option>
+      <option value="200"><= 200</option>
+      <option value="500"><= 500</option>
+      <option value="1000"><= 1000</option>
+      <option value="all">all</option>
+  </select>
+  </td>
+
+  <td id="totalRowsReplace">Total rows:</td>
 
 </tr>
 </table>

@@ -40,6 +40,7 @@ oscars.Reservations.handleReply = function (responseObject, ioArgs) {
     if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
     }
+    oscars.Form.applyParams(responseObject);
     var mainTabContainer = dijit.byId("mainTabContainer");
     var resvGrid = dijit.byId("resvGrid");
     var model = resvGrid.model;

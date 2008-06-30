@@ -60,6 +60,7 @@ public class ListReservations extends HttpServlet {
         outputMap.put("status", "Reservations list");
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
+        outputMap.put("totalRowsReplace", "Total rows: " + reservations.size());
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
         aaa.getTransaction().commit();
@@ -150,9 +151,20 @@ public class ListReservations extends HttpServlet {
 
         // TODO:  fix hard-wired database name
         net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
-        List<String> statuses = this.getStatuses(request);
         ArrayList resvList = new ArrayList();
-        for (Reservation resv: reservations) {
+        int rowsReturned = reservations.size();
+        String numRowsParam = request.getParameter("numRows"); 
+        if (numRowsParam != null) {
+            numRowsParam = numRowsParam.trim();
+            if (!numRowsParam.equals("") && !numRowsParam.equals("all")) {
+                int rowsSelected = Integer.parseInt(numRowsParam);
+                if (rowsSelected < rowsReturned) {
+                    rowsReturned = rowsSelected;
+                }
+            }
+        }
+        for (int i=0; i < rowsReturned; i++) {
+            Reservation resv = reservations.get(i);
             Path path = resv.getPath();
             String pathStr = utils.pathToString(path, false);
             String localSrc = null;
