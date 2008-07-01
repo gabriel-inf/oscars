@@ -1,4 +1,5 @@
 USE aaa;
+-- Changes between release 1 and 2
 
 -- attribute for an IDC in an adjacent network domain. It's attributes implement
 -- an SLA between domains.  Currently set to all permissions on reservations and 

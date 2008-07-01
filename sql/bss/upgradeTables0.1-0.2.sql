@@ -1,3 +1,5 @@
+-- upgrade bss tables from release 0.1 to 0.2
+
 USE bss;
 
 -- add interPathElem to path so interdomain paths can be stored
@@ -37,14 +39,4 @@ CREATE TABLE IF NOT EXISTS routeElems (
   PRIMARY KEY (id)
 ) ENGINE=MyISAM;
 
---
--- Table to look up an institution associated with a domain (for site admin
--- privileges)
-CREATE TABLE IF NOT EXISTS sites (
-    id                  INT NOT NULL AUTO_INCREMENT,
-        -- site name, matches a name in the aaa institutions table
-    name                TEXT NOT NULL,
-        -- key of corresponding domain in domains table
-    domainId            INT NOT NULL,
-    PRIMARY KEY (id)
-) type=MyISAM;
+

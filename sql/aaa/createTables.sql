@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS institutions (
     name                TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
+CREATE UNIQUE INDEX instName ON institutions(name(9));
 
 CREATE TABLE IF NOT EXISTS resources (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -68,6 +69,7 @@ CREATE TABLE IF NOT EXISTS authorizations (
     constraintValue     INT,
     PRIMARY KEY (id)
 ) type=MyISAM;
+CREATE UNIQUE INDEX row ON authorizations (attrId,resourceId,permissionId,constraintName(9));
 
 CREATE TABLE IF NOT EXISTS attributes (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -75,6 +77,7 @@ CREATE TABLE IF NOT EXISTS attributes (
     attrType            TEXT,
     PRIMARY KEY (id)
 ) type=MyISAM;
+CREATE UNIQUE INDEX attrName ON attributes(name(9));
 
 -- cross reference table
 CREATE TABLE IF NOT EXISTS userAttributes (
