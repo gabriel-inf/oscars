@@ -19,7 +19,10 @@ Tomcat uses commons-logging out-of-the box, but will use log4j if the
 commons-logging.jar and log4j.jar files are copied to common/lib, and
 there is a log4j.properties file in common/classes. Axis2 defaults to
 use log4j. The OSCARS.aar inherits its logging configuration from
-axis2.&nbsp; The list below shows where each component finds its
+axis2.  The OSCARS.war finds 
+its logging configuration in the war at WEB-INF/classes/log4j.properties. 
+
+The list below shows where each component finds its
 log4j.properties file.<br>
 <br>
 <h3>Tomcat logging</h3>
@@ -35,38 +38,40 @@ catalina*.log. Since all messages at the INFO level are logged to
 catalina.out, these other logs are redundant.<br>
 <br>
 The version of this file that is used at ESnet is included in the
-distribution in conf/server/log4j.axis2.properties. The setupServer
-target copies it to ${catalina.home}/common/classes. The deployaar ant
-target copies the same<br>
-file to ${catalina.home}/webapps/axis2/WEB-INF/classes/log4j.properties.</div>
+distribution in conf/server/common.log4j.properties. The setupServer
+target copies it to ${catalina.home}/common/classes. .</div>
 <br>
 <h3>Axis2 Logging<br>
 </h3>
 <div style="margin-left: 40px;">Uses
 ${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/commons-logging.properties
 to select no logging, simple logging or log4j. Uses the file
-${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/log4j.properties.<br>
+${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/log4j.properties.
+The deployaar ant target copies conf/server/axis2.log4j.properties
+file to ${catalina.home}/webapps/axis2/WEB-INF/classes/log4j.properties<br>
 </div>
 <br>
 <h3>OSCARS aar logging</h3>
 <div style="margin-left: 40px;">Uses the file
 ${CATALINA_HOME}/webapps/axis2/WEB-INF/classes/log4j.properties, not
-the one that is included in OSCARS.aar/classes/log4j.properties.<br>
+the one that is included in OSCARS.aar/classes/log4j.properties.
+The deployaar target copies conf/server/axis2.log4j.properties
+to ${catalina.home}/webapps/axis2/WEB-INF/classes/log4j.properties.<br>
 </div>
 <br>
 <h3>OSCARS war logging</h3>
 <div style="margin-left: 40px;">Uses the file that is included in
-OSCARS.war at classes/log4.properties. Deployed at
-${CATALINA_HOME}/webapps/OSCARS/WEB-INF/classes/log4j.properties. This
-file is included in the distribution in conf/server/log4j.properties.
-It is sometimes necessary to add log4j.jar to the OSCARS/WEB-INF/lib
-directory to get the logging to the oscars.log file to happen.<br>
+OSCARS.war at WEB-INF/classes/log4j.properties. It is copied there 
+from the source in conf/server/log4j.properties by the prepare and wbui targets.
+The wbui target adds log4j.jar to the OSCARS/WEB-INF/lib
+directory to ensure that the war will get its log4j.properties 
+from OSCARS/WEB-INF/classes.<br>
 </div>
 <h3>Scheduler logging</h3>
 <div style="margin-left: 40px;">The scheduler is started by the
 tools/scheduler.sh script which sets the location of the logging
 configuration file to
-${CATALINA_HOME}/webapps/OSCARS/WEB-INF/classes/log4j.properties.&nbsp;
+./log4j.sched.properties.
 <br>
 </div>
 <br>
