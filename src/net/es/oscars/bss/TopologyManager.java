@@ -922,7 +922,7 @@ public class TopologyManager {
             } catch (BSSException e) {
                 String msg = "Reservation invalidated due to oversubscription.";
                 EventProducer eventProducer = new EventProducer();
-                eventProducer.addEvent(Event.RESV_INVALIDATED, "",
+                eventProducer.addEvent(OSCARSEvent.RESV_INVALIDATED, "",
                     "WBUI", r, "", msg);
                 this.log.warn("request may be INVALID due to oversubscription: " +
                     r.getGlobalReservationId() );
@@ -938,7 +938,7 @@ public class TopologyManager {
                 if (!this.isDuplicate(oldPath, path)) {
                     String msg = "Reservation invalidated due to changed path.";
                     EventProducer eventProducer = new EventProducer();
-                    eventProducer.addEvent(Event.RESV_INVALIDATED, "", 
+                    eventProducer.addEvent(OSCARSEvent.RESV_INVALIDATED, "", 
                         "WBUI", r, "", msg);
 //                    r.setStatus("INVALIDATED");
                     this.log.warn("INVALIDATED request due to changed path: " +

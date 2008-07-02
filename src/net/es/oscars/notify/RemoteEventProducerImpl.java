@@ -19,7 +19,7 @@ public class RemoteEventProducerImpl implements RemoteEventProducer{
      *
      * @param event the event to add to the EventQueue
      */
-    public void addEvent(Event event) throws RemoteException{
+    public void addEvent(OSCARSEvent event) throws RemoteException{
         this.log.info("Adding event " + event.getType() + " to queue");
         try{
             EventQueue.put(event);

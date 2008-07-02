@@ -59,7 +59,7 @@ public class EmailObserver implements Observer {
 
     /**
      * Observer method called whenever a change occurs. It accepts an 
-     * Observable object and an net.es.oscars.notify.Event object as
+     * Observable object and an net.es.oscars.notify.OSCARSEvent object as
      * arguments. Sends email notifications if template exists for
      * event.
      *
@@ -73,13 +73,13 @@ public class EmailObserver implements Observer {
             this.log.info("email notification overriden");
             return;
         }
-        if(!(arg instanceof Event)){
+        if(!(arg instanceof OSCARSEvent)){
             this.log.error("[ALERT] Wrong argument passed to EmailObserver");
             return;
         }
         
         //TODO: Do not hardcode this path
-        Event event = (Event) arg;
+        OSCARSEvent event = (OSCARSEvent) arg;
         String catalinaHome = System.getProperty("catalina.home");
         if(!catalinaHome.endsWith("/")){
             catalinaHome += "/";
@@ -160,7 +160,7 @@ public class EmailObserver implements Observer {
      * @param event the event containing the values to fill-in
      * @return the template with all dynamic fields replaced
      */
-    private String applyTemplate(String template, Event event){
+    private String applyTemplate(String template, OSCARSEvent event){
         Reservation resv = event.getReservation();
         Path path = null;
         Layer2Data l2Data = null;

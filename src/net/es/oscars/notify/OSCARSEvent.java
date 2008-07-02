@@ -8,7 +8,7 @@ import java.io.Serializable;
  * the Serializable interface so that it can be passed to methods over
  * Remote Method Invocation (RMI).
  */
-public class Event implements Serializable{
+public class OSCARSEvent implements Serializable{
     private String type;
     private long timestamp;
     private String userLogin;

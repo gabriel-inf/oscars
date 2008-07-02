@@ -100,7 +100,7 @@ public class CreateReservation extends HttpServlet {
             CreateReply forwardReply = forwarder.create(resv, pathInfo);
             rm.finalizeResv(forwardReply, resv, pathInfo);
             rm.store(resv);
-            eventProducer.addEvent(Event.RESV_CREATE_COMPLETED, userName, 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, userName, 
                 "WBUI", resv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
@@ -110,7 +110,7 @@ public class CreateReservation extends HttpServlet {
         } finally {
             forwarder.cleanUp();
             if (errMessage != null) {
-                eventProducer.addEvent(Event.RESV_CREATE_FAILED, userName, 
+                eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, 
                     "WBUI", resv, "", errMessage);
                 utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;

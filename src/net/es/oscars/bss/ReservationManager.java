@@ -227,7 +227,7 @@ public class ReservationManager {
         this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("finalizeCancel.start");
         EventProducer eventProducer = new EventProducer();
-        eventProducer.addEvent(Event.RESV_CANCEL_COMPLETED, login, 
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login, 
              eventSrc, resv);
 
         this.rsvLogger.stop();

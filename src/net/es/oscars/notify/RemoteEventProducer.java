@@ -13,5 +13,5 @@ public interface RemoteEventProducer extends Remote{
      *
      * @param event the event to add to the queue
      */
-    public void addEvent(Event event) throws RemoteException;
+    public void addEvent(OSCARSEvent event) throws RemoteException;
 }

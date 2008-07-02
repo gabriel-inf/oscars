@@ -52,24 +52,24 @@ public class Scheduler {
                     // resv set to proper status inside dragon, cisco, or jnx
                     String status = this.pathSetupManager.create(resv, true);
                 }
-                eventProducer.addEvent(Event.PATH_SETUP_COMPLETED, "", 
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "", 
                     "SCHEDULER", resv);
             } catch (PSSException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
                     "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             } catch (InterdomainException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
                     "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
                     "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             }
@@ -103,23 +103,23 @@ public class Scheduler {
                 this.log.info("expiredReservation: " +
                               resv.getGlobalReservationId());      
                 String status = this.pathSetupManager.teardown(resv, false);
-                eventProducer.addEvent(Event.PATH_TEARDOWN_COMPLETED, "", 
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", 
                     "SCHEDULER", resv);
                 
                 if (status.equals("CANCELLED")) {
-                    eventProducer.addEvent(Event.RESV_CANCELLED, "", 
+                    eventProducer.addEvent(OSCARSEvent.RESV_CANCELLED, "", 
                         "SCHEDULER", resv);
                 }
             } catch (PSSException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
                     "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(Event.PATH_SETUP_FAILED, "", 
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", 
                     "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             }
@@ -150,21 +150,21 @@ public class Scheduler {
         // 1 day
         reservations = dao.expiringReservations(days_1, timeInterval);
         for (Reservation resv: reservations) {
-            eventProducer.addEvent(Event.RESV_EXPIRES_IN_1DAY, "", 
+            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_1DAY, "", 
                     "SCHEDULER", resv);
         }
 
         // 7 days
         reservations = dao.expiringReservations(days_7, timeInterval);
         for (Reservation resv: reservations) {
-            eventProducer.addEvent(Event.RESV_EXPIRES_IN_7DAYS, "", 
+            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_7DAYS, "", 
                     "SCHEDULER", resv);
         }
 
         // 30 days
         reservations = dao.expiringReservations(days_30, timeInterval);
         for (Reservation resv: reservations) {
-            eventProducer.addEvent(Event.RESV_EXPIRES_IN_30DAYS, "", 
+            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_30DAYS, "", 
                     "SCHEDULER", resv);
         }
 

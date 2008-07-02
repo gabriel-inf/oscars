@@ -71,7 +71,7 @@ public class EventProducer{
      */
     public void addEvent(String type, String userLogin, String source,
         Reservation resv, String errorCode, String errorMessage){
-        Event event = new Event();
+        OSCARSEvent event = new OSCARSEvent();
         Reservation resvCopy = null;
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -97,7 +97,7 @@ public class EventProducer{
      *
      * @param event the event to add to the queue
      */
-    public void addEvent(Event event){
+    public void addEvent(OSCARSEvent event){
         //if RMI server connection failed then return
         if(!this.connected){
             return;

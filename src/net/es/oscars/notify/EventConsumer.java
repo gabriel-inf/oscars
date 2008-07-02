@@ -28,7 +28,7 @@ public class EventConsumer extends Thread{
         while(this.keepAlive){
             this.log.info("Listening for events...");
             try{
-                Event event = EventQueue.take();
+                OSCARSEvent event = EventQueue.take();
                 this.log.info("Received event: " + event.getType());
                 NotifierSource observable = this.notifier.getSource();
                 Object obj = (Object) event;

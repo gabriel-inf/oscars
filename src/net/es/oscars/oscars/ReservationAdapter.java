@@ -65,7 +65,7 @@ public class ReservationAdapter {
         EventProducer eventProducer = new EventProducer();
         
         try {
-            eventProducer.addEvent(Event.RESV_CREATE_STARTED, login, "API", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "API", resv);
             this.rm.create(resv, login, pathInfo);
             this.tc.ensureLocalIds(pathInfo);
 
@@ -90,7 +90,7 @@ public class ReservationAdapter {
             // persist to db
             this.rm.store(resv);
             resv.toString("bss");//initialize object
-            eventProducer.addEvent(Event.RESV_CREATE_COMPLETED, login, 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, 
                 "API", resv);
             
             this.log.debug("create, to toReply");
@@ -110,13 +110,13 @@ public class ReservationAdapter {
         } catch (BSSException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(Event.RESV_CREATE_FAILED, login, "API", 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", 
                 resv, "", errMsg);
             throw new BSSException(e.getMessage());
         } catch (InterdomainException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(Event.RESV_CREATE_FAILED, login, "API", 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", 
                 resv, "", errMsg);
             throw new InterdomainException(e.getMessage());
         }
@@ -190,13 +190,13 @@ public class ReservationAdapter {
         } catch (BSSException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(Event.RESV_MODIFY_FAILED, login, "API",
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, "API",
                 resv, "", errMsg);
             throw new BSSException(e.getMessage());
         } catch (InterdomainException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(Event.RESV_MODIFY_FAILED, login, "API",
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, login, "API",
                 resv, "", errMsg);
             throw new InterdomainException(e.getMessage());
         }

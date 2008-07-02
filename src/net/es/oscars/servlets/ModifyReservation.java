@@ -93,7 +93,7 @@ public class ModifyReservation extends HttpServlet {
             forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
             persistentResv = rm.finalizeModifyResv(forwardReply, resv);
             Map<String,String> messageInfo = new HashMap<String,String>();
-            eventProducer.addEvent(Event.RESV_MODIFY_COMPLETED, userName, 
+            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_COMPLETED, userName, 
                 "WBUI", persistentResv);
         } catch (BSSException e) {
             errMessage = e.getMessage();
@@ -105,7 +105,7 @@ public class ModifyReservation extends HttpServlet {
         } finally {
             forwarder.cleanUp();
             if (errMessage != null) {
-                eventProducer.addEvent(Event.RESV_MODIFY_FAILED, userName, 
+                eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, userName, 
                     "WBUI", resv, "", errMessage);
                 utils.handleFailure(out, errMessage, methodName, null, bss);
                 return;
