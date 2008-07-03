@@ -6,6 +6,7 @@ import java.util.*;
 import org.apache.log4j.*;
 import org.apache.axis2.AxisFault;
 
+import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.oscars.OSCARSStub;
 import net.es.oscars.oscars.TypeConverter;
 import net.es.oscars.oscars.AAAFaultMessage;
@@ -21,10 +22,12 @@ import net.es.oscars.client.*;
 public class Forwarder extends Client {
     private Logger log;
     private TypeConverter tc;
+    private OSCARSCore core;
 
     public Forwarder() {
         this.log = Logger.getLogger(this.getClass());
-        this.tc = new TypeConverter();
+        this.core = OSCARSCore.getInstance();
+        this.tc = this.core.getTypeConverter();
     }
 
     private void setup(Reservation resv, String url)
@@ -42,8 +45,7 @@ public class Forwarder extends Client {
             super.setUp(true, url, repo, repo + "axis2.xml");
         } catch (AxisFault af) {
             this.log.error("setup.axisFault: " + af.getMessage());
-            throw new InterdomainException("failed to reach remote domain:" +
-                                           url +  af.getMessage());
+            throw new InterdomainException("failed to reach remote domain:" + url +  af.getMessage());
         }
         this.log.debug("setup.finish: " + url);
     }
@@ -61,8 +63,7 @@ public class Forwarder extends Client {
         if (nextDomain == null) { return null; }
         String url = nextDomain.getUrl();
         this.log.info("create.start forward to  " + url);
-        ForwardReply reply =
-            this.forward("createReservation", resv, pathInfo, url);
+        ForwardReply reply = this.forward("createReservation", resv, pathInfo, url);
         createReply = reply.getCreateReservation();
         this.log.info("create.finish GRI is: " +
                       createReply.getGlobalReservationId());
@@ -241,7 +242,7 @@ public class Forwarder extends Client {
 
         /* default pathSetupMode between domains is signal-xml */
         String pathSetupMode = pathInfo.getPathSetupMode();
-        if(pathSetupMode == null || pathSetupMode.equals("timer-automatic")){
+        if (pathSetupMode == null || pathSetupMode.equals("timer-automatic")) {
             pathInfo.setPathSetupMode("signal-xml");
         }
 
