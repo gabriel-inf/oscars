@@ -169,7 +169,7 @@ public class ReservationManager {
      * @param institution string with institution of caller
      *          if null reservations from any site may be canceled
      *          if set only reservations starting or ending at that site may be canceled
-     * 
+     *
      * @return reservation with cancellation status
      * @throws BSSException
      */
@@ -185,7 +185,7 @@ public class ReservationManager {
                 institution );
 
         Reservation resv = getConstrainedResv(gri,login,institution);
- 
+
         String prevStatus = resv.getStatus();
         if (prevStatus.equals("FINISHED")) {
             throw new BSSException(
@@ -227,7 +227,7 @@ public class ReservationManager {
         this.rsvLogger.redirect(resv.getGlobalReservationId());
         this.log.info("finalizeCancel.start");
         EventProducer eventProducer = new EventProducer();
-        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login, 
+        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login,
              eventSrc, resv);
 
         this.rsvLogger.stop();
@@ -249,7 +249,7 @@ public class ReservationManager {
      */
     public Reservation query(String gri, String login, String institution)
             throws BSSException {
-     
+
         this.log.info("query.start: " + gri + " login: " + login + " institution: " + institution);
         Reservation resv = getConstrainedResv(gri,login,institution);
         this.log.info("query.finish: " + resv.getGlobalReservationId());
@@ -274,7 +274,7 @@ public class ReservationManager {
              PathInfo pathInfo)
             throws  BSSException {
 
-    
+
         this.log.info("modify.start: login: " +  login + " institution: " +  institution ) ;
 
         String gri = resv.getGlobalReservationId();
@@ -282,7 +282,7 @@ public class ReservationManager {
         // need to set this before validation
         // leave it the same, do not set to current user
         resv.setLogin(persistentResv.getLogin());
-        
+
         ParamValidator paramValidator = new ParamValidator();
 
         StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
@@ -375,10 +375,10 @@ public class ReservationManager {
      * @param login String with user's login name
      *          if null any user's reservation may be listed
      *          if set, only that user's reservation may be listed
-     *          
+     *
      * @param institution String with name of user's institution
      *          if null reservations from any site may be listed
-     *          if set only reservations starting or ending at that site may be listed     
+     *          if set only reservations starting or ending at that site may be listed
      *
      * @param statuses a list of reservation statuses. If not null or empty,
      * results will only include reservations with one of these statuses.
@@ -421,19 +421,19 @@ public class ReservationManager {
         ReservationDAO dao = new ReservationDAO(this.dbname);
         reservations = dao.list(loginIds, statuses, description, links,
                                 vlanTags, startTime, endTime);
-        
+
         if (institution == null){
             // the dao.list selected only the allowed reservations
             this.log.info("list.finish, success");
-            return reservations;  
+            return reservations;
         } else {
-            // keep reservations that start or terminate at institution 
+            // keep reservations that start or terminate at institution
             // or belong to this user
             this.log.debug("Checking " + reservations.size() + " reservations for site");
             for (Reservation resv : reservations) {
-        	if ( checkInstitution( resv, institution)){
+            if ( checkInstitution( resv, institution)){
                     authResv.add(resv);
-        	}
+            }
             }
             this.log.info("list.finish, success");
             return authResv;
@@ -570,6 +570,9 @@ public class ReservationManager {
             if (link == null) {
                 this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
                 throw new BSSException("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
+            } else if (!link.isValid()) {
+                this.log.error("Link is invalid in db for: ["+hops[i].getLinkIdRef()+"]");
+                throw new BSSException("Link is invalid in db for: ["+hops[i].getLinkIdRef()+"]");
             } else {
                 this.log.debug("Found link in db for: ["+hops[i].getLinkIdRef()+"]");
             }
@@ -814,7 +817,7 @@ public class ReservationManager {
     }
 
 
-    
+
     /**
      * Returns the name of the institution of the an end point of the reservation
      *
@@ -1095,48 +1098,48 @@ public class ReservationManager {
         }
         return false;
     }
- 
+
     /**
      *  finds the reservations that matches all the constraints
-     *  
+     *
      *  @param gri String global reservation Id identifies the reservation
      *  @param String loginConstraint = reservation must be owned by this login
      *  @param String institutionConstraint - reservation must belong to this institution
-     *  
+     *
      *  @return Reservation - a reservation that meets the constraint,
      *  @throws PSSException if no such reservation exists
-     *  
+     *
      */
    private Reservation getConstrainedResv(String gri, String loginConstraint,
-	   		String institutionConstraint)  throws BSSException {
-       
+               String institutionConstraint)  throws BSSException {
+
        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
        Reservation resv = null;
-       
+
        if (loginConstraint == null ) {
            try {
-       	       resv = resvDAO.query(gri);
+                  resv = resvDAO.query(gri);
            } catch ( BSSException e ){
                this.log.error("No reservation matches gri: " + gri);
-       	       throw new BSSException("No reservations match request");
-           } 
+                  throw new BSSException("No reservations match request");
+           }
            if (institutionConstraint != null) {
-       	       //check the institution
-       	       if (!this.checkInstitution(resv, institutionConstraint) ) {
-       	           resv = null;
-       	       }
+                  //check the institution
+                  if (!this.checkInstitution(resv, institutionConstraint) ) {
+                      resv = null;
+                  }
            }
        }
        else  {
-           resv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);  
+           resv = resvDAO.queryByGRIAndLogin(gri, loginConstraint);
        }
        if (resv == null) {
-	   this.log.error("No reservation matches gri: " + gri + " login: " +
-		   loginConstraint + " institution: " + institutionConstraint);
+       this.log.error("No reservation matches gri: " + gri + " login: " +
+           loginConstraint + " institution: " + institutionConstraint);
            throw new BSSException("No reservations match request");
-       } 
+       }
        return resv;
    }
 
- 
+
 }
