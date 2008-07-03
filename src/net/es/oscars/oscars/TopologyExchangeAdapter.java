@@ -30,9 +30,13 @@ import java.util.List;
 public class TopologyExchangeAdapter {
     private Logger log;
     private TopologyExchangeManager tm;
+    private OSCARSCore core;
+    private String dbname;
 
     public TopologyExchangeAdapter() {
         this.log = Logger.getLogger(this.getClass());
+        this.core = OSCARSCore.getInstance();
+        this.dbname = this.core.getBssDbName();
         this.tm = new TopologyExchangeManager();
     }
 
@@ -65,7 +69,8 @@ public class TopologyExchangeAdapter {
      */
     public InitiateTopologyPullResponseContent initiateTopologyPull(
         InitiateTopologyPullContent initTopoPullRequest)
-        throws TSSException {
+            throws TSSException {
+
         InitiateTopologyPullResponseContent initTopoResponse = new InitiateTopologyPullResponseContent();
         HashMap<Domain, Boolean> visitedDomains = new HashMap<Domain, Boolean>();
         GetNetworkTopology getTopoRequest = new GetNetworkTopology();
@@ -74,7 +79,7 @@ public class TopologyExchangeAdapter {
         StringBuffer resultMsg = new StringBuffer();
 
         /* Connect to DB */
-        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = this.core.getBssSession();
         bss.beginTransaction();
 
         DomainDAO domainDAO = new DomainDAO("bss");
