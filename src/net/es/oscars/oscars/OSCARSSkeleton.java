@@ -32,8 +32,11 @@ import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.tss.TSSException;
+import net.es.oscars.notify.NotifyException;
+import net.es.oscars.pathfinder.PathfinderException;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.interdomain.InterdomainException;
+import net.es.oscars.lookup.LookupException;
 
 
 /**
@@ -44,6 +47,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     private ReservationAdapter adapter;
     private TopologyExchangeAdapter topoAdapter;
     private PathSetupAdapter pathSetupAdapter;
+    private OSCARSCore core;
     private UserManager userMgr;
     private Principal certIssuer;
     private Principal certSubject;
@@ -64,18 +68,26 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         createReservation(CreateReservation request)
             throws AAAFaultMessage, BSSFaultMessage {
 
+        if (this.core.initialized) {
+            this.log.debug("Core has been initialized");
+        }
+
+        TypeConverter tc = core.getTypeConverter();
+
         CreateReply reply = null;
         CreateReservationResponse response = new CreateReservationResponse();
         ResCreateContent params = request.getCreateReservation();
         String login = this.checkUser();
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+
+//        Session aaa = HibernateUtil.getSessionFactory(core.getAaaDbName()).getCurrentSession();
+        Session aaa = core.getAaaSession();
+
         aaa.beginTransaction();
         // Check to see if user can create this  reservation
         int reqBandwidth = params.getBandwidth();
         // convert from milli-seconds to minutes
         int  reqDuration = (int)(params.getEndTime() - params.getStartTime())/6000;
-        TypeConverter tc = new TypeConverter();
+
         boolean specifyPath = tc.checkPathAuth(params.getPathInfo());
         boolean specifyGRI = (params.getGlobalReservationId() != null);
         AuthValue authVal = this.userMgr.checkModResAccess(login, "Reservations", "create",
@@ -86,9 +98,12 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             this.log.info("denied");
             throw new AAAFaultMessage("createReservation: permission denied");
         }
+        this.log.debug("AAA complete");
 
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+
+//        Session bss = HibernateUtil.getSessionFactory(core.getBssDbName()).getCurrentSession();
+        Session bss = core.getBssSession();
+
         bss.beginTransaction();
         try {
             reply = this.adapter.create(params, login);
@@ -122,15 +137,14 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String login = this.checkUser();
         String institution = null;
         String loginConstraint = null;
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         GlobalReservationId params = request.getCancelReservation();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         if (authVal.equals(AuthValue.DENIED)) {
             throw new AAAFaultMessage("cancelReservation: permission denied");
-        } 
+        }
         if (authVal.equals(AuthValue.MYSITE)) {
             institution = this.userMgr.getInstitution(login);
         } else if (authVal.equals(AuthValue.SELFONLY)){
@@ -139,8 +153,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         // read-only
         aaa.getTransaction().commit();
 
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
             reply = this.adapter.cancel(params,loginConstraint,institution);
@@ -178,8 +191,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String login = this.checkUser();
         String loginConstraint = null;
         String institution = null;
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         GlobalReservationId gri = request.getQueryReservation();
@@ -193,8 +205,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             loginConstraint = login;
         }
         aaa.getTransaction().commit();
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
             reply = this.adapter.query(gri, loginConstraint, institution);
@@ -231,7 +242,8 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String institution = null;
         String login = this.checkUser();
 
-        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
+
         aaa.beginTransaction();
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "modify");
         if (authVal.equals(AuthValue.DENIED)) {
@@ -244,7 +256,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         aaa.getTransaction().commit();
 
-        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
             reply = this.adapter.modify(params, loginConstraint, institution );
@@ -288,8 +300,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String institution = null;
         String login = this.checkUser();
 
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         UserManager.AuthValue authVal = this.userMgr.checkAccess(login, "Reservations", "list");
@@ -303,12 +314,15 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         aaa.getTransaction().commit();
 
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         try {
             reply = this.adapter.list(loginConstraint, institution, request.getListReservations());
         } catch (BSSException e) {
+            bss.getTransaction().rollback();
+            this.log.error("listReservations: " + e.getMessage());
+            throw new BSSFaultMessage("listReservations: " + e.getMessage());
+        } catch (LookupException e) {
             bss.getTransaction().rollback();
             this.log.error("listReservations: " + e.getMessage());
             throw new BSSFaultMessage("listReservations: " + e.getMessage());
@@ -333,8 +347,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         GetNetworkTopologyResponse response = new GetNetworkTopologyResponse();
         GetTopologyResponseContent responseContent = null;
         String login = this.checkUser();
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         /* Check user attributes. Must have query permissions
@@ -343,12 +356,11 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         aaa.getTransaction().commit();
 
        if (authVal.equals(AuthValue.DENIED)) {
-	   this.log.info("denied");
-	   throw new AAAFaultMessage("OSCARSSkeleton:getNetworkTopology: permission denied");
+           this.log.info("denied");
+           throw new AAAFaultMessage("OSCARSSkeleton:getNetworkTopology: permission denied");
        }
 
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         /* Retrieve topology from TEDB */
         try {
@@ -379,8 +391,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         InitiateTopologyPullResponse response = new InitiateTopologyPullResponse();
         InitiateTopologyPullResponseContent responseContent = null;
         String login = this.checkUser();
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         /* Check user attributes. Must have modify permissions
@@ -392,8 +403,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw new AAAFaultMessage("OSCARSSkeleton:initiateTopologyPull: permission denied");
         }
 
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         /* Pull topology and store in TEDB */
         try{
@@ -427,8 +437,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         String loginConstraint = null;
         String institution = null; // not used yet
         String login = this.checkUser();
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         /* Check user attributes. Must have signal permissions
@@ -445,8 +454,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         aaa.getTransaction().commit();
         try {
-            responseContent = this.pathSetupAdapter.create(requestContent, loginConstraint,
-        	    institution);
+            responseContent = this.pathSetupAdapter.create(requestContent, loginConstraint, institution);
             response.setCreatePathResponse(responseContent);
         } catch(PSSException e) {
             throw new BSSFaultMessage("createPath: " + e.getMessage());
@@ -474,10 +482,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         RefreshPathResponseContent responseContent = null;
 
         String loginConstraint = null;
-        String institution = null; 
+        String institution = null;
         String login = this.checkUser();
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         /* Check user attributes. Must have signal permissions
@@ -494,8 +501,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         aaa.getTransaction().commit();
         try {
-            responseContent = this.pathSetupAdapter.refresh(requestContent, loginConstraint,
-        	    institution);
+            responseContent = this.pathSetupAdapter.refresh(requestContent, loginConstraint, institution);
             response.setRefreshPathResponse(responseContent);
         } catch (PSSException e) {
             throw new BSSFaultMessage("refreshPath: " + e.getMessage());
@@ -523,10 +529,9 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         TeardownPathResponseContent responseContent = null;
 
         String loginConstraint = null;
-        String institution = null; 
+        String institution = null;
         String login = this.checkUser();
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         /* Check user attributes. Must have signal permissions
@@ -543,8 +548,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         aaa.getTransaction().commit();
         try{
-            responseContent = this.pathSetupAdapter.teardown(requestContent, loginConstraint,
-        	    institution);
+            responseContent = this.pathSetupAdapter.teardown(requestContent, loginConstraint, institution);
             response.setTeardownPathResponse(responseContent);
         } catch(PSSException e) {
             throw new BSSFaultMessage("teardownPath: " + e.getMessage());
@@ -669,27 +673,32 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
     public void init(ServiceContext sc) {
 
         this.log = Logger.getLogger(this.getClass());
-    this.log.info("OSCARS init.start");
+        this.log.info("OSCARS init.start");
         String catalinaHome = System.getProperty("catalina.home");
-    this.log.info("catalina.home is "+ catalinaHome);
-        Initializer initializer = new Initializer();
-        List<String> dbnames = new ArrayList<String>();
-        dbnames.add("aaa");
-        dbnames.add("bss");
-        this.log.info("initDatabase.start");
-        initializer.initDatabase(dbnames);
-        this.log.info("initDatabase.finish");
-        this.adapter = new ReservationAdapter();
-        this.topoAdapter = new TopologyExchangeAdapter();
-        this.pathSetupAdapter = new PathSetupAdapter();
-        this.userMgr = new UserManager("aaa");
+        this.log.info("catalina.home is "+ catalinaHome);
+
+        OSCARSCore core = null;
+        core = OSCARSCore.init();
+
+        if (core == null) {
+            this.log.fatal("OSCARS core not initialized!");
+            return;
+        }
+
+        this.core = core;
+        this.userMgr = this.core.getUserManager();
+
+        this.adapter = this.core.getReservationAdapter();
+        this.topoAdapter = this.core.getTopologyExchangeAdapter();
+        this.pathSetupAdapter = this.core.getPathSetupAdapter();
+
         this.log.info("OSCARS init.finish");
     }
 
     public void destroy(ServiceContext sc) {
         this.log.info("Axis2 destroy.start");
-        HibernateUtil.closeSessionFactory("aaa");
-        HibernateUtil.closeSessionFactory("bss");
+        OSCARSCore core = OSCARSCore.getInstance();
+        core.shutdown();
         this.log.info("Axis2 destroy.finish");
     }
 
@@ -771,6 +780,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
      * @throws AAAFaultMessage
      */
     public String checkUser() throws AAAFaultMessage {
+        this.log.debug("checkUser.start");
 
         String login = null;
         String[] dnElems = null;
@@ -783,13 +793,13 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             throw AAAErrorEx;
         }
 
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
+//        Session aaa = HibernateUtil.getSessionFactory(core.getAaaDbName()).getCurrentSession();
         aaa.beginTransaction();
 
         // lookup up using input DN first
         String origDN = this.certSubject.getName();
-        this.log.debug("checkUser: " + origDN);
+        this.log.debug("checkUser original DN: " + origDN);
         try {
             login = this.userMgr.loginFromDN(origDN);
             if (login == null) {
@@ -800,7 +810,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
                     dn = dnElems[i] + "," + dn;
                 }
                 dn = dn.substring(1);
-                this.log.debug("checkUser: " + dn);
+                this.log.debug("checkUser reverse DN: " + dn);
 
                 login = this.userMgr.loginFromDN(dn);
                 if (login == null) {
@@ -820,6 +830,7 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
         }
         this.log.info("checkUser authenticated user: " + login);
         aaa.getTransaction().commit();
+        this.log.debug("checkUser.end");
         return login;
     }
 

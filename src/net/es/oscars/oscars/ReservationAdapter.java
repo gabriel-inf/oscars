@@ -13,12 +13,14 @@ import java.io.IOException;
 
 import org.apache.log4j.*;
 import org.ogf.schema.network.topology.ctrlplane._20070626.*;
+import org.quartz.*;
 
 import net.es.oscars.lookup.LookupException;
 import net.es.oscars.lookup.LookupFactory;
 import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.notify.*;
 import net.es.oscars.interdomain.*;
+import net.es.oscars.scheduler.CreateReservationJob;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
@@ -32,12 +34,16 @@ public class ReservationAdapter {
     private ReservationManager rm;
     private TypeConverter tc;
     private String dbname;
+    private OSCARSCore core;
 
     public ReservationAdapter() {
+
         this.log = Logger.getLogger(this.getClass());
-        this.dbname = "bss";
-        this.rm = new ReservationManager("bss");
-        this.tc = new TypeConverter();
+        this.core = OSCARSCore.getInstance();
+        this.dbname = this.core.getBssDbName();
+        this.rm = this.core.getReservationManager();
+        this.tc = this.core.getTypeConverter();
+
     }
 
     /**
@@ -58,15 +64,37 @@ public class ReservationAdapter {
         this.log.info("create.start");
         this.logCreateParams(params);
         Reservation resv = this.tc.contentToReservation(params);
-        Forwarder forwarder = new Forwarder();
+        Forwarder forwarder = this.core.getForwarder();
+        if (this.core.initialized) {
+            this.log.debug("Core has been initialized");
+        }
+
+
+
         PathInfo pathInfo = params.getPathInfo();
         CreateReply forwardReply = null;
         CreateReply reply = null;
         EventProducer eventProducer = new EventProducer();
-        
+
         try {
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "API", resv);
             this.rm.create(resv, login, pathInfo);
+
+            try {
+                Scheduler sched = this.core.getScheduleManager().getScheduler();
+                String gri = resv.getGlobalReservationId();
+                JobDetail jobDetail = new JobDetail("create-"+gri, "UNQUEUED", CreateReservationJob.class);
+                this.log.debug("Adding job create-"+gri);
+                jobDetail.setDurability(true);
+                JobDataMap jobDataMap = new JobDataMap();
+                jobDataMap.put("reservation", resv);
+                jobDetail.setJobDataMap(jobDataMap);
+                sched.addJob(jobDetail, false);
+
+            } catch (SchedulerException ex) {
+                this.log.error("Scheduler exception", ex);
+            }
+
             this.tc.ensureLocalIds(pathInfo);
 
             // TODO: why does this sometimes get unset?
@@ -76,13 +104,13 @@ public class ReservationAdapter {
             // the next domain if necessary, and handles the response
             this.log.debug("create, to forward");
             InterdomainException interException = null;
-            try{
+            try {
                 forwardReply = forwarder.create(resv, pathInfo);
-            }catch(InterdomainException e){
+            } catch (InterdomainException e) {
                 interException = e;
-            }finally{
+            } finally {
                 forwarder.cleanUp();
-                if(interException != null){
+                if(interException != null) {
                     throw interException;
                 }
             }
@@ -90,9 +118,9 @@ public class ReservationAdapter {
             // persist to db
             this.rm.store(resv);
             resv.toString("bss");//initialize object
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login,
                 "API", resv);
-            
+
             this.log.debug("create, to toReply");
             reply = this.tc.reservationToReply(resv);
             if (pathInfo.getLayer3Info() != null && forwardReply != null && forwardReply.getPathInfo() != null) {
@@ -110,19 +138,19 @@ public class ReservationAdapter {
         } catch (BSSException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API",
                 resv, "", errMsg);
             throw new BSSException(e.getMessage());
         } catch (InterdomainException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", 
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API",
                 resv, "", errMsg);
             throw new InterdomainException(e.getMessage());
         }
-        
+
         this.log.info("create.finish: " + resv.toString("bss"));
-        
+
         return reply;
     }
 
@@ -138,8 +166,7 @@ public class ReservationAdapter {
      * @return reply CreateReply encapsulating library reply.
      * @throws BSSException
      */
-    public ModifyResReply modify(ModifyResContent params, String login,
-                                 String institution)
+    public ModifyResReply modify(ModifyResContent params, String login, String institution)
             throws BSSException, InterdomainException {
 
         this.log.info("modify.start");
@@ -147,7 +174,7 @@ public class ReservationAdapter {
         Reservation resv = this.tc.contentToReservation(params);
         this.log.debug("Reservation was: "+resv.getGlobalReservationId());
 
-        Forwarder forwarder = new Forwarder();
+        Forwarder forwarder = this.core.getForwarder();
         PathInfo pathInfo = params.getPathInfo();
 
         // for now, do NOT change the path no matter what the user specified
@@ -156,8 +183,7 @@ public class ReservationAdapter {
         ModifyResReply forwardReply = null;
         ModifyResReply reply = null;
         try {
-            Reservation persistentResv = this.rm.modify(resv, login, institution, 
-                                                        pathInfo);
+            Reservation persistentResv = this.rm.modify(resv, login, institution, pathInfo);
             this.tc.ensureLocalIds(pathInfo);
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
@@ -186,7 +212,7 @@ public class ReservationAdapter {
                 this.tc.clientConvert(pathInfo);
             }
             reply.getReservation().setPathInfo(pathInfo); */
-            
+
         } catch (BSSException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
@@ -214,29 +240,27 @@ public class ReservationAdapter {
      * @return ResStatus reply CancelReservationResponse
      * @throws BSSException
      */
-    public String cancel(GlobalReservationId params, String login,
-                         String institution)
+    public String cancel(GlobalReservationId params, String login, String institution)
             throws BSSException, InterdomainException {
 
         Reservation resv = null;
-        Forwarder forwarder = new Forwarder();
+        Forwarder forwarder = this.core.getForwarder();
         String remoteStatus = null;
 
         String gri = params.getGri();
         this.log.info("cancel.start: " + gri);
         resv = this.rm.cancel(gri, login, institution);
-        this.log.info("cancel.finish " +
-                      "GRI: " + gri + ", status: "  + resv.getStatus());
+        this.log.info("cancel.finish " + "GRI: " + gri + ", status: "  + resv.getStatus());
         // checks whether next domain should be contacted, forwards to
         // the next domain if necessary, and handles the response
         this.log.debug("cancel to forward");
 
         InterdomainException interException = null;
-        try{
+        try {
             remoteStatus = forwarder.cancel(resv);
-        }catch(InterdomainException e){
+        } catch (InterdomainException e) {
             interException = e;
-        }finally{
+        } finally {
             forwarder.cleanUp();
             if(interException != null){
                 throw interException;
@@ -267,7 +291,7 @@ public class ReservationAdapter {
             throws BSSException, InterdomainException {
 
         Reservation resv = null;
-        Forwarder forwarder = new Forwarder();
+        Forwarder forwarder = this.core.getForwarder();
 
         String gri = params.getGri();
         this.log.info("query.start: " + gri);
@@ -278,13 +302,13 @@ public class ReservationAdapter {
         this.log.debug("query to forward");
         ResDetails forwardReply = null;
         InterdomainException interException = null;
-        try{
+        try {
             forwardReply = forwarder.query(resv);
-        }catch(InterdomainException e){
+        } catch (InterdomainException e) {
             interException = e;
-        }finally{
+        } finally {
             forwarder.cleanUp();
-            if(interException != null){
+            if (interException != null) {
                 throw interException;
             }
         }
@@ -333,18 +357,18 @@ public class ReservationAdapter {
      * @return reply ListReply encapsulating library reply.
      * @throws BSSException
      */
-    public ListReply list(String login, String institution,ListRequest request) 
-                 throws BSSException {
+    public ListReply list(String login, String institution,ListRequest request)
+                 throws BSSException, LookupException{
         ListReply reply = null;
         List<Reservation> reservations = null;
+
         ArrayList<net.es.oscars.bss.topology.Link> inLinks =
             new ArrayList<net.es.oscars.bss.topology.Link>();
         ArrayList<String> inVlanTags = new ArrayList<String>();
         ArrayList<String> statuses = new ArrayList<String>();
 
         // lookup name via perfSONAR Lookup Service
-        LookupFactory lookupFactory = new LookupFactory();
-        PSLookupClient lookupClient = lookupFactory.getPSLookupClient();
+        PSLookupClient lookupClient = core.getLookupClient();
 
         this.log.info("list.start");
         String[] linkIds = request.getLinkId();
@@ -369,10 +393,8 @@ public class ReservationAdapter {
 
                         }
                         inLinks.add(link);
-
                     } catch (BSSException ex) {
-                        this.log.error("Could not get link for string: [" +
-                                    s.trim()+"], error: ["+ex.getMessage()+"]");
+                        this.log.error("Could not get link for string: [" + s.trim()+"], error: ["+ex.getMessage()+"]");
                     }
                 }
             }
@@ -404,11 +426,12 @@ public class ReservationAdapter {
         }
         String description = request.getDescription();
         reservations =
-            this.rm.list(login, institution, statuses, description, inLinks, 
-                         inVlanTags, startTime, endTime);
+            this.rm.list(login, institution, statuses, description, inLinks,
+                            inVlanTags, startTime, endTime);
 
         reply = this.tc.reservationToListReply(reservations,
-                request.getResRequested(), request.getResOffset());
+                           request.getResRequested(), request.getResOffset());
+
         this.log.info("list.finish: " + reply.toString());
         return reply;
     }
@@ -432,8 +455,7 @@ public class ReservationAdapter {
         for (int i=0; i < remoteHops.length;  i++) {
             localPath.addHop(remoteHops[i]);
         }
-        this.log.debug("added " + remoteHops.length +
-                       " remote hops to path");
+        this.log.debug("added " + remoteHops.length + " remote hops to path");
         this.log.debug("complete path has " + localHops.length + " hops");
     }
 
@@ -511,7 +533,7 @@ public class ReservationAdapter {
         }else if (resv.getGlobalReservationId() != null) {
            errMsg = "Reservation scheduling through API failed with " + errMsg;
         }
-        
+
         return errMsg;
     }
 }
