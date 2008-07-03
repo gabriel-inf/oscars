@@ -87,7 +87,7 @@ public class PSLookupClient {
 
         urn = urnNode.getTextContent();
         if(urn == null || urn.equals("Nothing returned for search.")){
-            return null;
+            throw new LookupException("Lookup service could not find "+hostname);
         }
 
         //return urn with trailing whitespace removed
