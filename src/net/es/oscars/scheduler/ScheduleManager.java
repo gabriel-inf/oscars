@@ -1,10 +1,12 @@
 package net.es.oscars.scheduler;
 
 import net.es.oscars.oscars.*;
+import net.es.oscars.pss.PSSScheduler;
 
 import java.util.*;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 import org.quartz.*;
 import org.quartz.impl.*;
 
@@ -78,6 +80,8 @@ public class ScheduleManager {
                 }
             }
 
+            this.queueScheduledActions();
+
 
             String[] unQueuedJobNames = this.scheduler.getJobNames("UNQUEUED");
             String[] queuedJobNames = this.scheduler.getJobNames("QUEUED");
@@ -149,6 +153,20 @@ public class ScheduleManager {
         this.log.info("processQueue.end");
     }
 
+
+
+
+    public void queueScheduledActions() {
+        this.log.debug("queueScheduledActions.start");
+        Session session = core.getBssSession();
+        session.beginTransaction();
+        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
+        sched.pendingReservations(0);
+        sched.expiredReservations(0);
+        sched.expiringReservations(0);
+        session.getTransaction().commit();
+        this.log.debug("queueScheduledActions.end");
+    }
 
     public void addJobToQueue() throws SchedulerException {
     }
