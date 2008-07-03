@@ -1,6 +1,7 @@
 package net.es.oscars.oscars;
 
 import java.util.*;
+import java.rmi.*;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -15,6 +16,7 @@ import net.es.oscars.lookup.*;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.scheduler.*;
+import net.es.oscars.rmi.*;
 
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -50,6 +52,8 @@ public class OSCARSCore {
     private TypeConverter typeConverter = null;
     private Forwarder forwarder = null;
     private ScheduleManager scheduleManager = null;
+
+    private CoreRmiServer rmiServer = null;
 
 
     private OSCARSCore() {
@@ -95,10 +99,11 @@ public class OSCARSCore {
         this.initPathSetupAdapter();
         this.initTypeConverter();
         this.initForwarder();
+        this.initRMIServer();
         this.initialized = true;
 
 
-
+/*
         try {
             Scheduler sched = this.getScheduleManager().getScheduler();
 
@@ -121,7 +126,7 @@ public class OSCARSCore {
         } catch (SchedulerException ex) {
             this.log.error("Could not schedule job", ex);
         }
-
+*/
 
 
         this.log.debug("initAll.end");
@@ -134,6 +139,7 @@ public class OSCARSCore {
         } catch (SchedulerException ex) {
             this.log.error("Scheduler error shutting down", ex);
         }
+        this.rmiServer.shutdown();
         HibernateUtil.closeSessionFactory(this.aaaDbName);
         HibernateUtil.closeSessionFactory(this.bssDbName);
         this.log.info("shutdown.end");
@@ -250,6 +256,19 @@ public class OSCARSCore {
         this.policyManager = new PolicyManager(this.bssDbName);
         this.log.debug("initPolicyManager.end");
     }
+
+    public void initRMIServer() {
+        this.log.debug("initRMIServer.start");
+        try {
+            this.rmiServer = new CoreRmiServer();
+            this.rmiServer.init();
+        } catch (RemoteException ex) {
+            this.log.error("Error initializing RMI server", ex);
+            this.rmiServer = null;
+        }
+        this.log.debug("initRMIServer.end");
+    }
+
 
     public Session getAaaSession() {
         Session aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
@@ -562,6 +581,23 @@ public class OSCARSCore {
      */
     public void setPolicyManager(PolicyManager policyManager) {
         this.policyManager = policyManager;
+    }
+
+    /**
+     * @return the rmiServer
+     */
+    public CoreRmiServer getRmiServer() {
+        if (this.rmiServer == null) {
+            this.initRMIServer();
+        }
+        return rmiServer;
+    }
+
+    /**
+     * @param rmiServer the rmiServer to set
+     */
+    public void setRmiServer(CoreRmiServer rmiServer) {
+        this.rmiServer = rmiServer;
     }
 
 
