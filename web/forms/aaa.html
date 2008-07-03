@@ -3,31 +3,40 @@
 <script type="text/javascript">
     var institutionView = {
       cells: [[
-         {name: 'Name', field: "institutionName", width: "22em"}
+         {name: 'Name', field: "institutionName", width: "30em",
+          editor: dojox.grid.editors.Input}
       ]]
     };
     var institutionLayout = [ institutionView ];
-    var resourceView = {
-      cells: [[
-         {name: 'Name', field: "resourceName", width: "15em"},
-         {name: 'Description', field: "resourceDescription", width: "30em"}
-      ]]
-    };
-    var resourceLayout = [ resourceView ];
-    var permissionView = {
-      cells: [[
-         {name: 'Name', field: "permissionName", width: "15em"},
-         {name: 'Description', field: "permissionDescription", width: "30em"}
-      ]]
-    };
-    var permissionLayout = [ permissionView ];
+
     var attributeView = {
       cells: [[
-         {name: 'Name', field: "attributeName", width: "15em"},
-         {name: 'Type', field: "attributeType", width: "11em"}
+         {name: 'Name', field: "attributeName", width: "15em",
+          editor: dojox.grid.editors.Input},
+         {name: 'Type', field: "attributeType", width: "11em"},
+         {name: 'Type', field: "attributeDescription", width: "25em",
+          editor: dojox.grid.editors.Input}
       ]]
     };
     var attributeLayout = [ attributeView ];
+
+    var resourceView = {
+      cells: [[
+         {name: 'Name', field: "resourceName", width: "15em"},
+         {name: 'Description', field: "resourceDescription", width: "30em",
+          editor: dojox.grid.editors.Input}
+      ]]
+    };
+    var resourceLayout = [ resourceView ];
+
+    var permissionView = {
+      cells: [[
+         {name: 'Name', field: "permissionName", width: "15em"},
+         {name: 'Description', field: "permissionDescription", width: "30em",
+          editor: dojox.grid.editors.Input}
+      ]]
+    };
+    var permissionLayout = [ permissionView ];
 </script>
 </head>
 
@@ -37,21 +46,36 @@
 <input type="hidden" name="aaaTable" id="aaaTable" />
 <input type="hidden" name="aaaOp" id="aaaOp" />
 
-<p>Institutions</p>
-<div id="institutionGrid" dojoType="dojox.Grid" structure="institutionLayout">
-</div>
+<!-- All these grids are associated with ItemFileWriteStore's, which are
+     set up programmatically -->
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <p>Institutions</p>
+      <div id="institutionGrid" dojoType="dojox.Grid" structure="institutionLayout">
+      </div>
+    </td>
 
-<p>Resources</p>
-<div id="resourceGrid" dojoType="dojox.Grid" structure="resourceLayout">
-</div>
+    <td width="50%">
+      <p>Attributes</p>
+      <div id="attributeGrid" dojoType="dojox.Grid" structure="attributeLayout">
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <p>Resources</p>
+      <div id="resourceGrid" dojoType="dojox.Grid" structure="resourceLayout">
+      </div>
+    </td>
+    <td width="50%">
+      <p>Permissions</p>
+      <div id="permissionGrid" dojoType="dojox.Grid" structure="permissionLayout">
+      </div>
+    </td>
+  </tr>
+</table>
 
-<p>Permissions</p>
-<div id="permissionGrid" dojoType="dojox.Grid" structure="permissionLayout">
-</div>
-
-<p>Attributes</p>
-<div id="attributeGrid" dojoType="dojox.Grid" structure="attributeLayout">
-</div>
 </form>
 </body>
 </html>

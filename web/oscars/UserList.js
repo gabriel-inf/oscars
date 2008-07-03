@@ -29,11 +29,13 @@ oscars.UserList.tabSelected = function (
         oscarsStatus.innerHTML = "Users list";
     }
     var userGrid = dijit.byId("userGrid");
-    // The current implementation of grids is buggy.
-    // This should not be necessary.
+    // Creation apparently needs to be programmatic, after the ContentPane
+    // has been selected and its style no longer display:none
     if ((userGrid != null) && (!oscarsState.userGridInitialized)) {
-        oscars.UserList.refreshUserGrid();
         dojo.connect(userGrid, "onRowClick", oscars.UserList.onUserRowSelect);
+        oscars.UserList.refreshUserGrid();
+        userGrid.resize();
+        userGrid.render();
         oscarsState.userGridInitialized = true;
     }
 };
@@ -45,7 +47,8 @@ oscars.UserList.refreshUserGrid = function () {
                       {url: 'servlet/UserList'});
     var newModel = new dojox.grid.data.DojoData(
                       null, newStore,
-                      {query: {login: '*'}, clientSort: true});
+                      {query: {login: '*'}, clientSort: true,
+                       rowsPerPage: 20});
     userGrid.setModel(newModel);
     userGrid.refresh();
 };

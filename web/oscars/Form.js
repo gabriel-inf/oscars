@@ -146,6 +146,10 @@ oscars.Form.selectedChanged = function (/* ContentPane widget */ contentPane) {
     // selected add user tab
     } else if (contentPane.id == "userAddPane") {
         oscars.UserAdd.tabSelected(contentPane, oscarsStatus, changeStatus);
+    // selected basic AAA management tab
+    } else if (contentPane.id == "aaaPane") {
+        oscars.AAA.tabSelected(contentPane, oscarsStatus, changeStatus);
+    // selected login/logout tab
     } else if (contentPane.id == "sessionPane") {
         oscars.UserLogin.tabSelected(oscarsStatus, changeStatus);
     }

@@ -32,16 +32,10 @@
 </tr>
 </table>
 
-<!-- store and model declarations need to have the correct syntax, but the
-     declarations themselves are not currently sufficient -->
-<div id="userStore" dojoType="dojo.data.ItemFileReadStore"
-    jsId="userStore" url="servlet/UserList">
-</div>
-<div id="userModel" dojoType="dojox.grid.data.DojoData" jsId="userModel"
-     rowsPerPage="20" store="userStore" query="{ login: '*' }">
-</div>
-<div id="userGrid" dojoType="dojox.Grid" model="userModel" jsId="thisUserGrid"
-     structure="userLayout">
+<!-- store and model declarations are done in Javascript; content pane has
+     display:none originally, so any declarations beside the grid's are
+     apparently ignored -->
+<div id="userGrid" dojoType="dojox.Grid" structure="userLayout">
 </div>
 </body>
 

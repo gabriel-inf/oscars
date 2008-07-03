@@ -19,7 +19,7 @@ oscars.AAA.postTableOp = function () {
     }
 };
 
-// handles reply from request to server to add user
+// handles reply from request to server to operate on AAA table
 oscars.AAA.handleReply = function (responseObject, ioArgs) {
     if (!oscars.Form.resetStatus(responseObject, true)) {
         return;
@@ -35,5 +35,24 @@ oscars.AAA.tabSelected = function (
     if (changeStatus) {
         oscarsStatus.innerHTML = "Basic AAA Management";
     }
-    // refresh all grids initially
+    var institutionGrid = dijit.byId("institutionGrid");
+    if ((institutionGrid != null) && (!oscarsState.aaaGridsInitialized)) {
+        oscars.AAA.createInstitutionGrid();
+        oscarsState.aaaGridsInitialized = true;
+    }
 };
+
+// return initial institution list from servlet
+oscars.AAA.createInstitutionGrid = function () {
+    var institutionGrid = dijit.byId("institutionGrid");
+    var newStore = new dojo.data.ItemFileWriteStore(
+                      {url: 'servlet/AAA?table=institution&op=list'});
+    var newModel = new dojox.grid.data.DojoData(
+                      null, newStore,
+                      {query: {institutionName: '*'}, clientSort: true});
+    institutionGrid.setModel(newModel);
+    institutionGrid.refresh();
+    institutionGrid.resize();
+    institutionGrid.render();
+};
+

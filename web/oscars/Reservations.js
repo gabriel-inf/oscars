@@ -47,11 +47,6 @@ oscars.Reservations.handleReply = function (responseObject, ioArgs) {
     // convert seconds to datetime format before displaying
     oscars.Reservations.convertReservationTimes(responseObject.resvData);
     model.setData(responseObject.resvData);
-    // workaround for bug where doesn't show up on first setData
-    if (oscarsState.resvGridInitialized == 1) {
-        model.setData(responseObject.resvData);
-        oscarsState.resvGridInitialized = 2;
-    }
 };
 
 // takes action based on this tab being selected
@@ -66,8 +61,7 @@ oscars.Reservations.tabSelected = function (
     }
     // refresh reservations grid
     var resvGrid = dijit.byId("resvGrid");
-    if ((resvGrid != null) && (oscarsState.resvGridInitialized == 0)) {
-        oscarsState.resvGridInitialized = 1;
+    if ((resvGrid != null) && !oscarsState.resvGridInitialized) {
         dojo.connect(resvGrid, "onRowClick",
                      oscars.Reservations.onResvRowSelect);
         dojo.xhrPost({
@@ -77,6 +71,9 @@ oscars.Reservations.tabSelected = function (
             error: oscars.Form.handleError,
             form: dijit.byId("reservationsForm").domNode
         });
+        resvGrid.resize();
+        resvGrid.render();
+        oscarsState.resvGridInitialized = true;
     }
     if (changeStatus) {
         oscarsStatus.className = "success";

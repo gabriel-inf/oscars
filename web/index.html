@@ -37,6 +37,7 @@
         dojo.require("dojo.back");
         // all widgets used in all forms
         dojo.require("dojo.data.ItemFileReadStore");
+        dojo.require("dojo.data.ItemFileWriteStore");
         dojo.require("dijit.Dialog");
         dojo.require("dijit.Tooltip");
         dojo.require("dijit.layout.TabContainer");
@@ -61,7 +62,8 @@
             },
             login: "",
             userGridInitialized: false,
-            resvGridInitialized: 0
+            resvGridInitialized: false,
+            aaaGridsInitialized: false
         });
     </script>
     <script type="text/javascript">
