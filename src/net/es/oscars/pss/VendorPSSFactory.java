@@ -5,12 +5,19 @@ import java.util.Properties;
 import java.util.List;
 
 import org.apache.log4j.*;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 import net.es.oscars.PropHandler;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.topology.*;
+import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.pss.jnx.JnxLSP;
 import net.es.oscars.pss.cisco.LSP;
+import net.es.oscars.scheduler.CreatePathJob;
+import net.es.oscars.scheduler.TeardownPathJob;
 
 /**
  * This class decides whether to configure Juniper or Cisco routers,
@@ -26,6 +33,7 @@ public class VendorPSSFactory implements PSS {
     private LSPData lspData;
     private boolean allowLSP;
     private static String staticAllowLSP;
+    private OSCARSCore core;
 
     public VendorPSSFactory(String dbname) {
         this.log = Logger.getLogger(this.getClass());
@@ -39,6 +47,7 @@ public class VendorPSSFactory implements PSS {
         }
         this.dbname = dbname;
         this.lspData = new LSPData(dbname);
+        this.core = OSCARSCore.getInstance();
     }
 
     /**
@@ -50,6 +59,23 @@ public class VendorPSSFactory implements PSS {
      * @throws PSSException
      */
     public String createPath(Reservation resv) throws PSSException {
+
+        try {
+            String gri = resv.getGlobalReservationId();
+            Scheduler sched = this.core.getScheduleManager().getScheduler();
+            String jobName = "pathsetup-"+gri;
+            JobDetail jobDetail = new JobDetail(jobName, "UNQUEUED", CreatePathJob.class);
+            this.log.debug("Adding job "+jobName);
+            jobDetail.setDurability(true);
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDataMap.put("reservation", resv);
+            jobDetail.setJobDataMap(jobDataMap);
+            sched.addJob(jobDetail, false);
+
+        } catch (SchedulerException ex) {
+            this.log.error("Scheduler exception", ex);
+        }
+
 
         // for Juniper circuit set up
         JnxLSP jnxLSP = null;
@@ -167,6 +193,22 @@ public class VendorPSSFactory implements PSS {
      * @throws PSSException
      */
     public String teardownPath(Reservation resv) throws PSSException {
+        try {
+            String gri = resv.getGlobalReservationId();
+            Scheduler sched = this.core.getScheduleManager().getScheduler();
+            String jobName = "teardown-"+gri;
+            JobDetail jobDetail = new JobDetail(jobName, "UNQUEUED", TeardownPathJob.class);
+            this.log.debug("Adding job "+jobName);
+            jobDetail.setDurability(true);
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDataMap.put("reservation", resv);
+            jobDetail.setJobDataMap(jobDataMap);
+            sched.addJob(jobDetail, false);
+
+        } catch (SchedulerException ex) {
+            this.log.error("Scheduler exception", ex);
+        }
+
 
         // for Juniper circuit set up
         JnxLSP jnxLSP = null;
