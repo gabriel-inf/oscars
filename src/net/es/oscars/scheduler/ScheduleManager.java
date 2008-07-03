@@ -83,64 +83,11 @@ public class ScheduleManager {
             this.queueScheduledActions();
 
 
-            String[] unQueuedJobNames = this.scheduler.getJobNames("UNQUEUED");
-            String[] queuedJobNames = this.scheduler.getJobNames("QUEUED");
-            String jobToSchedule = null;
-            JobDetail lastJobInQueue = null;
-            if (queuedJobNames != null) {
-                for (String queuedJobName : queuedJobNames) {
-                    this.log.debug("Queued job name: "+queuedJobName);
-                    // the LAST in the queue chain would have null nextJobGroup, nextJobName
-                    JobDetail jobDetail = this.scheduler.getJobDetail(queuedJobName, "QUEUED");
-                    String nextJobName = (String) jobDetail.getJobDataMap().get("nextJobName");
-                    if (nextJobName == null) {
-                        lastJobInQueue = jobDetail;
-                        this.log.debug("Last job in existing queue: "+queuedJobName);
-                        break;
-                    }
-                }
-            }
+            String[] queueNames = this.scheduler.getJobGroupNames();
 
-            JobDetail previousUnqueuedJob = null;
-
-            if (unQueuedJobNames != null) {
-                for (String unQueuedJobName : unQueuedJobNames) {
-                    this.log.debug("Unqueued job name: "+unQueuedJobName);
-                    JobDetail jobDetail = this.scheduler.getJobDetail(unQueuedJobName, "UNQUEUED");
-                    if (lastJobInQueue != null && previousUnqueuedJob == null) {
-                        this.log.debug("Next job to added to queue: "+unQueuedJobName);
-                        jobToSchedule = unQueuedJobName;
-                        jobDetail.setGroup("QUEUED");
-                        jobDetail.setDurability(false);
-                        this.scheduler.deleteJob(unQueuedJobName, "UNQUEUED");
-                        this.scheduler.addJob(jobDetail, true);
-                        lastJobInQueue.getJobDataMap().put("nextJobGroup", "QUEUED");
-                        lastJobInQueue.getJobDataMap().put("nextJobName", unQueuedJobName);
-                    } else if (previousUnqueuedJob == null) {
-                        this.log.debug("Next job to be first in queue: "+unQueuedJobName);
-                        jobToSchedule = unQueuedJobName;
-                        jobDetail.setGroup("QUEUED");
-                        jobDetail.setDurability(false);
-                        this.scheduler.deleteJob(unQueuedJobName, "UNQUEUED");
-                        this.scheduler.addJob(jobDetail, true);
-                    } else {
-                        this.log.debug("Adding job to queue: "+unQueuedJobName);
-                        previousUnqueuedJob.getJobDataMap().put("nextJobGroup", "QUEUED");
-                        previousUnqueuedJob.getJobDataMap().put("nextJobName", unQueuedJobName);
-                        this.scheduler.addJob(previousUnqueuedJob, true);
-                        jobDetail.setGroup("QUEUED");
-                        jobDetail.setDurability(false);
-                        this.scheduler.deleteJob(unQueuedJobName, "UNQUEUED");
-                        this.scheduler.addJob(jobDetail, true);
-                    }
-                    previousUnqueuedJob = jobDetail;
-                }
-
-                if (jobToSchedule != null) {
-                    Trigger trigger = new SimpleTrigger("immediate", "group1", new Date());
-                    trigger.setJobName(jobToSchedule);
-                    trigger.setJobGroup("QUEUED");
-                    this.scheduler.scheduleJob(trigger);
+            for (String queueName : queueNames) {
+                if (queueName.startsWith("SERIALIZE_")) {
+                    this.serializeQueue(queueName);
                 }
             }
 
@@ -153,6 +100,72 @@ public class ScheduleManager {
         this.log.info("processQueue.end");
     }
 
+
+    public void serializeQueue(String queueName) throws SchedulerException {
+
+        String unqueuedJobsGroupName = queueName;
+        String queuedJobsGroupName = "QUEUED_"+queueName;
+
+        String[] unQueuedJobNames = this.scheduler.getJobNames(unqueuedJobsGroupName);
+        String[] queuedJobNames = this.scheduler.getJobNames(queuedJobsGroupName);
+        String jobToSchedule = null;
+        JobDetail lastJobInQueue = null;
+        if (queuedJobNames != null) {
+            for (String queuedJobName : queuedJobNames) {
+                this.log.debug("Queued job name: "+queuedJobName);
+                // the LAST in the queue chain would have null nextJobGroup, nextJobName
+                JobDetail jobDetail = this.scheduler.getJobDetail(queuedJobName, queuedJobsGroupName);
+                String nextJobName = (String) jobDetail.getJobDataMap().get("nextJobName");
+                if (nextJobName == null) {
+                    lastJobInQueue = jobDetail;
+                    this.log.debug("Last job in existing queue: "+queuedJobName);
+                    break;
+                }
+            }
+        }
+
+        JobDetail previousUnqueuedJob = null;
+
+        if (unQueuedJobNames != null) {
+            for (String unQueuedJobName : unQueuedJobNames) {
+                this.log.debug("Unqueued job name: "+unQueuedJobName);
+                JobDetail jobDetail = this.scheduler.getJobDetail(unQueuedJobName, unqueuedJobsGroupName);
+                if (lastJobInQueue != null && previousUnqueuedJob == null) {
+                    this.log.debug("Next job to added to queue: "+unQueuedJobName);
+                    jobToSchedule = unQueuedJobName;
+                    jobDetail.setGroup(queuedJobsGroupName);
+                    jobDetail.setDurability(false);
+                    this.scheduler.deleteJob(unQueuedJobName, unqueuedJobsGroupName);
+                    this.scheduler.addJob(jobDetail, true);
+                    lastJobInQueue.getJobDataMap().put("nextJobGroup", queuedJobsGroupName);
+                    lastJobInQueue.getJobDataMap().put("nextJobName", unQueuedJobName);
+                } else if (previousUnqueuedJob == null) {
+                    this.log.debug("Next job to be first in queue: "+unQueuedJobName);
+                    jobToSchedule = unQueuedJobName;
+                    jobDetail.setGroup(queuedJobsGroupName);
+                    jobDetail.setDurability(false);
+                    this.scheduler.deleteJob(unQueuedJobName, unqueuedJobsGroupName);
+                    this.scheduler.addJob(jobDetail, true);
+                } else {
+                    this.log.debug("Adding job to queue: "+unQueuedJobName);
+                    previousUnqueuedJob.getJobDataMap().put("nextJobGroup", queuedJobsGroupName);
+                    previousUnqueuedJob.getJobDataMap().put("nextJobName", unQueuedJobName);
+                    this.scheduler.addJob(previousUnqueuedJob, true);
+                    jobDetail.setGroup(queuedJobsGroupName);
+                    jobDetail.setDurability(false);
+                    this.scheduler.deleteJob(unQueuedJobName, unqueuedJobsGroupName);
+                    this.scheduler.addJob(jobDetail, true);
+                }
+                previousUnqueuedJob = jobDetail;
+            }
+
+            if (jobToSchedule != null) {
+                Trigger trigger = new SimpleTrigger("immediate", queuedJobsGroupName, new Date());
+                trigger.setJobName(jobToSchedule);
+                trigger.setJobGroup(queuedJobsGroupName);
+                this.scheduler.scheduleJob(trigger);
+            }
+        }    }
 
 
 

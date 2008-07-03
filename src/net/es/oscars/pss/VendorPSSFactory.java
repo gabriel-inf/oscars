@@ -64,7 +64,7 @@ public class VendorPSSFactory implements PSS {
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "pathsetup-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "UNQUEUED", CreatePathJob.class);
+            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_CREATE", CreatePathJob.class);
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
@@ -197,7 +197,7 @@ public class VendorPSSFactory implements PSS {
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
             String jobName = "teardown-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "UNQUEUED", TeardownPathJob.class);
+            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_TEARDOWN", TeardownPathJob.class);
             this.log.debug("Adding job "+jobName);
             jobDetail.setDurability(true);
             JobDataMap jobDataMap = new JobDataMap();
