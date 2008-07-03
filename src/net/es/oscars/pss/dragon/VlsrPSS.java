@@ -690,6 +690,12 @@ public class VlsrPSS implements PSS{
             this.log.info("tunnel-id local-id");
             number = vtag;
             type = DragonLocalID.TUNNEL_ID;
+        }else if(portTopoId.indexOf('E') == 0){
+            this.log.info("untagged local-id (tagged override)");
+            type = DragonLocalID.UNTAGGED_PORT;
+            String strNum = portTopoId.substring(1);
+            number = this.intefaceToLocalIdNum(strNum, false);
+            this.log.info("local-id value " + number);
         }else if(portTopoId.indexOf('S') == 0){
             this.log.info("subnet-interface local-id");
             type = DragonLocalID.SUBNET_INTERFACE;
