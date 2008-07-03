@@ -20,7 +20,7 @@ public class HibernateUtil {
 
     private static final Map<String, SessionFactory> sessionFactories =
         new HashMap<String,SessionFactory>();
-    
+
     /**
      * Called from OSCARSSkeleton and test setup. When running in axis, we need
      *     to set the classLoader in order for it to find the .xml files.
@@ -28,35 +28,46 @@ public class HibernateUtil {
      * @param CL classloader for the calling class
      * @param dbnames list of db names to build session factories for
      */
-    public static void initSessionFactories(ClassLoader CL,
-                                            List<String> dbnames) {
+    public static void initSessionFactories(ClassLoader CL, List<String> dbnames) {
         try {
             PropHandler propHandler = new PropHandler("oscars.properties");
             if (propHandler == null) {
-                throw new ExceptionInInitializerError(
-                            "Could not find properties file");
+                throw new ExceptionInInitializerError("Could not find properties file");
             }
-            Properties props =
-                propHandler.getPropertyGroup("hibernate", false);
+            Properties props = propHandler.getPropertyGroup("hibernate", false);
             Configuration cfg = new Configuration();
             cfg.setProperties(props);
-            
-            ClassLoader clsave =
-                    Thread.currentThread().getContextClassLoader();
+
+            ClassLoader clsave = Thread.currentThread().getContextClassLoader();
 
             for (String dbname: dbnames) {
-                putSessionFactory(dbname,
-                    cfg.configure(dbname + ".cfg.xml").buildSessionFactory());
+                if (sessionFactories.get(dbname) == null) {
+                    SessionFactory sessionFactory = cfg.configure(dbname + ".cfg.xml").buildSessionFactory();
+                    putSessionFactory(dbname, sessionFactory);
+                }
             }
         } catch (Throwable ex) {
             throw new ExceptionInInitializerError(ex.getMessage());
         }
     }
 
-    public static SessionFactory closeSessionFactory(String factoryName) {
+    public static void destroySessionFactories() {
+        Iterator<String> dbNamesIt = sessionFactories.keySet().iterator();
+        while (dbNamesIt.hasNext()) {
+            String dbName = dbNamesIt.next();
+            HibernateUtil.closeSessionFactory(dbName);
+        }
+    }
+
+    public static void closeSessionFactory(String factoryName) {
         SessionFactory sessionFactory = sessionFactories.get(factoryName);
-        sessionFactory.close();
-        return sessionFactories.remove(factoryName);
+        if (sessionFactory != null) {
+            Session session = sessionFactory.getCurrentSession();
+            if (session != null) {
+                session.close();
+            }
+            sessionFactory.close();
+        }
     }
 
     public static SessionFactory getSessionFactory(String factoryName) {
