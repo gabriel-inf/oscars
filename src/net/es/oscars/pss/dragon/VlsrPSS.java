@@ -736,12 +736,15 @@ public class VlsrPSS implements PSS{
         
         /* If in form K-M-N return local ID value... */
         if(componentList.length == 3){
-            int k = Integer.parseInt(componentList[0]);
-            int m = Integer.parseInt(componentList[1]);
-            int n = Integer.parseInt(componentList[2]);
-            
-            number = (k << 12) + (m << 8) + n;
-            return number;
+            //Remove try block when E type no longer needed
+            try{
+                int k = Integer.parseInt(componentList[0]);
+                int m = Integer.parseInt(componentList[1]);
+                int n = Integer.parseInt(componentList[2]);
+                
+                number = (k << 12) + (m << 8) + n;
+                return number;
+            }catch(Exception e){}
         }
         
         /* If doesn't match any of the above but isn't required to be an 
