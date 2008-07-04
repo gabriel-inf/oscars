@@ -7,9 +7,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import net.es.oscars.notify.RemoteEventProducer;
 
 import org.apache.log4j.*;
@@ -21,7 +18,7 @@ public class CoreRmiServer implements CoreRmiInterface {
     /* Make remote object static so GarbageCollector doesn't delete it */
     public static  CoreRmiServer staticObject;
     private CoreRmiInterface stub;
-    private ServletRmiHandlerSwitchboard switchboard;
+    private RmiHandlerSwitchboard switchboard;
 
     public CoreRmiServer() throws RemoteException {
         this.log = Logger.getLogger(this.getClass());
@@ -35,7 +32,7 @@ public class CoreRmiServer implements CoreRmiInterface {
         this.stub = (CoreRmiInterface) UnicastRemoteObject.exportObject(CoreRmiServer.staticObject, 0);
 
         this.registry.rebind("IDCRMIServer", this.stub);
-        this.switchboard = new ServletRmiHandlerSwitchboard();
+        this.switchboard = new RmiHandlerSwitchboard();
         this.log.debug("init.end");
     }
 
@@ -55,8 +52,24 @@ public class CoreRmiServer implements CoreRmiInterface {
         }
     }
 
-    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) throws IOException, RemoteException {
+    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
+        throws IOException, RemoteException {
         return this.switchboard.createReservation(inputMap, userName);
+    }
+    
+    public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
+        throws IOException, RemoteException {
+        return this.switchboard.queryReservation(inputMap, userName);
+    }
+    
+    public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
+        throws IOException, RemoteException {
+        return this.switchboard.listReservations(inputMap, userName);
+    }
+    
+    public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName) 
+        throws IOException, RemoteException {
+        return this.switchboard.cancelReservation(inputMap, userName);
     }
 
 

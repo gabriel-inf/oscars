@@ -1,70 +1,65 @@
 package net.es.oscars.rmi;
 
+/**
+ * rmi handler for createReservation. Interfaces to ReservationManager.createReservation
+ * 
+ * @author Evangelos Chaniotakis, David Robertson
+ */
+
 import java.io.*;
 import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.*;
 import org.hibernate.*;
-
-
 import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.notify.*;
-
 import net.es.oscars.PropHandler;
 import net.es.oscars.database.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
-import net.es.oscars.servlets.*;
 import net.es.oscars.wsdlTypes.*;
-
-
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 
-public class ServletCreateRmiHandler {
+public class CreateResRmiHandler {
     private OSCARSCore core;
     private Logger log;
 
 
-    public ServletCreateRmiHandler() {
+    public CreateResRmiHandler() {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
     }
 
-    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) throws IOException {
+    /**
+     * CreateReservation rmi handler; interfaces between servlet and ReservationManager.
+     * 
+     * @param userName String - name of user  making request
+     * @param inputMap HashMap - contains start and end times, bandwidth, description,
+     *          productionType, pathinfo
+     * @return HashMap - contains gri and sucess or error status
+     */
+    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
+        throws IOException {
         this.log.debug("create.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CreateReservation";
 
-
         TypeConverter tc = core.getTypeConverter();
         Forwarder forwarder = core.getForwarder();
         ReservationManager rm = core.getReservationManager();
-
-
-// FIXME
-//        net.es.oscars.servlets.Utils utils = new net.es.oscars.servlets.Utils();
         EventProducer eventProducer = new EventProducer();
-
-
 
         Reservation resv = this.toReservation(userName, inputMap);
         PathInfo pathInfo = null;
         try {
             pathInfo = this.handlePath(inputMap);
         } catch (BSSException e) {
-
-// FIXME
-//            utils.handleFailure(out, e.getMessage(), methodName, null, null);
-            return null;
+            result.put("error", methodName + ": " + e.getMessage());
+            this.log.debug("create reservaton failed: " + e.getMessage());
+            return result;
         }
-
-
 
         Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
         aaa.beginTransaction();
@@ -91,10 +86,9 @@ public class ServletCreateRmiHandler {
                 "create", reqBandwidth, reqDuration, specifyPath, false);
 
         if (authVal == AuthValue.DENIED) {
-
-// FIXME
-//            utils.handleFailure(out, "createReservation permission denied", methodName, aaa, null);
-            return null;
+            result.put("error", "createReservation permission denied");
+            this.log.debug("createReservation failed permission denied");
+            return result;
         }
         aaa.getTransaction().commit();
 
@@ -120,31 +114,20 @@ public class ServletCreateRmiHandler {
             forwarder.cleanUp();
             if (errMessage != null) {
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "WBUI", resv, "", errMessage);
-
-// FIXME
-//                utils.handleFailure(out, errMessage, methodName, null, bss);
-                return null;
+                result.put("error", errMessage);
+                this.log.debug("createReservation failed: " + errMessage);
+                return result;
             }
         }
-
-
         result.put("gri", resv.getGlobalReservationId());
         result.put("status", "Created reservation with GRI " + resv.getGlobalReservationId());
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
 
         bss.getTransaction().commit();
-        this.log.info("CreateReservation.end");
-        this.log.debug("create.end");
+        this.log.debug("create.end - success");
         return result;
     }
-
-
-
-
-
-
-
 
     private Reservation toReservation(String userName, HashMap<String, String[]> inputMap) {
         String[] arrayParam = null;
@@ -191,9 +174,6 @@ public class ServletCreateRmiHandler {
 
         resv.setBandwidth(bandwidth);
 
-
-
-
         String description = "";
         arrayParam = inputMap.get("description");
         if (arrayParam != null) {
@@ -202,7 +182,6 @@ public class ServletCreateRmiHandler {
                 description = strParam;
             }
         }
-
 
         arrayParam = (String[]) inputMap.get("productionType");
         // if not blank, check box indicating production circuit was checked
@@ -300,8 +279,6 @@ public class ServletCreateRmiHandler {
             }
         }
 
-
-
         //Set default to tagged if tagSrcPort and tagDestPort unspecified
         if ((tagSrcPort == null) || tagSrcPort.trim().equals("")) {
             tagSrcPort = "Tagged";
@@ -368,9 +345,6 @@ public class ServletCreateRmiHandler {
         }
         layer3Info.setSrcHost(strParam);
 
-
-
-
         arrayParam = inputMap.get("destination");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -394,8 +368,6 @@ public class ServletCreateRmiHandler {
             layer3Info.setSrcIpPort(0);
         }
 
-
-
         arrayParam = inputMap.get("destPort");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -409,8 +381,6 @@ public class ServletCreateRmiHandler {
             layer3Info.setDestIpPort(0);
         }
 
-
-
         arrayParam = inputMap.get("protocol");
         if (arrayParam != null) {
             strParam = arrayParam[0];
@@ -421,8 +391,6 @@ public class ServletCreateRmiHandler {
         if ((strParam != null) && !strParam.trim().equals("")) {
             layer3Info.setProtocol(strParam);
         }
-
-
 
         arrayParam = inputMap.get("dscp");
         if (arrayParam != null) {

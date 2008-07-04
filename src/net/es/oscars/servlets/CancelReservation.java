@@ -4,88 +4,71 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-
-import org.hibernate.*;
+import org.apache.log4j.Logger;
 import net.sf.json.*;
+import net.es.oscars.rmi.CoreRmiClient;
+import net.es.oscars.rmi.CoreRmiInterface;
 
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.aaa.AAAException;
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.bss.ReservationManager;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.interdomain.*;
-
+/**
+ * Cancel Reservation servlet
+ * 
+ * @author David Robertson, Mary Thompson
+ *
+ */
 
 public class CancelReservation extends HttpServlet {
-
+    private Logger log;
+    /**
+     * doGet
+     * 
+     * @param request HttpServletRequest - contains gri of reservation to cancel
+     * @return response HttpServletResponse -contains gri of reservation, success or error status
+     */
     public void
         doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        Reservation reservation = null;
-        String reply = null;
-        String institution = null;
-        String loginConstraint = null;
-        
+        this.log = Logger.getLogger(this.getClass());
+        this.log.info("CancelReservation.start");
+
         String methodName = "CancelReservation";
-        UserManager userMgr =  new UserManager("aaa");
-        ReservationManager rm = new ReservationManager("bss");
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
-        Forwarder forwarder = new Forwarder();
-        
         PrintWriter out = response.getWriter();
+        
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
-        if (userName == null) { return; }
+        if (userName == null) { 
+            this.log.info("CancelReservation.end: no user session" );
+            return; }
  
-        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        aaa.beginTransaction();
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
-                                                "modify");
-        if (authVal == AuthValue.DENIED) {
-            utils.handleFailure(out, "no permission to cancel Reservations",
-                                methodName, aaa, null);
+        HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
+        HashMap<String, Object> outputMap = new HashMap<String, Object>();
+
+        String[] paramValues = request.getParameterValues("gri");
+        inputMap.put("gri", paramValues);
+
+        try {
+            CoreRmiInterface rmiClient = new CoreRmiClient();
+            rmiClient.init();
+            outputMap = rmiClient.cancelReservation(inputMap, userName);
+        } catch (Exception ex) {
+            utils.handleFailure(out, "failed to cancel Reservation: " + ex.getMessage(),
+                                      methodName, null, null);
+            this.log.info("CancelReservation.end: " + ex.getMessage());
             return;
         }
-        if (authVal.equals(AuthValue.MYSITE)){
-            institution = userMgr.getInstitution(userName);
-        } else if (authVal.equals(AuthValue.SELFONLY)){
-            loginConstraint = userName;
+        String errorMsg = (String) outputMap.get("error");
+        if (errorMsg != null) {
+            utils.handleFailure(out, errorMsg, methodName, null, null);
+            this.log.info("CancelReservation.end: " + errorMsg);
+            return;
         }
-        aaa.getTransaction().commit();
-        
-        String gri = request.getParameter("gri");
-        
-        Session bss = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        bss.beginTransaction();
-        String errMessage = null;
-        try {
-        	reservation = rm.cancel(gri, loginConstraint, institution);
-            String remoteStatus = forwarder.cancel(reservation);
-            rm.finalizeCancel(reservation, userName, "WBUI");
-        } catch (BSSException e) {
-            errMessage = e.getMessage();
-        } catch (InterdomainException e) {
-            errMessage = e.getMessage();
-        } finally {
-            forwarder.cleanUp();
-            if (errMessage != null) {
-                utils.handleFailure(out, errMessage, methodName, null, bss);
-                return;
-            }
-        }
-        Map outputMap = new HashMap();
-        outputMap.put("status", "Successfully canceled reservation with " +
-                                "GRI " + reservation.getGlobalReservationId());
-        outputMap.put("method", methodName);
-        outputMap.put("success", Boolean.TRUE);
+
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
-        bss.getTransaction().commit();
+        this.log.info("CancelReservation.end");
+        return;
     }
 
     public void

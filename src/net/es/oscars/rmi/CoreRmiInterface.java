@@ -7,7 +7,17 @@ import java.rmi.RemoteException;
 
 public interface CoreRmiInterface extends Remote {
 
-    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName)  throws IOException, RemoteException;
     public void init()  throws RemoteException;
+    
+    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName)
+         throws IOException, RemoteException;
 
+    public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName)
+        throws IOException, RemoteException;
+    
+    public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName)
+        throws IOException, RemoteException;
+    
+    public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName)
+        throws IOException, RemoteException;
 }
