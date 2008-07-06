@@ -734,10 +734,10 @@ class ElementProxy(Base, MessageInterface):
     }
     reserved_ns = {\
         _soap_env_prefix:_soap_env_nsuri,
-        _soap_enc_prefix:_soap_enc_nsuri,
-        _zsi_prefix:_zsi_nsuri,
-        _xsd_prefix:_xsd_nsuri,
-        _xsi_prefix:_xsi_nsuri,
+        #_soap_enc_prefix:_soap_enc_nsuri,
+        #_zsi_prefix:_zsi_nsuri,
+        #_xsd_prefix:_xsd_nsuri,
+        #_xsi_prefix:_xsi_nsuri,
     }
     name = None
     namespaceURI = None

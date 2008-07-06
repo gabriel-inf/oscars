@@ -14,10 +14,10 @@ _standard_ns = [ ('xml', XMLNS.XML), ('xmlns', XMLNS.BASE) ]
 
 _reserved_ns = {
         'SOAP-ENV': SOAP.ENV,
-        'SOAP-ENC': SOAP.ENC,
-        'ZSI': ZSI_SCHEMA_URI,
-        'xsd': SCHEMA.BASE,
-        'xsi': SCHEMA.BASE + '-instance',
+        #'SOAP-ENC': SOAP.ENC,
+        #'ZSI': ZSI_SCHEMA_URI,
+        #'xsd': SCHEMA.BASE,
+        #'xsi': SCHEMA.BASE + '-instance',
 }
 
 class SoapWriter:

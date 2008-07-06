@@ -26,8 +26,7 @@ if __name__ == '__main__':
     binding = Binding(url=WS_URL, sig_handler=signatureHandler)
     echoRequest = EchoRequestWrapper('Hello world!')
     try:
-        binding.Send(None, 'echo', echoRequest,
-                     encodingStyle='http://www.w3.org/2001/12/soap-encoding')
+        binding.Send(None, 'echo', echoRequest)
         response = binding.Receive(EchoResponseWrapper())
         print 'Got back "%s"' % response._message
     except socket.error, (errorNo, errorMessage):

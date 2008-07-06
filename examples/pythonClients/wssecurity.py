@@ -41,17 +41,22 @@ class SignatureHandler(object):
     def _appendSecurityElement(self, soapWriter):
         """Creates and appends the <Security> element"""
 
+        # Set namespace attributes in the SOAP header
+        soapWriter._header.setNamespaceAttribute('wsse', OASIS.WSSE)
+        soapWriter._header.setNamespaceAttribute('wsu', OASIS.UTILITY)
+        soapWriter._header.setNamespaceAttribute('ds', DSIG.BASE)
+
         wsseSecurityElement = soapWriter._header.createAppendElement(OASIS.WSSE, 'Security')
         wsseSecurityElement.setNamespaceAttribute('wsse', OASIS.WSSE)
-        wsseSecurityElement.node.setAttribute('SOAP-ENV:mustUnderstand', '1')
+        wsseSecurityElement.node.setAttribute('SOAP-ENV:mustUnderstand', 'true')
 
         # Add references to the message body
         soapWriter.body.setNamespaceAttribute('wsu', OASIS.UTILITY)
         soapWriter.body.node.setAttribute('wsu:Id', 'body')
 
         self._appendBinarySecurityTokenElement(wsseSecurityElement)
-        self._appendTimestampElement(wsseSecurityElement)
         self._appendAndComputeSignatureElement(soapWriter, wsseSecurityElement)
+        self._appendTimestampElement(wsseSecurityElement)
 
 
     def _appendBinarySecurityTokenElement(self, wsseSecurityElement):
@@ -60,6 +65,7 @@ class SignatureHandler(object):
 
         x509Cert = self._loadCertificate()
         binarySecurityTokenElement = wsseSecurityElement.createAppendElement(OASIS.WSSE, 'BinarySecurityToken')
+        binarySecurityTokenElement.setNamespaceAttribute('wsu', OASIS.UTILITY)
         binarySecurityTokenElement.node.setAttribute('EncodingType', OASIS.X509TOKEN.Base64Binary)
         binarySecurityTokenElement.node.setAttribute('ValueType', OASIS.X509TOKEN.X509 + 'v3')
         binarySecurityTokenElement.node.setAttribute('wsu:Id', 'binaryToken')
@@ -85,6 +91,7 @@ class SignatureHandler(object):
         # Signature
         signatureElement = wsseSecurityElement.createAppendElement(DSIG.BASE, 'Signature')
         signatureElement.setNamespaceAttribute('ds', DSIG.BASE)
+        signatureElement.node.setAttribute('Id', 'Signature')
 
         # Signature -> SignedInfo
         signedInfoElement = signatureElement.createAppendElement(DSIG.BASE, 'SignedInfo')
@@ -97,8 +104,21 @@ class SignatureHandler(object):
         signatureMethodElement = signedInfoElement.createAppendElement(DSIG.BASE, 'SignatureMethod')
         signatureMethodElement.node.setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#dsa-sha1')
 
-        # Signature -> SignatureValue (the actual value will be computed later on)
+        # Get referenced nodes and add a <Reference> for each
+        referencedNodes = self._getReferencedNodes(soapWriter)
+
+        for node in referencedNodes:
+            uri = u'#' + node.attributes[(OASIS.UTILITY, 'Id')].value
+
+            # Only sign the body
+            if uri is u'#body':
+                canonicalizedReference = Canonicalize(node, unsuppressedPrefixes=None)
+                digestValue = base64.b64encode(sha1(canonicalizedReference).digest())
+                self._appendReferenceElement(signedInfoElement, uri, digestValue)
+
+        # Signature -> SignatureValue
         signatureValueElement = signatureElement.createAppendElement(DSIG.BASE, 'SignatureValue')
+        self._computeAndStoreSignature(soapWriter, signatureValueElement)
 
         # Signature -> KeyInfo
         keyInfoElement = signatureElement.createAppendElement(DSIG.BASE, 'KeyInfo')
@@ -113,18 +133,6 @@ class SignatureHandler(object):
         referenceElement = securityTokenReferenceElement.createAppendElement(OASIS.WSSE, 'Reference')
         referenceElement.node.setAttribute('URI', '#binaryToken')
         referenceElement.node.setAttribute('ValueType', OASIS.X509TOKEN.X509 + 'v3')
-
-        # Get referenced nodes and add a <Reference> for each one
-        referencedNodes = self._getReferencedNodes(soapWriter)
-
-        for node in referencedNodes:
-            uri = u'#' + node.attributes[(OASIS.UTILITY, 'Id')].value
-            canonicalizedReference = Canonicalize(node, unsuppressedPrefixes=None)
-            digestValue = base64.encodestring(sha1(canonicalizedReference).digest()).strip()
-            self._appendReferenceElement(signedInfoElement, uri, digestValue)
-
-        self._computeAndStoreSignature(soapWriter, signatureValueElement)
-
 
     def _getReferencedNodes(self, soapWriter):
         """Looks for nodes to be signed"""
@@ -205,11 +213,6 @@ class SignatureHandler(object):
 
     def sign(self, soapWriter):
         """Signs outgoing requests"""
-
-        # Set namespace attributes
-        soapWriter._header.setNamespaceAttribute('wsse', OASIS.WSSE)
-        soapWriter._header.setNamespaceAttribute('wsu', OASIS.UTILITY)
-        soapWriter._header.setNamespaceAttribute('ds', DSIG.BASE)
 
         self._appendSecurityElement(soapWriter)
 
