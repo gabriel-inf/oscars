@@ -277,14 +277,14 @@ class _Binding:
         request_uri = _get_postvalue_from_absoluteURI(url)
         self.h.putrequest("POST", request_uri)
         self.h.putheader("Content-Length", "%d" % len(soapdata))
-        self.h.putheader("Content-Type", 'text/xml; charset=utf-8')
+        self.h.putheader("Content-Type", 'application/xml; charset=utf-8')
         self.__addcookies()
 
         for header,value in headers.items():
             self.h.putheader(header, value)
 
-        SOAPActionValue = '"%s"' % (soapaction or self.soapaction)
         # Fixes http://wso2.org/library/559
+        #SOAPActionValue = '"%s"' % (soapaction or self.soapaction)
         #self.h.putheader("SOAPAction", SOAPActionValue)
         if self.auth_style & AUTH.httpbasic:
             val = _b64_encode(self.auth_user + ':' + self.auth_pass) \
@@ -382,7 +382,8 @@ class _Binding:
         if self.ps: return 1
         self.ReceiveRaw()
         mimetype = self.reply_headers.type
-        return mimetype == 'text/xml'
+        return mimetype == 'text/xml' or \
+               mimetype == 'application/xml'
 
     def ReceiveSOAP(self, readerclass=None, **kw):
         '''Get back a SOAP message.
@@ -390,7 +391,7 @@ class _Binding:
         if self.ps: return self.ps
         if not self.IsSOAP():
             raise TypeError(
-                'Response is "%s", not "text/xml"' % self.reply_headers.type)
+                'Response is "%s", not "text/xml" or "application/xml"' % self.reply_headers.type)
         if len(self.data) == 0:
             raise TypeError('Received empty response')
 

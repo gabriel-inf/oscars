@@ -112,7 +112,7 @@ class SignatureHandler(object):
 
             # Only sign the body
             if uri is u'#body':
-                canonicalizedReference = Canonicalize(node, unsuppressedPrefixes=None)
+                canonicalizedReference = Canonicalize(node, unsuppressedPrefixes=['SOAP-ENV', 'wsu'])
                 digestValue = base64.b64encode(sha1(canonicalizedReference).digest())
                 self._appendReferenceElement(signedInfoElement, uri, digestValue)
 
