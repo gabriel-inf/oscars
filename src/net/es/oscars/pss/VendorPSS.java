@@ -29,7 +29,6 @@ public class VendorPSS implements PSS {
 
     private Logger log;
     private String dbname;
-    private LSPData lspData;
     private boolean allowLSP;
     private static String staticAllowLSP;
     private OSCARSCore core;
@@ -45,7 +44,6 @@ public class VendorPSS implements PSS {
                 commonProps.getProperty("allowLSP").equals("1") ? true : false;
         }
         this.dbname = dbname;
-        this.lspData = new LSPData(dbname);
         this.core = OSCARSCore.getInstance();
     }
 
@@ -59,6 +57,7 @@ public class VendorPSS implements PSS {
      */
     public String createPath(Reservation resv) throws PSSException {
 
+        LSPData lspData = new LSPData(dbname);
 
 
         String forwardRouterType = "";
@@ -71,13 +70,13 @@ public class VendorPSS implements PSS {
 
         this.log.info("createPath.start");
         Path path = resv.getPath();
-        this.lspData.setPathVars(path.getPathElem());
-        String ingressNodeId = this.lspData.getIngressLink().getPort().getNode().getTopologyIdent();
-        String egressNodeId = this.lspData.getEgressLink().getPort().getNode().getTopologyIdent();
+        lspData.setPathVars(path.getPathElem());
+        String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
+        String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 
 
         this.log.info("Getting forward router type");
-        String sysDescr = this.getRouterType(this.lspData.getIngressLink());
+        String sysDescr = this.getRouterType(lspData.getIngressLink());
 
         if (sysDescr.contains("Juniper")) {
             this.log.info("Creating Juniper-style forward path");
@@ -93,7 +92,7 @@ public class VendorPSS implements PSS {
         // reverse path setup needed if layer 2
         if (layer2Data != null) {
             doReverse = true;
-            sysDescr = this.getRouterType(this.lspData.getEgressLink());
+            sysDescr = this.getRouterType(lspData.getEgressLink());
             if (sysDescr.contains("Juniper")) {
                 this.log.info("Creating Juniper-style reverse path");
                 reverseRouterType = "jnx";
@@ -117,7 +116,7 @@ public class VendorPSS implements PSS {
             fwdJobDetail.setDurability(true);
             JobDataMap fwdJobDataMap = new JobDataMap();
             fwdJobDataMap.put("reservation", resv);
-            fwdJobDataMap.put("lspData", this.lspData);
+            fwdJobDataMap.put("lspData", lspData);
             fwdJobDataMap.put("direction", "forward");
             fwdJobDataMap.put("routerType", forwardRouterType);
             fwdJobDetail.setJobDataMap(fwdJobDataMap);
@@ -129,7 +128,7 @@ public class VendorPSS implements PSS {
                 rvsJobDetail.setDurability(true);
                 JobDataMap rvsJobDataMap = new JobDataMap();
                 rvsJobDataMap.put("reservation", resv);
-                rvsJobDataMap.put("lspData", this.lspData);
+                rvsJobDataMap.put("lspData", lspData);
                 rvsJobDataMap.put("direction", "reverse");
                 rvsJobDataMap.put("routerType", reverseRouterType);
                 rvsJobDetail.setJobDataMap(rvsJobDataMap);
@@ -192,18 +191,19 @@ public class VendorPSS implements PSS {
     public String refreshPath(Reservation resv) throws PSSException {
 
         String status = null;
+        LSPData lspData = new LSPData(dbname);
 
         Path path = resv.getPath();
-        this.lspData.setPathVars(path.getPathElem());
-        String sysDescr = this.getRouterType(this.lspData.getIngressLink());
+        lspData.setPathVars(path.getPathElem());
+        String sysDescr = this.getRouterType(lspData.getIngressLink());
         // when Juniper status works this will be sufficient for layer 2
         // since both directions need to be up
         if (sysDescr.contains("Juniper")) {
             JnxLSP jnxLSP = new JnxLSP(this.dbname);
-            status = jnxLSP.refreshPath(resv, this.lspData);
+            status = jnxLSP.refreshPath(resv, lspData);
         } else if (sysDescr.contains("Cisco")) {
             LSP lsp = new LSP(this.dbname);
-            status = lsp.refreshPath(resv, this.lspData);
+            status = lsp.refreshPath(resv, lspData);
         } else {
             throw new PSSException(
                 "unable to perform circuit refresh for router of type " +
@@ -221,7 +221,9 @@ public class VendorPSS implements PSS {
      * @throws PSSException
      */
     public String teardownPath(Reservation resv) throws PSSException {
+        this.log.info("teardownPath.start");
 
+        LSPData lspData = new LSPData(dbname);
 
         String forwardRouterType = "";
         String reverseRouterType = "";
@@ -231,15 +233,14 @@ public class VendorPSS implements PSS {
         // for Cisco circuit set up
         LSP ciscoLSP = null;
 
-        this.log.info("createPath.start");
         Path path = resv.getPath();
-        this.lspData.setPathVars(path.getPathElem());
-        String ingressNodeId = this.lspData.getIngressLink().getPort().getNode().getTopologyIdent();
-        String egressNodeId = this.lspData.getEgressLink().getPort().getNode().getTopologyIdent();
+        lspData.setPathVars(path.getPathElem());
+        String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
+        String egressNodeId = lspData.getEgressLink().getPort().getNode().getTopologyIdent();
 
 
         this.log.info("Getting forward router type");
-        String sysDescr = this.getRouterType(this.lspData.getIngressLink());
+        String sysDescr = this.getRouterType(lspData.getIngressLink());
 
         if (sysDescr.contains("Juniper")) {
             this.log.info("Creating Juniper-style forward path");
@@ -255,7 +256,7 @@ public class VendorPSS implements PSS {
         // reverse path setup needed if layer 2
         if (layer2Data != null) {
             doReverse = true;
-            sysDescr = this.getRouterType(this.lspData.getEgressLink());
+            sysDescr = this.getRouterType(lspData.getEgressLink());
             if (sysDescr.contains("Juniper")) {
                 this.log.info("Creating Juniper-style reverse path");
                 reverseRouterType = "jnx";
@@ -278,7 +279,7 @@ public class VendorPSS implements PSS {
             fwdJobDetail.setDurability(true);
             JobDataMap fwdJobDataMap = new JobDataMap();
             fwdJobDataMap.put("reservation", resv);
-            fwdJobDataMap.put("lspData", this.lspData);
+            fwdJobDataMap.put("lspData", lspData);
             fwdJobDataMap.put("direction", "forward");
             fwdJobDataMap.put("routerType", forwardRouterType);
             fwdJobDetail.setJobDataMap(fwdJobDataMap);
@@ -290,7 +291,7 @@ public class VendorPSS implements PSS {
                 rvsJobDetail.setDurability(true);
                 JobDataMap rvsJobDataMap = new JobDataMap();
                 rvsJobDataMap.put("reservation", resv);
-                rvsJobDataMap.put("lspData", this.lspData);
+                rvsJobDataMap.put("lspData", lspData);
                 rvsJobDataMap.put("direction", "reverse");
                 rvsJobDataMap.put("routerType", reverseRouterType);
                 rvsJobDetail.setJobDataMap(rvsJobDataMap);
