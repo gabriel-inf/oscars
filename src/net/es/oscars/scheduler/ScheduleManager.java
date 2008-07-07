@@ -53,7 +53,7 @@ public class ScheduleManager {
 
     @SuppressWarnings("unchecked")
     public void processQueue() {
-        this.log.info("processQueue.start");
+        this.log.debug("processQueue.start");
         try {
             this.scheduler.standby();
 
@@ -97,7 +97,7 @@ public class ScheduleManager {
             this.log.error("Scheduler exception", ex);
         }
 
-        this.log.info("processQueue.end");
+        this.log.debug("processQueue.end");
     }
 
 

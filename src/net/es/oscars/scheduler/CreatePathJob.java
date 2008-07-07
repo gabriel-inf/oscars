@@ -15,10 +15,17 @@ public class CreatePathJob extends ChainingJob  implements Job {
         String gri;
         if (resv != null) {
             gri = (String) resv.getGlobalReservationId();
+            this.log.debug("gri is: "+gri);
         } else {
-            gri = "unknown gri!";
+            this.log.error("No reservation!");
+            return;
         }
-        this.log.debug("gri is: "+gri);
+
+
+
+
+
+
         try {
             Thread.sleep(10000);
             super.execute(context);

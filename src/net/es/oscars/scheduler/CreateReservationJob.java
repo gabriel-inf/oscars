@@ -9,7 +9,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
-        this.log.info("CreateReservationJob.start name:"+context.getJobDetail().getFullName());
+        this.log.debug("CreateReservationJob.start name:"+context.getJobDetail().getFullName());
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         Reservation resv = (Reservation) dataMap.get("reservation");
         String gri;
@@ -27,7 +27,7 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         }
 
 
-        this.log.info("CreateReservationJob.end");
+        this.log.debug("CreateReservationJob.end");
     }
 
 }

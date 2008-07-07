@@ -9,12 +9,12 @@ public class ProcessQueueJob implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
 
-        this.log.info("processQueueJob.start");
+        this.log.debug("processQueueJob.start");
         this.log = Logger.getLogger(this.getClass());
         OSCARSCore core = OSCARSCore.getInstance();
         ScheduleManager schedMgr = core.getScheduleManager();
         schedMgr.processQueue();
-        this.log.info("processQueueJob.end");
+        this.log.debug("processQueueJob.end");
 
     }
 
