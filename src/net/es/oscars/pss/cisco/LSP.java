@@ -102,6 +102,8 @@ public class LSP {
         this.hm.put("lsp_reservation-priority",
              this.commonProps.getProperty("lsp_reservation-priority"));
 
+        this.hm.put("direction", direction);
+
         if (direction.equals("forward")) {
             // get IP associated with physical interface before egress
             ipaddr = lspData.getLastXfaceElem().getLink().getValidIpaddr();
@@ -394,7 +396,7 @@ public class LSP {
             throws IOException, PSSException {
 
         // create a temporary file for use by RANCID
-        String fname =  "/tmp/" + this.hm.get("resv-id");
+        String fname =  "/tmp/" + this.hm.get("resv-id")+"-"+this.hm.get("direction");
         File tmpFile = new File(fname);
         BufferedWriter outputStream =
             new BufferedWriter(new FileWriter(tmpFile));
