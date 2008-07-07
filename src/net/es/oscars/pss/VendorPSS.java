@@ -16,8 +16,7 @@ import net.es.oscars.bss.topology.*;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.pss.jnx.JnxLSP;
 import net.es.oscars.pss.cisco.LSP;
-import net.es.oscars.scheduler.CreatePathJob;
-import net.es.oscars.scheduler.TeardownPathJob;
+import net.es.oscars.scheduler.*;
 
 /**
  * This class decides whether to configure Juniper or Cisco routers,
@@ -26,7 +25,7 @@ import net.es.oscars.scheduler.TeardownPathJob;
  *
  * @author David Robertson
  */
-public class VendorPSSFactory implements PSS {
+public class VendorPSS implements PSS {
 
     private Logger log;
     private String dbname;
@@ -35,7 +34,7 @@ public class VendorPSSFactory implements PSS {
     private static String staticAllowLSP;
     private OSCARSCore core;
 
-    public VendorPSSFactory(String dbname) {
+    public VendorPSS(String dbname) {
         this.log = Logger.getLogger(this.getClass());
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties commonProps = propHandler.getPropertyGroup("pss", true);
@@ -60,23 +59,11 @@ public class VendorPSSFactory implements PSS {
      */
     public String createPath(Reservation resv) throws PSSException {
 
-        try {
-            String gri = resv.getGlobalReservationId();
-            Scheduler sched = this.core.getScheduleManager().getScheduler();
-            String jobName = "pathsetup-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_CREATE", CreatePathJob.class);
-            this.log.debug("Adding job "+jobName);
-            jobDetail.setDurability(true);
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("reservation", resv);
-            jobDetail.setJobDataMap(jobDataMap);
-            sched.addJob(jobDetail, false);
-
-        } catch (SchedulerException ex) {
-            this.log.error("Scheduler exception", ex);
-        }
 
 
+        String forwardRouterType = "";
+        String reverseRouterType = "";
+        boolean doReverse = false;
         // for Juniper circuit set up
         JnxLSP jnxLSP = null;
         // for Cisco circuit set up
@@ -85,43 +72,84 @@ public class VendorPSSFactory implements PSS {
         this.log.info("createPath.start");
         Path path = resv.getPath();
         this.lspData.setPathVars(path.getPathElem());
-        this.log.info("to getRouterType");
+        String ingressNodeId = this.lspData.getIngressLink().getPort().getNode().getTopologyIdent();
+        String egressNodeId = this.lspData.getEgressLink().getPort().getNode().getTopologyIdent();
+
+
+        this.log.info("Getting forward router type");
         String sysDescr = this.getRouterType(this.lspData.getIngressLink());
+
         if (sysDescr.contains("Juniper")) {
             this.log.info("Creating Juniper-style forward path");
-            jnxLSP = new JnxLSP(this.dbname);
-            jnxLSP.createPath(resv, this.lspData, "forward");
+            forwardRouterType = "jnx";
         } else if (sysDescr.contains("Cisco")) {
             this.log.info("Creating Cisco-style forward path");
-            ciscoLSP = new LSP(this.dbname);
-            ciscoLSP.createPath(resv, this.lspData, "forward");
+            forwardRouterType = "cisco";
         } else {
-            throw new PSSException(
-                "unable to perform forward circuit set up for router of type " +
-                 sysDescr);
+            throw new PSSException("Unsupported router type " + sysDescr);
         }
+
         Layer2Data layer2Data = path.getLayer2Data();
-        // set up reverse path if layer 2
+        // reverse path setup needed if layer 2
         if (layer2Data != null) {
+            doReverse = true;
             sysDescr = this.getRouterType(this.lspData.getEgressLink());
             if (sysDescr.contains("Juniper")) {
                 this.log.info("Creating Juniper-style reverse path");
-                if (jnxLSP == null) {
-                    jnxLSP = new JnxLSP(this.dbname);
-                }
-                jnxLSP.createPath(resv, this.lspData, "reverse");
+                reverseRouterType = "jnx";
             } else if (sysDescr.contains("Cisco")) {
                 this.log.info("Creating Cisco-style reverse path");
-                if (ciscoLSP == null) {
-                    ciscoLSP = new LSP(this.dbname);
-                }
-                ciscoLSP.createPath(resv, this.lspData, "reverse");
+                reverseRouterType = "cisco";
             } else {
-                throw new PSSException(
-                    "couldn't do reverse circuit set up for router of type " +
-                     sysDescr);
+                throw new PSSException("Unsupported router type " + sysDescr);
             }
         }
+
+
+
+        try {
+            String gri = resv.getGlobalReservationId();
+            Scheduler sched = this.core.getScheduleManager().getScheduler();
+
+            String fwdJobName = "createpath-forward-"+forwardRouterType+"-"+gri;
+            JobDetail fwdJobDetail = new JobDetail(fwdJobName, "SERIALIZE_NODECONFIG_"+ingressNodeId, VendorCreatePathJob.class);
+            this.log.debug("Adding job "+fwdJobName);
+            fwdJobDetail.setDurability(true);
+            JobDataMap fwdJobDataMap = new JobDataMap();
+            fwdJobDataMap.put("reservation", resv);
+            fwdJobDataMap.put("lspData", this.lspData);
+            fwdJobDataMap.put("direction", "forward");
+            fwdJobDataMap.put("routerType", forwardRouterType);
+            fwdJobDetail.setJobDataMap(fwdJobDataMap);
+            sched.addJob(fwdJobDetail, false);
+            if (doReverse) {
+                String rvsJobName = "createpath-reverse-"+reverseRouterType+"-"+gri;
+                JobDetail rvsJobDetail = new JobDetail(rvsJobName, "SERIALIZE_NODECONFIG_"+egressNodeId, VendorCreatePathJob.class);
+                this.log.debug("Adding job "+rvsJobName);
+                rvsJobDetail.setDurability(true);
+                JobDataMap rvsJobDataMap = new JobDataMap();
+                rvsJobDataMap.put("reservation", resv);
+                rvsJobDataMap.put("lspData", this.lspData);
+                rvsJobDataMap.put("direction", "reverse");
+                rvsJobDataMap.put("routerType", reverseRouterType);
+                rvsJobDetail.setJobDataMap(rvsJobDataMap);
+                sched.addJob(rvsJobDetail, false);
+            }
+
+        } catch (SchedulerException ex) {
+            this.log.error("Scheduler exception", ex);
+        }
+
+
+        // TODO: temp fix
+        if (true) {
+            resv.setStatus("ACTIVE");
+            return resv.getStatus();
+        }
+
+
+        // TODO: add a verify path setup job
+
         // don't attempt to get circuit status if not configuring
         if (!this.allowLSP) {
             return resv.getStatus();
@@ -193,58 +221,96 @@ public class VendorPSSFactory implements PSS {
      * @throws PSSException
      */
     public String teardownPath(Reservation resv) throws PSSException {
+
+
+        String forwardRouterType = "";
+        String reverseRouterType = "";
+        boolean doReverse = false;
+        // for Juniper circuit set up
+        JnxLSP jnxLSP = null;
+        // for Cisco circuit set up
+        LSP ciscoLSP = null;
+
+        this.log.info("createPath.start");
+        Path path = resv.getPath();
+        this.lspData.setPathVars(path.getPathElem());
+        String ingressNodeId = this.lspData.getIngressLink().getPort().getNode().getTopologyIdent();
+        String egressNodeId = this.lspData.getEgressLink().getPort().getNode().getTopologyIdent();
+
+
+        this.log.info("Getting forward router type");
+        String sysDescr = this.getRouterType(this.lspData.getIngressLink());
+
+        if (sysDescr.contains("Juniper")) {
+            this.log.info("Creating Juniper-style forward path");
+            forwardRouterType = "jnx";
+        } else if (sysDescr.contains("Cisco")) {
+            this.log.info("Creating Cisco-style forward path");
+            forwardRouterType = "cisco";
+        } else {
+            throw new PSSException("Unsupported router type " + sysDescr);
+        }
+
+        Layer2Data layer2Data = path.getLayer2Data();
+        // reverse path setup needed if layer 2
+        if (layer2Data != null) {
+            doReverse = true;
+            sysDescr = this.getRouterType(this.lspData.getEgressLink());
+            if (sysDescr.contains("Juniper")) {
+                this.log.info("Creating Juniper-style reverse path");
+                reverseRouterType = "jnx";
+            } else if (sysDescr.contains("Cisco")) {
+                this.log.info("Creating Cisco-style reverse path");
+                reverseRouterType = "cisco";
+            } else {
+                throw new PSSException("Unsupported router type " + sysDescr);
+            }
+        }
+
+
         try {
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
-            String jobName = "teardown-"+gri;
-            JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_TEARDOWN", TeardownPathJob.class);
-            this.log.debug("Adding job "+jobName);
-            jobDetail.setDurability(true);
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("reservation", resv);
-            jobDetail.setJobDataMap(jobDataMap);
-            sched.addJob(jobDetail, false);
+
+            String fwdJobName = "teardownpath-forward-"+forwardRouterType+"-"+gri;
+            JobDetail fwdJobDetail = new JobDetail(fwdJobName, "SERIALIZE_NODECONFIG_"+ingressNodeId, VendorTeardownPathJob.class);
+            this.log.debug("Adding job "+fwdJobName);
+            fwdJobDetail.setDurability(true);
+            JobDataMap fwdJobDataMap = new JobDataMap();
+            fwdJobDataMap.put("reservation", resv);
+            fwdJobDataMap.put("lspData", this.lspData);
+            fwdJobDataMap.put("direction", "forward");
+            fwdJobDataMap.put("routerType", forwardRouterType);
+            fwdJobDetail.setJobDataMap(fwdJobDataMap);
+            sched.addJob(fwdJobDetail, false);
+            if (doReverse) {
+                String rvsJobName = "teardownpath-reverse-"+reverseRouterType+"-"+gri;
+                JobDetail rvsJobDetail = new JobDetail(rvsJobName, "SERIALIZE_NODECONFIG_"+egressNodeId, VendorTeardownPathJob.class);
+                this.log.debug("Adding job "+rvsJobName);
+                rvsJobDetail.setDurability(true);
+                JobDataMap rvsJobDataMap = new JobDataMap();
+                rvsJobDataMap.put("reservation", resv);
+                rvsJobDataMap.put("lspData", this.lspData);
+                rvsJobDataMap.put("direction", "reverse");
+                rvsJobDataMap.put("routerType", reverseRouterType);
+                rvsJobDetail.setJobDataMap(rvsJobDataMap);
+                sched.addJob(rvsJobDetail, false);
+            }
 
         } catch (SchedulerException ex) {
             this.log.error("Scheduler exception", ex);
         }
 
 
-        // for Juniper circuit set up
-        JnxLSP jnxLSP = null;
-        // for Cisco circuit set up
-        LSP ciscoLSP = null;
+        // TODO: temp fix
+        if (true) {
+            resv.setStatus("FINISHED");
+            return resv.getStatus();
+        }
 
-        Path path = resv.getPath();
-        this.lspData.setPathVars(path.getPathElem());
-        String sysDescr = this.getRouterType(this.lspData.getIngressLink());
-        if (sysDescr.contains("Juniper")) {
-            jnxLSP = new JnxLSP(this.dbname);
-            jnxLSP.teardownPath(resv, this.lspData, "forward");
-        } else if (sysDescr.contains("Cisco")) {
-            ciscoLSP = new LSP(this.dbname);
-            ciscoLSP.teardownPath(resv, this.lspData, "forward");
-        } else {
-            throw new PSSException(
-                "unable to perform circuit teardown for router of type " +
-                 sysDescr);
-        }
-        Layer2Data layer2Data = path.getLayer2Data();
-        // tear down reverse path if layer 2
-        if (layer2Data != null) {
-            sysDescr = this.getRouterType(this.lspData.getEgressLink());
-            if (sysDescr.contains("Juniper")) {
-                jnxLSP = new JnxLSP(this.dbname);
-                jnxLSP.teardownPath(resv, this.lspData, "reverse");
-            } else if (sysDescr.contains("Cisco")) {
-                ciscoLSP = new LSP(this.dbname);
-                ciscoLSP.teardownPath(resv, this.lspData, "reverse");
-            } else {
-                throw new PSSException(
-                    "unable to perform circuit teardown for router of type " +
-                     sysDescr);
-            }
-        }
+
+        // TODO: replace this with a status check job
+
         // don't attempt to get circuit status if not configuring
         if (!this.allowLSP) {
             return resv.getStatus();
@@ -259,8 +325,7 @@ public class VendorPSSFactory implements PSS {
         }
         if (active) {
             resv.setStatus("FAILED");
-            throw new PSSException("circuit teardown for " +
-                                   resv.getGlobalReservationId() + " failed");
+            throw new PSSException("circuit teardown for " + resv.getGlobalReservationId() + " failed");
         }
         return resv.getStatus();
     }

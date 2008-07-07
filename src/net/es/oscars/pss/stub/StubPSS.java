@@ -38,7 +38,7 @@ public class StubPSS implements PSS{
      * @throws PSSException
      */
     public String createPath(Reservation resv) throws PSSException{
-        this.log.info("vlsr.create.start");
+        this.log.info("stub.create.start");
         resv.setStatus("ACTIVE");
         try {
             String gri = resv.getGlobalReservationId();
@@ -56,7 +56,7 @@ public class StubPSS implements PSS{
             this.log.error("Scheduler exception", ex);
         }
 
-        this.log.info("vlsr.create.end");
+        this.log.info("stub.create.end");
 
         return resv.getStatus();
     }
@@ -68,8 +68,8 @@ public class StubPSS implements PSS{
      * @throws PSSException
      */
     public String refreshPath(Reservation resv) throws PSSException{
-        this.log.info("vlsr.refresh.start");
-        this.log.info("vlsr.refresh.end");
+        this.log.info("stub.refresh.start");
+        this.log.info("stub.refresh.end");
 
         return resv.getStatus();
     }
@@ -81,7 +81,7 @@ public class StubPSS implements PSS{
      * @throws PSSException
      */
     public String teardownPath(Reservation resv) throws PSSException{
-        this.log.info("vlsr.teardown.start");
+        this.log.info("stub.teardown.start");
         try {
             String gri = resv.getGlobalReservationId();
             Scheduler sched = this.core.getScheduleManager().getScheduler();
@@ -110,7 +110,7 @@ public class StubPSS implements PSS{
             resv.setStatus("PENDING");
         }
 
-        this.log.info("vlsr.teardown.end");
+        this.log.info("stub.teardown.end");
 
         return resv.getStatus();
     }

@@ -53,7 +53,7 @@ public class LSP {
     public void createPath(Reservation resv, LSPData lspData,
                              String direction) throws PSSException {
 
-        this.log.info("create.start");
+        this.log.info("createPath.start");
 
         // only used if an explicit path was given
         List<String> hops = null;
@@ -146,6 +146,7 @@ public class LSP {
             this.log.info("Circuit set up done");
             resv.setStatus("ACTIVE");
         }
+        this.log.info("createPath.end");
     }
 
     /**
@@ -218,6 +219,7 @@ public class LSP {
     public void teardownPath(Reservation resv, LSPData lspData,
                              String direction)
             throws PSSException {
+        this.log.info("teardownPath.start");
 
         String newStatus = null;
 
@@ -261,6 +263,7 @@ public class LSP {
             // will be reset if turned out teardown failed
             resv.setStatus(newStatus);
         }
+        this.log.info("teardownPath.end");
     }
 
     /**

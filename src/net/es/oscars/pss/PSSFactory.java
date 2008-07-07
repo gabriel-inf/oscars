@@ -25,7 +25,7 @@ public class PSSFactory{
             return new VlsrPSS();
         } else if (pssType.equals("vendor")) {
             // this class chooses between configuring Cisco's or Juniper's
-            return new VendorPSSFactory(dbname);
+            return new VendorPSS(dbname);
         } else if (pssType.equals("stub")) {
             return new StubPSS();
         }

@@ -64,13 +64,14 @@ public class JnxLSP {
     public void createPath(Reservation resv, LSPData lspData,
                              String direction) throws PSSException {
 
+        this.log.info("jnx.createPath.start");
+
         // only used if an explicit path was given
         List<String> hops = null;
         String param = null;
 
         if (lspData == null) {
-            throw new PSSException(
-                    "no path related configuration data present");
+            throw new PSSException("no path related configuration data present");
         }
         if ((direction == null) || (!direction.equals("forward") &&
                                     !direction.equals("reverse"))) {
@@ -90,8 +91,7 @@ public class JnxLSP {
             }
             */
             if (lspData.getIngressLink() == null) {
-                throw new PSSException(
-                        "createPath called before getting path endpoints");
+                throw new PSSException("createPath called before getting path endpoints");
             }
             // get VLAN tag and loopbacks
             lspData.setLayer2PathInfo(true);
@@ -198,6 +198,7 @@ public class JnxLSP {
         if ((layer3Data != null) || direction.equals("reverse")) {
             resv.setStatus("ACTIVE");
         }
+        this.log.info("jnx.createPath.end");
     }
 
     /**
@@ -223,11 +224,11 @@ public class JnxLSP {
     public void teardownPath(Reservation resv, LSPData lspData,
                              String direction) throws PSSException {
 
+        this.log.info("jnx.teardownPath.start");
         String newStatus = null;
 
         if (lspData == null) {
-            throw new PSSException(
-                    "no path related configuration data present");
+            throw new PSSException("no path related configuration data present");
         }
         if ((direction == null) || (!direction.equals("forward") &&
                                     !direction.equals("reverse"))) {
@@ -298,6 +299,7 @@ public class JnxLSP {
             }
             resv.setStatus(newStatus);
         }
+        this.log.info("jnx.teardownPath.end");
     }
 
     /**
