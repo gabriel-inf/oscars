@@ -21,9 +21,9 @@
         <!-- connection pool section -->
         <property name="hibernate.c3p0.min_size">5</property>
         <property name="hibernate.c3p0.max_size">20</property>
-	<property name="hibernate.c3p0.timeout">300</property>
-	<property name="hibernate.c3p0.max_statements">50</property>
-	<property name="hibernate.c3p0.idle_test_period">3000</property>
+    <property name="hibernate.c3p0.timeout">300</property>
+    <property name="hibernate.c3p0.max_statements">50</property>
+    <property name="hibernate.c3p0.idle_test_period">3000</property>
 
         <!-- miscellaneous settings section -->
         <!-- enable batch updates even for versioned data -->
@@ -36,9 +36,10 @@
         <property name="cache.provider_class">
                   org.hibernate.cache.HashtableCacheProvider</property>
 
+<!--
         <mapping resource="net/es/oscars/bss/History.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/Job.hbm.xml"/>
-
+-->
         <mapping resource="net/es/oscars/bss/Reservation.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/IdSequence.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/Token.hbm.xml"/>
@@ -57,6 +58,6 @@
         <mapping resource="net/es/oscars/bss/topology/L2SwitchingCapabilityData.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/InterdomainRoute.hbm.xml"/>
         <mapping resource="net/es/oscars/bss/topology/RouteElem.hbm.xml"/>
-	<mapping resource="net/es/oscars/bss/topology/Site.hbm.xml"/>
+    <mapping resource="net/es/oscars/bss/topology/Site.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>
