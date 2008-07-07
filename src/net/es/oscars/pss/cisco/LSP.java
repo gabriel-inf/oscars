@@ -241,6 +241,7 @@ public class LSP {
         lspData.setLayer2PathInfo(false);
         // Set up parameters for tearing down an LSP circuit.
         this.hm = new HashMap<String, String>();
+        this.hm.put("direction", direction);
         this.fillCommonParams(resv, lspData.getVlanTag());
         Link ingressLink = lspData.getIngressLink();
         if (direction.equals("forward")) {
