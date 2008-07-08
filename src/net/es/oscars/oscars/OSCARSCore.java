@@ -278,7 +278,7 @@ public class OSCARSCore {
             aaa = HibernateUtil.getSessionFactory(this.aaaDbName).getCurrentSession();
         }
         if (aaa == null || !aaa.isOpen()) {
-            this.log.error("BSS session is still closed!");
+            this.log.error("AAA session is still closed!");
         }
         return aaa;
     }
