@@ -1,15 +1,7 @@
 package net.es.oscars.pss.jnx;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
-
-import javax.xml.*;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamException;
 
 import org.jdom.*;
 import org.jdom.input.*;
@@ -100,7 +92,7 @@ public class JnxLSP {
             throw new PSSException("no layer 2 or layer 3 data provided");
         }
         // Create map for filling in template.
-        HashMap hm = new HashMap<String, String>();
+        HashMap<String, String> hm = new HashMap<String, String>();
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
@@ -217,7 +209,7 @@ public class JnxLSP {
         if (lspData == null) {
             throw new PSSException("no path related configuration data present");
         }
-        if ((direction == null) || (!direction.equals("forwaurn:ogf:network:domain=es.net:node=wash-sdn1:port=TenGigabitEthernet4/1:link=Trd") &&
+        if ((direction == null) || (!direction.equals("forward") &&
                                     !direction.equals("reverse"))) {
             throw new PSSException("illegal circuit direction");
         }
@@ -239,7 +231,7 @@ public class JnxLSP {
             throw new PSSException("no layer 2 or layer 3 data provided");
         }
         // Create map for filling in template.
-        HashMap hm = new HashMap<String, String>();
+        HashMap<String, String> hm = new HashMap<String, String>();
         String circuitStr = "oscars_" + resv.getGlobalReservationId();
         // "." is illegal character in resv-id parameter
         String circuitName = circuitStr.replaceAll("\\.", "_");
