@@ -266,14 +266,14 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <!-- Note that this requires that Axis2 has already been deployed. -->
     <target name="deploylibs" description="copy all libraries used by the aar and war to shared/lib">
         <copy todir="${catalina.home}/shared/lib">
-            <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar"/>
+            <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" excludes="jaxen-1.1.1.jar" />
         </copy>
     </target>
     <target name="copyMailTemplates">
-	    <mkdir dir="${catalina.home}/shared/classes/server/mail_templates"/>
-	    <copy todir="${catalina.home}/shared/classes/server/mail_templates">
-	        <fileset dir="${defaultKeys}/server/mail_templates" includes="*.xml"/>
-	    </copy>
+        <mkdir dir="${catalina.home}/shared/classes/server/mail_templates"/>
+        <copy todir="${catalina.home}/shared/classes/server/mail_templates">
+            <fileset dir="${defaultKeys}/server/mail_templates" includes="*.xml"/>
+        </copy>
     </target>
     <target name="copydomain" if="domain.exists" depends="copyMailTemplates">
         <!-- Copy domain keys to repo -->
@@ -379,7 +379,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="test" depends="test.compile, testpkg, testESnet, testI2">
         <testng classpathref="test.path" groups="${groups}" suitename="${testsuite}" outputDir="${webapp.home}/test" listeners="net.es.oscars.ITestListener" haltOnFailure="true" verbose="2" parallel="methods" threadCount="8">
             <jvmarg value="-Djava.net.preferIPv4Stack=true"/>
-        	<jvmarg value="-Dlog4j.configuration=file:///${env.PWD}/test/log4j.test.properties"/> 
+            <jvmarg value="-Dlog4j.configuration=file:///${env.PWD}/test/log4j.test.properties"/>
             <jvmarg value="-Dcatalina.home=${catalina.home}"/>
             <!-- <jvmarg value="-Dapp=-test"/> -->
             <jvmarg value="-Dsuite=${testsuite}"/>
