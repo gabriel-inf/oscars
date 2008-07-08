@@ -102,7 +102,7 @@ class SignatureHandler(object):
 
         # Signature -> SignedInfo -> SignatureMethod
         signatureMethodElement = signedInfoElement.createAppendElement(DSIG.BASE, 'SignatureMethod')
-        signatureMethodElement.node.setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#dsa-sha1')
+        signatureMethodElement.node.setAttribute('Algorithm', DSIG.SIG_DSA_SHA1)
 
         # Get referenced nodes and add a <Reference> for each
         referencedNodes = self._getReferencedNodes(soapWriter)
@@ -111,7 +111,7 @@ class SignatureHandler(object):
             uri = u'#' + node.attributes[(OASIS.UTILITY, 'Id')].value
 
             # Only sign the body
-            if uri is u'#body':
+            if uri == u'#body':
                 canonicalizedReference = Canonicalize(node, unsuppressedPrefixes=['SOAP-ENV', 'wsu'])
                 digestValue = base64.b64encode(sha1(canonicalizedReference).digest())
                 self._appendReferenceElement(signedInfoElement, uri, digestValue)
@@ -217,7 +217,7 @@ class SignatureHandler(object):
         self._appendSecurityElement(soapWriter)
 
         # DEBUG: print the message before sending it
-        print str(soapWriter)
+        #print str(soapWriter)
 
 
     def verify(self, parsedSoap):

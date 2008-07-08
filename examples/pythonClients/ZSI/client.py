@@ -277,7 +277,7 @@ class _Binding:
         request_uri = _get_postvalue_from_absoluteURI(url)
         self.h.putrequest("POST", request_uri)
         self.h.putheader("Content-Length", "%d" % len(soapdata))
-        self.h.putheader("Content-Type", 'application/xml; charset=utf-8')
+        self.h.putheader("Content-Type", 'application/soap+xml; charset=utf-8')
         self.__addcookies()
 
         for header,value in headers.items():
@@ -383,7 +383,8 @@ class _Binding:
         self.ReceiveRaw()
         mimetype = self.reply_headers.type
         return mimetype == 'text/xml' or \
-               mimetype == 'application/xml'
+               mimetype == 'application/xml' or \
+               mimetype == 'application/soap+xml'
 
     def ReceiveSOAP(self, readerclass=None, **kw):
         '''Get back a SOAP message.
@@ -391,7 +392,7 @@ class _Binding:
         if self.ps: return self.ps
         if not self.IsSOAP():
             raise TypeError(
-                'Response is "%s", not "text/xml" or "application/xml"' % self.reply_headers.type)
+                'Response is "%s", not "text/xml", "application/xml" or "application/soap-xml"' % self.reply_headers.type)
         if len(self.data) == 0:
             raise TypeError('Received empty response')
 
