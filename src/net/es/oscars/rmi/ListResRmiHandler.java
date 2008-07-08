@@ -1,34 +1,29 @@
 package net.es.oscars.rmi;
 
 /**
- * Interface between rmi listReservatins call and reservationManager.listReservations
+ * Interface between rmi listReservations call and reservationManager.listReservations
  * 
  * @author Mary Thompson, David Robertson
  */
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.*;
 import org.hibernate.*;
-
 import net.es.oscars.aaa.*;
 import net.es.oscars.aaa.UserManager.*;
 import net.es.oscars.bss.*;
+import net.es.oscars.bss.topology.Layer2Data;
+import net.es.oscars.bss.topology.Layer3Data;
 import net.es.oscars.bss.topology.Link;
+import net.es.oscars.bss.topology.Path;
 import net.es.oscars.bss.topology.TopologyUtil;
-import net.es.oscars.notify.*;
-
-import net.es.oscars.PropHandler;
-import net.es.oscars.database.*;
-import net.es.oscars.interdomain.*;
 import net.es.oscars.oscars.*;
-import net.es.oscars.wsdlTypes.*;
-
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 
 public class ListResRmiHandler {
     private OSCARSCore core;
@@ -49,20 +44,34 @@ public class ListResRmiHandler {
         String methodName = "ListReservations";
         ReservationManager rm = core.getReservationManager();
 
-/* 
-        List<String> statuses = this.getStatuses(request);
-        List<String> vlans = this.getVlanTags(request);
-        String description = this.getDescription(request);
-        List<Link> inLinks = this.getLinks(request);
-        String startTimeStr = request.getParameter("startTimeSeconds");
-        String endTimeStr = request.getParameter("endTimeSeconds");
-        if ((startTimeStr != null) && !startTimeStr.equals("")) {
-            startTimeSeconds = Long.valueOf(startTimeStr.trim());
-        }
-        if ((endTimeStr != null) && !endTimeStr.equals("")) {
-            endTimeSeconds = Long.valueOf(endTimeStr.trim());
-        }
+        int numRowsReq =0;
+        Long startTimeSeconds = null;
+        Long endTimeSeconds = null;
+        List<String> statuses = this.getStatuses(inputMap);
+        List<String> vlans = this.getVlanTags(inputMap);
+        String description = this.getDescription(inputMap);
+        List<Link> inLinks = null;
         
+        List<Reservation> reservations = null;
+        if (inputMap.get("startTimeSeconds") != null) {
+            String startTimeStr = inputMap.get("startTimeSeconds")[0];
+            if ( !startTimeStr.equals("")) {
+                startTimeSeconds = Long.valueOf(startTimeStr.trim());
+            }
+        }
+        if (inputMap.get("endTimeSeconds") != null) {
+            String endTimeStr = inputMap.get("endTimeSeconds")[0];
+            if ( !endTimeStr.equals("")) {
+                endTimeSeconds = Long.valueOf(endTimeStr.trim());
+            }
+        }
+        String numRowsParam[] = inputMap.get("numRows");
+        if (numRowsParam != null) {
+            String numRowParam =numRowsParam[0].trim();
+            if (!numRowParam.equals("") && !numRowParam.equals("all")) {
+                numRowsReq = Integer.parseInt(numRowParam);
+            }
+        }
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
@@ -86,6 +95,7 @@ public class ListResRmiHandler {
         bss.beginTransaction();
         String errMessage = null;
         try {
+            inLinks = this.getLinks(inputMap);
             reservations =
                 rm.list(loginConstraint, institution, statuses, description, inLinks,
                         vlans, startTimeSeconds, endTimeSeconds);
@@ -105,7 +115,8 @@ public class ListResRmiHandler {
         }
 
 
-        result.put();
+        outputReservations(result, reservations, numRowsReq);
+        result.put("totalRowsReplace", "Total rows: " + reservations.size());
         result.put("status", "list reservations successful ");
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
@@ -113,20 +124,10 @@ public class ListResRmiHandler {
         bss.getTransaction().commit();
         this.log.info("ListReservations.end");
         this.log.debug("listReservations.end");
-        */
+
         return result;
     }
-/*
-    public String getLinkIds(HashMap<String, String[]>request) {
 
-        String linkList = request.get("linkIds");
-        if (linkList == null) {
-            // space needed for text area
-            linkList = " ";
-        }
-        return linkList;
-    }
-    */
 
     /**
      * Gets list of links to search for.  If a reservation's path includes
@@ -136,16 +137,20 @@ public class ListResRmiHandler {
      * @
      * @return list of links to send to BSS
      */
-/*
-    public List<Link> getLinks(HashMap<String, String[]> request) {
 
-       List<Link> inLinks = new ArrayList<Link>();
-        String linkList = this.getLinkIds(request).trim();
-        if (linkList.equals("")) {
+    public List<Link> getLinks(HashMap<String, String[]> request) throws BSSException {
+
+        List<Link> inLinks = new ArrayList<Link>();
+        String linkList;
+        String linkParam [] = request.get("linkIds");
+        if (linkParam != null) {
+            linkList = linkParam[0].trim();
+        } else {
             return inLinks;
         }
-        String[] linkIds = linkList.trim().split(" ");
+        String[] linkIds = linkList.split(" ");
         if (linkIds.length > 0) {
+            
             for (String s : linkIds) {
                 if (s != null && !s.trim().equals("")) {
                     Link link = null;
@@ -155,14 +160,15 @@ public class ListResRmiHandler {
                     } catch (BSSException ex) {
                         this.log.error("Could not get link for string: [" +
                                    s.trim()+"], error: ["+ex.getMessage()+"]");
-                    }
+                        throw new BSSException ("invalid link" + s.trim() );
+                    }                   
                 }
             }
         }
         
         return inLinks;
     }
-    */
+ 
 
     /**
      * Gets description search parameter and sets to blank field if empty.
@@ -222,5 +228,137 @@ public class ListResRmiHandler {
         }
         return vlanTags;
     }
+    /**
+     * Formats reservation data sent back by list request from the reservation
+     * manager into grid format that Dojo understands.
+     *
+     * @param outputMap map containing grid data
+     * @param reservations list of reservations satisfying search criteria
+     * @param request servlet request
+     */
+    public void
+        outputReservations(Map outputMap, List<Reservation> reservations,
+                           int numRowsReq) {
 
+        InetAddress inetAddress = null;
+        String gri = "";
+        String source = null;
+        String hostName = null;
+        String destination = null;
+
+        // TODO:  fix hard-wired database name
+        net.es.oscars.bss.Utils utils = new net.es.oscars.bss.Utils("bss");
+        ArrayList resvList = new ArrayList();
+        int rowsReturned = reservations.size();
+
+        if (numRowsReq != 0) {
+            if (numRowsReq < rowsReturned) {
+                rowsReturned = numRowsReq;
+            }
+        }
+        for (int i=0; i < rowsReturned; i++) {
+            Reservation resv = reservations.get(i);
+            Path path = resv.getPath();
+            String pathStr = utils.pathToString(path, false);
+            String localSrc = null;
+            String localDest = null;
+            if (pathStr != null) {
+                String[] hops = pathStr.trim().split("\n");
+                localSrc = hops[0];
+                localDest = hops[hops.length-1];
+            }
+            ArrayList resvEntry = new ArrayList();
+            gri = resv.getGlobalReservationId();
+            Layer3Data layer3Data = path.getLayer3Data();
+            Layer2Data layer2Data = path.getLayer2Data();
+            resvEntry.add(gri);
+            resvEntry.add(resv.getStatus());
+            Long mbps = resv.getBandwidth()/1000000;
+            String bandwidthField = mbps.toString() + "Mbps";
+            resvEntry.add(bandwidthField);
+            // entries are converted on the fly on the client to standard
+            // date and time format before the model's data is set
+            resvEntry.add(resv.getStartTime().toString());
+            if (layer2Data != null) {
+                resvEntry.add(this.abbreviate(layer2Data.getSrcEndpoint()));
+            } else if (layer3Data != null) {
+                source = layer3Data.getSrcHost();
+                try {
+                    inetAddress = InetAddress.getByName(source);
+                    hostName = inetAddress.getHostName();
+                    resvEntry.add(hostName);
+                } catch (UnknownHostException e) {
+                    resvEntry.add(source);
+                }
+            }
+            if (localSrc != null) {
+                if (layer2Data != null) {
+                    resvEntry.add(this.abbreviate(localSrc));
+                } else {
+                    resvEntry.add(localSrc);
+                }
+            } else {
+                resvEntry.add("");
+            }
+            // start of second sub-row
+            resvEntry.add(resv.getLogin());
+            String vlanTag = utils.getVlanTag(path);
+            if (vlanTag != null) {
+                int vlanNum = Math.abs(Integer.parseInt(vlanTag));
+                resvEntry.add(vlanNum + "");
+            } else {
+                resvEntry.add("");
+            }
+            resvEntry.add(resv.getEndTime().toString());
+            if (layer2Data != null) {
+                resvEntry.add(this.abbreviate(layer2Data.getDestEndpoint()));
+            } else if (layer3Data != null) {
+                destination = layer3Data.getDestHost();
+                try {
+                    inetAddress = InetAddress.getByName(destination);
+                    hostName = inetAddress.getHostName();
+                    resvEntry.add(hostName);
+                } catch (UnknownHostException e) {
+                    resvEntry.add(destination);
+                }
+            }
+            if (localDest != null) {
+                if (layer2Data != null) {
+                    resvEntry.add(this.abbreviate(localDest));
+                } else {
+                    resvEntry.add(localDest);
+                }
+            } else {
+                resvEntry.add("");
+            }
+            resvList.add(resvEntry);
+        }
+        outputMap.put("resvData", resvList);
+    }
+    
+    /**
+     * Returns an abbreviated version of the full layer 2 topology identifier.
+     * (adapted from bss.topology.URNParser)
+     *
+     * @param topoId string with full topology identifier, for example
+     * urn:ogf:network:domain=es.net:node=bnl-mr1:port=TenGigabitEthernet1/3:link=*
+     * @return string abbreviation such as es.net:bnl-mr1:TenGigabitEthernet1/3
+     */
+    public String abbreviate(String topoIdent) {
+        Pattern p = Pattern.compile(
+            "^urn:ogf:network:domain=([^:]+):node=([^:]+):port=([^:]+):link=([^:]+)$");
+        Matcher matcher = p.matcher(topoIdent);
+        String domainId = "";
+        String nodeId = "";
+        String portId = "";
+        // punt if not in expected format
+        if (!matcher.matches()) {
+            return topoIdent;
+        } else {
+            domainId = matcher.group(1);
+            nodeId = matcher.group(2);
+            portId = matcher.group(3);
+            return domainId + ":" + nodeId + ":" + portId;
+        }
+    }
 }

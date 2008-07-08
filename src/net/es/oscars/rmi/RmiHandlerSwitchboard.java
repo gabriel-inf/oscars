@@ -26,21 +26,53 @@ public class RmiHandlerSwitchboard implements Remote {
         this.cancelHandler = new CancelResRmiHandler();
     }
 
+    /**
+     *   createReservation
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+    
     public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException {
         return this.createHandler.createReservation(inputMap, userName);
     }
-    
+
+    /**
+     *   queryReservation
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+
     public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException {
         return this.queryHandler.queryReservation(inputMap, userName);
     }
     
+    /**
+     *   listReservations
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+   
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
         throws IOException {
          return this.listHandler.listReservations(inputMap, userName);
     }
     
+    /**
+     *   cancelReservation
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+   
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException {
         return this.cancelHandler.cancelReservation(inputMap, userName);

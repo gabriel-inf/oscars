@@ -20,11 +20,19 @@ public class CoreRmiServer implements CoreRmiInterface {
     private CoreRmiInterface stub;
     private RmiHandlerSwitchboard switchboard;
 
+    /**
+     * CoreRmiServer constructor
+     * @throws RemoteException
+     */
     public CoreRmiServer() throws RemoteException {
         this.log = Logger.getLogger(this.getClass());
         CoreRmiServer.staticObject = this;
     }
 
+    /**
+     * init
+     * @throws remoteException
+     */
     public void init() throws RemoteException {
         this.log.debug("init.start");
         this.registry = LocateRegistry.createRegistry(8091);
@@ -36,6 +44,9 @@ public class CoreRmiServer implements CoreRmiInterface {
         this.log.debug("init.end");
     }
 
+    /**
+     * shutdown
+     */
     public void shutdown() {
 
         try {
@@ -52,26 +63,54 @@ public class CoreRmiServer implements CoreRmiInterface {
         }
     }
 
+    /**
+     *   createReservation
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+    
     public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
         return this.switchboard.createReservation(inputMap, userName);
     }
-    
+
+    /**
+     *   queryReservation
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+   
     public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
         return this.switchboard.queryReservation(inputMap, userName);
     }
     
+    /**
+     *   listReservations
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+   
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
         return this.switchboard.listReservations(inputMap, userName);
     }
     
+    /**
+     *   cancelReservation
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     */
+    
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException, RemoteException {
         return this.switchboard.cancelReservation(inputMap, userName);
     }
-
-
-
 }
