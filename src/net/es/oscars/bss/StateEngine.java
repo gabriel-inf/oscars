@@ -36,8 +36,26 @@ public class StateEngine {
         if (StateEngine.statusMap.get(gri) == null) {
             StateEngine.statusMap.put(gri, resv.getStatus());
         }
-
         String status = StateEngine.statusMap.get(gri);
+
+        StateEngine.canTransitBetween(status, newStatus);
+
+        status = newStatus;
+        resv.setStatus(status);
+        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+        resvDAO.update(resv);
+        StateEngine.statusMap.put(gri, status);
+        return status;
+    }
+
+    // This is intentionally not synchronized, we do not want to block when reading the status
+    public static void canUpdateStatus(Reservation resv, String newStatus) throws BSSException {
+        String status = StateEngine.getStatus(resv);
+        StateEngine.canTransitBetween(status, newStatus);
+    }
+
+    // Business / state diagram logic goes here
+    public static void canTransitBetween(String status, String newStatus) throws BSSException {
 
         if (newStatus.equals(CREATED)) {
             // always go there
@@ -72,12 +90,6 @@ public class StateEngine {
                 throw new BSSException("Current status is "+status+"; cannot cancel");
             }
         }
-        status = newStatus;
-        resv.setStatus(status);
-        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-        resvDAO.update(resv);
-        StateEngine.statusMap.put(gri, status);
-        return status;
     }
 
 

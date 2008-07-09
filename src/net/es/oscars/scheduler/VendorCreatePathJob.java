@@ -19,8 +19,6 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         String jobName = context.getJobDetail().getFullName();
         this.log.debug("VendorCreatePathJob.start name: "+jobName);
 
-        this.log.debug("vendorCreatePath thread: "+Thread.currentThread().getName());
-
         OSCARSCore core = OSCARSCore.getInstance();
         String bssDbName = core.getBssDbName();
 
@@ -36,27 +34,23 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             return;
         }
 
+        try {
+            StateEngine.canUpdateStatus(resv, StateEngine.ACTIVE);
+        } catch (BSSException ex) {
+            this.log.error(ex);
+            return;
+        }
+
         // Need to get our own Hibernate session since this is a new thread
         Session bss = core.getBssSession();
         bss.beginTransaction();
-
-        String status;
-        StateEngine stateEngine = new StateEngine();
-        try {
-            status = StateEngine.getStatus(resv);
-            this.log.debug("Reservation status was: "+status);
-            status = stateEngine.updateStatus(resv, StateEngine.ACTIVE);
-            this.log.debug("Reservation status now is: "+status);
-        } catch (BSSException ex) {
-            this.log.error("State engine error", ex);
-        }
-
 
 
         LSPData lspData = (LSPData) dataMap.get("lspData");
         String direction = (String) dataMap.get("direction");
         String routerType = (String) dataMap.get("routerType");
 
+        boolean pathWasSetup = true;
         LSP ciscoLSP = null;
         JnxLSP jnxLSP = null;
         if (routerType.equals("jnx")) {
@@ -65,6 +59,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                 jnxLSP.createPath(resv, lspData, direction);
             } catch (PSSException ex) {
                 this.log.error("Could not set up path!", ex);
+                pathWasSetup = false;
             }
         } else if (routerType.equals("cisco")) {
             ciscoLSP = new LSP(bssDbName);
@@ -72,15 +67,27 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
                 ciscoLSP.createPath(resv, lspData, direction);
             } catch (PSSException ex) {
                 this.log.error("Could not set up path!", ex);
+                pathWasSetup = false;
             }
+        }
+
+        String status;
+        StateEngine stateEngine = new StateEngine();
+        try {
+            status = StateEngine.getStatus(resv);
+            this.log.debug("Reservation status was: "+status);
+            if (pathWasSetup) {
+                status = stateEngine.updateStatus(resv, StateEngine.ACTIVE);
+            } else {
+                status = stateEngine.updateStatus(resv, StateEngine.FAILED);
+            }
+            this.log.debug("Reservation status now is: "+status);
+        } catch (BSSException ex) {
+            this.log.error("State engine error", ex);
         }
 
 
         super.execute(context);
-        try {
-            Thread.sleep(10);
-        } catch (Exception ex) {
-        }
 
 
 

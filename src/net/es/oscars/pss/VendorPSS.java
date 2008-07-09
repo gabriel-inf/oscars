@@ -53,6 +53,13 @@ public class VendorPSS implements PSS {
     public String createPath(Reservation resv) throws PSSException {
         this.log.info("createPath.start");
 
+        try {
+            StateEngine.canUpdateStatus(resv, StateEngine.INSETUP);
+        } catch (BSSException ex) {
+            throw new PSSException(ex);
+        }
+
+
         String status;
         LSPData lspData = new LSPData(dbname);
 
