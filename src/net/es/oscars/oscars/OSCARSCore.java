@@ -100,34 +100,8 @@ public class OSCARSCore {
         this.initTypeConverter();
         this.initForwarder();
         this.initRMIServer();
+        this.initStateEngineManager();
         this.initialized = true;
-
-
-/*
-        try {
-            Scheduler sched = this.getScheduleManager().getScheduler();
-
-            String gri = "es.net-1200";
-            JobDetail jobDetail = new JobDetail("create-"+gri, "UNQUEUED", CreateReservationJob.class);
-            jobDetail.setDurability(true);
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDetail.setJobDataMap(jobDataMap);
-            this.log.debug("Adding job create-"+gri);
-            sched.addJob(jobDetail, false);
-
-            gri = "es.net-2200";
-            jobDetail = new JobDetail("create-"+gri, "UNQUEUED", CreateReservationJob.class);
-            jobDetail.setDurability(true);
-            jobDataMap = new JobDataMap();
-            jobDetail.setJobDataMap(jobDataMap);
-            this.log.debug("Adding job create-"+gri);
-            sched.addJob(jobDetail, false);
-
-        } catch (SchedulerException ex) {
-            this.log.error("Could not schedule job", ex);
-        }
-*/
-
 
         this.log.debug("initAll.end");
     }
@@ -280,6 +254,7 @@ public class OSCARSCore {
         if (aaa == null || !aaa.isOpen()) {
             this.log.error("AAA session is still closed!");
         }
+
         return aaa;
     }
 
