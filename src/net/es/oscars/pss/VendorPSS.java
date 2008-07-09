@@ -1,17 +1,12 @@
 package net.es.oscars.pss;
 
-import java.io.*;
 import java.util.Properties;
-import java.util.List;
 
 import org.apache.log4j.*;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
+import org.quartz.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.bss.Reservation;
+import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.oscars.OSCARSCore;
 import net.es.oscars.pss.jnx.JnxLSP;
@@ -56,19 +51,19 @@ public class VendorPSS implements PSS {
      * @throws PSSException
      */
     public String createPath(Reservation resv) throws PSSException {
+        this.log.info("createPath.start");
 
+        String status;
         LSPData lspData = new LSPData(dbname);
-
 
         String forwardRouterType = "";
         String reverseRouterType = "";
         boolean doReverse = false;
         // for Juniper circuit set up
-        JnxLSP jnxLSP = null;
+//        JnxLSP jnxLSP = null;
         // for Cisco circuit set up
-        LSP ciscoLSP = null;
+//        LSP ciscoLSP = null;
 
-        this.log.info("createPath.start");
         Path path = resv.getPath();
         lspData.setPathVars(path.getPathElem());
         String ingressNodeId = lspData.getIngressLink().getPort().getNode().getTopologyIdent();
@@ -105,6 +100,16 @@ public class VendorPSS implements PSS {
         }
 
 
+        StateEngine stateEngine = new StateEngine();
+        try {
+            status = stateEngine.getStatus();
+            this.log.debug("Reservation status was: "+status);
+            status = stateEngine.updateStatus(resv, StateEngine.INSETUP);
+            this.log.debug("Reservation status now is: "+status);
+        } catch (BSSException ex) {
+            this.log.error("State engine error", ex);
+        }
+
 
         try {
             String gri = resv.getGlobalReservationId();
@@ -140,12 +145,12 @@ public class VendorPSS implements PSS {
         }
 
 
+/*
         // TODO: temp fix
         if (true) {
             resv.setStatus("ACTIVE");
             return resv.getStatus();
         }
-
 
         // TODO: add a verify path setup job
 
@@ -176,6 +181,8 @@ public class VendorPSS implements PSS {
             throw new PSSException("circuit setup for " +
                                    resv.getGlobalReservationId() + " failed");
         }
+*/
+
         this.log.info("create.end");
         return resv.getStatus();
     }
