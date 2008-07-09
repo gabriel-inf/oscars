@@ -64,7 +64,10 @@ public class ScheduleManager {
                 for (JobExecutionContext context : currentlyRunningJobs) {
                     String groupName = context.getJobDetail().getGroup();
                     String jobName = context.getJobDetail().getName();
-                    this.log.debug("Currenty running job: "+groupName+"."+jobName);
+                    // don't log ProcessQueueJob!
+                    if (!groupName.equals("queue")) {
+                        this.log.debug("Currenty running job: "+groupName+"."+jobName);
+                    }
                     if (groupName.equals("QUEUED")) {
                         isQueueRunning = true;
                     }

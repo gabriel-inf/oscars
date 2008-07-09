@@ -36,7 +36,6 @@ public class PSSScheduler {
      * @return response the list of reservation that are pending
      */
     public List<Reservation> pendingReservations(Integer timeInterval)  {
-        this.log.debug("pendingReservations.start");
 
         List<Reservation> reservations = null;
         EventProducer eventProducer = new EventProducer();
@@ -77,7 +76,6 @@ public class PSSScheduler {
 
             dao.update(resv);
         }
-        this.log.debug("pendingReservations.end");
         return reservations;
     }
 
