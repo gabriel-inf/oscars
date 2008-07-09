@@ -19,12 +19,7 @@ public class TeardownPathJob extends ChainingJob implements Job {
             gri = "unknown gri!";
         }
         this.log.debug("gri is: "+gri);
-        try {
-            Thread.sleep(10000);
-            super.execute(context);
-        } catch (InterruptedException ex) {
-            this.log.error("Interrupted", ex);
-        }
+        super.execute(context);
         this.log.info("TeardownPathJob.end");
     }
 

@@ -53,7 +53,6 @@ public class ScheduleManager {
 
     @SuppressWarnings("unchecked")
     public void processQueue() {
-        this.log.debug("processQueue.start");
         try {
             this.scheduler.standby();
 
@@ -97,7 +96,6 @@ public class ScheduleManager {
             this.log.error("Scheduler exception", ex);
         }
 
-        this.log.debug("processQueue.end");
     }
 
 
@@ -112,13 +110,11 @@ public class ScheduleManager {
         JobDetail lastJobInQueue = null;
         if (queuedJobNames != null) {
             for (String queuedJobName : queuedJobNames) {
-                this.log.debug("Queued job name: "+queuedJobName);
                 // the LAST in the queue chain would have null nextJobGroup, nextJobName
                 JobDetail jobDetail = this.scheduler.getJobDetail(queuedJobName, queuedJobsGroupName);
                 String nextJobName = (String) jobDetail.getJobDataMap().get("nextJobName");
                 if (nextJobName == null) {
                     lastJobInQueue = jobDetail;
-                    this.log.debug("Last job in existing queue: "+queuedJobName);
                     break;
                 }
             }
@@ -131,7 +127,7 @@ public class ScheduleManager {
                 this.log.debug("Unqueued job name: "+unQueuedJobName);
                 JobDetail jobDetail = this.scheduler.getJobDetail(unQueuedJobName, unqueuedJobsGroupName);
                 if (lastJobInQueue != null && previousUnqueuedJob == null) {
-                    this.log.debug("Next job to added to queue: "+unQueuedJobName);
+                    this.log.debug("Next job to added to existing queue: "+unQueuedJobName);
                     jobToSchedule = unQueuedJobName;
                     jobDetail.setGroup(queuedJobsGroupName);
                     jobDetail.setDurability(false);
@@ -140,14 +136,14 @@ public class ScheduleManager {
                     lastJobInQueue.getJobDataMap().put("nextJobGroup", queuedJobsGroupName);
                     lastJobInQueue.getJobDataMap().put("nextJobName", unQueuedJobName);
                 } else if (previousUnqueuedJob == null) {
-                    this.log.debug("Next job to be first in queue: "+unQueuedJobName);
+                    this.log.debug("Next job to be first in new queue: "+unQueuedJobName);
                     jobToSchedule = unQueuedJobName;
                     jobDetail.setGroup(queuedJobsGroupName);
                     jobDetail.setDurability(false);
                     this.scheduler.deleteJob(unQueuedJobName, unqueuedJobsGroupName);
                     this.scheduler.addJob(jobDetail, true);
                 } else {
-                    this.log.debug("Adding job to queue: "+unQueuedJobName);
+                    this.log.debug("Adding job to a queue: "+unQueuedJobName);
                     previousUnqueuedJob.getJobDataMap().put("nextJobGroup", queuedJobsGroupName);
                     previousUnqueuedJob.getJobDataMap().put("nextJobName", unQueuedJobName);
                     this.scheduler.addJob(previousUnqueuedJob, true);
@@ -170,7 +166,6 @@ public class ScheduleManager {
 
 
     public void queueScheduledActions() {
-        this.log.debug("queueScheduledActions.start");
         Session session = core.getBssSession();
         session.beginTransaction();
         PSSScheduler sched = new PSSScheduler(core.getBssDbName());
@@ -178,7 +173,6 @@ public class ScheduleManager {
         sched.expiredReservations(0);
         sched.expiringReservations(0);
         session.getTransaction().commit();
-        this.log.debug("queueScheduledActions.end");
     }
 
     public void addJobToQueue() throws SchedulerException {
