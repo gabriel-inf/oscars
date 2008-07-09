@@ -100,7 +100,6 @@ public class OSCARSCore {
         this.initTypeConverter();
         this.initForwarder();
         this.initRMIServer();
-        this.initStateEngineManager();
         this.initialized = true;
 
         this.log.debug("initAll.end");
