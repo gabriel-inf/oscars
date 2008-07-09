@@ -1,5 +1,6 @@
 package net.es.oscars.bss;
 
+import java.util.*;
 import org.apache.log4j.Logger;
 import org.hibernate.*;
 
@@ -20,8 +21,7 @@ public class StateEngine {
     public final static String INMODIFY = "INMODIFY";
 
     private String dbname;
-    private OSCARSCore core;
-    private String status;
+    private static HashMap<String, String> statusMap = new HashMap<String, String>();
     private Logger log;
 
     public StateEngine() {
@@ -30,9 +30,15 @@ public class StateEngine {
     }
 
     public synchronized String updateStatus(Reservation resv, String newStatus) throws BSSException {
-        if (this.status == null) {
-            this.status = resv.getStatus();
+        String gri = resv.getGlobalReservationId();
+
+        // initialize this if this is the first time
+        if (StateEngine.statusMap.get(gri) == null) {
+            StateEngine.statusMap.put(gri, resv.getStatus());
         }
+
+        String status = StateEngine.statusMap.get(gri);
+
         if (newStatus.equals(CREATED)) {
             // always go there
         } else if (newStatus.equals(FAILED)) {
@@ -70,6 +76,7 @@ public class StateEngine {
         resv.setStatus(status);
         ReservationDAO resvDAO = new ReservationDAO(this.dbname);
         resvDAO.update(resv);
+        StateEngine.statusMap.put(gri, status);
         return status;
     }
 
@@ -78,7 +85,16 @@ public class StateEngine {
     /**
      * @return the status
      */
-    public String getStatus() {
+    public static String getStatus(Reservation resv) {
+        String gri = resv.getGlobalReservationId();
+        String status = null;
+        // if the state engine has not been initialized, return what is in the Reservation object
+        if (StateEngine.statusMap.get(gri) != null) {
+            status = StateEngine.statusMap.get(gri);
+        } else {
+            status = resv.getStatus();
+        }
+
         return status;
     }
 
