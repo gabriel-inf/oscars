@@ -61,7 +61,7 @@ public class CreateResRmiHandler {
             return result;
         }
 
-        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         UserManager userMgr = core.getUserManager();
 
@@ -92,7 +92,7 @@ public class CreateResRmiHandler {
         }
         aaa.getTransaction().commit();
 
-        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
         try {

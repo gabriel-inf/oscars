@@ -54,7 +54,7 @@ public class CancelResRmiHandler {
         Reservation reservation = null;
         result.put("method", methodName);
 
-        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
         AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
                                                 "modify");
@@ -74,8 +74,7 @@ public class CancelResRmiHandler {
         String []paramValues = inputMap.get("gri");
         String gri = paramValues[0];
         
-        Session bss = 
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
         try {

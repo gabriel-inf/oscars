@@ -15,6 +15,7 @@ public class RmiHandlerSwitchboard implements Remote {
     private QueryResRmiHandler queryHandler;
     private ListResRmiHandler listHandler;
     private CancelResRmiHandler cancelHandler;
+    private ModifyResRmiHandler modifyHandler;
 
 
     public RmiHandlerSwitchboard() {
@@ -24,6 +25,7 @@ public class RmiHandlerSwitchboard implements Remote {
         this.queryHandler = new QueryResRmiHandler();
         this.listHandler = new ListResRmiHandler();
         this.cancelHandler = new CancelResRmiHandler();
+        this.modifyHandler = new ModifyResRmiHandler();
     }
 
     /**
@@ -31,7 +33,7 @@ public class RmiHandlerSwitchboard implements Remote {
      *   
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
     
     public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
@@ -44,7 +46,7 @@ public class RmiHandlerSwitchboard implements Remote {
      *   
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
     public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
@@ -58,7 +60,7 @@ public class RmiHandlerSwitchboard implements Remote {
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
      *   
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
    
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
@@ -70,12 +72,23 @@ public class RmiHandlerSwitchboard implements Remote {
      *   cancelReservation
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
    
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName) 
         throws IOException {
         return this.cancelHandler.cancelReservation(inputMap, userName);
+    }
+    /**
+     *   modifyReservation
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into json Object.
+     */
+   
+    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName) 
+        throws IOException {
+        return this.modifyHandler.modifyReservation(inputMap, userName);
     }
 
 }

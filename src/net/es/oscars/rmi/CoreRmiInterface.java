@@ -14,7 +14,7 @@ public interface CoreRmiInterface extends Remote {
      *   
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
     public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName)
          throws IOException, RemoteException;
@@ -24,7 +24,7 @@ public interface CoreRmiInterface extends Remote {
      *   
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
     public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName)
@@ -35,7 +35,7 @@ public interface CoreRmiInterface extends Remote {
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
      *
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName)
@@ -45,9 +45,20 @@ public interface CoreRmiInterface extends Remote {
      *   cancelReservation
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
    
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName)
         throws IOException, RemoteException;
+    
+    /**
+     *   modifyReservation
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into json Object.
+     */
+    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName)
+         throws IOException, RemoteException;
+
 }

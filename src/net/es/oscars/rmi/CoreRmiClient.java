@@ -49,7 +49,7 @@ public class CoreRmiClient implements CoreRmiInterface {
      *   
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
     public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
@@ -83,7 +83,7 @@ public class CoreRmiClient implements CoreRmiInterface {
      *   
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
     public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
@@ -117,7 +117,7 @@ public class CoreRmiClient implements CoreRmiInterface {
      *   
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
@@ -150,7 +150,7 @@ public class CoreRmiClient implements CoreRmiInterface {
      *   cancelReservation
      *   @param inputMap HashMap<String, String[]> - contains input from web request
      *   @param String userName - authenticated login name of user
-     *   @return HashMap<String, Object> - out values to pour into jason Object.
+     *   @return HashMap<String, Object> - out values to pour into json Object.
      */
 
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName) 
@@ -170,6 +170,40 @@ public class CoreRmiClient implements CoreRmiInterface {
         try {
             result = this.remote.cancelReservation(inputMap, userName);
             this.log.debug(" cancelReservation.end");
+            return result;
+        } catch (RemoteException e) {
+            this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+        } catch (Exception e) {
+            this.log.warn("Exception from RMI server" + e.getMessage(), e);
+        }
+        return result;
+    }
+    
+    /**
+     *   modifyReservation
+     *   
+     *   @param inputMap HashMap<String, String[]> - contains input from web request
+     *   @param String userName - authenticated login name of user
+     *   @return HashMap<String, Object> - out values to pour into json Object.
+     */
+
+    public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName) 
+        throws RemoteException {
+        this.log.debug("modifyReservation.start");
+        HashMap<String, Object> result = null;
+        if (this.remote == null) {
+            this.log.error("Remote object not found");
+            return result;
+        }
+        if (!this.connected) {
+            this.log.error("Not connected to RMI server");
+            // TODO was there a reason for the return to be commented out
+            return result;
+        }
+
+        try {
+            result = this.remote.modifyReservation(inputMap, userName);
+            this.log.debug("modifyReservation.end");
             return result;
         } catch (RemoteException e) {
             this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);

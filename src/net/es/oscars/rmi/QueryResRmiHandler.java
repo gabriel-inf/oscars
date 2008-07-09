@@ -57,7 +57,7 @@ public class QueryResRmiHandler {
         String loginConstraint = null;
         result.put("method", methodName);
 
-        Session aaa = HibernateUtil.getSessionFactory("aaa").getCurrentSession();
+        Session aaa = core.getAaaSession();
         aaa.beginTransaction();
 
         // check to see if user is allowed to query at all, and if they can
@@ -66,6 +66,7 @@ public class QueryResRmiHandler {
         if (authVal == AuthValue.DENIED) {
             result.put("error", "no permission to query Reservations");
             this.log.debug("query failed: no permission to query Reservations");
+            aaa.getTransaction().rollback();
             return result;
         }
         if (authVal.equals(AuthValue.MYSITE)) {
@@ -83,7 +84,7 @@ public class QueryResRmiHandler {
         aaa.getTransaction().commit();
        
 
-        Session bss = HibernateUtil.getSessionFactory("bss").getCurrentSession();
+        Session bss = core.getBssSession();
         bss.beginTransaction();
         String [] paramValues = inputMap.get("gri");
         String gri = paramValues[0];
