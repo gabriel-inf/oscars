@@ -18,11 +18,7 @@ public class Initializer {
      * Initializes Hibernate.
      */
     public void initDatabase(List<String> dbnames) {
-        ClassLoader OSCARSCL = this.getClass().getClassLoader();
-        if (OSCARSCL == null) {
-            this.log.error("initDatabase: Class loader is null");
-        }
         // initializes session factories for aaa and bss databases
-        HibernateUtil.initSessionFactories(OSCARSCL, dbnames);
+        HibernateUtil.initSessionFactories(dbnames);
     }
 }

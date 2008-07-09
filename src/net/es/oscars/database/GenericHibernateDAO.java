@@ -19,7 +19,6 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
         implements GenericDAO<T, ID> {
 
     private Class<T> persistentClass;
-    private Session session;
     private String dbName;
 
     public GenericHibernateDAO() {
@@ -33,11 +32,7 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
     }
 
     protected Session getSession() {
-        if (session == null) {
-            session = HibernateUtil.getSessionFactory(this.dbName)
-                                   .getCurrentSession();
-        }
-        return session;
+        return HibernateUtil.getSessionFactory(this.dbName).getCurrentSession();
     }
 
     public Class<T> getPersistentClass() { return persistentClass; }
@@ -94,7 +89,7 @@ public abstract class GenericHibernateDAO<T, ID extends Serializable>
   @SuppressWarnings("unchecked")
     public T queryByParam(String paramName, Object paramValue) {
         String hsql = "from " + this.persistentClass.getName() +
-                                " where " + paramName + " = :" + paramName; 
+                                " where " + paramName + " = :" + paramName;
         return (T) getSession().createQuery(hsql)
                                .setParameter(paramName, paramValue)
                                .setMaxResults(1)

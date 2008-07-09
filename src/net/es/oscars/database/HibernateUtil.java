@@ -17,7 +17,6 @@ import net.es.oscars.PropHandler;
  */
 public class HibernateUtil {
 
-
     private static final Map<String, SessionFactory> sessionFactories =
         new HashMap<String,SessionFactory>();
 
@@ -28,7 +27,7 @@ public class HibernateUtil {
      * @param CL classloader for the calling class
      * @param dbnames list of db names to build session factories for
      */
-    public static void initSessionFactories(ClassLoader CL, List<String> dbnames) {
+    public static void initSessionFactories(List<String> dbnames) {
         try {
             PropHandler propHandler = new PropHandler("oscars.properties");
             if (propHandler == null) {
@@ -37,8 +36,6 @@ public class HibernateUtil {
             Properties props = propHandler.getPropertyGroup("hibernate", false);
             Configuration cfg = new Configuration();
             cfg.setProperties(props);
-
-            ClassLoader clsave = Thread.currentThread().getContextClassLoader();
 
             for (String dbname: dbnames) {
                 if (sessionFactories.get(dbname) == null) {
@@ -77,4 +74,9 @@ public class HibernateUtil {
     public static void putSessionFactory (String name, SessionFactory SF) {
         sessionFactories.put(name, SF);
     }
+
+
+
+
+
 }
