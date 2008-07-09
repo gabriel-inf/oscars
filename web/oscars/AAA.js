@@ -1,21 +1,29 @@
 /*
 AAA.js:     Handles form for basic AAA tables.
-Last modified:  June 24, 2008
+Last modified:  July 2, 2008
 David Robertson (dwrobertson@lbl.gov)
 */
 
 /* Functions:
-postInstitutionAdd()
+tableOp(tableName, opName)
 handleReply(responseObject, ioArgs)
 tabSelected(contentPaneWidget)
+createInstitutionGrid()
 */
 
 dojo.provide("oscars.AAA");
 
-oscars.AAA.postTableOp = function () { 
-    var valid = dijit.byId("aaaForm").validate();
-    if (!valid) {
-        return;
+oscars.AAA.tableOp = function (tableName, opName) { 
+    if (tableName == "institution") {
+        var institutionGrid = dijit.byId("institutionGrid");
+        if (opName == "add") {
+            // note there has to be at least one character, or revert fails
+            institutionGrid.model.store.newItem({institutionName: " "});
+        } else if (opName == "delete") {
+            institutionGrid.removeSelectedRows();
+        } else if (opName == "revert") {
+            institutionGrid.model.store.revert();
+        }
     }
 };
 

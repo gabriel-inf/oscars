@@ -27,11 +27,30 @@ public class AAA extends HttpServlet {
         this.log = Logger.getLogger(this.getClass());
         this.dbname = "aaa";
         this.log.debug("AAA:start");
-
         String methodName = "AAA";
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
+        String[] ops = request.getQueryString().split("&");
+        if (ops.length != 2) {
+            utils.handleFailure(out, "incorrect input from AAA page",
+                                methodName, null, null);
+        }
+        String[] tableParams = ops[0].split("=");
+        if (tableParams.length != 2) {
+            utils.handleFailure(out, "incorrect input from AAA page",
+                                methodName, null, null);
+        }
+        String tableName = tableParams[1];
+        this.log.info("table is " + tableName);
+        String[] opParams = ops[1].split("=");
+        if (opParams.length != 2) {
+            utils.handleFailure(out, "incorrect input from AAA page",
+                                methodName, null, null);
+        }
+        String opName = opParams[1];
+        this.log.info("op is " + opName);
+
         response.setContentType("text/json-comment-filtered");
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
@@ -46,8 +65,12 @@ public class AAA extends HttpServlet {
                                 methodName, aaa, null);
         }
         Map outputMap = new HashMap();
-        outputMap.put("status", "Institution list");
-        this.outputInstitutions(outputMap);
+        if (tableName.equals("institution")) {
+            if (opName.equals("list")) {
+                outputMap.put("status", "Institution list");
+                this.outputInstitutions(outputMap);
+            }
+        }
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);

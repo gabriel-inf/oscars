@@ -64,5 +64,6 @@ oscars.UserLogout.handleReply = function (responseObject, ioArgs) {
     }
     // reset global state
     oscarsState.userGridInitialized = false;
-    oscarsState.resvGridInitialized = 0;
+    oscarsState.resvGridInitialized = false;
+    oscarsState.aaaGridsInitialized = false;
 };

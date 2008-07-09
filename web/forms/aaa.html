@@ -41,17 +41,45 @@
 </head>
 
 <body>
-<form id="aaaForm" dojoType="dijit.form.Form">
+<p>Use this form to manage four of the AAA tables.  If a cell is editable,
+double-clicking on it will allow changing its value.  Clicking on ADD
+will add a new blank row locally.  Clicking on DELETE will delete the
+selected row locally.  SAVE saves the changes to the database.  REVERT
+undoes all local changes up to the last save.
+</p>
 
-<input type="hidden" name="aaaTable" id="aaaTable" />
-<input type="hidden" name="aaaOp" id="aaaOp" />
+<form id="aaaForm" dojoType="dijit.form.Form">
 
 <!-- All these grids are associated with ItemFileWriteStore's, which are
      set up programmatically -->
 <table width="100%">
   <tr>
     <td width="50%">
-      <p>Institutions</p>
+        <p>Institutions ->
+      <button dojoType="dijit.form.Button" id="institutionAddButton">
+        ADD
+        <script type="dojo/method" event="onClick">
+            oscars.AAA.tableOp("institution", "add");
+        </script>
+      </button>
+      <button dojoType="dijit.form.Button" id="institutionDeleteButton">
+        DELETE
+        <script type="dojo/method" event="onClick">
+            oscars.AAA.tableOp("institution", "delete");
+        </script>
+      </button>
+      <button dojoType="dijit.form.Button" id="institutionSaveButton">
+        SAVE
+        <script type="dojo/method" event="onClick">
+            oscars.AAA.tableOp("institution", "save");
+        </script>
+      </button>
+      <button dojoType="dijit.form.Button" id="institutionRevertButton">
+        REVERT
+        <script type="dojo/method" event="onClick">
+            oscars.AAA.tableOp("institution", "revert");
+        </script>
+      </button></p>
       <div id="institutionGrid" dojoType="dojox.Grid" structure="institutionLayout">
       </div>
     </td>
