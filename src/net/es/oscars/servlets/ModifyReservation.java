@@ -2,29 +2,14 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
-
 import javax.servlet.*;
 import javax.servlet.http.*;
-import javax.mail.MessagingException;
 
 import org.apache.log4j.*;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
-import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
-
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.ReservationManager;
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.interdomain.*;
-import net.es.oscars.oscars.TypeConverter;
-import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.notify.*;
-import net.es.oscars.PropHandler;
+import net.es.oscars.rmi.CoreRmiClient;
+import net.es.oscars.rmi.CoreRmiInterface;
 
 
 public class ModifyReservation extends HttpServlet {
@@ -37,89 +22,43 @@ public class ModifyReservation extends HttpServlet {
         this.log.info("ModifyReservation.start");
         String methodName = "ModifyReservation";
 
-        TypeConverter tc = new TypeConverter();
-        Forwarder forwarder = new Forwarder();
-        ModifyResReply forwardReply = null;
-        ReservationManager rm = new ReservationManager("bss");
         UserSession userSession = new UserSession();
         Utils utils = new Utils();
         PrintWriter out = response.getWriter();
-        EventProducer eventProducer = new EventProducer();
-        
-        String institution = null;
-        String loginConstraint = null;
 
         response.setContentType("text/json-comment-filtered");
 
         String userName = userSession.checkSession(out, request);
         if (userName == null) { return; }
-
-        Reservation resv = this.toReservation(request);
-        Session aaa =
-            HibernateUtil.getSessionFactory("aaa").getCurrentSession();
-        aaa.beginTransaction();
-        UserManager userMgr = new UserManager("aaa");
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
-                "modify");
-        if (authVal == AuthValue.DENIED) {
-                this.log.info("denied");
-                utils.handleFailure(out, "modifyReservation: permission denied",
-                                    methodName, aaa, null);
-                return;
+        
+        HashMap<String, String[]> inputMap = new HashMap<String, String[]>();
+        HashMap<String, Object> outputMap = new HashMap<String, Object>();
+        
+        Enumeration e = request.getParameterNames();
+        while (e.hasMoreElements()) {
+            String paramName = (String) e.nextElement();
+            String[] paramValues = request.getParameterValues(paramName);
+            inputMap.put(paramName, paramValues);
         }
-        if (authVal.equals(AuthValue.MYSITE)) {
-            institution = userMgr.getInstitution(userName);
-        } else if (authVal.equals(AuthValue.SELFONLY)) {
-            loginConstraint = userName;
-        }  
-
-        aaa.getTransaction().commit();
-
-        Session bss =
-            HibernateUtil.getSessionFactory("bss").getCurrentSession();
-        bss.beginTransaction();
-        // for now, path cannot be modified
-        PathInfo pathInfo = null;
-        String errMessage = null;
-        Reservation persistentResv = null;
         try {
-            persistentResv = rm.modify(resv, loginConstraint, institution,
-                                                   pathInfo);
-            tc.ensureLocalIds(pathInfo);
-            // checks whether next domain should be contacted, forwards to
-            // the next domain if necessary, and handles the response
-            this.log.debug("modify, to forward");
-            InterdomainException interException = null;
-            forwardReply = forwarder.modify(resv, persistentResv, pathInfo);
-            persistentResv = rm.finalizeModifyResv(forwardReply, resv);
-            Map<String,String> messageInfo = new HashMap<String,String>();
-            eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_COMPLETED, userName, 
-                "WBUI", persistentResv);
-        } catch (BSSException e) {
-            errMessage = e.getMessage();
-        } catch (InterdomainException e) {
-            errMessage = e.getMessage();
-        } catch (Exception e) {
-            // use this so we can find NullExceptions
-            errMessage = e.getMessage();
-        } finally {
-            forwarder.cleanUp();
-            if (errMessage != null) {
-                eventProducer.addEvent(OSCARSEvent.RESV_MODIFY_FAILED, userName, 
-                    "WBUI", resv, "", errMessage);
-                utils.handleFailure(out, errMessage, methodName, null, bss);
-                return;
-            }
+            CoreRmiInterface rmiClient = new CoreRmiClient();
+            rmiClient.init();
+            outputMap = rmiClient.modifyReservation(inputMap, userName);
+        } catch (Exception ex) {
+            utils.handleFailure(out, "ModifyReservation not completed: " + ex.getMessage(), 
+                    methodName, null, null);
+            this.log.error("Error calling rmiClient for ModifyReservation", ex);
+            return;
+        }
+        String errorMsg = (String)outputMap.get("error");
+        if (errorMsg != null) {
+            utils.handleFailure(out, errorMsg, methodName, null,null);
+            this.log.error("ModifyReservation failed: " + errorMsg);
+            return;
         }
 
-        Map outputMap = new HashMap();
-        outputMap.put("status", "Modified reservation with GRI " +
-            resv.getGlobalReservationId());
-        outputMap.put("method", methodName);
-        outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
         out.println("/* " + jsonObject + " */");
-        bss.getTransaction().commit();
         this.log.info("ModifyReservation.end");
     }
 
@@ -128,36 +67,5 @@ public class ModifyReservation extends HttpServlet {
         this.doGet(request, response);
     }
 
-    public Reservation toReservation(HttpServletRequest request) {
-        String strParam = null;
-        Long bandwidth = null;
-        Long seconds = 0L;
-
-        Reservation resv = new Reservation();
-
-        strParam = request.getParameter("gri");
-        resv.setGlobalReservationId(strParam);
-
-        // necessary type conversions performed here; validation done in
-        // ReservationManager
-        strParam = request.getParameter("modifyStartSeconds");
-        if ((strParam != null) && (!strParam.equals(""))) {
-            seconds = Long.parseLong(strParam);
-        }
-        resv.setStartTime(seconds);
-        strParam = request.getParameter("modifyEndSeconds");
-        if ((strParam != null) && (!strParam.equals(""))) {
-            seconds = Long.parseLong(strParam);
-        }
-        resv.setEndTime(seconds);
-
-        // currently hidden form fields; not modifiable
-        strParam = request.getParameter("modifyBandwidth");
-        bandwidth = ((strParam != null) && !strParam.trim().equals(""))
-            ? (Long.valueOf(strParam.trim()) * 1000000L) : 0L;
-        resv.setBandwidth(bandwidth);
-        String description = request.getParameter("modifyDescription");
-        resv.setDescription(description);
-        return resv;
-    }
+   
 }

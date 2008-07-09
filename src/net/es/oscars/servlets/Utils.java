@@ -16,6 +16,7 @@ public class Utils {
 
     public void handleFailure(PrintWriter out, String message, String method,
                               Session aaa, Session bss) {
+        // bss should no longer be used in OSCARS.war 
 
         if (aaa != null) { aaa.getTransaction().rollback(); }
         if (bss != null) { bss.getTransaction().rollback(); }

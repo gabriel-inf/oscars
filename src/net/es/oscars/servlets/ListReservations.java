@@ -2,30 +2,15 @@ package net.es.oscars.servlets;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.apache.log4j.Logger;
-import org.hibernate.*;
 import net.sf.json.*;
 
-import net.es.oscars.database.HibernateUtil;
 import net.es.oscars.rmi.CoreRmiClient;
 import net.es.oscars.rmi.CoreRmiInterface;
-import net.es.oscars.bss.ReservationManager;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.Utils;
-import net.es.oscars.aaa.UserManager;
-import net.es.oscars.aaa.User;
-import net.es.oscars.aaa.AAAException;
-import net.es.oscars.aaa.UserManager.AuthValue;
-import net.es.oscars.bss.topology.*;
+
 
 public class ListReservations extends HttpServlet {
 

@@ -26,7 +26,6 @@ public class AuthenticateUser extends HttpServlet {
         Initializer initializer = new Initializer();
         List<String> dbnames = new ArrayList<String>();
         dbnames.add("aaa");
-        dbnames.add("bss");
         initializer.initDatabase(dbnames);
         log.info("init.end");
     }
@@ -36,7 +35,6 @@ public class AuthenticateUser extends HttpServlet {
         Logger log = Logger.getLogger(this.getClass());
         log.info("destroy.start");
         HibernateUtil.closeSessionFactory("aaa");
-        HibernateUtil.closeSessionFactory("bss");
         log.info("destroy.end");
     }
 
