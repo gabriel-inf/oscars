@@ -25,15 +25,11 @@ import org.apache.log4j.*;
 import org.hibernate.*;
 
 import net.es.oscars.wsdlTypes.*;
-import net.es.oscars.database.HibernateUtil;
-import net.es.oscars.database.Initializer;
 import net.es.oscars.aaa.UserManager;
 import net.es.oscars.aaa.UserManager.AuthValue;
 import net.es.oscars.aaa.AAAException;
 import net.es.oscars.bss.BSSException;
 import net.es.oscars.tss.TSSException;
-import net.es.oscars.notify.NotifyException;
-import net.es.oscars.pathfinder.PathfinderException;
 import net.es.oscars.pss.PSSException;
 import net.es.oscars.interdomain.InterdomainException;
 import net.es.oscars.lookup.LookupException;
@@ -111,10 +107,6 @@ public class OSCARSSkeleton implements OSCARSSkeletonInterface {
             bss.getTransaction().rollback();
             this.log.error("createReservation: " + e.getMessage());
             throw new BSSFaultMessage("createReservation " + e.getMessage());
-        } catch (InterdomainException e) {
-            bss.getTransaction().rollback();
-            this.log.error("createReservation interdomain error: " + e.getMessage());
-            throw new BSSFaultMessage("createReservation interdomain error " + e.getMessage());
         }
         response.setCreateReservationResponse(reply);
         bss.getTransaction().commit();
