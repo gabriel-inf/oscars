@@ -9,4 +9,7 @@ public class BSSException extends Exception {
     public BSSException(String msg) {
         super(msg);
     }
+    public BSSException(Exception ex) {
+    	super(ex);
+    }
 }
