@@ -9,15 +9,16 @@ import net.es.oscars.database.*;
 
 public class StateEngine {
 
-    public final static String CREATED = "CREATED";
+    public final static String SUBMITTED = "SUBMITTED";
+    public final static String ACCEPTED = "ACCEPTED";
     public final static String RESERVED = "PENDING";
     public final static String PENDING = "PENDING"; // to be removed..
     public final static String ACTIVE = "ACTIVE";
+    public final static String INSETUP = "INSETUP";
+    public final static String INTEARDOWN = "INTEARDOWN";
     public final static String FINISHED = "FINISHED";
     public final static String CANCELLED = "CANCELLED";
     public final static String FAILED = "FAILED";
-    public final static String INSETUP = "INSETUP";
-    public final static String INTEARDOWN = "INTEARDOWN";
     public final static String INMODIFY = "INMODIFY";
 
     private String dbname;
@@ -38,7 +39,7 @@ public class StateEngine {
         }
         String status = StateEngine.statusMap.get(gri);
 
-        StateEngine.canTransitBetween(status, newStatus);
+        StateEngine.canModifyStatus(status, newStatus);
 
         status = newStatus;
         resv.setStatus(status);
@@ -51,45 +52,54 @@ public class StateEngine {
     // This is intentionally not synchronized, we do not want to block when reading the status
     public static void canUpdateStatus(Reservation resv, String newStatus) throws BSSException {
         String status = StateEngine.getStatus(resv);
-        StateEngine.canTransitBetween(status, newStatus);
+        StateEngine.canModifyStatus(status, newStatus);
     }
 
     // Business / state diagram logic goes here
-    public static void canTransitBetween(String status, String newStatus) throws BSSException {
-
-        if (newStatus.equals(CREATED)) {
-            // always go there
+    public static void canModifyStatus(String status, String newStatus) throws BSSException {
+    	boolean allowed = true;
+    	if (newStatus.equals(status)) {
+    		// no-ops always allowed
+    	} else if (newStatus.equals(SUBMITTED)) {
+            // always allowed, must not abuse..
         } else if (newStatus.equals(FAILED)) {
-            // always go there
+            // always allowed, must not abuse..
+        } else if (newStatus.equals(ACCEPTED)) {
+            if (!status.equals(SUBMITTED)) {
+            	allowed = false;
+            }
         } else if (newStatus.equals(RESERVED)) {
-            if (!status.equals(CREATED)) {
-                throw new BSSException("Current status is "+status+"; cannot become RESERVED");
+            if (!status.equals(ACCEPTED) && !status.equals(INTEARDOWN) && !status.equals(INMODIFY)) {
+            	allowed = false;
             }
         } else if (newStatus.equals(INMODIFY)) {
             if (!status.equals(RESERVED) && !status.equals(ACTIVE)) {
-                throw new BSSException("Current status is "+status+"; cannot modify");
+            	allowed = false;
             }
         } else if (newStatus.equals(INSETUP)) {
             if (!status.equals(RESERVED)) {
-                throw new BSSException("Current status is "+status+"; cannot setup");
+            	allowed = false;
             }
         } else if (newStatus.equals(ACTIVE)) {
-            if (!status.equals(INSETUP) && !status.equals(ACTIVE)) {
-                throw new BSSException("Current status is "+status+"; cannot make active");
+            if (!status.equals(INSETUP) && !status.equals(INMODIFY)) {
+            	allowed = false;
             }
         } else if (newStatus.equals(INTEARDOWN)) {
             if (!status.equals(ACTIVE)) {
-                throw new BSSException("Current status is "+status+"; cannot tear down");
+            	allowed = false;
             }
         } else if (newStatus.equals(FINISHED)) {
             if (!status.equals(RESERVED) && !status.equals(INTEARDOWN)) {
-                throw new BSSException("Current status is "+status+"; cannot finish");
+            	allowed = false;
             }
         } else if (newStatus.equals(CANCELLED)) {
             if (!status.equals(RESERVED) && !status.equals(INTEARDOWN)) {
-                throw new BSSException("Current status is "+status+"; cannot cancel");
+            	allowed = false;
             }
         }
+    	if (!allowed) {
+    		throw new BSSException("Current status is "+status+"; cannot change to "+newStatus);
+    	}
     }
 
 
