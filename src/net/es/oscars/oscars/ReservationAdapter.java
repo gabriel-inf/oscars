@@ -20,7 +20,7 @@ import net.es.oscars.lookup.LookupFactory;
 import net.es.oscars.lookup.PSLookupClient;
 import net.es.oscars.notify.*;
 import net.es.oscars.interdomain.*;
-import net.es.oscars.scheduler.CreateReservationJob;
+import net.es.oscars.scheduler.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.*;
 import net.es.oscars.bss.topology.*;
@@ -59,17 +59,16 @@ public class ReservationAdapter {
      * @throws BSSException
      */
     public CreateReply create(ResCreateContent params, String login)
-            throws BSSException, InterdomainException {
+            throws BSSException {
 
         this.log.info("create.start");
         this.logCreateParams(params);
         Reservation resv = this.tc.contentToReservation(params);
-        Forwarder forwarder = this.core.getForwarder();
-        if (this.core.initialized) {
-            this.log.debug("Core has been initialized");
+        
+        if (!this.core.initialized) {
+            this.log.error("Core has not been initialized!");
+            throw new BSSException("Core has not been initialized!");
         }
-
-
 
         PathInfo pathInfo = params.getPathInfo();
         CreateReply forwardReply = null;
@@ -78,51 +77,14 @@ public class ReservationAdapter {
 
         try {
             eventProducer.addEvent(OSCARSEvent.RESV_CREATE_STARTED, login, "API", resv);
-            this.rm.create(resv, login, pathInfo);
+            this.rm.submitCreate(resv, login, pathInfo);
 
-            try {
-                Scheduler sched = this.core.getScheduleManager().getScheduler();
-                String gri = resv.getGlobalReservationId();
-                JobDetail jobDetail = new JobDetail("create-"+gri, "UNQUEUED", CreateReservationJob.class);
-                this.log.debug("Adding job create-"+gri);
-                jobDetail.setDurability(true);
-                JobDataMap jobDataMap = new JobDataMap();
-                jobDataMap.put("reservation", resv);
-                jobDetail.setJobDataMap(jobDataMap);
-                sched.addJob(jobDetail, false);
-
-            } catch (SchedulerException ex) {
-                this.log.error("Scheduler exception", ex);
-            }
-
-            this.tc.ensureLocalIds(pathInfo);
-
-            // TODO: why does this sometimes get unset?
-            pathInfo.getPath().setId("unimplemented");
-
-            // checks whether next domain should be contacted, forwards to
-            // the next domain if necessary, and handles the response
-            this.log.debug("create, to forward");
-            InterdomainException interException = null;
-            try {
-                forwardReply = forwarder.create(resv, pathInfo);
-            } catch (InterdomainException e) {
-                interException = e;
-            } finally {
-                forwarder.cleanUp();
-                if(interException != null) {
-                    throw interException;
-                }
-            }
-            this.rm.finalizeResv(forwardReply, resv, pathInfo);
-            // persist to db
-            this.rm.store(resv);
-            resv.toString("bss");//initialize object
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login,
-                "API", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, login, "API", resv);
 
             this.log.debug("create, to toReply");
             reply = this.tc.reservationToReply(resv);
+            
+            // FIXME: This test will always fail on asynchronous mode
             if (pathInfo.getLayer3Info() != null && forwardReply != null && forwardReply.getPathInfo() != null) {
                 // Add remote hops to returned explicitPath
                 this.addHops(reply.getPathInfo(), forwardReply.getPathInfo());
@@ -138,15 +100,8 @@ public class ReservationAdapter {
         } catch (BSSException e) {
             // send notification in all cases
             String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API",
-                resv, "", errMsg);
+            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API", resv, "", errMsg);
             throw new BSSException(e.getMessage());
-        } catch (InterdomainException e) {
-            // send notification in all cases
-            String errMsg = this.generateErrorMsg(resv, e.getMessage());
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, login, "API",
-                resv, "", errMsg);
-            throw new InterdomainException(e.getMessage());
         }
 
         this.log.info("create.finish: " + resv.toString("bss"));

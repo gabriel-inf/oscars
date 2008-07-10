@@ -46,8 +46,6 @@ public class CreateResRmiHandler {
         HashMap<String, Object> result = new HashMap<String, Object>();
         String methodName = "CreateReservation";
 
-        TypeConverter tc = core.getTypeConverter();
-        Forwarder forwarder = core.getForwarder();
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
 
@@ -91,6 +89,11 @@ public class CreateResRmiHandler {
             return result;
         }
         aaa.getTransaction().commit();
+        
+        
+        
+ 
+        
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
@@ -98,20 +101,13 @@ public class CreateResRmiHandler {
         try {
             // url returned, if not null, indicates location of next domain
             // manager
-            rm.create(resv, userName, pathInfo);
-            // checks whether next domain should be contacted, forwards to
-            // the next domain if necessary, and handles the response
-            CreateReply forwardReply = forwarder.create(resv, pathInfo);
-            rm.finalizeResv(forwardReply, resv, pathInfo);
-            rm.store(resv);
-            eventProducer.addEvent(OSCARSEvent.RESV_CREATE_COMPLETED, userName, "WBUI", resv);
+            rm.submitCreate(resv, userName, pathInfo);
         } catch (BSSException e) {
             errMessage = e.getMessage();
         } catch (Exception e) {
             // use this so we can find NullExceptions
             errMessage = e.getMessage();
         } finally {
-            forwarder.cleanUp();
             if (errMessage != null) {
                 eventProducer.addEvent(OSCARSEvent.RESV_CREATE_FAILED, userName, "WBUI", resv, "", errMessage);
                 result.put("error", errMessage);
@@ -120,7 +116,7 @@ public class CreateResRmiHandler {
             }
         }
         result.put("gri", resv.getGlobalReservationId());
-        result.put("status", "Created reservation with GRI " + resv.getGlobalReservationId());
+        result.put("status", "Submitted reservation with GRI " + resv.getGlobalReservationId());
         result.put("method", methodName);
         result.put("success", Boolean.TRUE);
 
@@ -128,6 +124,11 @@ public class CreateResRmiHandler {
         this.log.debug("create.end - success");
         return result;
     }
+    
+    
+    
+    
+    
 
     private Reservation toReservation(String userName, HashMap<String, String[]> inputMap) {
         String[] arrayParam = null;
