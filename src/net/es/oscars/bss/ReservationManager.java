@@ -68,36 +68,11 @@ public class ReservationManager {
     public void submitCreate(Reservation resv, String login, PathInfo pathInfo)
     	throws  BSSException {
         this.log.info("submitCreate.start");
-
-        // this should be the ONLY time we set status with setStatus
-        resv.setStatus(StateEngine.SUBMITTED);
-        StateEngine se = new StateEngine();
-        try {
-            // AAA has been performed before this
-        	se.updateStatus(resv, StateEngine.ACCEPTED, false);
-        } catch (BSSException ex) {
-        	this.log.error(ex);
-        }
+        ReservationDAO dao = new ReservationDAO(this.dbname);
         
-        long seconds = System.currentTimeMillis()/1000;
-        resv.setCreatedTime(seconds);
-
         
-        // will throw an exception if we can't
-        //set GRI if none specified
-        if (resv.getGlobalReservationId() == null){
-            String gri = this.generateGRI();
-            resv.setGlobalReservationId(gri);
-        } else {
-            ReservationDAO dao = new ReservationDAO(this.dbname);
-            Reservation tmp = dao.query(resv.getGlobalReservationId());
-            if (tmp != null) {
-                throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
-            }
-        }
-        
+        // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
-        // so far just validation for create
         StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
@@ -105,7 +80,42 @@ public class ReservationManager {
 
         this.log.info("create.validated");
 
+        // set GRI if none specified
+        if (resv.getGlobalReservationId() == null){
+            String gri = this.generateGRI();
+            resv.setGlobalReservationId(gri);
+        } else {
+            // this should be the first time we're seeing this GRI
+            Reservation tmp = dao.query(resv.getGlobalReservationId());
+            if (tmp != null) {
+                throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
+            }
+        }
+
+        long seconds = System.currentTimeMillis()/1000;
+        resv.setCreatedTime(seconds);
         
+        // This is a pretty bad misuse of this function 
+        // TODO: Test if this actually works
+        Path tempPath = this.convertPath(pathInfo, pathInfo, null, false);
+        resv.setPath(tempPath);
+
+        // This will be the ONLY time we set status with setStatus
+        resv.setStatus(StateEngine.SUBMITTED);
+        StateEngine se = new StateEngine();
+        try {
+            // Assume AAA has been performed before this.
+        	se.updateStatus(resv, StateEngine.ACCEPTED);
+        } catch (BSSException ex) {
+        	this.log.error(ex);
+        }
+        
+        // Save the reservation so that the client can query for it
+        dao.update(resv);
+        
+
+        // Now create a CreateReservationJob, put it in the SERIALIZE_RESOURCE_SCHEDULING queue
+        // All create / cancel / modify operations will be in this queue.
         Scheduler sched = this.core.getScheduleManager().getScheduler();
 
         String jobName = "submit-"+resv.hashCode();
@@ -537,7 +547,7 @@ public class ReservationManager {
             }
         }
         // convert to form for db
-        Path path = this.convertPath(intraPath, pathInfo, nextDomain);
+        Path path = this.convertPath(intraPath, pathInfo, nextDomain, true);
         path.setExplicit(isExplicit);
         return path;
     }
@@ -552,7 +562,7 @@ public class ReservationManager {
      * @return path Path in database format
      */
     public Path convertPath(PathInfo intraPathInfo, PathInfo interPathInfo,
-        Domain nextDomain) throws BSSException {
+        Domain nextDomain, boolean isPermanent) throws BSSException {
 
         Link link = null;
         Link srcLink = null;
@@ -566,9 +576,16 @@ public class ReservationManager {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
 
-        Layer2Info layer2Info = interPathInfo.getLayer2Info();
-        Layer3Info layer3Info = interPathInfo.getLayer3Info();
-        String pathSetupMode = interPathInfo.getPathSetupMode();
+        Layer2Info layer2Info = null;
+        
+        Layer3Info layer3Info = null; 
+        String pathSetupMode = null; 
+        
+        if (interPathInfo != null) {
+	        layer2Info = interPathInfo.getLayer2Info();
+	        layer3Info = interPathInfo.getLayer3Info();
+	        pathSetupMode = interPathInfo.getPathSetupMode();
+        }
 
         if (layer2Info != null) {
             srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
@@ -578,12 +595,17 @@ public class ReservationManager {
         Path path = new Path();
         path.setNextDomain(nextDomain);
 
-        CtrlPlanePathContent intraPath = intraPathInfo.getPath();
-        CtrlPlaneHopContent[] hops = intraPath.getHop();
+        CtrlPlanePathContent intraPath = null;
+        CtrlPlaneHopContent[] hops = new CtrlPlaneHopContent[0];
+        if (intraPathInfo != null) {
+        	intraPath = intraPathInfo.getPath();
+        	hops = intraPath.getHop();
+        }
+        
         List<PathElem> pathElems = new ArrayList<PathElem>();
 
-        //  finalize information at layer 2 if last domain
-        if (nextDomain == null && layer2Info != null) {
+        //  finalize information at layer 2 if last domain (and we're not just saving during submitCreate())
+        if (nextDomain == null && layer2Info != null && isPermanent) {
             this.chooseVlanTag(layer2Info);
         }
 
@@ -655,11 +677,14 @@ public class ReservationManager {
                 }
             }
             pathElem.setLink(link);
-            //set VLAN tag if layer2 request and l2sc link
-            //TODO: Set differently if VLAN mapping supported
+            
+            // set VLAN tag if layer2 request and l2sc link
+            // do not set if this comes from submitCreate()
+            // TODO: Set differently if VLAN mapping supported
             if(layer2Info != null &&
                 link.getL2SwitchingCapabilityData() != null &&
-                nextDomain == null) {
+                nextDomain == null &&
+                isPermanent) {
                 this.setL2LinkDescr(pathElem, srcLink, destLink, link,  layer2Info);
             } else if (nextDomain != null) {
                 this.log.info("next domain is NOT NULL, not setting up VLAN tags now");
