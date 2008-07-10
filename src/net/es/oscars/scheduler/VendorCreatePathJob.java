@@ -24,6 +24,9 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         Reservation resv = (Reservation) dataMap.get("reservation");
+        LSPData lspData = (LSPData) dataMap.get("lspData");
+        String direction = (String) dataMap.get("direction");
+        String routerType = (String) dataMap.get("routerType");
 
         String gri;
         if (resv != null) {
@@ -31,6 +34,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             this.log.debug("GRI is: "+gri+ " for job name: "+jobName);
         } else {
             this.log.error("No reservation!");
+            super.execute(context);
             return;
         }
 
@@ -38,6 +42,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             StateEngine.canUpdateStatus(resv, StateEngine.ACTIVE);
         } catch (BSSException ex) {
             this.log.error(ex);
+            super.execute(context);
             return;
         }
 
@@ -45,10 +50,6 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         Session bss = core.getBssSession();
         bss.beginTransaction();
 
-
-        LSPData lspData = (LSPData) dataMap.get("lspData");
-        String direction = (String) dataMap.get("direction");
-        String routerType = (String) dataMap.get("routerType");
 
         boolean pathWasSetup = true;
         LSP ciscoLSP = null;
@@ -87,11 +88,9 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         }
 
 
-        super.execute(context);
-
-
-
         bss.getTransaction().commit();
+
+        super.execute(context);
 
         this.log.debug("VendorCreatePathJob.end name: "+jobName);
 
