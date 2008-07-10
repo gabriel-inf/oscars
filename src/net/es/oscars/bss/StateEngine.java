@@ -29,8 +29,12 @@ public class StateEngine {
         this.dbname = OSCARSCore.getInstance().getBssDbName();
         this.log = Logger.getLogger(this.getClass());
     }
-
+    
     public synchronized String updateStatus(Reservation resv, String newStatus) throws BSSException {
+    	return this.updateStatus(resv, newStatus, true);
+    }
+
+    public synchronized String updateStatus(Reservation resv, String newStatus, boolean persist) throws BSSException {
         String gri = resv.getGlobalReservationId();
 
         // initialize this if this is the first time
@@ -43,8 +47,10 @@ public class StateEngine {
 
         status = newStatus;
         resv.setStatus(status);
-        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-        resvDAO.update(resv);
+        if (persist) {
+	        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+	        resvDAO.update(resv);
+        }
         StateEngine.statusMap.put(gri, status);
         return status;
     }
