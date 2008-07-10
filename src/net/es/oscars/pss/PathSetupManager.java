@@ -186,7 +186,7 @@ public class PathSetupManager{
      * @return the status returned by the the teardown operation
      * @throws PSSException
      */
-    public String teardown(Reservation resv, boolean doForward)
+    public String teardown(Reservation resv, String newStatus, boolean doForward)
                     throws PSSException{
         String prevStatus = resv.getStatus();
         String status = null;
@@ -201,7 +201,7 @@ public class PathSetupManager{
 
         /* Teardown path in this domain */
         try{
-            status = this.pss.teardownPath(resv);
+            status = this.pss.teardownPath(resv, newStatus);
         }catch(PSSException e){
             //still want to forward if error occurs
             this.log.error("Unable to teardown path for " +

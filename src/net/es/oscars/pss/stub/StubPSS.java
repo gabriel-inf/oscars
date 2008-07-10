@@ -80,7 +80,7 @@ public class StubPSS implements PSS{
      * @param resv the reservation whose path will be removed
      * @throws PSSException
      */
-    public String teardownPath(Reservation resv) throws PSSException{
+    public String teardownPath(Reservation resv, String newStatus) throws PSSException{
         this.log.info("stub.teardown.start");
         try {
             String gri = resv.getGlobalReservationId();

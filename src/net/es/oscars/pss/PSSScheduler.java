@@ -7,6 +7,7 @@ import java.lang.Throwable;
 import org.apache.log4j.*;
 import org.hibernate.*;
 
+import net.es.oscars.bss.StateEngine;
 import net.es.oscars.bss.Reservation;
 import net.es.oscars.bss.ReservationDAO;
 import net.es.oscars.interdomain.InterdomainException;
@@ -52,25 +53,21 @@ public class PSSScheduler {
                     // resv set to proper status inside dragon, cisco, or jnx
                     String status = this.pathSetupManager.create(resv, true);
                 }
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "",
-                    "SCHEDULER", resv);
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_COMPLETED, "", "SCHEDULER", resv);
             } catch (PSSException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "",
-                    "SCHEDULER", resv, "", ex.getMessage());
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             } catch (InterdomainException ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "",
-                    "SCHEDULER", resv, "", ex.getMessage());
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, and log
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "",
-                    "SCHEDULER", resv, "", ex.getMessage());
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             }
 
@@ -100,27 +97,24 @@ public class PSSScheduler {
                 // call PSS to tear down LSP
                 prevStatus = resv.getStatus();
 
-                this.log.info("expiredReservation: " +
-                              resv.getGlobalReservationId());
-                String status = this.pathSetupManager.teardown(resv, false);
-                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "",
-                    "SCHEDULER", resv);
+                this.log.info("expiredReservation: " + resv.getGlobalReservationId());
+                String status = this.pathSetupManager.teardown(resv, StateEngine.FINISHED, false);
+                eventProducer.addEvent(OSCARSEvent.PATH_TEARDOWN_COMPLETED, "", "SCHEDULER", resv);
 
                 if (status.equals("CANCELLED")) {
-                    eventProducer.addEvent(OSCARSEvent.RESV_CANCELLED, "",
-                        "SCHEDULER", resv);
+                    eventProducer.addEvent(OSCARSEvent.RESV_CANCELLED, "", "SCHEDULER", resv);
                 }
             } catch (PSSException ex) {
                 // set to FAILED, and log
+            	// FIXME: don't do that
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "",
-                    "SCHEDULER", resv, "", ex.getMessage());
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             } catch (Exception ex) {
                 // set to FAILED, and log
+            	// FIXME: don't do that
                 resv.setStatus("FAILED");
-                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "",
-                    "SCHEDULER", resv, "", ex.getMessage());
+                eventProducer.addEvent(OSCARSEvent.PATH_SETUP_FAILED, "", "SCHEDULER", resv, "", ex.getMessage());
                 this.log.error(ex.getMessage());
             }
             dao.update(resv);
@@ -150,22 +144,19 @@ public class PSSScheduler {
         // 1 day
         reservations = dao.expiringReservations(days_1, timeInterval);
         for (Reservation resv: reservations) {
-            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_1DAY, "",
-                    "SCHEDULER", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_1DAY, "", "SCHEDULER", resv);
         }
 
         // 7 days
         reservations = dao.expiringReservations(days_7, timeInterval);
         for (Reservation resv: reservations) {
-            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_7DAYS, "",
-                    "SCHEDULER", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_7DAYS, "", "SCHEDULER", resv);
         }
 
         // 30 days
         reservations = dao.expiringReservations(days_30, timeInterval);
         for (Reservation resv: reservations) {
-            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_30DAYS, "",
-                    "SCHEDULER", resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_EXPIRES_IN_30DAYS, "", "SCHEDULER", resv);
         }
 
 

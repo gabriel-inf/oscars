@@ -11,5 +11,5 @@ import net.es.oscars.bss.Reservation;
 public interface PSS{
     public String createPath(Reservation resv) throws PSSException;
     public String refreshPath(Reservation resv) throws PSSException;
-    public String teardownPath(Reservation resv) throws PSSException;
+    public String teardownPath(Reservation resv, String newStatus) throws PSSException;
 }

@@ -479,7 +479,7 @@ public class VlsrPSS implements PSS{
      * @param resv the reservation whose path will be removed
      * @throws PSSException
      */
-    public String teardownPath(Reservation resv) throws PSSException{
+    public String teardownPath(Reservation resv, String newStatus) throws PSSException{
         this.log.info("vlsr.teardown.start");
         DragonCSA csa = new DragonCSA();
         csa.setLogger("PathScheduler");

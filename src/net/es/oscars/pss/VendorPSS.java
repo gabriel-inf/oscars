@@ -151,47 +151,11 @@ public class VendorPSS implements PSS {
             this.log.error("Scheduler exception", ex);
         }
 
+        status = StateEngine.getStatus(resv);
 
-/*
-        // TODO: temp fix
-        if (true) {
-            resv.setStatus("ACTIVE");
-            return resv.getStatus();
-        }
-
-        // TODO: add a verify path setup job
-
-        // don't attempt to get circuit status if not configuring
-        if (!this.allowLSP) {
-            return resv.getStatus();
-        }
-        boolean active = false;
-        // both sides need to be up for a circuit to show up as UP
-        // currently only Cisco status gathering works
-        if (ciscoLSP != null) {
-            active = ciscoLSP.statusLSP();
-            if (!active) {
-                // try one more time a minute later
-                try {
-                    Thread.sleep(60000);
-                } catch (Exception ex) {
-                    throw new PSSException(ex.getMessage());
-                }
-                active = ciscoLSP.statusLSP();
-            }
-        } else {
-            //active = jnxLSP.statusLSP();
-            active = true;
-        }
-        if (!active) {
-            resv.setStatus("FAILED");
-            throw new PSSException("circuit setup for " +
-                                   resv.getGlobalReservationId() + " failed");
-        }
-*/
 
         this.log.info("create.end");
-        return resv.getStatus();
+        return status;
     }
 
     /**
@@ -234,9 +198,17 @@ public class VendorPSS implements PSS {
      * @return status string with status of tear down
      * @throws PSSException
      */
-    public String teardownPath(Reservation resv) throws PSSException {
+    public String teardownPath(Reservation resv, String newStatus) throws PSSException {
         this.log.info("teardownPath.start");
 
+
+        try {
+            StateEngine.canUpdateStatus(resv, StateEngine.INTEARDOWN);
+        } catch (BSSException ex) {
+            throw new PSSException(ex);
+        }
+        String status;
+        
         LSPData lspData = new LSPData(dbname);
 
         String forwardRouterType = "";
@@ -281,7 +253,16 @@ public class VendorPSS implements PSS {
                 throw new PSSException("Unsupported router type " + sysDescr);
             }
         }
-
+        
+        StateEngine stateEngine = new StateEngine();
+        try {
+            status = StateEngine.getStatus(resv);
+            this.log.debug("Reservation status was: "+status);
+            status = stateEngine.updateStatus(resv, StateEngine.INTEARDOWN);
+            this.log.debug("Reservation status now is: "+status);
+        } catch (BSSException ex) {
+            this.log.error("State engine error", ex);
+        }
 
         try {
             String gri = resv.getGlobalReservationId();
@@ -296,6 +277,7 @@ public class VendorPSS implements PSS {
             fwdJobDataMap.put("lspData", lspData);
             fwdJobDataMap.put("direction", "forward");
             fwdJobDataMap.put("routerType", forwardRouterType);
+            fwdJobDataMap.put("newStatus", newStatus);
             fwdJobDetail.setJobDataMap(fwdJobDataMap);
             sched.addJob(fwdJobDetail, false);
             if (doReverse) {
@@ -308,6 +290,7 @@ public class VendorPSS implements PSS {
                 rvsJobDataMap.put("lspData", lspData);
                 rvsJobDataMap.put("direction", "reverse");
                 rvsJobDataMap.put("routerType", reverseRouterType);
+                fwdJobDataMap.put("newStatus", newStatus);
                 rvsJobDetail.setJobDataMap(rvsJobDataMap);
                 sched.addJob(rvsJobDetail, false);
             }
@@ -316,33 +299,10 @@ public class VendorPSS implements PSS {
             this.log.error("Scheduler exception", ex);
         }
 
-
-        // TODO: temp fix
-        if (true) {
-            resv.setStatus("FINISHED");
-            return resv.getStatus();
-        }
-
-
         // TODO: replace this with a status check job
-
-        // don't attempt to get circuit status if not configuring
-        if (!this.allowLSP) {
-            return resv.getStatus();
-        }
-        boolean active = false;
-        // currently only Cisco status gathering works
-        if (ciscoLSP != null) {
-            active = ciscoLSP.statusLSP();
-        } else {
-            //active = jnxLSP.statusLSP();
-            active = false;
-        }
-        if (active) {
-            resv.setStatus("FAILED");
-            throw new PSSException("circuit teardown for " + resv.getGlobalReservationId() + " failed");
-        }
-        return resv.getStatus();
+        status = StateEngine.getStatus(resv);
+        this.log.info("create.end");
+        return status;
     }
 
     /**

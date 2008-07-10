@@ -196,18 +196,21 @@ public class PathSetupAdapter{
 
         Reservation resv = getConstrainedResv(gri,tokenValue,login,institution);
 
-        /* Check reservation parameters */
         if(resv.getPath().getPathSetupMode() == null ||
-            (!resv.getPath().getPathSetupMode().equals("signal-xml")) ){
-            throw new PSSException("No reservations match request");
-        }else if(!resv.getStatus().equals("ACTIVE")){
-            throw new PSSException("Cannot teardown path. " +
-            "Reservation is not active. Please run createPath first.");
+                (!resv.getPath().getPathSetupMode().equals("signal-xml")) ){
+                throw new PSSException("No reservations match request");
+        }
+
+        String currentStatus = StateEngine.getStatus(resv);
+        try {
+        	StateEngine.canModifyStatus(currentStatus, StateEngine.INTEARDOWN);
+        } catch (BSSException ex) {
+        	throw new PSSException(ex);
         }
 
         /* Teardown path in this domain */
         try {
-            status = this.pm.teardown(resv, true);
+            status = this.pm.teardown(resv, StateEngine.RESERVED, true);
             response.setStatus(status);
             response.setGlobalReservationId(gri);
         } catch (PSSException e) {
