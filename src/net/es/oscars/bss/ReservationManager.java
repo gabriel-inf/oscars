@@ -13,12 +13,16 @@ import org.aaaarch.gaaapi.tvs.TokenKey;
 
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlanePathContent;
 import org.ogf.schema.network.topology.ctrlplane._20070626.CtrlPlaneHopContent;
+import org.quartz.*;
 
 import net.es.oscars.PropHandler;
-import net.es.oscars.oscars.TypeConverter;
+import net.es.oscars.oscars.*;
+import net.es.oscars.scheduler.*;
 import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.bss.topology.*;
 import net.es.oscars.pathfinder.*;
+import net.es.oscars.pss.PSSException;
+import net.es.oscars.scheduler.VendorCreatePathJob;
 import net.es.oscars.notify.*;
 import net.es.oscars.database.HibernateUtil;
 
@@ -38,6 +42,7 @@ public class ReservationManager {
     private TypeConverter tc;
     private String dbname;
     private ReservationLogger rsvLogger;
+    private OSCARSCore core;
 
     /** Constructor. */
     public ReservationManager(String dbname) {
@@ -48,6 +53,7 @@ public class ReservationManager {
         this.tc = new TypeConverter();
         this.dbname = dbname;
         this.notifier = new NotifyInitializer();
+        this.core = OSCARSCore.getInstance();
         try {
             this.notifier.init();
         } catch (NotifyException ex) {
@@ -58,7 +64,75 @@ public class ReservationManager {
             // want exceptions in constructor
         }
     }
+    
+    public void submitCreate(Reservation resv, String login, PathInfo pathInfo)
+    	throws  BSSException {
+        this.log.info("submitCreate.start");
 
+        // this should be the ONLY time we set status with setStatus
+        resv.setStatus(StateEngine.SUBMITTED);
+        StateEngine se = new StateEngine();
+        try {
+            // AAA has been performed before this
+        	se.updateStatus(resv, StateEngine.ACCEPTED, false);
+        } catch (BSSException ex) {
+        	this.log.error(ex);
+        }
+        
+        long seconds = System.currentTimeMillis()/1000;
+        resv.setCreatedTime(seconds);
+
+        
+        // will throw an exception if we can't
+        //set GRI if none specified
+        if (resv.getGlobalReservationId() == null){
+            String gri = this.generateGRI();
+            resv.setGlobalReservationId(gri);
+        } else {
+            ReservationDAO dao = new ReservationDAO(this.dbname);
+            Reservation tmp = dao.query(resv.getGlobalReservationId());
+            if (tmp != null) {
+                throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
+            }
+        }
+        
+        ParamValidator paramValidator = new ParamValidator();
+        // so far just validation for create
+        StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
+        if (errorMsg.length() > 0) {
+            throw new BSSException(errorMsg.toString());
+        }
+
+        this.log.info("create.validated");
+
+        
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+
+        String jobName = "submit-"+resv.hashCode();
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_RESOURCE_SCHEDULING", CreateReservationJob.class);
+        this.log.debug("Adding job "+jobName);
+        jobDetail.setDurability(true);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("reservation", resv);
+        jobDataMap.put("login", login);
+        jobDataMap.put("pathInfo", pathInfo);
+        jobDetail.setJobDataMap(jobDataMap);
+        try {
+        	sched.addJob(jobDetail, false);
+        } catch (SchedulerException ex) {
+        	throw new BSSException(ex);
+        }
+
+        this.log.info("submitCreate.end");
+    }
+
+    
+    
+    
+    
+    
+    
+    
     /**
      * Creates the reservation, given a partially filled in reservation
      * instance and additional parameters.
@@ -71,43 +145,19 @@ public class ReservationManager {
     public void create(Reservation resv, String login, PathInfo pathInfo)
             throws  BSSException {
 
-        ParamValidator paramValidator = new ParamValidator();
 
         this.log.info("create.start");
         // login is checked in validate so set it here
         resv.setLogin(login);
 
-        //set GRI if none specified
-        if (resv.getGlobalReservationId() == null){
-            String gri = this.generateGRI();
-            resv.setGlobalReservationId(gri);
-        } else {
-            ReservationDAO dao = new ReservationDAO(this.dbname);
-            Reservation tmp = dao.query(resv.getGlobalReservationId());
-            if (tmp != null) {
-                throw new BSSException("Reservation with gri: "+resv.getGlobalReservationId()+" already exists!");
-            }
-
-        }
         this.rsvLogger.redirect(resv.getGlobalReservationId());
 
-        // so far just validation for create
-        StringBuilder errorMsg =
-                paramValidator.validate(resv, pathInfo);
-        if (errorMsg.length() > 0) {
-            throw new BSSException(errorMsg.toString());
-        }
-
-        this.log.info("create.validated");
-        resv.setStatus("PENDING");
         CtrlPlanePathContent pathCopy = null;
 
         // this modifies the path to include internal hops with layer 2,
         // and finds the complete path with traceroute
         Path path = this.getPath(resv, pathInfo);
         resv.setPath(path);
-        long seconds = System.currentTimeMillis()/1000;
-        resv.setCreatedTime(seconds);
 
         // if layer 3, forward complete path found by traceroute, minus
         // internal hops
