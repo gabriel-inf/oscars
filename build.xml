@@ -78,7 +78,7 @@ Adding a -sd switch generates resources/services.xml -->
     <target name="wsdl2java" depends="prepare, genWsdl.check" if="genWsdl">
         <delete failonerror="true">
             <fileset dir="src/net/es/oscars/wsdlTypes" includes="*"/>
-            <fileset dir="src/org" includes="**/*"/>
+            <fileset dir="src/org" includes="ogf/**/*"/>
         </delete>
         <delete failonerror="false">
             <fileset dir="resources" includes="services.xml"/>
@@ -116,9 +116,8 @@ been generated yet. -->
     <target name="wsdlType.check">
         <pathconvert refid="wsdlTypes" property="wsdlTypes.notempty" setonempty="false"/>
     </target>
-    <fileset dir="src/org" id="org"/>
     <target name="org.check">
-        <pathconvert refid="org" property="org.notempty" setonempty="false"/>
+        <available file="src/org/ogf" property="org.avail"/>
     </target>
     <!-- Determine whether WSDL or XSD files have changed -->
     <target name="schema.check">
@@ -136,7 +135,7 @@ been generated yet. -->
                     <isset property="wsdlTypes.notempty"/>
                 </not>
                 <not>
-                    <isset property="org.notempty"/>
+                    <isset property="org.avail"/>
                 </not>
                 <not>
                     <isset property="schema.current"/>
@@ -147,7 +146,7 @@ been generated yet. -->
     <!-- Compile everything except tests.  Various targets use portions they
 need. Will need to separate if someone wants only WBUI and not Axis2 -->
     <!-- Added the debug flags to give us line numbers in stack traces -mrt -->
-    <target name="compile" depends="prepare, wsdl2java" description="Compile Java sources">
+    <target name="compile" depends="prepare, notifywsdl2java" description="Compile Java sources">
         <javac srcdir="src" includes="**/*.java" destdir="${build.classes}" debug="true" debuglevel="lines,vars,source">
             <compilerarg value="-Xlint:deprecation"/>
             <classpath>
@@ -203,7 +202,7 @@ need. Will need to separate if someone wants only WBUI and not Axis2 -->
 Tomcat, this is webapps/axis2/WEB-INF/services -->
     <target name="aar" description="Create OSCARS.aar file" depends="compile">
         <jar destfile="build/OSCARS.aar">
-            <fileset dir="${build.classes}" includes="**/*" excludes="**/servlets/**/*"/>
+            <fileset dir="${build.classes}" includes="**/*" excludes="**/servlets/**/*, **/notify/ws/**/*, **/notify/Subscribription**, **/org/oasis_open/**/*, **/org/w3/**/*"/>
             <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
             <metainf dir="conf/server" includes="*.wsdl, *.xsd, services.xml"/>
         </jar>
@@ -266,7 +265,7 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
     <!-- Note that this requires that Axis2 has already been deployed. -->
     <target name="deploylibs" description="copy all libraries used by the aar and war to shared/lib">
         <copy todir="${catalina.home}/shared/lib">
-            <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" excludes="jaxen-1.1.1.jar" />
+            <fileset dir="${webapp.home}/axis2/WEB-INF/lib" includes="*.jar" excludes="jaxen-1.1.1.jar"/>
         </copy>
     </target>
     <target name="copyMailTemplates">
@@ -385,5 +384,81 @@ Tomcat, this is webapps/axis2/WEB-INF/services -->
             <jvmarg value="-Dsuite=${testsuite}"/>
             <classfileset dir="${test.classes}" includes="**/*.class"/>
         </testng>
+    </target>
+    <!-- Notification interface targets -->
+    <target name="genAllWsdl.check" depends="genWsdl.check">
+        <available file="src/org/oasis_open" property="wsn.avail"/>
+        <available file="src/org/w3" property="w3.avail"/>
+        <uptodate property="notifyschema.current" targetfile="src/net/es/oscars/wsdlTypes/EmptyArg.java">
+            <srcfiles dir="conf/notify-server" includes="*.wsdl, *.xsd"/>
+        </uptodate>
+        <condition property="genAllWsdl">
+            <or>
+                <isset property="genWsdl"/>
+                <not>
+                    <isset property="wsn.avail"/>
+                </not>
+                <not>
+                    <isset property="w3.avail"/>
+                </not>
+                <not>
+                    <isset property="notifyschema.current"/>
+                </not>
+            </or>
+        </condition>
+    </target>
+    <target name="notifywsdl2java" depends="prepare, genAllWsdl.check" if="genAllWsdl">
+        <delete failonerror="true">
+            <fileset dir="src/net/es/oscars/wsdlTypes" includes="*"/>
+            <fileset dir="src/org" includes="**/*"/>
+        </delete>
+        <delete failonerror="false">
+            <fileset dir="resources" includes="services.xml"/>
+        </delete>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <jvmarg value="-Daxis2.jalopy=false"/>
+            <classpath>
+                <fileset dir="${build.lib}" includes="*.jar"/>
+                <fileset dir="${build.axis2.lib}" includes="*.jar"/>
+            </classpath>
+            <arg value="-uri"/>
+            <arg file="conf/notify-server/OSCARS-Notify.wsdl"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--sync"/>
+            <arg value="--service-description"/>
+            <arg value="--generate-all"/>
+            <arg value="-d"/>
+            <arg value="adb"/>
+            <arg value="-package"/>
+            <arg value="net.es.oscars.notify.ws"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://oscars.es.net/OSCARS=net.es.oscars.wsdlTypes"/>
+        </java>
+        <echo>
+  ***
+  **** Changes to resources/services.xml must be merged with
+  **** conf/server/services.xml
+  ****
+        </echo>
+    </target>
+    <target name="notifyaar" description="Create OSCARSNotify.aar file" depends="compile">
+        <copy file="conf/notify-server/notify.cfg.xml" todir="${build.classes}"/>
+        <jar destfile="build/OSCARSNotify.aar">
+            <fileset dir="${build.classes}" includes="**/*" excludes="**/servlets/**/*"/>
+            <fileset dir="${build.lib}/.." includes="lib/*.jar"/>
+            <metainf dir="conf/notify-server" includes="*.wsdl, *.xsd, services.xml"/>
+        </jar>
+    </target>
+    <target name="deploynotifyaar" description="copy OSCARSNotify.aar to axis2 services directory" depends="notifyaar,deploylibs">
+        <copy file="${build.home}/OSCARSNotify.aar" todir="${webservice.home}"/>
+        <copy file="conf/server/axis2.log4j.properties" tofile="${webservice.home}/../classes/log4j.properties"/>
+        <!-- these jars need to be in shared/lib to avoid classNotFound
+         errors ... mrt/3/27 -->
+        <copy todir="${webapp.home}/../shared/lib">
+            <fileset dir="lib" includes="wss4j-1.5.3.jar,xmlsec-1.4.0.jar,xalan-2.7.0.jar"/>
+        </copy>
+        <!-- Since wss4j is there the PWCallback class needs to be there as well -->
+        <copy file="${build.classes}/net/es/oscars/client/security/PWCallback.class" todir="${catalina.home}/webapps/axis2/WEB-INF/classes/net/es/oscars/client/security/"/>
     </target>
 </project>
