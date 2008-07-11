@@ -52,6 +52,8 @@
         <classpath refid="client.path" />
         <include name="net/es/oscars/oscars/OSCARSStub.java" />
         <include name="net/es/oscars/oscars/*FaultMessageException.java" />
+        <include name="net/es/oscars/notify/ws/OSCARSNotifyStub.java" />
+        <include name="net/es/oscars/notify/ws/*Fault.java" />
         <include name="net/es/oscars/oscars/ExtensionMapper.java" />
         <include name="net/es/oscars/wsdlTypes/*.java" />
         <include name="net/es/oscars/bss/topology/URNParser.java" />
