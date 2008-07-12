@@ -3,51 +3,32 @@ package net.es.oscars.notify;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.RemoteException;
-import java.rmi.NotBoundException;
-
 import org.apache.log4j.*;
+import org.quartz.*;
 
 import net.es.oscars.bss.Reservation;
+import net.es.oscars.oscars.OSCARSCore;
+import net.es.oscars.scheduler.NotifyJob;
 
 /**
- * EventProducer is used by the entity generating events to populate 
- * the EventQueue. EventProducer accesses the EventQueue through a 
- * the RemoteEventQueue class shared over RMI. This class hides the details of
- * RMI and adding the event to the queue from the event generating entity. It 
- * also contains many convenience methods for adding events to the queue.
+ * EventProducer is used by the entity generating events to schedule
+ * notifications. Notifications are sent to a NotifyJob in the core
+ * scheduler from which the notifications are sent out by the
+ * configured modules.
  */
 public class EventProducer{
     private Logger log;
-    private RemoteEventProducer remote;
-    private boolean connected;
-    
+    private OSCARSCore core;
     /**
      * Constructor that obtains RemoteEventProducer via RMI.
      */
     public EventProducer(){
         this.log = Logger.getLogger(this.getClass());
-        this.connected = true;
-        try{
-            Registry registry = LocateRegistry.getRegistry(8090);
-            this.remote = (RemoteEventProducer) 
-                registry.lookup("OSCARSRemoteEventProducer");
-        }catch(RemoteException e){
-            this.connected = false;
-            this.log.warn("Remote exception from RMI server: " + e);
-        }catch(NotBoundException e){
-            this.connected = false;
-            this.log.warn("Trying to access unregistered remote object: " + e);
-        }catch(Exception e){
-            this.connected = false;
-            this.log.warn(e.getMessage());
-        }
+        this.core = OSCARSCore.getInstance();
     }
     
     /**
-     * Adds an event to the event queue.
+     * Schedules an event notification
      *
      * @param type the type of event.
      * @param userLogin the login of the user that triggered the event
@@ -55,12 +36,12 @@ public class EventProducer{
      * @param resv the reservation affected by this event
      */
     public void addEvent(String type, String userLogin, String source,
-        Reservation resv){
+            Reservation resv){
         this.addEvent(type, userLogin, source, resv, null, null);
     }
     
     /**
-     * Adds an event to the event queue.
+     * Schedules an event notification
      *
      * @param type the type of event.
      * @param userLogin the login of the user that triggered the event
@@ -70,7 +51,7 @@ public class EventProducer{
      * @param errorMessage a message describing an error. null if no error.
      */
     public void addEvent(String type, String userLogin, String source,
-        Reservation resv, String errorCode, String errorMessage){
+            Reservation resv, String errorCode, String errorMessage){
         OSCARSEvent event = new OSCARSEvent();
         Reservation resvCopy = null;
         StringWriter sw = new StringWriter();
@@ -93,23 +74,29 @@ public class EventProducer{
     }
     
     /**
-     * Adds an event to the event queue.
+     * Schedules an event notification
      *
-     * @param event the event to add to the queue
+     * @param event the event to schedule
      */
     public void addEvent(OSCARSEvent event){
-        //if RMI server connection failed then return
-        if(!this.connected){
-            return;
+        this.log.info("Scheduling notifcation of event " + event.getType());
+        Scheduler sched = this.core.getScheduleManager().getScheduler();
+        String jobName = "submit-"+event.hashCode();
+        //TODO: DON'T REALLY NEED TO SERIALIZE BUT SCHEDULER DOESN"T EXECUTE OTHERWISE?
+        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_NOTIFY", NotifyJob.class);
+        JobDataMap jobDataMap = new JobDataMap();
+        
+        this.log.debug("Adding job "+jobName);
+        //jobDetail.setName(jobName);
+        //jobDetail.setJobClass(NotifyJob.class);
+        jobDetail.setDurability(true);
+        jobDataMap.put("event", event);
+        jobDetail.setJobDataMap(jobDataMap);
+        //TODO:Handle exception better
+        try {
+        	sched.addJob(jobDetail, false);
+        } catch (SchedulerException ex) {
+        	this.log.error(ex);
         }
-        this.log.info("Adding event " + event.getType() + " to queue");
-        try{
-            remote.addEvent(event);
-        }catch(RemoteException e){
-            this.log.warn("Remote exception from RMI server: " + e);
-        }catch(Exception e){
-            this.log.warn("Cannot send event: " + e.getMessage());
-        }
-        this.log.info("Done adding event " + event.getType() + " to queue");
     }
 }
