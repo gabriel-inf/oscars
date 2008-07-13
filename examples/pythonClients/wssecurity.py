@@ -167,7 +167,7 @@ class SignatureHandler(object):
         signedInfoNode = xpath.Evaluate('//ds:SignedInfo', contextNode=document, context=context)[0]
 
         # Apply exclusive canonicalization and compute its digest
-        canonicalizedSignedInfo = Canonicalize(signedInfoNode, unsuppressedPrefixes=None)
+        canonicalizedSignedInfo = Canonicalize(signedInfoNode, unsuppressedPrefixes=[])
         signedInfoDigestValue = sha1(canonicalizedSignedInfo).digest().strip()
 
         # Sign the digest and store the signature value in the <SignatureValue> element
