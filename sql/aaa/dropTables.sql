@@ -1,3 +1,5 @@
+use aaa;
+
 DROP TABLE  institutions;
 DROP TABLE  resources;
 DROP TABLE  permissions;

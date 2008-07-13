@@ -67,30 +67,31 @@ CREATE TABLE IF NOT EXISTS attributes (
     id                  INT NOT NULL AUTO_INCREMENT,
     name                TEXT NOT NULL,
     attrType            TEXT,
+    description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
 
 CREATE UNIQUE INDEX attrName ON attributes(name(9));
 -- ordinary OSCARS user
-INSERT INTO attributes VALUES(NULL, "OSCARS-user", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-user", "group" , "make reservations");
 
 -- member of the  network engineering group. Has complete control over
 -- all reservations
-INSERT INTO attributes VALUES(NULL, "OSCARS-engineer", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-engineer", "group", "manage all reservations, view and update topology");
 
 -- Has complete control over all user accounts, including granting permissions
-INSERT INTO attributes VALUES(NULL, "OSCARS-administrator", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-administrator", "group", "manage all users");
 
 -- attribute for an IDC in an adjacent network domain. It's attributes implement
 -- an SLA between domains.  Currently set to all permissions on reservations and 
 -- query permissions for domains, no permissions on users
-INSERT INTO attributes VALUES(NULL, "OSCARS-service", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-service", "group", "make reservations and view topology");
 
 -- for use by NOC operators. Can see all reservations.
-INSERT INTO attributes VALUES(NULL, "OSCARS-operator", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-operator", "group", "view all reservations");
 
 -- Site Administrator - Can manage all reservations starting or terminating at a site
-INSERT INTO attributes VALUES(NULL, "OSCARS-siteAdmin", "group");
+INSERT INTO attributes VALUES(NULL, "OSCARS-siteAdmin", "group", "manage all reservations starting or ending at site");
 
 
 -- populate userAttributes table by selecting attributes in tool/utils/idc-adduser

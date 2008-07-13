@@ -1,7 +1,7 @@
 -- upgrade aaa tables from 3.2 to 4.0
 
 USE aaa;
-ALTER IGNORE TABLE attributes ADD COLUMN description TEXT;
+ALTER IGNORE TABLE attributes ADD COLUMN description TEXT NOT NULL;
 
 UPDATE  attributes SET description="make reservations" WHERE name="OSCARS-user" ;
 UPDATE  attributes SET description="manage all reservations, view and update topology" WHERE name="OSCARS-engineer";

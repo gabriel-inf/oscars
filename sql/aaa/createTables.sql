@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS attributes (
     id                  INT NOT NULL AUTO_INCREMENT,
     name                TEXT NOT NULL,
     attrType            TEXT,
+    description			TEXT NOT NULL,
     PRIMARY KEY (id)
 ) type=MyISAM;
 CREATE UNIQUE INDEX attrName ON attributes(name(9));
