@@ -28,7 +28,11 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         String direction = (String) dataMap.get("direction");
         String routerType = (String) dataMap.get("routerType");
         String newStatus = (String) dataMap.get("newStatus");
+        
+        String status;
+        StateEngine stateEngine = new StateEngine();
 
+        
         String gri;
         if (resv != null) {
             gri = (String) resv.getGlobalReservationId();
@@ -72,8 +76,6 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             }
         }
 
-        String status;
-        StateEngine stateEngine = new StateEngine();
         try {
             status = StateEngine.getStatus(resv);
             this.log.debug("Reservation status was: "+status);

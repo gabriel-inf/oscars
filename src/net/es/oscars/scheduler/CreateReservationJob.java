@@ -7,7 +7,7 @@ import net.es.oscars.wsdlTypes.*;
 import net.es.oscars.interdomain.*;
 import net.es.oscars.notify.*;
 import net.es.oscars.oscars.*;
-import net.es.oscars.pss.PSSException;
+import net.es.oscars.pss.*;
 
 public class CreateReservationJob extends ChainingJob implements org.quartz.Job {
     private Logger log;
@@ -103,6 +103,11 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
         }
+        // just in case this is an immediate reservation, check pending & add setup actions
+        
+        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
+        sched.pendingReservations(0);
+
         bss.getTransaction().commit();
         this.runNextJob(context);
         this.log.debug("CreateReservationJob.end name:"+jobName);
