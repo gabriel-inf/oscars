@@ -70,14 +70,14 @@ public class ReservationManager {
         this.log.info("submitCreate.start");
         ReservationDAO dao = new ReservationDAO(this.dbname);
 
-
+        // login is checked in validate so set it here
+        resv.setLogin(login);
         // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
         StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
         if (errorMsg.length() > 0) {
             throw new BSSException(errorMsg.toString());
         }
-
         this.log.info("create.validated");
 
         // set GRI if none specified
@@ -113,7 +113,6 @@ public class ReservationManager {
         // Save the reservation so that the client can query for it
         dao.update(resv);
 
-
         // Now create a CreateReservationJob, put it in the SERIALIZE_RESOURCE_SCHEDULING queue
         // All create / cancel / modify operations will be in this queue.
         Scheduler sched = this.core.getScheduleManager().getScheduler();
@@ -132,36 +131,23 @@ public class ReservationManager {
         } catch (SchedulerException ex) {
             throw new BSSException(ex);
         }
-
         this.log.info("submitCreate.end");
     }
-
-
-
-
-
-
-
 
     /**
      * Creates the reservation, given a partially filled in reservation
      * instance and additional parameters.
      *
      * @param resv reservation instance modified in place
-     * @param login string with login name
      * @param pathInfo contains either layer 2 or layer 3 info
      * @throws BSSException
      */
-    public void create(Reservation resv, String login, PathInfo pathInfo)
+    public void create(Reservation resv, PathInfo pathInfo)
             throws  BSSException {
 
-
         this.log.info("create.start");
-        // login is checked in validate so set it here
-        resv.setLogin(login);
 
         this.rsvLogger.redirect(resv.getGlobalReservationId());
-
         CtrlPlanePathContent pathCopy = null;
 
         // this modifies the path to include internal hops with layer 2,
@@ -179,7 +165,6 @@ public class ReservationManager {
         }else if (pathCopy == null && pathInfo.getLayer2Info() != null) {
             pathCopy = this.copyPath(pathInfo, true);
         }
-
         pathInfo.setPath(pathCopy);
         this.log.info("create.finish");
         this.rsvLogger.stop();
@@ -238,12 +223,8 @@ public class ReservationManager {
             throws BSSException {
 
         this.rsvLogger.redirect(gri);
-
         this.log.info("cancel.start: " + gri + " login: " + login + " institution: " + institution );
-
         Reservation resv = getConstrainedResv(gri,login,institution);
-
-
 
         // See if we can cancel at all; this logic is DIFFERENT from the StateEngine
         StateEngine se = new StateEngine();
@@ -276,13 +257,10 @@ public class ReservationManager {
                 throw new BSSException(ex);
             }
         }
-
-
         this.log.info("cancel.finish: " + resv.getGlobalReservationId());
         this.rsvLogger.stop();
         return resv;
     }
-
 
     /**
      * Given a reservation GRI, queries the database and returns the
@@ -324,7 +302,6 @@ public class ReservationManager {
     public Reservation modify(Reservation resv, String login, String institution,
              PathInfo pathInfo)
             throws  BSSException {
-
 
         this.log.info("modify.start: login: " +  login + " institution: " +  institution ) ;
 
@@ -420,8 +397,6 @@ public class ReservationManager {
         return persistentResv;
     }
 
-
-
    /**
      * @param login String with user's login name
      *          if null any user's reservation may be listed
@@ -482,9 +457,9 @@ public class ReservationManager {
             // or belong to this user
             this.log.debug("Checking " + reservations.size() + " reservations for site");
             for (Reservation resv : reservations) {
-            if ( checkInstitution( resv, institution)){
+                if (checkInstitution( resv, institution)) {
                     authResv.add(resv);
-            }
+                }
             }
             this.log.info("list.finish, success");
             return authResv;
@@ -562,9 +537,6 @@ public class ReservationManager {
         ArrayList<String> linksList = new ArrayList<String>();
 
         this.log.info("convertPath.start");
-
-
-
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
 
@@ -614,13 +586,11 @@ public class ReservationManager {
             String hopType = parseResults.get("type");
             String domainId = parseResults.get("domainId");
 
-
             // can't store non-local addresses
             if (!hopType.equals("link") || !domainDAO.isLocal(domainId)) {
                 this.log.debug("convertPath: not a local link");
                 continue;
             }
-
 
             // check for duplicate hops in our local portion of the path
             String fqti = parseResults.get("fqti");
@@ -629,7 +599,6 @@ public class ReservationManager {
             } else {
                 linksList.add(fqti);
             }
-
             link = domainDAO.getFullyQualifiedLink(hopTopoId);
             if (link == null) {
                 this.log.error("Couldn't find link in db for: ["+hops[i].getLinkIdRef()+"]");
@@ -759,7 +728,6 @@ public class ReservationManager {
             currPathElem.setNextElem(prevPathElem);
             prevPathElem = currPathElem;
         }
-
         return currPathElem;
     }
 
@@ -782,12 +750,10 @@ public class ReservationManager {
         if (ctrlPlanePath == null) {
             return null;
         }
-
         String pathId = "unimplemented";
         if (ctrlPlanePath.getId() != null && !ctrlPlanePath.getId().equals("")) {
             pathId = ctrlPlanePath.getId();
         }
-
         pathCopy.setId(pathId);
 
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
@@ -799,7 +765,6 @@ public class ReservationManager {
                 pathCopy.addHop(hopCopy);
                 continue;
             }
-
             String hopTopoId = hops[i].getLinkIdRef();
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
@@ -848,7 +813,6 @@ public class ReservationManager {
         CtrlPlanePathContent ctrlPlanePath = pathInfo.getPath();
         CtrlPlaneHopContent[] hops = ctrlPlanePath.getHop();
         for (int i = 0; i < hops.length; i++) {
-
             String hopTopoId = hops[i].getLinkIdRef();
             Hashtable<String, String> parseResults = URNParser.parseTopoIdent(hopTopoId);
             String hopType = parseResults.get("type");
@@ -882,8 +846,6 @@ public class ReservationManager {
         // returns same value if already an IP address
         return addr.getHostAddress();
     }
-
-
 
     /**
      * Returns the name of the institution of the an end point of the reservation
@@ -924,7 +886,6 @@ public class ReservationManager {
         return institutionName;
     }
 
-
     /**
      *  Generates the next Global Resource Identifier, created from the local
      *  Domain's topology identifier and the next unused index in the IdSequence table.
@@ -932,20 +893,19 @@ public class ReservationManager {
      * @return the GRI.
      * @throws BSSException
      */
-    public String generateGRI() throws BSSException{
+    public String generateGRI() throws BSSException {
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IdSequenceDAO idDAO = new IdSequenceDAO(this.dbname);
         Domain localDomain = domainDAO.getLocalDomain();
         int id = idDAO.getNewId();
         String gri = null;
 
-        if(localDomain != null){
+        if (localDomain != null) {
             gri = localDomain.getTopologyIdent() + "-" + id;
             this.log.info("GRI: " + gri);
-        }else{
+        } else {
             throw new BSSException("Unable to generate GRI");
         }
-
         return gri;
     }
 
@@ -967,7 +927,7 @@ public class ReservationManager {
         pathElem.setLinkDescr((vtagValue * srcTagged) + "");
         if (link == srcLink) {
             this.log.info("linkId: " + link.getId() + ", srcLink: " + vtagValue * srcTagged);
-        } else if(link == destLink) {
+        } else if (link == destLink) {
             this.log.info("linkId: " + link.getId() + ", destLink: " + vtagValue * srcTagged);
         } else {
             this.log.info("linkId: " + link.getId() + ", internalLink: " + vtagValue * srcTagged);
@@ -985,16 +945,14 @@ public class ReservationManager {
         byte[] vtagMask = this.tc.rangeStringToMask(vtag);
 
         /* Pick first available */
-        for(int i = 0;i < vtagMask.length; i++){
-            for(int j = 0; vtagMask[i] != 0 && j < 8; j++){
+        for (int i = 0;i < vtagMask.length; i++) {
+            for (int j = 0; vtagMask[i] != 0 && j < 8; j++) {
                 byte tag = (byte)(vtagMask[i] & (1 << (7 - j)));
-                if(tag != 0){
+                if (tag != 0) {
                     vtag = (i*8 + j) + "";
                     this.log.info("chose VLAN " + vtag);
-
                     layer2Info.getSrcVtag().setString(vtag);
                     layer2Info.getDestVtag().setString(vtag);
-
                     return;
                 }
             }
@@ -1018,11 +976,10 @@ public class ReservationManager {
 
         // if user signaled and last domain create token, otherwise store
         // token returned in forwardReply
-        if(pathSetupMode == null || pathSetupMode.equals("signal-xml")){
+        if (pathSetupMode == null || pathSetupMode.equals("signal-xml")) {
             this.generateToken(forwardReply, resv);
         }
-
-        if(layer2Info != null && forwardReply != null &&
+        if (layer2Info != null && forwardReply != null &&
             forwardReply.getPathInfo() != null &&
             forwardReply.getPathInfo().getLayer2Info() != null) {
 
@@ -1030,7 +987,6 @@ public class ReservationManager {
             DomainDAO domainDAO = new DomainDAO(this.dbname);
             Link srcLink = domainDAO.getFullyQualifiedLink(layer2Info.getSrcEndpoint());
             Link destLink = domainDAO.getFullyQualifiedLink(layer2Info.getDestEndpoint());
-
             PathInfo fwdPathInfo = forwardReply.getPathInfo();
             VlanTag srcVtag = fwdPathInfo.getLayer2Info().getSrcVtag();
             VlanTag destVtag = fwdPathInfo.getLayer2Info().getDestVtag();
@@ -1054,10 +1010,10 @@ public class ReservationManager {
             }
 
             /* Store interdomain path */
-            try{
+            try {
                 PathElem interPathElem = this.convertInterPath(fwdPathInfo);
                 path.setInterPathElem(interPathElem);
-            }catch(BSSException e){
+            } catch(BSSException e) {
                 /* Catch error when try to store path with links not in the
                    database. Perhaps in the future this will be an error but
                    until everyone shares topology we can relax this requirement
@@ -1079,17 +1035,15 @@ public class ReservationManager {
             } else {
                 this.log.info("unknown error");
             }
-
             /* Store version of path in terms of interdomain hops. Still want to do
                this even if a local path because the intradomain version may be private.
                For current implementations the intradomain URNs and interdomain URNs will
                be the same but that won't be true in the future so we need two versions
                of every path*/
-            try{
-
+            try {
                 PathElem interPathElem = this.convertInterPath(pathInfo);
                 path.setInterPathElem(interPathElem);
-            }catch(BSSException e){
+            } catch(BSSException e) {
                 /* Catch error when try to store path with links not in the
                    database. Perhaps in the future this will be an error but
                    until everyone shares topology we can relax this requirement
@@ -1099,7 +1053,6 @@ public class ReservationManager {
             }
         }
     }
-
 
     /**
      * Creates a token if this is the last domain otherwise sets the token returned
@@ -1113,12 +1066,12 @@ public class ReservationManager {
         PropHandler propHandler = new PropHandler("oscars.properties");
         Properties props = propHandler.getPropertyGroup("aaa", true);
         String doTokenGen = props.getProperty("useSignalTokens");
-        if(doTokenGen != null && doTokenGen.equals("0")){
+        if (doTokenGen != null && doTokenGen.equals("0")) {
             return;
         }
         Token token = new Token();
 
-        if(forwardReply == null){
+        if (forwardReply == null) {
             //Generate token
             String gri = resv.getGlobalReservationId();
             byte[] tokenKey = null;
@@ -1133,15 +1086,15 @@ public class ReservationManager {
                     e.getMessage());
             }
             token.setValue(tokenValue);
-        }else if(forwardReply.getToken() == null){
+        } else if(forwardReply.getToken() == null) {
             return;
-        }else{
+        } else {
             token.setValue(forwardReply.getToken());
         }
-
         resv.setToken(token);
         token.setReservation(resv);
     }
+
     /**
      * Checks to see if the reservation either starts or terminates at the given institution
      * @param resv Reservation to be checked
@@ -1185,16 +1138,16 @@ public class ReservationManager {
 
        if (loginConstraint == null ) {
            try {
-                  resv = resvDAO.query(gri);
+              resv = resvDAO.query(gri);
            } catch ( BSSException e ){
                this.log.error("No reservation matches gri: " + gri);
                   throw new BSSException("No reservations match request");
            }
            if (institutionConstraint != null) {
-                  //check the institution
-                  if (!this.checkInstitution(resv, institutionConstraint) ) {
-                      resv = null;
-                  }
+              //check the institution
+              if (!this.checkInstitution(resv, institutionConstraint)) {
+                  resv = null;
+              }
            }
        }
        else  {
@@ -1207,6 +1160,4 @@ public class ReservationManager {
        }
        return resv;
    }
-
-
 }

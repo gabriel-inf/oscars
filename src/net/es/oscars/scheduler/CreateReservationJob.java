@@ -13,7 +13,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
     private Logger log;
     private OSCARSCore core;
 
-
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String jobName = context.getJobDetail().getFullName();
         this.log = Logger.getLogger(this.getClass());
@@ -50,12 +49,10 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         Session bss = core.getBssSession();
         bss.beginTransaction();
         boolean wasReserved = true;
-
         String errMessage = null;
 
         try {
-
-            rm.create(resv, login, pathInfo);
+            rm.create(resv, pathInfo);
 
             TypeConverter tc = core.getTypeConverter();
             tc.ensureLocalIds(pathInfo);
@@ -65,7 +62,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
 
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
-
 
             // **** IMPORTANT ****
             // FIXME: this bit right here makes CreateReservationJobs kinda slow
@@ -93,9 +89,6 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             }
         }
 
-
-
-
         String status;
         StateEngine stateEngine = new StateEngine();
         try {
@@ -110,13 +103,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         } catch (BSSException ex) {
             this.log.error("State engine error", ex);
         }
-
-
         bss.getTransaction().commit();
-
         this.runNextJob(context);
-
         this.log.debug("CreateReservationJob.end name:"+jobName);
     }
-
 }
