@@ -2,8 +2,8 @@ package net.es.oscars.rmi;
 
 /**
  * Interface between rmi cancelReservation and ReservationManager.cancelReservation
- * 
- * @author David Robertson, Mary Thompson 
+ *
+ * @author David Robertson, Mary Thompson
  */
 import java.io.*;
 import java.util.*;
@@ -26,15 +26,15 @@ public class CancelResRmiHandler {
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
     }
-    
+
     /**
      * CancelResRmiHandler - interfaces between servlet and ReservationManager
-     * 
+     *
      * @param inputMap contains the gri of the reservation
      * @param userName String name of user making request
-     * 
+     *
      * @return HashMap - contains gri and success or error status
-     * 
+     *
      * @throws IOException
      */
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName)
@@ -56,8 +56,7 @@ public class CancelResRmiHandler {
 
         Session aaa = core.getAaaSession();
         aaa.beginTransaction();
-        AuthValue authVal = userMgr.checkAccess(userName, "Reservations",
-                                                "modify");
+        AuthValue authVal = userMgr.checkAccess(userName, "Reservations", "modify");
         if (authVal == AuthValue.DENIED) {
             result.put("error", "no permission to cancel Reservations");
             aaa.getTransaction().rollback();
@@ -70,17 +69,18 @@ public class CancelResRmiHandler {
             loginConstraint = userName;
         }
         aaa.getTransaction().commit();
-        
+
         String []paramValues = inputMap.get("gri");
         String gri = paramValues[0];
-        
+
         Session bss = core.getBssSession();
         bss.beginTransaction();
         String errMessage = null;
         try {
             reservation = rm.cancel(gri, loginConstraint, institution);
+
+            // TODO: Make this an asynchronous job
             String remoteStatus = forwarder.cancel(reservation);
-            rm.finalizeCancel(reservation, userName, "WBUI");
             eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, userName, "WBUI", reservation);
         } catch (BSSException e) {
             errMessage = e.getMessage();
@@ -92,8 +92,7 @@ public class CancelResRmiHandler {
                 result.put("error", errMessage);
                 bss.getTransaction().rollback();
                 if (reservation != null){
-                    eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, "WBUI", reservation,
-                        "", errMessage);
+                    eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, userName, "WBUI", reservation, "", errMessage);
                 }
                 this.log.debug("queryReservation failed: " + errMessage);
                 return result;

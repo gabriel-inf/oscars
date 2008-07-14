@@ -2,7 +2,7 @@ package net.es.oscars.rmi;
 
 /**
  * rmi handler for createReservation. Interfaces to ReservationManager.createReservation
- * 
+ *
  * @author Evangelos Chaniotakis, David Robertson
  */
 
@@ -34,13 +34,13 @@ public class CreateResRmiHandler {
 
     /**
      * CreateReservation rmi handler; interfaces between servlet and ReservationManager.
-     * 
+     *
      * @param userName String - name of user  making request
      * @param inputMap HashMap - contains start and end times, bandwidth, description,
      *          productionType, pathinfo
      * @return HashMap - contains gri and sucess or error status
      */
-    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
+    public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName)
         throws IOException {
         this.log.debug("create.start");
         HashMap<String, Object> result = new HashMap<String, Object>();
@@ -89,11 +89,11 @@ public class CreateResRmiHandler {
             return result;
         }
         aaa.getTransaction().commit();
-        
-        
-        
- 
-        
+
+
+
+
+
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
@@ -124,11 +124,11 @@ public class CreateResRmiHandler {
         this.log.debug("create.end - success");
         return result;
     }
-    
-    
-    
-    
-    
+
+
+
+
+
 
     private Reservation toReservation(String userName, HashMap<String, String[]> inputMap) {
         String[] arrayParam = null;
@@ -247,6 +247,27 @@ public class CreateResRmiHandler {
                 hop.setId(i + "");
                 hop.setLinkIdRef(hops[i]);
                 this.log.info("explicit path hop: " + hops[i]);
+                path.addHop(hop);
+            }
+
+            pathInfo.setPath(path);
+        } else {
+            // Add a path just composed of source and destination
+            path = new CtrlPlanePathContent();
+            path.setId("userPath"); //id doesn't matter in this context
+
+            String[] hops = new String[2];
+            hops[0] = inputMap.get("source")[0];
+            hops[1] = inputMap.get("destination")[0];
+
+            for (int i = 0; i < hops.length; i++) {
+                hops[i] = hops[i].trim();
+                CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+                // these can currently be either topology identifiers
+                // or IP addresses
+                hop.setId(i + "");
+                hop.setLinkIdRef(hops[i]);
+                this.log.info("implicit path hop: " + hops[i]);
                 path.addHop(hop);
             }
 

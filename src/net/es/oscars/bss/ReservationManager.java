@@ -64,13 +64,13 @@ public class ReservationManager {
             // want exceptions in constructor
         }
     }
-    
+
     public void submitCreate(Reservation resv, String login, PathInfo pathInfo)
-    	throws  BSSException {
+        throws  BSSException {
         this.log.info("submitCreate.start");
         ReservationDAO dao = new ReservationDAO(this.dbname);
-        
-        
+
+
         // Validate parameters
         ParamValidator paramValidator = new ParamValidator();
         StringBuilder errorMsg = paramValidator.validate(resv, pathInfo);
@@ -94,8 +94,8 @@ public class ReservationManager {
 
         long seconds = System.currentTimeMillis()/1000;
         resv.setCreatedTime(seconds);
-        
-        // This is a pretty bad misuse of this function 
+
+        // This is a pretty bad misuse of this function
         // TODO: Test if this actually works
         Path tempPath = this.convertPath(pathInfo, pathInfo, null, false);
         resv.setPath(tempPath);
@@ -105,14 +105,14 @@ public class ReservationManager {
         StateEngine se = new StateEngine();
         try {
             // Assume AAA has been performed before this.
-        	se.updateStatus(resv, StateEngine.ACCEPTED);
+            se.updateStatus(resv, StateEngine.ACCEPTED);
         } catch (BSSException ex) {
-        	this.log.error(ex);
+            this.log.error(ex);
         }
-        
+
         // Save the reservation so that the client can query for it
         dao.update(resv);
-        
+
 
         // Now create a CreateReservationJob, put it in the SERIALIZE_RESOURCE_SCHEDULING queue
         // All create / cancel / modify operations will be in this queue.
@@ -128,21 +128,21 @@ public class ReservationManager {
         jobDataMap.put("pathInfo", pathInfo);
         jobDetail.setJobDataMap(jobDataMap);
         try {
-        	sched.addJob(jobDetail, false);
+            sched.addJob(jobDetail, false);
         } catch (SchedulerException ex) {
-        	throw new BSSException(ex);
+            throw new BSSException(ex);
         }
 
         this.log.info("submitCreate.end");
     }
 
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     /**
      * Creates the reservation, given a partially filled in reservation
      * instance and additional parameters.
@@ -239,59 +239,50 @@ public class ReservationManager {
 
         this.rsvLogger.redirect(gri);
 
-        String newStatus = null;
-
-        this.log.info("cancel.start: " + gri + " login: " + login + " institution: " +
-                institution );
+        this.log.info("cancel.start: " + gri + " login: " + login + " institution: " + institution );
 
         Reservation resv = getConstrainedResv(gri,login,institution);
 
-        String prevStatus = resv.getStatus();
-        if (prevStatus.equals("FINISHED")) {
-            throw new BSSException(
-               "Trying to cancel a finished reservation");
-        }
-        if (prevStatus.equals("FAILED")) {
-            throw new BSSException(
-               "Trying to cancel a failed reservation");
-        }
-        if (prevStatus.equals("CANCELLED") || prevStatus.equals("PRECANCEL")) {
-            throw new BSSException(
-               "Trying to cancel an already cancelled reservation");
+
+
+        // See if we can cancel at all; this logic is DIFFERENT from the StateEngine
+        StateEngine se = new StateEngine();
+        String status = StateEngine.getStatus(resv);
+
+        if (status.equals(StateEngine.CANCELLED)) {
+            // a no-op; no need to complain though
+            return resv;
         }
 
-        if (prevStatus.equals("ACTIVE")) {
-            newStatus = "PRECANCEL";
+        String newStatus = "";
+        if (status.equals(StateEngine.RESERVED) || status.equals(StateEngine.ACCEPTED)) {
+            newStatus = StateEngine.CANCELLED;
+        } else if (status.equals(StateEngine.ACTIVE)) {
+            newStatus = StateEngine.INTEARDOWN;
         } else {
-            newStatus = "CANCELLED";
+            throw new BSSException("Cannot cancel with status: "+status);
         }
-        // note that this is not persisted until any forward domains
-        // are also contacted
-        resv.setStatus(newStatus);
+
+        // remove all pending jobs in the scheduler related to this reservation
+        this.core.getScheduleManager().processCancel(resv, newStatus);
+
+        se.updateStatus(resv, newStatus);
+        if (newStatus.equals(StateEngine.INTEARDOWN)) {
+            // add the teardown jobs
+            try {
+                core.getPathSetupManager().teardown(resv, StateEngine.CANCELLED, true);
+            } catch (PSSException ex) {
+                this.log.error(ex);
+                throw new BSSException(ex);
+            }
+        }
+
+
         this.log.info("cancel.finish: " + resv.getGlobalReservationId());
         this.rsvLogger.stop();
         return resv;
     }
 
-    /**
-     * Handles final status of cancellation after possible forwarding.
-     * Assume that permission exists or we would not have got this far
-     *
-     * @param resv Reservation instance
-     * @param eventSrc string indicating whether API or scheduler called method
-     * @throws BSSException
-     */
-    public void finalizeCancel(Reservation resv, String login, String eventSrc)
-            throws BSSException {
-
-        this.rsvLogger.redirect(resv.getGlobalReservationId());
-        this.log.info("finalizeCancel.start");
-        EventProducer eventProducer = new EventProducer();
-        eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login,
-             eventSrc, resv);
-
-        this.rsvLogger.stop();
-    }
 
     /**
      * Given a reservation GRI, queries the database and returns the
@@ -529,8 +520,7 @@ public class ReservationManager {
 
         ReservationDAO dao = new ReservationDAO(this.dbname);
         List<Reservation> reservations = dao.overlappingReservations(resv.getStartTime(), resv.getEndTime());
-        this.policyMgr.checkOversubscribed(reservations, pathInfo,
-                                           intraPath.getPath(), resv);
+        this.policyMgr.checkOversubscribed(reservations, pathInfo, intraPath.getPath(), resv);
         Domain nextDomain = null;
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         // get next external hop (first past egress) from the complete path
@@ -573,18 +563,20 @@ public class ReservationManager {
 
         this.log.info("convertPath.start");
 
+
+
         DomainDAO domainDAO = new DomainDAO(this.dbname);
         IpaddrDAO ipaddrDAO = new IpaddrDAO(this.dbname);
 
         Layer2Info layer2Info = null;
-        
-        Layer3Info layer3Info = null; 
-        String pathSetupMode = null; 
-        
+
+        Layer3Info layer3Info = null;
+        String pathSetupMode = null;
+
         if (interPathInfo != null) {
-	        layer2Info = interPathInfo.getLayer2Info();
-	        layer3Info = interPathInfo.getLayer3Info();
-	        pathSetupMode = interPathInfo.getPathSetupMode();
+            layer2Info = interPathInfo.getLayer2Info();
+            layer3Info = interPathInfo.getLayer3Info();
+            pathSetupMode = interPathInfo.getPathSetupMode();
         }
 
         if (layer2Info != null) {
@@ -598,10 +590,10 @@ public class ReservationManager {
         CtrlPlanePathContent intraPath = null;
         CtrlPlaneHopContent[] hops = new CtrlPlaneHopContent[0];
         if (intraPathInfo != null) {
-        	intraPath = intraPathInfo.getPath();
-        	hops = intraPath.getHop();
+            intraPath = intraPathInfo.getPath();
+            hops = intraPath.getHop();
         }
-        
+
         List<PathElem> pathElems = new ArrayList<PathElem>();
 
         //  finalize information at layer 2 if last domain (and we're not just saving during submitCreate())
@@ -677,7 +669,7 @@ public class ReservationManager {
                 }
             }
             pathElem.setLink(link);
-            
+
             // set VLAN tag if layer2 request and l2sc link
             // do not set if this comes from submitCreate()
             // TODO: Set differently if VLAN mapping supported

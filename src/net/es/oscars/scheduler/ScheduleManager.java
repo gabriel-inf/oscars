@@ -1,6 +1,7 @@
 package net.es.oscars.scheduler;
 
 import net.es.oscars.oscars.*;
+import net.es.oscars.bss.*;
 import net.es.oscars.pss.PSSScheduler;
 
 import java.util.*;
@@ -54,36 +55,9 @@ public class ScheduleManager {
     @SuppressWarnings("unchecked")
     public void processQueue() {
         try {
-            this.scheduler.standby();
+            this.pauseScheduler();
 
-            // first wait for currently running jobs in the queue to complete
-            boolean isQueueRunning = true;
-            while (isQueueRunning) {
-                isQueueRunning = false;
-                List<JobExecutionContext> currentlyRunningJobs = (List<JobExecutionContext>) this.scheduler.getCurrentlyExecutingJobs();
-                for (JobExecutionContext context : currentlyRunningJobs) {
-                    String groupName = context.getJobDetail().getGroup();
-                    String jobName = context.getJobDetail().getName();
-                    // don't log ProcessQueueJob!
-                    if (!groupName.equals("queue")) {
-                        this.log.debug("Currenty running job: "+groupName+"."+jobName);
-                    }
-                    if (groupName.equals("QUEUED")) {
-                        isQueueRunning = true;
-                    }
-                }
-                if (isQueueRunning) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        this.log.error("Job queueing interrupted", ex);
-                        return;
-                    }
-                }
-            }
-
-            this.queueScheduledActions();
-
+            this.queueExpiredAndPending();
 
             String[] queueNames = this.scheduler.getJobGroupNames();
 
@@ -99,6 +73,91 @@ public class ScheduleManager {
             this.log.error("Scheduler exception", ex);
         }
 
+    }
+
+
+
+    // cancel means we need to remove all other jobs in the queue related to that job
+    // it's initiated by the user so it trumps scheduled actions
+    public void processCancel(Reservation resv, String nextStatus) throws BSSException {
+    	this.log.debug("processCancel.start");
+        String gri = resv.getGlobalReservationId();
+        try {
+            this.pauseScheduler();
+            // If state has changed in the meantime to an unacceptable one,
+            // throw an exception
+            try {
+                StateEngine.canUpdateStatus(resv, nextStatus);
+            } catch (BSSException ex) {
+                this.log.error(ex);
+                this.startScheduler();
+                throw ex;
+            }
+
+
+            String[] queueNames = this.scheduler.getJobGroupNames();
+
+            for (String queueName : queueNames) {
+                boolean wasAltered = false;
+                if (queueName.startsWith("SERIALIZE_") || queueName.startsWith("QUEUED_")) {
+                    String[] jobNames = this.scheduler.getJobNames(queueName);
+                    for (String jobName : jobNames) {
+                        JobDetail jobDetail = this.scheduler.getJobDetail(jobName, queueName);
+                    	this.log.debug("Examining job "+jobDetail.getFullName());
+                        Reservation tmpResv = (Reservation) jobDetail.getJobDataMap().get("reservation");
+                    	this.log.debug("Reservation is "+tmpResv.getGlobalReservationId());
+                        if (tmpResv != null) {
+                            if (gri.equals(tmpResv.getGlobalReservationId())) {
+                                this.scheduler.deleteJob(jobName, queueName);
+                                this.log.debug("Removed job: "+jobDetail.getFullName());
+                                wasAltered = true;
+                            }
+                        }
+                    }
+                }
+                if (wasAltered) {
+                    this.reformQueue(queueName);
+                }
+            }
+            this.startScheduler();
+        } catch (SchedulerException ex) {
+            this.log.error("Scheduler exception", ex);
+        }
+    	this.log.debug("processCancel.end");
+    }
+
+    public void reformQueue(String queueName) throws SchedulerException {
+        // nothing to do here
+        if (queueName.startsWith("SERIALIZE_")) {
+            return;
+        }
+
+        JobDetail previousJobDetail = null;
+
+        String[] jobNames = this.scheduler.getJobNames(queueName);
+        for (String jobName : jobNames) {
+            JobDetail jobDetail = this.scheduler.getJobDetail(jobName, queueName);
+            if (previousJobDetail != null) {
+                previousJobDetail.getJobDataMap().put("nextJobGroup", queueName);
+                previousJobDetail.getJobDataMap().put("nextJobName", jobName);
+            }
+            previousJobDetail = jobDetail;
+        }
+        previousJobDetail.getJobDataMap().remove("nextJobGroup");
+        previousJobDetail.getJobDataMap().remove("nextJobName");
+    }
+
+
+
+    public void queueExpiredAndPending() {
+        core = OSCARSCore.getInstance();
+        Session session = core.getBssSession();
+        session.beginTransaction();
+        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
+        sched.pendingReservations(0);
+        sched.expiredReservations(0);
+        sched.expiringReservations(0);
+        session.getTransaction().commit();
     }
 
 
@@ -164,22 +223,42 @@ public class ScheduleManager {
                 trigger.setJobGroup(queuedJobsGroupName);
                 this.scheduler.scheduleJob(trigger);
             }
-        }    }
-
-
-
-    public void queueScheduledActions() {
-        Session session = core.getBssSession();
-        session.beginTransaction();
-        PSSScheduler sched = new PSSScheduler(core.getBssDbName());
-        sched.pendingReservations(0);
-        sched.expiredReservations(0);
-        sched.expiringReservations(0);
-        session.getTransaction().commit();
+        }
     }
 
-    public void addJobToQueue() throws SchedulerException {
+
+
+    @SuppressWarnings("unchecked")
+    public void pauseScheduler() throws SchedulerException {
+        this.scheduler.standby();
+        // first wait for currently running jobs in the queue to complete
+        boolean isQueueRunning = true;
+        while (isQueueRunning) {
+            isQueueRunning = false;
+            List<JobExecutionContext> currentlyRunningJobs = (List<JobExecutionContext>) this.scheduler.getCurrentlyExecutingJobs();
+            for (JobExecutionContext context : currentlyRunningJobs) {
+                String groupName = context.getJobDetail().getGroup();
+                // don't log ProcessQueueJob!
+                if (groupName.startsWith("QUEUED")) {
+                    isQueueRunning = true;
+                }
+            }
+            if (isQueueRunning) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    this.log.error("Job queueing interrupted", ex);
+                    return;
+                }
+            }
+        }
     }
+
+    public void startScheduler() throws SchedulerException {
+        this.scheduler.start();
+    }
+
+
 
     /**
      * @return the scheduler
