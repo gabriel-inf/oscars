@@ -199,7 +199,7 @@ public class VendorPSS implements PSS {
      * @throws PSSException
      */
     public String teardownPath(Reservation resv, String newStatus) throws PSSException {
-        this.log.info("teardownPath.start");
+        this.log.info("teardownPath.start, reason: "+newStatus);
 
 
         try {
@@ -290,7 +290,7 @@ public class VendorPSS implements PSS {
                 rvsJobDataMap.put("lspData", lspData);
                 rvsJobDataMap.put("direction", "reverse");
                 rvsJobDataMap.put("routerType", reverseRouterType);
-                fwdJobDataMap.put("newStatus", newStatus);
+                rvsJobDataMap.put("newStatus", newStatus);
                 rvsJobDetail.setJobDataMap(rvsJobDataMap);
                 sched.addJob(rvsJobDetail, false);
             }
