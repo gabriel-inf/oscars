@@ -29,9 +29,9 @@ public class StateEngine {
         this.dbname = OSCARSCore.getInstance().getBssDbName();
         this.log = Logger.getLogger(this.getClass());
     }
-    
+
     public synchronized String updateStatus(Reservation resv, String newStatus) throws BSSException {
-    	return this.updateStatus(resv, newStatus, true);
+        return this.updateStatus(resv, newStatus, true);
     }
 
     public synchronized String updateStatus(Reservation resv, String newStatus, boolean persist) throws BSSException {
@@ -48,8 +48,8 @@ public class StateEngine {
         status = newStatus;
         resv.setStatus(status);
         if (persist) {
-	        ReservationDAO resvDAO = new ReservationDAO(this.dbname);
-	        resvDAO.update(resv);
+            ReservationDAO resvDAO = new ReservationDAO(this.dbname);
+            resvDAO.update(resv);
         }
         StateEngine.statusMap.put(gri, status);
         return status;
@@ -63,49 +63,49 @@ public class StateEngine {
 
     // Business / state diagram logic goes here
     public static void canModifyStatus(String status, String newStatus) throws BSSException {
-    	boolean allowed = true;
-    	if (newStatus.equals(status)) {
-    		// no-ops always allowed
-    	} else if (newStatus.equals(SUBMITTED)) {
+        boolean allowed = true;
+        if (newStatus.equals(status)) {
+            // no-ops always allowed
+        } else if (newStatus.equals(SUBMITTED)) {
             // always allowed, must not abuse..
         } else if (newStatus.equals(FAILED)) {
             // always allowed, must not abuse..
         } else if (newStatus.equals(ACCEPTED)) {
             if (!status.equals(SUBMITTED)) {
-            	allowed = false;
+                allowed = false;
             }
         } else if (newStatus.equals(RESERVED)) {
             if (!status.equals(ACCEPTED) && !status.equals(INTEARDOWN) && !status.equals(INMODIFY)) {
-            	allowed = false;
+                allowed = false;
             }
         } else if (newStatus.equals(INMODIFY)) {
             if (!status.equals(RESERVED) && !status.equals(ACTIVE)) {
-            	allowed = false;
+                allowed = false;
             }
         } else if (newStatus.equals(INSETUP)) {
             if (!status.equals(RESERVED)) {
-            	allowed = false;
+                allowed = false;
             }
         } else if (newStatus.equals(ACTIVE)) {
             if (!status.equals(INSETUP) && !status.equals(INMODIFY)) {
-            	allowed = false;
+                allowed = false;
             }
         } else if (newStatus.equals(INTEARDOWN)) {
             if (!status.equals(ACTIVE)) {
-            	allowed = false;
+                allowed = false;
             }
         } else if (newStatus.equals(FINISHED)) {
             if (!status.equals(RESERVED) && !status.equals(INTEARDOWN)) {
-            	allowed = false;
+                allowed = false;
             }
         } else if (newStatus.equals(CANCELLED)) {
-            if (!status.equals(RESERVED) && !status.equals(INTEARDOWN)) {
-            	allowed = false;
+            if (!status.equals(ACCEPTED) && !status.equals(RESERVED) && !status.equals(INTEARDOWN)) {
+                allowed = false;
             }
         }
-    	if (!allowed) {
-    		throw new BSSException("Current status is "+status+"; cannot change to "+newStatus);
-    	}
+        if (!allowed) {
+            throw new BSSException("Current status is "+status+"; cannot change to "+newStatus);
+        }
     }
 
 
