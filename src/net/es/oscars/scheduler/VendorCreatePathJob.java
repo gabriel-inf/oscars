@@ -20,6 +20,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
         this.log.debug("VendorCreatePathJob.start name: "+jobName);
 
         OSCARSCore core = OSCARSCore.getInstance();
+
         String bssDbName = core.getBssDbName();
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
@@ -34,7 +35,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             this.log.debug("GRI is: "+gri+ " for job name: "+jobName);
         } else {
             this.log.error("No reservation!");
-            super.execute(context);
+            this.runNextJob(context);
             return;
         }
 
@@ -42,7 +43,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
             StateEngine.canUpdateStatus(resv, StateEngine.ACTIVE);
         } catch (BSSException ex) {
             this.log.error(ex);
-            super.execute(context);
+            this.runNextJob(context);
             return;
         }
 
@@ -90,7 +91,7 @@ public class VendorCreatePathJob extends ChainingJob  implements Job {
 
         bss.getTransaction().commit();
 
-        super.execute(context);
+        this.runNextJob(context);
 
         this.log.debug("VendorCreatePathJob.end name: "+jobName);
 

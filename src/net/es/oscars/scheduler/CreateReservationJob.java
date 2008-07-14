@@ -19,11 +19,11 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
         this.log = Logger.getLogger(this.getClass());
         this.log.debug("CreateReservationJob.start name:"+jobName);
         this.core = OSCARSCore.getInstance();
-        
+
         Forwarder forwarder = core.getForwarder();
         ReservationManager rm = core.getReservationManager();
         EventProducer eventProducer = new EventProducer();
-        
+
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
         Reservation resv = (Reservation) dataMap.get("reservation");
         PathInfo pathInfo = (PathInfo) dataMap.get("pathInfo");
@@ -34,39 +34,39 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
             gri = (String) resv.getGlobalReservationId();
         } else {
             this.log.error("No reservation associated with job name:"+jobName);
-            super.execute(context);
+            this.runNextJob(context);
             return;
         }
         this.log.debug("GRI is: "+gri+"for job name: "+jobName);
-        
+
         try {
             StateEngine.canUpdateStatus(resv, StateEngine.RESERVED);
         } catch (BSSException ex) {
             this.log.error(ex);
-            super.execute(context);
+            this.runNextJob(context);
             return;
         }
-        
+
         Session bss = core.getBssSession();
         bss.beginTransaction();
         boolean wasReserved = true;
-        
+
         String errMessage = null;
-        
+
         try {
 
             rm.create(resv, login, pathInfo);
-            
+
             TypeConverter tc = core.getTypeConverter();
             tc.ensureLocalIds(pathInfo);
-            
+
             // FIXME: why does this sometimes get unset?
             pathInfo.getPath().setId("unimplemented");
-            
+
             // checks whether next domain should be contacted, forwards to
             // the next domain if necessary, and handles the response
-            
-            
+
+
             // **** IMPORTANT ****
             // FIXME: this bit right here makes CreateReservationJobs kinda slow
             CreateReply forwardReply = forwarder.create(resv, pathInfo);
@@ -92,10 +92,10 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
                 this.log.debug("createReservation failed: " + errMessage);
             }
         }
-        
-        
-        
-        
+
+
+
+
         String status;
         StateEngine stateEngine = new StateEngine();
         try {
@@ -113,8 +113,8 @@ public class CreateReservationJob extends ChainingJob implements org.quartz.Job 
 
 
         bss.getTransaction().commit();
-        
-        super.execute(context);
+
+        this.runNextJob(context);
 
         this.log.debug("CreateReservationJob.end name:"+jobName);
     }

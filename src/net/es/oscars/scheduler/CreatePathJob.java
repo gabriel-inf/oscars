@@ -28,7 +28,7 @@ public class CreatePathJob extends ChainingJob  implements Job {
 
         try {
             Thread.sleep(10000);
-            super.execute(context);
+            this.runNextJob(context);
         } catch (InterruptedException ex) {
             this.log.error("Interrupted", ex);
         }

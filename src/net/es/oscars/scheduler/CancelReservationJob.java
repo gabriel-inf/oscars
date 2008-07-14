@@ -2,7 +2,7 @@ package net.es.oscars.scheduler;
 import org.apache.log4j.Logger;
 import org.quartz.*;
 
-public class CancelReservationJob implements Job {
+public class CancelReservationJob  extends ChainingJob  implements Job {
     private Logger log;
 
     public void execute(JobExecutionContext context) throws JobExecutionException {

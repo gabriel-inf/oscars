@@ -19,7 +19,7 @@ public class TeardownPathJob extends ChainingJob implements Job {
             gri = "unknown gri!";
         }
         this.log.debug("gri is: "+gri);
-        super.execute(context);
+        this.runNextJob(context);
         this.log.info("TeardownPathJob.end");
     }
 

@@ -17,8 +17,9 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         this.log = Logger.getLogger(this.getClass());
         this.log.debug("VendorTeardownPathJob.start name:"+context.getJobDetail().getFullName());
-        
+
         OSCARSCore core = OSCARSCore.getInstance();
+
         String bssDbName = core.getBssDbName();
 
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
@@ -27,29 +28,29 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
         String direction = (String) dataMap.get("direction");
         String routerType = (String) dataMap.get("routerType");
         String newStatus = (String) dataMap.get("newStatus");
-        
+
         String gri;
         if (resv != null) {
             gri = (String) resv.getGlobalReservationId();
             this.log.debug("gri is: "+gri);
         } else {
             this.log.error("No reservation!");
-            super.execute(context);
+            this.runNextJob(context);
             return;
         }
-        
-        
+
+
         try {
             StateEngine.canUpdateStatus(resv, newStatus);
         } catch (BSSException ex) {
             this.log.error(ex);
-            super.execute(context);
+            this.runNextJob(context);
             return;
         }
 
         Session bss = core.getBssSession();
         bss.beginTransaction();
-        
+
         boolean pathWasTornDown = true;
         LSP ciscoLSP = null;
         JnxLSP jnxLSP = null;
@@ -58,7 +59,7 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             try {
                 jnxLSP.teardownPath(resv, lspData, direction);
             } catch (PSSException ex) {
-            	pathWasTornDown = false;
+                pathWasTornDown = false;
                 this.log.error("Could not set up path", ex);
             }
         } else if (routerType.equals("cisco")) {
@@ -66,11 +67,11 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
             try {
                 ciscoLSP.teardownPath(resv, lspData, direction);
             } catch (PSSException ex) {
-            	pathWasTornDown = false;
+                pathWasTornDown = false;
                 this.log.error("Could not set up path", ex);
             }
         }
-        
+
         String status;
         StateEngine stateEngine = new StateEngine();
         try {
@@ -89,7 +90,7 @@ public class VendorTeardownPathJob extends ChainingJob  implements Job {
 
         bss.getTransaction().commit();
 
-        super.execute(context);
+        this.runNextJob(context);
         this.log.debug("VendorTeardownPathJobs.end");
 
     }
