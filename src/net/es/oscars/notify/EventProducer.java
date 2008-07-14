@@ -2,6 +2,7 @@ package net.es.oscars.notify;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 
 import org.apache.log4j.*;
 import org.quartz.*;
@@ -26,7 +27,7 @@ public class EventProducer{
         this.log = Logger.getLogger(this.getClass());
         this.core = OSCARSCore.getInstance();
     }
-    
+
     /**
      * Schedules an event notification
      *
@@ -39,7 +40,7 @@ public class EventProducer{
             Reservation resv){
         this.addEvent(type, userLogin, source, resv, null, null);
     }
-    
+
     /**
      * Schedules an event notification
      *
@@ -72,31 +73,35 @@ public class EventProducer{
         event.setErrorMessage(errorMessage);
         this.addEvent(event);
     }
-    
+
     /**
      * Schedules an event notification
      *
      * @param event the event to schedule
      */
-    public void addEvent(OSCARSEvent event){
+    public void addEvent(OSCARSEvent event) {
         this.log.info("Scheduling notifcation of event " + event.getType());
         Scheduler sched = this.core.getScheduleManager().getScheduler();
-        String jobName = "submit-"+event.hashCode();
-        //TODO: DON'T REALLY NEED TO SERIALIZE BUT SCHEDULER DOESN"T EXECUTE OTHERWISE?
-        JobDetail jobDetail = new JobDetail(jobName, "SERIALIZE_NOTIFY", NotifyJob.class);
+        String jobName = "notify-"+event.hashCode();
+
+
+        JobDetail jobDetail = new JobDetail(jobName, "NOTIFY", NotifyJob.class);
         JobDataMap jobDataMap = new JobDataMap();
-        
-        this.log.debug("Adding job "+jobName);
-        //jobDetail.setName(jobName);
-        //jobDetail.setJobClass(NotifyJob.class);
-        jobDetail.setDurability(true);
+
+        this.log.debug("Adding job "+jobDetail.getFullName());
         jobDataMap.put("event", event);
         jobDetail.setJobDataMap(jobDataMap);
+
+        // this is how you schedule a job for immediate execution
+        String triggerId = "notify-"+event.hashCode();
+        Trigger trigger = new SimpleTrigger(triggerId, "NOTIFY", new Date());
+
+
         //TODO:Handle exception better
         try {
-        	sched.addJob(jobDetail, false);
+            sched.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException ex) {
-        	this.log.error(ex);
+            this.log.error(ex);
         }
     }
 }
