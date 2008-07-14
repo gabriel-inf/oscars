@@ -255,8 +255,9 @@ public class PolicyManager {
             vtag.setTagged(true);
             vtag2 = new VlanTag();
             vtag2.setTagged(true);
-        }else if (vtag.getString().equals("any")) {
+        } else if (vtag.getString().equals("any")) {
             vtag.setString("2-4094");
+            vtag.setTagged(true);
         }
 
         /* Check if link allows untagged VLAN */
