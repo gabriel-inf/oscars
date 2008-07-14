@@ -197,6 +197,8 @@ public class ReservationAdapter {
      */
     public String cancel(GlobalReservationId params, String login, String institution)
             throws BSSException, InterdomainException {
+    	
+        EventProducer eventProducer = new EventProducer();
 
         Reservation resv = null;
         Forwarder forwarder = this.core.getForwarder();
@@ -213,15 +215,16 @@ public class ReservationAdapter {
         InterdomainException interException = null;
         try {
             remoteStatus = forwarder.cancel(resv);
+            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_COMPLETED, login, "API", resv);
         } catch (InterdomainException e) {
             interException = e;
+            eventProducer.addEvent(OSCARSEvent.RESV_CANCEL_FAILED, login, "API", resv, "", e.getMessage());
         } finally {
             forwarder.cleanUp();
             if(interException != null){
                 throw interException;
             }
         }
-        this.rm.finalizeCancel(resv, login, "API");
         return resv.getStatus();
     }
 
