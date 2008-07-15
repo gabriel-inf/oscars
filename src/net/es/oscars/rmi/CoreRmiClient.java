@@ -55,14 +55,16 @@ public class CoreRmiClient implements CoreRmiInterface {
     public HashMap<String, Object> createReservation(HashMap<String, String[]> inputMap, String userName) 
         throws RemoteException {
         this.log.debug("createReservation.start");
-        HashMap<String, Object> result = null;
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        String methodName = "CreateReservation";
         if (this.remote == null) {
             this.log.error("Remote object not found");
+            result.put("error", methodName + ": Remote object not found");
             return result;
         }
         if (!this.connected) {
             this.log.error("Not connected to RMI server");
-            // TODO was there a reason for the return to be commented out
+            result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
 
@@ -72,8 +74,10 @@ public class CoreRmiClient implements CoreRmiInterface {
             return result;
         } catch (RemoteException e) {
             this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
             this.log.warn("Exception from RMI server" + e.getMessage(), e);
+            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
         }
         return result;
     }
@@ -89,14 +93,16 @@ public class CoreRmiClient implements CoreRmiInterface {
     public HashMap<String, Object> queryReservation(HashMap<String, String[]> inputMap, String userName) 
         throws RemoteException {
         this.log.debug("queryReservation.start");
-        HashMap<String, Object> result = null;
+        HashMap<String, Object> result =  new HashMap<String, Object>();
+        String methodName = "QueryReservation";
         if (this.remote == null) {
             this.log.error("Remote object not found");
+            result.put("error", methodName + ": Remote object not found");
             return result;
         }
         if (!this.connected) {
             this.log.error("Not connected to RMI server");
-            // TODO was there a reason for the return to be commented out
+            result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
 
@@ -106,8 +112,10 @@ public class CoreRmiClient implements CoreRmiInterface {
             return result;
         } catch (RemoteException e) {
             this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
             this.log.warn("Exception from RMI server" + e.getMessage(), e);
+            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
         }
         return result;
     }
@@ -123,14 +131,16 @@ public class CoreRmiClient implements CoreRmiInterface {
     public HashMap<String, Object> listReservations(HashMap<String, String[]> inputMap, String userName) 
         throws RemoteException {
         this.log.debug(" listReservations.start");
-        HashMap<String, Object> result = null;
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        String methodName = "ListReservations";
         if (this.remote == null) {
             this.log.error("Remote object not found");
+            result.put("error", methodName + ": Remote object not found");
             return result;
         }
         if (!this.connected) {
             this.log.error("Not connected to RMI server");
-            // TODO was there a reason for the return to be commented out
+            result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
 
@@ -140,8 +150,10 @@ public class CoreRmiClient implements CoreRmiInterface {
             return result;
         } catch (RemoteException e) {
             this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
             this.log.warn("Exception from RMI server" + e.getMessage(), e);
+            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
         }
         return result;
     }
@@ -156,14 +168,16 @@ public class CoreRmiClient implements CoreRmiInterface {
     public HashMap<String, Object> cancelReservation(HashMap<String, String[]> inputMap, String userName) 
         throws RemoteException {
         this.log.debug(" cancelReservation.start");
-        HashMap<String, Object> result = null;
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        String methodName = "CancelReservation";
         if (this.remote == null) {
             this.log.error("Remote object not found");
+            result.put("error", methodName + ": Remote object not found");
             return result;
         }
         if (!this.connected) {
             this.log.error("Not connected to RMI server");
-            // TODO was there a reason for the return to be commented out
+            result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
 
@@ -173,8 +187,10 @@ public class CoreRmiClient implements CoreRmiInterface {
             return result;
         } catch (RemoteException e) {
             this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
             this.log.warn("Exception from RMI server" + e.getMessage(), e);
+            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
         }
         return result;
     }
@@ -190,14 +206,16 @@ public class CoreRmiClient implements CoreRmiInterface {
     public HashMap<String, Object> modifyReservation(HashMap<String, String[]> inputMap, String userName) 
         throws RemoteException {
         this.log.debug("modifyReservation.start");
-        HashMap<String, Object> result = null;
+        String methodName = "ModifyReservation";
+        HashMap<String, Object> result = new HashMap<String, Object>();
         if (this.remote == null) {
             this.log.error("Remote object not found");
+            result.put("error", methodName + ": Remote object not found");
             return result;
         }
         if (!this.connected) {
             this.log.error("Not connected to RMI server");
-            // TODO was there a reason for the return to be commented out
+            result.put("error", methodName + ": Could not connect to RMI server");
             return result;
         }
 
@@ -207,8 +225,10 @@ public class CoreRmiClient implements CoreRmiInterface {
             return result;
         } catch (RemoteException e) {
             this.log.warn("Remote exception from RMI server: " + e.getMessage(), e);
+            result.put("error", methodName + ": Remote exception from RMI server: " + e.getMessage());
         } catch (Exception e) {
             this.log.warn("Exception from RMI server" + e.getMessage(), e);
+            result.put("error", methodName + ": Exception from RMI server: " + e.getMessage());
         }
         return result;
     }
