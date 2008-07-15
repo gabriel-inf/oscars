@@ -670,6 +670,7 @@ public class TypeConverter {
      */
     public HashMap<String, String[]> pathToHashMap(Path path){
         HashMap<String, String[]> map = new HashMap<String, String[]>();
+        ArrayList<String> layers = new ArrayList<String>();
         if(path == null){
             return map;
         }
@@ -699,13 +700,16 @@ public class TypeConverter {
             map.put("protocol", this.genHashVal(layer3Data.getProtocol()));
             map.put("dscp", this.genHashVal(layer3Data.getDscp()));
             map.put("layer", this.genHashVal("3"));
+            layers.add("3");
         }
         
         if(layer2Data != null){
             map.put("source", this.genHashVal(layer2Data.getSrcEndpoint()));
             map.put("destination", this.genHashVal(layer2Data.getDestEndpoint()));
-            map.put("layer", this.genHashVal("2"));
+            layers.add("2");
         }
+        
+        map.put("layer", (String[]) layers.toArray());
         
         if(mplsData != null){
             map.put("burstLimit", this.genHashVal(mplsData.getBurstLimit() + ""));
@@ -775,7 +779,7 @@ public class TypeConverter {
      * Generates a String array from a String
      * 
      * @param value the String to convert
-     * @param the converted array
+     * @return the converted array
      */
     private String[] genHashVal(String value){
         if(value == null){
@@ -784,5 +788,151 @@ public class TypeConverter {
         String[] array = new String[1];
         array[0] = value;
         return array;
+    }
+    
+    /**
+     * Extracts a String from a String array
+     * 
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    private String extractHashVal(String[] array){
+        if(array == null || array.length < 1){
+            return null;
+        }
+        return array[0];
+    }
+    
+    /**
+     * Extracts a long from a String array
+     * 
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    private long extractHashLongVal(String[] array){
+        long longVal = 0;
+        if(array == null || array.length < 1){
+            return 0;
+        }
+        try{
+            longVal = Long.parseLong(array[0]);
+        }catch(Exception e){}
+        
+        return longVal;
+    }
+    
+    /**
+     * Extracts a int from a String array
+     * 
+     * @param array the String[] to extract
+     * @return the converted array
+     */
+    private int extractHashIntVal(String[] array){
+        int intVal = 0;
+        if(array == null || array.length < 1){
+            return 0;
+        }
+        try{
+            intVal = Integer.parseInt(array[0]);
+        }catch(Exception e){}
+        
+        return intVal;
+    }
+    
+    /**
+     * Converts a hash map to a ResDetail object for Axis2
+     * 
+     * @param value the String to convert
+     * @return the converted HashMap in a ResDatils object
+     */
+    public ResDetails hashMaptoResDetails(HashMap<String, String[]> map){
+        ResDetails details = new ResDetails();
+        PathInfo pathInfo = new PathInfo();
+        boolean hasLayer2Params = false;
+        boolean hasLayer3Params = false;
+        
+        details.setGlobalReservationId(this.extractHashVal(map.get("gri")));
+        details.setLogin(this.extractHashVal(map.get("userLogin")));
+        details.setStatus(this.extractHashVal(map.get("status")));
+        details.setStartTime(this.extractHashLongVal(map.get("startSeconds")));
+        details.setEndTime(this.extractHashLongVal(map.get("endSeconds")));
+        details.setCreateTime(this.extractHashLongVal(map.get("createTime")));
+        details.setBandwidth(this.extractHashIntVal(map.get("bandwidth")));
+        details.setDescription(this.extractHashVal(map.get("description")));
+        
+        pathInfo.setPathSetupMode(this.extractHashVal(map.get("pathSetupMode")));
+        pathInfo.setPathType(this.extractHashVal(map.get("pathType")));
+        
+        //Set Path
+        //TODO: add fields for intra and interdomain path
+        //use intradomain path for now since its never null
+        String[] path = map.get("intradomainPath");
+        if(path != null){
+            CtrlPlanePathContent wsPath = new CtrlPlanePathContent();
+            wsPath.setId("resvPath");
+            for(int i = 0; i < path.length; i++){
+                CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+                hop.setId("hop-" + (i+1));
+                hop.setLinkIdRef(path[i]);
+                wsPath.addHop(hop);
+            }
+            pathInfo.setPath(wsPath);
+        }
+        
+        //Get layers
+        String[] layers = map.get("layer");
+        for(int i = 0; layers!= null && i < layers.length; i++){
+            if("2".equals(layers[i])){
+                hasLayer2Params = true;
+            }else if("3".equals(layers[i])){
+                hasLayer3Params = true;
+            }
+        }
+         
+        if(hasLayer2Params){
+            Layer2Info layer2Info = new Layer2Info();
+            String vtagStr = this.extractHashVal(map.get("vlanTag"));
+            layer2Info.setSrcEndpoint(this.extractHashVal(map.get("source")));
+            layer2Info.setDestEndpoint(this.extractHashVal(map.get("destination")));
+            if(vtagStr != null){
+                VlanTag vtag = new VlanTag();
+                String isTagged = this.extractHashVal(map.get("tagSrcPort"));
+                vtag.setString(vtagStr);
+                vtag.setTagged(isTagged!= null && "true".equals(isTagged));
+                layer2Info.setSrcVtag(vtag);
+            }
+            if(vtagStr != null){
+                VlanTag vtag = new VlanTag();
+                String isTagged = this.extractHashVal(map.get("tagDestPort"));
+                vtag.setString(vtagStr);
+                vtag.setTagged(isTagged!= null && "true".equals(isTagged));
+                layer2Info.setDestVtag(vtag);
+            }
+            pathInfo.setLayer2Info(layer2Info);
+        }
+         
+        if(hasLayer3Params){
+            Layer3Info layer3Info = new Layer3Info();
+            layer3Info.setSrcHost(this.extractHashVal(map.get("source")));
+            layer3Info.setDestHost(this.extractHashVal(map.get("destination")));
+            layer3Info.setProtocol(this.extractHashVal(map.get("protocol")));
+            layer3Info.setSrcIpPort(this.extractHashIntVal(map.get("srcPort")));
+            layer3Info.setDestIpPort(this.extractHashIntVal(map.get("destPort")));
+            layer3Info.setDscp(this.extractHashVal(map.get("dscp")));
+            pathInfo.setLayer3Info(layer3Info);
+        }
+        
+        int burstLimit = this.extractHashIntVal(map.get("burstLimit"));
+        String lspClass = this.extractHashVal(map.get("lspClass"));
+        if(burstLimit != 0 || lspClass != null){
+            MplsInfo mplsInfo = new MplsInfo();
+            mplsInfo.setLspClass(lspClass);
+            mplsInfo.setBurstLimit(burstLimit);
+            pathInfo.setMplsInfo(mplsInfo);
+        }
+        
+        details.setPathInfo(pathInfo);
+        
+        return details;
     }
 }
